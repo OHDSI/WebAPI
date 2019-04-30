@@ -9,35 +9,45 @@ CREATE OR REPLACE PROCEDURE ${ohdsiSchema}.rename_cs_names AS
     amount_of_constraints INT;
     constraint_title VARCHAR(100);
     schema_title VARCHAR(100);
+    all_duplicates INT;
 
 BEGIN
-    SELECT concept_set_name BULK COLLECT INTO duplicate_names
-    FROM ${ohdsiSchema}.concept_set
-    GROUP BY concept_set_name
-    HAVING COUNT(*) > 1;
+    SELECT COUNT(*) INTO all_duplicates FROM (SELECT concept_set_name FROM ${ohdsiSchema}.concept_set
+                                                GROUP BY concept_set_name
+                                                HAVING COUNT(*) > 1);
 
-    SELECT COUNT(*) BULK COLLECT INTO name_repeats
-    FROM ${ohdsiSchema}.concept_set
-    GROUP BY concept_set_name
-    HAVING COUNT(*) > 1;
-
-    amount_of_duplicate_names := duplicate_names.COUNT;
-
-    FOR i IN 1 .. coalesce(amount_of_duplicate_names, 0)
+    FOR k IN 0 .. coalesce(all_duplicates, 0)
         LOOP
-            FOR j IN 1 .. coalesce(name_repeats(i), 0)
+            SELECT concept_set_name BULK COLLECT INTO duplicate_names
+            FROM ${ohdsiSchema}.concept_set
+            GROUP BY concept_set_name
+            HAVING COUNT(*) > 1;
+        
+            SELECT COUNT(*) BULK COLLECT INTO name_repeats
+            FROM ${ohdsiSchema}.concept_set
+            GROUP BY concept_set_name
+            HAVING COUNT(*) > 1;
+        
+            amount_of_duplicate_names := duplicate_names.COUNT;
+        
+            FOR i IN 1 .. coalesce(amount_of_duplicate_names, 0)
                 LOOP
-                    UPDATE ${ohdsiSchema}.concept_set
-                    SET concept_set_name = concept_set_name || ' (' || j || ')'
-                    WHERE concept_set_id = (SELECT concept_set_id
-                                            FROM ${ohdsiSchema}.concept_set
-                                            WHERE concept_set_name = duplicate_names(i)
-                                              AND ROWNUM = 1);
+                    FOR j IN 1 .. coalesce(name_repeats(i), 0)
+                        LOOP
+                            UPDATE ${ohdsiSchema}.concept_set
+                            SET concept_set_name = concept_set_name || ' (' || j || ')'
+                            WHERE concept_set_id = (SELECT concept_set_id
+                                                    FROM ${ohdsiSchema}.concept_set
+                                                    WHERE concept_set_name = duplicate_names(i)
+                                                      AND ROWNUM = 1);
+                        END LOOP;
                 END LOOP;
+            duplicate_names.DELETE();
+            name_repeats.DELETE();
         END LOOP;
+    
 
     constraint_title := 'U_' || ${ohdsiSchemaQuotes} || '_' || 'CS_NAME';
-
     schema_title := ${ohdsiSchemaQuotes};
 
     SELECT COUNT(*) INTO amount_of_constraints
@@ -69,35 +79,44 @@ CREATE OR REPLACE PROCEDURE ${ohdsiSchema}.rename_cd_names AS
     amount_of_constraints INT;
     constraint_title VARCHAR(100);
     schema_title VARCHAR(100);
+    all_duplicates INT;
 
 BEGIN
-    SELECT name BULK COLLECT INTO duplicate_names
-    FROM ${ohdsiSchema}.cohort_definition
-    GROUP BY name
-    HAVING COUNT(*) > 1;
+    SELECT COUNT(*) INTO all_duplicates FROM (SELECT name FROM ${ohdsiSchema}.cohort_definition
+                                                GROUP BY name
+                                                HAVING COUNT(*) > 1);
 
-    SELECT COUNT(*) BULK COLLECT INTO name_repeats
-    FROM ${ohdsiSchema}.cohort_definition
-    GROUP BY name
-    HAVING COUNT(*) > 1;
-
-    amount_of_duplicate_names := duplicate_names.COUNT;
-
-    FOR i IN 1 .. coalesce(amount_of_duplicate_names, 0)
+    FOR k IN 0 .. coalesce(all_duplicates, 0)
         LOOP
-            FOR j IN 1 .. coalesce(name_repeats(i), 0)
+            SELECT name BULK COLLECT INTO duplicate_names
+            FROM ${ohdsiSchema}.cohort_definition
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            SELECT COUNT(*) BULK COLLECT INTO name_repeats
+            FROM ${ohdsiSchema}.cohort_definition
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            amount_of_duplicate_names := duplicate_names.COUNT;
+        
+            FOR i IN 1 .. coalesce(amount_of_duplicate_names, 0)
                 LOOP
-                    UPDATE ${ohdsiSchema}.cohort_definition
-                    SET name = name || ' (' || j || ')'
-                    WHERE id = (SELECT id
-                                    FROM ${ohdsiSchema}.cohort_definition
-                                    WHERE name = duplicate_names(i)
-                                      AND ROWNUM = 1);
+                    FOR j IN 1 .. coalesce(name_repeats(i), 0)
+                        LOOP
+                            UPDATE ${ohdsiSchema}.cohort_definition
+                            SET name = name || ' (' || j || ')'
+                            WHERE id = (SELECT id
+                                            FROM ${ohdsiSchema}.cohort_definition
+                                            WHERE name = duplicate_names(i)
+                                              AND ROWNUM = 1);
+                        END LOOP;
                 END LOOP;
-        END LOOP;
+            duplicate_names.DELETE();
+            name_repeats.DELETE();
+        END LOOP;    
 
     constraint_title := 'U_' || ${ohdsiSchemaQuotes} || '_' || 'CD_NAME';
-
     schema_title := ${ohdsiSchemaQuotes};
 
     SELECT COUNT(*) INTO amount_of_constraints
@@ -129,35 +148,44 @@ CREATE OR REPLACE PROCEDURE ${ohdsiSchema}.rename_cc_names AS
     amount_of_constraints INT;
     constraint_title VARCHAR(100);
     schema_title VARCHAR(100);
+    all_duplicates INT;
 
 BEGIN
-    SELECT name BULK COLLECT INTO duplicate_names
-    FROM ${ohdsiSchema}.cohort_characterization
-    GROUP BY name
-    HAVING COUNT(*) > 1;
+    SELECT COUNT(*) INTO all_duplicates FROM (SELECT name FROM ${ohdsiSchema}.cohort_characterization
+                                                GROUP BY name
+                                                HAVING COUNT(*) > 1);
 
-    SELECT COUNT(*) BULK COLLECT INTO name_repeats
-    FROM ${ohdsiSchema}.cohort_characterization
-    GROUP BY name
-    HAVING COUNT(*) > 1;
-
-    amount_of_duplicate_names := duplicate_names.COUNT;
-
-    FOR i IN 1 .. coalesce(amount_of_duplicate_names, 0)
+    FOR k IN 0 .. coalesce(all_duplicates, 0)
         LOOP
-            FOR j IN 1 .. coalesce(name_repeats(i), 0)
+            SELECT name BULK COLLECT INTO duplicate_names
+            FROM ${ohdsiSchema}.cohort_characterization
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            SELECT COUNT(*) BULK COLLECT INTO name_repeats
+            FROM ${ohdsiSchema}.cohort_characterization
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            amount_of_duplicate_names := duplicate_names.COUNT;
+        
+            FOR i IN 1 .. coalesce(amount_of_duplicate_names, 0)
                 LOOP
-                    UPDATE ${ohdsiSchema}.cohort_characterization
-                    SET name = name || ' (' || j || ')'
-                    WHERE id = (SELECT id
-                                    FROM ${ohdsiSchema}.cohort_characterization
-                                    WHERE name = duplicate_names(i)
-                                      AND ROWNUM = 1);
-                END LOOP;
-        END LOOP;
+                    FOR j IN 1 .. coalesce(name_repeats(i), 0)
+                        LOOP
+                            UPDATE ${ohdsiSchema}.cohort_characterization
+                            SET name = name || ' (' || j || ')'
+                            WHERE id = (SELECT id
+                                            FROM ${ohdsiSchema}.cohort_characterization
+                                            WHERE name = duplicate_names(i)
+                                              AND ROWNUM = 1);
+                        END LOOP;
+                END LOOP;        
+            duplicate_names.DELETE();
+            name_repeats.DELETE();
+        END LOOP;    
 
     constraint_title := 'U_' || ${ohdsiSchemaQuotes} || '_' || 'CC_NAME';
-
     schema_title := ${ohdsiSchemaQuotes};
 
     SELECT COUNT(*) INTO amount_of_constraints
@@ -188,35 +216,44 @@ CREATE OR REPLACE PROCEDURE ${ohdsiSchema}.rename_fe_names AS
     amount_of_constraints INT;
     constraint_title VARCHAR(100);
     schema_title VARCHAR(100);
+    all_duplicates INT;
 
 BEGIN
-    SELECT name BULK COLLECT INTO duplicate_names
-    FROM ${ohdsiSchema}.fe_analysis
-    GROUP BY name
-    HAVING COUNT(*) > 1;
+    SELECT COUNT(*) INTO all_duplicates FROM (SELECT name FROM ${ohdsiSchema}.fe_analysis
+                                                GROUP BY name
+                                                HAVING COUNT(*) > 1);
 
-    SELECT COUNT(*) BULK COLLECT INTO name_repeats
-    FROM ${ohdsiSchema}.fe_analysis
-    GROUP BY name
-    HAVING COUNT(*) > 1;
-
-    amount_of_duplicate_names := duplicate_names.COUNT;
-
-    FOR i IN 1 .. coalesce(amount_of_duplicate_names, 0)
+    FOR k IN 0 .. coalesce(all_duplicates, 0)
         LOOP
-            FOR j IN 1 .. coalesce(name_repeats(i), 0)
+            SELECT name BULK COLLECT INTO duplicate_names
+            FROM ${ohdsiSchema}.fe_analysis
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            SELECT COUNT(*) BULK COLLECT INTO name_repeats
+            FROM ${ohdsiSchema}.fe_analysis
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            amount_of_duplicate_names := duplicate_names.COUNT;
+        
+            FOR i IN 1 .. coalesce(amount_of_duplicate_names, 0)
                 LOOP
-                    UPDATE ${ohdsiSchema}.fe_analysis
-                    SET name = name || ' (' || j || ')'
-                    WHERE id = (SELECT id
-                                    FROM ${ohdsiSchema}.fe_analysis
-                                    WHERE name = duplicate_names(i)
-                                      AND ROWNUM = 1);
-                END LOOP;
-        END LOOP;
+                    FOR j IN 1 .. coalesce(name_repeats(i), 0)
+                        LOOP
+                            UPDATE ${ohdsiSchema}.fe_analysis
+                            SET name = name || ' (' || j || ')'
+                            WHERE id = (SELECT id
+                                            FROM ${ohdsiSchema}.fe_analysis
+                                            WHERE name = duplicate_names(i)
+                                              AND ROWNUM = 1);
+                        END LOOP;
+                END LOOP;        
+            duplicate_names.DELETE();
+            name_repeats.DELETE();
+        END LOOP;    
 
     constraint_title := 'U_' || ${ohdsiSchemaQuotes} || '_' || 'FE_NAME';
-
     schema_title := ${ohdsiSchemaQuotes};
 
     SELECT COUNT(*) INTO amount_of_constraints
@@ -247,35 +284,44 @@ CREATE OR REPLACE PROCEDURE ${ohdsiSchema}.rename_pathway_names AS
     amount_of_constraints INT;
     constraint_title VARCHAR(100);
     schema_title VARCHAR(100);
+    all_duplicates INT;
 
 BEGIN
-    SELECT name BULK COLLECT INTO duplicate_names
-    FROM ${ohdsiSchema}.pathway_analysis
-    GROUP BY name
-    HAVING COUNT(*) > 1;
+    SELECT COUNT(*) INTO all_duplicates FROM (SELECT name FROM ${ohdsiSchema}.pathway_analysis
+                                                GROUP BY name
+                                                HAVING COUNT(*) > 1);
 
-    SELECT COUNT(*) BULK COLLECT INTO name_repeats
-    FROM ${ohdsiSchema}.pathway_analysis
-    GROUP BY name
-    HAVING COUNT(*) > 1;
-
-    amount_of_duplicate_names := duplicate_names.COUNT;
-
-    FOR i IN 1 .. coalesce(amount_of_duplicate_names, 0)
+    FOR k IN 0 .. coalesce(all_duplicates, 0)
         LOOP
-            FOR j IN 1 .. coalesce(name_repeats(i), 0)
+            SELECT name BULK COLLECT INTO duplicate_names
+            FROM ${ohdsiSchema}.pathway_analysis
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            SELECT COUNT(*) BULK COLLECT INTO name_repeats
+            FROM ${ohdsiSchema}.pathway_analysis
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            amount_of_duplicate_names := duplicate_names.COUNT;
+        
+            FOR i IN 1 .. coalesce(amount_of_duplicate_names, 0)
                 LOOP
-                    UPDATE ${ohdsiSchema}.pathway_analysis
-                    SET name = name || ' (' || j || ')'
-                    WHERE id = (SELECT id
-                                    FROM ${ohdsiSchema}.pathway_analysis
-                                    WHERE name = duplicate_names(i)
-                                      AND ROWNUM = 1);
-                END LOOP;
-        END LOOP;
+                    FOR j IN 1 .. coalesce(name_repeats(i), 0)
+                        LOOP
+                            UPDATE ${ohdsiSchema}.pathway_analysis
+                            SET name = name || ' (' || j || ')'
+                            WHERE id = (SELECT id
+                                            FROM ${ohdsiSchema}.pathway_analysis
+                                            WHERE name = duplicate_names(i)
+                                              AND ROWNUM = 1);
+                        END LOOP;
+                END LOOP;        
+            duplicate_names.DELETE();
+            name_repeats.DELETE();
+        END LOOP;    
 
     constraint_title := 'U_' || ${ohdsiSchemaQuotes} || '_' || 'PW_NAME';
-
     schema_title := ${ohdsiSchemaQuotes};
 
     SELECT COUNT(*) INTO amount_of_constraints
@@ -306,35 +352,44 @@ CREATE OR REPLACE PROCEDURE ${ohdsiSchema}.rename_ir_names AS
     amount_of_constraints INT;
     constraint_title VARCHAR(100);
     schema_title VARCHAR(100);
+    all_duplicates INT;
 
 BEGIN
-    SELECT name BULK COLLECT INTO duplicate_names
-    FROM ${ohdsiSchema}.ir_analysis
-    GROUP BY name
-    HAVING COUNT(*) > 1;
+    SELECT COUNT(*) INTO all_duplicates FROM (SELECT name FROM ${ohdsiSchema}.ir_analysis
+                                                GROUP BY name
+                                                HAVING COUNT(*) > 1);
 
-    SELECT COUNT(*) BULK COLLECT INTO name_repeats
-    FROM ${ohdsiSchema}.ir_analysis
-    GROUP BY name
-    HAVING COUNT(*) > 1;
-
-    amount_of_duplicate_names := duplicate_names.COUNT;
-
-    FOR i IN 1 .. coalesce(amount_of_duplicate_names, 0)
+    FOR k IN 0 .. coalesce(all_duplicates, 0)
         LOOP
-            FOR j IN 1 .. coalesce(name_repeats(i), 0)
+            SELECT name BULK COLLECT INTO duplicate_names
+            FROM ${ohdsiSchema}.ir_analysis
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            SELECT COUNT(*) BULK COLLECT INTO name_repeats
+            FROM ${ohdsiSchema}.ir_analysis
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            amount_of_duplicate_names := duplicate_names.COUNT;
+        
+            FOR i IN 1 .. coalesce(amount_of_duplicate_names, 0)
                 LOOP
-                    UPDATE ${ohdsiSchema}.ir_analysis
-                    SET name = name || ' (' || j || ')'
-                    WHERE id = (SELECT id
-                                    FROM ${ohdsiSchema}.ir_analysis
-                                    WHERE name = duplicate_names(i)
-                                      AND ROWNUM = 1);
-                END LOOP;
-        END LOOP;
+                    FOR j IN 1 .. coalesce(name_repeats(i), 0)
+                        LOOP
+                            UPDATE ${ohdsiSchema}.ir_analysis
+                            SET name = name || ' (' || j || ')'
+                            WHERE id = (SELECT id
+                                            FROM ${ohdsiSchema}.ir_analysis
+                                            WHERE name = duplicate_names(i)
+                                              AND ROWNUM = 1);
+                        END LOOP;
+                END LOOP;        
+            duplicate_names.DELETE();
+            name_repeats.DELETE();
+        END LOOP;    
 
     constraint_title := 'U_' || ${ohdsiSchemaQuotes} || '_' || 'IR_NAME';
-
     schema_title := ${ohdsiSchemaQuotes};
 
     SELECT COUNT(*) INTO amount_of_constraints
@@ -365,35 +420,44 @@ CREATE OR REPLACE PROCEDURE ${ohdsiSchema}.rename_estimation_names AS
     amount_of_constraints INT;
     constraint_title VARCHAR(100);
     schema_title VARCHAR(100);
+    all_duplicates INT;
 
 BEGIN
-    SELECT name BULK COLLECT INTO duplicate_names
-    FROM ${ohdsiSchema}.estimation
-    GROUP BY name
-    HAVING COUNT(*) > 1;
+    SELECT COUNT(*) INTO all_duplicates FROM (SELECT name FROM ${ohdsiSchema}.estimation
+                                                GROUP BY name
+                                                HAVING COUNT(*) > 1);
 
-    SELECT COUNT(*) BULK COLLECT INTO name_repeats
-    FROM ${ohdsiSchema}.estimation
-    GROUP BY name
-    HAVING COUNT(*) > 1;
-
-    amount_of_duplicate_names := duplicate_names.COUNT;
-
-    FOR i IN 1 .. coalesce(amount_of_duplicate_names, 0)
+    FOR k IN 0 .. coalesce(all_duplicates, 0)
         LOOP
-            FOR j IN 1 .. coalesce(name_repeats(i), 0)
+            SELECT name BULK COLLECT INTO duplicate_names
+            FROM ${ohdsiSchema}.estimation
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            SELECT COUNT(*) BULK COLLECT INTO name_repeats
+            FROM ${ohdsiSchema}.estimation
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            amount_of_duplicate_names := duplicate_names.COUNT;
+        
+            FOR i IN 1 .. coalesce(amount_of_duplicate_names, 0)
                 LOOP
-                    UPDATE ${ohdsiSchema}.estimation
-                    SET name = name || ' (' || j || ')'
-                    WHERE estimation_id = (SELECT estimation_id
-                                    FROM ${ohdsiSchema}.estimation
-                                    WHERE name = duplicate_names(i)
-                                      AND ROWNUM = 1);
+                    FOR j IN 1 .. coalesce(name_repeats(i), 0)
+                        LOOP
+                            UPDATE ${ohdsiSchema}.estimation
+                            SET name = name || ' (' || j || ')'
+                            WHERE estimation_id = (SELECT estimation_id
+                                            FROM ${ohdsiSchema}.estimation
+                                            WHERE name = duplicate_names(i)
+                                              AND ROWNUM = 1);
+                        END LOOP;
                 END LOOP;
-        END LOOP;
+            duplicate_names.DELETE();
+            name_repeats.DELETE();        
+        END LOOP;    
 
     constraint_title := 'U_' || ${ohdsiSchemaQuotes} || '_' || 'ES_NAME';
-
     schema_title := ${ohdsiSchemaQuotes};
 
     SELECT COUNT(*) INTO amount_of_constraints
@@ -424,35 +488,44 @@ CREATE OR REPLACE PROCEDURE ${ohdsiSchema}.rename_prediction_names AS
     amount_of_constraints INT;
     constraint_title VARCHAR(100);
     schema_title VARCHAR(100);
+    all_duplicates INT;
 
 BEGIN
-    SELECT name BULK COLLECT INTO duplicate_names
-    FROM ${ohdsiSchema}.prediction
-    GROUP BY name
-    HAVING COUNT(*) > 1;
+    SELECT COUNT(*) INTO all_duplicates FROM (SELECT name FROM ${ohdsiSchema}.prediction
+                                                GROUP BY name
+                                                HAVING COUNT(*) > 1);
 
-    SELECT COUNT(*) BULK COLLECT INTO name_repeats
-    FROM ${ohdsiSchema}.prediction
-    GROUP BY name
-    HAVING COUNT(*) > 1;
-
-    amount_of_duplicate_names := duplicate_names.COUNT;
-
-    FOR i IN 1 .. coalesce(amount_of_duplicate_names, 0)
+    FOR k IN 0 .. coalesce(all_duplicates, 0)
         LOOP
-            FOR j IN 1 .. coalesce(name_repeats(i), 0)
+            SELECT name BULK COLLECT INTO duplicate_names
+            FROM ${ohdsiSchema}.prediction
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            SELECT COUNT(*) BULK COLLECT INTO name_repeats
+            FROM ${ohdsiSchema}.prediction
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            amount_of_duplicate_names := duplicate_names.COUNT;
+        
+            FOR i IN 1 .. coalesce(amount_of_duplicate_names, 0)
                 LOOP
-                    UPDATE ${ohdsiSchema}.prediction
-                    SET name = name || ' (' || j || ')'
-                    WHERE prediction_id = (SELECT prediction_id
-                                    FROM ${ohdsiSchema}.prediction
-                                    WHERE name = duplicate_names(i)
-                                      AND ROWNUM = 1);
-                END LOOP;
-        END LOOP;
+                    FOR j IN 1 .. coalesce(name_repeats(i), 0)
+                        LOOP
+                            UPDATE ${ohdsiSchema}.prediction
+                            SET name = name || ' (' || j || ')'
+                            WHERE prediction_id = (SELECT prediction_id
+                                            FROM ${ohdsiSchema}.prediction
+                                            WHERE name = duplicate_names(i)
+                                              AND ROWNUM = 1);
+                        END LOOP;
+                END LOOP;        
+            duplicate_names.DELETE();
+            name_repeats.DELETE();
+        END LOOP;    
 
     constraint_title := 'U_' || ${ohdsiSchemaQuotes} || '_' || 'PD_NAME';
-
     schema_title := ${ohdsiSchemaQuotes};
 
     SELECT COUNT(*) INTO amount_of_constraints

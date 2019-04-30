@@ -8,42 +8,57 @@ BEGIN
     DECLARE @amount_of_constraints int;
     DECLARE @constraint_title varchar(100);
     DECLARE @schema_title varchar(100);
+    DECLARE @k int;
+    
+    SET @k = (SELECT COUNT(*) FROM (SELECT concept_set_name FROM ${ohdsiSchema}.concept_set
+                                    GROUP BY concept_set_name
+                                    HAVING COUNT(*) > 1) AS temp);
 
-    INSERT INTO @duplicate_names
-    SELECT concept_set_name FROM ${ohdsiSchema}.concept_set
-    GROUP BY concept_set_name
-    HAVING COUNT(*) > 1;
-
-    INSERT INTO @name_repeats
-    SELECT COUNT(*) FROM ${ohdsiSchema}.concept_set
-    GROUP BY concept_set_name
-    HAVING COUNT(*) > 1;
-
-    SET @amount_of_duplicate_names = (SELECT COUNT(*) FROM @duplicate_names);
-
-    DECLARE @i int = 1;
-    DECLARE @j int = 1;
-    DECLARE @name_repeat int = 0;
-    DECLARE @dupl_name varchar(100);
-
-    WHILE @i <= coalesce(@amount_of_duplicate_names, 0)
-    BEGIN
-        SET @name_repeat = (SELECT repeat_number FROM @name_repeats WHERE id = @i);
-        WHILE @j <= coalesce(@name_repeat, 0)
+    WHILE @k > 0
         BEGIN
-            SET @dupl_name = (SELECT duplicate_name FROM @duplicate_names WHERE id = @i);
-
-            UPDATE ${ohdsiSchema}.concept_set
-            SET concept_set_name = concept_set_name + ' (' + CAST(@j AS varchar(15)) + ')'
-            WHERE concept_set_id =
-                  (SELECT TOP (1) concept_set_id FROM ${ohdsiSchema}.concept_set
-                   WHERE concept_set_name = @dupl_name
-                  );
-            SET @j = @j + 1;
+            INSERT INTO @duplicate_names
+            SELECT concept_set_name FROM ${ohdsiSchema}.concept_set
+            GROUP BY concept_set_name
+            HAVING COUNT(*) > 1;
+        
+            INSERT INTO @name_repeats
+            SELECT COUNT(*) FROM ${ohdsiSchema}.concept_set
+            GROUP BY concept_set_name
+            HAVING COUNT(*) > 1;
+        
+            SET @amount_of_duplicate_names = (SELECT COUNT(*) FROM @duplicate_names);
+        
+            DECLARE @i int = 1;
+            DECLARE @j int = 1;
+            DECLARE @name_repeat int = 0;
+            DECLARE @dupl_name varchar(100);
+        
+            WHILE @i <= coalesce(@amount_of_duplicate_names, 0)
+            BEGIN
+                SET @name_repeat = (SELECT repeat_number FROM @name_repeats WHERE id = @i);
+                WHILE @j <= coalesce(@name_repeat, 0)
+                BEGIN
+                    SET @dupl_name = (SELECT duplicate_name FROM @duplicate_names WHERE id = @i);
+        
+                    UPDATE ${ohdsiSchema}.concept_set
+                    SET concept_set_name = concept_set_name + ' (' + CAST(@j AS varchar(15)) + ')'
+                    WHERE concept_set_id =
+                          (SELECT TOP (1) concept_set_id FROM ${ohdsiSchema}.concept_set
+                           WHERE concept_set_name = @dupl_name
+                          );
+                    SET @j = @j + 1;
+                END;
+                SET @i = @i + 1;
+                SET @j = 1;
+            END;
+            
+            DELETE FROM @duplicate_names WHERE id = id;
+            DELETE FROM @name_repeats WHERE id = id;
+            SET @k = (SELECT COUNT(*) FROM (SELECT concept_set_name FROM ${ohdsiSchema}.concept_set
+                                            GROUP BY concept_set_name
+                                            HAVING COUNT(*) > 1) AS temp);
         END;
-        SET @i = @i + 1;
-        SET @j = 1;
-    END;
+    
     SET @constraint_title = 'UNIQUE_' + ${ohdsiSchemaQuotes} + '_' + 'CS_NAME';
     SET @schema_title = ${ohdsiSchemaQuotes};
     SET @amount_of_constraints = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
@@ -67,42 +82,57 @@ BEGIN
     DECLARE @amount_of_constraints int;
     DECLARE @constraint_title varchar(100);
     DECLARE @schema_title varchar(100);
+    DECLARE @k int;
 
-    INSERT INTO @duplicate_names
-    SELECT name FROM ${ohdsiSchema}.cohort_definition
-    GROUP BY name
-    HAVING COUNT(*) > 1;
-
-    INSERT INTO @name_repeats
-    SELECT COUNT(*) FROM ${ohdsiSchema}.cohort_definition
-    GROUP BY name
-    HAVING COUNT(*) > 1;
-
-    SET @amount_of_duplicate_names = (SELECT COUNT(*) FROM @duplicate_names);
-
-    DECLARE @i int = 1;
-    DECLARE @j int = 1;
-    DECLARE @name_repeat int = 0;
-    DECLARE @dupl_name varchar(100);
-
-    WHILE @i <= coalesce(@amount_of_duplicate_names, 0)
-    BEGIN
-        SET @name_repeat = (SELECT repeat_number FROM @name_repeats WHERE id = @i);
-        WHILE @j <= coalesce(@name_repeat, 0)
+    SET @k = (SELECT COUNT(*) FROM (SELECT name FROM ${ohdsiSchema}.cohort_definition
+                                    GROUP BY name
+                                    HAVING COUNT(*) > 1) AS temp);
+                                    
+    WHILE @k > 0
         BEGIN
-            SET @dupl_name = (SELECT duplicate_name FROM @duplicate_names WHERE id = @i);
-
-            UPDATE ${ohdsiSchema}.cohort_definition
-            SET name = name + ' (' + CAST(@j AS varchar(15)) + ')'
-            WHERE id =
-                  (SELECT TOP (1) id FROM ${ohdsiSchema}.cohort_definition
-                   WHERE name = @dupl_name
-                  );
-            SET @j = @j + 1;
+            INSERT INTO @duplicate_names
+            SELECT name FROM ${ohdsiSchema}.cohort_definition
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            INSERT INTO @name_repeats
+            SELECT COUNT(*) FROM ${ohdsiSchema}.cohort_definition
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            SET @amount_of_duplicate_names = (SELECT COUNT(*) FROM @duplicate_names);
+        
+            DECLARE @i int = 1;
+            DECLARE @j int = 1;
+            DECLARE @name_repeat int = 0;
+            DECLARE @dupl_name varchar(100);
+        
+            WHILE @i <= coalesce(@amount_of_duplicate_names, 0)
+            BEGIN
+                SET @name_repeat = (SELECT repeat_number FROM @name_repeats WHERE id = @i);
+                WHILE @j <= coalesce(@name_repeat, 0)
+                BEGIN
+                    SET @dupl_name = (SELECT duplicate_name FROM @duplicate_names WHERE id = @i);
+        
+                    UPDATE ${ohdsiSchema}.cohort_definition
+                    SET name = name + ' (' + CAST(@j AS varchar(15)) + ')'
+                    WHERE id =
+                          (SELECT TOP (1) id FROM ${ohdsiSchema}.cohort_definition
+                           WHERE name = @dupl_name
+                          );
+                    SET @j = @j + 1;
+                END;
+                SET @i = @i + 1;
+                SET @j = 1;
+            END;
+            
+            DELETE FROM @duplicate_names WHERE id = id;
+            DELETE FROM @name_repeats WHERE id = id;
+            SET @k = (SELECT COUNT(*) FROM (SELECT name FROM ${ohdsiSchema}.cohort_definition
+                                            GROUP BY name
+                                            HAVING COUNT(*) > 1) AS temp);
         END;
-        SET @i = @i + 1;
-        SET @j = 1;
-    END;
+    
     SET @constraint_title = 'UNIQUE_' + ${ohdsiSchemaQuotes} + '_' + 'CD_NAME';
     SET @schema_title = ${ohdsiSchemaQuotes};
     SET @amount_of_constraints = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
@@ -126,42 +156,57 @@ BEGIN
     DECLARE @amount_of_constraints int;
     DECLARE @constraint_title varchar(100);
     DECLARE @schema_title varchar(100);
-
-    INSERT INTO @duplicate_names
-    SELECT name FROM ${ohdsiSchema}.cohort_characterization
-    GROUP BY name
-    HAVING COUNT(*) > 1;
-
-    INSERT INTO @name_repeats
-    SELECT COUNT(*) FROM ${ohdsiSchema}.cohort_characterization
-    GROUP BY name
-    HAVING COUNT(*) > 1;
-
-    SET @amount_of_duplicate_names = (SELECT COUNT(*) FROM @duplicate_names);
-
-    DECLARE @i int = 1;
-    DECLARE @j int = 1;
-    DECLARE @name_repeat int = 0;
-    DECLARE @dupl_name varchar(100);
-
-    WHILE @i <= coalesce(@amount_of_duplicate_names, 0)
-    BEGIN
-        SET @name_repeat = (SELECT repeat_number FROM @name_repeats WHERE id = @i);
-        WHILE @j <= coalesce(@name_repeat, 0)
+    DECLARE @k int;
+    
+    SET @k = (SELECT COUNT(*) FROM (SELECT name FROM ${ohdsiSchema}.cohort_characterization
+                                    GROUP BY name
+                                    HAVING COUNT(*) > 1) AS temp);
+                                    
+    WHILE @k > 0
         BEGIN
-            SET @dupl_name = (SELECT duplicate_name FROM @duplicate_names WHERE id = @i);
-
-            UPDATE ${ohdsiSchema}.cohort_characterization
-            SET name = name + ' (' + CAST(@j AS varchar(15)) + ')'
-            WHERE id =
-                  (SELECT TOP (1) id FROM ${ohdsiSchema}.cohort_characterization
-                   WHERE name = @dupl_name
-                  );
-            SET @j = @j + 1;
+            INSERT INTO @duplicate_names
+            SELECT name FROM ${ohdsiSchema}.cohort_characterization
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            INSERT INTO @name_repeats
+            SELECT COUNT(*) FROM ${ohdsiSchema}.cohort_characterization
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            SET @amount_of_duplicate_names = (SELECT COUNT(*) FROM @duplicate_names);
+        
+            DECLARE @i int = 1;
+            DECLARE @j int = 1;
+            DECLARE @name_repeat int = 0;
+            DECLARE @dupl_name varchar(100);
+        
+            WHILE @i <= coalesce(@amount_of_duplicate_names, 0)
+            BEGIN
+                SET @name_repeat = (SELECT repeat_number FROM @name_repeats WHERE id = @i);
+                WHILE @j <= coalesce(@name_repeat, 0)
+                BEGIN
+                    SET @dupl_name = (SELECT duplicate_name FROM @duplicate_names WHERE id = @i);
+        
+                    UPDATE ${ohdsiSchema}.cohort_characterization
+                    SET name = name + ' (' + CAST(@j AS varchar(15)) + ')'
+                    WHERE id =
+                          (SELECT TOP (1) id FROM ${ohdsiSchema}.cohort_characterization
+                           WHERE name = @dupl_name
+                          );
+                    SET @j = @j + 1;
+                END;
+                SET @i = @i + 1;
+                SET @j = 1;
+            END;
+        
+            DELETE FROM @duplicate_names WHERE id = id;
+            DELETE FROM @name_repeats WHERE id = id;
+            SET @k = (SELECT COUNT(*) FROM (SELECT name FROM ${ohdsiSchema}.cohort_characterization
+                                            GROUP BY name
+                                            HAVING COUNT(*) > 1) AS temp);
         END;
-        SET @i = @i + 1;
-        SET @j = 1;
-    END;
+    
     SET @constraint_title = 'UNIQUE_' + ${ohdsiSchemaQuotes} + '_' + 'CC_NAME';
     SET @schema_title = ${ohdsiSchemaQuotes};
     SET @amount_of_constraints = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
@@ -185,42 +230,58 @@ BEGIN
     DECLARE @amount_of_constraints int;
     DECLARE @constraint_title varchar(100);
     DECLARE @schema_title varchar(100);
+    DECLARE @k int;
 
-    INSERT INTO @duplicate_names
-    SELECT name FROM ${ohdsiSchema}.fe_analysis
-    GROUP BY name
-    HAVING COUNT(*) > 1;
-
-    INSERT INTO @name_repeats
-    SELECT COUNT(*) FROM ${ohdsiSchema}.fe_analysis
-    GROUP BY name
-    HAVING COUNT(*) > 1;
-
-    SET @amount_of_duplicate_names = (SELECT COUNT(*) FROM @duplicate_names);
-
-    DECLARE @i int = 1;
-    DECLARE @j int = 1;
-    DECLARE @name_repeat int = 0;
-    DECLARE @dupl_name varchar(100);
-
-    WHILE @i <= coalesce(@amount_of_duplicate_names, 0)
-    BEGIN
-        SET @name_repeat = (SELECT repeat_number FROM @name_repeats WHERE id = @i);
-        WHILE @j <= coalesce(@name_repeat, 0)
+    SET @k = (SELECT COUNT(*) FROM (SELECT name FROM ${ohdsiSchema}.fe_analysis
+                                    GROUP BY name
+                                    HAVING COUNT(*) > 1) AS temp);
+                                    
+    WHILE @k > 0
         BEGIN
-            SET @dupl_name = (SELECT duplicate_name FROM @duplicate_names WHERE id = @i);
+            INSERT INTO @duplicate_names
+            SELECT name FROM ${ohdsiSchema}.fe_analysis
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            INSERT INTO @name_repeats
+            SELECT COUNT(*) FROM ${ohdsiSchema}.fe_analysis
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            SET @amount_of_duplicate_names = (SELECT COUNT(*) FROM @duplicate_names);
+        
+            DECLARE @i int = 1;
+            DECLARE @j int = 1;
+            DECLARE @name_repeat int = 0;
+            DECLARE @dupl_name varchar(100);
+        
+            WHILE @i <= coalesce(@amount_of_duplicate_names, 0)
+            BEGIN
+                SET @name_repeat = (SELECT repeat_number FROM @name_repeats WHERE id = @i);
+                WHILE @j <= coalesce(@name_repeat, 0)
+                BEGIN
+                    SET @dupl_name = (SELECT duplicate_name FROM @duplicate_names WHERE id = @i);
+        
+                    UPDATE ${ohdsiSchema}.fe_analysis
+                    SET name = name + ' (' + CAST(@j AS varchar(15)) + ')'
+                    WHERE id =
+                          (SELECT TOP (1) id FROM ${ohdsiSchema}.fe_analysis
+                           WHERE name = @dupl_name
+                          );
+                    SET @j = @j + 1;
+                END;
+                SET @i = @i + 1;
+                SET @j = 1;
+            END;
+        
+            DELETE FROM @duplicate_names WHERE id = id;
+            DELETE FROM @name_repeats WHERE id = id;
 
-            UPDATE ${ohdsiSchema}.fe_analysis
-            SET name = name + ' (' + CAST(@j AS varchar(15)) + ')'
-            WHERE id =
-                  (SELECT TOP (1) id FROM ${ohdsiSchema}.fe_analysis
-                   WHERE name = @dupl_name
-                  );
-            SET @j = @j + 1;
+            SET @k = (SELECT COUNT(*) FROM (SELECT name FROM ${ohdsiSchema}.fe_analysis
+                                            GROUP BY name
+                                            HAVING COUNT(*) > 1) AS temp);
         END;
-        SET @i = @i + 1;
-        SET @j = 1;
-    END;
+    
     SET @constraint_title = 'UNIQUE_' + ${ohdsiSchemaQuotes} + '_' + 'FE_NAME';
     SET @schema_title = ${ohdsiSchemaQuotes};
     SET @amount_of_constraints = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
@@ -244,42 +305,57 @@ BEGIN
     DECLARE @amount_of_constraints int;
     DECLARE @constraint_title varchar(100);
     DECLARE @schema_title varchar(100);
+    DECLARE @k int;
 
-    INSERT INTO @duplicate_names
-    SELECT name FROM ${ohdsiSchema}.pathway_analysis
-    GROUP BY name
-    HAVING COUNT(*) > 1;
+    SET @k = (SELECT COUNT(*) FROM (SELECT name FROM ${ohdsiSchema}.pathway_analysis
+                                    GROUP BY name
+                                    HAVING COUNT(*) > 1) AS temp);
 
-    INSERT INTO @name_repeats
-    SELECT COUNT(*) FROM ${ohdsiSchema}.pathway_analysis
-    GROUP BY name
-    HAVING COUNT(*) > 1;
-
-    SET @amount_of_duplicate_names = (SELECT COUNT(*) FROM @duplicate_names);
-
-    DECLARE @i int = 1;
-    DECLARE @j int = 1;
-    DECLARE @name_repeat int = 0;
-    DECLARE @dupl_name varchar(100);
-
-    WHILE @i <= coalesce(@amount_of_duplicate_names, 0)
-    BEGIN
-        SET @name_repeat = (SELECT repeat_number FROM @name_repeats WHERE id = @i);
-        WHILE @j <= coalesce(@name_repeat, 0)
+    WHILE @k > 0
         BEGIN
-            SET @dupl_name = (SELECT duplicate_name FROM @duplicate_names WHERE id = @i);
-
-            UPDATE ${ohdsiSchema}.pathway_analysis
-            SET name = name + ' (' + CAST(@j AS varchar(15)) + ')'
-            WHERE id =
-                  (SELECT TOP (1) id FROM ${ohdsiSchema}.pathway_analysis
-                   WHERE name = @dupl_name
-                  );
-            SET @j = @j + 1;
+            INSERT INTO @duplicate_names
+            SELECT name FROM ${ohdsiSchema}.pathway_analysis
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            INSERT INTO @name_repeats
+            SELECT COUNT(*) FROM ${ohdsiSchema}.pathway_analysis
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            SET @amount_of_duplicate_names = (SELECT COUNT(*) FROM @duplicate_names);
+        
+            DECLARE @i int = 1;
+            DECLARE @j int = 1;
+            DECLARE @name_repeat int = 0;
+            DECLARE @dupl_name varchar(100);
+        
+            WHILE @i <= coalesce(@amount_of_duplicate_names, 0)
+            BEGIN
+                SET @name_repeat = (SELECT repeat_number FROM @name_repeats WHERE id = @i);
+                WHILE @j <= coalesce(@name_repeat, 0)
+                BEGIN
+                    SET @dupl_name = (SELECT duplicate_name FROM @duplicate_names WHERE id = @i);
+        
+                    UPDATE ${ohdsiSchema}.pathway_analysis
+                    SET name = name + ' (' + CAST(@j AS varchar(15)) + ')'
+                    WHERE id =
+                          (SELECT TOP (1) id FROM ${ohdsiSchema}.pathway_analysis
+                           WHERE name = @dupl_name
+                          );
+                    SET @j = @j + 1;
+                END;
+                SET @i = @i + 1;
+                SET @j = 1;
+            END;
+        
+            DELETE FROM @duplicate_names WHERE id = id;
+            DELETE FROM @name_repeats WHERE id = id;
+            SET @k = (SELECT COUNT(*) FROM (SELECT name FROM ${ohdsiSchema}.pathway_analysis
+                                            GROUP BY name
+                                            HAVING COUNT(*) > 1) AS temp);
         END;
-        SET @i = @i + 1;
-        SET @j = 1;
-    END;
+            
     SET @constraint_title = 'UNIQUE_' + ${ohdsiSchemaQuotes} + '_' + 'PW_NAME';
     SET @schema_title = ${ohdsiSchemaQuotes};
     SET @amount_of_constraints = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
@@ -303,42 +379,57 @@ BEGIN
     DECLARE @amount_of_constraints int;
     DECLARE @constraint_title varchar(100);
     DECLARE @schema_title varchar(100);
+    DECLARE @k int;
 
-    INSERT INTO @duplicate_names
-    SELECT name FROM ${ohdsiSchema}.ir_analysis
-    GROUP BY name
-    HAVING COUNT(*) > 1;
-
-    INSERT INTO @name_repeats
-    SELECT COUNT(*) FROM ${ohdsiSchema}.ir_analysis
-    GROUP BY name
-    HAVING COUNT(*) > 1;
-
-    SET @amount_of_duplicate_names = (SELECT COUNT(*) FROM @duplicate_names);
-
-    DECLARE @i int = 1;
-    DECLARE @j int = 1;
-    DECLARE @name_repeat int = 0;
-    DECLARE @dupl_name varchar(100);
-
-    WHILE @i <= coalesce(@amount_of_duplicate_names, 0)
-    BEGIN
-        SET @name_repeat = (SELECT repeat_number FROM @name_repeats WHERE id = @i);
-        WHILE @j <= coalesce(@name_repeat, 0)
+    SET @k = (SELECT COUNT(*) FROM (SELECT name FROM ${ohdsiSchema}.ir_analysis
+                                    GROUP BY name
+                                    HAVING COUNT(*) > 1) AS temp);
+                                    
+    WHILE @k > 0
         BEGIN
-            SET @dupl_name = (SELECT duplicate_name FROM @duplicate_names WHERE id = @i);
-
-            UPDATE ${ohdsiSchema}.ir_analysis
-            SET name = name + ' (' + CAST(@j AS varchar(15)) + ')'
-            WHERE id =
-                  (SELECT TOP (1) id FROM ${ohdsiSchema}.ir_analysis
-                   WHERE name = @dupl_name
-                  );
-            SET @j = @j + 1;
+            INSERT INTO @duplicate_names
+            SELECT name FROM ${ohdsiSchema}.ir_analysis
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            INSERT INTO @name_repeats
+            SELECT COUNT(*) FROM ${ohdsiSchema}.ir_analysis
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            SET @amount_of_duplicate_names = (SELECT COUNT(*) FROM @duplicate_names);
+        
+            DECLARE @i int = 1;
+            DECLARE @j int = 1;
+            DECLARE @name_repeat int = 0;
+            DECLARE @dupl_name varchar(100);
+        
+            WHILE @i <= coalesce(@amount_of_duplicate_names, 0)
+            BEGIN
+                SET @name_repeat = (SELECT repeat_number FROM @name_repeats WHERE id = @i);
+                WHILE @j <= coalesce(@name_repeat, 0)
+                BEGIN
+                    SET @dupl_name = (SELECT duplicate_name FROM @duplicate_names WHERE id = @i);
+        
+                    UPDATE ${ohdsiSchema}.ir_analysis
+                    SET name = name + ' (' + CAST(@j AS varchar(15)) + ')'
+                    WHERE id =
+                          (SELECT TOP (1) id FROM ${ohdsiSchema}.ir_analysis
+                           WHERE name = @dupl_name
+                          );
+                    SET @j = @j + 1;
+                END;
+                SET @i = @i + 1;
+                SET @j = 1;
+            END;
+        
+            DELETE FROM @duplicate_names WHERE id = id;
+            DELETE FROM @name_repeats WHERE id = id;
+            SET @k = (SELECT COUNT(*) FROM (SELECT name FROM ${ohdsiSchema}.ir_analysis
+                                            GROUP BY name
+                                            HAVING COUNT(*) > 1) AS temp);
         END;
-        SET @i = @i + 1;
-        SET @j = 1;
-    END;
+    
     SET @constraint_title = 'UNIQUE_' + ${ohdsiSchemaQuotes} + '_' + 'IR_NAME';
     SET @schema_title = ${ohdsiSchemaQuotes};
     SET @amount_of_constraints = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
@@ -362,42 +453,58 @@ BEGIN
     DECLARE @amount_of_constraints int;
     DECLARE @constraint_title varchar(100);
     DECLARE @schema_title varchar(100);
+    DECLARE @k int;
 
-    INSERT INTO @duplicate_names
-    SELECT name FROM ${ohdsiSchema}.estimation
-    GROUP BY name
-    HAVING COUNT(*) > 1;
-
-    INSERT INTO @name_repeats
-    SELECT COUNT(*) FROM ${ohdsiSchema}.estimation
-    GROUP BY name
-    HAVING COUNT(*) > 1;
-
-    SET @amount_of_duplicate_names = (SELECT COUNT(*) FROM @duplicate_names);
-
-    DECLARE @i int = 1;
-    DECLARE @j int = 1;
-    DECLARE @name_repeat int = 0;
-    DECLARE @dupl_name varchar(100);
-
-    WHILE @i <= coalesce(@amount_of_duplicate_names, 0)
-    BEGIN
-        SET @name_repeat = (SELECT repeat_number FROM @name_repeats WHERE id = @i);
-        WHILE @j <= coalesce(@name_repeat, 0)
+    SET @k = (SELECT COUNT(*) FROM (SELECT name FROM ${ohdsiSchema}.estimation
+                                    GROUP BY name
+                                    HAVING COUNT(*) > 1) AS temp);
+                                    
+    WHILE @k > 0
         BEGIN
-            SET @dupl_name = (SELECT duplicate_name FROM @duplicate_names WHERE id = @i);
-
-            UPDATE ${ohdsiSchema}.estimation
-            SET name = name + ' (' + CAST(@j AS varchar(15)) + ')'
-            WHERE estimation_id =
-                  (SELECT TOP (1) estimation_id FROM ${ohdsiSchema}.estimation
-                   WHERE name = @dupl_name
-                  );
-            SET @j = @j + 1;
+            INSERT INTO @duplicate_names
+            SELECT name FROM ${ohdsiSchema}.estimation
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            INSERT INTO @name_repeats
+            SELECT COUNT(*) FROM ${ohdsiSchema}.estimation
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            SET @amount_of_duplicate_names = (SELECT COUNT(*) FROM @duplicate_names);
+        
+            DECLARE @i int = 1;
+            DECLARE @j int = 1;
+            DECLARE @name_repeat int = 0;
+            DECLARE @dupl_name varchar(100);
+        
+            WHILE @i <= coalesce(@amount_of_duplicate_names, 0)
+            BEGIN
+                SET @name_repeat = (SELECT repeat_number FROM @name_repeats WHERE id = @i);
+                WHILE @j <= coalesce(@name_repeat, 0)
+                BEGIN
+                    SET @dupl_name = (SELECT duplicate_name FROM @duplicate_names WHERE id = @i);
+        
+                    UPDATE ${ohdsiSchema}.estimation
+                    SET name = name + ' (' + CAST(@j AS varchar(15)) + ')'
+                    WHERE estimation_id =
+                          (SELECT TOP (1) estimation_id FROM ${ohdsiSchema}.estimation
+                           WHERE name = @dupl_name
+                          );
+                    SET @j = @j + 1;
+                END;
+                SET @i = @i + 1;
+                SET @j = 1;
+            END;
+        
+            SET @k = (SELECT COUNT(*) FROM (SELECT name FROM ${ohdsiSchema}.estimation
+                                            GROUP BY name
+                                            HAVING COUNT(*) > 1) AS temp);
+            DELETE FROM @duplicate_names WHERE id = id;
+            DELETE FROM @name_repeats WHERE id = id;
         END;
-        SET @i = @i + 1;
-        SET @j = 1;
-    END;
+
+    
     SET @constraint_title = 'UNIQUE_' + ${ohdsiSchemaQuotes} + '_' + 'ESTIMATION_NAME';
     SET @schema_title = ${ohdsiSchemaQuotes};
     SET @amount_of_constraints = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
@@ -421,42 +528,57 @@ BEGIN
     DECLARE @amount_of_constraints int;
     DECLARE @constraint_title varchar(100);
     DECLARE @schema_title varchar(100);
+    DECLARE @k int;
 
-    INSERT INTO @duplicate_names
-    SELECT name FROM ${ohdsiSchema}.prediction
-    GROUP BY name
-    HAVING COUNT(*) > 1;
-
-    INSERT INTO @name_repeats
-    SELECT COUNT(*) FROM ${ohdsiSchema}.prediction
-    GROUP BY name
-    HAVING COUNT(*) > 1;
-
-    SET @amount_of_duplicate_names = (SELECT COUNT(*) FROM @duplicate_names);
-
-    DECLARE @i int = 1;
-    DECLARE @j int = 1;
-    DECLARE @name_repeat int = 0;
-    DECLARE @dupl_name varchar(100);
-
-    WHILE @i <= coalesce(@amount_of_duplicate_names, 0)
-    BEGIN
-        SET @name_repeat = (SELECT repeat_number FROM @name_repeats WHERE id = @i);
-        WHILE @j <= coalesce(@name_repeat, 0)
+    SET @k = (SELECT COUNT(*) FROM (SELECT name FROM ${ohdsiSchema}.prediction
+                                    GROUP BY name
+                                    HAVING COUNT(*) > 1) AS temp);
+    
+    WHILE @k > 0
         BEGIN
-            SET @dupl_name = (SELECT duplicate_name FROM @duplicate_names WHERE id = @i);
-
-            UPDATE ${ohdsiSchema}.prediction
-            SET name = name + ' (' + CAST(@j AS varchar(15)) + ')'
-            WHERE prediction_id =
-                  (SELECT TOP (1) prediction_id FROM ${ohdsiSchema}.prediction
-                   WHERE name = @dupl_name
-                  );
-            SET @j = @j + 1;
+            INSERT INTO @duplicate_names
+            SELECT name FROM ${ohdsiSchema}.prediction
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            INSERT INTO @name_repeats
+            SELECT COUNT(*) FROM ${ohdsiSchema}.prediction
+            GROUP BY name
+            HAVING COUNT(*) > 1;
+        
+            SET @amount_of_duplicate_names = (SELECT COUNT(*) FROM @duplicate_names);
+        
+            DECLARE @i int = 1;
+            DECLARE @j int = 1;
+            DECLARE @name_repeat int = 0;
+            DECLARE @dupl_name varchar(100);
+        
+            WHILE @i <= coalesce(@amount_of_duplicate_names, 0)
+            BEGIN
+                SET @name_repeat = (SELECT repeat_number FROM @name_repeats WHERE id = @i);
+                WHILE @j <= coalesce(@name_repeat, 0)
+                BEGIN
+                    SET @dupl_name = (SELECT duplicate_name FROM @duplicate_names WHERE id = @i);
+        
+                    UPDATE ${ohdsiSchema}.prediction
+                    SET name = name + ' (' + CAST(@j AS varchar(15)) + ')'
+                    WHERE prediction_id =
+                          (SELECT TOP (1) prediction_id FROM ${ohdsiSchema}.prediction
+                           WHERE name = @dupl_name
+                          );
+                    SET @j = @j + 1;
+                END;
+                SET @i = @i + 1;
+                SET @j = 1;
+            END;
+            
+            SET @k = (SELECT COUNT(*) FROM (SELECT name FROM ${ohdsiSchema}.prediction
+                                            GROUP BY name
+                                            HAVING COUNT(*) > 1) AS temp);
+            DELETE FROM @duplicate_names WHERE id = id;
+            DELETE FROM @name_repeats WHERE id = id;
         END;
-        SET @i = @i + 1;
-        SET @j = 1;
-    END;
+    
     SET @constraint_title = 'UNIQUE_' + ${ohdsiSchemaQuotes} + '_' + 'PREDICTION_NAME';
     SET @schema_title = ${ohdsiSchemaQuotes};
     SET @amount_of_constraints = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS

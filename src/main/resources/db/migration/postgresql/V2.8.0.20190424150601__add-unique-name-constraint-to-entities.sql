@@ -1,5 +1,5 @@
 CREATE OR REPLACE FUNCTION ${ohdsiSchema}.rename_duplicate_names(name_title VARCHAR(20), id_title VARCHAR(15),
-                                                  table_title VARCHAR(30)) RETURNS VOID
+                                                                 table_title VARCHAR(30)) RETURNS VOID
     LANGUAGE 'plpgsql'
 AS
 $$
@@ -9,35 +9,47 @@ DECLARE
     amount_of_duplicate_names INT;
     amount_of_constraints     INT;
     constraint_name           VARCHAR(100);
+    all_duplicates            INT;
 
 BEGIN
-    EXECUTE format('SELECT ARRAY(SELECT %I
+    EXECUTE format('SELECT COUNT(*)
+                    FROM (SELECT %I
+                            FROM %I.%I
+                            GROUP BY %I
+                            HAVING COUNT(*) > 1) as temp;', name_title, ${ohdsiSchemaQuotes}, table_title,
+                   name_title) INTO all_duplicates;
+    FOR k IN 0 .. coalesce(all_duplicates, 0)
+        LOOP
+            EXECUTE format('SELECT ARRAY(SELECT %I
                                  FROM %I.%I
                                  GROUP BY %I
                                  HAVING COUNT(*) > 1)', name_title, ${ohdsiSchemaQuotes}, table_title,
                    name_title) INTO duplicate_names;
 
-    EXECUTE format('SELECT ARRAY(SELECT COUNT(*)
-                                 FROM %I.%I
-                                 GROUP BY %I
-                                 HAVING COUNT(*) > 1);', ${ohdsiSchemaQuotes}, table_title, name_title) INTO name_repeats;
+            EXECUTE format('SELECT ARRAY(SELECT COUNT(*)
+                                         FROM %I.%I
+                                         GROUP BY %I
+                                         HAVING COUNT(*) > 1);', ${ohdsiSchemaQuotes}, table_title,
+                           name_title) INTO name_repeats;
 
 
-    amount_of_duplicate_names := (SELECT array_length(duplicate_names, 1));
+            amount_of_duplicate_names := (SELECT array_length(duplicate_names, 1));
 
-    FOR i IN 1 .. coalesce(amount_of_duplicate_names, 0)
-        LOOP
-            FOR j IN 1 .. coalesce(name_repeats[i], 0)
+            FOR i IN 1 .. coalesce(amount_of_duplicate_names, 0)
                 LOOP
-                    EXECUTE format('UPDATE %I.%I
-                     SET %I = concat(%I, '' ('', $1, '')'')
-                     WHERE %I = (SELECT %I
-                                 FROM %I.%I
-                                 WHERE %I = $2
-                                 ORDER BY %I
-                                 LIMIT 1);', ${ohdsiSchemaQuotes}, table_title, name_title, name_title, id_title, id_title,
-                                   ${ohdsiSchemaQuotes}, table_title,
-                                   name_title, id_title) USING j, duplicate_names[i];
+                    FOR j IN 1 .. coalesce(name_repeats[i], 0)
+                        LOOP
+                            EXECUTE format('UPDATE %I.%I
+                             SET %I = concat(%I, '' ('', $1, '')'')
+                             WHERE %I = (SELECT %I
+                                         FROM %I.%I
+                                         WHERE %I = $2
+                                         ORDER BY %I
+                                         LIMIT 1);', ${ohdsiSchemaQuotes}, table_title, name_title, name_title, id_title,
+                                           id_title,
+                                           ${ohdsiSchemaQuotes}, table_title,
+                                           name_title, id_title) USING j, duplicate_names[i];
+                        END LOOP;
                 END LOOP;
         END LOOP;
 
@@ -47,11 +59,13 @@ BEGIN
                   FROM information_schema.table_constraints
                   WHERE constraint_schema = ''%I''
                     AND constraint_name = ''%I''
-                    AND table_name = ''%I''', ${ohdsiSchemaQuotes}, constraint_name, table_title) INTO amount_of_constraints;
+                    AND table_name = ''%I''', ${ohdsiSchemaQuotes}, constraint_name,
+                   table_title) INTO amount_of_constraints;
 
     IF amount_of_constraints = 0 THEN
         EXECUTE format('ALTER TABLE %I.%I
-                             ADD CONSTRAINT %I UNIQUE (%I);', ${ohdsiSchemaQuotes}, table_title, constraint_name, name_title);
+                             ADD CONSTRAINT %I UNIQUE (%I);', ${ohdsiSchemaQuotes}, table_title, constraint_name,
+                       name_title);
     END IF;
 END;
 $$;

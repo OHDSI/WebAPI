@@ -22,7 +22,6 @@ import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.QuoteUtils;
 import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.stereotype.Component;

@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.regex.Pattern;
@@ -22,7 +21,6 @@ import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.stereotype.Component;
 import org.ohdsi.featureExtraction.FeatureExtraction;
@@ -62,7 +60,7 @@ public class FeatureExtractionService extends AbstractDaoService {
 	private final String QUERY_COVARIATE_STATS_VOCAB = ResourceHelper.GetResourceAsString("/resources/cohortfeatures/sql/queryCovariateStatsVocab.sql");
 
 	private final Pattern timeWindowPattern = Pattern.compile("(LongTerm|MediumTerm|ShortTerm|AnyTimePrior|Overlapping)");
-	
+
 	@Autowired
 	private JobBuilderFactory jobBuilders;
 
@@ -117,18 +115,16 @@ public class FeatureExtractionService extends AbstractDaoService {
 		}
 
 		if (analysisIds != null && analysisIds.size() > 0) {
-			ArrayList<Integer> ids = new ArrayList<>();
+			ArrayList<String> ids = new ArrayList<>();
 			ArrayList<String> ranges = new ArrayList<>();
 
-			analysisIds.stream().map((analysisIdExpr) -> analysisIdExpr.split(":"))
-							.map(strArray -> Arrays.stream(strArray).map(Integer::parseInt).toArray(Integer[]::new))
-							.forEachOrdered((parsedIds) -> {
-									if (parsedIds.length > 1) {
-										ranges.add(String.format("(ar.analysis_id >= %s and ar.analysis_id <= %s)", parsedIds[0], parsedIds[1]));
-									} else {
-										ids.add(parsedIds[0]);
-									}
-							});
+			analysisIds.stream().map((analysisIdExpr) -> analysisIdExpr.split(":")).forEachOrdered((parsedIds) -> {
+				if (parsedIds.length > 1) {
+					ranges.add(String.format("(ar.analysis_id >= %s and ar.analysis_id <= %s)", parsedIds[0], parsedIds[1]));
+				} else {
+					ids.add(parsedIds[0]);
+				}
+			});
 
 			String idClause = "";
 			if (ids.size() > 0) {
@@ -172,10 +168,10 @@ public class FeatureExtractionService extends AbstractDaoService {
 		if (analysisName.endsWith("ShortTerm")) return "Short Term";
 		if (analysisName.endsWith("AnyTimePrior")) return "Any Time Prior";
 		if (analysisName.endsWith("Overlapping")) return "Overlapping";
-		
-		return "None";	
+
+		return "None";
 	}
-	
+
 	private String getAnalysisName(String analysisName, String domainId)
 	{
 		String finalName = analysisName.replaceAll(timeWindowPattern.pattern(), "");
@@ -184,7 +180,7 @@ public class FeatureExtractionService extends AbstractDaoService {
 			finalName = finalName.substring(domainId.length() + 1);
 		return finalName;
 	}
-	
+
         @GET
         @Path("defaultcovariatesettings")
         @Produces(MediaType.APPLICATION_JSON)
@@ -197,7 +193,7 @@ public class FeatureExtractionService extends AbstractDaoService {
             } catch (Exception e) {
                 throw new IllegalArgumentException("The parameter temporal must be a string of true or false.");
             }
-            
+
             FeatureExtraction.init(null);
             String settings = "";
             if (getTemporal) {
@@ -205,10 +201,10 @@ public class FeatureExtractionService extends AbstractDaoService {
             } else {
                 settings = FeatureExtraction.getDefaultPrespecAnalyses();
             }
-            
+
             return settings;
         }
-        
+
 	@GET
 	@Path("query/prevalence/{cohortId}/{sourceKey}")
 	@Produces(MediaType.APPLICATION_JSON)

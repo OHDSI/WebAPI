@@ -45,20 +45,24 @@ public class CohortAnalysisTasklet implements Tasklet {
 		
 		private final CohortDefinitionRepository cohortDefinitionRepository;
 
+		private final HeraclesQueryBuilder heraclesQueryBuilder;
+
 	public CohortAnalysisTasklet(CohortAnalysisTask task
-				, final JdbcTemplate jdbcTemplate
-				, final TransactionTemplate transactionTemplate
-				, final TransactionTemplate transactionTemplateRequiresNew
-				, String sourceDialect
-				, VisualizationDataRepository visualizationDataRepository
-				, CohortDefinitionRepository cohortDefinitionRepository,
-				final ObjectMapper objectMapper) {
+					, final JdbcTemplate jdbcTemplate
+					, final TransactionTemplate transactionTemplate
+					, final TransactionTemplate transactionTemplateRequiresNew
+					, String sourceDialect
+					, VisualizationDataRepository visualizationDataRepository
+					, CohortDefinitionRepository cohortDefinitionRepository
+					, final ObjectMapper objectMapper
+					, HeraclesQueryBuilder heraclesQueryBuilder) {
         this.task = task;
         this.jdbcTemplate = jdbcTemplate;
         this.transactionTemplate = transactionTemplate;
         this.transactionTemplateRequiresNew = transactionTemplateRequiresNew;
-        this.analysisRunner = new CohortResultsAnalysisRunner(sourceDialect, visualizationDataRepository, objectMapper);
-        this.cohortDefinitionRepository = cohortDefinitionRepository;
+		this.heraclesQueryBuilder = heraclesQueryBuilder;
+		this.analysisRunner = new CohortResultsAnalysisRunner(sourceDialect, visualizationDataRepository, objectMapper);
+				this.cohortDefinitionRepository = cohortDefinitionRepository;
 	}
     
     @Override
@@ -83,7 +87,7 @@ public class CohortAnalysisTasklet implements Tasklet {
 					return gi;
 				});
         try {
-						final String cohortSql = CohortAnalysisService.getCohortAnalysisSql(task);
+						final String cohortSql = heraclesQueryBuilder.buildHeraclesAnalysisQuery(task);
 						BatchStatementExecutorWithProgress executor = new BatchStatementExecutorWithProgress(
 										SqlSplit.splitSql(cohortSql),
 										transactionTemplate,

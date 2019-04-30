@@ -51,6 +51,6 @@ tryCatch({
                 minCellCount = 5,
                 cdmVersion = 5)
 }, finally = {
-        remove.packages('@packageName')
+        remove.packages('@packageName', lib = libs_local)
         unlink(libs_local, recursive = TRUE, force = TRUE)
 })

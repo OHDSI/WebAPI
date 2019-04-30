@@ -56,6 +56,6 @@ tryCatch({
                 maxCores = maxCores,
                 minCellCount = 5)
 }, finally = {
-        remove.packages('@packageName')
+        remove.packages('@packageName', lib = libs_local)
         unlink(libs_local, recursive = TRUE, force = TRUE)
 })

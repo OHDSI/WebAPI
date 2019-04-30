@@ -8,4 +8,9 @@ public class QuoteUtils {
 
     return Objects.nonNull(val) ? val.replaceAll("(^\"|\"$|^'|'$)", "") : val;
   }
+
+  public static String escapeSql(String val) {
+
+    return Objects.nonNull(val) ? val.replaceAll("'", "''") : val;
+  }
 }

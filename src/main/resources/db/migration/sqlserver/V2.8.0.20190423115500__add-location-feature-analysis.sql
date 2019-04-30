@@ -16,7 +16,7 @@ FROM (SELECT *
       WHERE cohort_definition_id = @cohort_id) cohort
   JOIN @cdm_database_schema.location_history LH
     ON LH.start_date < cohort.cohort_end_date
-       AND COALESCE(LH.end_date, CAST(''2099-12-31'' AS DATE)) > cohort.cohort_start_date
+       AND COALESCE(LH.end_date, CAST(''20991231'' AS DATE)) > cohort.cohort_start_date
        AND LH.domain_id = ''PERSON''
        AND LH.entity_id = cohort.subject_id
   JOIN @cdm_database_schema.location L ON L.location_id = LH.location_id
@@ -27,7 +27,7 @@ FROM (SELECT *
                FROM @cohort_table
                WHERE cohort_definition_id = @cohort_id
              ) stat
-GROUP BY C.concept_id, stat.total_cnt',
+GROUP BY C.concept_id, C.concept_name, stat.total_cnt',
   1,
   'PREVALENCE'
 );
@@ -50,7 +50,7 @@ FROM (SELECT *
       WHERE cohort_definition_id = @cohort_id) cohort
   JOIN @cdm_database_schema.location_history LH
     ON LH.start_date < cohort.cohort_start_date
-       AND COALESCE(LH.end_date, CAST(''2099-12-31'' AS DATE)) > dateadd(d, -365, cohort.cohort_start_date)
+       AND COALESCE(LH.end_date, CAST(''20991231'' AS DATE)) > dateadd(d, -365, cohort.cohort_start_date)
        AND LH.domain_id = ''PERSON''
        AND LH.entity_id = cohort.subject_id
   JOIN @cdm_database_schema.location L ON L.location_id = LH.location_id
@@ -61,7 +61,7 @@ FROM (SELECT *
                FROM @cohort_table
                WHERE cohort_definition_id = @cohort_id
              ) stat
-GROUP BY C.concept_id, stat.total_cnt',
+GROUP BY C.concept_id, C.concept_name, stat.total_cnt',
   1,
   'PREVALENCE'
 );

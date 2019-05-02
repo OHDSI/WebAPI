@@ -79,7 +79,8 @@ public enum FilterTemplates {
     OIDC_AUTH("oidcAuth"),
     OAUTH_CALLBACK("oauthCallback"),
     HANDLE_UNSUCCESSFUL_OAUTH("handleUnsuccessfullOAuth"),
-    HANDLE_CAS("handleCas");
+    HANDLE_CAS("handleCas"),
+    RUN_AS("runAs");
     
     private String templateName;
     private EntityName entityName;

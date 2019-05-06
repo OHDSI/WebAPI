@@ -21,6 +21,8 @@ public interface PathwayService {
 
     Page<PathwayAnalysisEntity> getPage(final Pageable pageable);
 
+    int getCountPAWithSameName(Integer id, String name);
+
     PathwayAnalysisEntity getById(Integer id);
 
     PathwayAnalysisEntity update(PathwayAnalysisEntity pathwayAnalysisEntity);

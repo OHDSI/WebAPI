@@ -136,6 +136,11 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     }
     
     @Override
+    public int getCountEstimationWithSameName(Integer id, String name) {
+        return estimationRepository.getCountEstimationWithSameName(id, name);
+    }
+    
+    @Override
     public Estimation getById(Integer id) {
         return estimationRepository.findOne(id, COMMONS_ENTITY_GRAPH);
     }
@@ -196,7 +201,6 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     @Override
     public EstimationAnalysisImpl exportAnalysis(Estimation est) {
 
-        ObjectMapper mapper = new ObjectMapper();
         EstimationAnalysisImpl expression;
         try {
             expression = Utils.deserialize(est.getSpecification(), EstimationAnalysisImpl.class);

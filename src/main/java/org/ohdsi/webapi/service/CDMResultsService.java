@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cache.ResultsCache;
@@ -61,9 +62,12 @@ public class CDMResultsService extends AbstractDaoService {
     @Autowired
     private SourceAccessor sourceAccessor;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @PostConstruct
     public void init() {
-        queryRunner = new CDMResultsAnalysisRunner(this.getSourceDialect());
+        queryRunner = new CDMResultsAnalysisRunner(this.getSourceDialect(), objectMapper);
         warmCaches();
     }
 

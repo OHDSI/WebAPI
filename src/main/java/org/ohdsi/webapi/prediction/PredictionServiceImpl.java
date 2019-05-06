@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
+import javax.ws.rs.InternalServerErrorException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -223,7 +224,11 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     @Override
     public PredictionAnalysis importAnalysis(PatientLevelPredictionAnalysisImpl analysis) throws Exception {
         try {
-            // Create all of the cohort definitions 
+            if (Objects.isNull(analysis.getCohortDefinitions()) || Objects.isNull(analysis.getCovariateSettings())) {
+                log.error("Failed to import Prediction. Invalid source JSON.");
+                throw new InternalServerErrorException();
+            }
+            // Create all of the cohort definitions
             // and map the IDs from old -> new
             List<BigDecimal> newTargetIds = new ArrayList<>();
             List<BigDecimal> newOutcomeIds = new ArrayList<>();

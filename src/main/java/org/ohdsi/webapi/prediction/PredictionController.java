@@ -14,6 +14,8 @@ import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisI
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
@@ -27,6 +29,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.ohdsi.analysis.Utils;
@@ -34,6 +37,8 @@ import org.ohdsi.analysis.Utils;
 @Controller
 @Path("/prediction/")
 public class PredictionController {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(PredictionController.class);
 
   private static final String NO_PREDICTION_ANALYSIS_MESSAGE = "There is no prediction analysis with id = %d.";
   private static final String NO_GENERATION_MESSAGE = "There is no generation with id = %d";
@@ -140,6 +145,11 @@ public class PredictionController {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public PredictionAnalysisDTO importAnalysis(PatientLevelPredictionAnalysisImpl analysis) throws Exception {
+
+    if (Objects.isNull(analysis)) {
+      LOGGER.error("Failed to import Prediction, empty or not valid source JSON");
+      throw new InternalServerErrorException();
+    }
     PredictionAnalysis importedAnalysis = service.importAnalysis(analysis);
     return conversionService.convert(importedAnalysis, PredictionAnalysisDTO.class);
   }  

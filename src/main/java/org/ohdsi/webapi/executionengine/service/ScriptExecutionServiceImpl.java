@@ -77,6 +77,8 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
     private String resultCallback;
     @Value("${executionengine.updateStatusCallback}")
     private String updateStatusCallback;
+    @Value("${executionengine.resultExclusions}")
+    private String resultExclusions;
 
     private List<ExecutionEngineAnalysisStatus.Status> FINAL_STATUES = ImmutableList.of(ExecutionEngineAnalysisStatus.Status.COMPLETED, ExecutionEngineAnalysisStatus.Status.COMPLETED);
 
@@ -185,6 +187,7 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
         analysisRequestDTO.setCallbackPassword(password);
         analysisRequestDTO.setRequested(new Date());
         analysisRequestDTO.setExecutableFileName(executableFileName);
+        analysisRequestDTO.setResultExclusions(resultExclusions);
         analysisRequestDTO.setResultCallback(
                 StrSubstitutor.replace(resultCallback,
                         ImmutableMap.of("id", executionId,

@@ -59,4 +59,6 @@ public interface CcService {
     void cancelGeneration(Long id, String sourceKey);
 
     int countLikeName(String copyName);
+
+    Integer getCCResultCount(Long id);
 }

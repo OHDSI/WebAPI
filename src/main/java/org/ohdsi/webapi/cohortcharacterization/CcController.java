@@ -249,6 +249,15 @@ public class CcController {
     }
 
     @GET
+    @Path("/generation/{generationId}/count")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Integer getGenerationsResultsCount(
+            @PathParam("generationId") final Long generationId) {
+        return service.getCCResultCount(generationId);
+    }
+
+    @GET
     @Path("/generation/{generationId}/explore/prevalence/{analysisId}/{cohortId}/{covariateId}")
     @Produces(MediaType.APPLICATION_JSON)
     public List<CcPrevalenceStat> getPrevalenceStat(@PathParam("generationId") Long generationId,

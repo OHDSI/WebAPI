@@ -14,6 +14,8 @@ import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
 
@@ -27,6 +29,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -34,6 +37,7 @@ import java.util.stream.StreamSupport;
 @Path("/estimation/")
 public class EstimationController {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(EstimationController.class);
   private static final String NO_ESTIMATION_MESSAGE = "There is no estimation with id = %d.";
   private static final String NO_GENERATION_MESSAGE = "There is no generation with id = %d";
   private final EstimationService service;
@@ -142,6 +146,11 @@ public class EstimationController {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public EstimationDTO importAnalysis(EstimationAnalysisImpl analysis) throws Exception {
+
+      if (Objects.isNull(analysis)) {
+          LOGGER.error("Failed to import Estimation, empty or not valid source JSON");
+          throw new InternalServerErrorException();
+      }
       Estimation importedEstimation = service.importAnalysis(analysis);
       return conversionService.convert(importedEstimation, EstimationDTO.class);
   }  

@@ -94,6 +94,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 
   @Autowired
   private CohortDefinitionRepository cohortDefinitionRepository;
+  
+  @Autowired
+  private CohortDefinitionDetailsRepository cohortDefinitionDetailsRepository;
 
   @Autowired
   private JobBuilderFactory jobBuilders;
@@ -368,6 +371,7 @@ public class CohortDefinitionService extends AbstractDaoService {
               .setExpression(Utils.serialize(dto.getExpression()));
 
       newDef.setDetails(details);
+      cohortDefinitionDetailsRepository.save(details);
 
       CohortDefinition createdDefinition = this.cohortDefinitionRepository.save(newDef);      
       return conversionService.convert(createdDefinition, CohortDTO.class);

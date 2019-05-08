@@ -459,12 +459,12 @@
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-core</artifactId>
-      <version>5.2.14.Final</version>
+      <version>5.4.2.Final</version>
     </dependency>
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-entitymanager</artifactId>
-      <version>5.2.14.Final</version>
+      <version>5.4.2.Final</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>

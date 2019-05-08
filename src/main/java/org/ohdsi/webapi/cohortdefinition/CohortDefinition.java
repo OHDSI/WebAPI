@@ -84,7 +84,7 @@ public class CohortDefinition extends CommonEntity implements Serializable, Coho
   @Column(name="expression_type")
   private ExpressionType expressionType;
   
-  @OneToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY, optional = false, orphanRemoval = true)
+  @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false, orphanRemoval = true, mappedBy="definition")
   @JoinColumn(name="id")
   private CohortDefinitionDetails details;
 

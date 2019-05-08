@@ -85,7 +85,7 @@ public class CleanupCohortTasklet implements Tasklet {
 				getSourceJdbcTemplate(source).batchUpdate(deleteSql.split(";")); // use batch update since SQL translation may produce multiple statements
 				sourcesUpdated++;
 			} catch (Exception e) {
-				log.error("Error deleting results for cohort: {}, cause: {}", cohortId, e.getMessage());
+				log.error("Error deleting results for cohort: {}", cohortId);
 			}
 		}
     return sourcesUpdated;

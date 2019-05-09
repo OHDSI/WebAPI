@@ -9,12 +9,14 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
@@ -22,6 +24,9 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
+import org.codehaus.jettison.json.JSONArray;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
@@ -49,25 +54,54 @@ import org.ohdsi.webapi.vocabulary.VocabularyInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
-/**
- * @author fdefalco
- */
 @Path("vocabulary/")
 @Component
 public class VocabularyService extends AbstractDaoService {
 
   private static Hashtable<String, VocabularyInfo> vocabularyInfoCache = null;
+  private static HashSet<String> availableVocabularyFullTextIndices = null;
 
   @Autowired
   private SourceService sourceService;
 
   @Value("${datasource.driverClassName}")
   private String driver;
-  
+
+  @Value("${solr.enabled}")
+  private boolean solrEnabled;
+
+  @Value("${solr.endpoint}")
+  private String solrUrl;
+
+  @PostConstruct
+  private void InitializeFullTextIndexCache() {
+    if (solrEnabled) {
+      availableVocabularyFullTextIndices = new HashSet<>();
+      RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+      String searchEndpoint = solrUrl + "/admin/cores";
+
+      try {
+        ResponseEntity<String> responseJson = restTemplate.getForEntity(searchEndpoint, String.class);
+        JSONObject responseObject = new JSONObject(responseJson.getBody());
+        JSONObject statusObject = responseObject.getJSONObject("status");
+        Iterator<String> keys = statusObject.keys();
+
+        while(keys.hasNext()) {
+          String key = keys.next();
+          availableVocabularyFullTextIndices.add(key);
+        }
+      } catch (Exception ex) {
+        log.error("SOLR Core Initialization Error:  WebAPI was unable to obtain the list of available cores.", ex);
+      }
+    }
+  }
+
   private final RowMapper<Concept> rowMapper = new RowMapper<Concept>() {
     @Override
     public Concept mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
@@ -384,8 +418,6 @@ public class VocabularyService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, ConceptSearch search) {
-    Tracker.trackActivity(ActivityType.Search, search.query);
-
     Source source = getSourceRepository().findBySourceKey(sourceKey);
 
     PreparedStatementRenderer psr = prepareExecuteSearch(search, source);
@@ -475,17 +507,62 @@ public class VocabularyService extends AbstractDaoService {
   }
   
   /**
-   * @param query
    * @return
    */
-  @Path("{sourceKey}/search/{query}")
+  @Path("{sourceKey}/search")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, @PathParam("query") String query) {
-    Tracker.trackActivity(ActivityType.Search, query);
+  public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, @QueryParam("query") String query) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    PreparedStatementRenderer psr = prepareExecuteSearchWithQuery(query, source);
-    return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.rowMapper);
+    VocabularyInfo vocabularyInfo = getInfo(sourceKey);
+    String versionKey = vocabularyInfo.version.replace(' ', '_');
+    if (solrEnabled && availableVocabularyFullTextIndices.contains(versionKey)) {
+      ArrayList<Concept> concepts = new ArrayList<>();
+      RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+      String searchEndpoint = solrUrl + "/" + versionKey + "/select?q=query:" + query + "&wt=json&rows=20000";
+      ResponseEntity<String> responseJson = restTemplate.getForEntity(searchEndpoint, String.class);
+      try {
+        JSONObject jsonObject = new JSONObject(responseJson.getBody());
+        JSONObject responseNode = jsonObject.getJSONObject("response");
+        JSONArray docs = responseNode.getJSONArray("docs");
+        for (int i=0; i<docs.length(); i++) {
+          Concept c = new Concept();
+          JSONObject conceptNode = docs.getJSONObject(i);
+          c.conceptName = conceptNode.getString("concept_name");
+          c.conceptId = conceptNode.getLong("id");
+          try {
+            c.conceptClassId = conceptNode.getString("concept_class_id");
+          } catch (JSONException ex) {
+            c.conceptClassId = "";
+          }
+          try {
+            c.conceptCode = conceptNode.getString("concept_code");
+          } catch (JSONException ex) {
+            c.conceptCode = "";
+          }
+          c.domainId = conceptNode.getString("domain_id");
+          try {
+            c.invalidReason = conceptNode.getString("invalid_reason");
+          } catch (JSONException ex) {
+            c.invalidReason = "V";
+          }
+          try {
+            c.standardConcept = conceptNode.getString("standard_concept");
+          } catch (JSONException ex) {
+            c.standardConcept = "N";
+          }
+          c.vocabularyId = conceptNode.getString("vocabulary_id");
+          concepts.add(c);
+        }
+      } catch (JSONException jsonException) {
+        log.error("SOLR Search Error", jsonException);
+      }
+
+      return concepts;
+    } else {
+      PreparedStatementRenderer psr = prepareExecuteSearchWithQuery(query, source);
+      return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.rowMapper);
+    }
   }
 
   protected PreparedStatementRenderer prepareExecuteSearchWithQuery(String query, Source source) {

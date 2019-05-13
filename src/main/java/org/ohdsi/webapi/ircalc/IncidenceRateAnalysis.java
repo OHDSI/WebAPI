@@ -60,7 +60,7 @@ public class IncidenceRateAnalysis extends CommonEntity implements Serializable 
   @Column(name="description")
   private String description;
 
-  @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional=true, orphanRemoval = true)
+  @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional=true, orphanRemoval = true, mappedBy="analysis")
   @JoinColumn(name="id")
   private IncidenceRateAnalysisDetails details;
   

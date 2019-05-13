@@ -252,8 +252,7 @@ public class CcController {
     @Path("/generation/{generationId}/count")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Integer getGenerationsResultsCount(
-            @PathParam("generationId") final Long generationId) {
+    public Long getGenerationsResultsCount(@PathParam("generationId") final Long generationId) {
         return service.getCCResultCount(generationId);
     }
 

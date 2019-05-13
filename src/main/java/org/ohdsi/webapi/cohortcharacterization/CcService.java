@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
@@ -60,5 +59,5 @@ public interface CcService {
 
     int countLikeName(String copyName);
 
-    Integer getCCResultCount(Long id);
+    Long getCCResultCount(Long id);
 }

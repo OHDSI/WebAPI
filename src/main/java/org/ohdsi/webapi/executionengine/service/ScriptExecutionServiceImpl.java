@@ -13,9 +13,9 @@ import org.apache.commons.lang3.text.StrSubstitutor;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
-import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
+import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineGenerationEntity;
 import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
 import org.ohdsi.webapi.executionengine.repository.ExecutionEngineGenerationRepository;
@@ -47,11 +47,12 @@ import java.io.*;
 import java.nio.file.Files;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import static org.ohdsi.webapi.Constants.Variables.SOURCE;
 
 @Service
 @Transactional
@@ -89,9 +90,6 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
     private JobExplorer jobExplorer;
     @Autowired
     private AnalysisExecutionRepository analysisExecutionRepository;
-
-    @Autowired
-    private AnalysisResultFileSensitiveInfoService sensitiveInfoService;
 
     @Autowired
     private ExecutionEngineGenerationRepository executionEngineGenerationRepository;
@@ -267,13 +265,12 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
         String fileName = "execution_" + executionId + "_result.zip";
         File archive = tempDirectory.resolve(fileName).toFile();
         archive.deleteOnExit();
-        Map<String, Object> variables = Collections.singletonMap(SOURCE, analysisExecution.getExecutionEngineGeneration().getSource());
 
         try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(archive))) {
             List<AnalysisResultFile> outputFiles = analysisExecution.getResultFiles(); //outputFileRepository.findByExecutionId(analysisExecution.getId());
             for (AnalysisResultFile resultFile : outputFiles) {
                 ZipEntry entry = new ZipEntry(resultFile.getFileName());
-                entry.setSize(sensitiveInfoService.filterSensitiveInfo(resultFile, variables).getContents().length);
+                entry.setSize(resultFile.getContents().length);
                 zos.putNextEntry(entry);
                 zos.write(resultFile.getContents());
                 zos.closeEntry();

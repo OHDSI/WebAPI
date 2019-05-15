@@ -14,6 +14,7 @@ public abstract class BasePathwayAnalysisDTOToPathwayAnalysisConverter<T extends
         pathwayAnalysis.setId(source.getId());
         pathwayAnalysis.setName(source.getName());
         pathwayAnalysis.setCombinationWindow(source.getCombinationWindow());
+				pathwayAnalysis.setMinSegmentLength(source.getMinSegmentLength());
         pathwayAnalysis.setMinCellCount(source.getMinCellCount());
         pathwayAnalysis.setMaxDepth(source.getMaxDepth());
         pathwayAnalysis.setAllowRepeats(source.isAllowRepeats());

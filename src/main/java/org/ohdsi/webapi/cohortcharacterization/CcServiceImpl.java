@@ -3,6 +3,7 @@ package org.ohdsi.webapi.cohortcharacterization;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.WithId;
@@ -35,11 +36,7 @@ import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
-import org.ohdsi.webapi.util.CancelableJdbcTemplate;
-import org.ohdsi.webapi.util.CopyUtils;
-import org.ohdsi.webapi.util.EntityUtils;
-import org.ohdsi.webapi.util.SessionUtils;
-import org.ohdsi.webapi.util.SourceUtils;
+import org.ohdsi.webapi.util.*;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobExecution;
@@ -60,7 +57,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
+import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -84,6 +84,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     private final String DELETE_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/deleteResults.sql");
     private final String DELETE_EXECUTION = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/deleteExecution.sql");
     private final String QUERY_PREVALENCE_STATS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/queryCovariateStatsVocab.sql");
+
+    private final String HYDRA_PACKAGE = "/resources/cohortcharacterizations/hydra/CohortCharacterization_v0.0.1.zip";
 
     private final static List<String> INCOMPLETE_STATUSES = ImmutableList.of(BatchStatus.STARTED, BatchStatus.STARTING, BatchStatus.STOPPING, BatchStatus.UNKNOWN)
             .stream().map(BatchStatus::name).collect(Collectors.toList());
@@ -191,6 +193,11 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         savedEntity.setModifiedDate(modifiedDate);
 
         return repository.save(savedEntity);
+    }
+
+    @Override
+    public int getCountCcWithSameName(Long id, String name) {
+        return repository.getCountCcWithSameName(id, name);
     }
 
     @Override
@@ -395,7 +402,17 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
       analysis.setPackageName(packageName);
       String studySpecs = Utils.serialize(analysis, true);
       Hydra hydra = new Hydra(studySpecs);
-      hydra.hydrate(out);
+      File skeletonFile = null;
+      try {
+        skeletonFile = TempFileUtils.copyResourceToTempFile(HYDRA_PACKAGE, "cc-", ".zip");
+        hydra.setExternalSkeletonFileName(skeletonFile.getAbsolutePath());
+        hydra.hydrate(out);
+      } catch (IOException e) {
+        log.error("Failed to hydrate cohort characterization", e);
+        throw new InternalServerErrorException(e);
+      } finally {
+        FileUtils.deleteQuietly(skeletonFile);
+      }
     }
 
     @Override

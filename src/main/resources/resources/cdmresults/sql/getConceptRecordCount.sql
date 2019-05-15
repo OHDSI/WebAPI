@@ -7,10 +7,7 @@ WITH concepts AS (
 ), counts AS (
 SELECT stratum_1 concept_id, MAX (count_value) agg_count_value
 FROM @resultTableQualifier.achilles_results
-WHERE analysis_id IN (
-2, 4, 5, 201, 225, 301, 325, 401, 425, 501, 505, 525, 601, 625, 
-701, 725, 801, 825, 826, 827, 901, 1001, 1201, 1425, 1801, 1825, 1826, 1827, 2101, 2125
-)
+WHERE analysis_id IN (2, 4, 5, 201, 225, 301, 325, 401, 425, 501, 505, 525, 601, 625, 701, 725, 801, 825, 826, 827, 901, 1001, 1201, 1425, 1801, 1825, 1826, 1827, 2101, 2125, 2301)
 
 		/* analyses:
  			 Number of persons by gender
@@ -43,6 +40,7 @@ WHERE analysis_id IN (
 			 Number of measurement records, by unit_concept_id
 			 Number of device exposure records, by device_concept_id
 			 Number of device_exposure records, by device_source_concept_id
+			 Number of location records, by region_concept_id
 		*/
 GROUP BY stratum_1
 UNION

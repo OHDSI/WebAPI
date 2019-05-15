@@ -36,8 +36,10 @@ import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.util.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
@@ -75,9 +77,7 @@ public class ConceptSetService extends AbstractDaoService {
     @Produces(MediaType.APPLICATION_JSON)
     public ConceptSetDTO getConceptSet(@PathParam("id") final int id) {
         ConceptSet conceptSet = getConceptSetRepository().findById(id);
-        if (Objects.isNull(conceptSet)) {
-            throw new NotFoundException();
-        }
+        ExceptionUtils.throwNotFoundExceptionIfNull(conceptSet, String.format("There is no concept set with id = %d.", id));
         return conversionService.convert(conceptSet, ConceptSetDTO.class);
     }
 
@@ -154,8 +154,12 @@ public class ConceptSetService extends AbstractDaoService {
     @GET
     @Path("/exists")
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<ConceptSet> getConceptSetExists(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
-        return getConceptSetRepository().conceptSetExists(id, name);
+    public Collection<ConceptSetDTO> getConceptSetExists(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+        return getConceptSetRepository()
+            .conceptSetExists(id, name)
+            .stream()
+            .map(cs -> conversionService.convert(cs, ConceptSetDTO.class))
+            .collect(Collectors.toList());
     }
 
     @PUT
@@ -231,11 +235,12 @@ public class ConceptSetService extends AbstractDaoService {
     public ConceptSetDTO createConceptSet(ConceptSetDTO conceptSetDTO) {
 
         UserEntity user = userRepository.findByLogin(security.getSubject());
+        ConceptSet conceptSet = conversionService.convert(conceptSetDTO, ConceptSet.class);
         ConceptSet updated = new ConceptSet();
         updated.setCreatedBy(user);
         updated.setCreatedDate(new Date());
-        ConceptSet conceptSet = conversionService.convert(conceptSetDTO, ConceptSet.class);
-        return conversionService.convert(updateConceptSet(updated, conceptSet), ConceptSetDTO.class);
+        updateConceptSet(updated, conceptSet);
+        return conversionService.convert(updated, ConceptSetDTO.class);
     }
 
     @Path("/{id}")
@@ -293,13 +298,13 @@ public class ConceptSetService extends AbstractDaoService {
   @DELETE
   @Transactional(rollbackOn = Exception.class, dontRollbackOn = EmptyResultDataAccessException.class)
   @Path("{id}")
-  public void deleteConceptSet(@PathParam("id") final int id) throws Exception {
+  public void deleteConceptSet(@PathParam("id") final int id) {
       // Remove any generation info
       try {
         this.conceptSetGenerationInfoRepository.deleteByConceptSetId(id);
       } catch (EmptyResultDataAccessException e) {
           // Ignore - there may be no data
-          log.debug(e.getMessage());
+          log.warn("Failed to delete Generation Info by ConceptSet with ID = {}, {}", id, e);
       }
       catch (Exception e) {
           throw e;
@@ -310,7 +315,7 @@ public class ConceptSetService extends AbstractDaoService {
         getConceptSetItemRepository().deleteByConceptSetId(id);
       } catch (EmptyResultDataAccessException e) {
           // Ignore - there may be no data
-          log.debug(e.getMessage());
+          log.warn("Failed to delete ConceptSet items with ID = {}, {}", id, e);
       }
       catch (Exception e) {
           throw e;
@@ -321,7 +326,7 @@ public class ConceptSetService extends AbstractDaoService {
         getConceptSetRepository().delete(id);
       } catch (EmptyResultDataAccessException e) {
           // Ignore - there may be no data
-          log.debug(e.getMessage());
+          log.warn("Failed to delete ConceptSet with ID = {}, {}", id, e);
       }
       catch (Exception e) {
           throw e;

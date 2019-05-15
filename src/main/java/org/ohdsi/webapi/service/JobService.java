@@ -2,8 +2,8 @@ package org.ohdsi.webapi.service;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.function.Predicate;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -13,24 +13,29 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobInstanceResource;
+import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.job.JobUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.batch.admin.service.SearchableJobExecutionDao;
-import org.springframework.batch.admin.service.SearchableJobInstanceDao;
-import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobInstance;
-import org.springframework.batch.core.configuration.JobLocator;
+import org.springframework.batch.core.*;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.NoSuchJobException;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.scope.context.StepSynchronizationManager;
+import org.springframework.batch.core.step.StepLocator;
+import org.springframework.batch.core.step.tasklet.StoppableTasklet;
+import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.batch.core.step.tasklet.TaskletStep;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -39,20 +44,23 @@ import org.springframework.stereotype.Component;
 @Component
 public class JobService extends AbstractDaoService {
 
-  @Autowired
-  private String batchTablePrefix;
+  private final JobExplorer jobExplorer;
 
-  @Autowired
-  private JobExplorer jobExplorer;
+  private final SearchableJobExecutionDao jobExecutionDao;
 
-  @Autowired
-  private JobLocator jobLocator;
+  private final JobRepository jobRepository;
 
-  @Autowired
-  private SearchableJobExecutionDao jobExecutionDao;
+  private final JobTemplate jobTemplate;
 
-  @Autowired
-  private SearchableJobInstanceDao jobInstanceDao;
+  private Map<Long, Job> jobMap = new HashMap<>();
+
+  public JobService(JobExplorer jobExplorer, SearchableJobExecutionDao jobExecutionDao, JobRepository jobRepository, JobTemplate jobTemplate) {
+
+    this.jobExplorer = jobExplorer;
+    this.jobExecutionDao = jobExecutionDao;
+    this.jobRepository = jobRepository;
+    this.jobTemplate = jobTemplate;
+  }
 
   @GET
   @Path("{jobId}")
@@ -64,6 +72,16 @@ public class JobService extends AbstractDaoService {
     }
     return JobUtils.toJobInstanceResource(job);
   }
+
+    @GET
+    @Path("/type/{jobType}/name/{jobName}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public JobExecutionResource findJobByName(@PathParam("jobName") final String jobName, @PathParam("jobType") final String jobType) {
+            final Optional<JobExecution> jobExecution = jobExplorer.findRunningJobExecutions(jobType).stream()
+                    .filter(job -> jobName.equals(job.getJobParameters().getString(Constants.Params.JOB_NAME)))
+                    .findFirst();
+            return jobExecution.isPresent() ? JobUtils.toJobExecutionResource(jobExecution.get()) : null;
+    }
 
   @GET
   @Path("{jobId}/execution/{executionId}")
@@ -157,5 +175,63 @@ public class JobService extends AbstractDaoService {
               this.jobExecutionDao.countJobExecutions());
     }
 
+  }
+
+  public void stopJob(JobExecution jobExecution, Job job) {
+
+    if (Objects.nonNull(job)) {
+        jobExecution.getStepExecutions().stream()
+          .filter(step -> step.getStatus().isRunning())
+          .forEach(stepExec -> {
+            Step step = ((StepLocator) job).getStep(stepExec.getStepName());
+            if (step instanceof TaskletStep) {
+              Tasklet tasklet = ((TaskletStep) step).getTasklet();
+              if (tasklet instanceof StoppableTasklet) {
+                StepSynchronizationManager.register(stepExec);
+                ((StoppableTasklet) tasklet).stop();
+                StepSynchronizationManager.release();
+              }
+            }
+          });
+      }
+      if (jobExecution.isRunning()) {
+        jobExecution.setStatus(BatchStatus.STOPPING);
+        jobRepository.update(jobExecution);
+      }
+  }
+
+  public JobExecution getJobExecution(Long jobExecutionId) {
+
+    return jobExplorer.getJobExecution(jobExecutionId);
+  }
+
+  public Job getRunningJob(Long jobExecutionId) {
+
+    return jobMap.get(jobExecutionId);
+  }
+
+  public void removeJob(Long jobExecutionId) {
+
+    jobMap.remove(jobExecutionId);
+  }
+
+  public JobExecutionResource runJob(Job job, JobParameters jobParameters) {
+
+    JobExecutionResource jobExecution = this.jobTemplate.launch(job, jobParameters);
+    jobMap.put(jobExecution.getExecutionId(), job);
+    return jobExecution;
+  }
+
+  @Transactional
+  public void cancelJobExecution(String jobName, Predicate<? super JobExecution> filterPredicate) {
+    jobExplorer.findRunningJobExecutions(jobName).stream()
+            .filter(filterPredicate)
+            .findFirst()
+            .ifPresent(jobExecution -> {
+              Job job = getRunningJob(jobExecution.getJobId());
+              if (Objects.nonNull(job)) {
+                stopJob(jobExecution, job);
+              }
+            });
   }
 }

@@ -1,22 +1,26 @@
 package org.ohdsi.webapi.executionengine.service;
 
-import java.util.List;
-import org.ohdsi.webapi.executionengine.dto.ExecutionRequestDTO;
-import org.ohdsi.webapi.executionengine.entity.AnalysisExecution;
+import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
+import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
 import org.ohdsi.webapi.source.Source;
-import org.springframework.stereotype.Service;
 
-@Service
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
 public interface ScriptExecutionService {
 
-    Long runScript(ExecutionRequestDTO dto, int analysisExecutionId) throws Exception;
+    void runScript(Long executionId, Source source, List<AnalysisFile> files, String updatePassword,
+                   String executableFilename, String targetTable) throws Exception;
 
     Source findSourceByKey(String key);
 
-    AnalysisExecution createAnalysisExecution(ExecutionRequestDTO dto, Source source, String password);
+    ExecutionEngineAnalysisStatus createAnalysisExecution(Long jobId, Source source, String password, List<AnalysisFile> analysisFiles);
 
     String getExecutionStatus(Long executionId);
 
-    List<AnalysisResultFile> getExecutionResultFiles(Long executionId);
+    void updateAnalysisStatus(ExecutionEngineAnalysisStatus analysisExecution, ExecutionEngineAnalysisStatus.Status running);
+
+    File getExecutionResult(Long executionId) throws IOException;
 }

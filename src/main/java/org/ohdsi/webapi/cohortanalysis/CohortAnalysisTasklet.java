@@ -7,8 +7,6 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
@@ -16,6 +14,8 @@ import org.ohdsi.webapi.cohortresults.CohortResultsAnalysisRunner;
 import org.ohdsi.webapi.cohortresults.VisualizationDataRepository;
 import org.ohdsi.webapi.service.CohortAnalysisService;
 import org.ohdsi.webapi.util.BatchStatementExecutorWithProgress;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -25,9 +25,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.ws.rs.NotFoundException;
+
 public class CohortAnalysisTasklet implements Tasklet {
     
-    private static final Log log = LogFactory.getLog(CohortAnalysisTasklet.class);
+    private static final Logger log = LoggerFactory.getLogger(CohortAnalysisTasklet.class);
     
     private final CohortAnalysisTask task;
        
@@ -89,23 +91,27 @@ public class CohortAnalysisTasklet implements Tasklet {
 								CohortDefinition cohortDef = cohortDefinitionRepository.findOne(cohortDefinitionId);
 								CohortAnalysisGenerationInfo info = cohortDef.getCohortAnalysisGenerationInfoList().stream()
 												.filter(a -> a.getSourceId() == task.getSource().getSourceId())
-												.findFirst().get();
+												.findFirst().orElseThrow(NotFoundException::new);
 								info.setProgress(progress);
 								cohortDefinitionRepository.save(cohortDef);
 								return null;
 							});
 						});
-						log.debug("Update count: " + ret.length);
-						log.debug("warm up visualizations");
+						if (log.isDebugEnabled()) {
+							log.debug("Update count: {}", ret.length);
+							log.debug("Warming up visualizations");
+						}
 						final int count = this.analysisRunner.warmupData(jdbcTemplate, task);
-						log.debug("warmed up " + count + " visualizations");
+						if (log.isDebugEnabled()) {
+							log.debug("Warmed up {} visualizations", count);
+						}
 						successful = true;
         } catch (final TransactionException | DataAccessException e) {
             log.error(whitelist(e));
 						failMessage = StringUtils.left(e.getMessage(),2000);
             throw e;//FAIL job status
         } finally {
-						// add genrated analysis IDs to  cohort analysis generation info
+						// add generated analysis IDs to  cohort analysis generation info
 						final String f_failMessage = failMessage; // assign final var to pass into lambda
 						final boolean f_successful = successful; // assign final var to pass into lambda
 						
@@ -114,7 +120,7 @@ public class CohortAnalysisTasklet implements Tasklet {
 							CohortDefinition cohortDef = cohortDefinitionRepository.findOne(cohortDefinitionId);
 							CohortAnalysisGenerationInfo info = cohortDef.getCohortAnalysisGenerationInfoList().stream()
 											.filter(a -> a.getSourceId() == task.getSource().getSourceId())
-											.findFirst().get();
+											.findFirst().orElseThrow(NotFoundException::new);
 							info.setExecutionDuration((int)(Calendar.getInstance().getTime().getTime()- info.getLastExecution().getTime()));
 
 							if (f_successful) {

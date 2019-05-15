@@ -1,13 +1,13 @@
 package org.ohdsi.webapi.shiro.management.datasource;
 
-import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisGenerationRepository;
+import org.ohdsi.webapi.source.Source;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.NotFoundException;
 
 @Component
-public class PathwayAnalysisGenerationIdAccessor extends BaseDataSourceAccessor implements DataSourceAccessor<Long> {
+public class PathwayAnalysisGenerationIdAccessor extends BaseDataSourceAccessor<Long> {
 
   private PathwayAnalysisGenerationRepository repository;
 
@@ -16,8 +16,8 @@ public class PathwayAnalysisGenerationIdAccessor extends BaseDataSourceAccessor 
   }
 
   @Override
-  public void checkAccess(Long id) {
-    CcGenerationEntity generationEntity = repository.findById(id).orElseThrow(NotFoundException::new);
-    checkSourceAccess(generationEntity.getSource());
+  protected Source extractSource(Long id) {
+
+    return repository.findById(id).orElseThrow(NotFoundException::new).getSource();
   }
 }

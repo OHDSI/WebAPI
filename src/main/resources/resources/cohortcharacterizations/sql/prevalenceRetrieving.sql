@@ -1,6 +1,7 @@
-insert into @results_database_schema.cc_results (type, fa_type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id, count_value, avg_value, cohort_definition_id, cc_generation_id)
-  select 'PREVALENCE' as type,
-    'PRESET' as fa_type,
+insert into @results_database_schema.cc_results (type, fa_type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id, count_value, avg_value,
+                                                 strata_id, strata_name, cohort_definition_id, cc_generation_id)
+  select CAST('PREVALENCE' AS VARCHAR(255)) as type,
+    CAST('PRESET' AS VARCHAR(255)) as fa_type,
     f.covariate_id,
     fr.covariate_name,
     ar.analysis_id,
@@ -8,6 +9,8 @@ insert into @results_database_schema.cc_results (type, fa_type, covariate_id, co
     fr.concept_id,
     f.sum_value     as count_value,
     f.average_value as stat_value,
+    @strataId as strata_id,
+    CAST(@strataName AS VARCHAR(1000)) as strata_name,
     @cohortId as cohort_definition_id,
     @executionId as cc_generation_id
   from (@features) f

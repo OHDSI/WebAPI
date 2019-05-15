@@ -3,15 +3,18 @@ package org.ohdsi.webapi.service;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.cohortdefinition.*;
 import org.ohdsi.webapi.cohortfeatures.GenerateCohortFeaturesTasklet;
+import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
-import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.SourceUtils;
+import org.ohdsi.webapi.util.TempTableCleanupManager;
 import org.springframework.batch.core.*;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
-import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
+import org.springframework.batch.repeat.exception.ExceptionHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,13 +24,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 import static org.ohdsi.webapi.Constants.GENERATE_COHORT;
 import static org.ohdsi.webapi.Constants.Params.*;
 
 @Component
-public class CohortGenerationService extends AbstractDaoService {
+public class CohortGenerationService extends AbstractDaoService implements GeneratesNotification {
 
 
   private static final String DEFAULT_COHORT_TABLE = "cohort";
@@ -40,23 +42,19 @@ public class CohortGenerationService extends AbstractDaoService {
 
   private final StepBuilderFactory stepBuilders;
 
-  private final JobTemplate jobTemplate;
-
-  private final JobExplorer jobExplorer;
+  private JobService jobService;
 
   @Autowired
   public CohortGenerationService(CohortDefinitionRepository cohortDefinitionRepository,
                                  CohortGenerationInfoRepository cohortGenerationInfoRepository,
                                  JobBuilderFactory jobBuilders,
                                  StepBuilderFactory stepBuilders,
-                                 JobTemplate jobTemplate,
-                                 JobExplorer jobExplorer) {
+                                 JobService jobService) {
     this.cohortDefinitionRepository = cohortDefinitionRepository;
     this.cohortGenerationInfoRepository = cohortGenerationInfoRepository;
     this.jobBuilders = jobBuilders;
     this.stepBuilders = stepBuilders;
-    this.jobTemplate = jobTemplate;
-    this.jobExplorer = jobExplorer;
+    this.jobService = jobService;
   }
 
   public JobExecutionResource generateCohort(CohortDefinition cohortDefinition, Source source, boolean includeFeatures) {
@@ -81,21 +79,30 @@ public class CohortGenerationService extends AbstractDaoService {
     return runGenerateCohortJob(cohortDefinition, source, includeFeatures, true, targetTable);
   }
 
-  public Job buildGenerateCohortJob(CohortDefinition cohortDefinition, Source source, boolean includeFeatures, boolean updateGenerationInfo) {
+  public Job buildGenerateCohortJob(CohortDefinition cohortDefinition, Source source, boolean includeFeatures, boolean updateGenerationInfo,
+                                    String jobName, JobParameters jobParameters) {
 
-    log.info(String.format("Beginning generate cohort for cohort definition id: \n %s", "" + cohortDefinition.getId()));
+    log.info("Beginning generate cohort for cohort definition id: {}", cohortDefinition.getId());
 
     GenerateCohortTasklet generateTasklet = new GenerateCohortTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), cohortDefinitionRepository,
             getSourceRepository());
 
+    ExceptionHandler exceptionHandler = new GenerationTaskExceptionHandler(new TempTableCleanupManager(getSourceJdbcTemplate(source),
+            getTransactionTemplate(),
+            source.getSourceDialect(),
+            jobParameters.getString(SESSION_ID),
+            SourceUtils.getTempQualifier(source)
+    ));
+
     Step generateCohortStep = stepBuilders.get("cohortDefinition.generateCohort")
             .tasklet(generateTasklet)
+            .exceptionHandler(exceptionHandler)
             .build();
 
-    SimpleJobBuilder generateJobBuilder = jobBuilders.get(GENERATE_COHORT).start(generateCohortStep);
+    SimpleJobBuilder generateJobBuilder = jobBuilders.get(jobName).start(generateCohortStep);
 
     if (updateGenerationInfo) {
-      generateJobBuilder.listener(new GenerationJobExecutionListener(cohortDefinitionRepository, this.getTransactionTemplateRequiresNew(),
+      generateJobBuilder.listener(new GenerationJobExecutionListener(this, cohortDefinitionRepository, this.getTransactionTemplateRequiresNew(),
               this.getSourceJdbcTemplate(source)));
     }
 
@@ -105,6 +112,7 @@ public class CohortGenerationService extends AbstractDaoService {
 
       Step generateCohortFeaturesStep = stepBuilders.get("cohortFeatures.generateFeatures")
               .tasklet(generateCohortFeaturesTasklet)
+              .exceptionHandler(exceptionHandler)
               .build();
 
       generateJobBuilder.next(generateCohortFeaturesStep);
@@ -113,30 +121,15 @@ public class CohortGenerationService extends AbstractDaoService {
     return generateJobBuilder.build();
   }
 
-  public JobExecutionResource runGenerateCohortJob(CohortDefinition cohortDefinition, Source source, boolean includeFeatures, boolean updateGenerationInfo, String targetTable, Map<String, String> extraJobParams) {
-    Job job = buildGenerateCohortJob(cohortDefinition, source, includeFeatures, updateGenerationInfo);
+  public JobExecutionResource runGenerateCohortJob(CohortDefinition cohortDefinition, Source source, boolean includeFeatures, boolean updateGenerationInfo, String targetTable, Map<String, String> extraJobParams, String jobName) {
     final JobParametersBuilder jobParametersBuilder = getJobParametersBuilder(source, cohortDefinition, targetTable);
+    Job job = buildGenerateCohortJob(cohortDefinition, source, includeFeatures, updateGenerationInfo, jobName, jobParametersBuilder.toJobParameters());
     extraJobParams.forEach(jobParametersBuilder::addString);
-    return this.jobTemplate.launch(job, jobParametersBuilder.toJobParameters());
+    return jobService.runJob(job, jobParametersBuilder.toJobParameters());
   }
 
   public JobExecutionResource runGenerateCohortJob(CohortDefinition cohortDefinition, Source source, boolean includeFeatures, boolean updateGenerationInfo, String targetTable) {
-    return runGenerateCohortJob(cohortDefinition, source, includeFeatures, updateGenerationInfo, targetTable, new HashMap<>());
-  }
-
-  public Optional<JobExecution> getJobExecution(Source source, Integer cohortDefinitionId) {
-
-    return jobExplorer.findRunningJobExecutions(GENERATE_COHORT)
-            .stream().filter(e -> {
-      JobParameters parameters = e.getJobParameters();
-      return Objects.equals(parameters.getString(COHORT_DEFINITION_ID), Integer.toString(cohortDefinitionId))
-              && Objects.equals(parameters.getString(SOURCE_ID), Integer.toString(source.getSourceId()));
-    }).findFirst();
-  }
-
-  public JobExecution getJobExecution(Long jobExecutionId) {
-
-    return jobExplorer.getJobExecution(jobExecutionId);
+    return runGenerateCohortJob(cohortDefinition, source, includeFeatures, updateGenerationInfo, targetTable, new HashMap<>(), GENERATE_COHORT);
   }
 
   public JobParametersBuilder getJobParametersBuilder(Source source, CohortDefinition cohortDefinition, String targetTable) {
@@ -149,12 +142,16 @@ public class CohortGenerationService extends AbstractDaoService {
     builder.addString(JOB_NAME, String.format("Generating cohort %d : %s (%s)", cohortDefinition.getId(), source.getSourceName(), source.getSourceKey()));
     builder.addString(CDM_DATABASE_SCHEMA, cdmTableQualifier);
     builder.addString(RESULTS_DATABASE_SCHEMA, resultsTableQualifier);
-    builder.addString(TARGET_DATABASE_SCHEMA, resultsTableQualifier);
+    builder.addString(TEMP_DATABASE_SCHEMA, SourceUtils.getTempQualifier(source));
+
+    builder.addString(TARGET_DATABASE_SCHEMA, SourceUtils.getResultsQualifier(source));
+    builder.addString(TARGET_TABLE, targetTable);
+    builder.addString(SESSION_ID, SessionUtils.sessionId());
+
     if (vocabularyTableQualifier != null) {
       builder.addString(VOCABULARY_DATABASE_SCHEMA, vocabularyTableQualifier);
     }
     builder.addString(TARGET_DIALECT, source.getSourceDialect());
-    builder.addString(TARGET_TABLE, targetTable);
     builder.addString(COHORT_DEFINITION_ID, String.valueOf(cohortDefinition.getId()));
     builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
     builder.addString(GENERATE_STATS, Boolean.TRUE.toString());
@@ -177,4 +174,13 @@ public class CohortGenerationService extends AbstractDaoService {
     });
   }
 
+  @Override
+  public String getJobName() {
+    return GENERATE_COHORT;
+  }
+
+  @Override
+  public String getExecutionFoldingKey() {
+    return COHORT_DEFINITION_ID;
+  }
 }

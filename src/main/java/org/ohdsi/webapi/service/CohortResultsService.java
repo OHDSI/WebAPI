@@ -103,7 +103,7 @@ public class CohortResultsService extends AbstractDaoService {
         minIntervalPersonCountParam, sqlPath, source);
       return genericResultSetLoader(psr, source);
     } catch (Exception e) {
-      log.error(String.format("Unable to translate sql for analysis %s", analysisName), e);
+      log.error("Unable to translate sql for analysis {}", analysisName, e);
       return null;
     }
   }
@@ -222,7 +222,7 @@ public class CohortResultsService extends AbstractDaoService {
   }
 
   @POST
-  @Path("{id}/warmup")
+  @Path("/warmup")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public int warmUpVisualizationData(CohortAnalysisTask task) {
@@ -515,11 +515,10 @@ public class CohortResultsService extends AbstractDaoService {
   protected PreparedStatementRenderer prepareGetCompletedAnalysis(String id, int sourceId) {
 
     String sqlPath = BASE_SQL_PATH + "/raw/getCompletedAnalyses.sql";
-    PreparedStatementRenderer psr = new PreparedStatementRenderer(null
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(getSourceRepository().findBySourceId(sourceId)
 			, sqlPath
 			, new String[]{"tableQualifier"}, new String[] { this.getOhdsiSchema()}
 			, new String[]{"cohort_definition_id", "source_id"}, new Object[]{Integer.valueOf(id), Integer.valueOf(sourceId)});
-		psr.setTargetDialect(this.getDialect());
     return psr;
   }
 
@@ -1665,7 +1664,7 @@ public class CohortResultsService extends AbstractDaoService {
           try {
               attrs = mapper.readValue(data.getData(), new TypeReference<List<CohortAttribute>>(){});
           } catch (Exception e) {
-              log.error(e);
+              log.error(e.getMessage());
           }
       }
 

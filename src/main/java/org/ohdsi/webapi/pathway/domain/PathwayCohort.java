@@ -1,24 +1,30 @@
 package org.ohdsi.webapi.pathway.domain;
 
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
-
+import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
-import javax.persistence.SequenceGenerator;
-import java.util.Objects;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 
 @MappedSuperclass
 public abstract class PathwayCohort {
 
     @Id
-    @SequenceGenerator(name = "pathway_cohort_pk_sequence", sequenceName = "pathway_cohort_sequence", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pathway_cohort_pk_sequence")
+    @GenericGenerator(
+        name = "pathway_cohort_generator",
+        strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+        parameters = {
+            @Parameter(name = "sequence_name", value = "pathway_cohort_sequence"),
+            @Parameter(name = "increment_size", value = "1")
+        }
+    )
+    @GeneratedValue(generator = "pathway_cohort_generator")
     protected Integer id;
 
     @Column

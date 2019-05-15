@@ -26,6 +26,7 @@ public class InclusionRuleReport {
   public static class Summary {
     public long baseCount;
     public long finalCount;
+    public long lostCount;
     public String percentMatched;
   }
   

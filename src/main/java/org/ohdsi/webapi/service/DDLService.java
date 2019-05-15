@@ -20,22 +20,31 @@ package org.ohdsi.webapi.service;
 
 import static org.ohdsi.webapi.service.SqlRenderService.translateSQL;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import org.apache.commons.lang3.ObjectUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.webapi.sqlrender.SourceStatement;
 import org.ohdsi.webapi.sqlrender.TranslatedStatement;
+import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.stereotype.Component;
 
 @Path("/ddl/")
 @Component
 public class DDLService {
+
+	public static final String VOCAB_SCHEMA = "vocab_schema";
+	public static final String RESULTS_SCHEMA = "results_schema";
+	public static final String CEM_SCHEMA = "cem_results_schema";
+	public static final String TEMP_SCHEMA = "oracle_temp_schema";
 
 	private static final Collection<String> RESULT_DDL_FILE_PATHS = Arrays.asList(
 		"/ddl/results/cohort.sql",
@@ -47,7 +56,7 @@ public class DDLService {
 		"/ddl/results/cohort_inclusion_result.sql",
 		"/ddl/results/cohort_inclusion_stats.sql",
 		"/ddl/results/cohort_summary_stats.sql",
-		"/ddl/results/concept_hierarchy.sql",
+		"/ddl/results/cohort_censor_stats.sql",
 		"/ddl/results/feas_study_inclusion_stats.sql",
 		"/ddl/results/feas_study_index_stats.sql",
 		"/ddl/results/feas_study_result.sql",
@@ -67,15 +76,19 @@ public class DDLService {
 
 	public static final Collection<String> RESULT_INIT_FILE_PATHS = Arrays.asList(
 		"/ddl/results/init_heracles_analysis.sql",
-		"/ddl/results/init_heracles_periods.sql",
-		"/ddl/results/init_concept_hierarchy.sql"
+		"/ddl/results/init_heracles_periods.sql"
+	);
+
+	public static final Collection<String> INIT_CONCEPT_HIERARCHY_FILE_PATHS = Arrays.asList(
+			"/ddl/results/concept_hierarchy.sql",
+			"/ddl/results/init_concept_hierarchy.sql"
 	);
 
 	private static final Collection<String> RESULT_INDEX_FILE_PATHS = Arrays.asList(
 		"/ddl/results/create_index.sql",
 		"/ddl/results/pathway_analysis_events_indexes.sql"
 	);
-        
+
 	private static final Collection<String> CEMRESULT_DDL_FILE_PATHS = Arrays.asList(
 		"/ddl/cemresults/nc_results.sql"
 	);
@@ -89,18 +102,41 @@ public class DDLService {
 	@GET
 	@Path("results")
 	@Produces("text/plain")
-	public String generateResultSQL(@QueryParam("dialect") String dialect, @DefaultValue("results") @QueryParam("schema") String schema) {
-            return generateSQL(dialect, "results_schema", schema, RESULT_DDL_FILE_PATHS, RESULT_INIT_FILE_PATHS, RESULT_INDEX_FILE_PATHS);
+	public String generateResultSQL(
+			@QueryParam("dialect") String dialect,
+			@DefaultValue("vocab") @QueryParam("vocabSchema") String vocabSchema,
+			@DefaultValue("results") @QueryParam("schema") String resultSchema,
+			@DefaultValue("true") @QueryParam("initConceptHierarchy") Boolean initConceptHierarchy,
+			@QueryParam("tempSchema") String tempSchema) {
+
+		Collection<String> resultDDLFilePaths = new ArrayList<>(RESULT_DDL_FILE_PATHS);
+
+		if (initConceptHierarchy) {
+			resultDDLFilePaths.addAll(INIT_CONCEPT_HIERARCHY_FILE_PATHS);
+		}
+		String oracleTempSchema = ObjectUtils.firstNonNull(tempSchema, resultSchema);
+		Map<String, String> params = new HashMap<String, String>() {{
+			put(VOCAB_SCHEMA, vocabSchema);
+			put(RESULTS_SCHEMA, resultSchema);
+			put(TEMP_SCHEMA, oracleTempSchema);
+		}};
+
+		return generateSQL(dialect, params, resultDDLFilePaths, RESULT_INIT_FILE_PATHS, RESULT_INDEX_FILE_PATHS);
 	}
-        
+
 	@GET
 	@Path("cemresults")
 	@Produces("text/plain")
 	public String generateCemResultSQL(@QueryParam("dialect") String dialect, @DefaultValue("cemresults") @QueryParam("schema") String schema) {
-            return generateSQL(dialect, "cem_results_schema", schema, CEMRESULT_DDL_FILE_PATHS, CEMRESULT_INIT_FILE_PATHS, CEMRESULT_INDEX_FILE_PATHS);
+
+		Map<String, String> params = new HashMap<String, String>() {{
+			put(CEM_SCHEMA, schema);
+		}};
+
+		return generateSQL(dialect, params, CEMRESULT_DDL_FILE_PATHS, CEMRESULT_INIT_FILE_PATHS, CEMRESULT_INDEX_FILE_PATHS);
 	}
-        
-        private String generateSQL(String dialect, String schemaSqlParameter, String schema, Collection<String> filePaths, Collection<String> initFilePaths, Collection<String> indexFilePaths) {
+
+	private String generateSQL(String dialect, Map<String, String> params, Collection<String> filePaths, Collection<String> initFilePaths, Collection<String> indexFilePaths) {
 		StringBuilder sqlBuilder = new StringBuilder();
 		for (String fileName : filePaths) {
 			sqlBuilder.append("\n").append(ResourceHelper.GetResourceAsString(fileName));
@@ -117,19 +153,18 @@ public class DDLService {
 		}
 		String result = sqlBuilder.toString();
 		if (dialect != null) {
-			result = translateSqlFile(result, dialect, schemaSqlParameter, schema);
+			result = translateSqlFile(result, dialect, params);
 		}
 		return result.replaceAll(";", ";\n");
-        }
+	}
 
-	private String translateSqlFile(String sql, String dialect, String schemaSqlParameter, String schema) {
+	private String translateSqlFile(String sql, String dialect, Map<String, String> params) {
 
 		SourceStatement statement = new SourceStatement();
 		statement.targetDialect = dialect.toLowerCase();
+		statement.oracleTempSchema = params.get(TEMP_SCHEMA);
 		statement.sql = sql;
-		HashMap<String, String> parameters = new HashMap<>();
-		parameters.put(schemaSqlParameter, schema);
-		statement.parameters = parameters;
+		statement.parameters = new HashMap<>(params);
 		TranslatedStatement translatedStatement = translateSQL(statement);
 		return translatedStatement.targetSQL;
 	}

@@ -1,13 +1,17 @@
 package org.ohdsi.webapi.pathway;
 
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.Pagination;
+import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
+import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
+import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnalysisConverter;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisGenerationEntity;
-import org.ohdsi.webapi.pathway.dto.PathwayAnalysisExportDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
+import org.ohdsi.webapi.pathway.dto.PathwayAnalysisExportDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayCodeDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayPopulationEventDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayPopulationResultsDTO;
@@ -15,6 +19,8 @@ import org.ohdsi.webapi.pathway.dto.TargetCohortPathwaysDTO;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.util.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
@@ -31,6 +37,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -43,14 +50,16 @@ public class PathwayController {
     private ConverterUtils converterUtils;
     private PathwayService pathwayService;
     private final SourceService sourceService;
+    private final CommonGenerationSensitiveInfoService<CommonGenerationDTO> sensitiveInfoService;
 
     @Autowired
-    public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService) {
+    public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService) {
 
         this.conversionService = conversionService;
         this.converterUtils = converterUtils;
         this.pathwayService = pathwayService;
         this.sourceService = sourceService;
+        this.sensitiveInfoService = sensitiveInfoService;
     }
 
     @POST
@@ -65,11 +74,22 @@ public class PathwayController {
     }
 
     @POST
+    @Path("/{id}")
+    public PathwayAnalysisDTO copy(@PathParam("id") final Integer id) {
+
+        PathwayAnalysisDTO dto = get(id);
+        dto.setId(null);
+        dto.setName(pathwayService.getNameForCopy(dto.getName()));
+        return create(dto);
+    }
+
+    @POST
     @Path("/import")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public PathwayAnalysisDTO importAnalysis(final PathwayAnalysisExportDTO dto) {
 
+        dto.setName(pathwayService.getNameForCopy(dto.getName()));
         PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
         PathwayAnalysisEntity imported = pathwayService.importAnalysis(pathwayAnalysis);
         return conversionService.convert(imported, PathwayAnalysisDTO.class);
@@ -103,6 +123,7 @@ public class PathwayController {
     public PathwayAnalysisDTO get(@PathParam("id") final Integer id) {
 
         PathwayAnalysisEntity pathwayAnalysis = pathwayService.getById(id);
+        ExceptionUtils.throwNotFoundExceptionIfNull(pathwayAnalysis, String.format("There is no pathway analysis with id = %d.", id));
         Map<Integer, Integer> eventCodes = pathwayService.getEventCohortCodes(pathwayAnalysis);
 
         PathwayAnalysisDTO dto = conversionService.convert(pathwayAnalysis, PathwayAnalysisDTO.class);
@@ -144,13 +165,24 @@ public class PathwayController {
     @Path("/{id}/generation/{sourceKey}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public void generatePathways(
+    public JobExecutionResource generatePathways(
             @PathParam("id") final Integer pathwayAnalysisId,
             @PathParam("sourceKey") final String sourceKey
     ) {
 
         Source source = sourceService.findBySourceKey(sourceKey);
-        pathwayService.generatePathways(pathwayAnalysisId, source.getSourceId());
+        return pathwayService.generatePathways(pathwayAnalysisId, source.getSourceId());
+    }
+
+    @DELETE
+    @Path("/{id}/generation/{sourceKey}")
+    public void cancelPathwaysGeneration(
+            @PathParam("id") final Integer pathwayAnalysisId,
+            @PathParam("sourceKey") final String sourceKey
+    ){
+
+        Source source = sourceService.findBySourceKey(sourceKey);
+        pathwayService.cancelGeneration(pathwayAnalysisId, source.getSourceId());
     }
 
     @GET
@@ -161,7 +193,9 @@ public class PathwayController {
             @PathParam("id") final Integer pathwayAnalysisId
     ) {
 
-        return converterUtils.convertList(pathwayService.getPathwayGenerations(pathwayAnalysisId), CommonGenerationDTO.class);
+        Map<String, SourceInfo> sourcesMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_KEY);
+        return sensitiveInfoService.filterSensitiveInfo(converterUtils.convertList(pathwayService.getPathwayGenerations(pathwayAnalysisId), CommonGenerationDTO.class),
+                info -> Collections.singletonMap(Constants.Variables.SOURCE, sourcesMap.get(info.getSourceKey())));
     }
 
     @GET
@@ -172,7 +206,9 @@ public class PathwayController {
             @PathParam("generationId") final Long generationId
     ) {
 
-        return conversionService.convert(pathwayService.getGeneration(generationId), CommonGenerationDTO.class);
+        PathwayAnalysisGenerationEntity generationEntity = pathwayService.getGeneration(generationId);
+        return sensitiveInfoService.filterSensitiveInfo(conversionService.convert(generationEntity, CommonGenerationDTO.class),
+                Collections.singletonMap(Constants.Variables.SOURCE, generationEntity.getSource()));
     }
 
     @GET

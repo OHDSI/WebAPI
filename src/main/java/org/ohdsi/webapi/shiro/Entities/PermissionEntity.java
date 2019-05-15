@@ -4,7 +4,16 @@ import java.io.Serializable;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 
 /**
  * Created by GMalikov on 24.08.2015.
@@ -23,8 +32,16 @@ public class PermissionEntity implements Serializable {
 
   @Id
   @Column(name = "ID")
-  @SequenceGenerator(name = "SEC_PERMISSION_SEQUENCE_GENERATOR", sequenceName = "SEC_PERMISSION_SEQUENCE", allocationSize = 1, initialValue = 1000)
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEC_PERMISSION_SEQUENCE_GENERATOR")
+  @GenericGenerator(
+      name = "sec_permission_generator",
+      strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+      parameters = {
+          @Parameter(name = "sequence_name", value = "sec_permission_id_seq"),
+          @Parameter(name = "initial_value", value = "1000"),
+          @Parameter(name = "increment_size", value = "1")
+      }
+  )
+  @GeneratedValue(generator = "sec_permission_generator")
   public Long getId() {
     return id;
   }

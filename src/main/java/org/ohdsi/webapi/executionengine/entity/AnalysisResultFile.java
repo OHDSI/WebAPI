@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.executionengine.entity;
 
-import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -8,38 +7,52 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 
 @Entity(name = "output_files")
 public class AnalysisResultFile {
 
     @Id
-    @GeneratedValue
+    @GenericGenerator(
+        name = "analysis_result_file_generator",
+        strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+        parameters = {
+                @Parameter(name = "sequence_name", value = "output_file_seq"),
+                @Parameter(name = "increment_size", value = "1")
+        }
+    )
+    @GeneratedValue(generator = "analysis_result_file_generator")
     @Column
     private Long id;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "execution_id", nullable = false, updatable = false)
-    private AnalysisExecution execution;
+    private ExecutionEngineAnalysisStatus execution;
 
     @Column(name = "file_name")
     private String fileName;
 
-    @Column(name = "file_contents", columnDefinition = "BYTEA")
-    @Basic(fetch = FetchType.LAZY)
-    private byte[] contents;
+    @Column(name = "media_type")
+    private String mediaType;
+
+    @OneToOne(optional = false, mappedBy = "analysisResultFile", fetch = FetchType.LAZY)
+    private AnalysisResultFileContent content;
 
     public AnalysisResultFile() {
 
     }
 
     public AnalysisResultFile(
-            AnalysisExecution execution,
+            ExecutionEngineAnalysisStatus execution,
             String fileName,
-            byte[] contents) {
+            String mediaType) {
 
         this.execution = execution;
         this.fileName = fileName;
-        this.contents = contents;
+        this.mediaType = mediaType;
     }
 
     public Long getId() {
@@ -47,12 +60,12 @@ public class AnalysisResultFile {
         return id;
     }
 
-    public AnalysisExecution getExecution() {
+    public ExecutionEngineAnalysisStatus getExecution() {
 
         return execution;
     }
 
-    public void setExecution(AnalysisExecution execution) {
+    public void setExecution(ExecutionEngineAnalysisStatus execution) {
 
         this.execution = execution;
     }
@@ -69,11 +82,19 @@ public class AnalysisResultFile {
 
     public byte[] getContents() {
 
-        return contents;
+        return content.getContents();
     }
 
     public void setContents(byte[] contents) {
 
-        this.contents = contents;
+        this.content.setContents(contents);
+    }
+
+    public String getMediaType() {
+        return mediaType;
+    }
+
+    public void setMediaType(String mediaType) {
+        this.mediaType = mediaType;
     }
 }

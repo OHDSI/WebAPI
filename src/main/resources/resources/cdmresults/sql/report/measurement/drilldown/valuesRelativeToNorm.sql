@@ -1,11 +1,12 @@
 select c1.concept_id as MEASUREMENT_CONCEPT_ID,
        c1.concept_name as MEASUREMENT_CONCEPT_NAME,
        c2.concept_id as concept_id,
-       c2.concept_name + ': ' + ar1.stratum_3 as concept_name,
+       CONCAT(c2.concept_name, ': ', ar1.stratum_3) as concept_name,
        ar1.count_value as count_value
 from (
-       select cast(stratum_1 as int) stratum_1, cast(stratum_2 as int) stratum_2, stratum_3, count_value
-       FROM @results_database_schema.ACHILLES_results
+       select cast(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END as int) stratum_1, 
+              cast(CASE WHEN isNumeric(stratum_2) = 1 THEN stratum_2 ELSE null END as int) stratum_2, stratum_3, count_value
+       FROM @results_database_schema.achilles_results
        where analysis_id = 1818
        GROUP BY analysis_id, stratum_1, stratum_2, stratum_3, count_value
      ) ar1

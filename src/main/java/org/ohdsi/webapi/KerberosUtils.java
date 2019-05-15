@@ -11,7 +11,7 @@ public final class KerberosUtils {
     public static void setKerberosParams(Source source, ConnectionParams connectionParams, DataSourceUnsecuredDTO ds) {
         ds.setUseKerberos(Boolean.TRUE);
         ds.setKrbAuthMethod(source.getKrbAuthMethod());
-        ds.setKrbKeytab(source.getKrbKeytab());
+        ds.setKeyfile(source.getKeyfile());
         if (source.getKrbAdminServer() != null) {
             ds.setKrbAdminFQDN(source.getKrbAdminServer());
         } else {

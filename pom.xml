@@ -9,7 +9,7 @@
   <version>1.2-SNAPSHOT</version>
   <name>WebAPI</name>
   <properties>
-    <webapi.version>2.6.0</webapi.version>
+    <webapi.version>2.7.1</webapi.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jersey.version>2.14</jersey.version>
     <!-- Spring Boot manages spring.version as well -->
@@ -69,6 +69,8 @@
     <security.oauth.google.apiSecret></security.oauth.google.apiSecret>
     <security.oauth.facebook.apiKey></security.oauth.facebook.apiKey>
     <security.oauth.facebook.apiSecret></security.oauth.facebook.apiSecret>
+    <security.oauth.github.apiKey></security.oauth.github.apiKey>
+    <security.oauth.github.apiSecret></security.oauth.github.apiSecret>
     <security.oid.clientId></security.oid.clientId>
     <security.oid.apiSecret></security.oid.apiSecret>
     <security.oid.url></security.oid.url>
@@ -125,8 +127,7 @@
 
     <arachne.version>1.14.0-alpha-1</arachne.version>
     <jersey-media-multipart.version>2.25.1</jersey-media-multipart.version>
-    <execution.invalidation.maxage>4</execution.invalidation.maxage>
-    <execution.invalidation.period>10000</execution.invalidation.period>
+    <execution.invalidation.period>600000</execution.invalidation.period>
     <execution.status.period>10000</execution.status.period>
 		<executionengine.url>https://localhost:8888/api/v1/analyze</executionengine.url>
 		<executionengine.token>Basic YWRtaW5Ab2R5c3NldXNpbmMuY29tOnBhc3N3b3Jk</executionengine.token>
@@ -142,8 +143,25 @@
     <!-- ORGANIZATION SETTINGS -->
     <organization.name>OHDSI</organization.name>
 
+    <!-- JdbcTemplate -->
+    <jdbc.suppressInvalidApiException>true</jdbc.suppressInvalidApiException>
+
+    <!-- Logging -->
+    <spring.jpa.show-sql>false</spring.jpa.show-sql>
+    <logging.level.root>info</logging.level.root>
+    <logging.level.org.ohdsi>info</logging.level.org.ohdsi>
+    <logging.level.org.springframework.orm>info</logging.level.org.springframework.orm>
+    <logging.level.org.springframework.jdbc>info</logging.level.org.springframework.jdbc>
+    <logging.level.org.apache.shiro>warn</logging.level.org.apache.shiro>
+
     <spring.batch.taskExecutor.corePoolSize>10</spring.batch.taskExecutor.corePoolSize>
     <spring.batch.taskExecutor.maxPoolSize>20</spring.batch.taskExecutor.maxPoolSize>
+
+    <!-- Sensitive Info settings -->
+    <sensitiveinfo.admin.role>admin</sensitiveinfo.admin.role>
+
+    <hydra.externalPackage.prediction></hydra.externalPackage.prediction>
+    <hydra.externalPackage.estimation></hydra.externalPackage.estimation>
   </properties>
   <build>
     <finalName>webapi</finalName>
@@ -153,6 +171,7 @@
         <filtering>true</filtering>
         <includes>
           <include>**/*.properties</include>
+          <include>log4j.xml</include>
         </includes>
       </resource>
       <resource>
@@ -163,6 +182,7 @@
         </includes>
         <excludes>
           <exclude>**/*.properties</exclude>
+          <exclude>log4j.xml</exclude>
         </excludes>
       </resource>
       <resource>
@@ -236,11 +256,6 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>2.18.1</version>
-        <configuration>
-          <includes>
-            <include>**/*IT.java</include>
-          </includes>
-        </configuration>
         <executions>
           <execution>
             <id>failsafe-integration-tests</id>
@@ -248,13 +263,32 @@
             <goals>
               <goal>integration-test</goal>
             </goals>
+            <configuration>
+              <includes>
+                <include>**/*IT.java</include>
+              </includes>
+              <excludes>
+                <exclude>**/SecurityIT.java</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+          <execution>
+            <phase>test</phase>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+            <configuration>
+              <includes>
+                <include>**/SecurityIT.java</include>
+              </includes>
+            </configuration>
           </execution>
         </executions>
       </plugin>
       <plugin>
         <groupId>com.qmino</groupId>
         <artifactId>miredot-plugin</artifactId>
-        <version>1.5.1</version>
+        <version>2.1.2</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -264,31 +298,36 @@
           </execution>
         </executions>
         <configuration>
-           <licence>cHJvamVjdHxvcmcub2hkc2kuV2ViQVBJfDIwMjAtMDMtMzF8dHJ1ZXwtMSNNQzBDRkNNQ2R2ZEhjbDg0Z2tONVI3bHlmQ2Y4SnNkYUFoVUFoMkdtOUVFdy9RelpLVzM1V2p6a2FsdzJZV009</licence>
-           <restModel>
-						<httpStatusCodes>
-							<httpStatusCode>
-									<httpCode>200</httpCode>
-									<document>always</document>
-									<defaultMessage>The service call has completed successfully.</defaultMessage>
-							</httpStatusCode>
-							<httpStatusCode>
-									<httpCode>401</httpCode>
-									<document>Authorization Exception</document>
-									<defaultMessage>The user is not authorized to use this service.</defaultMessage>
-							</httpStatusCode>
-							<httpStatusCode>
-									<httpCode>412</httpCode>
-									<document>put,post</document>
-									<defaultMessage>Invalid JSON/XML input.</defaultMessage>
-							</httpStatusCode>
-							<httpStatusCode>
-									<httpCode>500</httpCode>
-									<document>always</document>
-									<defaultMessage>The service call has not succeeded.</defaultMessage>
-							</httpStatusCode>
-						</httpStatusCodes>
-           </restModel>
+          <licence>cHJvamVjdHxvcmcub2hkc2kuV2ViQVBJfDIwMjAtMDMtMzF8dHJ1ZXwtMSNNQzBDRkNNQ2R2ZEhjbDg0Z2tONVI3bHlmQ2Y4SnNkYUFoVUFoMkdtOUVFdy9RelpLVzM1V2p6a2FsdzJZV009</licence>
+          <restModel>
+            <httpStatusCodes>
+              <httpStatusCode>
+                <httpCode>200</httpCode>
+                <document>always</document>
+                <defaultMessage>The service call has completed successfully.</defaultMessage>
+              </httpStatusCode>
+              <httpStatusCode>
+                <httpCode>401</httpCode>
+                <document>Authorization Exception</document>
+                <defaultMessage>The user is not authorized to use this service.</defaultMessage>
+              </httpStatusCode>
+              <httpStatusCode>
+                <httpCode>412</httpCode>
+                <document>put,post</document>
+                <defaultMessage>Invalid JSON/XML input.</defaultMessage>
+              </httpStatusCode>
+              <httpStatusCode>
+                <httpCode>500</httpCode>
+                <document>always</document>
+                <defaultMessage>The service call has not succeeded.</defaultMessage>
+              </httpStatusCode>
+            </httpStatusCodes>
+          </restModel>
+          <output>
+            <html>
+              <intro>api.html</intro>
+            </html>
+          </output>
         </configuration>
       </plugin>
 
@@ -456,6 +495,16 @@
       <version>${spring.boot.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-core</artifactId>
+      <version>5.2.13.Final</version>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-entitymanager</artifactId>
+      <version>5.2.13.Final</version>
+    </dependency>
+    <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
       <version>3.1.0</version>
@@ -464,7 +513,7 @@
     <dependency>
       <groupId>org.ohdsi.sql</groupId>
       <artifactId>SqlRender</artifactId>
-      <version>1.5.2</version>
+      <version>1.6.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>commons-dbutils</groupId>
@@ -531,7 +580,7 @@
     <dependency>
       <groupId>com.microsoft.sqlserver</groupId>
       <artifactId>mssql-jdbc</artifactId>
-      <version>6.2.2.jre8</version>
+      <version>7.0.0.jre8</version>
     </dependency>
     <dependency>
       <groupId>com.opencsv</groupId>
@@ -603,12 +652,12 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>
-      <version>1.7.0</version>
+      <version>1.7.3</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>hydra</artifactId>
-      <version>0.0.1</version>
+      <version>0.0.4-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.json</groupId>
@@ -618,7 +667,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>featureExtraction</artifactId>
-      <version>2.1.5</version>
+      <version>2.1.5-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.amazon.redshift</groupId>
@@ -659,6 +708,11 @@
       <version>${arachne.version}</version>
     </dependency>
     <dependency>
+      <groupId>com.odysseusinc.arachne</groupId>
+      <artifactId>arachne-scheduler</artifactId>
+      <version>${arachne.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.glassfish.jersey.media</groupId>
       <artifactId>jersey-media-multipart</artifactId>
       <version>${jersey-media-multipart.version}</version>
@@ -676,7 +730,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>standardized-analysis-api</artifactId>
-      <version>1.0.0</version>
+      <version>1.1.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.cosium.spring.data</groupId>
@@ -729,9 +783,9 @@
       </properties>
       <dependencies>
         <dependency>
-          <groupId>ojdbc</groupId>
-          <artifactId>ojdbc</artifactId>
-          <version>14</version>
+          <groupId>com.oracle</groupId>
+          <artifactId>ojdbc6</artifactId>
+          <version>12.1.0.1</version>
         </dependency>
       </dependencies>
     </profile>
@@ -978,6 +1032,141 @@
                   <version>1.0.0</version>
                   <packaging>jar</packaging>
                   <file>${impala.classpath}/TCLIServiceClient.jar</file>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>webapi-bigquery</id>
+      <properties>
+        <bigquery.enabled>true</bigquery.enabled>
+        <!-- BigQuery JDBC driver path -->
+        <bigquery.classpath>${basedir}/src/main/extras/bigquery</bigquery.classpath>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.google.api-client</groupId>
+          <artifactId>google-api-client</artifactId>
+          <version>1.24.1</version>
+        </dependency>
+        <dependency>
+          <groupId>com.google.apis</groupId>
+          <artifactId>google-api-services-bigquery</artifactId>
+          <version>v2-rev410-1.24.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-bigquery</artifactId>
+            <version>1.24.1</version>
+        </dependency>
+        <dependency>
+          <groupId>com.google.http-client</groupId>
+          <artifactId>google-http-client</artifactId>
+          <version>1.24.1</version>
+        </dependency>
+        <dependency>
+          <groupId>com.google.http-client</groupId>
+          <artifactId>google-http-client-jackson2</artifactId>
+          <version>1.24.1</version>
+        </dependency>
+        <dependency>
+          <groupId>com.google.oauth-client</groupId>
+          <artifactId>google-oauth-client</artifactId>
+          <version>1.24.1</version>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-install-plugin</artifactId>
+            <version>2.5.2</version>
+            <executions>
+              <execution>
+                <id>google-api-client</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <groupId>com.google.api-client</groupId>
+                  <artifactId>google-api-client</artifactId>
+                  <version>1.24.1</version>
+                  <packaging>jar</packaging>
+                  <file>${bigquery.classpath}/google-api-client-1.24.1.jar</file>
+                </configuration>
+              </execution>
+              <execution>
+                <id>google-api-services-bigquery</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <groupId>com.google.apis</groupId>
+                  <artifactId>google-api-services-bigquery</artifactId>
+                  <version>1.24.1</version>
+                  <packaging>jar</packaging>
+                  <file>${bigquery.classpath}/google-api-services-bigquery-v2-rev400-1.24.1.jar</file>
+                </configuration>
+              </execution>
+              <execution>
+                <id>google-cloud-bigquery</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <groupId>com.google.cloud</groupId>
+                  <artifactId>google-cloud-bigquery</artifactId>
+                  <version>1.24.1</version>
+                  <packaging>jar</packaging>
+                  <file>${bigquery.classpath}/GoogleBigQueryJDBC42.jar</file>
+                </configuration>
+              </execution>
+              <execution>
+                <id>google-http-client</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <groupId>com.google.http-client</groupId>
+                  <artifactId>google-http-client</artifactId>
+                  <version>1.24.1</version>
+                  <packaging>jar</packaging>
+                  <file>${bigquery.classpath}/google-http-client-1.24.1.jar</file>
+                </configuration>
+              </execution>
+              <execution>
+                <id>google-http-client-jackson2</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <groupId>com.google.http-client</groupId>
+                  <artifactId>google-http-client-jackson2</artifactId>
+                  <version>1.24.1</version>
+                  <packaging>jar</packaging>
+                  <file>${bigquery.classpath}/google-http-client-jackson2-1.24.1.jar</file>
+                </configuration>
+              </execution>
+              <execution>
+                <id>google-oauth-client</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <groupId>com.google.oauth-client</groupId>
+                  <artifactId>google-oauth-client</artifactId>
+                  <version>1.24.1</version>
+                  <packaging>jar</packaging>
+                  <file>${bigquery.classpath}/google-oauth-client-1.24.1.jar</file>
                 </configuration>
               </execution>
             </executions>

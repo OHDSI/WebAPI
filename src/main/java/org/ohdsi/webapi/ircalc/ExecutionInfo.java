@@ -19,13 +19,10 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.MapsId;
-import javax.persistence.Table;
+import javax.persistence.*;
+
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.IExecutionInfo;
 import org.ohdsi.webapi.source.Source;
@@ -52,6 +49,7 @@ public class ExecutionInfo implements Serializable, IExecutionInfo {
   @ManyToOne
   @MapsId("sourceId")
   @JoinColumn(name="source_id", referencedColumnName="source_id")
+  @NotFound(action = NotFoundAction.IGNORE)
   private Source source;
   
   @Column(name="start_time")
@@ -61,10 +59,14 @@ public class ExecutionInfo implements Serializable, IExecutionInfo {
   private Integer executionDuration;    
   
   @Column(name="status")
+  @Enumerated(EnumType.STRING)
   private GenerationStatus status;    
   
   @Column(name="is_valid")
   private boolean isValid;
+
+  @Column(name = "is_canceled")
+  private boolean isCanceled;
   
   @Column(name="message")
   private String message;
@@ -122,6 +124,19 @@ public class ExecutionInfo implements Serializable, IExecutionInfo {
   public ExecutionInfo setIsValid(boolean isValid) {
     this.isValid = isValid;
     return this;
+  }
+
+  @Override
+  public boolean getIsCanceled() {
+    return isCanceled();
+  }
+
+  public boolean isCanceled() {
+    return isCanceled;
+  }
+
+  public void setCanceled(boolean canceled) {
+    isCanceled = canceled;
   }
 
   public String getMessage() {

@@ -14,19 +14,41 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
+import javax.persistence.NamedSubgraph;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.ohdsi.circe.cohortdefinition.CohortExpression;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.ohdsi.analysis.Cohort;
+import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisGenerationInfo;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.model.CommonEntity;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
 
 /**
  * JPA Entity for Cohort Definitions
@@ -44,9 +66,16 @@ public class CohortDefinition extends CommonEntity implements Serializable, Coho
   private static final long serialVersionUID = 1L;
     
   @Id
-  @SequenceGenerator(name = "cohort_definition_seq",sequenceName = "cohort_definition_sequence", allocationSize = 1)
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cohort_definition_seq")
-  @Access(AccessType.PROPERTY) 
+  @GenericGenerator(
+    name = "cohort_definition_generator",
+    strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+    parameters = {
+      @Parameter(name = "sequence_name", value = "cohort_definition_sequence"),
+      @Parameter(name = "increment_size", value = "1")
+    }
+  )
+  @GeneratedValue(generator = "cohort_definition_generator")
+  @Access(AccessType.PROPERTY)
   private Integer id;
   
   private String name;
@@ -54,7 +83,7 @@ public class CohortDefinition extends CommonEntity implements Serializable, Coho
   private String description;
 
   @Enumerated(EnumType.STRING)
-  @Column(name="expression_type")  
+  @Column(name="expression_type")
   private ExpressionType expressionType;
   
   @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional=true, orphanRemoval = true)
@@ -64,8 +93,8 @@ public class CohortDefinition extends CommonEntity implements Serializable, Coho
   @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "cohortDefinition")
   private Set<CohortGenerationInfo> generationInfoList;
 
-	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "cohortDefinition")
-	private Set<CohortAnalysisGenerationInfo> cohortAnalysisGenerationInfoList = new HashSet<>();
+  @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "cohortDefinition")
+  private Set<CohortAnalysisGenerationInfo> cohortAnalysisGenerationInfoList = new HashSet<>();
 
   @ManyToMany(targetEntity = CohortCharacterizationEntity.class, fetch = FetchType.LAZY)
   @JoinTable(name = "cc_cohort",
@@ -148,7 +177,7 @@ public class CohortDefinition extends CommonEntity implements Serializable, Coho
   @Override
   public int hashCode() {
 
-    return Objects.hash(getId(), super.hashCode());
+    return Objects.hash(getId());
   }
 
   public Set<CohortAnalysisGenerationInfo> getCohortAnalysisGenerationInfoList() {

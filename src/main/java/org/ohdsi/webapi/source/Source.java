@@ -16,10 +16,11 @@
 package org.ohdsi.webapi.source;
 
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
-import org.hibernate.annotations.Type;
-import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -30,8 +31,13 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import org.hibernate.annotations.Cascade;
+
+import jersey.repackaged.com.google.common.collect.ImmutableList;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.Where;
 import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
 
 /**
@@ -40,17 +46,31 @@ import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
  */
 @Entity(name = "Source")
 @Table(name="source")
+@SQLDelete(sql = "UPDATE {h-schema}source SET deleted_date = current_timestamp WHERE SOURCE_ID = ?")
+@Where(clause = "deleted_date IS NULL")
 public class Source implements Serializable {
 
   public static final String MASQUERADED_USERNAME = "<username>";
   public static final String MASQUERADED_PASSWORD = "<password>";
+  public static final String IMPALA_DATASOURCE = "impala";
+  public static final String BIGQUERY_DATASOURCE = "bigquery";
+  public static final List<String> DBMS_KEYTAB_SUPPORT = ImmutableList.of(IMPALA_DATASOURCE, BIGQUERY_DATASOURCE);
 
   @Id
-  @GeneratedValue
+  @GenericGenerator(
+    name = "source_generator",
+    strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+    parameters = {
+      @Parameter(name = "sequence_name", value = "source_sequence"),
+      @Parameter(name = "increment_size", value = "1")
+    }
+  )
+  @GeneratedValue(generator = "source_generator")
   @Column(name="SOURCE_ID")
   private int sourceId;
 
   @OneToMany(fetch= FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "source")
+  @Where(clause = "priority >= 0")
   private Collection<SourceDaimon> daimons;
 
   @Column(name="SOURCE_NAME")
@@ -73,18 +93,21 @@ public class Source implements Serializable {
   @Type(type = "encryptedString")
   private String password;
 
+  @Column(name = "deleted_date")
+  private Date deletedDate;
+
     @Column(name = "krb_keytab")
-    private byte[] krbKeytab;
+  private byte[] keyfile;
 
-    @Column(name = "keytab_name")
-    private String keytabName;
+  @Column(name = "keytab_name")
+  private String keyfileName;
 
-    @Column(name = "krb_admin_server")
-    private String krbAdminServer;
+  @Column(name = "krb_admin_server")
+  private String krbAdminServer;
 
-    @Column(name = "krb_auth_method")
-    @Enumerated(EnumType.STRING)
-    private KerberosAuthMechanism krbAuthMethod;
+  @Column(name = "krb_auth_method")
+  @Enumerated(EnumType.STRING)
+  private KerberosAuthMechanism krbAuthMethod;
 
   public String getTableQualifier(DaimonType daimonType) {
 		String result = getTableQualifierOrNull(daimonType);
@@ -93,7 +116,7 @@ public class Source implements Serializable {
 		return result;
   }
 
-	  public String getTableQualifierOrNull(DaimonType daimonType) {
+  public String getTableQualifierOrNull(DaimonType daimonType) {
     for (SourceDaimon sourceDaimon : this.getDaimons()) {
       if (sourceDaimon.getDaimonType() == daimonType) {
         return sourceDaimon.getTableQualifier();
@@ -170,35 +193,70 @@ public class Source implements Serializable {
     this.password = password;
   }
 
-    public byte[] getKrbKeytab() {
-        return krbKeytab;
+  public byte[] getKeyfile() {
+        return keyfile;
     }
 
-    public void setKrbKeytab(byte[] krbKeytab) {
-        this.krbKeytab = krbKeytab;
+  public void setKeyfile(byte[] keyfile) {
+        this.keyfile = keyfile;
     }
 
-    public String getKeytabName() {
-        return keytabName;
+  public String getKeyfileName() {
+        return keyfileName;
     }
 
-    public void setKeytabName(String keytabName) {
-        this.keytabName = keytabName;
+  public void setKeyfileName(String keyfileName) {
+        this.keyfileName = keyfileName;
     }
 
-    public KerberosAuthMechanism getKrbAuthMethod() {
+  public KerberosAuthMechanism getKrbAuthMethod() {
         return krbAuthMethod;
     }
 
-    public void setKrbAuthMethod(KerberosAuthMechanism krbAuthMethod) {
+  public void setKrbAuthMethod(KerberosAuthMechanism krbAuthMethod) {
         this.krbAuthMethod = krbAuthMethod;
     }
 
-    public String getKrbAdminServer() {
+  public String getKrbAdminServer() {
         return krbAdminServer;
     }
 
-    public void setKrbAdminServer(String krbAdminServer) {
+  public void setKrbAdminServer(String krbAdminServer) {
         this.krbAdminServer = krbAdminServer;
     }
+
+  public boolean supportsKeyfile() {
+
+    return DBMS_KEYTAB_SUPPORT.stream().anyMatch(t -> t.equalsIgnoreCase(getSourceDialect()));
+  }
+
+  @Override
+  public boolean equals(Object o) {
+
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Source source = (Source) o;
+    return sourceId == source.sourceId;
+  }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hash(sourceId);
+  }
+
+  @Override
+  public String toString() {
+    String source = "sourceId=" + sourceId +
+                    ", daimons=" + daimons +
+                    ", sourceName='" + sourceName + '\'' +
+                    ", sourceDialect='" + sourceDialect + '\'' +
+                    ", sourceKey='" + sourceKey;
+    if (IMPALA_DATASOURCE.equalsIgnoreCase(sourceDialect)){
+      source += '\'' +
+              ", krbAdminServer='" + krbAdminServer + '\'' +
+              ", krbAuthMethod=" + krbAuthMethod;
+    }
+    return source;
+  }
 }

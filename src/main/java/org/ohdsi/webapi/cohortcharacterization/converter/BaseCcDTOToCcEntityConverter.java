@@ -1,26 +1,26 @@
 package org.ohdsi.webapi.cohortcharacterization.converter;
 
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.ohdsi.analysis.CohortMetadata;
-import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
+import org.ohdsi.analysis.Utils;
+import org.ohdsi.webapi.cohortcharacterization.CcResultType;
+import org.ohdsi.webapi.cohortcharacterization.domain.CcStrataConceptSetEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcParamEntity;
+import org.ohdsi.webapi.cohortcharacterization.domain.CcStrataEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.BaseCcDTO;
-import org.ohdsi.webapi.cohortcharacterization.dto.CcParameterDTO;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.TreeSet;
+
+import static org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType.CRITERIA_SET;
 
 public abstract class BaseCcDTOToCcEntityConverter<T extends BaseCcDTO<? extends CohortMetadata, ? extends FeAnalysisShortDTO>>
         extends BaseConversionServiceAwareConverter<T, CohortCharacterizationEntity> {
@@ -34,25 +34,30 @@ public abstract class BaseCcDTOToCcEntityConverter<T extends BaseCcDTO<? extends
     final CohortCharacterizationEntity cohortCharacterization = new CohortCharacterizationEntity();
 
     cohortCharacterization.setName(source.getName());
+    cohortCharacterization.setStratifiedBy(source.getStratifiedBy());
+    cohortCharacterization.setStrataOnly(source.getStrataOnly());
 
     cohortCharacterization.setId(source.getId());
 
-    if (!CollectionUtils.isEmpty(source.getCohorts())) {
-      final List<CohortDefinition> convertedCohortDefinitions = converterUtils.convertList(new ArrayList<>(source.getCohorts()), CohortDefinition.class);
-      cohortCharacterization.setCohortDefinitions(convertedCohortDefinitions);
-    }
+    cohortCharacterization.setCohortDefinitions(converterUtils.convertSet(source.getCohorts(), CohortDefinition.class));
 
-    final Set<FeAnalysisEntity> convertedFeatureAnalyses = source.getFeatureAnalyses().stream().map(fa -> conversionService.convert(fa, FeAnalysisEntity.class)).collect(Collectors.toSet());
-    cohortCharacterization.setFeatureAnalyses(convertedFeatureAnalyses);
+    source.getFeatureAnalyses().forEach(fa -> {
+      // Legacy Criteria Analyses didn't have statType, they were always PREVALENCE
+      if (Objects.equals(fa.getType(), CRITERIA_SET) && fa.getStatType() == null) {
+        fa.setStatType(CcResultType.PREVALENCE);
+      }
+    });
+    cohortCharacterization.setFeatureAnalyses(converterUtils.convertSet(source.getFeatureAnalyses(), FeAnalysisEntity.class));
 
-    final Set<CcParamEntity> convertedParameters = source.getParameters().stream().map(this::convertParameter).collect(Collectors.toSet());
-    cohortCharacterization.setParameters(convertedParameters);
+    cohortCharacterization.setParameters(converterUtils.convertSet(source.getParameters(), CcParamEntity.class));
+    cohortCharacterization.setStratas(converterUtils.convertSet(source.getStratas(), CcStrataEntity.class));
+
+    CcStrataConceptSetEntity conceptSetEntity = new CcStrataConceptSetEntity();
+    conceptSetEntity.setCohortCharacterization(cohortCharacterization);
+    conceptSetEntity.setRawExpression(Utils.serialize(source.getStrataConceptSets()));
+    cohortCharacterization.setConceptSetEntity(conceptSetEntity);
 
     return cohortCharacterization;
-  }
-
-  protected CcParamEntity convertParameter(final CcParameterDTO dto) {
-    return conversionService.convert(dto, CcParamEntity.class);
   }
 
 

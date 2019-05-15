@@ -9,29 +9,33 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
-import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+
+import org.apache.commons.lang3.ObjectUtils;
 import org.hibernate.annotations.DiscriminatorFormula;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.webapi.cohortcharacterization.CcResultType;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import org.ohdsi.webapi.model.CommonEntity;
 
 @Entity
 @Table(name = "fe_analysis")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorFormula("type")
-public abstract class FeAnalysisEntity<T> implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
+@DiscriminatorFormula(
+        "CASE WHEN type = 'CRITERIA_SET' THEN CONCAT(type,'_',stat_type)" +
+          "ELSE type END"
+)
+public abstract class FeAnalysisEntity<T> extends CommonEntity implements FeatureAnalysis, Comparable<FeAnalysisEntity> {
 
     public FeAnalysisEntity() {
     }
@@ -48,8 +52,15 @@ public abstract class FeAnalysisEntity<T> implements FeatureAnalysis, Comparable
     }
     
     @Id
-    @SequenceGenerator(name = "fe_analysis_pk_sequence", sequenceName = "fe_analysis_sequence", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "fe_analysis_pk_sequence")
+    @GenericGenerator(
+        name = "fe_analysis_generator",
+        strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+        parameters = {
+            @Parameter(name = "sequence_name", value = "fe_analysis_sequence"),
+            @Parameter(name = "increment_size", value = "1")
+        }
+    )
+    @GeneratedValue(generator = "fe_analysis_generator")
     private Integer id;
 
     @Column
@@ -151,12 +162,16 @@ public abstract class FeAnalysisEntity<T> implements FeatureAnalysis, Comparable
         if (this == o) return true;
         if (!(o instanceof FeAnalysisEntity)) return false;
         final FeAnalysisEntity that = (FeAnalysisEntity) o;
-        return Objects.equals(getId(), that.getId());
+        if (getId() != null && that.getId() != null) {
+            return Objects.equals(getId(), that.getId());
+        } else {
+            return Objects.equals(getType(), that.getType()) && Objects.equals(getDesign(), that.getDesign());
+        }
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), super.hashCode());
+        return Objects.hash(getId());
     }
 
     public Boolean getLocked() {
@@ -179,7 +194,7 @@ public abstract class FeAnalysisEntity<T> implements FeatureAnalysis, Comparable
 
     @Override
     public int compareTo(final FeAnalysisEntity o) {
-        return this.name.compareTo(o.name);
+        return ObjectUtils.compare(this.name, o.name);
     }
 
     public CcResultType getStatType() {

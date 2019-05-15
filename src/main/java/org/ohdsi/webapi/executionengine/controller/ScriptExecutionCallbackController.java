@@ -3,151 +3,149 @@ package org.ohdsi.webapi.executionengine.controller;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisExecutionStatusDTO;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisResultDTO;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisResultStatusDTO;
-import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
+import org.glassfish.jersey.media.multipart.BodyPartEntity;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+import org.hibernate.Hibernate;
+import org.ohdsi.webapi.executionengine.entity.AnalysisResultFileContent;
+import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
+import org.ohdsi.webapi.executionengine.entity.ExecutionEngineGenerationEntity;
+import org.ohdsi.webapi.executionengine.exception.ScriptCallbackException;
+import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
+import org.ohdsi.webapi.executionengine.repository.AnalysisResultFileContentRepository;
+import org.ohdsi.webapi.executionengine.repository.ExecutionEngineGenerationRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.glassfish.jersey.media.multipart.BodyPartEntity;
-import org.glassfish.jersey.media.multipart.FormDataBodyPart;
-import org.glassfish.jersey.media.multipart.FormDataMultiPart;
-import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisExecutionRepository;
-import org.ohdsi.webapi.executionengine.entity.AnalysisExecution;
-import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
-import org.ohdsi.webapi.executionengine.exception.ScriptCallbackException;
-import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
-import org.ohdsi.webapi.executionengine.repository.OutputFileRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+import java.io.IOException;
+import java.util.*;
 
-@Component
+import static org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus.Status.*;
+
+@Controller
 @Path("/executionservice/callbacks")
 public class ScriptExecutionCallbackController {
 
-    private static final Log log = LogFactory.getLog(ScriptExecutionCallbackController.class);
+    private static final Logger log = LoggerFactory.getLogger(ScriptExecutionCallbackController.class);
+    private static final String EXECUTION_NOT_FOUND = "Analysis execution with id {%d} not found";
 
-    private final ComparativeCohortAnalysisExecutionRepository comparativeCohortAnalysisExecutionRepository;
+    private final ExecutionEngineGenerationRepository executionEngineGenerationRepository;
 
     private final AnalysisExecutionRepository analysisExecutionRepository;
 
-    private final OutputFileRepository outputFileRepository;
-
+    private final AnalysisResultFileContentRepository analysisResultFileContentRepository;
 
     @Autowired
-    public ScriptExecutionCallbackController(ComparativeCohortAnalysisExecutionRepository
-                                                     comparativeCohortAnalysisExecutionRepository,
+    public ScriptExecutionCallbackController(ExecutionEngineGenerationRepository executionEngineGenerationRepository,
                                              AnalysisExecutionRepository analysisExecutionRepository,
-                                             OutputFileRepository outputFileRepository) {
+                                             AnalysisResultFileContentRepository analysisResultFileContentRepository) {
 
-        this.comparativeCohortAnalysisExecutionRepository = comparativeCohortAnalysisExecutionRepository;
+        this.executionEngineGenerationRepository = executionEngineGenerationRepository;
         this.analysisExecutionRepository = analysisExecutionRepository;
-        this.outputFileRepository = outputFileRepository;
+        this.analysisResultFileContentRepository = analysisResultFileContentRepository;
     }
 
     @Path(value = "submission/{id}/status/update/{password}")
     @Consumes(MediaType.APPLICATION_JSON)
     @POST
     @Transactional
-    public void statusUpdate(@PathParam("id") Integer id,
+    public void statusUpdate(@PathParam("id") Long id,
                              @PathParam("password") String password,
                              AnalysisExecutionStatusDTO status) {
 
-        log.info(MessageFormat
-                .format("Accepted an updateSubmission request. \n "
-                                + "ID:{0}, Update date:{1} Log:\n" + "{2}",
-                        status.getId(), status.getStdoutDate(),
-                        status.getStdout()));
-            AnalysisExecution analysisExecution = analysisExecutionRepository.findOne(id);
-            if (analysisExecution != null
-                    && Objects.equals(password, analysisExecution.getUpdatePassword())
-                    && ( analysisExecution.getExecutionStatus().equals(AnalysisExecution.Status.STARTED)
-                    || analysisExecution.getExecutionStatus().equals(AnalysisExecution.Status.RUNNING))
-                    ) {
-                analysisExecution.setExecutionStatus(AnalysisExecution.Status.RUNNING);
-            }
+        log.info("Accepted an updateSubmission request. ID:{}, Update date:{} Log: {}",
+                        status.getId(), status.getStdoutDate(), status.getStdout());
+        ExecutionEngineGenerationEntity executionEngineGeneration = executionEngineGenerationRepository.findById(id)
+                .orElseThrow(() -> new ScriptCallbackException(String.format(EXECUTION_NOT_FOUND, id)));
+        ExecutionEngineAnalysisStatus analysisExecution = executionEngineGeneration.getAnalysisExecution();
+        Hibernate.initialize(analysisExecution);
+        if (Objects.equals(password, analysisExecution.getExecutionEngineGeneration().getUpdatePassword())
+                && ( analysisExecution.getExecutionStatus().equals(STARTED)
+                || analysisExecution.getExecutionStatus().equals(RUNNING))
+                ) {
+
+            analysisExecution.setExecutionStatus(RUNNING);
+            analysisExecutionRepository.saveAndFlush(analysisExecution);
+        }
     }
 
     @Path(value = "submission/{id}/result/{password}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @POST
     @Transactional
-    public void analysisResult(@PathParam("id") Integer id,
+    public void analysisResult(@PathParam("id") Long id,
                                @PathParam("password") String password,
                                FormDataMultiPart multiPart) {
 
-        log.info(MessageFormat.format("Accepted an analysisResult request. \n " + "ID:{0}", id));
-        AnalysisExecution analysisExecution = analysisExecutionRepository.findOne(id);
-        if (Objects.nonNull(analysisExecution) && Objects.equals(password, analysisExecution.getUpdatePassword())) {
-            Date timestamp = new Date();
-            int seconds = (int) ((timestamp.getTime() - analysisExecution.getExecuted().getTime()) / 1000);
-            analysisExecution.setDuration(seconds);
+        log.info("Accepted an analysisResult request. ID:{}", id);
+        ExecutionEngineGenerationEntity executionEngineGeneration = executionEngineGenerationRepository.findById(id)
+                .orElseThrow(() -> new ScriptCallbackException(String.format(EXECUTION_NOT_FOUND, id)));
+        ExecutionEngineAnalysisStatus analysisExecution = executionEngineGeneration.getAnalysisExecution();
+
+        if (Objects.equals(password, analysisExecution.getExecutionEngineGeneration().getUpdatePassword())) {
 
             AnalysisResultDTO analysisResultDTO =
                     multiPart.getField("analysisResult").getValueAs(AnalysisResultDTO.class);
-            try {
-                saveFiles(multiPart, analysisExecution, analysisResultDTO);
-            }catch (Exception e){
-                log.warn("Failed to save files for execution id: " + id, e);
-            }
-
             AnalysisResultStatusDTO status = analysisResultDTO.getStatus();
 
             if (status == AnalysisResultStatusDTO.EXECUTED) {
-                analysisExecution.setExecutionStatus(AnalysisExecution.Status.COMPLETED);
+                analysisExecution.setExecutionStatus(ExecutionEngineAnalysisStatus.Status.COMPLETED);
             } else if (status == AnalysisResultStatusDTO.FAILED) {
-                analysisExecution.setExecutionStatus(AnalysisExecution.Status.FAILED);
+                analysisExecution.setExecutionStatus(ExecutionEngineAnalysisStatus.Status.FAILED);
             }
-            analysisExecutionRepository.save(analysisExecution);
+            analysisExecutionRepository.saveAndFlush(analysisExecution);
+
+            try {
+                saveFiles(multiPart, analysisExecution, analysisResultDTO);
+            }catch (Exception e){
+                log.warn("Failed to save files for execution ID:{}", id, e);
+            }
         } else {
-            log.error(String.format("Update password not matched for execution id=%d", id));
+            log.error("Update password not matched for execution ID:{}", id);
         }
     }
 
-    private Iterable<AnalysisResultFile> saveFiles(
+    private Iterable<AnalysisResultFileContent> saveFiles(
             FormDataMultiPart multiPart,
-            AnalysisExecution analysisExecution,
+            ExecutionEngineAnalysisStatus analysisExecution,
             AnalysisResultDTO analysisResultDTO) {
 
-        List<AnalysisResultFile> files = new ArrayList<>();
+        List<AnalysisResultFileContent> files = new ArrayList<>();
         List<FormDataBodyPart> bodyParts = multiPart.getFields("file");
         if (bodyParts != null) {
+            Map<String,Integer> duplicates = new HashMap<>();
             for (FormDataBodyPart bodyPart : bodyParts) {
                 BodyPartEntity bodyPartEntity =
                         (BodyPartEntity) bodyPart.getEntity();
                 String fileName = bodyPart.getContentDisposition().getFileName();
+                String extension = FilenameUtils.getExtension(fileName);
+                int count = duplicates.getOrDefault(fileName, 0) + 1;
+                duplicates.put(fileName, count);
+                if (count > 1) {
+                    fileName = FilenameUtils.getBaseName(fileName) + " (" + count + ")." + extension;
+                }
                 try {
                     byte[] contents = IOUtils.toByteArray(bodyPartEntity.getInputStream());
-                    String extension = FilenameUtils.getExtension(fileName);
-                    if ("R".equalsIgnoreCase(extension)) {
-                        contents = filterCredentials(contents);
-                    }
-                    files.add(new AnalysisResultFile(analysisExecution, fileName, contents));
+                    files.add(new AnalysisResultFileContent(analysisExecution, fileName,
+                            bodyPart.getMediaType().getType(), contents));
                 } catch (IOException e) {
                     throw new ScriptCallbackException("Unable to read result " + "files");
                 }
             }
         }
-        files.add(new AnalysisResultFile(analysisExecution, "stdout.txt", analysisResultDTO.getStdout().getBytes()));
-        return outputFileRepository.save(files);
+        files.add(new AnalysisResultFileContent(analysisExecution, "stdout.txt", MediaType.TEXT_PLAIN,
+                analysisResultDTO.getStdout().getBytes()));
+        return analysisResultFileContentRepository.save(files);
     }
 
-    private byte[] filterCredentials(byte[] contents) throws IOException {
-
-        String script = IOUtils.toString(contents, "UTF-8");
-        return script
-                .replaceAll("user\\s*=\\s*\".*\"", "user = \"database_user\"")
-                .replaceAll("password\\s*=\\s*\".*?\"","password = \"database_password\"")
-                .getBytes();
-    }
 }

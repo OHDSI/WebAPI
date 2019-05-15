@@ -1,66 +1,74 @@
 package org.ohdsi.webapi.executionengine.service;
 
-import com.odysseusinc.arachne.commons.types.DBMSType;
-import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.*;
-import com.odysseusinc.arachne.execution_engine_common.util.ConnectionParams;
+import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestDTO;
+import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestStatusDTO;
+import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
+import com.odysseusinc.arachne.execution_engine_common.util.CommonFileUtils;
 import jersey.repackaged.com.google.common.collect.ImmutableList;
 import jersey.repackaged.com.google.common.collect.ImmutableMap;
+import net.lingala.zip4j.exception.ZipException;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
-import org.apache.commons.lang3.time.DateUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
-import org.ohdsi.webapi.KerberosUtils;
-import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysis;
-import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisExecutionRepository;
-import org.ohdsi.webapi.cohortcomparison.ComparativeCohortAnalysisRepository;
-import org.ohdsi.webapi.executionengine.dto.ExecutionRequestDTO;
-import org.ohdsi.webapi.executionengine.entity.AnalysisExecution;
+import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
+import org.ohdsi.webapi.executionengine.entity.ExecutionEngineGenerationEntity;
 import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
+import org.ohdsi.webapi.executionengine.repository.ExecutionEngineGenerationRepository;
 import org.ohdsi.webapi.executionengine.repository.InputFileRepository;
-import org.ohdsi.webapi.executionengine.repository.OutputFileRepository;
-import org.ohdsi.webapi.executionengine.util.StringGenerationUtil;
-import org.ohdsi.webapi.prediction.PatientLevelPredictionAnalysis;
-import org.ohdsi.webapi.prediction.PatientLevelPredictionAnalysisRepository;
+import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.HttpClient;
 import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.DataSourceDTOParser;
+import org.ohdsi.webapi.util.SourceUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.net.ssl.HttpsURLConnection;
+import javax.transaction.Transactional;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
+import java.io.*;
+import java.nio.file.Files;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import static org.ohdsi.webapi.Constants.Variables.SOURCE;
 
 @Service
-class ScriptExecutionServiceImpl implements ScriptExecutionService {
+@Transactional
+class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExecutionService {
 
-    private static final Log logger = LogFactory.getLog(ScriptExecutionServiceImpl.class);
-    private static final String IMPALA_DATASOURCE = "impala";
+    private static final Logger logger = LoggerFactory.getLogger(ScriptExecutionServiceImpl.class);
+    private static final String REQUEST_FILENAME = "request.zip";
+    private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String ARACHNE_COMPRESSED_HEADER = "arachne-compressed";
+    private static final String ARACHNE_WAITING_COMPRESSED_RESULT_HEADER = "arachne-waiting-compressed-result";
+    private static final String TEMPDIR_PREFIX = "webapi-exec";
+
+    private List<ExecutionEngineAnalysisStatus.Status> INVALIDATE_STATUSES = new ArrayList<>();
 
     @Autowired
     private HttpClient client;
 
-    @Autowired
-    ComparativeCohortAnalysisExecutionRepository comparativeCohortAnalysisExecutionRepository;
     @Value("${executionengine.url}")
     private String executionEngineURL;
     @Value("${executionengine.token}")
@@ -69,12 +77,8 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     private String resultCallback;
     @Value("${executionengine.updateStatusCallback}")
     private String updateStatusCallback;
-    @Value("${execution.invalidation.maxage}")
-    private int invalidateHours;
-    @Autowired
-    private OutputFileRepository outputFileRepository;
 
-    private List<DBMSType> DBMS_REQUIRE_DB = ImmutableList.of(DBMSType.POSTGRESQL, DBMSType.REDSHIFT);
+    private List<ExecutionEngineAnalysisStatus.Status> FINAL_STATUES = ImmutableList.of(ExecutionEngineAnalysisStatus.Status.COMPLETED, ExecutionEngineAnalysisStatus.Status.COMPLETED);
 
     @Autowired
     private SourceService sourceService;
@@ -82,65 +86,66 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     private InputFileRepository inputFileRepository;
 
     @Autowired
-    private ComparativeCohortAnalysisRepository comparativeCohortAnalysisRepository;
-    @Autowired
     private JobExplorer jobExplorer;
     @Autowired
     private AnalysisExecutionRepository analysisExecutionRepository;
-    @Autowired
-    private PatientLevelPredictionAnalysisRepository patientLevelPredictionAnalysisRepository;
 
-    private List<AnalysisExecution.Status> INVALIDATE_STATUSES = new ArrayList<>();
+    @Autowired
+    private AnalysisResultFileSensitiveInfoService sensitiveInfoService;
+
+    @Autowired
+    private ExecutionEngineGenerationRepository executionEngineGenerationRepository;
+
+    @Autowired
+    private SourceAccessor sourceAccessor;
 
     ScriptExecutionServiceImpl() throws KeyManagementException, NoSuchAlgorithmException {
 
         HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
-        INVALIDATE_STATUSES.add(AnalysisExecution.Status.RUNNING);
-        INVALIDATE_STATUSES.add(AnalysisExecution.Status.STARTED);
-        INVALIDATE_STATUSES.add(AnalysisExecution.Status.PENDING);
+        INVALIDATE_STATUSES.add(ExecutionEngineAnalysisStatus.Status.RUNNING);
+        INVALIDATE_STATUSES.add(ExecutionEngineAnalysisStatus.Status.STARTED);
+        INVALIDATE_STATUSES.add(ExecutionEngineAnalysisStatus.Status.PENDING);
     }
 
     @Override
-    public Long runScript(ExecutionRequestDTO dto, int analysisExecutionId) {
+    public void runScript(Long executionId, Source source, List<AnalysisFile> files, String updatePassword,
+                          String executableFilename, String targetTable) {
 
-        Source source = findSourceByKey(dto.sourceKey);
-
-        final String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
-        final String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-        String vocabularyTableQualifier = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Vocabulary);
-        if (vocabularyTableQualifier == null) {
-            vocabularyTableQualifier = cdmTableQualifier;
-        }
-
-        AnalysisExecution execution = analysisExecutionRepository.findOne(analysisExecutionId);
-
-        String name = getAnalysisName(dto);
-
-        //replace var in R-script
-        ConnectionParams connectionParams = DataSourceDTOParser.parse(source);
-        final String script = processTemplate(dto, cdmTableQualifier, resultsTableQualifier, vocabularyTableQualifier, source.getSourceDialect(), connectionParams);
-        AnalysisFile inputFile = new AnalysisFile();
-        inputFile.setAnalysisExecution(execution);
-        inputFile.setContents(script.getBytes());
-        inputFile.setFileName(name + ".r");
-        inputFileRepository.save(inputFile);
+        DataSourceUnsecuredDTO dataSourceData = DataSourceDTOParser.parseDTO(source);
+        dataSourceData.setCohortTargetTable(targetTable);
+        dataSourceData.setTargetSchema(SourceUtils.getTempQualifier(source));
 
         final String analysisExecutionUrl = "/analyze";
         WebTarget webTarget = client.target(executionEngineURL + analysisExecutionUrl);
-        MultiPart multiPart = buildRequest(buildAnalysisRequest(execution, source, execution.getUpdatePassword(), connectionParams), script);
         try {
-                webTarget
-                    .request(MediaType.MULTIPART_FORM_DATA_TYPE)
-                    .accept(MediaType.APPLICATION_JSON)
-                    .header("Authorization", executionEngineToken)
-                    .post(Entity.entity(multiPart, multiPart.getMediaType()),
-                            AnalysisRequestStatusDTO.class);
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            execution.setExecutionStatus(AnalysisExecution.Status.FAILED);
-            analysisExecutionRepository.save(execution);
+            File tempDir = Files.createTempDirectory(TEMPDIR_PREFIX).toFile();
+            try {
+                saveFilesToTempDir(tempDir, files);
+                try(MultiPart multiPart = buildRequest(buildAnalysisRequest(executionId, dataSourceData, updatePassword, executableFilename), tempDir)) {
+
+                    File zipFile = new File(tempDir, REQUEST_FILENAME);
+                    CommonFileUtils.compressAndSplit(tempDir, zipFile, null);
+                    try(InputStream in = new FileInputStream(zipFile)) {
+                        StreamDataBodyPart filePart = new StreamDataBodyPart("file", in, zipFile.getName());
+                        multiPart.bodyPart(filePart);
+
+                        webTarget
+                                .request(MediaType.MULTIPART_FORM_DATA_TYPE)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .header(AUTHORIZATION_HEADER, executionEngineToken)
+                                .header(ARACHNE_COMPRESSED_HEADER, "true")
+                                .header(ARACHNE_WAITING_COMPRESSED_RESULT_HEADER, "true")
+                                .post(Entity.entity(multiPart, multiPart.getMediaType()),
+                                        AnalysisRequestStatusDTO.class);
+                    }
+                }
+            } finally {
+                FileUtils.deleteQuietly(tempDir);
+            }
+        }catch (ZipException | IOException e) {
+            log.error("Failed to compress request files", e);
+            throw new InternalServerErrorException(e);
         }
-        return execution.getId().longValue();
     }
 
     @Override
@@ -149,15 +154,21 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         return sourceService.findBySourceKey(key);
     }
 
-    private MultiPart buildRequest(AnalysisRequestDTO analysisRequestDTO, String script) {
+    private void saveFilesToTempDir(File tempDir, List<AnalysisFile> files) {
+        files.forEach(file -> {
+            try(OutputStream out = new FileOutputStream(new File(tempDir, file.getFileName()))) {
+                IOUtils.write(file.getContents(), out);
+            } catch (IOException e) {
+                log.error("Cannot build request to ExecutionEngine", e);
+                throw new InternalServerErrorException();
+            }
+        });
+    }
+
+    private MultiPart buildRequest(AnalysisRequestDTO analysisRequestDTO, File tempDir) throws ZipException, IOException {
 
         MultiPart multiPart = new MultiPart();
         multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
-
-        StreamDataBodyPart filePart = new StreamDataBodyPart("file",
-                IOUtils.toInputStream(script),
-                analysisRequestDTO.getExecutableFileName());
-        multiPart.bodyPart(filePart);
 
         multiPart.bodyPart(
                 new FormDataBodyPart("analysisRequest", analysisRequestDTO,
@@ -165,17 +176,14 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         return multiPart;
     }
 
-    private AnalysisRequestDTO buildAnalysisRequest(AnalysisExecution execution, Source source, String password, ConnectionParams connectionParams) {
+    private AnalysisRequestDTO buildAnalysisRequest(Long executionId, DataSourceUnsecuredDTO dataSourceData, String password,
+                                                    String executableFileName) {
+
         AnalysisRequestDTO analysisRequestDTO = new AnalysisRequestDTO();
-        Long executionId = execution.getId().longValue();
         analysisRequestDTO.setId(executionId);
-        analysisRequestDTO.setDataSource(makeDataSourceDTO(source, connectionParams));
+        analysisRequestDTO.setDataSource(dataSourceData);
         analysisRequestDTO.setCallbackPassword(password);
         analysisRequestDTO.setRequested(new Date());
-        if (IMPALA_DATASOURCE.equalsIgnoreCase(source.getSourceDialect()) && AuthMethod.KERBEROS == connectionParams.getAuthMethod()) {
-            KerberosUtils.setKerberosParams(source, connectionParams, analysisRequestDTO.getDataSource());
-        }
-        String executableFileName = StringGenerationUtil.generateFileName(AnalysisRequestTypeDTO.R.name().toLowerCase());
         analysisRequestDTO.setExecutableFileName(executableFileName);
         analysisRequestDTO.setResultCallback(
                 StrSubstitutor.replace(resultCallback,
@@ -193,39 +201,18 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
     }
 
     @Override
-    public AnalysisExecution createAnalysisExecution(ExecutionRequestDTO dto, Source source, String password) {
+    public ExecutionEngineAnalysisStatus createAnalysisExecution(Long jobId, Source source, String password, List<AnalysisFile> analysisFiles) {
 
-        AnalysisExecution execution = new AnalysisExecution();
-        execution.setAnalysisId(dto.cohortId);
-        execution.setAnalysisType(dto.analysisType);
-        execution.setDuration(0);
-        execution.setSourceId(source.getSourceId());
-        execution.setExecuted(new Date());
-        execution.setExecutionStatus(AnalysisExecution.Status.STARTED);
-        execution.setUserId(0); //Looks strange
-        execution.setUpdatePassword(password);
-        analysisExecutionRepository.saveAndFlush(execution);
-        return execution;
-    }
-
-    private String getAnalysisName(ExecutionRequestDTO dto) {
-
-        String name;
-
-        switch (dto.analysisType){
-            case CCA:
-                ComparativeCohortAnalysis cca = comparativeCohortAnalysisRepository.findOne(dto.cohortId);
-                name = cca.getName();
-                break;
-            case PLP:
-                PatientLevelPredictionAnalysis plp = patientLevelPredictionAnalysisRepository.findOne(dto.cohortId);
-                name = plp.getName();
-                break;
-            default:
-                name = "";
-                break;
+        ExecutionEngineGenerationEntity executionEngineGenerationEntity = executionEngineGenerationRepository.findOne(jobId);
+        ExecutionEngineAnalysisStatus execution = new ExecutionEngineAnalysisStatus();
+        execution.setExecutionStatus(ExecutionEngineAnalysisStatus.Status.STARTED);
+        execution.setExecutionEngineGeneration(executionEngineGenerationEntity);
+        ExecutionEngineAnalysisStatus saved = analysisExecutionRepository.saveAndFlush(execution);
+        if (Objects.nonNull(analysisFiles)) {
+            analysisFiles.forEach(file -> file.setAnalysisExecution(saved));
+            inputFileRepository.save(analysisFiles);
         }
-        return name;
+        return saved;
     }
 
     @Override
@@ -236,93 +223,63 @@ class ScriptExecutionServiceImpl implements ScriptExecutionService {
         if (execution.getExecutionContext().containsKey("engineExecutionId")) {
             Long execId = execution.getExecutionContext().getLong("engineExecutionId");
 
-            AnalysisExecution analysisExecution = analysisExecutionRepository.findOne(execId.intValue());
+            ExecutionEngineAnalysisStatus analysisExecution = analysisExecutionRepository.findOne(execId.intValue());
             if (analysisExecution == null) {
                 throw new NotFoundException(String.format("Execution with id=%d was not found", executionId));
             }
             status = analysisExecution.getExecutionStatus().name();
         } else {
-            status = AnalysisExecution.Status.PENDING.name();
+            status = ExecutionEngineAnalysisStatus.Status.PENDING.name();
         }
         return status;
     }
 
     @Override
-    public List<AnalysisResultFile> getExecutionResultFiles(Long executionId) {
+    public void updateAnalysisStatus(ExecutionEngineAnalysisStatus analysisExecution, ExecutionEngineAnalysisStatus.Status status) {
 
-        return outputFileRepository.findByExecutionId(executionId.intValue());
+        if (FINAL_STATUES.stream().noneMatch(s -> Objects.equals(s, status))) {
+            analysisExecution.setExecutionStatus(status);
+            analysisExecutionRepository.saveAndFlush(analysisExecution);
+        }
     }
 
-    @Scheduled(fixedDelayString = "${execution.invalidation.period}")
-    public void invalidateExecutions(){
+    @PostConstruct
+    public void invalidateOutdatedAnalyses() {
 
-        Date invalidate = DateUtils.addHours(new Date(), -invalidateHours);
-        List<AnalysisExecution> executions = analysisExecutionRepository.findByExecutedBeforeAndExecutionStatusIn(invalidate, INVALIDATE_STATUSES);
-        executions.forEach(exec -> {
-            exec.setExecutionStatus(AnalysisExecution.Status.FAILED);
-            analysisExecutionRepository.save(exec);
+        getTransactionTemplateRequiresNew().execute(status -> {
+            logger.info("Invalidating execution engine based analyses");
+            List<ExecutionEngineAnalysisStatus> outdateExecutions = analysisExecutionRepository.findByExecutionStatusIn(INVALIDATE_STATUSES);
+            outdateExecutions.forEach(ee -> ee.setExecutionStatus(ExecutionEngineAnalysisStatus.Status.FAILED));
+            analysisExecutionRepository.save(outdateExecutions);
+            return null;
         });
     }
 
-    private String processTemplate(ExecutionRequestDTO requestDTO,
-                                   String cdmTable, String resultsTable,
-                                   String vocabularyTable,
-                                   String sourceDialect,
-                                   ConnectionParams connectionParams) {
+    @Override
+    public File getExecutionResult(Long executionId) throws IOException {
 
-        String serverName;
-        if (DBMS_REQUIRE_DB.stream().anyMatch(dbms -> dbms.getOhdsiDB().equalsIgnoreCase(sourceDialect))) {
-            serverName = connectionParams.getServer() + "/" + connectionParams.getSchema();
-        } else {
-            serverName = connectionParams.getServer();
+        ExecutionEngineGenerationEntity executionEngineGeneration = executionEngineGenerationRepository.findById(executionId)
+                .orElseThrow(NotFoundException::new);
+        sourceAccessor.checkAccess(executionEngineGeneration.getSource());
+        ExecutionEngineAnalysisStatus analysisExecution = executionEngineGeneration.getAnalysisExecution();
+
+        java.nio.file.Path tempDirectory = Files.createTempDirectory("atlas_ee_arch");
+        String fileName = "execution_" + executionId + "_result.zip";
+        File archive = tempDirectory.resolve(fileName).toFile();
+        archive.deleteOnExit();
+        Map<String, Object> variables = Collections.singletonMap(SOURCE, analysisExecution.getExecutionEngineGeneration().getSource());
+
+        try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(archive))) {
+            List<AnalysisResultFile> outputFiles = analysisExecution.getResultFiles(); //outputFileRepository.findByExecutionId(analysisExecution.getId());
+            for (AnalysisResultFile resultFile : outputFiles) {
+                ZipEntry entry = new ZipEntry(resultFile.getFileName());
+                entry.setSize(sensitiveInfoService.filterSensitiveInfo(resultFile, variables).getContents().length);
+                zos.putNextEntry(entry);
+                zos.write(resultFile.getContents());
+                zos.closeEntry();
+            }
         }
 
-        String temp = requestDTO.template
-                .replace("dbms = \"postgresql\"", "dbms = \"" + connectionParams.getDbms() + "\"")
-                .replace("server = \"localhost/ohdsi\"", "server = \"" + serverName + "\"")
-                .replace("user = \"joe\"", "user = \"" + connectionParams.getUser() + "\"")
-                .replace("my_cdm_data", cdmTable)
-                .replace("my_vocabulary_data", vocabularyTable)
-                .replace("my_results", resultsTable)
-                .replace("exposure_database_schema", resultsTable)
-                .replace("outcome_database_schema", resultsTable)
-                .replace("exposure_table", "cohort")
-                .replace("outcome_table", "cohort")
-                .replace("cohort_table", "cohort")
-//                .replace("exposureTable <- \"exposure_table\"", "")
-//                .replace("outcomeTable <- \"outcome_table\"", "")
-
-                .replace("cdmVersion <- \"5\"",
-                        "cdmVersion <- \"" + requestDTO.cdmVersion + "\"")
-                .replace("<insert your " + "directory here>",
-                        requestDTO.workFolder);
-        if (IMPALA_DATASOURCE.equalsIgnoreCase(sourceDialect)) {
-            temp = temp.replace("password = \"supersecret\"", "password = \""
-                    + connectionParams.getPassword() + "\", "
-                    + "schema=\"" + connectionParams.getSchema() + "\", "
-                    + "extraSettings=\"" + connectionParams.getExtraSettings() + "\", "
-                    + "pathToDriver=\"/impala/\"");
-
-        } else {
-            temp = temp.replace("password = \"supersecret\"", "password = \"" + connectionParams.getPassword() + "\"");
-        }
-
-        if (connectionParams.getPort() != null) {
-            temp = temp.replace("port = 5432", "port = " + connectionParams.getPort());
-        } else {
-            temp = temp.replace( "port = 5432,", "");
-        }
-        //uncommenting package installation
-        return temp
-                .replace("true", "TRUE")
-                .replace("false", "FALSE");
+        return archive;
     }
-
-    private DataSourceUnsecuredDTO makeDataSourceDTO(Source source, ConnectionParams connectionParams) {
-
-        DataSourceUnsecuredDTO dto = DataSourceDTOParser.parseDTO(source, connectionParams);
-        dto.setCdmSchema(source.getTableQualifier(SourceDaimon.DaimonType.CDM));
-        return dto;
-    }
-
 }

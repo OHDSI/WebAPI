@@ -17,17 +17,16 @@ from @ohdsi_database_schema.heracles_results hr1
                     case when (concept_name like 'Inpatient%' or concept_name like 'Outpatient%' ) and (concept_name like '%primary%' or concept_name like '%1st position%') then 1
                     when (concept_name like 'Inpatient%' or concept_name like 'Outpatient%' ) and (concept_name not like '%primary%' and concept_name not like '%1st position%') then 2
                     else 0 end as concept_group_id,
-             case when concept_name like 'Inpatient%' then 'Claim- Inpatient: '
-                    when concept_name like 'Outpatient%' then 'Claim- Outpatient: '
-                    else concept_name end  
-                    +
-                    ''
-                    +
-                    case when (concept_name like 'Inpatient%' or concept_name like 'Outpatient%' ) and (concept_name like '%primary%' or concept_name like '%1st position%') then 'Primary diagnosis'
-                    when (concept_name like 'Inpatient%' or concept_name like 'Outpatient%' ) and (concept_name not like '%primary%' and concept_name not like '%1st position%') then 'Secondary diagnosis'
-                    else '' end as concept_group_name
+             CONCAT(
+                case when concept_name like 'Inpatient%' then 'Claim- Inpatient: '
+                when concept_name like 'Outpatient%' then 'Claim- Outpatient: '
+                else concept_name end,
+                case when (concept_name like 'Inpatient%' or concept_name like 'Outpatient%' ) and (concept_name like '%primary%' or concept_name like '%1st position%') then 'Primary diagnosis'
+                when (concept_name like 'Inpatient%' or concept_name like 'Outpatient%' ) and (concept_name not like '%primary%' and concept_name not like '%1st position%') then 'Secondary diagnosis'
+                else '' end
+             ) as concept_group_name
        from @cdm_database_schema.concept
-       where lower(domain_id) = 'condition type' 
+       where lower(vocabulary_id) = 'condition type'
        
        ) c2
        on hr1.stratum_2 = CAST(c2.concept_id as VARCHAR(255))

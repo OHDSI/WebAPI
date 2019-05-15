@@ -19,10 +19,10 @@ import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.ohdsi.webapi.model.CommonEntity;
 
 /**
@@ -34,15 +34,22 @@ import org.ohdsi.webapi.model.CommonEntity;
 public class ConceptSet extends CommonEntity implements Serializable {
   
   @Id
-  @SequenceGenerator(name = "concept_set_seq", sequenceName = "concept_set_sequence", allocationSize = 1)
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "concept_set_seq")
-  @Column(name="concept_set_id")    
-  private int id;
+  @GenericGenerator(
+      name = "concept_set_generator",
+      strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+      parameters = {
+          @Parameter(name = "sequence_name", value = "concept_set_sequence"),
+          @Parameter(name = "increment_size", value = "1")
+      }
+  )
+  @GeneratedValue(generator = "concept_set_generator")
+  @Column(name="concept_set_id")
+  private Integer id;
   
   @Column(name="concept_set_name")
   private String name;
   
-  public int getId() {
+  public Integer getId() {
     return id;
   }
 

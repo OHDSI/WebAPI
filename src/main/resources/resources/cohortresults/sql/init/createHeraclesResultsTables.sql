@@ -35,7 +35,7 @@ insert into heracles_analysis (ANALYSIS_ID,ANALYSIS_NAME,STRATUM_1_NAME,STRATUM_
 insert into heracles_analysis (ANALYSIS_ID,ANALYSIS_NAME,STRATUM_1_NAME,STRATUM_2_NAME,STRATUM_3_NAME,STRATUM_4_NAME,STRATUM_5_NAME,ANALYSIS_TYPE) values (105,'Length of observation (days) of first observation period',null,null,null,null,null,'OBSERVATION');
 insert into heracles_analysis (ANALYSIS_ID,ANALYSIS_NAME,STRATUM_1_NAME,STRATUM_2_NAME,STRATUM_3_NAME,STRATUM_4_NAME,STRATUM_5_NAME,ANALYSIS_TYPE) values (106,'Length of observation (days) of first observation period by gender','gender_concept_id',null,null,null,null,'OBSERVATION');
 insert into heracles_analysis (ANALYSIS_ID,ANALYSIS_NAME,STRATUM_1_NAME,STRATUM_2_NAME,STRATUM_3_NAME,STRATUM_4_NAME,STRATUM_5_NAME,ANALYSIS_TYPE) values (107,'Length of observation (days) of first observation period by age decile','age decile',null,null,null,null,'OBSERVATION');
-insert into heracles_analysis (ANALYSIS_ID,ANALYSIS_NAME,STRATUM_1_NAME,STRATUM_2_NAME,STRATUM_3_NAME,STRATUM_4_NAME,STRATUM_5_NAME,ANALYSIS_TYPE) values (108,'Number of persons by length of observation period, in 30d increments','Observation period length 30d increments',null,null,null,null,'OBSERVATION');
+insert into heracles_analysis (ANALYSIS_ID,ANALYSIS_NAME,STRATUM_1_NAME,STRATUM_2_NAME,STRATUM_3_NAME,STRATUM_4_NAME,STRATUM_5_NAME,ANALYSIS_TYPE) values (108,'Number of persons by length of first observation period, in 30d increments','Observation period length 30d increments',null,null,null,null,'OBSERVATION');
 insert into heracles_analysis (ANALYSIS_ID,ANALYSIS_NAME,STRATUM_1_NAME,STRATUM_2_NAME,STRATUM_3_NAME,STRATUM_4_NAME,STRATUM_5_NAME,ANALYSIS_TYPE) values (109,'Number of persons with continuous observation in each year','calendar year',null,null,null,null,'OBSERVATION');
 insert into heracles_analysis (ANALYSIS_ID,ANALYSIS_NAME,STRATUM_1_NAME,STRATUM_2_NAME,STRATUM_3_NAME,STRATUM_4_NAME,STRATUM_5_NAME,ANALYSIS_TYPE) values (110,'Number of persons with continuous observation in each month','calendar month',null,null,null,null,'OBSERVATION');
 insert into heracles_analysis (ANALYSIS_ID,ANALYSIS_NAME,STRATUM_1_NAME,STRATUM_2_NAME,STRATUM_3_NAME,STRATUM_4_NAME,STRATUM_5_NAME,ANALYSIS_TYPE) values (111,'Number of persons by observation period start month','calendar month',null,null,null,null,'OBSERVATION');
@@ -200,7 +200,7 @@ create table heracles_results
 	last_update_time timestamp
 );
 
-ALTER TABLE heracles_results ADD CONSTRAINT DF_HERACLES_results DEFAULT GETDATE() FOR last_update_time;
+ALTER TABLE heracles_results ADD CONSTRAINT DF_heracles_results DEFAULT GETDATE() FOR last_update_time;
 
 create table heracles_results_dist
 (
@@ -224,6 +224,6 @@ create table heracles_results_dist
 	last_update_time timestamp
 );
 
-ALTER TABLE heracles_results_dist ADD CONSTRAINT DF_HERACLES_results_dist DEFAULT GETDATE() FOR last_update_time;
+ALTER TABLE heracles_results_dist ADD CONSTRAINT DF_heracles_results_dist DEFAULT GETDATE() FOR last_update_time;
 
 

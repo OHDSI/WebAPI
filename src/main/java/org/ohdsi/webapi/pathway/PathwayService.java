@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.pathway;
 
+import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisGenerationEntity;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
@@ -15,6 +16,8 @@ public interface PathwayService {
 
     PathwayAnalysisEntity importAnalysis(PathwayAnalysisEntity toImport);
 
+    String getNameForCopy(String dtoName);
+
     Page<PathwayAnalysisEntity> getPage(final Pageable pageable);
 
     PathwayAnalysisEntity getById(Integer id);
@@ -27,13 +30,17 @@ public interface PathwayService {
 
     String buildAnalysisSql(Long generationId, PathwayAnalysisEntity pathwayAnalysis, Integer sourceId);
 
-    String buildAnalysisSql(Long generationId, PathwayAnalysisEntity pathwayAnalysis, Integer sourceId, String cohortTable);
+    String buildAnalysisSql(Long generationId, PathwayAnalysisEntity pathwayAnalysis, Integer sourceId, String cohortTable, String sessionId);
 
-    void generatePathways(final Integer pathwayAnalysisId, final Integer sourceId);
+    JobExecutionResource generatePathways(final Integer pathwayAnalysisId, final Integer sourceId);
 
     List<PathwayAnalysisGenerationEntity> getPathwayGenerations(final Integer pathwayAnalysisId);
 
     PathwayAnalysisGenerationEntity getGeneration(Long generationId);
 
     PathwayAnalysisResult getResultingPathways(final Long generationId);
+
+    void cancelGeneration(Integer pathwayAnalysisId, Integer sourceId);
+
+    int countLikeName(String copyName);
 }

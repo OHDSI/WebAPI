@@ -15,14 +15,14 @@
  */
 package org.ohdsi.webapi.ircalc;
 
-import org.ohdsi.webapi.model.CommonEntity;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
-
 import java.io.Serializable;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import javax.persistence.*;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.ohdsi.webapi.model.CommonEntity;
 
 /**
  *
@@ -31,14 +31,27 @@ import javax.persistence.*;
 
 @Entity(name = "IncidenceRateAnalysis")
 @Table(name="ir_analysis")
+@NamedEntityGraphs({
+  @NamedEntityGraph(
+          name = "IncidenceRateAnalysis.withExecutionInfoList",
+          attributeNodes = @NamedAttributeNode("executionInfoList")
+  )
+})
 public class IncidenceRateAnalysis extends CommonEntity implements Serializable {
   private static final long serialVersionUID = 1L;
   
   @Id
-  @SequenceGenerator(name = "ir_analysis_seq", sequenceName = "ir_analysis_sequence", allocationSize = 1)
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ir_analysis_seq")
+  @GenericGenerator(
+      name = "ir_analysis_generator",
+      strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+      parameters = {
+          @Parameter(name = "sequence_name", value = "ir_analysis_sequence"),
+          @Parameter(name = "increment_size", value = "1")
+      }
+  )
+  @GeneratedValue(generator = "ir_analysis_generator")
   @Column(name="id")
-  @Access(AccessType.PROPERTY) 
+  @Access(AccessType.PROPERTY)
   private Integer id; 
   
   @Column(name="name")

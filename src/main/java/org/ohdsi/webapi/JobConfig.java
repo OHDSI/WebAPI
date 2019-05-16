@@ -1,16 +1,14 @@
 package org.ohdsi.webapi;
 
-import javax.annotation.PostConstruct;
-import javax.sql.DataSource;
-
-import org.ohdsi.webapi.common.generation.AutoremoveJobListener;
 import org.ohdsi.webapi.common.generation.CancelJobListener;
 import org.ohdsi.webapi.job.JobTemplate;
-import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.admin.service.*;
+import org.springframework.batch.admin.service.JdbcSearchableJobExecutionDao;
+import org.springframework.batch.admin.service.JdbcSearchableJobInstanceDao;
+import org.springframework.batch.admin.service.SearchableJobExecutionDao;
+import org.springframework.batch.admin.service.SearchableJobInstanceDao;
 import org.springframework.batch.core.configuration.BatchConfigurationException;
 import org.springframework.batch.core.configuration.annotation.BatchConfigurer;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
@@ -35,6 +33,9 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
+
+import javax.annotation.PostConstruct;
+import javax.sql.DataSource;
 
 /**
  * Had to copy DefaultBatchConfigurer and include within because jobLauncher config is private.

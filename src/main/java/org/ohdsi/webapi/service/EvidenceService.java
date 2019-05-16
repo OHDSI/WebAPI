@@ -1,25 +1,6 @@
 package org.ohdsi.webapi.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Collection;
-import java.util.ArrayList;
-import java.util.List;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Arrays;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jettison.json.JSONException;
@@ -30,26 +11,7 @@ import org.ohdsi.circe.vocabulary.ConceptSetExpressionQueryBuilder;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
-import org.ohdsi.webapi.evidence.CohortStudyMapping;
-import org.ohdsi.webapi.evidence.CohortStudyMappingRepository;
-import org.ohdsi.webapi.evidence.ConceptCohortMapping;
-import org.ohdsi.webapi.evidence.ConceptCohortMappingRepository;
-import org.ohdsi.webapi.evidence.ConceptOfInterestMapping;
-import org.ohdsi.webapi.evidence.ConceptOfInterestMappingRepository;
-import org.ohdsi.webapi.evidence.DrugEvidence;
-import org.ohdsi.webapi.evidence.EvidenceDetails;
-import org.ohdsi.webapi.evidence.EvidenceSummary;
-import org.ohdsi.webapi.evidence.EvidenceUniverse;
-import org.ohdsi.webapi.evidence.HoiEvidence;
-import org.ohdsi.webapi.evidence.DrugHoiEvidence;
-import org.ohdsi.webapi.evidence.DrugLabel;
-import org.ohdsi.webapi.evidence.DrugLabelInfo;
-import org.ohdsi.webapi.evidence.DrugLabelRepository;
-import org.ohdsi.webapi.evidence.EvidenceInfo;
-import org.ohdsi.webapi.evidence.DrugRollUpEvidence;
-import org.ohdsi.webapi.evidence.Evidence;
-import org.ohdsi.webapi.evidence.SpontaneousReport;
-import org.ohdsi.webapi.evidence.EvidenceSearch;
+import org.ohdsi.webapi.evidence.*;
 import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlDTO;
 import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlMapper;
 import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlTaskParameters;
@@ -67,6 +29,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Provides REST services for querying the Common Evidence Model

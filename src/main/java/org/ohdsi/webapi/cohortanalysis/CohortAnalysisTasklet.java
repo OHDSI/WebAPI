@@ -1,12 +1,6 @@
 package org.ohdsi.webapi.cohortanalysis;
 
-import java.util.Calendar;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
-import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
-
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
@@ -26,6 +20,12 @@ import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.ws.rs.NotFoundException;
+import java.util.Calendar;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 public class CohortAnalysisTasklet implements Tasklet {
     

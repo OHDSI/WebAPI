@@ -14,15 +14,15 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
-import java.util.List;
-import java.util.UUID;
-
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *

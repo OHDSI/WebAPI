@@ -30,7 +30,8 @@ import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.*;
 
-import static org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus.Status.*;
+import static org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus.Status.RUNNING;
+import static org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus.Status.STARTED;
 
 @Controller
 @Path("/executionservice/callbacks")

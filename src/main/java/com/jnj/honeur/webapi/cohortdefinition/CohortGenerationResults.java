@@ -12,7 +12,6 @@ import org.ohdsi.webapi.cohort.CohortEntity;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
 
 public class CohortGenerationResults implements Serializable {

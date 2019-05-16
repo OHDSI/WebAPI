@@ -1,8 +1,8 @@
 package com.jnj.honeur.webapi;
 
+import com.jnj.honeur.webapi.source.SourceDaimonContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import com.jnj.honeur.webapi.source.SourceDaimonContext;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.springframework.beans.factory.annotation.Autowired;

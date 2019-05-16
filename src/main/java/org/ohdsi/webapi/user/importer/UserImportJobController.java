@@ -7,7 +7,6 @@ import org.ohdsi.webapi.user.importer.dto.UserImportJobMappingDTO;
 import org.ohdsi.webapi.user.importer.exception.JobAlreadyExistException;
 import org.ohdsi.webapi.user.importer.model.LdapProviderType;
 import org.ohdsi.webapi.user.importer.model.UserImportJob;
-import org.ohdsi.webapi.user.importer.providers.LdapProvider;
 import org.ohdsi.webapi.user.importer.service.UserImportJobService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.transaction.annotation.Transactional;

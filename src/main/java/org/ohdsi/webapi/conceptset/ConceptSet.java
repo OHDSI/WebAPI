@@ -15,15 +15,12 @@
  */
 package org.ohdsi.webapi.conceptset;
 
-import java.io.Serializable;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.webapi.model.CommonEntity;
+
+import javax.persistence.*;
+import java.io.Serializable;
 
 /**
  *

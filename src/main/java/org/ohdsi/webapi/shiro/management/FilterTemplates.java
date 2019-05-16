@@ -1,21 +1,22 @@
 package org.ohdsi.webapi.shiro.management;
 
-import static javax.ws.rs.HttpMethod.GET;
-import static javax.ws.rs.HttpMethod.POST;
-import static org.ohdsi.webapi.events.EntityName.COHORT;
-import static org.ohdsi.webapi.events.EntityName.COHORT_CHARACTERIZATION;
-import static org.ohdsi.webapi.events.EntityName.CONCEPT_SET;
-import static org.ohdsi.webapi.events.EntityName.ESTIMATION;
-import static org.ohdsi.webapi.events.EntityName.FEATURE_ANALYSIS;
-import static org.ohdsi.webapi.events.EntityName.INCIDENCE_RATE;
-import static org.ohdsi.webapi.events.EntityName.PATHWAY_ANALYSIS;
-import static org.ohdsi.webapi.events.EntityName.PATIENT_LEVEL_PREDICTION;
-import static org.ohdsi.webapi.events.EntityName.PREDICTION;
-import static org.ohdsi.webapi.events.EntityName.SOURCE;
-
 import org.ohdsi.webapi.events.EntityName;
 
+import static javax.ws.rs.HttpMethod.GET;
+import static javax.ws.rs.HttpMethod.POST;
+import static org.ohdsi.webapi.events.EntityName.*;
+
 public enum FilterTemplates {
+
+    // HONEUR specific start
+    HONEUR_REQUEST("honeur-request"),
+    CAS_SESSION("casSessionFilter"),
+    CREATE_PERMISSIONS_ON_IMPORT_COHORT_DEFINITION("createPermissionsOnImportCohortDefinition"),
+    CREATE_PERMISSIONS_ON_CREATE_COHORT_DEFINITION("createPermissionsOnCreateCohortDefinition"),
+    DELETE_PERMISSIONS_ON_DELETE_COHORT_DEFINITION("deletePermissionsOnDeleteCohortDefinition"),
+    DELETE_PERMISSIONS_ON_EXPORT_COHORT_DEFINITION("deletePermissionsOnExportCohortDefinition"),
+    // HONEUR specific end
+
     CREATE_COHORT_DEFINITION("createPermissionsOnCreateCohortDefinition", COHORT, POST),
     CREATE_COPY_COHORT_DEFINITION("createPermissionsOnCopyCohortDefinition", COHORT, GET),
     CREATE_COHORT_CHARACTERIZATION("createPermissionsOnCreateCohortCharacterization", COHORT_CHARACTERIZATION, POST),

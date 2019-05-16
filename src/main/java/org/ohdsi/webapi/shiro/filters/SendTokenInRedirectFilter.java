@@ -19,7 +19,6 @@
 package org.ohdsi.webapi.shiro.filters;
 
 import org.apache.shiro.web.servlet.AdviceFilter;
-import org.springframework.beans.factory.annotation.Value;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;

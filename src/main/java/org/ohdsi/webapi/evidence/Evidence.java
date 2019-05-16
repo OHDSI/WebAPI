@@ -16,6 +16,7 @@
 package org.ohdsi.webapi.evidence;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.math.BigDecimal;
 
 /**

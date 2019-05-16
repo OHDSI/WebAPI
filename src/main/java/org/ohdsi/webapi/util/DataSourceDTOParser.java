@@ -3,14 +3,6 @@ package org.ohdsi.webapi.util;
 import com.odysseusinc.arachne.commons.types.DBMSType;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AuthMethod;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
-
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.nio.file.Paths;
-import java.util.*;
-
 import com.odysseusinc.arachne.execution_engine_common.util.BigQueryUtils;
 import com.odysseusinc.arachne.execution_engine_common.util.ConnectionParams;
 import com.odysseusinc.arachne.execution_engine_common.util.ConnectionParamsParser;
@@ -20,6 +12,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.KerberosUtils;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Objects;
 
 import static com.odysseusinc.arachne.commons.types.DBMSType.BIGQUERY;
 import static com.odysseusinc.arachne.commons.types.DBMSType.IMPALA;

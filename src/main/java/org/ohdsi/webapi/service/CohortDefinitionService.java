@@ -8,24 +8,6 @@ package org.ohdsi.webapi.service;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.math.RoundingMode;
-import java.io.ByteArrayOutputStream;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
-import javax.servlet.ServletContext;
-import javax.transaction.Transactional;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-
 import com.jnj.honeur.webapi.liferay.model.Organization;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.circe.check.Checker;
@@ -89,9 +71,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
-import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
-import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
+import static org.ohdsi.webapi.Constants.Params.*;
 import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 

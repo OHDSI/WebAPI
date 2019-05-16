@@ -1,11 +1,11 @@
 package org.ohdsi.webapi.shiro.management;
 
-import java.util.Map;
-import java.util.Set;
 import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.realm.Realm;
 
 import javax.servlet.Filter;
+import java.util.Map;
+import java.util.Set;
 
 /**
  *

@@ -1,10 +1,10 @@
 package org.ohdsi.webapi.cohortresults.mapper;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import org.ohdsi.webapi.cohortresults.ConceptDecileRecord;
 import org.springframework.jdbc.core.RowMapper;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class ConceptDecileMapper implements RowMapper<ConceptDecileRecord> {
 

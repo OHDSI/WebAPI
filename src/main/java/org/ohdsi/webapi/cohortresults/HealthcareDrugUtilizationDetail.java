@@ -16,6 +16,7 @@
 package org.ohdsi.webapi.cohortresults;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.util.Date;
 import java.util.List;
 

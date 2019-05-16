@@ -13,11 +13,7 @@ import javax.servlet.Filter;
 import java.util.Map;
 import java.util.Set;
 
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.AUTHZ;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CORS;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.JWT_AUTHC;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_SESSION_CREATION;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.SSL;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.*;
 
 @Component
 @ConditionalOnProperty(name = "security.provider", havingValue = Constants.SecurityProviders.GOOGLE)

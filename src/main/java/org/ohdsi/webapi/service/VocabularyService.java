@@ -1,25 +1,7 @@
 package org.ohdsi.webapi.service;
 
-import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
@@ -38,20 +20,23 @@ import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.PreparedSqlRender;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
-import org.ohdsi.webapi.vocabulary.ConceptRelationship;
-import org.ohdsi.webapi.vocabulary.ConceptSearch;
-import org.ohdsi.webapi.vocabulary.DescendentOfAncestorSearch;
-import org.ohdsi.webapi.vocabulary.Domain;
-import org.ohdsi.webapi.vocabulary.RelatedConcept;
-import org.ohdsi.webapi.vocabulary.RelatedConceptSearch;
-import org.ohdsi.webapi.vocabulary.Vocabulary;
-import org.ohdsi.webapi.vocabulary.VocabularyInfo;
+import org.ohdsi.webapi.vocabulary.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
  * @author fdefalco

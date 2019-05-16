@@ -1,13 +1,13 @@
 package org.ohdsi.webapi.estimation.specification;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.ohdsi.analysis.hydra.design.SkeletonTypeEnum;
 import org.ohdsi.analysis.estimation.design.EstimationAnalysis;
+import org.ohdsi.analysis.hydra.design.SkeletonTypeEnum;
 import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
 import org.ohdsi.webapi.analysis.AnalysisConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetCrossReferenceImpl;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *

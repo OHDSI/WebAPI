@@ -1,13 +1,9 @@
 package org.ohdsi.webapi.cohortcharacterization.domain;
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
 import org.ohdsi.webapi.common.generation.CommonGeneration;
+
+import javax.persistence.*;
 
 @Entity
 @Table(name = "cc_generation")

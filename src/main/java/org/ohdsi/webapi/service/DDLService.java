@@ -18,24 +18,16 @@
  */
 package org.ohdsi.webapi.service;
 
-import static org.ohdsi.webapi.service.SqlRenderService.translateSQL;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import org.apache.commons.lang3.ObjectUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.webapi.sqlrender.SourceStatement;
 import org.ohdsi.webapi.sqlrender.TranslatedStatement;
-import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.stereotype.Component;
+
+import javax.ws.rs.*;
+import java.util.*;
+
+import static org.ohdsi.webapi.service.SqlRenderService.translateSQL;
 
 @Path("/ddl/")
 @Component

@@ -16,29 +16,20 @@
 package org.ohdsi.webapi.source;
 
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
+import jersey.repackaged.com.google.common.collect.ImmutableList;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.*;
+import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-
-import jersey.repackaged.com.google.common.collect.ImmutableList;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.Where;
-import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
 
 /**
  *

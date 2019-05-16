@@ -1,8 +1,9 @@
 package org.ohdsi.webapi.estimation.comparativecohortanalysis.specification;
 
-import org.ohdsi.webapi.RLangClassImpl;
 import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.CaliperScaleEnum;
 import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.MatchOnPsArgs;
+import org.ohdsi.webapi.RLangClassImpl;
+
 import java.util.ArrayList;
 import java.util.List;
 

@@ -12,15 +12,16 @@
  */
 package org.ohdsi.webapi.test;
 
-import java.util.Arrays;
 import org.junit.Test;
-import org.ohdsi.webapi.util.SecurityUtils;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
 import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.util.SecurityUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
+
+import java.util.Arrays;
 
 /**
  *

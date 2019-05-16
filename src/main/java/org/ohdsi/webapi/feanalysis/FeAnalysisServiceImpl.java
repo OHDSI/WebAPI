@@ -1,8 +1,5 @@
 package org.ohdsi.webapi.feanalysis;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
@@ -21,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.NotFoundException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)

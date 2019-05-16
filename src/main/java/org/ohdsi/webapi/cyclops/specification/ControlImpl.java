@@ -1,9 +1,10 @@
 package org.ohdsi.webapi.cyclops.specification;
 
-import java.math.BigDecimal;
-import java.util.InputMismatchException;
 import org.ohdsi.analysis.cyclops.design.*;
 import org.ohdsi.webapi.RLangClassImpl;
+
+import java.math.BigDecimal;
+import java.util.InputMismatchException;
 
 /**
  *

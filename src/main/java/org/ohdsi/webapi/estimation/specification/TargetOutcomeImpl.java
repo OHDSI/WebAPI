@@ -1,9 +1,10 @@
 package org.ohdsi.webapi.estimation.specification;
 
+import org.ohdsi.analysis.estimation.design.TargetOutcome;
+
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
-import javax.validation.constraints.*;
-import org.ohdsi.analysis.estimation.design.TargetOutcome;
 
 /**
  *

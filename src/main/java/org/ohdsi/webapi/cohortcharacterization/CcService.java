@@ -1,7 +1,5 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
-import java.util.List;
-
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
@@ -10,6 +8,8 @@ import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 public interface CcService {
     CohortCharacterizationEntity createCc(CohortCharacterizationEntity entity);

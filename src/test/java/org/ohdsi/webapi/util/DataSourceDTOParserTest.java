@@ -7,7 +7,7 @@ import org.ohdsi.webapi.source.Source;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 public class DataSourceDTOParserTest {
 

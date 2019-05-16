@@ -37,7 +37,6 @@ import java.util.Optional;
 
 import static org.ohdsi.webapi.Constants.GENERATE_COHORT;
 import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
-import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_KEY;
 
 @Component

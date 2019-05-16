@@ -1,23 +1,12 @@
 package org.ohdsi.webapi.user.importer.model;
 
 import com.odysseusinc.scheduler.model.ArachneJob;
-
-import java.time.DayOfWeek;
-import java.util.List;
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.NamedAttributeNode;
-import javax.persistence.NamedEntityGraph;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+
+import javax.persistence.*;
+import java.time.DayOfWeek;
+import java.util.List;
 
 @Entity
 @Table(name = "user_import_job")

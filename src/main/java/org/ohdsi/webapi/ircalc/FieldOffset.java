@@ -15,7 +15,6 @@
  */
 package org.ohdsi.webapi.ircalc;
 
-import org.ohdsi.webapi.cohortdefinition.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**

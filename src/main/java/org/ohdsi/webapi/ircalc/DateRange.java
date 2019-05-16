@@ -15,8 +15,6 @@
  */
 package org.ohdsi.webapi.ircalc;
 
-import java.util.Date;
-
 /**
  *
  * @author Chris Knoll <cknoll@ohdsi.org>

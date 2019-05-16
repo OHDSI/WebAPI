@@ -1,5 +1,8 @@
 package org.ohdsi.webapi.util;
 
+import org.apache.commons.lang.StringUtils;
+import org.ohdsi.webapi.source.Source;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -7,8 +10,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.lang.StringUtils;
-import org.ohdsi.webapi.source.Source;
 
 public class PreparedSqlRender {
 

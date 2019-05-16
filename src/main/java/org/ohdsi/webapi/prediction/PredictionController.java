@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.prediction;
 
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
+import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
@@ -28,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import org.ohdsi.analysis.Utils;
 
 @Controller
 @Path("/prediction/")

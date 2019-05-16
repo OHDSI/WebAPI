@@ -1,11 +1,9 @@
 package org.ohdsi.webapi.cohortanalysis;
 
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-
 import org.ohdsi.webapi.model.results.Analysis;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 
 public class CohortAnalysis extends Analysis {
 

@@ -1,13 +1,14 @@
 package org.ohdsi.webapi.estimation.comparativecohortanalysis.specification;
 
-import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.OutcomeModelTypeEnum;
 import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.FitOutcomeModelArgs;
+import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.OutcomeModelTypeEnum;
 import org.ohdsi.webapi.RLangClassImpl;
-import java.util.ArrayList;
-import java.util.List;
-import javax.validation.constraints.*;
 import org.ohdsi.webapi.cyclops.specification.ControlImpl;
 import org.ohdsi.webapi.cyclops.specification.PriorImpl;
+
+import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *

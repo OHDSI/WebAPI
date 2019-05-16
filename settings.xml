@@ -124,6 +124,49 @@
             </properties>
         </profile>
         <profile>
+            <id>docker-test</id>
+            <properties>
+                <central>false</central>
+                <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
+                <datasource.dialect>postgresql</datasource.dialect>
+                <datasource.db>OHDSI</datasource.db>
+                <datasource.url>jdbc:postgresql://localhost:5444/OHDSI</datasource.url>
+                <datasource.ohdsi.schema>webapi</datasource.ohdsi.schema>
+                <datasource.username>ohdsi_app_user</datasource.username>
+                <datasource.password>gB1qRLGnFJbRn71q</datasource.password>
+                <flyway.datasource.driverClassName>org.postgresql.Driver</flyway.datasource.driverClassName>
+                <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
+                <flyway.datasource.username>ohdsi_admin_user</flyway.datasource.username>
+                <flyway.datasource.password>kN519H3rNuie6UEL</flyway.datasource.password>
+                <flyway.locations>classpath:db/migration/postgresql,classpath:db/extension/honeur</flyway.locations>
+                <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
+                <honeur.enabled>true</honeur.enabled>
+                <hss.url>https://dev.honeur.org/storage/api</hss.url>
+                <jasypt.encryptor.enabled>true</jasypt.encryptor.enabled>
+                <jasypt.encryptor.algorithm>PBEWithSHAAndTwofish-CBC</jasypt.encryptor.algorithm>
+                <jasypt.encryptor.password>Lw3cNuAd953dFZOq</jasypt.encryptor.password>
+                <jersey.resources.additional.packages>com.jnj.honeur.webapi</jersey.resources.additional.packages>
+                <liferay.company.web.id>liferay.com</liferay.company.web.id>
+                <security.enabled>false</security.enabled>
+                <security.origin>*</security.origin>
+                <security.ssl.enabled>false</security.ssl.enabled>
+                <war.directory>target</war.directory>
+                <security.provider>DisabledSecurity</security.provider>
+                <security.db.datasource.url>jdbc:postgresql://localhost:5444/OHDSI</security.db.datasource.url>
+                <security.db.datasource.driverClassName>org.postgresql.Driver</security.db.datasource.driverClassName>
+                <security.db.datasource.schema>webapi</security.db.datasource.schema>
+                <security.db.datasource.username>ohdsi_admin_user</security.db.datasource.username>
+                <security.db.datasource.password>kN519H3rNuie6UEL</security.db.datasource.password>
+                <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.sec_user where login = ?</security.db.datasource.authenticationQuery>
+                <security.ldap.dn>uid={0},dc=example,dc=com</security.ldap.dn>
+                <security.ldap.baseDn>dc=example,dc=com</security.ldap.baseDn>
+                <security.ldap.system.username>cn=read-only-admin,dc=example,dc=com</security.ldap.system.username>
+                <security.ldap.system.password>password</security.ldap.system.password>
+                <security.ldap.url>ldap://ldap.forumsys.com:389</security.ldap.url>
+                <security.honeur.request.origin>^(https|http)://localhost.*</security.honeur.request.origin>
+            </properties>
+        </profile>
+        <profile>
             <id>agunva-uat</id>
             <properties>
                 <central>false</central>

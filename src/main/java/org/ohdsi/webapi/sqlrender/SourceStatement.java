@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.sqlrender;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.HashMap;
 
 /**

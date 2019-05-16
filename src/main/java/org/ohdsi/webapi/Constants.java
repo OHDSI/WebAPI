@@ -1,11 +1,6 @@
 package org.ohdsi.webapi;
 
-import org.ohdsi.webapi.source.Source;
-import com.google.common.collect.ImmutableList;
-import com.odysseusinc.arachne.commons.types.DBMSType;
 import org.springframework.batch.core.ExitStatus;
-
-import java.util.List;
 
 public interface Constants {
   String GENERATE_COHORT = "generateCohort";

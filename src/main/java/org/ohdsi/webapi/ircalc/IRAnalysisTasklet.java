@@ -28,7 +28,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 import static org.ohdsi.webapi.Constants.Params.*;
 

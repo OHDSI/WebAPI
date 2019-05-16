@@ -1,9 +1,5 @@
 package org.ohdsi.webapi.executionengine.job;
 
-import static org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus.Status.COMPLETED;
-import static org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus.Status.FAILED;
-
-import javax.persistence.EntityManager;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
 import org.ohdsi.webapi.executionengine.repository.ExecutionEngineGenerationRepository;
 import org.springframework.batch.core.ExitStatus;
@@ -11,6 +7,11 @@ import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.repeat.RepeatStatus;
+
+import javax.persistence.EntityManager;
+
+import static org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus.Status.COMPLETED;
+import static org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus.Status.FAILED;
 
 public class ExecutionEngineCallbackTasklet extends BaseExecutionTasklet {
 

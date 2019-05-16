@@ -1,7 +1,8 @@
 package org.ohdsi.webapi.estimation;
 
-import java.util.Date;
 import org.ohdsi.analysis.estimation.design.EstimationTypeEnum;
+
+import java.util.Date;
 
 public class EstimationListItem {
     public Integer estimationId;

@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.executionengine.job;
 
-import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.ohdsi.webapi.source.Source;
@@ -11,9 +10,7 @@ import org.springframework.batch.repeat.RepeatStatus;
 import java.util.List;
 import java.util.Map;
 
-import static org.ohdsi.webapi.Constants.Params.EXECUTABLE_FILE_NAME;
-import static org.ohdsi.webapi.Constants.Params.TARGET_TABLE;
-import static org.ohdsi.webapi.Constants.Params.UPDATE_PASSWORD;
+import static org.ohdsi.webapi.Constants.Params.*;
 
 public class RunExecutionEngineTasklet extends BaseExecutionTasklet {
 

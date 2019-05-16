@@ -3,7 +3,6 @@ package org.ohdsi.webapi.shiro.filters;
 import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.events.DeleteEntityEvent;
 import org.ohdsi.webapi.events.EntityName;
-import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

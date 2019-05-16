@@ -15,8 +15,9 @@
  */
 package org.ohdsi.webapi.cache;
 
-import java.util.HashMap;
 import org.ohdsi.webapi.cdmresults.CDMResultsCache;
+
+import java.util.HashMap;
 
 /**
  *

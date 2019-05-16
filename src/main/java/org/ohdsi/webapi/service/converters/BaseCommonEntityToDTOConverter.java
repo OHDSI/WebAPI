@@ -2,7 +2,6 @@ package org.ohdsi.webapi.service.converters;
 
 import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.service.dto.CommonEntityDTO;
-import org.ohdsi.webapi.util.UserUtils;
 import org.springframework.core.convert.converter.Converter;
 
 import static org.ohdsi.webapi.util.ConversionUtils.convertMetadata;

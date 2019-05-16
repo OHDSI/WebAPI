@@ -1,15 +1,16 @@
 package org.ohdsi.webapi.prediction.specification;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import org.ohdsi.analysis.prediction.design.PatientLevelPredictionAnalysis;
 import org.ohdsi.analysis.hydra.design.SkeletonTypeEnum;
+import org.ohdsi.analysis.prediction.design.PatientLevelPredictionAnalysis;
 import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
 import org.ohdsi.webapi.analysis.AnalysisConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetCrossReferenceImpl;
 import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *

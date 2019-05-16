@@ -1,8 +1,8 @@
 package com.jnj.honeur.webapi;
 
+import com.jnj.honeur.webapi.source.SourceDaimonContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import com.jnj.honeur.webapi.source.SourceDaimonContext;
 
 /**
  * Holds the Source Daimon Context key for the running threads

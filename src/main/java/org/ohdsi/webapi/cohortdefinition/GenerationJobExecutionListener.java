@@ -15,8 +15,6 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
-import java.util.*;
-
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -32,6 +30,8 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
+
+import java.util.*;
 
 /**
  *

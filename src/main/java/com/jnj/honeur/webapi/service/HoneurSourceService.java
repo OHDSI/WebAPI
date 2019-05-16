@@ -9,13 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 
 @Component("honeurSourceService")
 @ConditionalOnProperty(value = "datasource.honeur.enabled", havingValue = "true")

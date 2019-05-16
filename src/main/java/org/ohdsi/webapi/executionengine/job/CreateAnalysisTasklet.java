@@ -1,8 +1,8 @@
 package org.ohdsi.webapi.executionengine.job;
 
 import org.ohdsi.webapi.Constants;
-import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
+import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepContribution;

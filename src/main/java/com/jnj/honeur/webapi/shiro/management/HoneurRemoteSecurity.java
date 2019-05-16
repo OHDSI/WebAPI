@@ -2,6 +2,8 @@ package com.jnj.honeur.webapi.shiro.management;
 
 import com.jnj.honeur.webapi.shiro.filters.HoneurOriginFilter;
 import org.ohdsi.webapi.shiro.management.AtlasRegularSecurity;
+import org.ohdsi.webapi.shiro.management.FilterChainBuilder;
+import org.ohdsi.webapi.shiro.management.FilterTemplates;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.DependsOn;
@@ -10,6 +12,8 @@ import org.springframework.stereotype.Component;
 
 import javax.servlet.Filter;
 import java.util.Map;
+
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.*;
 
 @Component
 @ConditionalOnProperty(name = "security.provider", havingValue = "AtlasRegularSecurity")
@@ -21,9 +25,9 @@ public class HoneurRemoteSecurity extends AtlasRegularSecurity {
     private String honeurRequestOrigin;
 
     @Override
-    public Map<String, Filter> getFilters() {
-        Map<String, Filter> filters = super.getFilters();
-        filters.put("honeur-request", new HoneurOriginFilter(honeurRequestOrigin));
+    public Map<FilterTemplates, Filter> getFilters() {
+        Map<FilterTemplates, Filter> filters = super.getFilters();
+        filters.put(HONEUR_REQUEST, new HoneurOriginFilter(honeurRequestOrigin));
         return filters;
     }
 
@@ -32,27 +36,28 @@ public class HoneurRemoteSecurity extends AtlasRegularSecurity {
 
         // the order does matter - first match wins
         FilterChainBuilder filterChainBuilder = new FilterChainBuilder()
-                .setOAuthFilters("ssl, cors, forceSessionCreation", "updateToken, sendTokenInUrl")
-                .setRestFilters("ssl, noSessionCreation, cors")
-                .setAuthcFilter("jwtAuthc")
-                .setAuthzFilter("authz")
+                .setBeforeOAuthFilters(SSL, CORS, FORCE_SESSION_CREATION)
+                .setAfterOAuthFilters(UPDATE_TOKEN, SEND_TOKEN_IN_URL)
+                .setRestFilters(SSL, NO_SESSION_CREATION, CORS)
+                .setAuthcFilter(JWT_AUTHC)
+                .setAuthzFilter(AUTHZ)
                 // login/logout
-                .addRestPath("/user/login/openid", "forceSessionCreation, oidcAuth, updateToken, sendTokenInRedirect")
-                .addRestPath("/user/login/windows","negotiateAuthc, updateToken, sendTokenInHeader")
-                .addRestPath("/user/login/kerberos","kerberosFilter, updateToken, sendTokenInHeader")
-                .addRestPath("/user/login/db", "jdbcFilter, updateToken, sendTokenInHeader")
-                .addRestPath("/user/login/ldap", "ldapFilter, updateToken, sendTokenInHeader")
-                .addRestPath("/user/login/ad", "adFilter, updateToken, sendTokenInHeader")
-                .addRestPath("/user/refresh", "jwtAuthc, updateToken, sendTokenInHeader")
-                .addRestPath("/user/logout", "logout")
-                .addRestPath("/hss/token", "honeur-request") // added for HONEUR
-                .addProtectedRestPath("/cohortdefinition/hss/select") // added for HONEUR
-                .addOAuthPath("/user/oauth/google", "googleAuthc")
-                .addOAuthPath("/user/oauth/facebook", "facebookAuthc")
-                .addPath("/user/login/cas", "ssl, cors, forceSessionCreation, casAuthc, updateToken, sendTokenInUrl")
-                .addPath("/user/oauth/callback", "ssl, handleUnsuccessfullOAuth, oauthCallback")
-                .addPath("/user/cas/callback", "ssl, handleCas, updateToken, sendTokenInUrl");
-
+                .addRestPath("/user/login/openid", FORCE_SESSION_CREATION, OIDC_AUTH, UPDATE_TOKEN, SEND_TOKEN_IN_REDIRECT)
+                .addRestPath("/user/login/windows",NEGOTIATE_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
+                .addRestPath("/user/login/kerberos", KERBEROS_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
+                .addRestPath("/user/login/db",  JDBC_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
+                .addRestPath("/user/login/ldap", LDAP_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
+                .addRestPath("/user/login/ad", AD_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
+                .addRestPath("/user/refresh", JWT_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
+                .addRestPath("/user/logout", LOGOUT)
+                .addRestPath("/hss/token", "honeur-request")    // added for HONEUR
+                .addProtectedRestPath("/cohortdefinition/hss/select")       // added for HONEUR
+                .addOAuthPath("/user/oauth/google", GOOGLE_AUTHC)
+                .addOAuthPath("/user/oauth/facebook", FACEBOOK_AUTHC)
+                .addOAuthPath("/user/oauth/github", GITHUB_AUTHC)
+                .addPath("/user/login/cas", SSL, CORS, FORCE_SESSION_CREATION, CAS_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_URL)
+                .addPath("/user/oauth/callback", SSL, HANDLE_UNSUCCESSFUL_OAUTH, OAUTH_CALLBACK)
+                .addPath("/user/cas/callback", SSL, HANDLE_CAS, UPDATE_TOKEN, SEND_TOKEN_IN_URL);
 
         setupProtectedPaths(filterChainBuilder);
 

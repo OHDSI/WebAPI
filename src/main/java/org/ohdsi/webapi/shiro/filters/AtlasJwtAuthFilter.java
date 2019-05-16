@@ -1,13 +1,14 @@
 package org.ohdsi.webapi.shiro.filters;
 
 import io.jsonwebtoken.JwtException;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.web.util.WebUtils;
+import org.ohdsi.webapi.shiro.TokenManager;
+import org.ohdsi.webapi.shiro.tokens.JwtAuthToken;
+
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.web.util.WebUtils;
-import org.ohdsi.webapi.shiro.tokens.JwtAuthToken;
-import org.ohdsi.webapi.shiro.TokenManager;
 
 public final class AtlasJwtAuthFilter extends AtlasAuthFilter {
 

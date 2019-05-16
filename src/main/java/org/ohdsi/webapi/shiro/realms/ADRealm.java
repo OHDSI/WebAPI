@@ -1,9 +1,5 @@
 package org.ohdsi.webapi.shiro.realms;
 
-import java.util.List;
-import java.util.Objects;
-import javax.naming.NamingException;
-import javax.naming.directory.SearchControls;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -16,6 +12,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.LdapTemplate;
+
+import javax.naming.NamingException;
+import javax.naming.directory.SearchControls;
+import java.util.List;
+import java.util.Objects;
 
 public class ADRealm extends ActiveDirectoryRealm {
     private static final Logger LOGGER = LoggerFactory.getLogger(ADRealm.class);

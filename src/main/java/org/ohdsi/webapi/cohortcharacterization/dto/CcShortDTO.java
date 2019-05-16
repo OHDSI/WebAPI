@@ -1,9 +1,10 @@
 package org.ohdsi.webapi.cohortcharacterization.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import java.util.Date;
 import org.ohdsi.webapi.cohortcharacterization.CcConst;
 import org.ohdsi.webapi.user.dto.UserDTO;
+
+import java.util.Date;
 
 public class CcShortDTO {
     

@@ -1,15 +1,15 @@
 package org.ohdsi.webapi.user.importer.service;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.ohdsi.webapi.shiro.Entities.RoleEntity;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.shiro.Entities.UserRepository;
+import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.user.Role;
 import org.ohdsi.webapi.user.importer.model.*;
 import org.ohdsi.webapi.user.importer.providers.ActiveDirectoryProvider;
 import org.ohdsi.webapi.user.importer.providers.DefaultLdapProvider;
 import org.ohdsi.webapi.user.importer.providers.LdapProvider;
-import org.ohdsi.webapi.shiro.Entities.RoleEntity;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
-import org.ohdsi.webapi.shiro.Entities.UserRepository;
-import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.user.importer.repository.RoleGroupRepository;
 import org.ohdsi.webapi.user.importer.utils.RoleGroupUtils;
 import org.ohdsi.webapi.util.UserUtils;
@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.ldap.core.*;
+import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.ldap.support.LdapUtils;

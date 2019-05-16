@@ -1,35 +1,12 @@
 package org.ohdsi.webapi.service;
 
-import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
-
-import java.beans.PropertyEditorSupport;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-
 import jersey.repackaged.com.google.common.base.Joiner;
-
 import org.apache.commons.collections.CollectionUtils;
+import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.webapi.cohortanalysis.CohortAnalysis;
-import org.ohdsi.webapi.cohortanalysis.CohortAnalysisGenerationInfo;
-import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
-import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTasklet;
-import org.ohdsi.webapi.cohortanalysis.CohortSummary;
+import org.ohdsi.webapi.cohortanalysis.*;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortresults.PeriodType;
@@ -50,6 +27,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
  * Services related to running Heracles analyses

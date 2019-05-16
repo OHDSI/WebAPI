@@ -1,8 +1,5 @@
 package org.ohdsi.webapi.test;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.junit.Test;
 import org.ohdsi.webapi.exampleapplication.ExampleApplicationWithJobService;
 import org.ohdsi.webapi.job.JobExecutionResource;
@@ -15,6 +12,9 @@ import org.springframework.retry.RetryContext;
 import org.springframework.retry.policy.TimeoutRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.Assert;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *

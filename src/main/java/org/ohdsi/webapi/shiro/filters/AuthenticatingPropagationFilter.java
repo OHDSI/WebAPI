@@ -1,8 +1,5 @@
 package org.ohdsi.webapi.shiro.filters;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
 import com.odysseusinc.logging.event.FailedLoginEvent;
 import com.odysseusinc.logging.event.SuccessLoginEvent;
 import org.apache.shiro.authc.AuthenticationException;
@@ -14,6 +11,10 @@ import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
 import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.shiro.management.AtlasSecurity;
 import org.springframework.context.ApplicationEventPublisher;
+
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletResponse;
 
 public abstract class AuthenticatingPropagationFilter extends AuthenticatingFilter {
 

@@ -59,7 +59,7 @@ BEGIN
                                             HAVING COUNT(*) > 1) AS temp);
         END;
     
-    SET @constraint_title = 'UNIQUE_' + ${ohdsiSchemaQuotes} + '_' + 'CS_NAME';
+    SET @constraint_title = 'uq_' + ${ohdsiSchemaQuotes} + '_' + 'cs_name';
     SET @schema_title = ${ohdsiSchemaQuotes};
     SET @amount_of_constraints = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
                                   WHERE TABLE_SCHEMA = ${ohdsiSchemaQuotes}
@@ -133,7 +133,7 @@ BEGIN
                                             HAVING COUNT(*) > 1) AS temp);
         END;
     
-    SET @constraint_title = 'UNIQUE_' + ${ohdsiSchemaQuotes} + '_' + 'CD_NAME';
+    SET @constraint_title = 'uq_' + ${ohdsiSchemaQuotes} + '_' + 'cd_name';
     SET @schema_title = ${ohdsiSchemaQuotes};
     SET @amount_of_constraints = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
                                   WHERE TABLE_SCHEMA = ${ohdsiSchemaQuotes}
@@ -207,7 +207,7 @@ BEGIN
                                             HAVING COUNT(*) > 1) AS temp);
         END;
     
-    SET @constraint_title = 'UNIQUE_' + ${ohdsiSchemaQuotes} + '_' + 'CC_NAME';
+    SET @constraint_title = 'uq_' + ${ohdsiSchemaQuotes} + '_' + 'cc_name';
     SET @schema_title = ${ohdsiSchemaQuotes};
     SET @amount_of_constraints = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
                                   WHERE TABLE_SCHEMA = ${ohdsiSchemaQuotes}
@@ -282,7 +282,7 @@ BEGIN
                                             HAVING COUNT(*) > 1) AS temp);
         END;
     
-    SET @constraint_title = 'UNIQUE_' + ${ohdsiSchemaQuotes} + '_' + 'FE_NAME';
+    SET @constraint_title = 'uq_' + ${ohdsiSchemaQuotes} + '_' + 'fe_name';
     SET @schema_title = ${ohdsiSchemaQuotes};
     SET @amount_of_constraints = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
                                   WHERE TABLE_SCHEMA = ${ohdsiSchemaQuotes}
@@ -356,7 +356,7 @@ BEGIN
                                             HAVING COUNT(*) > 1) AS temp);
         END;
             
-    SET @constraint_title = 'UNIQUE_' + ${ohdsiSchemaQuotes} + '_' + 'PW_NAME';
+    SET @constraint_title = 'uq_' + ${ohdsiSchemaQuotes} + '_' + 'pw_name';
     SET @schema_title = ${ohdsiSchemaQuotes};
     SET @amount_of_constraints = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
                                   WHERE TABLE_SCHEMA = ${ohdsiSchemaQuotes}
@@ -430,7 +430,7 @@ BEGIN
                                             HAVING COUNT(*) > 1) AS temp);
         END;
     
-    SET @constraint_title = 'UNIQUE_' + ${ohdsiSchemaQuotes} + '_' + 'IR_NAME';
+    SET @constraint_title = 'uq_' + ${ohdsiSchemaQuotes} + '_' + 'ir_name';
     SET @schema_title = ${ohdsiSchemaQuotes};
     SET @amount_of_constraints = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
                                   WHERE TABLE_SCHEMA = ${ohdsiSchemaQuotes}
@@ -505,7 +505,7 @@ BEGIN
         END;
 
     
-    SET @constraint_title = 'UNIQUE_' + ${ohdsiSchemaQuotes} + '_' + 'ESTIMATION_NAME';
+    SET @constraint_title = 'uq_' + ${ohdsiSchemaQuotes} + '_' + 'es_name';
     SET @schema_title = ${ohdsiSchemaQuotes};
     SET @amount_of_constraints = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
                                   WHERE TABLE_SCHEMA = ${ohdsiSchemaQuotes}
@@ -579,7 +579,7 @@ BEGIN
             DELETE FROM @name_repeats WHERE id = id;
         END;
     
-    SET @constraint_title = 'UNIQUE_' + ${ohdsiSchemaQuotes} + '_' + 'PREDICTION_NAME';
+    SET @constraint_title = 'uq_' + ${ohdsiSchemaQuotes} + '_' + 'pd_name';
     SET @schema_title = ${ohdsiSchemaQuotes};
     SET @amount_of_constraints = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
                                   WHERE TABLE_SCHEMA = ${ohdsiSchemaQuotes}

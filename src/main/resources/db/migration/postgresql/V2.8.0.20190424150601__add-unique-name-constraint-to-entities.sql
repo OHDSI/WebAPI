@@ -1,5 +1,5 @@
 CREATE OR REPLACE FUNCTION ${ohdsiSchema}.rename_duplicate_names(name_title VARCHAR(20), id_title VARCHAR(15),
-                                                                 table_title VARCHAR(30)) RETURNS VOID
+                                                                 table_title VARCHAR(30), constraint_title VARCHAR(2)) RETURNS VOID
     LANGUAGE 'plpgsql'
 AS
 $$
@@ -53,7 +53,7 @@ BEGIN
                 END LOOP;
         END LOOP;
 
-    constraint_name := concat('unique_name_', ${ohdsiSchemaQuotes}, '_', table_title);
+    constraint_name := concat('uq_', ${ohdsiSchemaQuotes}, '_', constraint_title, '_name');
 
     EXECUTE format('SELECT COUNT(*)
                   FROM information_schema.table_constraints
@@ -70,13 +70,13 @@ BEGIN
 END;
 $$;
 
-SELECT rename_duplicate_names('concept_set_name', 'concept_set_id', 'concept_set');
-SELECT rename_duplicate_names('name', 'id', 'cohort_definition');
-SELECT rename_duplicate_names('name', 'id', 'cohort_characterization');
-SELECT rename_duplicate_names('name', 'id', 'fe_analysis');
-SELECT rename_duplicate_names('name', 'id', 'pathway_analysis');
-SELECT rename_duplicate_names('name', 'id', 'ir_analysis');
-SELECT rename_duplicate_names('name', 'estimation_id', 'estimation');
-SELECT rename_duplicate_names('name', 'prediction_id', 'prediction');
+SELECT rename_duplicate_names('concept_set_name', 'concept_set_id', 'concept_set', 'cs');
+SELECT rename_duplicate_names('name', 'id', 'cohort_definition', 'cd');
+SELECT rename_duplicate_names('name', 'id', 'cohort_characterization', 'cc');
+SELECT rename_duplicate_names('name', 'id', 'fe_analysis', 'fe');
+SELECT rename_duplicate_names('name', 'id', 'pathway_analysis', 'pw');
+SELECT rename_duplicate_names('name', 'id', 'ir_analysis', 'ir');
+SELECT rename_duplicate_names('name', 'estimation_id', 'estimation', 'es');
+SELECT rename_duplicate_names('name', 'prediction_id', 'prediction', 'pd');
 
-DROP FUNCTION ${ohdsiSchema}.rename_duplicate_names(name_title VARCHAR(20), id_title VARCHAR(15), table_title VARCHAR(30));
+DROP FUNCTION ${ohdsiSchema}.rename_duplicate_names(name_title VARCHAR(20), id_title VARCHAR(15), table_title VARCHAR(30), constraint_title VARCHAR(2));

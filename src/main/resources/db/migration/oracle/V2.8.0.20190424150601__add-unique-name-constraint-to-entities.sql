@@ -47,7 +47,7 @@ BEGIN
         END LOOP;
     
 
-    constraint_title := 'U_' || ${ohdsiSchemaQuotes} || '_' || 'CS_NAME';
+    constraint_title := 'uq_' || ${ohdsiSchemaQuotes} || '_' || 'cs_name';
     schema_title := ${ohdsiSchemaQuotes};
 
     SELECT COUNT(*) INTO amount_of_constraints
@@ -116,7 +116,7 @@ BEGIN
             name_repeats.DELETE();
         END LOOP;    
 
-    constraint_title := 'U_' || ${ohdsiSchemaQuotes} || '_' || 'CD_NAME';
+    constraint_title := 'uq_' || ${ohdsiSchemaQuotes} || '_' || 'cd_name';
     schema_title := ${ohdsiSchemaQuotes};
 
     SELECT COUNT(*) INTO amount_of_constraints
@@ -185,7 +185,7 @@ BEGIN
             name_repeats.DELETE();
         END LOOP;    
 
-    constraint_title := 'U_' || ${ohdsiSchemaQuotes} || '_' || 'CC_NAME';
+    constraint_title := 'uq_' || ${ohdsiSchemaQuotes} || '_' || 'cc_name';
     schema_title := ${ohdsiSchemaQuotes};
 
     SELECT COUNT(*) INTO amount_of_constraints
@@ -253,7 +253,7 @@ BEGIN
             name_repeats.DELETE();
         END LOOP;    
 
-    constraint_title := 'U_' || ${ohdsiSchemaQuotes} || '_' || 'FE_NAME';
+    constraint_title := 'uq_' || ${ohdsiSchemaQuotes} || '_' || 'fe_name';
     schema_title := ${ohdsiSchemaQuotes};
 
     SELECT COUNT(*) INTO amount_of_constraints
@@ -321,7 +321,7 @@ BEGIN
             name_repeats.DELETE();
         END LOOP;    
 
-    constraint_title := 'U_' || ${ohdsiSchemaQuotes} || '_' || 'PW_NAME';
+    constraint_title := 'uq_' || ${ohdsiSchemaQuotes} || '_' || 'pw_name';
     schema_title := ${ohdsiSchemaQuotes};
 
     SELECT COUNT(*) INTO amount_of_constraints
@@ -389,7 +389,7 @@ BEGIN
             name_repeats.DELETE();
         END LOOP;    
 
-    constraint_title := 'U_' || ${ohdsiSchemaQuotes} || '_' || 'IR_NAME';
+    constraint_title := 'uq_' || ${ohdsiSchemaQuotes} || '_' || 'ir_name';
     schema_title := ${ohdsiSchemaQuotes};
 
     SELECT COUNT(*) INTO amount_of_constraints
@@ -457,7 +457,7 @@ BEGIN
             name_repeats.DELETE();        
         END LOOP;    
 
-    constraint_title := 'U_' || ${ohdsiSchemaQuotes} || '_' || 'ES_NAME';
+    constraint_title := 'uq_' || ${ohdsiSchemaQuotes} || '_' || 'es_name';
     schema_title := ${ohdsiSchemaQuotes};
 
     SELECT COUNT(*) INTO amount_of_constraints
@@ -525,7 +525,7 @@ BEGIN
             name_repeats.DELETE();
         END LOOP;    
 
-    constraint_title := 'U_' || ${ohdsiSchemaQuotes} || '_' || 'PD_NAME';
+    constraint_title := 'uq_' || ${ohdsiSchemaQuotes} || '_' || 'pd_name';
     schema_title := ${ohdsiSchemaQuotes};
 
     SELECT COUNT(*) INTO amount_of_constraints

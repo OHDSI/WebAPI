@@ -30,6 +30,7 @@ tryCatch({
         resultsDatabaseSchema <- Sys.getenv("RESULT_SCHEMA")
         cohortsDatabaseSchema <- Sys.getenv("TARGET_SCHEMA")
         cohortTable <- Sys.getenv("COHORT_TARGET_TABLE")
+        databaseId <- Sys.getenv("DATA_SOURCE_NAME")
         driversPath <- (function(path) if (path == "") NULL else path)( Sys.getenv("JDBC_DRIVER_PATH") )
 
         connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = dbms,
@@ -47,7 +48,7 @@ tryCatch({
                 cohortTable = cohortTable,
                 oracleTempSchema = resultsDatabaseSchema,
                 outputFolder = outputFolder,
-                databaseId = 'Synpuf',
+                databaseId = databaseId,
                 synthesizePositiveControls = TRUE,
                 runAnalyses = TRUE,
                 runDiagnostics = TRUE,

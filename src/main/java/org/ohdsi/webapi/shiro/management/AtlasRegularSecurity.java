@@ -1,5 +1,8 @@
 package org.ohdsi.webapi.shiro.management;
 
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.*;
+import static org.ohdsi.webapi.util.QuoteUtils.dequote;
+
 import io.buji.pac4j.filter.CallbackFilter;
 import io.buji.pac4j.filter.SecurityFilter;
 import io.buji.pac4j.realm.Pac4jRealm;

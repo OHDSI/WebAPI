@@ -47,7 +47,7 @@ BEGIN
         END LOOP;
     
 
-    constraint_title := 'uq_' || '${ohdsiSchema}' || '_' || 'cs_name';
+    constraint_title := 'uq_cs_name';
     schema_title := '${ohdsiSchema}';
 
     SELECT COUNT(*) INTO amount_of_constraints
@@ -116,7 +116,7 @@ BEGIN
             name_repeats.DELETE();
         END LOOP;    
 
-    constraint_title := 'uq_' || '${ohdsiSchema}' || '_' || 'cd_name';
+    constraint_title := 'uq_cd_name';
     schema_title := '${ohdsiSchema}';
 
     SELECT COUNT(*) INTO amount_of_constraints
@@ -185,7 +185,7 @@ BEGIN
             name_repeats.DELETE();
         END LOOP;    
 
-    constraint_title := 'uq_' || '${ohdsiSchema}' || '_' || 'cc_name';
+    constraint_title := 'uq_cc_name';
     schema_title := '${ohdsiSchema}';
 
     SELECT COUNT(*) INTO amount_of_constraints
@@ -253,7 +253,7 @@ BEGIN
             name_repeats.DELETE();
         END LOOP;    
 
-    constraint_title := 'uq_' || '${ohdsiSchema}' || '_' || 'fe_name';
+    constraint_title := 'uq_fe_name';
     schema_title := '${ohdsiSchema}';
 
     SELECT COUNT(*) INTO amount_of_constraints
@@ -321,7 +321,7 @@ BEGIN
             name_repeats.DELETE();
         END LOOP;    
 
-    constraint_title := 'uq_' || '${ohdsiSchema}' || '_' || 'pw_name';
+    constraint_title := 'uq_pw_name';
     schema_title := '${ohdsiSchema}';
 
     SELECT COUNT(*) INTO amount_of_constraints
@@ -389,7 +389,7 @@ BEGIN
             name_repeats.DELETE();
         END LOOP;    
 
-    constraint_title := 'uq_' || '${ohdsiSchema}' || '_' || 'ir_name';
+    constraint_title := 'uq_ir_name';
     schema_title := '${ohdsiSchema}';
 
     SELECT COUNT(*) INTO amount_of_constraints
@@ -457,7 +457,7 @@ BEGIN
             name_repeats.DELETE();        
         END LOOP;    
 
-    constraint_title := 'uq_' || '${ohdsiSchema}' || '_' || 'es_name';
+    constraint_title := 'uq_es_name';
     schema_title := '${ohdsiSchema}';
 
     SELECT COUNT(*) INTO amount_of_constraints
@@ -525,7 +525,7 @@ BEGIN
             name_repeats.DELETE();
         END LOOP;    
 
-    constraint_title := 'uq_' || '${ohdsiSchema}' || '_' || 'pd_name';
+    constraint_title := 'uq_pd_name';
     schema_title := '${ohdsiSchema}';
 
     SELECT COUNT(*) INTO amount_of_constraints

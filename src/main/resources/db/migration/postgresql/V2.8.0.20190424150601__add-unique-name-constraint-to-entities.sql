@@ -4,7 +4,7 @@ CREATE OR REPLACE FUNCTION ${ohdsiSchema}.rename_duplicate_names(name_title VARC
 AS
 $$
 DECLARE
-    duplicate_names           VARCHAR(100)[];
+    duplicate_names           VARCHAR(400)[];
     name_repeats              INT[];
     amount_of_duplicate_names INT;
     amount_of_constraints     INT;
@@ -53,7 +53,7 @@ BEGIN
                 END LOOP;
         END LOOP;
 
-    constraint_name := concat('uq_', '${ohdsiSchema}', '_', constraint_title, '_name');
+    constraint_name := concat('uq_', constraint_title, '_name');
 
     EXECUTE format('SELECT COUNT(*)
                   FROM information_schema.table_constraints
@@ -70,13 +70,13 @@ BEGIN
 END;
 $$;
 
-SELECT rename_duplicate_names('concept_set_name', 'concept_set_id', 'concept_set', 'cs');
-SELECT rename_duplicate_names('name', 'id', 'cohort_definition', 'cd');
-SELECT rename_duplicate_names('name', 'id', 'cohort_characterization', 'cc');
-SELECT rename_duplicate_names('name', 'id', 'fe_analysis', 'fe');
-SELECT rename_duplicate_names('name', 'id', 'pathway_analysis', 'pw');
-SELECT rename_duplicate_names('name', 'id', 'ir_analysis', 'ir');
-SELECT rename_duplicate_names('name', 'estimation_id', 'estimation', 'es');
-SELECT rename_duplicate_names('name', 'prediction_id', 'prediction', 'pd');
+SELECT ${ohdsiSchema}.rename_duplicate_names('concept_set_name', 'concept_set_id', 'concept_set', 'cs');
+SELECT ${ohdsiSchema}.rename_duplicate_names('name', 'id', 'cohort_definition', 'cd');
+SELECT ${ohdsiSchema}.rename_duplicate_names('name', 'id', 'cohort_characterization', 'cc');
+SELECT ${ohdsiSchema}.rename_duplicate_names('name', 'id', 'fe_analysis', 'fe');
+SELECT ${ohdsiSchema}.rename_duplicate_names('name', 'id', 'pathway_analysis', 'pw');
+SELECT ${ohdsiSchema}.rename_duplicate_names('name', 'id', 'ir_analysis', 'ir');
+SELECT ${ohdsiSchema}.rename_duplicate_names('name', 'estimation_id', 'estimation', 'es');
+SELECT ${ohdsiSchema}.rename_duplicate_names('name', 'prediction_id', 'prediction', 'pd');
 
 DROP FUNCTION ${ohdsiSchema}.rename_duplicate_names(name_title VARCHAR(20), id_title VARCHAR(15), table_title VARCHAR(30), constraint_title VARCHAR(2));

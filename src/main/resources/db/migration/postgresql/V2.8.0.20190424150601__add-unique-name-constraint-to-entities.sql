@@ -16,20 +16,20 @@ BEGIN
                     FROM (SELECT %I
                             FROM %I.%I
                             GROUP BY %I
-                            HAVING COUNT(*) > 1) as temp;', name_title, ${ohdsiSchemaQuotes}, table_title,
+                            HAVING COUNT(*) > 1) as temp;', name_title, '${ohdsiSchema}', table_title,
                    name_title) INTO all_duplicates;
     FOR k IN 0 .. coalesce(all_duplicates, 0)
         LOOP
             EXECUTE format('SELECT ARRAY(SELECT %I
                                  FROM %I.%I
                                  GROUP BY %I
-                                 HAVING COUNT(*) > 1)', name_title, ${ohdsiSchemaQuotes}, table_title,
+                                 HAVING COUNT(*) > 1)', name_title, '${ohdsiSchema}', table_title,
                    name_title) INTO duplicate_names;
 
             EXECUTE format('SELECT ARRAY(SELECT COUNT(*)
                                          FROM %I.%I
                                          GROUP BY %I
-                                         HAVING COUNT(*) > 1);', ${ohdsiSchemaQuotes}, table_title,
+                                         HAVING COUNT(*) > 1);', '${ohdsiSchema}', table_title,
                            name_title) INTO name_repeats;
 
 
@@ -45,26 +45,26 @@ BEGIN
                                          FROM %I.%I
                                          WHERE %I = $2
                                          ORDER BY %I
-                                         LIMIT 1);', ${ohdsiSchemaQuotes}, table_title, name_title, name_title, id_title,
+                                         LIMIT 1);', '${ohdsiSchema}', table_title, name_title, name_title, id_title,
                                            id_title,
-                                           ${ohdsiSchemaQuotes}, table_title,
+                                           '${ohdsiSchema}', table_title,
                                            name_title, id_title) USING j, duplicate_names[i];
                         END LOOP;
                 END LOOP;
         END LOOP;
 
-    constraint_name := concat('uq_', ${ohdsiSchemaQuotes}, '_', constraint_title, '_name');
+    constraint_name := concat('uq_', '${ohdsiSchema}', '_', constraint_title, '_name');
 
     EXECUTE format('SELECT COUNT(*)
                   FROM information_schema.table_constraints
                   WHERE constraint_schema = ''%I''
                     AND constraint_name = ''%I''
-                    AND table_name = ''%I''', ${ohdsiSchemaQuotes}, constraint_name,
+                    AND table_name = ''%I''', '${ohdsiSchema}', constraint_name,
                    table_title) INTO amount_of_constraints;
 
     IF amount_of_constraints = 0 THEN
         EXECUTE format('ALTER TABLE %I.%I
-                             ADD CONSTRAINT %I UNIQUE (%I);', ${ohdsiSchemaQuotes}, table_title, constraint_name,
+                             ADD CONSTRAINT %I UNIQUE (%I);', '${ohdsiSchema}', table_title, constraint_name,
                        name_title);
     END IF;
 END;

@@ -59,10 +59,10 @@ BEGIN
                                             HAVING COUNT(*) > 1) AS temp);
         END;
     
-    SET @constraint_title = 'uq_' + ${ohdsiSchemaQuotes} + '_' + 'cs_name';
-    SET @schema_title = ${ohdsiSchemaQuotes};
+    SET @constraint_title = 'uq_' + '${ohdsiSchema}' + '_' + 'cs_name';
+    SET @schema_title = '${ohdsiSchema}';
     SET @amount_of_constraints = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
-                                  WHERE TABLE_SCHEMA = ${ohdsiSchemaQuotes}
+                                  WHERE TABLE_SCHEMA = '${ohdsiSchema}'
                                     AND CONSTRAINT_NAME = @constraint_title AND TABLE_NAME = 'concept_set');
     IF @amount_of_constraints = 0
         BEGIN EXEC ('ALTER TABLE ' + @schema_title + '.concept_set ADD CONSTRAINT ' + @constraint_title +' UNIQUE (concept_set_name)'); END;
@@ -133,10 +133,10 @@ BEGIN
                                             HAVING COUNT(*) > 1) AS temp);
         END;
     
-    SET @constraint_title = 'uq_' + ${ohdsiSchemaQuotes} + '_' + 'cd_name';
-    SET @schema_title = ${ohdsiSchemaQuotes};
+    SET @constraint_title = 'uq_' + '${ohdsiSchema}' + '_' + 'cd_name';
+    SET @schema_title = '${ohdsiSchema}';
     SET @amount_of_constraints = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
-                                  WHERE TABLE_SCHEMA = ${ohdsiSchemaQuotes}
+                                  WHERE TABLE_SCHEMA = '${ohdsiSchema}'
                                     AND CONSTRAINT_NAME = @constraint_title AND TABLE_NAME = 'cohort_definition');
     IF @amount_of_constraints = 0
         BEGIN EXEC ('ALTER TABLE ' + @schema_title + '.cohort_definition ADD CONSTRAINT ' + @constraint_title +' UNIQUE (name)'); END;
@@ -207,10 +207,10 @@ BEGIN
                                             HAVING COUNT(*) > 1) AS temp);
         END;
     
-    SET @constraint_title = 'uq_' + ${ohdsiSchemaQuotes} + '_' + 'cc_name';
-    SET @schema_title = ${ohdsiSchemaQuotes};
+    SET @constraint_title = 'uq_' + '${ohdsiSchema}' + '_' + 'cc_name';
+    SET @schema_title = '${ohdsiSchema}';
     SET @amount_of_constraints = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
-                                  WHERE TABLE_SCHEMA = ${ohdsiSchemaQuotes}
+                                  WHERE TABLE_SCHEMA = '${ohdsiSchema}'
                                     AND CONSTRAINT_NAME = @constraint_title AND TABLE_NAME = 'cohort_characterization');
     IF @amount_of_constraints = 0
         BEGIN EXEC ('ALTER TABLE ' + @schema_title + '.cohort_characterization ADD CONSTRAINT ' + @constraint_title +' UNIQUE (name)'); END;
@@ -282,10 +282,10 @@ BEGIN
                                             HAVING COUNT(*) > 1) AS temp);
         END;
     
-    SET @constraint_title = 'uq_' + ${ohdsiSchemaQuotes} + '_' + 'fe_name';
-    SET @schema_title = ${ohdsiSchemaQuotes};
+    SET @constraint_title = 'uq_' + '${ohdsiSchema}' + '_' + 'fe_name';
+    SET @schema_title = '${ohdsiSchema}';
     SET @amount_of_constraints = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
-                                  WHERE TABLE_SCHEMA = ${ohdsiSchemaQuotes}
+                                  WHERE TABLE_SCHEMA = '${ohdsiSchema}'
                                     AND CONSTRAINT_NAME = @constraint_title AND TABLE_NAME = 'fe_analysis');
     IF @amount_of_constraints = 0
         BEGIN EXEC ('ALTER TABLE ' + @schema_title + '.fe_analysis ADD CONSTRAINT ' + @constraint_title +' UNIQUE (name)'); END;
@@ -356,10 +356,10 @@ BEGIN
                                             HAVING COUNT(*) > 1) AS temp);
         END;
             
-    SET @constraint_title = 'uq_' + ${ohdsiSchemaQuotes} + '_' + 'pw_name';
-    SET @schema_title = ${ohdsiSchemaQuotes};
+    SET @constraint_title = 'uq_' + '${ohdsiSchema}' + '_' + 'pw_name';
+    SET @schema_title = '${ohdsiSchema}';
     SET @amount_of_constraints = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
-                                  WHERE TABLE_SCHEMA = ${ohdsiSchemaQuotes}
+                                  WHERE TABLE_SCHEMA = '${ohdsiSchema}'
                                     AND CONSTRAINT_NAME = @constraint_title AND TABLE_NAME = 'pathway_analysis');
     IF @amount_of_constraints = 0
         BEGIN EXEC ('ALTER TABLE ' + @schema_title + '.pathway_analysis ADD CONSTRAINT ' + @constraint_title +' UNIQUE (name)'); END;
@@ -430,10 +430,10 @@ BEGIN
                                             HAVING COUNT(*) > 1) AS temp);
         END;
     
-    SET @constraint_title = 'uq_' + ${ohdsiSchemaQuotes} + '_' + 'ir_name';
-    SET @schema_title = ${ohdsiSchemaQuotes};
+    SET @constraint_title = 'uq_' + '${ohdsiSchema}' + '_' + 'ir_name';
+    SET @schema_title = '${ohdsiSchema}';
     SET @amount_of_constraints = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
-                                  WHERE TABLE_SCHEMA = ${ohdsiSchemaQuotes}
+                                  WHERE TABLE_SCHEMA = '${ohdsiSchema}'
                                     AND CONSTRAINT_NAME = @constraint_title AND TABLE_NAME = 'ir_analysis');
     IF @amount_of_constraints = 0
         BEGIN EXEC ('ALTER TABLE ' + @schema_title + '.ir_analysis ADD CONSTRAINT ' + @constraint_title +' UNIQUE (name)'); END;
@@ -505,10 +505,10 @@ BEGIN
         END;
 
     
-    SET @constraint_title = 'uq_' + ${ohdsiSchemaQuotes} + '_' + 'es_name';
-    SET @schema_title = ${ohdsiSchemaQuotes};
+    SET @constraint_title = 'uq_' + '${ohdsiSchema}' + '_' + 'es_name';
+    SET @schema_title = '${ohdsiSchema}';
     SET @amount_of_constraints = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
-                                  WHERE TABLE_SCHEMA = ${ohdsiSchemaQuotes}
+                                  WHERE TABLE_SCHEMA = '${ohdsiSchema}'
                                     AND CONSTRAINT_NAME = @constraint_title AND TABLE_NAME = 'estimation');
     IF @amount_of_constraints = 0
         BEGIN EXEC ('ALTER TABLE ' + @schema_title + '.estimation ADD CONSTRAINT ' + @constraint_title +' UNIQUE (name)'); END;
@@ -579,10 +579,10 @@ BEGIN
             DELETE FROM @name_repeats WHERE id = id;
         END;
     
-    SET @constraint_title = 'uq_' + ${ohdsiSchemaQuotes} + '_' + 'pd_name';
-    SET @schema_title = ${ohdsiSchemaQuotes};
+    SET @constraint_title = 'uq_' + '${ohdsiSchema}' + '_' + 'pd_name';
+    SET @schema_title = '${ohdsiSchema}';
     SET @amount_of_constraints = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
-                                  WHERE TABLE_SCHEMA = ${ohdsiSchemaQuotes}
+                                  WHERE TABLE_SCHEMA = '${ohdsiSchema}'
                                     AND CONSTRAINT_NAME = @constraint_title AND TABLE_NAME = 'prediction');
     IF @amount_of_constraints = 0
         BEGIN EXEC ('ALTER TABLE ' + @schema_title + '.prediction ADD CONSTRAINT ' + @constraint_title +' UNIQUE (name)'); END;

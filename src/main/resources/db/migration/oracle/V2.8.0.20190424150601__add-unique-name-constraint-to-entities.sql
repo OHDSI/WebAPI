@@ -47,12 +47,12 @@ BEGIN
         END LOOP;
     
 
-    constraint_title := 'uq_' || ${ohdsiSchemaQuotes} || '_' || 'cs_name';
-    schema_title := ${ohdsiSchemaQuotes};
+    constraint_title := 'uq_' || '${ohdsiSchema}' || '_' || 'cs_name';
+    schema_title := '${ohdsiSchema}';
 
     SELECT COUNT(*) INTO amount_of_constraints
     FROM ALL_CONSTRAINTS
-    WHERE OWNER = ${ohdsiSchemaQuotes}
+    WHERE OWNER = '${ohdsiSchema}'
     AND CONSTRAINT_NAME = constraint_title
     AND TABLE_NAME = 'CONCEPT_SET';
 
@@ -116,12 +116,12 @@ BEGIN
             name_repeats.DELETE();
         END LOOP;    
 
-    constraint_title := 'uq_' || ${ohdsiSchemaQuotes} || '_' || 'cd_name';
-    schema_title := ${ohdsiSchemaQuotes};
+    constraint_title := 'uq_' || '${ohdsiSchema}' || '_' || 'cd_name';
+    schema_title := '${ohdsiSchema}';
 
     SELECT COUNT(*) INTO amount_of_constraints
     FROM ALL_CONSTRAINTS
-    WHERE OWNER = ${ohdsiSchemaQuotes}
+    WHERE OWNER = '${ohdsiSchema}'
     AND CONSTRAINT_NAME = constraint_title
     AND TABLE_NAME = 'COHORT_DEFINITION';
 
@@ -185,12 +185,12 @@ BEGIN
             name_repeats.DELETE();
         END LOOP;    
 
-    constraint_title := 'uq_' || ${ohdsiSchemaQuotes} || '_' || 'cc_name';
-    schema_title := ${ohdsiSchemaQuotes};
+    constraint_title := 'uq_' || '${ohdsiSchema}' || '_' || 'cc_name';
+    schema_title := '${ohdsiSchema}';
 
     SELECT COUNT(*) INTO amount_of_constraints
     FROM ALL_CONSTRAINTS
-    WHERE OWNER = ${ohdsiSchemaQuotes}
+    WHERE OWNER = '${ohdsiSchema}'
     AND CONSTRAINT_NAME = constraint_title
     AND TABLE_NAME = 'COHORT_CHARACTERIZATION';
 
@@ -253,12 +253,12 @@ BEGIN
             name_repeats.DELETE();
         END LOOP;    
 
-    constraint_title := 'uq_' || ${ohdsiSchemaQuotes} || '_' || 'fe_name';
-    schema_title := ${ohdsiSchemaQuotes};
+    constraint_title := 'uq_' || '${ohdsiSchema}' || '_' || 'fe_name';
+    schema_title := '${ohdsiSchema}';
 
     SELECT COUNT(*) INTO amount_of_constraints
     FROM ALL_CONSTRAINTS
-    WHERE OWNER = ${ohdsiSchemaQuotes}
+    WHERE OWNER = '${ohdsiSchema}'
     AND CONSTRAINT_NAME = constraint_title
     AND TABLE_NAME = 'FE_ANALYSIS';
 
@@ -321,12 +321,12 @@ BEGIN
             name_repeats.DELETE();
         END LOOP;    
 
-    constraint_title := 'uq_' || ${ohdsiSchemaQuotes} || '_' || 'pw_name';
-    schema_title := ${ohdsiSchemaQuotes};
+    constraint_title := 'uq_' || '${ohdsiSchema}' || '_' || 'pw_name';
+    schema_title := '${ohdsiSchema}';
 
     SELECT COUNT(*) INTO amount_of_constraints
     FROM ALL_CONSTRAINTS
-    WHERE OWNER = ${ohdsiSchemaQuotes}
+    WHERE OWNER = '${ohdsiSchema}'
     AND CONSTRAINT_NAME = constraint_title
     AND TABLE_NAME = 'PATHWAY_ANALYSIS';
 
@@ -389,12 +389,12 @@ BEGIN
             name_repeats.DELETE();
         END LOOP;    
 
-    constraint_title := 'uq_' || ${ohdsiSchemaQuotes} || '_' || 'ir_name';
-    schema_title := ${ohdsiSchemaQuotes};
+    constraint_title := 'uq_' || '${ohdsiSchema}' || '_' || 'ir_name';
+    schema_title := '${ohdsiSchema}';
 
     SELECT COUNT(*) INTO amount_of_constraints
     FROM ALL_CONSTRAINTS
-    WHERE OWNER = ${ohdsiSchemaQuotes}
+    WHERE OWNER = '${ohdsiSchema}'
     AND CONSTRAINT_NAME = constraint_title
     AND TABLE_NAME = 'IR_ANALYSIS';
 
@@ -457,12 +457,12 @@ BEGIN
             name_repeats.DELETE();        
         END LOOP;    
 
-    constraint_title := 'uq_' || ${ohdsiSchemaQuotes} || '_' || 'es_name';
-    schema_title := ${ohdsiSchemaQuotes};
+    constraint_title := 'uq_' || '${ohdsiSchema}' || '_' || 'es_name';
+    schema_title := '${ohdsiSchema}';
 
     SELECT COUNT(*) INTO amount_of_constraints
     FROM ALL_CONSTRAINTS
-    WHERE OWNER = ${ohdsiSchemaQuotes}
+    WHERE OWNER = '${ohdsiSchema}'
     AND CONSTRAINT_NAME = constraint_title
     AND TABLE_NAME = 'ESTIMATION';
 
@@ -525,12 +525,12 @@ BEGIN
             name_repeats.DELETE();
         END LOOP;    
 
-    constraint_title := 'uq_' || ${ohdsiSchemaQuotes} || '_' || 'pd_name';
-    schema_title := ${ohdsiSchemaQuotes};
+    constraint_title := 'uq_' || '${ohdsiSchema}' || '_' || 'pd_name';
+    schema_title := '${ohdsiSchema}';
 
     SELECT COUNT(*) INTO amount_of_constraints
     FROM ALL_CONSTRAINTS
-    WHERE OWNER = ${ohdsiSchemaQuotes}
+    WHERE OWNER = '${ohdsiSchema}'
     AND CONSTRAINT_NAME = constraint_title
     AND TABLE_NAME = 'PREDICTION';
 

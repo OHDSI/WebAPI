@@ -11,7 +11,7 @@ tryCatch({
     file.remove(pkg_file)
   })
 }, finally = {
-  unlink('{{analysisDir}}', recursive = TRUE, force = TRUE)
+  unlink('@analysisDir', recursive = TRUE, force = TRUE)
 })
 
 .libPaths(c(.libPaths(), libs_local))

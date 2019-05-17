@@ -171,13 +171,15 @@
 
     <!-- Sensitive Info settings -->
     <sensitiveinfo.admin.role>admin</sensitiveinfo.admin.role>
+    <!-- Use "-" for files without extension, "*" for all files, extension must not include a leading dot. Use comma to separate values.
+     In case of "*" other values will be ignored -->
+    <sensitiveinfo.analysis.extensions>txt</sensitiveinfo.analysis.extensions>
 
     <hydra.externalPackage.prediction></hydra.externalPackage.prediction>
     <hydra.externalPackage.estimation></hydra.externalPackage.estimation>
-		
-		<!-- Cache Config -->
-		<spring.cache.jcache.config>classpath:config/ehcache.xml</spring.cache.jcache.config>
-			
+
+    <!-- Cache Config -->
+    <spring.cache.jcache.config>classpath:config/ehcache.xml</spring.cache.jcache.config>
   </properties>
   <build>
     <finalName>WebAPI</finalName>
@@ -249,7 +251,7 @@
         <configuration>
           <skipTests>true</skipTests>
         </configuration>
-			</plugin>
+</plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -464,11 +466,11 @@
 		<dependency>
 			<groupId>javax.cache</groupId>
 			<artifactId>cache-api</artifactId>
-		</dependency>		
+		</dependency>
 		<dependency>
 			<groupId>org.ehcache</groupId>
 			<artifactId>ehcache</artifactId>
-		</dependency>			
+		</dependency>
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-core</artifactId>

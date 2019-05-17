@@ -48,6 +48,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
+import javax.ws.rs.InternalServerErrorException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -164,7 +165,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     @Override
     public Estimation updateEstimation(final int id, Estimation est) throws Exception {
 
-        Estimation estFromDB = estimationRepository.findOne(id);
+        Estimation estFromDB = getById(id);
         Date currentTime = Calendar.getInstance().getTime();
 
         est.setModifiedBy(getCurrentUser());
@@ -288,6 +289,10 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     @Override
     public Estimation importAnalysis(EstimationAnalysisImpl analysis) throws Exception {
         try {
+            if (Objects.isNull(analysis.getEstimationAnalysisSettings())) {
+                log.error("Failed to import Estimation. Invalid source JSON. EstimationAnalysisSettings is empty");
+                throw new InternalServerErrorException();
+            }
             if (analysis.getEstimationAnalysisSettings().getEstimationType() != EstimationTypeEnum.COMPARATIVE_COHORT_ANALYSIS) {
                 String estimationType = analysis.getEstimationAnalysisSettings().getEstimationType().name();
                 throw new UnsupportedOperationException("Cannot import " + estimationType);

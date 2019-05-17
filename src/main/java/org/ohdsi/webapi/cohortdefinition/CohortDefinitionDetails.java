@@ -36,7 +36,7 @@ public class CohortDefinitionDetails implements Serializable {
   private Integer id;
 
   @MapsId
-  @OneToOne(fetch = FetchType.LAZY, mappedBy = "details")
+  @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name="id")
   private CohortDefinition definition;
 

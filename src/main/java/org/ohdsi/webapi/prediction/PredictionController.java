@@ -108,7 +108,6 @@ public class PredictionController {
 
   @PUT
   @Path("{id}")
-  @Transactional
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public PredictionAnalysisDTO updateAnalysis(@PathParam("id") int id, PredictionAnalysis pred) {

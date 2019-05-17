@@ -141,7 +141,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
 
     @Override
     public PredictionAnalysis updateAnalysis(final int id, PredictionAnalysis pred) {
-        PredictionAnalysis predFromDB = predictionAnalysisRepository.findOne(id);
+        PredictionAnalysis predFromDB = getById(id);
         Date currentTime = Calendar.getInstance().getTime();
 
         pred.setModifiedBy(getCurrentUser());

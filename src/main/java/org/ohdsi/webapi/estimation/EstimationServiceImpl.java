@@ -165,7 +165,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     @Override
     public Estimation updateEstimation(final int id, Estimation est) throws Exception {
 
-        Estimation estFromDB = estimationRepository.findOne(id);
+        Estimation estFromDB = getById(id);
         Date currentTime = Calendar.getInstance().getTime();
 
         est.setModifiedBy(getCurrentUser());

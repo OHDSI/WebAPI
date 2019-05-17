@@ -101,7 +101,6 @@ public class EstimationController {
   @Path("{id}")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  @Transactional
   public EstimationDTO updateEstimation(@PathParam("id") final int id, Estimation est) throws Exception {
 
     Estimation updatedEst = service.updateEstimation(id, est);

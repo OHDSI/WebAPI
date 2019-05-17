@@ -12,6 +12,4 @@ public interface EstimationRepository extends EntityGraphJpaRepository<Estimatio
     Optional<Estimation> findByName(String name);
     @Query("SELECT COUNT(es) FROM Estimation es WHERE es.name = :name and es.id <> :id")
     int getCountEstimationWithSameName(@Param("id") Integer id, @Param("name") String name);
-    @Query("SELECT es FROM Estimation es JOIN FETCH es.createdBy WHERE es.id = :id")
-    Estimation findOne(@Param("id")Integer id);
 }

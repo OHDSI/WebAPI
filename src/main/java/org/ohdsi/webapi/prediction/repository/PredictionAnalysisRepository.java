@@ -12,6 +12,4 @@ public interface PredictionAnalysisRepository extends EntityGraphJpaRepository<P
     Optional<PredictionAnalysis> findByName(String name);
     @Query("SELECT COUNT(pa) FROM PredictionAnalysis pa WHERE pa.name = :name and pa.id <> :id")
     int getCountPredictionWithSameName(@Param("id") Integer id, @Param("name") String name);
-    @Query("SELECT pa FROM PredictionAnalysis pa JOIN FETCH pa.createdBy WHERE pa.id = :id")
-    PredictionAnalysis findOne(@Param("id")Integer id);
 }

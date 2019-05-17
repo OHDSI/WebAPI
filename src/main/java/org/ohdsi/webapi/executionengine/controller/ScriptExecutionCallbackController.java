@@ -16,6 +16,7 @@ import org.ohdsi.webapi.executionengine.exception.ScriptCallbackException;
 import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
 import org.ohdsi.webapi.executionengine.repository.AnalysisResultFileContentRepository;
 import org.ohdsi.webapi.executionengine.repository.ExecutionEngineGenerationRepository;
+import org.ohdsi.webapi.executionengine.service.AnalysisResultFileContentSensitiveInfoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,9 @@ import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.*;
 
-import static org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus.Status.*;
+import static org.ohdsi.webapi.Constants.Variables.SOURCE;
+import static org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus.Status.RUNNING;
+import static org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus.Status.STARTED;
 
 @Controller
 @Path("/executionservice/callbacks")
@@ -46,13 +49,18 @@ public class ScriptExecutionCallbackController {
     private final AnalysisResultFileContentRepository analysisResultFileContentRepository;
 
     @Autowired
+    private AnalysisResultFileContentSensitiveInfoService sensitiveInfoService;
+
+    @Autowired
     public ScriptExecutionCallbackController(ExecutionEngineGenerationRepository executionEngineGenerationRepository,
                                              AnalysisExecutionRepository analysisExecutionRepository,
-                                             AnalysisResultFileContentRepository analysisResultFileContentRepository) {
+                                             AnalysisResultFileContentRepository analysisResultFileContentRepository,
+                                             AnalysisResultFileContentSensitiveInfoService sensitiveInfoService) {
 
         this.executionEngineGenerationRepository = executionEngineGenerationRepository;
         this.analysisExecutionRepository = analysisExecutionRepository;
         this.analysisResultFileContentRepository = analysisResultFileContentRepository;
+        this.sensitiveInfoService = sensitiveInfoService;
     }
 
     @Path(value = "submission/{id}/status/update/{password}")
@@ -120,6 +128,8 @@ public class ScriptExecutionCallbackController {
             ExecutionEngineAnalysisStatus analysisExecution,
             AnalysisResultDTO analysisResultDTO) {
 
+        Map<String, Object> variables = Collections.singletonMap(SOURCE, analysisExecution.getExecutionEngineGeneration().getSource());
+
         List<AnalysisResultFileContent> files = new ArrayList<>();
         List<FormDataBodyPart> bodyParts = multiPart.getFields("file");
         if (bodyParts != null) {
@@ -136,8 +146,12 @@ public class ScriptExecutionCallbackController {
                 }
                 try {
                     byte[] contents = IOUtils.toByteArray(bodyPartEntity.getInputStream());
-                    files.add(new AnalysisResultFileContent(analysisExecution, fileName,
-                            bodyPart.getMediaType().getType(), contents));
+
+                    AnalysisResultFileContent resultFileContent = new AnalysisResultFileContent(analysisExecution, fileName,
+                            bodyPart.getMediaType().getType(), contents);
+                    resultFileContent = sensitiveInfoService.filterSensitiveInfo(resultFileContent, variables);
+
+                    files.add(resultFileContent);
                 } catch (IOException e) {
                     throw new ScriptCallbackException("Unable to read result " + "files");
                 }

@@ -100,7 +100,7 @@ public class Source implements Serializable {
   private byte[] keyfile;
 
   @Column(name = "keytab_name")
-  private String keytabName;
+  private String keyfileName;
 
   @Column(name = "krb_admin_server")
   private String krbAdminServer;
@@ -201,12 +201,12 @@ public class Source implements Serializable {
         this.keyfile = keyfile;
     }
 
-  public String getKeytabName() {
-        return keytabName;
+  public String getKeyfileName() {
+        return keyfileName;
     }
 
-  public void setKeytabName(String keytabName) {
-        this.keytabName = keytabName;
+  public void setKeyfileName(String keyfileName) {
+        this.keyfileName = keyfileName;
     }
 
   public KerberosAuthMechanism getKrbAuthMethod() {

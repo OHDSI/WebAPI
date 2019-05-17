@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.cohortdefinition.*;
 import org.ohdsi.webapi.cohortfeatures.GenerateCohortFeaturesTasklet;
@@ -45,17 +46,21 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
 
   private JobService jobService;
 
+  private ObjectMapper objectMapper;
+
   @Autowired
   public CohortGenerationService(CohortDefinitionRepository cohortDefinitionRepository,
                                  CohortGenerationInfoRepository cohortGenerationInfoRepository,
                                  JobBuilderFactory jobBuilders,
                                  StepBuilderFactory stepBuilders,
-                                 JobService jobService) {
+                                 JobService jobService,
+                                 ObjectMapper objectMapper) {
     this.cohortDefinitionRepository = cohortDefinitionRepository;
     this.cohortGenerationInfoRepository = cohortGenerationInfoRepository;
     this.jobBuilders = jobBuilders;
     this.stepBuilders = stepBuilders;
     this.jobService = jobService;
+    this.objectMapper = objectMapper;
   }
 
   public JobExecutionResource generateCohort(CohortDefinition cohortDefinition, Source source, boolean includeFeatures) {
@@ -86,7 +91,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     log.info("Beginning generate cohort for cohort definition id: {}", cohortDefinition.getId());
 
     GenerateCohortTasklet generateTasklet = new GenerateCohortTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), cohortDefinitionRepository,
-            getSourceRepository());
+            getSourceRepository(), objectMapper);
 
     ExceptionHandler exceptionHandler = new GenerationTaskExceptionHandler(new TempTableCleanupManager(getSourceJdbcTemplate(source),
             getTransactionTemplate(),

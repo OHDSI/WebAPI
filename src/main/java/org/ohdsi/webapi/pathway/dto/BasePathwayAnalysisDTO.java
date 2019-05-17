@@ -13,6 +13,7 @@ public abstract class BasePathwayAnalysisDTO<T extends CohortMetadata> {
     private List<T> targetCohorts;
     private List<T> eventCohorts;
     private Integer combinationWindow;
+		private Integer minSegmentLength;
     private Integer minCellCount;
     private Integer maxDepth;
     private boolean allowRepeats;
@@ -71,6 +72,14 @@ public abstract class BasePathwayAnalysisDTO<T extends CohortMetadata> {
 
         this.combinationWindow = combinationWindow;
     }
+
+		public Integer getMinSegmentLength() {
+			return minSegmentLength;
+		}
+
+		public void setMinSegmentLength(Integer minSegmentLength) {
+			this.minSegmentLength = minSegmentLength;
+		}
 
     public Integer getMinCellCount() {
 

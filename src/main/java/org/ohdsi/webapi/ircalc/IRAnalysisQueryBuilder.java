@@ -36,7 +36,7 @@ public class IRAnalysisQueryBuilder {
   
   private final static String PERFORM_ANALYSIS_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/incidencerate/sql/performAnalysis.sql"); 
   private final static String STRATA_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/incidencerate/sql/strata.sql");  
-  
+
   public static class BuildExpressionQueryOptions {
     @JsonProperty("cdmSchema")  
     public String cdmSchema;
@@ -52,7 +52,14 @@ public class IRAnalysisQueryBuilder {
 
     @JsonProperty("cohortTable")
     public String cohortTable;
-  } 
+  }
+
+  private final ObjectMapper objectMapper;
+
+  public IRAnalysisQueryBuilder(ObjectMapper objectMapper) {
+
+    this.objectMapper = objectMapper;
+  }
 
   private String getStrataQuery(CriteriaGroup strataCriteria)
   {
@@ -149,8 +156,7 @@ public class IRAnalysisQueryBuilder {
 
   public String buildAnalysisQuery(IncidenceRateAnalysis analyisis, BuildExpressionQueryOptions options) {
     try {
-      ObjectMapper mapper = new ObjectMapper();
-      IncidenceRateAnalysisExpression analysisExpression = mapper.readValue(analyisis.getDetails().getExpression(), IncidenceRateAnalysisExpression.class);
+      IncidenceRateAnalysisExpression analysisExpression = objectMapper.readValue(analyisis.getDetails().getExpression(), IncidenceRateAnalysisExpression.class);
       return buildAnalysisQuery(analysisExpression, analyisis.getId(), options);
     } catch (Exception e) {
       throw new RuntimeException(e);

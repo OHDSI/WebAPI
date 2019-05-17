@@ -7,7 +7,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.hydra.Hydra;
-import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.common.generation.AnalysisExecutionSupport;
@@ -36,6 +35,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
+import javax.ws.rs.InternalServerErrorException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.GENERATE_PREDICTION_ANALYSIS;
 import static org.ohdsi.webapi.Constants.Params.*;
-import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
+
 import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
 import org.ohdsi.webapi.analysis.AnalysisConceptSet;
 import org.ohdsi.webapi.common.DesignImportService;
@@ -64,9 +64,9 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
             "modifiedBy"
     );
 
-    @Value("${hydra.external-package.prediction}")
+    @Value("${hydra.externalPackage.prediction}")
     private String extenalPackagePath;
-    
+
     @Autowired
     private PredictionAnalysisRepository predictionAnalysisRepository;
 
@@ -115,6 +115,12 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     }
     
     @Override
+    public int getCountPredictionWithSameName(Integer id, String name) {
+
+        return predictionAnalysisRepository.getCountPredictionWithSameName(id, name);
+    }
+    
+    @Override
     public PredictionAnalysis getById(Integer id) {
         return predictionAnalysisRepository.findOne(id, COMMONS_ENTITY_GRAPH);
     }
@@ -135,7 +141,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
 
     @Override
     public PredictionAnalysis updateAnalysis(final int id, PredictionAnalysis pred) {
-        PredictionAnalysis predFromDB = predictionAnalysisRepository.findOne(id);
+        PredictionAnalysis predFromDB = getById(id);
         Date currentTime = Calendar.getInstance().getTime();
 
         pred.setModifiedBy(getCurrentUser());
@@ -218,7 +224,11 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     @Override
     public PredictionAnalysis importAnalysis(PatientLevelPredictionAnalysisImpl analysis) throws Exception {
         try {
-            // Create all of the cohort definitions 
+            if (Objects.isNull(analysis.getCohortDefinitions()) || Objects.isNull(analysis.getCovariateSettings())) {
+                log.error("Failed to import Prediction. Invalid source JSON.");
+                throw new InternalServerErrorException();
+            }
+            // Create all of the cohort definitions
             // and map the IDs from old -> new
             List<BigDecimal> newTargetIds = new ArrayList<>();
             List<BigDecimal> newOutcomeIds = new ArrayList<>();

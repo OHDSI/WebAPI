@@ -50,11 +50,17 @@ public class FeasibilityStudyQueryBuilder {
     
     @JsonProperty("cohortTable")  
     public String cohortTable;
-  } 
-  
+  }
+
+  private ObjectMapper objectMapper;
+
+  public FeasibilityStudyQueryBuilder(ObjectMapper objectMapper) {
+    this.objectMapper = objectMapper;
+  }
+
   private String getInclusionRuleInserts(FeasibilityStudy study)
   {
-    String insertTemplate = "insert into #inclusionRules vaues (%d, %d, %s)\n";
+    String insertTemplate = "insert into #inclusionRules values (%d, %d, %s)\n";
     StringBuilder insertStatements = new StringBuilder();
     
     List<InclusionRule> inclusionRules = study.getInclusionRules();
@@ -82,11 +88,10 @@ public class FeasibilityStudyQueryBuilder {
 
     try
     {
-      ObjectMapper mapper = new ObjectMapper();
-      indexRule = mapper.readValue(study.getIndexRule().getDetails().getExpression(), CohortExpression.class);
+      indexRule = objectMapper.readValue(study.getIndexRule().getDetails().getExpression(), CohortExpression.class);
       for (InclusionRule inclusionRule : study.getInclusionRules())
       {
-        inclusionRules.add(mapper.readValue(inclusionRule.getExpression(), CriteriaGroup.class));
+        inclusionRules.add(objectMapper.readValue(inclusionRule.getExpression(), CriteriaGroup.class));
       }
     }
     catch (Exception e)

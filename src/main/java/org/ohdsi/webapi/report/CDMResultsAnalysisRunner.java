@@ -29,10 +29,12 @@ public class CDMResultsAnalysisRunner {
     private static final String[] DRILLDOWN_TABLE = new String[]{"results_database_schema", "vocab_database_schema"};
 
     private String sourceDialect;
+    private ObjectMapper objectMapper;
 
-    public CDMResultsAnalysisRunner(String sourceDialect) {
+    public CDMResultsAnalysisRunner(String sourceDialect, ObjectMapper objectMapper) {
 
         this.sourceDialect = sourceDialect;
+        this.objectMapper = objectMapper;
     }
 
     public CDMDashboard getDashboard(JdbcTemplate jdbcTemplate,
@@ -169,13 +171,12 @@ public class CDMResultsAnalysisRunner {
     public ArrayNode getTreemap(JdbcTemplate jdbcTemplate,
                                 String domain,
                                 Source source) {
-        ObjectMapper mapper = new ObjectMapper();
-        ArrayNode arrayNode = mapper.createArrayNode();
+        ArrayNode arrayNode = objectMapper.createArrayNode();
 
         String sqlPath = BASE_SQL_PATH + "/report/" + domain.toLowerCase() + "/treemap.sql";
         PreparedStatementRenderer sql = this.renderTranslateSql(sqlPath, source);
         if (sql != null) {
-            List<JsonNode> list = jdbcTemplate.query(sql.getSql(), sql.getSetter(), new GenericRowMapper(mapper));
+            List<JsonNode> list = jdbcTemplate.query(sql.getSql(), sql.getSetter(), new GenericRowMapper(objectMapper));
             arrayNode.addAll(list);
         }
         return arrayNode;
@@ -185,8 +186,7 @@ public class CDMResultsAnalysisRunner {
                                  final String domain,
                                  final int conceptId,
                                  Source source) {
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectNode objectNode = mapper.createObjectNode();
+        ObjectNode objectNode = objectMapper.createObjectNode();
 
         ClassLoader cl = this.getClass().getClassLoader();
         ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(cl);
@@ -199,7 +199,7 @@ public class CDMResultsAnalysisRunner {
                 String sqlPath = fullSqlPath.substring(startIndex);
                 PreparedStatementRenderer sql = this.renderTranslateSql(sqlPath, conceptId, source);
                 if (sql != null) {
-                    List<JsonNode> l = jdbcTemplate.query(sql.getSql(), sql.getSetter(), new GenericRowMapper(mapper));
+                    List<JsonNode> l = jdbcTemplate.query(sql.getSql(), sql.getSetter(), new GenericRowMapper(objectMapper));
                     String analysisName = resource.getFilename().replace(".sql", "");
                     objectNode.putArray(analysisName).addAll(l);
                 }

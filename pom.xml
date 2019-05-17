@@ -78,15 +78,28 @@
     <security.ldap.baseDn></security.ldap.baseDn>
     <security.ldap.system.username></security.ldap.system.username>
     <security.ldap.system.password></security.ldap.system.password>
-    <security.ad.url>ldap://localhost:389</security.ad.url>
+    <security.ldap.searchString>(&amp;(objectClass=person)(CN={0}))</security.ldap.searchString>
+    <security.ldap.userMapping.displaynameAttr>displayName</security.ldap.userMapping.displaynameAttr>
+    <security.ldap.userMapping.firstnameAttr>givenName</security.ldap.userMapping.firstnameAttr>
+    <security.ldap.userMapping.middlenameAttr>initials</security.ldap.userMapping.middlenameAttr>
+    <security.ldap.userMapping.lastnameAttr>sn</security.ldap.userMapping.lastnameAttr>
+    <security.ldap.userMapping.usernameAttr>cn</security.ldap.userMapping.usernameAttr>
+    <security.ldap.searchBase>CN=Users,DC=example,DC=org</security.ldap.searchBase>
+    <security.ad.url></security.ad.url>
     <security.ad.searchBase>CN=Users,DC=example,DC=org</security.ad.searchBase>
     <security.ad.principalSuffix>@example.org</security.ad.principalSuffix>
     <security.ad.system.username></security.ad.system.username>
     <security.ad.system.password></security.ad.system.password>
-    <security.ad.searchFilter></security.ad.searchFilter>
+    <security.ad.searchFilter>(&amp;(objectClass=person)(cn=%s))</security.ad.searchFilter>
     <security.ad.ignore.partial.result.exception>true</security.ad.ignore.partial.result.exception>
     <security.ad.result.count.limit>30000</security.ad.result.count.limit> <!-- 0 means no limit -->
     <security.ad.default.import.group>public</security.ad.default.import.group>
+    <security.ad.searchString>(&amp;(objectClass=person)(userPrincipalName=%s))</security.ad.searchString>
+    <security.ad.userMapping.displaynameAttr>displayname</security.ad.userMapping.displaynameAttr>
+    <security.ad.userMapping.firstnameAttr>givenname</security.ad.userMapping.firstnameAttr>
+    <security.ad.userMapping.middlenameAttr>initials</security.ad.userMapping.middlenameAttr>
+    <security.ad.userMapping.lastnameAttr>sn</security.ad.userMapping.lastnameAttr>
+    <security.ad.userMapping.usernameAttr>cn</security.ad.userMapping.usernameAttr>
 
     <security.cas.loginUrl></security.cas.loginUrl>
     <security.cas.callbackUrl></security.cas.callbackUrl>

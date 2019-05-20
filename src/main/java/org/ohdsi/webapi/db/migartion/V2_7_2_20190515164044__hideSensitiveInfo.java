@@ -96,8 +96,8 @@ public class V2_7_2_20190515164044__hideSensitiveInfo implements ApplicationCont
         }
 
         public Map<Integer, Source> getSourceData(String webAPISchema) {
-            String[] params = new String[]{"webapi_schema", "webapi_schema", "webapi_schema"};
-            String[] values = new String[]{webAPISchema, webAPISchema, webAPISchema};
+            String[] params = new String[]{"webapi_schema"};
+            String[] values = new String[]{webAPISchema};
 
             String generatedDesignSql = SqlRender.renderSql(ResourceHelper.GetResourceAsString(SQL_PATH + "getSourceData.sql"), params, values);
             String translatedSql = SqlTranslate.translateSingleStatementSql(generatedDesignSql, getDialect());

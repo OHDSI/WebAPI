@@ -20,22 +20,6 @@ import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.CSVWriter;
-import java.io.ByteArrayOutputStream;
-import java.io.StringWriter;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-import javax.annotation.PostConstruct;
-import javax.servlet.ServletContext;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -43,7 +27,6 @@ import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
@@ -78,6 +61,21 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+import javax.annotation.PostConstruct;
+import javax.servlet.ServletContext;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.ByteArrayOutputStream;
+import java.io.StringWriter;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import static org.ohdsi.webapi.Constants.GENERATE_IR_ANALYSIS;
 import static org.ohdsi.webapi.Constants.Params.*;
@@ -190,7 +188,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     statistic.name = rs.getString("name");
     statistic.targetId = rs.getInt("target_id");
     statistic.outcomeId = rs.getInt("outcome_id");
-    
+
     statistic.totalPersons = rs.getLong("person_count");
     statistic.timeAtRisk = rs.getLong("time_at_risk");
     statistic.cases = rs.getLong("cases");
@@ -287,7 +285,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
               .collect(Collectors.toList());
     });
   }
-  
+
   @Override
   public int getCountIRWithSameName(final int id, String name) {
     return irAnalysisRepository.getCountIRWithSameName(id, name);
@@ -472,7 +470,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
     AnalysisReport.Summary summary = IterableUtils.find(getAnalysisSummaryList(id, source), summary12 -> ((summary12.targetId == targetId) && (summary12.outcomeId == outcomeId)));
 
-    Collection<AnalysisReport.StrataStatistic> strataStats = CollectionUtils.select(getStrataStatistics(id, source), 
+    Collection<AnalysisReport.StrataStatistic> strataStats = CollectionUtils.select(getStrataStatistics(id, source),
             summary1 -> ((summary1.targetId == targetId) && (summary1.outcomeId == outcomeId)));
     String treemapData = getStrataTreemapData(id, targetId, outcomeId, strataStats.size(), source);
 
@@ -694,5 +692,5 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
   private int countLikeName(String name) {
     return irAnalysisRepository.countByNameStartsWith(name);
-  }  
+  }
 }

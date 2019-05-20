@@ -119,7 +119,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
 
         return predictionAnalysisRepository.getCountPredictionWithSameName(id, name);
     }
-    
+
     @Override
     public PredictionAnalysis getById(Integer id) {
         return predictionAnalysisRepository.findOne(id, COMMONS_ENTITY_GRAPH);
@@ -141,7 +141,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
 
     @Override
     public PredictionAnalysis updateAnalysis(final int id, PredictionAnalysis pred) {
-        PredictionAnalysis predFromDB = predictionAnalysisRepository.findOne(id);
+        PredictionAnalysis predFromDB = getById(id);
         Date currentTime = Calendar.getInstance().getTime();
 
         pred.setModifiedBy(getCurrentUser());

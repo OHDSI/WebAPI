@@ -5,9 +5,6 @@ BEGIN
     DECLARE @duplicate_names TABLE(id int IDENTITY (1, 1), duplicate_name varchar(100));
     DECLARE @name_repeats TABLE (id int IDENTITY (1, 1), repeat_number int);
     DECLARE @amount_of_duplicate_names int;
-    DECLARE @amount_of_constraints int;
-    DECLARE @constraint_title varchar(100);
-    DECLARE @schema_title varchar(100);
     DECLARE @k int;
     
     SET @k = (SELECT COUNT(*) FROM (SELECT concept_set_name FROM ${ohdsiSchema}.concept_set
@@ -73,9 +70,6 @@ BEGIN
     DECLARE @duplicate_names TABLE(id int IDENTITY (1, 1), duplicate_name varchar(100));
     DECLARE @name_repeats TABLE (id int IDENTITY (1, 1), repeat_number int);
     DECLARE @amount_of_duplicate_names int;
-    DECLARE @amount_of_constraints int;
-    DECLARE @constraint_title varchar(100);
-    DECLARE @schema_title varchar(100);
     DECLARE @k int;
 
     SET @k = (SELECT COUNT(*) FROM (SELECT name FROM ${ohdsiSchema}.cohort_definition
@@ -141,9 +135,6 @@ BEGIN
     DECLARE @duplicate_names TABLE(id int IDENTITY (1, 1), duplicate_name varchar(100));
     DECLARE @name_repeats TABLE (id int IDENTITY (1, 1), repeat_number int);
     DECLARE @amount_of_duplicate_names int;
-    DECLARE @amount_of_constraints int;
-    DECLARE @constraint_title varchar(100);
-    DECLARE @schema_title varchar(100);
     DECLARE @k int;
     
     SET @k = (SELECT COUNT(*) FROM (SELECT name FROM ${ohdsiSchema}.cohort_characterization
@@ -209,9 +200,6 @@ BEGIN
     DECLARE @duplicate_names TABLE(id int IDENTITY (1, 1), duplicate_name varchar(100));
     DECLARE @name_repeats TABLE (id int IDENTITY (1, 1), repeat_number int);
     DECLARE @amount_of_duplicate_names int;
-    DECLARE @amount_of_constraints int;
-    DECLARE @constraint_title varchar(100);
-    DECLARE @schema_title varchar(100);
     DECLARE @k int;
 
     SET @k = (SELECT COUNT(*) FROM (SELECT name FROM ${ohdsiSchema}.fe_analysis
@@ -278,9 +266,6 @@ BEGIN
     DECLARE @duplicate_names TABLE(id int IDENTITY (1, 1), duplicate_name varchar(100));
     DECLARE @name_repeats TABLE (id int IDENTITY (1, 1), repeat_number int);
     DECLARE @amount_of_duplicate_names int;
-    DECLARE @amount_of_constraints int;
-    DECLARE @constraint_title varchar(100);
-    DECLARE @schema_title varchar(100);
     DECLARE @k int;
 
     SET @k = (SELECT COUNT(*) FROM (SELECT name FROM ${ohdsiSchema}.pathway_analysis
@@ -346,9 +331,6 @@ BEGIN
     DECLARE @duplicate_names TABLE(id int IDENTITY (1, 1), duplicate_name varchar(100));
     DECLARE @name_repeats TABLE (id int IDENTITY (1, 1), repeat_number int);
     DECLARE @amount_of_duplicate_names int;
-    DECLARE @amount_of_constraints int;
-    DECLARE @constraint_title varchar(100);
-    DECLARE @schema_title varchar(100);
     DECLARE @k int;
 
     SET @k = (SELECT COUNT(*) FROM (SELECT name FROM ${ohdsiSchema}.ir_analysis
@@ -414,9 +396,6 @@ BEGIN
     DECLARE @duplicate_names TABLE(id int IDENTITY (1, 1), duplicate_name varchar(100));
     DECLARE @name_repeats TABLE (id int IDENTITY (1, 1), repeat_number int);
     DECLARE @amount_of_duplicate_names int;
-    DECLARE @amount_of_constraints int;
-    DECLARE @constraint_title varchar(100);
-    DECLARE @schema_title varchar(100);
     DECLARE @k int;
 
     SET @k = (SELECT COUNT(*) FROM (SELECT name FROM ${ohdsiSchema}.estimation
@@ -482,9 +461,6 @@ BEGIN
     DECLARE @duplicate_names TABLE(id int IDENTITY (1, 1), duplicate_name varchar(100));
     DECLARE @name_repeats TABLE (id int IDENTITY (1, 1), repeat_number int);
     DECLARE @amount_of_duplicate_names int;
-    DECLARE @amount_of_constraints int;
-    DECLARE @constraint_title varchar(100);
-    DECLARE @schema_title varchar(100);
     DECLARE @k int;
 
     SET @k = (SELECT COUNT(*) FROM (SELECT name FROM ${ohdsiSchema}.prediction

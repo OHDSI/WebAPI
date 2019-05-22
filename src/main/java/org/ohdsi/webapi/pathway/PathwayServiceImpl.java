@@ -174,6 +174,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         Stream.concat(toImport.getTargetCohorts().stream(), toImport.getEventCohorts().stream()).forEach(pc -> {
             CohortDefinition cohortDefinition = designImportService.persistCohortOrGetExisting(pc.getCohortDefinition());
             pc.setId(null);
+            pc.setName(cohortDefinition.getName());
             pc.setCohortDefinition(cohortDefinition);
             pc.setPathwayAnalysis(newAnalysis);
             if (pc instanceof PathwayTargetCohort) {

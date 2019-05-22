@@ -64,6 +64,11 @@ public class DesignImportService {
             cohort.setCreatedDate(new Date());
             cohort.setDetails(details);
             details.setCohortDefinition(cohort);
+            String name = cohort.getName();
+            while (cohortRepository.findByName(name).size() > 0){
+                name = name + " (" + cohortRepository.countByNameStartsWith(name) + ")";
+            }
+            cohort.setName(name);
             final CohortDefinition savedCohort = cohortRepository.save(cohort);
             detailsRepository.save(details);
             return savedCohort;

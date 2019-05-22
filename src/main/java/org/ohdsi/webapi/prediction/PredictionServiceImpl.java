@@ -243,6 +243,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
                     newOutcomeIds.add(new BigDecimal(cd.getId()));
                 }
                 analysisCohortDefinition.setId(cd.getId());
+                analysisCohortDefinition.setName(cd.getName());
             });
             
             // Create all of the concept sets and map

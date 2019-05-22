@@ -313,6 +313,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
                 CohortDefinition cd = designImportService.persistCohortOrGetExisting(conversionService.convert(analysisCohortDefinition, CohortDefinition.class), true);
                 cohortIds.put(Long.valueOf(oldId), Long.valueOf(cd.getId()));
                 analysisCohortDefinition.setId(cd.getId());
+                analysisCohortDefinition.setName(cd.getName());
                 log.debug("cohort created: " + cd.getId());
             });
 

@@ -5,6 +5,7 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetailsRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
+import org.ohdsi.webapi.conceptset.ConceptSetRepository;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
@@ -30,18 +31,27 @@ public class DesignImportService {
     private final CohortDefinitionDetailsRepository detailsRepository;
     private final ConversionService conversionService;
     private final ConceptSetService conceptSetService;
+    private final ConceptSetRepository conceptSetRepository;
 
-    public DesignImportService(Security security, UserRepository userRepository, CohortDefinitionRepository cohortRepository, CohortDefinitionDetailsRepository detailsRepository, ConceptSetService conceptSetService, ConversionService conversionService) {
+    public DesignImportService(Security security, UserRepository userRepository, CohortDefinitionRepository cohortRepository, 
+                               CohortDefinitionDetailsRepository detailsRepository, ConceptSetService conceptSetService, 
+                               ConversionService conversionService, ConceptSetRepository conceptSetRepository) {
         this.security = security;
         this.userRepository = userRepository;
         this.cohortRepository = cohortRepository;
         this.detailsRepository = detailsRepository;
         this.conceptSetService = conceptSetService;
         this.conversionService = conversionService;
+        this.conceptSetRepository = conceptSetRepository;
     }
     
     public ConceptSetDTO persistConceptSet(final AnalysisConceptSet analysisConceptSet) {
         ConceptSetDTO cs = conversionService.convert(analysisConceptSet, ConceptSetDTO.class);
+        String name = cs.getName();
+        while (conceptSetRepository.countByNameStartsWith(name) > 0){
+            name = name + " (" + conceptSetRepository.countByNameStartsWith(name) + ")";
+        }
+        cs.setName(name);
         cs = conceptSetService.createConceptSet(cs);
         final Integer conceptSetId = cs.getId();
         List<ConceptSetItem> csi = Arrays.stream(analysisConceptSet.expression.items).map(i -> conversionService.convert(i, ConceptSetItem.class)).collect(Collectors.toList());
@@ -65,7 +75,7 @@ public class DesignImportService {
             cohort.setDetails(details);
             details.setCohortDefinition(cohort);
             String name = cohort.getName();
-            while (cohortRepository.findByName(name).size() > 0){
+            while (cohortRepository.countByNameStartsWith(name) > 0){
                 name = name + " (" + cohortRepository.countByNameStartsWith(name) + ")";
             }
             cohort.setName(name);

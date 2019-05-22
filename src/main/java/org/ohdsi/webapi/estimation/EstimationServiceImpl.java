@@ -324,6 +324,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
                int oldId = pcs.id;
                ConceptSetDTO cs = designImportService.persistConceptSet(pcs);
                pcs.id = cs.getId();
+               pcs.name = cs.getName();
                conceptSetIdMap.put(oldId, cs.getId());
                 log.debug("concept set created: " + cs.getId());
             });

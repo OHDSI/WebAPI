@@ -34,4 +34,6 @@ public interface ConceptSetRepository extends CrudRepository<ConceptSet, Integer
   
   @Query("SELECT COUNT(cs) FROM ConceptSet cs WHERE cs.name = :conceptSetName and cs.id <> :conceptSetId")
   int getCountCSetWithSameName(@Param("conceptSetId") Integer conceptSetId, @Param("conceptSetName") String conceptSetName);
+
+  int countByNameStartsWith(String pattern);
 }

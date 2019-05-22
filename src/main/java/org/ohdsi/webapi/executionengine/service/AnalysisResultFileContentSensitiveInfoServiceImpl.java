@@ -20,6 +20,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.google.common.io.Files.createTempDir;
 
@@ -28,6 +30,7 @@ public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractS
     private final String EXTENSION_ALL = "*";
     private final String EXTENSION_EMPTY = "-";
     private final String EXTENSION_ZIP = "zip";
+    private static final String ZIP_VOLUME_EXT_PATTERN = "z[0-9]";
 
     private Set<String> sensitiveExtensions;
 
@@ -60,7 +63,10 @@ public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractS
             // Save all files to be able to process multivolume archives
             Map<AnalysisResultFileContent, Path> paths = saveFiles(temporaryDir, source.getFiles());
             paths.forEach((file, path) -> {
-                processFile(path, variables);
+                // Archive volumes will be processed as entire archive
+                if(!isArchiveVolume(path)) {
+                    processFile(path, variables);
+                }
             });
             for(Iterator<Map.Entry<AnalysisResultFileContent, Path>> iter = paths.entrySet().iterator(); iter.hasNext();) {
                 Map.Entry<AnalysisResultFileContent, Path> entry = iter.next();
@@ -114,6 +120,13 @@ public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractS
             Files.write(path, value.getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
         }
         return path;
+    }
+
+    private boolean isArchiveVolume(Path path) {
+        String extension = FilenameUtils.getExtension(path.getFileName().toString());
+        Pattern pattern = Pattern.compile(ZIP_VOLUME_EXT_PATTERN);
+        Matcher matcher = pattern.matcher(extension);
+        return matcher.find();
     }
 
     private boolean isFilteringRequired(Path path) {

@@ -63,13 +63,10 @@ public class V2_7_2_20190515164044__hideSensitiveInfo implements ApplicationCont
                     contentList.getFiles().add(resultFileContent);
                 }
 
-                try {
-                    // We have to filter all files for current execution because of possibility of archives split into volumes
-                    // Volumes will be removed during decompressing and compressing
-                    contentList = sensitiveInfoService.filterSensitiveInfo(contentList, variables);
-                } catch (Exception e) {
-                    log.error("Error filtering sensitive info", e);
-                }
+                // We have to filter all files for current execution because of possibility of archives split into volumes
+                // Volumes will be removed during decompressing and compressing
+                contentList = sensitiveInfoService.filterSensitiveInfo(contentList, variables);
+
                 // Update content of files only if all files were processed successfully
                 if(contentList.isSuccessfullyFiltered()) {
                     for (AnalysisResultFileContent resultFileContent : contentList.getFiles()) {
@@ -111,7 +108,7 @@ public class V2_7_2_20190515164044__hideSensitiveInfo implements ApplicationCont
             String generatedDesignSql = SqlRender.renderSql(ResourceHelper.GetResourceAsString(SQL_PATH + "getOutputFilesData.sql"), params, values);
             String translatedSql = SqlTranslate.translateSingleStatementSql(generatedDesignSql, getDialect());
 
-            Map<Integer, ExecutionData> executionMap = new HashedMap();
+            Map<Integer, ExecutionData> executionMap = new HashMap<>();
             return getJdbcTemplate().query(translatedSql, rs -> {
                 while (rs.next()) {
                     OutputFile outputFile = new OutputFile();

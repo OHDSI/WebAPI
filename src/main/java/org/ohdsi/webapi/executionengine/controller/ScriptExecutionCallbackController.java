@@ -10,6 +10,7 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.hibernate.Hibernate;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFileContent;
+import org.ohdsi.webapi.executionengine.entity.AnalysisResultFileContentList;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineGenerationEntity;
 import org.ohdsi.webapi.executionengine.exception.ScriptCallbackException;
@@ -129,8 +130,8 @@ public class ScriptExecutionCallbackController {
 
         Map<String, Object> variables = Collections.singletonMap(SOURCE, analysisExecution.getExecutionEngineGeneration().getSource());
 
-        List<AnalysisResultFileContent> files = new ArrayList<>();
         List<FormDataBodyPart> bodyParts = multiPart.getFields("file");
+        AnalysisResultFileContentList contentList = new AnalysisResultFileContentList();
         if (bodyParts != null) {
             Map<String,Integer> duplicates = new HashMap<>();
             for (FormDataBodyPart bodyPart : bodyParts) {
@@ -148,17 +149,21 @@ public class ScriptExecutionCallbackController {
 
                     AnalysisResultFileContent resultFileContent = new AnalysisResultFileContent(analysisExecution, fileName,
                             bodyPart.getMediaType().getType(), contents);
-                    resultFileContent = sensitiveInfoService.filterSensitiveInfo(resultFileContent, variables);
+                    contentList.getFiles().add(resultFileContent);
 
-                    files.add(resultFileContent);
                 } catch (IOException e) {
                     throw new ScriptCallbackException("Unable to read result " + "files");
                 }
             }
         }
-        files.add(new AnalysisResultFileContent(analysisExecution, "stdout.txt", MediaType.TEXT_PLAIN,
-                analysisResultDTO.getStdout().getBytes()));
-        return analysisResultFileContentRepository.save(files);
+        AnalysisResultFileContent resultFileContent = new AnalysisResultFileContent(analysisExecution, "stdout.txt", MediaType.TEXT_PLAIN,
+                analysisResultDTO.getStdout().getBytes());
+        contentList.getFiles().add(resultFileContent);
+
+        // We have to filter all files for current execution because of possibility of archives split into volumes
+        // Volumes will be removed during decompressing and compressing
+        contentList = sensitiveInfoService.filterSensitiveInfo(contentList, variables);
+        return analysisResultFileContentRepository.save(contentList.getFiles());
     }
 
 }

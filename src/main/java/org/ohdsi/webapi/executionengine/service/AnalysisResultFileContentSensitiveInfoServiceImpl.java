@@ -1,11 +1,15 @@
 package org.ohdsi.webapi.executionengine.service;
 
 import com.odysseusinc.arachne.execution_engine_common.util.CommonFileUtils;
+import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.ohdsi.webapi.common.sensitiveinfo.AbstractSensitiveInfoService;
+import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFileContent;
+import org.ohdsi.webapi.executionengine.entity.AnalysisResultFileContentList;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -15,9 +19,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static com.google.common.io.Files.createTempDir;
 
@@ -51,18 +53,33 @@ public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractS
     }
 
     @Override
-    public AnalysisResultFileContent filterSensitiveInfo(AnalysisResultFileContent source, Map<String, Object> variables, boolean isAdmin) {
+    // IMPORTANT: All volumes of multivolume archives will be merged into one volume
+    public AnalysisResultFileContentList filterSensitiveInfo(AnalysisResultFileContentList source, Map<String, Object> variables, boolean isAdmin) {
         File temporaryDir = createTempDir();
         try {
-            Path path = new File(temporaryDir, source.getAnalysisResultFile().getFileName()).toPath();
-            Files.write(path, source.getContents(), StandardOpenOption.CREATE_NEW);
-
-            processFile(path, variables);
-
-            byte[] content = Files.readAllBytes(path);
-            source.setContents(content);
-        } catch (IOException e) {
-            LOGGER.error("File writing error", e);
+            // Save all files to be able to process multivolume archives
+            Map<AnalysisResultFileContent, Path> paths = saveFiles(temporaryDir, source.getFiles());
+            paths.forEach((file, path) -> {
+                processFile(path, variables);
+            });
+            for(Iterator<Map.Entry<AnalysisResultFileContent, Path>> iter = paths.entrySet().iterator(); iter.hasNext();) {
+                Map.Entry<AnalysisResultFileContent, Path> entry = iter.next();
+                AnalysisResultFileContent fileContent = entry.getKey();
+                Path path = entry.getValue();
+                // If file does not exist then it was a part of multivolume archive and was deleted
+                if(path.toFile().exists()) {
+                    byte[] content = Files.readAllBytes(path);
+                    fileContent.setContents(content);
+                } else {
+                    // Path contains information about archive volume, must be deleted
+                    // because we create new archive without volumes
+                    iter.remove();
+                }
+            }
+            source.getFiles().retainAll(paths.keySet());
+        } catch (Exception e) {
+            LOGGER.error("Files filtering error", e);
+            source.setHasErrors(true);
         } finally {
             FileUtils.deleteQuietly(temporaryDir);
         }
@@ -72,6 +89,22 @@ public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractS
     @Override
     public boolean isAdmin() {
         return false;
+    }
+
+    private Map<AnalysisResultFileContent, Path> saveFiles(File tempDir, List<AnalysisResultFileContent> files) throws Exception{
+        Map<AnalysisResultFileContent, Path> paths = new HashedMap();
+        for (AnalysisResultFileContent file : files) {
+            try {
+                AnalysisResultFile analysisResultFile = file.getAnalysisResultFile();
+                Path path = new File(tempDir, analysisResultFile.getFileName()).toPath();
+                paths.put(file, path);
+                Files.write(path, file.getContents(), StandardOpenOption.CREATE_NEW);
+            } catch (Exception e) {
+                LOGGER.error("File writing error for file with id: {}", file.getAnalysisResultFile().getId(), e);
+                throw e;
+            }
+        }
+        return paths;
     }
 
     private Path doFilterSensitiveInfo(Path path, Map<String, Object> variables) throws IOException {
@@ -107,10 +140,17 @@ public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractS
         File temporaryDir = createTempDir();
         try {
             CommonFileUtils.unzipFiles(zipPath.toFile(), temporaryDir);
-            zipPath.toFile().delete();
+
+            // Delete archive volumes
+            ZipFile zipFile = new ZipFile(zipPath.toFile());
+            List<String> filenames = zipFile.getSplitZipFiles();
+            filenames.forEach(filename -> {
+                File file = new File(filename);
+                file.delete();
+            });
 
             Files.list(temporaryDir.toPath()).forEach(path -> {
-                try{
+                try {
                     process(path, variables);
                 } catch (IOException e) {
                     LOGGER.error("File processing error: {}", path.getFileName().toString(), e);

@@ -253,6 +253,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
                int oldId = pcs.id;
                ConceptSetDTO cs = designImportService.persistConceptSet(pcs);
                pcs.id = cs.getId();
+               pcs.name = cs.getName();
                conceptSetIdMap.put(oldId, cs.getId());
             });
             

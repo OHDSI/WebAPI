@@ -22,7 +22,7 @@ import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.ohdsi.webapi.util.QuoteUtils;
 import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.stereotype.Component;
 import org.ohdsi.featureExtraction.FeatureExtraction;
@@ -62,7 +62,7 @@ public class FeatureExtractionService extends AbstractDaoService {
 	private final String QUERY_COVARIATE_STATS_VOCAB = ResourceHelper.GetResourceAsString("/resources/cohortfeatures/sql/queryCovariateStatsVocab.sql");
 
 	private final Pattern timeWindowPattern = Pattern.compile("(LongTerm|MediumTerm|ShortTerm|AnyTimePrior|Overlapping)");
-	
+
 	@Autowired
 	private JobBuilderFactory jobBuilders;
 
@@ -113,7 +113,7 @@ public class FeatureExtractionService extends AbstractDaoService {
 		ArrayList<String> clauses = new ArrayList<>();
 
 		if (searchTerm != null && searchTerm.length() > 0) {
-			clauses.add(String.format("lower(fr.covariate_name) like '%%%s%%'", searchTerm));
+			clauses.add(String.format("lower(fr.covariate_name) like '%%%s%%'", QuoteUtils.escapeSql(searchTerm)));
 		}
 
 		if (analysisIds != null && analysisIds.size() > 0) {
@@ -145,7 +145,7 @@ public class FeatureExtractionService extends AbstractDaoService {
 		if (timeWindows != null && timeWindows.size() > 0) {
 			ArrayList<String> timeWindowClauses = new ArrayList<>();
 			timeWindows.forEach((timeWindow) -> {
-				timeWindowClauses.add(String.format("ar.analysis_name like '%%%s'", timeWindow));
+				timeWindowClauses.add(String.format("ar.analysis_name like '%%%s'", QuoteUtils.escapeSql(timeWindow)));
 			});
 			clauses.add("(" + StringUtils.join(timeWindowClauses, " OR ") + ")");
 		}
@@ -156,7 +156,7 @@ public class FeatureExtractionService extends AbstractDaoService {
 				if (domain.toLowerCase().equals("null")) {
 					domainClauses.add("ar.domain_id is null");
 				} else {
-					domainClauses.add(String.format("lower(ar.domain_id) = lower('%s')", domain));
+					domainClauses.add(String.format("lower(ar.domain_id) = lower('%s')", QuoteUtils.escapeSql(domain)));
 				}
 			});
 			clauses.add("(" + StringUtils.join(domainClauses, " OR ") + ")");
@@ -172,10 +172,10 @@ public class FeatureExtractionService extends AbstractDaoService {
 		if (analysisName.endsWith("ShortTerm")) return "Short Term";
 		if (analysisName.endsWith("AnyTimePrior")) return "Any Time Prior";
 		if (analysisName.endsWith("Overlapping")) return "Overlapping";
-		
-		return "None";	
+
+		return "None";
 	}
-	
+
 	private String getAnalysisName(String analysisName, String domainId)
 	{
 		String finalName = analysisName.replaceAll(timeWindowPattern.pattern(), "");
@@ -184,7 +184,7 @@ public class FeatureExtractionService extends AbstractDaoService {
 			finalName = finalName.substring(domainId.length() + 1);
 		return finalName;
 	}
-	
+
         @GET
         @Path("defaultcovariatesettings")
         @Produces(MediaType.APPLICATION_JSON)
@@ -197,7 +197,7 @@ public class FeatureExtractionService extends AbstractDaoService {
             } catch (Exception e) {
                 throw new IllegalArgumentException("The parameter temporal must be a string of true or false.");
             }
-            
+
             FeatureExtraction.init(null);
             String settings = "";
             if (getTemporal) {
@@ -205,10 +205,10 @@ public class FeatureExtractionService extends AbstractDaoService {
             } else {
                 settings = FeatureExtraction.getDefaultPrespecAnalyses();
             }
-            
+
             return settings;
         }
-        
+
 	@GET
 	@Path("query/prevalence/{cohortId}/{sourceKey}")
 	@Produces(MediaType.APPLICATION_JSON)

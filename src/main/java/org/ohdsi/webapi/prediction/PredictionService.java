@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.prediction;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.prediction.domain.PredictionGenerationEntity;
 import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl;
 
@@ -30,7 +31,7 @@ public interface PredictionService {
 
   void hydrateAnalysis(PatientLevelPredictionAnalysisImpl analysis, String packageName, OutputStream out) throws JsonProcessingException;
 
-  void runGeneration(PredictionAnalysis predictionAnalysis, String sourceKey) throws IOException;
+  JobExecutionResource runGeneration(PredictionAnalysis predictionAnalysis, String sourceKey) throws IOException;
 
   PredictionGenerationEntity getGeneration(Long generationId);
 

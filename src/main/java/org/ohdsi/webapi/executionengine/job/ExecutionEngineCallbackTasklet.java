@@ -1,16 +1,18 @@
 package org.ohdsi.webapi.executionengine.job;
 
-import static org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus.Status.COMPLETED;
-import static org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus.Status.FAILED;
-
-import javax.persistence.EntityManager;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
 import org.ohdsi.webapi.executionengine.repository.ExecutionEngineGenerationRepository;
+import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.repeat.RepeatStatus;
+
+import javax.persistence.EntityManager;
+
+import static org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus.Status.COMPLETED;
+import static org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus.Status.FAILED;
 
 public class ExecutionEngineCallbackTasklet extends BaseExecutionTasklet {
 
@@ -42,7 +44,12 @@ public class ExecutionEngineCallbackTasklet extends BaseExecutionTasklet {
 
     @Override
     public ExitStatus afterStep(StepExecution stepExecution) {
+        if (status == FAILED) {
+            // Synchronize step exit status and batch status of the job
+            stepExecution.setStatus(BatchStatus.FAILED);
+            return ExitStatus.FAILED;
+        }
 
-        return status == FAILED ? ExitStatus.FAILED : ExitStatus.COMPLETED;
+        return ExitStatus.COMPLETED;
     }
 }

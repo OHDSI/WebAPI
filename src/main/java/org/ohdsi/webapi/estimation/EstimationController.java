@@ -3,7 +3,6 @@ package org.ohdsi.webapi.estimation;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.common.SourceMapKey;
-import org.ohdsi.webapi.common.analyses.CommonAnalysisDTO;
 import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
 import org.ohdsi.webapi.estimation.domain.EstimationGenerationEntity;
@@ -11,6 +10,7 @@ import org.ohdsi.webapi.estimation.dto.EstimationDTO;
 import org.ohdsi.webapi.estimation.dto.EstimationShortDTO;
 import org.ohdsi.webapi.estimation.specification.EstimationAnalysisImpl;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
+import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.ExceptionUtils;
@@ -187,12 +187,12 @@ public class EstimationController {
   @Path("{id}/generation/{sourceKey}")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public void runGeneration(@PathParam("id") Integer analysisId,
-                            @PathParam("sourceKey") String sourceKey) throws IOException {
+  public JobExecutionResource runGeneration(@PathParam("id") Integer analysisId,
+                                            @PathParam("sourceKey") String sourceKey) throws IOException {
 
     Estimation analysis = service.getAnalysis(analysisId);
     ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format(NO_ESTIMATION_MESSAGE, analysisId));
-    service.runGeneration(analysis, sourceKey);
+    return service.runGeneration(analysis, sourceKey);
   }
 
   @GET

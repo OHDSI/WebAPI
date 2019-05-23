@@ -17,5 +17,6 @@
 	<cache alias="datasources.person" uses-template="default"/>	
 	<cache alias="datasources.domain" uses-template="default"/>
 	<cache alias="datasources.drilldown" uses-template="default"/>
-	
+	<cache alias="datasources.dataDensity" uses-template="default"/>
+
 </config>

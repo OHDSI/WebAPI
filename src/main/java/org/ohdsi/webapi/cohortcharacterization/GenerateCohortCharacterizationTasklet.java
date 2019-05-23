@@ -110,7 +110,12 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
                     .replaceAll("#", tempSchema + "." + sessionId + "_")
                     .replaceAll("tempdb\\.\\.", "");
         }
-        final String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect());
+        final String translatedSql;
+        if (DBMSType.BIGQUERY.getOhdsiDB().equals(source.getSourceDialect())){
+            translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), null, tempSchema);
+        } else {
+            translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect());
+        }        
         return SqlSplit.splitSql(translatedSql);
     }
 

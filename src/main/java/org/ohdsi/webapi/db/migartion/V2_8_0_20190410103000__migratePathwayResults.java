@@ -49,9 +49,12 @@ public class V2_8_0_20190410103000__migratePathwayResults implements Application
 			// clear existing results to prevent double-inserts
 			params = new String[]{"results_schema"};
 			values = new String[]{resultsSchema};
-			String truncateSql = SqlRender.renderSql("TRUNCATE TABLE @results_schema.pathway_analysis_codes;", params, values);
-			String translatedSql = SqlTranslate.translateSql(truncateSql, source.getSourceDialect()); // TRUNCATE could lead to multiple statements
-			Arrays.asList(SqlSplit.splitSql(translatedSql)).forEach(jdbcTemplate::execute);
+
+			// delete only codes that belongs current Atlas instance
+			List<Object[]> executionIdAndCodes = pathwayCodes.stream().map(v -> new Object[]{ v[0], v[1] }).collect(Collectors.toList());
+			String deleteSql = SqlRender.renderSql("DELETE FROM @results_schema.pathway_analysis_codes WHERE pathway_analysis_generation_id = ? AND code = ?", params, values);
+			String translatedSql = SqlTranslate.translateSingleStatementSql(deleteSql, source.getSourceDialect());
+			jdbcTemplate.batchUpdate(translatedSql, executionIdAndCodes);
 
 			String saveCodesSql = SqlRender.renderSql(ResourceHelper.GetResourceAsString(SQL_PATH + "saveCodes.sql"), params, values);
 			saveCodesSql = SqlTranslate.translateSingleStatementSql(saveCodesSql, source.getSourceDialect());

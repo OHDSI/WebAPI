@@ -38,6 +38,7 @@ import org.ohdsi.webapi.shiro.management.datasource.SourceIdAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.util.CopyUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -508,11 +509,15 @@ public class CohortDefinitionService extends AbstractDaoService {
   public CohortDTO copy(@PathParam("id") final int id) {
     CohortDTO sourceDef = getCohortDefinition(id);
     sourceDef.setId(null); // clear the ID
-    sourceDef.setName(String.format(ENTITY_COPY_PREFIX, sourceDef.getName()));
-
+    sourceDef.setName(CopyUtils.getNameForCopy(sourceDef.getName(), this::countLikeName, cohortDefinitionRepository.findByName(sourceDef.getName())));
     CohortDTO copyDef = createCohortDefinition(sourceDef);
 
     return copyDef;
+  }
+  
+  public int countLikeName(String copyName) {
+
+    return cohortDefinitionRepository.countByNameStartsWith(copyName);
   }
 
   /**

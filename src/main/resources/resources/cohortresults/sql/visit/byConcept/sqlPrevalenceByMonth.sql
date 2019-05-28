@@ -14,6 +14,6 @@ inner join (
 	where analysis_id = 117 and cohort_definition_id = @cohortDefinitionId
 	group by stratum_1, count_value 
 ) denom on num.stratum_2 = denom.stratum_1  --calendar year
-inner join @cdm_database_schema.concept c1 on CAST(num.stratum_1 AS BIGINT) = c1.concept_id
+inner join @cdm_database_schema.concept c1 on CAST(CASE WHEN isNumeric(num.stratum_1) = 1 THEN num.stratum_1 ELSE null END AS INT) = c1.concept_id
 where  c1.concept_id = @conceptId
 ORDER BY CAST(num.stratum_2 as INT)

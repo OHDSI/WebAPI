@@ -10,11 +10,12 @@ public enum FilterTemplates {
 
     // HONEUR specific start
     HONEUR_REQUEST("honeur-request"),
-    CAS_SESSION("casSessionFilter"),
+    //CAS_SESSION("casSessionFilter"),
     CREATE_PERMISSIONS_ON_IMPORT_COHORT_DEFINITION("createPermissionsOnImportCohortDefinition"),
-    CREATE_PERMISSIONS_ON_CREATE_COHORT_DEFINITION("createPermissionsOnCreateCohortDefinition"),
-    DELETE_PERMISSIONS_ON_DELETE_COHORT_DEFINITION("deletePermissionsOnDeleteCohortDefinition"),
     DELETE_PERMISSIONS_ON_EXPORT_COHORT_DEFINITION("deletePermissionsOnExportCohortDefinition"),
+
+    CAS_SESSION_FILTER("casSessionFilter"),
+
     // HONEUR specific end
 
     CREATE_COHORT_DEFINITION("createPermissionsOnCreateCohortDefinition", COHORT, POST),
@@ -30,12 +31,12 @@ public enum FilterTemplates {
     CREATE_ESTIMATION("createPermissionsOnCreateEstimation", ESTIMATION, POST),
     COPY_PREDICTION("createPermissionsOnCopyPrediction", PREDICTION, GET),
     COPY_ESTIMATION("createPermissionsOnCopyEstimation", ESTIMATION, GET),
-    
+
     //old PLE & PLP
     CREATE_PLE("createPermissionsOnCreatePle", ESTIMATION, POST),
     CREATE_PLP("createPermissionsOnCreatePlp", PATIENT_LEVEL_PREDICTION, POST),
     CREATE_COPY_PLP("createPermissionsOnCopyPlp", PATIENT_LEVEL_PREDICTION, GET),
-    
+
     DELETE_COHORT_CHARACTERIZATION("deletePermissionsOnDeleteCohortCharacterization", COHORT_CHARACTERIZATION),
     DELETE_PATHWAY_ANALYSIS("deletePermissionsOnDeletePathwayAnalysis", PATHWAY_ANALYSIS),
     DELETE_FEATURE_ANALYSIS("deletePermissionsOnDeleteFeatureAnalysis", FEATURE_ANALYSIS),
@@ -46,7 +47,7 @@ public enum FilterTemplates {
     DELETE_SOURCE("deletePermissionsOnDeleteSource", SOURCE),
     DELETE_PREDICTION("deletePermissionsOnDeletePrediction", PREDICTION),
     DELETE_ESTIMATION("deletePermissionsOnDeleteEstimation", ESTIMATION),
-    
+
     SKIP_IF_NOT_POST("skipFurtherFiltersIfNotPost"),
     SKIP_IF_NOT_PUT("skipFurtherFiltersIfNotPut"),
     SKIP_IF_NOT_PUT_OR_POST("skipFurtherFiltersIfNotPutOrPost"),
@@ -63,7 +64,7 @@ public enum FilterTemplates {
     FACEBOOK_AUTHC("facebookAuthc"),
     GITHUB_AUTHC("githubAuthc"),
     CAS_AUTHC("casAuthc"),
-    
+
 
     NO_SESSION_CREATION("noSessionCreation"),
     FORCE_SESSION_CREATION("forceSessionCreation"),
@@ -81,25 +82,25 @@ public enum FilterTemplates {
     OAUTH_CALLBACK("oauthCallback"),
     HANDLE_UNSUCCESSFUL_OAUTH("handleUnsuccessfullOAuth"),
     HANDLE_CAS("handleCas");
-    
+
     private String templateName;
     private EntityName entityName;
     private String httpMethod;
-    
-    FilterTemplates(String templateName){
+
+    FilterTemplates(String templateName) {
         this(templateName, null, null);
     }
 
-    FilterTemplates(String templateName, EntityName entityName){
+    FilterTemplates(String templateName, EntityName entityName) {
         this(templateName, entityName, null);
     }
-    
-    FilterTemplates(String templateName, EntityName entityName, String httpMethod){
+
+    FilterTemplates(String templateName, EntityName entityName, String httpMethod) {
         this.templateName = templateName;
         this.entityName = entityName;
         this.httpMethod = httpMethod;
     }
-    
+
     public String getTemplateName() {
         return templateName;
     }

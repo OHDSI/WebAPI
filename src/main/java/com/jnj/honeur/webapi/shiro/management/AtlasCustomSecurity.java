@@ -1,12 +1,11 @@
 package com.jnj.honeur.webapi.shiro.management;
 
+import com.jnj.honeur.webapi.cas.filter.CASSessionFilter;
 import com.jnj.honeur.webapi.shiro.filters.*;
 import io.buji.pac4j.filter.CallbackFilter;
 import io.buji.pac4j.filter.SecurityFilter;
 import io.buji.pac4j.realm.Pac4jRealm;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.activedirectory.ActiveDirectoryRealm;
 import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
@@ -16,6 +15,7 @@ import org.apache.shiro.web.util.WebUtils;
 import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.filters.*;
+import org.ohdsi.webapi.shiro.management.AtlasRegularSecurity;
 import org.ohdsi.webapi.shiro.management.AtlasSecurity;
 import org.ohdsi.webapi.shiro.management.FilterChainBuilder;
 import org.ohdsi.webapi.shiro.management.FilterTemplates;
@@ -33,6 +33,8 @@ import org.pac4j.oauth.client.GitHubClient;
 import org.pac4j.oauth.client.Google2Client;
 import org.pac4j.oidc.client.OidcClient;
 import org.pac4j.oidc.config.OidcConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -69,22 +71,10 @@ public class AtlasCustomSecurity extends AtlasSecurity {
 
     public static final String FINGERPRINT_ATTRIBUTE = "FINGERPRINT";
 
-    private final Log logger = LogFactory.getLog(getClass());
-
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
+    private final Logger logger = LoggerFactory.getLogger(AtlasRegularSecurity.class);
 
     @Value("${security.token.expiration}")
     private int tokenExpirationIntervalInSeconds;
-
-    @Value("${webapi.central}")
-    private boolean central;
-
-    @Value("${security.cas.tgc.domain}")
-    private String casTgcDomain;
-
-    @Value("${security.cookies.domain}")
-    private String cookiesDomain;
 
     @Value("${security.oauth.callback.ui}")
     private String oauthUiCallback;
@@ -147,6 +137,18 @@ public class AtlasCustomSecurity extends AtlasSecurity {
     @Autowired(required = false)
     @Qualifier("authDataSource")
     private DataSource jdbcDataSource;
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+
+    @Value("${webapi.central}")
+    private boolean central;
+
+    @Value("${security.cas.tgc.domain}")
+    private String casTgcDomain;
+
+    @Value("${security.cookies.domain}")
+    private String cookiesDomain;
 
     @Value("${security.oid.redirectUrl}")
     private String redirectUrl;
@@ -217,6 +219,12 @@ public class AtlasCustomSecurity extends AtlasSecurity {
         filters.put(SEND_TOKEN_IN_HEADER, new HoneurSendTokenInHeaderFilter());
         filters.put(SEND_TOKEN_IN_REDIRECT, new HoneurSendTokenInRedirectFilter(redirectUrl));
 
+        filters.put(CREATE_PERMISSIONS_ON_IMPORT_COHORT_DEFINITION, this.getCreatePermissionsOnImportCohortDefinitionFilter());
+        filters.put(DELETE_PERMISSIONS_ON_EXPORT_COHORT_DEFINITION, this.getDeletePermissionsOnExportCohortDefinitionFilter());
+        filters.put(CREATE_COHORT_DEFINITION, this.getCreatePermissionsOnCreateCohortDefinitionFilter());
+        filters.put(DELETE_COHORT_DEFINITION, this.getDeletePermissionsOnDeleteCohortDefinitionFilter());
+        filters.put(CAS_SESSION_FILTER, new CASSessionFilter(true, casTgcDomain, tokenExpirationIntervalInSeconds));
+
         // OAuth
         //
         Google2Client googleClient = new Google2Client(this.googleApiKey, this.googleApiSecret);
@@ -273,44 +281,6 @@ public class AtlasCustomSecurity extends AtlasSecurity {
         this.setUpCAS(filters);
 
         return filters;
-    }
-
-    @Override
-    protected FilterChainBuilder getFilterChainBuilder() {
-
-        // the order does matter - first match wins
-        FilterChainBuilder filterChainBuilder = new FilterChainBuilder()
-                .setBeforeOAuthFilters(SSL, CORS, FORCE_SESSION_CREATION)
-                .setAfterOAuthFilters(UPDATE_TOKEN, SEND_TOKEN_IN_URL)
-                .setRestFilters(SSL, NO_SESSION_CREATION, CORS, CAS_SESSION)
-                .setAuthcFilter(JWT_AUTHC)
-                .setAuthzFilter(AUTHZ)
-                // login/logout
-                .addRestPath("/user/login/openid", FORCE_SESSION_CREATION, OIDC_AUTH, UPDATE_TOKEN, SEND_TOKEN_IN_REDIRECT)
-                .addRestPath("/user/login/windows", NEGOTIATE_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
-                .addRestPath("/user/login/kerberos", KERBEROS_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
-                .addRestPath("/user/login/db", JDBC_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
-                .addRestPath("/user/login/ldap", LDAP_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
-                .addRestPath("/user/login/ad", AD_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
-                .addRestPath("/user/refresh", JWT_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
-                .addRestPath("/user/logout", LOGOUT)
-                .addOAuthPath("/user/oauth/google", GOOGLE_AUTHC)
-                .addOAuthPath("/user/oauth/facebook", FACEBOOK_AUTHC)
-                .addOAuthPath("/user/oauth/github", GITHUB_AUTHC)
-                .addPath("/user/login/cas", SSL, CORS, FORCE_SESSION_CREATION, CAS_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_URL)
-                .addPath("/user/oauth/callback", SSL, HANDLE_UNSUCCESSFUL_OAUTH, OAUTH_CALLBACK)
-                .addPath("/user/cas/callback", SSL, HANDLE_CAS, UPDATE_TOKEN, SEND_TOKEN_IN_URL)
-
-                .addProtectedRestPath("/cohortdefinition/hss/select", CREATE_PERMISSIONS_ON_IMPORT_COHORT_DEFINITION)
-                .addProtectedRestPath("/cohortdefinition/", CREATE_PERMISSIONS_ON_CREATE_COHORT_DEFINITION)
-                .addProtectedRestPath("/cohortdefinition/*", DELETE_PERMISSIONS_ON_DELETE_COHORT_DEFINITION)
-                .addProtectedRestPath("/cohortdefinition/*/export", DELETE_PERMISSIONS_ON_EXPORT_COHORT_DEFINITION, CREATE_PERMISSIONS_ON_CREATE_COHORT_DEFINITION)
-                .addProtectedRestPath("/cohortdefinition/hss/select", CREATE_PERMISSIONS_ON_IMPORT_COHORT_DEFINITION);
-
-
-        setupProtectedPaths(filterChainBuilder);
-
-        return filterChainBuilder.addRestPath("/**");
     }
 
     private Filter getCreatePermissionsOnImportCohortDefinitionFilter() {
@@ -402,6 +372,44 @@ public class AtlasCustomSecurity extends AtlasSecurity {
                 authorizer.removePermissionsFromTemplate(cohortdefinitionImporterPermissionTemplates, id);
             }
         };
+    }
+
+    @Override
+    protected FilterChainBuilder getFilterChainBuilder() {
+
+        // the order does matter - first match wins
+        FilterChainBuilder filterChainBuilder = new FilterChainBuilder()
+                .setBeforeOAuthFilters(SSL, CORS, FORCE_SESSION_CREATION)
+                .setAfterOAuthFilters(UPDATE_TOKEN, SEND_TOKEN_IN_URL)
+                .setRestFilters(SSL, NO_SESSION_CREATION, CORS, CAS_SESSION_FILTER)
+                .setAuthcFilter(JWT_AUTHC)
+                .setAuthzFilter(AUTHZ)
+                // login/logout
+                .addRestPath("/user/login/openid", FORCE_SESSION_CREATION, OIDC_AUTH, UPDATE_TOKEN, SEND_TOKEN_IN_REDIRECT)
+                .addRestPath("/user/login/windows", NEGOTIATE_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
+                .addRestPath("/user/login/kerberos", KERBEROS_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
+                .addRestPath("/user/login/db", JDBC_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
+                .addRestPath("/user/login/ldap", LDAP_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
+                .addRestPath("/user/login/ad", AD_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
+                .addRestPath("/user/refresh", JWT_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
+                .addRestPath("/user/logout", LOGOUT)
+                .addOAuthPath("/user/oauth/google", GOOGLE_AUTHC)
+                .addOAuthPath("/user/oauth/facebook", FACEBOOK_AUTHC)
+                .addOAuthPath("/user/oauth/github", GITHUB_AUTHC)
+                .addPath("/user/login/cas", SSL, CORS, FORCE_SESSION_CREATION, CAS_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_URL)
+                .addPath("/user/oauth/callback", SSL, HANDLE_UNSUCCESSFUL_OAUTH, OAUTH_CALLBACK)
+                .addPath("/user/cas/callback", SSL, HANDLE_CAS, UPDATE_TOKEN, SEND_TOKEN_IN_URL)
+
+                .addRestPath("/cohortdefinition/uuids")
+                .addProtectedRestPath("/cohortdefinition/hss/select", CREATE_PERMISSIONS_ON_IMPORT_COHORT_DEFINITION)
+                .addProtectedRestPath("/cohortdefinition/", CREATE_COHORT_DEFINITION)
+                .addProtectedRestPath("/cohortdefinition/*", DELETE_COHORT_DEFINITION)
+                .addProtectedRestPath("/cohortdefinition/*/export", DELETE_PERMISSIONS_ON_EXPORT_COHORT_DEFINITION, CREATE_COHORT_DEFINITION)
+                .addProtectedRestPath("/cohortdefinition/*/export/*", DELETE_PERMISSIONS_ON_EXPORT_COHORT_DEFINITION, CREATE_COHORT_DEFINITION);
+
+        setupProtectedPaths(filterChainBuilder);
+
+        return filterChainBuilder.addRestPath("/**");
     }
 
     @Override

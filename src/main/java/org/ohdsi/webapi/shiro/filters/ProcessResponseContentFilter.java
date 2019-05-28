@@ -77,7 +77,7 @@ public abstract class ProcessResponseContentFilter implements Filter {
     if (Objects.isNull(fieldNode)) {
         throw new NullJsonNodeException(format("Json node '%s' is null", field));
     }
-    String fieldValue = fieldNode.asText();
+    String fieldValue = fieldNode.toString();
     return fieldValue;
   }
 

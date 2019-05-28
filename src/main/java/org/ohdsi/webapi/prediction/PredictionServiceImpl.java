@@ -22,7 +22,7 @@ import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.util.CopyUtils;
+import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.Job;
@@ -280,7 +280,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
             PredictionAnalysis pa = new PredictionAnalysis();
             pa.setDescription(analysis.getDescription());
             pa.setSpecification(Utils.serialize(analysis));
-            pa.setName(getNameForCopy(analysis.getName()));
+            pa.setName(NameUtils.getNameWithSuffix(analysis.getName(), this::countLikeName));
             
             PredictionAnalysis savedAnalysis = this.createAnalysis(pa);
             return predictionAnalysisRepository.findOne(savedAnalysis.getId(), COMMONS_ENTITY_GRAPH);
@@ -292,7 +292,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
 
     @Override
     public String getNameForCopy(String dtoName) {
-        return CopyUtils.getNameForCopy(dtoName, this::countLikeName, predictionAnalysisRepository.findByName(dtoName));
+        return NameUtils.getNameForCopy(dtoName, this::countLikeName, predictionAnalysisRepository.findByName(dtoName));
     }
 
     @Override

@@ -340,7 +340,12 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     @Override
     public String getNameForCopy(String dtoName) {
-        return CopyUtils.getNameForCopy(dtoName, this::countLikeName, repository.findByName(dtoName));
+        return NameUtils.getNameForCopy(dtoName, this::countLikeName, repository.findByName(dtoName));
+    }
+    
+    @Override
+    public String getNameWithSuffix(String dtoName) {
+        return NameUtils.getNameWithSuffix(dtoName, this::countLikeName);
     }
 
     @Override

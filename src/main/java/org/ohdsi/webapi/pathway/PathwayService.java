@@ -18,6 +18,8 @@ public interface PathwayService {
     PathwayAnalysisEntity importAnalysis(PathwayAnalysisEntity toImport);
 
     String getNameForCopy(String dtoName);
+    
+    String getNameWithSuffix(String dtoName);
 
     Page<PathwayAnalysisEntity> getPage(final Pageable pageable);
 

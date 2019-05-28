@@ -6,9 +6,7 @@
 package org.ohdsi.webapi.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.check.Checker;
@@ -17,7 +15,6 @@ import org.ohdsi.circe.check.warnings.DefaultWarning;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
-import org.ohdsi.analysis.versioning.VersionedSerializerModifier;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.*;
@@ -38,7 +35,7 @@ import org.ohdsi.webapi.shiro.management.datasource.SourceIdAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
-import org.ohdsi.webapi.util.CopyUtils;
+import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -77,7 +74,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.ohdsi.webapi.Constants.Params.*;
-import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
@@ -509,7 +505,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   public CohortDTO copy(@PathParam("id") final int id) {
     CohortDTO sourceDef = getCohortDefinition(id);
     sourceDef.setId(null); // clear the ID
-    sourceDef.setName(CopyUtils.getNameForCopy(sourceDef.getName(), this::countLikeName, cohortDefinitionRepository.findByName(sourceDef.getName())));
+    sourceDef.setName(NameUtils.getNameForCopy(sourceDef.getName(), this::countLikeName, cohortDefinitionRepository.findByName(sourceDef.getName())));
     CohortDTO copyDef = createCohortDefinition(sourceDef);
 
     return copyDef;

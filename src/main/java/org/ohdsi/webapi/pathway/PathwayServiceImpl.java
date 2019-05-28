@@ -36,7 +36,7 @@ import org.ohdsi.webapi.shiro.annotations.SourceId;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
-import org.ohdsi.webapi.util.CopyUtils;
+import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -221,7 +221,12 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     
     @Override
     public String getNameForCopy(String dtoName) {
-        return CopyUtils.getNameForCopy(dtoName, this::countLikeName, pathwayAnalysisRepository.findByName(dtoName));
+        return NameUtils.getNameForCopy(dtoName, this::countLikeName, pathwayAnalysisRepository.findByName(dtoName));
+    }
+    
+    @Override
+    public String getNameWithSuffix(String dtoName) {
+        return NameUtils.getNameWithSuffix(dtoName, this::countLikeName);
     }
 
     @Override

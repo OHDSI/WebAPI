@@ -25,6 +25,8 @@ public interface CcService {
     CohortCharacterizationEntity importCc(CohortCharacterizationEntity entity);
 
     String getNameForCopy(String dtoName);
+    
+    String getNameWithSuffix(String dtoName);
 
     String serializeCc(Long id);
 

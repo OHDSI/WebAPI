@@ -9,6 +9,7 @@ import org.ohdsi.webapi.conceptset.ConceptSetRepository;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.util.NameUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -47,11 +48,7 @@ public class DesignImportService {
     
     public ConceptSetDTO persistConceptSet(final AnalysisConceptSet analysisConceptSet) {
         ConceptSetDTO cs = conversionService.convert(analysisConceptSet, ConceptSetDTO.class);
-        String name = cs.getName();
-        while (conceptSetRepository.countByNameStartsWith(name) > 0){
-            name = name + " (" + conceptSetRepository.countByNameStartsWith(name) + ")";
-        }
-        cs.setName(name);
+        cs.setName(NameUtils.getNameWithSuffix(cs.getName(), this::countLikeNameCS));
         cs = conceptSetService.createConceptSet(cs);
         final Integer conceptSetId = cs.getId();
         List<ConceptSetItem> csi = Arrays.stream(analysisConceptSet.expression.items).map(i -> conversionService.convert(i, ConceptSetItem.class)).collect(Collectors.toList());
@@ -73,16 +70,20 @@ public class DesignImportService {
             cohort.setCreatedBy(user);
             cohort.setCreatedDate(new Date());
             cohort.setDetails(details);
-            details.setCohortDefinition(cohort);
-            String name = cohort.getName();
-            while (cohortRepository.countByNameStartsWith(name) > 0){
-                name = name + " (" + cohortRepository.countByNameStartsWith(name) + ")";
-            }
-            cohort.setName(name);
+            details.setCohortDefinition(cohort);            
+            cohort.setName(NameUtils.getNameWithSuffix(cohort.getName(), this::countLikeNameCD));
             final CohortDefinition savedCohort = cohortRepository.save(cohort);
             detailsRepository.save(details);
             return savedCohort;
         });
+    }
+
+    private int countLikeNameCS(String name) {
+        return conceptSetRepository.countByNameStartsWith(name);
+    }
+
+    private int countLikeNameCD(String name) {
+        return cohortRepository.countByNameStartsWith(name);
     }
 
     private Optional<CohortDefinition> findCohortByExpressionHashcode(final CohortDefinitionDetails details) {

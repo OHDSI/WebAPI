@@ -36,7 +36,7 @@ import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.SourceInfo;
-import org.ohdsi.webapi.util.CopyUtils;
+import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
@@ -243,7 +243,7 @@ public class ConceptSetService extends AbstractDaoService {
     @Produces(MediaType.APPLICATION_JSON)
     public Map<String, String> getNameForCopy (@PathParam("id") final int id){
         ConceptSetDTO source = getConceptSet(id);
-        String name = CopyUtils.getNameForCopy(source.getName(), this::countLikeName, getConceptSetRepository().findByName(source.getName()));
+        String name = NameUtils.getNameForCopy(source.getName(), this::countLikeName, getConceptSetRepository().findByName(source.getName()));
         return Collections.singletonMap("copyName", name);
     }
 

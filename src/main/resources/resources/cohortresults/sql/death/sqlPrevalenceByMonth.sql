@@ -5,4 +5,4 @@ from
 	(select * from @ohdsi_database_schema.heracles_results where analysis_id = 502 and cohort_definition_id = @cohortDefinitionId) num
 	inner join
 	(select * from @ohdsi_database_schema.heracles_results where analysis_id = 117 and cohort_definition_id = @cohortDefinitionId) denom on num.stratum_1 = denom.stratum_1  --calendar year
-ORDER BY CAST(num.stratum_1 as INT)
+ORDER BY CAST(CASE WHEN isNumeric(num.stratum_1) = 1 THEN num.stratum_1 ELSE null END AS INT)

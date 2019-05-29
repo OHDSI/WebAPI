@@ -36,23 +36,24 @@ public class DataSourceAccessBeanPostProcessor implements BeanPostProcessor {
   public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 
     Class type = bean.getClass();
-    final List<Method> methods = getMethodsAnnotatedWith(type);
+    final List<Method> annotatedMethods = getMethodsAnnotatedWith(type);
     Object result = bean;
-    if (!methods.isEmpty()) {
+    if (!annotatedMethods.isEmpty()) {
       ProxyFactory factory = new ProxyFactory(bean);
       factory.setProxyTargetClass(proxyTargetClass);
       factory.addAdvice((MethodInterceptor) invocation -> {
         Method method = invocation.getMethod();
         Object[] args = invocation.getArguments();
-        if (methods.stream().anyMatch(m -> Objects.equals(m.getName(), method.getName()))) {
-          Optional<Method> targetMethod = methods.stream().filter(m -> Objects.nonNull(findMethod(m, method))).findFirst();
-          if (targetMethod.isPresent()) {
-            AccessorParameterBinding<Object> binding = accessParameterResolver.resolveParameterBinding(targetMethod.get());
+        Optional<Method> originalAnnotatedMethod = annotatedMethods.stream().filter(m ->
+            Objects.equals(m.getName(), method.getName())
+            && Objects.equals(m.getReturnType(), method.getReturnType())
+            && Arrays.equals(m.getParameterTypes(), method.getParameterTypes())).findFirst();
+        if (originalAnnotatedMethod.isPresent()) {
+            AccessorParameterBinding<Object> binding = accessParameterResolver.resolveParameterBinding(originalAnnotatedMethod.get());
             if (Objects.nonNull(binding)) {
               Object value = args[binding.getParameterIndex()];
               binding.getDataSourceAccessor().checkAccess(value);
             }
-          }
         }
         return method.invoke(bean, args);
       });

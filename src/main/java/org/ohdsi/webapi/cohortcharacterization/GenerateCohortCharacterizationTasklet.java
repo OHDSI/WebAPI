@@ -110,7 +110,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
                     .replaceAll("#", tempSchema + "." + sessionId + "_")
                     .replaceAll("tempdb\\.\\.", "");
         }
-        final String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect());
+        final String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), sessionId, tempSchema);
         return SqlSplit.splitSql(translatedSql);
     }
 

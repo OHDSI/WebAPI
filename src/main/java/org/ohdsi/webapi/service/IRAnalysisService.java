@@ -687,10 +687,10 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   }
 
   private String getNameForCopy(String dtoName) {
-    return NameUtils.getNameForCopy(dtoName, this::countLikeName, irAnalysisRepository.findByName(dtoName));
+    return NameUtils.getNameForCopy(dtoName, this::getNamesLike, irAnalysisRepository.findByName(dtoName));
   }
 
-  private int countLikeName(String name) {
-    return irAnalysisRepository.countByNameStartsWith(name);
+  private List<String> getNamesLike(String name) {
+    return irAnalysisRepository.findAllByNameStartsWith(name).stream().map(IncidenceRateAnalysis::getName).collect(Collectors.toList());
   }
 }

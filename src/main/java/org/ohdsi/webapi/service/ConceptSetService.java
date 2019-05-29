@@ -239,17 +239,17 @@ public class ConceptSetService extends AbstractDaoService {
     }
 
     @GET
-    @Path("/{id}/copyName")    
+    @Path("/{id}/copy-name")
     @Produces(MediaType.APPLICATION_JSON)
     public Map<String, String> getNameForCopy (@PathParam("id") final int id){
         ConceptSetDTO source = getConceptSet(id);
-        String name = NameUtils.getNameForCopy(source.getName(), this::countLikeName, getConceptSetRepository().findByName(source.getName()));
+        String name = NameUtils.getNameForCopy(source.getName(), this::getNamesLike, getConceptSetRepository().findByName(source.getName()));
         return Collections.singletonMap("copyName", name);
     }
 
-    public int countLikeName(String copyName) {
+    public List<String> getNamesLike(String copyName) {
 
-        return getConceptSetRepository().countByNameStartsWith(copyName);
+        return getConceptSetRepository().findAllByNameStartsWith(copyName).stream().map(ConceptSet::getName).collect(Collectors.toList());
     }
     
     @Path("/{id}")

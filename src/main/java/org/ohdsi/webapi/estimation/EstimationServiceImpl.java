@@ -175,10 +175,9 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
 
         return save(est);
     }
-    
-    @Override
-    public int countLikeName(String name) {
-        return estimationRepository.countByNameStartsWith(name);
+
+    private List<String> getNamesLike(String name) {
+        return estimationRepository.findAllByNameStartsWith(name).stream().map(Estimation::getName).collect(Collectors.toList());
     }
     
     @Override
@@ -372,7 +371,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
             est.setDescription(analysis.getDescription());
             est.setType(EstimationTypeEnum.COMPARATIVE_COHORT_ANALYSIS);
             est.setSpecification(Utils.serialize(analysis));
-            est.setName(NameUtils.getNameWithSuffix(analysis.getName(), this::countLikeName));
+            est.setName(NameUtils.getNameWithSuffix(analysis.getName(), this::getNamesLike));
 
             Estimation savedEstimation = this.createEstimation(est);
             return estimationRepository.findOne(savedEstimation.getId(), COMMONS_ENTITY_GRAPH);
@@ -384,7 +383,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
 
     @Override
     public String getNameForCopy(String dtoName) {
-        return NameUtils.getNameForCopy(dtoName, this::countLikeName, estimationRepository.findByName(dtoName));
+        return NameUtils.getNameForCopy(dtoName, this::getNamesLike, estimationRepository.findByName(dtoName));
     }
 
     @Override

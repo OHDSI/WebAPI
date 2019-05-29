@@ -213,20 +213,19 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         return entity;
     }
 
-    @Override
-    public int countLikeName(String name) {
+    private List<String> getNamesLike(String name) {
 
-        return pathwayAnalysisRepository.countByNameStartsWith(name);
+        return pathwayAnalysisRepository.findAllByNameStartsWith(name).stream().map(PathwayAnalysisEntity::getName).collect(Collectors.toList());
     }
     
     @Override
     public String getNameForCopy(String dtoName) {
-        return NameUtils.getNameForCopy(dtoName, this::countLikeName, pathwayAnalysisRepository.findByName(dtoName));
+        return NameUtils.getNameForCopy(dtoName, this::getNamesLike, pathwayAnalysisRepository.findByName(dtoName));
     }
     
     @Override
     public String getNameWithSuffix(String dtoName) {
-        return NameUtils.getNameWithSuffix(dtoName, this::countLikeName);
+        return NameUtils.getNameWithSuffix(dtoName, this::getNamesLike);
     }
 
     @Override

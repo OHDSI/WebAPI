@@ -47,7 +47,5 @@ public interface PathwayService {
 
     void cancelGeneration(Integer pathwayAnalysisId, Integer sourceId);
 
-    int countLikeName(String copyName);
-
     String findDesignByGenerationId(@PathwayAnalysisGenerationId final Long id);
 }

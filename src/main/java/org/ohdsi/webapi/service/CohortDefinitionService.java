@@ -505,15 +505,15 @@ public class CohortDefinitionService extends AbstractDaoService {
   public CohortDTO copy(@PathParam("id") final int id) {
     CohortDTO sourceDef = getCohortDefinition(id);
     sourceDef.setId(null); // clear the ID
-    sourceDef.setName(NameUtils.getNameForCopy(sourceDef.getName(), this::countLikeName, cohortDefinitionRepository.findByName(sourceDef.getName())));
+    sourceDef.setName(NameUtils.getNameForCopy(sourceDef.getName(), this::getNamesLike, cohortDefinitionRepository.findByName(sourceDef.getName())));
     CohortDTO copyDef = createCohortDefinition(sourceDef);
 
     return copyDef;
   }
   
-  public int countLikeName(String copyName) {
+  public List<String> getNamesLike(String copyName) {
 
-    return cohortDefinitionRepository.countByNameStartsWith(copyName);
+    return cohortDefinitionRepository.findAllByNameStartsWith(copyName).stream().map(CohortDefinition::getName).collect(Collectors.toList());
   }
 
   /**

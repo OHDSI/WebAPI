@@ -152,10 +152,9 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
 
         return save(pred);
     }
-    
-    @Override
-    public int countLikeName(String name) {
-        return predictionAnalysisRepository.countByNameStartsWith(name);
+
+    private List<String> getNamesLike(String name) {
+        return predictionAnalysisRepository.findAllByNameStartsWith(name).stream().map(PredictionAnalysis::getName).collect(Collectors.toList());
     }
     
     @Override
@@ -280,7 +279,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
             PredictionAnalysis pa = new PredictionAnalysis();
             pa.setDescription(analysis.getDescription());
             pa.setSpecification(Utils.serialize(analysis));
-            pa.setName(NameUtils.getNameWithSuffix(analysis.getName(), this::countLikeName));
+            pa.setName(NameUtils.getNameWithSuffix(analysis.getName(), this::getNamesLike));
             
             PredictionAnalysis savedAnalysis = this.createAnalysis(pa);
             return predictionAnalysisRepository.findOne(savedAnalysis.getId(), COMMONS_ENTITY_GRAPH);
@@ -292,7 +291,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
 
     @Override
     public String getNameForCopy(String dtoName) {
-        return NameUtils.getNameForCopy(dtoName, this::countLikeName, predictionAnalysisRepository.findByName(dtoName));
+        return NameUtils.getNameForCopy(dtoName, this::getNamesLike, predictionAnalysisRepository.findByName(dtoName));
     }
 
     @Override

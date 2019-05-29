@@ -20,6 +20,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -36,7 +37,7 @@ public interface ConceptSetRepository extends CrudRepository<ConceptSet, Integer
   @Query("SELECT COUNT(cs) FROM ConceptSet cs WHERE cs.name = :conceptSetName and cs.id <> :conceptSetId")
   int getCountCSetWithSameName(@Param("conceptSetId") Integer conceptSetId, @Param("conceptSetName") String conceptSetName);
 
-  int countByNameStartsWith(String pattern);
+  List<ConceptSet> findAllByNameStartsWith(String pattern);
   
   Optional<ConceptSet> findByName(String name);
 }

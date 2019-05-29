@@ -1,25 +1,29 @@
 package org.ohdsi.webapi.shiro.management;
 
+import org.aopalliance.intercept.MethodInterceptor;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.management.datasource.AccessorParameterBinding;
 import org.ohdsi.webapi.shiro.management.datasource.DataSourceAccessParameterResolver;
 import org.ohdsi.webapi.util.AnnotationReflectionUtils;
+import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.*;
 
 public class DataSourceAccessBeanPostProcessor implements BeanPostProcessor {
 
+  private Boolean proxyTargetClass;
+
   private DataSourceAccessParameterResolver accessParameterResolver;
 
-  public DataSourceAccessBeanPostProcessor(DataSourceAccessParameterResolver accessParameterResolver) {
+  public DataSourceAccessBeanPostProcessor(DataSourceAccessParameterResolver accessParameterResolver, Boolean proxyTargetClass) {
 
     this.accessParameterResolver = accessParameterResolver;
+    this.proxyTargetClass = proxyTargetClass;
   }
 
   @Override
@@ -35,8 +39,11 @@ public class DataSourceAccessBeanPostProcessor implements BeanPostProcessor {
     final List<Method> methods = getMethodsAnnotatedWith(type);
     Object result = bean;
     if (!methods.isEmpty()) {
-      result = Proxy.newProxyInstance(type.getClassLoader(), type.getInterfaces(), (proxy, method, args) -> {
-
+      ProxyFactory factory = new ProxyFactory(bean);
+      factory.setProxyTargetClass(proxyTargetClass);
+      factory.addAdvice((MethodInterceptor) invocation -> {
+        Method method = invocation.getMethod();
+        Object[] args = invocation.getArguments();
         if (methods.stream().anyMatch(m -> Objects.equals(m.getName(), method.getName()))) {
           Optional<Method> targetMethod = methods.stream().filter(m -> Objects.nonNull(findMethod(m, method))).findFirst();
           if (targetMethod.isPresent()) {
@@ -49,6 +56,7 @@ public class DataSourceAccessBeanPostProcessor implements BeanPostProcessor {
         }
         return method.invoke(bean, args);
       });
+      result = factory.getProxy();
     }
     return result;
   }

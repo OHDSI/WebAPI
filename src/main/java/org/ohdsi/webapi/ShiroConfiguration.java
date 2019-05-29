@@ -36,6 +36,8 @@ public class ShiroConfiguration {
   private long initialDuration;
   @Value("${security.duration.increment}")
   private long increment;
+  @Value("${spring.aop.proxy-target-class:false}")
+  private Boolean proxyTargetClass;
   @Autowired
   protected ApplicationEventPublisher eventPublisher;
 
@@ -91,7 +93,7 @@ public class ShiroConfiguration {
   @ConditionalOnMissingBean(value = DisabledSecurity.class)
   public DataSourceAccessBeanPostProcessor dataSourceAccessBeanPostProcessor(DataSourceAccessParameterResolver parameterResolver) {
 
-    return new DataSourceAccessBeanPostProcessor(parameterResolver);
+    return new DataSourceAccessBeanPostProcessor(parameterResolver, proxyTargetClass);
   }
 
 }

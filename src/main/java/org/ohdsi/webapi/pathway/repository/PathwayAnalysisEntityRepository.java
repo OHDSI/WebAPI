@@ -5,11 +5,12 @@ import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface PathwayAnalysisEntityRepository extends EntityGraphJpaRepository<PathwayAnalysisEntity, Integer> {
 
-  int countByNameStartsWith(String pattern);
+  List<PathwayAnalysisEntity> findAllByNameStartsWith(String pattern);
 
   Optional<PathwayAnalysisEntity> findByName(String name);
 

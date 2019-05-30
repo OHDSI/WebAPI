@@ -18,6 +18,8 @@ public interface PathwayService {
     PathwayAnalysisEntity importAnalysis(PathwayAnalysisEntity toImport);
 
     String getNameForCopy(String dtoName);
+    
+    String getNameWithSuffix(String dtoName);
 
     Page<PathwayAnalysisEntity> getPage(final Pageable pageable);
 
@@ -44,8 +46,6 @@ public interface PathwayService {
     PathwayAnalysisResult getResultingPathways(final Long generationId);
 
     void cancelGeneration(Integer pathwayAnalysisId, Integer sourceId);
-
-    int countLikeName(String copyName);
 
     String findDesignByGenerationId(@PathwayAnalysisGenerationId final Long id);
 }

@@ -10,7 +10,7 @@ select c1.concept_id as concept_id,
 from @ohdsi_database_schema.heracles_results_dist hrd1
 	inner join
 	@cdm_database_schema.concept c1
-	on CAST(hrd1.stratum_1 AS INT) = c1.concept_id
+	on CAST(CASE WHEN isNumeric(hrd1.stratum_1) = 1 THEN hrd1.stratum_1 ELSE null END AS INT) = c1.concept_id
 where hrd1.analysis_id = 717
 and cohort_definition_id = @cohortDefinitionId
 and hrd1.count_value > 0

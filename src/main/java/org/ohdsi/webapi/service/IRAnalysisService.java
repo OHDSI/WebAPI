@@ -42,9 +42,10 @@ import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
-import org.ohdsi.webapi.util.CopyUtils;
+import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -122,6 +123,10 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
   @Autowired
   private ObjectMapper objectMapper;
+
+  //Directly wired since IRAnalysisService is directly called by Jersey and @DataSourceAccess wouldn't work in this case
+  @Autowired
+  private SourceAccessor sourceAccessor;
 
   @Context
   ServletContext context;
@@ -355,10 +360,14 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   }
 
   @Override
-  public JobExecutionResource performAnalysis(final int analysisId, final String sourceKey) {
+  @DataSourceAccess
+  public JobExecutionResource performAnalysis(final int analysisId, final @SourceKey String sourceKey) {
     Date startTime = Calendar.getInstance().getTime();
 
     Source source = this.getSourceRepository().findBySourceKey(sourceKey);
+
+    ExceptionUtils.throwNotFoundExceptionIfNull(source, String.format("There is no source with sourceKey = %s", sourceKey));
+    sourceAccessor.checkAccess(source);
 
     DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
     requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -447,6 +456,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
     Source source = sourceService.findBySourceKey(sourceKey);
     ExceptionUtils.throwNotFoundExceptionIfNull(source, String.format("There is no source with sourceKey = %s", sourceKey));
+    sourceAccessor.checkAccess(source);
     AnalysisInfoDTO info = new AnalysisInfoDTO();
     List<ExecutionInfo> executionInfoList = irExecutionInfoRepository.findByAnalysisId(id);
     info.setExecutionInfo(executionInfoList.stream().filter(i -> Objects.equals(i.getSource(), source))
@@ -687,10 +697,10 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   }
 
   private String getNameForCopy(String dtoName) {
-    return CopyUtils.getNameForCopy(dtoName, this::countLikeName, irAnalysisRepository.findByName(dtoName));
+    return NameUtils.getNameForCopy(dtoName, this::getNamesLike, irAnalysisRepository.findByName(dtoName));
   }
 
-  private int countLikeName(String name) {
-    return irAnalysisRepository.countByNameStartsWith(name);
+  private List<String> getNamesLike(String name) {
+    return irAnalysisRepository.findAllByNameStartsWith(name).stream().map(IncidenceRateAnalysis::getName).collect(Collectors.toList());
   }
 }

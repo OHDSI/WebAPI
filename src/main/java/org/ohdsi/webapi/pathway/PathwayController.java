@@ -91,7 +91,7 @@ public class PathwayController {
     @Consumes(MediaType.APPLICATION_JSON)
     public PathwayAnalysisDTO importAnalysis(final PathwayAnalysisExportDTO dto) {
 
-        dto.setName(pathwayService.getNameForCopy(dto.getName()));
+        dto.setName(pathwayService.getNameWithSuffix(dto.getName()));
         PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
         PathwayAnalysisEntity imported = pathwayService.importAnalysis(pathwayAnalysis);
         return conversionService.convert(imported, PathwayAnalysisDTO.class);

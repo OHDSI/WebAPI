@@ -231,6 +231,7 @@ public class CDMResultsService extends AbstractDaoService {
     @GET
     @Path("{sourceKey}/datadensity")
     @Produces(MediaType.APPLICATION_JSON)
+        @CacheResult(cacheName="datasources.dataDensity")
     public CDMDataDensity getDataDensity(@PathParam("sourceKey")
             final String sourceKey, @DefaultValue("false")
             @QueryParam("refresh") boolean refresh) {

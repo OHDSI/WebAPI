@@ -23,6 +23,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.stereotype.Component;
@@ -37,25 +38,29 @@ public class InfoService {
 
     @Inject
     public InfoService(BuildProperties buildProperties, @Value("${build.number}") final String buildNumber) {
+
+        String version = StringUtils.split(buildProperties.getVersion(),'-')[0];
         String artifactVersion = String.format("%s %s", buildProperties.getArtifact(), buildProperties.getVersion());
 
-        this.info = new Info(buildNumber, artifactVersion, buildProperties.getTime().toString());
+        this.info = new Info(artifactVersion, buildNumber, buildProperties.getTime().toString(), version);
     }
 
     public static class Info {
+        private final String artifactVersion;
         private final String build;
         private final String timestamp;
         @JsonProperty("version")
         private final String version;
 
-        public Info(String build, String artifactVersion, String timestamp) {
+        public Info(String artifactVersion, String build, String timestamp, String version) {
+            this.artifactVersion = artifactVersion;
             this.build = build;
-            this.version = artifactVersion;
             this.timestamp = timestamp;
+            this.version = version;
         }
 
-        public String getVersion() {
-            return version;
+        public String getArtifactVersion() {
+            return artifactVersion;
         }
 
         public String getBuild() {
@@ -64,6 +69,10 @@ public class InfoService {
 
         public String getTimestamp() {
             return timestamp;
+        }
+
+        public String getVersion() {
+            return version;
         }
     }
 

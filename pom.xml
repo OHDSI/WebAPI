@@ -6,10 +6,10 @@
   <groupId>org.ohdsi</groupId>
   <artifactId>WebAPI</artifactId>
   <packaging>war</packaging>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>2.8.0-SNAPSHOT</version>
   <name>WebAPI</name>
   <properties>
-    <webapi.version>2.8.0</webapi.version>
+    <build.number>${BUILD_NUMBER}</build.number>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jersey.version>2.14</jersey.version>
     <!-- Spring Boot manages spring.version as well -->
@@ -230,19 +230,14 @@
         <configuration>
           <!-- Since we filter properties files via Maven, do not add resources. -->
           <addResources>false</addResources>
-          <!-- executable-jar
-          <classifier>exec</classifier>
-          -->
         </configuration>
-        <!-- executable-jar
         <executions>
-            <execution>
-                <goals>
-                    <goal>repackage</goal>
-                </goals>
-            </execution>
+          <execution>
+            <goals>
+              <goal>build-info</goal>
+            </goals>
+          </execution>
         </executions>
-        -->
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -251,11 +246,11 @@
         <configuration>
           <skipTests>true</skipTests>
         </configuration>
-</plugin>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.5.1</version>
+        <version>3.1</version>
         <inherited>true</inherited>
         <configuration>
           <source>1.8</source>
@@ -265,7 +260,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
-        <version>2.2</version>
+        <version>2.6</version>
         <configuration>
           <failOnMissingWebXml>false</failOnMissingWebXml>
           <attachClasses>true</attachClasses>
@@ -501,7 +496,7 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.4</version>
+      <version>2.6</version>
     </dependency>
     <dependency>
       <groupId>com.sun.xml.security</groupId>
@@ -517,7 +512,7 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.3.2</version>
+      <version>3.9</version>
     </dependency>
     <dependency>
       <groupId>org.flywaydb</groupId>

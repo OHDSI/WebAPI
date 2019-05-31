@@ -22,7 +22,7 @@ public final class NameUtils {
     public static String getNameWithSuffix(String dtoName, Function<String, List<String>> getNamesLike){
         StringBuilder builder = new StringBuilder(dtoName);
 
-        List<String> nameList = getNamesLike.apply(dtoName);
+        List<String> nameList = getNamesLike.apply(dtoName.replace("[", "\\[") + "%");
         Pattern p = Pattern.compile(Pattern.quote(dtoName) + " \\(([0-9]+)\\)");
         nameList.stream()
                 .map(n -> {

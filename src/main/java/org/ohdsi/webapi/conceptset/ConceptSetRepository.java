@@ -37,6 +37,7 @@ public interface ConceptSetRepository extends CrudRepository<ConceptSet, Integer
   @Query("SELECT COUNT(cs) FROM ConceptSet cs WHERE cs.name = :conceptSetName and cs.id <> :conceptSetId")
   int getCountCSetWithSameName(@Param("conceptSetId") Integer conceptSetId, @Param("conceptSetName") String conceptSetName);
 
+  @Query("SELECT cs FROM ConceptSet cs WHERE cs.name LIKE ?1 ESCAPE '\\'")
   List<ConceptSet> findAllByNameStartsWith(String pattern);
   
   Optional<ConceptSet> findByName(String name);

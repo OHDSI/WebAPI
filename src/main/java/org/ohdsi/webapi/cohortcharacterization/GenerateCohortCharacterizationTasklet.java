@@ -24,8 +24,7 @@ import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConvert
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
 import org.ohdsi.webapi.common.generation.AnalysisTasklet;
-import org.ohdsi.webapi.feanalysis.FeAnalysisService;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
+import org.ohdsi.webapi.exception.AtlasException;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
@@ -76,7 +75,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
         );
         final Long jobId = chunkContext.getStepContext().getStepExecution().getJobExecution().getId();
         final UserEntity userEntity = userRepository.findByLogin(jobParams.get(JOB_AUTHOR).toString());
-        saveInfo(jobId, new SerializedCcToCcConverter().convertToDatabaseColumn(cohortCharacterization), userEntity);
+        saveInfoWithinTheSeparateTransaction(cohortCharacterization, jobId, userEntity);
         final Integer sourceId = Integer.valueOf(jobParams.get(SOURCE_ID).toString());
         final Source source = sourceService.findBySourceId(sourceId);
         final String cohortTable = jobParams.get(TARGET_TABLE).toString();
@@ -112,6 +111,21 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
         }
         final String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), sessionId, tempSchema);
         return SqlSplit.splitSql(translatedSql);
+    }
+
+    private void saveInfoWithinTheSeparateTransaction(CohortCharacterizationEntity cohortCharacterization, Long jobId, UserEntity userEntity) {
+        DefaultTransactionDefinition txDefinition = new DefaultTransactionDefinition();
+        txDefinition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        TransactionStatus infoSaveTx = null;
+        try {
+            infoSaveTx = this.transactionTemplate.getTransactionManager().getTransaction(txDefinition);
+            saveInfo(jobId, new SerializedCcToCcConverter().convertToDatabaseColumn(cohortCharacterization), userEntity);
+            this.transactionTemplate.getTransactionManager().commit(infoSaveTx);
+        } catch (Exception ex) {
+            log.error("Cannot save CC sourceInfo for the job: {} ", jobId, ex);
+            this.transactionTemplate.getTransactionManager().rollback(infoSaveTx);
+            throw new AtlasException(ex);
+        }
     }
 
     private void initTx() {

@@ -25,7 +25,7 @@ public class LockoutWebSecurityManager extends DefaultWebSecurityManager {
 
     @Override
     protected void onFailedLogin(AuthenticationToken token, AuthenticationException ae, Subject subject) {
-
+        log.error("Failed to login: {}", ae.getMessage(), ae);
         super.onFailedLogin(token, ae, subject);
         if (token instanceof UsernamePasswordToken) {
             String username = ((UsernamePasswordToken) token).getUsername();

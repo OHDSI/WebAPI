@@ -324,6 +324,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
       IncidenceRateAnalysisDetails details = new IncidenceRateAnalysisDetails(newAnalysis);
       newAnalysis.setDetails(details);
       details.setExpression(analysis.getExpression());
+      clearCohorts(details);
     }
     else {
       newAnalysis.setDetails(null);
@@ -332,7 +333,25 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     return getAnalysis(createdAnalysis.getId());
   }
 
-  @Override
+    private void clearCohorts(IncidenceRateAnalysisDetails details) {
+        // Clear the cohort definitions lists as we do not store them in db
+        // Information about cohorts can be retrived from lists of cohort ids
+        if (details.getExpression() != null) {
+            try {
+                IncidenceRateAnalysisExpression expression = objectMapper.readValue(
+                        details.getExpression(), IncidenceRateAnalysisExpression.class);
+                expression.targetCohorts.clear();
+                expression.outcomeCohorts.clear();
+                String strExpression = objectMapper.writeValueAsString(expression);
+                details.setExpression(strExpression);
+            } catch (Exception e) {
+                log.error("Error converting expression to object", e);
+                throw new InternalServerErrorException();
+            }
+        }
+    }
+
+    @Override
   public IRAnalysisDTO getAnalysis(final int id) {
       return getTransactionTemplate().execute(transactionStatus -> {
           IncidenceRateAnalysis analysis = this.irAnalysisRepository.findOne(id);
@@ -427,6 +446,8 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
         updatedAnalysis.setDetails(details);
       }
       details.setExpression(analysis.getExpression());
+
+      clearCohorts(details);
     }
     else
       updatedAnalysis.setDetails(null);

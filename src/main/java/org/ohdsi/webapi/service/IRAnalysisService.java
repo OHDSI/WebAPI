@@ -29,6 +29,10 @@ import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
+import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.ircalc.*;
@@ -45,8 +49,8 @@ import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
-import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
+import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.slf4j.Logger;
@@ -65,9 +69,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
-import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -129,6 +131,12 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   //Directly wired since IRAnalysisService is directly called by Jersey and @DataSourceAccess wouldn't work in this case
   @Autowired
   private SourceAccessor sourceAccessor;
+
+  @Autowired
+  private CohortDefinitionRepository cohortDefinitionRepository;
+
+  @Autowired
+  private DesignImportService designImportService;
 
   @Context
   ServletContext context;
@@ -321,20 +329,86 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
       newAnalysis.setDetails(null);
     }
     IncidenceRateAnalysis createdAnalysis = this.irAnalysisRepository.save(newAnalysis);
-    return conversionService.convert(createdAnalysis, IRAnalysisDTO.class);
+    return getAnalysis(createdAnalysis.getId());
   }
 
   @Override
   public IRAnalysisDTO getAnalysis(final int id) {
+      return getTransactionTemplate().execute(transactionStatus -> {
+          IncidenceRateAnalysis analysis = this.irAnalysisRepository.findOne(id);
+          ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format(NO_INCIDENCE_RATE_ANALYSIS_MESSAGE, id));
 
-    return getTransactionTemplate().execute(transactionStatus -> {
-      IncidenceRateAnalysis a = this.irAnalysisRepository.findOne(id);
-      ExceptionUtils.throwNotFoundExceptionIfNull(a, String.format(NO_INCIDENCE_RATE_ANALYSIS_MESSAGE, id));
-      return conversionService.convert(a, IRAnalysisDTO.class);
-    });
+          try {
+              IncidenceRateAnalysisExpression expression = objectMapper.readValue(
+                      analysis.getDetails().getExpression(), IncidenceRateAnalysisExpression.class);
+
+              // Cohorts are not stored in expression now - create lists of cohorts from
+              // lists of their ids
+              fillCohorts(expression.outcomeIds, expression.outcomeCohorts);
+              fillCohorts(expression.targetIds, expression.targetCohorts);
+
+              String strExpression = objectMapper.writeValueAsString(expression);
+              analysis.getDetails().setExpression(strExpression);
+          } catch (Exception e) {
+              log.error("Error converting expression to object", e);
+              throw new InternalServerErrorException();
+          }
+          return conversionService.convert(analysis, IRAnalysisDTO.class);
+      });
   }
 
-  @Override
+    private void fillCohorts(List<Integer> outcomeIds, List<CohortDTO> cohortDefinitions) {
+        cohortDefinitions.clear();
+        for (Integer cohortId : outcomeIds) {
+            CohortDefinition cohortDefinition = cohortDefinitionRepository.findOne(cohortId);
+            if (Objects.isNull(cohortDefinition)) {
+                // Pass cohort without name to client if no cohort definition found
+                cohortDefinition = new CohortDefinition();
+                cohortDefinition.setId(cohortId);
+                CohortDefinitionDetails details = new CohortDefinitionDetails();
+                details.setCohortDefinition(cohortDefinition);
+            }
+            cohortDefinitions.add(conversionService.convert(cohortDefinition, CohortDTO.class));
+        }
+    }
+
+    @Override
+    public IRAnalysisDTO doImport(final IRAnalysisDTO dto) {
+        if (dto.getExpression() != null) {
+            try {
+                IncidenceRateAnalysisExpression expression = objectMapper.readValue(
+                        dto.getExpression(), IncidenceRateAnalysisExpression.class);
+                // Create lists of ids from list of cohort definitions because we do not store
+                // cohort definitions in expression now
+                fillCohortIds(expression.targetIds, expression.targetCohorts);
+                fillCohortIds(expression.outcomeIds, expression.outcomeCohorts);
+                String strExpression = objectMapper.writeValueAsString(expression);
+                dto.setExpression(strExpression);
+            } catch (Exception e) {
+                log.error("Error converting expression to object", e);
+                throw new InternalServerErrorException();
+            }
+        }
+        // Check for incidence rates with the same name
+        int count = getCountIRWithSameName(0, dto.getName());
+        if (count > 0) {
+            String newName = getNameForCopy(dto.getName());
+            dto.setName(newName);
+        }
+        return createAnalysis (dto);
+    }
+
+    private void fillCohortIds(List<Integer> ids, List<CohortDTO> cohortDTOS) {
+        ids.clear();
+        for(CohortDTO cohortDTO: cohortDTOS) {
+            CohortDefinition definition = conversionService.convert(cohortDTO, CohortDefinition.class);
+            definition = designImportService.persistCohortOrGetExisting(definition);
+            ids.add(definition.getId());
+        }
+        cohortDTOS.clear();
+    }
+
+    @Override
   public IRAnalysisDTO saveAnalysis(final int id, IRAnalysisDTO analysis) {
     Date currentTime = Calendar.getInstance().getTime();
 

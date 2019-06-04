@@ -16,9 +16,11 @@
 package org.ohdsi.webapi.ircalc;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.ohdsi.circe.cohortdefinition.ConceptSet;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.ohdsi.circe.cohortdefinition.ConceptSet;
 
 /**
  *
@@ -32,8 +34,14 @@ public class IncidenceRateAnalysisExpression {
   @JsonProperty("targetIds")
   public List<Integer> targetIds = new ArrayList<>();
 
+  @JsonProperty("targetCohorts")
+  public List<CohortDTO> targetCohorts = new ArrayList<>();
+
   @JsonProperty("outcomeIds")
   public List<Integer> outcomeIds = new ArrayList<>();
+
+  @JsonProperty("outcomeCohorts")
+  public List<CohortDTO> outcomeCohorts = new ArrayList<>();
     
   @JsonProperty("timeAtRisk")
   public TimeAtRisk timeAtRisk;

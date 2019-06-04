@@ -63,11 +63,6 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
     }
 
     @Override
-    protected void doBefore(ChunkContext chunkContext) {
-        initTx();
-    }
-
-    @Override
     protected String[] prepareQueries(ChunkContext chunkContext, CancelableJdbcTemplate jdbcTemplate) {
         Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
         CohortCharacterizationEntity cohortCharacterization = ccService.findByIdWithLinkedEntities(
@@ -127,12 +122,5 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
             throw new AtlasException(ex);
         }
     }
-
-    private void initTx() {
-        DefaultTransactionDefinition txDefinition = new DefaultTransactionDefinition();
-        txDefinition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-        TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(txDefinition);
-        this.transactionTemplate.getTransactionManager().commit(initStatus);
-    }
-
+   
 }

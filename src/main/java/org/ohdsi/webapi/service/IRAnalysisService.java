@@ -65,6 +65,7 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import javax.annotation.PostConstruct;
@@ -324,55 +325,20 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
       IncidenceRateAnalysisDetails details = new IncidenceRateAnalysisDetails(newAnalysis);
       newAnalysis.setDetails(details);
       details.setExpression(analysis.getExpression());
-      clearCohorts(details);
     }
     else {
       newAnalysis.setDetails(null);
     }
     IncidenceRateAnalysis createdAnalysis = this.irAnalysisRepository.save(newAnalysis);
-    return getAnalysis(createdAnalysis.getId());
+    return conversionService.convert(createdAnalysis, IRAnalysisDTO.class);
   }
-
-    private void clearCohorts(IncidenceRateAnalysisDetails details) {
-        // Clear the cohort definitions lists as we do not store them in db
-        // Information about cohorts can be retrived from lists of cohort ids
-        if (details.getExpression() != null) {
-            try {
-                IncidenceRateAnalysisExpression expression = objectMapper.readValue(
-                        details.getExpression(), IncidenceRateAnalysisExpression.class);
-                expression.targetCohorts.clear();
-                expression.outcomeCohorts.clear();
-                String strExpression = objectMapper.writeValueAsString(expression);
-                details.setExpression(strExpression);
-            } catch (Exception e) {
-                log.error("Error converting expression to object", e);
-                throw new InternalServerErrorException();
-            }
-        }
-    }
 
     @Override
   public IRAnalysisDTO getAnalysis(final int id) {
       return getTransactionTemplate().execute(transactionStatus -> {
-          IncidenceRateAnalysis analysis = this.irAnalysisRepository.findOne(id);
-          ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format(NO_INCIDENCE_RATE_ANALYSIS_MESSAGE, id));
-
-          try {
-              IncidenceRateAnalysisExpression expression = objectMapper.readValue(
-                      analysis.getDetails().getExpression(), IncidenceRateAnalysisExpression.class);
-
-              // Cohorts are not stored in expression now - create lists of cohorts from
-              // lists of their ids
-              fillCohorts(expression.outcomeIds, expression.outcomeCohorts);
-              fillCohorts(expression.targetIds, expression.targetCohorts);
-
-              String strExpression = objectMapper.writeValueAsString(expression);
-              analysis.getDetails().setExpression(strExpression);
-          } catch (Exception e) {
-              log.error("Error converting expression to object", e);
-              throw new InternalServerErrorException();
-          }
-          return conversionService.convert(analysis, IRAnalysisDTO.class);
+          IncidenceRateAnalysis a = this.irAnalysisRepository.findOne(id);
+          ExceptionUtils.throwNotFoundExceptionIfNull(a, String.format(NO_INCIDENCE_RATE_ANALYSIS_MESSAGE, id));
+          return conversionService.convert(a, IRAnalysisDTO.class);
       });
   }
 
@@ -395,26 +361,46 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     public IRAnalysisDTO doImport(final IRAnalysisDTO dto) {
         if (dto.getExpression() != null) {
             try {
-                IncidenceRateAnalysisExpression expression = objectMapper.readValue(
-                        dto.getExpression(), IncidenceRateAnalysisExpression.class);
+                IncidenceRateAnalysisExportExpression expression = objectMapper.readValue(
+                        dto.getExpression(), IncidenceRateAnalysisExportExpression.class);
                 // Create lists of ids from list of cohort definitions because we do not store
                 // cohort definitions in expression now
                 fillCohortIds(expression.targetIds, expression.targetCohorts);
                 fillCohortIds(expression.outcomeIds, expression.outcomeCohorts);
-                String strExpression = objectMapper.writeValueAsString(expression);
+                String strExpression = objectMapper.writeValueAsString(new IncidenceRateAnalysisExpression(expression));
                 dto.setExpression(strExpression);
             } catch (Exception e) {
                 log.error("Error converting expression to object", e);
                 throw new InternalServerErrorException();
             }
         }
-        // Check for incidence rates with the same name
-        int count = getCountIRWithSameName(0, dto.getName());
-        if (count > 0) {
-            String newName = getNameForCopy(dto.getName());
-            dto.setName(newName);
-        }
-        return createAnalysis (dto);
+        dto.setName(NameUtils.getNameWithSuffix(dto.getName(), this::getNamesLike));
+        return createAnalysis(dto);
+    }
+
+
+    @Override
+    @Transactional
+    public IRAnalysisDTO export(final Integer id) {
+      IncidenceRateAnalysis analysis = this.irAnalysisRepository.findOne(id);
+      ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format(NO_INCIDENCE_RATE_ANALYSIS_MESSAGE, id));
+
+      try {
+          IncidenceRateAnalysisExportExpression expression = objectMapper.readValue(
+                  analysis.getDetails().getExpression(), IncidenceRateAnalysisExportExpression.class);
+
+          // Cohorts are not stored in expression now - create lists of cohorts from
+          // lists of their ids
+          fillCohorts(expression.outcomeIds, expression.outcomeCohorts);
+          fillCohorts(expression.targetIds, expression.targetCohorts);
+
+          String strExpression = objectMapper.writeValueAsString(expression);
+          analysis.getDetails().setExpression(strExpression);
+      } catch (Exception e) {
+          log.error("Error converting expression to object", e);
+          throw new InternalServerErrorException();
+      }
+      return conversionService.convert(analysis, IRAnalysisDTO.class);
     }
 
     private void fillCohortIds(List<Integer> ids, List<CohortDTO> cohortDTOS) {
@@ -446,8 +432,6 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
         updatedAnalysis.setDetails(details);
       }
       details.setExpression(analysis.getExpression());
-
-      clearCohorts(details);
     }
     else
       updatedAnalysis.setDetails(null);

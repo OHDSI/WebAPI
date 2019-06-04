@@ -34,14 +34,8 @@ public class IncidenceRateAnalysisExpression {
   @JsonProperty("targetIds")
   public List<Integer> targetIds = new ArrayList<>();
 
-  @JsonProperty("targetCohorts")
-  public List<CohortDTO> targetCohorts = new ArrayList<>();
-
   @JsonProperty("outcomeIds")
   public List<Integer> outcomeIds = new ArrayList<>();
-
-  @JsonProperty("outcomeCohorts")
-  public List<CohortDTO> outcomeCohorts = new ArrayList<>();
     
   @JsonProperty("timeAtRisk")
   public TimeAtRisk timeAtRisk;
@@ -51,5 +45,19 @@ public class IncidenceRateAnalysisExpression {
   
   @JsonProperty("strata")
   public List<StratifyRule> strata = new ArrayList<>();
-  
+
+  public IncidenceRateAnalysisExpression() {
+
+  }
+
+  public <T extends IncidenceRateAnalysisExpression> IncidenceRateAnalysisExpression(T source) {
+
+    this.conceptSets = source.conceptSets;
+    this.targetIds = source.targetIds;
+    this.outcomeIds = source.outcomeIds;
+    this.timeAtRisk = source.timeAtRisk;
+    this.studyWindow = source.studyWindow;
+    this.strata = source.strata;
+  }
+
 }

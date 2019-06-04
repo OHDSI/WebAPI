@@ -333,13 +333,14 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     return conversionService.convert(createdAnalysis, IRAnalysisDTO.class);
   }
 
-    @Override
+  @Override
   public IRAnalysisDTO getAnalysis(final int id) {
-      return getTransactionTemplate().execute(transactionStatus -> {
-          IncidenceRateAnalysis a = this.irAnalysisRepository.findOne(id);
-          ExceptionUtils.throwNotFoundExceptionIfNull(a, String.format(NO_INCIDENCE_RATE_ANALYSIS_MESSAGE, id));
-          return conversionService.convert(a, IRAnalysisDTO.class);
-      });
+
+    return getTransactionTemplate().execute(transactionStatus -> {
+      IncidenceRateAnalysis a = this.irAnalysisRepository.findOne(id);
+      ExceptionUtils.throwNotFoundExceptionIfNull(a, String.format(NO_INCIDENCE_RATE_ANALYSIS_MESSAGE, id));
+      return conversionService.convert(a, IRAnalysisDTO.class);
+    });
   }
 
     private void fillCohorts(List<Integer> outcomeIds, List<CohortDTO> cohortDefinitions) {

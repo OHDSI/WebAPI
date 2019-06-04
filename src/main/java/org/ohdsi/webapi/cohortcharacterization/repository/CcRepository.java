@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 public interface CcRepository extends EntityGraphJpaRepository<CohortCharacterizationEntity, Long> {
     Optional<CohortCharacterizationEntity> findById(final Long id);
 
+    @Query("SELECT cc FROM CohortCharacterizationEntity cc WHERE cc.name LIKE ?1 ESCAPE '\\'")
     List<CohortCharacterizationEntity> findAllByNameStartsWith(String pattern);
 
     Optional<CohortCharacterizationEntity> findByName(String name);

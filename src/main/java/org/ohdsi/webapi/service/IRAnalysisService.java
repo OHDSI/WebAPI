@@ -343,21 +343,6 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     });
   }
 
-    private void fillCohorts(List<Integer> outcomeIds, List<CohortDTO> cohortDefinitions) {
-        cohortDefinitions.clear();
-        for (Integer cohortId : outcomeIds) {
-            CohortDefinition cohortDefinition = cohortDefinitionRepository.findOne(cohortId);
-            if (Objects.isNull(cohortDefinition)) {
-                // Pass cohort without name to client if no cohort definition found
-                cohortDefinition = new CohortDefinition();
-                cohortDefinition.setId(cohortId);
-                CohortDefinitionDetails details = new CohortDefinitionDetails();
-                details.setCohortDefinition(cohortDefinition);
-            }
-            cohortDefinitions.add(conversionService.convert(cohortDefinition, CohortDTO.class));
-        }
-    }
-
     @Override
     public IRAnalysisDTO doImport(final IRAnalysisDTO dto) {
         if (dto.getExpression() != null) {
@@ -402,16 +387,6 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
           throw new InternalServerErrorException();
       }
       return conversionService.convert(analysis, IRAnalysisDTO.class);
-    }
-
-    private void fillCohortIds(List<Integer> ids, List<CohortDTO> cohortDTOS) {
-        ids.clear();
-        for(CohortDTO cohortDTO: cohortDTOS) {
-            CohortDefinition definition = conversionService.convert(cohortDTO, CohortDefinition.class);
-            definition = designImportService.persistCohortOrGetExisting(definition);
-            ids.add(definition.getId());
-        }
-        cohortDTOS.clear();
     }
 
     @Override
@@ -784,5 +759,30 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
   private List<String> getNamesLike(String name) {
     return irAnalysisRepository.findAllByNameStartsWith(name).stream().map(IncidenceRateAnalysis::getName).collect(Collectors.toList());
+  }
+
+  private void fillCohorts(List<Integer> outcomeIds, List<CohortDTO> cohortDefinitions) {
+    cohortDefinitions.clear();
+    for (Integer cohortId : outcomeIds) {
+      CohortDefinition cohortDefinition = cohortDefinitionRepository.findOne(cohortId);
+      if (Objects.isNull(cohortDefinition)) {
+        // Pass cohort without name to client if no cohort definition found
+        cohortDefinition = new CohortDefinition();
+        cohortDefinition.setId(cohortId);
+        CohortDefinitionDetails details = new CohortDefinitionDetails();
+        details.setCohortDefinition(cohortDefinition);
+      }
+      cohortDefinitions.add(conversionService.convert(cohortDefinition, CohortDTO.class));
+    }
+  }
+
+  private void fillCohortIds(List<Integer> ids, List<CohortDTO> cohortDTOS) {
+    ids.clear();
+    for(CohortDTO cohortDTO: cohortDTOS) {
+      CohortDefinition definition = conversionService.convert(cohortDTO, CohortDefinition.class);
+      definition = designImportService.persistCohortOrGetExisting(definition);
+      ids.add(definition.getId());
+    }
+    cohortDTOS.clear();
   }
 }

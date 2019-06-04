@@ -197,6 +197,11 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     }
 
     @Override
+    public EstimationAnalysisImpl getAnalysisExpression(int id) {
+        return Utils.deserialize(estimationRepository.findOne(id, COMMONS_ENTITY_GRAPH).getSpecification(), EstimationAnalysisImpl.class);
+    }
+
+    @Override
     public EstimationAnalysisImpl exportAnalysis(Estimation est) {
 
         EstimationAnalysisImpl expression;

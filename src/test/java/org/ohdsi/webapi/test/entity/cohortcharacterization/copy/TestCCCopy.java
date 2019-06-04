@@ -2,11 +2,11 @@ package org.ohdsi.webapi.test.entity.cohortcharacterization.copy;
 
 import org.junit.Test;
 import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
-import org.ohdsi.webapi.test.entity.cohortcharacterization.BaseTestEntity;
+import org.ohdsi.webapi.test.entity.cohortcharacterization.BaseCCTestEntity;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestEntityCopy extends BaseTestEntity {
+public class TestCCCopy extends BaseCCTestEntity {
 
     @Test
     public void testUsualCopy() {

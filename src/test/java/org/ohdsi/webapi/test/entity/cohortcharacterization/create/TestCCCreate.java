@@ -1,11 +1,11 @@
 package org.ohdsi.webapi.test.entity.cohortcharacterization.create;
 
 import org.junit.Test;
-import org.ohdsi.webapi.test.entity.cohortcharacterization.BaseTestEntity;
+import org.ohdsi.webapi.test.entity.cohortcharacterization.BaseCCTestEntity;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestEntityCreate extends BaseTestEntity {
+public class TestCCCreate extends BaseCCTestEntity {
 
     @Test
     public void testCreateWithDuplicateName() {

@@ -16,6 +16,7 @@ public interface EstimationService {
   Estimation updateEstimation(final int id, Estimation est) throws Exception;
   Estimation copy(final int id) throws Exception;
   Estimation getAnalysis(int id);
+  EstimationAnalysisImpl getAnalysisExpression(int id);
   EstimationAnalysisImpl exportAnalysis(Estimation est);
   Estimation importAnalysis(EstimationAnalysisImpl est) throws Exception;
   String getNameForCopy(String dtoName);

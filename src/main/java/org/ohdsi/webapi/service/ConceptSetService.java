@@ -69,6 +69,8 @@ public class ConceptSetService extends AbstractDaoService {
 
     @Autowired
     private Security security;
+    
+    public static final String COPY_NAME = "copyName";
 
     @Path("{id}")
     @GET
@@ -244,7 +246,7 @@ public class ConceptSetService extends AbstractDaoService {
     public Map<String, String> getNameForCopy (@PathParam("id") final int id){
         ConceptSetDTO source = getConceptSet(id);
         String name = NameUtils.getNameForCopy(source.getName(), this::getNamesLike, getConceptSetRepository().findByName(source.getName()));
-        return Collections.singletonMap("copyName", name);
+        return Collections.singletonMap(COPY_NAME, name);
     }
 
     public List<String> getNamesLike(String copyName) {

@@ -4,20 +4,19 @@ import org.junit.Test;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
-import org.ohdsi.webapi.test.entity.cohortcharacterization.BaseTestEntity;
+import org.ohdsi.webapi.test.entity.cohortcharacterization.BaseCCTestEntity;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestEntityImport extends BaseTestEntity {
+public class TestCCImport extends BaseCCTestEntity {
 
     @Test
     public void testImportUniqueName() {
 
         //Arrange
-        CohortCharacterizationDTO incomingDTO = new CohortCharacterizationDTO();
-        incomingDTO.setName(SOME_UNIQUE_TEST_NAME);
-        CohortCharacterizationEntity createdEntity = conversionService.convert(incomingDTO, CohortCharacterizationEntity.class);
-        CcExportDTO exportDTO = conversionService.convert(createdEntity, CcExportDTO.class);
+        CohortCharacterizationEntity savedEntity = ccService.findByIdWithLinkedEntities(firstSavedDTO.getId());
+        CcExportDTO exportDTO = conversionService.convert(savedEntity, CcExportDTO.class);
+        exportDTO.setName(SOME_UNIQUE_TEST_NAME);
 
         //Action
         CohortCharacterizationDTO firstImport = ccController.doImport(exportDTO);
@@ -30,7 +29,7 @@ public class TestEntityImport extends BaseTestEntity {
     public void testImportWithTheSameName() {
 
         //Arrange
-        CohortCharacterizationEntity createdEntity = conversionService.convert(firstSavedDTO, CohortCharacterizationEntity.class);
+        CohortCharacterizationEntity createdEntity = ccService.findByIdWithLinkedEntities(firstSavedDTO.getId());
         CcExportDTO exportDTO = conversionService.convert(createdEntity, CcExportDTO.class);
 
         //Action
@@ -48,7 +47,7 @@ public class TestEntityImport extends BaseTestEntity {
     public void testImportWhenEntityWithNameExists() {
         
         //Arrange
-        CohortCharacterizationEntity firstCreatedEntity = conversionService.convert(firstSavedDTO, CohortCharacterizationEntity.class);
+        CohortCharacterizationEntity firstCreatedEntity = ccService.findByIdWithLinkedEntities(firstSavedDTO.getId());
         CcExportDTO firstExportDTO = conversionService.convert(firstCreatedEntity, CcExportDTO.class);
         
         CohortCharacterizationDTO secondIncomingDTO = new CohortCharacterizationDTO();
@@ -60,7 +59,7 @@ public class TestEntityImport extends BaseTestEntity {
         thirdIncomingDTO.setName(NEW_TEST_ENTITY + " (1) (2)");
         //save "New test entity (1) (2)" to DB
         CohortCharacterizationDTO thirdSavedDTO = ccController.create(thirdIncomingDTO);
-        CohortCharacterizationEntity thirdCreatedEntity = conversionService.convert(thirdSavedDTO, CohortCharacterizationEntity.class);
+        CohortCharacterizationEntity thirdCreatedEntity = ccService.findByIdWithLinkedEntities(thirdSavedDTO.getId());
         CcExportDTO thirdExportDTO = conversionService.convert(thirdCreatedEntity, CcExportDTO.class);
         
         //Action

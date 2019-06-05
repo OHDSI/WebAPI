@@ -14,7 +14,6 @@
     <jersey.version>2.14</jersey.version>
     <!-- Spring Boot manages spring.version as well -->
     <spring.boot.version>1.5.20.RELEASE</spring.boot.version>
-    <spring.batch.version>3.0.8.RELEASE</spring.batch.version>
     <flyway.version>4.2.0</flyway.version>
     <waffle.version>1.7.3</waffle.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
@@ -444,9 +443,8 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.springframework.batch</groupId>
-      <artifactId>spring-batch-core</artifactId>
-      <version>${spring.batch.version}</version>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-batch</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>

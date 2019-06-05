@@ -62,6 +62,18 @@ public interface IRAnalysisResource {
     @Transactional(readOnly = true)
     IRAnalysisDTO getAnalysis(@PathParam("id") final int id);
 
+    @POST
+    @Path("/design")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    IRAnalysisDTO doImport(final IRAnalysisDTO dto);
+
+    @GET
+    @Path("/{id}/design")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    IRAnalysisDTO export(@PathParam("id") final Integer id);
+
     @PUT
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)

@@ -1,13 +1,13 @@
 package org.ohdsi.webapi.common.generation;
 
 import org.ohdsi.webapi.Constants;
+import org.ohdsi.webapi.exception.AtlasException;
 import org.slf4j.Logger;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
-import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.concurrent.ExecutorService;
@@ -36,10 +36,10 @@ public abstract class TransactionalTasklet<T> implements Tasklet {
       doBefore(chunkContext);
       this.transactionTemplate.execute(status -> doTask(chunkContext));
       contribution.setExitStatus(ExitStatus.COMPLETED);
-    } catch (final TransactionException e) {
-      log.error(e.getMessage(), e);
-      contribution.setExitStatus(new ExitStatus(Constants.FAILED, e.getMessage()));
-      throw e;
+    } catch (final Throwable ex) {
+      log.error(ex.getMessage(), ex);
+      contribution.setExitStatus(new ExitStatus(Constants.FAILED, ex.getMessage()));
+      throw new AtlasException(ex);
     } finally {
       taskExecutor.shutdown();
       doAfter(contribution, chunkContext);

@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.test.entity;
+package org.ohdsi.webapi.test;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -47,5 +47,5 @@ import org.ohdsi.webapi.test.entity.prediction.importing.TestPredictionImport;
         TestPredictionCreate.class,
         TestPredictionImport.class,
         TestPredictionCopy.class})
-public class TestRunner {
+public class TestEntityIT {
 }

@@ -16,6 +16,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.support.TestPropertySourceUtils;
+import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import static org.ohdsi.webapi.test.entity.BaseTestEntity.*;
@@ -27,19 +29,12 @@ import static org.ohdsi.webapi.test.entity.BaseTestEntity.*;
 public abstract class BaseTestEntity extends AbstractShiroTest {    
     @Autowired
     protected ConversionService conversionService;
-    private static PostgreSQLContainer postgres;
     protected final static String COPY_PREFIX = "COPY OF: ";
     protected final static String NEW_TEST_ENTITY = "New test entity";
     protected final static String SOME_UNIQUE_TEST_NAME = "Some unique test name";
 
     @BeforeClass
     public static void before() {
-
-        postgres = new PostgreSQLContainer()
-                .withDatabaseName("ohdsi_webapi")
-                .withUsername("ohdsi")
-                .withPassword("ohdsi");
-        postgres.start();
 
         Subject subjectUnderTest = Mockito.mock(Subject.class);
         SimplePrincipalCollection principalCollection = Mockito.mock(SimplePrincipalCollection.class);
@@ -61,10 +56,18 @@ public abstract class BaseTestEntity extends AbstractShiroTest {
 
         @Override
         public void initialize(ConfigurableApplicationContext context) {
+            JdbcDatabaseContainer container = new PostgreSQLContainer()
+                    .withDatabaseName("ohdsi_webapi")
+                    .withUsername("ohdsi")
+                    .withPassword("ohdsi");
+
+//            container = new MSSQLServerContainer();
+            container.start();           
+            
             TestPropertySourceUtils.addInlinedPropertiesToEnvironment(context,
-                    "datasource.url=" + postgres.getJdbcUrl(),
-                    "flyway.datasource.url=" + postgres.getJdbcUrl(),
-                    "flyway.datasource.driverClassName=" + postgres.getDriverClassName());
+                    "datasource.url=" + container.getJdbcUrl(),
+                    "flyway.datasource.url=" + container.getJdbcUrl(),
+                    "flyway.datasource.driverClassName=" + container.getDriverClassName());
         }
     }
 }

@@ -3,7 +3,8 @@ package org.ohdsi.webapi.test.entity.incidencerate.create;
 import org.junit.Test;
 import org.ohdsi.webapi.test.entity.incidencerate.BaseIRTestEntity;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class TestIRCreate extends BaseIRTestEntity {
 
@@ -12,11 +13,11 @@ public class TestIRCreate extends BaseIRTestEntity {
         //Action
         try {
             irAnalysisResource.createAnalysis(firstIncomingDTO);
+            fail();
         } catch (Exception e) {
 
         //Assert
-        assertEquals(e.getCause().getCause().getCause().getCause().getMessage(),
-                    "ERROR: duplicate key value violates unique constraint \"uq_ir_name\"\n  Detail: Key (name)=(" + NEW_TEST_ENTITY + ") already exists.");
+            assertTrue(e.getCause().getCause().getCause().getCause().getMessage().contains("uq_ir_name"));
         }
     }
 }

@@ -3,7 +3,8 @@ package org.ohdsi.webapi.test.entity.prediction.create;
 import org.junit.Test;
 import org.ohdsi.webapi.test.entity.prediction.BasePredictionTestEntity;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class TestPredictionCreate extends BasePredictionTestEntity {
 
@@ -12,11 +13,11 @@ public class TestPredictionCreate extends BasePredictionTestEntity {
         //Action
         try {
             prController.createAnalysis(firstIncomingEntity);
+            fail();
         } catch (Exception e) {
 
         //Assert
-        assertEquals(e.getCause().getCause().getCause().getCause().getMessage(),
-                    "ERROR: duplicate key value violates unique constraint \"uq_pd_name\"\n  Detail: Key (name)=(" + NEW_TEST_ENTITY + ") already exists.");
+            assertTrue(e.getCause().getCause().getCause().getCause().getMessage().contains("uq_pd_name"));
         }
     }
 }

@@ -3,7 +3,8 @@ package org.ohdsi.webapi.test.entity.conceptset.create;
 import org.junit.Test;
 import org.ohdsi.webapi.test.entity.conceptset.BaseCSTestEntity;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class TestCSCreate extends BaseCSTestEntity {
 
@@ -12,11 +13,11 @@ public class TestCSCreate extends BaseCSTestEntity {
         //Action
         try {
             csService.createConceptSet(firstIncomingDTO);
+            fail();
         } catch (Exception e) {
 
         //Assert
-        assertEquals(e.getCause().getCause().getMessage(),
-                    "ERROR: duplicate key value violates unique constraint \"uq_cs_name\"\n  Detail: Key (concept_set_name)=(" + NEW_TEST_ENTITY + ") already exists.");
+            assertTrue(e.getCause().getCause().getMessage().contains("uq_cs_name"));
         }
     }
 }

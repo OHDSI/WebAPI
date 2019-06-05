@@ -1700,6 +1700,11 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
             query = StringUtils.replace(query, "@ordinalExpression", "");
         }
 
+        if (treatmentLine.treatmentLineType != null && treatmentLine.treatmentLineType.length > 0) {
+            ArrayList<Long> conceptIds = this.getConceptIdsFromConcepts(treatmentLine.treatmentLineType);
+            whereClauses.add(String.format("C.treatment_type_id in (%s)", StringUtils.join(conceptIds, ",")));
+        }
+
         if (treatmentLine.treatmentLineStartDate != null) {
             whereClauses.add(this.buildDateRangeClause("C.line_start_date", treatmentLine.treatmentLineStartDate));
         }
@@ -1726,10 +1731,6 @@ public class CohortExpressionQueryBuilder implements IGetCriteriaSqlDispatcher, 
 
         if (treatmentLine.drugExposureCount != null) {
             whereClauses.add(this.buildNumericRangeClause("C.drug_exposure_count", treatmentLine.drugExposureCount));
-        }
-
-        if (treatmentLine.treatmentTypeId != null) {
-            whereClauses.add(this.buildNumericRangeClause("C.treatment_type_id", treatmentLine.treatmentTypeId));
         }
 
         if (treatmentLine.age != null) {

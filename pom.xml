@@ -50,8 +50,6 @@
 
     <!-- Kerberos properties -->
     <kerberos.timeout>60</kerberos.timeout>
-<!--    <kerberos.configPath>D:\projects\Odysseus\WebAPI\src\main\resources\krb5.conf</kerberos.configPath>-->
-<!--    <kerberos.kinitPath>C:\Program Files\MIT\Kerberos\bin\</kerberos.kinitPath>-->
     <kerberos.configPath>/etc/krb5.conf</kerberos.configPath>
     <kerberos.kinitPath></kerberos.kinitPath>
 
@@ -182,8 +180,6 @@
 
     <!-- Cache Config -->
     <spring.cache.jcache.config>classpath:config/ehcache.xml</spring.cache.jcache.config>
-
-    <runSuite>**/TestRunner.class</runSuite>
   </properties>
   <build>
     <finalName>WebAPI</finalName>

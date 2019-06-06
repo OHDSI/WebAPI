@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PredictionAnalysisRepository extends EntityGraphJpaRepository<PredictionAnalysis, Integer> {
+    @Query("SELECT pa FROM PredictionAnalysis pa WHERE pa.name LIKE ?1 ESCAPE '\\'")
     List<PredictionAnalysis> findAllByNameStartsWith(String pattern);
     Optional<PredictionAnalysis> findByName(String name);
     @Query("SELECT COUNT(pa) FROM PredictionAnalysis pa WHERE pa.name = :name and pa.id <> :id")

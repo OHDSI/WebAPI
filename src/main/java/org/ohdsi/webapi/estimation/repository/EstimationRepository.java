@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface EstimationRepository extends EntityGraphJpaRepository<Estimation, Integer> {
+    @Query("SELECT es FROM Estimation es WHERE es.name LIKE ?1 ESCAPE '\\'")
     List<Estimation> findAllByNameStartsWith(String pattern);
     Optional<Estimation> findByName(String name);
     @Query("SELECT COUNT(es) FROM Estimation es WHERE es.name = :name and es.id <> :id")

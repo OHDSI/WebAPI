@@ -113,7 +113,9 @@ public class CDMResultsService extends AbstractDaoService {
         if (identifiers.length == 0) {
             return returnVal;
         } else {
-            int parameterLimit = PreparedSqlRender.getParameterLimit(source);
+            // Take into account the fact that the identifiers are used in 2
+            // places in the target query so the parameter limit will need to be divided
+            int parameterLimit = Math.floorDiv(PreparedSqlRender.getParameterLimit(source), 2);
             if (parameterLimit > 0 && identifiers.length > parameterLimit) {
                 returnVal = executeGetConceptRecordCount(Arrays.copyOfRange(identifiers, parameterLimit, identifiers.length), source, sourceCache);
                 logger.debug("executeGetConceptRecordCount: " + returnVal.size());

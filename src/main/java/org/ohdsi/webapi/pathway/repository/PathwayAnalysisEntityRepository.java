@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PathwayAnalysisEntityRepository extends EntityGraphJpaRepository<PathwayAnalysisEntity, Integer> {
-
+  @Query("SELECT pa FROM pathway_analysis pa WHERE pa.name LIKE ?1 ESCAPE '\\'")
   List<PathwayAnalysisEntity> findAllByNameStartsWith(String pattern);
 
   Optional<PathwayAnalysisEntity> findByName(String name);

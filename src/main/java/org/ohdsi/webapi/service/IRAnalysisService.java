@@ -303,11 +303,13 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   }
 
   @Override
+  @Transactional
   public int getCountIRWithSameName(final int id, String name) {
     return irAnalysisRepository.getCountIRWithSameName(id, name);
   }
 
   @Override
+  @Transactional
   public IRAnalysisDTO createAnalysis(IRAnalysisDTO analysis) {
     Date currentTime = Calendar.getInstance().getTime();
 
@@ -334,6 +336,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   }
 
   @Override
+  @Transactional(readOnly = true)
   public IRAnalysisDTO getAnalysis(final int id) {
 
     return getTransactionTemplate().execute(transactionStatus -> {
@@ -390,6 +393,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     }
 
     @Override
+    @Transactional
   public IRAnalysisDTO saveAnalysis(final int id, IRAnalysisDTO analysis) {
     Date currentTime = Calendar.getInstance().getTime();
 
@@ -497,6 +501,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<AnalysisInfoDTO> getAnalysisInfo(final int id) {
 
     List<ExecutionInfo> executionInfoList = irExecutionInfoRepository.findByAnalysisId(id);
@@ -509,6 +514,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
   @Override
   @DataSourceAccess
+  @Transactional(readOnly = true)
   public AnalysisInfoDTO getAnalysisInfo(int id, @SourceKey String sourceKey) {
 
     Source source = sourceService.findBySourceKey(sourceKey);
@@ -531,6 +537,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   }
 
   @Override
+  @Transactional
   public AnalysisReport getAnalysisReport(final int id, final String sourceKey, final int targetId, final int outcomeId ) {
 
     Source source = this.getSourceRepository().findBySourceKey(sourceKey);
@@ -563,6 +570,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   }
 
   @Override
+  @Transactional
   public IRAnalysisDTO copy(final int id) {
     IRAnalysisDTO analysis = getAnalysis(id);
     analysis.setId(null); // clear the ID
@@ -572,6 +580,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
 
   @Override
+  @Transactional
   public Response export(final int id) {
 
     Response response = null;
@@ -706,11 +715,13 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   }
 
   @Override
+  @Transactional
   public void delete(final int id) {
     irAnalysisRepository.delete(id);
   }
 
-  @Override   
+  @Override
+  @Transactional
   public void deleteInfo(final int id, final String sourceKey) {
     IncidenceRateAnalysis analysis = irAnalysisRepository.findOne(id);
     ExecutionInfo itemToRemove = null;

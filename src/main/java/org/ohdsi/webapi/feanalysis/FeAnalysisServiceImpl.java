@@ -174,6 +174,12 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     public void deleteAnalysis(int id) {
         deleteAnalysis(analysisRepository.findById(id).orElseThrow(() -> new RuntimeException("There is no Feature Analysis with id = " + id)));
     }
+    
+    @Override
+    public List<String> getNamesLike(String name) {
+        return analysisRepository.findAllByNameStartsWith(name).stream().map(FeAnalysisEntity::getName).collect(Collectors.toList());
+    }
+    
 
     private void checkEntityLocked(FeAnalysisEntity entity) {
         if (entity.getLocked() == Boolean.TRUE) {

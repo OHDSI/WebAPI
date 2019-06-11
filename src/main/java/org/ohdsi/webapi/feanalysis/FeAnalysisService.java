@@ -34,4 +34,6 @@ public interface FeAnalysisService {
     void deleteAnalysis(FeAnalysisEntity entity);
     
     void deleteAnalysis(int id);
+    
+    List<String> getNamesLike(String name);
 }

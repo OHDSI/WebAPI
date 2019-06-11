@@ -631,12 +631,14 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             switch (analysis.getType()) {
                 case CRITERIA_SET:
                     FeAnalysisWithCriteriaEntity criteriaAnalysis = (FeAnalysisWithCriteriaEntity)analysis;
+                    criteriaAnalysis.setName(NameUtils.getNameWithSuffix(criteriaAnalysis.getName(), this::getFeNamesLike));
                     entityAnalyses.add(analysisService.createCriteriaAnalysis(criteriaAnalysis));
                     break;
                 case PRESET:
                     entityAnalyses.add(presetAnalysesMap.get(analysis.getDesign()));
                     break;
                 case CUSTOM_FE:
+                    analysis.setName(NameUtils.getNameWithSuffix(analysis.getName(), this::getFeNamesLike));
                     entityAnalyses.add(analysisService.createAnalysis(analysis));
                     break;
                 default:
@@ -700,6 +702,10 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             });
             return null;
         });
+    }
+    
+    private List<String> getFeNamesLike(String name) {
+        return analysisService.getNamesLike(name);
     }
 
 }

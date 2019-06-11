@@ -1,9 +1,9 @@
 select  concept_hierarchy.concept_id,
 	CONCAT(
-	  isNull(concept_hierarchy.level3_concept_name,'NA'), '||',
-	  isNull(concept_hierarchy.level2_concept_name,'NA'), '||',
-	  isNull(concept_hierarchy.level1_concept_name,'NA'), '||',
-	  isNull(concept_hierarchy.concept_name,'NA')
+	  coalesce(concept_hierarchy.level3_concept_name,'NA'), '||',
+	  coalesce(concept_hierarchy.level2_concept_name,'NA'), '||',
+	  coalesce(concept_hierarchy.level1_concept_name,'NA'), '||',
+	  coalesce(concept_hierarchy.concept_name,'NA')
 	) concept_path,
 	hr1.count_value as num_persons, 
 	ROUND(1.0*hr1.count_value / denom.count_value,5) as percent_persons,

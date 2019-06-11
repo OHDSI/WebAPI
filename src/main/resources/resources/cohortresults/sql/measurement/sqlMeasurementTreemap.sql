@@ -1,6 +1,7 @@
 select  concept_hierarchy.concept_id,
 	CONCAT(
-		coalesce(concept_hierarchy.level4_concept_name,'NA'), '||',
+                -- Note: concept_hierarchy.level4_concept_name is null so removing from this query
+		--coalesce(concept_hierarchy.level4_concept_name,'NA'), '||', 
 		coalesce(concept_hierarchy.level3_concept_name,'NA'), '||',
 		coalesce(concept_hierarchy.level2_concept_name,'NA'), '||',
 		coalesce(concept_hierarchy.level1_concept_name,'NA'), '||',

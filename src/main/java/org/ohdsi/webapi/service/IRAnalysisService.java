@@ -605,10 +605,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
       for (ExecutionInfo execution : executions)
       {
         Source source = execution.getSource();
-        try {
-          sourceService.checkConnection(source.getSourceKey());
-        } catch (Exception e) {
-          log.error("cannot get connection to source with key {}", source.getSourceKey(), e);
+        if (!isSourceAvailable(source)) {
           continue;
         }
         String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
@@ -801,5 +798,20 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
       ids.add(definition.getId());
     }
     cohortDTOS.clear();
+  }
+
+
+  private boolean isSourceAvailable(Source source) {
+    boolean sourceAvailable = true;
+    try {
+      sourceService.checkConnection(source.getSourceKey());
+    } catch (Exception e) {
+      log.error("cannot get connection to source with key {}", source.getSourceKey(), e);
+      sourceAvailable = false;
+    }
+    if (!sourceAccessor.hasAccess(source)) {
+      sourceAvailable = false;
+    }
+    return sourceAvailable;
   }
 }

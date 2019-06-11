@@ -605,6 +605,12 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
       for (ExecutionInfo execution : executions)
       {
         Source source = execution.getSource();
+        try {
+          sourceService.checkConnection(source.getSourceKey());
+        } catch (Exception e) {
+          log.error("cannot get connection to source with key {}", source.getSourceKey(), e);
+          continue;
+        }
         String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 
         // perform this query to CDM in an isolated transaction to avoid expensive JDBC transaction synchronization

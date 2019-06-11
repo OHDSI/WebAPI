@@ -602,12 +602,10 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
       ArrayList<String[]> strataLines = new ArrayList<>();
       ArrayList<String[]> distLines = new ArrayList<>();
 
+      executions = executions.stream().filter(e -> this.isSourceAvailable(e.getSource())).collect(Collectors.toSet());
       for (ExecutionInfo execution : executions)
       {
         Source source = execution.getSource();
-        if (!isSourceAvailable(source)) {
-          continue;
-        }
         String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 
         // perform this query to CDM in an isolated transaction to avoid expensive JDBC transaction synchronization
@@ -803,14 +801,15 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
   private boolean isSourceAvailable(Source source) {
     boolean sourceAvailable = true;
-    try {
-      sourceService.checkConnection(source.getSourceKey());
-    } catch (Exception e) {
-      log.error("cannot get connection to source with key {}", source.getSourceKey(), e);
-      sourceAvailable = false;
-    }
     if (!sourceAccessor.hasAccess(source)) {
       sourceAvailable = false;
+    } else {
+      try {
+        sourceService.checkConnection(source.getSourceKey());
+      } catch (Exception e) {
+        log.error("cannot get connection to source with key {}", source.getSourceKey(), e);
+        sourceAvailable = false;
+      }
     }
     return sourceAvailable;
   }

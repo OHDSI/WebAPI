@@ -71,6 +71,7 @@ import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.GENERATE_COHORT_CHARACTERIZATION;
 import static org.ohdsi.webapi.Constants.Params.*;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
 
 @Service
 @Transactional
@@ -638,8 +639,14 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                     entityAnalyses.add(presetAnalysesMap.get(analysis.getDesign()));
                     break;
                 case CUSTOM_FE:
-                    analysis.setName(NameUtils.getNameWithSuffix(analysis.getName(), this::getFeNamesLike));
-                    entityAnalyses.add(analysisService.createAnalysis(analysis));
+                    FeAnalysisWithStringEntity withStringEntity = (FeAnalysisWithStringEntity) analysis;
+                    Optional<FeAnalysisEntity> findAnalysisResult = this.getFeByDesignAndName(withStringEntity, withStringEntity.getName());
+                    if (findAnalysisResult.isPresent()) {
+                        entityAnalyses.add(findAnalysisResult.get());
+                    } else {
+                        analysis.setName(NameUtils.getNameWithSuffix(analysis.getName(), this::getFeNamesLike));
+                        entityAnalyses.add(analysisService.createAnalysis(analysis));
+                    }
                     break;
                 default:
                     throw new IllegalArgumentException("Analysis with type: " + analysis.getType() + " cannot be imported");
@@ -706,6 +713,10 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     
     private List<String> getFeNamesLike(String name) {
         return analysisService.getNamesLike(name);
+    }
+    
+    private Optional<FeAnalysisEntity> getFeByDesignAndName(final FeAnalysisWithStringEntity withStringEntity, final String feAnalysisName) {
+        return analysisService.findByDesignAndName(withStringEntity, feAnalysisName);
     }
 
 }

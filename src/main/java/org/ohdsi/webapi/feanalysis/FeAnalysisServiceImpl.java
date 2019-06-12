@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.NotFoundException;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
@@ -178,6 +179,20 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     @Override
     public List<String> getNamesLike(String name) {
         return analysisRepository.findAllByNameStartsWith(name).stream().map(FeAnalysisEntity::getName).collect(Collectors.toList());
+    }
+    
+    @Override
+    public Optional<FeAnalysisEntity> findByDesignAndName(final FeAnalysisWithStringEntity withStringEntity, final String name) {
+        return this.findByDesignAndPredicate(withStringEntity.getDesign(), f -> Objects.equals(f.getName(), name));
+    }
+    
+    private Optional<FeAnalysisEntity> findByDesignAndPredicate(final String design, final Predicate<FeAnalysisEntity> f) {
+        List<FeAnalysisEntity> detailsFromDb = analysisRepository.findByDesign(design);
+        return detailsFromDb
+                .stream()
+                .filter(v -> Objects.equals(v.getDesign(), design))
+                .filter(f)
+                .findFirst();
     }
     
 

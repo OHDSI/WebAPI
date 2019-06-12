@@ -235,6 +235,7 @@ public abstract class AtlasSecurity extends Security {
 
             // incidence rates
             .addProtectedRestPath("/ir", CREATE_IR)
+            .addProtectedRestPath("/ir/design", CREATE_IR)
             .addProtectedRestPath("/ir/*/copy", CREATE_COPY_IR)
 
             // comparative cohort analysis (estimation)

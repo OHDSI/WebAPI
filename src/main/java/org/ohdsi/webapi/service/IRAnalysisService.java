@@ -303,11 +303,13 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   }
 
   @Override
+  @Transactional
   public int getCountIRWithSameName(final int id, String name) {
     return irAnalysisRepository.getCountIRWithSameName(id, name);
   }
 
   @Override
+  @Transactional
   public IRAnalysisDTO createAnalysis(IRAnalysisDTO analysis) {
     Date currentTime = Calendar.getInstance().getTime();
 
@@ -334,6 +336,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   }
 
   @Override
+  @Transactional(readOnly = true)
   public IRAnalysisDTO getAnalysis(final int id) {
 
     return getTransactionTemplate().execute(transactionStatus -> {
@@ -390,6 +393,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     }
 
     @Override
+    @Transactional
   public IRAnalysisDTO saveAnalysis(final int id, IRAnalysisDTO analysis) {
     Date currentTime = Calendar.getInstance().getTime();
 
@@ -497,6 +501,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<AnalysisInfoDTO> getAnalysisInfo(final int id) {
 
     List<ExecutionInfo> executionInfoList = irExecutionInfoRepository.findByAnalysisId(id);
@@ -509,6 +514,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
   @Override
   @DataSourceAccess
+  @Transactional(readOnly = true)
   public AnalysisInfoDTO getAnalysisInfo(int id, @SourceKey String sourceKey) {
 
     Source source = sourceService.findBySourceKey(sourceKey);
@@ -531,6 +537,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   }
 
   @Override
+  @Transactional
   public AnalysisReport getAnalysisReport(final int id, final String sourceKey, final int targetId, final int outcomeId ) {
 
     Source source = this.getSourceRepository().findBySourceKey(sourceKey);
@@ -563,6 +570,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   }
 
   @Override
+  @Transactional
   public IRAnalysisDTO copy(final int id) {
     IRAnalysisDTO analysis = getAnalysis(id);
     analysis.setId(null); // clear the ID
@@ -572,6 +580,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
 
   @Override
+  @Transactional
   public Response export(final int id) {
 
     Response response = null;
@@ -593,16 +602,11 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
       ArrayList<String[]> strataLines = new ArrayList<>();
       ArrayList<String[]> distLines = new ArrayList<>();
 
+      executions = executions.stream().filter(e -> this.isSourceAvailable(e.getSource())).collect(Collectors.toSet());
       for (ExecutionInfo execution : executions)
       {
         Source source = execution.getSource();
         String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-
-        // perform this query to CDM in an isolated transaction to avoid expensive JDBC transaction synchronization
-        DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
-        requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);        
-        TransactionStatus initStatus = this.getTransactionTemplateRequiresNew().getTransactionManager().getTransaction(requresNewTx);
-
 
         // get the summary data
         List<AnalysisReport.Summary> summaryList = getAnalysisSummaryList(id, source);
@@ -631,8 +635,6 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
         String translatedSql = SqlTranslate.translateSql(distQuery, source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
 
         SqlRowSet rs = this.getSourceJdbcTemplate(source).queryForRowSet(translatedSql);
-
-        this.getTransactionTemplateRequiresNew().getTransactionManager().commit(initStatus);
 
         if (distLines.isEmpty())
         {
@@ -706,11 +708,13 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   }
 
   @Override
+  @Transactional
   public void delete(final int id) {
     irAnalysisRepository.delete(id);
   }
 
-  @Override   
+  @Override
+  @Transactional
   public void deleteInfo(final int id, final String sourceKey) {
     IncidenceRateAnalysis analysis = irAnalysisRepository.findOne(id);
     ExecutionInfo itemToRemove = null;
@@ -784,5 +788,21 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
       ids.add(definition.getId());
     }
     cohortDTOS.clear();
+  }
+
+
+  private boolean isSourceAvailable(Source source) {
+    boolean sourceAvailable = true;
+    if (!sourceAccessor.hasAccess(source)) {
+      sourceAvailable = false;
+    } else {
+      try {
+        sourceService.checkConnection(source.getSourceKey());
+      } catch (Exception e) {
+        log.error("cannot get connection to source with key {}", source.getSourceKey(), e);
+        sourceAvailable = false;
+      }
+    }
+    return sourceAvailable;
   }
 }

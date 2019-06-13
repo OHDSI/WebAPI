@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.ohdsi.cohortcharacterization.utils.QuoteUtils.dequote;
+import static org.ohdsi.analysis.QuoteUtils.dequote;
 import static org.ohdsi.webapi.user.importer.providers.OhdsiLdapUtils.valueAsList;
 
 @Component

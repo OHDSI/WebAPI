@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.shiro.management;
 
-import static org.ohdsi.cohortcharacterization.utils.QuoteUtils.dequote;
+import static org.ohdsi.analysis.QuoteUtils.dequote;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.*;
 
 import io.buji.pac4j.filter.CallbackFilter;

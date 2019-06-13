@@ -608,12 +608,6 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
         Source source = execution.getSource();
         String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 
-        // perform this query to CDM in an isolated transaction to avoid expensive JDBC transaction synchronization
-        DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
-        requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);        
-        TransactionStatus initStatus = this.getTransactionTemplateRequiresNew().getTransactionManager().getTransaction(requresNewTx);
-
-
         // get the summary data
         List<AnalysisReport.Summary> summaryList = getAnalysisSummaryList(id, source);
         if (summaryLines.isEmpty())
@@ -641,8 +635,6 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
         String translatedSql = SqlTranslate.translateSql(distQuery, source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
 
         SqlRowSet rs = this.getSourceJdbcTemplate(source).queryForRowSet(translatedSql);
-
-        this.getTransactionTemplateRequiresNew().getTransactionManager().commit(initStatus);
 
         if (distLines.isEmpty())
         {

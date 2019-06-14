@@ -1170,7 +1170,7 @@
       <id>webapi-hive</id>
       <properties>
         <hive.enabled>true</hive.enabled>
-        <!-- HIVE JDBC driver path --> 
+        <!-- HIVE JDBC driver path -->
         <hive.classpath>${basedir}/src/main/extras/hive</hive.classpath>
       </properties>
       <dependencies>

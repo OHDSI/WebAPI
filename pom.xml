@@ -824,32 +824,32 @@
           lower(email) = lower(?)</security.db.datasource.authenticationQuery>
       </properties>
     </profile>
-    <profile>
-      <id>webapi-mssql</id>
-      <properties>
-        <datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
-        <datasource.url>jdbc:sqlserver://server</datasource.url>
-        <datasource.username>USER</datasource.username>
-        <datasource.password>PASS</datasource.password>
-        <datasource.dialect>sql server</datasource.dialect>
-        <datasource.ohdsi.schema>OHDSI_schema</datasource.ohdsi.schema>
-        <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
-        <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
-        <flyway.datasource.username>FLYWAY_USER</flyway.datasource.username>
-        <flyway.datasource.password>FLYWAY_PASS</flyway.datasource.password>
-        <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
-        <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
-        <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
-        <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
-        <hibernate.dialect>org.hibernate.dialect.SQLServer2012Dialect</hibernate.dialect>
-        <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
-        <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
-        <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
-        <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
-        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \
-          lower(email) = lower(?)</security.db.datasource.authenticationQuery>
-      </properties>
-    </profile>
+<!--    <profile>-->
+<!--      <id>webapi-mssql</id>-->
+<!--      <properties>-->
+<!--        <datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>-->
+<!--        <datasource.url>jdbc:sqlserver://server</datasource.url>-->
+<!--        <datasource.username>USER</datasource.username>-->
+<!--        <datasource.password>PASS</datasource.password>-->
+<!--        <datasource.dialect>sql server</datasource.dialect>-->
+<!--        <datasource.ohdsi.schema>OHDSI_schema</datasource.ohdsi.schema>-->
+<!--        <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>-->
+<!--        <flyway.datasource.url>${datasource.url}</flyway.datasource.url>-->
+<!--        <flyway.datasource.username>FLYWAY_USER</flyway.datasource.username>-->
+<!--        <flyway.datasource.password>FLYWAY_PASS</flyway.datasource.password>-->
+<!--        <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>-->
+<!--        <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>-->
+<!--        <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>-->
+<!--        <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>-->
+<!--        <hibernate.dialect>org.hibernate.dialect.SQLServer2012Dialect</hibernate.dialect>-->
+<!--        <security.db.datasource.url>${datasource.url}</security.db.datasource.url>-->
+<!--        <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>-->
+<!--        <security.db.datasource.username>${datasource.username}</security.db.datasource.username>-->
+<!--        <security.db.datasource.password>${datasource.password}</security.db.datasource.password>-->
+<!--        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \-->
+<!--          lower(email) = lower(?)</security.db.datasource.authenticationQuery>-->
+<!--      </properties>-->
+<!--    </profile>-->
     <profile>
       <id>webapi-netezza</id>
       <properties>

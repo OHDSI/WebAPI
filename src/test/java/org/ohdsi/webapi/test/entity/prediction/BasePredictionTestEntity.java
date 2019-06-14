@@ -29,7 +29,7 @@ public abstract class BasePredictionTestEntity extends BaseTestEntity {
                     "\"splitSeed\":null,\"nfold\":3}}\"\n";
 
     @Before
-    public void setupDB() throws Exception {
+    public void setupDB() {
         firstIncomingEntity = new PredictionAnalysis();
         firstIncomingEntity.setName(NEW_TEST_ENTITY);
         firstIncomingEntity.setSpecification(PR_SPECIFICATION);

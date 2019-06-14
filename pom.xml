@@ -138,7 +138,7 @@
     <server.ssl.key-store-password></server.ssl.key-store-password>
     <server.ssl.key-password></server.ssl.key-password>
 
-    <arachne.version>1.14.0-SNAPSHOT</arachne.version>
+    <arachne.version>1.15.0-SNAPSHOT</arachne.version>
     <jersey-media-multipart.version>2.25.1</jersey-media-multipart.version>
     <execution.invalidation.period>600000</execution.invalidation.period>
     <execution.status.period>10000</execution.status.period>
@@ -675,6 +675,11 @@
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk15on</artifactId>
       <version>1.59</version>
+    </dependency>
+    <dependency>
+      <groupId>com.odysseusinc.arachne</groupId>
+      <artifactId>arachne-common-utils</artifactId>
+      <version>${arachne.version}</version>
     </dependency>
     <dependency>
       <groupId>com.odysseusinc.arachne</groupId>

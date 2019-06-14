@@ -206,7 +206,6 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
         List<FeAnalysisEntity> detailsFromDb = analysisRepository.findByDesign(design);
         return detailsFromDb
                 .stream()
-                .filter(v -> Objects.equals(v.getDesign(), design))
                 .filter(f)
                 .findFirst();
     }

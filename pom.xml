@@ -680,6 +680,11 @@
     </dependency>
     <dependency>
       <groupId>com.odysseusinc.arachne</groupId>
+      <artifactId>arachne-common-utils</artifactId>
+      <version>${arachne.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.odysseusinc.arachne</groupId>
       <artifactId>execution-engine-commons</artifactId>
       <version>${arachne.version}</version>
     </dependency>

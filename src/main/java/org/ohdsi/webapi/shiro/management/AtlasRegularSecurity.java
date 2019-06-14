@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.shiro.management;
 
+import static com.odysseusinc.arachne.commons.utils.QuoteUtils.dequote;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.*;
-import static org.ohdsi.webapi.util.QuoteUtils.dequote;
 
 import io.buji.pac4j.filter.CallbackFilter;
 import io.buji.pac4j.filter.SecurityFilter;
@@ -54,7 +54,6 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.*;
-import static org.ohdsi.webapi.util.QuoteUtils.dequote;
 
 @Component
 @ConditionalOnProperty(name = "security.provider", havingValue = Constants.SecurityProviders.REGULAR)

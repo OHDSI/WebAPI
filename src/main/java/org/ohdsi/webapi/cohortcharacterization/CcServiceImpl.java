@@ -26,6 +26,7 @@ import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.AnalysisGenerationInfoEntity;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
 import org.ohdsi.webapi.job.GeneratesNotification;
@@ -330,11 +331,11 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         updateStratas(entity, persistedCohortCharacterization);
 
         importCohorts(entity, persistedCohortCharacterization);
-        importAnalyses(entity, persistedCohortCharacterization);
+        List<Integer> savedAnalysesIds = importAnalyses(entity, persistedCohortCharacterization);
 
         final CohortCharacterizationEntity savedEntity = saveCc(persistedCohortCharacterization);
 
-        eventPublisher.publishEvent(new CcImportEvent(savedEntity));
+        eventPublisher.publishEvent(new CcImportEvent(savedAnalysesIds));
 
         return savedEntity;
     }
@@ -623,7 +624,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         stat.setMax(rs.getDouble("max_value"));
     }
 
-    private void importAnalyses(final CohortCharacterizationEntity entity, final CohortCharacterizationEntity persistedEntity) {
+    private List<Integer> importAnalyses(final CohortCharacterizationEntity entity, final CohortCharacterizationEntity persistedEntity) {
+        List<Integer> savedAnalysesIds = new ArrayList<>();
         final Map<String, FeAnalysisEntity> presetAnalysesMap = buildPresetAnalysisMap(entity);
 
         final Set<FeAnalysisEntity> entityAnalyses = new HashSet<>();
@@ -631,9 +633,18 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         for (final FeAnalysisEntity analysis : entity.getFeatureAnalyses()) {
             switch (analysis.getType()) {
                 case CRITERIA_SET:
-                    FeAnalysisWithCriteriaEntity criteriaAnalysis = (FeAnalysisWithCriteriaEntity)analysis;
-                    criteriaAnalysis.setName(NameUtils.getNameWithSuffix(criteriaAnalysis.getName(), this::getFeNamesLike));
-                    entityAnalyses.add(analysisService.createCriteriaAnalysis(criteriaAnalysis));
+                    FeAnalysisWithCriteriaEntity<? extends FeAnalysisCriteriaEntity> criteriaAnalysis = (FeAnalysisWithCriteriaEntity) analysis;
+                    List<? extends FeAnalysisCriteriaEntity> design = criteriaAnalysis.getDesign();
+                    Optional<FeAnalysisEntity> entityCriteriaSet = analysisService
+                            .findByCriteriaListAndName(design, criteriaAnalysis.getName());
+                    if (entityCriteriaSet.isPresent()) {
+                        entityAnalyses.add(entityCriteriaSet.get());
+                    } else {
+                        criteriaAnalysis.setName(NameUtils.getNameWithSuffix(criteriaAnalysis.getName(), this::getFeNamesLike));
+                        FeAnalysisWithCriteriaEntity createdAnalysis = analysisService.createCriteriaAnalysis(criteriaAnalysis);
+                        entityAnalyses.add(createdAnalysis);
+                        savedAnalysesIds.add(createdAnalysis.getId());
+                    }
                     break;
                 case PRESET:
                     entityAnalyses.add(presetAnalysesMap.get(analysis.getDesign()));
@@ -645,7 +656,9 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                         entityAnalyses.add(findAnalysisResult.get());
                     } else {
                         analysis.setName(NameUtils.getNameWithSuffix(analysis.getName(), this::getFeNamesLike));
-                        entityAnalyses.add(analysisService.createAnalysis(analysis));
+                        FeAnalysisEntity createdAnalysis = analysisService.createAnalysis(analysis);
+                        entityAnalyses.add(createdAnalysis);
+                        savedAnalysesIds.add(createdAnalysis.getId());
                     }
                     break;
                 default:
@@ -654,6 +667,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         }
 
         persistedEntity.setFeatureAnalyses(entityAnalyses);
+        return savedAnalysesIds;
     }
 
     private Map<String, FeAnalysisEntity> buildPresetAnalysisMap(final CohortCharacterizationEntity entity) {

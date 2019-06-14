@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.feanalysis;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
@@ -185,7 +186,20 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     public Optional<FeAnalysisEntity> findByDesignAndName(final FeAnalysisWithStringEntity withStringEntity, final String name) {
         return this.findByDesignAndPredicate(withStringEntity.getDesign(), f -> Objects.equals(f.getName(), name));
     }
-    
+
+    @Override
+    public Optional<FeAnalysisEntity> findByCriteriaListAndName(List<? extends FeAnalysisCriteriaEntity> newCriteriaList, String name) {
+        List<FeAnalysisEntity> analysis = analysisRepository.findAllByNameStartsWith(name);
+        return analysis.stream()
+                .filter(a -> this.checkCriteriaList(criteriaRepository.findAllByFeatureAnalysisId(a.getId()), newCriteriaList)).findFirst();
+    }
+
+    private boolean checkCriteriaList(List<FeAnalysisCriteriaEntity> curCriteriaList, List<? extends FeAnalysisCriteriaEntity> newCriteriaList) {
+        List<String> currentList = curCriteriaList.stream().map(FeAnalysisCriteriaEntity::getExpressionString).collect(Collectors.toList());
+        List<String> newList = newCriteriaList.stream().map(FeAnalysisCriteriaEntity::getExpressionString).collect(Collectors.toList());
+        return CollectionUtils.isEqualCollection(currentList, newList);
+    }
+
     private Optional<FeAnalysisEntity> findByDesignAndPredicate(final String design, final Predicate<FeAnalysisEntity> f) {
         List<FeAnalysisEntity> detailsFromDb = analysisRepository.findByDesign(design);
         return detailsFromDb

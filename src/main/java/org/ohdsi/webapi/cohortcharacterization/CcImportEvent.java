@@ -1,18 +1,17 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
-import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import java.util.List;
 
 public class CcImportEvent {
 
-    private CohortCharacterizationEntity entity;
+    // should keep list of ids to prevent error for duplication of permissions
+    private List<Integer> savedAnalysesIds;
 
-    public CcImportEvent(CohortCharacterizationEntity entity) {
-
-        this.entity = entity;
+    public CcImportEvent(List<Integer> savedAnalysesIds) {
+        this.savedAnalysesIds = savedAnalysesIds;
     }
 
-    public CohortCharacterizationEntity getEntity() {
-
-        return entity;
+    public List<Integer> getSavedAnalysesIds() {
+        return savedAnalysesIds;
     }
 }

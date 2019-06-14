@@ -40,5 +40,5 @@ public interface FeAnalysisService {
     
     Optional<FeAnalysisEntity> findByDesignAndName(FeAnalysisWithStringEntity withStringEntity, final String name);
 
-    Optional<FeAnalysisEntity> findByCriteriaListAndName(List<? extends FeAnalysisCriteriaEntity> criteriaList, final String name);
+    Optional<FeAnalysisEntity> findByCriteriaList(List<? extends FeAnalysisCriteriaEntity> newCriteriaList);
 }

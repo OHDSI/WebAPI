@@ -188,10 +188,12 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     }
 
     @Override
-    public Optional<FeAnalysisEntity> findByCriteriaListAndName(List<? extends FeAnalysisCriteriaEntity> newCriteriaList, String name) {
-        List<FeAnalysisEntity> analysis = analysisRepository.findAllByNameStartsWith(name);
-        return analysis.stream()
-                .filter(a -> this.checkCriteriaList(criteriaRepository.findAllByFeatureAnalysisId(a.getId()), newCriteriaList)).findFirst();
+    public Optional<FeAnalysisEntity> findByCriteriaList(List<? extends FeAnalysisCriteriaEntity> newCriteriaList) {
+        Map<FeAnalysisWithCriteriaEntity, List<FeAnalysisCriteriaEntity>> feAnalysisEntityListMap = newCriteriaList.stream()
+                .map(c -> criteriaRepository.findAllByExpressionString(c.getExpressionString()))
+                .flatMap(List::stream).collect(Collectors.groupingBy(FeAnalysisCriteriaEntity::getFeatureAnalysis));
+        return feAnalysisEntityListMap.entrySet().stream().filter(e -> checkCriteriaList(e.getValue(), newCriteriaList))
+                .findAny().map(Map.Entry::getKey);
     }
 
     private boolean checkCriteriaList(List<FeAnalysisCriteriaEntity> curCriteriaList, List<? extends FeAnalysisCriteriaEntity> newCriteriaList) {

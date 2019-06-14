@@ -635,8 +635,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                 case CRITERIA_SET:
                     FeAnalysisWithCriteriaEntity<? extends FeAnalysisCriteriaEntity> criteriaAnalysis = (FeAnalysisWithCriteriaEntity) analysis;
                     List<? extends FeAnalysisCriteriaEntity> design = criteriaAnalysis.getDesign();
-                    Optional<FeAnalysisEntity> entityCriteriaSet = analysisService
-                            .findByCriteriaListAndName(design, criteriaAnalysis.getName());
+                    Optional<FeAnalysisEntity> entityCriteriaSet = analysisService.findByCriteriaList(design);
                     if (entityCriteriaSet.isPresent()) {
                         entityAnalyses.add(entityCriteriaSet.get());
                     } else {
@@ -651,7 +650,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                     break;
                 case CUSTOM_FE:
                     FeAnalysisWithStringEntity withStringEntity = (FeAnalysisWithStringEntity) analysis;
-                    Optional<FeAnalysisEntity> findAnalysisResult = this.getFeByDesignAndName(withStringEntity, withStringEntity.getName());
+                    Optional<FeAnalysisEntity> findAnalysisResult = analysisService.findByDesignAndName(withStringEntity, withStringEntity.getName());
                     if (findAnalysisResult.isPresent()) {
                         entityAnalyses.add(findAnalysisResult.get());
                     } else {
@@ -727,10 +726,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     
     private List<String> getFeNamesLike(String name) {
         return analysisService.getNamesLike(name);
-    }
-    
-    private Optional<FeAnalysisEntity> getFeByDesignAndName(final FeAnalysisWithStringEntity withStringEntity, final String feAnalysisName) {
-        return analysisService.findByDesignAndName(withStringEntity, feAnalysisName);
     }
 
 }

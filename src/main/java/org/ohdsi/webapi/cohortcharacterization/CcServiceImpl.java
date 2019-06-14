@@ -628,45 +628,43 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         List<Integer> savedAnalysesIds = new ArrayList<>();
         final Map<String, FeAnalysisEntity> presetAnalysesMap = buildPresetAnalysisMap(entity);
 
-        final Set<FeAnalysisEntity> entityAnalyses = new HashSet<>();
+        final Set<FeAnalysisEntity> analysesSet = new HashSet<>();
 
-        for (final FeAnalysisEntity analysis : entity.getFeatureAnalyses()) {
-            switch (analysis.getType()) {
+        for (final FeAnalysisEntity newAnalysis : entity.getFeatureAnalyses()) {
+            switch (newAnalysis.getType()) {
                 case CRITERIA_SET:
-                    FeAnalysisWithCriteriaEntity<? extends FeAnalysisCriteriaEntity> criteriaAnalysis = (FeAnalysisWithCriteriaEntity) analysis;
+                    FeAnalysisWithCriteriaEntity<? extends FeAnalysisCriteriaEntity> criteriaAnalysis = (FeAnalysisWithCriteriaEntity) newAnalysis;
                     List<? extends FeAnalysisCriteriaEntity> design = criteriaAnalysis.getDesign();
                     Optional<FeAnalysisEntity> entityCriteriaSet = analysisService.findByCriteriaList(design);
-                    if (entityCriteriaSet.isPresent()) {
-                        entityAnalyses.add(entityCriteriaSet.get());
-                    } else {
-                        criteriaAnalysis.setName(NameUtils.getNameWithSuffix(criteriaAnalysis.getName(), this::getFeNamesLike));
-                        FeAnalysisWithCriteriaEntity createdAnalysis = analysisService.createCriteriaAnalysis(criteriaAnalysis);
-                        entityAnalyses.add(createdAnalysis);
-                        savedAnalysesIds.add(createdAnalysis.getId());
-                    }
+                    this.<FeAnalysisWithCriteriaEntity<?>>addAnalysis(savedAnalysesIds, analysesSet, criteriaAnalysis, entityCriteriaSet, a -> analysisService.createCriteriaAnalysis(a));
                     break;
                 case PRESET:
-                    entityAnalyses.add(presetAnalysesMap.get(analysis.getDesign()));
+                    analysesSet.add(presetAnalysesMap.get(newAnalysis.getDesign()));
                     break;
                 case CUSTOM_FE:
-                    FeAnalysisWithStringEntity withStringEntity = (FeAnalysisWithStringEntity) analysis;
-                    Optional<FeAnalysisEntity> findAnalysisResult = analysisService.findByDesignAndName(withStringEntity, withStringEntity.getName());
-                    if (findAnalysisResult.isPresent()) {
-                        entityAnalyses.add(findAnalysisResult.get());
-                    } else {
-                        analysis.setName(NameUtils.getNameWithSuffix(analysis.getName(), this::getFeNamesLike));
-                        FeAnalysisEntity createdAnalysis = analysisService.createAnalysis(analysis);
-                        entityAnalyses.add(createdAnalysis);
-                        savedAnalysesIds.add(createdAnalysis.getId());
-                    }
+                    FeAnalysisWithStringEntity withStringEntity = (FeAnalysisWithStringEntity) newAnalysis;
+                    Optional<FeAnalysisEntity> curAnalysis = analysisService.findByDesignAndName(withStringEntity, withStringEntity.getName());
+                    this.<FeAnalysisEntity>addAnalysis(savedAnalysesIds, analysesSet, newAnalysis, curAnalysis, a -> analysisService.createAnalysis(a));
                     break;
                 default:
-                    throw new IllegalArgumentException("Analysis with type: " + analysis.getType() + " cannot be imported");
+                    throw new IllegalArgumentException("Analysis with type: " + newAnalysis.getType() + " cannot be imported");
             }
         }
 
-        persistedEntity.setFeatureAnalyses(entityAnalyses);
+        persistedEntity.setFeatureAnalyses(analysesSet);
         return savedAnalysesIds;
+    }
+
+    private <T extends FeAnalysisEntity<?>> void addAnalysis(List<Integer> savedAnalysesIds, Set<FeAnalysisEntity> entityAnalyses, T newAnalysis,
+            Optional<FeAnalysisEntity> curAnalysis, Function<T, FeAnalysisEntity> func) {
+        if (curAnalysis.isPresent()) {
+            entityAnalyses.add(curAnalysis.get());
+        } else {
+            newAnalysis.setName(NameUtils.getNameWithSuffix(newAnalysis.getName(), this::getFeNamesLike));
+            FeAnalysisEntity created = func.apply(newAnalysis);
+            entityAnalyses.add(created);
+            savedAnalysesIds.add(created.getId());
+        }
     }
 
     private Map<String, FeAnalysisEntity> buildPresetAnalysisMap(final CohortCharacterizationEntity entity) {

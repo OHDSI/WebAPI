@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.test.entity.conceptset.create;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Test;
 import org.ohdsi.webapi.test.entity.conceptset.BaseCSTestEntity;
 
@@ -7,6 +8,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class TestCSCreate extends BaseCSTestEntity {
+
+    private final static String CONSTRAINT_NAME = "uq_cs_name";
 
     @Test
     public void testCreateWithDuplicateName() {
@@ -17,7 +20,7 @@ public class TestCSCreate extends BaseCSTestEntity {
         } catch (Exception e) {
 
         //Assert
-            assertTrue(e.getCause().getCause().getMessage().contains("uq_cs_name"));
+            assertTrue(ExceptionUtils.getRootCauseMessage(e).contains(CONSTRAINT_NAME));
         }
     }
 }

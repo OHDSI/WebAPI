@@ -13,7 +13,7 @@ public class TestPredictionCopy extends BasePredictionTestEntity {
     public void testUsualCopy() {
 
         //Action
-        PredictionAnalysisDTO copy = prController.copy(firstSavedDTO.getId());
+        PredictionAnalysisDTO copy = plpController.copy(firstSavedDTO.getId());
 
         //Assert
         assertEquals(COPY_PREFIX + firstIncomingEntity.getName(), copy.getName());
@@ -23,8 +23,8 @@ public class TestPredictionCopy extends BasePredictionTestEntity {
     public void testCopyOfCopy() {
 
         //Action
-        PredictionAnalysisDTO firstCopy = prController.copy(firstSavedDTO.getId());
-        PredictionAnalysisDTO secondCopy = prController.copy(firstCopy.getId());
+        PredictionAnalysisDTO firstCopy = plpController.copy(firstSavedDTO.getId());
+        PredictionAnalysisDTO secondCopy = plpController.copy(firstCopy.getId());
 
         //Assert
         assertEquals(COPY_PREFIX + COPY_PREFIX + firstIncomingEntity.getName(), secondCopy.getName());
@@ -34,8 +34,8 @@ public class TestPredictionCopy extends BasePredictionTestEntity {
     public void testSeveralCopiesOfOriginal() {
 
         //Action
-        PredictionAnalysisDTO firstCopy = prController.copy(firstSavedDTO.getId());
-        PredictionAnalysisDTO secondCopy = prController.copy(firstSavedDTO.getId());
+        PredictionAnalysisDTO firstCopy = plpController.copy(firstSavedDTO.getId());
+        PredictionAnalysisDTO secondCopy = plpController.copy(firstSavedDTO.getId());
 
         //Assert
         assertEquals(COPY_PREFIX + firstIncomingEntity.getName(), firstCopy.getName());
@@ -48,16 +48,16 @@ public class TestPredictionCopy extends BasePredictionTestEntity {
         //Arrange
         PredictionAnalysis secondIncomingEntity = new PredictionAnalysis();
         secondIncomingEntity.setName(COPY_PREFIX + "abcde");
-        secondIncomingEntity.setSpecification(PR_SPECIFICATION);
-        prController.createAnalysis(secondIncomingEntity);
+        secondIncomingEntity.setSpecification(PLP_SPECIFICATION);
+        plpController.createAnalysis(secondIncomingEntity);
 
         PredictionAnalysis thirdIncomingEntity = new PredictionAnalysis();
         thirdIncomingEntity.setName("abc");
-        thirdIncomingEntity.setSpecification(PR_SPECIFICATION);
-        PredictionAnalysisDTO savedDTO = prController.createAnalysis(thirdIncomingEntity);
+        thirdIncomingEntity.setSpecification(PLP_SPECIFICATION);
+        PredictionAnalysisDTO savedDTO = plpController.createAnalysis(thirdIncomingEntity);
         
         //Action
-        PredictionAnalysisDTO copy = prController.copy(savedDTO.getId());
+        PredictionAnalysisDTO copy = plpController.copy(savedDTO.getId());
         
         //Assert
         assertEquals(COPY_PREFIX + "abc", copy.getName());
@@ -69,16 +69,16 @@ public class TestPredictionCopy extends BasePredictionTestEntity {
         //Arrange
         PredictionAnalysis secondIncomingEntity = new PredictionAnalysis();
         secondIncomingEntity.setName(COPY_PREFIX + "abcde (1)");
-        secondIncomingEntity.setSpecification(PR_SPECIFICATION);
-        prController.createAnalysis(secondIncomingEntity);
+        secondIncomingEntity.setSpecification(PLP_SPECIFICATION);
+        plpController.createAnalysis(secondIncomingEntity);
 
         PredictionAnalysis thirdIncomingEntity = new PredictionAnalysis();
         thirdIncomingEntity.setName("abcde");
-        thirdIncomingEntity.setSpecification(PR_SPECIFICATION);
-        PredictionAnalysisDTO savedDTO = prController.createAnalysis(thirdIncomingEntity);
+        thirdIncomingEntity.setSpecification(PLP_SPECIFICATION);
+        PredictionAnalysisDTO savedDTO = plpController.createAnalysis(thirdIncomingEntity);
 
         //Action
-        PredictionAnalysisDTO copy = prController.copy(savedDTO.getId());
+        PredictionAnalysisDTO copy = plpController.copy(savedDTO.getId());
 
         //Assert
         assertEquals(COPY_PREFIX + "abcde (2)", copy.getName());

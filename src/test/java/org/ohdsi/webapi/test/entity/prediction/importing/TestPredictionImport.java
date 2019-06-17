@@ -14,12 +14,12 @@ public class TestPredictionImport extends BasePredictionTestEntity {
     public void testImportUniqueName() throws Exception {
 
         //Arrange
-        PredictionAnalysis savedEntity = prService.getAnalysis(firstSavedDTO.getId());
-        PatientLevelPredictionAnalysisImpl exportEntity = prController.exportAnalysis(savedEntity.getId());
+        PredictionAnalysis savedEntity = plpService.getAnalysis(firstSavedDTO.getId());
+        PatientLevelPredictionAnalysisImpl exportEntity = plpController.exportAnalysis(savedEntity.getId());
         exportEntity.setName(SOME_UNIQUE_TEST_NAME);
 
         //Action
-        PredictionAnalysisDTO firstImport = prController.importAnalysis(exportEntity);
+        PredictionAnalysisDTO firstImport = plpController.importAnalysis(exportEntity);
 
         //Assert
         assertEquals(SOME_UNIQUE_TEST_NAME, firstImport.getName());
@@ -29,14 +29,14 @@ public class TestPredictionImport extends BasePredictionTestEntity {
     public void testImportWithTheSameName() throws Exception {
 
         //Arrange
-        PredictionAnalysis createdEntity = prService.getAnalysis(firstSavedDTO.getId());
-        PatientLevelPredictionAnalysisImpl exportEntity = prController.exportAnalysis(createdEntity.getId());
+        PredictionAnalysis createdEntity = plpService.getAnalysis(firstSavedDTO.getId());
+        PatientLevelPredictionAnalysisImpl exportEntity = plpController.exportAnalysis(createdEntity.getId());
 
         //Action
-        PredictionAnalysisDTO firstImport = prController.importAnalysis(exportEntity);
+        PredictionAnalysisDTO firstImport = plpController.importAnalysis(exportEntity);
         //reset dto
-        exportEntity = prController.exportAnalysis(createdEntity.getId());
-        PredictionAnalysisDTO secondImport = prController.importAnalysis(exportEntity);
+        exportEntity = plpController.exportAnalysis(createdEntity.getId());
+        PredictionAnalysisDTO secondImport = plpController.importAnalysis(exportEntity);
 
         //Assert
         assertEquals(NEW_TEST_ENTITY + " (1)", firstImport.getName());
@@ -47,39 +47,39 @@ public class TestPredictionImport extends BasePredictionTestEntity {
     public void testImportWhenEntityWithNameExists() throws Exception {
         
         //Arrange
-        PredictionAnalysis firstCreatedEntity = prService.getAnalysis(firstSavedDTO.getId());
-        PatientLevelPredictionAnalysisImpl firstExportEntity = prController.exportAnalysis(firstCreatedEntity.getId());
+        PredictionAnalysis firstCreatedEntity = plpService.getAnalysis(firstSavedDTO.getId());
+        PatientLevelPredictionAnalysisImpl firstExportEntity = plpController.exportAnalysis(firstCreatedEntity.getId());
 
         PredictionAnalysis secondIncomingEntity = new PredictionAnalysis();
         secondIncomingEntity.setName(NEW_TEST_ENTITY + " (1)");
-        secondIncomingEntity.setSpecification(PR_SPECIFICATION);
+        secondIncomingEntity.setSpecification(PLP_SPECIFICATION);
         //save "New test entity (1)" to DB
-        prController.createAnalysis(secondIncomingEntity);
+        plpController.createAnalysis(secondIncomingEntity);
 
         PredictionAnalysis thirdIncomingEntity = new PredictionAnalysis();
         thirdIncomingEntity.setName(NEW_TEST_ENTITY + " (1) (2)");
-        thirdIncomingEntity.setSpecification(PR_SPECIFICATION);
+        thirdIncomingEntity.setSpecification(PLP_SPECIFICATION);
         //save "New test entity (1) (2)" to DB
-        PredictionAnalysisDTO thirdSavedDTO = prController.createAnalysis(thirdIncomingEntity);
-        PredictionAnalysis thirdCreatedEntity = prService.getAnalysis(thirdSavedDTO.getId());
-        PatientLevelPredictionAnalysisImpl thirdExportEntity = prController.exportAnalysis(thirdCreatedEntity.getId());
+        PredictionAnalysisDTO thirdSavedDTO = plpController.createAnalysis(thirdIncomingEntity);
+        PredictionAnalysis thirdCreatedEntity = plpService.getAnalysis(thirdSavedDTO.getId());
+        PatientLevelPredictionAnalysisImpl thirdExportEntity = plpController.exportAnalysis(thirdCreatedEntity.getId());
         
         //Action
         //import of "New test entity"
-        PredictionAnalysisDTO firstImport = prController.importAnalysis(firstExportEntity);
+        PredictionAnalysisDTO firstImport = plpController.importAnalysis(firstExportEntity);
         //import of "New test entity (1) (2)"
-        PredictionAnalysisDTO secondImport = prController.importAnalysis(thirdExportEntity);
+        PredictionAnalysisDTO secondImport = plpController.importAnalysis(thirdExportEntity);
 
         PredictionAnalysis fourthIncomingEntity = new PredictionAnalysis();
         fourthIncomingEntity.setName(NEW_TEST_ENTITY + " (1) (2) (2)");
-        fourthIncomingEntity.setSpecification(PR_SPECIFICATION);
+        fourthIncomingEntity.setSpecification(PLP_SPECIFICATION);
         //save "New test entity (1) (2) (2)" to DB
-        prController.createAnalysis(fourthIncomingEntity);
+        plpController.createAnalysis(fourthIncomingEntity);
         
         //reset dto
-        thirdExportEntity = prController.exportAnalysis(thirdCreatedEntity.getId());
+        thirdExportEntity = plpController.exportAnalysis(thirdCreatedEntity.getId());
         //import of "New test entity (1) (2)"
-        PredictionAnalysisDTO thirdImport = prController.importAnalysis(thirdExportEntity);
+        PredictionAnalysisDTO thirdImport = plpController.importAnalysis(thirdExportEntity);
         
         //Assert
         assertEquals(NEW_TEST_ENTITY + " (2)", firstImport.getName());

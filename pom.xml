@@ -53,6 +53,8 @@
     <kerberos.configPath>/etc/krb5.conf</kerberos.configPath>
     <kerberos.kinitPath></kerberos.kinitPath>
 
+    <testcontainers.version>1.11.3</testcontainers.version>
+
     <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
     <spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
     <spring.profiles.active>default</spring.profiles.active>
@@ -748,19 +750,19 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers</artifactId>
-      <version>1.11.3</version>
+      <version>${testcontainers.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>postgresql</artifactId>
-      <version>1.11.3</version>
+      <version>${testcontainers.version}</version>
       <scope>test</scope>
     </dependency>
       <dependency>
           <groupId>org.testcontainers</groupId>
           <artifactId>mssqlserver</artifactId>
-          <version>1.11.3</version>
+          <version>${testcontainers.version}</version>
       </dependency>
   </dependencies>
   <profiles>

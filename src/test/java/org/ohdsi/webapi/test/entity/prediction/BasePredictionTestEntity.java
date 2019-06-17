@@ -1,7 +1,12 @@
 package org.ohdsi.webapi.test.entity.prediction;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.ohdsi.webapi.prediction.PredictionAnalysis;
 import org.ohdsi.webapi.prediction.PredictionController;
 import org.ohdsi.webapi.prediction.PredictionService;
@@ -12,32 +17,32 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class BasePredictionTestEntity extends BaseTestEntity {
     @Autowired
-    protected PredictionController prController;
+    protected PredictionController plpController;
     @Autowired
-    protected PredictionAnalysisRepository prRepository;
+    protected PredictionAnalysisRepository plpRepository;
     @Autowired
-    protected PredictionService prService;
+    protected PredictionService plpService;
     protected PredictionAnalysis firstIncomingEntity;
     protected PredictionAnalysisDTO firstSavedDTO;
-    protected static final String PR_SPECIFICATION =
-            "{\"id\":null,\"name\":\"\",\"version\":\"v2.7.0\"," +
-                    "\"description\":null,\"skeletonType\":\"PatientLevelPredictionStudy\",\"skeletonVersion\":\"v0.0.1\"," +
-                    "\"createdBy\":null,\"createdDate\":null,\"modifiedBy\":null,\"modifiedDate\":null,\"cohortDefinitions\":[]," +
-                    "\"conceptSets\":[],\"conceptSetCrossReference\":[],\"targetIds\":[],\"outcomeIds\":[],\"covariateSettings\":[]," +
-                    "\"populationSettings\":[],\"modelSettings\":[],\"getPlpDataArgs\":{\"washoutPeriod\":0,\"maxSampleSize\":null}," +
-                    "\"runPlpArgs\":{\"minCovariateFraction\":0.001,\"normalizeData\":true,\"testSplit\":\"person\",\"testFraction\":0.25," +
-                    "\"splitSeed\":null,\"nfold\":3}}\"\n";
+    protected static String PLP_SPECIFICATION;
+    
+    @BeforeClass
+    public static void setPlpSpecification() throws IOException {
+
+        File plp_spec = new File("src/test/resources/plp-specification.json");
+        PLP_SPECIFICATION = FileUtils.readFileToString(plp_spec, StandardCharsets.UTF_8);
+    }
 
     @Before
     public void setupDB() {
         firstIncomingEntity = new PredictionAnalysis();
         firstIncomingEntity.setName(NEW_TEST_ENTITY);
-        firstIncomingEntity.setSpecification(PR_SPECIFICATION);
-        firstSavedDTO = prController.createAnalysis(firstIncomingEntity);
+        firstIncomingEntity.setSpecification(PLP_SPECIFICATION);
+        firstSavedDTO = plpController.createAnalysis(firstIncomingEntity);
     }
 
     @After
     public void tearDownDB() {
-        prRepository.deleteAll();
+        plpRepository.deleteAll();
     }
 }

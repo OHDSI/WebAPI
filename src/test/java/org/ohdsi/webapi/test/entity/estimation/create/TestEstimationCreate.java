@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.test.entity.estimation.create;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Test;
 import org.ohdsi.webapi.estimation.Estimation;
 import org.ohdsi.webapi.test.entity.estimation.BaseEstimationTestEntity;
@@ -10,6 +11,8 @@ import static org.ohdsi.analysis.estimation.design.EstimationTypeEnum.COMPARATIV
 
 public class TestEstimationCreate extends BaseEstimationTestEntity {
 
+    private final static String CONSTRAINT_NAME = "uq_es_name";
+
     @Test
     public void testCreateWithDuplicateName() {
         //Arrange
@@ -17,16 +20,16 @@ public class TestEstimationCreate extends BaseEstimationTestEntity {
         firstIncomingEntity = new Estimation();
         firstIncomingEntity.setName(NEW_TEST_ENTITY);
         firstIncomingEntity.setType(COMPARATIVE_COHORT_ANALYSIS);
-        firstIncomingEntity.setSpecification(ES_SPECIFICATION);
+        firstIncomingEntity.setSpecification(PLE_SPECIFICATION);
         
         //Action
         try {
-            esController.createEstimation(firstIncomingEntity);
+            pleController.createEstimation(firstIncomingEntity);
             fail();
         } catch (Exception e) {
 
         //Assert
-            assertTrue(e.getCause().getCause().getCause().getMessage().contains("uq_es_name"));
+            assertTrue(ExceptionUtils.getRootCauseMessage(e).contains(CONSTRAINT_NAME));
         }
     }
 }

@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.test.entity.cohortdefinition.create;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Test;
 import org.ohdsi.webapi.test.entity.cohortdefinition.BaseCDTestEntity;
 
@@ -7,6 +8,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class TestCDCreate extends BaseCDTestEntity {
+
+    private final static String CONSTRAINT_NAME = "uq_cd_name";
 
     @Test
     public void testCreateWithDuplicateName() {
@@ -17,7 +20,7 @@ public class TestCDCreate extends BaseCDTestEntity {
         } catch (Exception e) {
 
         //Assert
-            assertTrue(e.getCause().getCause().getMessage().contains("uq_cd_name"));
+            assertTrue(ExceptionUtils.getRootCauseMessage(e).contains(CONSTRAINT_NAME));
         }
     }
 }

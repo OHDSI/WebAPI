@@ -14,7 +14,7 @@ public class TestEstimationCopy extends BaseEstimationTestEntity {
     public void testUsualCopy() throws Exception {
 
         //Action
-        EstimationDTO copy = esController.copy(firstSavedDTO.getId());
+        EstimationDTO copy = pleController.copy(firstSavedDTO.getId());
 
         //Assert
         assertEquals(COPY_PREFIX + firstIncomingEntity.getName(), copy.getName());
@@ -24,8 +24,8 @@ public class TestEstimationCopy extends BaseEstimationTestEntity {
     public void testCopyOfCopy() throws Exception {
 
         //Action
-        EstimationDTO firstCopy = esController.copy(firstSavedDTO.getId());
-        EstimationDTO secondCopy = esController.copy(firstCopy.getId());
+        EstimationDTO firstCopy = pleController.copy(firstSavedDTO.getId());
+        EstimationDTO secondCopy = pleController.copy(firstCopy.getId());
 
         //Assert
         assertEquals(COPY_PREFIX + COPY_PREFIX + firstIncomingEntity.getName(), secondCopy.getName());
@@ -35,8 +35,8 @@ public class TestEstimationCopy extends BaseEstimationTestEntity {
     public void testSeveralCopiesOfOriginal() throws Exception {
 
         //Action
-        EstimationDTO firstCopy = esController.copy(firstSavedDTO.getId());
-        EstimationDTO secondCopy = esController.copy(firstSavedDTO.getId());
+        EstimationDTO firstCopy = pleController.copy(firstSavedDTO.getId());
+        EstimationDTO secondCopy = pleController.copy(firstSavedDTO.getId());
 
         //Assert
         assertEquals(COPY_PREFIX + firstIncomingEntity.getName(), firstCopy.getName());
@@ -50,17 +50,17 @@ public class TestEstimationCopy extends BaseEstimationTestEntity {
         Estimation secondIncomingEntity = new Estimation();
         secondIncomingEntity.setName(COPY_PREFIX + "abcde");
         secondIncomingEntity.setType(COMPARATIVE_COHORT_ANALYSIS);
-        secondIncomingEntity.setSpecification(ES_SPECIFICATION);
-        esController.createEstimation(secondIncomingEntity);
+        secondIncomingEntity.setSpecification(PLE_SPECIFICATION);
+        pleController.createEstimation(secondIncomingEntity);
 
         Estimation thirdIncomingEntity = new Estimation();
         thirdIncomingEntity.setName("abc");
         thirdIncomingEntity.setType(COMPARATIVE_COHORT_ANALYSIS);
-        thirdIncomingEntity.setSpecification(ES_SPECIFICATION);
-        EstimationDTO savedDTO = esController.createEstimation(thirdIncomingEntity);
+        thirdIncomingEntity.setSpecification(PLE_SPECIFICATION);
+        EstimationDTO savedDTO = pleController.createEstimation(thirdIncomingEntity);
         
         //Action
-        EstimationDTO copy = esController.copy(savedDTO.getId());
+        EstimationDTO copy = pleController.copy(savedDTO.getId());
         
         //Assert
         assertEquals(COPY_PREFIX + "abc", copy.getName());
@@ -73,17 +73,17 @@ public class TestEstimationCopy extends BaseEstimationTestEntity {
         Estimation secondIncomingEntity = new Estimation();
         secondIncomingEntity.setName(COPY_PREFIX + "abcde (1)");
         secondIncomingEntity.setType(COMPARATIVE_COHORT_ANALYSIS);
-        secondIncomingEntity.setSpecification(ES_SPECIFICATION);
-        esController.createEstimation(secondIncomingEntity);
+        secondIncomingEntity.setSpecification(PLE_SPECIFICATION);
+        pleController.createEstimation(secondIncomingEntity);
 
         Estimation thirdIncomingEntity = new Estimation();
         thirdIncomingEntity.setName("abcde");
         thirdIncomingEntity.setType(COMPARATIVE_COHORT_ANALYSIS);
-        thirdIncomingEntity.setSpecification(ES_SPECIFICATION);
-        EstimationDTO savedDTO = esController.createEstimation(thirdIncomingEntity);
+        thirdIncomingEntity.setSpecification(PLE_SPECIFICATION);
+        EstimationDTO savedDTO = pleController.createEstimation(thirdIncomingEntity);
 
         //Action
-        EstimationDTO copy = esController.copy(savedDTO.getId());
+        EstimationDTO copy = pleController.copy(savedDTO.getId());
 
         //Assert
         assertEquals(COPY_PREFIX + "abcde (2)", copy.getName());

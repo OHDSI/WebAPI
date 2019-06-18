@@ -49,7 +49,7 @@ public class ExecutionEngineStatusServiceImpl implements ExecutionEngineStatusSe
                     .header("Authorization", executionEngineToken)
                     .get();
             if (!isExecutionEngineOnline()) {
-                logger.error("Execution engine is online");
+                logger.info("Execution engine is online");
             }
             this.executionEngineStatus = ONLINE;
         } catch (Exception e) {

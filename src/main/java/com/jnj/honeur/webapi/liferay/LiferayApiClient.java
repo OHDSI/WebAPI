@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -66,9 +65,11 @@ public class LiferayApiClient {
         companyId = getCompanyId();
     }
 
-    private String getCompanyId(){
+    private String getCompanyId() {
+        if(companyId != null) {
+            return companyId;
+        }
         String companyEndPoint = "/company/get-companies";
-        String companyId;
         try {
             List<LinkedHashMap<String, String>> companies = restTemplate.exchange(liferayWebApi + companyEndPoint,
                     HttpMethod.GET, new HttpEntity<>(createHeaders()),
@@ -82,13 +83,13 @@ public class LiferayApiClient {
             }
         } catch (HttpStatusCodeException e) {
             LOGGER.error(e.getMessage());
-            return null;
+            companyId = null;
         }
         return companyId;
     }
 
     public UserEntity findUserByLogin(String login) {
-        String userIdEndpoint = "/user/get-user-id-by-email-address/company-id/"+ companyId +"/email-address/"+login;
+        String userIdEndpoint = "/user/get-user-id-by-email-address/company-id/"+ getCompanyId() +"/email-address/"+login;
         String id;
         try {
             id = restTemplate.exchange(liferayWebApi + userIdEndpoint,
@@ -263,7 +264,7 @@ public class LiferayApiClient {
     }
 
     public List<String> getRoleNames(){
-        String endpoint = "/role/get-roles/company-id/"+ companyId +"/types/"+STANDARD_ROLE;
+        String endpoint = "/role/get-roles/company-id/"+ getCompanyId() +"/types/"+STANDARD_ROLE;
         try {
             JsonNode response = restTemplate.exchange(liferayWebApi + endpoint,
                     HttpMethod.GET, new HttpEntity<>(createHeaders()),
@@ -290,7 +291,7 @@ public class LiferayApiClient {
     }
 
     public List<Organization> getOrganizations() {
-        String endpoint = "/organization/get-organizations/company-id/" + companyId + "/parent-organization-id/-1";
+        String endpoint = "/organization/get-organizations/company-id/" + getCompanyId() + "/parent-organization-id/-1";
         try {
             return Arrays.asList(restTemplate.exchange(liferayWebApi + endpoint,
                     HttpMethod.GET, new HttpEntity<>(createHeaders()),
@@ -339,7 +340,7 @@ public class LiferayApiClient {
     }
 
     String getRoleId(RoleEntity role) {
-        String endpoint = "/role/get-role/company-id/"+ companyId +"/name/Atlas "+role.getName();
+        String endpoint = "/role/get-role/company-id/"+ getCompanyId() +"/name/Atlas "+role.getName();
         try {
             JsonNode response = restTemplate.exchange(liferayWebApi + endpoint,
                     HttpMethod.GET, new HttpEntity<>(createHeaders()),

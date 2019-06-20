@@ -2,7 +2,7 @@
 
 CREATE PROCEDURE ${ohdsiSchema}.rename_cs_names AS
 BEGIN
-    DECLARE @duplicate_names TABLE(id int IDENTITY (1, 1), duplicate_name varchar(100));
+    DECLARE @duplicate_names TABLE(id int IDENTITY (1, 1), duplicate_name varchar(255));
     DECLARE @name_repeats TABLE (id int IDENTITY (1, 1), repeat_number int);
     DECLARE @amount_of_duplicate_names int;
     DECLARE @k int;
@@ -28,7 +28,7 @@ BEGIN
             DECLARE @i int = 1;
             DECLARE @j int = 1;
             DECLARE @name_repeat int = 0;
-            DECLARE @dupl_name varchar(100);
+            DECLARE @dupl_name varchar(255);
         
             WHILE @i <= coalesce(@amount_of_duplicate_names, 0)
             BEGIN
@@ -67,7 +67,7 @@ GO
 
 CREATE PROCEDURE ${ohdsiSchema}.rename_cd_names AS
 BEGIN
-    DECLARE @duplicate_names TABLE(id int IDENTITY (1, 1), duplicate_name varchar(100));
+    DECLARE @duplicate_names TABLE(id int IDENTITY (1, 1), duplicate_name varchar(255));
     DECLARE @name_repeats TABLE (id int IDENTITY (1, 1), repeat_number int);
     DECLARE @amount_of_duplicate_names int;
     DECLARE @k int;
@@ -93,7 +93,7 @@ BEGIN
             DECLARE @i int = 1;
             DECLARE @j int = 1;
             DECLARE @name_repeat int = 0;
-            DECLARE @dupl_name varchar(100);
+            DECLARE @dupl_name varchar(255);
         
             WHILE @i <= coalesce(@amount_of_duplicate_names, 0)
             BEGIN
@@ -132,7 +132,7 @@ GO
 
 CREATE PROCEDURE ${ohdsiSchema}.rename_cc_names AS
 BEGIN
-    DECLARE @duplicate_names TABLE(id int IDENTITY (1, 1), duplicate_name varchar(100));
+    DECLARE @duplicate_names TABLE(id int IDENTITY (1, 1), duplicate_name varchar(255));
     DECLARE @name_repeats TABLE (id int IDENTITY (1, 1), repeat_number int);
     DECLARE @amount_of_duplicate_names int;
     DECLARE @k int;
@@ -158,7 +158,7 @@ BEGIN
             DECLARE @i int = 1;
             DECLARE @j int = 1;
             DECLARE @name_repeat int = 0;
-            DECLARE @dupl_name varchar(100);
+            DECLARE @dupl_name varchar(255);
         
             WHILE @i <= coalesce(@amount_of_duplicate_names, 0)
             BEGIN
@@ -197,7 +197,7 @@ GO
 
 CREATE PROCEDURE ${ohdsiSchema}.rename_fe_names AS
 BEGIN
-    DECLARE @duplicate_names TABLE(id int IDENTITY (1, 1), duplicate_name varchar(100));
+    DECLARE @duplicate_names TABLE(id int IDENTITY (1, 1), duplicate_name varchar(255));
     DECLARE @name_repeats TABLE (id int IDENTITY (1, 1), repeat_number int);
     DECLARE @amount_of_duplicate_names int;
     DECLARE @k int;
@@ -223,7 +223,7 @@ BEGIN
             DECLARE @i int = 1;
             DECLARE @j int = 1;
             DECLARE @name_repeat int = 0;
-            DECLARE @dupl_name varchar(100);
+            DECLARE @dupl_name varchar(255);
         
             WHILE @i <= coalesce(@amount_of_duplicate_names, 0)
             BEGIN
@@ -263,7 +263,7 @@ GO
 
 CREATE PROCEDURE ${ohdsiSchema}.rename_pw_names AS
 BEGIN
-    DECLARE @duplicate_names TABLE(id int IDENTITY (1, 1), duplicate_name varchar(100));
+    DECLARE @duplicate_names TABLE(id int IDENTITY (1, 1), duplicate_name varchar(255));
     DECLARE @name_repeats TABLE (id int IDENTITY (1, 1), repeat_number int);
     DECLARE @amount_of_duplicate_names int;
     DECLARE @k int;
@@ -289,7 +289,7 @@ BEGIN
             DECLARE @i int = 1;
             DECLARE @j int = 1;
             DECLARE @name_repeat int = 0;
-            DECLARE @dupl_name varchar(100);
+            DECLARE @dupl_name varchar(255);
         
             WHILE @i <= coalesce(@amount_of_duplicate_names, 0)
             BEGIN
@@ -328,7 +328,7 @@ GO
 
 CREATE PROCEDURE ${ohdsiSchema}.rename_ir_names AS
 BEGIN
-    DECLARE @duplicate_names TABLE(id int IDENTITY (1, 1), duplicate_name varchar(100));
+    DECLARE @duplicate_names TABLE(id int IDENTITY (1, 1), duplicate_name varchar(255));
     DECLARE @name_repeats TABLE (id int IDENTITY (1, 1), repeat_number int);
     DECLARE @amount_of_duplicate_names int;
     DECLARE @k int;
@@ -354,7 +354,7 @@ BEGIN
             DECLARE @i int = 1;
             DECLARE @j int = 1;
             DECLARE @name_repeat int = 0;
-            DECLARE @dupl_name varchar(100);
+            DECLARE @dupl_name varchar(255);
         
             WHILE @i <= coalesce(@amount_of_duplicate_names, 0)
             BEGIN
@@ -393,7 +393,7 @@ GO
 
 CREATE PROCEDURE ${ohdsiSchema}.rename_estimation_names AS
 BEGIN
-    DECLARE @duplicate_names TABLE(id int IDENTITY (1, 1), duplicate_name varchar(100));
+    DECLARE @duplicate_names TABLE(id int IDENTITY (1, 1), duplicate_name varchar(255));
     DECLARE @name_repeats TABLE (id int IDENTITY (1, 1), repeat_number int);
     DECLARE @amount_of_duplicate_names int;
     DECLARE @k int;
@@ -419,7 +419,7 @@ BEGIN
             DECLARE @i int = 1;
             DECLARE @j int = 1;
             DECLARE @name_repeat int = 0;
-            DECLARE @dupl_name varchar(100);
+            DECLARE @dupl_name varchar(255);
         
             WHILE @i <= coalesce(@amount_of_duplicate_names, 0)
             BEGIN
@@ -458,7 +458,7 @@ GO
 
 CREATE PROCEDURE ${ohdsiSchema}.rename_prediction_names AS
 BEGIN
-    DECLARE @duplicate_names TABLE(id int IDENTITY (1, 1), duplicate_name varchar(100));
+    DECLARE @duplicate_names TABLE(id int IDENTITY (1, 1), duplicate_name varchar(255));
     DECLARE @name_repeats TABLE (id int IDENTITY (1, 1), repeat_number int);
     DECLARE @amount_of_duplicate_names int;
     DECLARE @k int;
@@ -484,7 +484,7 @@ BEGIN
             DECLARE @i int = 1;
             DECLARE @j int = 1;
             DECLARE @name_repeat int = 0;
-            DECLARE @dupl_name varchar(100);
+            DECLARE @dupl_name varchar(255);
         
             WHILE @i <= coalesce(@amount_of_duplicate_names, 0)
             BEGIN

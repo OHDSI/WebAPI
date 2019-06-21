@@ -8,9 +8,6 @@ WHERE pathway_analysis_generation_id = @generation_id AND target_cohort_id = @pa
 * SELECT 1 AS cohort_definition_id, 1 AS cohort_index UNION ALL ...
 */
 
-IF OBJECT_ID('tempdb..#raw_events', 'U') IS NOT NULL
-DROP TABLE #raw_events;
-
 select id, event_cohort_index, subject_id, CAST(cohort_start_date AS DATETIME) AS cohort_start_date, CAST(cohort_end_date AS DATETIME) AS cohort_end_date
 INTO #raw_events
 FROM (
@@ -18,19 +15,16 @@ FROM (
 	  ec.cohort_index AS event_cohort_index,
 	  e.subject_id,
 	  e.cohort_start_date,
-	  e.cohort_end_date
+	  dateadd(d, 1, e.cohort_end_date) as cohort_end_date
 	FROM @target_cohort_table e
 	  JOIN ( @event_cohort_id_index_map ) ec ON e.cohort_definition_id = ec.cohort_definition_id
-	  JOIN @target_cohort_table t ON t.cohort_start_date <= e.cohort_start_date AND e.cohort_end_date <= t.cohort_end_date AND t.subject_id = e.subject_id
+	  JOIN @target_cohort_table t ON t.cohort_start_date <= e.cohort_start_date AND e.cohort_start_date <= t.cohort_end_date AND t.subject_id = e.subject_id
 	WHERE t.cohort_definition_id = @pathway_target_cohort_id
 ) RE;
 
 /*
 * Find closely located dates, which need to be collapsed, based on collapse_window
 */
-
-IF OBJECT_ID('tempdb..#date_replacements', 'U') IS NOT NULL
-DROP TABLE #date_replacements;
 
 WITH person_dates AS (
   SELECT subject_id, cohort_start_date cohort_date FROM #raw_events
@@ -52,7 +46,7 @@ replacements AS (
   SELECT orig.subject_id, orig.cohort_date, FIRST_VALUE(cohort_date) OVER (PARTITION BY group_idx ORDER BY ordinal ASC ROWS UNBOUNDED PRECEDING) as replacement_date
   FROM grouped_dates orig
 )
-SELECT *
+SELECT subject_id, cohort_date, replacement_date
 INTO #date_replacements
 FROM replacements
 WHERE cohort_date <> replacement_date;
@@ -60,9 +54,6 @@ WHERE cohort_date <> replacement_date;
 /*
 * Collapse dates
 */
-
-IF OBJECT_ID('tempdb..#collapsed_dates_events', 'U') IS NOT NULL
-DROP TABLE #collapsed_dates_events;
 
 SELECT
   event.id,
@@ -77,6 +68,11 @@ FROM #raw_events event
 ;
 
 /*
+The collapsed dates (or the raw event cohort dates) may have intervals where start == end, so these should be expanded to cover a minimum of 1 day
+*/
+update #collapsed_dates_events set cohort_end_date = dateadd(d,1,cohort_end_date) where cohort_start_date = cohort_end_date;
+
+/*
 Split partially overlapping events into a set of events which either do not overlap or fully overlap (for later GROUP BY start_date, end_date)
 
 e.g.
@@ -86,77 +82,44 @@ into
 
   |A--|A--|
       |B--|B--|
+
+or 
+  |A--------------|
+      |B-----|
+into   
+  |A--|A-----|A---|
+      |B-----|
 */
 
-IF OBJECT_ID('tempdb..#split_overlay_events', 'U') IS NOT NULL
-DROP TABLE #split_overlay_events;
+WITH 
+cohort_dates AS (
+	SELECT DISTINCT subject_id, cohort_date 
+	FROM (
+		  SELECT subject_id, cohort_start_date cohort_date FROM #collapsed_dates_events 
+		  UNION 
+		  SELECT subject_id,cohort_end_date cohort_date FROM #collapsed_dates_events
+		  ) all_dates
+),
+time_periods AS (
+	SELECT subject_id, cohort_date, LEAD(cohort_date,1) over (PARTITION BY subject_id ORDER BY cohort_date ASC) next_cohort_date
+	FROM cohort_dates 
+	GROUP BY subject_id, cohort_date
 
-SELECT soe.id, soe.event_cohort_index, soe.subject_id, soe.cohort_start_date, soe.cohort_end_date
-INTO #split_overlay_events
-FROM (
-  SELECT
-    CASE WHEN ordinal < 3 THEN f.id ELSE s.id END as id,
-    CASE WHEN ordinal < 3 THEN f.event_cohort_index ELSE s.event_cohort_index END event_cohort_index,
-    CASE WHEN ordinal < 3 THEN f.subject_id ELSE s.subject_id END subject_id,
-
-    CASE ordinal
-      WHEN 1 THEN
-      f.cohort_start_date
-      WHEN 2 THEN
-      s.cohort_start_date
-      WHEN 3 THEN
-      s.cohort_start_date
-      WHEN 4 THEN
-      f.cohort_end_date
-      END as cohort_start_date,
-
-    CASE ordinal
-      WHEN 1 THEN
-      s.cohort_start_date
-      WHEN 2 THEN
-      f.cohort_end_date
-      WHEN 3 THEN
-      f.cohort_end_date
-      WHEN 4 THEN
-      s.cohort_end_date
-      END as cohort_end_date
-  FROM #collapsed_dates_events f
-  JOIN #collapsed_dates_events s ON f.subject_id = s.subject_id
-      AND f.cohort_start_date < s.cohort_start_date
-      AND f.cohort_end_date < s.cohort_end_date
-      AND f.cohort_end_date > s.cohort_start_date
-  CROSS JOIN (SELECT 1 ordinal UNION SELECT 2 UNION SELECT 3 UNION SELECT 4) multiplier
-) soe;
-
-/*
-* Group fully overlapping events into combinations (e.g. two separate events A and B with same start and end dates -> single A+B event)
-* We'll use bitwise addition with SUM() to combine events instead of LIST_AGG(), replacing 'name' column with 'combo_id'.
-*/
-
-IF OBJECT_ID('tempdb..#combo_events', 'U') IS NOT NULL
-DROP TABLE #combo_events;
-
-WITH events AS (
-  SELECT *
-  FROM #collapsed_dates_events cde
-  WHERE NOT EXISTS(SELECT id FROM #split_overlay_events soe WHERE soe.id = cde.id)
-
-  UNION ALL
-
-  SELECT *
-  FROM #split_overlay_events
-)
-SELECT CAST(SUM(DISTINCT POWER(2, e.event_cohort_index)) as INT) as combo_id, subject_id, cohort_start_date, cohort_end_date
-INTO #combo_events
+),
+events AS (
+	SELECT tp.subject_id, event_cohort_index, cohort_date cohort_start_date, next_cohort_date cohort_end_date  
+	FROM time_periods tp
+	LEFT JOIN #collapsed_dates_events e ON e.subject_id = tp.subject_id
+	WHERE (e.cohort_start_date <= tp.cohort_date AND e.cohort_end_date >= tp.next_cohort_date)
+) 
+SELECT SUM(POWER(2, e.event_cohort_index)) as combo_id,  subject_id , cohort_start_date, cohort_end_date
+into #combo_events
 FROM events e
 GROUP BY subject_id, cohort_start_date, cohort_end_date;
 
 /*
 * Remove repetitive events (e.g. A-A-A into A)
 */
-
-IF OBJECT_ID('tempdb..#non_repetitive_events', 'U') IS NOT NULL
-DROP TABLE #non_repetitive_events;
 
 SELECT
   CAST(ROW_NUMBER() OVER (PARTITION BY subject_id ORDER BY cohort_start_date) AS INT) ordinal,
@@ -200,13 +163,28 @@ SELECT
   target_count.cnt AS target_cohort_count,
   pathway_count.cnt AS pathways_count
 FROM (
-  SELECT CAST(COUNT(*) AS INT) cnt
+  SELECT CAST(COUNT_BIG(*) as BIGINT) cnt
   FROM @target_cohort_table
   WHERE cohort_definition_id = @pathway_target_cohort_id
 ) target_count,
 (
-  SELECT CAST(COUNT(DISTINCT subject_id) AS INT) cnt
+  SELECT CAST(COUNT_BIG(DISTINCT subject_id) as BIGINT) cnt
   FROM @target_database_schema.pathway_analysis_events
   WHERE pathway_analysis_generation_id = @generation_id
   AND target_cohort_id = @pathway_target_cohort_id
 ) pathway_count;
+
+TRUNCATE TABLE #non_repetitive_events;
+DROP TABLE #non_repetitive_events;
+
+TRUNCATE TABLE #combo_events;
+DROP TABLE #combo_events;
+
+TRUNCATE TABLE #collapsed_dates_events;
+DROP TABLE #collapsed_dates_events;
+
+TRUNCATE TABLE #date_replacements;
+DROP TABLE #date_replacements;
+
+TRUNCATE TABLE #raw_events;
+DROP TABLE #raw_events;

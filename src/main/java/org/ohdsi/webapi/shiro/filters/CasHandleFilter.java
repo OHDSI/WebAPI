@@ -1,11 +1,6 @@
 package org.ohdsi.webapi.shiro.filters;
 
-import java.util.LinkedHashMap;
-
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpSession;
-
+import io.buji.pac4j.token.Pac4jToken;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.shiro.SecurityUtils;
@@ -20,7 +15,11 @@ import org.jasig.cas.client.validation.TicketValidator;
 import org.pac4j.cas.profile.CasProfile;
 import org.pac4j.core.profile.CommonProfile;
 
-import io.buji.pac4j.token.Pac4jToken;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * CAS authentication callback filter
@@ -82,9 +81,9 @@ public class CasHandleFilter extends AtlasAuthFilter {
                         casProfile.addAttributes(principal.getAttributes());
                         
                         Subject currentUser = SecurityUtils.getSubject();
-                        LinkedHashMap<String, CommonProfile> pMap = new LinkedHashMap<String, CommonProfile>();
-                        pMap.put(principal.getName(), casProfile);
-                        ct = new Pac4jToken(pMap, currentUser.isRemembered());
+                        List<CommonProfile> profileList = new ArrayList<>();
+                        profileList.add(casProfile);
+                        ct = new Pac4jToken(profileList, currentUser.isRemembered());
                         /*
                          * let AuthenticatingFilter.executeLogin login user
                          */

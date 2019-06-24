@@ -44,7 +44,7 @@ public class OidcConfCreator {
         conf.setClientId(clientId);
         conf.setSecret(apiSecret);
         conf.setDiscoveryURI(url);
-        conf.setCallbackUrl(oauthApiCallback);
+        //conf.setCallbackUrl(oauthApiCallback);
         conf.setPreferredJwsAlgorithm(JWSAlgorithm.RS256);
         return conf;
     }

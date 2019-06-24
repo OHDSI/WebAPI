@@ -126,32 +126,39 @@
         <profile>
             <id>docker-test</id>
             <properties>
-                <central>false</central>
+                <central>true</central>
+                <honeur.enabled>true</honeur.enabled>
+                <honeur.port>8444</honeur.port>
+                <hss.url>https://localhost:8445/api</hss.url>
                 <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
                 <datasource.dialect>postgresql</datasource.dialect>
-                <datasource.db>OHDSI_REMOTE</datasource.db>
-                <datasource.url>jdbc:postgresql://localhost:5432/${datasource.db}</datasource.url>
+                <datasource.db>OHDSI</datasource.db>
+                <datasource.url>jdbc:postgresql://localhost:5444/${datasource.db}</datasource.url>
                 <datasource.ohdsi.schema>webapi</datasource.ohdsi.schema>
                 <datasource.username>ohdsi_app_user</datasource.username>
-                <datasource.password>vw0C0DHVVvBxKetr</datasource.password>
+                <datasource.password>ZEbxVFNxlvKbeISQ</datasource.password>
                 <flyway.datasource.driverClassName>org.postgresql.Driver</flyway.datasource.driverClassName>
                 <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
                 <flyway.datasource.username>ohdsi_admin_user</flyway.datasource.username>
-                <flyway.datasource.password>Jb16Q0HYmToTULg4</flyway.datasource.password>
+                <flyway.datasource.password>rwixdOYs09dn5oEd</flyway.datasource.password>
                 <flyway.locations>classpath:db/migration/postgresql,classpath:db/extension/honeur</flyway.locations>
                 <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
-                <honeur.enabled>true</honeur.enabled>
-                <hss.url>https://localhost:8445/api</hss.url>
+                <liferay.url>https://localhost:8443</liferay.url>
+                <liferay.user>test@liferay.com</liferay.user>
+                <liferay.password>test</liferay.password>
+                <liferay.company.web.id>liferay.com</liferay.company.web.id>
                 <jasypt.encryptor.enabled>true</jasypt.encryptor.enabled>
                 <jasypt.encryptor.algorithm>PBEWithSHAAndTwofish-CBC</jasypt.encryptor.algorithm>
                 <jasypt.encryptor.password>naTbB4HGfaWex0kj</jasypt.encryptor.password>
                 <jersey.resources.additional.packages>com.jnj.honeur.webapi</jersey.resources.additional.packages>
-                <liferay.company.web.id>liferay.com</liferay.company.web.id>
                 <security.enabled>false</security.enabled>
                 <security.origin>*</security.origin>
                 <security.ssl.enabled>false</security.ssl.enabled>
-                <war.directory>target-remote</war.directory>
-                <security.provider>DisabledSecurity</security.provider>
+                <war.directory>target</war.directory>
+                <security.cas.loginUrl>https://localhost:8443/cas/login</security.cas.loginUrl>
+                <security.cas.callbackUrl>https://localhost:${honeur.port}/webapi/user/cas/callback?client_name=CasClient</security.cas.callbackUrl>
+                <security.cas.tgc.domain>localhost</security.cas.tgc.domain>
+                <security.cookies.domain>localhost</security.cookies.domain>
                 <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
                 <security.db.datasource.driverClassName>org.postgresql.Driver</security.db.datasource.driverClassName>
                 <security.db.datasource.schema>webapi</security.db.datasource.schema>
@@ -164,6 +171,11 @@
                 <security.ldap.system.password>password</security.ldap.system.password>
                 <security.ldap.url>ldap://ldap.forumsys.com:389</security.ldap.url>
                 <security.honeur.request.origin>^(https|http)://localhost.*</security.honeur.request.origin>
+                <security.oauth.callback.ui>https://localhost:${server.port}/atlas/#/welcome</security.oauth.callback.ui>
+                <security.oauth.callback.api>https://localhost:${server.port}/webapi/user/oauth/callback</security.oauth.callback.api>
+                <security.provider>AtlasCustomSecurity</security.provider>
+                <security.ssl.enabled>true</security.ssl.enabled>
+                <server.port>${honeur.port}</server.port>
             </properties>
         </profile>
         <profile>
@@ -227,13 +239,13 @@
             <id>local-dev</id>
             <properties>
                 <server.port>${honeur.port}</server.port>
-                <datasource.password>vw0C0DHVVvBxKetr</datasource.password>
-                <flyway.datasource.password>Jb16Q0HYmToTULg4</flyway.datasource.password>
+                <datasource.password>app1</datasource.password>
+                <flyway.datasource.password>admin1</flyway.datasource.password>
                 <datasource.url>jdbc:postgresql://localhost:5432/${datasource.db}</datasource.url>
                 <liferay.url>https://localhost:8443</liferay.url>
                 <liferay.user>test@liferay.com</liferay.user>
                 <liferay.password>test</liferay.password>
-                <hss.url>https://localhost:8445/api</hss.url>
+                <hss.url>https://dev.honeur.org/storage/api</hss.url>
                 <security.cas.loginUrl>https://localhost:8443/cas/login</security.cas.loginUrl>
                 <security.cas.callbackUrl>https://localhost:${server.port}/webapi/user/cas/callback?client_name=CasClient</security.cas.callbackUrl>
                 <security.oauth.callback.ui>https://localhost:${server.port}/atlas/#/welcome</security.oauth.callback.ui>
@@ -242,7 +254,7 @@
                 <security.cas.tgc.domain>localhost</security.cas.tgc.domain>
                 <security.cookies.domain>localhost</security.cookies.domain>
                 <liferay.company.web.id>liferay.com</liferay.company.web.id>
-                <jasypt.encryptor.password>naTbB4HGfaWex0kj</jasypt.encryptor.password>
+                <jasypt.encryptor.password>localpassword</jasypt.encryptor.password>
             </properties>
         </profile>
 
@@ -252,8 +264,8 @@
             <properties>
                 <central>true</central>
                 <security.provider>AtlasCustomSecurity</security.provider>
-                <war.directory>target-central</war.directory>
-                <datasource.db>OHDSI_CENTRAL</datasource.db>
+                <war.directory>target</war.directory>
+                <datasource.db>OHDSI</datasource.db>
                 <honeur.port>8444</honeur.port>
             </properties>
         </profile>

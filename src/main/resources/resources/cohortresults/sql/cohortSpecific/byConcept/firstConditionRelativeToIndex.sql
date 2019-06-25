@@ -17,11 +17,11 @@ FROM   (SELECT cohort_definition_id,
                AND cohort_definition_id = @cohortDefinitionId
                AND CAST(CASE WHEN isNumeric(stratum_2) = 1 THEN stratum_2 ELSE null END AS INT) * 30 BETWEEN -1000 AND 1000
                         ) hr1 
-       INNER JOIN (SELECT -1 * CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT) * 30                AS
+       INNER JOIN (SELECT -1 * CAST(stratum_1 AS INT) * 30                AS
               duration, 
                           Sum(count_value) 
                             OVER ( 
-                              ORDER BY -1* CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT)*30 ASC) AS
+                              ORDER BY -1* CAST(stratum_1 AS INT)*30 ASC) AS
               count_value 
                    FROM  (
                                              select stratum_1, max(count_value) as count_value
@@ -44,7 +44,7 @@ FROM   (SELECT cohort_definition_id,
                                              ) t0
                                              
                                              
-                                             WHERE CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT) > 0
+                                             WHERE CAST(stratum_1 AS INT) > 0
                    UNION 
                    SELECT CAST(CASE WHEN isNumeric(hr1.stratum_1) = 1 THEN hr1.stratum_1 ELSE null END AS INT) * 30
                           AS 
@@ -100,11 +100,11 @@ FROM   (SELECT cohort_definition_id,
                AND cohort_definition_id = @cohortDefinitionId
                AND CAST(CASE WHEN isNumeric(stratum_2) = 1 THEN stratum_2 ELSE null END AS INT) * 30 BETWEEN -1000 AND 1000
                ) hr1 
-       INNER JOIN (SELECT -1 * CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT) * 30                AS
+       INNER JOIN (SELECT -1 * CAST(stratum_1 AS INT) * 30                AS
               duration, 
                           Sum(count_value) 
                             OVER ( 
-                              ORDER BY -1* CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT)*30 ASC) AS
+                              ORDER BY -1* CAST(stratum_1 AS INT)*30 ASC) AS
               count_value 
                    FROM  (
                                              select stratum_1, max(count_value) as count_value
@@ -127,7 +127,7 @@ FROM   (SELECT cohort_definition_id,
                                              ) t0
                                              
                                              
-                                             WHERE CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT) > 0
+                                             WHERE CAST(stratum_1 AS INT) > 0
                    UNION 
                    SELECT CAST(CASE WHEN isNumeric(hr1.stratum_1) = 1 THEN hr1.stratum_1 ELSE null END AS INT) * 30
                           AS 

@@ -16,9 +16,10 @@
 package org.ohdsi.webapi.ircalc;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.ohdsi.circe.cohortdefinition.ConceptSet;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.ohdsi.circe.cohortdefinition.ConceptSet;
 
 /**
  *

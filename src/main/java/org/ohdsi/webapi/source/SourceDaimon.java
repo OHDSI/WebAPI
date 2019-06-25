@@ -16,17 +16,14 @@
 package org.ohdsi.webapi.source;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Objects;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 
 /**
  *
@@ -34,8 +31,10 @@ import javax.persistence.Table;
  */
 @Entity(name = "SourceDaimon")
 @Table(name="source_daimon")
+@SQLDelete(sql = "UPDATE {h-schema}source_daimon SET priority = -1 WHERE SOURCE_DAIMON_ID = ?")
+@Where(clause = "priority >= 0")
 public class SourceDaimon implements Serializable {
-  public enum DaimonType { CDM, Vocabulary, Results, CEM, CEMResults };
+  public enum DaimonType { CDM, Vocabulary, Results, CEM, CEMResults, Temp };
   
   public SourceDaimon() {
   
@@ -46,7 +45,15 @@ public class SourceDaimon implements Serializable {
   }
   
   @Id
-  @GeneratedValue    
+  @GenericGenerator(
+    name = "source_daimon_generator",
+    strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+    parameters = {
+      @Parameter(name = "sequence_name", value = "source_daimon_sequence"),
+      @Parameter(name = "increment_size", value = "1")
+    }
+  )
+  @GeneratedValue(generator = "source_daimon_generator")
   @Column(name="SOURCE_DAIMON_ID")  
   private int sourceDaimonId;
   
@@ -111,15 +118,18 @@ public class SourceDaimon implements Serializable {
         if (this == o) return true;
         if (!(o instanceof SourceDaimon)) return false;
         SourceDaimon that = (SourceDaimon) o;
-        return sourceDaimonId == that.sourceDaimonId &&
-                daimonType == that.daimonType &&
-                Objects.equals(tableQualifier, that.tableQualifier) &&
-                Objects.equals(priority, that.priority);
+        return Objects.equals(getSource(), that.getSource()) &&
+                Objects.equals(getDaimonType(), that.getDaimonType());
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(sourceDaimonId, daimonType, tableQualifier, priority);
+        return Objects.hash(getSource(), getDaimonType());
+    }
+
+    @Override
+    public String toString(){
+        return String.format("sourceDaimonId = %d, daimonType = %s, tableQualifier = %s, priority = %d", sourceDaimonId, daimonType, tableQualifier, priority);
     }
 }

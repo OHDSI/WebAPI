@@ -4,15 +4,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.sql.SqlRender;
-import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.report.mapper.*;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -24,21 +21,18 @@ public class CDMResultsAnalysisRunner {
 
     private static final String BASE_SQL_PATH = "/resources/cdmresults/sql";
 
-    private static final Log log = LogFactory.getLog(CDMResultsAnalysisRunner.class);
+    private static final Logger log = LoggerFactory.getLogger(CDMResultsAnalysisRunner.class);
 
     private static final String[] STANDARD_TABLE = new String[]{"results_database_schema", "vocab_database_schema", "cdm_database_schema"};
 
     private static final String[] DRILLDOWN_COLUMNS = new String[]{"conceptId"};
     private static final String[] DRILLDOWN_TABLE = new String[]{"results_database_schema", "vocab_database_schema"};
 
-    private ObjectMapper mapper;
-
     private String sourceDialect;
 
     public CDMResultsAnalysisRunner(String sourceDialect) {
 
         this.sourceDialect = sourceDialect;
-        mapper = new ObjectMapper();
     }
 
     public CDMDashboard getDashboard(JdbcTemplate jdbcTemplate,
@@ -211,7 +205,7 @@ public class CDMResultsAnalysisRunner {
                 }
             }
         } catch (Exception e) {
-            log.error(e);
+            log.error(e.getMessage(), e);
         }
         return objectNode;
     }
@@ -232,7 +226,6 @@ public class CDMResultsAnalysisRunner {
             tableQualifierValues = new String[]{resultsTableQualifier, vocabularyTableQualifier, cdmTableQualifier};
             psr = new PreparedStatementRenderer(source, sqlPath, STANDARD_TABLE, tableQualifierValues, (String) null, null);
         }
-        psr.setTargetDialect(source.getSourceDialect());
         return psr;
     }
 }

@@ -102,7 +102,7 @@ cost_wide cst on N1.cohort_definition_id = cst.cohort_definition_id
 {@is_summary == FALSE} ? {left join @results_schema.heracles_periods P on N1.stratum_1 = cast(P.period_id as VARCHAR(255)) }
 where N1.cohort_definition_id = @cohort_definition_id
 {@is_summary} ? {	and N1.stratum_1 = ''} : { and P.period_type = '@period_type'}
-	and N1.stratum_2 = '@visit_concept_id'
-	and N1.stratum_3 = '@visit_type_concept_id'
+{@visit_concept_id != ''} ? {and N1.stratum_2 = '@visit_concept_id'}
+{@visit_type_concept_id != ''} ? {and N1.stratum_3 = '@visit_type_concept_id'}
 {@is_summary == FALSE} ? {ORDER BY P.PERIOD_START_DATE}
 ;

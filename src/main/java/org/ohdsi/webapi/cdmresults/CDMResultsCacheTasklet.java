@@ -15,24 +15,24 @@
  */
 package org.ohdsi.webapi.cdmresults;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.webapi.cache.ResultsCache;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.jdbc.core.RowMapper;
+
+import java.sql.ResultSet;
+import java.util.AbstractMap;
+import java.util.HashMap;
 
 /**
  * @author fdefalco
@@ -42,7 +42,7 @@ public class CDMResultsCacheTasklet implements Tasklet {
     private final JdbcTemplate jdbcTemplate;
     private final Source source;
     private final CDMResultsCache cdmResultsCache;
-	private static final Log log = LogFactory.getLog(CDMResultsCacheTasklet.class);
+	  private static final Logger log = LoggerFactory.getLogger(CDMResultsCacheTasklet.class);
 
     public CDMResultsCacheTasklet(final JdbcTemplate t, final Source s) {
         jdbcTemplate = t;
@@ -50,7 +50,7 @@ public class CDMResultsCacheTasklet implements Tasklet {
         cdmResultsCache = new CDMResultsCache();
     }
     
-    private HashMap<Long,Long[]> warmCache() {
+    private HashMap<Integer,Long[]> warmCache() {
         String resultTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
         String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
 
@@ -61,24 +61,12 @@ public class CDMResultsCacheTasklet implements Tasklet {
         PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql_statement, tables, tableValues,
           SessionUtils.sessionId());
 
-				HashMap<Long, Long[]> newCache = new HashMap<>();
+				HashMap<Integer, Long[]> newCache = new HashMap<>();
 				try {
-					jdbcTemplate.query(psr.getSql(), psr.getSetter(), new ResultSetExtractor<HashMap<Long,Long[]>>() {
-							@Override
-							public HashMap<Long,Long[]> extractData(ResultSet rs) throws SQLException, DataAccessException {
-									while (rs.next()) {
-											long id = rs.getLong("concept_id");
-											long record_count = rs.getLong("record_count");
-											long descendant_record_count = rs.getLong("descendant_record_count");
-											long person_record_count = rs.getLong("person_record_count");
-
-											newCache.put(id, new Long[] { record_count, descendant_record_count, person_record_count });
-									}
-									return newCache;
-							}
-					});
+					jdbcTemplate.query(psr.getSql(), psr.getSetter(), getMapper(newCache));
+                    return newCache;
 				} catch (Exception e) {
-					log.error("Failed to warm cache for " + source.getSourceKey() + ". Exception: " + e.getLocalizedMessage());
+					log.error("Failed to warm cache for {}. Exception: {}", source.getSourceKey(), e.getLocalizedMessage());
 					throw e;
 				} finally {
 					return newCache;
@@ -94,4 +82,16 @@ public class CDMResultsCacheTasklet implements Tasklet {
         return RepeatStatus.FINISHED;
     }
 
+    public static RowMapper<AbstractMap.SimpleEntry<Integer, Long[]>> getMapper(HashMap<Integer, Long[]> cache) {
+        return (ResultSet resultSet, int arg1) -> {
+            Integer id = resultSet.getInt("concept_id");
+            long record_count = resultSet.getLong("record_count");
+            long descendant_record_count = resultSet.getLong("descendant_record_count");
+            long person_record_count = resultSet.getLong("person_record_count");
+
+            cache.put(id, new Long[] { record_count, descendant_record_count, person_record_count });
+
+            return new AbstractMap.SimpleEntry<>(id, new Long[]{record_count, descendant_record_count, person_record_count});
+        };
+    }
 }

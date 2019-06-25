@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.sqlrender;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.HashMap;
 
 /**
@@ -15,7 +16,10 @@ public class SourceStatement {
         
     @JsonProperty("targetdialect")
     public String targetDialect;
-    
+
+    @JsonProperty("oracleTempSchema")
+    public String oracleTempSchema;
+
     @JsonProperty("SQL")
     public String sql;
     

@@ -1,9 +1,12 @@
 package org.ohdsi.webapi.shiro.Entities;
 
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import javax.persistence.*;
 
 /**
  * Created by GMalikov on 24.08.2015.
@@ -17,8 +20,16 @@ public class RoleEntity implements Serializable{
 
   @Id
   @Column(name = "ID")
-  @SequenceGenerator(name = "SEC_ROLE_SEQUENCE_GENERATOR", sequenceName = "SEC_ROLE_SEQUENCE", allocationSize = 1, initialValue = 1000)
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEC_ROLE_SEQUENCE_GENERATOR")
+  @GenericGenerator(
+    name = "sec_role_generator",
+    strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+    parameters = {
+      @Parameter(name = "sequence_name", value = "sec_role_sequence"),
+      @Parameter(name = "initial_value", value = "1000"),
+      @Parameter(name = "increment_size", value = "1")
+    }
+  )
+  @GeneratedValue(generator = "sec_role_generator")
   private Long id;
 
   @Column(name = "NAME")
@@ -30,6 +41,8 @@ public class RoleEntity implements Serializable{
   @OneToMany(mappedBy = "role", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   private Set<UserRoleEntity> userRoles = new LinkedHashSet<>();
 
+  @Column(name = "system_role")
+  private Boolean systemRole;
   
   public Long getId() {
     return id;
@@ -61,5 +74,13 @@ public class RoleEntity implements Serializable{
 
   public void setUserRoles(Set<UserRoleEntity> userRoles) {
     this.userRoles = userRoles;
+  }
+
+  public Boolean isSystemRole() {
+    return systemRole;
+  }
+
+  public void setSystemRole(Boolean system) {
+    systemRole = system;
   }
 }

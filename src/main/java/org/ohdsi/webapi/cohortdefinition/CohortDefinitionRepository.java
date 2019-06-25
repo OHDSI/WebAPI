@@ -14,15 +14,15 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
-import java.util.List;
-import java.util.UUID;
-
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -31,10 +31,10 @@ import org.springframework.data.repository.CrudRepository;
 public interface CohortDefinitionRepository extends CrudRepository<CohortDefinition, Integer> {
   Page<CohortDefinition> findAll(Pageable pageable);
   
-  // Bug in hibernate, findById should use @EntityGraph, but details are not being feched. Workaround: mark details Fetch.EAGER,
+  // Bug in hibernate, findById should use @EntityGraph, but details are not being fetched. Workaround: mark details Fetch.EAGER,
   // but means findAll() will eager load definitions (what the @EntityGraph was supposed to solve)
   @EntityGraph(value = "CohortDefinition.withDetail", type = EntityGraph.EntityGraphType.LOAD)
-  @Query("select cd from CohortDefinition cd where id = ?1")
+  @Query("select cd from CohortDefinition cd LEFT JOIN FETCH cd.createdBy LEFT JOIN FETCH cd.modifiedBy where cd.id = ?1")
   CohortDefinition findOneWithDetail(Integer id);
   
   @Query("select cd from CohortDefinition AS cd JOIN FETCH cd.details as d")          

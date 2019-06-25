@@ -1,12 +1,13 @@
 package org.ohdsi.webapi.service;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
 
 public class CDMResultsServiceTest extends AbstractServiceTest {
 
@@ -22,7 +23,7 @@ public class CDMResultsServiceTest extends AbstractServiceTest {
   @Test
   public void prepareGetConceptRecordCount() throws IOException {
 
-    String[] identifiers = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+    Integer[] identifiers = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     PreparedStatementRenderer psr = cdmResultsService.prepareGetConceptRecordCount(identifiers, getSource());
     assertSqlEquals("/cdmresults/sql/getConceptRecordCount-expected.sql", psr);
   }

@@ -1,9 +1,10 @@
 package org.ohdsi.webapi.shiro.filters;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.util.WebUtils;
+
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 
 /**
  *

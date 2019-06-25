@@ -173,14 +173,14 @@ public class LiferayPermissionManager extends PermissionManager {
         return user;
     }
 
-    private RoleEntity addRole(String roleName, boolean addToLiferay) {
-        return addRole(roleName, addToLiferay, true);
+    private RoleEntity addRole(String roleName, boolean isSystem, boolean addToLiferay) {
+        return addRole(roleName, isSystem, addToLiferay, true);
     }
 
-    private RoleEntity addRole(String roleName, boolean addToLiferay, boolean prefix) {
+    private RoleEntity addRole(String roleName, boolean isSystem, boolean addToLiferay, boolean prefix) {
         RoleEntity roleEntity;
         try {
-            roleEntity = super.addRole(roleName);
+            roleEntity = super.addRole(roleName, isSystem);
         } catch (Exception e) {
             LOGGER.info(e.getMessage(), e);
             roleEntity = this.roleRepository.findByName(roleName);
@@ -192,10 +192,11 @@ public class LiferayPermissionManager extends PermissionManager {
     }
 
     @Override
-    public RoleEntity addRole(String roleName) {
+    public RoleEntity addRole(String roleName, boolean isSystem) {
         try {
-            return addRole(roleName, true);
+            return addRole(roleName,  isSystem, true);
         } catch (Exception e) {
+            LOGGER.warn(e.getMessage());
             return null;
         }
     }

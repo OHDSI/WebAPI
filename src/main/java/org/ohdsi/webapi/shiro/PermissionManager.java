@@ -16,7 +16,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
@@ -45,17 +49,19 @@ public class PermissionManager {
   @Autowired
   private ApplicationEventPublisher eventPublisher;
 
+  private ThreadLocal<ConcurrentHashMap<String, AuthorizationInfo>> authorizationInfoCache = ThreadLocal.withInitial(ConcurrentHashMap::new);
 
-  public RoleEntity addRole(String roleName) throws Exception {
+  public RoleEntity addRole(String roleName, boolean isSystem) throws Exception {
     Guard.checkNotEmpty(roleName);
     
-    RoleEntity role = this.roleRepository.findByName(roleName);
+    RoleEntity role = this.roleRepository.findByNameAndSystemRole(roleName, isSystem);
     if (role != null) {
       throw new Exception("Can't create role - it already exists");
     }
     
     role = new RoleEntity();
     role.setName(roleName);
+    role.setSystemRole(isSystem);
     role = this.roleRepository.save(role);
     
     return role;
@@ -88,39 +94,38 @@ public class PermissionManager {
   }
 
   public Iterable<RoleEntity> getRoles(boolean includePersonalRoles) {
-    Iterable<RoleEntity> roles = this.roleRepository.findAll();
+
     if (includePersonalRoles) {
-      return roles;
+      return this.roleRepository.findAll();
+    } else {
+      return this.roleRepository.findAllBySystemRoleTrue();
     }
-
-    Set<String> logins = this.userRepository.getUserLogins();
-    HashSet<RoleEntity> filteredRoles = new HashSet<>();
-    for (RoleEntity role : roles) {
-      if (!logins.contains(role.getName())) {
-        filteredRoles.add(role);
-      }
-    }
-
-    return filteredRoles;
   }
 
   public AuthorizationInfo getAuthorizationInfo(final String login) {
-    final SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
-    
-    final UserEntity userEntity = userRepository.findByLogin(login);
-    if(userEntity == null) {
-      throw new UnknownAccountException("Account does not exist");
-    }
-    
-    final Set<String> permissionNames = new LinkedHashSet<>();
-    final Set<PermissionEntity> permissions = this.getUserPermissions(userEntity);
 
-    for (PermissionEntity permission : permissions) {
-      permissionNames.add(permission.getValue());
-    }
+    return authorizationInfoCache.get().computeIfAbsent(login, newLogin -> {
+      final SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
 
-    info.setStringPermissions(permissionNames);
-    return info;
+      final UserEntity userEntity = userRepository.findByLogin(newLogin);
+      if(userEntity == null) {
+        throw new UnknownAccountException("Account does not exist");
+      }
+
+      final Set<String> permissionNames = new LinkedHashSet<>();
+      final Set<PermissionEntity> permissions = this.getUserPermissions(userEntity);
+
+      for (PermissionEntity permission : permissions) {
+        permissionNames.add(permission.getValue());
+      }
+
+      info.setStringPermissions(permissionNames);
+      return info;
+    });
+  }
+
+  public void clearAuthorizationInfoCache() {
+    this.authorizationInfoCache.set(new ConcurrentHashMap<>());
   }
 
   @Transactional
@@ -137,7 +142,7 @@ public class PermissionManager {
     user = userRepository.save(user);
     eventPublisher.publishEvent(new AddUserEvent(this, user.getId(), login));
 
-    RoleEntity personalRole = this.addRole(login);
+    RoleEntity personalRole = this.addRole(login, false);
     this.addUser(user, personalRole, null);
 
     if (defaultRoles != null) {
@@ -536,6 +541,11 @@ public class PermissionManager {
       PermissionEntity permissionEntity = this.addPermission(permission, description);
       this.addPermission(roleEntity, permissionEntity);
     }
+  }
+
+  public void addPermissionsFromTemplate(Map<String, String> template, String value) throws Exception {
+    RoleEntity currentUserPersonalRole = getCurrentUserPersonalRole();
+    addPermissionsFromTemplate(currentUserPersonalRole, template, value);
   }
 
   public void removePermissionsFromTemplate(Map<String, String> template, String value) {

@@ -1,35 +1,35 @@
 package org.ohdsi.webapi.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import org.ohdsi.webapi.Constants;
+import org.ohdsi.webapi.cache.ResultsCache;
+import org.ohdsi.webapi.cdmresults.CDMResultsCache;
+import org.ohdsi.webapi.cdmresults.CDMResultsCacheTasklet;
+import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.report.*;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.PreparedSqlRender;
+import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
-import javax.annotation.PostConstruct;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import org.apache.commons.lang3.StringUtils;
-import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.sql.SqlRender;
-import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.cache.ResultsCache;
-import org.ohdsi.webapi.cdmresults.CDMResultsCache;
-import org.ohdsi.webapi.cdmresults.CDMResultsCacheTasklet;
-import org.ohdsi.webapi.report.*;
-import org.ohdsi.webapi.job.JobExecutionResource;
-import org.ohdsi.webapi.job.JobTemplate;
-import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.source.SourceDaimon;
-import org.ohdsi.webapi.util.PreparedStatementRenderer;
-import org.springframework.batch.core.JobParametersBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.event.EventListener;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.stereotype.Component;
+import java.util.stream.Collectors;
 
 /**
  * @author fdefalco
@@ -37,11 +37,16 @@ import org.springframework.stereotype.Component;
 @Path("/cdmresults")
 @Component
 public class CDMResultsService extends AbstractDaoService {
+    private final Logger logger = LoggerFactory.getLogger(CDMResultsService.class);
 
     private CDMResultsAnalysisRunner queryRunner = null;
 
     @Autowired
     private JobTemplate jobTemplate;
+
+    @Autowired
+    private JobService jobService;
+
     @Autowired
     private SourceService sourceService;
     @Value("${jasypt.encryptor.enabled}")
@@ -54,16 +59,13 @@ public class CDMResultsService extends AbstractDaoService {
     }
 
     public void warmCaches(){
-        sourceService.getSources().stream().forEach((s) -> {
-            for (SourceDaimon sd : s.daimons) {
-                if (sd.getDaimonType() == SourceDaimon.DaimonType.Results) {
-                    warmCache(s.sourceKey);
-                }
-            }
-        });
+			sourceService.getSources()
+				.stream()
+				.filter(s -> s.daimons.stream().anyMatch(sd -> Objects.equals(sd.getDaimonType(), SourceDaimon.DaimonType.Results)) && s.daimons.stream().anyMatch(sd -> sd.getPriority() > 0))
+				.forEach(s -> warmCache(s.sourceKey));
     }
 
-    private final RowMapper<SimpleEntry<Long, Long[]>> rowMapper = new RowMapper<SimpleEntry<Long, Long[]>>() {
+    private final RowMapper<AbstractMap.SimpleEntry<Long, Long[]>> rowMapper = new RowMapper<SimpleEntry<Long, Long[]>>() {
         @Override
         public SimpleEntry<Long, Long[]> mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
             long id = resultSet.getLong("concept_id");
@@ -80,27 +82,52 @@ public class CDMResultsService extends AbstractDaoService {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public List<SimpleEntry<Long, Long[]>> getConceptRecordCount(@PathParam("sourceKey") String sourceKey, String[] identifiers) {
+    public List<SimpleEntry<Integer, Long[]>> getConceptRecordCount(@PathParam("sourceKey") String sourceKey, ArrayList<Integer> identifiers) {
         ResultsCache resultsCache = new ResultsCache();
         CDMResultsCache sourceCache = resultsCache.getCache(sourceKey);
-        if (sourceCache != null && sourceCache.warm) {
-            ArrayList<SimpleEntry<Long, Long[]>> listFromCache = new ArrayList<>();
-            for (String identifier : identifiers) {
-                Long id = Long.parseLong(identifier);
+
+        List<Integer> notCachedRecordIds = new ArrayList<>();
+
+        List<SimpleEntry<Integer, Long[]>> cachedRecordCounts = identifiers.stream()
+            .map(id -> {
                 Long[] counts = sourceCache.cache.get(id);
-                SimpleEntry<Long, Long[]> se = new SimpleEntry<>(id, counts);
-                listFromCache.add(se);
-            }
-            return listFromCache;
+                if (counts != null) {
+                    return new SimpleEntry<>(id, counts);
+                } else {
+                    notCachedRecordIds.add(id);
+                    return null;
+                }
+            })
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+
+        if (!sourceCache.warm && notCachedRecordIds.size() > 0) {
+            Source source = getSourceRepository().findBySourceKey(sourceKey);
+            List<SimpleEntry<Integer, Long[]>> queriedList = this.executeGetConceptRecordCount(notCachedRecordIds.toArray(new Integer[notCachedRecordIds.size()]), source, sourceCache);
+            cachedRecordCounts.addAll(queriedList);
         }
 
-        Source source = getSourceRepository().findBySourceKey(sourceKey);
-
-        PreparedStatementRenderer psr = prepareGetConceptRecordCount(identifiers, source);
-        return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), rowMapper);
+        return cachedRecordCounts;
     }
 
-    protected PreparedStatementRenderer prepareGetConceptRecordCount(String[] identifiers, Source source) {
+    protected List<SimpleEntry<Integer, Long[]>> executeGetConceptRecordCount(Integer[] identifiers, Source source, CDMResultsCache sourceCache) {
+        List<SimpleEntry<Integer, Long[]>> returnVal = new ArrayList<>();
+        if (identifiers.length == 0) {
+            return returnVal;
+        } else {
+            int parameterLimit = PreparedSqlRender.getParameterLimit(source);
+            if (parameterLimit > 0 && identifiers.length > parameterLimit) {
+                returnVal = executeGetConceptRecordCount(Arrays.copyOfRange(identifiers, parameterLimit, identifiers.length), source, sourceCache);
+                logger.debug("executeGetConceptRecordCount: " + returnVal.size());
+                identifiers = Arrays.copyOfRange(identifiers, 0, parameterLimit);
+            }
+            PreparedStatementRenderer psr = prepareGetConceptRecordCount(identifiers, source);
+            returnVal.addAll(getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), CDMResultsCacheTasklet.getMapper(sourceCache.cache)));
+        }
+        return returnVal;
+    }
+
+    protected PreparedStatementRenderer prepareGetConceptRecordCount(Integer[] identifiers, Source source) {
 
         String sqlPath = "/resources/cdmresults/sql/getConceptRecordCount.sql";
 
@@ -111,12 +138,7 @@ public class CDMResultsService extends AbstractDaoService {
 
         String[] tableQualifierNames = {resultTableQualifierName, vocabularyTableQualifierName};
         String[] tableQualifierValues = {resultTableQualifierValue, vocabularyTableQualifierValue};
-
-        Object[] results = new Object[identifiers.length];
-        for (int i = 0; i < identifiers.length; i++) {
-            results[i] = Integer.parseInt(identifiers[i]);
-        }
-        return new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, "conceptIdentifiers", results);
+        return new PreparedStatementRenderer(source, sqlPath, tableQualifierNames, tableQualifierValues, "conceptIdentifiers", identifiers);
     }
 
     /**
@@ -157,15 +179,15 @@ public class CDMResultsService extends AbstractDaoService {
     public JobExecutionResource warmCache(@PathParam("sourceKey") final String sourceKey) {
         ResultsCache resultsCache = new ResultsCache();
         CDMResultsCache cache = resultsCache.getCache(sourceKey);
-        if (cache != null) {
+        if (!cache.warm && jobService.findJobByName(Constants.WARM_CACHE, getWarmCacheJobName(sourceKey)) == null) {
+            Source source = getSourceRepository().findBySourceKey(sourceKey);
+            CDMResultsCacheTasklet tasklet = new CDMResultsCacheTasklet(this.getSourceJdbcTemplate(source), source);
+            JobParametersBuilder builder = new JobParametersBuilder();
+            builder.addString(Constants.Params.JOB_NAME, getWarmCacheJobName(sourceKey));
+            return this.jobTemplate.launchTasklet(Constants.WARM_CACHE, "warmCacheStep", tasklet, builder.toJobParameters());
+        } else {
             return new JobExecutionResource();
         }
-
-        Source source = getSourceRepository().findBySourceKey(sourceKey);
-        CDMResultsCacheTasklet tasklet = new CDMResultsCacheTasklet(this.getSourceJdbcTemplate(source), source);
-        JobParametersBuilder builder = new JobParametersBuilder();
-        builder.addString("jobName", "warming " + sourceKey + " cache ");
-        return this.jobTemplate.launchTasklet("warmCache", "warmCacheStep", tasklet, builder.toJobParameters());
     }
 
     /**
@@ -320,6 +342,11 @@ public class CDMResultsService extends AbstractDaoService {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         JdbcTemplate jdbcTemplate = this.getSourceJdbcTemplate(source);
         return queryRunner.getDrilldown(jdbcTemplate, domain, conceptId, source);
+    }
+
+    private String getWarmCacheJobName(String sourceKey) {
+
+        return "warming " + sourceKey + " cache";
     }
 
 }

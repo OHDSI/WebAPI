@@ -15,14 +15,17 @@
  */
 package org.ohdsi.webapi.util;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.messaging.support.ErrorMessage;
+
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
-import org.springframework.messaging.support.ErrorMessage;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 /**
  *
@@ -31,16 +34,24 @@ import org.springframework.messaging.support.ErrorMessage;
 
 @Provider
 public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
-	
-	@Override 
-	public Response toResponse(Throwable ex) {
-		ErrorMessage errorMessage = new ErrorMessage(ex);
-		StringWriter errorStackTrace = new StringWriter();
-		ex.printStackTrace(new PrintWriter(errorStackTrace));
- 
-		return Response.status(Status.INTERNAL_SERVER_ERROR)
-				.entity(errorMessage)
-				.type(MediaType.APPLICATION_JSON)
-				.build();	
-	}
+
+    @Override
+    public Response toResponse(Throwable ex) {
+        ErrorMessage errorMessage = new ErrorMessage(ex);
+        StringWriter errorStackTrace = new StringWriter();
+        ex.printStackTrace(new PrintWriter(errorStackTrace));
+        Status responseStatus;
+        if(ex instanceof DataIntegrityViolationException) {
+            responseStatus = Status.CONFLICT;
+        } else if (ex instanceof NotFoundException) {
+            responseStatus = Status.NOT_FOUND;
+        } else {
+            responseStatus = Status.INTERNAL_SERVER_ERROR;
+        }
+
+        return Response.status(responseStatus)
+                .entity(errorMessage)
+                .type(MediaType.APPLICATION_JSON)
+                .build();
+    }
 }

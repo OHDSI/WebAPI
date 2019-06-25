@@ -1,9 +1,10 @@
 package org.ohdsi.webapi.feanalysis.domain;
 
+import org.hibernate.annotations.Type;
+
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.Lob;
-import org.hibernate.annotations.Type;
 
 @Entity
 @DiscriminatorValue("not null")

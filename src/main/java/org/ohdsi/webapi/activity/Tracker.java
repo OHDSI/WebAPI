@@ -15,9 +15,10 @@
  */
 package org.ohdsi.webapi.activity;
 
+import org.ohdsi.webapi.activity.Activity.ActivityType;
+
 import java.util.Date;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import org.ohdsi.webapi.activity.Activity.ActivityType;
 
 /**
  *

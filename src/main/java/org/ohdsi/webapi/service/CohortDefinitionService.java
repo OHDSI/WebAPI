@@ -5,57 +5,23 @@
  */
 package org.ohdsi.webapi.service;
 
-import static org.ohdsi.webapi.Constants.GENERATE_COHORT;
-import static org.ohdsi.webapi.Constants.Params.CDM_DATABASE_SCHEMA;
-import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
-import static org.ohdsi.webapi.Constants.Params.GENERATE_STATS;
-import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
-import static org.ohdsi.webapi.Constants.Params.RESULTS_DATABASE_SCHEMA;
-import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
-import static org.ohdsi.webapi.Constants.Params.TARGET_DATABASE_SCHEMA;
-import static org.ohdsi.webapi.Constants.Params.TARGET_DIALECT;
-import static org.ohdsi.webapi.Constants.Params.TARGET_TABLE;
-import static org.ohdsi.webapi.Constants.Params.VOCABULARY_DATABASE_SCHEMA;
-import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.io.IOException;
-import java.math.BigDecimal;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.math.RoundingMode;
-import java.io.ByteArrayOutputStream;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
-import javax.servlet.ServletContext;
-import javax.transaction.Transactional;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-
 import com.jnj.honeur.webapi.liferay.model.Organization;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.circe.check.Checker;
 import org.ohdsi.circe.check.Warning;
-import javax.ws.rs.core.Response;
 import org.ohdsi.circe.check.WarningSeverity;
 import org.ohdsi.circe.check.warnings.DefaultWarning;
-import org.ohdsi.sql.SqlRender;
-
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
+import org.ohdsi.sql.SqlRender;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.*;
-import org.ohdsi.webapi.GenerationStatus;
-import org.ohdsi.webapi.cohortfeatures.GenerateCohortFeaturesTasklet;
+import org.ohdsi.webapi.common.SourceMapKey;
+import org.ohdsi.webapi.common.sensitiveinfo.CohortGenerationSensitiveInfoService;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ExportUtil;
 import org.ohdsi.webapi.job.JobExecutionResource;
@@ -63,26 +29,51 @@ import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.shiro.management.datasource.SourceIdAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
-import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.UserUtils;
-import org.springframework.batch.core.*;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
-import org.springframework.batch.core.launch.JobExecutionNotRunningException;
 import org.springframework.batch.core.launch.JobOperator;
-import org.springframework.batch.core.launch.NoSuchJobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.servlet.ServletContext;
+import javax.transaction.Transactional;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.ohdsi.webapi.Constants.Params.*;
+import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
  *
@@ -128,6 +119,15 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Autowired
   private CohortGenerationService cohortGenerationService;
 
+  @Autowired
+  private JobService jobService;
+
+  @Autowired
+  private CohortGenerationSensitiveInfoService sensitiveInfoService;
+
+  @Autowired
+  private SourceIdAccessor sourceIdAccessor;
+
 	@PersistenceContext
 	protected EntityManager entityManager;
 	
@@ -137,6 +137,7 @@ public class CohortDefinitionService extends AbstractDaoService {
       InclusionRuleReport.Summary summary = new InclusionRuleReport.Summary();
       summary.baseCount = rs.getLong("base_count");
       summary.finalCount = rs.getLong("final_count");
+      summary.lostCount = rs.getLong("lost_count");
 
       double matchRatio = (summary.baseCount > 0) ? ((double) summary.finalCount / (double) summary.baseCount) : 0.0;
       summary.percentMatched = new BigDecimal(matchRatio * 100.0).setScale(2, RoundingMode.HALF_UP).toPlainString() + "%";
@@ -189,7 +190,8 @@ public class CohortDefinitionService extends AbstractDaoService {
   
   private InclusionRuleReport.Summary getInclusionRuleReportSummary(int id, Source source, int modeId) {
 
-    String sql = "select base_count, final_count from @tableQualifier.cohort_summary_stats where cohort_definition_id = @id and mode_id = @modeId";
+    String sql = "select cs.base_count, cs.final_count, cc.lost_count from @tableQualifier.cohort_summary_stats cs left join @tableQualifier.cohort_censor_stats cc " +
+            "on cc.cohort_definition_id = cs.cohort_definition_id where cs.cohort_definition_id = @id and cs.mode_id = @modeId";
     String tqName = "tableQualifier";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 		String[] varNames = {"id", "modeId"};
@@ -403,11 +405,11 @@ public class CohortDefinitionService extends AbstractDaoService {
    */
   @POST
   @Path("/")
+  @Transactional
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public CohortDefinitionDTO createCohortDefinition(CohortDefinitionDTO def) {
 
-    return getTransactionTemplate().execute(transactionStatus -> {
       Date currentTime = Calendar.getInstance().getTime();
 
       UserEntity user = userRepository.findByLogin(security.getSubject());
@@ -430,9 +432,7 @@ public class CohortDefinitionService extends AbstractDaoService {
       newDef.setDetails(details);
 
       CohortDefinition createdDefinition = this.cohortDefinitionRepository.save(newDef);
-
       return cohortDefinitionToDTO(createdDefinition);
-    });
   }
 
   /**
@@ -448,6 +448,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 
     return getTransactionTemplate().execute(transactionStatus -> {
       CohortDefinition d = this.cohortDefinitionRepository.findOneWithDetail(id);
+      ExceptionUtils.throwNotFoundExceptionIfNull(d, String.format("There is no cohort definition with id = %d.", id));
       return cohortDefinitionToDTO(d);
     });
   }
@@ -516,13 +517,11 @@ public class CohortDefinitionService extends AbstractDaoService {
       return null;
     });
 
-    cohortGenerationService.getJobExecution(source, id)
-            .ifPresent(job -> {
-              try {
-                jobOperator.stop(job.getJobId());
-              } catch (NoSuchJobExecutionException | JobExecutionNotRunningException ignored) {
-              }
-            });
+    jobService.cancelJobExecution(Constants.GENERATE_COHORT, e -> {
+        JobParameters parameters = e.getJobParameters();
+        return Objects.equals(parameters.getString(COHORT_DEFINITION_ID), Integer.toString(id))
+              && Objects.equals(parameters.getString(SOURCE_ID), Integer.toString(source.getSourceId()));
+      });
     return Response.status(Response.Status.OK).build();
   }
 
@@ -539,13 +538,15 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Transactional
   public List<CohortGenerationInfo> getInfo(@PathParam("id") final int id) {
     CohortDefinition def = this.cohortDefinitionRepository.findOne(id);
+    if (Objects.isNull(def)) {
+      throw new IllegalArgumentException(String.format("There is no cohort definition with id = %d.", id));
+    }
     Set<CohortGenerationInfo> infoList = def.getGenerationInfoList();
 
-    List<CohortGenerationInfo> result = new ArrayList<>();
-    for (CohortGenerationInfo info : infoList) {
-      result.add(info);
-    }
-    return result;
+    List<CohortGenerationInfo> result = infoList.stream().filter(genInfo -> sourceIdAccessor.hasAccess(genInfo.getId().getSourceId())).collect(Collectors.toList());
+
+    Map<Integer, SourceInfo> sourceMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_ID);
+    return sensitiveInfoService.filterSensitiveInfo(result, gi -> Collections.singletonMap(Constants.Variables.SOURCE, sourceMap.get(gi.getId().getSourceId())));
   }
 
   /**
@@ -561,12 +562,12 @@ public class CohortDefinitionService extends AbstractDaoService {
   public CohortDefinitionDTO copy(@PathParam("id") final int id) {
     CohortDefinitionDTO sourceDef = getCohortDefinition(id);
     sourceDef.id = null; // clear the ID
-    sourceDef.name = "COPY OF: " + sourceDef.name;
+    sourceDef.name = String.format(ENTITY_COPY_PREFIX, sourceDef.name);
 
     CohortDefinitionDTO copyDef = createCohortDefinition(sourceDef);
 
     return copyDef;
-  }      
+  }
 
   /**
    * Deletes the specified cohort definition
@@ -592,7 +593,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 
 		final JobParameters jobParameters = builder.toJobParameters();
 
-		log.info(String.format("Beginning cohort cleanup for cohort definition id: \n %s", "" + id));
+		log.info("Beginning cohort cleanup for cohort definition id: {}", "" + id);
 
 		CleanupCohortTasklet cleanupTasklet = new CleanupCohortTasklet(this.getTransactionTemplateNoTransaction(),this.getSourceRepository());
 
@@ -644,8 +645,14 @@ public class CohortDefinitionService extends AbstractDaoService {
   {
     
     SourceInfo sourceInfo = sourceService.getPriorityVocabularySourceInfo();
+    if (Objects.isNull(sourceInfo)) {
+        throw new ForbiddenException();
+    }
     CohortDefinition def = this.cohortDefinitionRepository.findOneWithDetail(id);
-    
+    if (Objects.isNull(def)) {
+        throw new NotFoundException();
+    }
+
     ArrayList<ConceptSetExport> exports = getConceptSetExports(def, sourceInfo);
     ByteArrayOutputStream exportStream = ExportUtil.writeConceptSetExportToCSVAndZip(exports);
 
@@ -689,7 +696,7 @@ public class CohortDefinitionService extends AbstractDaoService {
           CohortExpression cohortExpression = mapper.readValue(expression, CohortExpression.class);
           result = runChecks(id, cohortExpression);
       } catch (IOException e) {
-          log.error(String.format("Failed to parse cohort:%d expression", id), e);
+          log.error("Failed to parse cohort:{} expression", id, e);
           result = new CheckResultDTO(id, Stream.of(new DefaultWarning(WarningSeverity.INFO,"Failed to check expression"))
                   .collect(Collectors.toList()));
       }

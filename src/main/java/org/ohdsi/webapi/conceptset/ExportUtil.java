@@ -16,14 +16,15 @@
 package org.ohdsi.webapi.conceptset;
 
 import com.opencsv.CSVWriter;
+import org.ohdsi.circe.vocabulary.Concept;
+import org.ohdsi.circe.vocabulary.ConceptSetExpression;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import org.ohdsi.circe.vocabulary.Concept;
-import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 
 /**
  *

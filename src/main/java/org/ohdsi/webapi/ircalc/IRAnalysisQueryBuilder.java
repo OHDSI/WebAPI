@@ -17,13 +17,13 @@ package org.ohdsi.webapi.ircalc;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.circe.vocabulary.ConceptSetExpressionQueryBuilder;
+
+import java.util.ArrayList;
 
 /**
  *
@@ -46,6 +46,12 @@ public class IRAnalysisQueryBuilder {
 		
     @JsonProperty("vocabularySchema")  
     public String vocabularySchema;
+
+    @JsonProperty("tempSchema")
+    public String tempSchema;
+
+    @JsonProperty("cohortTable")
+    public String cohortTable;
   } 
 
   private String getStrataQuery(CriteriaGroup strataCriteria)
@@ -145,6 +151,8 @@ public class IRAnalysisQueryBuilder {
       resultSql = StringUtils.replace(resultSql, "@cdm_database_schema", options.cdmSchema);
       resultSql = StringUtils.replace(resultSql, "@results_database_schema", options.resultsSchema);
       resultSql = StringUtils.replace(resultSql, "@vocabulary_database_schema", options.vocabularySchema);
+      resultSql = StringUtils.replace(resultSql, "@temp_database_schema", options.tempSchema);
+      resultSql = StringUtils.replace(resultSql, "@cohort_table", options.cohortTable);
     }
     
     resultSql = StringUtils.replace(resultSql, "@analysisId", analyisis.getId().toString());

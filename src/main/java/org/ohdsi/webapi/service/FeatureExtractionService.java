@@ -5,44 +5,42 @@
  */
 package org.ohdsi.webapi.service;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.StringJoiner;
-import java.util.regex.Pattern;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.ohdsi.circe.helper.ResourceHelper;
-import org.springframework.stereotype.Component;
 import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.cohortfeatures.GenerateCohortFeaturesTasklet;
 import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.Step;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
-import org.ohdsi.webapi.cohortfeatures.GenerateCohortFeaturesTasklet;
-import org.ohdsi.webapi.job.JobTemplate;
-import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringJoiner;
+import java.util.regex.Pattern;
+
+import static org.ohdsi.webapi.Constants.Params.TEMP_DATABASE_SCHEMA;
 
 /**
  *
@@ -219,8 +217,9 @@ public class FeatureExtractionService extends AbstractDaoService {
 		List<String> criteriaClauses = buildCriteriaClauses(searchTerm, analysisIds, timeWindows, domains);
 
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String resultsSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-		String cdmSchema = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
+    String resultsSchema = SourceUtils.getResultsQualifier(source);
+		String cdmSchema = SourceUtils.getCdmQualifier(source);
+		String tempSchema = SourceUtils.getTempQualifier(source);
 		
 		String categoricalQuery = SqlRender.renderSql(
 			QUERY_COVARIATE_STATS,
@@ -228,7 +227,7 @@ public class FeatureExtractionService extends AbstractDaoService {
 			new String[]{cdmSchema, resultsSchema, Long.toString(cohortId), criteriaClauses.isEmpty() ? "" : " AND\n" + StringUtils.join(criteriaClauses, "\n AND ")}
 		);
 		
-		translatedSql = SqlTranslate.translateSql(categoricalQuery, source.getSourceDialect(), SessionUtils.sessionId(), resultsSchema);
+		translatedSql = SqlTranslate.translateSql(categoricalQuery, source.getSourceDialect(), SessionUtils.sessionId(), tempSchema);
 		List<PrevalenceStat> prevalenceStats = this.getSourceJdbcTemplate(source).query(translatedSql, (rs, rowNum) -> {
 			PrevalenceStat mappedRow = new PrevalenceStat() {
 				{
@@ -365,10 +364,11 @@ public class FeatureExtractionService extends AbstractDaoService {
 		builder.addString("target_dialect", source.getSourceDialect());
 		builder.addString("cohort_definition_id", ("" + id));
 		builder.addString("source_id", ("" + source.getSourceId()));
+		builder.addString(TEMP_DATABASE_SCHEMA, SourceUtils.getTempQualifier(source));
 
 		final JobParameters jobParameters = builder.toJobParameters();
 
-		log.info(String.format("Beginning generate cohort features for cohort definition id: \n %s", "" + id));
+		log.info("Beginning generate cohort features for cohort definition id: {}", id);
 
 		GenerateCohortFeaturesTasklet generateCohortFeaturesTasklet
 			= new GenerateCohortFeaturesTasklet(getSourceJdbcTemplate(source), getTransactionTemplate());

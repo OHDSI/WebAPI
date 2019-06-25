@@ -1,9 +1,9 @@
 package org.ohdsi.webapi.pathway.converter;
 
-import org.ohdsi.webapi.user.dto.UserDTO;
 import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.dto.BasePathwayAnalysisDTO;
+import org.ohdsi.webapi.user.dto.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 

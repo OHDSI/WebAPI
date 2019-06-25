@@ -5,16 +5,12 @@
  */
 package org.ohdsi.webapi.conceptset;
 
-import java.io.Serializable;
-import java.util.Date;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.Lob;
-import javax.persistence.Table;
 import org.hibernate.annotations.Type;
 import org.ohdsi.webapi.GenerationStatus;
+
+import javax.persistence.*;
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  *
@@ -57,6 +53,9 @@ public class ConceptSetGenerationInfo implements Serializable {
 
     @Column(name = "is_valid")
     private boolean isValid;
+
+    @Column(name = "is_canceled")
+    private boolean isCanceled;
 		
 		@Lob
 		@Type(type = "org.hibernate.type.TextType")  
@@ -103,6 +102,14 @@ public class ConceptSetGenerationInfo implements Serializable {
      */
     public boolean isIsValid() {
         return isValid;
+    }
+
+    public boolean isCanceled() {
+        return isCanceled;
+    }
+
+    public void setCanceled(boolean canceled) {
+        isCanceled = canceled;
     }
 
     /**

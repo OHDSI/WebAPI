@@ -1,26 +1,26 @@
 package org.ohdsi.webapi.estimation;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
+import org.ohdsi.analysis.estimation.design.EstimationTypeEnum;
 import org.ohdsi.webapi.model.CommonEntity;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
+
+import javax.persistence.*;
 
 @Entity(name = "Estimation")
 @Table(name="estimation")
 public class Estimation extends CommonEntity {
     @Id
-    @SequenceGenerator(name = "estimation_seq", sequenceName = "estimation_seq", allocationSize = 1)
-    @GeneratedValue(generator = "estimation_seq", strategy = GenerationType.SEQUENCE)
+    @GenericGenerator(
+        name = "estimation_generator",
+        strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+        parameters = {
+            @Parameter(name = "sequence_name", value = "estimation_seq"),
+            @Parameter(name = "increment_size", value = "1")
+        }
+    )
+    @GeneratedValue(generator = "estimation_generator")
     @Column(name = "estimation_id")
     private Integer id;
 
@@ -36,14 +36,6 @@ public class Estimation extends CommonEntity {
     @Lob
     @Type(type = "org.hibernate.type.TextType")
     private String specification;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by_id", updatable = false)
-    private UserEntity createdBy;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "modified_by_id")
-    private UserEntity modifiedBy;
 
     /**
      * @return the id
@@ -76,14 +68,14 @@ public class Estimation extends CommonEntity {
     /**
      * @return the type
      */
-    public EstimationType getType() {
-        return EstimationType.valueOf(type);
+    public EstimationTypeEnum getType() {
+        return EstimationTypeEnum.fromValue(type);
     }
 
     /**
      * @param type the type to set
      */
-    public void setType(EstimationType type) {
+    public void setType(EstimationTypeEnum type) {
         this.type = type.toString();
     }
 
@@ -113,34 +105,6 @@ public class Estimation extends CommonEntity {
      */
     public void setSpecification(String specification) {
         this.specification = specification;
-    }
-
-    /**
-     * @return the createdBy
-     */
-    public UserEntity getCreatedBy() {
-        return createdBy;
-    }
-
-    /**
-     * @param createdBy the createdBy to set
-     */
-    public void setCreatedBy(UserEntity createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    /**
-     * @return the modifiedBy
-     */
-    public UserEntity getModifiedBy() {
-        return modifiedBy;
-    }
-
-    /**
-     * @param modifiedBy the modifiedBy to set
-     */
-    public void setModifiedBy(UserEntity modifiedBy) {
-        this.modifiedBy = modifiedBy;
     }
     
 }

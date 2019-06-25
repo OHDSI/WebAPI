@@ -111,7 +111,7 @@ FROM (
 		a.UNIQUE_IDENTIFIER,
 		a.UNIQUE_IDENTIFIER_TYPE
 	FROM #NC_CONCEPT_UNIVERSE  u
-		JOIN @vocabulary.CONCEPT_RELATIONSHIP cr
+		JOIN @vocabulary.concept_relationship cr
   		  ON cr.CONCEPT_ID_1 = u.CONCEPT_ID
 			  AND UPPER(cr.RELATIONSHIP_ID) = 'IS A'
 		JOIN @adeData a

@@ -1,7 +1,7 @@
 WITH conceptSetConcepts AS (
 	-- Concepts that are part of the concept set definition that are "EXCLUDED = N, DECENDANTS = Y or N"
 	select DISTINCT concept_id 
-        from @cdm_database_schema.CONCEPT 
+        from @cdm_database_schema.concept
         where concept_id in (@allConcepts)
           and invalid_reason is null
 ), conceptSetDescendants AS (

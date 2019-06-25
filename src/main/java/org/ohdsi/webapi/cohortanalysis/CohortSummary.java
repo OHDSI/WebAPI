@@ -1,8 +1,8 @@
 package org.ohdsi.webapi.cohortanalysis;
 
-import java.util.List;
-
 import org.ohdsi.webapi.service.CohortDefinitionService.CohortDefinitionDTO;
+
+import java.util.List;
 
 public class CohortSummary {
 

@@ -18,15 +18,9 @@ package org.ohdsi.webapi.cohortdefinition;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.IExecutionInfo;
 
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.MapsId;
-import javax.persistence.Table;
 
 /**
  *
@@ -66,6 +60,9 @@ public class CohortGenerationInfo implements Serializable, IExecutionInfo {
   
   @Column(name="is_valid")
   private boolean isValid;
+
+  @Column(name = "is_canceled")
+  private boolean isCanceled;
 	
   @Column(name="include_features", nullable = true)
   private boolean includeFeatures = false;
@@ -127,6 +124,19 @@ public class CohortGenerationInfo implements Serializable, IExecutionInfo {
   public CohortGenerationInfo setIsValid(boolean isValid) {
     this.isValid = isValid;
     return this;
+  }
+
+  @Override
+  public boolean getIsCanceled() {
+    return isCanceled();
+  }
+
+  public boolean isCanceled() {
+    return isCanceled;
+  }
+
+  public void setCanceled(boolean canceled) {
+    isCanceled = canceled;
   }
 
   @Override

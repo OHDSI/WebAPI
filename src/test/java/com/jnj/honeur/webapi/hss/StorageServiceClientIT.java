@@ -4,7 +4,6 @@ import com.jnj.honeur.security.TokenContext;
 import com.jnj.honeur.webapi.cohortdefinition.CohortGenerationResults;
 import com.jnj.honeur.webapi.hssserviceuser.HSSServiceUserEntity;
 import com.jnj.honeur.webapi.hssserviceuser.HSSServiceUserRepository;
-import jdk.nashorn.internal.parser.Token;
 import org.junit.Before;
 import org.junit.Test;
 import org.ohdsi.webapi.service.CohortDefinitionService;
@@ -22,7 +21,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.notNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

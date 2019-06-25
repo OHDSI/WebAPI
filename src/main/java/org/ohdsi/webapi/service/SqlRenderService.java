@@ -1,7 +1,13 @@
 package org.ohdsi.webapi.service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import org.ohdsi.sql.SqlRender;
+import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.sqlrender.SourceStatement;
+import org.ohdsi.webapi.sqlrender.TranslatedStatement;
+import org.ohdsi.webapi.util.SessionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -9,12 +15,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import org.ohdsi.sql.SqlRender;
-import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.sqlrender.SourceStatement;
-import org.ohdsi.webapi.sqlrender.TranslatedStatement;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  *
@@ -51,7 +53,7 @@ public class SqlRenderService {
             if ((sourceStatement.targetDialect == null) || ("sql server".equals(sourceStatement.targetDialect))) {
                 translated.targetSQL = renderedSQL;
             } else {
-                translated.targetSQL = SqlTranslate.translateSql(renderedSQL, sourceStatement.targetDialect);
+                translated.targetSQL = SqlTranslate.translateSql(renderedSQL, sourceStatement.targetDialect, SessionUtils.sessionId(), sourceStatement.oracleTempSchema);
             }
 
         } catch (Exception exception) {

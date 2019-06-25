@@ -12,8 +12,8 @@ import javax.ws.rs.ext.Provider;
 @Provider
 public class JdbcExceptionMapper implements ExceptionMapper<CannotGetJdbcConnectionException> {
 
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
+	@Autowired
+	private ApplicationEventPublisher eventPublisher;
 
     @Override
     public Response toResponse(CannotGetJdbcConnectionException exception) {

@@ -11,17 +11,17 @@ SELECT
   round(1.0 * ar1.count_value / denom.count_value, 5) AS percent_persons,
   round(1.0 * ar2.count_value / ar1.count_value, 5)   AS records_per_person
 FROM (SELECT *
-      FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 700) ar1
+      FROM @results_database_schema.achilles_results WHERE analysis_id = 700) ar1
   INNER JOIN
   (SELECT *
-   FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 701) ar2
+   FROM @results_database_schema.achilles_results WHERE analysis_id = 701) ar2
     ON ar1.stratum_1 = ar2.stratum_1
   INNER JOIN
   @results_database_schema.concept_hierarchy concept_hierarchy
-    ON CAST(ar1.stratum_1 AS INT) = concept_hierarchy.concept_id
+    ON CAST(CASE WHEN isNumeric(ar1.stratum_1) = 1 THEN ar1.stratum_1 ELSE null END AS INT) = concept_hierarchy.concept_id
   AND concept_hierarchy.treemap='Drug'
   ,
   (SELECT count_value
-   FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 1) denom
+   FROM @results_database_schema.achilles_results WHERE analysis_id = 1) denom
 
 ORDER BY ar1.count_value DESC

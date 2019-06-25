@@ -7,7 +7,7 @@ SELECT
   ard1.p75_value    AS p75_Value,
   ard1.p90_value    AS p90_Value,
   ard1.max_value    AS max_Value
-FROM @results_database_schema.ACHILLES_results_dist ard1
+FROM @results_database_schema.achilles_results_dist ard1
 INNER JOIN
-@vocab_database_schema.concept c2 ON CAST(ard1.stratum_1 AS INT) = c2.concept_id
+@vocab_database_schema.concept c2 ON CAST(CASE WHEN isNumeric(ard1.stratum_1) = 1 THEN ard1.stratum_1 ELSE null END AS INT) = c2.concept_id
 WHERE ard1.analysis_id = 506

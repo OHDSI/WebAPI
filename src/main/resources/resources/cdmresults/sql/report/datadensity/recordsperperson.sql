@@ -8,57 +8,57 @@ FROM
       'Visit occurrence' AS table_name,
       stratum_1,
       count_value
-    FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 220
+    FROM @results_database_schema.achilles_results WHERE analysis_id = 220
     UNION ALL
 SELECT
   'Condition occurrence' AS table_name,
   stratum_1,
   count_value
-FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 420
+FROM @results_database_schema.achilles_results WHERE analysis_id = 420
 UNION ALL
 SELECT
   'Death' AS table_name,
   stratum_1,
   count_value
-FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 502
+FROM @results_database_schema.achilles_results WHERE analysis_id = 502
 UNION ALL
 SELECT
   'Procedure occurrence' AS table_name,
   stratum_1,
   count_value
-FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 620
+FROM @results_database_schema.achilles_results WHERE analysis_id = 620
 UNION ALL
 SELECT
   'Drug exposure' AS table_name,
   stratum_1,
   count_value
-FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 720
+FROM @results_database_schema.achilles_results WHERE analysis_id = 720
 UNION ALL
 SELECT
   'Observation' AS table_name,
   stratum_1,
   count_value
-FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 820
+FROM @results_database_schema.achilles_results WHERE analysis_id = 820
 UNION ALL
 SELECT
   'Drug era' AS table_name,
   stratum_1,
   count_value
-FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 920
+FROM @results_database_schema.achilles_results WHERE analysis_id = 920
 UNION ALL
 SELECT
   'Condition era' AS table_name,
   stratum_1,
   count_value
-FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 1020
+FROM @results_database_schema.achilles_results WHERE analysis_id = 1020
 UNION ALL
 SELECT
   'Observation period' AS table_name,
   stratum_1,
   count_value
-FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 111
+FROM @results_database_schema.achilles_results WHERE analysis_id = 111
 ) t1
 INNER JOIN
-( SELECT * FROM @results_database_schema.ACHILLES_results WHERE analysis_id = 117) denom
+( SELECT * FROM @results_database_schema.achilles_results WHERE analysis_id = 117) denom
 ON t1.stratum_1 = denom.stratum_1
-ORDER BY series_Name, CAST(t1.stratum_1 AS INT)
+ORDER BY series_Name, CAST(CASE WHEN isNumeric(t1.stratum_1) = 1 THEN t1.stratum_1 ELSE null END AS INT)

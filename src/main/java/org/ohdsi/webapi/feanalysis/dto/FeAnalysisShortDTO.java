@@ -1,16 +1,24 @@
 package org.ohdsi.webapi.feanalysis.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.webapi.cohortcharacterization.CcResultType;
+import org.ohdsi.webapi.service.dto.CommonEntityDTO;
 
-public class FeAnalysisShortDTO {
+public class FeAnalysisShortDTO extends CommonEntityDTO {
 
+    @JsonProperty("description")
     protected String description;
+    @JsonProperty("id")
     private Integer id;
+    @JsonProperty("name")
     private String name;
+    @JsonProperty("type")
     private StandardFeatureAnalysisType type;
+    @JsonProperty("domain")
     private StandardFeatureAnalysisDomain domain;
+    @JsonProperty("statType")
     private CcResultType statType;
 
     public Integer getId() {

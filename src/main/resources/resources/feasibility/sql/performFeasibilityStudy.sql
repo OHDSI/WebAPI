@@ -25,7 +25,7 @@ CROSS JOIN (select count(*) as total_rules from #inclusionRules where study_id =
 WHERE MG.inclusion_rule_mask = POWER(cast(2 as bigint),RuleTotal.total_rules)-1
 ;
 
--- calculte matching group counts
+-- calculate matching group counts
 delete from @ohdsi_database_schema.feas_study_result where study_id = @studyId;
 insert into @ohdsi_database_schema.feas_study_result (study_id, inclusion_rule_mask, person_count)
 select @studyId as study_id, inclusion_rule_mask, count(*) as person_count

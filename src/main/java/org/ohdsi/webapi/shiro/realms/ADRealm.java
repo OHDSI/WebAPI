@@ -4,7 +4,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.UsernamePasswordToken;
-import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.activedirectory.ActiveDirectoryRealm;
 import org.apache.shiro.realm.ldap.LdapContextFactory;
@@ -45,7 +44,7 @@ public class ADRealm extends ActiveDirectoryRealm {
 
         try {
             return super.doGetAuthorizationInfo(principals);
-        } catch (AuthorizationException e) {
+        } catch (Exception e) {
             LOGGER.warn(e.getMessage());
             return null;
         }

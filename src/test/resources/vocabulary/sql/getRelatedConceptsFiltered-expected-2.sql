@@ -9,20 +9,20 @@ select distinct * from (
 		DOMAIN_ID, 
 		c.VOCABULARY_ID 
 		
-    from vocab_schema.CONCEPT_RELATIONSHIP cr 
-    join vocab_schema.CONCEPT c on cr.CONCEPT_ID_2 = c.CONCEPT_ID 
-    join vocab_schema.RELATIONSHIP r on cr.RELATIONSHIP_ID = r.RELATIONSHIP_ID 
+    from vocab_schema.concept_relationship cr
+    join vocab_schema.concept c on cr.CONCEPT_ID_2 = c.CONCEPT_ID
+    join vocab_schema.relationship r on cr.RELATIONSHIP_ID = r.RELATIONSHIP_ID
     where cr.CONCEPT_ID_1 IN (?) and cr.INVALID_REASON IS NULL
     union 
     select ANCESTOR_CONCEPT_ID, CONCEPT_NAME, ISNULL(STANDARD_CONCEPT,'N') STANDARD_CONCEPT, ISNULL(c.INVALID_REASON,'V') INVALID_REASON, CONCEPT_CODE, CONCEPT_CLASS_ID, DOMAIN_ID, c.VOCABULARY_ID 
-    from vocab_schema.CONCEPT_ANCESTOR ca 
-    join vocab_schema.CONCEPT c on c.CONCEPT_ID = ca.ANCESTOR_CONCEPT_ID 
+    from vocab_schema.concept_ancestor ca
+    join vocab_schema.concept c on c.CONCEPT_ID = ca.ANCESTOR_CONCEPT_ID
     where DESCENDANT_CONCEPT_ID IN (?)
     
     union 
     select DESCENDANT_CONCEPT_ID, CONCEPT_NAME, ISNULL(STANDARD_CONCEPT,'N') STANDARD_CONCEPT, ISNULL(c.INVALID_REASON,'V') INVALID_REASON, CONCEPT_CODE, CONCEPT_CLASS_ID, DOMAIN_ID, c.VOCABULARY_ID 
-    from vocab_schema.CONCEPT_ANCESTOR ca 
-    join vocab_schema.CONCEPT c on c.CONCEPT_ID = ca.DESCENDANT_CONCEPT_ID 
+    from vocab_schema.concept_ancestor ca
+    join vocab_schema.concept c on c.CONCEPT_ID = ca.DESCENDANT_CONCEPT_ID
     where ANCESTOR_CONCEPT_ID IN (?)
     
     union

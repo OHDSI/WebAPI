@@ -1,7 +1,5 @@
 package com.jnj.honeur.webapi.cohortsummarystats;
 
-import com.jnj.honeur.webapi.cohortinclusionstats.CohortInclusionStatsEntityId;
-
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Objects;

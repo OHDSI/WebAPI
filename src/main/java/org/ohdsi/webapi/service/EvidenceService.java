@@ -1,25 +1,6 @@
 package org.ohdsi.webapi.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Collection;
-import java.util.ArrayList;
-import java.util.List;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Arrays;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jettison.json.JSONException;
@@ -30,30 +11,12 @@ import org.ohdsi.circe.vocabulary.ConceptSetExpressionQueryBuilder;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
-import org.ohdsi.webapi.evidence.CohortStudyMapping;
-import org.ohdsi.webapi.evidence.CohortStudyMappingRepository;
-import org.ohdsi.webapi.evidence.ConceptCohortMapping;
-import org.ohdsi.webapi.evidence.ConceptCohortMappingRepository;
-import org.ohdsi.webapi.evidence.ConceptOfInterestMapping;
-import org.ohdsi.webapi.evidence.ConceptOfInterestMappingRepository;
-import org.ohdsi.webapi.evidence.DrugEvidence;
-import org.ohdsi.webapi.evidence.EvidenceDetails;
-import org.ohdsi.webapi.evidence.EvidenceSummary;
-import org.ohdsi.webapi.evidence.EvidenceUniverse;
-import org.ohdsi.webapi.evidence.HoiEvidence;
-import org.ohdsi.webapi.evidence.DrugHoiEvidence;
-import org.ohdsi.webapi.evidence.DrugLabel;
-import org.ohdsi.webapi.evidence.DrugLabelInfo;
-import org.ohdsi.webapi.evidence.DrugLabelRepository;
-import org.ohdsi.webapi.evidence.EvidenceInfo;
-import org.ohdsi.webapi.evidence.DrugRollUpEvidence;
-import org.ohdsi.webapi.evidence.Evidence;
-import org.ohdsi.webapi.evidence.SpontaneousReport;
-import org.ohdsi.webapi.evidence.EvidenceSearch;
+import org.ohdsi.webapi.evidence.*;
 import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlDTO;
 import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlMapper;
 import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlTaskParameters;
 import org.ohdsi.webapi.evidence.negativecontrols.NegativeControlTasklet;
+import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.source.Source;
@@ -67,6 +30,18 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
 /**
  * Provides REST services for querying the Common Evidence Model
  *
@@ -75,7 +50,9 @@ import org.springframework.stereotype.Component;
  */
 @Path("/evidence")
 @Component
-public class EvidenceService extends AbstractDaoService {
+public class EvidenceService extends AbstractDaoService implements GeneratesNotification {
+
+    private static final String NAME = "negativeControlsAnalysisJob";
 
     @Autowired
     private JobTemplate jobTemplate;
@@ -665,7 +642,7 @@ public class EvidenceService extends AbstractDaoService {
                 csExpression = conceptSetService.getConceptSetExpression(task.getCsToInclude());
                 csSQL = csBuilder.buildExpressionQuery(csExpression);
             } catch (Exception e) {
-                log.debug(e);
+                log.warn("Failed to build Inclusion expression query", e);
             }
         }
         task.setCsToIncludeSQL(csSQL);
@@ -675,19 +652,19 @@ public class EvidenceService extends AbstractDaoService {
                 csExpression = conceptSetService.getConceptSetExpression(task.getCsToExclude());
                 csSQL = csBuilder.buildExpressionQuery(csExpression);
             } catch (Exception e) {
-                log.debug(e);
+                log.warn("Failed to build Exclusion expression query", e);
             }
         }
         task.setCsToExcludeSQL(csSQL);
 
         final String taskString = task.toString();
         final JobParameters jobParameters = builder.toJobParameters();
-        log.info(String.format("Beginning run for negative controls analysis task: \n %s", taskString));
+        log.info("Beginning run for negative controls analysis task: {}", taskString);
 
         NegativeControlTasklet tasklet = new NegativeControlTasklet(task, getSourceJdbcTemplate(task.getSource()), task.getJdbcTemplate(),
                 getTransactionTemplate(), this.conceptSetGenerationInfoRepository, this.getSourceDialect());
 
-        return this.jobTemplate.launchTasklet("negativeControlsAnalysisJob", "negativeControlsAnalysisStep", tasklet, jobParameters);
+        return this.jobTemplate.launchTasklet(NAME, "negativeControlsAnalysisStep", tasklet, jobParameters);
     }
 
     /**
@@ -739,13 +716,22 @@ public class EvidenceService extends AbstractDaoService {
         return getNegativeControlSql(task);
     }
 
+    @Override
+    public String getJobName() {
+        return NAME;
+    }
+
+    @Override
+    public String getExecutionFoldingKey() {
+        return "concept_set_id";
+    }
+
     /**
      * Retrieve the SQL used to generate negative controls
      *
      * @summary Get negative control SQL
      * @param task The task containing the parameters for generating negative
      * controls
-     * @param jobId The job Id for capturing the negative controls
      * @return The SQL script for generating negative controls
      */
     public static String getNegativeControlSql(NegativeControlTaskParameters task) {
@@ -966,7 +952,6 @@ public class EvidenceService extends AbstractDaoService {
      * ids
      *
      * @summary SQL for obtaining evidence for a drug/hoi pair by source
-     * @param key The drug-hoi conceptId pair
      * @param source The source that contains the CEM daimon
      * @return A prepared SQL statement
      */

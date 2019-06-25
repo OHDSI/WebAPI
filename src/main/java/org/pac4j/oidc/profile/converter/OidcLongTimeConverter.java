@@ -19,8 +19,8 @@
 package org.pac4j.oidc.profile.converter;
 
 import org.pac4j.core.exception.TechnicalException;
-import org.pac4j.core.profile.converter.DateConverter;
 import org.pac4j.core.profile.converter.AttributeConverter;
+import org.pac4j.core.profile.converter.DateConverter;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

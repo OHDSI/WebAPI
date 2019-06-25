@@ -11,7 +11,8 @@ public class CcResult {
     private Integer analysisId;
     private String analysisName;
     private CcResultType resultType;
-
+    private Long strataId;
+    private String strataName;
 
     public Long getId() {
 
@@ -81,5 +82,21 @@ public class CcResult {
     public void setAnalysisName(final String analysisName) {
 
         this.analysisName = analysisName;
+    }
+
+    public Long getStrataId() {
+        return strataId;
+    }
+
+    public void setStrataId(Long strataId) {
+        this.strataId = strataId;
+    }
+
+    public String getStrataName() {
+        return strataName;
+    }
+
+    public void setStrataName(String strataName) {
+        this.strataName = strataName;
     }
 }

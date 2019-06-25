@@ -2,28 +2,19 @@ package org.ohdsi.webapi.shiro.filters;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import org.apache.shiro.web.util.WebUtils;
+import org.ohdsi.webapi.shiro.exception.NullJsonNodeException;
+
+import javax.servlet.*;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
+import java.io.*;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.WriteListener;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
-import org.apache.shiro.web.util.WebUtils;
+
+import static java.lang.String.format;
 
 /**
  *
@@ -32,7 +23,7 @@ import org.apache.shiro.web.util.WebUtils;
 public abstract class ProcessResponseContentFilter implements Filter {
 
   @Override
-  public void init(FilterConfig fc) throws ServletException {
+  public void init(FilterConfig fc) {
   }
 
   @Override
@@ -68,6 +59,8 @@ public abstract class ProcessResponseContentFilter implements Filter {
   private void processResponseContent(String content) {
     try {
       this.doProcessResponseContent(content);
+    } catch (NullJsonNodeException ex) {
+      Logger.getLogger(ProcessResponseContentFilter.class.getName()).log(Level.SEVERE, "Failed to process response content: " + ex.getMessage());
     } catch (Exception ex) {
       Logger.getLogger(ProcessResponseContentFilter.class.getName()).log(Level.SEVERE, "Failed to process response content", ex);
     }
@@ -75,13 +68,16 @@ public abstract class ProcessResponseContentFilter implements Filter {
 
   protected abstract boolean shouldProcess(ServletRequest request, ServletResponse response);
   
-  protected abstract void doProcessResponseContent(String content) throws Exception;
+  public abstract void doProcessResponseContent(String content) throws Exception;
 
   protected String parseJsonField(String json, String field) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
     JsonNode rootNode = mapper.readValue(json, JsonNode.class);
     JsonNode fieldNode = rootNode.get(field);
-    String fieldValue = fieldNode.asText();
+    if (Objects.isNull(fieldNode)) {
+        throw new NullJsonNodeException(format("Json node '%s' is null", field));
+    }
+    String fieldValue = fieldNode.toString();
     return fieldValue;
   }
 

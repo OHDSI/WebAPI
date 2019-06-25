@@ -3,24 +3,21 @@ package org.ohdsi.webapi.feanalysis;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import javax.annotation.PostConstruct;
-
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
-import org.ohdsi.webapi.feanalysis.dto.FeAnalysisCriteriaDTO;
+import org.ohdsi.webapi.cohortcharacterization.CcResultType;
+import org.ohdsi.webapi.feanalysis.dto.BaseFeAnalysisCriteriaDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisWithConceptSetDTO;
+
+import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class FeAnalysisDeserializer extends JsonDeserializer<FeAnalysisDTO> {
     
@@ -74,7 +71,11 @@ public class FeAnalysisDeserializer extends JsonDeserializer<FeAnalysisDTO> {
 
             final JsonNode design = node.get("design");
             if (analysisType == StandardFeatureAnalysisType.CRITERIA_SET) {
-                final List<FeAnalysisCriteriaDTO> list = new ArrayList<>();
+                JsonNode statType = node.get("statType");
+                if (statType != null) {
+                    dto.setStatType(CcResultType.valueOf(statType.textValue()));
+                }
+                final List<BaseFeAnalysisCriteriaDTO> list = new ArrayList<>();
                 for (final JsonNode jsonNode : design) {
                     list.add(convert(jsonNode));
                 }
@@ -114,9 +115,9 @@ public class FeAnalysisDeserializer extends JsonDeserializer<FeAnalysisDTO> {
         return analysisDTO;
     }
     
-    private FeAnalysisCriteriaDTO convert(final JsonNode node) {
+    private BaseFeAnalysisCriteriaDTO convert(final JsonNode node) {
         try {
-            return objectMapper.treeToValue(node, FeAnalysisCriteriaDTO.class);
+            return objectMapper.treeToValue(node, BaseFeAnalysisCriteriaDTO.class);
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException(e);
         }

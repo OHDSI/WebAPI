@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.source;
 
-import java.util.Collection;
 import javax.validation.constraints.NotNull;
+import java.util.Collection;
 
 public class SourceRequest {
     @NotNull
@@ -18,7 +18,7 @@ public class SourceRequest {
     private String krbAuthMethod;
     private String krbAdminServer;
     private Collection<SourceDaimon> daimons;
-    private String keytabName;
+    private String keyfileName;
 
     public String getName() {
 
@@ -102,13 +102,13 @@ public class SourceRequest {
         this.krbAdminServer = krbAdminServer;
     }
 
-    public String getKeytabName() {
+    public String getKeyfileName() {
 
-        return keytabName;
+        return keyfileName;
     }
 
-    public void setKeytabName(String keytabName) {
+    public void setKeyfileName(String keyfileName) {
 
-        this.keytabName = keytabName;
+        this.keyfileName = keyfileName;
     }
 }

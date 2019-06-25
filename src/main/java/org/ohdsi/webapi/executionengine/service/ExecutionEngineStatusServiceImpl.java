@@ -1,10 +1,5 @@
 package org.ohdsi.webapi.executionengine.service;
 
-import static org.ohdsi.webapi.executionengine.service.ExecutionEngineStatus.OFFLINE;
-import static org.ohdsi.webapi.executionengine.service.ExecutionEngineStatus.ONLINE;
-
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
 import org.ohdsi.webapi.service.HttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+
+import static org.ohdsi.webapi.executionengine.service.ExecutionEngineStatus.OFFLINE;
+import static org.ohdsi.webapi.executionengine.service.ExecutionEngineStatus.ONLINE;
 
 @Service
 public class ExecutionEngineStatusServiceImpl implements ExecutionEngineStatusService{

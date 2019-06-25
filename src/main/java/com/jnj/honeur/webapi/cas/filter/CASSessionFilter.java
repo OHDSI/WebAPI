@@ -4,7 +4,6 @@ import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.util.WebUtils;
-import org.springframework.beans.factory.annotation.Value;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;

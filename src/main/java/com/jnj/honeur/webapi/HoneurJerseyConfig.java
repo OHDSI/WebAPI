@@ -47,16 +47,13 @@ public class HoneurJerseyConfig extends ResourceConfig implements InitializingBe
         register(CohortDefinitionService.class);
         register(CohortResultsService.class);
         register(CohortService.class);
-        register(ComparativeCohortAnalysisService.class);
         register(ConceptSetService.class);
         register(EvidenceService.class);
         register(FeasibilityService.class);
         register(InfoService.class);
-        register(IRAnalysisService.class);
+        register(IRAnalysisResource.class);
         register(JobService.class);
         register(PersonService.class);
-        register(RSBProxyService.class);
-        register(PatientLevelPredictionService.class);
         register(SourceService.class);
         register(SparqlService.class);
         register(SqlRenderService.class);

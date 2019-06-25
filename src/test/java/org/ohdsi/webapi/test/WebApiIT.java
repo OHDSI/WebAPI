@@ -1,20 +1,20 @@
 package org.ohdsi.webapi.test;
 
-import static org.junit.Assert.assertEquals;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.ohdsi.webapi.WebApi;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -25,7 +25,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 @Ignore//do not run this test
 public abstract class WebApiIT {
     
-    protected final Log log = LogFactory.getLog(getClass());
+    protected final Logger log = LoggerFactory.getLogger(getClass());
     
     @Value("${baseUri}")
     private String baseUri;
@@ -55,6 +55,8 @@ public abstract class WebApiIT {
     
     public void assertOK(ResponseEntity entity){
         assertEquals(HttpStatus.OK, entity.getStatusCode());
-        log.debug("Body:" + entity.getBody());
+        if (log.isDebugEnabled()) {
+            log.debug("Body: {}", entity.getBody());
+        }
     }
 }

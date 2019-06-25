@@ -14,17 +14,10 @@
  */
 package org.ohdsi.webapi.ircalc;
 
-import java.io.Serializable;
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
-import javax.persistence.MapsId;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
 import org.hibernate.annotations.Type;
+
+import javax.persistence.*;
+import java.io.Serializable;
 
 /**
  *

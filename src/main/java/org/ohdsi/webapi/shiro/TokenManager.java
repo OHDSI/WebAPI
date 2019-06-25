@@ -1,23 +1,14 @@
 package org.ohdsi.webapi.shiro;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.SignatureException;
-import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.impl.crypto.MacProvider;
-import java.security.Key;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
 import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.util.ExpiringMultimap;
+
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
+import java.security.Key;
+import java.util.*;
 
 /**
  *

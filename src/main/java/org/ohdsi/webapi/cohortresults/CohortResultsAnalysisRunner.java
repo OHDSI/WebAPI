@@ -1,29 +1,25 @@
 package org.ohdsi.webapi.cohortresults;
 
-import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang3.StringUtils;
+import org.ohdsi.circe.helper.ResourceHelper;
+import org.ohdsi.sql.SqlRender;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
 import org.ohdsi.webapi.cohortresults.mapper.*;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.util.HashMap;
-import java.util.Map;
-import org.apache.commons.lang3.StringUtils;
-import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.sql.SqlRender;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 public class CohortResultsAnalysisRunner {
 
@@ -58,7 +54,7 @@ public class CohortResultsAnalysisRunner {
 	public static final String VISIT = "visit";
 	public static final String VISIT_DRILLDOWN = "visit_drilldown";
 	
-	private static final Log log = LogFactory.getLog(CohortResultsAnalysisRunner.class);
+	private static final Logger log = LoggerFactory.getLogger(CohortResultsAnalysisRunner.class);
 	
 	public static final String BASE_SQL_PATH = "/resources/cohortresults/sql";
 
@@ -1367,14 +1363,14 @@ public class CohortResultsAnalysisRunner {
 
 	private void saveEntity(int cohortDefinitionId, int sourceId, String visualizationKey, Object dataObject) {
 		if (dataObject == null) {
-			log.error(String.format("cannot store null entity %s", visualizationKey));
+			log.error("Cannot store null entity {}", visualizationKey);
 			return;
 		}
 		
 		if (dataObject instanceof List) {
 			List<?> listObject = (List<?>) dataObject;
 			if (listObject.size() == 0) {
-				log.debug(String.format("no need to store empty list for %s", visualizationKey));
+				log.warn("No need to store empty list for {}", visualizationKey);
 				return;
 			}
 		}
@@ -1393,7 +1389,7 @@ public class CohortResultsAnalysisRunner {
 				}
 			}
 		} catch (Exception e) {
-			log.error(e);
+			log.error(e.getMessage());
 		}
 		
 		// save entity
@@ -1416,14 +1412,14 @@ public class CohortResultsAnalysisRunner {
 
 	private void saveEntityDrilldown(int cohortDefinitionId, int sourceId, String visualizationKey, int drilldownId, Object dataObject) {
 		if (dataObject == null) {
-			log.error(String.format("cannot store null entity %s", visualizationKey));
+			log.error("Cannot store null entity {}", visualizationKey);
 			return;
 		}
 		
 		if (dataObject instanceof List) {
 			List<?> listObject = (List<?>) dataObject;
 			if (listObject.size() == 0) {
-				log.debug(String.format("no need to store empty list for %s",  visualizationKey));
+				log.warn("No need to store empty list for {}",  visualizationKey);
 				return;
 			}
 		}
@@ -1636,7 +1632,11 @@ public class CohortResultsAnalysisRunner {
 		String reportPath = BASE_SQL_PATH + "/healthcareutilization/getVisitUtilization.sql";
 		String reportSql = ResourceHelper.GetResourceAsString(reportPath);
 		
-		String summarySql = SqlRender.renderSql(reportSql, new String[] {"is_summary"}, new String[]{"TRUE"});
+		String visitConceptIdStr = visitConceptId == null ? "" : visitConceptId.toString();
+		String visitTypeConceptIdStr = visitTypeConceptId == null ? "" : visitTypeConceptId.toString();
+		
+		String summarySql = SqlRender.renderSql(reportSql, new String[] {"is_summary", "visit_concept_id", "visit_type_concept_id"}, 
+				new String[]{"TRUE", visitConceptIdStr, visitTypeConceptIdStr});
 		
 		String[] reportCols = new String[]{"cohort_definition_id"
 			, "subjects_analysis_id"
@@ -1655,8 +1655,8 @@ public class CohortResultsAnalysisRunner {
 			, visitStatAnalysisId
 			, losAnalysisId
 			, costAnalysisId
-			, visitConceptId == null ? "" : visitConceptId.toString()
-			, visitTypeConceptId == null ? "" : visitTypeConceptId.toString()
+			, visitConceptIdStr
+			, visitTypeConceptIdStr
 			, costTypeConceptId == null ? "" : costTypeConceptId.toString()
 			, periodType.toString().toLowerCase()
 		};

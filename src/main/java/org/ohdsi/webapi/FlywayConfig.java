@@ -1,9 +1,7 @@
 package org.ohdsi.webapi;
 
 import com.odysseusinc.arachne.commons.config.flyway.ApplicationContextAwareSpringJdbcMigrationResolver;
-import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
-
 import org.springframework.boot.autoconfigure.flyway.FlywayDataSource;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationInitializer;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
@@ -11,6 +9,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import javax.sql.DataSource;
 
 
 /**

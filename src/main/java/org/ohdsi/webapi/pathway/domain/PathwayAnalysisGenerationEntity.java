@@ -3,11 +3,7 @@ package org.ohdsi.webapi.pathway.domain;
 import org.ohdsi.webapi.common.generation.CommonGeneration;
 import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnalysisConverter;
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "pathway_analysis_generation")

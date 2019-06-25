@@ -1,9 +1,6 @@
 package org.ohdsi.webapi.shiro.filters;
 
 import io.buji.pac4j.token.Pac4jToken;
-import io.buji.pac4j.token.Pac4jToken;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;

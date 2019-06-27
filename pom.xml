@@ -492,7 +492,7 @@
     <dependency>
       <groupId>org.ohdsi.sql</groupId>
       <artifactId>SqlRender</artifactId>
-      <version>1.6.2-SNAPSHOT</version>
+      <version>1.6.2</version>
     </dependency>
     <dependency>
       <groupId>commons-dbutils</groupId>
@@ -631,12 +631,12 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>
-      <version>1.8.0-SNAPSHOT</version>
+      <version>1.8.0</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>hydra</artifactId>
-      <version>0.0.4-SNAPSHOT</version>
+      <version>0.0.5</version>
     </dependency>
     <dependency>
       <groupId>org.json</groupId>
@@ -646,7 +646,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>featureExtraction</artifactId>
-      <version>2.2.0</version>
+      <version>2.2.4</version>
     </dependency>
     <dependency>
       <groupId>com.amazon.redshift</groupId>
@@ -714,17 +714,17 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>standardized-analysis-specs</artifactId>
-      <version>1.2.0-SNAPSHOT</version>
+      <version>1.2.0</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>standardized-analysis-utils</artifactId>
-      <version>1.2.0-SNAPSHOT</version>
+      <version>1.2.0</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>SkeletonCohortCharacterization</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.0.0</version>
       <exclusions>
         <exclusion>
           <groupId>org.ohdsi</groupId>

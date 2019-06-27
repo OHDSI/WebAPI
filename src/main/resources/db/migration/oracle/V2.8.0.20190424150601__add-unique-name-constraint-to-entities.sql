@@ -2,13 +2,13 @@
 
 CREATE OR REPLACE PROCEDURE ${ohdsiSchema}.rename_cs_names AS
     TYPE NumberArray IS TABLE OF NUMBER;
-    TYPE CharArray IS TABLE OF VARCHAR(100);
+    TYPE CharArray IS TABLE OF VARCHAR(255);
     duplicate_names CharArray;
     name_repeats NumberArray;
     amount_of_duplicate_names INT;
     amount_of_constraints INT;
-    constraint_title VARCHAR(100);
-    schema_title VARCHAR(100);
+    constraint_title VARCHAR(255);
+    schema_title VARCHAR(255);
     all_duplicates INT;
 
 BEGIN
@@ -72,13 +72,13 @@ end;
 
 CREATE OR REPLACE PROCEDURE ${ohdsiSchema}.rename_cd_names AS
     TYPE NumberArray IS TABLE OF NUMBER;
-    TYPE CharArray IS TABLE OF VARCHAR(100);
+    TYPE CharArray IS TABLE OF VARCHAR(255);
     duplicate_names CharArray;
     name_repeats NumberArray;
     amount_of_duplicate_names INT;
     amount_of_constraints INT;
-    constraint_title VARCHAR(100);
-    schema_title VARCHAR(100);
+    constraint_title VARCHAR(255);
+    schema_title VARCHAR(255);
     all_duplicates INT;
 
 BEGIN
@@ -141,13 +141,13 @@ end;
 
 CREATE OR REPLACE PROCEDURE ${ohdsiSchema}.rename_cc_names AS
     TYPE NumberArray IS TABLE OF NUMBER;
-    TYPE CharArray IS TABLE OF VARCHAR(100);
+    TYPE CharArray IS TABLE OF VARCHAR(255);
     duplicate_names CharArray;
     name_repeats NumberArray;
     amount_of_duplicate_names INT;
     amount_of_constraints INT;
-    constraint_title VARCHAR(100);
-    schema_title VARCHAR(100);
+    constraint_title VARCHAR(255);
+    schema_title VARCHAR(255);
     all_duplicates INT;
 
 BEGIN
@@ -209,13 +209,13 @@ end;
 
 CREATE OR REPLACE PROCEDURE ${ohdsiSchema}.rename_fe_names AS
     TYPE NumberArray IS TABLE OF NUMBER;
-    TYPE CharArray IS TABLE OF VARCHAR(100);
+    TYPE CharArray IS TABLE OF VARCHAR(255);
     duplicate_names CharArray;
     name_repeats NumberArray;
     amount_of_duplicate_names INT;
     amount_of_constraints INT;
-    constraint_title VARCHAR(100);
-    schema_title VARCHAR(100);
+    constraint_title VARCHAR(255);
+    schema_title VARCHAR(255);
     all_duplicates INT;
 
 BEGIN
@@ -277,13 +277,13 @@ end;
 
 CREATE OR REPLACE PROCEDURE ${ohdsiSchema}.rename_pathway_names AS
     TYPE NumberArray IS TABLE OF NUMBER;
-    TYPE CharArray IS TABLE OF VARCHAR(100);
+    TYPE CharArray IS TABLE OF VARCHAR(255);
     duplicate_names CharArray;
     name_repeats NumberArray;
     amount_of_duplicate_names INT;
     amount_of_constraints INT;
-    constraint_title VARCHAR(100);
-    schema_title VARCHAR(100);
+    constraint_title VARCHAR(255);
+    schema_title VARCHAR(255);
     all_duplicates INT;
 
 BEGIN
@@ -345,13 +345,13 @@ end;
 
 CREATE OR REPLACE PROCEDURE ${ohdsiSchema}.rename_ir_names AS
     TYPE NumberArray IS TABLE OF NUMBER;
-    TYPE CharArray IS TABLE OF VARCHAR(100);
+    TYPE CharArray IS TABLE OF VARCHAR(255);
     duplicate_names CharArray;
     name_repeats NumberArray;
     amount_of_duplicate_names INT;
     amount_of_constraints INT;
-    constraint_title VARCHAR(100);
-    schema_title VARCHAR(100);
+    constraint_title VARCHAR(255);
+    schema_title VARCHAR(255);
     all_duplicates INT;
 
 BEGIN
@@ -413,13 +413,13 @@ end;
 
 CREATE OR REPLACE PROCEDURE ${ohdsiSchema}.rename_estimation_names AS
     TYPE NumberArray IS TABLE OF NUMBER;
-    TYPE CharArray IS TABLE OF VARCHAR(100);
+    TYPE CharArray IS TABLE OF VARCHAR(255);
     duplicate_names CharArray;
     name_repeats NumberArray;
     amount_of_duplicate_names INT;
     amount_of_constraints INT;
-    constraint_title VARCHAR(100);
-    schema_title VARCHAR(100);
+    constraint_title VARCHAR(255);
+    schema_title VARCHAR(255);
     all_duplicates INT;
 
 BEGIN
@@ -481,13 +481,13 @@ end;
 
 CREATE OR REPLACE PROCEDURE ${ohdsiSchema}.rename_prediction_names AS
     TYPE NumberArray IS TABLE OF NUMBER;
-    TYPE CharArray IS TABLE OF VARCHAR(100);
+    TYPE CharArray IS TABLE OF VARCHAR(255);
     duplicate_names CharArray;
     name_repeats NumberArray;
     amount_of_duplicate_names INT;
     amount_of_constraints INT;
-    constraint_title VARCHAR(100);
-    schema_title VARCHAR(100);
+    constraint_title VARCHAR(255);
+    schema_title VARCHAR(255);
     all_duplicates INT;
 
 BEGIN

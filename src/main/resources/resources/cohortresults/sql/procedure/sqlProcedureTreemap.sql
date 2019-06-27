@@ -1,5 +1,7 @@
 select  concept_hierarchy.concept_id,
 	CONCAT(
+          -- Note: concept_hierarchy.level4_concept_name is null 
+          -- and so it is not included in this query
 	  isNull(concept_hierarchy.level3_concept_name,'NA'), '||',
 	  isNull(concept_hierarchy.level2_concept_name,'NA'), '||',
 	  isNull(concept_hierarchy.level1_concept_name,'NA'), '||',

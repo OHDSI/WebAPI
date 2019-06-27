@@ -463,10 +463,8 @@ public abstract class AtlasSecurity extends Security {
   // Since we need to create permissions only for certain analyses, we cannot go with `addProcessEntityFilter`
   @EventListener
   public void onCcImport(CcImportEvent event) throws Exception {
-    for (FeAnalysisEntity analysis : event.getEntity().getFeatureAnalyses()) {
-      if (!Objects.equals(analysis.getType(), StandardFeatureAnalysisType.PRESET)) {
-        authorizer.addPermissionsFromTemplate(featureAnalysisPermissionTemplates, analysis.getId().toString());
+      for (Integer id : event.getSavedAnalysesIds()) {
+          authorizer.addPermissionsFromTemplate(featureAnalysisPermissionTemplates, id.toString());
       }
-    }
   }
 }

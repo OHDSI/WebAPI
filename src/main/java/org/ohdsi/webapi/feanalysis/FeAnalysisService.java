@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
@@ -34,4 +35,10 @@ public interface FeAnalysisService {
     void deleteAnalysis(FeAnalysisEntity entity);
     
     void deleteAnalysis(int id);
+    
+    List<String> getNamesLike(String name);
+    
+    Optional<FeAnalysisEntity> findByDesignAndName(FeAnalysisWithStringEntity withStringEntity, final String name);
+
+    Optional<FeAnalysisEntity> findByCriteriaList(List<? extends FeAnalysisCriteriaEntity> newCriteriaList);
 }

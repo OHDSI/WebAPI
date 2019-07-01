@@ -8,9 +8,6 @@ WHERE pathway_analysis_generation_id = @generation_id AND target_cohort_id = @pa
 * SELECT 1 AS cohort_definition_id, 1 AS cohort_index UNION ALL ...
 */
 
-IF OBJECT_ID('tempdb..#raw_events', 'U') IS NOT NULL
-DROP TABLE #raw_events;
-
 select id, event_cohort_index, subject_id, CAST(cohort_start_date AS DATETIME) AS cohort_start_date, CAST(cohort_end_date AS DATETIME) AS cohort_end_date
 INTO #raw_events
 FROM (
@@ -18,7 +15,7 @@ FROM (
 	  ec.cohort_index AS event_cohort_index,
 	  e.subject_id,
 	  e.cohort_start_date,
-	  e.cohort_end_date
+	  dateadd(d, 1, e.cohort_end_date) as cohort_end_date
 	FROM @target_cohort_table e
 	  JOIN ( @event_cohort_id_index_map ) ec ON e.cohort_definition_id = ec.cohort_definition_id
 	  JOIN @target_cohort_table t ON t.cohort_start_date <= e.cohort_start_date AND e.cohort_start_date <= t.cohort_end_date AND t.subject_id = e.subject_id
@@ -28,9 +25,6 @@ FROM (
 /*
 * Find closely located dates, which need to be collapsed, based on collapse_window
 */
-
-IF OBJECT_ID('tempdb..#date_replacements', 'U') IS NOT NULL
-DROP TABLE #date_replacements;
 
 WITH person_dates AS (
   SELECT subject_id, cohort_start_date cohort_date FROM #raw_events
@@ -60,9 +54,6 @@ WHERE cohort_date <> replacement_date;
 /*
 * Collapse dates
 */
-
-IF OBJECT_ID('tempdb..#collapsed_dates_events', 'U') IS NOT NULL
-DROP TABLE #collapsed_dates_events;
 
 SELECT
   event.id,
@@ -130,9 +121,6 @@ GROUP BY subject_id, cohort_start_date, cohort_end_date;
 * Remove repetitive events (e.g. A-A-A into A)
 */
 
-IF OBJECT_ID('tempdb..#non_repetitive_events', 'U') IS NOT NULL
-DROP TABLE #non_repetitive_events;
-
 SELECT
   CAST(ROW_NUMBER() OVER (PARTITION BY subject_id ORDER BY cohort_start_date) AS INT) ordinal,
   CAST(combo_id AS BIGINT) combo_id,
@@ -175,13 +163,28 @@ SELECT
   target_count.cnt AS target_cohort_count,
   pathway_count.cnt AS pathways_count
 FROM (
-  SELECT COUNT_BIG(*) cnt
+  SELECT CAST(COUNT_BIG(*) as BIGINT) cnt
   FROM @target_cohort_table
   WHERE cohort_definition_id = @pathway_target_cohort_id
 ) target_count,
 (
-  SELECT COUNT_BIG(DISTINCT subject_id) cnt
+  SELECT CAST(COUNT_BIG(DISTINCT subject_id) as BIGINT) cnt
   FROM @target_database_schema.pathway_analysis_events
   WHERE pathway_analysis_generation_id = @generation_id
   AND target_cohort_id = @pathway_target_cohort_id
 ) pathway_count;
+
+TRUNCATE TABLE #non_repetitive_events;
+DROP TABLE #non_repetitive_events;
+
+TRUNCATE TABLE #combo_events;
+DROP TABLE #combo_events;
+
+TRUNCATE TABLE #collapsed_dates_events;
+DROP TABLE #collapsed_dates_events;
+
+TRUNCATE TABLE #date_replacements;
+DROP TABLE #date_replacements;
+
+TRUNCATE TABLE #raw_events;
+DROP TABLE #raw_events;

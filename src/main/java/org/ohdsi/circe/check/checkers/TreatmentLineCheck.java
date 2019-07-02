@@ -18,13 +18,10 @@
 
 package org.ohdsi.circe.check.checkers;
 
-import static org.ohdsi.circe.check.operations.Operations.match;
-
-import java.util.Objects;
-import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.circe.cohortdefinition.Criteria;
-import org.ohdsi.circe.cohortdefinition.DrugExposure;
 import org.ohdsi.circe.cohortdefinition.TreatmentLine;
+
+import static org.ohdsi.circe.check.operations.Operations.match;
 
 public class TreatmentLineCheck extends BaseCriteriaCheck {
 

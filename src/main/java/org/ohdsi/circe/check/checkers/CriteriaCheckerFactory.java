@@ -18,10 +18,10 @@
 
 package org.ohdsi.circe.check.checkers;
 
+import org.ohdsi.circe.cohortdefinition.*;
+
 import java.util.Objects;
 import java.util.function.Function;
-
-import org.ohdsi.circe.cohortdefinition.*;
 
 class CriteriaCheckerFactory {
 

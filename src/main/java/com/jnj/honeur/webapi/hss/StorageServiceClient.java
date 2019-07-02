@@ -21,6 +21,7 @@ import org.springframework.http.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -199,10 +200,14 @@ public class StorageServiceClient {
     }
 
     public TokenContext getStorageServiceToken() {
-        ResponseEntity<JsonNode> tokenResponse = restTemplate
-                .exchange(storageServiceApi + "/login", HttpMethod.GET, getBasicAuthenticationHeader(),
-                        JsonNode.class);
-        return new TokenContext(tokenResponse.getBody().path("token").asText(), tokenResponse.getHeaders().getFirst("Set-Cookie").replace("userFingerprint=", ""));
+        try{
+            ResponseEntity<JsonNode> tokenResponse = restTemplate
+                    .exchange(storageServiceApi + "/login", HttpMethod.GET, getBasicAuthenticationHeader(),
+                            JsonNode.class);
+            return new TokenContext(tokenResponse.getBody().path("token").asText(), tokenResponse.getHeaders().getFirst("Set-Cookie").replace("userFingerprint=", ""));
+        } catch (Exception e) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "CAS login failed: Wrong storage service user credentials");
+        }
     }
 
     boolean deleteStorageFile(String token, String fingerprint, String uuid) {
@@ -227,7 +232,7 @@ public class StorageServiceClient {
     private HttpEntity getBasicAuthenticationHeader() {
         Iterator<HSSServiceUserEntity> hssServiceUserEntities = hssServiceUserRepository.findAll().iterator();
         if(!hssServiceUserEntities.hasNext()){
-            throw new IllegalStateException("No HSS service user defined.");
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN,"No HSS service user defined.");
         }
         final HSSServiceUserEntity hssServiceUser = hssServiceUserEntities.next();
         return new HttpEntity(new HttpHeaders() {{

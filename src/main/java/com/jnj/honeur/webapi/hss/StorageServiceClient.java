@@ -200,9 +200,10 @@ public class StorageServiceClient {
     }
 
     public TokenContext getStorageServiceToken() {
+        HttpEntity httpEntity = getBasicAuthenticationHeader();
         try{
             ResponseEntity<JsonNode> tokenResponse = restTemplate
-                    .exchange(storageServiceApi + "/login", HttpMethod.GET, getBasicAuthenticationHeader(),
+                    .exchange(storageServiceApi + "/login", HttpMethod.GET, httpEntity,
                             JsonNode.class);
             return new TokenContext(tokenResponse.getBody().path("token").asText(), tokenResponse.getHeaders().getFirst("Set-Cookie").replace("userFingerprint=", ""));
         } catch (Exception e) {

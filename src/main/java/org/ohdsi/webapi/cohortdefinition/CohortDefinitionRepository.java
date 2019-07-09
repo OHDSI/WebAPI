@@ -37,7 +37,7 @@ public interface CohortDefinitionRepository extends CrudRepository<CohortDefinit
   @Query("select cd from CohortDefinition cd LEFT JOIN FETCH cd.createdBy LEFT JOIN FETCH cd.modifiedBy where cd.id = ?1")
   CohortDefinition findOneWithDetail(Integer id);
   
-  @Query("select cd from CohortDefinition AS cd JOIN FETCH cd.details LEFT JOIN FETCH cd.createdBy LEFT JOIN FETCH cd.modifiedBy")          
+  @Query("select cd from CohortDefinition AS cd LEFT JOIN FETCH cd.createdBy LEFT JOIN FETCH cd.modifiedBy")          
   List<CohortDefinition> list();
 
   @Query("select count(cd) from CohortDefinition AS cd WHERE cd.name = :name and cd.id <> :id")

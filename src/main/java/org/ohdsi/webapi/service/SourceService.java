@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.env.Environment;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
@@ -336,6 +337,7 @@ public class SourceService extends AbstractDaoService {
   @Path("connection/{key}")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
+  @Transactional(noRollbackFor = CannotGetJdbcConnectionException.class)
   public SourceInfo checkConnection(@PathParam("key") final String sourceKey) {
 
     final Source source = sourceRepository.findBySourceKey(sourceKey);

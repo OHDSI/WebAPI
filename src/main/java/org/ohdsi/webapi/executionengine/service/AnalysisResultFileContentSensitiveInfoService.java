@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.executionengine.service;
 
 import org.ohdsi.webapi.common.sensitiveinfo.SensitiveInfoService;
-import org.ohdsi.webapi.executionengine.entity.AnalysisResultFileContent;
+import org.ohdsi.webapi.executionengine.entity.AnalysisResultFileContentList;
 
-public interface AnalysisResultFileContentSensitiveInfoService extends SensitiveInfoService<AnalysisResultFileContent> {
+public interface AnalysisResultFileContentSensitiveInfoService extends SensitiveInfoService<AnalysisResultFileContentList> {
 }

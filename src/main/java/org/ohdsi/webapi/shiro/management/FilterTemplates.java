@@ -4,7 +4,16 @@ import org.ohdsi.webapi.events.EntityName;
 
 import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.HttpMethod.POST;
-import static org.ohdsi.webapi.events.EntityName.*;
+import static org.ohdsi.webapi.events.EntityName.COHORT;
+import static org.ohdsi.webapi.events.EntityName.COHORT_CHARACTERIZATION;
+import static org.ohdsi.webapi.events.EntityName.CONCEPT_SET;
+import static org.ohdsi.webapi.events.EntityName.ESTIMATION;
+import static org.ohdsi.webapi.events.EntityName.FEATURE_ANALYSIS;
+import static org.ohdsi.webapi.events.EntityName.INCIDENCE_RATE;
+import static org.ohdsi.webapi.events.EntityName.PATHWAY_ANALYSIS;
+import static org.ohdsi.webapi.events.EntityName.PATIENT_LEVEL_PREDICTION;
+import static org.ohdsi.webapi.events.EntityName.PREDICTION;
+import static org.ohdsi.webapi.events.EntityName.SOURCE;
 
 public enum FilterTemplates {
     CREATE_COHORT_DEFINITION("createPermissionsOnCreateCohortDefinition", COHORT, POST),

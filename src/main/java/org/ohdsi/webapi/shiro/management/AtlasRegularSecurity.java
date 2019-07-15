@@ -1,8 +1,5 @@
 package org.ohdsi.webapi.shiro.management;
 
-import static com.odysseusinc.arachne.commons.utils.QuoteUtils.dequote;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.*;
-
 import io.buji.pac4j.filter.CallbackFilter;
 import io.buji.pac4j.filter.SecurityFilter;
 import io.buji.pac4j.realm.Pac4jRealm;
@@ -14,7 +11,19 @@ import org.apache.shiro.realm.ldap.JndiLdapRealm;
 import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
-import org.ohdsi.webapi.shiro.filters.*;
+import org.ohdsi.webapi.shiro.filters.ActiveDirectoryAuthFilter;
+import org.ohdsi.webapi.shiro.filters.AtlasJwtAuthFilter;
+import org.ohdsi.webapi.shiro.filters.CasHandleFilter;
+import org.ohdsi.webapi.shiro.filters.JdbcAuthFilter;
+import org.ohdsi.webapi.shiro.filters.KerberosAuthFilter;
+import org.ohdsi.webapi.shiro.filters.LdapAuthFilter;
+import org.ohdsi.webapi.shiro.filters.LogoutFilter;
+import org.ohdsi.webapi.shiro.filters.RedirectOnFailedOAuthFilter;
+import org.ohdsi.webapi.shiro.filters.RunAsFilter;
+import org.ohdsi.webapi.shiro.filters.SendTokenInHeaderFilter;
+import org.ohdsi.webapi.shiro.filters.SendTokenInRedirectFilter;
+import org.ohdsi.webapi.shiro.filters.SendTokenInUrlFilter;
+import org.ohdsi.webapi.shiro.filters.UpdateAccessTokenFilter;
 import org.ohdsi.webapi.shiro.mapper.ADUserMapper;
 import org.ohdsi.webapi.shiro.mapper.LdapUserMapper;
 import org.ohdsi.webapi.shiro.realms.ADRealm;
@@ -53,7 +62,33 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Set;
 
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.*;
+import static com.odysseusinc.arachne.commons.utils.QuoteUtils.dequote;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.AD_FILTER;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.AUTHZ;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CAS_AUTHC;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CORS;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.FACEBOOK_AUTHC;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.FORCE_SESSION_CREATION;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.GITHUB_AUTHC;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.GOOGLE_AUTHC;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.HANDLE_CAS;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.HANDLE_UNSUCCESSFUL_OAUTH;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.JDBC_FILTER;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.JWT_AUTHC;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.KERBEROS_FILTER;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.LDAP_FILTER;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.LOGOUT;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.NEGOTIATE_AUTHC;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_CACHE;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_SESSION_CREATION;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.OAUTH_CALLBACK;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.OIDC_AUTH;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.RUN_AS;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.SEND_TOKEN_IN_HEADER;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.SEND_TOKEN_IN_REDIRECT;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.SEND_TOKEN_IN_URL;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.SSL;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.UPDATE_TOKEN;
 
 @Component
 @ConditionalOnProperty(name = "security.provider", havingValue = Constants.SecurityProviders.REGULAR)
@@ -252,7 +287,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         FilterChainBuilder filterChainBuilder = new FilterChainBuilder()
                 .setBeforeOAuthFilters(SSL, CORS, FORCE_SESSION_CREATION)
                 .setAfterOAuthFilters(UPDATE_TOKEN, SEND_TOKEN_IN_URL)
-                .setRestFilters(SSL, NO_SESSION_CREATION, CORS)
+                .setRestFilters(SSL, NO_SESSION_CREATION, CORS, NO_CACHE)
                 .setAuthcFilter(JWT_AUTHC)
                 .setAuthzFilter(AUTHZ)
                 // login/logout

@@ -1,18 +1,5 @@
 package org.ohdsi.webapi.shiro.management;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import javax.annotation.PostConstruct;
-import javax.servlet.Filter;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.HttpMethod;
-
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
@@ -21,17 +8,11 @@ import org.apache.shiro.web.filter.authz.SslFilter;
 import org.apache.shiro.web.filter.session.NoSessionCreationFilter;
 import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.util.WebUtils;
-import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.webapi.OidcConfCreator;
 import org.ohdsi.webapi.cohortcharacterization.CcImportEvent;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
-import org.ohdsi.webapi.shiro.filters.CorsFilter;
-import org.ohdsi.webapi.shiro.filters.ForceSessionCreationFilter;
-import org.ohdsi.webapi.shiro.filters.ProcessResponseContentFilterImpl;
-import org.ohdsi.webapi.shiro.filters.SkipFurtherFilteringFilter;
-import org.ohdsi.webapi.shiro.filters.UrlBasedAuthorizingFilter;
+import org.ohdsi.webapi.shiro.filters.*;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.slf4j.Logger;
@@ -42,41 +23,15 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import waffle.shiro.negotiate.NegotiateAuthenticationStrategy;
 
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.AUTHZ;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.COPY_ESTIMATION;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.COPY_PREDICTION;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CORS;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_COHORT_CHARACTERIZATION;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_COHORT_DEFINITION;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_CONCEPT_SET;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_COPY_COHORT_DEFINITION;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_COPY_IR;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_COPY_PLP;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_IR;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_PLE;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_PLP;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_SOURCE;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_ESTIMATION;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_FEATURE_ANALYSIS;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_PATHWAY_ANALYSIS;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CREATE_PREDICTION;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_COHORT_CHARACTERIZATION;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_COHORT_DEFINITION;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_CONCEPT_SET;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_ESTIMATION;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_FEATURE_ANALYSIS;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_PATHWAY_ANALYSIS;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_PLE;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_PLP;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_PREDICTION;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.DELETE_SOURCE;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.FORCE_SESSION_CREATION;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_SESSION_CREATION;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.SKIP_IF_NOT_POST;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.SKIP_IF_NOT_PUT;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.SKIP_IF_NOT_PUT_OR_DELETE;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.SKIP_IF_NOT_PUT_OR_POST;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.SSL;
+import javax.annotation.PostConstruct;
+import javax.servlet.Filter;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.HttpMethod;
+import java.util.*;
+
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.*;
 
 /**
  *
@@ -310,6 +265,7 @@ public abstract class AtlasSecurity extends Security {
     filters.put(SKIP_IF_NOT_PUT_OR_POST, this.getskipFurtherFiltersIfNotPutOrPostFilter());
     filters.put(SKIP_IF_NOT_PUT_OR_DELETE, this.getskipFurtherFiltersIfNotPutOrDeleteFilter());
     filters.put(SSL, this.getSslFilter());
+    filters.put(NO_CACHE, this.getNoCacheFilter());
     
     filters.put(DELETE_COHORT_CHARACTERIZATION, this.getDeletePermissionsOnDeleteFilter(cohortCharacterizationCreatorPermissionTemplates));
     filters.put(DELETE_PATHWAY_ANALYSIS, this.getDeletePermissionsOnDeleteFilter(pathwayAnalysisCreatorPermissionTemplate));
@@ -450,6 +406,10 @@ public abstract class AtlasSecurity extends Security {
     sslFilter.setPort(sslPort);
     sslFilter.setEnabled(sslEnabled);
     return sslFilter;
+  }
+
+  private Filter getNoCacheFilter() {
+    return new ResponseNoCacheFilter();
   }
 
   @Override

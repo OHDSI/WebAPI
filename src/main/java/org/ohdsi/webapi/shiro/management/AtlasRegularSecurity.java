@@ -1,8 +1,5 @@
 package org.ohdsi.webapi.shiro.management;
 
-import static com.odysseusinc.arachne.commons.utils.QuoteUtils.dequote;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.*;
-
 import io.buji.pac4j.filter.CallbackFilter;
 import io.buji.pac4j.filter.SecurityFilter;
 import io.buji.pac4j.realm.Pac4jRealm;
@@ -53,6 +50,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Set;
 
+import static com.odysseusinc.arachne.commons.utils.QuoteUtils.dequote;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.*;
 
 @Component
@@ -252,7 +250,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         FilterChainBuilder filterChainBuilder = new FilterChainBuilder()
                 .setBeforeOAuthFilters(SSL, CORS, FORCE_SESSION_CREATION)
                 .setAfterOAuthFilters(UPDATE_TOKEN, SEND_TOKEN_IN_URL)
-                .setRestFilters(SSL, NO_SESSION_CREATION, CORS)
+                .setRestFilters(SSL, NO_SESSION_CREATION, CORS, NO_CACHE)
                 .setAuthcFilter(JWT_AUTHC)
                 .setAuthzFilter(AUTHZ)
                 // login/logout

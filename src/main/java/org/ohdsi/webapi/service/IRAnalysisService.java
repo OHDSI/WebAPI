@@ -22,6 +22,7 @@ import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.google.common.collect.ImmutableMap;
 import com.opencsv.CSVWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
@@ -85,6 +86,7 @@ import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
@@ -552,11 +554,9 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   public Response export(final int id) {
 
     Response response = null;
-    HashMap<String, String> fileList = new HashMap<>();
-    HashMap<Integer, String> distTypeLookup = new HashMap<>();
 
-    distTypeLookup.put(1, "TAR");
-    distTypeLookup.put(2, "TTO");
+    Map<String, String> fileList = new HashMap<>();
+    Map<Integer, String> distTypeLookup = ImmutableMap.of(1, "TAR", 2, "TTO");
 
     try {
       IncidenceRateAnalysis analysis = this.irAnalysisRepository.findOne(id);
@@ -577,7 +577,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
         // perform this query to CDM in an isolated transaction to avoid expensive JDBC transaction synchronization
         DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
-        requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);        
+        requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         TransactionStatus initStatus = this.getTransactionTemplateRequiresNew().getTransactionManager().getTransaction(requresNewTx);
 
 
@@ -601,7 +601,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
         for (AnalysisReport.StrataStatistic strata : strataList)
         {
           strataLines.add(new String[] {source.getSourceKey(),String.valueOf(strata.targetId), String.valueOf(strata.outcomeId),String.valueOf(strata.id), String.valueOf(strata.name), String.valueOf(strata.totalPersons), String.valueOf(strata.timeAtRisk), String.valueOf(strata.cases)});
-        }        
+        }
 
         // get the distribution data
         String distQuery = String.format("select '%s' as db_id, target_id, outcome_id, strata_sequence, dist_type, total, avg_value, std_dev, min_value, p10_value, p25_value, median_value, p75_value, p90_value, max_value from %s.ir_analysis_dist where analysis_id = %d", source.getSourceKey(), resultsTableQualifier, id);
@@ -617,11 +617,11 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
         }
         while (rs.next())
         {
-          ArrayList<String> columns = new ArrayList<>();
+          List<String> columns = new ArrayList<>();
           for(int i = 1; i <= rs.getMetaData().getColumnNames().length; i++)
           {
             switch (rs.getMetaData().getColumnName(i)) {
-              case "dist_type": 
+              case "dist_type":
                 columns.add(distTypeLookup.get(rs.getInt(i)));
                 break;
               default:
@@ -646,13 +646,13 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
       sw = new StringWriter();
       csvWriter = new CSVWriter(sw);
       csvWriter.writeAll(strataLines);
-      csvWriter.flush();      
+      csvWriter.flush();
       fileList.put("ir_strata.csv", sw.getBuffer().toString());
 
       sw = new StringWriter();
       csvWriter = new CSVWriter(sw);
       csvWriter.writeAll(distLines);
-      csvWriter.flush();      
+      csvWriter.flush();
       fileList.put("ir_dist.csv", sw.getBuffer().toString());
 
       // build zip output
@@ -669,12 +669,12 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
       zos.closeEntry();
       zos.close();
       baos.flush();
-      baos.close();      
+      baos.close();
 
       response = Response
         .ok(baos)
         .type(MediaType.APPLICATION_OCTET_STREAM)
-        .header("Content-Disposition", String.format("attachment; filename=\"%s\"", "ir_analysis_" + id + ".zip"))
+        .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", "ir_analysis_" + id + ".zip"))
         .build();
     } catch (Exception ex) {
       throw new RuntimeException(ex);

@@ -13,7 +13,6 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.webapi.evidence.CommandList;
-import org.ohdsi.webapi.evidence.LinkoutData;
 import org.ohdsi.webapi.evidence.RdfInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,16 +22,11 @@ import org.springframework.stereotype.Component;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.Proxy;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -104,64 +98,6 @@ public class SparqlService {
 	    
 	    return infoOnSources;
 	  }
-	
-	
-	@GET
-	  @Path("linkoutdata/{linkout}")
-	  @Produces(MediaType.APPLICATION_JSON)
-	  public Collection<LinkoutData> getLinkout(@PathParam("linkout") String linkout) throws JSONException, IOException {
-		
-		String expandedURL = URIUtil.decode(linkout);
-		expandedURL = expandUrl(expandedURL);
-		expandedURL = URIUtil.decode(expandedURL);;
-		expandedURL = URIUtil.encodeQuery(expandedURL);
-	    List<LinkoutData> infoOnLinkout = new ArrayList<LinkoutData>();
-	    JSONArray lineItems = readJSONFeed(expandedURL);
-	    for (int i = 0; i < lineItems.length(); ++i) {
-	        JSONObject tempItem = lineItems.getJSONObject(i);
-	        JSONObject tempSource = tempItem.getJSONObject("an");
-	        String source = tempSource.getString("value");
-	        LinkoutData info = new LinkoutData();
-	        info.an = source;
-	        tempSource = tempItem.getJSONObject("body");
-	        source = tempSource.getString("value");
-	        info.body = source;
-	        tempSource = tempItem.getJSONObject("target");
-	        source = tempSource.getString("value");
-	        info.target = source;
-	        tempSource = tempItem.getJSONObject("sourceURL");
-	        source = tempSource.getString("value");
-	        info.sourceURL = source;
-	        tempSource = tempItem.getJSONObject("selector");
-	        source = tempSource.getString("value");
-	        info.selector = source;
-	        tempSource = tempItem.getJSONObject("spl");
-	        source = tempSource.getString("value");
-	        info.spl = source;
-	        tempSource = tempItem.getJSONObject("text");
-	        source = tempSource.getString("value");
-	        info.text = source;
-	        infoOnLinkout.add(info);
-	    }
-	    
-	    return infoOnLinkout;
-	  }
-	
-	//expand URL from short URL
-	public String expandUrl(String shortenedUrl) throws IOException {
-        URL url = new URL(shortenedUrl);    
-        // open connection
-        HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection(Proxy.NO_PROXY); 
-        
-        // stop following browser redirect
-        httpURLConnection.setInstanceFollowRedirects(false);
-         
-        // extract location header containing the actual destination URL
-        String expandedURL = httpURLConnection.getHeaderField("Location");
-        httpURLConnection.disconnect();
-        //System.out.println("EXPAND: "+expandedURL);
-        return expandedURL;
-    }
 	
 	//get and parse JSON function
 	public JSONArray readJSONFeed(String URL) throws JSONException {

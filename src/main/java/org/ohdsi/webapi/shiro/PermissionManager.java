@@ -51,13 +51,9 @@ public class PermissionManager {
 
   public RoleEntity addRole(String roleName, boolean isSystem) throws Exception {
     Guard.checkNotEmpty(roleName);
-    
-    RoleEntity role = this.roleRepository.findByNameAndSystemRole(roleName, isSystem);
-    if (role != null) {
-      throw new Exception("Can't create role - it already exists");
-    }
-    
-    role = new RoleEntity();
+
+    checkRoleIsAbsent(roleName, isSystem, "Can't create role - it already exists");
+    RoleEntity role = new RoleEntity();
     role.setName(roleName);
     role.setSystemRole(isSystem);
     role = this.roleRepository.save(role);
@@ -139,7 +135,9 @@ public class PermissionManager {
       }
       return user;
     }
-    
+
+    checkRoleIsAbsent(login, false, "User with such login has been improperly removed from the database. " +
+            "Please contact your system administrator");
     user = new UserEntity();
     user.setLogin(login);
     user.setName(name);
@@ -356,6 +354,12 @@ public class PermissionManager {
     return role;
   }
 
+  private void checkRoleIsAbsent(String roleName, boolean isSystem, String message) throws Exception {
+    RoleEntity role = this.roleRepository.findByNameAndSystemRole(roleName, isSystem);
+    if (role != null) {
+      throw new Exception(message);
+    }
+  }
 
   private Set<PermissionEntity> getUserPermissions(UserEntity user) {
     Set<RoleEntity> roles = this.getUserRoles(user);

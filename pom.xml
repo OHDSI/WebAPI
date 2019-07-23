@@ -683,6 +683,11 @@
     </dependency>
     <dependency>
       <groupId>com.odysseusinc.arachne</groupId>
+      <artifactId>data-source-manager</artifactId>
+      <version>${arachne.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.odysseusinc.arachne</groupId>
       <artifactId>execution-engine-commons</artifactId>
       <version>${arachne.version}</version>
     </dependency>

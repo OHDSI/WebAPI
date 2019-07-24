@@ -24,7 +24,7 @@ FROM   (SELECT cohort_definition_id,
                               ORDER BY -1* CAST(stratum_1 AS INT)*30 ASC) AS
               count_value 
                    FROM  (
-                                             select stratum_1, max(count_value) as count_value
+                                             select CAST(stratum_1 AS STRING) AS stratum_1, max(count_value) as count_value
                                                   from
                                                   (
                                                   select row_number() over (order by analysis_id) as stratum_1, 0 as count_value
@@ -107,7 +107,7 @@ FROM   (SELECT cohort_definition_id,
                               ORDER BY -1* CAST(stratum_1 AS INT)*30 ASC) AS
               count_value 
                    FROM  (
-                                             select stratum_1, max(count_value) as count_value
+                                             select CAST(stratum_1 AS STRING) AS stratum_1, max(count_value) as count_value
                                                   from
                                                   (
                                                   select row_number() over (order by analysis_id) as stratum_1, 0 as count_value

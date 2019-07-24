@@ -20,7 +20,7 @@ public class ResponseNoCacheFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletResponse httpResponse = WebUtils.toHttp(response);
 
-        httpResponse.setHeader("Cache-control", "no-store");
+        httpResponse.setHeader("Cache-Control", "no-store");
         httpResponse.setHeader("Pragma", "no-cache");
 
         chain.doFilter(request, response);

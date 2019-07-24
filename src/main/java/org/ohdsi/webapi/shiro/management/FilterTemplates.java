@@ -1,5 +1,7 @@
 package org.ohdsi.webapi.shiro.management;
 
+import org.ohdsi.webapi.events.EntityName;
+
 import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.HttpMethod.POST;
 import static org.ohdsi.webapi.events.EntityName.COHORT;
@@ -12,8 +14,6 @@ import static org.ohdsi.webapi.events.EntityName.PATHWAY_ANALYSIS;
 import static org.ohdsi.webapi.events.EntityName.PATIENT_LEVEL_PREDICTION;
 import static org.ohdsi.webapi.events.EntityName.PREDICTION;
 import static org.ohdsi.webapi.events.EntityName.SOURCE;
-
-import org.ohdsi.webapi.events.EntityName;
 
 public enum FilterTemplates {
     CREATE_COHORT_DEFINITION("createPermissionsOnCreateCohortDefinition", COHORT, POST),
@@ -69,6 +69,7 @@ public enum FilterTemplates {
     AUTHZ("authz"),
     CORS("cors"),
     SSL("ssl"),
+    NO_CACHE("noCache"),
     HIDE_RESOURCE("hideResource"),
     LOGOUT("logout"),
     UPDATE_TOKEN("updateToken"),

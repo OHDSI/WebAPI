@@ -59,5 +59,5 @@ public interface CcService {
 
     void cancelGeneration(Long id, String sourceKey);
 
-    Long getCCResultCount(Long id);
+    Long getCCResultsTotalCount(Long id);
 }

@@ -498,7 +498,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     @Override
     @DataSourceAccess
-    public Long getCCResultCount(@CcGenerationId final Long generationId) {
+    public Long getCCResultsTotalCount(@CcGenerationId final Long generationId) {
         final CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
                 .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
         final Source source = generationEntity.getSource();
@@ -506,7 +506,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                 new String[]{String.valueOf(generationId), SourceUtils.getVocabularyQualifier(source)});
         final String tempSchema = SourceUtils.getTempQualifier(source);
         String translatedSql = SqlTranslate.translateSql(countReq, source.getSourceDialect(), SessionUtils.sessionId(), tempSchema);
-        return getResultsCount(source, translatedSql);
+        return this.getSourceJdbcTemplate(source).queryForObject(translatedSql, Long.class);
     }
 
     @Override
@@ -603,10 +603,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             }
             return null;
         });
-    }
-
-    private Long getResultsCount(final Source source, final String translatedSql) {
-        return this.getSourceJdbcTemplate(source).queryForObject(translatedSql, Long.class);
     }
 
     private void gatherForPrevalence(final CcPrevalenceStat stat, final ResultSet rs) throws SQLException {

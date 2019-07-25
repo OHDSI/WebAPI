@@ -15,6 +15,8 @@
 package org.ohdsi.webapi.cohortdefinition;
 
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -40,4 +42,9 @@ public interface CohortDefinitionRepository extends CrudRepository<CohortDefinit
 
   @Query("select count(cd) from CohortDefinition AS cd WHERE cd.name = :name and cd.id <> :id")
   int getCountCDefWithSameName(@Param("id") Integer id, @Param("name") String name);
+
+  @Query("SELECT cd FROM CohortDefinition cd WHERE cd.name LIKE ?1 ESCAPE '\\'")
+  List<CohortDefinition> findAllByNameStartsWith(String pattern);
+  
+  Optional<CohortDefinition> findByName(String name);
 }

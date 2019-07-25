@@ -25,6 +25,8 @@ public interface CcService {
 
     String getNameForCopy(String dtoName);
 
+    String getNameWithSuffix(String dtoName);
+
     String serializeCc(Long id);
 
     String serializeCc(CohortCharacterizationEntity cohortCharacterizationEntity);
@@ -56,8 +58,6 @@ public interface CcService {
     void deleteCcGeneration(Long generationId);
 
     void cancelGeneration(Long id, String sourceKey);
-
-    int countLikeName(String copyName);
 
     Long getCCResultCount(Long id);
 }

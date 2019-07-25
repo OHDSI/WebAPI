@@ -85,7 +85,9 @@ public class GoogleIapJwtAuthFilter extends AtlasAuthFilter {
 
         if (loggedIn) {
             final PrincipalCollection principals = SecurityUtils.getSubject().getPrincipals();
-            this.authorizer.registerUser((String) principals.getPrimaryPrincipal(), defaultRoles);
+            String name = (String) principals.getPrimaryPrincipal();
+            // For now we supposed name to be equal to login for google iap
+            this.authorizer.registerUser(name, name, defaultRoles);
         } else {
             httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }

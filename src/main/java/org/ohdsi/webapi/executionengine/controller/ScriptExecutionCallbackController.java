@@ -10,12 +10,14 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.hibernate.Hibernate;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFileContent;
+import org.ohdsi.webapi.executionengine.entity.AnalysisResultFileContentList;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineGenerationEntity;
 import org.ohdsi.webapi.executionengine.exception.ScriptCallbackException;
 import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
 import org.ohdsi.webapi.executionengine.repository.AnalysisResultFileContentRepository;
 import org.ohdsi.webapi.executionengine.repository.ExecutionEngineGenerationRepository;
+import org.ohdsi.webapi.executionengine.service.AnalysisResultFileContentSensitiveInfoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +32,9 @@ import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.*;
 
-import static org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus.Status.*;
+import static org.ohdsi.webapi.Constants.Variables.SOURCE;
+import static org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus.Status.RUNNING;
+import static org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus.Status.STARTED;
 
 @Controller
 @Path("/executionservice/callbacks")
@@ -45,14 +49,18 @@ public class ScriptExecutionCallbackController {
 
     private final AnalysisResultFileContentRepository analysisResultFileContentRepository;
 
+    private final AnalysisResultFileContentSensitiveInfoService sensitiveInfoService;
+
     @Autowired
     public ScriptExecutionCallbackController(ExecutionEngineGenerationRepository executionEngineGenerationRepository,
                                              AnalysisExecutionRepository analysisExecutionRepository,
-                                             AnalysisResultFileContentRepository analysisResultFileContentRepository) {
+                                             AnalysisResultFileContentRepository analysisResultFileContentRepository,
+                                             AnalysisResultFileContentSensitiveInfoService sensitiveInfoService) {
 
         this.executionEngineGenerationRepository = executionEngineGenerationRepository;
         this.analysisExecutionRepository = analysisExecutionRepository;
         this.analysisResultFileContentRepository = analysisResultFileContentRepository;
+        this.sensitiveInfoService = sensitiveInfoService;
     }
 
     @Path(value = "submission/{id}/status/update/{password}")
@@ -120,8 +128,10 @@ public class ScriptExecutionCallbackController {
             ExecutionEngineAnalysisStatus analysisExecution,
             AnalysisResultDTO analysisResultDTO) {
 
-        List<AnalysisResultFileContent> files = new ArrayList<>();
+        Map<String, Object> variables = Collections.singletonMap(SOURCE, analysisExecution.getExecutionEngineGeneration().getSource());
+
         List<FormDataBodyPart> bodyParts = multiPart.getFields("file");
+        AnalysisResultFileContentList contentList = new AnalysisResultFileContentList();
         if (bodyParts != null) {
             Map<String,Integer> duplicates = new HashMap<>();
             for (FormDataBodyPart bodyPart : bodyParts) {
@@ -136,16 +146,24 @@ public class ScriptExecutionCallbackController {
                 }
                 try {
                     byte[] contents = IOUtils.toByteArray(bodyPartEntity.getInputStream());
-                    files.add(new AnalysisResultFileContent(analysisExecution, fileName,
-                            bodyPart.getMediaType().getType(), contents));
+
+                    AnalysisResultFileContent resultFileContent = new AnalysisResultFileContent(analysisExecution, fileName,
+                            bodyPart.getMediaType().getType(), contents);
+                    contentList.getFiles().add(resultFileContent);
+
                 } catch (IOException e) {
                     throw new ScriptCallbackException("Unable to read result " + "files");
                 }
             }
         }
-        files.add(new AnalysisResultFileContent(analysisExecution, "stdout.txt", MediaType.TEXT_PLAIN,
-                analysisResultDTO.getStdout().getBytes()));
-        return analysisResultFileContentRepository.save(files);
+        AnalysisResultFileContent resultFileContent = new AnalysisResultFileContent(analysisExecution, "stdout.txt", MediaType.TEXT_PLAIN,
+                analysisResultDTO.getStdout().getBytes());
+        contentList.getFiles().add(resultFileContent);
+
+        // We have to filter all files for current execution because of possibility of archives split into volumes
+        // Volumes will be removed during decompressing and compressing
+        contentList = sensitiveInfoService.filterSensitiveInfo(contentList, variables);
+        return analysisResultFileContentRepository.save(contentList.getFiles());
     }
 
 }

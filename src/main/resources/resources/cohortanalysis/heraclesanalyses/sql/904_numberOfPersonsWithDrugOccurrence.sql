@@ -7,7 +7,7 @@ select c1.cohort_definition_id,
   p1.gender_concept_id as stratum_3,
   floor((year(drug_era_start_date) - p1.year_of_birth)/10) as stratum_4,
   COUNT_BIG(distinct p1.PERSON_ID) as count_value
-into #results_903
+into #results_904
 from @CDM_schema.person p1
 inner join #HERACLES_cohort c1
 on p1.person_id = c1.subject_id

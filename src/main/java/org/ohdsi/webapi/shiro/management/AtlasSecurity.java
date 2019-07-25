@@ -164,6 +164,7 @@ public abstract class AtlasSecurity extends Security {
     this.sourcePermissionTemplates.put("ir:*:execute:%s:delete", "Cancel IR generation on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("ir:*:info:%s:get", "Get IR execution info on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("ir:*:report:%s:get","Get IR generation report with SourceKey = %s");
+    this.sourcePermissionTemplates.put("ir:%s:info:*:delete", "Delete IR generation report with ID=%s");
     this.sourcePermissionTemplates.put("%s:person:*:get", "Get person's profile on Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("vocabulary:%s:lookup:sourcecodes:post", "Lookup source codes in Source with SourceKey = %s");
     this.sourcePermissionTemplates.put("cohort-characterization:*:generation:%s:post", "Generate Cohort Characterization on Source with SourceKey = %s");
@@ -187,7 +188,6 @@ public abstract class AtlasSecurity extends Security {
     this.incidenceRatePermissionTemplates.put("ir:%s:export:get", "Export Incidence Rate with ID=%s");
     this.incidenceRatePermissionTemplates.put("ir:%s:put", "Edit Incidence Rate with ID=%s");
     this.incidenceRatePermissionTemplates.put("ir:%s:delete", "Delete Incidence Rate with ID=%s");
-    this.incidenceRatePermissionTemplates.put("ir:%s:info:*:delete", "Delete Incidence Rate info with ID=%s");
 
     this.dataSourcePermissionTemplates.put("source:%s:put", "Edit Source with sourceKey=%s");
     this.dataSourcePermissionTemplates.put("source:%s:get", "Read Source with sourceKey=%s");
@@ -235,6 +235,7 @@ public abstract class AtlasSecurity extends Security {
 
             // incidence rates
             .addProtectedRestPath("/ir", CREATE_IR)
+            .addProtectedRestPath("/ir/design", CREATE_IR)
             .addProtectedRestPath("/ir/*/copy", CREATE_COPY_IR)
 
             // comparative cohort analysis (estimation)
@@ -462,10 +463,8 @@ public abstract class AtlasSecurity extends Security {
   // Since we need to create permissions only for certain analyses, we cannot go with `addProcessEntityFilter`
   @EventListener
   public void onCcImport(CcImportEvent event) throws Exception {
-    for (FeAnalysisEntity analysis : event.getEntity().getFeatureAnalyses()) {
-      if (!Objects.equals(analysis.getType(), StandardFeatureAnalysisType.PRESET)) {
-        authorizer.addPermissionsFromTemplate(featureAnalysisPermissionTemplates, analysis.getId().toString());
+      for (Integer id : event.getSavedAnalysesIds()) {
+          authorizer.addPermissionsFromTemplate(featureAnalysisPermissionTemplates, id.toString());
       }
-    }
   }
 }

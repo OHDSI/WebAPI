@@ -6,7 +6,6 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.service.dto.AnalysisInfoDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisShortDTO;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -39,7 +38,6 @@ public interface IRAnalysisResource {
     @Path("/{id}/exists")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    @Transactional
     int getCountIRWithSameName(@PathParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name);
 
     /**
@@ -52,20 +50,29 @@ public interface IRAnalysisResource {
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    @Transactional
     IRAnalysisDTO createAnalysis(IRAnalysisDTO analysis);
 
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    @Transactional(readOnly = true)
     IRAnalysisDTO getAnalysis(@PathParam("id") final int id);
+
+    @POST
+    @Path("/design")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    IRAnalysisDTO doImport(final IRAnalysisDTO dto);
+
+    @GET
+    @Path("/{id}/design")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    IRAnalysisDTO export(@PathParam("id") final Integer id);
 
     @PUT
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    @Transactional
     IRAnalysisDTO saveAnalysis(@PathParam("id") final int id, IRAnalysisDTO analysis);
 
     @GET
@@ -81,13 +88,11 @@ public interface IRAnalysisResource {
     @GET
     @Path("/{id}/info")
     @Produces(MediaType.APPLICATION_JSON)
-    @Transactional(readOnly = true)
     List<AnalysisInfoDTO> getAnalysisInfo(@PathParam("id") final int id);
 
     @GET
     @Path("/{id}/info/{sourceKey}")
     @Produces(MediaType.APPLICATION_JSON)
-    @Transactional(readOnly = true)
     AnalysisInfoDTO getAnalysisInfo(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey);
 
     /**
@@ -98,7 +103,6 @@ public interface IRAnalysisResource {
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/info/{sourceKey}")
-    @Transactional
     void deleteInfo(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey);
 
     /**
@@ -109,7 +113,6 @@ public interface IRAnalysisResource {
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}")
-    @Transactional
     void delete(@PathParam("id") final int id);
 
     /**
@@ -121,7 +124,6 @@ public interface IRAnalysisResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/export")
-    @Transactional
     Response export(@PathParam("id") final int id);
 
     /**
@@ -133,14 +135,12 @@ public interface IRAnalysisResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/copy")
-    @Transactional
     IRAnalysisDTO copy(@PathParam("id") final int id);
 
     @GET
     @Path("/{id}/report/{sourceKey}")
     @Produces(MediaType.APPLICATION_JSON)
-    @Transactional
-    AnalysisReport getAnalysisReport(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, 
+    AnalysisReport getAnalysisReport(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey,
                                      @QueryParam("targetId") final int targetId, @QueryParam("outcomeId") final int outcomeId );
 
     @Path("/sql")

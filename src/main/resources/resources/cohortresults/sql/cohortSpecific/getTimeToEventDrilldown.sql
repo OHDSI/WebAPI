@@ -20,16 +20,16 @@ WITH denominator AS (
 
 			SELECT exposure_cohort_definition_id, 
 				outcome_cohort_definition_id,
-				cast(stratum_2 AS INTEGER) as stratum_1, sum(count_value) as count_value
+				CAST(CASE WHEN isNumeric(stratum_2) = 1 THEN stratum_2 ELSE null END AS INT) as stratum_1, sum(count_value) as count_value
 			FROM @ohdsi_database_schema.penelope_results
 			WHERE exposure_cohort_definition_id = @exposure_cohort_definition_id
 			AND outcome_cohort_definition_id = @outcome_cohort_definition_id
 			AND analysis_id = 1805
 			GROUP BY exposure_cohort_definition_id, 
 				outcome_cohort_definition_id,
-				cast(stratum_2 AS INTEGER)
+				CAST(CASE WHEN isNumeric(stratum_2) = 1 THEN stratum_2 ELSE null END AS INT)
 		) t0
-		WHERE CAST(stratum_1 AS INTEGER)<= 10 OR count_value > 0
+		WHERE CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT)<= 10 OR count_value > 0
 		GROUP BY exposure_cohort_definition_id, outcome_cohort_definition_id, stratum_1 
 	) t1
 
@@ -57,16 +57,16 @@ WITH denominator AS (
 
 			SELECT exposure_cohort_definition_id, 
 				outcome_cohort_definition_id,
-				cast(stratum_2 AS INTEGER) as stratum_1, sum(count_value) as count_value
+				CAST(CASE WHEN isNumeric(stratum_2) = 1 THEN stratum_2 ELSE null END AS INT) as stratum_1, sum(count_value) as count_value
 			FROM @ohdsi_database_schema.penelope_results
 			WHERE exposure_cohort_definition_id = @exposure_cohort_definition_id
 			AND outcome_cohort_definition_id = @outcome_cohort_definition_id
 			AND analysis_id = 1806
 			GROUP BY exposure_cohort_definition_id, 
 				outcome_cohort_definition_id,
-				cast(stratum_2 AS INTEGER)
+				CAST(CASE WHEN isNumeric(stratum_2) = 1 THEN stratum_2 ELSE null END AS INT)
 		) t0
-		WHERE CAST(stratum_1 AS INTEGER)<= 10 OR count_value > 0
+		WHERE CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT)<= 10 OR count_value > 0
 		GROUP BY exposure_cohort_definition_id, outcome_cohort_definition_id, stratum_1 
 	) t1
 	INNER JOIN
@@ -88,7 +88,7 @@ numerator_first as
 (
 	SELECT exposure_cohort_definition_id, 
 		outcome_cohort_definition_id,
-		CAST(stratum_1 AS INTEGER)*30 AS duration, 
+		CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT)*30 AS duration,
 		count_value
 	FROM @ohdsi_database_schema.penelope_results
 	WHERE exposure_cohort_definition_id = @exposure_cohort_definition_id
@@ -99,7 +99,7 @@ numerator_all as
 (
 	SELECT exposure_cohort_definition_id, 
 		outcome_cohort_definition_id,
-		CAST(stratum_1 AS INTEGER)*30 AS duration, 
+		CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT)*30 AS duration,
 		count_value
 	FROM @ohdsi_database_schema.penelope_results
 	WHERE exposure_cohort_definition_id = @exposure_cohort_definition_id

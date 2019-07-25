@@ -8,6 +8,7 @@ import org.ohdsi.webapi.shiro.management.DataSourceAccessBeanPostProcessor;
 import org.ohdsi.webapi.shiro.management.DisabledSecurity;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.shiro.management.datasource.DataSourceAccessParameterResolver;
+import org.ohdsi.webapi.shiro.subject.WebDelegatingRunAsSubjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -35,6 +36,8 @@ public class ShiroConfiguration {
   private long initialDuration;
   @Value("${security.duration.increment}")
   private long increment;
+  @Value("${spring.aop.proxy-target-class:false}")
+  private Boolean proxyTargetClass;
   @Autowired
   protected ApplicationEventPublisher eventPublisher;
 
@@ -56,6 +59,7 @@ public class ShiroConfiguration {
     final DefaultWebSecurityManager securityManager = new LockoutWebSecurityManager(lockoutPolicy);
 
     securityManager.setAuthenticator(security.getAuthenticator());
+    securityManager.setSubjectFactory(new WebDelegatingRunAsSubjectFactory());
 
     Set<Realm> realms = security.getRealms();
     if (realms != null && !realms.isEmpty())
@@ -89,7 +93,7 @@ public class ShiroConfiguration {
   @ConditionalOnMissingBean(value = DisabledSecurity.class)
   public DataSourceAccessBeanPostProcessor dataSourceAccessBeanPostProcessor(DataSourceAccessParameterResolver parameterResolver) {
 
-    return new DataSourceAccessBeanPostProcessor(parameterResolver);
+    return new DataSourceAccessBeanPostProcessor(parameterResolver, proxyTargetClass);
   }
 
 }

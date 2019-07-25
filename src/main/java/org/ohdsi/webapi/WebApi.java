@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.web.ErrorMvcAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import javax.annotation.PostConstruct;
@@ -19,6 +20,7 @@ import java.util.TimeZone;
  */
 @EnableScheduling
 @SpringBootApplication(exclude={HibernateJpaAutoConfiguration.class, ErrorMvcAutoConfiguration.class})
+@EnableAspectJAutoProxy(proxyTargetClass = true)
 public class WebApi extends SpringBootServletInitializer {
 
 

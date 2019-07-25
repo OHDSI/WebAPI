@@ -42,6 +42,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Path("/pathway-analysis")
@@ -91,7 +92,7 @@ public class PathwayController {
     @Consumes(MediaType.APPLICATION_JSON)
     public PathwayAnalysisDTO importAnalysis(final PathwayAnalysisExportDTO dto) {
 
-        dto.setName(pathwayService.getNameForCopy(dto.getName()));
+        dto.setName(pathwayService.getNameWithSuffix(dto.getName()));
         PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
         PathwayAnalysisEntity imported = pathwayService.importAnalysis(pathwayAnalysis);
         return conversionService.convert(imported, PathwayAnalysisDTO.class);
@@ -258,6 +259,10 @@ public class PathwayController {
         List<TargetCohortPathwaysDTO> pathwayDtos = resultingPathways.getCohortPathwaysList()
                 .stream()
                 .map(cohortResults -> {
+                    if (cohortResults.getPathwaysCounts() == null) {
+                        return null;
+                    }
+
                     List<PathwayPopulationEventDTO> eventDTOs = cohortResults.getPathwaysCounts()
                             .entrySet()
                             .stream()
@@ -265,6 +270,7 @@ public class PathwayController {
                             .collect(Collectors.toList());
                     return new TargetCohortPathwaysDTO(cohortResults.getCohortId(), cohortResults.getTargetCohortCount(), cohortResults.getTotalPathwaysCount(), eventDTOs);
                 })
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
         return new PathwayPopulationResultsDTO(eventCodeDtos, pathwayDtos);

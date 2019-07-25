@@ -34,21 +34,25 @@ import java.io.StringWriter;
 
 @Provider
 public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
+    
+    private final String DETAIL = "Detail: ";
 
     @Override
     public Response toResponse(Throwable ex) {
-        ErrorMessage errorMessage = new ErrorMessage(ex);
         StringWriter errorStackTrace = new StringWriter();
         ex.printStackTrace(new PrintWriter(errorStackTrace));
         Status responseStatus;
         if(ex instanceof DataIntegrityViolationException) {
             responseStatus = Status.CONFLICT;
+            String cause = ex.getCause().getCause().getMessage();
+            cause = cause.substring(cause.indexOf(DETAIL) + DETAIL.length());
+            ex = new RuntimeException(cause);
         } else if (ex instanceof NotFoundException) {
             responseStatus = Status.NOT_FOUND;
         } else {
             responseStatus = Status.INTERNAL_SERVER_ERROR;
         }
-
+        ErrorMessage errorMessage = new ErrorMessage(ex);
         return Response.status(responseStatus)
                 .entity(errorMessage)
                 .type(MediaType.APPLICATION_JSON)

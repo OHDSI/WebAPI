@@ -55,7 +55,7 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
         } else {
             responseStatus = Status.INTERNAL_SERVER_ERROR;
             // Create new message to prevent sending error information to client
-            ex = new RuntimeException("Oooops!.. Something went wrong :(");
+            ex = new RuntimeException("An exception ocurred: " + ex.getClass().getName());
         }
         // Clean stacktrace, but keep message
         ex.setStackTrace(new StackTraceElement[0]);

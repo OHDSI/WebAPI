@@ -29,7 +29,7 @@ public class ExceptionHandlerFilter implements Filter {
         } catch (Exception e) {
             LOGGER.error("Error during filtering", e);
             // Throw new exception without information of original exception;
-            throw new RuntimeException("Oooops!.. Something went wrong :(");
+            throw new RuntimeException("An exception ocurred: " + e.getClass().getName());
         }
     }
 

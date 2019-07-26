@@ -26,10 +26,14 @@ public class ExceptionHandlerFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         try {
             chain.doFilter(request, response);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             LOGGER.error("Error during filtering", e);
             // Throw new exception without information of original exception;
-            throw new RuntimeException("An exception ocurred: " + e.getClass().getName());
+            RuntimeException ex = new RuntimeException("An exception ocurred: " + e.getClass().getName());
+            // Clean stacktrace, but keep message
+            ex.setStackTrace(new StackTraceElement[0]);
+            // Throw new exception without information of original exception;
+            throw ex;
         }
     }
 

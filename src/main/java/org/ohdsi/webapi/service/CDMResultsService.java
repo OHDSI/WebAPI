@@ -66,7 +66,7 @@ public class CDMResultsService extends AbstractDaoService {
     @PostConstruct
     public void init() {
         queryRunner = new CDMResultsAnalysisRunner(this.getSourceDialect(), objectMapper);
-        warmCaches();
+//        warmCaches();
     }
 
     public void warmCaches(){

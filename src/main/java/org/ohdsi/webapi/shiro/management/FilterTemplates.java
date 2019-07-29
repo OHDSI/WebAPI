@@ -30,11 +30,6 @@ public enum FilterTemplates {
     COPY_PREDICTION("createPermissionsOnCopyPrediction", PREDICTION, GET),
     COPY_ESTIMATION("createPermissionsOnCopyEstimation", ESTIMATION, GET),
     
-    //old PLE & PLP
-    CREATE_PLE("createPermissionsOnCreatePle", ESTIMATION, POST),
-    CREATE_PLP("createPermissionsOnCreatePlp", PATIENT_LEVEL_PREDICTION, POST),
-    CREATE_COPY_PLP("createPermissionsOnCopyPlp", PATIENT_LEVEL_PREDICTION, GET),
-    
     DELETE_COHORT_CHARACTERIZATION("deletePermissionsOnDeleteCohortCharacterization", COHORT_CHARACTERIZATION),
     DELETE_PATHWAY_ANALYSIS("deletePermissionsOnDeletePathwayAnalysis", PATHWAY_ANALYSIS),
     DELETE_FEATURE_ANALYSIS("deletePermissionsOnDeleteFeatureAnalysis", FEATURE_ANALYSIS),

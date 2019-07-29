@@ -13,6 +13,7 @@ import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
 import org.apache.shiro.realm.ldap.JndiLdapRealm;
 import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
 import org.ohdsi.webapi.Constants;
+import org.ohdsi.webapi.security.entity.EntityPermissionSchemaResolver;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.filters.*;
 import org.ohdsi.webapi.shiro.mapper.ADUserMapper;
@@ -165,7 +166,12 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     
     @Value("${security.cas.casticket}")
     private String casticket;
-    
+
+    public AtlasRegularSecurity(EntityPermissionSchemaResolver permissionSchemaResolver) {
+
+        super(permissionSchemaResolver);
+    }
+
     @Override
     public Map<FilterTemplates, Filter> getFilters() {
 

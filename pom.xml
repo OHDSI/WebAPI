@@ -161,7 +161,7 @@
     <jdbc.suppressInvalidApiException>true</jdbc.suppressInvalidApiException>
 
     <!-- Logging -->
-    <spring.jpa.show-sql>false</spring.jpa.show-sql>
+    <spring.jpa.show-sql>true</spring.jpa.show-sql>
     <logging.level.root>info</logging.level.root>
     <logging.level.org.ohdsi>info</logging.level.org.ohdsi>
     <logging.level.org.springframework.orm>info</logging.level.org.springframework.orm>

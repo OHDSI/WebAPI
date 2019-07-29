@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.security.entity;
+package org.ohdsi.webapi.security.model;
 
 import org.springframework.stereotype.Component;
 

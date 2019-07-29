@@ -2,7 +2,7 @@ package org.ohdsi.webapi.security;
 
 import org.ohdsi.webapi.security.dto.AccessRequestDTO;
 import org.ohdsi.webapi.security.dto.RoleDTO;
-import org.ohdsi.webapi.security.entity.EntityType;
+import org.ohdsi.webapi.security.model.EntityType;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.springframework.stereotype.Controller;

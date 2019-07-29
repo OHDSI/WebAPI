@@ -2,7 +2,7 @@ package org.ohdsi.webapi.shiro.management;
 
 import org.apache.shiro.realm.Realm;
 import org.ohdsi.webapi.Constants;
-import org.ohdsi.webapi.security.entity.EntityPermissionSchemaResolver;
+import org.ohdsi.webapi.security.model.EntityPermissionSchemaResolver;
 import org.ohdsi.webapi.shiro.filters.GoogleIapJwtAuthFilter;
 import org.ohdsi.webapi.shiro.realms.JwtAuthRealm;
 import org.springframework.beans.factory.annotation.Value;

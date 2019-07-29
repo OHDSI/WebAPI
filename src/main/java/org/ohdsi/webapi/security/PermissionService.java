@@ -2,9 +2,9 @@ package org.ohdsi.webapi.security;
 
 import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.webapi.model.CommonEntity;
-import org.ohdsi.webapi.security.entity.EntityPermissionSchema;
-import org.ohdsi.webapi.security.entity.EntityPermissionSchemaResolver;
-import org.ohdsi.webapi.security.entity.EntityType;
+import org.ohdsi.webapi.security.model.EntityPermissionSchema;
+import org.ohdsi.webapi.security.model.EntityPermissionSchemaResolver;
+import org.ohdsi.webapi.security.model.EntityType;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.PermissionRepository;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
@@ -23,8 +23,6 @@ import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class PermissionService {

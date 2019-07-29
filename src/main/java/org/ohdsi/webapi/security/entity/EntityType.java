@@ -18,7 +18,7 @@ public enum EntityType {
     PATHWAY_ANALYSIS(PathwayAnalysisEntity.class),
     FE_ANALYSIS(FeAnalysisEntity.class),
     INCIDENCE_RATE(IncidenceRateAnalysis.class),
-//    SOURCE(Source.class),
+    SOURCE(Source.class),
     ESTIMATION(Estimation.class),
     PREDICTION(PredictionAnalysis.class);
 

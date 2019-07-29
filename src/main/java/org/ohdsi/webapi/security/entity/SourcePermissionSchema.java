@@ -61,6 +61,6 @@ public class SourcePermissionSchema extends EntityPermissionSchema {
 
     public SourcePermissionSchema() {
 
-        super(EntityType.COHORT_DEFINITION, readPermissions, writePermissions);
+        super(EntityType.SOURCE, readPermissions, writePermissions);
     }
 }

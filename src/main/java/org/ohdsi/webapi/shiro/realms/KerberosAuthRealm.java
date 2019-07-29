@@ -47,6 +47,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+// For instructions see README.MD in this package
 public class KerberosAuthRealm extends AuthenticatingRealm {
 
     private String serviceProviderName;

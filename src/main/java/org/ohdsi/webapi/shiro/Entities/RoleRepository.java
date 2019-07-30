@@ -17,6 +17,8 @@ public interface RoleRepository extends CrudRepository<RoleEntity, Long> {
 
   RoleEntity findByNameAndSystemRole(String name, Boolean isSystem);
 
+  List<RoleEntity> findByNameIgnoreCaseContaining(String roleSearch);
+
   Iterable<RoleEntity> findAllBySystemRoleTrue();
 
   @Query("SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END FROM RoleEntity r WHERE r.name = ?1")

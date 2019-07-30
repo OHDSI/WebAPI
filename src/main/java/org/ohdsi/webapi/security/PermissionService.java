@@ -59,6 +59,11 @@ public class PermissionService {
         this.repositories = new Repositories(appContext);
     }
 
+    public List<RoleEntity> suggestRoles(String roleSearch) {
+
+        return roleRepository.findByNameIgnoreCaseContaining(roleSearch);
+    }
+
     public Map<String, String> getTemplatesForType(EntityType entityType, AccessType accessType) {
 
         EntityPermissionSchema entityPermissionSchema = entityPermissionSchemaResolver.getForType(entityType);
@@ -94,14 +99,14 @@ public class PermissionService {
 
         RoleEntity role = roleRepository.findById(roleId);
         permissionTemplates.keySet()
-            .forEach(pt -> {
-                String permission = getPermission(pt, entityId);
-                PermissionEntity permissionEntity = permissionRepository.findByValueIgnoreCase(permission);
-                if (permissionEntity != null) {
-                    RolePermissionEntity rp = rolePermissionRepository.findByRoleAndPermission(role, permissionEntity);
-                    rolePermissionRepository.delete(rp.getId());
-                }
-            });
+                .forEach(pt -> {
+                    String permission = getPermission(pt, entityId);
+                    PermissionEntity permissionEntity = permissionRepository.findByValueIgnoreCase(permission);
+                    if (permissionEntity != null) {
+                        RolePermissionEntity rp = rolePermissionRepository.findByRoleAndPermission(role, permissionEntity);
+                        rolePermissionRepository.delete(rp.getId());
+                    }
+                });
     }
 
     public String getPermission(String template, Object entityId) {

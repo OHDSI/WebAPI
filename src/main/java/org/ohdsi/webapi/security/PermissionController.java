@@ -5,6 +5,7 @@ import org.ohdsi.webapi.security.dto.RoleDTO;
 import org.ohdsi.webapi.security.model.EntityType;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +16,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Map;
@@ -28,11 +30,23 @@ public class PermissionController {
 
     private final PermissionService permissionService;
     private final PermissionManager permissionManager;
+    private final ConversionService conversionService;
 
-    public PermissionController(PermissionService permissionService, PermissionManager permissionManager) {
+    public PermissionController(PermissionService permissionService, PermissionManager permissionManager, ConversionService conversionService) {
 
         this.permissionService = permissionService;
         this.permissionManager = permissionManager;
+        this.conversionService = conversionService;
+    }
+
+    @GET
+    @Path("/access/suggest")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<RoleDTO> listAccessesForEntity(@QueryParam("roleSearch") String roleSearch) {
+
+        List<RoleEntity> roles = permissionService.suggestRoles(roleSearch);
+        return roles.stream().map(re -> conversionService.convert(re, RoleDTO.class)).collect(Collectors.toList());
     }
 
     @GET
@@ -55,7 +69,7 @@ public class PermissionController {
 
         List<RoleEntity> roles = permissionService.finaAllRolesHavingPermissions(permissions);
 
-        return roles.stream().map(r -> new RoleDTO(r.getId(), r.getName())).collect(Collectors.toList());
+        return roles.stream().map(re -> conversionService.convert(re, RoleDTO.class)).collect(Collectors.toList());
     }
 
 

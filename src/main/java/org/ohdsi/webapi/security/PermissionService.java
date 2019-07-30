@@ -14,12 +14,15 @@ import org.ohdsi.webapi.shiro.Entities.RoleRepository;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.springframework.aop.framework.Advised;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.annotation.PostConstruct;
+import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -33,6 +36,7 @@ public class PermissionService {
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
     private final RolePermissionRepository rolePermissionRepository;
+    private final ConversionService conversionService;
 
     private Repositories repositories;
 
@@ -42,7 +46,8 @@ public class PermissionService {
             EntityPermissionSchemaResolver entityPermissionSchemaResolver,
             RoleRepository roleRepository,
             PermissionRepository permissionRepository,
-            RolePermissionRepository rolePermissionRepository
+            RolePermissionRepository rolePermissionRepository,
+            ConversionService conversionService
     ) {
 
         this.appContext = appContext;
@@ -51,6 +56,7 @@ public class PermissionService {
         this.roleRepository = roleRepository;
         this.permissionRepository = permissionRepository;
         this.rolePermissionRepository = rolePermissionRepository;
+        this.conversionService = conversionService;
     }
 
     @PostConstruct
@@ -73,7 +79,12 @@ public class PermissionService {
     public void checkCommonEntityOwnership(EntityType entityType, Integer entityId) throws Exception {
 
         JpaRepository entityRepository = (JpaRepository) (((Advised) repositories.getRepositoryFor(entityType.getEntityClass())).getTargetSource().getTarget());
-        CommonEntity entity = (CommonEntity) entityRepository.getOne(entityId);
+        Class idClazz = Arrays.stream(entityType.getEntityClass().getMethods())
+            .filter(m -> m.getName().equals("getId"))
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("Cannot retrieve common entity"))
+            .getReturnType();
+        CommonEntity entity = (CommonEntity) entityRepository.getOne((Serializable) conversionService.convert(entityId, idClazz));
 
         if (!isCurrentUserOwnerOf(entity)) {
             throw new UnauthorizedException();

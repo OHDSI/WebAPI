@@ -718,6 +718,12 @@
       <groupId>com.odysseusinc</groupId>
       <artifactId>data-source-manager</artifactId>
       <version>${arachne.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.bouncycastle</groupId>
+          <artifactId>bcprov-jdk15</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>

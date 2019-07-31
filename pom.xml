@@ -647,6 +647,12 @@
       <groupId>org.ohdsi</groupId>
       <artifactId>featureExtraction</artifactId>
       <version>2.2.4</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.ohdsi.sql</groupId>
+          <artifactId>SqlRender</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.amazon.redshift</groupId>
@@ -679,11 +685,6 @@
     <dependency>
       <groupId>com.odysseusinc.arachne</groupId>
       <artifactId>arachne-common-utils</artifactId>
-      <version>${arachne.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.odysseusinc.arachne</groupId>
-      <artifactId>data-source-manager</artifactId>
       <version>${arachne.version}</version>
     </dependency>
     <dependency>
@@ -734,6 +735,10 @@
         <exclusion>
           <groupId>org.ohdsi</groupId>
           <artifactId>standardized-analysis-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ohdsi.sql</groupId>
+          <artifactId>SqlRender</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

@@ -241,11 +241,17 @@ public class CcController {
     @Path("/generation/{generationId}/result")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public List<CcResult> getGenerationsResults(
+    public GenerationResults getGenerationsResults(
             @PathParam("generationId") final Long generationId, @DefaultValue("0.01") @QueryParam("thresholdLevel") final float thresholdLevel) {
         List<CcResult> ccResults = service.findResults(generationId, thresholdLevel);
         convertPresetAnalysesToLocal(ccResults);
-        return ccResults;
+
+        GenerationResults res = new GenerationResults();
+        res.setResults(ccResults);
+        res.setPrevalenceThreshold(thresholdLevel);
+        res.setTotalCount(service.getCCResultsTotalCount(generationId));
+
+        return res;
     }
 
     @GET

@@ -168,8 +168,8 @@ INSERT INTO @target_database_schema.pathway_analysis_stats (pathway_analysis_gen
 SELECT
   @generation_id as pathway_analysis_generation_id,
   CAST(@pathway_target_cohort_id AS INT) AS target_cohort_id,
-  CAST(target_count.cnt AS INT) AS target_cohort_count,
-  CAST(pathway_count.cnt AS INT) AS pathways_count
+  CAST(target_count.cnt AS BIGINT) AS target_cohort_count,
+  CAST(pathway_count.cnt AS BIGINT) AS pathways_count
 FROM (
   SELECT CAST(COUNT_BIG(*) as BIGINT) cnt
   FROM @target_cohort_table

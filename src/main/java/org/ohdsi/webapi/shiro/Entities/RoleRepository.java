@@ -30,7 +30,7 @@ public interface RoleRepository extends CrudRepository<RoleEntity, Long> {
     "JOIN RolePermissionEntity rp ON r.id = rp.role.id " +
     "JOIN PermissionEntity p ON rp.permission.id = p.id " +
     "WHERE p.value IN :permissions " +
-    "GROUP BY r.id, r.name " +
+    "GROUP BY r.id, r.name, r.systemRole " +
     "HAVING COUNT(p.value) = :permissionCnt"
   )
   List<RoleEntity> finaAllRolesHavingPermissions(@Param("permissions") List<String> permissions, @Param("permissionCnt") Long permissionCnt);

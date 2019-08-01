@@ -34,6 +34,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,6 +44,7 @@ import static org.ohdsi.webapi.Constants.Params.*;
 
 public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
+    private static final String REGEX_ESCAPED_QUOTES = "('([^'']|'')*')";
     private final CcService ccService;
     private final SourceService sourceService;
     private final UserRepository userRepository;
@@ -107,13 +110,33 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
         return SqlSplit.splitSql(translatedSql);
     }
 
-    private String replaceEscapedQuoteWithConcat(String val) {
+    private String replaceWithConcat(String val) {
 
-        Matcher matcher = Pattern.compile("('([^'']|'')*')").matcher(val);
+        List<String> tokens = splitAndKeep(val, REGEX_ESCAPED_QUOTES); // single quoted string with escaped single quotes
+        tokens.stream().map(t -> {
+            if (t.matches(REGEX_ESCAPED_QUOTES)) {
+                StringBuilder sb = new StringBuilder("CONCAT(");
+                t.split("''");
+            } else {
+                return t;
+            }
+        });
+    }
+
+    private List<String> splitAndKeep(String val, String regex) {
+
+        List<String> result = new ArrayList<>();
+        Matcher matcher = Pattern.compile(regex).matcher(val);
+        int pos = 0;
         while (matcher.find()) {
-
+            result.add(val.substring(pos, matcher.start()));
+            result.add(matcher.group());
+            pos = matcher.end() + 1;
         }
-        return val;
+        if (pos < val.length()) {
+            result.add(val.substring(pos));
+        }
+        return result;
     }
 
 }

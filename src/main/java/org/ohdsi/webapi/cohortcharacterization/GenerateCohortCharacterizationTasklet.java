@@ -35,6 +35,8 @@ import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.ohdsi.webapi.Constants.Params.*;
 
@@ -103,6 +105,15 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
         }
         final String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), sessionId, tempSchema);
         return SqlSplit.splitSql(translatedSql);
+    }
+
+    private String replaceEscapedQuoteWithConcat(String val) {
+
+        Matcher matcher = Pattern.compile("('([^'']|'')*')").matcher(val);
+        while (matcher.find()) {
+
+        }
+        return val;
     }
 
 }

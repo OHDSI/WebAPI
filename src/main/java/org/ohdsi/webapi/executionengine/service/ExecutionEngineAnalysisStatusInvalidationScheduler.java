@@ -18,9 +18,7 @@ import org.springframework.stereotype.Service;
         "!T(org.springframework.util.StringUtils).isEmpty('${execution.invalidation.maxage:}') && " +
         "!T(org.springframework.util.StringUtils).isEmpty('${execution.invalidation.period:}')")
 @Service
-@Transactional
 public class ExecutionEngineAnalysisStatusInvalidationScheduler {
-    private static final Logger logger = LoggerFactory.getLogger(ExecutionEngineAnalysisStatusInvalidationScheduler.class);
 
     @Value("${execution.invalidation.maxage}")
     private int invalidateHours;

@@ -47,7 +47,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -65,8 +64,6 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
     private static final String ARACHNE_WAITING_COMPRESSED_RESULT_HEADER = "arachne-waiting-compressed-result";
     private static final String TEMPDIR_PREFIX = "webapi-exec";
 
-    private List<ExecutionEngineAnalysisStatus.Status> INVALIDATE_STATUSES = new ArrayList<>();
-
     @Autowired
     private HttpClient client;
 
@@ -81,7 +78,15 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
     @Value("${executionengine.resultExclusions}")
     private String resultExclusions;
 
-    private List<ExecutionEngineAnalysisStatus.Status> FINAL_STATUES = ImmutableList.of(ExecutionEngineAnalysisStatus.Status.COMPLETED, ExecutionEngineAnalysisStatus.Status.COMPLETED);
+    private static List<ExecutionEngineAnalysisStatus.Status> INVALIDATE_STATUSES = ImmutableList.of(
+            ExecutionEngineAnalysisStatus.Status.RUNNING,
+            ExecutionEngineAnalysisStatus.Status.STARTED,
+            ExecutionEngineAnalysisStatus.Status.PENDING
+    );
+
+    private static List<ExecutionEngineAnalysisStatus.Status> FINAL_STATUES = ImmutableList.of(
+            ExecutionEngineAnalysisStatus.Status.COMPLETED,
+            ExecutionEngineAnalysisStatus.Status.COMPLETED);
 
     @Autowired
     private SourceService sourceService;
@@ -102,9 +107,6 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
     ScriptExecutionServiceImpl() throws KeyManagementException, NoSuchAlgorithmException {
 
         HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
-        INVALIDATE_STATUSES.add(ExecutionEngineAnalysisStatus.Status.RUNNING);
-        INVALIDATE_STATUSES.add(ExecutionEngineAnalysisStatus.Status.STARTED);
-        INVALIDATE_STATUSES.add(ExecutionEngineAnalysisStatus.Status.PENDING);
     }
 
     @Override
@@ -244,16 +246,21 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
         }
     }
 
-    @PostConstruct
-    public void invalidateOutdatedAnalyses() {
-
+    @Override
+    public void invalidateExecutions(Date invalidateDate) {
         getTransactionTemplateRequiresNew().execute(status -> {
             logger.info("Invalidating execution engine based analyses");
-            List<ExecutionEngineAnalysisStatus> outdateExecutions = analysisExecutionRepository.findByExecutionStatusIn(INVALIDATE_STATUSES);
-            outdateExecutions.forEach(ee -> ee.setExecutionStatus(ExecutionEngineAnalysisStatus.Status.FAILED));
-            analysisExecutionRepository.save(outdateExecutions);
+            List<ExecutionEngineAnalysisStatus> executions = analysisExecutionRepository.findAllInvalidAnalysis(invalidateDate, ScriptExecutionServiceImpl.INVALIDATE_STATUSES);
+
+            executions.forEach(exec -> exec.setExecutionStatus(ExecutionEngineAnalysisStatus.Status.FAILED));
+            analysisExecutionRepository.save(executions);
             return null;
         });
+    }
+
+    @PostConstruct
+    public void invalidateOutdatedAnalyses() {
+        invalidateExecutions(new Date());
     }
 
     @Override

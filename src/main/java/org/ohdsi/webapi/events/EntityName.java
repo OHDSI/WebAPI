@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.events;
 
+// NOTE: overlaps with EntityType, will be refactored in upcoming PR
 public enum EntityName {
     COHORT_CHARACTERIZATION("cohort characterization"),
     FEATURE_ANALYSIS("feature analysis"),

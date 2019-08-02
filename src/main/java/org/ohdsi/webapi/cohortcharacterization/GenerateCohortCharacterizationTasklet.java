@@ -17,6 +17,7 @@ package org.ohdsi.webapi.cohortcharacterization;
 
 import com.google.common.collect.ImmutableList;
 import com.odysseusinc.arachne.commons.types.DBMSType;
+import com.odysseusinc.arachne.commons.utils.QuoteUtils;
 import org.ohdsi.cohortcharacterization.CCQueryBuilder;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
@@ -34,17 +35,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.Params.*;
 
 public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
 
-    private static final String REGEX_ESCAPED_QUOTES = "('([^'']|'')*')";
     private final CcService ccService;
     private final SourceService sourceService;
     private final UserRepository userRepository;
@@ -84,6 +82,19 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
         String sql = ccQueryBuilder.build();
 
         /*
+         * Impala and BigQuery doesn't support single quote literal escaping as doubled single quotes
+         * Workaround is to split string containing escaped quotes into several parts, escape quotes with '\''
+         * and collect back with CONCAT function.
+         */
+        if (DBMSType.IMPALA.getOhdsiDB().equals(source.getSourceDialect())) {
+            sql = QuoteUtils.replaceWithConcat(sql);
+        }
+
+        if (DBMSType.BIGQUERY.getOhdsiDB().equals(source.getSourceDialect())) {
+            sql = QuoteUtils.escapeSingleQuotes(sql);
+        }
+
+        /*
          * There is an issue with temp tables on sql server: Temp tables scope is session or stored procedure.
          * To execute PreparedStatement sql server uses stored procedure <i>sp_executesql</i>
          * and this is the reason why multiple PreparedStatements cannot share the same local temporary table.
@@ -109,34 +120,4 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
         final String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), sessionId, tempSchema);
         return SqlSplit.splitSql(translatedSql);
     }
-
-    private String replaceWithConcat(String val) {
-
-        List<String> tokens = splitAndKeep(val, REGEX_ESCAPED_QUOTES); // single quoted string with escaped single quotes
-        tokens.stream().map(t -> {
-            if (t.matches(REGEX_ESCAPED_QUOTES)) {
-                StringBuilder sb = new StringBuilder("CONCAT(");
-                t.split("''");
-            } else {
-                return t;
-            }
-        });
-    }
-
-    private List<String> splitAndKeep(String val, String regex) {
-
-        List<String> result = new ArrayList<>();
-        Matcher matcher = Pattern.compile(regex).matcher(val);
-        int pos = 0;
-        while (matcher.find()) {
-            result.add(val.substring(pos, matcher.start()));
-            result.add(matcher.group());
-            pos = matcher.end() + 1;
-        }
-        if (pos < val.length()) {
-            result.add(val.substring(pos));
-        }
-        return result;
-    }
-
 }

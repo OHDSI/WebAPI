@@ -61,16 +61,18 @@ FROM   (SELECT cohort_definition_id,
                           AND hr1.cohort_definition_id IN 
                               ( @cohortDefinitionId )) t1 
                ON hr1.cohort_definition_id = t1.cohort_definition_id 
-                  AND hr1.duration = t1.duration 
-       INNER JOIN (SELECT cohort_definition_id, 
-                          CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT) AS concept_id,
-                          Sum(count_value)           AS count_value 
-                   FROM   @ohdsi_database_schema.heracles_results 
-                   WHERE  analysis_id IN ( 1830 ) 
-                          AND cohort_definition_id = @cohortDefinitionId 
-                   GROUP  BY cohort_definition_id, 
-                             CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT)
-                   HAVING Sum(heracles_results.count_value) > @minCovariatePersonCount) ct1
+                  AND hr1.duration = t1.duration
+          INNER JOIN (SELECT iq1.cohort_definition_id, iq1.concept_id, Sum(iq1.count_value)
+                   FROM   (
+                     SELECT cohort_definition_id,
+                            CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT) AS concept_id,
+                            count_value
+                     FROM   @ohdsi_database_schema.heracles_results
+                     WHERE  analysis_id IN ( 1830 )
+                            AND cohort_definition_id = @cohortDefinitionId
+                   ) iq1
+                   GROUP  BY iq1.cohort_definition_id, iq1.concept_id
+                   HAVING Sum(iq1.count_value) > @minCovariatePersonCount) ct1
                ON hr1.cohort_definition_id = ct1.cohort_definition_id 
                   AND hr1.concept_id = ct1.concept_id 
        INNER JOIN @cdm_database_schema.concept c1 
@@ -132,16 +134,18 @@ FROM   (SELECT cohort_definition_id,
                           AND hr1.cohort_definition_id IN 
                               ( @cohortDefinitionId )) t1 
                ON hr1.cohort_definition_id = t1.cohort_definition_id 
-                  AND hr1.duration = t1.duration 
-       INNER JOIN (SELECT cohort_definition_id, 
-                          CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT) AS concept_id,
-                          Sum(count_value)           AS count_value 
-                   FROM   @ohdsi_database_schema.heracles_results 
-                   WHERE  analysis_id IN ( 1831 ) 
-                          AND cohort_definition_id = @cohortDefinitionId 
-                   GROUP  BY cohort_definition_id, 
-                            CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT)
-                   HAVING Sum(heracles_results.count_value) > @minCovariatePersonCount) ct1
+                  AND hr1.duration = t1.duration
+          INNER JOIN (SELECT iq2.cohort_definition_id, iq2.concept_id, Sum(iq2.count_value)
+                   FROM   (
+                     SELECT cohort_definition_id,
+                            CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT) AS concept_id,
+                            count_value
+                     FROM   @ohdsi_database_schema.heracles_results
+                     WHERE  analysis_id IN ( 1831 )
+                            AND cohort_definition_id = @cohortDefinitionId
+                   ) iq2
+                   GROUP  BY iq2.cohort_definition_id, iq2.concept_id
+                   HAVING Sum(iq2.count_value) > @minCovariatePersonCount) ct1
                ON hr1.cohort_definition_id = ct1.cohort_definition_id 
                   AND hr1.concept_id = ct1.concept_id 
        INNER JOIN @cdm_database_schema.concept c1 

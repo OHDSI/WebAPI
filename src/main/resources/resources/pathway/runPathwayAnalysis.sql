@@ -64,7 +64,7 @@ SELECT
   /*
   The collapsed dates (or the raw event cohort dates) may have intervals where start == end, so these should be expanded to cover a minimum of 1 day
   */
-    when e.cohort_start_date = e.cohort_end_date then dateadd(d,1,e.cohort_end_date)
+    when e.cohort_start_date = e.cohort_end_date then CAST(dateadd(d,1,e.cohort_end_date) AS DATETIME) /* cast is required for BigQuery */
     else e.cohort_end_date
   end cohort_end_date
 FROM
@@ -143,7 +143,7 @@ FROM (
       THEN 1
       ELSE 0
     END repetitive_event, 
-		case when ROW_NUMBER() OVER (PARTITION BY subject_id, combo_id ORDER BY cohort_start_date) > 1 then 1 else 0 end is_repeat
+		case when ROW_NUMBER() OVER (PARTITION BY subject_id, CAST(combo_id AS INT) ORDER BY cohort_start_date) > 1 then 1 else 0 end is_repeat
   FROM #combo_events
 ) AS marked_repetitive_events
 WHERE repetitive_event = 0 {@allow_repeats == 'false'}?{ AND is_repeat = 0 };

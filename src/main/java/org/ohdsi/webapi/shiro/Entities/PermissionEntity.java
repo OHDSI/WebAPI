@@ -23,11 +23,6 @@ import org.hibernate.annotations.Parameter;
 public class PermissionEntity implements Serializable {
 
   private static final long serialVersionUID = 1810877985769153135L;
-  private Long id;
-  private String value;
-  private String description;
-  private Set<RolePermissionEntity> rolePermissions = new LinkedHashSet<>();
-
 
   @Id
   @Column(name = "ID")
@@ -41,6 +36,17 @@ public class PermissionEntity implements Serializable {
       }
   )
   @GeneratedValue(generator = "sec_permission_generator")
+  private Long id;
+
+  @Column(name = "VALUE")
+  private String value;
+
+  @Column(name = "DESCRIPTION")
+  private String description;
+
+  @OneToMany(mappedBy = "permission", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+  private Set<RolePermissionEntity> rolePermissions = new LinkedHashSet<>();
+
   public Long getId() {
     return id;
   }
@@ -49,7 +55,6 @@ public class PermissionEntity implements Serializable {
     this.id = id;
   }
 
-  @Column(name = "VALUE")
   public String getValue() {
     return value;
   }
@@ -58,7 +63,6 @@ public class PermissionEntity implements Serializable {
     this.value = value;
   }
 
-  @Column(name = "DESCRIPTION")
   public String getDescription() {
     return this.description;
   }
@@ -67,7 +71,6 @@ public class PermissionEntity implements Serializable {
     this.description = description;
   }
 
-  @OneToMany(mappedBy = "permission", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   public Set<RolePermissionEntity> getRolePermissions() {
     return rolePermissions;
   }

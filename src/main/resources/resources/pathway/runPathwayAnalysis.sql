@@ -56,21 +56,29 @@ WHERE cohort_date <> replacement_date;
 */
 
 SELECT
-  event.id,
-  event.event_cohort_index,
-  event.subject_id,
-  COALESCE(start_dr.replacement_date, event.cohort_start_date) cohort_start_date,
-  COALESCE(end_dr.replacement_date, event.cohort_end_date) cohort_end_date
-INTO #collapsed_dates_events
+  e.id,
+  e.event_cohort_index,
+  e.subject_id,
+  e.cohort_start_date,
+  case
+  /*
+  The collapsed dates (or the raw event cohort dates) may have intervals where start == end, so these should be expanded to cover a minimum of 1 day
+  */
+    when e.cohort_start_date = e.cohort_end_date then CAST(dateadd(d,1,e.cohort_end_date) AS DATETIME) /* cast is required for BigQuery */
+    else e.cohort_end_date
+  end cohort_end_date
+FROM
+  (SELECT
+    event.id,
+    event.event_cohort_index,
+    event.subject_id,
+    COALESCE(start_dr.replacement_date, event.cohort_start_date) cohort_start_date,
+    COALESCE(end_dr.replacement_date, event.cohort_end_date) cohort_end_date
 FROM #raw_events event
   LEFT JOIN #date_replacements start_dr ON start_dr.subject_id = event.subject_id AND start_dr.cohort_date = event.cohort_start_date
-  LEFT JOIN #date_replacements end_dr ON end_dr.subject_id = event.subject_id AND end_dr.cohort_date = event.cohort_end_date
+  LEFT JOIN #date_replacements end_dr ON end_dr.subject_id = event.subject_id AND end_dr.cohort_date = event.cohort_end_date) e
+INTO #collapsed_dates_events
 ;
-
-/*
-The collapsed dates (or the raw event cohort dates) may have intervals where start == end, so these should be expanded to cover a minimum of 1 day
-*/
-update #collapsed_dates_events set cohort_end_date = dateadd(d,1,cohort_end_date) where cohort_start_date = cohort_end_date;
 
 /*
 Split partially overlapping events into a set of events which either do not overlap or fully overlap (for later GROUP BY start_date, end_date)
@@ -135,7 +143,7 @@ FROM (
       THEN 1
       ELSE 0
     END repetitive_event, 
-		case when ROW_NUMBER() OVER (PARTITION BY subject_id, combo_id ORDER BY cohort_start_date) > 1 then 1 else 0 end is_repeat
+		case when ROW_NUMBER() OVER (PARTITION BY subject_id, CAST(combo_id AS INT) ORDER BY cohort_start_date) > 1 then 1 else 0 end is_repeat
   FROM #combo_events
 ) AS marked_repetitive_events
 WHERE repetitive_event = 0 {@allow_repeats == 'false'}?{ AND is_repeat = 0 };
@@ -159,9 +167,9 @@ WHERE 1 = 1 {@max_depth != ''}?{ AND ordinal <= @max_depth };
 INSERT INTO @target_database_schema.pathway_analysis_stats (pathway_analysis_generation_id, target_cohort_id, target_cohort_count, pathways_count)
 SELECT
   @generation_id as pathway_analysis_generation_id,
-  @pathway_target_cohort_id as target_cohort_id,
-  target_count.cnt AS target_cohort_count,
-  pathway_count.cnt AS pathways_count
+  CAST(@pathway_target_cohort_id AS INT) AS target_cohort_id,
+  CAST(target_count.cnt AS BIGINT) AS target_cohort_count,
+  CAST(pathway_count.cnt AS BIGINT) AS pathways_count
 FROM (
   SELECT CAST(COUNT_BIG(*) as BIGINT) cnt
   FROM @target_cohort_table

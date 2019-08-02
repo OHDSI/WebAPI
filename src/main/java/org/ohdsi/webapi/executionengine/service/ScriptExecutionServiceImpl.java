@@ -13,6 +13,7 @@ import org.apache.commons.lang3.text.StrSubstitutor;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
+import org.ohdsi.webapi.JobInvalidator;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
@@ -95,6 +96,9 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
 
     @Autowired
     private JobExplorer jobExplorer;
+    @Autowired
+    private JobInvalidator jobInvalidator;
+
     @Autowired
     private AnalysisExecutionRepository analysisExecutionRepository;
 
@@ -252,7 +256,10 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
             logger.info("Invalidating execution engine based analyses");
             List<ExecutionEngineAnalysisStatus> executions = analysisExecutionRepository.findAllInvalidAnalysis(invalidateDate, ScriptExecutionServiceImpl.INVALIDATE_STATUSES);
 
-            executions.forEach(exec -> exec.setExecutionStatus(ExecutionEngineAnalysisStatus.Status.FAILED));
+            executions.forEach(exec -> {
+                exec.setExecutionStatus(ExecutionEngineAnalysisStatus.Status.FAILED);
+                jobInvalidator.invalidateJobExecutionById(exec);
+            });
             analysisExecutionRepository.save(executions);
             return null;
         });

@@ -400,6 +400,7 @@ public class AtlasCustomSecurity extends AtlasSecurity {
                 .addPath("/user/oauth/callback", SSL, HANDLE_UNSUCCESSFUL_OAUTH, OAUTH_CALLBACK)
                 .addPath("/user/cas/callback", SSL, HANDLE_CAS, UPDATE_TOKEN, SEND_TOKEN_IN_URL)
 
+                .addRestPath("/health-status")
                 .addRestPath("/cohortdefinition/uuids")
                 .addProtectedRestPath("/cohortdefinition/hss/select", CREATE_PERMISSIONS_ON_IMPORT_COHORT_DEFINITION)
                 .addProtectedRestPath("/cohortdefinition/", CREATE_COHORT_DEFINITION)

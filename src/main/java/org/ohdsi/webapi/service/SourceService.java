@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.env.Environment;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
@@ -244,6 +245,8 @@ public class SourceService extends AbstractDaoService {
     Source original = new Source();
     original.setSourceDialect(source.getSourceDialect());
     setKeyfileData(source, original, file);
+    source.setCreatedBy(getCurrentUser());
+    source.setCreatedDate(new Date());
     Source saved = sourceRepository.save(source);
     String sourceKey = saved.getSourceKey();
     cachedSources = null;
@@ -280,6 +283,8 @@ public class SourceService extends AbstractDaoService {
       List<SourceDaimon> removed = source.getDaimons().stream().filter(d -> !updated.getDaimons().contains(d))
               .collect(Collectors.toList());
       sourceDaimonRepository.delete(removed);
+      updated.setModifiedBy(getCurrentUser());
+      updated.setModifiedDate(new Date());
       Source result = sourceRepository.save(updated);
         publisher.publishEvent(new ChangeDataSourceEvent(this, updated.getSourceId(), updated.getSourceName()));
       cachedSources = null;
@@ -336,6 +341,7 @@ public class SourceService extends AbstractDaoService {
   @Path("connection/{key}")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
+  @Transactional(noRollbackFor = CannotGetJdbcConnectionException.class)
   public SourceInfo checkConnection(@PathParam("key") final String sourceKey) {
 
     final Source source = sourceRepository.findBySourceKey(sourceKey);

@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.shiro.management;
 
+import static com.odysseusinc.arachne.commons.utils.QuoteUtils.dequote;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.*;
-import static org.ohdsi.webapi.util.QuoteUtils.dequote;
 
 import io.buji.pac4j.filter.CallbackFilter;
 import io.buji.pac4j.filter.SecurityFilter;
@@ -13,6 +13,7 @@ import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
 import org.apache.shiro.realm.ldap.JndiLdapRealm;
 import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
 import org.ohdsi.webapi.Constants;
+import org.ohdsi.webapi.security.model.EntityPermissionSchemaResolver;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.filters.*;
 import org.ohdsi.webapi.shiro.mapper.ADUserMapper;
@@ -52,9 +53,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Set;
-
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.*;
-import static org.ohdsi.webapi.util.QuoteUtils.dequote;
 
 @Component
 @ConditionalOnProperty(name = "security.provider", havingValue = Constants.SecurityProviders.REGULAR)
@@ -166,7 +164,12 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     
     @Value("${security.cas.casticket}")
     private String casticket;
-    
+
+    public AtlasRegularSecurity(EntityPermissionSchemaResolver permissionSchemaResolver) {
+
+        super(permissionSchemaResolver);
+    }
+
     @Override
     public Map<FilterTemplates, Filter> getFilters() {
 

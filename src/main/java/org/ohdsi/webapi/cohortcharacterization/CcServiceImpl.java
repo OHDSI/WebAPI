@@ -26,6 +26,7 @@ import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.AnalysisGenerationInfoEntity;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
 import org.ohdsi.webapi.job.GeneratesNotification;
@@ -71,6 +72,7 @@ import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.GENERATE_COHORT_CHARACTERIZATION;
 import static org.ohdsi.webapi.Constants.Params.*;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
 
 @Service
 @Transactional
@@ -79,8 +81,10 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     private static final String GENERATION_NOT_FOUND_ERROR = "generation cannot be found by id %d";
     private static final String[] PARAMETERS_RESULTS = {"cohort_characterization_generation_id", "threshold_level", "vocabulary_schema"};
+    private static final String[] PARAMETERS_COUNT = {"cohort_characterization_generation_id", "vocabulary_schema"};
     private static final String[] PREVALENCE_STATS_PARAMS = {"cdm_database_schema", "cdm_results_schema", "cc_generation_id", "analysis_id", "cohort_id", "covariate_id"};
     private final String QUERY_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/queryResults.sql");
+    private final String QUERY_COUNT = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/queryCountWithoutThreshold.sql");
     private final String DELETE_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/deleteResults.sql");
     private final String DELETE_EXECUTION = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/deleteExecution.sql");
     private final String QUERY_PREVALENCE_STATS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/queryCovariateStatsVocab.sql");
@@ -329,11 +333,11 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         updateStratas(entity, persistedCohortCharacterization);
 
         importCohorts(entity, persistedCohortCharacterization);
-        importAnalyses(entity, persistedCohortCharacterization);
+        List<Integer> savedAnalysesIds = importAnalyses(entity, persistedCohortCharacterization);
 
         final CohortCharacterizationEntity savedEntity = saveCc(persistedCohortCharacterization);
 
-        eventPublisher.publishEvent(new CcImportEvent(savedEntity));
+        eventPublisher.publishEvent(new CcImportEvent(savedAnalysesIds));
 
         return savedEntity;
     }
@@ -493,6 +497,19 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     }
 
     @Override
+    @DataSourceAccess
+    public Long getCCResultsTotalCount(@CcGenerationId final Long generationId) {
+        final CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
+                .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
+        final Source source = generationEntity.getSource();
+        String countReq = sourceAwareSqlRender.renderSql(source.getSourceId(), QUERY_COUNT, PARAMETERS_COUNT,
+                new String[]{String.valueOf(generationId), SourceUtils.getVocabularyQualifier(source)});
+        final String tempSchema = SourceUtils.getTempQualifier(source);
+        String translatedSql = SqlTranslate.translateSql(countReq, source.getSourceDialect(), SessionUtils.sessionId(), tempSchema);
+        return this.getSourceJdbcTemplate(source).queryForObject(translatedSql, Long.class);
+    }
+
+    @Override
     public List<CcPrevalenceStat> getPrevalenceStatsByGenerationId(Long id, Long analysisId, Long cohortId, Long covariateId) {
         final CcGenerationEntity generationEntity = ccGenerationRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, id)));
@@ -622,29 +639,47 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         stat.setMax(rs.getDouble("max_value"));
     }
 
-    private void importAnalyses(final CohortCharacterizationEntity entity, final CohortCharacterizationEntity persistedEntity) {
+    private List<Integer> importAnalyses(final CohortCharacterizationEntity entity, final CohortCharacterizationEntity persistedEntity) {
+        List<Integer> savedAnalysesIds = new ArrayList<>();
         final Map<String, FeAnalysisEntity> presetAnalysesMap = buildPresetAnalysisMap(entity);
 
-        final Set<FeAnalysisEntity> entityAnalyses = new HashSet<>();
+        final Set<FeAnalysisEntity> analysesSet = new HashSet<>();
 
-        for (final FeAnalysisEntity analysis : entity.getFeatureAnalyses()) {
-            switch (analysis.getType()) {
+        for (final FeAnalysisEntity newAnalysis : entity.getFeatureAnalyses()) {
+            switch (newAnalysis.getType()) {
                 case CRITERIA_SET:
-                    FeAnalysisWithCriteriaEntity criteriaAnalysis = (FeAnalysisWithCriteriaEntity)analysis;
-                    entityAnalyses.add(analysisService.createCriteriaAnalysis(criteriaAnalysis));
+                    FeAnalysisWithCriteriaEntity<? extends FeAnalysisCriteriaEntity> criteriaAnalysis = (FeAnalysisWithCriteriaEntity) newAnalysis;
+                    List<? extends FeAnalysisCriteriaEntity> design = criteriaAnalysis.getDesign();
+                    Optional<FeAnalysisEntity> entityCriteriaSet = analysisService.findByCriteriaList(design);
+                    this.<FeAnalysisWithCriteriaEntity<?>>addAnalysis(savedAnalysesIds, analysesSet, criteriaAnalysis, entityCriteriaSet, a -> analysisService.createCriteriaAnalysis(a));
                     break;
                 case PRESET:
-                    entityAnalyses.add(presetAnalysesMap.get(analysis.getDesign()));
+                    analysesSet.add(presetAnalysesMap.get(newAnalysis.getDesign()));
                     break;
                 case CUSTOM_FE:
-                    entityAnalyses.add(analysisService.createAnalysis(analysis));
+                    FeAnalysisWithStringEntity withStringEntity = (FeAnalysisWithStringEntity) newAnalysis;
+                    Optional<FeAnalysisEntity> curAnalysis = analysisService.findByDesignAndName(withStringEntity, withStringEntity.getName());
+                    this.<FeAnalysisEntity>addAnalysis(savedAnalysesIds, analysesSet, newAnalysis, curAnalysis, a -> analysisService.createAnalysis(a));
                     break;
                 default:
-                    throw new IllegalArgumentException("Analysis with type: " + analysis.getType() + " cannot be imported");
+                    throw new IllegalArgumentException("Analysis with type: " + newAnalysis.getType() + " cannot be imported");
             }
         }
 
-        persistedEntity.setFeatureAnalyses(entityAnalyses);
+        persistedEntity.setFeatureAnalyses(analysesSet);
+        return savedAnalysesIds;
+    }
+
+    private <T extends FeAnalysisEntity<?>> void addAnalysis(List<Integer> savedAnalysesIds, Set<FeAnalysisEntity> entityAnalyses, T newAnalysis,
+            Optional<FeAnalysisEntity> curAnalysis, Function<T, FeAnalysisEntity> func) {
+        if (curAnalysis.isPresent()) {
+            entityAnalyses.add(curAnalysis.get());
+        } else {
+            newAnalysis.setName(NameUtils.getNameWithSuffix(newAnalysis.getName(), this::getFeNamesLike));
+            FeAnalysisEntity created = func.apply(newAnalysis);
+            entityAnalyses.add(created);
+            savedAnalysesIds.add(created.getId());
+        }
     }
 
     private Map<String, FeAnalysisEntity> buildPresetAnalysisMap(final CohortCharacterizationEntity entity) {
@@ -700,6 +735,10 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             });
             return null;
         });
+    }
+    
+    private List<String> getFeNamesLike(String name) {
+        return analysisService.getNamesLike(name);
     }
 
 }

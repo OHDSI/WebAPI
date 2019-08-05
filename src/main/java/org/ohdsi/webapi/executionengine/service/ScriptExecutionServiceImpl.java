@@ -85,9 +85,6 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
             ExecutionEngineAnalysisStatus.Status.PENDING
     );
 
-    private static List<ExecutionEngineAnalysisStatus.Status> FINAL_STATUES = ImmutableList.of(
-            ExecutionEngineAnalysisStatus.Status.COMPLETED,
-            ExecutionEngineAnalysisStatus.Status.COMPLETED);
 
     @Autowired
     private SourceService sourceService;
@@ -239,15 +236,6 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
             status = ExecutionEngineAnalysisStatus.Status.PENDING.name();
         }
         return status;
-    }
-
-    @Override
-    public void updateAnalysisStatus(ExecutionEngineAnalysisStatus analysisExecution, ExecutionEngineAnalysisStatus.Status status) {
-
-        if (FINAL_STATUES.stream().noneMatch(s -> Objects.equals(s, status))) {
-            analysisExecution.setExecutionStatus(status);
-            analysisExecutionRepository.saveAndFlush(analysisExecution);
-        }
     }
 
     @Override

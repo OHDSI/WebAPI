@@ -15,7 +15,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Component
 public class JobInvalidator {
 
-    public static final String INVALIDATED_BY_SYSTEM_EXIT_CODE = "Invalidated by system";
+    public static final String INVALIDATED_BY_SYSTEM_EXIT_MESSAGE = "Invalidated by system";
 
     private final JobExplorer jobExplorer;
     private final JobRepository jobRepository;
@@ -47,7 +47,7 @@ public class JobInvalidator {
 
     private void invalidationJobExecution(JobExecution job) {
         job.setStatus(BatchStatus.FAILED);
-        job.setExitStatus(new ExitStatus(ExitStatus.FAILED.getExitCode(), INVALIDATED_BY_SYSTEM_EXIT_CODE));
+        job.setExitStatus(new ExitStatus(ExitStatus.FAILED.getExitCode(), INVALIDATED_BY_SYSTEM_EXIT_MESSAGE));
         job.setEndTime(Calendar.getInstance().getTime());
         jobRepository.update(job);
     }

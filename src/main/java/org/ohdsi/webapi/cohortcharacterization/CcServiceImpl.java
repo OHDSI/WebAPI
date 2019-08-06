@@ -13,6 +13,7 @@ import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisT
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.hydra.Hydra;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.JobInvalidator;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
 import org.ohdsi.webapi.cohortcharacterization.domain.*;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcDistributionStat;
@@ -39,7 +40,6 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
 import org.ohdsi.webapi.util.*;
 import org.springframework.batch.core.BatchStatus;
-import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -118,6 +118,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     private final JobRepository jobRepository;
     private final SourceAwareSqlRender sourceAwareSqlRender;
     private final JobService jobService;
+    private final JobInvalidator jobInvalidator;
     private final GenericConversionService genericConversionService;
 
     private final Environment env;
@@ -136,10 +137,11 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             final AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository,
             final SourceService sourceService,
             final GenerationUtils generationUtils,
-            SourceAwareSqlRender sourceAwareSqlRender,
+            final SourceAwareSqlRender sourceAwareSqlRender,
             final EntityManager entityManager,
             final JobService jobService,
             final ApplicationEventPublisher eventPublisher,
+            final JobInvalidator jobInvalidator,
             @Qualifier("conversionService") final GenericConversionService genericConversionService,
             Environment env) {
         this.repository = ccRepository;
@@ -158,6 +160,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         this.entityManager = entityManager;
         this.jobService = jobService;
         this.eventPublisher = eventPublisher;
+        this.jobInvalidator = jobInvalidator;
         this.genericConversionService = genericConversionService;
       this.env = env;
       SerializedCcToCcConverter.setConversionService(conversionService);
@@ -714,9 +717,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             List<CcGenerationEntity> generations = findAllIncompleteGenerations();
             generations.forEach(gen -> {
                 JobExecution job = jobService.getJobExecution(gen.getId());
-                job.setStatus(BatchStatus.FAILED);
-                job.setExitStatus(new ExitStatus(ExitStatus.FAILED.getExitCode(), "Invalidated by system"));
-                jobRepository.update(job);
+                jobInvalidator.invalidationJobExecution(job);
             });
             return null;
         });

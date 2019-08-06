@@ -74,6 +74,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.ohdsi.webapi.Constants.Params.*;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
@@ -379,7 +380,21 @@ public class CohortDefinitionService extends AbstractDaoService {
   @GET
   @Path("/{id}")
   @Produces(MediaType.APPLICATION_JSON)
-  public CohortDTO getCohortDefinition(@PathParam("id") final int id) {
+  public CohortRawDTO getCohortDefinitionRaw(@PathParam("id") final int id) {
+
+    return getTransactionTemplate().execute(transactionStatus -> {
+      CohortDefinition d = this.cohortDefinitionRepository.findOneWithDetail(id);
+      ExceptionUtils.throwNotFoundExceptionIfNull(d, String.format("There is no cohort definition with id = %d.", id));
+      return conversionService.convert(d, CohortRawDTO.class);
+    });
+  }
+
+	/**
+	 * This method returns the cohort definition containg the circe cohort expression
+	 * @param id
+	 * @return 
+	 */
+  public CohortDTO getCohortDefinition( final int id) {
 
     return getTransactionTemplate().execute(transactionStatus -> {
       CohortDefinition d = this.cohortDefinitionRepository.findOneWithDetail(id);
@@ -387,7 +402,7 @@ public class CohortDefinitionService extends AbstractDaoService {
       return conversionService.convert(d, CohortDTO.class);
     });
   }
-
+	
   @GET
   @Path("/{id}/exists")
   @Produces(MediaType.APPLICATION_JSON)

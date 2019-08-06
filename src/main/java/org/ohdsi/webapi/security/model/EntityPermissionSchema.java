@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.security.model;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 public abstract class EntityPermissionSchema {
@@ -29,5 +30,13 @@ public abstract class EntityPermissionSchema {
     public Map<String, String> getWritePermissions() {
 
         return writePermissions;
+    }
+
+    public Map<String, String> getAllPermissions() {
+
+        Map<String, String> permissions = new HashMap<>();
+        permissions.putAll(getReadPermissions());
+        permissions.putAll(getWritePermissions());
+        return permissions;
     }
 }

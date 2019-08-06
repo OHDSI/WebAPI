@@ -245,6 +245,8 @@ public class SourceService extends AbstractDaoService {
     Source original = new Source();
     original.setSourceDialect(source.getSourceDialect());
     setKeyfileData(source, original, file);
+    source.setCreatedBy(getCurrentUser());
+    source.setCreatedDate(new Date());
     Source saved = sourceRepository.save(source);
     String sourceKey = saved.getSourceKey();
     cachedSources = null;
@@ -281,6 +283,8 @@ public class SourceService extends AbstractDaoService {
       List<SourceDaimon> removed = source.getDaimons().stream().filter(d -> !updated.getDaimons().contains(d))
               .collect(Collectors.toList());
       sourceDaimonRepository.delete(removed);
+      updated.setModifiedBy(getCurrentUser());
+      updated.setModifiedDate(new Date());
       Source result = sourceRepository.save(updated);
         publisher.publishEvent(new ChangeDataSourceEvent(this, updated.getSourceId(), updated.getSourceName()));
       cachedSources = null;

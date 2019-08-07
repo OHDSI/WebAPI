@@ -634,12 +634,18 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>
-      <version>1.8.1-SNAPSHOT</version>
+      <version>1.8.1</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>hydra</artifactId>
       <version>0.0.5</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.ohdsi</groupId>
+          <artifactId>circe</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.json</groupId>

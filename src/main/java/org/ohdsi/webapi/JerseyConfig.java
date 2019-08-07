@@ -1,6 +1,5 @@
 package org.ohdsi.webapi;
 
-import javax.inject.Singleton;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.message.GZipEncoder;
@@ -27,7 +26,6 @@ import org.ohdsi.webapi.service.InfoService;
 import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.service.PersonService;
 import org.ohdsi.webapi.service.SourceService;
-import org.ohdsi.webapi.service.SparqlService;
 import org.ohdsi.webapi.service.SqlRenderService;
 import org.ohdsi.webapi.service.TherapyPathResultsService;
 import org.ohdsi.webapi.service.UserService;
@@ -35,6 +33,8 @@ import org.ohdsi.webapi.service.VocabularyService;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import javax.inject.Singleton;
 
 /**
  *
@@ -69,7 +69,6 @@ public class JerseyConfig extends ResourceConfig implements InitializingBean {
         register(JobService.class);
         register(PersonService.class);
         register(SourceService.class);
-        register(SparqlService.class);
         register(SqlRenderService.class);
         register(DDLService.class);
         register(TherapyPathResultsService.class);

@@ -122,7 +122,6 @@ public interface IRAnalysisResource {
      * @return Response containing binary stream of zipped data
      */
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/export")
     Response export(@PathParam("id") final int id);
 

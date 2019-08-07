@@ -36,6 +36,7 @@ import static org.ohdsi.webapi.shiro.management.FilterTemplates.AUTHZ;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.CORS;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.FORCE_SESSION_CREATION;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.JWT_AUTHC;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_CACHE;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_SESSION_CREATION;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.SSL;
 

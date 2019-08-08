@@ -17,6 +17,7 @@ import java.util.Set;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.AUTHZ;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.CORS;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.JWT_AUTHC;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_CACHE;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_SESSION_CREATION;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.SSL;
 
@@ -44,7 +45,7 @@ public class AtlasGoogleSecurity extends AtlasSecurity {
     protected FilterChainBuilder getFilterChainBuilder() {
 
         FilterChainBuilder filterChainBuilder = new FilterChainBuilder()
-                .setRestFilters(SSL, NO_SESSION_CREATION, CORS)
+                .setRestFilters(SSL, NO_SESSION_CREATION, CORS, NO_CACHE)
                 .setAuthcFilter(JWT_AUTHC)
                 .setAuthzFilter(AUTHZ);
 

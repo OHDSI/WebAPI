@@ -15,6 +15,8 @@
  */
 package org.ohdsi.webapi.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.messaging.support.ErrorMessage;
@@ -35,13 +37,14 @@ import java.io.StringWriter;
 
 @Provider
 public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
-    
+    private static final Logger LOGGER = LoggerFactory.getLogger(GenericExceptionMapper.class);
     private final String DETAIL = "Detail: ";
 
     @Override
     public Response toResponse(Throwable ex) {
         StringWriter errorStackTrace = new StringWriter();
         ex.printStackTrace(new PrintWriter(errorStackTrace));
+        LOGGER.error(errorStackTrace.toString());
         Status responseStatus;
         if(ex instanceof DataIntegrityViolationException) {
             responseStatus = Status.CONFLICT;
@@ -54,7 +57,11 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
             responseStatus = Status.NOT_FOUND;
         } else {
             responseStatus = Status.INTERNAL_SERVER_ERROR;
+            // Create new message to prevent sending error information to client
+            ex = new RuntimeException("An exception ocurred: " + ex.getClass().getName());
         }
+        // Clean stacktrace, but keep message
+        ex.setStackTrace(new StackTraceElement[0]);
         ErrorMessage errorMessage = new ErrorMessage(ex);
         return Response.status(responseStatus)
                 .entity(errorMessage)

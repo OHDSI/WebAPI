@@ -21,6 +21,7 @@ import org.ohdsi.webapi.shiro.mapper.LdapUserMapper;
 import org.ohdsi.webapi.shiro.realms.ADRealm;
 import org.ohdsi.webapi.shiro.realms.JdbcAuthRealm;
 import org.ohdsi.webapi.shiro.realms.JwtAuthRealm;
+import org.ohdsi.webapi.shiro.realms.KerberosAuthRealm;
 import org.ohdsi.webapi.shiro.realms.LdapRealm;
 import org.ohdsi.webapi.user.importer.providers.LdapProvider;
 import org.pac4j.cas.client.CasClient;
@@ -87,6 +88,12 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
     @Value("${security.oauth.github.apiSecret}")
     private String githubApiSecret;
+
+    @Value("${security.kerberos.spn}")
+    private String kerberosSpn;
+
+    @Value("${security.kerberos.keytabPath}")
+    private String kerberosKeytabPath;
 
     @Value("${security.ldap.dn}")
     private String userDnTemplate;
@@ -256,7 +263,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         FilterChainBuilder filterChainBuilder = new FilterChainBuilder()
                 .setBeforeOAuthFilters(SSL, CORS, FORCE_SESSION_CREATION)
                 .setAfterOAuthFilters(UPDATE_TOKEN, SEND_TOKEN_IN_URL)
-                .setRestFilters(SSL, NO_SESSION_CREATION, CORS)
+                .setRestFilters(SSL, NO_SESSION_CREATION, CORS, NO_CACHE)
                 .setAuthcFilter(JWT_AUTHC)
                 .setAuthzFilter(AUTHZ)
                 // login/logout
@@ -291,6 +298,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         if (jdbcDataSource != null) {
             realms.add(new JdbcAuthRealm(jdbcDataSource, jdbcAuthenticationQuery));
         }
+        realms.add(new KerberosAuthRealm(kerberosSpn, kerberosKeytabPath));
         realms.add(ldapRealm());
         realms.add(activeDirectoryRealm());
 

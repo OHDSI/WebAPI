@@ -7,6 +7,7 @@ import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
@@ -114,7 +115,7 @@ public class SourceService extends AbstractDaoService {
 
         for (Source source : sourceRepository.findAll()) {
             for (SourceDaimon daimon : source.getDaimons()) {
-                if (daimon.getDaimonType() == daimonType && sourceAccessor.hasAccess(source)) {
+                if (daimon.getDaimonType() == daimonType && sourceAccessor.hasAccess(source) && checkConnectionSafe(source)) {
                     int daimonPriority = daimon.getPriority();
                     if (daimonPriority >= priority) {
                         priority = daimonPriority;
@@ -130,6 +131,16 @@ public class SourceService extends AbstractDaoService {
     public Source getPriorityVocabularySource() {
 
         return getPrioritySourceForDaimon(SourceDaimon.DaimonType.Vocabulary);
+    }
+
+    private boolean checkConnectionSafe(Source source) {
+
+        try {
+            checkConnection(source);
+            return true;
+        } catch (CannotGetJdbcConnectionException ex) {
+            return false;
+        }
     }
 
     private class SortByKey implements Comparator<Source> {

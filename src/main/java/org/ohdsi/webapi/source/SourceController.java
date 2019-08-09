@@ -81,15 +81,6 @@ public class SourceController extends AbstractDaoService {
     return getSources();
   }
 
-  @Path("priorityVocabulary")
-  @GET
-  @Produces(MediaType.APPLICATION_JSON)
-  public SourceInfo getPriorityVocabularySourceInfo() {
-
-    Source priorityVocabularySource = sourceService.getPriorityVocabularySource();
-    return new SourceInfo(priorityVocabularySource);
-  }
-
   @Path("{key}")
   @GET
   @Produces(MediaType.APPLICATION_JSON)

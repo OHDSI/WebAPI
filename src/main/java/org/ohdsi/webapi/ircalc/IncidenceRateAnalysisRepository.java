@@ -18,6 +18,10 @@ package org.ohdsi.webapi.ircalc;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.repository.EntityGraphCrudRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  *
@@ -31,4 +35,11 @@ public interface IncidenceRateAnalysisRepository extends EntityGraphCrudReposito
   @Query("SELECT ira FROM IncidenceRateAnalysis AS ira LEFT JOIN ira.executionInfoList e LEFT JOIN Source s ON s.id = e.source.id AND s.deletedDate = NULL WHERE ira.id = ?1")
   IncidenceRateAnalysis findOneWithExecutionsOnExistingSources(int id, EntityGraph entityGraph);
 
+  @Query("SELECT COUNT(ira) FROM IncidenceRateAnalysis ira WHERE ira.name = :name and ira.id <> :id")
+  int getCountIRWithSameName(@Param("id") Integer id, @Param("name") String name);
+
+  @Query("SELECT ira FROM IncidenceRateAnalysis ira WHERE ira.name LIKE ?1 ESCAPE '\\'")
+  List<IncidenceRateAnalysis> findAllByNameStartsWith(String pattern);
+  
+  Optional<IncidenceRateAnalysis> findByName(String name);
 }

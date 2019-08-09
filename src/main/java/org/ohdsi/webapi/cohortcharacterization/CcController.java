@@ -1,6 +1,25 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
@@ -26,15 +45,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Path("/cohort-characterization")
 @Controller
@@ -119,6 +130,14 @@ public class CcController {
         return convertCcToDto(service.findByIdWithLinkedEntities(id));
     }
 
+    @GET
+    @Path("/{id}/exists")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public int getCountCcWithSameName(@PathParam("id") @DefaultValue("0") final long id, @QueryParam("name") String name) {
+        return service.getCountCcWithSameName(id, name);
+    }
+
     @DELETE
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -151,7 +170,7 @@ public class CcController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public CohortCharacterizationDTO doImport(final CcExportDTO dto) {
-        dto.setName(service.getNameForCopy(dto.getName()));
+        dto.setName(service.getNameWithSuffix(dto.getName()));
         final CohortCharacterizationEntity entity = conversionService.convert(dto, CohortCharacterizationEntity.class);
         return conversionService.convert(service.importCc(entity), CohortCharacterizationDTO.class);
     }
@@ -222,11 +241,17 @@ public class CcController {
     @Path("/generation/{generationId}/result")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public List<CcResult> getGenerationsResults(
+    public GenerationResults getGenerationsResults(
             @PathParam("generationId") final Long generationId, @DefaultValue("0.01") @QueryParam("thresholdLevel") final float thresholdLevel) {
         List<CcResult> ccResults = service.findResults(generationId, thresholdLevel);
         convertPresetAnalysesToLocal(ccResults);
-        return ccResults;
+
+        GenerationResults res = new GenerationResults();
+        res.setResults(ccResults);
+        res.setPrevalenceThreshold(thresholdLevel);
+        res.setTotalCount(service.getCCResultsTotalCount(generationId));
+
+        return res;
     }
 
     @POST

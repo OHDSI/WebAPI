@@ -1,33 +1,20 @@
 package org.ohdsi.webapi.service;
 
-import com.odysseusinc.logging.event.AddPermissionEvent;
-import com.odysseusinc.logging.event.AddRoleEvent;
-import com.odysseusinc.logging.event.AssignRoleEvent;
-import com.odysseusinc.logging.event.ChangeRoleEvent;
-import com.odysseusinc.logging.event.DeletePermissionEvent;
-import com.odysseusinc.logging.event.DeleteRoleEvent;
-import com.odysseusinc.logging.event.UnassignRoleEvent;
+import com.odysseusinc.logging.event.*;
 import org.eclipse.collections.impl.block.factory.Comparators;
-import org.ohdsi.webapi.user.Role;
-import org.springframework.context.ApplicationEventPublisher;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
+import org.ohdsi.webapi.user.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import java.util.*;
 
 /**
  *
@@ -59,6 +46,7 @@ public class UserService {
   public static class User implements Comparable<User> {
     public Long id;
     public String login;
+    public String name;
     public List<Permission> permissions;
 
     public User() {}
@@ -66,6 +54,7 @@ public class UserService {
     public User(UserEntity userEntity) {
       this.id = userEntity.getId();
       this.login = userEntity.getLogin();
+      this.name = userEntity.getName();
     }
 
     @Override
@@ -121,6 +110,7 @@ public class UserService {
     User user = new User();
     user.id = currentUser.getId();
     user.login = currentUser.getLogin();
+    user.name = currentUser.getName();
     user.permissions = convertPermissions(permissions);
 
     return user;

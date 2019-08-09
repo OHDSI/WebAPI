@@ -1,1 +1,1 @@
-CREATE INDEX idx_pathway_analysis_events_combo_id ON @results_schema.pathway_analysis_events (combo_id);
+CREATE INDEX idx_pathway_events_combo_id ON @results_schema.pathway_analysis_events (combo_id);

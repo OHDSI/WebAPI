@@ -36,9 +36,9 @@ import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.EventListener;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
@@ -140,24 +140,21 @@ public class ConceptSetService extends AbstractDaoService {
         return expression;
     }
 
+    @Deprecated
     @GET
     @Path("{id}/{name}/exists")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getConceptSetExistsDeprecated(@PathParam("id") final int id, @PathParam("name") String name) {
-        String warningMessage = "This method will be deprecated in the next release. Instead, please use the new REST endpoint: conceptset/exists?id={id}&name={name}";
+        String warningMessage = "This method will be deprecated in the next release. Instead, please use the new REST endpoint: conceptset/{id}/exists?name={name}";
         Collection<ConceptSet> cs = getConceptSetRepository().conceptSetExists(id, name);
         return Response.ok(cs).header("Warning: 299", warningMessage).build();
     }
 		
     @GET
-    @Path("/exists")
+    @Path("/{id}/exists")
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<ConceptSetDTO> getConceptSetExists(@QueryParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
-        return getConceptSetRepository()
-            .conceptSetExists(id, name)
-            .stream()
-            .map(cs -> conversionService.convert(cs, ConceptSetDTO.class))
-            .collect(Collectors.toList());
+    public int getCountCSetWithSameName(@PathParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+        return getConceptSetRepository().getCountCSetWithSameName(id, name);
     }
 
     @PUT
@@ -241,6 +238,20 @@ public class ConceptSetService extends AbstractDaoService {
         return conversionService.convert(updated, ConceptSetDTO.class);
     }
 
+    @GET
+    @Path("/{id}/copy-name")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map<String, String> getNameForCopy (@PathParam("id") final int id){
+        ConceptSetDTO source = getConceptSet(id);
+        String name = NameUtils.getNameForCopy(source.getName(), this::getNamesLike, getConceptSetRepository().findByName(source.getName()));
+        return Collections.singletonMap("copyName", name);
+    }
+
+    public List<String> getNamesLike(String copyName) {
+
+        return getConceptSetRepository().findAllByNameStartsWith(copyName).stream().map(ConceptSet::getName).collect(Collectors.toList());
+    }
+    
     @Path("/{id}")
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)

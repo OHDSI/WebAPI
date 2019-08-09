@@ -7,7 +7,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.hydra.Hydra;
-import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.common.generation.AnalysisExecutionSupport;
@@ -23,7 +22,7 @@ import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.util.CopyUtils;
+import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.Job;
@@ -36,6 +35,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
+import javax.ws.rs.InternalServerErrorException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.GENERATE_PREDICTION_ANALYSIS;
 import static org.ohdsi.webapi.Constants.Params.*;
-import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
+
 import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
 import org.ohdsi.webapi.analysis.AnalysisConceptSet;
 import org.ohdsi.webapi.common.DesignImportService;
@@ -115,6 +115,12 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     }
     
     @Override
+    public int getCountPredictionWithSameName(Integer id, String name) {
+
+        return predictionAnalysisRepository.getCountPredictionWithSameName(id, name);
+    }
+
+    @Override
     public PredictionAnalysis getById(Integer id) {
         return predictionAnalysisRepository.findOne(id, COMMONS_ENTITY_GRAPH);
     }
@@ -135,7 +141,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
 
     @Override
     public PredictionAnalysis updateAnalysis(final int id, PredictionAnalysis pred) {
-        PredictionAnalysis predFromDB = predictionAnalysisRepository.findOne(id);
+        PredictionAnalysis predFromDB = getById(id);
         Date currentTime = Calendar.getInstance().getTime();
 
         pred.setModifiedBy(getCurrentUser());
@@ -146,10 +152,9 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
 
         return save(pred);
     }
-    
-    @Override
-    public int countLikeName(String name) {
-        return predictionAnalysisRepository.countByNameStartsWith(name);
+
+    private List<String> getNamesLike(String name) {
+        return predictionAnalysisRepository.findAllByNameStartsWith(name).stream().map(PredictionAnalysis::getName).collect(Collectors.toList());
     }
     
     @Override
@@ -218,7 +223,11 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     @Override
     public PredictionAnalysis importAnalysis(PatientLevelPredictionAnalysisImpl analysis) throws Exception {
         try {
-            // Create all of the cohort definitions 
+            if (Objects.isNull(analysis.getCohortDefinitions()) || Objects.isNull(analysis.getCovariateSettings())) {
+                log.error("Failed to import Prediction. Invalid source JSON.");
+                throw new InternalServerErrorException();
+            }
+            // Create all of the cohort definitions
             // and map the IDs from old -> new
             List<BigDecimal> newTargetIds = new ArrayList<>();
             List<BigDecimal> newOutcomeIds = new ArrayList<>();
@@ -233,6 +242,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
                     newOutcomeIds.add(new BigDecimal(cd.getId()));
                 }
                 analysisCohortDefinition.setId(cd.getId());
+                analysisCohortDefinition.setName(cd.getName());
             });
             
             // Create all of the concept sets and map
@@ -242,6 +252,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
                int oldId = pcs.id;
                ConceptSetDTO cs = designImportService.persistConceptSet(pcs);
                pcs.id = cs.getId();
+               pcs.name = cs.getName();
                conceptSetIdMap.put(oldId, cs.getId());
             });
             
@@ -268,7 +279,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
             PredictionAnalysis pa = new PredictionAnalysis();
             pa.setDescription(analysis.getDescription());
             pa.setSpecification(Utils.serialize(analysis));
-            pa.setName(getNameForCopy(analysis.getName()));
+            pa.setName(NameUtils.getNameWithSuffix(analysis.getName(), this::getNamesLike));
             
             PredictionAnalysis savedAnalysis = this.createAnalysis(pa);
             return predictionAnalysisRepository.findOne(savedAnalysis.getId(), COMMONS_ENTITY_GRAPH);
@@ -280,7 +291,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
 
     @Override
     public String getNameForCopy(String dtoName) {
-        return CopyUtils.getNameForCopy(dtoName, this::countLikeName, predictionAnalysisRepository.findByName(dtoName));
+        return NameUtils.getNameForCopy(dtoName, this::getNamesLike, predictionAnalysisRepository.findByName(dtoName));
     }
 
     @Override

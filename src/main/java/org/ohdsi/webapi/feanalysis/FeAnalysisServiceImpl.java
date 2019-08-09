@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.feanalysis;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.NotFoundException;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,6 +47,11 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     @Override
     public Page<FeAnalysisEntity> getPage(final Pageable pageable) {
         return analysisRepository.findAll(pageable, defaultEntityGraph);
+    }
+    
+    @Override
+    public int getCountFeWithSameName(Integer id, String name){
+        return analysisRepository.getCountFeWithSameName(id, name);
     }
 
     @Override
@@ -169,6 +176,40 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     public void deleteAnalysis(int id) {
         deleteAnalysis(analysisRepository.findById(id).orElseThrow(() -> new RuntimeException("There is no Feature Analysis with id = " + id)));
     }
+    
+    @Override
+    public List<String> getNamesLike(String name) {
+        return analysisRepository.findAllByNameStartsWith(name).stream().map(FeAnalysisEntity::getName).collect(Collectors.toList());
+    }
+    
+    @Override
+    public Optional<FeAnalysisEntity> findByDesignAndName(final FeAnalysisWithStringEntity withStringEntity, final String name) {
+        return this.findByDesignAndPredicate(withStringEntity.getDesign(), f -> Objects.equals(f.getName(), name));
+    }
+
+    @Override
+    public Optional<FeAnalysisEntity> findByCriteriaList(List<? extends FeAnalysisCriteriaEntity> newCriteriaList) {
+        Map<FeAnalysisWithCriteriaEntity, List<FeAnalysisCriteriaEntity>> feAnalysisEntityListMap = newCriteriaList.stream()
+                .map(c -> criteriaRepository.findAllByExpressionString(c.getExpressionString()))
+                .flatMap(List::stream).collect(Collectors.groupingBy(FeAnalysisCriteriaEntity::getFeatureAnalysis));
+        return feAnalysisEntityListMap.entrySet().stream().filter(e -> checkCriteriaList(e.getValue(), newCriteriaList))
+                .findAny().map(Map.Entry::getKey);
+    }
+
+    private boolean checkCriteriaList(List<FeAnalysisCriteriaEntity> curCriteriaList, List<? extends FeAnalysisCriteriaEntity> newCriteriaList) {
+        List<String> currentList = curCriteriaList.stream().map(FeAnalysisCriteriaEntity::getExpressionString).collect(Collectors.toList());
+        List<String> newList = newCriteriaList.stream().map(FeAnalysisCriteriaEntity::getExpressionString).collect(Collectors.toList());
+        return CollectionUtils.isEqualCollection(currentList, newList);
+    }
+
+    private Optional<FeAnalysisEntity> findByDesignAndPredicate(final String design, final Predicate<FeAnalysisEntity> f) {
+        List<FeAnalysisEntity> detailsFromDb = analysisRepository.findByDesign(design);
+        return detailsFromDb
+                .stream()
+                .filter(f)
+                .findFirst();
+    }
+    
 
     private void checkEntityLocked(FeAnalysisEntity entity) {
         if (entity.getLocked() == Boolean.TRUE) {

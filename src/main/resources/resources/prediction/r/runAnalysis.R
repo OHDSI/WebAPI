@@ -1,12 +1,15 @@
-library(devtools)
-options(devtools.install.args = "--no-multiarch")
-
 setwd("./")
 tryCatch({
-    unzip('@packageFile', exdir = file.path(".", "@analysisDir"))
-    install_local(file.path(".", "@analysisDir"))
+  unzip('@packageFile', exdir = file.path(".", "@analysisDir"))
+  callr::rcmd("build", c("@analysisDir", c("--no-build-vignettes")), echo = TRUE, show = TRUE)
+  pkg_file <- list.files(path = ".", pattern = "\\.tar\\.gz")[1]
+  tryCatch({
+    install.packages(pkg_file, repos = NULL, type="source", INSTALL_opts=c("--no-multiarch"))
+  }, finally = {
+    file.remove(pkg_file)
+  })
 }, finally = {
-    unlink('@analysisDir', recursive = TRUE, force = TRUE)
+  unlink('@analysisDir', recursive = TRUE, force = TRUE)
 })
 
 library(DatabaseConnector)
@@ -43,6 +46,11 @@ tryCatch({
                 packageResults = T,
                 minCellCount = 5,
                 cdmVersion = 5)
+
+        populateShinyApp(shinyDirectory = file.path(getwd(), 'shiny', 'PLPViewer'), resultDirectory = outputFolder)
+
+        # To run PLP Viewer shiny app call:
+        # PatientLevelPrediction::viewPlp(readRDS("./shiny/PLPViewer/data/Analysis_1/plpResult.rds"))
 }, finally = {
         remove.packages('@packageName')
 })

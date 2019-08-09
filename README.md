@@ -26,5 +26,3 @@ Documentation can be found a the [Web API Installation Guide](https://github.com
 
 ## License
 OHDSI WebAPI is licensed under Apache License 2.0
-
-

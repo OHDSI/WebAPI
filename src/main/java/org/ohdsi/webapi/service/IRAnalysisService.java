@@ -19,7 +19,9 @@ import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import com.opencsv.CSVWriter;
+import javax.ws.rs.core.HttpHeaders;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -584,11 +586,9 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   public Response export(final int id) {
 
     Response response = null;
-    HashMap<String, String> fileList = new HashMap<>();
-    HashMap<Integer, String> distTypeLookup = new HashMap<>();
 
-    distTypeLookup.put(1, "TAR");
-    distTypeLookup.put(2, "TTO");
+    Map<String, String> fileList = new HashMap<>();
+    Map<Integer, String> distTypeLookup = ImmutableMap.of(1, "TAR", 2, "TTO");
 
     try {
       IncidenceRateAnalysis analysis = this.irAnalysisRepository.findOne(id);
@@ -699,7 +699,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
       response = Response
         .ok(baos)
         .type(MediaType.APPLICATION_OCTET_STREAM)
-        .header("Content-Disposition", String.format("attachment; filename=\"%s\"", "ir_analysis_" + id + ".zip"))
+        .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", "ir_analysis_" + id + ".zip"))
         .build();
     } catch (Exception ex) {
       throw new RuntimeException(ex);

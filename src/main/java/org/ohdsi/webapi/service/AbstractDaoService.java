@@ -67,8 +67,8 @@ public abstract class AbstractDaoService extends AbstractAdminService {
   @Autowired
   private SourceRepository sourceRepository;
 
-  @Autowired 
-  ConceptSetItemRepository conceptSetItemRepository;
+  @Autowired
+  private ConceptSetItemRepository conceptSetItemRepository;
 
   @Autowired
   protected Security security;

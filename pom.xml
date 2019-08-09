@@ -9,7 +9,7 @@
   <version>2.8.0-SNAPSHOT</version>
   <name>WebAPI</name>
   <properties>
-    <webapi.version>2.8.0</webapi.version>
+    <build.number>${BUILD_NUMBER}</build.number>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jersey.version>2.14</jersey.version>
     <!-- Spring Boot manages spring.version as well -->
@@ -72,6 +72,8 @@
     <security.oid.apiSecret></security.oid.apiSecret>
     <security.oid.url></security.oid.url>
     <security.oid.redirectUrl>http://localhost/index.html#/welcome/</security.oid.redirectUrl>
+    <security.kerberos.spn></security.kerberos.spn>
+    <security.kerberos.keytabPath></security.kerberos.keytabPath>
     <security.ldap.dn>cn={0},dc=example,dc=org</security.ldap.dn>
     <security.ldap.url>ldap://localhost:389</security.ldap.url>
     <security.ldap.baseDn></security.ldap.baseDn>
@@ -141,6 +143,7 @@
     <arachne.version>1.15.0-SNAPSHOT</arachne.version>
     <jersey-media-multipart.version>2.25.1</jersey-media-multipart.version>
     <execution.invalidation.period>600000</execution.invalidation.period>
+    <execution.invalidation.maxage.hours>12</execution.invalidation.maxage.hours>
     <execution.status.period>10000</execution.status.period>
 		<executionengine.url>https://localhost:8888/api/v1/analyze</executionengine.url>
 		<executionengine.token>Basic YWRtaW5Ab2R5c3NldXNpbmMuY29tOnBhc3N3b3Jk</executionengine.token>
@@ -232,19 +235,14 @@
         <configuration>
           <!-- Since we filter properties files via Maven, do not add resources. -->
           <addResources>false</addResources>
-          <!-- executable-jar
-          <classifier>exec</classifier>
-          -->
         </configuration>
-        <!-- executable-jar
         <executions>
-            <execution>
-                <goals>
-                    <goal>repackage</goal>
-                </goals>
-            </execution>
+          <execution>
+            <goals>
+              <goal>build-info</goal>
+            </goals>
+          </execution>
         </executions>
-        -->
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -253,11 +251,11 @@
         <configuration>
           <skipTests>true</skipTests>
         </configuration>
-</plugin>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.5.1</version>
+        <version>3.1</version>
         <inherited>true</inherited>
         <configuration>
           <source>1.8</source>
@@ -267,7 +265,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
-        <version>2.2</version>
+        <version>2.6</version>
         <configuration>
           <failOnMissingWebXml>false</failOnMissingWebXml>
           <attachClasses>true</attachClasses>
@@ -492,7 +490,7 @@
     <dependency>
       <groupId>org.ohdsi.sql</groupId>
       <artifactId>SqlRender</artifactId>
-      <version>1.6.2</version>
+      <version>1.6.3-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>commons-dbutils</groupId>
@@ -502,7 +500,7 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.4</version>
+      <version>2.6</version>
     </dependency>
     <dependency>
       <groupId>com.sun.xml.security</groupId>
@@ -518,7 +516,7 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.3.2</version>
+      <version>3.9</version>
     </dependency>
     <dependency>
       <groupId>org.flywaydb</groupId>
@@ -631,12 +629,18 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>
-      <version>1.8.0</version>
+      <version>1.8.1</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>hydra</artifactId>
       <version>0.0.5</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.ohdsi</groupId>
+          <artifactId>circe</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.json</groupId>
@@ -647,6 +651,12 @@
       <groupId>org.ohdsi</groupId>
       <artifactId>featureExtraction</artifactId>
       <version>2.2.4</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.ohdsi.sql</groupId>
+          <artifactId>SqlRender</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.amazon.redshift</groupId>
@@ -710,6 +720,12 @@
       <groupId>com.odysseusinc</groupId>
       <artifactId>data-source-manager</artifactId>
       <version>${arachne.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.bouncycastle</groupId>
+          <artifactId>bcprov-jdk15</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
@@ -719,7 +735,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>standardized-analysis-utils</artifactId>
-      <version>1.2.0</version>
+      <version>1.2.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
@@ -729,6 +745,10 @@
         <exclusion>
           <groupId>org.ohdsi</groupId>
           <artifactId>standardized-analysis-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ohdsi.sql</groupId>
+          <artifactId>SqlRender</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -895,7 +915,7 @@
         <dependency>
           <groupId>com.cloudera</groupId>
           <artifactId>ImpalaJDBC41</artifactId>
-          <version>2.5.42</version>
+          <version>2.5.43</version>
         </dependency>
         <dependency>
           <groupId>libfb</groupId>
@@ -940,7 +960,7 @@
                 <configuration>
                   <groupId>com.cloudera</groupId>
                   <artifactId>ImpalaJDBC41</artifactId>
-                  <version>2.5.41</version>
+                  <version>2.5.43</version>
                   <packaging>jar</packaging>
                   <file>${impala.classpath}/ImpalaJDBC41.jar</file>
                 </configuration>

@@ -110,7 +110,7 @@ public class SourceService extends AbstractDaoService {
     public Source getPrioritySourceForDaimon(SourceDaimon.DaimonType daimonType) {
 
         int priority = 0;
-        Source priorityVocabularySource = null;
+        Source prioritySource = null;
 
         for (Source source : sourceRepository.findAll()) {
             for (SourceDaimon daimon : source.getDaimons()) {
@@ -118,13 +118,13 @@ public class SourceService extends AbstractDaoService {
                     int daimonPriority = daimon.getPriority();
                     if (daimonPriority >= priority) {
                         priority = daimonPriority;
-                        priorityVocabularySource = source;
+                        prioritySource = source;
                     }
                 }
             }
         }
 
-        return priorityVocabularySource;
+        return prioritySource;
     }
 
     public Source getPriorityVocabularySource() {

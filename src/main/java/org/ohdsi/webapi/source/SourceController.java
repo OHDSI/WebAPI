@@ -36,8 +36,6 @@ import java.util.stream.Collectors;
 public class SourceController extends AbstractDaoService {
 
   public static final String SECURE_MODE_ERROR = "This feature requires the administrator to enable security for the application";
-  private static final String KRB_REALM = "KrbRealm";
-  private static final String KRB_FQDN = "KrbHostFQDN";
 
   @Autowired
   private ApplicationEventPublisher publisher;

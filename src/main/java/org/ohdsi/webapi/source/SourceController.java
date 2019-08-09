@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.service;
+package org.ohdsi.webapi.source;
 
 import com.odysseusinc.arachne.commons.types.DBMSType;
 import com.odysseusinc.logging.event.AddDataSourceEvent;
@@ -9,26 +9,19 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.jasypt.encryption.pbe.PBEStringEncryptor;
-import org.jasypt.properties.PropertyValueEncryptionUtils;
-import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.common.SourceMapKey;
+import org.ohdsi.webapi.service.AbstractDaoService;
+import org.ohdsi.webapi.service.VocabularyService;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
-import org.ohdsi.webapi.source.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
-import javax.annotation.PostConstruct;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -40,82 +33,21 @@ import java.util.stream.Collectors;
 @Path("/source/")
 @Component
 @Transactional
-public class SourceService extends AbstractDaoService {
+public class SourceController extends AbstractDaoService {
 
   public static final String SECURE_MODE_ERROR = "This feature requires the administrator to enable security for the application";
   private static final String KRB_REALM = "KrbRealm";
   private static final String KRB_FQDN = "KrbHostFQDN";
 
   @Autowired
-  private JdbcTemplate jdbcTemplate;
-  @Autowired
-  private PBEStringEncryptor defaultStringEncryptor;
-  @Autowired
-  private Environment env;
-  @Autowired
   private ApplicationEventPublisher publisher;
+
   @Autowired
   private VocabularyService vocabularyService;
 
   @Autowired
-  private SourceAccessor sourceAccessor;
+  private SourceService sourceService;
 
-  @Value("${datasource.ohdsi.schema}")
-  private String schema;
-
-  private boolean encryptorPasswordSet = false;
-
-  @PostConstruct
-  public void ensureSourceEncrypted(){
-    if (encryptorEnabled) {
-			String query = "SELECT source_id, username, password FROM ${schema}.source".replaceAll("\\$\\{schema\\}", schema);
-			String update = "UPDATE ${schema}.source SET username = ?, password = ? WHERE source_id = ?".replaceAll("\\$\\{schema\\}", schema);
-			getTransactionTemplateRequiresNew().execute(new TransactionCallbackWithoutResult() {
-				@Override
-				protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-					jdbcTemplate.query(query, rs -> {
-						int id = rs.getInt("source_id");
-						String username = rs.getString("username");
-						String password = rs.getString("password");
-						if (username != null && !PropertyValueEncryptionUtils.isEncryptedValue(username)){
-							username = "ENC(" + defaultStringEncryptor.encrypt(username) + ")";
-						}
-						if (password != null && !PropertyValueEncryptionUtils.isEncryptedValue(password)){
-							password = "ENC(" + defaultStringEncryptor.encrypt(password) + ")";
-						}
-						jdbcTemplate.update(update, username, password, id);
-					});
-				}
-			});
-		}
-	}
-
-  public Source findBySourceKey(final String sourceKey) {
-
-    return sourceRepository.findBySourceKey(sourceKey);
-  }
-
-  public Source findBySourceId(final Integer sourceId) {
-
-    return sourceRepository.findBySourceId(sourceId);
-  }
-
-  public class SortByKey implements Comparator<SourceInfo>
-  {
-    private boolean isAscending;
-
-    public SortByKey(boolean ascending) {
-      isAscending = ascending;
-    }
-
-    public SortByKey() {
-      this(true);
-    }
-
-    public int compare(SourceInfo s1, SourceInfo s2) {
-      return s1.sourceKey.compareTo(s2.sourceKey) * (isAscending ? 1 : -1);
-    }
-  }
   @Autowired
   private SourceRepository sourceRepository;
 
@@ -131,9 +63,6 @@ public class SourceService extends AbstractDaoService {
   @Value("#{!'${security.provider}'.equals('DisabledSecurity')}")
   private boolean securityEnabled;
 
-  @Value("${jasypt.encryptor.enabled}")
-  private boolean encryptorEnabled;
-
   private static Collection<SourceInfo> cachedSources = null;
 
   @Path("sources")
@@ -141,20 +70,7 @@ public class SourceService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<SourceInfo> getSources() {
 
-    if (cachedSources == null) {
-      ArrayList<SourceInfo> sources = new ArrayList<>();
-      for (Source source : sourceRepository.findAll()) {
-        sources.add(new SourceInfo(source));
-      }
-      Collections.sort(sources, new SortByKey());
-      cachedSources = sources;
-    }
-    return cachedSources;
-  }
-
-  public <T> Map<T, SourceInfo> getSourcesMap(SourceMapKey<T> mapKey) {
-
-    return getSources().stream().collect(Collectors.toMap(mapKey.getKeyFunc(), s -> s));
+    return sourceService.getSources().stream().map(SourceInfo::new).collect(Collectors.toList());
   }
 
   @Path("refresh")
@@ -163,7 +79,7 @@ public class SourceService extends AbstractDaoService {
   public Collection<SourceInfo> refreshSources() {
     cachedSources = null;
     vocabularyService.clearVocabularyInfoCache();
-		this.ensureSourceEncrypted();
+    sourceService.ensureSourceEncrypted();
     return getSources();
   }
 
@@ -171,22 +87,9 @@ public class SourceService extends AbstractDaoService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public SourceInfo getPriorityVocabularySourceInfo() {
-    int priority = 0;
-    SourceInfo priorityVocabularySourceInfo = null;
 
-    for (Source source : sourceRepository.findAll()) {
-      for (SourceDaimon daimon : source.getDaimons()) {
-        if (daimon.getDaimonType() == SourceDaimon.DaimonType.Vocabulary && sourceAccessor.hasAccess(source)) {
-          int daimonPriority = daimon.getPriority();
-          if (daimonPriority >= priority) {
-            priority = daimonPriority;
-            priorityVocabularySourceInfo = new SourceInfo(source);
-          }
-        }
-      }
-    }
-
-    return priorityVocabularySourceInfo;
+    Source priorityVocabularySource = sourceService.getPriorityVocabularySource();
+    return new SourceInfo(priorityVocabularySource);
   }
 
   @Path("{key}")
@@ -344,9 +247,8 @@ public class SourceService extends AbstractDaoService {
   @Transactional(noRollbackFor = CannotGetJdbcConnectionException.class)
   public SourceInfo checkConnection(@PathParam("key") final String sourceKey) {
 
-    final Source source = sourceRepository.findBySourceKey(sourceKey);
-    final JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
-    jdbcTemplate.execute(SqlTranslate.translateSql("select 1;", source.getSourceDialect()).replaceAll(";$", ""));
+    final Source source = sourceService.findBySourceKey(sourceKey);
+    sourceService.checkConnection(source);
     return source.getSourceInfo();
   }
 

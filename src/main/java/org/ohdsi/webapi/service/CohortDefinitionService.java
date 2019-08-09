@@ -33,6 +33,7 @@ import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.shiro.management.datasource.SourceIdAccessor;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.NameUtils;
@@ -503,7 +504,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 
     List<CohortGenerationInfo> result = infoList.stream().filter(genInfo -> sourceIdAccessor.hasAccess(genInfo.getId().getSourceId())).collect(Collectors.toList());
 
-    Map<Integer, SourceInfo> sourceMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_ID);
+    Map<Integer, Source> sourceMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_ID);
     return sensitiveInfoService.filterSensitiveInfo(result, gi -> Collections.singletonMap(Constants.Variables.SOURCE, sourceMap.get(gi.getId().getSourceId())));
   }
 
@@ -618,8 +619,8 @@ public class CohortDefinitionService extends AbstractDaoService {
   public Response exportConceptSets(@PathParam("id") final int id)
   {
     
-    SourceInfo sourceInfo = sourceService.getPriorityVocabularySourceInfo();
-    if (Objects.isNull(sourceInfo)) {
+    Source source = sourceService.getPriorityVocabularySource();
+    if (Objects.isNull(source)) {
         throw new ForbiddenException();
     }
     CohortDefinition def = this.cohortDefinitionRepository.findOneWithDetail(id);
@@ -627,7 +628,7 @@ public class CohortDefinitionService extends AbstractDaoService {
         throw new NotFoundException();
     }
     
-    ArrayList<ConceptSetExport> exports = getConceptSetExports(def, sourceInfo);
+    ArrayList<ConceptSetExport> exports = getConceptSetExports(def, new SourceInfo(source));
     ByteArrayOutputStream exportStream = ExportUtil.writeConceptSetExportToCSVAndZip(exports);
 
     Response response = Response

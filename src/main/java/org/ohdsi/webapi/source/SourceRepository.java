@@ -15,13 +15,13 @@
  */
 package org.ohdsi.webapi.source;
 
-import org.springframework.data.repository.CrudRepository;
+import com.cosium.spring.data.jpa.entity.graph.repository.EntityGraphJpaRepository;
 
 /**
  *
  * @author fdefalco
  */
-public interface SourceRepository extends CrudRepository<Source, Integer> {
+public interface SourceRepository extends EntityGraphJpaRepository<Source, Integer> {
   Source findBySourceKey(String sourceKey);
   Source findBySourceId(int sourceId);
 }

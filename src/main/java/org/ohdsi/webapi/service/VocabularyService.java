@@ -34,6 +34,7 @@ import org.ohdsi.webapi.conceptset.ConceptSetComparison;
 import org.ohdsi.webapi.conceptset.ConceptSetOptimizationResult;
 import org.ohdsi.webapi.service.vocabulary.ConceptSetStrategy;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceController;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.PreparedSqlRender;
@@ -63,7 +64,7 @@ public class VocabularyService extends AbstractDaoService {
   private static Hashtable<String, VocabularyInfo> vocabularyInfoCache = null;
 
   @Autowired
-  private SourceService sourceService;
+  private SourceController sourceController;
 
   @Value("${datasource.driverClassName}")
   private String driver;
@@ -86,7 +87,7 @@ public class VocabularyService extends AbstractDaoService {
 
   private String getDefaultVocabularySourceKey()
   {
-    List<SourceInfo> vocabSources = sourceService.getSources().stream()
+    List<SourceInfo> vocabSources = sourceController.getSources().stream()
            .filter(source -> source.daimons.stream()
                    .filter(daimon -> daimon.getDaimonType() == SourceDaimon.DaimonType.Vocabulary)
                    .collect(Collectors.toList()).size() > 0)

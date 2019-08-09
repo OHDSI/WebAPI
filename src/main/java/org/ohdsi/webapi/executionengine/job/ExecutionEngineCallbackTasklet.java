@@ -3,8 +3,10 @@ package org.ohdsi.webapi.executionengine.job;
 import static org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus.Status.COMPLETED;
 import static org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus.Status.FAILED;
 
+import java.util.Optional;
 import javax.persistence.EntityManager;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
+import org.ohdsi.webapi.executionengine.entity.ExecutionEngineGenerationEntity;
 import org.ohdsi.webapi.executionengine.repository.ExecutionEngineGenerationRepository;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepContribution;
@@ -16,7 +18,7 @@ public class ExecutionEngineCallbackTasklet extends BaseExecutionTasklet {
 
     private final ExecutionEngineGenerationRepository executionEngineGenerationRepository;
     private final EntityManager entityManager;
-    private ExecutionEngineAnalysisStatus.Status status;
+    private ExitStatus exitStatus;
 
     public ExecutionEngineCallbackTasklet(ExecutionEngineGenerationRepository executionEngineGenerationRepository, final EntityManager entityManager) {
 
@@ -30,19 +32,34 @@ public class ExecutionEngineCallbackTasklet extends BaseExecutionTasklet {
         final Long jobId = chunkContext.getStepContext().getStepExecution().getJobExecution().getJobId();
         while (true) {
             entityManager.clear();
-            status = executionEngineGenerationRepository.findById(jobId).map(g -> g.getAnalysisExecution().getExecutionStatus())
-                    .orElse(ExecutionEngineAnalysisStatus.Status.RUNNING);
-            if (status == COMPLETED || status == FAILED) {
+
+            Optional<ExitStatus> exitStatusOptional = executionEngineGenerationRepository.findById(jobId)
+                    .filter(g -> {
+                        ExecutionEngineAnalysisStatus.Status status = g.getAnalysisExecution().getExecutionStatus();
+                        return status == COMPLETED || status == FAILED;
+                    })
+                    .map(this::create);
+
+            if (exitStatusOptional.isPresent()) {
+                this.exitStatus = exitStatusOptional.get();
                 break;
             }
+
             Thread.sleep(3000);
         }
         return RepeatStatus.FINISHED;
     }
 
+
+    private ExitStatus create(ExecutionEngineGenerationEntity executionEngineGenerationEntity) {
+        ExitStatus status = executionEngineGenerationEntity.getAnalysisExecution().getExecutionStatus() == FAILED ?
+                ExitStatus.FAILED :
+                ExitStatus.COMPLETED;
+        return status.addExitDescription(executionEngineGenerationEntity.getExitMessage());
+    }
+
     @Override
     public ExitStatus afterStep(StepExecution stepExecution) {
-
-        return status == FAILED ? ExitStatus.FAILED : ExitStatus.COMPLETED;
+        return this.exitStatus;
     }
 }

@@ -19,6 +19,7 @@ public enum FilterTemplates {
     AUTHZ("authz"),
     CORS("cors"),
     SSL("ssl"),
+    NO_CACHE("noCache"),
     HIDE_RESOURCE("hideResource"),
     LOGOUT("logout"),
     UPDATE_TOKEN("updateToken"),

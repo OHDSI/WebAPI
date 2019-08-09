@@ -21,6 +21,7 @@ import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.filters.CorsFilter;
 import org.ohdsi.webapi.shiro.filters.ForceSessionCreationFilter;
+import org.ohdsi.webapi.shiro.filters.ResponseNoCacheFilter;
 import org.ohdsi.webapi.shiro.filters.UrlBasedAuthorizingFilter;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
@@ -35,6 +36,7 @@ import static org.ohdsi.webapi.shiro.management.FilterTemplates.AUTHZ;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.CORS;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.FORCE_SESSION_CREATION;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.JWT_AUTHC;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_CACHE;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_SESSION_CREATION;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.SSL;
 
@@ -130,6 +132,7 @@ public abstract class AtlasSecurity extends Security {
     filters.put(AUTHZ, new UrlBasedAuthorizingFilter());
     filters.put(CORS, new CorsFilter());
     filters.put(SSL, this.getSslFilter());
+    filters.put(NO_CACHE, this.getNoCacheFilter());
   }
 
   @Override
@@ -178,6 +181,10 @@ public abstract class AtlasSecurity extends Security {
     sslFilter.setPort(sslPort);
     sslFilter.setEnabled(sslEnabled);
     return sslFilter;
+  }
+
+  private Filter getNoCacheFilter() {
+    return new ResponseNoCacheFilter();
   }
 
   @Override

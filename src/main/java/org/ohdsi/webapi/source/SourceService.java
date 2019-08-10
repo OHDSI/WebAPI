@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.source;
 
+import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.jasypt.properties.PropertyValueEncryptionUtils;
 import org.ohdsi.sql.SqlTranslate;
@@ -31,6 +32,9 @@ public class SourceService extends AbstractDaoService {
 
     @Value("${datasource.ohdsi.schema}")
     private String schema;
+
+    private Map<Source, Boolean> connectionAvailability = Collections.synchronizedMap(new PassiveExpiringMap<>(5000));
+
 
     private final SourceRepository sourceRepository;
     private final JdbcTemplate jdbcTemplate;
@@ -110,22 +114,16 @@ public class SourceService extends AbstractDaoService {
 
     public Source getPrioritySourceForDaimon(SourceDaimon.DaimonType daimonType) {
 
-        int priority = 0;
-        Source prioritySource = null;
+        List<Source> sourcesByDaimonPriority = sourceRepository.findAllSortedByDiamonPrioirty(daimonType);
 
-        for (Source source : sourceRepository.findAll()) {
-            for (SourceDaimon daimon : source.getDaimons()) {
-                if (daimon.getDaimonType() == daimonType && sourceAccessor.hasAccess(source) && checkConnectionSafe(source)) {
-                    int daimonPriority = daimon.getPriority();
-                    if (daimonPriority >= priority) {
-                        priority = daimonPriority;
-                        prioritySource = source;
-                    }
-                }
+        for (Source source : sourcesByDaimonPriority) {
+            if (!(sourceAccessor.hasAccess(source) && connectionAvailability.computeIfAbsent(source, this::checkConnectionSafe))) {
+                continue;
             }
+            return source;
         }
 
-        return prioritySource;
+        return null;
     }
 
     public Source getPriorityVocabularySource() {

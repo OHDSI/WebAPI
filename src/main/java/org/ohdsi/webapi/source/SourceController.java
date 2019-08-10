@@ -12,12 +12,10 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.VocabularyService;
 import org.ohdsi.webapi.shiro.management.Security;
-import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.convert.support.GenericConversionService;
-import org.springframework.core.env.Environment;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -241,6 +239,20 @@ public class SourceController extends AbstractDaoService {
     return source.getSourceInfo();
   }
 
+  @Path("daimon/priority")
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  public Map<SourceDaimon.DaimonType, SourceInfo> getPriorityDaimons() {
+
+    Map<SourceDaimon.DaimonType, SourceInfo> priorityDaimons = new HashMap<>();
+    Arrays.asList(SourceDaimon.DaimonType.values()).forEach(d -> {
+      Source source = sourceService.getPrioritySourceForDaimon(d);
+      if (source != null) {
+        priorityDaimons.put(d, new SourceInfo(source));
+      }
+    });
+    return priorityDaimons;
+  }
 
   @Path("{sourceKey}/daimons/{daimonType}/set-priority")
   @POST

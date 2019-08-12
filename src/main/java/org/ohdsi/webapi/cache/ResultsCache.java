@@ -15,22 +15,23 @@
  */
 package org.ohdsi.webapi.cache;
 
-import java.util.HashMap;
-import org.ohdsi.webapi.cdmresults.CDMResultsCache;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import org.ohdsi.webapi.cdmresults.cache.CDMResultsCache;
 
 /**
  *
  * @author fdefalco
  */
 public class ResultsCache {
-    private static HashMap<String,CDMResultsCache> sourceCaches = new HashMap<>();
+    private static Map<String,CDMResultsCache> sourceCaches = new ConcurrentHashMap<>();
     
-    public HashMap<String,CDMResultsCache> getCaches() {
+    public static Map<String,CDMResultsCache> getAll() {
         return sourceCaches;
     }
     
-    public CDMResultsCache getCache(String sourceKey) {
-        this.getCaches().putIfAbsent(sourceKey, new CDMResultsCache());
-        return this.getCaches().get(sourceKey);
+    public static CDMResultsCache get(String sourceKey) {
+        getAll().putIfAbsent(sourceKey, new CDMResultsCache());
+        return getAll().get(sourceKey);
     }
 }

@@ -22,7 +22,7 @@ import org.ohdsi.webapi.service.EvidenceService;
 import org.ohdsi.webapi.service.FeasibilityService;
 import org.ohdsi.webapi.service.FeatureExtractionService;
 import org.ohdsi.webapi.service.IRAnalysisResource;
-import org.ohdsi.webapi.service.InfoService;
+import org.ohdsi.webapi.info.InfoService;
 import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.service.PersonService;
 import org.ohdsi.webapi.service.SourceService;

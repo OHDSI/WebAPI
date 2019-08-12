@@ -50,6 +50,7 @@ import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.NameUtils;
@@ -797,7 +798,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
       sourceAvailable = false;
     } else {
       try {
-        sourceService.checkConnection(source.getSourceKey());
+        sourceService.checkConnection(source);
       } catch (Exception e) {
         log.error("cannot get connection to source with key {}", source.getSourceKey(), e);
         sourceAvailable = false;

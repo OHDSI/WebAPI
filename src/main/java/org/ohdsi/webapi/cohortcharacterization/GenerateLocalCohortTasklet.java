@@ -5,7 +5,7 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.service.CohortGenerationService;
 import org.ohdsi.webapi.service.JobService;
-import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.batch.core.Job;
@@ -17,7 +17,6 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;

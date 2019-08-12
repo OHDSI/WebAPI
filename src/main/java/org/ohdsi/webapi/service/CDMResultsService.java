@@ -12,6 +12,7 @@ import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.report.*;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedSqlRender;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
@@ -72,8 +73,8 @@ public class CDMResultsService extends AbstractDaoService {
     public void warmCaches(){
 			sourceService.getSources()
 				.stream()
-				.filter(s -> s.daimons.stream().anyMatch(sd -> Objects.equals(sd.getDaimonType(), SourceDaimon.DaimonType.Results)) && s.daimons.stream().anyMatch(sd -> sd.getPriority() > 0))
-				.forEach(s -> warmCache(s.sourceKey));
+				.filter(s -> s.getDaimons().stream().anyMatch(sd -> Objects.equals(sd.getDaimonType(), SourceDaimon.DaimonType.Results)) && s.getDaimons().stream().anyMatch(sd -> sd.getPriority() > 0))
+				.forEach(s -> warmCache(s.getSourceKey()));
     }
 
     @Path("{sourceKey}/conceptRecordCount")

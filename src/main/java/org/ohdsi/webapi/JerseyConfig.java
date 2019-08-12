@@ -25,7 +25,7 @@ import org.ohdsi.webapi.service.IRAnalysisResource;
 import org.ohdsi.webapi.info.InfoService;
 import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.service.PersonService;
-import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.source.SourceController;
 import org.ohdsi.webapi.service.SqlRenderService;
 import org.ohdsi.webapi.service.TherapyPathResultsService;
 import org.ohdsi.webapi.service.UserService;
@@ -68,7 +68,7 @@ public class JerseyConfig extends ResourceConfig implements InitializingBean {
         register(IRAnalysisResource.class);
         register(JobService.class);
         register(PersonService.class);
-        register(SourceService.class);
+        register(SourceController.class);
         register(SqlRenderService.class);
         register(DDLService.class);
         register(TherapyPathResultsService.class);

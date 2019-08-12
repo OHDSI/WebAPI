@@ -34,8 +34,8 @@ import org.ohdsi.webapi.conceptset.ConceptSetComparison;
 import org.ohdsi.webapi.conceptset.ConceptSetOptimizationResult;
 import org.ohdsi.webapi.service.vocabulary.ConceptSetStrategy;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.SourceDaimon;
-import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.PreparedSqlRender;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.vocabulary.ConceptRelationship;
@@ -84,25 +84,9 @@ public class VocabularyService extends AbstractDaoService {
     }
   };
 
-  private String getDefaultVocabularySourceKey()
-  {
-    List<SourceInfo> vocabSources = sourceService.getSources().stream()
-           .filter(source -> source.daimons.stream()
-                   .filter(daimon -> daimon.getDaimonType() == SourceDaimon.DaimonType.Vocabulary)
-                   .collect(Collectors.toList()).size() > 0)
-            .collect(Collectors.toList());
-    
-    Integer vocabularyPriority = 0;
-    String sourceKey = null;
-    for(SourceInfo si : vocabSources) {
-        SourceDaimon sd = si.daimons.stream().filter(daimon -> daimon.getDaimonType() == SourceDaimon.DaimonType.Vocabulary).findFirst().orElse(null);
-        if (sd != null && sd.getPriority() >= vocabularyPriority) {
-            vocabularyPriority = sd.getPriority();
-            sourceKey = si.sourceKey;
-        }
-    }
-    
-    return sourceKey;
+  private String getDefaultVocabularySourceKey() {
+    Source vocabSource = sourceService.getPriorityVocabularySource();
+    return Objects.nonNull(vocabSource) ? vocabSource.getSourceKey() : null;
   }
 
   /**

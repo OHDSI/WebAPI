@@ -32,6 +32,11 @@ public class EntityPermissionSchemaResolver {
 
     public EntityType getEntityType(Class<? extends CommonEntity> clazz) {
 
-        return classToEntityTypeMap.get(clazz);
+        return classToEntityTypeMap.entrySet()
+            .stream()
+            .filter(e -> e.getKey().isAssignableFrom(clazz))
+            .map(Map.Entry::getValue)
+            .findFirst()
+            .orElse(null);
     }
 }

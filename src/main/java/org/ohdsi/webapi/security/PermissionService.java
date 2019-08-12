@@ -5,6 +5,7 @@ import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.security.model.EntityPermissionSchema;
 import org.ohdsi.webapi.security.model.EntityPermissionSchemaResolver;
 import org.ohdsi.webapi.security.model.EntityType;
+import org.ohdsi.webapi.security.model.SourcePermissionSchema;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.PermissionRepository;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
@@ -13,6 +14,8 @@ import org.ohdsi.webapi.shiro.Entities.RolePermissionRepository;
 import org.ohdsi.webapi.shiro.Entities.RoleRepository;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.aop.framework.Advised;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -33,7 +36,9 @@ public class PermissionService {
     private final WebApplicationContext appContext;
     private final PermissionManager permissionManager;
     private final EntityPermissionSchemaResolver entityPermissionSchemaResolver;
+    private final SourcePermissionSchema sourcePermissionSchema;
     private final RoleRepository roleRepository;
+    private final SourceRepository sourceRepository;
     private final PermissionRepository permissionRepository;
     private final RolePermissionRepository rolePermissionRepository;
     private final ConversionService conversionService;
@@ -44,7 +49,9 @@ public class PermissionService {
             WebApplicationContext appContext,
             PermissionManager permissionManager,
             EntityPermissionSchemaResolver entityPermissionSchemaResolver,
+            SourcePermissionSchema sourcePermissionSchema,
             RoleRepository roleRepository,
+            SourceRepository sourceRepository,
             PermissionRepository permissionRepository,
             RolePermissionRepository rolePermissionRepository,
             ConversionService conversionService
@@ -53,7 +60,9 @@ public class PermissionService {
         this.appContext = appContext;
         this.permissionManager = permissionManager;
         this.entityPermissionSchemaResolver = entityPermissionSchemaResolver;
+        this.sourcePermissionSchema = sourcePermissionSchema;
         this.roleRepository = roleRepository;
+        this.sourceRepository = sourceRepository;
         this.permissionRepository = permissionRepository;
         this.rolePermissionRepository = rolePermissionRepository;
         this.conversionService = conversionService;
@@ -63,6 +72,11 @@ public class PermissionService {
     private void postConstruct() {
 
         this.repositories = new Repositories(appContext);
+
+        // Migrated from Atlas security. Is it still required?
+        for (Source source : sourceRepository.findAll()) {
+            sourcePermissionSchema.addSourceUserRole(source);
+        }
     }
 
     public List<RoleEntity> suggestRoles(String roleSearch) {

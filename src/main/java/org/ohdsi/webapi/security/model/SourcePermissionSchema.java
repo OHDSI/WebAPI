@@ -87,7 +87,7 @@ public class SourcePermissionSchema extends EntityPermissionSchema {
         final String roleName = getSourceRoleName(source.getSourceKey());
         final RoleEntity role;
         if (permissionManager.roleExists(roleName)) {
-            role = permissionManager.getRoleByName(roleName);
+            role = permissionManager.getRoleByNameAndSystemRole(roleName, true);
         } else {
             role = permissionManager.addRole(roleName, true);
         }

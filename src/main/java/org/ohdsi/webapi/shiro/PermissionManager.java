@@ -345,6 +345,14 @@ public class PermissionManager {
     return roleEntity;
   }
 
+  public RoleEntity getRoleByNameAndSystemRole(String roleName, Boolean isSystemRole) {
+    final RoleEntity roleEntity = this.roleRepository.findByNameAndSystemRole(roleName, isSystemRole);
+    if (roleEntity == null)
+      throw new RuntimeException("Role doesn't exist");
+
+    return roleEntity;
+  }
+
   private RoleEntity getRoleById(Long roleId) {
     final RoleEntity roleEntity = this.roleRepository.findById(roleId);
     if (roleEntity == null)

@@ -59,8 +59,6 @@ public class SourceController extends AbstractDaoService {
   @Value("#{!'${security.provider}'.equals('DisabledSecurity')}")
   private boolean securityEnabled;
 
-  private static Collection<SourceInfo> cachedSources = null;
-
   @Path("sources")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
@@ -73,7 +71,7 @@ public class SourceController extends AbstractDaoService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<SourceInfo> refreshSources() {
-    cachedSources = null;
+    sourceService.invalidateCache();
     vocabularyService.clearVocabularyInfoCache();
     sourceService.ensureSourceEncrypted();
     return getSources();
@@ -138,7 +136,7 @@ public class SourceController extends AbstractDaoService {
     source.setCreatedBy(getCurrentUser());
     source.setCreatedDate(new Date());
     Source saved = sourceRepository.save(source);
-    cachedSources = null;
+    sourceService.invalidateCache();
     SourceInfo sourceInfo = new SourceInfo(saved);
     publisher.publishEvent(new AddDataSourceEvent(this, source.getSourceId(), source.getSourceName()));
     return sourceInfo;
@@ -175,7 +173,7 @@ public class SourceController extends AbstractDaoService {
       updated.setModifiedDate(new Date());
       Source result = sourceRepository.save(updated);
         publisher.publishEvent(new ChangeDataSourceEvent(this, updated.getSourceId(), updated.getSourceName()));
-      cachedSources = null;
+      sourceService.invalidateCache();
       return new SourceInfo(result);
     } else {
       throw new NotFoundException();
@@ -217,7 +215,7 @@ public class SourceController extends AbstractDaoService {
     if (source != null) {
       sourceRepository.delete(source);
       publisher.publishEvent(new DeleteDataSourceEvent(this, sourceId, source.getSourceName()));
-      cachedSources = null;
+      sourceService.invalidateCache();
       return Response.ok().build();
     } else {
       throw new NotFoundException();
@@ -267,7 +265,7 @@ public class SourceController extends AbstractDaoService {
       daimon.setPriority(newPriority);
       sourceDaimonRepository.save(daimon);
     });
-    cachedSources = null;
+    sourceService.invalidateCache();
     return Response.ok().build();
   }
 

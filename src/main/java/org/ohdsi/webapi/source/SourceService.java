@@ -131,6 +131,11 @@ public class SourceService extends AbstractDaoService {
         return getPrioritySourceForDaimon(SourceDaimon.DaimonType.Vocabulary);
     }
 
+    public void invalidateCache() {
+
+        this.cachedSources = null;
+    }
+
     private boolean checkConnectionSafe(Source source) {
 
         try {

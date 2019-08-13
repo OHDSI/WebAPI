@@ -138,9 +138,7 @@ public class SourceController extends AbstractDaoService {
     source.setCreatedBy(getCurrentUser());
     source.setCreatedDate(new Date());
     Source saved = sourceRepository.save(source);
-    String sourceKey = saved.getSourceKey();
     cachedSources = null;
-    securityManager.addSourceRole(sourceKey);
     SourceInfo sourceInfo = new SourceInfo(saved);
     publisher.publishEvent(new AddDataSourceEvent(this, source.getSourceId(), source.getSourceName()));
     return sourceInfo;
@@ -217,11 +215,9 @@ public class SourceController extends AbstractDaoService {
     }
     Source source = sourceRepository.findBySourceId(sourceId);
     if (source != null) {
-      final String sourceKey = source.getSourceKey();
       sourceRepository.delete(source);
       publisher.publishEvent(new DeleteDataSourceEvent(this, sourceId, source.getSourceName()));
       cachedSources = null;
-      securityManager.removeSourceRole(sourceKey);
       return Response.ok().build();
     } else {
       throw new NotFoundException();

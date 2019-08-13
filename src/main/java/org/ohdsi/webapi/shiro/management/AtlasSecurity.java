@@ -17,13 +17,11 @@ import org.ohdsi.webapi.OidcConfCreator;
 import org.ohdsi.webapi.cohortcharacterization.CcImportEvent;
 import org.ohdsi.webapi.security.model.EntityPermissionSchemaResolver;
 import org.ohdsi.webapi.security.model.EntityType;
-import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.filters.CorsFilter;
 import org.ohdsi.webapi.shiro.filters.ForceSessionCreationFilter;
 import org.ohdsi.webapi.shiro.filters.ResponseNoCacheFilter;
 import org.ohdsi.webapi.shiro.filters.UrlBasedAuthorizingFilter;
-import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,18 +79,6 @@ public abstract class AtlasSecurity extends Security {
   @PostConstruct
   private void init() {
     fillFilters();
-    initRolesForSources();
-  }
-
-  private void initRolesForSources() {
-    try {
-      for (Source source : sourceRepository.findAll()) {
-        this.addSourceRole(source.getSourceKey());
-      }
-    }
-    catch (Exception e) {
-      log.error(e.getMessage(), e);
-    }
   }
 
   @Override
@@ -147,33 +133,6 @@ public abstract class AtlasSecurity extends Security {
     authenticator.setAuthenticationStrategy(new NegotiateAuthenticationStrategy());
 
     return authenticator;
-  }
-
-  private String getSourceRoleName(String sourceKey) {
-    return String.format("Source user (%s)", sourceKey);
-  }
-
-  @Override
-  public void addSourceRole(String sourceKey) throws Exception {
-    final String roleName = getSourceRoleName(sourceKey);
-    if (this.authorizer.roleExists(roleName)) {
-      return;
-    }
-
-    RoleEntity role = this.authorizer.addRole(roleName, true);
-    Map<String, String> sourceWritePermissionTemplates = permissionSchemaResolver.getForType(EntityType.SOURCE).getAllPermissions();
-    this.authorizer.addPermissionsFromTemplate(role, sourceWritePermissionTemplates, sourceKey);
-  }
-
-  @Override
-  public void removeSourceRole(String sourceKey) throws Exception {
-    final String roleName = getSourceRoleName(sourceKey);
-    if (this.authorizer.roleExists(roleName)) {
-      RoleEntity role = this.authorizer.getRoleByName(roleName);
-      Map<String, String> sourcePermissionTemplates = permissionSchemaResolver.getForType(EntityType.SOURCE).getAllPermissions();
-      this.authorizer.removePermissionsFromTemplate(sourcePermissionTemplates, sourceKey);
-      this.authorizer.removeRole(role.getId());
-    }
   }
 
   private Filter getSslFilter() {

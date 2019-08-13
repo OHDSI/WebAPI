@@ -3,6 +3,8 @@ package org.ohdsi.webapi.security;
 import org.ohdsi.webapi.security.dto.AccessRequestDTO;
 import org.ohdsi.webapi.security.dto.RoleDTO;
 import org.ohdsi.webapi.security.model.EntityType;
+import org.ohdsi.webapi.service.UserService;
+import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.springframework.core.convert.ConversionService;
@@ -18,10 +20,13 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Controller
 @Path(value = "/permission")
@@ -37,6 +42,17 @@ public class PermissionController {
         this.permissionService = permissionService;
         this.permissionManager = permissionManager;
         this.conversionService = conversionService;
+    }
+
+    @GET
+    @Path("")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<UserService.Permission> getPermissions() {
+
+        Iterable<PermissionEntity> permissionEntities = this.permissionManager.getPermissions();
+        return StreamSupport.stream(permissionEntities.spliterator(), false)
+            .map(UserService.Permission::new)
+            .collect(Collectors.toList());
     }
 
     @GET

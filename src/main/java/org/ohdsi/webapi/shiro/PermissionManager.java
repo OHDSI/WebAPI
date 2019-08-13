@@ -63,7 +63,7 @@ public class PermissionManager {
     Guard.checkNotEmpty(roleName);
     Guard.checkNotEmpty(login);
     
-    RoleEntity role = this.getRoleByName(roleName, true);
+    RoleEntity role = this.getSystemRoleByName(roleName);
     UserEntity user = this.getUserByLogin(login);
 
     UserRoleEntity userRole = this.addUser(user, role, null);
@@ -77,7 +77,7 @@ public class PermissionManager {
     if (roleName.equalsIgnoreCase(login))
       throw new RuntimeException("Can't remove user from personal role");
 
-    RoleEntity role = this.getRoleByName(roleName, true);
+    RoleEntity role = this.getSystemRoleByName(roleName);
     UserEntity user = this.getUserByLogin(login);
 
     UserRoleEntity userRole = this.userRoleRepository.findByUserAndRole(user, role);
@@ -147,7 +147,7 @@ public class PermissionManager {
 
     if (defaultRoles != null) {
       for (String roleName: defaultRoles) {
-        RoleEntity defaultRole = this.roleRepository.findByName(roleName);
+        RoleEntity defaultRole = this.getSystemRoleByName(roleName);
         if (defaultRole != null) {
           this.addUser(user, defaultRole, null);
         }
@@ -247,12 +247,7 @@ public class PermissionManager {
 
   public RoleEntity getUserPersonalRole(String username) {
 
-    RoleEntity role = this.roleRepository.findByName(username);
-    if (role == null) {
-      throw new RuntimeException(String.format("There is no personal role for user %s", username));
-    }
-
-    return role;
+    return this.getRoleByName(username, false);
   }
 
   public RoleEntity getCurrentUserPersonalRole() {
@@ -337,12 +332,16 @@ public class PermissionManager {
     return user;
   }
 
-  public RoleEntity getRoleByName(String roleName, Boolean isSystemRole) {
+  private RoleEntity getRoleByName(String roleName, Boolean isSystemRole) {
     final RoleEntity roleEntity = this.roleRepository.findByNameAndSystemRole(roleName, isSystemRole);
     if (roleEntity == null)
       throw new RuntimeException("Role doesn't exist");
 
     return roleEntity;
+  }
+
+  public RoleEntity getSystemRoleByName(String roleName) {
+    return getRoleByName(roleName, true);
   }
 
   private RoleEntity getRoleById(Long roleId) {

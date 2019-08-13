@@ -87,7 +87,7 @@ public class SourcePermissionSchema extends EntityPermissionSchema {
         final String roleName = getSourceRoleName(source.getSourceKey());
         final RoleEntity role;
         if (permissionManager.roleExists(roleName)) {
-            role = permissionManager.getRoleByName(roleName, true);
+            role = permissionManager.getSystemRoleByName(roleName);
         } else {
             role = permissionManager.addRole(roleName, true);
         }
@@ -99,7 +99,7 @@ public class SourcePermissionSchema extends EntityPermissionSchema {
         Source source = (Source) commonEntity;
         final String roleName = getSourceRoleName(source.getSourceKey());
         if (permissionManager.roleExists(roleName)) {
-            RoleEntity role = permissionManager.getRoleByName(roleName, true);
+            RoleEntity role = permissionManager.getSystemRoleByName(roleName);
             permissionManager.removePermissionsFromTemplate(getReadPermissions(), source.getSourceKey());
             permissionManager.removeRole(role.getId());
         }

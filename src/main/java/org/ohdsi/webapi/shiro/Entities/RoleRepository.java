@@ -13,8 +13,6 @@ public interface RoleRepository extends CrudRepository<RoleEntity, Long> {
 
   RoleEntity findById(Long id);
 
-  RoleEntity findByName(String name);
-
   RoleEntity findByNameAndSystemRole(String name, Boolean isSystem);
 
   List<RoleEntity> findByNameIgnoreCaseContaining(String roleSearch);

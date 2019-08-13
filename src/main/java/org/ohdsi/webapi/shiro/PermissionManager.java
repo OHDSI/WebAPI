@@ -63,7 +63,7 @@ public class PermissionManager {
     Guard.checkNotEmpty(roleName);
     Guard.checkNotEmpty(login);
     
-    RoleEntity role = this.getRoleByName(roleName);
+    RoleEntity role = this.getRoleByName(roleName, true);
     UserEntity user = this.getUserByLogin(login);
 
     UserRoleEntity userRole = this.addUser(user, role, null);
@@ -77,7 +77,7 @@ public class PermissionManager {
     if (roleName.equalsIgnoreCase(login))
       throw new RuntimeException("Can't remove user from personal role");
 
-    RoleEntity role = this.getRoleByName(roleName);
+    RoleEntity role = this.getRoleByName(roleName, true);
     UserEntity user = this.getUserByLogin(login);
 
     UserRoleEntity userRole = this.userRoleRepository.findByUserAndRole(user, role);
@@ -337,15 +337,7 @@ public class PermissionManager {
     return user;
   }
 
-  public RoleEntity getRoleByName(String roleName) {
-    final RoleEntity roleEntity = this.roleRepository.findByName(roleName);
-    if (roleEntity == null)
-      throw new RuntimeException("Role doesn't exist");
-
-    return roleEntity;
-  }
-
-  public RoleEntity getRoleByNameAndSystemRole(String roleName, Boolean isSystemRole) {
+  public RoleEntity getRoleByName(String roleName, Boolean isSystemRole) {
     final RoleEntity roleEntity = this.roleRepository.findByNameAndSystemRole(roleName, isSystemRole);
     if (roleEntity == null)
       throw new RuntimeException("Role doesn't exist");

@@ -5,11 +5,11 @@ import static org.ohdsi.webapi.Constants.WARM_CACHE_BY_USER;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
@@ -97,7 +97,7 @@ public class CDMResultsService extends AbstractDaoService {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Map<Integer, List<Long>> getConceptRecordCount(@PathParam("sourceKey") String sourceKey, List<Integer> identifiers) {
+    public List<SimpleEntry<Integer, List<Long>>> getConceptRecordCount(@PathParam("sourceKey") String sourceKey, List<Integer> identifiers) {
 
         Collection<DescendantRecordCount> recordCounts = ResultsCache.get(sourceKey)
                 .findAndCache(identifiers, idsForRequest -> {
@@ -108,14 +108,13 @@ public class CDMResultsService extends AbstractDaoService {
         return convertToResponse(recordCounts);
     }
 
-    private Map<Integer, List<Long>> convertToResponse(Collection<DescendantRecordCount> conceptRecordCounts) {
-
+    private List<SimpleEntry<Integer, List<Long>>> convertToResponse(Collection<DescendantRecordCount> conceptRecordCounts) {
         return conceptRecordCounts.stream()
-                .collect(Collectors.toMap(
-                        DescendantRecordCount::getId,
-                        descendantRecordCount -> Arrays.asList(descendantRecordCount.getRecordCount(), descendantRecordCount.getDescendantRecordCount()),
-                        (record1, record2) -> record2
-                ));
+                .map(descendantRecordCount -> new SimpleEntry<>(
+                        descendantRecordCount.getId(),
+                        Arrays.asList(descendantRecordCount.getRecordCount(), descendantRecordCount.getDescendantRecordCount())
+                ))
+                .collect(Collectors.toList());
     }
     
     protected List<DescendantRecordCount> executeGetConceptRecordCount(List<Integer> identifiers, Source source) {

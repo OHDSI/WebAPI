@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jmeterTestPlan version="1.2" properties="4.0" jmeter="4.0 r1823414">
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.1.1 r1855137">
   <hashTree>
     <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="WebAPI Custom Endpoints Integration Tests" enabled="true">
       <stringProp name="TestPlan.comments"></stringProp>
@@ -82,7 +82,7 @@
           </elementProp>
           <elementProp name="sourceKey" elementType="Argument">
             <stringProp name="Argument.name">sourceKey</stringProp>
-            <stringProp name="Argument.value">${__P(webapi.sourcekey,SYNPUF)}</stringProp>
+            <stringProp name="Argument.value">${__P(webapi.sourcekey,HONEUR_OMOP_CDM)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
         </collectionProp>
@@ -284,7 +284,7 @@ def jsonSlurper = new JsonSlurper();
 data = jsonSlurper.parseText(prev.getResponseDataAsString());
 
 AssertionResult.setFailureMessage(&quot;Wrong response for &apos;GET Organizations List&apos; (Arraysize=${data.size()})&quot;);
-AssertionResult.setFailure(data.size() &lt;= 0);    
+AssertionResult.setFailure(data.size() &lt;= 0);
 
 </stringProp>
             </JSR223Assertion>
@@ -446,7 +446,7 @@ def jsonSlurper = new JsonSlurper();
 data = jsonSlurper.parseText(prev.getResponseDataAsString());
 
 AssertionResult.setFailureMessage(&quot;Wrong response for &apos;GET Organizations List&apos; (Arraysize=${data.size()})&quot;);
-AssertionResult.setFailure(data.size() &lt;= 0);    
+AssertionResult.setFailure(data.size() &lt;= 0);
 
 </stringProp>
             </JSR223Assertion>
@@ -583,7 +583,7 @@ def jsonSlurper = new JsonSlurper();
 data = jsonSlurper.parseText(prev.getResponseDataAsString());
 
 AssertionResult.setFailureMessage(&quot;Wrong response for &apos;GET HSS List&apos; (Arraysize=${data.size()})&quot;);
-AssertionResult.setFailure(data.size() &lt;= 0);    
+AssertionResult.setFailure(data.size() &lt;= 0);
 </stringProp>
               </JSR223Assertion>
               <hashTree/>
@@ -612,7 +612,7 @@ for (d in data) {
 
 
 AssertionResult.setFailureMessage(&quot;No definition found with uuid ${uuidToImport}.&quot;);
-AssertionResult.setFailure(!success);   
+AssertionResult.setFailure(!success);
 
 </stringProp>
               </JSR223Assertion>
@@ -815,14 +815,14 @@ for(object in data){
 		//Currently one element is an object, so this will always work.
 		inValid = checkDefinitionId(object.getValue().id);
 	}
-	
+
 	if(inValid){
 		break
 	}
 }
 
 AssertionResult.setFailureMessage(&quot;Wrong response for &apos;GET Export Cohort Definition Generation Results To Cloud&apos; (Was=${actualCohortDefId}, Expected=${expectedCohortDefId})&quot;);
-AssertionResult.setFailure(inValid);    
+AssertionResult.setFailure(inValid);
 </stringProp>
                   <stringProp name="scriptLanguage">groovy</stringProp>
                 </JSR223Assertion>
@@ -886,7 +886,7 @@ AssertionResult.setFailure(inValid);
           <hashTree>
             <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Definition Results To Import" enabled="true">
               <stringProp name="JSONPostProcessor.referenceNames">definitionResultsToImport</stringProp>
-              <stringProp name="JSONPostProcessor.jsonPathExprs">$.[?(@.originalFilename =~ /SYNPUF-[0-9]+\.results/)]</stringProp>
+              <stringProp name="JSONPostProcessor.jsonPathExprs">$.[?(@.originalFilename =~ /HONEUR_OMOP_CDM-[0-9]+\.results/)]</stringProp>
               <stringProp name="JSONPostProcessor.match_numbers">-1</stringProp>
             </JSONPostProcessor>
             <hashTree/>

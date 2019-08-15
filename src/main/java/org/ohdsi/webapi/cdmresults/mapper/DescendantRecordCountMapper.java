@@ -14,25 +14,20 @@
  * limitations under the License.
  *
  */
-package org.ohdsi.webapi.cache;
+package org.ohdsi.webapi.cdmresults.mapper;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import org.ohdsi.webapi.cdmresults.cache.CDMResultsCache;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import org.ohdsi.webapi.cdmresults.DescendantRecordCount;
 
-/**
- *
- * @author fdefalco
- */
-public class ResultsCache {
-    private static Map<String,CDMResultsCache> sourceCaches = new ConcurrentHashMap<>();
-    
-    public static Map<String,CDMResultsCache> getAll() {
-        return sourceCaches;
-    }
-    
-    public static CDMResultsCache get(String sourceKey) {
-        getAll().putIfAbsent(sourceKey, new CDMResultsCache());
-        return getAll().get(sourceKey);
-    }
+public class DescendantRecordCountMapper {
+
+	public DescendantRecordCount mapRow(ResultSet rs)
+			throws SQLException {
+		DescendantRecordCount descendantRecordCount = new DescendantRecordCount();
+		descendantRecordCount.setId(rs.getInt("concept_id"));
+		descendantRecordCount.setRecordCount(rs.getLong("record_count"));
+		descendantRecordCount.setDescendantRecordCount(rs.getLong("descendant_record_count"));
+		return descendantRecordCount;
+	}
 }

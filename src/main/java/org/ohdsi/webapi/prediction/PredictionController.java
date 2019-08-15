@@ -4,15 +4,14 @@ import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.analyses.CommonAnalysisDTO;
-import org.ohdsi.webapi.common.generation.CommonGeneration;
 import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.ohdsi.webapi.prediction.domain.PredictionGenerationEntity;
 import org.ohdsi.webapi.prediction.dto.PredictionAnalysisDTO;
 import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl;
-import org.ohdsi.webapi.service.SourceService;
-import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -197,7 +196,7 @@ public class PredictionController {
   @Produces(MediaType.APPLICATION_JSON)
   public List<ExecutionBasedGenerationDTO> getGenerations(@PathParam("id") Integer predictionAnalysisId) {
 
-    Map<String, SourceInfo> sourcesMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_KEY);
+    Map<String, Source> sourcesMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_KEY);
     List<PredictionGenerationEntity> predictionGenerations = service.getPredictionGenerations(predictionAnalysisId);
     List<ExecutionBasedGenerationDTO> dtos = converterUtils.convertList(predictionGenerations, ExecutionBasedGenerationDTO.class);
     return sensitiveInfoService.filterSensitiveInfo(dtos, info -> Collections.singletonMap(Constants.Variables.SOURCE, sourcesMap.get(info.getSourceKey())));

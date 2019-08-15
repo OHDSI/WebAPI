@@ -111,7 +111,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     SimpleJobBuilder generateJobBuilder = jobBuilders.get(jobName).start(generateCohortStep);
 
     if (updateGenerationInfo) {
-      generateJobBuilder.listener(new GenerationJobExecutionListener(this, cohortDefinitionRepository, this.getTransactionTemplateRequiresNew(),
+      generateJobBuilder.listener(new GenerationJobExecutionListener(sourceService, cohortDefinitionRepository, this.getTransactionTemplateRequiresNew(),
               this.getSourceJdbcTemplate(source)));
     }
 
@@ -143,26 +143,10 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
 
   public JobParametersBuilder getJobParametersBuilder(Source source, CohortDefinition cohortDefinition, String targetTable) {
 
-    // cdmTableQualifier and resultsTableQualifier are mandatory but here we allow to proceed further with nulls because it is needed to create job instance
-    // to handle it correctly on the frontend. These nulls will be caught and handled in org.ohdsi.webapi.util.JobUtils.getSchema
-    String cdmTableQualifier = source.getTableQualifierOrNull(CDM);
-    String resultsTableQualifier = SourceUtils.getResultsQualifierOrNull(source);
-    String vocabularyTableQualifier = source.getTableQualifierOrNull(Vocabulary);
-
     JobParametersBuilder builder = new JobParametersBuilder();
     builder.addString(JOB_NAME, String.format("Generating cohort %d : %s (%s)", cohortDefinition.getId(), source.getSourceName(), source.getSourceKey()));
-    builder.addString(CDM_DATABASE_SCHEMA, cdmTableQualifier);
-    builder.addString(RESULTS_DATABASE_SCHEMA, resultsTableQualifier);
-    builder.addString(TEMP_DATABASE_SCHEMA, SourceUtils.getTempQualifierOrNull(source));
-
-    builder.addString(TARGET_DATABASE_SCHEMA, resultsTableQualifier);
     builder.addString(TARGET_TABLE, targetTable);
     builder.addString(SESSION_ID, SessionUtils.sessionId());
-
-    if (vocabularyTableQualifier != null) {
-      builder.addString(VOCABULARY_DATABASE_SCHEMA, vocabularyTableQualifier);
-    }
-    builder.addString(TARGET_DIALECT, source.getSourceDialect());
     builder.addString(COHORT_DEFINITION_ID, String.valueOf(cohortDefinition.getId()));
     builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
     builder.addString(GENERATE_STATS, Boolean.TRUE.toString());
@@ -173,14 +157,16 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     Integer cohortDefinitionId,
     Integer sourceId,
     String sessionId,
-    String cdmSchema,
-    String resultsSchema,
-    String targetSchema,
     String targetTable,
-    Object vocabSchema,
-    boolean generateStats,
-    String targetDialect
+    boolean generateStats
   ) {
+
+    Source source = sourceService.findBySourceId(sourceId);
+
+    String cdmSchema = SourceUtils.getCdmQualifier(source);
+    String vocabSchema = SourceUtils.getVocabQualifierOrNull(source);
+    String resultsSchema = SourceUtils.getResultsQualifier(source);
+    String targetSchema = resultsSchema;
 
     CohortExpressionQueryBuilder expressionQueryBuilder = new CohortExpressionQueryBuilder();
     StringBuilder sqlBuilder = new StringBuilder();
@@ -193,12 +179,9 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     options.cdmSchema = cdmSchema;
     options.resultSchema = resultsSchema;
     options.targetTable = targetSchema + "." + targetTable;
-    if (vocabSchema != null){
-      options.vocabularySchema = vocabSchema.toString();
-    }
+    options.vocabularySchema = vocabSchema;
     options.generateStats = generateStats;
 
-    Source source = sourceService.findBySourceId(sourceId);
     final String oracleTempSchema = SourceUtils.getTempQualifier(source);
 
     if (generateStats) {
@@ -223,7 +206,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     sqlBuilder.append(expressionSql);
 
     String renderedSql = SqlRender.renderSql(sqlBuilder.toString(), new String[] {"target_database_schema", "target_cohort_id"}, new String[]{targetSchema, cohortDefinitionId.toString()});
-    String translatedSql = SqlTranslate.translateSql(renderedSql, targetDialect, sessionId, oracleTempSchema);
+    String translatedSql = SqlTranslate.translateSql(renderedSql, source.getSourceDialect(), sessionId, oracleTempSchema);
     return SqlSplit.splitSql(translatedSql);
   }
 

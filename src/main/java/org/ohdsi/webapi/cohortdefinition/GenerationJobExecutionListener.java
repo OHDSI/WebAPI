@@ -22,7 +22,9 @@ import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.GenerationStatus;
-import org.ohdsi.webapi.service.CohortGenerationService;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceService;
+import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionListener;
@@ -39,17 +41,17 @@ import org.springframework.transaction.support.TransactionTemplate;
  */
 public class GenerationJobExecutionListener implements JobExecutionListener {
 
-	private final CohortGenerationService cohortGenerationService;
+	private final SourceService sourceService;
 	private final CohortDefinitionRepository cohortDefinitionRepository;
   private final TransactionTemplate transactionTemplate;
 	private final JdbcTemplate sourceTemplate;
 	
-	public GenerationJobExecutionListener(CohortGenerationService cohortGenerationService,
+	public GenerationJobExecutionListener(SourceService sourceService,
 																				CohortDefinitionRepository cohortDefinitionRepository,
 																				TransactionTemplate transactionTemplate,
 																				JdbcTemplate sourceTemplate)
 	{
-		this.cohortGenerationService = cohortGenerationService;
+		this.sourceService = sourceService;
 		this.cohortDefinitionRepository = cohortDefinitionRepository;
 		this.transactionTemplate = transactionTemplate;
 		this.sourceTemplate = sourceTemplate;
@@ -70,8 +72,8 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
     JobParameters jobParams = je.getJobParameters();
     Integer defId = Integer.valueOf(jobParams.getString("cohort_definition_id"));
     Integer sourceId = Integer.valueOf(jobParams.getString("source_id"));
-		String targetDialect = jobParams.getString("target_dialect");
-		String cohortTable = jobParams.getString("target_database_schema") + "." + jobParams.getString("target_table");
+    Source source = sourceService.findBySourceId(sourceId);
+    String cohortTable = SourceUtils.getResultsQualifier(source) + "." + jobParams.getString("target_table");
 		
 		DefaultTransactionDefinition completeTx = new DefaultTransactionDefinition();
 		completeTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -93,7 +95,7 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 
 			// query summary results from source
 			String statsQuery = "SELECT count(distinct subject_id) as person_count, count(*) as record_count from @cohort_table where cohort_definition_id = @cohort_definition_id";
-			String statsSql = SqlTranslate.translateSql(statsQuery, targetDialect, null, null);
+			String statsSql = SqlTranslate.translateSql(statsQuery, source.getSourceDialect(), null, null);
 			String renderedSql = SqlRender.renderSql(statsSql, new String[]{"cohort_table", "cohort_definition_id"}, new String[]{cohortTable, defId.toString()});
       Map<String, Object> stats = this.sourceTemplate.queryForMap(renderedSql);
 			info.setPersonCount(Long.parseLong(stats.get("person_count").toString()));

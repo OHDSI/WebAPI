@@ -18,7 +18,6 @@ package org.ohdsi.webapi.cohortdefinition;
 import org.ohdsi.webapi.common.generation.CancelableTasklet;
 import org.ohdsi.webapi.service.CohortGenerationService;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
-import org.ohdsi.webapi.util.JobUtils;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.scope.context.ChunkContext;
@@ -54,13 +53,8 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
         Integer.valueOf(jobParams.get(COHORT_DEFINITION_ID).toString()),
         Integer.parseInt(jobParams.get(SOURCE_ID).toString()),
         jobParams.getOrDefault(SESSION_ID, SessionUtils.sessionId()).toString(),
-        JobUtils.getSchema(jobParams, CDM_DATABASE_SCHEMA),
-        JobUtils.getSchema(jobParams, RESULTS_DATABASE_SCHEMA),
-        JobUtils.getSchema(jobParams, TARGET_DATABASE_SCHEMA),
         jobParams.get(TARGET_TABLE).toString(),
-        jobParams.get(VOCABULARY_DATABASE_SCHEMA),
-        Boolean.valueOf(jobParams.get(GENERATE_STATS).toString()),
-        jobParams.get("target_dialect").toString()
+        Boolean.valueOf(jobParams.get(GENERATE_STATS).toString())
     );
   }
 }

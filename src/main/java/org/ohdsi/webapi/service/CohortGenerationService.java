@@ -145,6 +145,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
 
     JobParametersBuilder builder = new JobParametersBuilder();
     builder.addString(JOB_NAME, String.format("Generating cohort %d : %s (%s)", cohortDefinition.getId(), source.getSourceName(), source.getSourceKey()));
+    builder.addString(TARGET_DATABASE_SCHEMA, SourceUtils.getResultsQualifier(source));
     builder.addString(TARGET_TABLE, targetTable);
     builder.addString(SESSION_ID, SessionUtils.sessionId());
     builder.addString(COHORT_DEFINITION_ID, String.valueOf(cohortDefinition.getId()));
@@ -157,6 +158,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     Integer cohortDefinitionId,
     Integer sourceId,
     String sessionId,
+    String targetSchema,
     String targetTable,
     boolean generateStats
   ) {
@@ -166,12 +168,11 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     String cdmSchema = SourceUtils.getCdmQualifier(source);
     String vocabSchema = SourceUtils.getVocabQualifierOrNull(source);
     String resultsSchema = SourceUtils.getResultsQualifier(source);
-    String targetSchema = resultsSchema;
 
     CohortExpressionQueryBuilder expressionQueryBuilder = new CohortExpressionQueryBuilder();
     StringBuilder sqlBuilder = new StringBuilder();
 
-    CohortDefinition def = this.cohortDefinitionRepository.findOne(cohortDefinitionId);
+    CohortDefinition def = this.cohortDefinitionRepository.findOneWithDetail(cohortDefinitionId);
     CohortExpression expression = def.getDetails().getExpressionObject();
 
     CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();

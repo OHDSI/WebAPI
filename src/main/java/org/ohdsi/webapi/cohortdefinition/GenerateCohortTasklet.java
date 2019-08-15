@@ -53,6 +53,7 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
         Integer.valueOf(jobParams.get(COHORT_DEFINITION_ID).toString()),
         Integer.parseInt(jobParams.get(SOURCE_ID).toString()),
         jobParams.getOrDefault(SESSION_ID, SessionUtils.sessionId()).toString(),
+        jobParams.get(TARGET_DATABASE_SCHEMA).toString(),
         jobParams.get(TARGET_TABLE).toString(),
         Boolean.valueOf(jobParams.get(GENERATE_STATS).toString())
     );

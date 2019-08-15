@@ -110,9 +110,9 @@ public class GenerationUtils extends AbstractDaoService {
 
         GenerateLocalCohortTasklet generateLocalCohortTasklet = new GenerateLocalCohortTasklet(
                 transactionTemplate,
+                getSourceJdbcTemplate(source),
                 cohortGenerationService,
                 sourceService,
-                jobService,
                 cohortGetter
         );
         Step generateLocalCohortStep = stepBuilderFactory.get(analysisTypeName + ".generateCohort")

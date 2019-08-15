@@ -73,34 +73,40 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
     String[] result = new String[0];
 
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
-    Integer defId = Integer.valueOf(jobParams.get(COHORT_DEFINITION_ID).toString());
+    Integer cohortDefinitionId = Integer.valueOf(jobParams.get(COHORT_DEFINITION_ID).toString());
+    Integer sourceId = Integer.parseInt(jobParams.get(SOURCE_ID).toString());
     String sessionId = jobParams.getOrDefault(SESSION_ID, SessionUtils.sessionId()).toString();
+    String cdmSchema = JobUtils.getSchema(jobParams, CDM_DATABASE_SCHEMA);
+    String resultsSchema = JobUtils.getSchema(jobParams, RESULTS_DATABASE_SCHEMA);
+    String targetSchema = JobUtils.getSchema(jobParams, TARGET_DATABASE_SCHEMA);
+    String targetTable = jobParams.get(TARGET_TABLE).toString();
+    Object vocabSchema = jobParams.get(VOCABULARY_DATABASE_SCHEMA);
+    boolean generateStats = Boolean.valueOf(jobParams.get(GENERATE_STATS).toString());
+    String targetDialect = jobParams.get("target_dialect").toString();
 
     try {
       DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
       requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 
       TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(requresNewTx);
-      CohortDefinition def = this.cohortDefinitionRepository.findOne(defId);
+      CohortDefinition def = this.cohortDefinitionRepository.findOne(cohortDefinitionId);
       CohortExpression expression = mapper.readValue(def.getDetails().getExpression(), CohortExpression.class);
       this.transactionTemplate.getTransactionManager().commit(initStatus);
 
       CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
-      options.cohortId = defId;
-      options.cdmSchema = JobUtils.getSchema(jobParams, CDM_DATABASE_SCHEMA);
-      options.resultSchema = JobUtils.getSchema(jobParams, RESULTS_DATABASE_SCHEMA);
-      final String targetSchema = JobUtils.getSchema(jobParams, TARGET_DATABASE_SCHEMA);
-      options.targetTable = targetSchema + "." + jobParams.get(TARGET_TABLE).toString();
-      if (jobParams.get(VOCABULARY_DATABASE_SCHEMA) != null){ 
-        options.vocabularySchema = jobParams.get(VOCABULARY_DATABASE_SCHEMA).toString();
+      options.cohortId = cohortDefinitionId;
+      options.cdmSchema = cdmSchema;
+      options.resultSchema = resultsSchema;
+      options.targetTable = targetSchema + "." + targetTable;
+      if (vocabSchema != null){
+        options.vocabularySchema = vocabSchema.toString();
       }        
-      options.generateStats = Boolean.valueOf(jobParams.get(GENERATE_STATS).toString());
+      options.generateStats = generateStats;
 
-      Integer sourceId = Integer.parseInt(jobParams.get(SOURCE_ID).toString());
       Source source = sourceRepository.findBySourceId(sourceId);
       final String oracleTempSchema = SourceUtils.getTempQualifier(source);
 
-      if (jobParams.get(GENERATE_STATS).equals(Boolean.TRUE.toString())) {
+      if (generateStats) {
 
         String deleteSql = "DELETE FROM @target_database_schema.cohort_inclusion WHERE cohort_definition_id = @cohortDefinitionId;";
         PreparedStatementRenderer psr = new PreparedStatementRenderer(source, deleteSql, "target_database_schema",
@@ -128,10 +134,10 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
 
       String expressionSql = expressionQueryBuilder.buildExpressionQuery(expression, options);
       expressionSql = SqlRender.renderSql(expressionSql, null, null);
-      String translatedSql = SqlTranslate.translateSql(expressionSql, jobParams.get("target_dialect").toString(), sessionId, oracleTempSchema);
+      String translatedSql = SqlTranslate.translateSql(expressionSql, targetDialect, sessionId, oracleTempSchema);
       return SqlSplit.splitSql(translatedSql);
     } catch (Exception e) {
-      log.error("Failed to generate cohort: {}", defId, e);
+      log.error("Failed to generate cohort: {}", cohortDefinitionId, e);
       throw new RuntimeException(e);
     }
   }

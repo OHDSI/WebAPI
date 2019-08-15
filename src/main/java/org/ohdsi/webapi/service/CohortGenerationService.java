@@ -91,7 +91,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     log.info("Beginning generate cohort for cohort definition id: {}", cohortDefinition.getId());
 
     GenerateCohortTasklet generateTasklet = new GenerateCohortTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), cohortDefinitionRepository,
-            getSourceRepository(), objectMapper);
+            getSourceRepository());
 
     ExceptionHandler exceptionHandler = new GenerationTaskExceptionHandler(new TempTableCleanupManager(getSourceJdbcTemplate(source),
             getTransactionTemplate(),

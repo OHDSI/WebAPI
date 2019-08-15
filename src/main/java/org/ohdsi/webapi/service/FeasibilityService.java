@@ -593,7 +593,7 @@ public class FeasibilityService extends AbstractDaoService {
     final JobParameters jobParameters = builder.toJobParameters();
     final CancelableJdbcTemplate sourceJdbcTemplate = getSourceJdbcTemplate(source);
 
-    GenerateCohortTasklet indexRuleTasklet = new GenerateCohortTasklet(sourceJdbcTemplate, getTransactionTemplate(), cohortDefinitionRepository, getSourceRepository(), objectMapper);
+    GenerateCohortTasklet indexRuleTasklet = new GenerateCohortTasklet(sourceJdbcTemplate, getTransactionTemplate(), cohortDefinitionRepository, getSourceRepository());
 
     Step generateCohortStep = stepBuilders.get("performStudy.generateIndexCohort")
             .tasklet(indexRuleTasklet)

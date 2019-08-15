@@ -327,7 +327,7 @@ public class CDMResultsService extends AbstractDaoService {
 
     private JobExecutionResource warmCache(final Source source, final String jobName) {
 
-        if (!cdmResultCacheWarmingDisable) {
+        if (cdmResultCacheWarmingDisable) {
             logger.info("Cache warming is disabled for CDM results");
             return new JobExecutionResource();
         }

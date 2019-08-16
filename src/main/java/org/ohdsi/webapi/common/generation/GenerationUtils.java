@@ -119,7 +119,7 @@ public class GenerationUtils extends AbstractDaoService {
                 .tasklet(generateLocalCohortTasklet)
                 .build();
 
-        Step generateCohortFeaturesStep = stepBuilderFactory.get(analysisTypeName + ".generate")
+        Step generateAnalysisStep = stepBuilderFactory.get(analysisTypeName + ".generate")
                 .tasklet(analysisTasklet)
                 .exceptionHandler(exceptionHandler)
                 .build();
@@ -129,7 +129,7 @@ public class GenerationUtils extends AbstractDaoService {
         SimpleJobBuilder generateJobBuilder = jobBuilders.get(analysisTypeName)
                 .start(createCohortTableStep)
                 .next(generateLocalCohortStep)
-                .next(generateCohortFeaturesStep)
+                .next(generateAnalysisStep)
                 .listener(dropCohortTableListener)
                 .listener(new AutoremoveJobListener(jobService));
 

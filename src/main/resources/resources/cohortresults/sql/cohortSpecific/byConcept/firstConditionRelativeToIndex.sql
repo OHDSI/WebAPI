@@ -24,7 +24,7 @@ FROM   (SELECT cohort_definition_id,
                               ORDER BY -1* CAST(stratum_1 AS INT)*30 ASC) AS
               count_value 
                    FROM  (
-                                             select stratum_1, max(count_value) as count_value
+                                             select CAST(stratum_1 AS VARCHAR(11)) AS stratum_1, max(count_value) as count_value
                                                   from
                                                   (
                                                   select row_number() over (order by analysis_id) as stratum_1, 0 as count_value
@@ -76,7 +76,7 @@ FROM   (SELECT cohort_definition_id,
                            GROUP  BY CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT)
 										HAVING Sum(heracles_results.count_value) > @minCovariatePersonCount
                    ) ct1 
-               ON hr1.concept_id = ct1.concept_id 
+               ON hr1.concept_id = ct1.concept_id
        INNER JOIN @cdm_database_schema.concept c1 
                ON hr1.concept_id = c1.concept_id 
 WHERE  c1.concept_id = @conceptId and t1.count_value > @minIntervalPersonCount 
@@ -107,7 +107,7 @@ FROM   (SELECT cohort_definition_id,
                               ORDER BY -1* CAST(stratum_1 AS INT)*30 ASC) AS
               count_value 
                    FROM  (
-                                             select stratum_1, max(count_value) as count_value
+                                             select CAST(stratum_1 AS VARCHAR(11)) AS stratum_1, max(count_value) as count_value
                                                   from
                                                   (
                                                   select row_number() over (order by analysis_id) as stratum_1, 0 as count_value

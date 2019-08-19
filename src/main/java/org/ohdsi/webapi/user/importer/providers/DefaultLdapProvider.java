@@ -48,7 +48,7 @@ public class DefaultLdapProvider extends AbstractLdapProvider {
   @Value("${security.ldap.system.password}")
   private String systemPassword;
 
-  private static final Set<String> GROUP_CLASSES = ImmutableSet.of("groupOfUniqueNames", "groupOfNames");
+  private static final Set<String> GROUP_CLASSES = ImmutableSet.of("groupOfUniqueNames", "groupOfNames", "posixGroup");
 
   private static final Set<String> USER_CLASSES = ImmutableSet.of("account", "person");
 

@@ -15,7 +15,7 @@ import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.CohortGenerationService;
 import org.ohdsi.webapi.service.GenerationTaskExceptionHandler;
 import org.ohdsi.webapi.service.JobService;
-import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -110,16 +110,16 @@ public class GenerationUtils extends AbstractDaoService {
 
         GenerateLocalCohortTasklet generateLocalCohortTasklet = new GenerateLocalCohortTasklet(
                 transactionTemplate,
+                getSourceJdbcTemplate(source),
                 cohortGenerationService,
                 sourceService,
-                jobService,
                 cohortGetter
         );
         Step generateLocalCohortStep = stepBuilderFactory.get(analysisTypeName + ".generateCohort")
                 .tasklet(generateLocalCohortTasklet)
                 .build();
 
-        Step generateCohortFeaturesStep = stepBuilderFactory.get(analysisTypeName + ".generate")
+        Step generateAnalysisStep = stepBuilderFactory.get(analysisTypeName + ".generate")
                 .tasklet(analysisTasklet)
                 .exceptionHandler(exceptionHandler)
                 .build();
@@ -129,7 +129,7 @@ public class GenerationUtils extends AbstractDaoService {
         SimpleJobBuilder generateJobBuilder = jobBuilders.get(analysisTypeName)
                 .start(createCohortTableStep)
                 .next(generateLocalCohortStep)
-                .next(generateCohortFeaturesStep)
+                .next(generateAnalysisStep)
                 .listener(dropCohortTableListener)
                 .listener(new AutoremoveJobListener(jobService));
 

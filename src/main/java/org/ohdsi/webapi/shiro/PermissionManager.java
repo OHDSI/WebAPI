@@ -47,15 +47,11 @@ public class PermissionManager {
 
   private ThreadLocal<ConcurrentHashMap<String, AuthorizationInfo>> authorizationInfoCache = ThreadLocal.withInitial(ConcurrentHashMap::new);
 
-  public RoleEntity addRole(String roleName, boolean isSystem) throws Exception {
+  public RoleEntity addRole(String roleName, boolean isSystem) {
     Guard.checkNotEmpty(roleName);
-    
-    RoleEntity role = this.roleRepository.findByNameAndSystemRole(roleName, isSystem);
-    if (role != null) {
-      throw new Exception("Can't create role - it already exists");
-    }
-    
-    role = new RoleEntity();
+
+    checkRoleIsAbsent(roleName, isSystem, "Can't create role - it already exists");
+    RoleEntity role = new RoleEntity();
     role.setName(roleName);
     role.setSystemRole(isSystem);
     role = this.roleRepository.save(role);
@@ -63,25 +59,25 @@ public class PermissionManager {
     return role;
   }
 
-  public String addUserToRole(String roleName, String login) throws Exception {
+  public String addUserToRole(String roleName, String login) {
     Guard.checkNotEmpty(roleName);
     Guard.checkNotEmpty(login);
     
-    RoleEntity role = this.getRoleByName(roleName);
+    RoleEntity role = this.getSystemRoleByName(roleName);
     UserEntity user = this.getUserByLogin(login);
 
     UserRoleEntity userRole = this.addUser(user, role, null);
     return userRole.getStatus();
   }
 
-  public void removeUserFromRole(String roleName, String login) throws Exception {
+  public void removeUserFromRole(String roleName, String login) {
     Guard.checkNotEmpty(roleName);
     Guard.checkNotEmpty(login);
 
     if (roleName.equalsIgnoreCase(login))
-      throw new Exception("Can't remove user from personal role");
+      throw new RuntimeException("Can't remove user from personal role");
 
-    RoleEntity role = this.getRoleByName(roleName);
+    RoleEntity role = this.getSystemRoleByName(roleName);
     UserEntity user = this.getUserByLogin(login);
 
     UserRoleEntity userRole = this.userRoleRepository.findByUserAndRole(user, role);
@@ -125,7 +121,7 @@ public class PermissionManager {
   }
 
   @Transactional
-  public UserEntity registerUser(final String login, final String name, final Set<String> defaultRoles) throws Exception {
+  public UserEntity registerUser(final String login, final String name, final Set<String> defaultRoles) {
     Guard.checkNotEmpty(login);
     
     UserEntity user = userRepository.findByLogin(login);
@@ -137,7 +133,9 @@ public class PermissionManager {
       }
       return user;
     }
-    
+
+    checkRoleIsAbsent(login, false, "User with such login has been improperly removed from the database. " +
+            "Please contact your system administrator");
     user = new UserEntity();
     user.setLogin(login);
     user.setName(name);
@@ -149,7 +147,7 @@ public class PermissionManager {
 
     if (defaultRoles != null) {
       for (String roleName: defaultRoles) {
-        RoleEntity defaultRole = this.roleRepository.findByName(roleName);
+        RoleEntity defaultRole = this.getSystemRoleByName(roleName);
         if (defaultRole != null) {
           this.addUser(user, defaultRole, null);
         }
@@ -164,7 +162,7 @@ public class PermissionManager {
     return this.userRepository.findAll();
   }
 
-  public PermissionEntity getOrAddPermission(final String permissionName, final String permissionDescription) throws Exception {
+  public PermissionEntity getOrAddPermission(final String permissionName, final String permissionDescription) {
     Guard.checkNotEmpty(permissionName);
 
     PermissionEntity permission = this.permissionRepository.findByValueIgnoreCase(permissionName);
@@ -189,7 +187,7 @@ public class PermissionManager {
     return this.permissionRepository.findAll();
   }
 
-  public Set<PermissionEntity> getUserPermissions(Long userId) throws Exception {
+  public Set<PermissionEntity> getUserPermissions(Long userId) {
     UserEntity user = this.getUserById(userId);
     Set<PermissionEntity> permissions = this.getUserPermissions(user);
     return permissions;
@@ -199,13 +197,13 @@ public class PermissionManager {
     this.roleRepository.delete(roleId);
   }
 
-  public Set<PermissionEntity> getRolePermissions(Long roleId) throws Exception {
+  public Set<PermissionEntity> getRolePermissions(Long roleId) {
     RoleEntity role = this.getRoleById(roleId);
     Set<PermissionEntity> permissions = this.getRolePermissions(role);
     return permissions;
   }
 
-  public void addPermission(Long roleId, Long permissionId) throws Exception {
+  public void addPermission(Long roleId, Long permissionId) {
     PermissionEntity permission = this.getPermissionById(permissionId);
     RoleEntity role = this.getRoleById(roleId);
 
@@ -222,13 +220,13 @@ public class PermissionManager {
       this.rolePermissionRepository.delete(rolePermission);
   }
 
-  public Set<UserEntity> getRoleUsers(Long roleId) throws Exception {
+  public Set<UserEntity> getRoleUsers(Long roleId) {
     RoleEntity role = this.getRoleById(roleId);
     Set<UserEntity> users = this.getRoleUsers(role);
     return users;
   }
 
-  public void addUser(Long userId, Long roleId) throws Exception {
+  public void addUser(Long userId, Long roleId) {
     UserEntity user = this.getUserById(userId);
     RoleEntity role = this.getRoleById(roleId);
 
@@ -247,19 +245,20 @@ public class PermissionManager {
       this.permissionRepository.delete(permission);
   }
 
-  public RoleEntity getUserPersonalRole(String username) throws Exception {
+  public RoleEntity getUserPersonalRole(String username) {
 
-    RoleEntity role = this.roleRepository.findByName(username);
-    if (role == null) {
-      throw new Exception(String.format("There is no personal role for user %s", username));
-    }
-
-    return role;
+    return this.getRoleByName(username, false);
   }
 
-  public RoleEntity getCurrentUserPersonalRole() throws Exception {
+  public RoleEntity getCurrentUserPersonalRole() {
     String username = this.getSubjectName();
     return getUserPersonalRole(username);
+  }
+  private void checkRoleIsAbsent(String roleName, boolean isSystem, String message) {
+    RoleEntity role = this.roleRepository.findByNameAndSystemRole(roleName, isSystem);
+    if (role != null) {
+      throw new RuntimeException(message);
+    }
   }
 
 
@@ -311,48 +310,52 @@ public class PermissionManager {
     return users;
   }
 
-  public UserEntity getCurrentUser() throws Exception {
+  public UserEntity getCurrentUser() {
     final String login = this.getSubjectName();
     final UserEntity currentUser = this.getUserByLogin(login);
     return currentUser;
   }
 
-  public UserEntity getUserById(Long userId) throws Exception {
+  public UserEntity getUserById(Long userId) {
     UserEntity user = this.userRepository.findOne(userId);
     if (user == null)
-      throw new Exception("User doesn't exist");
+      throw new RuntimeException("User doesn't exist");
 
     return user;
   }
 
-  private UserEntity getUserByLogin(final String login) throws Exception {
+  private UserEntity getUserByLogin(final String login) {
     final UserEntity user = this.userRepository.findByLogin(login);
     if (user == null)
-      throw new Exception("User doesn't exist");
+      throw new RuntimeException("User doesn't exist");
 
     return user;
   }
 
-  public RoleEntity getRoleByName(String roleName) throws Exception {
-    final RoleEntity roleEntity = this.roleRepository.findByName(roleName);
+  private RoleEntity getRoleByName(String roleName, Boolean isSystemRole) {
+    final RoleEntity roleEntity = this.roleRepository.findByNameAndSystemRole(roleName, isSystemRole);
     if (roleEntity == null)
-      throw new Exception("Role doesn't exist");
+      throw new RuntimeException("Role doesn't exist");
 
     return roleEntity;
   }
 
-  private RoleEntity getRoleById(Long roleId) throws Exception {
+  public RoleEntity getSystemRoleByName(String roleName) {
+    return getRoleByName(roleName, true);
+  }
+
+  private RoleEntity getRoleById(Long roleId) {
     final RoleEntity roleEntity = this.roleRepository.findById(roleId);
     if (roleEntity == null)
-      throw new Exception("Role doesn't exist");
+      throw new RuntimeException("Role doesn't exist");
 
     return roleEntity;
   }
 
-  private PermissionEntity getPermissionById(Long permissionId) throws Exception {
+  private PermissionEntity getPermissionById(Long permissionId) {
     final PermissionEntity permission = this.permissionRepository.findById(permissionId);
     if (permission == null )
-      throw new Exception("Permission doesn't exist");
+      throw new RuntimeException("Permission doesn't exist");
 
     return permission;
   }
@@ -410,7 +413,7 @@ public class PermissionManager {
     return this.roleRepository.save(roleEntity);
   }
 
-  public void addPermissionsFromTemplate(RoleEntity roleEntity, Map<String, String> template, String value) throws Exception {
+  public void addPermissionsFromTemplate(RoleEntity roleEntity, Map<String, String> template, String value) {
     for (Map.Entry<String, String> entry : template.entrySet()) {
       String permission = String.format(entry.getKey(), value);
       String description = String.format(entry.getValue(), value);
@@ -419,7 +422,7 @@ public class PermissionManager {
     }
   }
 
-  public void addPermissionsFromTemplate(Map<String, String> template, String value) throws Exception {
+  public void addPermissionsFromTemplate(Map<String, String> template, String value) {
     RoleEntity currentUserPersonalRole = getCurrentUserPersonalRole();
     addPermissionsFromTemplate(currentUserPersonalRole, template, value);
   }

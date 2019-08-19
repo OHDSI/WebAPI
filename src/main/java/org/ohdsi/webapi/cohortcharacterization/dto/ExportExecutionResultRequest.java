@@ -6,14 +6,25 @@ import java.util.Collections;
 import java.util.List;
 
 public class ExportExecutionResultRequest {
+    private static final Float DEFAULT_THRESHOLD = 0.01f;
+
     @JsonProperty("cohortIds")
     private List<Integer> cohortIds;
 
-    @JsonProperty("analisysIds")
-    private List<Integer> analisysIds;
+    @JsonProperty("analysisIds")
+    private List<Integer> analysisIds;
 
     @JsonProperty("domainIds")
     private List<String> domainIds;
+
+    @JsonProperty("thresholdValuePct")
+    private Float thresholdValuePct;
+
+    @JsonProperty("isComparative")
+    private Boolean isComparative;
+
+    @JsonProperty("isSummary")
+    private Boolean isSummary;
 
     public List<Integer> getCohortIds() {
         if(cohortIds == null) {
@@ -26,15 +37,15 @@ public class ExportExecutionResultRequest {
         this.cohortIds = cohortIds;
     }
 
-    public List<Integer> getAnalisysIds() {
-        if(analisysIds == null) {
+    public List<Integer> getAnalysisIds() {
+        if(analysisIds == null) {
             return Collections.emptyList();
         }
-        return analisysIds;
+        return analysisIds;
     }
 
-    public void setAnalisysIds(List<Integer> analisysIds) {
-        this.analisysIds = analisysIds;
+    public void setAnalysisIds(List<Integer> analysisIds) {
+        this.analysisIds = analysisIds;
     }
 
     public List<String> getDomainIds() {
@@ -49,6 +60,30 @@ public class ExportExecutionResultRequest {
     }
 
     public boolean isFilterUsed() {
-        return !(getAnalisysIds().isEmpty() && getDomainIds().isEmpty() && getCohortIds().isEmpty());
+        return !(getAnalysisIds().isEmpty() && getDomainIds().isEmpty() && getCohortIds().isEmpty());
+    }
+
+    public Float getThresholdValuePct() {
+        return thresholdValuePct != null ? thresholdValuePct : DEFAULT_THRESHOLD;
+    }
+
+    public void setThresholdValuePct(Float thresholdValuePct) {
+        this.thresholdValuePct = thresholdValuePct;
+    }
+
+    public Boolean isComparative() {
+        return isComparative;
+    }
+
+    public void setComparative(Boolean comparative) {
+        isComparative = comparative;
+    }
+
+    public Boolean isSummary() {
+        return isSummary;
+    }
+
+    public void setSummary(Boolean summary) {
+        isSummary = summary;
     }
 }

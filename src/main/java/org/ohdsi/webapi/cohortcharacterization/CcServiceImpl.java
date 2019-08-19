@@ -1,10 +1,14 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableList;
+import com.opencsv.CSVWriter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.WithId;
 import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
@@ -15,12 +19,23 @@ import org.ohdsi.hydra.Hydra;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.JobInvalidator;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
-import org.ohdsi.webapi.cohortcharacterization.domain.*;
+import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
+import org.ohdsi.webapi.cohortcharacterization.domain.CcParamEntity;
+import org.ohdsi.webapi.cohortcharacterization.domain.CcStrataConceptSetEntity;
+import org.ohdsi.webapi.cohortcharacterization.domain.CcStrataEntity;
+import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcDistributionStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
-import org.ohdsi.webapi.cohortcharacterization.repository.*;
+import org.ohdsi.webapi.cohortcharacterization.dto.ExportExecutionResultRequest;
+import org.ohdsi.webapi.cohortcharacterization.dto.GenerationResults;
+import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
+import org.ohdsi.webapi.cohortcharacterization.repository.CcConceptSetRepository;
+import org.ohdsi.webapi.cohortcharacterization.repository.CcGenerationEntityRepository;
+import org.ohdsi.webapi.cohortcharacterization.repository.CcParamRepository;
+import org.ohdsi.webapi.cohortcharacterization.repository.CcRepository;
+import org.ohdsi.webapi.cohortcharacterization.repository.CcStrataRepository;
 import org.ohdsi.webapi.cohortcharacterization.specification.CohortCharacterizationImpl;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.common.DesignImportService;
@@ -30,15 +45,24 @@ import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
-import org.ohdsi.webapi.service.*;
+import org.ohdsi.webapi.service.AbstractDaoService;
+import org.ohdsi.webapi.service.FeatureExtractionService;
+import org.ohdsi.webapi.service.JobService;
+import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.shiro.annotations.CcGenerationId;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
-import org.ohdsi.webapi.util.*;
+import org.ohdsi.webapi.util.CancelableJdbcTemplate;
+import org.ohdsi.webapi.util.EntityUtils;
+import org.ohdsi.webapi.util.NameUtils;
+import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.SourceUtils;
+import org.ohdsi.webapi.util.TempFileUtils;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
@@ -60,19 +84,39 @@ import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
+import static org.ohdsi.analysis.cohortcharacterization.design.CcResultType.DISTRIBUTION;
+import static org.ohdsi.analysis.cohortcharacterization.design.CcResultType.PREVALENCE;
 import static org.ohdsi.webapi.Constants.GENERATE_COHORT_CHARACTERIZATION;
-import static org.ohdsi.webapi.Constants.Params.*;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
+import static org.ohdsi.webapi.Constants.Params.COHORT_CHARACTERIZATION_ID;
+import static org.ohdsi.webapi.Constants.Params.JOB_AUTHOR;
+import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
+import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
 
 @Service
 @Transactional
@@ -81,6 +125,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     private static final String GENERATION_NOT_FOUND_ERROR = "generation cannot be found by id %d";
     private static final String[] PARAMETERS_RESULTS = {"cohort_characterization_generation_id", "threshold_level", "vocabulary_schema"};
+    private static final String[] PARAMETERS_RESULTS_FILTERED = {"cohort_characterization_generation_id", "threshold_level",
+            "analysis_ids", "cohort_ids", "vocabulary_schema"};
     private static final String[] PARAMETERS_COUNT = {"cohort_characterization_generation_id", "vocabulary_schema"};
     private static final String[] PREVALENCE_STATS_PARAMS = {"cdm_database_schema", "cdm_results_schema", "cc_generation_id", "analysis_id", "cohort_id", "covariate_id"};
     private final String QUERY_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/queryResults.sql");
@@ -115,7 +161,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                 "Count", "Avg", "StdDev", "Min", "P10", "P25", "Median", "P75", "P90", "Max"});
     }};
 
-    private final List<String[]> executionComparisonHeaderLines = new ArrayList<String[]>() {{
+    private final List<String[]> executionComparativeHeaderLines = new ArrayList<String[]>() {{
         add(new String[]{"Analysis ID", "Analysis name", "Strata ID",
                 "Strata name", "Target cohort ID", "Target cohort name", "Comparator cohort ID", "Comparator cohort name",
                 "Covariate ID", "Covariate name", "Covariate short name", "Target count", "Target percent",
@@ -507,12 +553,15 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     @Override
     @DataSourceAccess
-    public List<CcResult> findResults(@CcGenerationId final Long generationId, float thresholdLevel) {
+    public List<CcResult> findResults(@CcGenerationId final Long generationId, ExportExecutionResultRequest params) {
         final CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
                 .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
         final Source source = generationEntity.getSource();
-        String generationResults = sourceAwareSqlRender.renderSql(source.getSourceId(), QUERY_RESULTS, PARAMETERS_RESULTS, 
-                new String[]{String.valueOf(generationId), String.valueOf(thresholdLevel), SourceUtils.getVocabularyQualifier(source)});
+        String analysis = params.getAnalysisIds().stream().map(x -> String.valueOf(x)).collect(Collectors.joining(","));
+        String cohorts = params.getCohortIds().stream().map(x -> String.valueOf(x)).collect(Collectors.joining(","));
+        String generationResults = sourceAwareSqlRender.renderSql(source.getSourceId(), QUERY_RESULTS, PARAMETERS_RESULTS_FILTERED,
+                new String[]{String.valueOf(generationId), String.valueOf(params.getThresholdValuePct()),
+                        analysis, cohorts, SourceUtils.getVocabularyQualifier(source)});
         final String tempSchema = SourceUtils.getTempQualifier(source);
         String translatedSql = SqlTranslate.translateSql(generationResults, source.getSourceDialect(), SessionUtils.sessionId(), tempSchema);
         return getGenerationResults(source, translatedSql);
@@ -534,98 +583,190 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     @Override
     @DataSourceAccess
     public Response exportExecutionResult(@CcGenerationId final Long generationId, ExportExecutionResultRequest params) {
+        GenerationResults res = findResult(generationId, params);
+        return prepareExecutionResultResponse(res.getReports());
+    }
+
+    @Override
+    @DataSourceAccess
+    public GenerationResults findData(@CcGenerationId final Long generationId, ExportExecutionResultRequest params) {
+        GenerationResults res = findResult(generationId, params);
+        boolean hasComparativeReports = res.getReports().stream()
+                .anyMatch(report -> report.isComparative);
+        if (hasComparativeReports) {
+            // if there're comparative reports - return only them as simple reports won't be shown on ui
+            res.setReports(res.getReports().stream()
+                    .filter(report -> report.isComparative)
+                    .collect(Collectors.toList()));
+        }
+        res.setPrevalenceThreshold(params.getThresholdValuePct());
+        return res;
+    }
+
+    public GenerationResults findResult(final Long generationId, ExportExecutionResultRequest params) {
+        if (params.isFilterUsed()) {
+            // in case of filtering and nothing was selected in any list
+            if (params.getAnalysisIds().isEmpty()
+                    || params.getCohortIds().isEmpty()
+                    || params.getDomainIds().isEmpty()) {
+                GenerationResults res = new GenerationResults();
+                res.setReports(Collections.emptyList());
+                return res;
+            }
+        }
         CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
                 .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
         Set<FeAnalysisEntity> featureAnalyses = generationEntity.getCohortCharacterization().getFeatureAnalyses();
 
-        List<CcResult> ccResults = findResults(generationId, 0.01f);
-
         CohortCharacterizationEntity characterization = generationEntity.getCohortCharacterization();
         Set<CohortDefinition> cohortDefs = characterization.getCohorts();
 
-        // If filter has any values - apply them, otherwise use entire collection
-        if (params.isFilterUsed()) {
-            ccResults = ccResults
-                    .stream()
-                    .filter(ccResult -> (PREVALENCE.equals(ccResult.getResultType()) || DISTRIBUTION.equals(ccResult.getResultType())) &&
-                            params.getCohortIds().contains(ccResult.getCohortId()) &&
-                            params.getAnalisysIds().contains(ccResult.getAnalysisId()) &&
-                            featureAnalyses
-                                    .stream()
-                                    .anyMatch(fe -> fe.getName().equals(ccResult.getAnalysisName()) &&
-                                            params.getDomainIds().contains(fe.getDomain().toString())))
-                    .collect(Collectors.toList());
-            cohortDefs = cohortDefs
-                    .stream()
-                    .filter(def -> params.getCohortIds().contains(def.getId()))
-                    .collect(Collectors.toSet());
+        // if filter is not used then it must be initializaed first
+        if (!params.isFilterUsed()) {
+            params.setCohortIds(generationEntity.getCohortCharacterization().getCohortDefinitions().stream()
+                    .map(cd -> cd.getId()).collect(Collectors.toList()));
+            params.setAnalysisIds(generationEntity.getCohortCharacterization().getFeatureAnalyses().stream()
+                    .map(fa -> fa.getId()).collect(Collectors.toList()));
+            params.setDomainIds(generationEntity.getCohortCharacterization().getFeatureAnalyses().stream()
+                    .map(fa -> fa.getDomain().toString()).distinct().collect(Collectors.toList()));
         }
+        // remove domains which cannot be used as corresponding analyses are not selected
+        params.getDomainIds().removeIf(s ->
+                !featureAnalyses.stream()
+                        .filter(fe -> fe.getDomain().toString().equals(s) && params.getAnalysisIds().contains(fe.getId()))
+                        .findAny()
+                        .isPresent());
+        // remove analyses which cannot be used as corresponding domains are not selected
+        params.getAnalysisIds().removeIf(s ->
+                !featureAnalyses.stream()
+                        .filter(fe -> fe.getId().equals(s) && params.getDomainIds().contains(fe.getDomain().toString()))
+                        .findAny()
+                        .isPresent());
+
+        List<CcResult> ccResults = findResults(generationId, params);
+
+        // create initial structure and fill with results
         AnalysisMap analysisMap = new AnalysisMap();
         ccResults
                 .stream()
                 .forEach(ccResult -> {
                     if (ccResult instanceof CcPrevalenceStat) {
-                        AnalysisItem analysisItem = analysisMap.getAnalysisItem(ccResult.getAnalysisId());
+                        AnalysisItem analysisItem = analysisMap.getOrCreateAnalysisItem(ccResult.getAnalysisId());
                         analysisItem.setType(ccResult.getResultType());
                         analysisItem.setName(ccResult.getAnalysisName());
-                        CovariantStrataItem covariantStrataItem = analysisItem.getCovariantItem(((CcPrevalenceStat) ccResult).getCovariateId(),
-                                ccResult.getStrataId());
-                        covariantStrataItem.getResults().add(ccResult);
+                        analysisItem.setFaType(ccResult.getFaType());
+                        CovariateStrataItem covariateStrataItem = analysisItem.getOrCreateCovariateItem(
+                                ((CcPrevalenceStat) ccResult).getCovariateId(), ccResult.getStrataId());
+                        covariateStrataItem.getResults().add(ccResult);
                     }
                 });
 
-        return prepareExecutionResultResponse(cohortDefs, analysisMap);
+        cohortDefs = cohortDefs
+                .stream()
+                .filter(def -> params.getCohortIds().contains(def.getId()))
+                .collect(Collectors.toSet());
+
+        List<Report> reports = prepareReportData(analysisMap, cohortDefs, featureAnalyses);
+        if (params.isFilterUsed()) {
+            reports = reports.stream()
+                    .filter(r -> params.isComparative() == null || params.isComparative() == r.isComparative)
+                    .filter(r -> params.isSummary() == null || params.isSummary() == r.isSummary)
+                    .collect(Collectors.toList());
+        }
+
+        GenerationResults res = new GenerationResults();
+        res.setReports(reports);
+        res.setCount(ccResults.size());
+        return res;
     }
 
-    private Response prepareExecutionResultResponse(Set<CohortDefinition> cohortDefs, AnalysisMap analysisMap) {
-        // Create map to retrive cohort name by its id
-        final Map<Integer, CohortDefinition> definitionMap = cohortDefs
-                .stream()
+    private List<Report> prepareReportData(AnalysisMap analysisMap, Set<CohortDefinition> cohortDefs,
+                                           Set<FeAnalysisEntity> featureAnalyses) {
+        // Create map to get cohort name by its id
+        final Map<Integer, CohortDefinition> definitionMap = cohortDefs.stream()
                 .collect(Collectors.toMap(CohortDefinition::getId, Function.identity()));
+        // Create map to get feature analyses by its name
+        final Map<String, String> feAnalysisMap = featureAnalyses.stream()
+                .collect(Collectors.toMap(FeAnalysisEntity::getName, entity -> entity.getDomain().toString()));
+
+        List<Report> reports = new ArrayList<>();
+        try {
+            // list to accumulate results from simple reports
+            List<AnalysisResultItem> simpleResultSummary = new ArrayList<>();
+            // list to accumulate results from comparative reports
+            List<AnalysisResultItem> comparativeResultSummary = new ArrayList<>();
+            // do not create summary reports when only one analyses is present
+            boolean ignoreSummary = analysisMap.keySet().size() == 1;
+            for (Integer analysisId : analysisMap.keySet()) {
+                AnalysisItem analysisItem = analysisMap.getOrCreateAnalysisItem(analysisId);
+                AnalysisResultItem resultItem = analysisItem.getSimpleItems(definitionMap, feAnalysisMap);
+                Report simpleReport = new Report(analysisItem.getName(), analysisId, resultItem);
+                simpleReport.faType = analysisItem.getFaType();
+                simpleReport.domainId = feAnalysisMap.get(analysisItem.getName());
+
+                if (PREVALENCE.equals(analysisItem.getType())) {
+                    simpleReport.header = executionPrevalenceHeaderLines;
+                    simpleReport.resultType = PREVALENCE;
+                    // Summary comparative reports are only available for prevalence type
+                    simpleResultSummary.add(resultItem);
+                } else if (DISTRIBUTION.equals(analysisItem.getType())) {
+                    simpleReport.header = executionDistributionHeaderLines;
+                    simpleReport.resultType = DISTRIBUTION;
+                }
+                reports.add(simpleReport);
+
+                // comparative mode
+                if (definitionMap.size() == 2) {
+                    Iterator<CohortDefinition> iter = definitionMap.values().iterator();
+                    CohortDefinition firstCohortDef = iter.next();
+                    CohortDefinition secondCohortDef = iter.next();
+                    AnalysisResultItem comparativeResultItem = analysisItem.getComparativeItems(firstCohortDef,
+                            secondCohortDef, feAnalysisMap);
+                    Report comparativeReport = new Report(analysisItem.getName(), analysisId, comparativeResultItem);
+                    comparativeReport.header = executionComparativeHeaderLines;
+                    comparativeReport.isComparative = true;
+                    if (PREVALENCE.equals(analysisItem.getType())) {
+                        comparativeReport.resultType = PREVALENCE;
+                        // Summary comparative reports are only available for prevalence type
+                        comparativeResultSummary.add(comparativeResultItem);
+                    } else if (DISTRIBUTION.equals(analysisItem.getType())) {
+                        comparativeReport.resultType = DISTRIBUTION;
+                    }
+                    reports.add(comparativeReport);
+                }
+            }
+            if (!ignoreSummary) {
+                // summary comparative reports are only available for prevalence type
+                if (!simpleResultSummary.isEmpty()) {
+                    Report simpleSummaryData = new Report("All prevalence covariates", simpleResultSummary);
+                    simpleSummaryData.header = executionPrevalenceHeaderLines;
+                    simpleSummaryData.isSummary = true;
+                    simpleSummaryData.resultType = PREVALENCE;
+                    reports.add(simpleSummaryData);
+                }
+                // comparative mode
+                if (!comparativeResultSummary.isEmpty()) {
+                    Report comparativeSummaryData = new Report("All prevalence covariates", comparativeResultSummary);
+                    comparativeSummaryData.header = executionComparativeHeaderLines;
+                    comparativeSummaryData.isSummary = true;
+                    comparativeSummaryData.isComparative = true;
+                    comparativeSummaryData.resultType = PREVALENCE;
+                    reports.add(comparativeSummaryData);
+                }
+            }
+
+            return reports;
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private Response prepareExecutionResultResponse(List<Report> reports) {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
              ZipOutputStream zos = new ZipOutputStream(baos)) {
 
-            List<String[]> simpleResultSummary = new ArrayList<>();
-            List<String[]> simpleHeaderSummary = new ArrayList<>();
-            List<String[]> comparisonResultSummary = new ArrayList<>();
-            for (Integer analysisId : analysisMap.keySet()) {
-                AnalysisItem analysisItem = analysisMap.getAnalysisItem(analysisId);
-                List<String[]> simpleResult = analysisItem.getSimpleResultArray(definitionMap, null);
-
-                List<String[]> header = new ArrayList<>();
-                if (PREVALENCE.equals(analysisItem.getType())) {
-                    // Summary comparison reports are only available for prevalence type
-                    header = executionPrevalenceHeaderLines;
-                    simpleResultSummary.addAll(simpleResult);
-                } else if (DISTRIBUTION.equals(analysisItem.getType())) {
-                    header = executionDistributionHeaderLines;
-                }
-                createZipEntry(zos, header, simpleResult, "Export (" + analysisItem.getName() + ").csv");
-
-                // Comparison mode
-                if (cohortDefs.size() == 2) {
-                    Iterator<CohortDefinition> iter = cohortDefs.iterator();
-                    CohortDefinition firstCohortDef = iter.next();
-                    CohortDefinition secondCohortDef = iter.next();
-                    List<String[]> comparisonResult = analysisItem.getComparisonResultArray(firstCohortDef, secondCohortDef);
-                    if (PREVALENCE.equals(analysisItem.getType())) {
-                        // Summary comparison reports are only available for prevalence type
-                        comparisonResultSummary.addAll(comparisonResult);
-                    }
-
-                    createZipEntry(zos, executionComparisonHeaderLines, comparisonResult,
-                            "Export comparison (" + analysisItem.getName() + ").csv");
-                }
-            }
-            // Comparison mode
-            if (cohortDefs.size() == 2) {
-                // Summary comparison reports are only available for prevalence type
-                if (!simpleResultSummary.isEmpty()) {
-                    createZipEntry(zos, executionPrevalenceHeaderLines, simpleResultSummary, "Export (All prevalence covariates).csv");
-                }
-                if (!comparisonResultSummary.isEmpty()) {
-                    createZipEntry(zos, executionComparisonHeaderLines, comparisonResultSummary, "Export comparison (All prevalence covariates).csv");
-                }
+            for (Report report : reports) {
+                createZipEntry(zos, report);
             }
 
             zos.closeEntry();
@@ -641,14 +782,25 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         }
     }
 
-    private void createZipEntry(ZipOutputStream zos, List<String[]> header, List<String[]> lines, String name) throws IOException {
+    private void createZipEntry(ZipOutputStream zos, Report report) throws IOException {
         StringWriter sw = new StringWriter();
-        CSVWriter csvWriter = new CSVWriter(sw);
-        csvWriter.writeAll(header);
-        csvWriter.writeAll(lines);
+        CSVWriter csvWriter = new CSVWriter(sw, ',', CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.NO_ESCAPE_CHARACTER);
+        csvWriter.writeAll(report.header);
+        csvWriter.writeAll(report.getResultArray());
         csvWriter.flush();
 
-        ZipEntry resultsEntry = new ZipEntry(name);
+        String filename = report.analysisName;
+        if (report.isComparative) {
+            filename = "Export comparison (" + filename + ")";
+        } else {
+            filename = "Export (" + filename + ")";
+        }
+        // trim the name so it can be opened by archiver,
+        // -1 is for dot character
+        if (filename.length() >= 64) {
+            filename = filename.substring(0, 63);
+        }
+        ZipEntry resultsEntry = new ZipEntry(filename + ".csv");
         zos.putNextEntry(resultsEntry);
         zos.write(sw.getBuffer().toString().getBytes());
     }
@@ -891,7 +1043,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             return map.keySet();
         }
 
-        public AnalysisItem getAnalysisItem(Integer analysisId) {
+        public AnalysisItem getOrCreateAnalysisItem(Integer analysisId) {
             AnalysisItem analysisItem = map.get(analysisId);
             if (analysisItem == null) {
                 analysisItem = new AnalysisItem();
@@ -901,20 +1053,34 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         }
     }
 
+    private class AnalysisResultItem {
+        public Set<String> domainIds;
+        public Set<Pair<Integer, String>> cohorts;
+        public Set<ExportItem> exportItems;
+
+        public AnalysisResultItem(Set<String> domainIds, Set<Pair<Integer, String>> cohorts,
+                                  Set<ExportItem> exportItems) {
+            this.domainIds = domainIds;
+            this.cohorts = cohorts;
+            this.exportItems = exportItems;
+        }
+    }
+
     private class AnalysisItem {
-        // Key is covariant id and strata id
-        private Map<Pair<Long, Long>, CovariantStrataItem> map = new HashMap();
+        // Key is covariate id and strata id
+        private Map<Pair<Long, Long>, CovariateStrataItem> map = new HashMap();
         private CcResultType type;
         private String name;
+        private String faType;
 
-        public CovariantStrataItem getCovariantItem(Long covariantId, Long strataId) {
-            Pair<Long, Long> key = new ImmutablePair<>(covariantId, strataId);
-            CovariantStrataItem covariantStrataItem = map.get(key);
-            if (covariantStrataItem == null) {
-                covariantStrataItem = new CovariantStrataItem();
-                map.put(key, covariantStrataItem);
+        public CovariateStrataItem getOrCreateCovariateItem(Long covariateId, Long strataId) {
+            Pair<Long, Long> key = new ImmutablePair<>(covariateId, strataId);
+            CovariateStrataItem covariateStrataItem = map.get(key);
+            if (covariateStrataItem == null) {
+                covariateStrataItem = new CovariateStrataItem();
+                map.put(key, covariateStrataItem);
             }
-            return covariantStrataItem;
+            return covariateStrataItem;
         }
 
         public void setType(CcResultType resultType) {
@@ -933,58 +1099,118 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             this.name = name;
         }
 
-        public List<String[]> getSimpleResultArray(Map<Integer, CohortDefinition> definitionMap, Integer cohortId) {
-            List<ExportItem> values = new ArrayList<>();
-            ItemFactory factory = new ItemFactory();
-            for (CovariantStrataItem covariantStrataItem : map.values()) {
-                for (CcResult ccResult : covariantStrataItem.getResults()) {
-                    // cohortId == null if we need all cohorts
-                    if (cohortId == null || cohortId == ccResult.getCohortId()) {
-                        CohortDefinition cohortDef = definitionMap.get(ccResult.getCohortId());
-                        ExportItem item = factory.createItem(ccResult, cohortDef.getName());
-                        values.add(item);
-                    }
-                }
-            }
-            return getResultLines(values);
+        public void setFaType(String faType) {
+            this.faType = faType;
         }
 
-        public List<String[]> getComparisonResultArray(CohortDefinition firstCohortDef, CohortDefinition secondCohortDef) {
-            List<ExportItem> values = new ArrayList<>();
+        public String getFaType() {
+            return faType;
+        }
+
+        public AnalysisResultItem getSimpleItems(Map<Integer, CohortDefinition> definitionMap,
+                                                     Map<String, String> feAnalysisMap) {
+            Set<ExportItem> values = new HashSet<>();
+            Set<String> domainIds = new HashSet<>();
+            Set<Pair<Integer, String>> cohorts = new HashSet<>();
             ItemFactory factory = new ItemFactory();
-            for (CovariantStrataItem covariantStrataItem : map.values()) {
+            for (CovariateStrataItem covariateStrataItem : map.values()) {
+                for (CcResult ccResult : covariateStrataItem.getResults()) {
+                    CohortDefinition cohortDef = definitionMap.get(ccResult.getCohortId());
+                    ExportItem item = factory.createItem(ccResult, cohortDef.getName());
+                    item.domainId = feAnalysisMap.get(ccResult.getAnalysisName());
+                    domainIds.add(item.domainId);
+                    cohorts.add(new ImmutablePair<>(cohortDef.getId(), cohortDef.getName()));
+                    values.add(item);
+                }
+            }
+            return new AnalysisResultItem(domainIds, cohorts, values);
+        }
+
+        public AnalysisResultItem getComparativeItems(CohortDefinition firstCohortDef, CohortDefinition secondCohortDef,
+                                                      Map<String, String> feAnalysisMap) {
+            Set<ExportItem> values = new HashSet<>();
+            Set<String> domainIds = new HashSet<>();
+            Set<Pair<Integer, String>> cohorts = new HashSet<>();
+            cohorts.add(new ImmutablePair<>(firstCohortDef.getId(), firstCohortDef.getName()));
+            cohorts.add(new ImmutablePair<>(secondCohortDef.getId(), secondCohortDef.getName()));
+            ItemFactory factory = new ItemFactory();
+            for (CovariateStrataItem covariateStrataItem : map.values()) {
+                // create default items, because we can have result for only one cohort
                 ExportItem first = null;
                 ExportItem second = null;
-                for (CcResult ccResult : covariantStrataItem.getResults()) {
+                for (CcResult ccResult : covariateStrataItem.getResults()) {
                     if (ccResult.getCohortId() == firstCohortDef.getId()) {
                         first = factory.createItem(ccResult, firstCohortDef.getName());
                     } else {
                         second = factory.createItem(ccResult, secondCohortDef.getName());
                     }
                 }
-                if (first instanceof PrevalenceItem && second instanceof PrevalenceItem) {
-                    ComparisonItem comparisonItem = new ComparisonItem((PrevalenceItem) first, (PrevalenceItem) second);
-                    values.add(comparisonItem);
+                ExportItem comparativeItem;
+                if(first instanceof DistributionItem || second instanceof DistributionItem) {
+                    comparativeItem = new ComparativeDistributionItem((DistributionItem) first, (DistributionItem) second,
+                            firstCohortDef, secondCohortDef);
+                } else {
+                    comparativeItem = new ComparativeItem((PrevalenceItem) first, (PrevalenceItem) second,
+                            firstCohortDef, secondCohortDef);
                 }
+                comparativeItem.domainId = feAnalysisMap.get(comparativeItem.analysisName);
+                domainIds.add(comparativeItem.domainId);
+                values.add(comparativeItem);
             }
-            return getResultLines(values);
-        }
-
-        private List<String[]> getResultLines(List<ExportItem> values) {
-            return values
-                    .stream()
-                    .sorted()
-                    .map(x -> x.getValueArray())
-                    .collect(Collectors.toList());
-
+            return new AnalysisResultItem(domainIds, cohorts, values);
         }
     }
 
-    private class CovariantStrataItem {
+    private class CovariateStrataItem {
         private List<CcResult> results = new ArrayList<>();
 
         public List<CcResult> getResults() {
             return results;
+        }
+    }
+
+    public class Report {
+        public String analysisName;
+        public Integer analysisId;
+        public CcResultType resultType;
+        @JsonIgnore
+        public List<String[]> header;
+        public Set<String> domainIds;
+        public Set<Pair<Integer, String>> cohorts;
+        public Set<ExportItem> items;
+        public boolean isComparative;
+        public boolean isSummary;
+        public String faType;
+        public String domainId;
+
+        public Report(String analysisName, Integer analysisId, AnalysisResultItem resultItem) {
+            this.analysisName = analysisName;
+            this.analysisId = analysisId;
+            this.items = resultItem.exportItems;
+            cohorts = resultItem.cohorts;
+            domainIds = resultItem.domainIds;
+        }
+
+        public Report(String analysisName, List<AnalysisResultItem> simpleResultSummary) {
+            this.analysisName = analysisName;
+            domainIds = new HashSet<>();
+            cohorts = new HashSet<>();
+            items = new HashSet<>();
+            simpleResultSummary.stream()
+                    .forEach(item -> {
+                        domainIds.addAll(item.domainIds);
+                        cohorts.addAll(item.cohorts);
+                        items.addAll(item.exportItems);
+                    });
+        }
+
+        @JsonIgnore
+        public List<String[]> getResultArray() {
+            return items
+                    .stream()
+                    .sorted()
+                    .map(x -> x.getValueArray())
+                    .collect(Collectors.toList());
         }
     }
 
@@ -1000,9 +1226,67 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         }
     }
 
-    private abstract class ExportItem<T> implements Comparable<T> {
-        protected abstract List<String> getValueList();
+    private abstract class ExportItem<T extends ExportItem> implements Comparable<T> {
+        public final Integer analysisId;
+        public final String analysisName;
+        public final Long strataId;
+        public final String strataName;
+        public final Long covariateId;
+        public final String covariateName;
+        public final String covariateShortName;
+        public final String faType;
+        public String domainId;
+        public final Long conceptId;
+        public final String conceptName;
 
+        public ExportItem(CcPrevalenceStat ccResult) {
+            this.analysisId = ccResult.getAnalysisId();
+            this.analysisName = ccResult.getAnalysisName();
+            this.strataId = ccResult.getStrataId();
+            this.strataName = getStrataName(ccResult.getStrataName());
+            this.covariateId = ccResult.getCovariateId();
+            this.covariateName = ccResult.getCovariateName();
+            this.covariateShortName = extractMeaningfulCovariateName(ccResult.getCovariateName());
+            this.faType = ccResult.getFaType();
+            this.conceptId = ccResult.getConceptId();
+            this.conceptName = ccResult.getConceptName();
+        }
+
+        public ExportItem(PrevalenceItem item) {
+            this.analysisId = item.analysisId;
+            this.analysisName = item.analysisName;
+            this.strataId = item.strataId;
+            this.strataName = getStrataName(item.strataName);;
+            this.covariateId = item.covariateId;
+            this.covariateName = item.covariateName;
+            this.covariateShortName = extractMeaningfulCovariateName(item.covariateName);
+            this.faType = item.faType;
+            this.conceptId = item.conceptId;
+            this.conceptName = item.conceptName;
+        }
+
+        protected List<String> getValueList() {
+            List<String> values = new ArrayList<>();
+            values.add(String.valueOf(this.analysisId));
+            values.add(this.analysisName);
+            values.add(String.valueOf(this.strataId));
+            values.add(this.strataName);
+            values.add(String.valueOf(this.covariateId));
+            values.add(this.covariateName);
+            values.add(this.covariateShortName);
+            return values;
+        }
+
+        @Override
+        public int compareTo(ExportItem that) {
+            int res = analysisId.compareTo(analysisId);
+            if (res == 0) {
+                covariateName.compareToIgnoreCase(that.covariateName);
+            }
+            return res;
+        }
+
+        @JsonIgnore
         public String[] getValueArray() {
             List<String> values = getValueList();
             return values.toArray(new String[values.size()]);
@@ -1030,35 +1314,47 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         protected double calcDiff(T another) {
             return 0;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            ExportItem<?> that = (ExportItem<?>) o;
+
+            if (analysisId != null ? !analysisId.equals(that.analysisId) : that.analysisId != null) return false;
+            if (strataId != null ? !strataId.equals(that.strataId) : that.strataId != null) return false;
+            if (covariateId != null ? !covariateId.equals(that.covariateId) : that.covariateId != null) return false;
+            if (domainId != null ? !domainId.equals(that.domainId) : that.domainId != null) return false;
+            if (conceptId != null ? !conceptId.equals(that.conceptId) : that.conceptId != null) return false;
+            return conceptName != null ? conceptName.equals(that.conceptName) : that.conceptName == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = analysisId != null ? analysisId.hashCode() : 0;
+            result = 31 * result + (strataId != null ? strataId.hashCode() : 0);
+            result = 31 * result + (covariateId != null ? covariateId.hashCode() : 0);
+            result = 31 * result + (domainId != null ? domainId.hashCode() : 0);
+            result = 31 * result + (conceptId != null ? conceptId.hashCode() : 0);
+            return result;
+        }
     }
 
     private class PrevalenceItem<T extends PrevalenceItem> extends ExportItem<T> {
-        private final Integer cohortId;
-        private final Integer analysisId;
-        private final String analysisName;
-        private final Long strataId;
-        private final String strataName;
-        private final String cohortName;
-        private final Long covariateId;
-        private final String covariateName;
-        private final String covariateShortName;
-        protected final Long count;
-        protected final double percent;
-        protected final Double avg;
+        public final Integer cohortId;
+        public final String cohortName;
+        public final Long count;
+        public final Double pct;
+        public final Double avg;
 
         public PrevalenceItem(CcPrevalenceStat prevalenceStat, String cohortName) {
-            this.analysisId = prevalenceStat.getAnalysisId();
-            this.analysisName = prevalenceStat.getAnalysisName();
-            this.strataId = prevalenceStat.getStrataId();
-            this.strataName = getStrataName(prevalenceStat.getStrataName());
+            super(prevalenceStat);
             this.cohortId = prevalenceStat.getCohortId();
             this.cohortName = cohortName;
-            this.covariateId = prevalenceStat.getCovariateId();
-            this.covariateName = prevalenceStat.getCovariateName();
-            this.covariateShortName = extractMeaningfulCovariateName(prevalenceStat.getCovariateName());
             this.count = prevalenceStat.getCount();
             this.avg = prevalenceStat.getAvg();
-            this.percent = prevalenceStat.getAvg() * 100;
+            this.pct = prevalenceStat.getAvg() * 100;
         }
 
         @Override
@@ -1074,7 +1370,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             values.add(this.covariateName);
             values.add(this.covariateShortName);
             values.add(String.valueOf(this.count));
-            values.add(String.valueOf(this.percent));
+            values.add(String.valueOf(this.pct));
             return values;
         }
 
@@ -1108,22 +1404,38 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             }
             return res;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            if (!super.equals(o)) return false;
+
+            PrevalenceItem<?> that = (PrevalenceItem<?>) o;
+
+            return cohortId != null ? cohortId.equals(that.cohortId) : that.cohortId == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = super.hashCode();
+            result = 31 * result + (cohortId != null ? cohortId.hashCode() : 0);
+            return result;
+        }
     }
 
     private class DistributionItem extends PrevalenceItem<DistributionItem> {
-        private final Double avg;
-        private final Double stdDev;
-        private final Double min;
-        private final Double p10;
-        private final Double p25;
-        private final Double median;
-        private final Double p75;
-        private final Double p90;
-        private final Double max;
+        public final Double stdDev;
+        public final Double min;
+        public final Double p10;
+        public final Double p25;
+        public final Double median;
+        public final Double p75;
+        public final Double p90;
+        public final Double max;
 
         public DistributionItem(CcDistributionStat distributionStat, String cohortName) {
             super(distributionStat, cohortName);
-            this.avg = distributionStat.getAvg();
             this.stdDev = distributionStat.getStdDev();
             this.min = distributionStat.getMin();
             this.p10 = distributionStat.getP10();
@@ -1136,7 +1448,18 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
         @Override
         protected List<String> getValueList() {
-            List<String> values = super.getValueList();
+            // Do not use parent function as this report has its own order of columns
+            List<String> values = new ArrayList<>();
+            values.add(String.valueOf(this.analysisId));
+            values.add(this.analysisName);
+            values.add(String.valueOf(this.strataId));
+            values.add(this.strataName);
+            values.add(String.valueOf(this.cohortId));
+            values.add(this.cohortName);
+            values.add(String.valueOf(this.covariateId));
+            values.add(this.covariateName);
+            values.add(this.covariateShortName);
+            values.add(String.valueOf(this.count));
             values.add(String.valueOf(this.avg));
             values.add(String.valueOf(this.stdDev));
             values.add(String.valueOf(this.min));
@@ -1158,46 +1481,41 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             double sd2 = another.stdDev;
 
             double sd = Math.sqrt(sd1 * sd1 + sd2 * sd2);
-
+            // prevent division by zero
+            if (sd == 0D) {
+                return 0;
+            }
             return (avg - another.avg) / sd;
         }
     }
 
-    private class ComparisonItem extends ExportItem<ComparisonItem> {
-        private Integer analysisId;
-        private String analysisName;
-        private Long strataId;
-        private String strataName;
-        private Integer targetCohortId;
-        private String targetCohortName;
-        private Integer comparatorCohortId;
-        private String comparatorCohortName;
-        private Long covariateId;
-        private String covariateName;
-        private String covariateShortName;
-        private Long targetCount;
-        private Double targetPercent;
-        private Long comparatorCount;
-        private Double comparatorPercent;
-        private double diff;
+    private class ComparativeItem extends ExportItem<ComparativeItem> {
+        public final boolean hasFirstItem;
+        public final boolean hasSecondItem;
+        public final Integer targetCohortId;
+        public final String targetCohortName;
+        public final Long targetCount;
+        public final Double targetPct;
+        public final Integer comparatorCohortId;
+        public final String comparatorCohortName;
+        public final Long comparatorCount;
+        public final Double comparatorPct;
+        public final double diff;
 
-        public ComparisonItem(PrevalenceItem first, PrevalenceItem second) {
-            this.analysisId = getExisting(first, second).analysisId;
-            this.analysisName = getExisting(first, second).analysisName;
-            this.strataId = getExisting(first, second).strataId;
-            this.strataName = getExisting(first, second).strataName;
-            this.targetCohortId = first != null ? first.cohortId : null;
-            this.targetCohortName = first != null ? first.cohortName : null;
-            this.comparatorCohortId = second != null ? second.cohortId : null;
-            this.comparatorCohortName = second != null ? second.cohortName : null;
-            this.covariateId = getExisting(first, second).covariateId;
-            this.covariateName = getExisting(first, second).covariateName;
-            this.covariateShortName = getExisting(first, second).covariateShortName;
-            this.targetCount = first != null ? first.count : null;
-            this.targetPercent = first != null ? first.percent : null;
-            this.comparatorCount = second != null ? second.count : null;
-            this.comparatorPercent = second != null ? second.percent : null;
-            this.diff = calcDiff(first, second);
+        public ComparativeItem(PrevalenceItem firstItem, PrevalenceItem secondItem, CohortDefinition firstCohortDef,
+                               CohortDefinition secondCohortDef) {
+            super(firstItem != null ? firstItem : secondItem);
+            this.hasFirstItem = firstItem != null;
+            this.hasSecondItem = secondItem != null;
+            this.targetCohortId = firstCohortDef.getId();
+            this.targetCohortName = firstCohortDef.getName();
+            this.targetCount = firstItem != null ? firstItem.count : null;
+            this.targetPct = firstItem != null ? firstItem.pct : null;
+            this.comparatorCohortId = secondCohortDef.getId();
+            this.comparatorCohortName = secondCohortDef.getName();
+            this.comparatorCount = secondItem != null ? secondItem.count : null;
+            this.comparatorPct = secondItem != null ? secondItem.pct : null;
+            this.diff = calcDiff(firstItem, secondItem);
         }
 
         private double calcDiff(ExportItem first, ExportItem second) {
@@ -1209,37 +1527,102 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
         @Override
         protected List<String> getValueList() {
+            // Do not use parent function as this report has its own order of columns
             List<String> values = new ArrayList<>();
             values.add(String.valueOf(this.analysisId));
             values.add(this.analysisName);
             values.add(String.valueOf(this.strataId));
             values.add(this.strataName);
-            values.add(String.valueOf(this.targetCohortId));
-            values.add(this.targetCohortName);
-            values.add(String.valueOf(this.comparatorCohortId));
-            values.add(this.comparatorCohortName);
+            values.add(String.valueOf(targetCohortId));
+            values.add(targetCohortName);
+            values.add(String.valueOf(comparatorCohortId));
+            values.add(comparatorCohortName);
             values.add(String.valueOf(this.covariateId));
             values.add(this.covariateName);
             values.add(this.covariateShortName);
-            values.add(String.valueOf(this.targetCount));
-            values.add(String.valueOf(this.targetPercent));
-            values.add(String.valueOf(this.comparatorCount));
-            values.add(String.valueOf(this.comparatorPercent));
+            values.add(this.targetCount != null ? String.valueOf(this.targetCount) : "0");
+            values.add(this.targetPct != null ? String.valueOf(this.targetPct) : "0");
+            values.add(this.comparatorCount != null ? String.valueOf(this.comparatorCount) : "0");
+            values.add(this.comparatorPct != null ? String.valueOf(this.comparatorPct) : "0");
             values.add(String.format("%.4f", this.diff));
             return values;
         }
 
-        private <V> V getExisting(V first, V second) {
-            return first != null ? first : second;
-        }
-
         @Override
-        public int compareTo(ComparisonItem that) {
+        public int compareTo(ComparativeItem that) {
             int res = analysisId.compareTo(that.analysisId);
             if (res == 0) {
                 covariateName.compareToIgnoreCase(that.covariateName);
             }
             return res;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            if (!super.equals(o)) return false;
+
+            ComparativeItem that = (ComparativeItem) o;
+
+            if (targetCohortId != null ? !targetCohortId.equals(that.targetCohortId) : that.targetCohortId != null)
+                return false;
+            return comparatorCohortId != null ? comparatorCohortId.equals(that.comparatorCohortId) : that.comparatorCohortId == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = super.hashCode();
+            result = 31 * result + (targetCohortId != null ? targetCohortId.hashCode() : 0);
+            result = 31 * result + (comparatorCohortId != null ? comparatorCohortId.hashCode() : 0);
+            return result;
+        }
+    }
+
+    private class ComparativeDistributionItem extends ComparativeItem {
+        public final Double targetStdDev;
+        public final Double targetMin;
+        public final Double targetP10;
+        public final Double targetP25;
+        public final Double targetMedian;
+        public final Double targetP75;
+        public final Double targetP90;
+        public final Double targetMax;
+        public final Double targetAvg;
+        
+        public final Double comparatorStdDev;
+        public final Double comparatorMin;
+        public final Double comparatorP10;
+        public final Double comparatorP25;
+        public final Double comparatorMedian;
+        public final Double comparatorP75;
+        public final Double comparatorP90;
+        public final Double comparatorMax;
+        public final Double comparatorAvg;
+
+        public ComparativeDistributionItem(DistributionItem firstItem, DistributionItem secondItem, CohortDefinition firstCohortDef,
+                                           CohortDefinition secondCohortDef) {
+            super(firstItem, secondItem, firstCohortDef, secondCohortDef);
+
+            this.targetStdDev = firstItem != null ? ((DistributionItem) firstItem).stdDev : null;
+            this.targetMin = firstItem != null ? ((DistributionItem) firstItem).min : null;
+            this.targetP10 = firstItem != null ? ((DistributionItem) firstItem).p10 : null;
+            this.targetP25 = firstItem != null ? ((DistributionItem) firstItem).p25 : null;
+            this.targetMedian = firstItem != null ? ((DistributionItem) firstItem).median : null;
+            this.targetP75 = firstItem != null ? ((DistributionItem) firstItem).p75 : null;
+            this.targetP90 = firstItem != null ? ((DistributionItem) firstItem).p90 : null;
+            this.targetMax = firstItem != null ? ((DistributionItem) firstItem).max : null;
+            this.targetAvg = firstItem != null ? ((DistributionItem) firstItem).avg : null;
+
+            this.comparatorStdDev = secondItem != null ? ((DistributionItem) secondItem).stdDev : null;
+            this.comparatorMin = secondItem != null ? ((DistributionItem) secondItem).min : null;
+            this.comparatorP10 = secondItem != null ? ((DistributionItem) secondItem).p10 : null;
+            this.comparatorP25 = secondItem != null ? ((DistributionItem) secondItem).p25 : null;
+            this.comparatorMedian = secondItem != null ? ((DistributionItem) secondItem).median : null;
+            this.comparatorP75 = secondItem != null ? ((DistributionItem) secondItem).p75 : null;
+            this.comparatorP90 = secondItem != null ? ((DistributionItem) secondItem).p90 : null;
+            this.comparatorMax = secondItem != null ? ((DistributionItem) secondItem).max : null;
+            this.comparatorAvg = secondItem != null ? ((DistributionItem) secondItem).avg : null;
         }
     }
 }

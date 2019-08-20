@@ -1,0 +1,1 @@
+SELECT ISNULL(MAX(cohort_definition_id), 0) + 1 FROM @results_database_schema.cohort_generations;

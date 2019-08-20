@@ -63,6 +63,7 @@ import org.ohdsi.webapi.cohortdefinition.ExpressionType;
 import org.ohdsi.webapi.feasibility.FeasibilityStudyRepository;
 import org.ohdsi.webapi.cohortdefinition.GenerateCohortTasklet;
 import org.ohdsi.webapi.GenerationStatus;
+import org.ohdsi.webapi.generationcache.GenerationCacheHelper;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
@@ -70,6 +71,7 @@ import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -122,6 +124,12 @@ public class FeasibilityService extends AbstractDaoService {
 
   @Autowired
   private ObjectMapper objectMapper;
+
+  @Autowired
+  private GenerationCacheHelper generationCacheHelper;
+
+  @Autowired
+  private SourceService sourceService;
 
   @Context
   ServletContext context;
@@ -593,7 +601,14 @@ public class FeasibilityService extends AbstractDaoService {
     final JobParameters jobParameters = builder.toJobParameters();
     final CancelableJdbcTemplate sourceJdbcTemplate = getSourceJdbcTemplate(source);
 
-    GenerateCohortTasklet indexRuleTasklet = new GenerateCohortTasklet(sourceJdbcTemplate, getTransactionTemplate(), cohortGenerationService);
+    GenerateCohortTasklet indexRuleTasklet = new GenerateCohortTasklet(
+      sourceJdbcTemplate,
+      getTransactionTemplate(),
+      cohortGenerationService,
+      generationCacheHelper,
+      cohortDefinitionRepository,
+      sourceService
+    );
 
     Step generateCohortStep = stepBuilders.get("performStudy.generateIndexCohort")
             .tasklet(indexRuleTasklet)

@@ -68,4 +68,8 @@ public interface Constants {
 
     String ENTITY_COPY_PREFIX = "COPY OF: %s";
   }
+
+  interface Tables {
+    String COHORT_GENERATIONS_TABLE = "cohort_generations";
+  }
 }

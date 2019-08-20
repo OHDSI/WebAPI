@@ -11,6 +11,7 @@ import org.ohdsi.webapi.executionengine.job.ExecutionEngineCallbackTasklet;
 import org.ohdsi.webapi.executionengine.job.RunExecutionEngineTasklet;
 import org.ohdsi.webapi.executionengine.repository.ExecutionEngineGenerationRepository;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
+import org.ohdsi.webapi.generationcache.GenerationCacheHelper;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.CohortGenerationService;
 import org.ohdsi.webapi.service.GenerationTaskExceptionHandler;
@@ -52,6 +53,7 @@ public class GenerationUtils extends AbstractDaoService {
     private final ScriptExecutionService executionService;
     private final ExecutionEngineGenerationRepository executionEngineGenerationRepository;
     private final EntityManager entityManager;
+    private final GenerationCacheHelper generationCacheHelper;
 
     public GenerationUtils(StepBuilderFactory stepBuilderFactory,
                            TransactionTemplate transactionTemplate,
@@ -62,7 +64,8 @@ public class GenerationUtils extends AbstractDaoService {
                            JobService jobService,
                            ScriptExecutionService executionService,
                            ExecutionEngineGenerationRepository executionEngineGenerationRepository,
-                           EntityManager entityManager) {
+                           EntityManager entityManager,
+                           GenerationCacheHelper generationCacheHelper) {
 
         this.stepBuilderFactory = stepBuilderFactory;
         this.transactionTemplate = transactionTemplate;
@@ -74,6 +77,7 @@ public class GenerationUtils extends AbstractDaoService {
         this.executionService = executionService;
         this.executionEngineGenerationRepository = executionEngineGenerationRepository;
         this.entityManager = entityManager;
+        this.generationCacheHelper = generationCacheHelper;
     }
 
     public static String getTempCohortTableName(String sessionId) {
@@ -113,7 +117,8 @@ public class GenerationUtils extends AbstractDaoService {
                 getSourceJdbcTemplate(source),
                 cohortGenerationService,
                 sourceService,
-                cohortGetter
+                cohortGetter,
+                generationCacheHelper
         );
         Step generateLocalCohortStep = stepBuilderFactory.get(analysisTypeName + ".generateCohort")
                 .tasklet(generateLocalCohortTasklet)

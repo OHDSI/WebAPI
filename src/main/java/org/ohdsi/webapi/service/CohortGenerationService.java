@@ -11,6 +11,7 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.cohortdefinition.*;
 import org.ohdsi.webapi.cohortfeatures.GenerateCohortFeaturesTasklet;
+import org.ohdsi.webapi.generationcache.GenerationCacheHelper;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.source.Source;
@@ -35,8 +36,6 @@ import java.util.Objects;
 
 import static org.ohdsi.webapi.Constants.GENERATE_COHORT;
 import static org.ohdsi.webapi.Constants.Params.*;
-import static org.ohdsi.webapi.source.SourceDaimon.DaimonType.CDM;
-import static org.ohdsi.webapi.source.SourceDaimon.DaimonType.Vocabulary;
 
 @Component
 public class CohortGenerationService extends AbstractDaoService implements GeneratesNotification {
@@ -46,9 +45,10 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
   private final CohortGenerationInfoRepository cohortGenerationInfoRepository;
   private final JobBuilderFactory jobBuilders;
   private final StepBuilderFactory stepBuilders;
-  private JobService jobService;
-  private ObjectMapper objectMapper;
-  private SourceService sourceService;
+  private final JobService jobService;
+  private final ObjectMapper objectMapper;
+  private final SourceService sourceService;
+  private final GenerationCacheHelper generationCacheHelper;
 
   @Autowired
   public CohortGenerationService(CohortDefinitionRepository cohortDefinitionRepository,
@@ -57,7 +57,8 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
                                  StepBuilderFactory stepBuilders,
                                  JobService jobService,
                                  ObjectMapper objectMapper,
-                                 SourceService sourceService) {
+                                 SourceService sourceService,
+                                 GenerationCacheHelper generationCacheHelper) {
     this.cohortDefinitionRepository = cohortDefinitionRepository;
     this.cohortGenerationInfoRepository = cohortGenerationInfoRepository;
     this.jobBuilders = jobBuilders;
@@ -65,6 +66,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     this.jobService = jobService;
     this.objectMapper = objectMapper;
     this.sourceService = sourceService;
+    this.generationCacheHelper = generationCacheHelper;
   }
 
   public JobExecutionResource generateCohort(CohortDefinition cohortDefinition, Source source, boolean includeFeatures) {
@@ -94,7 +96,14 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
 
     log.info("Beginning generate cohort for cohort definition id: {}", cohortDefinition.getId());
 
-    GenerateCohortTasklet generateTasklet = new GenerateCohortTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), this);
+    GenerateCohortTasklet generateTasklet = new GenerateCohortTasklet(
+      getSourceJdbcTemplate(source),
+      getTransactionTemplate(),
+      this,
+      generationCacheHelper,
+      cohortDefinitionRepository,
+      sourceService
+    );
 
     ExceptionHandler exceptionHandler = new GenerationTaskExceptionHandler(new TempTableCleanupManager(getSourceJdbcTemplate(source),
             getTransactionTemplate(),
@@ -155,11 +164,12 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
   }
 
   public String[] buildGenerationSql(
-    Integer cohortDefinitionId,
+    CohortExpression expression,
     Integer sourceId,
     String sessionId,
     String targetSchema,
     String targetTable,
+    Integer targetId,
     boolean generateStats
   ) {
 
@@ -172,11 +182,8 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     CohortExpressionQueryBuilder expressionQueryBuilder = new CohortExpressionQueryBuilder();
     StringBuilder sqlBuilder = new StringBuilder();
 
-    CohortDefinition def = this.cohortDefinitionRepository.findOneWithDetail(cohortDefinitionId);
-    CohortExpression expression = def.getDetails().getExpressionObject();
-
     CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
-    options.cohortId = cohortDefinitionId;
+    options.cohortId = targetId;
     options.cdmSchema = cdmSchema;
     options.resultSchema = resultsSchema;
     options.targetTable = targetSchema + "." + targetTable;
@@ -206,7 +213,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     String expressionSql = expressionQueryBuilder.buildExpressionQuery(expression, options);
     sqlBuilder.append(expressionSql);
 
-    String renderedSql = SqlRender.renderSql(sqlBuilder.toString(), new String[] {"target_database_schema", "target_cohort_id"}, new String[]{targetSchema, cohortDefinitionId.toString()});
+    String renderedSql = SqlRender.renderSql(sqlBuilder.toString(), new String[] {"target_database_schema", "target_cohort_id"}, new String[]{targetSchema, targetId.toString()});
     String translatedSql = SqlTranslate.translateSql(renderedSql, source.getSourceDialect(), sessionId, oracleTempSchema);
     return SqlSplit.splitSql(translatedSql);
   }

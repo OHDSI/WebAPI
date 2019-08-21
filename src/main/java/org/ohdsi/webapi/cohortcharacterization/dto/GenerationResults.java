@@ -1,19 +1,19 @@
 package org.ohdsi.webapi.cohortcharacterization.dto;
 
-import org.ohdsi.webapi.cohortcharacterization.CcServiceImpl;
+import org.ohdsi.webapi.cohortcharacterization.report.Report;
 
 import java.util.List;
 
 public class GenerationResults {
-    private List<CcServiceImpl.Report> reports;
+    private List<Report> reports;
     private Float prevalenceThreshold;
     private int count;
 
-    public List<CcServiceImpl.Report> getReports() {
+    public List<Report> getReports() {
         return reports;
     }
 
-    public void setReports(List<CcServiceImpl.Report> reports) {
+    public void setReports(List<Report> reports) {
         this.reports = reports;
     }
 

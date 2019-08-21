@@ -290,6 +290,9 @@ public abstract class AtlasSecurity extends Security {
             //executionservice callbacks
             .addRestPath("/executionservice/callbacks/**")
 
+						//cache
+            .addRestPath("/cache/*")
+						
             .addProtectedRestPath("/**/*");
   }
 

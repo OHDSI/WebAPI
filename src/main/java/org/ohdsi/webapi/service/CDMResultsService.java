@@ -79,8 +79,8 @@ public class CDMResultsService extends AbstractDaoService {
     @Value("${jasypt.encryptor.enabled}")
     private boolean encryptorEnabled;
 
-    @Value("${cdm.result.cache.warming.disable}")
-    private boolean cdmResultCacheWarmingDisable;
+    @Value("${cdm.result.cache.warming.enable}")
+    private boolean cdmResultCacheWarmingEnable;
 
     private DescendantRecordCountMapper descendantRecordCountMapper = new DescendantRecordCountMapper();
 
@@ -327,7 +327,7 @@ public class CDMResultsService extends AbstractDaoService {
 
     private JobExecutionResource warmCache(final Source source, final String jobName) {
 
-        if (cdmResultCacheWarmingDisable) {
+        if (!cdmResultCacheWarmingEnable) {
             logger.info("Cache warming is disabled for CDM results");
             return new JobExecutionResource();
         }

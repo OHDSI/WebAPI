@@ -16,6 +16,7 @@
 package org.ohdsi.webapi.cohortdefinition;
 
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
+import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.Constants;
@@ -41,6 +42,7 @@ import static org.ohdsi.webapi.Constants.Params.*;
  * @author Chris Knoll <cknoll@ohdsi.org>
  */
 public class GenerateCohortTasklet extends CancelableTasklet implements StoppableTasklet {
+  private final static String copyGenerationIntoCohortTableSql = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/copyGenerationIntoCohortTableSql.sql");
 
   private final CohortGenerationService cohortGenerationService;
   private final GenerationCacheHelper generationCacheHelper;
@@ -69,6 +71,7 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
 
     Integer cohortDefinitionId = Integer.valueOf(jobParams.get(COHORT_DEFINITION_ID).toString());
     Integer sourceId = Integer.parseInt(jobParams.get(SOURCE_ID).toString());
+    String targetSchema = jobParams.get(TARGET_DATABASE_SCHEMA).toString();
 
     CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(cohortDefinitionId);
     CohortExpression expression = cohortDefinition.getDetails().getExpressionObject();
@@ -80,15 +83,16 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
           expression,
           sourceId,
           jobParams.getOrDefault(SESSION_ID, SessionUtils.sessionId()).toString(),
-          jobParams.get(TARGET_DATABASE_SCHEMA).toString(),
+          targetSchema,
           Constants.Tables.COHORT_GENERATIONS_TABLE,
+          "generation_id",
           resultIdentifier,
           Boolean.valueOf(jobParams.get(GENERATE_STATS).toString())
       );
       jdbcTemplate.batchUpdate(stmtCancel, sqls);
+      jdbcTemplate.batchUpdate(stmtCancel, generationCacheHelper.getGenerationRefSql(targetSchema, resultIdentifier, cohortDefinition.getId()));
     });
 
-    String copyGenerationIntoCohortTableSql = "INSERT INTO @results_database_schema.cohort SELECT @cohort_definition_id, subject_id, cohort_start_date, cohort_end_date FROM (@cached_result_sql) generations;";
     String sql = SqlRender.renderSql(
         copyGenerationIntoCohortTableSql,
         new String[]{ RESULTS_DATABASE_SCHEMA, COHORT_DEFINITION_ID, "cached_result_sql" },

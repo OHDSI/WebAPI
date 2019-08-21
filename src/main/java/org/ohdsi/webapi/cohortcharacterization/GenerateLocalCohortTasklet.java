@@ -70,6 +70,7 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
 
         Map<String, Object> jobParameters = chunkContext.getStepContext().getJobParameters();
         Source source = sourceService.findBySourceId(Integer.valueOf(jobParameters.get(SOURCE_ID).toString()));
+        String targetSchema = SourceUtils.getTempQualifier(source);
         String targetTable = jobParameters.get(TARGET_TABLE).toString();
 
         Collection<CohortDefinition> cohortDefinitions = cohortGetter.apply(chunkContext);
@@ -85,12 +86,14 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
                                                     cd.getExpression(),
                                                     source.getSourceId(),
                                                     sessionId,
-                                                    SourceUtils.getTempQualifier(source),
+                                                    targetSchema,
                                                     Constants.Tables.COHORT_GENERATIONS_TABLE,
+                                                    "generation_id",
                                                     resultIdentifier,
                                                     false
                                             );
                                             cancelableJdbcTemplate.batchUpdate(stmtCancel, sqls);
+                                            cancelableJdbcTemplate.batchUpdate(stmtCancel, generationCacheHelper.getGenerationRefSql(targetSchema, resultIdentifier, cd.getId()));
                                         } finally {
                                             // Usage of the same sessionId for all cohorts would cause issues in databases w/o real temp tables support
                                             // And we cannot postfix existing sessionId with some index because SqlRender requires sessionId to be only 8 symbols long

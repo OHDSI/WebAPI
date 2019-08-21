@@ -38,6 +38,8 @@ public interface Constants {
     String TEMP_DATABASE_SCHEMA = "temp_database_schema";
     String TARGET_DIALECT = "target_dialect";
     String TARGET_TABLE = "target_table";
+    String COHORT_ID_FIELD_NAME = "cohort_id_field_name";
+    String TARGET_COHORT_ID = "target_cohort_id";
     String GENERATE_STATS = "generate_stats";
     String JOB_START_TIME = "time";
     String USER_ROLES = "userRoles";

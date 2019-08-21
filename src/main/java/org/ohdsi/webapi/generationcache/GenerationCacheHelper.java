@@ -13,6 +13,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import static org.ohdsi.webapi.Constants.Params.RESULTS_DATABASE_SCHEMA;
+import static org.ohdsi.webapi.Constants.Params.TARGET_COHORT_ID;
+import static org.ohdsi.webapi.Constants.Params.TARGET_DATABASE_SCHEMA;
 
 @Component
 public class GenerationCacheHelper {
@@ -48,6 +50,17 @@ public class GenerationCacheHelper {
                     new String[]{SourceUtils.getResultsQualifier(source)}
             );
         }
+    }
+
+    public String getGenerationRefSql(String targetSchema, Integer generationId, Integer cohortId) {
+
+        String sql = "INSERT INTO @target_database_schema.cohort_generations_ref (generation_id, cohort_definition_id) VALUES (@generation_id, @target_cohort_id);";
+        sql = SqlRender.renderSql(
+            sql,
+            new String[] {TARGET_DATABASE_SCHEMA, "generation_id", TARGET_COHORT_ID},
+            new String[] {targetSchema, generationId.toString(), cohortId.toString()}
+        );
+        return sql;
     }
 
     private static class CacheableResource {

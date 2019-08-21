@@ -24,6 +24,7 @@ import org.ohdsi.webapi.cohortcharacterization.dto.CcDistributionStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
+import org.ohdsi.webapi.cohortcharacterization.dto.ExecutionResultRequest;
 import org.ohdsi.webapi.cohortcharacterization.dto.ExportExecutionResultRequest;
 import org.ohdsi.webapi.cohortcharacterization.dto.GenerationResults;
 import org.ohdsi.webapi.cohortcharacterization.report.AnalysisItem;
@@ -553,7 +554,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     @Override
     @DataSourceAccess
-    public List<CcResult> findResults(@CcGenerationId final Long generationId, ExportExecutionResultRequest params) {
+    public List<CcResult> findResults(@CcGenerationId final Long generationId, ExecutionResultRequest params) {
         final CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
                 .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
         final Source source = generationEntity.getSource();
@@ -584,12 +585,20 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     @DataSourceAccess
     public Response exportExecutionResult(@CcGenerationId final Long generationId, ExportExecutionResultRequest params) {
         GenerationResults res = findResult(generationId, params);
+
+        if (params.isFilterUsed()) {
+            res.setReports(res.getReports().stream()
+                    .filter(r -> params.isComparative() == null || params.isComparative() == r.isComparative)
+                    .filter(r -> params.isSummary() == null || params.isSummary() == r.isSummary)
+                    .collect(Collectors.toList()));
+        }
+
         return prepareExecutionResultResponse(res.getReports());
     }
 
     @Override
     @DataSourceAccess
-    public GenerationResults findData(@CcGenerationId final Long generationId, ExportExecutionResultRequest params) {
+    public GenerationResults findData(@CcGenerationId final Long generationId, ExecutionResultRequest params) {
         GenerationResults res = findResult(generationId, params);
         boolean hasComparativeReports = res.getReports().stream()
                 .anyMatch(report -> report.isComparative);
@@ -603,7 +612,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         return res;
     }
 
-    public GenerationResults findResult(final Long generationId, ExportExecutionResultRequest params) {
+    public GenerationResults findResult(final Long generationId, ExecutionResultRequest params) {
         if (params.isFilterUsed()) {
             // in case of filtering and nothing was selected in any list
             if (params.getAnalysisIds().isEmpty()
@@ -667,12 +676,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                 .collect(Collectors.toSet());
 
         List<Report> reports = prepareReportData(analysisMap, cohortDefs, featureAnalyses);
-        if (params.isFilterUsed()) {
-            reports = reports.stream()
-                    .filter(r -> params.isComparative() == null || params.isComparative() == r.isComparative)
-                    .filter(r -> params.isSummary() == null || params.isSummary() == r.isSummary)
-                    .collect(Collectors.toList());
-        }
 
         GenerationResults res = new GenerationResults();
         res.setReports(reports);

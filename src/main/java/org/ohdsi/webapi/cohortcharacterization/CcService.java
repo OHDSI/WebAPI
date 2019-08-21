@@ -5,6 +5,7 @@ import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
+import org.ohdsi.webapi.cohortcharacterization.dto.ExecutionResultRequest;
 import org.ohdsi.webapi.cohortcharacterization.dto.ExportExecutionResultRequest;
 import org.ohdsi.webapi.cohortcharacterization.dto.GenerationResults;
 import org.ohdsi.webapi.job.JobExecutionResource;
@@ -52,7 +53,7 @@ public interface CcService {
 
     List<CcGenerationEntity> findGenerationsByCcIdAndSource(Long id, String sourceKey);
 
-    List<CcResult> findResults(Long generationId, ExportExecutionResultRequest params);
+    List<CcResult> findResults(Long generationId, ExecutionResultRequest params);
 
     List<CcPrevalenceStat> getPrevalenceStatsByGenerationId(final Long id, Long analysisId, final Long cohortId, final Long covariateId);
 
@@ -66,5 +67,5 @@ public interface CcService {
 
     Response exportExecutionResult(Long generationId, ExportExecutionResultRequest params);
 
-    GenerationResults findData(final Long generationId, ExportExecutionResultRequest params);
+    GenerationResults findData(final Long generationId, ExecutionResultRequest params);
 }

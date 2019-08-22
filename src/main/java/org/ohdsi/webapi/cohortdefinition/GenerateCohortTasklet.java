@@ -36,6 +36,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.util.Map;
 
 import static org.ohdsi.webapi.Constants.Params.*;
+import static org.ohdsi.webapi.Constants.Tables.COHORT_GENERATIONS_TABLE;
 
 /**
  *
@@ -84,8 +85,8 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
           sourceId,
           jobParams.getOrDefault(SESSION_ID, SessionUtils.sessionId()).toString(),
           targetSchema,
-          Constants.Tables.COHORT_GENERATIONS_TABLE,
-          "generation_id",
+          COHORT_GENERATIONS_TABLE,
+          GENERATION_ID,
           resultIdentifier,
           Boolean.valueOf(jobParams.get(GENERATE_STATS).toString())
       );

@@ -27,6 +27,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.Params.*;
+import static org.ohdsi.webapi.Constants.Tables.COHORT_GENERATIONS_TABLE;
 
 public class GenerateLocalCohortTasklet implements StoppableTasklet {
 
@@ -87,8 +88,8 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
                                                     source.getSourceId(),
                                                     sessionId,
                                                     targetSchema,
-                                                    Constants.Tables.COHORT_GENERATIONS_TABLE,
-                                                    "generation_id",
+                                                    COHORT_GENERATIONS_TABLE,
+                                                    GENERATION_ID,
                                                     resultIdentifier,
                                                     false
                                             );

@@ -7,6 +7,7 @@ delete from @results_database_schema.cohort_inclusion where generation_id = (SEL
 delete from @results_database_schema.cohort_inclusion_result where generation_id = (SELECT generation_id FROM @results_database_schema.cohort_generations_ref WHERE cohort_definition_id = @cohort_definition_id);
 delete from @results_database_schema.cohort_inclusion_stats where generation_id = (SELECT generation_id FROM @results_database_schema.cohort_generations_ref WHERE cohort_definition_id = @cohort_definition_id);
 delete from @results_database_schema.cohort_summary_stats where generation_id = (SELECT generation_id FROM @results_database_schema.cohort_generations_ref WHERE cohort_definition_id = @cohort_definition_id);
+DELETE FROM @results_database_schema.cohort_censor_stats WHERE generation_id = (SELECT generation_id FROM @results_database_schema.cohort_generations_ref WHERE cohort_definition_id = @cohort_definition_id);;
 delete from @results_database_schema.heracles_heel_results where cohort_definition_id = @cohort_definition_id;
 delete from @results_database_schema.heracles_results where cohort_definition_id = @cohort_definition_id;
 delete from @results_database_schema.heracles_results_dist where cohort_definition_id = @cohort_definition_id;

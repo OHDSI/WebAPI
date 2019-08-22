@@ -2,6 +2,8 @@ package org.ohdsi.webapi.generationcache;
 
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
+import org.ohdsi.sql.SqlSplit;
+import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.source.Source;
@@ -12,14 +14,18 @@ import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
+import static org.ohdsi.webapi.Constants.Params.GENERATION_ID;
+import static org.ohdsi.webapi.Constants.Params.RESULTS_DATABASE_SCHEMA;
+
 @Component
 public class CohortGenerationCacheProvider extends AbstractDaoService implements GenerationCacheProvider {
 
-    private static final String COHORT_CHECKSUM_SQL_PATH = "/resources/generationcache/cohortResultsChecksum.sql";
-    private static final String NEXT_ID_SQL_PATH = "/resources/generationcache/nextResultIdentifier.sql";
-    private static final String COHORT_RESULTS_SQL = ResourceHelper.GetResourceAsString("/resources/generationcache/cohortResults.sql");
-    private static final String RESULTS_DATABASE_SCHEMA = "@results_database_schema";
-    private static final String RESULTS_IDENTIFIER = "cohort_definition_id";
+    private static final String CACHE_VALIDATION_TIME = "Generation cache for resultIdentifier = {} has been validated in {} milliseconds";
+
+    private static final String COHORT_CHECKSUM_SQL_PATH = "/resources/generationcache/cohort/resultsChecksum.sql";
+    private static final String NEXT_ID_SQL_PATH = "/resources/generationcache/cohort/nextResultIdentifier.sql";
+    private static final String COHORT_RESULTS_SQL = ResourceHelper.GetResourceAsString("/resources/generationcache/cohort/results.sql");
+    private static final String CLEANUP_SQL = ResourceHelper.GetResourceAsString("/resources/generationcache/cohort/cleanup.sql");
 
     @Override
     public boolean supports(CacheableGenerationType type) {
@@ -41,7 +47,7 @@ public class CohortGenerationCacheProvider extends AbstractDaoService implements
         PreparedStatementRenderer psr = new PreparedStatementRenderer(
             source,
             NEXT_ID_SQL_PATH,
-            RESULTS_DATABASE_SCHEMA,
+            "@" + RESULTS_DATABASE_SCHEMA,
             SourceUtils.getResultsQualifier(source)
         );
         return getSourceJdbcTemplate(source).queryForObject(psr.getSql(), psr.getOrderedParams(), Integer.class);
@@ -50,16 +56,19 @@ public class CohortGenerationCacheProvider extends AbstractDaoService implements
     @Override
     public String getResultsChecksum(Source source, Integer resultIdentifier) {
 
+        long startTime = System.currentTimeMillis();
         PreparedStatementRenderer psr = new PreparedStatementRenderer(
             source,
             COHORT_CHECKSUM_SQL_PATH,
-            RESULTS_DATABASE_SCHEMA,
+            "@" + RESULTS_DATABASE_SCHEMA,
             SourceUtils.getResultsQualifier(source),
-            RESULTS_IDENTIFIER,
+            GENERATION_ID,
             resultIdentifier,
             SessionUtils.sessionId()
         );
-        return getSourceJdbcTemplate(source).queryForObject(psr.getSql(), psr.getOrderedParams(), String.class);
+        String checksum = getSourceJdbcTemplate(source).queryForObject(psr.getSql(), psr.getOrderedParams(), String.class);
+        log.info(CACHE_VALIDATION_TIME, resultIdentifier, System.currentTimeMillis() - startTime);
+        return checksum;
     }
 
     @Override
@@ -67,8 +76,21 @@ public class CohortGenerationCacheProvider extends AbstractDaoService implements
 
         return SqlRender.renderSql(
                 COHORT_RESULTS_SQL,
-                new String[]{RESULTS_IDENTIFIER},
+                new String[]{GENERATION_ID},
                 new String[]{resultIdentifier.toString()}
         );
+    }
+
+    @Override
+    public void remove(GenerationCache generationCache) {
+
+        Source source = generationCache.getSource();
+        String sql = SqlRender.renderSql(
+            CLEANUP_SQL,
+            new String[] {RESULTS_DATABASE_SCHEMA, GENERATION_ID},
+            new String[] {SourceUtils.getResultsQualifier(source), generationCache.getResultIdentifier().toString()}
+        );
+        sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
+        getSourceJdbcTemplate(source).batchUpdate(SqlSplit.splitSql(sql));
     }
 }

@@ -15,8 +15,8 @@ public class GenerationCacheServiceImpl implements GenerationCacheService {
 
     private static final Logger log = LoggerFactory.getLogger(GenerationCacheServiceImpl.class);
     private static final String NO_PROVIDER_ERROR = "There is no generation cache provider which supports %s";
-    private static final String CACHE_CREATED = "Cached results of %s with design hash = %s";
-    private static final String CACHE_INVALID = "Actual results checksum doesn't match the original checksum for cache with id=%s. Invalidating cache";
+    private static final String CACHE_CREATED = "Cached results of {} with design hash = {}";
+    private static final String CACHE_INVALID = "Actual results checksum doesn't match the original checksum for cache with id={}. Invalidating cache";
 
     private final List<GenerationCacheProvider> generationCacheProviderList;
     private final GenerationCacheRepository generationCacheRepository;
@@ -40,13 +40,14 @@ public class GenerationCacheServiceImpl implements GenerationCacheService {
 
         Source source = sourceRepository.findBySourceId(sourceId);
         GenerationCache generationCache = generationCacheRepository.findByTypeAndAndDesignHashAndSource(type, designHash, source, EntityGraphUtils.fromAttributePaths("source"));
+        GenerationCacheProvider provider = getProvider(type);
         if (generationCache != null) {
-            String checksum = getProvider(type).getResultsChecksum(generationCache.getSource(), generationCache.getResultIdentifier());
+            String checksum = provider.getResultsChecksum(generationCache.getSource(), generationCache.getResultIdentifier());
             if (Objects.equals(generationCache.getResultChecksum(), checksum)) {
                 return generationCache;
             } else {
-                log.info(String.format(CACHE_INVALID, generationCache.getId()));
-                generationCacheRepository.delete(generationCache);
+                removeCache(generationCache);
+                log.info(CACHE_INVALID, generationCache.getId());
             }
         }
         return null;
@@ -79,9 +80,16 @@ public class GenerationCacheServiceImpl implements GenerationCacheService {
 
         generationCache = generationCacheRepository.saveAndFlush(generationCache);
 
-        log.info(String.format(CACHE_CREATED, type, designHash));
+        log.info(CACHE_CREATED, type, designHash);
 
         return generationCache;
+    }
+
+    @Override
+    public void removeCache(GenerationCache generationCache) {
+
+        getProvider(generationCache.getType()).remove(generationCache);
+        generationCacheRepository.delete(generationCache);
     }
 
     private GenerationCacheProvider getProvider(CacheableGenerationType type) {

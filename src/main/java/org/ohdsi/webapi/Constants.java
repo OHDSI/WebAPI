@@ -50,6 +50,7 @@ public interface Constants {
     String PACKAGE_NAME = "packageName";
     String PACKAGE_FILE_NAME = "packageFilename";
     String EXECUTABLE_FILE_NAME = "executableFilename";
+    String GENERATION_ID = "generation_id";
   }
 
   interface Variables {

@@ -185,6 +185,7 @@
 
     <!-- Cache Config -->
     <spring.cache.jcache.config>classpath:config/ehcache.xml</spring.cache.jcache.config>
+    <cache.generation.invalidAfterDays>7</cache.generation.invalidAfterDays>
   </properties>
   <build>
     <finalName>WebAPI</finalName>

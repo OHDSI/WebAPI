@@ -9,4 +9,5 @@ public interface GenerationCacheService {
     Integer getNextResultIdentifier(CacheableGenerationType type, Source source);
     String getResultsSql(GenerationCache cache);
     GenerationCache cacheResults(CacheableGenerationType type, String designHash, Integer sourceId, Integer resultIdentifier);
+    void removeCache(GenerationCache generationCache);
 }

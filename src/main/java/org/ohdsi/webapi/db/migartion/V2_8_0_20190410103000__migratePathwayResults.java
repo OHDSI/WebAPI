@@ -27,6 +27,8 @@ import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import static org.ohdsi.webapi.Constants.Params.GENERATION_ID;
+
 @Component
 public class V2_8_0_20190410103000__migratePathwayResults implements ApplicationContextAwareSpringMigration {
 
@@ -138,7 +140,7 @@ public class V2_8_0_20190410103000__migratePathwayResults implements Application
 						for (EventCohort ec : eventCohorts) {
 							ec.cohortId = (int) Math.pow(2, index++); // assign each cohort an ID based on their name-sort order, as a power of 2
 						}
-						result.put(rs.getLong("generation_id"), eventCohorts);
+						result.put(rs.getLong(GENERATION_ID), eventCohorts);
 					}
 					return result;
 				});

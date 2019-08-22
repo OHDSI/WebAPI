@@ -1,7 +1,7 @@
 CREATE SEQUENCE ${ohdsiSchema}.generation_cache_sequence;
 
 CREATE TABLE ${ohdsiSchema}.generation_cache (
-  id INTEGER DEFAULT NEXTVAL('generation_cache_sequence'),
+  id INTEGER,
   type VARCHAR NOT NULL,
   design_hash VARCHAR NOT NULL,
   source_id INTEGER NOT NULL,

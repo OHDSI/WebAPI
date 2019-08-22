@@ -118,7 +118,7 @@ DELETE FROM @results_database_schema.ir_analysis_result where analysis_id = @ana
 INSERT INTO @results_database_schema.ir_analysis_result (analysis_id, target_id, outcome_id, strata_mask, person_count, time_at_risk, cases)
 select @analysisId as analysis_id, T.target_id, T.outcome_id, CAST(E.strata_mask AS bigint),
   COUNT(subject_id) as person_count, 
-  CAST(sum(1.0 * time_at_risk / 365.25) AS BIGINT) as time_at_risk,
+  CAST(ROUND(sum(1.0 * time_at_risk / 365.25),0) AS BIGINT) as time_at_risk,
   sum(is_case) as cases
 from #time_at_risk T
 JOIN (

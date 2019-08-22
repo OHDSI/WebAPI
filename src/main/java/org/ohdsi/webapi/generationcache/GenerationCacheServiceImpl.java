@@ -46,7 +46,7 @@ public class GenerationCacheServiceImpl implements GenerationCacheService {
             if (Objects.equals(generationCache.getResultChecksum(), checksum)) {
                 return generationCache;
             } else {
-                removeCache(generationCache);
+                removeCache(generationCache.getType(), generationCache.getSource(), generationCache.getResultIdentifier());
                 log.info(CACHE_INVALID, generationCache.getId());
             }
         }
@@ -56,7 +56,9 @@ public class GenerationCacheServiceImpl implements GenerationCacheService {
     @Override
     public Integer getNextResultIdentifier(CacheableGenerationType type, Source source) {
 
-        return getProvider(type).getNextResultIdentifier(source);
+        Integer nextCacheId = generationCacheRepository.findNextResultIdentifier(type, source.getSourceId());
+        Integer nextResultId = getProvider(type).getNextResultIdentifier(source);
+        return Integer.max(nextCacheId, nextResultId);
     }
 
     @Override
@@ -86,10 +88,12 @@ public class GenerationCacheServiceImpl implements GenerationCacheService {
     }
 
     @Override
-    public void removeCache(GenerationCache generationCache) {
+    public void removeCache(CacheableGenerationType type, Source source, Integer resultIdentifier) {
 
-        getProvider(generationCache.getType()).remove(generationCache);
-        generationCacheRepository.delete(generationCache);
+        GenerationCache generationCache = generationCacheRepository.findByTypeAndSourceAndResultIdentifier(type, source, resultIdentifier, EntityGraphUtils.fromAttributePaths("source"));
+        if (generationCache != null) {
+            generationCacheRepository.delete(generationCache);
+        }
     }
 
     private GenerationCacheProvider getProvider(CacheableGenerationType type) {

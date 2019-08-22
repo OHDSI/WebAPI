@@ -9,5 +9,5 @@ public interface GenerationCacheProvider {
     Integer getNextResultIdentifier(Source source);
     String getResultsChecksum(Source source, Integer resultIdentifier);
     String getResultsSql(Integer resultIdentifier);
-    void remove(GenerationCache generationCache);
+    void remove(Source source, Integer resultIdentifier);
 }

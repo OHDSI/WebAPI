@@ -13,3 +13,6 @@ CREATE TABLE ${ohdsiSchema}.generation_cache (
     FOREIGN KEY (source_id)
     REFERENCES ${ohdsiSchema}.source (source_id)
 );
+
+ALTER TABLE ${ohdsiSchema}.generation_cache ADD CONSTRAINT uq_gc_hash UNIQUE (type, design_hash);
+ALTER TABLE ${ohdsiSchema}.generation_cache ADD CONSTRAINT uq_gc_result UNIQUE (type, source_id, result_identifier);

@@ -31,6 +31,6 @@ public class CleanupScheduler {
             DateUtils.addDays(new Date(), -1 * invalidateAfterDays),
             EntityGraphUtils.fromAttributePaths("source")
         );
-        caches.forEach(generationCacheService::removeCache);
+        caches.forEach(gc -> generationCacheService.removeCache(gc.getType(), gc.getSource(), gc.getResultIdentifier()));
     }
 }

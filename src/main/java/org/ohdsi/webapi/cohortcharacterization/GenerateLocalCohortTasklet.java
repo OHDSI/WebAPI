@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
-import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.generationcache.GenerationCacheHelper;
 import org.ohdsi.webapi.service.CohortGenerationService;
@@ -80,7 +79,7 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
                 .map(cd ->
                         CompletableFuture.supplyAsync(
                                 () -> {
-                                    String resultSql = generationCacheHelper.computeIfAbsent(cd, source, resultIdentifier -> {
+                                    GenerationCacheHelper.CacheResult res = generationCacheHelper.computeIfAbsent(cd, source, resultIdentifier -> {
                                         String sessionId = SessionUtils.sessionId();
                                         try {
                                             String[] sqls = cohortGenerationService.buildGenerationSql(
@@ -94,7 +93,6 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
                                                     false
                                             );
                                             cancelableJdbcTemplate.batchUpdate(stmtCancel, sqls);
-                                            cancelableJdbcTemplate.batchUpdate(stmtCancel, generationCacheHelper.getGenerationRefSql(targetSchema, resultIdentifier, cd.getId()));
                                         } finally {
                                             // Usage of the same sessionId for all cohorts would cause issues in databases w/o real temp tables support
                                             // And we cannot postfix existing sessionId with some index because SqlRender requires sessionId to be only 8 symbols long
@@ -110,7 +108,7 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
                                             cleanupManager.cleanupTempTables();
                                         }
                                     });
-                                    String sql = String.format(COPY_CACHED_RESULTS, SourceUtils.getTempQualifier(source), targetTable, resultSql);
+                                    String sql = String.format(COPY_CACHED_RESULTS, SourceUtils.getTempQualifier(source), targetTable, res.getSql());
                                     cancelableJdbcTemplate.batchUpdate(stmtCancel, sql);
                                     return null;
                                 },

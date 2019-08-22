@@ -13,8 +13,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import static org.ohdsi.webapi.Constants.Params.RESULTS_DATABASE_SCHEMA;
-import static org.ohdsi.webapi.Constants.Params.TARGET_COHORT_ID;
-import static org.ohdsi.webapi.Constants.Params.TARGET_DATABASE_SCHEMA;
 
 @Component
 public class GenerationCacheHelper {
@@ -30,7 +28,7 @@ public class GenerationCacheHelper {
         this.generationCacheService = generationCacheService;
     }
 
-    public String computeIfAbsent(CohortDefinition cohortDefinition, Source source, Consumer<Integer> generateCohort) {
+    public CacheResult computeIfAbsent(CohortDefinition cohortDefinition, Source source, Consumer<Integer> generateCohort) {
 
         CacheableGenerationType type = CacheableGenerationType.COHORT;
         String designHash = generationCacheService.getDesignHash(type, cohortDefinition.getDetails().getExpression());
@@ -39,28 +37,42 @@ public class GenerationCacheHelper {
             GenerationCache cache = generationCacheService.getCache(type, designHash, source.getSourceId());
             if (cache == null) {
                 Integer resultIdentifier = generationCacheService.getNextResultIdentifier(type, source);
+                // Ensure that there are no records in results schema with which we could mess up
+                generationCacheService.removeCache(type, source, resultIdentifier);
                 generateCohort.accept(resultIdentifier);
                 cache = generationCacheService.cacheResults(CacheableGenerationType.COHORT, designHash, source.getSourceId(), resultIdentifier);
             } else {
                 log.info(String.format(CACHE_USED, type, cohortDefinition.getId(), source.getSourceKey()));
             }
-            return SqlRender.renderSql(
+            String sql = SqlRender.renderSql(
                     generationCacheService.getResultsSql(cache),
                     new String[]{RESULTS_DATABASE_SCHEMA},
                     new String[]{SourceUtils.getResultsQualifier(source)}
             );
+            return new CacheResult(cache.getResultIdentifier(), sql);
         }
     }
 
-    public String getGenerationRefSql(String targetSchema, Integer generationId, Integer cohortId) {
+    public class CacheResult {
 
-        String sql = "INSERT INTO @target_database_schema.cohort_generations_ref (generation_id, cohort_definition_id) VALUES (@generation_id, @target_cohort_id);";
-        sql = SqlRender.renderSql(
-            sql,
-            new String[] {TARGET_DATABASE_SCHEMA, "generation_id", TARGET_COHORT_ID},
-            new String[] {targetSchema, generationId.toString(), cohortId.toString()}
-        );
-        return sql;
+        private Integer identifier;
+        private String sql;
+
+        public CacheResult(Integer identifier, String sql) {
+
+            this.identifier = identifier;
+            this.sql = sql;
+        }
+
+        public Integer getIdentifier() {
+
+            return identifier;
+        }
+
+        public String getSql() {
+
+            return sql;
+        }
     }
 
     private static class CacheableResource {

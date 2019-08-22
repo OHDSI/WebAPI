@@ -29,9 +29,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import static org.ohdsi.webapi.Constants.GENERATE_COHORT;
@@ -40,7 +38,6 @@ import static org.ohdsi.webapi.Constants.Params.*;
 @Component
 public class CohortGenerationService extends AbstractDaoService implements GeneratesNotification {
 
-  private static final String DEFAULT_COHORT_TABLE = "cohort";
   private final CohortDefinitionRepository cohortDefinitionRepository;
   private final CohortGenerationInfoRepository cohortGenerationInfoRepository;
   private final JobBuilderFactory jobBuilders;
@@ -71,11 +68,6 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
 
   public JobExecutionResource generateCohort(CohortDefinition cohortDefinition, Source source, boolean includeFeatures) {
 
-    return generateCohort(cohortDefinition, source, includeFeatures, DEFAULT_COHORT_TABLE);
-  }
-
-  public JobExecutionResource generateCohort(CohortDefinition cohortDefinition, Source source, boolean includeFeatures, String targetTable) {
-
     CohortGenerationInfo info = cohortDefinition.getGenerationInfoList().stream()
             .filter(val -> Objects.equals(val.getId().getSourceId(), source.getSourceId())).findFirst()
             .orElse(new CohortGenerationInfo(cohortDefinition, source.getSourceId()));
@@ -88,11 +80,10 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
 
     cohortDefinitionRepository.save(cohortDefinition);
 
-    return runGenerateCohortJob(cohortDefinition, source, includeFeatures, true, targetTable);
+    return runGenerateCohortJob(cohortDefinition, source, includeFeatures);
   }
 
-  public Job buildGenerateCohortJob(CohortDefinition cohortDefinition, Source source, boolean includeFeatures, boolean updateGenerationInfo,
-                                    String jobName, JobParameters jobParameters) {
+  public Job buildGenerateCohortJob(CohortDefinition cohortDefinition, Source source, boolean includeFeatures, JobParameters jobParameters) {
 
     log.info("Beginning generate cohort for cohort definition id: {}", cohortDefinition.getId());
 
@@ -117,12 +108,10 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
             .exceptionHandler(exceptionHandler)
             .build();
 
-    SimpleJobBuilder generateJobBuilder = jobBuilders.get(jobName).start(generateCohortStep);
+    SimpleJobBuilder generateJobBuilder = jobBuilders.get(GENERATE_COHORT).start(generateCohortStep);
 
-    if (updateGenerationInfo) {
-      generateJobBuilder.listener(new GenerationJobExecutionListener(sourceService, cohortDefinitionRepository, this.getTransactionTemplateRequiresNew(),
-              this.getSourceJdbcTemplate(source)));
-    }
+    generateJobBuilder.listener(new GenerationJobExecutionListener(sourceService, cohortDefinitionRepository, this.getTransactionTemplateRequiresNew(),
+            this.getSourceJdbcTemplate(source)));
 
     if (includeFeatures) {
       GenerateCohortFeaturesTasklet generateCohortFeaturesTasklet =
@@ -139,23 +128,17 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     return generateJobBuilder.build();
   }
 
-  public JobExecutionResource runGenerateCohortJob(CohortDefinition cohortDefinition, Source source, boolean includeFeatures, boolean updateGenerationInfo, String targetTable, Map<String, String> extraJobParams, String jobName) {
-    final JobParametersBuilder jobParametersBuilder = getJobParametersBuilder(source, cohortDefinition, targetTable);
-    Job job = buildGenerateCohortJob(cohortDefinition, source, includeFeatures, updateGenerationInfo, jobName, jobParametersBuilder.toJobParameters());
-    extraJobParams.forEach(jobParametersBuilder::addString);
+  public JobExecutionResource runGenerateCohortJob(CohortDefinition cohortDefinition, Source source, boolean includeFeatures) {
+    final JobParametersBuilder jobParametersBuilder = getJobParametersBuilder(source, cohortDefinition);
+    Job job = buildGenerateCohortJob(cohortDefinition, source, includeFeatures, jobParametersBuilder.toJobParameters());
     return jobService.runJob(job, jobParametersBuilder.toJobParameters());
   }
 
-  public JobExecutionResource runGenerateCohortJob(CohortDefinition cohortDefinition, Source source, boolean includeFeatures, boolean updateGenerationInfo, String targetTable) {
-    return runGenerateCohortJob(cohortDefinition, source, includeFeatures, updateGenerationInfo, targetTable, new HashMap<>(), GENERATE_COHORT);
-  }
-
-  public JobParametersBuilder getJobParametersBuilder(Source source, CohortDefinition cohortDefinition, String targetTable) {
+  public JobParametersBuilder getJobParametersBuilder(Source source, CohortDefinition cohortDefinition) {
 
     JobParametersBuilder builder = new JobParametersBuilder();
     builder.addString(JOB_NAME, String.format("Generating cohort %d : %s (%s)", cohortDefinition.getId(), source.getSourceName(), source.getSourceKey()));
     builder.addString(TARGET_DATABASE_SCHEMA, SourceUtils.getResultsQualifier(source));
-    builder.addString(TARGET_TABLE, targetTable);
     builder.addString(SESSION_ID, SessionUtils.sessionId());
     builder.addString(COHORT_DEFINITION_ID, String.valueOf(cohortDefinition.getId()));
     builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));

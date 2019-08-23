@@ -7,10 +7,21 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.subject.Subject;
 import org.ohdsi.webapi.helper.Guard;
-import org.ohdsi.webapi.shiro.Entities.*;
+import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
+import org.ohdsi.webapi.shiro.Entities.PermissionRepository;
+import org.ohdsi.webapi.shiro.Entities.RequestStatus;
+import org.ohdsi.webapi.shiro.Entities.RoleEntity;
+import org.ohdsi.webapi.shiro.Entities.RolePermissionEntity;
+import org.ohdsi.webapi.shiro.Entities.RolePermissionRepository;
+import org.ohdsi.webapi.shiro.Entities.RoleRepository;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.shiro.Entities.UserRepository;
+import org.ohdsi.webapi.shiro.Entities.UserRoleEntity;
+import org.ohdsi.webapi.shiro.Entities.UserRoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
@@ -116,6 +127,7 @@ public class PermissionManager {
     });
   }
 
+  @Transactional(propagation = Propagation.NEVER)
   public void clearAuthorizationInfoCache() {
     this.authorizationInfoCache.set(new ConcurrentHashMap<>());
   }

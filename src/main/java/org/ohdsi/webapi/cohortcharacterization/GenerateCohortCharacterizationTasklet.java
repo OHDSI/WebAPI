@@ -24,9 +24,7 @@ import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConvert
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
 import org.ohdsi.webapi.common.generation.AnalysisTasklet;
-import org.ohdsi.webapi.feanalysis.FeAnalysisService;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
-import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.source.Source;
@@ -34,9 +32,6 @@ import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.SourceUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.scope.context.ChunkContext;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Map;
@@ -64,11 +59,6 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
     }
 
     @Override
-    protected void doBefore(ChunkContext chunkContext) {
-        initTx();
-    }
-
-    @Override
     protected String[] prepareQueries(ChunkContext chunkContext, CancelableJdbcTemplate jdbcTemplate) {
         Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
         CohortCharacterizationEntity cohortCharacterization = ccService.findByIdWithLinkedEntities(
@@ -76,7 +66,8 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
         );
         final Long jobId = chunkContext.getStepContext().getStepExecution().getJobExecution().getId();
         final UserEntity userEntity = userRepository.findByLogin(jobParams.get(JOB_AUTHOR).toString());
-        saveInfo(jobId, new SerializedCcToCcConverter().convertToDatabaseColumn(cohortCharacterization), userEntity);
+        String serializedDesign = new SerializedCcToCcConverter().convertToDatabaseColumn(cohortCharacterization);
+        saveInfoWithinTheSeparateTransaction(jobId, serializedDesign, userEntity);
         final Integer sourceId = Integer.valueOf(jobParams.get(SOURCE_ID).toString());
         final Source source = sourceService.findBySourceId(sourceId);
         final String cohortTable = jobParams.get(TARGET_TABLE).toString();
@@ -110,15 +101,8 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
                     .replaceAll("#", tempSchema + "." + sessionId + "_")
                     .replaceAll("tempdb\\.\\.", "");
         }
-        final String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect());
+        final String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), sessionId, tempSchema);
         return SqlSplit.splitSql(translatedSql);
-    }
-
-    private void initTx() {
-        DefaultTransactionDefinition txDefinition = new DefaultTransactionDefinition();
-        txDefinition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-        TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(txDefinition);
-        this.transactionTemplate.getTransactionManager().commit(initStatus);
     }
 
 }

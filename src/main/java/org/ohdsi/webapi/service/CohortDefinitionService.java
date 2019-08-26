@@ -6,9 +6,7 @@
 package org.ohdsi.webapi.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.check.Checker;
@@ -17,7 +15,6 @@ import org.ohdsi.circe.check.warnings.DefaultWarning;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
-import org.ohdsi.analysis.versioning.VersionedSerializerModifier;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.*;
@@ -36,8 +33,10 @@ import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.shiro.management.datasource.SourceIdAccessor;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -76,7 +75,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.ohdsi.webapi.Constants.Params.*;
-import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
@@ -382,7 +381,21 @@ public class CohortDefinitionService extends AbstractDaoService {
   @GET
   @Path("/{id}")
   @Produces(MediaType.APPLICATION_JSON)
-  public CohortDTO getCohortDefinition(@PathParam("id") final int id) {
+  public CohortRawDTO getCohortDefinitionRaw(@PathParam("id") final int id) {
+
+    return getTransactionTemplate().execute(transactionStatus -> {
+      CohortDefinition d = this.cohortDefinitionRepository.findOneWithDetail(id);
+      ExceptionUtils.throwNotFoundExceptionIfNull(d, String.format("There is no cohort definition with id = %d.", id));
+      return conversionService.convert(d, CohortRawDTO.class);
+    });
+  }
+
+	/**
+	 * This method returns the cohort definition containg the circe cohort expression
+	 * @param id
+	 * @return 
+	 */
+  public CohortDTO getCohortDefinition( final int id) {
 
     return getTransactionTemplate().execute(transactionStatus -> {
       CohortDefinition d = this.cohortDefinitionRepository.findOneWithDetail(id);
@@ -390,7 +403,7 @@ public class CohortDefinitionService extends AbstractDaoService {
       return conversionService.convert(d, CohortDTO.class);
     });
   }
-
+	
   @GET
   @Path("/{id}/exists")
   @Produces(MediaType.APPLICATION_JSON)
@@ -491,7 +504,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 
     List<CohortGenerationInfo> result = infoList.stream().filter(genInfo -> sourceIdAccessor.hasAccess(genInfo.getId().getSourceId())).collect(Collectors.toList());
 
-    Map<Integer, SourceInfo> sourceMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_ID);
+    Map<Integer, Source> sourceMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_ID);
     return sensitiveInfoService.filterSensitiveInfo(result, gi -> Collections.singletonMap(Constants.Variables.SOURCE, sourceMap.get(gi.getId().getSourceId())));
   }
 
@@ -508,11 +521,15 @@ public class CohortDefinitionService extends AbstractDaoService {
   public CohortDTO copy(@PathParam("id") final int id) {
     CohortDTO sourceDef = getCohortDefinition(id);
     sourceDef.setId(null); // clear the ID
-    sourceDef.setName(String.format(ENTITY_COPY_PREFIX, sourceDef.getName()));
-
+    sourceDef.setName(NameUtils.getNameForCopy(sourceDef.getName(), this::getNamesLike, cohortDefinitionRepository.findByName(sourceDef.getName())));
     CohortDTO copyDef = createCohortDefinition(sourceDef);
 
     return copyDef;
+  }
+  
+  public List<String> getNamesLike(String copyName) {
+
+    return cohortDefinitionRepository.findAllByNameStartsWith(copyName).stream().map(CohortDefinition::getName).collect(Collectors.toList());
   }
 
   /**
@@ -602,8 +619,8 @@ public class CohortDefinitionService extends AbstractDaoService {
   public Response exportConceptSets(@PathParam("id") final int id)
   {
     
-    SourceInfo sourceInfo = sourceService.getPriorityVocabularySourceInfo();
-    if (Objects.isNull(sourceInfo)) {
+    Source source = sourceService.getPriorityVocabularySource();
+    if (Objects.isNull(source)) {
         throw new ForbiddenException();
     }
     CohortDefinition def = this.cohortDefinitionRepository.findOneWithDetail(id);
@@ -611,7 +628,7 @@ public class CohortDefinitionService extends AbstractDaoService {
         throw new NotFoundException();
     }
     
-    ArrayList<ConceptSetExport> exports = getConceptSetExports(def, sourceInfo);
+    ArrayList<ConceptSetExport> exports = getConceptSetExports(def, new SourceInfo(source));
     ByteArrayOutputStream exportStream = ExportUtil.writeConceptSetExportToCSVAndZip(exports);
 
     Response response = Response

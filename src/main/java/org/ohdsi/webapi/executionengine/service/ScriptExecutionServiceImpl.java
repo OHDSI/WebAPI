@@ -13,6 +13,7 @@ import org.apache.commons.lang3.text.StrSubstitutor;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
+import org.ohdsi.webapi.JobInvalidator;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
@@ -22,7 +23,7 @@ import org.ohdsi.webapi.executionengine.repository.ExecutionEngineGenerationRepo
 import org.ohdsi.webapi.executionengine.repository.InputFileRepository;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.HttpClient;
-import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.DataSourceDTOParser;
@@ -47,7 +48,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -65,8 +65,6 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
     private static final String ARACHNE_WAITING_COMPRESSED_RESULT_HEADER = "arachne-waiting-compressed-result";
     private static final String TEMPDIR_PREFIX = "webapi-exec";
 
-    private List<ExecutionEngineAnalysisStatus.Status> INVALIDATE_STATUSES = new ArrayList<>();
-
     @Autowired
     private HttpClient client;
 
@@ -81,7 +79,12 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
     @Value("${executionengine.resultExclusions}")
     private String resultExclusions;
 
-    private List<ExecutionEngineAnalysisStatus.Status> FINAL_STATUES = ImmutableList.of(ExecutionEngineAnalysisStatus.Status.COMPLETED, ExecutionEngineAnalysisStatus.Status.COMPLETED);
+    private static List<ExecutionEngineAnalysisStatus.Status> INVALIDATE_STATUSES = ImmutableList.of(
+            ExecutionEngineAnalysisStatus.Status.RUNNING,
+            ExecutionEngineAnalysisStatus.Status.STARTED,
+            ExecutionEngineAnalysisStatus.Status.PENDING
+    );
+
 
     @Autowired
     private SourceService sourceService;
@@ -90,6 +93,9 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
 
     @Autowired
     private JobExplorer jobExplorer;
+    @Autowired
+    private JobInvalidator jobInvalidator;
+
     @Autowired
     private AnalysisExecutionRepository analysisExecutionRepository;
 
@@ -102,9 +108,6 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
     ScriptExecutionServiceImpl() throws KeyManagementException, NoSuchAlgorithmException {
 
         HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
-        INVALIDATE_STATUSES.add(ExecutionEngineAnalysisStatus.Status.RUNNING);
-        INVALIDATE_STATUSES.add(ExecutionEngineAnalysisStatus.Status.STARTED);
-        INVALIDATE_STATUSES.add(ExecutionEngineAnalysisStatus.Status.PENDING);
     }
 
     @Override
@@ -236,24 +239,23 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
     }
 
     @Override
-    public void updateAnalysisStatus(ExecutionEngineAnalysisStatus analysisExecution, ExecutionEngineAnalysisStatus.Status status) {
+    public void invalidateExecutions(Date invalidateDate) {
+        getTransactionTemplateRequiresNew().execute(status -> {
+            logger.info("Invalidating execution engine based analyses");
+            List<ExecutionEngineAnalysisStatus> executions = analysisExecutionRepository.findAllInvalidAnalysis(invalidateDate, ScriptExecutionServiceImpl.INVALIDATE_STATUSES);
 
-        if (FINAL_STATUES.stream().noneMatch(s -> Objects.equals(s, status))) {
-            analysisExecution.setExecutionStatus(status);
-            analysisExecutionRepository.saveAndFlush(analysisExecution);
-        }
+            executions.forEach(exec -> {
+                exec.setExecutionStatus(ExecutionEngineAnalysisStatus.Status.FAILED);
+                jobInvalidator.invalidateJobExecutionById(exec);
+            });
+            analysisExecutionRepository.save(executions);
+            return null;
+        });
     }
 
     @PostConstruct
     public void invalidateOutdatedAnalyses() {
-
-        getTransactionTemplateRequiresNew().execute(status -> {
-            logger.info("Invalidating execution engine based analyses");
-            List<ExecutionEngineAnalysisStatus> outdateExecutions = analysisExecutionRepository.findByExecutionStatusIn(INVALIDATE_STATUSES);
-            outdateExecutions.forEach(ee -> ee.setExecutionStatus(ExecutionEngineAnalysisStatus.Status.FAILED));
-            analysisExecutionRepository.save(outdateExecutions);
-            return null;
-        });
+        invalidateExecutions(new Date());
     }
 
     @Override

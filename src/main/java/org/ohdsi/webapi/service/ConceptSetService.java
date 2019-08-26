@@ -35,7 +35,10 @@ import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
@@ -121,8 +124,8 @@ public class ConceptSetService extends AbstractDaoService {
         }
 
         // assume we want to resolve using the priority vocabulary provider
-        SourceInfo vocabSourceInfo = sourceService.getPriorityVocabularySourceInfo();
-        Collection<Concept> concepts = vocabService.executeIdentifierLookup(vocabSourceInfo.sourceKey, identifiers);
+        Source vocabSourceInfo = sourceService.getPriorityVocabularySource();
+        Collection<Concept> concepts = vocabService.executeIdentifierLookup(vocabSourceInfo.getSourceKey(), identifiers);
 
         // put the concept information into the expression along with the concept set item information 
         for (Concept concept : concepts) {
@@ -190,14 +193,14 @@ public class ConceptSetService extends AbstractDaoService {
         }
 
         ByteArrayOutputStream baos;
-        SourceInfo sourceInfo = sourceService.getPriorityVocabularySourceInfo();
+        Source source = sourceService.getPriorityVocabularySource();
         ArrayList<ConceptSetExport> cs = new ArrayList<>();
         Response response = null;
         try {
             // Load all of the concept sets requested
             for (int i = 0; i < conceptSetIds.size(); i++) {
                 // Get the concept set information
-                cs.add(getConceptSetForExport(conceptSetIds.get(i), sourceInfo));
+                cs.add(getConceptSetForExport(conceptSetIds.get(i), new SourceInfo(source)));
             }
            // Write Concept Set Expression to a CSV
             baos = ExportUtil.writeConceptSetExportToCSVAndZip(cs);
@@ -237,6 +240,20 @@ public class ConceptSetService extends AbstractDaoService {
         return conversionService.convert(updated, ConceptSetDTO.class);
     }
 
+    @GET
+    @Path("/{id}/copy-name")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map<String, String> getNameForCopy (@PathParam("id") final int id){
+        ConceptSetDTO source = getConceptSet(id);
+        String name = NameUtils.getNameForCopy(source.getName(), this::getNamesLike, getConceptSetRepository().findByName(source.getName()));
+        return Collections.singletonMap("copyName", name);
+    }
+
+    public List<String> getNamesLike(String copyName) {
+
+        return getConceptSetRepository().findAllByNameStartsWith(copyName).stream().map(ConceptSet::getName).collect(Collectors.toList());
+    }
+    
     @Path("/{id}")
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)

@@ -116,7 +116,12 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
       if (name == null) {
         name = login;
       }
-      this.authorizer.registerUser(login, name, defaultRoles);
+      try {
+        this.authorizer.registerUser(login, name, defaultRoles);
+      } catch (Exception e) {
+        WebUtils.toHttp(response).setHeader("x-auth-error", e.getMessage());
+        throw new Exception(e);
+      }
 
       Date expiration = this.getExpirationDate(this.tokenExpirationIntervalInSeconds);
       jwt = TokenManager.createJsonWebToken(login, expiration);

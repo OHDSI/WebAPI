@@ -28,7 +28,7 @@ import org.ohdsi.webapi.pathway.repository.PathwayAnalysisEntityRepository;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisGenerationRepository;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.JobService;
-import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.PathwayAnalysisGenerationId;
@@ -36,7 +36,7 @@ import org.ohdsi.webapi.shiro.annotations.SourceId;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
-import org.ohdsi.webapi.util.CopyUtils;
+import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -174,6 +174,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         Stream.concat(toImport.getTargetCohorts().stream(), toImport.getEventCohorts().stream()).forEach(pc -> {
             CohortDefinition cohortDefinition = designImportService.persistCohortOrGetExisting(pc.getCohortDefinition());
             pc.setId(null);
+            pc.setName(cohortDefinition.getName());
             pc.setCohortDefinition(cohortDefinition);
             pc.setPathwayAnalysis(newAnalysis);
             if (pc instanceof PathwayTargetCohort) {
@@ -212,15 +213,19 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         return entity;
     }
 
-    @Override
-    public int countLikeName(String name) {
+    private List<String> getNamesLike(String name) {
 
-        return pathwayAnalysisRepository.countByNameStartsWith(name);
+        return pathwayAnalysisRepository.findAllByNameStartsWith(name).stream().map(PathwayAnalysisEntity::getName).collect(Collectors.toList());
     }
     
     @Override
     public String getNameForCopy(String dtoName) {
-        return CopyUtils.getNameForCopy(dtoName, this::countLikeName, pathwayAnalysisRepository.findByName(dtoName));
+        return NameUtils.getNameForCopy(dtoName, this::getNamesLike, pathwayAnalysisRepository.findByName(dtoName));
+    }
+    
+    @Override
+    public String getNameWithSuffix(String dtoName) {
+        return NameUtils.getNameWithSuffix(dtoName, this::getNamesLike);
     }
 
     @Override

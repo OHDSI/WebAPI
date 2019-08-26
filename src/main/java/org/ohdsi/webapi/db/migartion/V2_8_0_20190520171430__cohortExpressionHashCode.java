@@ -24,6 +24,7 @@ public class V2_8_0_20190520171430__cohortExpressionHashCode implements Applicat
     public void migrate() throws Exception {
         List<CohortDefinitionDetails> allDetails = detailsRepository.findAll();
         for (CohortDefinitionDetails details: allDetails) {
+            //after deserialization the field "cdmVersionRange" is added and default value for it is set
             CohortExpression expression = Utils.deserialize(details.getExpression(), CohortExpression.class);            
             details.setExpression(Utils.serialize(expression));
             details.updateHashCode();

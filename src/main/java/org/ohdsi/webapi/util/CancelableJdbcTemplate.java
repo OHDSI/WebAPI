@@ -66,7 +66,7 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
             if (StringUtils.hasLength(batchExceptionSql)) {
               this.currSql = batchExceptionSql;
             }
-            throw ex;
+            throw ex.getNextException();
           }
         }
         else {

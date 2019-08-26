@@ -37,8 +37,6 @@ public interface PredictionService {
 
   List<PredictionGenerationEntity> getPredictionGenerations(Integer predictionAnalysisId);
   
-  int countLikeName(String copyName); 
-  
   PredictionAnalysis getById(Integer id);
 
   int getCountPredictionWithSameName(Integer id, String name);

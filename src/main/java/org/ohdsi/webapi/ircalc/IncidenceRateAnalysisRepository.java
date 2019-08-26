@@ -20,6 +20,7 @@ import com.cosium.spring.data.jpa.entity.graph.repository.EntityGraphCrudReposit
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -36,8 +37,9 @@ public interface IncidenceRateAnalysisRepository extends EntityGraphCrudReposito
 
   @Query("SELECT COUNT(ira) FROM IncidenceRateAnalysis ira WHERE ira.name = :name and ira.id <> :id")
   int getCountIRWithSameName(@Param("id") Integer id, @Param("name") String name);
-  
-  int countByNameStartsWith(String pattern);
+
+  @Query("SELECT ira FROM IncidenceRateAnalysis ira WHERE ira.name LIKE ?1 ESCAPE '\\'")
+  List<IncidenceRateAnalysis> findAllByNameStartsWith(String pattern);
   
   Optional<IncidenceRateAnalysis> findByName(String name);
 }

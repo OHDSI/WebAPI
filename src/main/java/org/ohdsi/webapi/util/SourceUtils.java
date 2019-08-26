@@ -7,6 +7,7 @@ import org.ohdsi.webapi.source.SourceDaimon;
 import static org.ohdsi.webapi.source.SourceDaimon.DaimonType.CDM;
 import static org.ohdsi.webapi.source.SourceDaimon.DaimonType.Results;
 import static org.ohdsi.webapi.source.SourceDaimon.DaimonType.Temp;
+import static org.ohdsi.webapi.source.SourceDaimon.DaimonType.Vocabulary;
 
 public class SourceUtils {
     public static String getVocabularyQualifier(Source source) {
@@ -35,6 +36,10 @@ public class SourceUtils {
 
     public static String getResultsQualifierOrNull(Source source) {
         return source.getTableQualifierOrNull(Results);
+    }
+
+    public static String getVocabQualifierOrNull(Source source) {
+        return source.getTableQualifierOrNull(Vocabulary);
     }
 
 }

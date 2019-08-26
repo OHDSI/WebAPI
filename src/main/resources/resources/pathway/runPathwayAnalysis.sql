@@ -196,3 +196,6 @@ DROP TABLE #date_replacements;
 
 TRUNCATE TABLE #raw_events;
 DROP TABLE #raw_events;
+
+{@isHive == 'true'}?{DROP TABLE #person_dates; DROP TABLE #marked_dates; DROP TABLE #grouped_dates; DROP TABLE #replacements;
+DROP TABLE #cohort_dates; DROP TABLE #time_periods; DROP TABLE #events;}

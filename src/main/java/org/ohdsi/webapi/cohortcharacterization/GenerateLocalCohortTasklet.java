@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortGenerationRequestBuilder;
 import org.ohdsi.webapi.generationcache.GenerationCacheHelper;
 import org.ohdsi.webapi.service.CohortGenerationService;
 import org.ohdsi.webapi.source.SourceService;
@@ -79,19 +80,16 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
                 .map(cd ->
                         CompletableFuture.supplyAsync(
                                 () -> {
-                                    GenerationCacheHelper.CacheResult res = generationCacheHelper.computeIfAbsent(cd, source, resultIdentifier -> {
-                                        String sessionId = SessionUtils.sessionId();
+                                    String sessionId = SessionUtils.sessionId();
+                                    CohortGenerationRequestBuilder generationRequestBuilder = new CohortGenerationRequestBuilder(
+                                        sessionId,
+                                        targetSchema,
+                                        COHORT_GENERATIONS_TABLE,
+                                        GENERATION_ID,
+                                        false
+                                    );
+                                    GenerationCacheHelper.CacheResult res = generationCacheHelper.computeIfAbsent(cd, source, generationRequestBuilder, (resId, sqls) -> {
                                         try {
-                                            String[] sqls = cohortGenerationService.buildGenerationSql(
-                                                    cd.getExpression(),
-                                                    source.getSourceId(),
-                                                    sessionId,
-                                                    targetSchema,
-                                                    COHORT_GENERATIONS_TABLE,
-                                                    GENERATION_ID,
-                                                    resultIdentifier,
-                                                    false
-                                            );
                                             cancelableJdbcTemplate.batchUpdate(stmtCancel, sqls);
                                         } finally {
                                             // Usage of the same sessionId for all cohorts would cause issues in databases w/o real temp tables support

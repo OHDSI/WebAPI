@@ -2,6 +2,9 @@ package org.ohdsi.webapi.generationcache;
 
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortGenerationRequest;
+import org.ohdsi.webapi.cohortdefinition.CohortGenerationRequestBuilder;
+import org.ohdsi.webapi.cohortdefinition.CohortGenerationUtils;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.SourceUtils;
 import org.slf4j.Logger;
@@ -10,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 import static org.ohdsi.webapi.Constants.Params.RESULTS_DATABASE_SCHEMA;
 
@@ -28,7 +31,7 @@ public class GenerationCacheHelper {
         this.generationCacheService = generationCacheService;
     }
 
-    public CacheResult computeIfAbsent(CohortDefinition cohortDefinition, Source source, Consumer<Integer> generateCohort) {
+    public CacheResult computeIfAbsent(CohortDefinition cohortDefinition, Source source, CohortGenerationRequestBuilder requestBuilder, BiConsumer<Integer, String[]> sqlExecutor) {
 
         CacheableGenerationType type = CacheableGenerationType.COHORT;
         String designHash = generationCacheService.getDesignHash(type, cohortDefinition.getDetails().getExpression());
@@ -39,7 +42,13 @@ public class GenerationCacheHelper {
                 Integer resultIdentifier = generationCacheService.getNextResultIdentifier(type, source);
                 // Ensure that there are no records in results schema with which we could mess up
                 generationCacheService.removeCache(type, source, resultIdentifier);
-                generateCohort.accept(resultIdentifier);
+                CohortGenerationRequest cohortGenerationRequest = requestBuilder
+                    .withExpression(cohortDefinition.getDetails().getExpressionObject())
+                    .withSource(source)
+                    .withTargetId(resultIdentifier)
+                    .build();
+                String[] sqls = CohortGenerationUtils.buildGenerationSql(cohortGenerationRequest);
+                sqlExecutor.accept(resultIdentifier, sqls);
                 cache = generationCacheService.cacheResults(CacheableGenerationType.COHORT, designHash, source.getSourceId(), resultIdentifier);
             } else {
                 log.info(String.format(CACHE_USED, type, cohortDefinition.getId(), source.getSourceKey()));

@@ -90,6 +90,9 @@ public class GenerationCacheServiceImpl implements GenerationCacheService {
     @Override
     public void removeCache(CacheableGenerationType type, Source source, Integer resultIdentifier) {
 
+        // Cleanup cached results
+        getProvider(type).remove(source, resultIdentifier);
+        // Cleanup cache record
         GenerationCache generationCache = generationCacheRepository.findByTypeAndSourceAndResultIdentifier(type, source, resultIdentifier, EntityGraphUtils.fromAttributePaths("source"));
         if (generationCache != null) {
             generationCacheRepository.delete(generationCache);

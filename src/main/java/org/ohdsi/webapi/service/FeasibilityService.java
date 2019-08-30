@@ -105,9 +105,6 @@ public class FeasibilityService extends AbstractDaoService {
   private FeasibilityStudyRepository feasibilityStudyRepository;
 
   @Autowired
-  private CohortGenerationService cohortGenerationService;
-
-  @Autowired
   private JobBuilderFactory jobBuilders;
 
   @Autowired
@@ -604,7 +601,6 @@ public class FeasibilityService extends AbstractDaoService {
     GenerateCohortTasklet indexRuleTasklet = new GenerateCohortTasklet(
       sourceJdbcTemplate,
       getTransactionTemplate(),
-      cohortGenerationService,
       generationCacheHelper,
       cohortDefinitionRepository,
       sourceService

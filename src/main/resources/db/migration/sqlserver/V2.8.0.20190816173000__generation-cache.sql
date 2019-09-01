@@ -6,7 +6,7 @@ CREATE TABLE ${ohdsiSchema}.generation_cache (
   design_hash VARCHAR NOT NULL,
   source_id INTEGER NOT NULL,
   result_identifier INTEGER NOT NULL,
-  result_checksum VARCHAR NOT NULL,
+  result_checksum VARCHAR, -- can be null in case of empty result set
   created_date DATE NOT NULL,
   CONSTRAINT PK_generation_cache PRIMARY KEY (id)
 );

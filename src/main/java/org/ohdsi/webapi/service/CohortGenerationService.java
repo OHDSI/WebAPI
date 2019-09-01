@@ -17,6 +17,7 @@ import org.springframework.batch.core.configuration.annotation.StepBuilderFactor
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.batch.repeat.exception.ExceptionHandler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -28,6 +29,7 @@ import static org.ohdsi.webapi.Constants.GENERATE_COHORT;
 import static org.ohdsi.webapi.Constants.Params.*;
 
 @Component
+@DependsOn("flyway")
 public class CohortGenerationService extends AbstractDaoService implements GeneratesNotification {
 
   private final CohortDefinitionRepository cohortDefinitionRepository;

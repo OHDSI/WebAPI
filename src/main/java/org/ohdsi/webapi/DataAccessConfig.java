@@ -103,7 +103,7 @@ public class DataAccessConfig {
     }
 
     @Bean
-    public EntityManagerFactory entityManagerFactory() {
+    public EntityManagerFactory entityManagerFactory(DataSource dataSource) {
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         vendorAdapter.setGenerateDdl(false);
@@ -115,7 +115,7 @@ public class DataAccessConfig {
         factory.setJpaVendorAdapter(vendorAdapter);
         factory.setJpaProperties(getJPAProperties());
         factory.setPackagesToScan("org.ohdsi.webapi");
-        factory.setDataSource(primaryDataSource());
+        factory.setDataSource(dataSource);
         factory.afterPropertiesSet();
 
         return factory.getObject();
@@ -124,10 +124,10 @@ public class DataAccessConfig {
     @Bean
     @Primary
     //This is needed so that JpaTransactionManager is used for autowiring, instead of DataSourceTransactionManager
-    public PlatformTransactionManager jpaTransactionManager() {//EntityManagerFactory entityManagerFactory) {
+    public PlatformTransactionManager jpaTransactionManager(EntityManagerFactory entityManagerFactory) {
 
         JpaTransactionManager txManager = new JpaTransactionManager();
-        txManager.setEntityManagerFactory(entityManagerFactory());
+        txManager.setEntityManagerFactory(entityManagerFactory);
         return txManager;
     }
 

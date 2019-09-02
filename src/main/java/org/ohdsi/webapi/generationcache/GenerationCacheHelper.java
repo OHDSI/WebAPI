@@ -31,13 +31,13 @@ public class GenerationCacheHelper {
         this.generationCacheService = generationCacheService;
     }
 
-    public CacheResult computeIfAbsent(CohortDefinition cohortDefinition, Source source, CohortGenerationRequestBuilder requestBuilder, BiConsumer<Integer, String[]> sqlExecutor) {
+    public CacheResult computeCacheIfAbsent(CohortDefinition cohortDefinition, Source source, CohortGenerationRequestBuilder requestBuilder, BiConsumer<Integer, String[]> sqlExecutor) {
 
         CacheableGenerationType type = CacheableGenerationType.COHORT;
         String designHash = generationCacheService.getDesignHash(type, cohortDefinition.getDetails().getExpression());
 
         synchronized (monitors.computeIfAbsent(new CacheableResource(type, designHash, source.getSourceId()), cr -> new Object())) {
-            GenerationCache cache = generationCacheService.getCache(type, designHash, source.getSourceId());
+            GenerationCache cache = generationCacheService.getCacheOrEraseInvalid(type, designHash, source.getSourceId());
             if (cache == null) {
                 Integer resultIdentifier = generationCacheService.getNextResultIdentifier(type, source);
                 // Ensure that there are no records in results schema with which we could mess up

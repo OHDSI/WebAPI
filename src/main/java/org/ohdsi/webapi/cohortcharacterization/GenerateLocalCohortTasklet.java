@@ -88,7 +88,7 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
                                         GENERATION_ID,
                                         false
                                     );
-                                    GenerationCacheHelper.CacheResult res = generationCacheHelper.computeIfAbsent(cd, source, generationRequestBuilder, (resId, sqls) -> {
+                                    GenerationCacheHelper.CacheResult res = generationCacheHelper.computeCacheIfAbsent(cd, source, generationRequestBuilder, (resId, sqls) -> {
                                         try {
                                             cancelableJdbcTemplate.batchUpdate(stmtCancel, sqls);
                                         } finally {

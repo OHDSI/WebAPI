@@ -16,6 +16,7 @@
     <spring.boot.version>1.5.20.RELEASE</spring.boot.version>
     <flyway.version>4.2.0</flyway.version>
     <waffle.version>1.7.3</waffle.version>
+    <circe.version>1.8.1-SNAPSHOT</circe.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
 
     <!-- Primary DataSource -->
@@ -186,6 +187,7 @@
     <!-- Cache Config -->
     <spring.cache.jcache.config>classpath:config/ehcache.xml</spring.cache.jcache.config>
     <cache.generation.invalidAfterDays>7</cache.generation.invalidAfterDays>
+    <cache.generation.cleanupInterval>60000</cache.generation.cleanupInterval>
   </properties>
   <build>
     <finalName>WebAPI</finalName>
@@ -630,7 +632,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>
-      <version>1.8.1-SNAPSHOT</version>
+      <version>${circe.version}</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>

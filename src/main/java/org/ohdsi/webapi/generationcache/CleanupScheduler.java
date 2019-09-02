@@ -24,7 +24,7 @@ public class CleanupScheduler {
         this.generationCacheRepository = generationCacheRepository;
     }
 
-    @Scheduled(fixedDelayString = "60000")
+    @Scheduled(fixedDelayString = "${cache.generation.cleanupInterval}")
     public void removeOldCache() {
 
         List<GenerationCache> caches = generationCacheRepository.findAllByCreatedDateBefore(

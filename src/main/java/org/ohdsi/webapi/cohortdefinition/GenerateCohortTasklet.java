@@ -81,7 +81,7 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
         generateStats
     );
 
-    GenerationCacheHelper.CacheResult res = generationCacheHelper.computeIfAbsent(
+    GenerationCacheHelper.CacheResult res = generationCacheHelper.computeCacheIfAbsent(
         cohortDefinition,
         source,
         generationRequestBuilder,

@@ -109,7 +109,7 @@ public class GenerationCacheTest {
     }
 
     @Before
-    public void beforeTest() throws SQLException {
+    public void setUp() throws SQLException {
 
         prepareResultSchema();
         generationCacheRepository.deleteAll();
@@ -134,7 +134,7 @@ public class GenerationCacheTest {
 
         // Run first-time generation
 
-        GenerationCacheHelper.CacheResult res = generationCacheHelper.computeIfAbsent(
+        GenerationCacheHelper.CacheResult res = generationCacheHelper.computeCacheIfAbsent(
                 cohortDefinition,
                 source,
                 cohortGenerationRequestBuilder,
@@ -151,7 +151,7 @@ public class GenerationCacheTest {
 
         isSqlExecuted.set(false);
 
-        res = generationCacheHelper.computeIfAbsent(
+        res = generationCacheHelper.computeCacheIfAbsent(
                 cohortDefinition,
                 source,
                 cohortGenerationRequestBuilder,
@@ -166,7 +166,7 @@ public class GenerationCacheTest {
 
         isSqlExecuted.set(false);
 
-        res = generationCacheHelper.computeIfAbsent(
+        res = generationCacheHelper.computeCacheIfAbsent(
                 cohortDefinition,
                 source,
                 cohortGenerationRequestBuilder,
@@ -187,7 +187,7 @@ public class GenerationCacheTest {
         CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(INITIAL_ENTITY_ID);
         Source source = sourceRepository.findBySourceId(INITIAL_ENTITY_ID);
 
-        generationCacheHelper.computeIfAbsent(
+        generationCacheHelper.computeCacheIfAbsent(
                 cohortDefinition,
                 source,
                 cohortGenerationRequestBuilder,
@@ -197,7 +197,7 @@ public class GenerationCacheTest {
         Integer nextId = generationCacheService.getNextResultIdentifier(type, source);
         Assert.isTrue(nextId == 2, "Generation cache sequence moves forward in case of empty result set");
 
-        GenerationCache generationCache = generationCacheService.getCache(type, generationCacheService.getDesignHash(type, cohortDefinition.getDetails().getExpression()), source.getSourceId());
+        GenerationCache generationCache = generationCacheService.getCacheOrEraseInvalid(type, generationCacheService.getDesignHash(type, cohortDefinition.getDetails().getExpression()), source.getSourceId());
         Assert.isTrue(generationCache != null, "Empty result set is cached");
     }
 
@@ -210,14 +210,14 @@ public class GenerationCacheTest {
 
         executeCohort(new AtomicBoolean(), 10);
 
-        generationCacheHelper.computeIfAbsent(
+        generationCacheHelper.computeCacheIfAbsent(
                 cohortDefinition,
                 source,
                 cohortGenerationRequestBuilder,
                 (resId, sqls) -> {}
         );
 
-        GenerationCache generationCache = generationCacheService.getCache(type, generationCacheService.getDesignHash(type, cohortDefinition.getDetails().getExpression()), source.getSourceId());
+        GenerationCache generationCache = generationCacheService.getCacheOrEraseInvalid(type, generationCacheService.getDesignHash(type, cohortDefinition.getDetails().getExpression()), source.getSourceId());
         Assert.isTrue(generationCache.getResultIdentifier() == 11, "Generation sequence respects existing results");
     }
 

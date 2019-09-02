@@ -36,7 +36,7 @@ public class GenerationCacheServiceImpl implements GenerationCacheService {
     }
 
     @Override
-    public GenerationCache getCache(CacheableGenerationType type, String designHash, Integer sourceId) {
+    public GenerationCache getCacheOrEraseInvalid(CacheableGenerationType type, String designHash, Integer sourceId) {
 
         Source source = sourceRepository.findBySourceId(sourceId);
         GenerationCache generationCache = generationCacheRepository.findByTypeAndAndDesignHashAndSource(type, designHash, source, EntityGraphUtils.fromAttributePaths("source"));

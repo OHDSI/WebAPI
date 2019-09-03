@@ -6,6 +6,7 @@ import com.opentable.db.postgres.junit.EmbeddedPostgresRules;
 import com.opentable.db.postgres.junit.SingleInstancePostgresRule;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -29,7 +30,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.util.Assert;
 
 import javax.sql.DataSource;
 import java.io.File;
@@ -141,11 +141,11 @@ public class GenerationCacheTest {
                 (resId, sqls) -> executeCohort(isSqlExecuted, resId)
         );
 
-        Assert.isTrue(isSqlExecuted.get(), "Cohort SQL is executed in case of empty cache");
+        Assert.assertTrue("Cohort SQL is executed in case of empty cache", isSqlExecuted.get());
 
         Map<String, Long> counts = retrieveCohortGenerationCounts(res.getIdentifier());
 
-        Assert.isTrue(checkCohortCounts(counts), "Cohort generation properly fills tables");
+        Assert.assertTrue("Cohort generation properly fills tables", checkCohortCounts(counts));
 
         // Second time generation. Cached results
 
@@ -158,7 +158,7 @@ public class GenerationCacheTest {
                 (resId, sqls) -> isSqlExecuted.set(true)
         );
 
-        Assert.isTrue(!isSqlExecuted.get(), "Cohort results are retrieved from cache");
+        Assert.assertFalse("Cohort results are retrieved from cache", isSqlExecuted.get());
 
         // Generation after results were corrupted
 
@@ -173,11 +173,11 @@ public class GenerationCacheTest {
                 (resId, sqls) -> executeCohort(isSqlExecuted, resId)
         );
 
-        Assert.isTrue(isSqlExecuted.get(), "Cohort SQL is executed in case of invalid cache");
+        Assert.assertTrue("Cohort SQL is executed in case of invalid cache", isSqlExecuted.get());
 
         counts = retrieveCohortGenerationCounts(res.getIdentifier());
 
-        Assert.isTrue(checkCohortCounts(counts), "Cohort generation properly fills tables after invalid cache");
+        Assert.assertTrue("Cohort generation properly fills tables after invalid cache", checkCohortCounts(counts));
     }
 
     @Test
@@ -195,10 +195,10 @@ public class GenerationCacheTest {
         );
 
         Integer nextId = generationCacheService.getNextResultIdentifier(type, source);
-        Assert.isTrue(nextId == 2, "Generation cache sequence moves forward in case of empty result set");
+        Assert.assertEquals("Generation cache sequence moves forward in case of empty result set", 2, (int) nextId);
 
         GenerationCache generationCache = generationCacheService.getCacheOrEraseInvalid(type, generationCacheService.getDesignHash(type, cohortDefinition.getDetails().getExpression()), source.getSourceId());
-        Assert.isTrue(generationCache != null, "Empty result set is cached");
+        Assert.assertNotNull("Empty result set is cached", generationCache);
     }
 
     @Test
@@ -218,7 +218,7 @@ public class GenerationCacheTest {
         );
 
         GenerationCache generationCache = generationCacheService.getCacheOrEraseInvalid(type, generationCacheService.getDesignHash(type, cohortDefinition.getDetails().getExpression()), source.getSourceId());
-        Assert.isTrue(generationCache.getResultIdentifier() == 11, "Generation sequence respects existing results");
+        Assert.assertEquals("Generation sequence respects existing results", 11, (int) generationCache.getResultIdentifier());
     }
 
     private void executeCohort(AtomicBoolean isSqlExecuted, Integer resId) {

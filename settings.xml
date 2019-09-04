@@ -11,11 +11,11 @@
                 <datasource.url>${OHDSI_DATASOURCE_URL}</datasource.url>
                 <datasource.ohdsi.schema>${WEBAPI_SCHEMA}</datasource.ohdsi.schema>
                 <datasource.username>ohdsi_app_user</datasource.username>
-                <datasource.password>${OHDSI_APP_USER_PASSWORD}</datasource.password>
+                <datasource.password>${WEBAPI_USER_PW}</datasource.password>
                 <flyway.datasource.driverClassName>org.postgresql.Driver</flyway.datasource.driverClassName>
                 <flyway.datasource.url>${OHDSI_DATASOURCE_URL}</flyway.datasource.url>
                 <flyway.datasource.username>ohdsi_admin_user</flyway.datasource.username>
-                <flyway.datasource.password>${OHDSI_ADMIN_USER_PASSWORD}</flyway.datasource.password>
+                <flyway.datasource.password>${OHDSI_ADMIN_PW}</flyway.datasource.password>
                 <flyway.locations>classpath:db/migration/postgresql,classpath:db/extension/honeur</flyway.locations>
                 <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
                 <liferay.url>${LIFERAY_SERVER_BASE_URL}</liferay.url>
@@ -61,11 +61,11 @@
                 <datasource.url>${OHDSI_DATASOURCE_URL}</datasource.url>
                 <datasource.ohdsi.schema>${WEBAPI_SCHEMA}</datasource.ohdsi.schema>
                 <datasource.username>ohdsi_app_user</datasource.username>
-                <datasource.password>${OHDSI_APP_USER_PASSWORD}</datasource.password>
+                <datasource.password>${WEBAPI_USER_PW}</datasource.password>
                 <flyway.datasource.driverClassName>org.postgresql.Driver</flyway.datasource.driverClassName>
                 <flyway.datasource.url>${OHDSI_DATASOURCE_URL}</flyway.datasource.url>
                 <flyway.datasource.username>ohdsi_admin_user</flyway.datasource.username>
-                <flyway.datasource.password>${OHDSI_ADMIN_USER_PASSWORD}</flyway.datasource.password>
+                <flyway.datasource.password>${WEBAPI_ADMIN_PW}</flyway.datasource.password>
                 <flyway.locations>classpath:db/migration/postgresql,classpath:db/extension/honeur</flyway.locations>
                 <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
                 <jasypt.encryptor.enabled>true</jasypt.encryptor.enabled>

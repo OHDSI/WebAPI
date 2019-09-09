@@ -185,6 +185,8 @@
 
     <!-- Cache Config -->
     <spring.cache.jcache.config>classpath:config/ehcache.xml</spring.cache.jcache.config>
+    <SqlRender.version>1.6.3-SNAPSHOT</SqlRender.version>
+    <hive-jdbc.version>3.1.0</hive-jdbc.version>
   </properties>
   <build>
     <finalName>WebAPI</finalName>
@@ -438,11 +440,13 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-tomcat</artifactId>
       <scope>provided</scope>
     </dependency>
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-batch</artifactId>
@@ -490,7 +494,7 @@
     <dependency>
       <groupId>org.ohdsi.sql</groupId>
       <artifactId>SqlRender</artifactId>
-      <version>1.6.3-SNAPSHOT</version>
+      <version>${SqlRender.version}</version>
     </dependency>
     <dependency>
       <groupId>commons-dbutils</groupId>
@@ -629,7 +633,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>
-      <version>1.8.1</version>
+      <version>1.8.2-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
@@ -899,7 +903,7 @@
       <properties>
         <impala.enabled>true</impala.enabled>
 				<!-- Impala JDBC driver path -->
-				<impala.classpath>...path/to/impala/jdbc/drivers...</impala.classpath>
+				<impala.classpath>${basedir}/src/main/extras/impala</impala.classpath>
       </properties>
       <dependencies>
         <dependency>
@@ -1192,17 +1196,33 @@
     <profile>
       <id>webapi-hive</id>
       <dependencies>
-          <dependency>
-            <groupId>org.apache.hive</groupId>
-            <artifactId>hive-jdbc</artifactId>
-            <version>3.1.0.3.0.1.0-187</version>
-            <exclusions>
-              <exclusion>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>*</artifactId>
-              </exclusion>
-            </exclusions>
-          </dependency>
+        <dependency>
+          <groupId>org.apache.hive</groupId>
+          <artifactId>hive-jdbc</artifactId>
+          <version>${hive-jdbc.version}</version>
+          <exclusions>
+            <exclusion>
+              <groupId>org.apache.tomcat</groupId>
+              <artifactId>*</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>org.eclipse.jetty</groupId>
+              <artifactId>*</artifactId>
+            </exclusion>
+            <exclusion>
+              <artifactId>slf4j-log4j12</artifactId>
+              <groupId>org.slf4j</groupId>
+            </exclusion>
+            <exclusion>
+              <artifactId>log4j</artifactId>
+              <groupId>log4j</groupId>
+            </exclusion>
+            <exclusion>
+              <artifactId>servlet-api</artifactId>
+              <groupId>javax.servlet</groupId>
+            </exclusion>
+          </exclusions>
+        </dependency>
       </dependencies>
     </profile>
   </profiles>

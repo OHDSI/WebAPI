@@ -1,7 +1,22 @@
 package org.ohdsi.webapi.executionengine.service;
 
+import static com.google.common.io.Files.createTempDir;
+
 import com.odysseusinc.arachne.execution_engine_common.util.CommonFileUtils;
-import net.lingala.zip4j.core.ZipFile;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.annotation.PostConstruct;
+import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.FileUtils;
@@ -12,18 +27,6 @@ import org.ohdsi.webapi.executionengine.entity.AnalysisResultFileContent;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFileContentList;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.PostConstruct;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static com.google.common.io.Files.createTempDir;
 
 @Service
 public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractSensitiveInfoService implements AnalysisResultFileContentSensitiveInfoService {
@@ -156,9 +159,8 @@ public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractS
 
             // Delete archive volumes
             ZipFile zipFile = new ZipFile(zipPath.toFile());
-            List<String> filenames = zipFile.getSplitZipFiles();
-            filenames.forEach(filename -> {
-                File file = new File(filename);
+            List<File> filenames = zipFile.getSplitZipFiles();
+            filenames.forEach(file -> {
                 file.delete();
             });
 
@@ -170,10 +172,11 @@ public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractS
                 }
             });
             CommonFileUtils.compressAndSplit(temporaryDir, zipPath.toFile(), null);
-        } catch (IOException e) {
-            LOGGER.error("File writing error", e);
+
         } catch (ZipException e) {
             LOGGER.error("Error unzipping file", e);
+        } catch (IOException e) {
+            LOGGER.error("File writing error", e);
         } finally {
             FileUtils.deleteQuietly(temporaryDir);
         }

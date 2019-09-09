@@ -145,7 +145,7 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
             } finally {
                 FileUtils.deleteQuietly(tempDir);
             }
-        }catch (ZipException | IOException e) {
+        }catch (IOException e) {
             log.error("Failed to compress request files", e);
             throw new InternalServerErrorException(e);
         }

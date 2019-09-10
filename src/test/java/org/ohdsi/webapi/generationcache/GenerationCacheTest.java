@@ -4,7 +4,7 @@ import com.odysseusinc.arachne.commons.types.DBMSType;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
 import com.opentable.db.postgres.junit.EmbeddedPostgresRules;
 import com.opentable.db.postgres.junit.SingleInstancePostgresRule;
-import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.junit.Assert;
 import org.junit.Before;

@@ -69,14 +69,18 @@ public class CDMResultsService extends AbstractDaoService {
 
     @Autowired
     private SourceService sourceService;
-    @Value("${jasypt.encryptor.enabled}")
-    private boolean encryptorEnabled;
 
     @Autowired
     private SourceAccessor sourceAccessor;
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Value("${jasypt.encryptor.enabled}")
+    private boolean encryptorEnabled;
+
+    @Value("${cdm.result.cache.warming.enable}")
+    private boolean cdmResultCacheWarmingEnable;
 
     private DescendantRecordCountMapper descendantRecordCountMapper = new DescendantRecordCountMapper();
 
@@ -86,12 +90,7 @@ public class CDMResultsService extends AbstractDaoService {
         warmCaches();
     }
 
-    public void warmCaches(){
-			sourceService.getSources()
-				.stream()
-				.filter(s -> s.getDaimons().stream().anyMatch(sd -> Objects.equals(sd.getDaimonType(), SourceDaimon.DaimonType.Results)) && s.getDaimons().stream().anyMatch(sd -> sd.getPriority() > 0))
-				.forEach(s -> warmCache(s.getSourceKey()));
-    }
+
 
     @Path("{sourceKey}/conceptRecordCount")
     @POST
@@ -194,13 +193,7 @@ public class CDMResultsService extends AbstractDaoService {
     @Path("{sourceKey}/warmCache")
     @Produces(MediaType.APPLICATION_JSON)
     public JobExecutionResource warmCache(@PathParam("sourceKey") final String sourceKey) {
-        CDMResultsCache cache = ResultsCache.get(sourceKey);
-        if (cache.notWarm() && jobService.findJobByName(Constants.WARM_CACHE, getWarmCacheJobName(sourceKey)) == null) {
-            Source source = getSourceRepository().findBySourceKey(sourceKey);
-            return warmCache(source, Constants.WARM_CACHE);
-        } else {
-            return new JobExecutionResource();
-        }
+        return this.warmCacheByKey(sourceKey);
     }
 
     @GET
@@ -313,15 +306,40 @@ public class CDMResultsService extends AbstractDaoService {
         return queryRunner.getDrilldown(jdbcTemplate, domain, conceptId, source);
     }
 
-    private String getWarmCacheJobName(String sourceKey) {
+    private void warmCaches(){
+        sourceService.getSources()
+                .stream()
+                .filter(s ->
+                        s.getDaimons().stream().anyMatch(sd -> Objects.equals(sd.getDaimonType(), SourceDaimon.DaimonType.Results)) &&
+                                s.getDaimons().stream().anyMatch(sd -> sd.getPriority() > 0))
+                .forEach(s -> warmCacheByKey(s.getSourceKey()));
+    }
 
-        return "warming " + sourceKey + " cache";
+    private JobExecutionResource warmCacheByKey(String sourceKey) {
+        CDMResultsCache cache = ResultsCache.get(sourceKey);
+        if (cache.notWarm() && jobService.findJobByName(Constants.WARM_CACHE, getWarmCacheJobName(sourceKey)) == null) {
+            Source source = getSourceRepository().findBySourceKey(sourceKey);
+            return warmCache(source, Constants.WARM_CACHE);
+        } else {
+            return new JobExecutionResource();
+        }
     }
 
     private JobExecutionResource warmCache(final Source source, final String jobName) {
+
+        if (!cdmResultCacheWarmingEnable) {
+            logger.info("Cache warming is disabled for CDM results");
+            return new JobExecutionResource();
+        }
+
         CDMResultsCacheTasklet tasklet = new CDMResultsCacheTasklet(this.getSourceJdbcTemplate(source), source);
         JobParametersBuilder builder = new JobParametersBuilder();
         builder.addString(Constants.Params.JOB_NAME, getWarmCacheJobName(source.getSourceKey()));
         return this.jobTemplate.launchTasklet(jobName, "warmCacheStep", tasklet, builder.toJobParameters());
     }
+
+    private String getWarmCacheJobName(String sourceKey) {
+        return "warming " + sourceKey + " cache";
+    }
+
 }

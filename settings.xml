@@ -21,7 +21,7 @@
                 <liferay.url>${LIFERAY_SERVER_BASE_URL}</liferay.url>
                 <liferay.user>${WEBAPI_LIFERAY_USER}</liferay.user>
                 <liferay.password>${WEBAPI_LIFERAY_PASSWORD}</liferay.password>
-                <liferay.company.web.id>liferay.com</liferay.company.web.id>
+                <liferay.company.web.id>${WEBAPI_LIFERAY_COMPANY_WEB_ID}</liferay.company.web.id>
                 <jasypt.encryptor.enabled>true</jasypt.encryptor.enabled>
                 <jasypt.encryptor.algorithm>PBEWithSHAAndTwofish-CBC</jasypt.encryptor.algorithm>
                 <jasypt.encryptor.password>${SOURCE_ENCRYPTION_PASSWORD}</jasypt.encryptor.password>
@@ -36,7 +36,7 @@
                 <security.oauth.callback.ui>${ATLAS_WELCOME_URL}</security.oauth.callback.ui>
                 <security.oauth.callback.api>${ATLAS_WEBAPI_CALLBACK_URL}</security.oauth.callback.api>
                 <security.provider>AtlasCustomSecurity</security.provider>
-                <security.cas.serverUrl>${CA_SSERVER_BASE_URL}</security.cas.serverUrl>
+                <security.cas.serverUrl>${CAS_SERVER_BASE_URL}</security.cas.serverUrl>
                 <security.cas.casticket>ticket</security.cas.casticket>
                 <security.cas.cassvcs></security.cas.cassvcs>
                 <!--<security.cas>true</security.cas>-->

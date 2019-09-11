@@ -395,6 +395,11 @@
       <id>redshift</id>
       <url>http://redshift-maven-repository.s3-website-us-east-1.amazonaws.com/release</url>
     </repository>
+    <repository>
+      <id>oracle</id>
+      <name>Or</name>
+      <url>http://maven.jahia.org/maven2</url>
+    </repository>    
   </repositories>
 
   <pluginRepositories>

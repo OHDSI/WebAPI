@@ -74,6 +74,6 @@ WITH partials AS (
   WHERE generation_id = @generation_id
 )
 SELECT AVG(
-  CAST(CONVERT(VARBINARY, CONCAT('0x', HASHBYTES('MD5',line)), 1) AS BIGINT)
+  CAST(CAST(CONVERT(VARBINARY, HASHBYTES('MD5',line), 1) AS INT) AS BIGINT)
 ) as checksum
 FROM partials;

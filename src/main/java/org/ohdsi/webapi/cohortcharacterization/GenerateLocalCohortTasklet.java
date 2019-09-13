@@ -31,7 +31,7 @@ import static org.ohdsi.webapi.Constants.Tables.COHORT_GENERATIONS_TABLE;
 
 public class GenerateLocalCohortTasklet implements StoppableTasklet {
 
-    private static final String COPY_CACHED_RESULTS = "INSERT INTO %s.%s %s";
+    private static final String COPY_CACHED_RESULTS = "INSERT INTO %s.%s (cohort_definition_id, subject_id, cohort_start_date, cohort_end_date) SELECT %s as cohort_definition_id, subject_id, cohort_start_date, cohort_end_date FROM (%s) r";
 
     protected TransactionTemplate transactionTemplate;
     private final CancelableJdbcTemplate cancelableJdbcTemplate;
@@ -106,7 +106,7 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
                                             cleanupManager.cleanupTempTables();
                                         }
                                     });
-                                    String sql = String.format(COPY_CACHED_RESULTS, SourceUtils.getTempQualifier(source), targetTable, res.getSql());
+                                    String sql = String.format(COPY_CACHED_RESULTS, SourceUtils.getTempQualifier(source), targetTable, cd.getId(), res.getSql());
                                     cancelableJdbcTemplate.batchUpdate(stmtCancel, sql);
                                     return null;
                                 },

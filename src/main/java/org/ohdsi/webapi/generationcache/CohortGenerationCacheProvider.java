@@ -23,7 +23,7 @@ public class CohortGenerationCacheProvider extends AbstractDaoService implements
     private static final String CACHE_VALIDATION_TIME = "Checksum of Generation cache for resultIdentifier = {} has been calculated in {} milliseconds";
 
     private static final String COHORT_CHECKSUM_SQL_PATH = "/resources/generationcache/cohort/resultsChecksum.sql";
-    private static final String NEXT_ID_SQL_PATH = "/resources/generationcache/cohort/nextResultIdentifier.sql";
+    private static final String MAX_ID_SQL_PATH = "/resources/generationcache/cohort/maxResultIdentifier.sql";
     private static final String COHORT_RESULTS_SQL = ResourceHelper.GetResourceAsString("/resources/generationcache/cohort/results.sql");
     private static final String CLEANUP_SQL = ResourceHelper.GetResourceAsString("/resources/generationcache/cohort/cleanup.sql");
 
@@ -43,11 +43,11 @@ public class CohortGenerationCacheProvider extends AbstractDaoService implements
 
     // NOTE: should not be used directly! Only via GenerationCacheService
     @Override
-    public Integer getNextResultIdentifier(Source source) {
+    public Integer getMaxResultIdentifier(Source source) {
 
         PreparedStatementRenderer psr = new PreparedStatementRenderer(
                 source,
-                NEXT_ID_SQL_PATH,
+                MAX_ID_SQL_PATH,
                 "@" + RESULTS_DATABASE_SCHEMA,
                 SourceUtils.getResultsQualifier(source)
         );

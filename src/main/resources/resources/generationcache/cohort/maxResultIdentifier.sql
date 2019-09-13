@@ -1,0 +1,1 @@
+SELECT MAX(generation_id) FROM @results_database_schema.cohort_generations;

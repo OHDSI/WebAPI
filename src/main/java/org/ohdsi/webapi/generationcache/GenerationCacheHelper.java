@@ -36,10 +36,14 @@ public class GenerationCacheHelper {
         CacheableGenerationType type = CacheableGenerationType.COHORT;
         String designHash = generationCacheService.getDesignHash(type, cohortDefinition.getDetails().getExpression());
 
+        log.info("Computes cache if absent for type = {}, design = {}, source id = {}", type, designHash, source.getSourceId());
+
         synchronized (monitors.computeIfAbsent(new CacheableResource(type, designHash, source.getSourceId()), cr -> new Object())) {
+            log.info("Retrieves or invalidates cache for cohort id = {}", cohortDefinition.getId());
             GenerationCache cache = generationCacheService.getCacheOrEraseInvalid(type, designHash, source.getSourceId());
             if (cache == null) {
                 Integer resultIdentifier = generationCacheService.getNextResultIdentifier(type, source);
+                log.info("Cache is absent for cohort id = {}. Calculating with results identifier = {}", cohortDefinition.getId(), resultIdentifier);
                 // Ensure that there are no records in results schema with which we could mess up
                 generationCacheService.removeCache(type, source, resultIdentifier);
                 CohortGenerationRequest cohortGenerationRequest = requestBuilder
@@ -58,6 +62,7 @@ public class GenerationCacheHelper {
                     new String[]{RESULTS_DATABASE_SCHEMA},
                     new String[]{SourceUtils.getResultsQualifier(source)}
             );
+            log.info("Finished computation cache if absent for cohort id = {}", cohortDefinition.getId());
             return new CacheResult(cache.getResultIdentifier(), sql);
         }
     }

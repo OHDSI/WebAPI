@@ -1,14 +1,18 @@
 package org.ohdsi.webapi.generationcache;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
+import com.google.common.base.MoreObjects;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 @Service
 public class GenerationCacheServiceImpl implements GenerationCacheService {
@@ -17,6 +21,8 @@ public class GenerationCacheServiceImpl implements GenerationCacheService {
     private static final String NO_PROVIDER_ERROR = "There is no generation cache provider which supports %s";
     private static final String CACHE_CREATED = "Cached results of {} with design hash = {}";
     private static final String CACHE_INVALID = "Actual results checksum doesn't match the original checksum for cache with id={}. Invalidating cache";
+
+    private static final ConcurrentHashMap<CacheableTypeSource, Integer> maxRequestedResultIds = new ConcurrentHashMap<>();
 
     private final List<GenerationCacheProvider> generationCacheProviderList;
     private final GenerationCacheRepository generationCacheRepository;
@@ -54,11 +60,21 @@ public class GenerationCacheServiceImpl implements GenerationCacheService {
     }
 
     @Override
-    public Integer getNextResultIdentifier(CacheableGenerationType type, Source source) {
+    public synchronized Integer getNextResultIdentifier(CacheableGenerationType type, Source source) {
 
-        Integer nextCacheId = generationCacheRepository.findNextResultIdentifier(type, source.getSourceId());
-        Integer nextResultId = getProvider(type).getNextResultIdentifier(source);
-        return Integer.max(nextCacheId, nextResultId);
+        CacheableTypeSource resIdKey = new CacheableTypeSource(type, source.getSourceId());
+
+        Integer maxIdInCacheTable = MoreObjects.firstNonNull(generationCacheRepository.findMaxResultIdentifier(type, source.getSourceId()), 0);
+        Integer maxIdInResultSchema = MoreObjects.firstNonNull(getProvider(type).getMaxResultIdentifier(source), 0);
+        Integer maxRequestedId = maxRequestedResultIds.getOrDefault(resIdKey, 0);
+
+        Integer nextId = Stream.of(maxIdInCacheTable, maxIdInResultSchema, maxRequestedId)
+            .max(Comparator.naturalOrder())
+            .orElse(0) + 1;
+
+        maxRequestedResultIds.put(resIdKey, nextId);
+
+        return nextId;
     }
 
     @Override
@@ -105,5 +121,33 @@ public class GenerationCacheServiceImpl implements GenerationCacheService {
                 .filter(p -> p.supports(type))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException(String.format(NO_PROVIDER_ERROR, type)));
+    }
+
+    private class CacheableTypeSource {
+
+        private CacheableGenerationType type;
+        private Integer sourceId;
+
+        public CacheableTypeSource(CacheableGenerationType type, Integer sourceId) {
+
+            this.type = type;
+            this.sourceId = sourceId;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            CacheableTypeSource that = (CacheableTypeSource) o;
+            return type == that.type &&
+                    Objects.equals(sourceId, that.sourceId);
+        }
+
+        @Override
+        public int hashCode() {
+
+            return Objects.hash(type, sourceId);
+        }
     }
 }

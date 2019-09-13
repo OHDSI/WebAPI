@@ -15,6 +15,6 @@ public interface GenerationCacheRepository extends EntityGraphJpaRepository<Gene
     GenerationCache findByTypeAndSourceAndResultIdentifier(CacheableGenerationType type, Source source, Integer resultIdentifier, EntityGraph entityGraph);
     List<GenerationCache> findAllByCreatedDateBefore(Date date, EntityGraph entityGraph);
 
-    @Query("SELECT COALESCE(MAX(gc.resultIdentifier), 0) + 1 FROM GenerationCache gc WHERE gc.type = :type AND gc.source.sourceId = :sourceId")
-    Integer findNextResultIdentifier(@Param("type") CacheableGenerationType type, @Param("sourceId") Integer sourceId);
+    @Query("SELECT MAX(gc.resultIdentifier) FROM GenerationCache gc WHERE gc.type = :type AND gc.source.sourceId = :sourceId")
+    Integer findMaxResultIdentifier(@Param("type") CacheableGenerationType type, @Param("sourceId") Integer sourceId);
 }

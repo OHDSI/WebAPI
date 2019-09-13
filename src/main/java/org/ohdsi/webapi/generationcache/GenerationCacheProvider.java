@@ -6,7 +6,7 @@ public interface GenerationCacheProvider {
 
     boolean supports(CacheableGenerationType type);
     String getDesignHash(String design);
-    Integer getNextResultIdentifier(Source source);
+    Integer getMaxResultIdentifier(Source source);
     String getResultsChecksum(Source source, Integer resultIdentifier);
     String getResultsSql(Integer resultIdentifier);
     void remove(Source source, Integer resultIdentifier);

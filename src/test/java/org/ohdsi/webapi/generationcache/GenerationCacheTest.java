@@ -221,6 +221,18 @@ public class GenerationCacheTest {
         Assert.assertEquals("Generation sequence respects existing results", 11, (int) generationCache.getResultIdentifier());
     }
 
+    @Test
+    public void checkResultIdentifiersGeneration() {
+
+        CacheableGenerationType type = CacheableGenerationType.COHORT;
+        Source source = sourceRepository.findBySourceId(INITIAL_ENTITY_ID);
+
+        Integer firstId = generationCacheService.getNextResultIdentifier(type, source);
+        Integer secondId = generationCacheService.getNextResultIdentifier(type, source);
+
+        Assert.assertTrue("Result identifier increases on each retrieval", firstId < secondId);
+    }
+
     private void executeCohort(AtomicBoolean isSqlExecuted, Integer resId) {
 
         String mockSqlList = SqlRender.renderSql(

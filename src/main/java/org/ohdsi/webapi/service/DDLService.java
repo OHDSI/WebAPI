@@ -174,15 +174,20 @@ public class DDLService {
 		return result.replaceAll(";", ";\n");
 	}
 
-	private List<String> getResultDDLFilePaths(@QueryParam("dialect") String dialect) {
-
+	private List<String> getResultDDLFilePaths(String dialect) {
 		return new ArrayList<>(RESULT_DDL_FILE_NAMES).stream()
 				.map(fileName -> {
+					String filePath = String.format("%s/%s", RESULT_DDL_ROOT, fileName);
+					if (StringUtils.isEmpty(dialect)) {
+						return filePath;
+					}
+
 					String dialectSpecificFilePath = String.format("%s/%s/%s", RESULT_DDL_ROOT, StringUtils.lowerCase(dialect), fileName);
 					if (isResourceFileExists(dialectSpecificFilePath)) {
 						return dialectSpecificFilePath;
 					}
-					return String.format("%s/%s", RESULT_DDL_ROOT, fileName);
+
+					return filePath;
 				})
 				.collect(Collectors.toList());
 	}

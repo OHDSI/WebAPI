@@ -1,6 +1,9 @@
 package org.ohdsi.webapi.util;
 
 import org.apache.tika.concurrent.SimpleThreadPoolExecutor;
+import org.ohdsi.webapi.user.importer.UserImportController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.StatementCallback;
@@ -14,6 +17,8 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 public class BatchStatementExecutorWithProgress {
+
+  private static final Logger logger = LoggerFactory.getLogger(BatchStatementExecutorWithProgress.class);
 
   private String[] statements;
 
@@ -41,6 +46,7 @@ public class BatchStatementExecutorWithProgress {
       try {
         for (int i = 0; i < totals; i++) {
           String stmt = statements[i];
+          logger.debug("Btch query: {}", stmt);
           updateCount[i] = jdbcTemplate.execute((StatementCallback<Integer>) st -> !st.execute(stmt) ? st.getUpdateCount() : 0);
           if (i % PROGRESS_UPDATE_SIZE == 0 || i == (totals - 1)) {
             int progress = (int) Math.round(100.0 * i / totals);

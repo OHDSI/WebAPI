@@ -21,6 +21,7 @@ package org.ohdsi.webapi.service;
 import static org.ohdsi.webapi.service.SqlRenderService.translateSQL;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -28,6 +29,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
 import com.odysseusinc.arachne.commons.types.DBMSType;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.webapi.sqlrender.SourceStatement;
@@ -43,34 +45,36 @@ public class DDLService {
 	public static final String CEM_SCHEMA = "cem_results_schema";
 	public static final String TEMP_SCHEMA = "oracle_temp_schema";
 
-	private static final Collection<String> RESULT_DDL_FILE_PATHS = Arrays.asList(
-		"/ddl/results/cohort.sql",
-		"/ddl/results/cohort_features.sql",
-		"/ddl/results/cohort_features_analysis_ref.sql",
-		"/ddl/results/cohort_features_dist.sql",
-		"/ddl/results/cohort_features_ref.sql",
-		"/ddl/results/cohort_inclusion.sql",
-		"/ddl/results/cohort_inclusion_result.sql",
-		"/ddl/results/cohort_inclusion_stats.sql",
-		"/ddl/results/cohort_summary_stats.sql",
-		"/ddl/results/cohort_censor_stats.sql",
-		"/ddl/results/feas_study_inclusion_stats.sql",
-		"/ddl/results/feas_study_index_stats.sql",
-		"/ddl/results/feas_study_result.sql",
-		"/ddl/results/heracles_analysis.sql",
-		"/ddl/results/heracles_heel_results.sql",
-		"/ddl/results/heracles_results.sql",
-		"/ddl/results/heracles_results_dist.sql",
-		"/ddl/results/ir_analysis_dist.sql",
-		"/ddl/results/ir_analysis_result.sql",
-		"/ddl/results/ir_analysis_strata_stats.sql",
-		"/ddl/results/ir_strata.sql",
-		"/ddl/results/heracles_periods.sql",
-		"/ddl/results/cohort_characterizations.sql",
-		"/ddl/results/pathway_analysis_codes.sql",
-		"/ddl/results/pathway_analysis_events.sql",
-		"/ddl/results/pathway_analysis_paths.sql",
-		"/ddl/results/pathway_analysis_stats.sql"
+
+	private static final String RESULT_DDL_ROOT = "/ddl/results";
+	private static final Collection<String> RESULT_DDL_FILE_NAMES = Arrays.asList(
+		"cohort.sql",
+		"cohort_features.sql",
+		"cohort_features_analysis_ref.sql",
+		"cohort_features_dist.sql",
+		"cohort_features_ref.sql",
+		"cohort_inclusion.sql",
+		"cohort_inclusion_result.sql",
+		"cohort_inclusion_stats.sql",
+		"cohort_summary_stats.sql",
+		"cohort_censor_stats.sql",
+		"feas_study_inclusion_stats.sql",
+		"feas_study_index_stats.sql",
+		"feas_study_result.sql",
+		"heracles_analysis.sql",
+		"heracles_heel_results.sql",
+		"heracles_results.sql",
+		"heracles_results_dist.sql",
+		"ir_analysis_dist.sql",
+		"ir_analysis_result.sql",
+		"ir_analysis_strata_stats.sql",
+		"ir_strata.sql",
+		"heracles_periods.sql",
+		"cohort_characterizations.sql",
+		"pathway_analysis_codes.sql",
+		"pathway_analysis_events.sql",
+		"pathway_analysis_paths.sql",
+		"pathway_analysis_stats.sql"
 	);
 
 	private static final String INIT_HERACLES_PERIODS = "/ddl/results/init_heracles_periods.sql";
@@ -113,7 +117,7 @@ public class DDLService {
 			@DefaultValue("true") @QueryParam("initConceptHierarchy") Boolean initConceptHierarchy,
 			@QueryParam("tempSchema") String tempSchema) {
 
-		Collection<String> resultDDLFilePaths = new ArrayList<>(RESULT_DDL_FILE_PATHS);
+		Collection<String> resultDDLFilePaths = getResultDDLFilePaths(dialect);
 
 		if (initConceptHierarchy) {
 			resultDDLFilePaths.addAll(INIT_CONCEPT_HIERARCHY_FILE_PATHS);
@@ -170,6 +174,22 @@ public class DDLService {
 		return result.replaceAll(";", ";\n");
 	}
 
+	private List<String> getResultDDLFilePaths(@QueryParam("dialect") String dialect) {
+
+		return new ArrayList<>(RESULT_DDL_FILE_NAMES).stream()
+				.map(fileName -> {
+					String dialectSpecificFilePath = String.format("%s/%s/%s", RESULT_DDL_ROOT, StringUtils.lowerCase(dialect), fileName);
+					if (isResourceFileExists(dialectSpecificFilePath)) {
+						return dialectSpecificFilePath;
+					}
+					return String.format("%s/%s", RESULT_DDL_ROOT, fileName);
+				})
+				.collect(Collectors.toList());
+	}
+
+	private boolean isResourceFileExists(String fileName) {
+		return ResourceHelper.class.getResource(fileName) != null;
+	}
 	private String translateSqlFile(String sql, String dialect, Map<String, String> params) {
 
 		SourceStatement statement = new SourceStatement();

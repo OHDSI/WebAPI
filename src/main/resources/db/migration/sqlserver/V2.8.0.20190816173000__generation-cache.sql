@@ -16,5 +16,5 @@ ALTER TABLE ${ohdsiSchema}.generation_cache
 REFERENCES ${ohdsiSchema}.source (source_id)
 ON UPDATE NO ACTION ON DELETE NO ACTION;
 
-ALTER TABLE ${ohdsiSchema}.generation_cache ADD CONSTRAINT uq_gc_hash UNIQUE (type, design_hash);
+ALTER TABLE ${ohdsiSchema}.generation_cache ADD CONSTRAINT uq_gc_hash UNIQUE (type, design_hash, source_id);
 ALTER TABLE ${ohdsiSchema}.generation_cache ADD CONSTRAINT uq_gc_result UNIQUE (type, source_id, result_identifier);

@@ -85,7 +85,7 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
         cohortDefinition,
         source,
         generationRequestBuilder,
-        (resId, sqls) -> jdbcTemplate.batchUpdate(stmtCancel, sqls)
+        (resId, sqls) -> generationCacheHelper.runCancelableCohortGeneration(jdbcTemplate, stmtCancel, sqls)
     );
 
     String sql = SqlRender.renderSql(

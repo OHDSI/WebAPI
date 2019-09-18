@@ -6,7 +6,9 @@ import org.ohdsi.webapi.cohortdefinition.CohortGenerationRequest;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationRequestBuilder;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationUtils;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.SourceUtils;
+import org.ohdsi.webapi.util.StatementCancel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -64,6 +66,15 @@ public class GenerationCacheHelper {
             );
             log.info("Finished computation cache if absent for cohort id = {}", cohortDefinition.getId());
             return new CacheResult(cache.getResultIdentifier(), sql);
+        }
+    }
+
+    public void runCancelableCohortGeneration(CancelableJdbcTemplate cancelableJdbcTemplate, StatementCancel stmtCancel, String sqls[]) {
+
+        cancelableJdbcTemplate.batchUpdate(stmtCancel, sqls);
+        // Ensure that no cache created if generation has been cancelled
+        if (stmtCancel.isCanceled()) {
+            throw new RuntimeException("Cohort generation has been cancelled");
         }
     }
 

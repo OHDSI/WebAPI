@@ -90,7 +90,7 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
                                     );
                                     GenerationCacheHelper.CacheResult res = generationCacheHelper.computeCacheIfAbsent(cd, source, generationRequestBuilder, (resId, sqls) -> {
                                         try {
-                                            cancelableJdbcTemplate.batchUpdate(stmtCancel, sqls);
+                                            generationCacheHelper.runCancelableCohortGeneration(cancelableJdbcTemplate, stmtCancel, sqls);
                                         } finally {
                                             // Usage of the same sessionId for all cohorts would cause issues in databases w/o real temp tables support
                                             // And we cannot postfix existing sessionId with some index because SqlRender requires sessionId to be only 8 symbols long

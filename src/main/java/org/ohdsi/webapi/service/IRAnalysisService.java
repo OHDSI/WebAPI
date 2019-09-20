@@ -475,11 +475,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
           return Stream.concat(
               expression.targetIds.stream(),
               expression.outcomeIds.stream()
-            ).map(id -> {
-              CohortDefinition cd = new CohortDefinition();
-              cd.setId(id);
-              return cd;
-            })
+            ).map(id -> cohortDefinitionRepository.findOneWithDetail(id))
             .collect(Collectors.toList());
       },
       new IRAnalysisTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), irAnalysisRepository, sourceService, queryBuilder, objectMapper)

@@ -24,7 +24,6 @@ import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
-import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionListener;
@@ -36,7 +35,6 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import static org.ohdsi.webapi.Constants.Params.TARGET_DATABASE_SCHEMA;
-import static org.ohdsi.webapi.Constants.Params.TARGET_TABLE;
 
 /**
  *
@@ -76,7 +74,7 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
     Integer defId = Integer.valueOf(jobParams.getString("cohort_definition_id"));
     Integer sourceId = Integer.valueOf(jobParams.getString("source_id"));
     Source source = sourceService.findBySourceId(sourceId);
-    String cohortTable = jobParams.getString(TARGET_DATABASE_SCHEMA) + "." + jobParams.getString(TARGET_TABLE);
+    String cohortTable = jobParams.getString(TARGET_DATABASE_SCHEMA) + ".cohort";
 		
 		DefaultTransactionDefinition completeTx = new DefaultTransactionDefinition();
 		completeTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);

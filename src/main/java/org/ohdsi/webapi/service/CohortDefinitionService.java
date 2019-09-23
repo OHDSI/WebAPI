@@ -195,8 +195,8 @@ public class CohortDefinitionService extends AbstractDaoService {
   
   private InclusionRuleReport.Summary getInclusionRuleReportSummary(int id, Source source, int modeId) {
 
-    String sql = "select cs.base_count, cs.final_count, cc.lost_count from @tableQualifier.cohort_summary_stats cs left join @tableQualifier.cohort_censor_stats cc " +
-            "on cc.cohort_definition_id = cs.cohort_definition_id where cs.cohort_definition_id = @id and cs.mode_id = @modeId";
+    String sql = "select cs.base_count, cs.final_count, cc.lost_count from @tableQualifier.cohort_generations_ref cgr join @tableQualifier.cohort_summary_stats cs on cs.generation_id = cgr.generation_id left join @tableQualifier.cohort_censor_stats cc " +
+            "on cc.generation_id = cs.generation_id where cgr.cohort_definition_id = @id and cs.mode_id = @modeId";
     String tqName = "tableQualifier";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 		String[] varNames = {"id", "modeId"};
@@ -209,9 +209,9 @@ public class CohortDefinitionService extends AbstractDaoService {
   private List<InclusionRuleReport.InclusionRuleStatistic> getInclusionRuleStatistics(int id, Source source, int modeId) {
 
     String sql = "select i.rule_sequence, i.name, s.person_count, s.gain_count, s.person_total"
-        + " from @tableQualifier.cohort_inclusion i join @tableQualifier.cohort_inclusion_stats s on i.cohort_definition_id = s.cohort_definition_id"
+        + " from @tableQualifier.cohort_generations_ref cgr join @tableQualifier.cohort_inclusion i on cgr.generation_id = i.generation_id join @tableQualifier.cohort_inclusion_stats s on i.generation_id = s.generation_id"
         + " and i.rule_sequence = s.rule_sequence"
-        + " where i.cohort_definition_id = @id and mode_id = @modeId ORDER BY i.rule_sequence";
+        + " where cgr.cohort_definition_id = @id and mode_id = @modeId ORDER BY i.rule_sequence";
     String tqName = "tableQualifier";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 		String[] varNames = {"id", "modeId"};
@@ -235,7 +235,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   
   private String getInclusionRuleTreemapData(int id, int inclusionRuleCount, Source source, int modeId) {
 
-    String sql = "select inclusion_rule_mask, person_count from @tableQualifier.cohort_inclusion_result where cohort_definition_id = @id and mode_id = @modeId";
+    String sql = "select inclusion_rule_mask, person_count from @tableQualifier.cohort_generations_ref cgr join @tableQualifier.cohort_inclusion_result cir on cgr.generation_id = cir.generation_id where cgr.cohort_definition_id = @id and cir.mode_id = @modeId";
     String tqName = "tableQualifier";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 		String[] varNames = {"id", "modeId"};
@@ -454,7 +454,7 @@ public class CohortDefinitionService extends AbstractDaoService {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOne(id);
 
-    return cohortGenerationService.generateCohort(currentDefinition, source, Objects.nonNull(includeFeatures));
+    return cohortGenerationService.generateCohortViaJob(currentDefinition, source, Objects.nonNull(includeFeatures));
   }
 
   @GET

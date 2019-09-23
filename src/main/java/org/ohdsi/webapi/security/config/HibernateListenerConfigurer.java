@@ -6,7 +6,8 @@ import org.hibernate.internal.SessionFactoryImpl;
 import org.ohdsi.webapi.security.listener.EntityDeleteEventListener;
 import org.ohdsi.webapi.security.listener.EntityInsertEventListener;
 import org.ohdsi.webapi.security.model.EntityPermissionSchemaResolver;
-import org.ohdsi.webapi.shiro.PermissionManager;
+import org.ohdsi.webapi.shiro.management.DisabledSecurity;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
@@ -14,6 +15,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
 
 @Configuration
+@ConditionalOnMissingBean(value = DisabledSecurity.class)
 public class HibernateListenerConfigurer {
 
     @PersistenceUnit

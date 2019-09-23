@@ -15,8 +15,14 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
+import org.ohdsi.circe.helper.ResourceHelper;
+import org.ohdsi.sql.SqlRender;
+import org.ohdsi.sql.SqlSplit;
+import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.common.generation.CancelableTasklet;
-import org.ohdsi.webapi.service.CohortGenerationService;
+import org.ohdsi.webapi.generationcache.GenerationCacheHelper;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.slf4j.LoggerFactory;
@@ -27,35 +33,67 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.util.Map;
 
 import static org.ohdsi.webapi.Constants.Params.*;
+import static org.ohdsi.webapi.Constants.Tables.COHORT_GENERATIONS_TABLE;
 
 /**
  *
  * @author Chris Knoll <cknoll@ohdsi.org>
  */
 public class GenerateCohortTasklet extends CancelableTasklet implements StoppableTasklet {
+  private final static String copyGenerationIntoCohortTableSql = ResourceHelper.GetResourceAsString("/resources/cohortdefinition/sql/copyGenerationIntoCohortTableSql.sql");
 
-  private final CohortGenerationService cohortGenerationService;
+  private final GenerationCacheHelper generationCacheHelper;
+  private final CohortDefinitionRepository cohortDefinitionRepository;
+  private final SourceService sourceService;
 
   public GenerateCohortTasklet(
           final CancelableJdbcTemplate jdbcTemplate,
           final TransactionTemplate transactionTemplate,
-          final CohortGenerationService cohortGenerationService
+          final GenerationCacheHelper generationCacheHelper,
+          final CohortDefinitionRepository cohortDefinitionRepository,
+          final SourceService sourceService
   ) {
     super(LoggerFactory.getLogger(GenerateCohortTasklet.class), jdbcTemplate, transactionTemplate);
-    this.cohortGenerationService = cohortGenerationService;
+    this.generationCacheHelper = generationCacheHelper;
+    this.cohortDefinitionRepository = cohortDefinitionRepository;
+    this.sourceService = sourceService;
   }
 
   @Override
   protected String[] prepareQueries(ChunkContext chunkContext, CancelableJdbcTemplate jdbcTemplate) {
 
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
-    return cohortGenerationService.buildGenerationSql(
-        Integer.valueOf(jobParams.get(COHORT_DEFINITION_ID).toString()),
-        Integer.parseInt(jobParams.get(SOURCE_ID).toString()),
-        jobParams.getOrDefault(SESSION_ID, SessionUtils.sessionId()).toString(),
-        jobParams.get(TARGET_DATABASE_SCHEMA).toString(),
-        jobParams.get(TARGET_TABLE).toString(),
-        Boolean.valueOf(jobParams.get(GENERATE_STATS).toString())
+
+    Integer cohortDefinitionId = Integer.valueOf(jobParams.get(COHORT_DEFINITION_ID).toString());
+    Integer sourceId = Integer.parseInt(jobParams.get(SOURCE_ID).toString());
+    String targetSchema = jobParams.get(TARGET_DATABASE_SCHEMA).toString();
+    String sessionId = jobParams.getOrDefault(SESSION_ID, SessionUtils.sessionId()).toString();
+    Boolean generateStats = Boolean.valueOf(jobParams.get(GENERATE_STATS).toString());
+
+    CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(cohortDefinitionId);
+    Source source = sourceService.findBySourceId(sourceId);
+
+    CohortGenerationRequestBuilder generationRequestBuilder = new CohortGenerationRequestBuilder(
+        sessionId,
+        targetSchema,
+        COHORT_GENERATIONS_TABLE,
+        GENERATION_ID,
+        generateStats
     );
+
+    GenerationCacheHelper.CacheResult res = generationCacheHelper.computeCacheIfAbsent(
+        cohortDefinition,
+        source,
+        generationRequestBuilder,
+        (resId, sqls) -> generationCacheHelper.runCancelableCohortGeneration(jdbcTemplate, stmtCancel, sqls)
+    );
+
+    String sql = SqlRender.renderSql(
+        copyGenerationIntoCohortTableSql,
+        new String[]{ RESULTS_DATABASE_SCHEMA, COHORT_DEFINITION_ID, GENERATION_ID },
+        new String[]{ targetSchema, cohortDefinition.getId().toString(), res.getIdentifier().toString() }
+    );
+    sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
+    return SqlSplit.splitSql(sql);
   }
 }

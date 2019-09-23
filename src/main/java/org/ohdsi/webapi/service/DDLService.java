@@ -48,6 +48,7 @@ public class DDLService {
 
 	private static final Collection<String> RESULT_DDL_FILE_PATHS = Arrays.asList(
 		"/ddl/results/cohort.sql",
+		"/ddl/results/cohort_generations.sql",
 		"/ddl/results/cohort_features.sql",
 		"/ddl/results/cohort_features_analysis_ref.sql",
 		"/ddl/results/cohort_features_dist.sql",

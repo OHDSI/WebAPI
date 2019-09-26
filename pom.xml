@@ -1204,10 +1204,6 @@
           <artifactId>hive-jdbc</artifactId>
           <version>${hive-jdbc.version}</version>
           <exclusions>
-<!--            <exclusion>-->
-<!--              <groupId>org.apache.tomcat</groupId>-->
-<!--              <artifactId>*</artifactId>-->
-<!--            </exclusion>-->
             <exclusion>
               <groupId>org.eclipse.jetty</groupId>
               <artifactId>*</artifactId>

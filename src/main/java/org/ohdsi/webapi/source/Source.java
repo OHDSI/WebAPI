@@ -117,12 +117,14 @@ public class Source implements Serializable {
   }
 
   public String getTableQualifierOrNull(DaimonType daimonType) {
-    for (SourceDaimon sourceDaimon : this.getDaimons()) {
-      if (sourceDaimon.getDaimonType() == daimonType) {
-        return sourceDaimon.getTableQualifier();
+    if (this.getDaimons() != null){
+      for (SourceDaimon sourceDaimon : this.getDaimons()) {
+        if (sourceDaimon.getDaimonType() == daimonType) {
+          return sourceDaimon.getTableQualifier();
+        }
       }
     }
-		return null;
+    return null;
   }
 
   public String getSourceKey() {

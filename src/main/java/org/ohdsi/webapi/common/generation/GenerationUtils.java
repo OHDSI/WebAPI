@@ -164,11 +164,15 @@ public class GenerationUtils extends AbstractDaoService {
         Step waitCallbackStep = stepBuilderFactory.get(analysisTypeName + ".waitForCallback")
                 .tasklet(callbackTasklet)
                 .build();
+        
+        DropCohortTableListener dropCohortTableListener = new DropCohortTableListener(getSourceJdbcTemplate(source),
+                transactionTemplate, sourceService, sourceAwareSqlRender);
 
         return jobBuilders.get(analysisTypeName)
                 .start(createAnalysisExecutionStep)
                 .next(runExecutionStep)
                 .next(waitCallbackStep)
+                .listener(dropCohortTableListener)
                 .listener(new AutoremoveJobListener(jobService));
     }
 }

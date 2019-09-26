@@ -2,6 +2,7 @@ package org.ohdsi.webapi.pathway;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.google.common.base.MoreObjects;
+import com.odysseusinc.arachne.commons.types.DBMSType;
 import org.hibernate.Hibernate;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
@@ -324,7 +325,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
                     "pathway_target_cohort_id",
                     "max_depth",
                     "combo_window",
-                    "allow_repeats"
+                    "allow_repeats",
+                    "isHive"
             };
             String[] values = new String[]{
                     generationId.toString(),
@@ -335,7 +337,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
                     tc.getCohortDefinition().getId().toString(),
                     pathwayAnalysis.getMaxDepth().toString(),
                     MoreObjects.firstNonNull(pathwayAnalysis.getCombinationWindow(), 1).toString(),
-                    String.valueOf(pathwayAnalysis.isAllowRepeats())
+                    String.valueOf(pathwayAnalysis.isAllowRepeats()),
+                    String.valueOf(Objects.equals(DBMSType.HIVE.getOhdsiDB(), source.getSourceDialect()))
             };
 
             String renderedSql = SqlRender.renderSql(analysisSql, params, values);

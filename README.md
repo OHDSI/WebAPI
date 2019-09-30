@@ -19,6 +19,10 @@ OHDSI WebAPI is a Java 8 web application that utilizes a database (PostgreSQL, S
 
 Documentation can be found a the [Web API Installation Guide](https://github.com/OHDSI/WebAPI/wiki) which covers the system requirements and installation instructions.
 
+## Testing
+
+It was chosen to use embedded PG instead of H2 for unit tests since H2 doesn't support window functions, `md5` function, HEX to BIT conversion, `setval`, `set datestyle`, CTAS + CTE.
+
 ## Support
 
 - Developer questions/comments/feedback: [OHDSI forum](http://forums.ohdsi.org/c/developers)

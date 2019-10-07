@@ -73,10 +73,12 @@ public class LiferayApiClient {
         }
         String companyEndPoint = "/company/get-companies";
         try {
+            LOGGER.info("URL:" + liferayWebApi + companyEndPoint);
+            LOGGER.info(createHeaders().toString());
             List<LinkedHashMap<String, String>> companies = restTemplate.exchange(liferayWebApi + companyEndPoint,
                     HttpMethod.GET, new HttpEntity<>(createHeaders()),
                     List.class).getBody();
-
+            LOGGER.info("SUCCES GET COMPANIES");
             if (companies.size() == 1) {
                 companyId = companies.get(0).get("companyId");
             } else {

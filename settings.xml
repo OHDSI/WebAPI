@@ -170,7 +170,7 @@
                 <central>true</central>
                 <security.cas.tgc.domain>.honeur.org</security.cas.tgc.domain>
                 <security.cookies.domain>${DOMAIN}</security.cookies.domain>
-                <liferay.company.web.id>liferay.com</liferay.company.web.id>
+                <liferay.company.web.id>${WEBAPI_LIFERAY_COMPANY_WEB_ID}</liferay.company.web.id>
             </properties>
         </profile>
         <profile>

@@ -5,8 +5,6 @@ import org.hibernate.event.spi.PreInsertEventListener;
 import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.security.model.EntityPermissionSchema;
 import org.ohdsi.webapi.security.model.EntityPermissionSchemaResolver;
-import org.ohdsi.webapi.shiro.Entities.RoleEntity;
-import org.ohdsi.webapi.shiro.PermissionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
@@ -19,15 +17,10 @@ public class EntityInsertEventListener implements PreInsertEventListener {
     private static final Logger LOG = LoggerFactory.getLogger(EntityInsertEventListener.class);
 
     private final EntityPermissionSchemaResolver entityPermissionSchemaResolver;
-    private final PermissionManager permissionManager;
 
-    public EntityInsertEventListener(
-            EntityPermissionSchemaResolver entityPermissionSchemaResolver,
-            PermissionManager permissionManager
-    ) {
+    public EntityInsertEventListener(EntityPermissionSchemaResolver entityPermissionSchemaResolver) {
 
         this.entityPermissionSchemaResolver = entityPermissionSchemaResolver;
-        this.permissionManager = permissionManager;
     }
 
     @Override
@@ -43,21 +36,15 @@ public class EntityInsertEventListener implements PreInsertEventListener {
                 // Fails if executed within the same thread
                 // http://anshuiitk.blogspot.com/2010/11/hibernate-pre-database-opertaion-event.html
                 Future<Boolean> future = new SimpleAsyncTaskExecutor().submit(() -> {
-                    try {
-                        String login = permissionManager.getSubjectName();
-                        RoleEntity role = permissionManager.getUserPersonalRole(login);
-                        permissionManager.addPermissionsFromTemplate(role, permissionSchema.getAllPermissions(), commonEntity.getId().toString());
-                        return true;
-                    } catch (Exception ex) {
-                        LOG.error(ex.getMessage(), ex);
-                        return false;
-                    }
+                    permissionSchema.onInsert(commonEntity);
+                    return true;
                 });
                 try {
                     if (future.get()) {
                         return false;
                     }
-                } catch (InterruptedException | ExecutionException e) {
+                } catch (InterruptedException | ExecutionException ex) {
+                    LOG.error(ex.getMessage(), ex);
                 }
             }
             throw new RuntimeException();

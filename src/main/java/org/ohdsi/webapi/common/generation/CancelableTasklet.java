@@ -17,7 +17,7 @@ import java.util.concurrent.FutureTask;
 public abstract class CancelableTasklet extends StoppableTransactionalTasklet<int[]> implements StoppableTasklet {
 
   protected final StatementCancel stmtCancel;
-  private final CancelableJdbcTemplate jdbcTemplate;
+  protected final CancelableJdbcTemplate jdbcTemplate;
 
   public CancelableTasklet(Logger log,
                            CancelableJdbcTemplate jdbcTemplate,

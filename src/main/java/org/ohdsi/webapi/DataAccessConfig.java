@@ -75,7 +75,7 @@ public class DataAccessConfig {
         //note autocommit defaults vary across vendors. use provided @Autowired TransactionTemplate
 
         String[] supportedDrivers;
-        supportedDrivers = new String[]{"org.postgresql.Driver", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "oracle.jdbc.driver.OracleDriver", "com.amazon.redshift.jdbc.Driver", "com.cloudera.impala.jdbc41.Driver", "net.starschema.clouddb.jdbc.BQDriver", "org.netezza.Driver", "com.simba.googlebigquery.jdbc42.Driver"};
+        supportedDrivers = new String[]{"org.postgresql.Driver", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "oracle.jdbc.driver.OracleDriver", "com.amazon.redshift.jdbc.Driver", "com.cloudera.impala.jdbc.Driver", "net.starschema.clouddb.jdbc.BQDriver", "org.netezza.Driver", "com.simba.googlebigquery.jdbc42.Driver"};
         for (String driverName : supportedDrivers) {
             try {
                 Class.forName(driverName);
@@ -103,7 +103,7 @@ public class DataAccessConfig {
     }
 
     @Bean
-    public EntityManagerFactory entityManagerFactory() {
+    public EntityManagerFactory entityManagerFactory(DataSource dataSource) {
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         vendorAdapter.setGenerateDdl(false);
@@ -115,7 +115,7 @@ public class DataAccessConfig {
         factory.setJpaVendorAdapter(vendorAdapter);
         factory.setJpaProperties(getJPAProperties());
         factory.setPackagesToScan("org.ohdsi.webapi");
-        factory.setDataSource(primaryDataSource());
+        factory.setDataSource(dataSource);
         factory.afterPropertiesSet();
 
         return factory.getObject();
@@ -124,10 +124,10 @@ public class DataAccessConfig {
     @Bean
     @Primary
     //This is needed so that JpaTransactionManager is used for autowiring, instead of DataSourceTransactionManager
-    public PlatformTransactionManager jpaTransactionManager() {//EntityManagerFactory entityManagerFactory) {
+    public PlatformTransactionManager jpaTransactionManager(EntityManagerFactory entityManagerFactory) {
 
         JpaTransactionManager txManager = new JpaTransactionManager();
-        txManager.setEntityManagerFactory(entityManagerFactory());
+        txManager.setEntityManagerFactory(entityManagerFactory);
         return txManager;
     }
 

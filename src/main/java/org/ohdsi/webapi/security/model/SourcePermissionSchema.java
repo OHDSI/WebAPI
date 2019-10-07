@@ -1,5 +1,8 @@
 package org.ohdsi.webapi.security.model;
 
+import org.ohdsi.webapi.model.CommonEntity;
+import org.ohdsi.webapi.shiro.Entities.RoleEntity;
+import org.ohdsi.webapi.source.Source;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -62,5 +65,48 @@ public class SourcePermissionSchema extends EntityPermissionSchema {
     public SourcePermissionSchema() {
 
         super(EntityType.SOURCE, readPermissions, writePermissions);
+    }
+
+    @Override
+    public void onInsert(CommonEntity commonEntity) {
+
+        addSourceUserRole(commonEntity);
+        addPermissionsToCurrentUserFromTemplate(commonEntity, getWritePermissions());
+    }
+
+    @Override
+    public void onDelete(CommonEntity commonEntity) {
+
+        super.onDelete(commonEntity);
+        dropSourceUserRole(commonEntity);
+    }
+
+    public void addSourceUserRole(CommonEntity commonEntity) {
+
+        Source source = (Source) commonEntity;
+        final String roleName = getSourceRoleName(source.getSourceKey());
+        final RoleEntity role;
+        if (permissionManager.roleExists(roleName)) {
+            role = permissionManager.getSystemRoleByName(roleName);
+        } else {
+            role = permissionManager.addRole(roleName, true);
+        }
+        permissionManager.addPermissionsFromTemplate(role, getReadPermissions(), source.getSourceKey());
+    }
+
+    private void dropSourceUserRole(CommonEntity commonEntity) {
+
+        Source source = (Source) commonEntity;
+        final String roleName = getSourceRoleName(source.getSourceKey());
+        if (permissionManager.roleExists(roleName)) {
+            RoleEntity role = permissionManager.getSystemRoleByName(roleName);
+            permissionManager.removePermissionsFromTemplate(getReadPermissions(), source.getSourceKey());
+            permissionManager.removeRole(role.getId());
+        }
+    }
+
+    private String getSourceRoleName(String sourceKey) {
+
+        return String.format("Source user (%s)", sourceKey);
     }
 }

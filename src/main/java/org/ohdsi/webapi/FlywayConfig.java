@@ -4,6 +4,7 @@ import com.odysseusinc.arachne.commons.config.flyway.ApplicationContextAwareSpri
 import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.flyway.FlywayDataSource;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationInitializer;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
@@ -17,6 +18,7 @@ import org.springframework.context.annotation.Configuration;
  *
  */
 @Configuration
+@ConditionalOnProperty(prefix = "flyway", name = "enabled", matchIfMissing = true)
 public class FlywayConfig {
  
     @Bean

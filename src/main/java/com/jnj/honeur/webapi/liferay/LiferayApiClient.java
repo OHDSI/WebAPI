@@ -80,7 +80,6 @@ public class LiferayApiClient {
             if (companies.size() == 1) {
                 companyId = companies.get(0).get("companyId");
             } else {
-                LOGGER.info("liferay companies: " + companies);
                 List<LinkedHashMap<String, String>> filteredCompanies = companies.stream().filter(company -> company.get("webId").equals(companyWebId)).collect(Collectors.toList());
                 companyId = filteredCompanies.get(0).get("companyId");
             }
@@ -88,7 +87,6 @@ public class LiferayApiClient {
             LOGGER.error(e.getMessage());
             companyId = null;
         }
-        LOGGER.info("liferay company id: " + companyId);
         return companyId;
     }
 

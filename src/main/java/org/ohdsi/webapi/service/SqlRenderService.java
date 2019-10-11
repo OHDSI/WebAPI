@@ -1,5 +1,8 @@
 package org.ohdsi.webapi.service;
 
+import static org.ohdsi.webapi.Constants.DEFAULT_DIALECT;
+import static org.ohdsi.webapi.Constants.SqlSchemaPlaceholders.TEMP_DATABASE_SCHEMA_PLACEHOLDER;
+
 import java.util.Collections;
 import java.util.Map;
 import javax.ws.rs.Consumes;
@@ -21,8 +24,6 @@ import org.ohdsi.webapi.util.SessionUtils;
 @Path("/sqlrender/")
 public class SqlRenderService {
 
-    public static final String DEFAULT_DIALECT = "sql server";
-
     @Path("translate")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -31,8 +32,14 @@ public class SqlRenderService {
         if (sourceStatement == null) {
             return new TranslatedStatement();
         }
+        sourceStatement.setOracleTempSchema(TEMP_DATABASE_SCHEMA_PLACEHOLDER);
+        return translatedStatement(sourceStatement);
+    }
+
+    public TranslatedStatement translatedStatement(SourceStatement sourceStatement) {
         return translateSQL(sourceStatement);
     }
+
 
     public static TranslatedStatement translateSQL(SourceStatement sourceStatement) {
 

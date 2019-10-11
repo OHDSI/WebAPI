@@ -15,6 +15,8 @@
  */
 package org.ohdsi.webapi.feasibility;
 
+import static org.ohdsi.webapi.Constants.SqlSchemaPlaceholders.CDM_DATABASE_SCHEMA_PLACEHOLDER;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
@@ -25,7 +27,6 @@ import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.circe.vocabulary.ConceptSetExpressionQueryBuilder;
-import org.ohdsi.webapi.service.FeasibilityService;
 
 /**
  *
@@ -122,7 +123,7 @@ public class FeasibilityStudyQueryBuilder {
     if (options != null)
     {
       // replace query parameters with tokens
-      resultSql = StringUtils.replace(resultSql, "@cdm_database_schema", options.cdmSchema);
+      resultSql = StringUtils.replace(resultSql, CDM_DATABASE_SCHEMA_PLACEHOLDER, options.cdmSchema);
       resultSql = StringUtils.replace(resultSql, "@ohdsi_database_schema", options.ohdsiSchema);
       resultSql = StringUtils.replace(resultSql, "@cohortTable", options.cohortTable);
     }
@@ -140,7 +141,7 @@ public class FeasibilityStudyQueryBuilder {
     if (options != null)
     {
       // replease query parameters with tokens
-      resultSql = StringUtils.replace(resultSql, "@cdm_database_schema", options.cdmSchema);
+      resultSql = StringUtils.replace(resultSql, CDM_DATABASE_SCHEMA_PLACEHOLDER, options.cdmSchema);
       resultSql = StringUtils.replace(resultSql, "@ohdsi_database_schema", options.ohdsiSchema);
       resultSql = StringUtils.replace(resultSql, "@cohortTable", options.cohortTable);
     }

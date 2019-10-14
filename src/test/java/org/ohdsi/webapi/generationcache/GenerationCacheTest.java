@@ -194,9 +194,6 @@ public class GenerationCacheTest {
                 (resId, sqls) -> {}
         );
 
-        Integer nextId = generationCacheService.getNextResultIdentifier(type, source);
-        Assert.assertEquals("Generation cache sequence moves forward in case of empty result set", 2, (int) nextId);
-
         GenerationCache generationCache = generationCacheService.getCacheOrEraseInvalid(type, generationCacheService.getDesignHash(type, cohortDefinition.getDetails().getExpression()), source.getSourceId());
         Assert.assertNotNull("Empty result set is cached", generationCache);
     }

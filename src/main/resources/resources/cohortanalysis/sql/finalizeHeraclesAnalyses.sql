@@ -546,7 +546,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
       ON or1.analysis_id = oa1.analysis_id
   WHERE or1.analysis_id IN (3)
         and or1.cohort_definition_id in (@cohort_definition_id)
-        AND CAST(or1.stratum_1 AS INT) > year(getdate())
+        AND CAST((CASE WHEN (IsNumeric(or1.stratum_1) = 1) THEN or1.stratum_1 ELSE NULL END) AS INT) > year(getdate())
         AND or1.count_value > 0
   GROUP BY or1.cohort_definition_id,
     or1.analysis_id,
@@ -567,7 +567,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
       ON or1.analysis_id = oa1.analysis_id
   WHERE or1.analysis_id IN (3)
         and cohort_definition_id in (@cohort_definition_id)
-        AND cAST(or1.stratum_1 AS INT) < 1900
+        AND CAST((CASE WHEN (IsNumeric(or1.stratum_1) = 1) THEN or1.stratum_1 ELSE NULL END) AS INT) < 1900
         AND or1.count_value > 0
   GROUP BY or1.cohort_definition_id,
     or1.analysis_id,
@@ -587,7 +587,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
       ON or1.analysis_id = oa1.analysis_id
   WHERE or1.analysis_id IN (101)
         and cohort_definition_id in (@cohort_definition_id)
-        AND CAST(or1.stratum_1 AS INT) < 0
+        AND CAST((CASE WHEN (IsNumeric(or1.stratum_1) = 1) THEN or1.stratum_1 ELSE NULL END) AS INT) < 0
         AND or1.count_value > 0
   GROUP BY or1.cohort_definition_id,
     or1.analysis_id,
@@ -607,7 +607,7 @@ INSERT INTO @results_schema.HERACLES_HEEL_results (
       ON or1.analysis_id = oa1.analysis_id
   WHERE or1.analysis_id IN (101)
         and or1.cohort_definition_id in (@cohort_definition_id)
-        AND CAST(or1.stratum_1 AS INT) > 100
+        AND CAST((CASE WHEN (IsNumeric(or1.stratum_1) = 1) THEN or1.stratum_1 ELSE NULL END) AS INT) > 100
         AND or1.count_value > 0
   GROUP BY or1.cohort_definition_id,
     or1.analysis_id,

@@ -183,7 +183,7 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     }
     
     @Override
-    public Optional<FeAnalysisEntity> findByDesignAndName(final FeAnalysisWithStringEntity withStringEntity, final String name) {
+    public Optional<? extends FeAnalysisEntity> findByDesignAndName(final FeAnalysisWithStringEntity withStringEntity, final String name) {
         return this.findByDesignAndPredicate(withStringEntity.getDesign(), f -> Objects.equals(f.getName(), name));
     }
 
@@ -202,8 +202,8 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
         return CollectionUtils.isEqualCollection(currentList, newList);
     }
 
-    private Optional<FeAnalysisEntity> findByDesignAndPredicate(final String design, final Predicate<FeAnalysisEntity> f) {
-        List<FeAnalysisEntity> detailsFromDb = analysisRepository.findByDesign(design);
+    private Optional<? extends FeAnalysisEntity> findByDesignAndPredicate(final String design, final Predicate<FeAnalysisEntity> f) {
+        List<? extends FeAnalysisEntity> detailsFromDb = stringAnalysisRepository.findByDesign(design);
         return detailsFromDb
                 .stream()
                 .filter(f)

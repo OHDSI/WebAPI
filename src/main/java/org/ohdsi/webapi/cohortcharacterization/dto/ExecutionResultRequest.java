@@ -20,9 +20,6 @@ public class ExecutionResultRequest {
     @JsonProperty("thresholdValuePct")
     private Float thresholdValuePct;
 
-    @JsonProperty("isComparative")
-    private Boolean isComparative;
-
     @JsonProperty("isSummary")
     private Boolean isSummary;
 
@@ -69,14 +66,6 @@ public class ExecutionResultRequest {
 
     public void setThresholdValuePct(Float thresholdValuePct) {
         this.thresholdValuePct = thresholdValuePct;
-    }
-
-    public Boolean isComparative() {
-        return isComparative;
-    }
-
-    public void setComparative(Boolean comparative) {
-        isComparative = comparative;
     }
 
     public Boolean isSummary() {

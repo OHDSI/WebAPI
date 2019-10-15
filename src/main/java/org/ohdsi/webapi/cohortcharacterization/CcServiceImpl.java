@@ -53,7 +53,6 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.FeatureExtractionService;
 import org.ohdsi.webapi.service.JobService;
-import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.shiro.annotations.CcGenerationId;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
@@ -330,6 +329,10 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             updated.setCohortCharacterization(foundEntity);
             if (Objects.nonNull(updated.getId())) {
                 CcStrataEntity strata = strataEntityMap.get(updated.getId());
+                // strata will be null in case of importing new characterization
+                if (strata == null) {
+                    return updated;
+                }
                 if (StringUtils.isNotBlank(updated.getName())) {
                     strata.setName(updated.getName());
                 }
@@ -958,7 +961,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                     break;
                 case CUSTOM_FE:
                     FeAnalysisWithStringEntity withStringEntity = (FeAnalysisWithStringEntity) newAnalysis;
-                    Optional<FeAnalysisEntity> curAnalysis = analysisService.findByDesignAndName(withStringEntity, withStringEntity.getName());
+                    Optional<? extends FeAnalysisEntity> curAnalysis = analysisService.findByDesignAndName(withStringEntity, withStringEntity.getName());
                     this.<FeAnalysisEntity>addAnalysis(savedAnalysesIds, analysesSet, newAnalysis, curAnalysis, a -> analysisService.createAnalysis(a));
                     break;
                 default:
@@ -971,7 +974,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     }
 
     private <T extends FeAnalysisEntity<?>> void addAnalysis(List<Integer> savedAnalysesIds, Set<FeAnalysisEntity> entityAnalyses, T newAnalysis,
-            Optional<FeAnalysisEntity> curAnalysis, Function<T, FeAnalysisEntity> func) {
+            Optional<? extends FeAnalysisEntity> curAnalysis, Function<T, FeAnalysisEntity> func) {
         if (curAnalysis.isPresent()) {
             entityAnalyses.add(curAnalysis.get());
         } else {

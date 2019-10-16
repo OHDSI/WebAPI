@@ -264,6 +264,10 @@
         <configuration>
           <source>1.8</source>
           <target>1.8</target>
+          <compilerArgs>
+            <!-- Prevents recompilation due to missing package-info.class, see MCOMPILER-205 -->
+            <arg>-Xpkginfo:always</arg>
+          </compilerArgs>     
         </configuration>
       </plugin>
       <plugin>

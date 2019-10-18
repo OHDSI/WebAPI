@@ -185,8 +185,6 @@
 
     <!-- Cache Config -->
     <spring.cache.jcache.config>classpath:config/ehcache.xml</spring.cache.jcache.config>
-    <SqlRender.version>1.6.3-SNAPSHOT</SqlRender.version>
-    <hive-jdbc.version>3.1.0</hive-jdbc.version>
   </properties>
   <build>
     <finalName>WebAPI</finalName>
@@ -497,7 +495,7 @@
     <dependency>
       <groupId>org.ohdsi.sql</groupId>
       <artifactId>SqlRender</artifactId>
-      <version>${SqlRender.version}</version>
+      <version>1.6.3-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>commons-dbutils</groupId>
@@ -1195,34 +1193,6 @@
           </plugin>
         </plugins>
       </build>
-    </profile>
-    <profile>
-      <id>webapi-hive</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hive</groupId>
-          <artifactId>hive-jdbc</artifactId>
-          <version>${hive-jdbc.version}</version>
-          <exclusions>
-            <exclusion>
-              <groupId>org.eclipse.jetty</groupId>
-              <artifactId>*</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>tomcat</groupId>
-              <artifactId>jasper-compiler</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>tomcat</groupId>
-              <artifactId>jasper-runtime</artifactId>
-            </exclusion>
-            <exclusion>
-              <groupId>com.sun.jersey</groupId>
-              <artifactId>*</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-      </dependencies>
     </profile>
   </profiles>
 </project>

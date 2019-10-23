@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -58,7 +59,7 @@ public final class DataSourceDTOParser {
             String keyPath = BigQueryUtils.getBigQueryKeyPath(source.getSourceConnection());
             if (StringUtils.isNotEmpty(keyPath) && Paths.get(keyPath).toFile().exists()) {
                 try(Reader r = new FileReader(new File(keyPath))) {
-                    return IOUtils.toByteArray(r);
+                    return IOUtils.toByteArray(r, Charset.defaultCharset());
                 }
             }
         }
@@ -83,7 +84,7 @@ public final class DataSourceDTOParser {
         return Arrays.stream(DBMSType.values())
                     .filter(type -> Objects.equals(type.getOhdsiDB(), source.getSourceDialect()))
                     .findFirst()
-                    .orElseThrow(() -> new RuntimeException("Unsupported data source dialect"));
+                    .orElseThrow(() -> new RuntimeException(String.format("Unsupported data source dialect: %s", source.getSourceDialect())));
     }
 
 }

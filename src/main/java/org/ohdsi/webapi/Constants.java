@@ -3,6 +3,7 @@ package org.ohdsi.webapi;
 import org.springframework.batch.core.ExitStatus;
 
 public interface Constants {
+  String DEFAULT_DIALECT = "sql server";
   String GENERATE_COHORT = "generateCohort";
   String GENERATE_COHORT_CHARACTERIZATION = "generateCohortCharacterization";
   String GENERATE_PATHWAY_ANALYSIS = "generatePathwayAnalysis";
@@ -17,6 +18,13 @@ public interface Constants {
   String CANCELED = "CANCELED";
 
   String TEMP_COHORT_TABLE_PREFIX = "temp_cohort_";
+
+  interface SqlSchemaPlaceholders {
+    String CDM_DATABASE_SCHEMA_PLACEHOLDER = "@cdm_database_schema";
+    String RESULTS_DATABASE_SCHEMA_PLACEHOLDER = "@results_database_schema";
+    String VOCABULARY_DATABASE_SCHEMA_PLACEHOLDER = "@vocabulary_database_schema";
+    String TEMP_DATABASE_SCHEMA_PLACEHOLDER = "@temp_database_schema";
+  }
 
   interface Params {
 

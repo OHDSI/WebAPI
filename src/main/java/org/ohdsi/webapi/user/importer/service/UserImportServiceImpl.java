@@ -1,30 +1,45 @@
 package org.ohdsi.webapi.user.importer.service;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.ohdsi.webapi.user.Role;
-import org.ohdsi.webapi.user.importer.model.*;
-import org.ohdsi.webapi.user.importer.providers.ActiveDirectoryProvider;
-import org.ohdsi.webapi.user.importer.providers.DefaultLdapProvider;
-import org.ohdsi.webapi.user.importer.providers.LdapProvider;
+import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.PermissionManager;
+import org.ohdsi.webapi.user.Role;
+import org.ohdsi.webapi.user.importer.model.AtlasUserRoles;
+import org.ohdsi.webapi.user.importer.model.LdapGroup;
+import org.ohdsi.webapi.user.importer.model.LdapProviderType;
+import org.ohdsi.webapi.user.importer.model.LdapUserImportStatus;
+import org.ohdsi.webapi.user.importer.model.RoleGroupEntity;
+import org.ohdsi.webapi.user.importer.model.RoleGroupMapping;
+import org.ohdsi.webapi.user.importer.model.RoleGroupsMap;
+import org.ohdsi.webapi.user.importer.model.UserImport;
+import org.ohdsi.webapi.user.importer.model.UserImportResult;
+import org.ohdsi.webapi.user.importer.providers.ActiveDirectoryProvider;
+import org.ohdsi.webapi.user.importer.providers.DefaultLdapProvider;
+import org.ohdsi.webapi.user.importer.providers.LdapProvider;
 import org.ohdsi.webapi.user.importer.repository.RoleGroupRepository;
+import org.ohdsi.webapi.user.importer.repository.UserImportRepository;
 import org.ohdsi.webapi.user.importer.utils.RoleGroupUtils;
 import org.ohdsi.webapi.util.UserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.ldap.core.*;
+import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.ldap.support.LdapUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.user.importer.providers.AbstractLdapProvider.OBJECTCLASS_ATTR;
@@ -40,6 +55,8 @@ public class UserImportServiceImpl implements UserImportService {
 
   private final UserRepository userRepository;
 
+  private final UserImportRepository userImportRepository;
+
   private final PermissionManager userManager;
 
   private final RoleGroupRepository roleGroupMappingRepository;
@@ -50,10 +67,12 @@ public class UserImportServiceImpl implements UserImportService {
   public UserImportServiceImpl(@Autowired(required = false) ActiveDirectoryProvider activeDirectoryProvider,
                                @Autowired(required = false) DefaultLdapProvider ldapProvider,
                                UserRepository userRepository,
+                               UserImportRepository userImportRepository,
                                PermissionManager userManager,
                                RoleGroupRepository roleGroupMappingRepository) {
 
     this.userRepository = userRepository;
+    this.userImportRepository = userImportRepository;
     this.userManager = userManager;
     this.roleGroupMappingRepository = roleGroupMappingRepository;
 
@@ -190,7 +209,29 @@ public class UserImportServiceImpl implements UserImportService {
     ldapTemplate.authenticate(LdapUtils.emptyLdapName(), filter.toString(), provider.getPassword());
   }
 
-  private LdapUserImportStatus getStatus(AtlasUserRoles atlasUser) {
+    @Override
+    @Transactional
+    public UserImport createUserImportJob(LdapProviderType provider, Boolean preserveRoles,
+                                          List<AtlasUserRoles> userRoles, RoleGroupMapping roleGroupMapping) {
+        UserImport userImport = new UserImport();
+        userImport.setPreserveRoles(preserveRoles);
+        userImport.setProvider(provider);
+        if (userRoles != null) {
+            userImport.setUserRoles(Utils.serialize(userRoles));
+        }
+        if (roleGroupMapping != null) {
+            userImport.setRoleGroupMapping(Utils.serialize(roleGroupMapping));
+        }
+
+        return userImportRepository.save(userImport);
+    }
+
+    @Override
+    public UserImport getImportUser(Integer userImportId) {
+      return userImportRepository.getOne(userImportId);
+    }
+
+    private LdapUserImportStatus getStatus(AtlasUserRoles atlasUser) {
 
     UserEntity userEntity = userRepository.findByLogin(atlasUser.getLogin());
     return getStatus(userEntity, atlasUser.getRoles());

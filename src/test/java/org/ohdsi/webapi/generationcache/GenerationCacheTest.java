@@ -16,6 +16,7 @@ import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
@@ -375,7 +376,7 @@ public class GenerationCacheTest {
             }
         }
 
-        return cdmSqlBuilder.toString().replaceAll("@cdm_database_schema", CDM_SCHEMA_NAME);
+        return cdmSqlBuilder.toString().replaceAll(Constants.SqlSchemaPlaceholders.CDM_DATABASE_SCHEMA_PLACEHOLDER, CDM_SCHEMA_NAME);
     }
 
     private static String getResultTablesSql() {

@@ -48,6 +48,7 @@ public class DDLService {
 
 	private static final Collection<String> RESULT_DDL_FILE_PATHS = Arrays.asList(
 		"/ddl/results/cohort.sql",
+		"/ddl/results/cohort_generations.sql",
 		"/ddl/results/cohort_features.sql",
 		"/ddl/results/cohort_features_analysis_ref.sql",
 		"/ddl/results/cohort_features_dist.sql",
@@ -163,12 +164,13 @@ public class DDLService {
 	private String translateSqlFile(String sql, String dialect, Map<String, String> params) {
 
 		SourceStatement statement = new SourceStatement();
-		statement.targetDialect = dialect.toLowerCase();
-		statement.oracleTempSchema = params.get(TEMP_SCHEMA);
-		statement.sql = sql;
-		statement.parameters = new HashMap<>(params);
+		statement.setTargetDialect(dialect.toLowerCase()) ;
+		statement.setOracleTempSchema(params.get(TEMP_SCHEMA));
+		statement.setSql(sql);
+		statement.getParameters().putAll(params);
+
 		TranslatedStatement translatedStatement = translateSQL(statement);
-		return translatedStatement.targetSQL;
+		return translatedStatement.getTargetSQL();
 	}
 
 }

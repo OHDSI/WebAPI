@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
@@ -25,7 +24,7 @@ public interface CcService {
     CohortCharacterizationEntity importCc(CohortCharacterizationEntity entity);
 
     String getNameForCopy(String dtoName);
-    
+
     String getNameWithSuffix(String dtoName);
 
     String serializeCc(Long id);
@@ -59,4 +58,6 @@ public interface CcService {
     void deleteCcGeneration(Long generationId);
 
     void cancelGeneration(Long id, String sourceKey);
+
+    Long getCCResultsTotalCount(Long id);
 }

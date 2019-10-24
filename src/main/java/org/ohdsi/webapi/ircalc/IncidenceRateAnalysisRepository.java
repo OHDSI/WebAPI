@@ -38,6 +38,7 @@ public interface IncidenceRateAnalysisRepository extends EntityGraphCrudReposito
   @Query("SELECT COUNT(ira) FROM IncidenceRateAnalysis ira WHERE ira.name = :name and ira.id <> :id")
   int getCountIRWithSameName(@Param("id") Integer id, @Param("name") String name);
 
+  @Query("SELECT ira FROM IncidenceRateAnalysis ira WHERE ira.name LIKE ?1 ESCAPE '\\'")
   List<IncidenceRateAnalysis> findAllByNameStartsWith(String pattern);
   
   Optional<IncidenceRateAnalysis> findByName(String name);

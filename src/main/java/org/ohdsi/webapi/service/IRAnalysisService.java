@@ -19,7 +19,9 @@ import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import com.opencsv.CSVWriter;
+import javax.ws.rs.core.HttpHeaders;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,6 +31,10 @@ import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
+import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.ircalc.*;
@@ -44,9 +50,10 @@ import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.SourceDaimon;
-import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
+import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.slf4j.Logger;
@@ -61,6 +68,7 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import javax.annotation.PostConstruct;
@@ -127,6 +135,12 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   //Directly wired since IRAnalysisService is directly called by Jersey and @DataSourceAccess wouldn't work in this case
   @Autowired
   private SourceAccessor sourceAccessor;
+
+  @Autowired
+  private CohortDefinitionRepository cohortDefinitionRepository;
+
+  @Autowired
+  private DesignImportService designImportService;
 
   @Context
   ServletContext context;
@@ -292,11 +306,13 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   }
 
   @Override
+  @Transactional
   public int getCountIRWithSameName(final int id, String name) {
     return irAnalysisRepository.getCountIRWithSameName(id, name);
   }
 
   @Override
+  @Transactional
   public IRAnalysisDTO createAnalysis(IRAnalysisDTO analysis) {
     Date currentTime = Calendar.getInstance().getTime();
 
@@ -323,6 +339,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   }
 
   @Override
+  @Transactional(readOnly = true)
   public IRAnalysisDTO getAnalysis(final int id) {
 
     return getTransactionTemplate().execute(transactionStatus -> {
@@ -332,7 +349,54 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     });
   }
 
-  @Override
+    @Override
+    public IRAnalysisDTO doImport(final IRAnalysisDTO dto) {
+        if (dto.getExpression() != null) {
+            try {
+                IncidenceRateAnalysisExportExpression expression = objectMapper.readValue(
+                        dto.getExpression(), IncidenceRateAnalysisExportExpression.class);
+                // Create lists of ids from list of cohort definitions because we do not store
+                // cohort definitions in expression now
+                fillCohortIds(expression.targetIds, expression.targetCohorts);
+                fillCohortIds(expression.outcomeIds, expression.outcomeCohorts);
+                String strExpression = objectMapper.writeValueAsString(new IncidenceRateAnalysisExpression(expression));
+                dto.setExpression(strExpression);
+            } catch (Exception e) {
+                log.error("Error converting expression to object", e);
+                throw new InternalServerErrorException();
+            }
+        }
+        dto.setName(NameUtils.getNameWithSuffix(dto.getName(), this::getNamesLike));
+        return createAnalysis(dto);
+    }
+
+
+    @Override
+    @Transactional
+    public IRAnalysisDTO export(final Integer id) {
+      IncidenceRateAnalysis analysis = this.irAnalysisRepository.findOne(id);
+      ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format(NO_INCIDENCE_RATE_ANALYSIS_MESSAGE, id));
+
+      try {
+          IncidenceRateAnalysisExportExpression expression = objectMapper.readValue(
+                  analysis.getDetails().getExpression(), IncidenceRateAnalysisExportExpression.class);
+
+          // Cohorts are not stored in expression now - create lists of cohorts from
+          // lists of their ids
+          fillCohorts(expression.outcomeIds, expression.outcomeCohorts);
+          fillCohorts(expression.targetIds, expression.targetCohorts);
+
+          String strExpression = objectMapper.writeValueAsString(expression);
+          analysis.getDetails().setExpression(strExpression);
+      } catch (Exception e) {
+          log.error("Error converting expression to object", e);
+          throw new InternalServerErrorException();
+      }
+      return conversionService.convert(analysis, IRAnalysisDTO.class);
+    }
+
+    @Override
+    @Transactional
   public IRAnalysisDTO saveAnalysis(final int id, IRAnalysisDTO analysis) {
     Date currentTime = Calendar.getInstance().getTime();
 
@@ -411,11 +475,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
           return Stream.concat(
               expression.targetIds.stream(),
               expression.outcomeIds.stream()
-            ).map(id -> {
-              CohortDefinition cd = new CohortDefinition();
-              cd.setId(id);
-              return cd;
-            })
+            ).map(id -> cohortDefinitionRepository.findOneWithDetail(id))
             .collect(Collectors.toList());
       },
       new IRAnalysisTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), irAnalysisRepository, sourceService, queryBuilder, objectMapper)
@@ -440,6 +500,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<AnalysisInfoDTO> getAnalysisInfo(final int id) {
 
     List<ExecutionInfo> executionInfoList = irExecutionInfoRepository.findByAnalysisId(id);
@@ -452,6 +513,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
   @Override
   @DataSourceAccess
+  @Transactional(readOnly = true)
   public AnalysisInfoDTO getAnalysisInfo(int id, @SourceKey String sourceKey) {
 
     Source source = sourceService.findBySourceKey(sourceKey);
@@ -474,6 +536,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   }
 
   @Override
+  @Transactional
   public AnalysisReport getAnalysisReport(final int id, final String sourceKey, final int targetId, final int outcomeId ) {
 
     Source source = this.getSourceRepository().findBySourceKey(sourceKey);
@@ -506,6 +569,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   }
 
   @Override
+  @Transactional
   public IRAnalysisDTO copy(final int id) {
     IRAnalysisDTO analysis = getAnalysis(id);
     analysis.setId(null); // clear the ID
@@ -515,14 +579,13 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
 
   @Override
+  @Transactional
   public Response export(final int id) {
 
     Response response = null;
-    HashMap<String, String> fileList = new HashMap<>();
-    HashMap<Integer, String> distTypeLookup = new HashMap<>();
 
-    distTypeLookup.put(1, "TAR");
-    distTypeLookup.put(2, "TTO");
+    Map<String, String> fileList = new HashMap<>();
+    Map<Integer, String> distTypeLookup = ImmutableMap.of(1, "TAR", 2, "TTO");
 
     try {
       IncidenceRateAnalysis analysis = this.irAnalysisRepository.findOne(id);
@@ -536,16 +599,11 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
       ArrayList<String[]> strataLines = new ArrayList<>();
       ArrayList<String[]> distLines = new ArrayList<>();
 
+      executions = executions.stream().filter(e -> this.isSourceAvailable(e.getSource())).collect(Collectors.toSet());
       for (ExecutionInfo execution : executions)
       {
         Source source = execution.getSource();
         String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-
-        // perform this query to CDM in an isolated transaction to avoid expensive JDBC transaction synchronization
-        DefaultTransactionDefinition requresNewTx = new DefaultTransactionDefinition();
-        requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);        
-        TransactionStatus initStatus = this.getTransactionTemplateRequiresNew().getTransactionManager().getTransaction(requresNewTx);
-
 
         // get the summary data
         List<AnalysisReport.Summary> summaryList = getAnalysisSummaryList(id, source);
@@ -574,8 +632,6 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
         String translatedSql = SqlTranslate.translateSql(distQuery, source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
 
         SqlRowSet rs = this.getSourceJdbcTemplate(source).queryForRowSet(translatedSql);
-
-        this.getTransactionTemplateRequiresNew().getTransactionManager().commit(initStatus);
 
         if (distLines.isEmpty())
         {
@@ -640,7 +696,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
       response = Response
         .ok(baos)
         .type(MediaType.APPLICATION_OCTET_STREAM)
-        .header("Content-Disposition", String.format("attachment; filename=\"%s\"", "ir_analysis_" + id + ".zip"))
+        .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", "ir_analysis_" + id + ".zip"))
         .build();
     } catch (Exception ex) {
       throw new RuntimeException(ex);
@@ -649,11 +705,13 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   }
 
   @Override
+  @Transactional
   public void delete(final int id) {
     irAnalysisRepository.delete(id);
   }
 
-  @Override   
+  @Override
+  @Transactional
   public void deleteInfo(final int id, final String sourceKey) {
     IncidenceRateAnalysis analysis = irAnalysisRepository.findOne(id);
     ExecutionInfo itemToRemove = null;
@@ -702,5 +760,46 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
   private List<String> getNamesLike(String name) {
     return irAnalysisRepository.findAllByNameStartsWith(name).stream().map(IncidenceRateAnalysis::getName).collect(Collectors.toList());
+  }
+
+  private void fillCohorts(List<Integer> outcomeIds, List<CohortDTO> cohortDefinitions) {
+    cohortDefinitions.clear();
+    for (Integer cohortId : outcomeIds) {
+      CohortDefinition cohortDefinition = cohortDefinitionRepository.findOne(cohortId);
+      if (Objects.isNull(cohortDefinition)) {
+        // Pass cohort without name to client if no cohort definition found
+        cohortDefinition = new CohortDefinition();
+        cohortDefinition.setId(cohortId);
+        CohortDefinitionDetails details = new CohortDefinitionDetails();
+        details.setCohortDefinition(cohortDefinition);
+      }
+      cohortDefinitions.add(conversionService.convert(cohortDefinition, CohortDTO.class));
+    }
+  }
+
+  private void fillCohortIds(List<Integer> ids, List<CohortDTO> cohortDTOS) {
+    ids.clear();
+    for(CohortDTO cohortDTO: cohortDTOS) {
+      CohortDefinition definition = conversionService.convert(cohortDTO, CohortDefinition.class);
+      definition = designImportService.persistCohortOrGetExisting(definition);
+      ids.add(definition.getId());
+    }
+    cohortDTOS.clear();
+  }
+
+
+  private boolean isSourceAvailable(Source source) {
+    boolean sourceAvailable = true;
+    if (!sourceAccessor.hasAccess(source)) {
+      sourceAvailable = false;
+    } else {
+      try {
+        sourceService.checkConnection(source);
+      } catch (Exception e) {
+        log.error("cannot get connection to source with key {}", source.getSourceKey(), e);
+        sourceAvailable = false;
+      }
+    }
+    return sourceAvailable;
   }
 }

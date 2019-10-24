@@ -17,9 +17,8 @@ import org.ohdsi.webapi.pathway.dto.PathwayPopulationEventDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayPopulationResultsDTO;
 import org.ohdsi.webapi.pathway.dto.TargetCohortPathwaysDTO;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
-import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
@@ -42,6 +41,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Path("/pathway-analysis")
@@ -204,7 +204,7 @@ public class PathwayController {
             @PathParam("id") final Integer pathwayAnalysisId
     ) {
 
-        Map<String, SourceInfo> sourcesMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_KEY);
+        Map<String, Source> sourcesMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_KEY);
         return sensitiveInfoService.filterSensitiveInfo(converterUtils.convertList(pathwayService.getPathwayGenerations(pathwayAnalysisId), CommonGenerationDTO.class),
                 info -> Collections.singletonMap(Constants.Variables.SOURCE, sourcesMap.get(info.getSourceKey())));
     }
@@ -258,6 +258,10 @@ public class PathwayController {
         List<TargetCohortPathwaysDTO> pathwayDtos = resultingPathways.getCohortPathwaysList()
                 .stream()
                 .map(cohortResults -> {
+                    if (cohortResults.getPathwaysCounts() == null) {
+                        return null;
+                    }
+
                     List<PathwayPopulationEventDTO> eventDTOs = cohortResults.getPathwaysCounts()
                             .entrySet()
                             .stream()
@@ -265,6 +269,7 @@ public class PathwayController {
                             .collect(Collectors.toList());
                     return new TargetCohortPathwaysDTO(cohortResults.getCohortId(), cohortResults.getTargetCohortCount(), cohortResults.getTotalPathwaysCount(), eventDTOs);
                 })
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
         return new PathwayPopulationResultsDTO(eventCodeDtos, pathwayDtos);

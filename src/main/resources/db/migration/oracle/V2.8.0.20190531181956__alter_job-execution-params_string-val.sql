@@ -4,6 +4,17 @@ DROP VIEW ${ohdsiSchema}.pathway_analysis_generation;
 DROP VIEW ${ohdsiSchema}.prediction_analysis_generation;
 DROP VIEW ${ohdsiSchema}.user_import_job_history;
 
+CREATE SEQUENCE ${ohdsiSchema}.user_import_sequence;
+
+CREATE TABLE ${ohdsiSchema}.user_import (
+  id INTEGER,
+  provider VARCHAR(255) NOT NULL,
+  preserveRoles NUMBER(1) NOT NULL,
+  userRoles CLOB,
+  roleGroupMapping CLOB,
+  CONSTRAINT PK_user_import PRIMARY KEY (id)
+);
+
 ALTER TABLE ${ohdsiSchema}.batch_job_execution_params ADD (clob_string_val CLOB);
 UPDATE ${ohdsiSchema}.batch_job_execution_params SET clob_string_val = string_val;
 ALTER TABLE ${ohdsiSchema}.batch_job_execution_params DROP (string_val);
@@ -104,15 +115,15 @@ CREATE OR REPLACE VIEW ${ohdsiSchema}.user_import_job_history
       job.exit_code as exit_code,
       job.exit_message as exit_message,
       name_param.STRING_VAL as job_name,
-      provider_param.STRING_VAL as provider_type,
-      author_param.STRING_VAL as author
+      author_param.STRING_VAL as author,
+      CAST(CAST(user_import_param.string_val AS VARCHAR2(50)) AS NUMBER(10)) user_import_id
     FROM
       ${ohdsiSchema}.BATCH_JOB_EXECUTION job
       JOIN ${ohdsiSchema}.BATCH_JOB_INSTANCE instance ON instance.JOB_INSTANCE_ID = job.JOB_INSTANCE_ID
       JOIN ${ohdsiSchema}.batch_job_execution_params name_param
         ON job.job_execution_id = name_param.job_execution_id AND name_param.KEY_NAME = 'jobName'
-      JOIN ${ohdsiSchema}.BATCH_JOB_EXECUTION_PARAMS provider_param
-        ON job.JOB_EXECUTION_ID = provider_param.JOB_EXECUTION_ID AND provider_param.KEY_NAME = 'provider'
+      JOIN ${ohdsiSchema}.BATCH_JOB_EXECUTION_PARAMS user_import_param
+        ON job.JOB_EXECUTION_ID = user_import_param.JOB_EXECUTION_ID AND user_import_param.KEY_NAME = 'user_import_id'
       JOIN ${ohdsiSchema}.BATCH_JOB_EXECUTION_PARAMS author_param
         ON job.JOB_EXECUTION_ID = author_param.JOB_EXECUTION_ID AND author_param.KEY_NAME = 'jobAuthor'
     WHERE

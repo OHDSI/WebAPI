@@ -3,8 +3,8 @@ package org.ohdsi.webapi.user.importer.service;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.user.importer.model.AtlasUserRoles;
-import org.ohdsi.webapi.user.importer.model.LdapProviderType;
 import org.ohdsi.webapi.user.importer.model.RoleGroupMapping;
+import org.ohdsi.webapi.user.importer.model.UserImport;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepExecution;
@@ -25,9 +25,9 @@ public class FindUsersToImportTasklet extends BaseUserImportTasklet<List<AtlasUs
   }
 
   @Override
-  protected List<AtlasUserRoles> doUserImportTask(ChunkContext chunkContext, LdapProviderType providerType, Boolean preserveRoles, RoleGroupMapping roleGroupMapping) {
-
-    userRoles = userImportService.findUsers(providerType, roleGroupMapping);
+  protected List<AtlasUserRoles> doUserImportTask(ChunkContext chunkContext, UserImport userImport) {
+    RoleGroupMapping roleGroupMapping = Utils.deserialize(userImport.getRoleGroupMapping(), RoleGroupMapping.class);
+    userRoles = userImportService.findUsers(userImport.getProvider(), roleGroupMapping);
     return userRoles;
   }
 

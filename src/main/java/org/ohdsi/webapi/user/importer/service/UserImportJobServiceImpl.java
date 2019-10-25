@@ -5,12 +5,16 @@ import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.cronutils.model.definition.CronDefinition;
 import com.odysseusinc.scheduler.model.ScheduledTask;
 import com.odysseusinc.scheduler.service.BaseJobServiceImpl;
-import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.user.importer.converter.RoleGroupMappingConverter;
 import org.ohdsi.webapi.user.importer.exception.JobAlreadyExistException;
-import org.ohdsi.webapi.user.importer.model.*;
+import org.ohdsi.webapi.user.importer.model.LdapProviderType;
+import org.ohdsi.webapi.user.importer.model.RoleGroupEntity;
+import org.ohdsi.webapi.user.importer.model.RoleGroupMapping;
+import org.ohdsi.webapi.user.importer.model.UserImport;
+import org.ohdsi.webapi.user.importer.model.UserImportJob;
+import org.ohdsi.webapi.user.importer.model.UserImportJobHistoryItem;
 import org.ohdsi.webapi.user.importer.repository.RoleGroupRepository;
 import org.ohdsi.webapi.user.importer.repository.UserImportJobHistoryItemRepository;
 import org.ohdsi.webapi.user.importer.repository.UserImportJobRepository;
@@ -130,13 +134,11 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
     return Optional.ofNullable(jobRepository.findOne(id)).map(this::assignNextExecution);
   }
 
-  public void runImportUsersTask(LdapProviderType providerType, List<AtlasUserRoles> userRoles, boolean preserveRoles) {
+  public void runImportUsersTask(UserImport userImport) {
 
     JobParameters jobParameters = new JobParametersBuilder()
-            .addString(Constants.Params.JOB_NAME, String.format("Users import for %s ran by user request", getProviderName(providerType)))
-            .addString(Constants.Params.LDAP_PROVIDER, providerType.getValue())
-            .addString(Constants.Params.PRESERVE_ROLES, Boolean.valueOf(preserveRoles).toString())
-            .addString(Constants.Params.USER_ROLES, Utils.serialize(userRoles))
+            .addString(Constants.Params.JOB_NAME, String.format("Users import for %s ran by user request", getProviderName(userImport.getProvider())))
+            .addString(Constants.Params.USER_IMPORT_ID, String.valueOf(userImport.getId()))
             .toJobParameters();
     Job job = jobBuilders.get(Constants.USERS_IMPORT)
             .start(userImportStep())
@@ -147,13 +149,13 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
   @Override
   public Stream<UserImportJobHistoryItem> getJobHistoryItems(LdapProviderType providerType) {
 
-    return jobHistoryItemRepository.findByProviderType(providerType);
+    return jobHistoryItemRepository.findByUserImportProvider(providerType);
   }
 
   @Override
   public Optional<UserImportJobHistoryItem> getLatestHistoryItem(LdapProviderType providerType) {
 
-    return jobHistoryItemRepository.findFirstByProviderTypeOrderByEndTimeDesc(providerType);
+    return jobHistoryItemRepository.findFirstByUserImportProviderOrderByEndTimeDesc(providerType);
   }
 
   Step userImportStep() {
@@ -190,12 +192,13 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
       RoleGroupMapping roleGroupMapping = transactionTemplate.execute(transactionStatus ->
               RoleGroupMappingConverter.convertRoleGroupMapping(job.getProviderType().getValue(), roleGroupEntities));
 
+      UserImport userImport = userImportService.createUserImportJob(job.getProviderType(),
+              job.getPreserveRoles(), null, roleGroupMapping);
+
       JobParameters jobParameters = new JobParametersBuilder()
               .addString(Constants.Params.JOB_NAME, String.format("Users import for %s", getProviderName(job.getProviderType())))
               .addString(Constants.Params.JOB_AUTHOR, "system")
-              .addString(Constants.Params.LDAP_PROVIDER, job.getProviderType().getValue())
-              .addString(Constants.Params.PRESERVE_ROLES, job.getPreserveRoles().toString())
-              .addString(Constants.Params.ROLE_GROUP_MAPPING, Utils.serialize(roleGroupMapping))
+              .addString(Constants.Params.USER_IMPORT_ID, String.valueOf(userImport.getId()))
               .toJobParameters();
 
       Job batchJob = buildJobForUserImportTasklet();

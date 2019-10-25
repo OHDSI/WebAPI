@@ -91,9 +91,9 @@ public class UserImportController {
   public Response importUsers(List<AtlasUserRoles> users,
                               @QueryParam("provider") String provider,
                               @DefaultValue("TRUE") @QueryParam("preserve") Boolean preserveRoles) {
-
     LdapProviderType providerType = LdapProviderType.fromValue(provider);
-    userImportJobService.runImportUsersTask(providerType, users, preserveRoles);
+    UserImport userImport = userImportService.createUserImportJob(providerType, preserveRoles, users, null);
+    userImportJobService.runImportUsersTask(userImport);
     return Response.ok().build();
   }
 

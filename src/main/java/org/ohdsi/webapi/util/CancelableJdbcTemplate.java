@@ -10,6 +10,7 @@ import org.springframework.util.StringUtils;
 import javax.sql.DataSource;
 import java.sql.*;
 import java.util.List;
+import java.util.Objects;
 
 public class CancelableJdbcTemplate extends JdbcTemplate {
 
@@ -66,7 +67,12 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
             if (StringUtils.hasLength(batchExceptionSql)) {
               this.currSql = batchExceptionSql;
             }
-            throw ex.getNextException();
+            SQLException reason = ex.getNextException();
+            if (Objects.nonNull(reason)) {
+              throw reason;
+            } else {
+              throw new SQLException("Failed to execute batch update", ex);
+            }
           }
         }
         else {

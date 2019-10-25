@@ -16,9 +16,3 @@ CREATE TABLE ${ohdsiSchema}.generation_cache (
 
 ALTER TABLE ${ohdsiSchema}.generation_cache ADD CONSTRAINT uq_gc_hash UNIQUE (type, design_hash, source_id);
 ALTER TABLE ${ohdsiSchema}.generation_cache ADD CONSTRAINT uq_gc_result UNIQUE (type, source_id, result_identifier);
-
-CREATE TRIGGER ${ohdsiSchema}.DefaultDateForGenerationCache BEFORE INSERT ON ${ohdsiSchema}.generation_cache
-    FOR EACH ROW
-BEGIN
-    :new.created_date := sysdate;
-END;

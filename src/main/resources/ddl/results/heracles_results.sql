@@ -1,4 +1,4 @@
---HINT PARTITION(cohort_definition_id)
+--HINT PARTITION(cohort_definition_id int)
 --HINT BUCKET(analysis_id, 64)
 IF OBJECT_ID('@results_schema.heracles_results', 'U') IS NULL
 create table @results_schema.heracles_results

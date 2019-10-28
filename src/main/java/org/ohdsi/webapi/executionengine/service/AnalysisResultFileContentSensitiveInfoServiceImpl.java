@@ -1,6 +1,21 @@
 package org.ohdsi.webapi.executionengine.service;
 
+import static com.google.common.io.Files.createTempDir;
+
 import com.odysseusinc.arachne.execution_engine_common.util.CommonFileUtils;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.annotation.PostConstruct;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.collections.map.HashedMap;
@@ -12,18 +27,6 @@ import org.ohdsi.webapi.executionengine.entity.AnalysisResultFileContent;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFileContentList;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.PostConstruct;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static com.google.common.io.Files.createTempDir;
 
 @Service
 public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractSensitiveInfoService implements AnalysisResultFileContentSensitiveInfoService {
@@ -168,6 +171,7 @@ public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractS
                 }
             });
             CommonFileUtils.compressAndSplit(temporaryDir, zipPath.toFile(), null);
+
         } catch (ZipException e) {
             LOGGER.error("Error unzipping file", e);
         } catch (IOException e) {

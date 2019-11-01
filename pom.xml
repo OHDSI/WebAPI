@@ -186,7 +186,7 @@
     <!-- Cache Config -->
     <spring.cache.jcache.config>classpath:config/ehcache.xml</spring.cache.jcache.config>
     <SqlRender.version>1.6.3-SNAPSHOT</SqlRender.version>
-    <hive-jdbc.version>3.1.0</hive-jdbc.version>
+    <hive-jdbc.version>3.1.2</hive-jdbc.version>
   </properties>
   <build>
     <finalName>WebAPI</finalName>
@@ -902,50 +902,15 @@
       <id>webapi-impala</id>
       <properties>
         <impala.enabled>true</impala.enabled>
-				<!-- Impala JDBC driver path -->
-				<impala.classpath>${basedir}/src/main/extras/impala</impala.classpath>
+        <impala.driver.version>2.6.15</impala.driver.version>
+        <!-- Impala JDBC driver path -->
+		<impala.classpath>...path/to/impala/jdbc/drivers...</impala.classpath>
       </properties>
       <dependencies>
         <dependency>
-          <groupId>hive</groupId>
-          <artifactId>hive_metastore</artifactId>
-          <version>1.0.0</version>
-        </dependency>
-        <dependency>
-          <groupId>hive</groupId>
-          <artifactId>hive_service</artifactId>
-          <version>1.0.0</version>
-        </dependency>
-        <dependency>
           <groupId>com.cloudera</groupId>
-          <artifactId>ImpalaJDBC41</artifactId>
-          <version>2.5.43</version>
-        </dependency>
-        <dependency>
-          <groupId>libfb</groupId>
-          <artifactId>libfb303</artifactId>
-          <version>0.9.0</version>
-        </dependency>
-        <dependency>
-          <groupId>libthrift</groupId>
-          <artifactId>libthrift</artifactId>
-          <version>0.9.0</version>
-        </dependency>
-        <dependency>
-          <groupId>ql</groupId>
-          <artifactId>ql</artifactId>
-          <version>1.0.0</version>
-        </dependency>
-        <dependency>
-          <groupId>TCLI</groupId>
-          <artifactId>TCLI</artifactId>
-          <version>1.0.0</version>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.zookeeper</groupId>
-          <artifactId>zookeeper</artifactId>
-          <version>3.4.6</version>
-          <type>pom</type>
+          <artifactId>ImpalaJDBC42</artifactId>
+          <version>${impala.driver.version}</version>
         </dependency>
       </dependencies>
       <build>
@@ -963,94 +928,10 @@
                 </goals>
                 <configuration>
                   <groupId>com.cloudera</groupId>
-                  <artifactId>ImpalaJDBC41</artifactId>
-                  <version>2.5.43</version>
+                  <artifactId>ImpalaJDBC42</artifactId>
+                  <version>${impala.driver.version}</version>
                   <packaging>jar</packaging>
-                  <file>${impala.classpath}/ImpalaJDBC41.jar</file>
-                </configuration>
-              </execution>
-              <execution>
-                <id>hive_metastore</id>
-                <phase>initialize</phase>
-                <goals>
-                  <goal>install-file</goal>
-                </goals>
-                <configuration>
-                  <groupId>hive</groupId>
-                  <artifactId>hive_metastore</artifactId>
-                  <version>1.0.0</version>
-                  <packaging>jar</packaging>
-                  <file>${impala.classpath}/hive_metastore.jar</file>
-                </configuration>
-              </execution>
-              <execution>
-                <id>hive_service</id>
-                <phase>initialize</phase>
-                <goals>
-                  <goal>install-file</goal>
-                </goals>
-                <configuration>
-                  <groupId>hive</groupId>
-                  <artifactId>hive_service</artifactId>
-                  <version>1.0.0</version>
-                  <packaging>jar</packaging>
-                  <file>${impala.classpath}/hive_service.jar</file>
-                </configuration>
-              </execution>
-              <execution>
-                <id>libfb</id>
-                <phase>initialize</phase>
-                <goals>
-                  <goal>install-file</goal>
-                </goals>
-                <configuration>
-                  <groupId>libfb</groupId>
-                  <artifactId>libfb303</artifactId>
-                  <version>0.9.0</version>
-                  <packaging>jar</packaging>
-                  <file>${impala.classpath}/libfb303-0.9.0.jar</file>
-                </configuration>
-              </execution>
-              <execution>
-                <id>libthrift</id>
-                <phase>initialize</phase>
-                <goals>
-                  <goal>install-file</goal>
-                </goals>
-                <configuration>
-                  <groupId>libthrift</groupId>
-                  <artifactId>libthrift</artifactId>
-                  <version>0.9.0</version>
-                  <packaging>jar</packaging>
-                  <file>${impala.classpath}/libthrift-0.9.0.jar</file>
-                </configuration>
-              </execution>
-              <execution>
-                <id>ql</id>
-                <phase>initialize</phase>
-                <goals>
-                  <goal>install-file</goal>
-                </goals>
-                <configuration>
-                  <groupId>ql</groupId>
-                  <artifactId>ql</artifactId>
-                  <version>1.0.0</version>
-                  <packaging>jar</packaging>
-                  <file>${impala.classpath}/ql.jar</file>
-                </configuration>
-              </execution>
-              <execution>
-                <id>TCLI</id>
-                <phase>initialize</phase>
-                <goals>
-                  <goal>install-file</goal>
-                </goals>
-                <configuration>
-                  <groupId>TCLI</groupId>
-                  <artifactId>TCLI</artifactId>
-                  <version>1.0.0</version>
-                  <packaging>jar</packaging>
-                  <file>${impala.classpath}/TCLIServiceClient.jar</file>
+                  <file>${impala.classpath}/ImpalaJDBC42.jar</file>
                 </configuration>
               </execution>
             </executions>
@@ -1221,7 +1102,61 @@
               <artifactId>servlet-api</artifactId>
               <groupId>javax.servlet</groupId>
             </exclusion>
+            <exclusion>
+              <groupId>com.zaxxer</groupId>
+              <artifactId>HikariCP</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>com.zaxxer</groupId>
+              <artifactId>HikariCP-java7</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>javax.ws.rs</groupId>
+              <artifactId>javax.ws.rs-api</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>com.sun.jersey</groupId>
+              <artifactId>jersey-server</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>com.sun.jersey</groupId>
+              <artifactId>jersey-core</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>com.sun.jersey</groupId>
+              <artifactId>jersey-client</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>com.sun.jersey</groupId>
+              <artifactId>jersey-json</artifactId>
+            </exclusion>
           </exclusions>
+        </dependency>
+        <dependency>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-server</artifactId>
+          <version>1.19.4</version>
+        </dependency>
+        <dependency>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-core</artifactId>
+          <version>1.19.4</version>
+          <exclusions>
+            <exclusion>
+              <groupId>javax.ws.rs</groupId>
+              <artifactId>jsr311-api</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+        <dependency>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-client</artifactId>
+          <version>1.19.4</version>
+        </dependency>
+        <dependency>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-json</artifactId>
+          <version>1.19.4</version>
         </dependency>
       </dependencies>
     </profile>

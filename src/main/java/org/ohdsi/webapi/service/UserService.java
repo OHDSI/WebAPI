@@ -15,6 +15,8 @@ import org.springframework.stereotype.Component;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  *
@@ -119,9 +121,9 @@ public class UserService {
   @GET
   @Path("user/{userId}/permissions")
   @Produces(MediaType.APPLICATION_JSON)
-  public ArrayList<Permission> getUsersPermissions(@PathParam("userId") Long userId) throws Exception {
+  public List<Permission> getUsersPermissions(@PathParam("userId") Long userId) throws Exception {
     Set<PermissionEntity> permissionEntities = this.authorizer.getUserPermissions(userId);
-    ArrayList<Permission> permissions = convertPermissions(permissionEntities);
+    List<Permission> permissions = convertPermissions(permissionEntities);
     Collections.sort(permissions);
     return permissions;
   }
@@ -197,9 +199,9 @@ public class UserService {
   @GET
   @Path("role/{roleId}/permissions")
   @Produces(MediaType.APPLICATION_JSON)
-  public ArrayList<Permission> getRolePermissions(@PathParam("roleId") Long roleId) throws Exception {
+  public List<Permission> getRolePermissions(@PathParam("roleId") Long roleId) throws Exception {
     Set<PermissionEntity> permissionEntities = this.authorizer.getRolePermissions(roleId);
-    ArrayList<Permission> permissions = convertPermissions(permissionEntities);
+    List<Permission> permissions = convertPermissions(permissionEntities);
     Collections.sort(permissions);
     return permissions;
   }
@@ -258,23 +260,10 @@ public class UserService {
     }
   }
 
-  @GET
-  @Path("permission")
-  @Produces(MediaType.APPLICATION_JSON)
-  public ArrayList<Permission> getPermissions() {
-    Iterable<PermissionEntity> permissionEntities = this.authorizer.getPermissions();
-    ArrayList<Permission> permissions = convertPermissions(permissionEntities);
-    return permissions;
-  }
-
-  private ArrayList<Permission> convertPermissions(final Iterable<PermissionEntity> permissionEntities) {
-    ArrayList<Permission> permissions = new ArrayList<>();
-    for (PermissionEntity permissionEntity : permissionEntities) {
-      Permission permission = new Permission(permissionEntity);
-      permissions.add(permission);
-    }
-
-    return permissions;
+  private List<Permission> convertPermissions(final Iterable<PermissionEntity> permissionEntities) {
+    return StreamSupport.stream(permissionEntities.spliterator(), false)
+            .map(UserService.Permission::new)
+            .collect(Collectors.toList());
   }
 
   private ArrayList<Role> convertRoles(final Iterable<RoleEntity> roleEntities) {

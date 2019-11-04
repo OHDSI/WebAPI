@@ -6,20 +6,15 @@ import org.hibernate.persister.entity.EntityPersister;
 import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.security.model.EntityPermissionSchema;
 import org.ohdsi.webapi.security.model.EntityPermissionSchemaResolver;
-import org.ohdsi.webapi.shiro.PermissionManager;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
-
-import java.util.Map;
 
 public class EntityDeleteEventListener implements PostDeleteEventListener {
 
     private final EntityPermissionSchemaResolver entityPermissionSchemaResolver;
-    private final PermissionManager permissionManager;
 
-    public EntityDeleteEventListener(EntityPermissionSchemaResolver entityPermissionSchemaResolver, PermissionManager permissionManager) {
+    public EntityDeleteEventListener(EntityPermissionSchemaResolver entityPermissionSchemaResolver) {
 
         this.entityPermissionSchemaResolver = entityPermissionSchemaResolver;
-        this.permissionManager = permissionManager;
     }
 
     @Override
@@ -30,10 +25,7 @@ public class EntityDeleteEventListener implements PostDeleteEventListener {
             CommonEntity commonEntity = (CommonEntity) entity;
             EntityPermissionSchema permissionSchema = entityPermissionSchemaResolver.getForClass(commonEntity.getClass());
             if (permissionSchema != null) {
-                new SimpleAsyncTaskExecutor().execute(() -> {
-                    Map<String, String> permissionTemplates = permissionSchema.getAllPermissions();
-                    permissionManager.removePermissionsFromTemplate(permissionTemplates, commonEntity.getId().toString());
-                });
+                new SimpleAsyncTaskExecutor().execute(() -> permissionSchema.onDelete(commonEntity));
             }
         }
     }

@@ -3,6 +3,7 @@ package org.ohdsi.webapi;
 import org.springframework.batch.core.ExitStatus;
 
 public interface Constants {
+  String DEFAULT_DIALECT = "sql server";
   String GENERATE_COHORT = "generateCohort";
   String GENERATE_COHORT_CHARACTERIZATION = "generateCohortCharacterization";
   String GENERATE_PATHWAY_ANALYSIS = "generatePathwayAnalysis";
@@ -17,6 +18,13 @@ public interface Constants {
   String CANCELED = "CANCELED";
 
   String TEMP_COHORT_TABLE_PREFIX = "temp_cohort_";
+
+  interface SqlSchemaPlaceholders {
+    String CDM_DATABASE_SCHEMA_PLACEHOLDER = "@cdm_database_schema";
+    String RESULTS_DATABASE_SCHEMA_PLACEHOLDER = "@results_database_schema";
+    String VOCABULARY_DATABASE_SCHEMA_PLACEHOLDER = "@vocabulary_database_schema";
+    String TEMP_DATABASE_SCHEMA_PLACEHOLDER = "@temp_database_schema";
+  }
 
   interface Params {
 
@@ -38,6 +46,8 @@ public interface Constants {
     String TEMP_DATABASE_SCHEMA = "temp_database_schema";
     String TARGET_DIALECT = "target_dialect";
     String TARGET_TABLE = "target_table";
+    String COHORT_ID_FIELD_NAME = "cohort_id_field_name";
+    String TARGET_COHORT_ID = "target_cohort_id";
     String GENERATE_STATS = "generate_stats";
     String JOB_START_TIME = "time";
     String USER_ROLES = "userRoles";
@@ -48,6 +58,7 @@ public interface Constants {
     String PACKAGE_NAME = "packageName";
     String PACKAGE_FILE_NAME = "packageFilename";
     String EXECUTABLE_FILE_NAME = "executableFilename";
+    String GENERATION_ID = "generation_id";
   }
 
   interface Variables {
@@ -67,5 +78,9 @@ public interface Constants {
   interface Templates {
 
     String ENTITY_COPY_PREFIX = "COPY OF: %s";
+  }
+
+  interface Tables {
+    String COHORT_GENERATIONS_TABLE = "cohort_generations";
   }
 }

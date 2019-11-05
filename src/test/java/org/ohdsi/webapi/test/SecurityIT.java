@@ -91,14 +91,8 @@ public class SecurityIT {
                                 .buildAndExpand(parametersMap).encode().toUri();
 
                         LOG.info("testing service {}:{}", serviceInfo.httpMethod, uri);
-                        ResponseEntity response;
-                        if (serviceInfo.mediaTypes.contains(MediaType.TEXT_PLAIN_TYPE)) {
-                            response = this.restTemplate.exchange(uri,
-                                    serviceInfo.httpMethod, entity, String.class);
-                        } else {
-                            response = this.restTemplate.exchange(uri,
-                                    serviceInfo.httpMethod, entity, Object.class);
-                        }
+                        ResponseEntity response = this.restTemplate.exchange(uri, serviceInfo.httpMethod, entity,
+                                getResponseType(serviceInfo));
                         LOG.info("tested service {}:{} with code {}", serviceInfo.httpMethod, uri, response.getStatusCode());
                         HttpStatus expectedStatus = EXPECTED_RESPONSE_CODES.getOrDefault(serviceInfo.pathPrefix, HttpStatus.UNAUTHORIZED);
                         assertThat(response.getStatusCode()).isEqualTo(expectedStatus);
@@ -109,6 +103,13 @@ public class SecurityIT {
                 }
             }
         }
+    }
+
+    private Class getResponseType(ServiceInfo serviceInfo) {
+        if (serviceInfo.mediaTypes.contains(MediaType.TEXT_PLAIN_TYPE)) {
+            return String.class;
+        }
+        return Object.class;
     }
 
     private Map<String, String> prepareParameters(List<Parameter> parameters) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {

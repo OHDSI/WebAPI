@@ -17,15 +17,8 @@ package org.ohdsi.webapi.source;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
+
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.SQLDelete;
@@ -65,7 +58,7 @@ public class SourceDaimon implements Serializable {
   @Column(name="SOURCE_DAIMON_ID")  
   private int sourceDaimonId;
   
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JsonIgnore
   @JoinColumn(name="SOURCE_ID", referencedColumnName="SOURCE_ID")  
   private Source source;

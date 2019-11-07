@@ -9,10 +9,10 @@ GO
 
 CREATE TABLE ${ohdsiSchema}.user_import (
   id INTEGER DEFAULT NEXT VALUE FOR ${ohdsiSchema}.user_import_sequence,
-  provider VARCHAR NOT NULL,
+  provider VARCHAR(MAX) NOT NULL,
   preserveRoles BIT NOT NULL ,
-  userRoles VARCHAR,
-  roleGroupMapping VARCHAR,
+  userRoles VARCHAR(MAX),
+  roleGroupMapping VARCHAR(MAX),
   CONSTRAINT PK_user_import PRIMARY KEY (id)
 );
 GO

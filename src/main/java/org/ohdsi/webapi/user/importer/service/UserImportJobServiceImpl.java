@@ -7,12 +7,9 @@ import com.odysseusinc.scheduler.model.ScheduledTask;
 import com.odysseusinc.scheduler.service.BaseJobServiceImpl;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.job.JobTemplate;
-import org.ohdsi.webapi.user.importer.converter.RoleGroupMappingConverter;
 import org.ohdsi.webapi.user.importer.exception.JobAlreadyExistException;
 import org.ohdsi.webapi.user.importer.model.LdapProviderType;
 import org.ohdsi.webapi.user.importer.model.RoleGroupEntity;
-import org.ohdsi.webapi.user.importer.model.RoleGroupMapping;
-import org.ohdsi.webapi.user.importer.model.UserImport;
 import org.ohdsi.webapi.user.importer.model.UserImportJob;
 import org.ohdsi.webapi.user.importer.model.UserImportJobHistoryItem;
 import org.ohdsi.webapi.user.importer.repository.RoleGroupRepository;
@@ -134,11 +131,12 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
     return Optional.ofNullable(jobRepository.findOne(id)).map(this::assignNextExecution);
   }
 
-  public void runImportUsersTask(UserImport userImport) {
+  public void runImportUsersTask(UserImportJob userImportJob) {
 
     JobParameters jobParameters = new JobParametersBuilder()
-            .addString(Constants.Params.JOB_NAME, String.format("Users import for %s ran by user request", getProviderName(userImport.getProvider())))
-            .addString(Constants.Params.USER_IMPORT_ID, String.valueOf(userImport.getId()))
+            .addString(Constants.Params.JOB_NAME, String.format("Users import for %s ran by user request",
+                    getProviderName(userImportJob.getProviderType())))
+            .addString(Constants.Params.USER_IMPORT_ID, String.valueOf(userImportJob.getId()))
             .toJobParameters();
     Job job = jobBuilders.get(Constants.USERS_IMPORT)
             .start(userImportStep())
@@ -149,13 +147,13 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
   @Override
   public Stream<UserImportJobHistoryItem> getJobHistoryItems(LdapProviderType providerType) {
 
-    return jobHistoryItemRepository.findByUserImportProvider(providerType);
+    return jobHistoryItemRepository.findByUserImportProviderType(providerType);
   }
 
   @Override
   public Optional<UserImportJobHistoryItem> getLatestHistoryItem(LdapProviderType providerType) {
 
-    return jobHistoryItemRepository.findFirstByUserImportProviderOrderByEndTimeDesc(providerType);
+    return jobHistoryItemRepository.findFirstByUserImportProviderTypeOrderByEndTimeDesc(providerType);
   }
 
   Step userImportStep() {
@@ -187,18 +185,10 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
 
     @Override
     public void run() {
-      List<RoleGroupEntity> roleGroupEntities = job.getRoleGroupMapping();
-
-      RoleGroupMapping roleGroupMapping = transactionTemplate.execute(transactionStatus ->
-              RoleGroupMappingConverter.convertRoleGroupMapping(job.getProviderType().getValue(), roleGroupEntities));
-
-      UserImport userImport = userImportService.createUserImportJob(job.getProviderType(),
-              job.getPreserveRoles(), null, roleGroupMapping);
-
       JobParameters jobParameters = new JobParametersBuilder()
               .addString(Constants.Params.JOB_NAME, String.format("Users import for %s", getProviderName(job.getProviderType())))
               .addString(Constants.Params.JOB_AUTHOR, "system")
-              .addString(Constants.Params.USER_IMPORT_ID, String.valueOf(userImport.getId()))
+              .addString(Constants.Params.USER_IMPORT_ID, String.valueOf(job.getId()))
               .toJobParameters();
 
       Job batchJob = buildJobForUserImportTasklet();

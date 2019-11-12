@@ -1,7 +1,6 @@
 package org.ohdsi.webapi.user.importer.service;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
@@ -14,13 +13,13 @@ import org.ohdsi.webapi.user.importer.model.LdapUserImportStatus;
 import org.ohdsi.webapi.user.importer.model.RoleGroupEntity;
 import org.ohdsi.webapi.user.importer.model.RoleGroupMapping;
 import org.ohdsi.webapi.user.importer.model.RoleGroupsMap;
-import org.ohdsi.webapi.user.importer.model.UserImport;
+import org.ohdsi.webapi.user.importer.model.UserImportJob;
 import org.ohdsi.webapi.user.importer.model.UserImportResult;
 import org.ohdsi.webapi.user.importer.providers.ActiveDirectoryProvider;
 import org.ohdsi.webapi.user.importer.providers.DefaultLdapProvider;
 import org.ohdsi.webapi.user.importer.providers.LdapProvider;
 import org.ohdsi.webapi.user.importer.repository.RoleGroupRepository;
-import org.ohdsi.webapi.user.importer.repository.UserImportRepository;
+import org.ohdsi.webapi.user.importer.repository.UserImportJobRepository;
 import org.ohdsi.webapi.user.importer.utils.RoleGroupUtils;
 import org.ohdsi.webapi.util.UserUtils;
 import org.slf4j.Logger;
@@ -55,7 +54,7 @@ public class UserImportServiceImpl implements UserImportService {
 
   private final UserRepository userRepository;
 
-  private final UserImportRepository userImportRepository;
+  private final UserImportJobRepository userImportJobRepository;
 
   private final PermissionManager userManager;
 
@@ -67,12 +66,12 @@ public class UserImportServiceImpl implements UserImportService {
   public UserImportServiceImpl(@Autowired(required = false) ActiveDirectoryProvider activeDirectoryProvider,
                                @Autowired(required = false) DefaultLdapProvider ldapProvider,
                                UserRepository userRepository,
-                               UserImportRepository userImportRepository,
+                               UserImportJobRepository userImportJobRepository,
                                PermissionManager userManager,
                                RoleGroupRepository roleGroupMappingRepository) {
 
     this.userRepository = userRepository;
-    this.userImportRepository = userImportRepository;
+    this.userImportJobRepository = userImportJobRepository;
     this.userManager = userManager;
     this.roleGroupMappingRepository = roleGroupMappingRepository;
 
@@ -210,25 +209,8 @@ public class UserImportServiceImpl implements UserImportService {
   }
 
     @Override
-    @Transactional
-    public UserImport createUserImportJob(LdapProviderType provider, Boolean preserveRoles,
-                                          List<AtlasUserRoles> userRoles, RoleGroupMapping roleGroupMapping) {
-        UserImport userImport = new UserImport();
-        userImport.setPreserveRoles(preserveRoles);
-        userImport.setProvider(provider);
-        if (userRoles != null) {
-            userImport.setUserRoles(Utils.serialize(userRoles));
-        }
-        if (roleGroupMapping != null) {
-            userImport.setRoleGroupMapping(Utils.serialize(roleGroupMapping));
-        }
-
-        return userImportRepository.save(userImport);
-    }
-
-    @Override
-    public UserImport getImportUser(Integer userImportId) {
-      return userImportRepository.getOne(userImportId);
+    public UserImportJob getImportUserJob(Long userImportId) {
+      return userImportJobRepository.getOne(userImportId);
     }
 
     private LdapUserImportStatus getStatus(AtlasUserRoles atlasUser) {

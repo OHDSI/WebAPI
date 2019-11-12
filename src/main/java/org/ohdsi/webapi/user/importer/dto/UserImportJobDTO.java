@@ -10,6 +10,8 @@ public class UserImportJobDTO extends ArachneJobDTO {
 
   private Boolean preserveRoles;
 
+  private String userRoles;
+
   private Date lastExecuted;
 
   private Date nextExecution;
@@ -45,4 +47,12 @@ public class UserImportJobDTO extends ArachneJobDTO {
   public void setNextExecution(Date nextExecution) {
     this.nextExecution = nextExecution;
   }
+
+    public String getUserRoles() {
+        return userRoles;
+    }
+
+    public void setUserRoles(String userRoles) {
+        this.userRoles = userRoles;
+    }
 }

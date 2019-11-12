@@ -2,7 +2,6 @@ package org.ohdsi.webapi.user.importer.service;
 
 import com.odysseusinc.scheduler.service.BaseJobService;
 import org.ohdsi.webapi.user.importer.model.LdapProviderType;
-import org.ohdsi.webapi.user.importer.model.UserImport;
 import org.ohdsi.webapi.user.importer.model.UserImportJob;
 import org.ohdsi.webapi.user.importer.model.UserImportJobHistoryItem;
 
@@ -16,7 +15,7 @@ public interface UserImportJobService extends BaseJobService<UserImportJob> {
 
   Optional<UserImportJob> getJob(Long id);
 
-  void runImportUsersTask(UserImport userImport);
+  void runImportUsersTask(UserImportJob userImportJob);
 
   Stream<UserImportJobHistoryItem> getJobHistoryItems(LdapProviderType providerType);
 

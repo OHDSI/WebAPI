@@ -22,8 +22,5 @@ public interface UserImportService {
 
   void testConnection(LdapProviderType provider);
 
-  UserImport createUserImportJob(LdapProviderType provider, Boolean preserveRoles, List<AtlasUserRoles> users,
-                                 RoleGroupMapping roleGroupMapping);
-
-  UserImport getImportUser(Integer userImportId);
+  UserImportJob getImportUserJob(Long userImportId);
 }

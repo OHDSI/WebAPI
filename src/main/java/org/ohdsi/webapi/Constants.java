@@ -13,6 +13,7 @@ public interface Constants {
   String WARM_CACHE = "warmCache";
   String WARM_CACHE_BY_USER = "warmCacheByUser";
   String USERS_IMPORT = "usersImport";
+  String JOB_IS_ALREADY_SCHEDULED = "Job for provider %s is already scheduled";
 
   String FAILED = ExitStatus.FAILED.getExitCode();
   String CANCELED = "CANCELED";

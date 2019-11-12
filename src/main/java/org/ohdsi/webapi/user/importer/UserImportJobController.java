@@ -7,24 +7,32 @@ import org.ohdsi.webapi.user.importer.dto.UserImportJobMappingDTO;
 import org.ohdsi.webapi.user.importer.exception.JobAlreadyExistException;
 import org.ohdsi.webapi.user.importer.model.LdapProviderType;
 import org.ohdsi.webapi.user.importer.model.UserImportJob;
-import org.ohdsi.webapi.user.importer.providers.LdapProvider;
 import org.ohdsi.webapi.user.importer.service.UserImportJobService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.ohdsi.webapi.Constants.JOB_IS_ALREADY_SCHEDULED;
+
 @RestController
 @Path("/user/import/job")
 @Transactional
 public class UserImportJobController {
-
-  private static final String JOB_IS_ALREADY_SCHEDULED = "Job for provider %s is already scheduled";
   private final UserImportJobService jobService;
   private final GenericConversionService conversionService;
 

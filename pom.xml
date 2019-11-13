@@ -634,7 +634,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>
-      <version>1.8.2</version>
+      <version>1.8.3</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>

@@ -35,7 +35,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Date;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import static org.ohdsi.webapi.Constants.JOB_IS_ALREADY_SCHEDULED;
@@ -114,16 +115,21 @@ public class UserImportController {
     @POST
     @Path("user/import")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response importUsers(List<AtlasUserRoles> users,
+    @Produces(MediaType.APPLICATION_JSON)
+    public UserImportJobDTO importUsers(List<AtlasUserRoles> users,
                                 @QueryParam("provider") String provider,
                                 @DefaultValue("TRUE") @QueryParam("preserve") Boolean preserveRoles) {
         LdapProviderType providerType = LdapProviderType.fromValue(provider);
+
+        Calendar calendar = GregorianCalendar.getInstance();
+        calendar.add(Calendar.SECOND, 5);
+        calendar.set(Calendar.MILLISECOND, 0);
 
         UserImportJobDTO jobDto = new UserImportJobDTO();
         jobDto.setProviderType(providerType);
         jobDto.setPreserveRoles(preserveRoles);
         jobDto.setEnabled(true);
-        jobDto.setStartDate(new Date());
+        jobDto.setStartDate(calendar.getTime());
         jobDto.setFrequency(JobExecutingType.ONCE);
         jobDto.setRecurringTimes(0);
         if (users != null) {
@@ -132,12 +138,11 @@ public class UserImportController {
 
         try {
             UserImportJob job = conversionService.convert(jobDto, UserImportJob.class);
-            job = userImportJobService.createJob(job);
-            userImportJobService.runImportUsersTask(job);
+            UserImportJob created = userImportJobService.createJob(job);
+            return conversionService.convert(created, UserImportJobDTO.class);
         } catch (JobAlreadyExistException e) {
             throw new NotAcceptableException(String.format(JOB_IS_ALREADY_SCHEDULED, jobDto.getProviderType()));
         }
-        return Response.ok().build();
     }
 
   @POST

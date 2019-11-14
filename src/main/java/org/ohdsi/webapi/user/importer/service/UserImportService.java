@@ -10,11 +10,7 @@ public interface UserImportService {
 
   List<AtlasUserRoles> findUsers(LdapProviderType providerType, RoleGroupMapping mapping);
 
-  UserImportResult importUsers(List<AtlasUserRoles> users);
-
   UserImportResult importUsers(List<AtlasUserRoles> users, boolean preserveRoles);
-
-  void runImportUsersTask(List<AtlasUserRoles> users, boolean preserveRoles);
 
   void saveRoleGroupMapping(LdapProviderType providerType, List<RoleGroupEntity> mappingEntities);
 

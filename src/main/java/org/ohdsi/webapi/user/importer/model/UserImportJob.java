@@ -49,14 +49,14 @@ public class UserImportJob extends ArachneJob {
   @Column(name = "preserve_roles")
   private Boolean preserveRoles;
 
+  @Column(name = "user_roles")
+  private String userRoles;
+
   @Override
   public List<DayOfWeek> getWeekDays() {
 
     return weekDays;
   }
-
-  @Column(name = "user_roles")
-  private String userRoles;
 
   @Override
   public void setWeekDays(List<DayOfWeek> weekDays) {

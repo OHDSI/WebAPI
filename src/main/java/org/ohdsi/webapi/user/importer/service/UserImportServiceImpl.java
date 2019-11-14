@@ -74,7 +74,6 @@ public class UserImportServiceImpl implements UserImportService {
     this.userImportJobRepository = userImportJobRepository;
     this.userManager = userManager;
     this.roleGroupMappingRepository = roleGroupMappingRepository;
-
     Optional.ofNullable(activeDirectoryProvider).ifPresent(provider -> providersMap.put(LdapProviderType.ACTIVE_DIRECTORY, provider));
     Optional.ofNullable(ldapProvider).ifPresent(provider -> providersMap.put(LdapProviderType.LDAP, provider));
   }
@@ -114,13 +113,6 @@ public class UserImportServiceImpl implements UserImportService {
             })
             .filter(user -> !LdapUserImportStatus.EXISTS.equals(user.getStatus()))
             .collect(Collectors.toList());
-  }
-
-  @Override
-  @Transactional
-  public UserImportResult importUsers(List<AtlasUserRoles> users) {
-
-    return importUsers(users, true);
   }
 
   @Override
@@ -169,11 +161,6 @@ public class UserImportServiceImpl implements UserImportService {
       }
     });
     return result;
-  }
-
-  @Override
-  public void runImportUsersTask(List<AtlasUserRoles> users, boolean preserveRoles) {
-
   }
 
   @Override

@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
 
@@ -53,7 +52,7 @@
     <kerberos.configPath>/etc/krb5.conf</kerberos.configPath>
     <kerberos.kinitPath></kerberos.kinitPath>
 
-		<spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
+    <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
     <spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
     <spring.profiles.active>default</spring.profiles.active>
 
@@ -121,22 +120,22 @@
     <server.ssl.key-store-password></server.ssl.key-store-password>
     <server.ssl.key-password></server.ssl.key-password>
 
-    <arachne.version>1.14.0-alpha-1</arachne.version>
+    <arachne.version>1.14.1-alpha2</arachne.version>
     <jersey-media-multipart.version>2.25.1</jersey-media-multipart.version>
     <execution.invalidation.maxage>4</execution.invalidation.maxage>
     <execution.invalidation.period>10000</execution.invalidation.period>
     <execution.status.period>10000</execution.status.period>
-		<executionengine.url>https://localhost:8888/api/v1/analyze</executionengine.url>
-		<executionengine.token>Basic YWRtaW5Ab2R5c3NldXNpbmMuY29tOnBhc3N3b3Jk</executionengine.token>
-		<executionengine.updateStatusCallback>http://localhost:8080/WebAPI/executionservice/callbacks/submission/{id}/status/update/{password}</executionengine.updateStatusCallback>
-		<executionengine.resultCallback>http://localhost:8080/WebAPI/executionservice/callbacks/submission/{id}/result/{password}</executionengine.resultCallback>
+    <executionengine.url>https://localhost:8888/api/v1/analyze</executionengine.url>
+    <executionengine.token>Basic YWRtaW5Ab2R5c3NldXNpbmMuY29tOnBhc3N3b3Jk</executionengine.token>
+    <executionengine.updateStatusCallback>http://localhost:8080/WebAPI/executionservice/callbacks/submission/{id}/status/update/{password}</executionengine.updateStatusCallback>
+    <executionengine.resultCallback>http://localhost:8080/WebAPI/executionservice/callbacks/submission/{id}/result/{password}</executionengine.resultCallback>
 
 
     <!-- PASSWORD ENCRYPTION -->
     <jasypt.encryptor.enabled>false</jasypt.encryptor.enabled>
     <jasypt.encryptor.password></jasypt.encryptor.password>
-		<jasypt.encryptor.algorithm>PBEWithMD5AndDES</jasypt.encryptor.algorithm>
-                
+    <jasypt.encryptor.algorithm>PBEWithMD5AndDES</jasypt.encryptor.algorithm>
+
     <!-- ORGANIZATION SETTINGS -->
     <organization.name>OHDSI</organization.name>
 
@@ -211,7 +210,7 @@
         <configuration>
           <skipTests>true</skipTests>
         </configuration>
-</plugin>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -249,46 +248,46 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>com.qmino</groupId>
-        <artifactId>miredot-plugin</artifactId>
-        <version>1.5.1</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>restdoc</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-           <licence>cHJvamVjdHxvcmcub2hkc2kuV2ViQVBJfDIwMjAtMDMtMzF8dHJ1ZXwtMSNNQzBDRkNNQ2R2ZEhjbDg0Z2tONVI3bHlmQ2Y4SnNkYUFoVUFoMkdtOUVFdy9RelpLVzM1V2p6a2FsdzJZV009</licence>
-           <restModel>
-						<httpStatusCodes>
-							<httpStatusCode>
-									<httpCode>200</httpCode>
-									<document>always</document>
-									<defaultMessage>The service call has completed successfully.</defaultMessage>
-							</httpStatusCode>
-							<httpStatusCode>
-									<httpCode>401</httpCode>
-									<document>Authorization Exception</document>
-									<defaultMessage>The user is not authorized to use this service.</defaultMessage>
-							</httpStatusCode>
-							<httpStatusCode>
-									<httpCode>412</httpCode>
-									<document>put,post</document>
-									<defaultMessage>Invalid JSON/XML input.</defaultMessage>
-							</httpStatusCode>
-							<httpStatusCode>
-									<httpCode>500</httpCode>
-									<document>always</document>
-									<defaultMessage>The service call has not succeeded.</defaultMessage>
-							</httpStatusCode>
-						</httpStatusCodes>
-           </restModel>
-        </configuration>
-      </plugin>
+<!--      <plugin>-->
+<!--        <groupId>com.qmino</groupId>-->
+<!--        <artifactId>miredot-plugin</artifactId>-->
+<!--        <version>1.5.1</version>-->
+<!--        <executions>-->
+<!--          <execution>-->
+<!--            <phase>package</phase>-->
+<!--            <goals>-->
+<!--              <goal>restdoc</goal>-->
+<!--            </goals>-->
+<!--          </execution>-->
+<!--        </executions>-->
+<!--        <configuration>-->
+<!--          <licence>cHJvamVjdHxvcmcub2hkc2kuV2ViQVBJfDIwMjAtMDMtMzF8dHJ1ZXwtMSNNQzBDRkNNQ2R2ZEhjbDg0Z2tONVI3bHlmQ2Y4SnNkYUFoVUFoMkdtOUVFdy9RelpLVzM1V2p6a2FsdzJZV009</licence>-->
+<!--          <restModel>-->
+<!--            <httpStatusCodes>-->
+<!--              <httpStatusCode>-->
+<!--                <httpCode>200</httpCode>-->
+<!--                <document>always</document>-->
+<!--                <defaultMessage>The service call has completed successfully.</defaultMessage>-->
+<!--              </httpStatusCode>-->
+<!--              <httpStatusCode>-->
+<!--                <httpCode>401</httpCode>-->
+<!--                <document>Authorization Exception</document>-->
+<!--                <defaultMessage>The user is not authorized to use this service.</defaultMessage>-->
+<!--              </httpStatusCode>-->
+<!--              <httpStatusCode>-->
+<!--                <httpCode>412</httpCode>-->
+<!--                <document>put,post</document>-->
+<!--                <defaultMessage>Invalid JSON/XML input.</defaultMessage>-->
+<!--              </httpStatusCode>-->
+<!--              <httpStatusCode>-->
+<!--                <httpCode>500</httpCode>-->
+<!--                <document>always</document>-->
+<!--                <defaultMessage>The service call has not succeeded.</defaultMessage>-->
+<!--              </httpStatusCode>-->
+<!--            </httpStatusCodes>-->
+<!--          </restModel>-->
+<!--        </configuration>-->
+<!--      </plugin>-->
     </plugins>
   </build>
 
@@ -333,32 +332,6 @@
     <repository>
       <id>redshift</id>
       <url>http://redshift-maven-repository.s3-website-us-east-1.amazonaws.com/release</url>
-    </repository>
-    <repository>
-      <id>odysseus.community.snapshots</id>
-      <name>Odysseus community snapshots</name>
-      <releases>
-        <enabled>false</enabled>
-        <updatePolicy>always</updatePolicy>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>always</updatePolicy>
-      </snapshots>
-      <url>http://repo.odysseusinc.com/artifactory/community-libs-snapshot-local</url>
-    </repository>
-    <repository>
-      <id>odysseus.community.releases</id>
-      <name>Odysseus community releases</name>
-      <releases>
-        <enabled>true</enabled>
-        <updatePolicy>always</updatePolicy>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-        <updatePolicy>always</updatePolicy>
-      </snapshots>
-      <url>http://repo.odysseusinc.com/artifactory/community-libs-release-local</url>
     </repository>
   </repositories>
 
@@ -801,8 +774,8 @@
       <id>webapi-impala</id>
       <properties>
         <impala.enabled>true</impala.enabled>
-				<!-- Impala JDBC driver path -->
-				<impala.classpath>...path/to/impala/jdbc/drivers...</impala.classpath>
+        <!-- Impala JDBC driver path -->
+        <impala.classpath>...path/to/impala/jdbc/drivers...</impala.classpath>
       </properties>
       <dependencies>
         <dependency>

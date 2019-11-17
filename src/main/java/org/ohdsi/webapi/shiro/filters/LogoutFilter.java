@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.shiro.filters;
 
-import com.odysseusinc.logging.event.FailedLogoffEvent;
-import com.odysseusinc.logging.event.SuccessLogoffEvent;
+import com.odysseusinc.logging.event.FailedLogoutEvent;
+import com.odysseusinc.logging.event.SuccessLogoutEvent;
 import io.jsonwebtoken.JwtException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -51,10 +51,10 @@ public class LogoutFilter extends AdviceFilter {
     Subject subject = SecurityUtils.getSubject();
     try {
         subject.logout();
-        eventPublisher.publishEvent(new SuccessLogoffEvent(this, principal));
+        eventPublisher.publishEvent(new SuccessLogoutEvent(this, principal));
     } catch (SessionException ise) {
         log.debug("Encountered session exception during logout. This can be generally safely ignored.", ise);
-        eventPublisher.publishEvent(new FailedLogoffEvent(this, principal));
+        eventPublisher.publishEvent(new FailedLogoutEvent(this, principal));
     }
     return false;
   }

@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -95,6 +96,7 @@ public class GenerationCacheServiceImpl implements GenerationCacheService {
         generationCache.setSource(source);
         generationCache.setResultIdentifier(resultIdentifier);
         generationCache.setResultChecksum(checksum);
+        generationCache.setCreatedDate(new Date());
 
         generationCache = generationCacheRepository.saveAndFlush(generationCache);
 

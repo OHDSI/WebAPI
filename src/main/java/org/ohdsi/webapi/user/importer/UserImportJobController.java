@@ -5,7 +5,6 @@ import org.ohdsi.webapi.user.importer.dto.JobHistoryItemDTO;
 import org.ohdsi.webapi.user.importer.dto.UserImportJobDTO;
 import org.ohdsi.webapi.user.importer.dto.UserImportJobMappingDTO;
 import org.ohdsi.webapi.user.importer.exception.JobAlreadyExistException;
-import org.ohdsi.webapi.user.importer.model.LdapProviderType;
 import org.ohdsi.webapi.user.importer.model.UserImportJob;
 import org.ohdsi.webapi.user.importer.service.UserImportJobService;
 import org.springframework.core.convert.support.GenericConversionService;
@@ -104,12 +103,11 @@ public class UserImportJobController {
   }
 
   @GET
-  @Path("/{type}/history")
+  @Path("/{id}/history")
   @Produces(MediaType.APPLICATION_JSON)
-  public List<JobHistoryItemDTO> getImportHistory(@PathParam("type") String provider) {
+  public List<JobHistoryItemDTO> getImportHistory(@PathParam("id") Long id) {
 
-    LdapProviderType providerType = LdapProviderType.fromValue(provider);
-    return jobService.getJobHistoryItems(providerType)
+    return jobService.getJobHistoryItems(id)
             .map(item -> conversionService.convert(item, JobHistoryItemDTO.class))
             .collect(Collectors.toList());
   }

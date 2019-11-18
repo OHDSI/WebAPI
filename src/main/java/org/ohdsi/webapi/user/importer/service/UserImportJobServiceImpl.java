@@ -121,9 +121,9 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
   }
 
   @Override
-  public Stream<UserImportJobHistoryItem> getJobHistoryItems(LdapProviderType providerType) {
+  public Stream<UserImportJobHistoryItem> getJobHistoryItems(Long id) {
 
-    return jobHistoryItemRepository.findByUserImportProviderType(providerType);
+    return jobHistoryItemRepository.findByUserImportId(id);
   }
 
   @Override

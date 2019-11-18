@@ -15,7 +15,7 @@ public interface UserImportJobService extends BaseJobService<UserImportJob> {
 
     Optional<UserImportJob> getJob(Long id);
 
-    Stream<UserImportJobHistoryItem> getJobHistoryItems(LdapProviderType providerType);
+    Stream<UserImportJobHistoryItem> getJobHistoryItems(Long id);
 
     Optional<UserImportJobHistoryItem> getLatestHistoryItem(LdapProviderType providerType);
 }

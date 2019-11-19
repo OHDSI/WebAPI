@@ -322,6 +322,7 @@
         <version>2.1.2</version>
         <executions>
           <execution>
+            <id>miredot-restdoc</id>
             <phase>package</phase>
             <goals>
               <goal>restdoc</goal>
@@ -822,6 +823,17 @@
       <id>travis</id>
       <build>
         <plugins>
+          <plugin>
+            <groupId>com.qmino</groupId>
+            <artifactId>miredot-plugin</artifactId>
+            <version>2.1.2</version>
+            <executions>
+              <execution>
+                <id>miredot-restdoc</id>
+                <phase>none</phase>
+              </execution>
+            </executions>
+          </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-failsafe-plugin</artifactId>

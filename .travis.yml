@@ -18,7 +18,8 @@ install:
 
 # Spin up postgres instance
 before_script:
-  - docker run --rm -p 7778:5432 --name test-postgres -v ${PWD}/src/test/resources/ci-dbinit:/docker-entrypoint-initdb.d postgres:9-alpine
+  - docker run -d --rm -p 7778:5432 --name test-postgres -v ${PWD}/src/test/resources/ci-dbinit:/docker-entrypoint-initdb.d postgres:9-alpine
+  - docker ps
 
 script:
   - mvn -Ptravis test

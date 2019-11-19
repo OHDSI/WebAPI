@@ -1,0 +1,21 @@
+language: java
+jdk:
+  - openjdk10
+
+sudo: required
+services:
+  - docker
+
+# Fix for https://travis-ci.community/t/problematic-docker-compose-version-1-23-1/5362/3
+before_install:
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/1.24.1/docker-compose-Linux-x86_64 > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
+
+# Spin up postgres instance
+before_script:
+  - docker run --rm -p 7778:5432 --name test-postgres -v ${PWD}/src/test/resources/ci-dbinit:/docker-entrypoint-initdb.d postgres:9-alpine
+
+script:
+  - mvn -Ptravis test

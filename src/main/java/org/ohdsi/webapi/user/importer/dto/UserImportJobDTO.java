@@ -16,6 +16,8 @@ public class UserImportJobDTO extends ArachneJobDTO {
 
   private Date nextExecution;
 
+  private Date startDate;
+
   public LdapProviderType getProviderType() {
     return providerType;
   }
@@ -47,6 +49,16 @@ public class UserImportJobDTO extends ArachneJobDTO {
   public void setNextExecution(Date nextExecution) {
     this.nextExecution = nextExecution;
   }
+
+    @Override
+    public Date getStartDate() {
+        return startDate;
+    }
+
+    @Override
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
+    }
 
     public String getUserRoles() {
         return userRoles;

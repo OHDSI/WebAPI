@@ -1,50 +1,39 @@
--- [UNTESTED] Add mode_id to cohort_inclusion_result table
 DECLARE
-  v_col_exists NUMBER 
+    V_COL_EXISTS NUMBER := 0;
 BEGIN
-  SELECT count(*) INTO v_col_exists
-    FROM user_tab_cols
-    WHERE column_name = 'mode_id'
-      AND table_name = 'cohort_inclusion_result';
- 
-   IF (v_col_exists = 0) THEN
-      EXECUTE IMMEDIATE 'ALTER TABLE cohort_inclusion_result ADD mode_id INT NOT NULL DEFAULT 0';
-   ELSE
-    DBMS_OUTPUT.PUT_LINE('The column mode_id already exists');
-  END IF;
-END;
-/
+    SELECT COUNT(*) INTO V_COL_EXISTS
+        FROM ALL_TAB_COLS
+            WHERE COLUMN_NAME = 'MODE_ID'
+            AND TABLE_NAME = 'COHORT_INCLUSION'
+            AND OWNER = UPPER('${ohdsiSchema}');
 
--- [UNTESTED] Add mode_id to cohort_inclusion_stats table
-DECLARE
-  v_col_exists NUMBER 
-BEGIN
-  SELECT count(*) INTO v_col_exists
-    FROM user_tab_cols
-    WHERE column_name = 'mode_id'
-      AND table_name = 'cohort_inclusion_stats';
- 
-   IF (v_col_exists = 0) THEN
-      EXECUTE IMMEDIATE 'ALTER TABLE cohort_inclusion_stats ADD mode_id INT NOT NULL DEFAULT 0';
-   ELSE
-    DBMS_OUTPUT.PUT_LINE('The column mode_id already exists');
-  END IF;
-END;
-/
+    IF (V_COL_EXISTS = 0) THEN
+        EXECUTE IMMEDIATE 'ALTER TABLE ${ohdsiSchema}.COHORT_INCLUSION ADD MODE_ID INT DEFAULT 0 NOT NULL';
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('The column COHORT_INCLUSION.MODE_ID already exists');
+    END IF;
 
--- [UNTESTED] Add mode_id to cohort_summary_stats table
-DECLARE
-  v_col_exists NUMBER 
-BEGIN
-  SELECT count(*) INTO v_col_exists
-    FROM user_tab_cols
-    WHERE column_name = 'mode_id'
-      AND table_name = 'cohort_summary_stats';
- 
-   IF (v_col_exists = 0) THEN
-      EXECUTE IMMEDIATE 'ALTER TABLE cohort_summary_stats ADD mode_id INT NOT NULL DEFAULT 0';
-   ELSE
-    DBMS_OUTPUT.PUT_LINE('The column mode_id already exists');
-  END IF;
+    SELECT COUNT(*) INTO V_COL_EXISTS
+        FROM ALL_TAB_COLS
+            WHERE COLUMN_NAME = 'MODE_ID'
+            AND TABLE_NAME = 'COHORT_INCLUSION_RESULT'
+            AND OWNER = UPPER('${ohdsiSchema}');
+
+    IF (V_COL_EXISTS = 0) THEN
+        EXECUTE IMMEDIATE 'ALTER TABLE ${ohdsiSchema}.COHORT_INCLUSION_RESULT ADD MODE_ID INT DEFAULT 0 NOT NULL';
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('The column COHORT_INCLUSION_RESULT.MODE_ID already exists');
+    END IF;
+
+    SELECT COUNT(*) INTO V_COL_EXISTS
+        FROM ALL_TAB_COLS
+            WHERE COLUMN_NAME = 'MODE_ID'
+            AND TABLE_NAME = 'COHORT_SUMMARY_STATS'
+            AND OWNER = UPPER('${ohdsiSchema}');
+
+    IF (V_COL_EXISTS = 0) THEN
+        EXECUTE IMMEDIATE 'ALTER TABLE ${ohdsiSchema}.COHORT_SUMMARY_STATS ADD MODE_ID INT DEFAULT 0 NOT NULL';
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('The column COHORT_SUMMARY_STATS.MODE_ID already exists');
+    END IF;
 END;
-/

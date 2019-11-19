@@ -1,4 +1,4 @@
--- [UNTESTED] Add mode_id to cohort_inclusion_result table
+-- Add mode_id to cohort_inclusion_result table
 IF NOT EXISTS (
   SELECT
     *
@@ -10,7 +10,7 @@ BEGIN
   ALTER TABLE [${ohdsiSchema}].[cohort_inclusion_result] ADD mode_id int NOT NULL DEFAULT 0
 END;
 
--- [UNTESTED] Add mode_id to cohort_inclusion_stats table
+-- Add mode_id to cohort_inclusion_stats table
 IF NOT EXISTS (
   SELECT
     *
@@ -22,7 +22,7 @@ BEGIN
   ALTER TABLE [${ohdsiSchema}].[cohort_inclusion_stats] ADD mode_id int NOT NULL DEFAULT 0
 END;
 
--- [UNTESTED] Add mode_id to cohort_summary_stats table
+-- Add mode_id to cohort_summary_stats table
 IF NOT EXISTS (
   SELECT
     *

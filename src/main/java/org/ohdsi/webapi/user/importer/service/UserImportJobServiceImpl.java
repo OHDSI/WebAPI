@@ -127,9 +127,9 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
   }
 
   @Override
-  public Optional<UserImportJobHistoryItem> getLatestHistoryItem(LdapProviderType providerType) {
+  public Optional<UserImportJobHistoryItem> getLatestHistoryItem(Long id) {
 
-    return jobHistoryItemRepository.findFirstByUserImportProviderTypeOrderByEndTimeDesc(providerType);
+    return jobHistoryItemRepository.findFirstByUserImportIdOrderByEndTimeDesc(id);
   }
 
   Step userImportStep() {

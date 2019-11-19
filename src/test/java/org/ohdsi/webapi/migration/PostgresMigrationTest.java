@@ -13,7 +13,6 @@ import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
 
-@Category(MigrationTests.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PostgresMigrationTest extends AbstractContainerDatabaseTest {
     public static PostgreSQLContainer postgres = new PostgreSQLContainer<>();

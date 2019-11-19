@@ -13,7 +13,6 @@ import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
 
-@Category(MigrationTests.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class OracleMigrationTest extends AbstractContainerDatabaseTest {
     public static OracleContainer oracle = new OracleContainer("wnameless/oracle-xe-11g-r2");

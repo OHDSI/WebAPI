@@ -4,7 +4,6 @@ import org.flywaydb.core.Flyway;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
 import org.testcontainers.containers.MSSQLServerContainer;
 
@@ -13,7 +12,6 @@ import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
 
-@Category(MigrationTests.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class MSSQLServerMigrationsTest extends AbstractContainerDatabaseTest {
     public static MSSQLServerContainer mssqlserver = new MSSQLServerContainer();

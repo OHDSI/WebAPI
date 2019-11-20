@@ -3,7 +3,7 @@ package org.ohdsi.webapi.user.importer.service;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.user.importer.model.AtlasUserRoles;
-import org.ohdsi.webapi.user.importer.model.UserImport;
+import org.ohdsi.webapi.user.importer.model.UserImportJob;
 import org.ohdsi.webapi.user.importer.model.UserImportResult;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.ExitStatus;
@@ -28,15 +28,15 @@ public class UserImportTasklet extends BaseUserImportTasklet<UserImportResult> i
   }
 
   @Override
-  protected UserImportResult doUserImportTask(ChunkContext chunkContext, UserImport userImport) {
+  protected UserImportResult doUserImportTask(ChunkContext chunkContext, UserImportJob userImportJob) {
 
     if (Objects.isNull(users)) {
-      if (Objects.isNull(userImport.getUserRoles())) {
+      if (Objects.isNull(userImportJob.getUserRoles())) {
         throw new IllegalArgumentException("userRoles is required for user import task");
       }
-      users = Utils.deserialize(userImport.getUserRoles(), factory -> factory.constructCollectionType(List.class, AtlasUserRoles.class));
+      users = Utils.deserialize(userImportJob.getUserRoles(), factory -> factory.constructCollectionType(List.class, AtlasUserRoles.class));
     }
-    return result = userImportService.importUsers(users, userImport.getPreserveRoles());
+    return result = userImportService.importUsers(users, userImportJob.getPreserveRoles());
   }
 
   @Override

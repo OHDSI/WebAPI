@@ -4,18 +4,9 @@ DROP VIEW ${ohdsiSchema}.pathway_analysis_generation;
 DROP VIEW ${ohdsiSchema}.prediction_analysis_generation;
 DROP VIEW ${ohdsiSchema}.user_import_job_history;
 
-CREATE SEQUENCE ${ohdsiSchema}.user_import_sequence;
-
-CREATE TABLE ${ohdsiSchema}.user_import (
-  id INTEGER DEFAULT NEXTVAL('user_import_sequence'),
-  provider VARCHAR NOT NULL,
-  preserveRoles BOOLEAN NOT NULL ,
-  userRoles VARCHAR,
-  roleGroupMapping VARCHAR,
-  CONSTRAINT PK_user_import PRIMARY KEY (id)
-);
-
 ALTER TABLE ${ohdsiSchema}.batch_job_execution_params ALTER string_val TYPE VARCHAR;
+
+ALTER TABLE ${ohdsiSchema}.user_import_job ADD user_roles VARCHAR;
 
 CREATE OR REPLACE VIEW ${ohdsiSchema}.cc_generation as (
   SELECT

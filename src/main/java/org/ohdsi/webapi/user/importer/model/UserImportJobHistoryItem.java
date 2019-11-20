@@ -42,7 +42,7 @@ public class UserImportJobHistoryItem {
 
   @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   @JoinColumn(name="user_import_id")
-  private UserImport userImport;
+  private UserImportJob userImport;
 
   @Column(name = "job_name")
   private String jobName;
@@ -71,7 +71,7 @@ public class UserImportJobHistoryItem {
     return author;
   }
 
-  public UserImport getUserImport() {
+  public UserImportJob getUserImport() {
     return userImport;
   }
 

@@ -2,7 +2,7 @@ package org.ohdsi.webapi.user.importer.service;
 
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.common.generation.TransactionalTasklet;
-import org.ohdsi.webapi.user.importer.model.UserImport;
+import org.ohdsi.webapi.user.importer.model.UserImportJob;
 import org.slf4j.Logger;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -23,11 +23,11 @@ public abstract class BaseUserImportTasklet<T> extends TransactionalTasklet<T> {
   protected T doTask(ChunkContext chunkContext) {
 
     Map<String,Object> jobParameters = chunkContext.getStepContext().getJobParameters();
-    Integer userImportId = Integer.valueOf(jobParameters.get(Constants.Params.USER_IMPORT_ID).toString());
-    UserImport userImport = userImportService.getImportUser(userImportId);
+    Long userImportId = Long.valueOf(jobParameters.get(Constants.Params.USER_IMPORT_ID).toString());
+    UserImportJob userImportJob = userImportService.getImportUserJob(userImportId);
 
-    return doUserImportTask(chunkContext, userImport);
+    return doUserImportTask(chunkContext, userImportJob);
   }
 
-  protected abstract T doUserImportTask(ChunkContext chunkContext, UserImport userImport);
+  protected abstract T doUserImportTask(ChunkContext chunkContext, UserImportJob userImportJob);
 }

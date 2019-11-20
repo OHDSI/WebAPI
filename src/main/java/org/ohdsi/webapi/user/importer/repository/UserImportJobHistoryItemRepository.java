@@ -9,6 +9,6 @@ import java.util.stream.Stream;
 
 public interface UserImportJobHistoryItemRepository extends JpaRepository<UserImportJobHistoryItem, Long> {
 
-  Stream<UserImportJobHistoryItem> findByUserImportProvider(LdapProviderType providerType);
-  Optional<UserImportJobHistoryItem> findFirstByUserImportProviderOrderByEndTimeDesc(LdapProviderType providerType);
+    Stream<UserImportJobHistoryItem> findByUserImportId(Long userImportId);
+    Optional<UserImportJobHistoryItem> findFirstByUserImportIdOrderByEndTimeDesc(Long userImportId);
 }

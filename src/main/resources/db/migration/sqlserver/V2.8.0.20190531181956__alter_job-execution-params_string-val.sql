@@ -4,20 +4,10 @@ DROP VIEW ${ohdsiSchema}.pathway_analysis_generation;
 DROP VIEW ${ohdsiSchema}.prediction_analysis_generation;
 DROP VIEW ${ohdsiSchema}.user_import_job_history;
 
-CREATE SEQUENCE ${ohdsiSchema}.user_import_sequence;
-GO
-
-CREATE TABLE ${ohdsiSchema}.user_import (
-  id INTEGER DEFAULT NEXT VALUE FOR ${ohdsiSchema}.user_import_sequence,
-  provider VARCHAR NOT NULL,
-  preserveRoles BIT NOT NULL ,
-  userRoles VARCHAR,
-  roleGroupMapping VARCHAR,
-  CONSTRAINT PK_user_import PRIMARY KEY (id)
-);
-GO
-
 ALTER TABLE ${ohdsiSchema}.batch_job_execution_params ALTER COLUMN string_val VARCHAR(MAX);
+GO
+
+ALTER TABLE ${ohdsiSchema}.user_import_job ADD user_roles VARCHAR(MAX);
 GO
 
 CREATE VIEW ${ohdsiSchema}.cc_generation as (

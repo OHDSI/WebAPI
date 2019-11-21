@@ -12,8 +12,11 @@ import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression.ConceptSetItem;
 import org.ohdsi.hydra.Hydra;
+import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
+import org.ohdsi.webapi.analysis.AnalysisConceptSet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
+import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.AnalysisExecutionSupport;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.conceptset.ConceptSetCrossReferenceImpl;
@@ -23,24 +26,27 @@ import org.ohdsi.webapi.estimation.comparativecohortanalysis.specification.Targe
 import org.ohdsi.webapi.estimation.domain.EstimationGenerationEntity;
 import org.ohdsi.webapi.estimation.repository.EstimationAnalysisGenerationRepository;
 import org.ohdsi.webapi.estimation.repository.EstimationRepository;
-import org.ohdsi.webapi.estimation.specification.*;
+import org.ohdsi.webapi.estimation.specification.EstimationAnalysisImpl;
+import org.ohdsi.webapi.estimation.specification.NegativeControlImpl;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
 import org.ohdsi.webapi.service.ConceptSetService;
 import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.service.VocabularyService;
-import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
+import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
+import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.EntityUtils;
+import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
@@ -51,17 +57,18 @@ import javax.ws.rs.InternalServerErrorException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.GENERATE_ESTIMATION_ANALYSIS;
 import static org.ohdsi.webapi.Constants.Params.ESTIMATION_ANALYSIS_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
-import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
-import org.ohdsi.webapi.analysis.AnalysisConceptSet;
-import org.ohdsi.webapi.common.DesignImportService;
-import org.ohdsi.webapi.service.dto.ConceptSetDTO;
-import org.springframework.core.convert.ConversionService;
 
 @Service
 @Transactional
@@ -151,7 +158,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     }
 
     @Override
-    public Estimation createEstimation(Estimation est) throws Exception {
+    public Integer createEstimation(Estimation est) throws Exception {
 
         Date currentTime = Calendar.getInstance().getTime();
 
@@ -162,7 +169,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     }
 
     @Override
-    public Estimation updateEstimation(final int id, Estimation est) throws Exception {
+    public Integer updateEstimation(final int id, Estimation est) throws Exception {
 
         Estimation estFromDB = getById(id);
         Date currentTime = Calendar.getInstance().getTime();
@@ -181,7 +188,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     }
     
     @Override
-    public Estimation copy(final int id) throws Exception {
+    public Integer copy(final int id) throws Exception {
 
         Estimation est = estimationRepository.findOne(id);
         entityManager.detach(est); // Detach from the persistence context in order to save a copy
@@ -285,7 +292,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     }
 
     @Override
-    public Estimation importAnalysis(EstimationAnalysisImpl analysis) throws Exception {
+    public Integer importAnalysis(EstimationAnalysisImpl analysis) throws Exception {
         try {
             if (Objects.isNull(analysis.getEstimationAnalysisSettings())) {
                 log.error("Failed to import Estimation. Invalid source JSON. EstimationAnalysisSettings is empty");
@@ -373,8 +380,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
             est.setSpecification(Utils.serialize(analysis));
             est.setName(NameUtils.getNameWithSuffix(analysis.getName(), this::getNamesLike));
 
-            Estimation savedEstimation = this.createEstimation(est);
-            return estimationRepository.findOne(savedEstimation.getId(), COMMONS_ENTITY_GRAPH);
+            return this.createEstimation(est);
         } catch (Exception e) {
             log.debug("Error while importing estimation analysis: " + e.getMessage());
             throw e;
@@ -456,10 +462,9 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         return generationRepository.findOne(generationId, DEFAULT_ENTITY_GRAPH);
     }
     
-    private Estimation save(Estimation analysis) {
+    private Integer save(Estimation analysis) {
         analysis = estimationRepository.saveAndFlush(analysis);
         entityManager.refresh(analysis);
-        analysis = getById(analysis.getId());
-        return analysis;
+        return analysis.getId();
     }
 }

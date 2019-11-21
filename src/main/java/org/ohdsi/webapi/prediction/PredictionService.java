@@ -14,17 +14,17 @@ public interface PredictionService {
 
   void delete(int id);
 
-  PredictionAnalysis createAnalysis(PredictionAnalysis pred);
+  Integer createAnalysis(PredictionAnalysis pred);
 
-  PredictionAnalysis updateAnalysis(int id, PredictionAnalysis pred);
+  Integer updateAnalysis(int id, PredictionAnalysis pred);
 
-  PredictionAnalysis copy(int id);
+  Integer copy(int id);
 
   PredictionAnalysis getAnalysis(int id);
 
   PatientLevelPredictionAnalysisImpl exportAnalysis(int id);
   
-  PredictionAnalysis importAnalysis(PatientLevelPredictionAnalysisImpl analysis) throws Exception;
+  Integer importAnalysis(PatientLevelPredictionAnalysisImpl analysis) throws Exception;
 
   String getNameForCopy(String dtoName);
 

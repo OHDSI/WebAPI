@@ -7,28 +7,37 @@ import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.hydra.Hydra;
+import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
+import org.ohdsi.webapi.analysis.AnalysisConceptSet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
+import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.AnalysisExecutionSupport;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.conceptset.ConceptSetCrossReferenceImpl;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
+import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
 import org.ohdsi.webapi.prediction.domain.PredictionGenerationEntity;
 import org.ohdsi.webapi.prediction.repository.PredictionAnalysisGenerationRepository;
 import org.ohdsi.webapi.prediction.repository.PredictionAnalysisRepository;
 import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl;
-import org.ohdsi.webapi.service.*;
+import org.ohdsi.webapi.service.ConceptSetService;
+import org.ohdsi.webapi.service.JobService;
+import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.service.VocabularyService;
+import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.EntityUtils;
+import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
@@ -40,18 +49,18 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.GENERATE_PREDICTION_ANALYSIS;
-import static org.ohdsi.webapi.Constants.Params.*;
-
-import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
-import org.ohdsi.webapi.analysis.AnalysisConceptSet;
-import org.ohdsi.webapi.common.DesignImportService;
-import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
-import org.ohdsi.webapi.service.dto.ConceptSetDTO;
-import org.springframework.core.convert.ConversionService;
+import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
+import static org.ohdsi.webapi.Constants.Params.PREDICTION_ANALYSIS_ID;
 
 @Service
 @Transactional
@@ -104,7 +113,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     private DesignImportService designImportService;
     
     @Autowired
-    private ConversionService conversionService;    
+    private ConversionService conversionService;
     
     private final String EXEC_SCRIPT = ResourceHelper.GetResourceAsString("/resources/prediction/r/runAnalysis.R");
 
@@ -131,7 +140,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     }
     
     @Override
-    public PredictionAnalysis createAnalysis(PredictionAnalysis pred) {
+    public Integer createAnalysis(PredictionAnalysis pred) {
         Date currentTime = Calendar.getInstance().getTime();
         pred.setCreatedBy(getCurrentUser());
         pred.setCreatedDate(currentTime);
@@ -140,7 +149,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     }
 
     @Override
-    public PredictionAnalysis updateAnalysis(final int id, PredictionAnalysis pred) {
+    public Integer updateAnalysis(final int id, PredictionAnalysis pred) {
         PredictionAnalysis predFromDB = getById(id);
         Date currentTime = Calendar.getInstance().getTime();
 
@@ -158,7 +167,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     }
     
     @Override
-    public PredictionAnalysis copy(final int id) {
+    public Integer copy(final int id) {
         PredictionAnalysis analysis = this.predictionAnalysisRepository.findOne(id);
         entityManager.detach(analysis); // Detach from the persistence context in order to save a copy
         analysis.setId(null);
@@ -221,7 +230,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     }
     
     @Override
-    public PredictionAnalysis importAnalysis(PatientLevelPredictionAnalysisImpl analysis) throws Exception {
+    public Integer importAnalysis(PatientLevelPredictionAnalysisImpl analysis) throws Exception {
         try {
             if (Objects.isNull(analysis.getCohortDefinitions()) || Objects.isNull(analysis.getCovariateSettings())) {
                 log.error("Failed to import Prediction. Invalid source JSON.");
@@ -281,8 +290,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
             pa.setSpecification(Utils.serialize(analysis));
             pa.setName(NameUtils.getNameWithSuffix(analysis.getName(), this::getNamesLike));
             
-            PredictionAnalysis savedAnalysis = this.createAnalysis(pa);
-            return predictionAnalysisRepository.findOne(savedAnalysis.getId(), COMMONS_ENTITY_GRAPH);
+            return this.createAnalysis(pa);
         } catch (Exception e) {
             log.debug("Error while importing prediction analysis: " + e.getMessage());
             throw e;
@@ -366,10 +374,9 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         return generationRepository.findOne(generationId, DEFAULT_ENTITY_GRAPH);
     }
     
-    private PredictionAnalysis save(PredictionAnalysis analysis) {
+    private Integer save(PredictionAnalysis analysis) {
         analysis = predictionAnalysisRepository.saveAndFlush(analysis);
         entityManager.refresh(analysis);
-        analysis = getById(analysis.getId());
-        return analysis;
+        return analysis.getId();
     }
 }

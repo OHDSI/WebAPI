@@ -12,12 +12,12 @@ public interface EstimationService {
 
   Iterable<Estimation> getAnalysisList();
   void delete(final int id);
-  Estimation createEstimation(Estimation estimation) throws Exception;
-  Estimation updateEstimation(final int id, Estimation est) throws Exception;
-  Estimation copy(final int id) throws Exception;
+  Integer createEstimation(Estimation estimation) throws Exception;
+  Integer updateEstimation(final int id, Estimation est) throws Exception;
+  Integer copy(final int id) throws Exception;
   Estimation getAnalysis(int id);
   EstimationAnalysisImpl exportAnalysis(Estimation est);
-  Estimation importAnalysis(EstimationAnalysisImpl est) throws Exception;
+  Integer importAnalysis(EstimationAnalysisImpl est) throws Exception;
   String getNameForCopy(String dtoName);
   void hydrateAnalysis(EstimationAnalysisImpl analysis, String packageName, OutputStream out) throws JsonProcessingException;
   void runGeneration(Estimation estimation, String sourceKey) throws IOException;

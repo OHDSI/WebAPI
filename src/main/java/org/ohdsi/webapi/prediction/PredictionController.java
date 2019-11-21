@@ -1,10 +1,10 @@
 package org.ohdsi.webapi.prediction;
 
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
+import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.analyses.CommonAnalysisDTO;
-import org.ohdsi.webapi.common.generation.CommonGeneration;
 import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
@@ -20,7 +20,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
@@ -32,7 +42,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import org.ohdsi.analysis.Utils;
 
 @Controller
 @Path("/prediction/")
@@ -101,8 +110,8 @@ public class PredictionController {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public PredictionAnalysisDTO createAnalysis(PredictionAnalysis pred) {
-
-    return conversionService.convert(service.createAnalysis(pred), PredictionAnalysisDTO.class);
+    Integer id = service.createAnalysis(pred);
+    return conversionService.convert(service.getById(id), PredictionAnalysisDTO.class);
   }
 
   @PUT
@@ -110,16 +119,15 @@ public class PredictionController {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public PredictionAnalysisDTO updateAnalysis(@PathParam("id") int id, PredictionAnalysis pred) {
-
-    return conversionService.convert(service.updateAnalysis(id, pred), PredictionAnalysisDTO.class);
+    return conversionService.convert(service.getById(id), PredictionAnalysisDTO.class);
   }
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}/copy")
   public PredictionAnalysisDTO copy(@PathParam("id") int id) {
-
-    return conversionService.convert(service.copy(id), PredictionAnalysisDTO.class);
+    Integer newId = service.copy(id);
+    return conversionService.convert(service.getById(newId), PredictionAnalysisDTO.class);
   }
 
   @GET
@@ -150,8 +158,8 @@ public class PredictionController {
       LOGGER.error("Failed to import Prediction, empty or not valid source JSON");
       throw new InternalServerErrorException();
     }
-    PredictionAnalysis importedAnalysis = service.importAnalysis(analysis);
-    return conversionService.convert(importedAnalysis, PredictionAnalysisDTO.class);
+    Integer id = service.importAnalysis(analysis);
+    return conversionService.convert(service.getById(id), PredictionAnalysisDTO.class);
   }  
 
   @GET

@@ -110,8 +110,10 @@ public class PredictionController {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public PredictionAnalysisDTO createAnalysis(PredictionAnalysis pred) {
-    Integer id = service.createAnalysis(pred);
-    return conversionService.convert(service.getById(id), PredictionAnalysisDTO.class);
+    PredictionAnalysis analysis = service.createAnalysis(pred);
+    // Before conversion entity must be refreshed to apply entity graphs
+    analysis = service.getById(analysis.getId());
+    return conversionService.convert(analysis, PredictionAnalysisDTO.class);
   }
 
   @PUT
@@ -126,8 +128,10 @@ public class PredictionController {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}/copy")
   public PredictionAnalysisDTO copy(@PathParam("id") int id) {
-    Integer newId = service.copy(id);
-    return conversionService.convert(service.getById(newId), PredictionAnalysisDTO.class);
+    PredictionAnalysis analysis = service.copy(id);
+    // Before conversion entity must be refreshed to apply entity graphs
+    analysis = service.getById(analysis.getId());
+    return conversionService.convert(analysis, PredictionAnalysisDTO.class);
   }
 
   @GET
@@ -158,8 +162,10 @@ public class PredictionController {
       LOGGER.error("Failed to import Prediction, empty or not valid source JSON");
       throw new InternalServerErrorException();
     }
-    Integer id = service.importAnalysis(analysis);
-    return conversionService.convert(service.getById(id), PredictionAnalysisDTO.class);
+    PredictionAnalysis importedAnalysis = service.importAnalysis(analysis);
+    // Before conversion entity must be refreshed to apply entity graphs
+    importedAnalysis = service.getById(importedAnalysis.getId());
+    return conversionService.convert(importedAnalysis, PredictionAnalysisDTO.class);
   }  
 
   @GET

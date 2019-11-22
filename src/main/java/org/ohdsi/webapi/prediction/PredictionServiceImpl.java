@@ -140,16 +140,19 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     }
     
     @Override
-    public Integer createAnalysis(PredictionAnalysis pred) {
+    public PredictionAnalysis createAnalysis(PredictionAnalysis pred) {
         Date currentTime = Calendar.getInstance().getTime();
         pred.setCreatedBy(getCurrentUser());
         pred.setCreatedDate(currentTime);
+        // Fields with information about modifications have to be reseted
+        pred.setModifiedBy(null);
+        pred.setModifiedDate(null);
     
         return save(pred);
     }
 
     @Override
-    public Integer updateAnalysis(final int id, PredictionAnalysis pred) {
+    public PredictionAnalysis updateAnalysis(final int id, PredictionAnalysis pred) {
         PredictionAnalysis predFromDB = getById(id);
         Date currentTime = Calendar.getInstance().getTime();
 
@@ -167,7 +170,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     }
     
     @Override
-    public Integer copy(final int id) {
+    public PredictionAnalysis copy(final int id) {
         PredictionAnalysis analysis = this.predictionAnalysisRepository.findOne(id);
         entityManager.detach(analysis); // Detach from the persistence context in order to save a copy
         analysis.setId(null);
@@ -230,7 +233,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     }
     
     @Override
-    public Integer importAnalysis(PatientLevelPredictionAnalysisImpl analysis) throws Exception {
+    public PredictionAnalysis importAnalysis(PatientLevelPredictionAnalysisImpl analysis) throws Exception {
         try {
             if (Objects.isNull(analysis.getCohortDefinitions()) || Objects.isNull(analysis.getCovariateSettings())) {
                 log.error("Failed to import Prediction. Invalid source JSON.");
@@ -290,7 +293,8 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
             pa.setSpecification(Utils.serialize(analysis));
             pa.setName(NameUtils.getNameWithSuffix(analysis.getName(), this::getNamesLike));
             
-            return this.createAnalysis(pa);
+            PredictionAnalysis savedAnalysis = this.createAnalysis(pa);
+            return predictionAnalysisRepository.findOne(savedAnalysis.getId(), COMMONS_ENTITY_GRAPH);
         } catch (Exception e) {
             log.debug("Error while importing prediction analysis: " + e.getMessage());
             throw e;
@@ -374,9 +378,10 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         return generationRepository.findOne(generationId, DEFAULT_ENTITY_GRAPH);
     }
     
-    private Integer save(PredictionAnalysis analysis) {
+    private PredictionAnalysis save(PredictionAnalysis analysis) {
         analysis = predictionAnalysisRepository.saveAndFlush(analysis);
         entityManager.refresh(analysis);
-        return analysis.getId();
+        analysis = getById(analysis.getId());
+        return analysis;
     }
 }

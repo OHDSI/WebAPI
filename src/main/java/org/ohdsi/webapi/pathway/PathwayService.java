@@ -13,9 +13,9 @@ import java.util.Map;
 
 public interface PathwayService {
 
-    Integer create(PathwayAnalysisEntity pathwayAnalysisEntity);
+    PathwayAnalysisEntity create(PathwayAnalysisEntity pathwayAnalysisEntity);
 
-    Integer importAnalysis(PathwayAnalysisEntity toImport);
+    PathwayAnalysisEntity importAnalysis(PathwayAnalysisEntity toImport);
 
     String getNameForCopy(String dtoName);
     
@@ -27,7 +27,7 @@ public interface PathwayService {
 
     PathwayAnalysisEntity getById(Integer id);
 
-    Integer update(PathwayAnalysisEntity pathwayAnalysisEntity);
+    PathwayAnalysisEntity update(PathwayAnalysisEntity pathwayAnalysisEntity);
 
     void delete(Integer id);
 

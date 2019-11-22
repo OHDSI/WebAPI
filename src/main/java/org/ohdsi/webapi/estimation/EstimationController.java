@@ -101,9 +101,10 @@ public class EstimationController {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public EstimationDTO createEstimation(Estimation est) throws Exception {
-
-    Integer id = service.createEstimation(est);
-    return conversionService.convert(service.getById(id), EstimationDTO.class);
+    Estimation estimation = service.createEstimation(est);
+    // Before conversion entity must be refreshed to apply entity graphs
+    estimation = service.getById(estimation.getId());
+    return conversionService.convert(estimation, EstimationDTO.class);
   }
 
   @PUT
@@ -122,8 +123,10 @@ public class EstimationController {
   @Transactional
   public EstimationDTO copy(@PathParam("id") final int id) throws Exception {
 
-    Integer newId = service.copy(id);
-    return conversionService.convert(service.getById(newId), EstimationDTO.class);
+    Estimation estimation = service.copy(id);
+    // Before conversion entity must be refreshed to apply entity graphs
+    estimation = service.getById(estimation.getId());
+    return conversionService.convert(estimation, EstimationDTO.class);
   }
 
   @GET
@@ -160,8 +163,10 @@ public class EstimationController {
           LOGGER.error("Failed to import Estimation, empty or not valid source JSON");
           throw new InternalServerErrorException();
       }
-      Integer id = service.importAnalysis(analysis);
-      return conversionService.convert(service.getById(id), EstimationDTO.class);
+      Estimation estimation = service.importAnalysis(analysis);
+      // Before conversion entity must be refreshed to apply entity graphs
+      estimation = service.getById(estimation.getId());
+      return conversionService.convert(estimation, EstimationDTO.class);
   }  
 
   /**

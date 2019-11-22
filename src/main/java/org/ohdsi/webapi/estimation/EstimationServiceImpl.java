@@ -158,7 +158,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     }
 
     @Override
-    public Integer createEstimation(Estimation est) throws Exception {
+    public Estimation createEstimation(Estimation est) throws Exception {
 
         Date currentTime = Calendar.getInstance().getTime();
 
@@ -169,7 +169,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     }
 
     @Override
-    public Integer updateEstimation(final int id, Estimation est) throws Exception {
+    public Estimation updateEstimation(final int id, Estimation est) throws Exception {
 
         Estimation estFromDB = getById(id);
         Date currentTime = Calendar.getInstance().getTime();
@@ -188,7 +188,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     }
     
     @Override
-    public Integer copy(final int id) throws Exception {
+    public Estimation copy(final int id) throws Exception {
 
         Estimation est = estimationRepository.findOne(id);
         entityManager.detach(est); // Detach from the persistence context in order to save a copy
@@ -292,7 +292,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     }
 
     @Override
-    public Integer importAnalysis(EstimationAnalysisImpl analysis) throws Exception {
+    public Estimation importAnalysis(EstimationAnalysisImpl analysis) throws Exception {
         try {
             if (Objects.isNull(analysis.getEstimationAnalysisSettings())) {
                 log.error("Failed to import Estimation. Invalid source JSON. EstimationAnalysisSettings is empty");
@@ -380,7 +380,8 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
             est.setSpecification(Utils.serialize(analysis));
             est.setName(NameUtils.getNameWithSuffix(analysis.getName(), this::getNamesLike));
 
-            return this.createEstimation(est);
+            Estimation savedEstimation = this.createEstimation(est);
+            return estimationRepository.findOne(savedEstimation.getId(), COMMONS_ENTITY_GRAPH);
         } catch (Exception e) {
             log.debug("Error while importing estimation analysis: " + e.getMessage());
             throw e;
@@ -462,9 +463,10 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         return generationRepository.findOne(generationId, DEFAULT_ENTITY_GRAPH);
     }
     
-    private Integer save(Estimation analysis) {
+    private Estimation save(Estimation analysis) {
         analysis = estimationRepository.saveAndFlush(analysis);
         entityManager.refresh(analysis);
-        return analysis.getId();
+        analysis = getById(analysis.getId());
+        return analysis;
     }
 }

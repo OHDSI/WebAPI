@@ -141,7 +141,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     }
 
     @Override
-    public Integer create(PathwayAnalysisEntity toSave) {
+    public PathwayAnalysisEntity create(PathwayAnalysisEntity toSave) {
 
         PathwayAnalysisEntity newAnalysis = new PathwayAnalysisEntity();
 
@@ -165,7 +165,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     }
 
     @Override
-    public Integer importAnalysis(PathwayAnalysisEntity toImport) {
+    public PathwayAnalysisEntity importAnalysis(PathwayAnalysisEntity toImport) {
 
         PathwayAnalysisEntity newAnalysis = new PathwayAnalysisEntity();
 
@@ -229,7 +229,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     }
 
     @Override
-    public Integer update(PathwayAnalysisEntity forUpdate) {
+    public PathwayAnalysisEntity update(PathwayAnalysisEntity forUpdate) {
 
         PathwayAnalysisEntity existing = getById(forUpdate.getId());
 
@@ -535,13 +535,13 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         return designConverter.convertToDatabaseColumn(pathwayAnalysis).hashCode();
     }
 
-    private Integer save(PathwayAnalysisEntity pathwayAnalysis) {
+    private PathwayAnalysisEntity save(PathwayAnalysisEntity pathwayAnalysis) {
 
         pathwayAnalysis = pathwayAnalysisRepository.saveAndFlush(pathwayAnalysis);
         entityManager.refresh(pathwayAnalysis);
         pathwayAnalysis = getById(pathwayAnalysis.getId());
         pathwayAnalysis.setHashCode(getAnalysisHashCode(pathwayAnalysis));
-        return pathwayAnalysis.getId();
+        return pathwayAnalysis;
     }
 
     @Override

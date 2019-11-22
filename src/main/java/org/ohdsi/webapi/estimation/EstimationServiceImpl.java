@@ -164,6 +164,9 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
 
         est.setCreatedBy(getCurrentUser());
         est.setCreatedDate(currentTime);
+        // Fields with information about modifications have to be reseted
+        est.setModifiedBy(null);
+        est.setModifiedDate(null);
 
         return save(est);
     }

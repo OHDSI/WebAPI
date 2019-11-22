@@ -161,6 +161,9 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         newAnalysis.setCreatedBy(getCurrentUser());
         newAnalysis.setCreatedDate(new Date());
+        // Fields with information about modifications have to be reseted
+        newAnalysis.setModifiedBy(null);
+        newAnalysis.setModifiedDate(null);
         return save(newAnalysis);
     }
 

@@ -192,6 +192,10 @@
   </properties>
   <build>
     <finalName>WebAPI</finalName>
+    <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+    <testSourceDirectory>${basedir}/src/test/java</testSourceDirectory>
+    <outputDirectory>${basedir}/target/classes</outputDirectory>
+    <testOutputDirectory>${basedir}/target/test-classes</testOutputDirectory>    
     <resources>
       <resource>
         <directory>src/main/resources</directory>
@@ -212,14 +216,16 @@
           <exclude>log4j.xml</exclude>
         </excludes>
       </resource>
-      <resource>
+    </resources>
+    <testResources>
+      <testResource>
         <directory>src/test/resources</directory>
         <filtering>true</filtering>
         <includes>
           <include>**/*.properties</include>
         </includes>
-      </resource>
-      <resource>
+      </testResource>
+      <testResource>
         <directory>src/test/resources</directory>
         <filtering>false</filtering>
         <includes>
@@ -228,8 +234,8 @@
         <excludes>
           <exclude>**/*.properties</exclude>
         </excludes>
-      </resource>
-    </resources>
+      </testResource>
+    </testResources>
     <plugins>
       <plugin>
         <groupId>org.springframework.boot</groupId>

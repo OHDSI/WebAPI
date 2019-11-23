@@ -1,19 +1,16 @@
 package org.ohdsi.webapi.generationcache;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
-import com.google.common.base.MoreObjects;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
 
 @Service
 public class GenerationCacheServiceImpl implements GenerationCacheService {
@@ -58,24 +55,6 @@ public class GenerationCacheServiceImpl implements GenerationCacheService {
             }
         }
         return null;
-    }
-
-    @Override
-    public synchronized Integer getNextResultIdentifier(CacheableGenerationType type, Source source) {
-
-        CacheableTypeSource resIdKey = new CacheableTypeSource(type, source.getSourceId());
-
-        Integer maxIdInCacheTable = MoreObjects.firstNonNull(generationCacheRepository.findMaxResultIdentifier(type, source.getSourceId()), 0);
-        Integer maxIdInResultSchema = MoreObjects.firstNonNull(getProvider(type).getMaxResultIdentifier(source), 0);
-        Integer maxRequestedId = maxRequestedResultIds.getOrDefault(resIdKey, 0);
-
-        Integer nextId = Stream.of(maxIdInCacheTable, maxIdInResultSchema, maxRequestedId)
-            .max(Comparator.naturalOrder())
-            .orElse(0) + 1;
-
-        maxRequestedResultIds.put(resIdKey, nextId);
-
-        return nextId;
     }
 
     @Override

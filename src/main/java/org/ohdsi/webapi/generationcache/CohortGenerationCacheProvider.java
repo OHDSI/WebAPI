@@ -1,5 +1,7 @@
 package org.ohdsi.webapi.generationcache;
 
+import org.ohdsi.analysis.Utils;
+import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
@@ -14,7 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
-import static org.ohdsi.webapi.Constants.Params.GENERATION_ID;
+import static org.ohdsi.webapi.Constants.Params.DESIGN_HASH;
 import static org.ohdsi.webapi.Constants.Params.RESULTS_DATABASE_SCHEMA;
 
 @Component
@@ -23,7 +25,6 @@ public class CohortGenerationCacheProvider extends AbstractDaoService implements
     private static final String CACHE_VALIDATION_TIME = "Checksum of Generation cache for resultIdentifier = {} has been calculated in {} milliseconds";
 
     private static final String COHORT_CHECKSUM_SQL_PATH = "/resources/generationcache/cohort/resultsChecksum.sql";
-    private static final String MAX_ID_SQL_PATH = "/resources/generationcache/cohort/maxResultIdentifier.sql";
     private static final String COHORT_RESULTS_SQL = ResourceHelper.GetResourceAsString("/resources/generationcache/cohort/results.sql");
     private static final String CLEANUP_SQL = ResourceHelper.GetResourceAsString("/resources/generationcache/cohort/cleanup.sql");
 
@@ -36,22 +37,17 @@ public class CohortGenerationCacheProvider extends AbstractDaoService implements
     @Override
     public String getDesignHash(String design) {
 
+        // remove elements from object that do not determine results output (names, descriptions, etc)
+        CohortExpression cleanExpression = CohortExpression.fromJson(design);
+        cleanExpression.title=null;
+        cleanExpression.inclusionRules.forEach((rule) -> {
+            rule.name = null;
+            rule.description = null;
+        });
+        
         CohortDefinitionDetails cohortDetails = new CohortDefinitionDetails();
-        cohortDetails.setExpression(design);
+        cohortDetails.setExpression(Utils.serialize(cleanExpression));
         return cohortDetails.calculateHashCode().toString();
-    }
-
-    // NOTE: should not be used directly! Only via GenerationCacheService
-    @Override
-    public Integer getMaxResultIdentifier(Source source) {
-
-        PreparedStatementRenderer psr = new PreparedStatementRenderer(
-                source,
-                MAX_ID_SQL_PATH,
-                "@" + RESULTS_DATABASE_SCHEMA,
-                SourceUtils.getResultsQualifier(source)
-        );
-        return getSourceJdbcTemplate(source).queryForObject(psr.getSql(), psr.getOrderedParams(), Integer.class);
     }
 
     @Override
@@ -63,7 +59,7 @@ public class CohortGenerationCacheProvider extends AbstractDaoService implements
                 COHORT_CHECKSUM_SQL_PATH,
                 "@" + RESULTS_DATABASE_SCHEMA,
                 SourceUtils.getResultsQualifier(source),
-                GENERATION_ID,
+                DESIGN_HASH,
                 resultIdentifier,
                 SessionUtils.sessionId()
         );
@@ -77,7 +73,7 @@ public class CohortGenerationCacheProvider extends AbstractDaoService implements
 
         return SqlRender.renderSql(
                 COHORT_RESULTS_SQL,
-                new String[]{GENERATION_ID},
+                new String[]{DESIGN_HASH},
                 new String[]{resultIdentifier.toString()}
         );
     }
@@ -87,7 +83,7 @@ public class CohortGenerationCacheProvider extends AbstractDaoService implements
 
         String sql = SqlRender.renderSql(
                 CLEANUP_SQL,
-                new String[]{RESULTS_DATABASE_SCHEMA, GENERATION_ID},
+                new String[]{RESULTS_DATABASE_SCHEMA, DESIGN_HASH},
                 new String[]{SourceUtils.getResultsQualifier(source), resultIdentifier.toString()}
         );
         sql = SqlTranslate.translateSql(sql, source.getSourceDialect());

@@ -6,17 +6,17 @@
   <groupId>org.ohdsi</groupId>
   <artifactId>WebAPI</artifactId>
   <packaging>war</packaging>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>2.8.0-SNAPSHOT</version>
   <name>WebAPI</name>
   <properties>
-    <webapi.version>2.8.0</webapi.version>
+    <build.number>${BUILD_NUMBER}</build.number>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jersey.version>2.14</jersey.version>
     <!-- Spring Boot manages spring.version as well -->
     <spring.boot.version>1.5.20.RELEASE</spring.boot.version>
-    <spring.batch.version>3.0.8.RELEASE</spring.batch.version>
     <flyway.version>4.2.0</flyway.version>
     <waffle.version>1.7.3</waffle.version>
+    <circe.version>1.9.0-SNAPSHOT</circe.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
 
     <!-- Primary DataSource -->
@@ -75,6 +75,8 @@
     <security.oid.apiSecret></security.oid.apiSecret>
     <security.oid.url></security.oid.url>
     <security.oid.redirectUrl>http://localhost/index.html#/welcome/</security.oid.redirectUrl>
+    <security.kerberos.spn></security.kerberos.spn>
+    <security.kerberos.keytabPath></security.kerberos.keytabPath>
     <security.ldap.dn>cn={0},dc=example,dc=org</security.ldap.dn>
     <security.ldap.url>ldap://localhost:389</security.ldap.url>
     <security.ldap.baseDn></security.ldap.baseDn>
@@ -141,9 +143,10 @@
     <server.ssl.key-store-password></server.ssl.key-store-password>
     <server.ssl.key-password></server.ssl.key-password>
 
-    <arachne.version>1.14.0-SNAPSHOT</arachne.version>
+    <arachne.version>1.15.0-SNAPSHOT</arachne.version>
     <jersey-media-multipart.version>2.25.1</jersey-media-multipart.version>
     <execution.invalidation.period>600000</execution.invalidation.period>
+    <execution.invalidation.maxage.hours>12</execution.invalidation.maxage.hours>
     <execution.status.period>10000</execution.status.period>
     <executionengine.url>https://localhost:8888/api/v1/analyze</executionengine.url>
     <executionengine.token>Basic YWRtaW5Ab2R5c3NldXNpbmMuY29tOnBhc3N3b3Jk</executionengine.token>
@@ -185,6 +188,9 @@
 
     <!-- Cache Config -->
     <spring.cache.jcache.config>classpath:config/ehcache.xml</spring.cache.jcache.config>
+    <cdm.result.cache.warming.enable>true</cdm.result.cache.warming.enable>
+    <cache.generation.invalidAfterDays>7</cache.generation.invalidAfterDays>
+    <cache.generation.cleanupInterval>60000</cache.generation.cleanupInterval>
   </properties>
   <build>
     <finalName>WebAPI</finalName>
@@ -235,19 +241,14 @@
         <configuration>
           <!-- Since we filter properties files via Maven, do not add resources. -->
           <addResources>false</addResources>
-          <!-- executable-jar
-          <classifier>exec</classifier>
-          -->
         </configuration>
-        <!-- executable-jar
         <executions>
-            <execution>
-                <goals>
-                    <goal>repackage</goal>
-                </goals>
-            </execution>
+          <execution>
+            <goals>
+              <goal>build-info</goal>
+            </goals>
+          </execution>
         </executions>
-        -->
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -256,21 +257,25 @@
         <configuration>
           <skipTests>true</skipTests>
         </configuration>
-</plugin>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.5.1</version>
+        <version>3.1</version>
         <inherited>true</inherited>
         <configuration>
           <source>1.8</source>
           <target>1.8</target>
+          <compilerArgs>
+            <!-- Prevents recompilation due to missing package-info.class, see MCOMPILER-205 -->
+            <arg>-Xpkginfo:always</arg>
+          </compilerArgs>     
         </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
-        <version>2.2</version>
+        <version>2.6</version>
         <configuration>
           <failOnMissingWebXml>false</failOnMissingWebXml>
           <attachClasses>true</attachClasses>
@@ -449,9 +454,8 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.springframework.batch</groupId>
-      <artifactId>spring-batch-core</artifactId>
-      <version>${spring.batch.version}</version>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-batch</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -496,7 +500,7 @@
     <dependency>
       <groupId>org.ohdsi.sql</groupId>
       <artifactId>SqlRender</artifactId>
-      <version>1.6.1-SNAPSHOT</version>
+      <version>1.6.3-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>commons-dbutils</groupId>
@@ -506,7 +510,7 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.4</version>
+      <version>2.6</version>
     </dependency>
     <dependency>
       <groupId>com.sun.xml.security</groupId>
@@ -522,7 +526,7 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.3.2</version>
+      <version>3.9</version>
     </dependency>
     <dependency>
       <groupId>org.flywaydb</groupId>
@@ -635,12 +639,18 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>
-      <version>1.8.0-SNAPSHOT</version>
+      <version>${circe.version}</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>hydra</artifactId>
-      <version>0.0.4-SNAPSHOT</version>
+      <version>0.0.5</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.ohdsi</groupId>
+          <artifactId>circe</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.json</groupId>
@@ -650,7 +660,13 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>featureExtraction</artifactId>
-      <version>2.2.0</version>
+      <version>2.2.4</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.ohdsi.sql</groupId>
+          <artifactId>SqlRender</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.amazon.redshift</groupId>
@@ -682,6 +698,11 @@
     </dependency>
     <dependency>
       <groupId>com.odysseusinc.arachne</groupId>
+      <artifactId>arachne-common-utils</artifactId>
+      <version>${arachne.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.odysseusinc.arachne</groupId>
       <artifactId>execution-engine-commons</artifactId>
       <version>${arachne.version}</version>
     </dependency>
@@ -709,25 +730,35 @@
       <groupId>com.odysseusinc</groupId>
       <artifactId>data-source-manager</artifactId>
       <version>${arachne.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.bouncycastle</groupId>
+          <artifactId>bcprov-jdk15</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>standardized-analysis-specs</artifactId>
-      <version>1.2.0-SNAPSHOT</version>
+      <version>1.2.0</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>standardized-analysis-utils</artifactId>
-      <version>1.2.0-SNAPSHOT</version>
+      <version>1.2.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>SkeletonCohortCharacterization</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.0.0</version>
       <exclusions>
         <exclusion>
           <groupId>org.ohdsi</groupId>
           <artifactId>standardized-analysis-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ohdsi.sql</groupId>
+          <artifactId>SqlRender</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -746,6 +777,12 @@
       <artifactId>jackson-annotations</artifactId>
       <version>2.8.7</version>
       <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>com.opentable.components</groupId>
+      <artifactId>otj-pg-embedded</artifactId>
+      <version>0.13.1</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
@@ -894,50 +931,15 @@
       <id>webapi-impala</id>
       <properties>
         <impala.enabled>true</impala.enabled>
-				<!-- Impala JDBC driver path -->
-				<impala.classpath>...path/to/impala/jdbc/drivers...</impala.classpath>
+        <impala.driver.version>2.6.15</impala.driver.version>
+        <!-- Impala JDBC driver path -->
+		<impala.classpath>...path/to/impala/jdbc/drivers...</impala.classpath>
       </properties>
       <dependencies>
         <dependency>
-          <groupId>hive</groupId>
-          <artifactId>hive_metastore</artifactId>
-          <version>1.0.0</version>
-        </dependency>
-        <dependency>
-          <groupId>hive</groupId>
-          <artifactId>hive_service</artifactId>
-          <version>1.0.0</version>
-        </dependency>
-        <dependency>
           <groupId>com.cloudera</groupId>
-          <artifactId>ImpalaJDBC41</artifactId>
-          <version>2.5.42</version>
-        </dependency>
-        <dependency>
-          <groupId>libfb</groupId>
-          <artifactId>libfb303</artifactId>
-          <version>0.9.0</version>
-        </dependency>
-        <dependency>
-          <groupId>libthrift</groupId>
-          <artifactId>libthrift</artifactId>
-          <version>0.9.0</version>
-        </dependency>
-        <dependency>
-          <groupId>ql</groupId>
-          <artifactId>ql</artifactId>
-          <version>1.0.0</version>
-        </dependency>
-        <dependency>
-          <groupId>TCLI</groupId>
-          <artifactId>TCLI</artifactId>
-          <version>1.0.0</version>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.zookeeper</groupId>
-          <artifactId>zookeeper</artifactId>
-          <version>3.4.6</version>
-          <type>pom</type>
+          <artifactId>ImpalaJDBC42</artifactId>
+          <version>${impala.driver.version}</version>
         </dependency>
       </dependencies>
       <build>
@@ -955,94 +957,10 @@
                 </goals>
                 <configuration>
                   <groupId>com.cloudera</groupId>
-                  <artifactId>ImpalaJDBC41</artifactId>
-                  <version>2.5.41</version>
+                  <artifactId>ImpalaJDBC42</artifactId>
+                  <version>${impala.driver.version}</version>
                   <packaging>jar</packaging>
-                  <file>${impala.classpath}/ImpalaJDBC41.jar</file>
-                </configuration>
-              </execution>
-              <execution>
-                <id>hive_metastore</id>
-                <phase>initialize</phase>
-                <goals>
-                  <goal>install-file</goal>
-                </goals>
-                <configuration>
-                  <groupId>hive</groupId>
-                  <artifactId>hive_metastore</artifactId>
-                  <version>1.0.0</version>
-                  <packaging>jar</packaging>
-                  <file>${impala.classpath}/hive_metastore.jar</file>
-                </configuration>
-              </execution>
-              <execution>
-                <id>hive_service</id>
-                <phase>initialize</phase>
-                <goals>
-                  <goal>install-file</goal>
-                </goals>
-                <configuration>
-                  <groupId>hive</groupId>
-                  <artifactId>hive_service</artifactId>
-                  <version>1.0.0</version>
-                  <packaging>jar</packaging>
-                  <file>${impala.classpath}/hive_service.jar</file>
-                </configuration>
-              </execution>
-              <execution>
-                <id>libfb</id>
-                <phase>initialize</phase>
-                <goals>
-                  <goal>install-file</goal>
-                </goals>
-                <configuration>
-                  <groupId>libfb</groupId>
-                  <artifactId>libfb303</artifactId>
-                  <version>0.9.0</version>
-                  <packaging>jar</packaging>
-                  <file>${impala.classpath}/libfb303-0.9.0.jar</file>
-                </configuration>
-              </execution>
-              <execution>
-                <id>libthrift</id>
-                <phase>initialize</phase>
-                <goals>
-                  <goal>install-file</goal>
-                </goals>
-                <configuration>
-                  <groupId>libthrift</groupId>
-                  <artifactId>libthrift</artifactId>
-                  <version>0.9.0</version>
-                  <packaging>jar</packaging>
-                  <file>${impala.classpath}/libthrift-0.9.0.jar</file>
-                </configuration>
-              </execution>
-              <execution>
-                <id>ql</id>
-                <phase>initialize</phase>
-                <goals>
-                  <goal>install-file</goal>
-                </goals>
-                <configuration>
-                  <groupId>ql</groupId>
-                  <artifactId>ql</artifactId>
-                  <version>1.0.0</version>
-                  <packaging>jar</packaging>
-                  <file>${impala.classpath}/ql.jar</file>
-                </configuration>
-              </execution>
-              <execution>
-                <id>TCLI</id>
-                <phase>initialize</phase>
-                <goals>
-                  <goal>install-file</goal>
-                </goals>
-                <configuration>
-                  <groupId>TCLI</groupId>
-                  <artifactId>TCLI</artifactId>
-                  <version>1.0.0</version>
-                  <packaging>jar</packaging>
-                  <file>${impala.classpath}/TCLIServiceClient.jar</file>
+                  <file>${impala.classpath}/ImpalaJDBC42.jar</file>
                 </configuration>
               </execution>
             </executions>

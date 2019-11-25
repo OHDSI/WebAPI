@@ -29,6 +29,8 @@ import org.ohdsi.webapi.common.generation.CancelableTasklet;
 import org.ohdsi.webapi.util.PreparedStatementRendererCreator;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 
+import static org.ohdsi.webapi.Constants.Params.GENERATION_ID;
+
 
 public class PathwayStatisticsTasklet extends CancelableTasklet {
     
@@ -97,7 +99,7 @@ public class PathwayStatisticsTasklet extends CancelableTasklet {
 			PreparedStatementRenderer pathwayStatsPsr = new PreparedStatementRenderer(
 							source, "/resources/pathway/getDistinctCodes.sql", "target_database_schema", 
 							source.getTableQualifier(SourceDaimon.DaimonType.Results),
-							new String[] { "generation_id" },
+							new String[] { GENERATION_ID },
 							new Object[] { generationId }
 			);
 
@@ -121,7 +123,7 @@ public class PathwayStatisticsTasklet extends CancelableTasklet {
     }
     
     private int[] savePathwayCodes(List<PathwayCode> pathwayCodes) {
-        String[] codeNames = new String[]{"generation_id", "code", "name", "is_combo"};
+        String[] codeNames = new String[]{GENERATION_ID, "code", "name", "is_combo"};
 				List<PreparedStatementCreator> creators = new ArrayList<>();
         pathwayCodes.forEach(code -> {
 					Object[] values = new Object[]{generationId, code.getCode(), code.getName(), code.isCombo() ? 1 : 0};
@@ -140,7 +142,7 @@ public class PathwayStatisticsTasklet extends CancelableTasklet {
                 "/resources/pathway/savePaths.sql",
                 new String[]{"target_database_schema"},
                 new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results)},
-                new String[] { "generation_id"},
+                new String[] { GENERATION_ID },
                 new Object[] { generationId}
         );
 

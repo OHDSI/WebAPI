@@ -10,6 +10,7 @@ import org.springframework.util.StringUtils;
 import javax.sql.DataSource;
 import java.sql.*;
 import java.util.List;
+import java.util.Objects;
 
 public class CancelableJdbcTemplate extends JdbcTemplate {
 
@@ -48,7 +49,7 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
       public int[] doInStatement(Statement stmt) throws SQLException, DataAccessException {
         int[] rowsAffected = new int[sql.length];
         cancelOp.setStatement(stmt);
-        if (JdbcUtils.supportsBatchUpdates(stmt.getConnection())) {
+        if (supportsBatchUpdates(stmt.getConnection())) {
           for (String sqlStmt : sql) {
             this.currSql = appendSql(this.currSql, sqlStmt);
             stmt.addBatch(sqlStmt);
@@ -66,7 +67,12 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
             if (StringUtils.hasLength(batchExceptionSql)) {
               this.currSql = batchExceptionSql;
             }
-            throw ex;
+            SQLException reason = ex.getNextException();
+            if (Objects.nonNull(reason)) {
+              throw reason;
+            } else {
+              throw new SQLException("Failed to execute batch update", ex);
+            }
           }
         }
         else {
@@ -134,5 +140,12 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
     }
 
     return execute(new BatchUpdateConnectionCallback());
+  }
+
+  private boolean supportsBatchUpdates(Connection connection) throws SQLException {
+
+    // NOTE:
+    // com.cloudera.impala.hivecommon.dataengine.HiveJDBCDataEngine.prepareBatch throws NOT_IMPLEMENTED exception
+    return JdbcUtils.supportsBatchUpdates(connection) && !connection.getMetaData().getURL().startsWith("jdbc:impala");
   }
 }

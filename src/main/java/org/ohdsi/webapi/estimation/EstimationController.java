@@ -91,9 +91,10 @@ public class EstimationController {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public EstimationDTO createEstimation(Estimation est) throws Exception {
-
-    Estimation estWithId = service.createEstimation(est);
-    return conversionService.convert(estWithId, EstimationDTO.class);
+    Estimation estimation = service.createEstimation(est);
+    // Before conversion entity must be refreshed to apply entity graphs
+    estimation = service.getById(estimation.getId());
+    return conversionService.convert(estimation, EstimationDTO.class);
   }
 
   @PUT
@@ -102,8 +103,8 @@ public class EstimationController {
   @Consumes(MediaType.APPLICATION_JSON)
   public EstimationDTO updateEstimation(@PathParam("id") final int id, Estimation est) throws Exception {
 
-    Estimation updatedEst = service.updateEstimation(id, est);
-    return conversionService.convert(updatedEst, EstimationDTO.class);
+    service.updateEstimation(id, est);
+    return conversionService.convert(service.getById(id), EstimationDTO.class);
   }
 
   @GET
@@ -112,8 +113,10 @@ public class EstimationController {
   @Transactional
   public EstimationDTO copy(@PathParam("id") final int id) throws Exception {
 
-    Estimation est = service.copy(id);
-    return conversionService.convert(est, EstimationDTO.class);
+    Estimation estimation = service.copy(id);
+    // Before conversion entity must be refreshed to apply entity graphs
+    estimation = service.getById(estimation.getId());
+    return conversionService.convert(estimation, EstimationDTO.class);
   }
 
   @GET
@@ -150,8 +153,10 @@ public class EstimationController {
           LOGGER.error("Failed to import Estimation, empty or not valid source JSON");
           throw new InternalServerErrorException();
       }
-      Estimation importedEstimation = service.importAnalysis(analysis);
-      return conversionService.convert(importedEstimation, EstimationDTO.class);
+      Estimation estimation = service.importAnalysis(analysis);
+      // Before conversion entity must be refreshed to apply entity graphs
+      estimation = service.getById(estimation.getId());
+      return conversionService.convert(estimation, EstimationDTO.class);
   }  
 
   /**

@@ -72,6 +72,8 @@ public class PathwayController {
 
         PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
         PathwayAnalysisEntity saved = pathwayService.create(pathwayAnalysis);
+        // Before conversion entity must be refreshed to apply entity graphs
+        saved = pathwayService.getById(saved.getId());
         return conversionService.convert(saved, PathwayAnalysisDTO.class);
     }
 
@@ -93,8 +95,10 @@ public class PathwayController {
 
         dto.setName(pathwayService.getNameWithSuffix(dto.getName()));
         PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
-        PathwayAnalysisEntity imported = pathwayService.importAnalysis(pathwayAnalysis);
-        return conversionService.convert(imported, PathwayAnalysisDTO.class);
+        PathwayAnalysisEntity analysis = pathwayService.importAnalysis(pathwayAnalysis);
+        // Before conversion entity must be refreshed to apply entity graphs
+        analysis = pathwayService.getById(analysis.getId());
+        return conversionService.convert(analysis, PathwayAnalysisDTO.class);
     }
 
     @GET
@@ -123,8 +127,8 @@ public class PathwayController {
 
         PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
         pathwayAnalysis.setId(id);
-        PathwayAnalysisEntity saved = pathwayService.update(pathwayAnalysis);
-        return conversionService.convert(saved, PathwayAnalysisDTO.class);
+        pathwayService.update(pathwayAnalysis);
+        return conversionService.convert(pathwayService.getById(id), PathwayAnalysisDTO.class);
     }
 
     @GET

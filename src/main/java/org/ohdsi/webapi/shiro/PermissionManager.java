@@ -7,10 +7,21 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.subject.Subject;
 import org.ohdsi.webapi.helper.Guard;
-import org.ohdsi.webapi.shiro.Entities.*;
+import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
+import org.ohdsi.webapi.shiro.Entities.PermissionRepository;
+import org.ohdsi.webapi.shiro.Entities.RequestStatus;
+import org.ohdsi.webapi.shiro.Entities.RoleEntity;
+import org.ohdsi.webapi.shiro.Entities.RolePermissionEntity;
+import org.ohdsi.webapi.shiro.Entities.RolePermissionRepository;
+import org.ohdsi.webapi.shiro.Entities.RoleRepository;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.shiro.Entities.UserRepository;
+import org.ohdsi.webapi.shiro.Entities.UserRoleEntity;
+import org.ohdsi.webapi.shiro.Entities.UserRoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
@@ -26,19 +37,19 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @Transactional
 public class PermissionManager {
-  
+
   @Autowired
-  private UserRepository userRepository;  
-  
+  private UserRepository userRepository;
+
   @Autowired
-  private RoleRepository roleRepository;  
-  
+  private RoleRepository roleRepository;
+
   @Autowired
   private PermissionRepository permissionRepository;
-  
+
   @Autowired
   private RolePermissionRepository rolePermissionRepository;
-  
+
   @Autowired
   private UserRoleRepository userRoleRepository;
 
@@ -55,14 +66,14 @@ public class PermissionManager {
     role.setName(roleName);
     role.setSystemRole(isSystem);
     role = this.roleRepository.save(role);
-    
+
     return role;
   }
 
   public String addUserToRole(String roleName, String login) {
     Guard.checkNotEmpty(roleName);
     Guard.checkNotEmpty(login);
-    
+
     RoleEntity role = this.getSystemRoleByName(roleName);
     UserEntity user = this.getUserByLogin(login);
 
@@ -116,6 +127,8 @@ public class PermissionManager {
     });
   }
 
+  // In case of unauthorized access there is no need to connect to database and create transaction
+  @Transactional(propagation = Propagation.NEVER)
   public void clearAuthorizationInfoCache() {
     this.authorizationInfoCache.set(new ConcurrentHashMap<>());
   }

@@ -121,7 +121,10 @@ public class PredictionController {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public PredictionAnalysisDTO updateAnalysis(@PathParam("id") int id, PredictionAnalysis pred) {
-    return conversionService.convert(service.getById(id), PredictionAnalysisDTO.class);
+    PredictionAnalysis analysis = service.updateAnalysis(id, pred);
+    // Before conversion entity must be refreshed to apply entity graphs
+    analysis = service.getById(analysis.getId());
+    return conversionService.convert(analysis, PredictionAnalysisDTO.class);
   }
 
   @GET

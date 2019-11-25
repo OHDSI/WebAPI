@@ -36,6 +36,7 @@ import javax.ws.rs.core.Response;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -121,15 +122,11 @@ public class UserImportController {
                                 @DefaultValue("TRUE") @QueryParam("preserve") Boolean preserveRoles) {
         LdapProviderType providerType = LdapProviderType.fromValue(provider);
 
-        Calendar calendar = GregorianCalendar.getInstance();
-        calendar.add(Calendar.SECOND, 5);
-        calendar.set(Calendar.MILLISECOND, 0);
-
         UserImportJobDTO jobDto = new UserImportJobDTO();
         jobDto.setProviderType(providerType);
         jobDto.setPreserveRoles(preserveRoles);
         jobDto.setEnabled(true);
-        jobDto.setStartDate(calendar.getTime());
+        jobDto.setStartDate(getJobStartDate());
         jobDto.setFrequency(JobExecutingType.ONCE);
         jobDto.setRecurringTimes(0);
         if (users != null) {
@@ -164,4 +161,12 @@ public class UserImportController {
     return RoleGroupMappingConverter.convertRoleGroupMapping(type, mappingEntities);
   }
 
+    private Date getJobStartDate() {
+        Calendar calendar = GregorianCalendar.getInstance();
+        // Job will be started in five seconds after now
+        calendar.add(Calendar.SECOND, 5);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        return calendar.getTime();
+    }
 }

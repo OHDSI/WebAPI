@@ -14,9 +14,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Component
 public class V2_8_0_20191106092815__migrateEventFAType implements ApplicationContextAwareSpringMigration {
-    private final static String SQL_PATH = "/db/migration/java/V2_8_0_20191106092815__migrateEventFAType/updateFaType.sql";
+    private final static String UPDATE_VALUE_SQL = ResourceHelper.GetResourceAsString(
+            "/db/migration/java/V2_8_0_20191106092815__migrateEventFAType/updateFaType.sql"
+    );
     private static final Logger log = LoggerFactory.getLogger(V2_8_0_20191106092815__migrateEventFAType.class);
 
     private final SourceRepository sourceRepository;
@@ -31,23 +35,20 @@ public class V2_8_0_20191106092815__migrateEventFAType implements ApplicationCon
 
     @Override
     public void migrate() throws Exception {
-        sourceRepository.findAll().forEach(source -> {
-            try {
-                String resultsSchema = source.getTableQualifierOrNull(SourceDaimon.DaimonType.Results);
+        List<Source> sources = sourceRepository.findAll();
+        sources.stream()
+                .filter(source -> source.getTableQualifierOrNull(SourceDaimon.DaimonType.Results) != null)
+                .forEach(source -> {
+                    try {
+                        CancelableJdbcTemplate jdbcTemplate = migrationDAO.getSourceJdbcTemplate(source);
 
-                if (resultsSchema == null) {
-                    return; // no results in this source
-                }
+                        this.migrationDAO.updateColumnValue(source, jdbcTemplate);
 
-                CancelableJdbcTemplate jdbcTemplate = migrationDAO.getSourceJdbcTemplate(source);
-
-                this.migrationDAO.updateColumnValue(source, jdbcTemplate);
-
-            }
-            catch(Exception e) {
-                log.error(String.format("Failed to update fa type value for source: %s (%s)", source.getSourceName(), source.getSourceKey()));
-            }
-        });
+                    } catch (Exception e) {
+                        log.error(String.format("Failed to update fa type value for source: %s (%s)", source.getSourceName(), source.getSourceKey()));
+                        throw e;
+                    }
+                });
     }
 
     @Service
@@ -56,7 +57,7 @@ public class V2_8_0_20191106092815__migrateEventFAType implements ApplicationCon
             String resultsSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
             String[] params = new String[]{"results_schema"};
             String[] values = new String[]{resultsSchema};
-            String translatedSql = SqlRender.renderSql(ResourceHelper.GetResourceAsString(SQL_PATH), params, values);
+            String translatedSql = SqlRender.renderSql(UPDATE_VALUE_SQL, params, values);
             jdbcTemplate.batchUpdate(translatedSql);
         }
     }

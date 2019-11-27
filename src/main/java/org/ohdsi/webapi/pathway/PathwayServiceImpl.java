@@ -3,7 +3,6 @@ package org.ohdsi.webapi.pathway;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.google.common.base.MoreObjects;
 import com.odysseusinc.arachne.commons.types.DBMSType;
-import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Hibernate;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
@@ -163,6 +162,9 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         newAnalysis.setCreatedBy(getCurrentUser());
         newAnalysis.setCreatedDate(new Date());
+        // Fields with information about modifications have to be reseted
+        newAnalysis.setModifiedBy(null);
+        newAnalysis.setModifiedDate(null);
         return save(newAnalysis);
     }
 

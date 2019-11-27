@@ -13,6 +13,7 @@ public interface Constants {
   String WARM_CACHE = "warmCache";
   String WARM_CACHE_BY_USER = "warmCacheByUser";
   String USERS_IMPORT = "usersImport";
+  String JOB_IS_ALREADY_SCHEDULED = "Job for provider %s is already scheduled";
 
   String FAILED = ExitStatus.FAILED.getExitCode();
   String CANCELED = "CANCELED";
@@ -48,10 +49,8 @@ public interface Constants {
     String TARGET_TABLE = "target_table";
     String GENERATE_STATS = "generate_stats";
     String JOB_START_TIME = "time";
+    String USER_IMPORT_ID = "user_import_id";
     String USER_ROLES = "userRoles";
-    String LDAP_PROVIDER = "provider";
-    String ROLE_GROUP_MAPPING = "roleGroupMapping";
-    String PRESERVE_ROLES = "preserveRoles";
     String SESSION_ID = "sessionId";
     String PACKAGE_NAME = "packageName";
     String PACKAGE_FILE_NAME = "packageFilename";

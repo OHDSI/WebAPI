@@ -111,9 +111,7 @@ public class PredictionController {
   @Consumes(MediaType.APPLICATION_JSON)
   public PredictionAnalysisDTO createAnalysis(PredictionAnalysis pred) {
     PredictionAnalysis analysis = service.createAnalysis(pred);
-    // Before conversion entity must be refreshed to apply entity graphs
-    analysis = service.getById(analysis.getId());
-    return conversionService.convert(analysis, PredictionAnalysisDTO.class);
+    return reloadAndConvert(analysis.getId());
   }
 
   @PUT
@@ -121,10 +119,8 @@ public class PredictionController {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public PredictionAnalysisDTO updateAnalysis(@PathParam("id") int id, PredictionAnalysis pred) {
-    PredictionAnalysis analysis = service.updateAnalysis(id, pred);
-    // Before conversion entity must be refreshed to apply entity graphs
-    analysis = service.getById(analysis.getId());
-    return conversionService.convert(service.getById(id), PredictionAnalysisDTO.class);
+    service.updateAnalysis(id, pred);
+    return reloadAndConvert(id);
   }
 
   @GET
@@ -132,9 +128,7 @@ public class PredictionController {
   @Path("/{id}/copy")
   public PredictionAnalysisDTO copy(@PathParam("id") int id) {
     PredictionAnalysis analysis = service.copy(id);
-    // Before conversion entity must be refreshed to apply entity graphs
-    analysis = service.getById(analysis.getId());
-    return conversionService.convert(analysis, PredictionAnalysisDTO.class);
+    return reloadAndConvert(analysis.getId());
   }
 
   @GET
@@ -242,5 +236,11 @@ public class PredictionController {
             .header("Content-Disposition", "attachment; filename=\"" + archive.getName() + "\"")
             .build();
   }
+
+    private PredictionAnalysisDTO reloadAndConvert(Integer id) {
+        // Before conversion entity must be refreshed to apply entity graphs
+        PredictionAnalysis analysis = service.getById(id);
+        return conversionService.convert(analysis, PredictionAnalysisDTO.class);
+    }
 
 }

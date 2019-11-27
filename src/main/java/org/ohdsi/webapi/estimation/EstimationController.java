@@ -102,9 +102,7 @@ public class EstimationController {
   @Consumes(MediaType.APPLICATION_JSON)
   public EstimationDTO createEstimation(Estimation est) throws Exception {
     Estimation estimation = service.createEstimation(est);
-    // Before conversion entity must be refreshed to apply entity graphs
-    estimation = service.getById(estimation.getId());
-    return conversionService.convert(estimation, EstimationDTO.class);
+    return reloadAndConvert(estimation.getId());
   }
 
   @PUT
@@ -114,7 +112,7 @@ public class EstimationController {
   public EstimationDTO updateEstimation(@PathParam("id") final int id, Estimation est) throws Exception {
 
     service.updateEstimation(id, est);
-    return conversionService.convert(service.getById(id), EstimationDTO.class);
+    return reloadAndConvert(id);
   }
 
   @GET
@@ -124,9 +122,7 @@ public class EstimationController {
   public EstimationDTO copy(@PathParam("id") final int id) throws Exception {
 
     Estimation estimation = service.copy(id);
-    // Before conversion entity must be refreshed to apply entity graphs
-    estimation = service.getById(estimation.getId());
-    return conversionService.convert(estimation, EstimationDTO.class);
+    return reloadAndConvert(estimation.getId());
   }
 
   @GET
@@ -164,9 +160,7 @@ public class EstimationController {
           throw new InternalServerErrorException();
       }
       Estimation estimation = service.importAnalysis(analysis);
-      // Before conversion entity must be refreshed to apply entity graphs
-      estimation = service.getById(estimation.getId());
-      return conversionService.convert(estimation, EstimationDTO.class);
+      return reloadAndConvert(estimation.getId());
   }  
 
   /**
@@ -241,4 +235,10 @@ public class EstimationController {
             .header("Content-Disposition", "attachment; filename=\"" + archive.getName() + "\"")
             .build();
   }
+
+    private EstimationDTO reloadAndConvert(Integer id) {
+        // Before conversion entity must be refreshed to apply entity graphs
+        Estimation estimation = service.getById(id);
+        return conversionService.convert(estimation, EstimationDTO.class);
+    }
 }

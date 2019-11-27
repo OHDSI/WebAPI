@@ -1,10 +1,10 @@
 package org.ohdsi.webapi.prediction;
 
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
+import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.analyses.CommonAnalysisDTO;
-import org.ohdsi.webapi.common.generation.CommonGeneration;
 import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
@@ -20,7 +20,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
@@ -32,7 +42,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import org.ohdsi.analysis.Utils;
 
 @Controller
 @Path("/prediction/")
@@ -101,8 +110,8 @@ public class PredictionController {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public PredictionAnalysisDTO createAnalysis(PredictionAnalysis pred) {
-
-    return conversionService.convert(service.createAnalysis(pred), PredictionAnalysisDTO.class);
+    PredictionAnalysis analysis = service.createAnalysis(pred);
+    return reloadAndConvert(analysis.getId());
   }
 
   @PUT
@@ -110,16 +119,16 @@ public class PredictionController {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public PredictionAnalysisDTO updateAnalysis(@PathParam("id") int id, PredictionAnalysis pred) {
-
-    return conversionService.convert(service.updateAnalysis(id, pred), PredictionAnalysisDTO.class);
+    service.updateAnalysis(id, pred);
+    return reloadAndConvert(id);
   }
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}/copy")
   public PredictionAnalysisDTO copy(@PathParam("id") int id) {
-
-    return conversionService.convert(service.copy(id), PredictionAnalysisDTO.class);
+    PredictionAnalysis analysis = service.copy(id);
+    return reloadAndConvert(analysis.getId());
   }
 
   @GET
@@ -151,6 +160,8 @@ public class PredictionController {
       throw new InternalServerErrorException();
     }
     PredictionAnalysis importedAnalysis = service.importAnalysis(analysis);
+    // Before conversion entity must be refreshed to apply entity graphs
+    importedAnalysis = service.getById(importedAnalysis.getId());
     return conversionService.convert(importedAnalysis, PredictionAnalysisDTO.class);
   }  
 
@@ -225,5 +236,11 @@ public class PredictionController {
             .header("Content-Disposition", "attachment; filename=\"" + archive.getName() + "\"")
             .build();
   }
+
+    private PredictionAnalysisDTO reloadAndConvert(Integer id) {
+        // Before conversion entity must be refreshed to apply entity graphs
+        PredictionAnalysis analysis = service.getById(id);
+        return conversionService.convert(analysis, PredictionAnalysisDTO.class);
+    }
 
 }

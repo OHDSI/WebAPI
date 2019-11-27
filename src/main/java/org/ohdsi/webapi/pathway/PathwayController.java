@@ -73,7 +73,7 @@ public class PathwayController {
 
         PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
         PathwayAnalysisEntity saved = pathwayService.create(pathwayAnalysis);
-        return conversionService.convert(saved, PathwayAnalysisDTO.class);
+        return reloadAndConvert(saved.getId());
     }
 
     @POST
@@ -94,8 +94,8 @@ public class PathwayController {
 
         dto.setName(pathwayService.getNameWithSuffix(dto.getName()));
         PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
-        PathwayAnalysisEntity imported = pathwayService.importAnalysis(pathwayAnalysis);
-        return conversionService.convert(imported, PathwayAnalysisDTO.class);
+        PathwayAnalysisEntity analysis = pathwayService.importAnalysis(pathwayAnalysis);
+        return reloadAndConvert(analysis.getId());
     }
 
     @GET
@@ -124,8 +124,8 @@ public class PathwayController {
 
         PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
         pathwayAnalysis.setId(id);
-        PathwayAnalysisEntity saved = pathwayService.update(pathwayAnalysis);
-        return conversionService.convert(saved, PathwayAnalysisDTO.class);
+        pathwayService.update(pathwayAnalysis);
+        return reloadAndConvert(id);
     }
 
     @GET
@@ -274,5 +274,11 @@ public class PathwayController {
                 .collect(Collectors.toList());
 
         return new PathwayPopulationResultsDTO(eventCodeDtos, pathwayDtos);
+    }
+
+    private PathwayAnalysisDTO reloadAndConvert(Integer id) {
+        // Before conversion entity must be refreshed to apply entity graphs
+        PathwayAnalysisEntity analysis = pathwayService.getById(id);
+        return conversionService.convert(analysis, PathwayAnalysisDTO.class);
     }
 }

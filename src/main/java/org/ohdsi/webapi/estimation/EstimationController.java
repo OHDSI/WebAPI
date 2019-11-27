@@ -3,7 +3,6 @@ package org.ohdsi.webapi.estimation;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.common.SourceMapKey;
-import org.ohdsi.webapi.common.analyses.CommonAnalysisDTO;
 import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
 import org.ohdsi.webapi.estimation.domain.EstimationGenerationEntity;
@@ -20,7 +19,17 @@ import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
 
 import javax.transaction.Transactional;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
@@ -92,9 +101,8 @@ public class EstimationController {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public EstimationDTO createEstimation(Estimation est) throws Exception {
-
-    Estimation estWithId = service.createEstimation(est);
-    return conversionService.convert(estWithId, EstimationDTO.class);
+    Estimation estimation = service.createEstimation(est);
+    return reloadAndConvert(estimation.getId());
   }
 
   @PUT
@@ -103,8 +111,8 @@ public class EstimationController {
   @Consumes(MediaType.APPLICATION_JSON)
   public EstimationDTO updateEstimation(@PathParam("id") final int id, Estimation est) throws Exception {
 
-    Estimation updatedEst = service.updateEstimation(id, est);
-    return conversionService.convert(updatedEst, EstimationDTO.class);
+    service.updateEstimation(id, est);
+    return reloadAndConvert(id);
   }
 
   @GET
@@ -113,8 +121,8 @@ public class EstimationController {
   @Transactional
   public EstimationDTO copy(@PathParam("id") final int id) throws Exception {
 
-    Estimation est = service.copy(id);
-    return conversionService.convert(est, EstimationDTO.class);
+    Estimation estimation = service.copy(id);
+    return reloadAndConvert(estimation.getId());
   }
 
   @GET
@@ -151,8 +159,8 @@ public class EstimationController {
           LOGGER.error("Failed to import Estimation, empty or not valid source JSON");
           throw new InternalServerErrorException();
       }
-      Estimation importedEstimation = service.importAnalysis(analysis);
-      return conversionService.convert(importedEstimation, EstimationDTO.class);
+      Estimation estimation = service.importAnalysis(analysis);
+      return reloadAndConvert(estimation.getId());
   }  
 
   /**
@@ -227,4 +235,10 @@ public class EstimationController {
             .header("Content-Disposition", "attachment; filename=\"" + archive.getName() + "\"")
             .build();
   }
+
+    private EstimationDTO reloadAndConvert(Integer id) {
+        // Before conversion entity must be refreshed to apply entity graphs
+        Estimation estimation = service.getById(id);
+        return conversionService.convert(estimation, EstimationDTO.class);
+    }
 }

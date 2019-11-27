@@ -5,6 +5,7 @@ import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
 import org.ohdsi.webapi.test.entity.incidencerate.BaseIRTestEntity;
 
 import static org.junit.Assert.assertEquals;
+import static org.ohdsi.webapi.test.entity.TestConstants.COPY_PREFIX;
 
 public class TestIRCopy extends BaseIRTestEntity {
 

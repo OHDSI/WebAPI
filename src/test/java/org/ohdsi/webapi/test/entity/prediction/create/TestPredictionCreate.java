@@ -7,6 +7,7 @@ import org.ohdsi.webapi.test.entity.prediction.BasePredictionTestEntity;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.ohdsi.webapi.test.entity.TestConstants.NEW_TEST_ENTITY;
 
 public class TestPredictionCreate extends BasePredictionTestEntity {
 

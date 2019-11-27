@@ -7,6 +7,7 @@ import org.ohdsi.webapi.test.entity.conceptset.BaseCSTestEntity;
 
 import static org.junit.Assert.assertEquals;
 import static org.ohdsi.webapi.service.ConceptSetService.COPY_NAME;
+import static org.ohdsi.webapi.test.entity.TestConstants.COPY_PREFIX;
 
 public class TestCSCopy extends BaseCSTestEntity {
 

@@ -7,6 +7,7 @@ import org.ohdsi.webapi.test.entity.estimation.BaseEstimationTestEntity;
 
 import static org.junit.Assert.assertEquals;
 import static org.ohdsi.analysis.estimation.design.EstimationTypeEnum.COMPARATIVE_COHORT_ANALYSIS;
+import static org.ohdsi.webapi.test.entity.TestConstants.COPY_PREFIX;
 
 public class TestEstimationCopy extends BaseEstimationTestEntity {
 

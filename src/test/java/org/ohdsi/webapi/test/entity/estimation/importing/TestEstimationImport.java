@@ -15,6 +15,8 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.ohdsi.analysis.estimation.design.EstimationTypeEnum.COMPARATIVE_COHORT_ANALYSIS;
+import static org.ohdsi.webapi.test.entity.TestConstants.NEW_TEST_ENTITY;
+import static org.ohdsi.webapi.test.entity.TestConstants.SOME_UNIQUE_TEST_NAME;
 
 public class TestEstimationImport extends BaseEstimationTestEntity {
 

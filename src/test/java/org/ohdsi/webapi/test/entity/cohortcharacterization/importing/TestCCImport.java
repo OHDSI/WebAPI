@@ -7,6 +7,8 @@ import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
 import org.ohdsi.webapi.test.entity.cohortcharacterization.BaseCCTestEntity;
 
 import static org.junit.Assert.assertEquals;
+import static org.ohdsi.webapi.test.entity.TestConstants.NEW_TEST_ENTITY;
+import static org.ohdsi.webapi.test.entity.TestConstants.SOME_UNIQUE_TEST_NAME;
 
 public class TestCCImport extends BaseCCTestEntity {
 

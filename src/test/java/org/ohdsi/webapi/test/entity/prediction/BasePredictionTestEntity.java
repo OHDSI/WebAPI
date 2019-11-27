@@ -1,5 +1,7 @@
 package org.ohdsi.webapi.test.entity.prediction;
 
+import static org.ohdsi.webapi.test.entity.TestConstants.NEW_TEST_ENTITY;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -7,15 +9,25 @@ import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
+import org.ohdsi.webapi.WebApi;
 import org.ohdsi.webapi.prediction.PredictionAnalysis;
 import org.ohdsi.webapi.prediction.PredictionController;
 import org.ohdsi.webapi.prediction.PredictionService;
 import org.ohdsi.webapi.prediction.dto.PredictionAnalysisDTO;
 import org.ohdsi.webapi.prediction.repository.PredictionAnalysisRepository;
-import org.ohdsi.webapi.test.entity.BaseTestEntity;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringRunner;
 
-public abstract class BasePredictionTestEntity extends BaseTestEntity {
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = WebApi.class)
+@TestPropertySource(locations = "/in-memory-webapi.properties")
+public abstract class BasePredictionTestEntity {
+    @Autowired
+    protected ConversionService conversionService;
     @Autowired
     protected PredictionController plpController;
     @Autowired

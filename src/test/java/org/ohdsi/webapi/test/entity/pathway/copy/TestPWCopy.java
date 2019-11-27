@@ -7,6 +7,7 @@ import org.ohdsi.webapi.test.entity.pathway.BasePWTestEntity;
 import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
+import static org.ohdsi.webapi.test.entity.TestConstants.COPY_PREFIX;
 
 public class TestPWCopy extends BasePWTestEntity {
 

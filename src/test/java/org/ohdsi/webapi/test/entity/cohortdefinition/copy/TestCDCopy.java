@@ -5,6 +5,7 @@ import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.test.entity.cohortdefinition.BaseCDTestEntity;
 
 import static org.junit.Assert.assertEquals;
+import static org.ohdsi.webapi.test.entity.TestConstants.COPY_PREFIX;
 
 public class TestCDCopy extends BaseCDTestEntity {
 

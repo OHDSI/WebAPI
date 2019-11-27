@@ -8,6 +8,7 @@ import org.ohdsi.webapi.test.entity.estimation.BaseEstimationTestEntity;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.ohdsi.analysis.estimation.design.EstimationTypeEnum.COMPARATIVE_COHORT_ANALYSIS;
+import static org.ohdsi.webapi.test.entity.TestConstants.NEW_TEST_ENTITY;
 
 public class TestEstimationCreate extends BaseEstimationTestEntity {
 

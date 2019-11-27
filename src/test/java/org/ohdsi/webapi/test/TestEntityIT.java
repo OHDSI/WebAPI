@@ -1,13 +1,12 @@
 package org.ohdsi.webapi.test;
 
-import com.opentable.db.postgres.embedded.EmbeddedPostgres;
-import java.io.IOException;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
+import com.opentable.db.postgres.junit.EmbeddedPostgresRules;
+import com.opentable.db.postgres.junit.SingleInstancePostgresRule;
 import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.mockito.Mockito;
@@ -59,13 +58,16 @@ import org.ohdsi.webapi.test.entity.prediction.importing.TestPredictionImport;
         TestPredictionCopy.class})
 public class TestEntityIT extends AbstractShiroTest {
 
-    private static EmbeddedPostgres pg;
+    @ClassRule
+    public static SingleInstancePostgresRule pg = EmbeddedPostgresRules.singleInstance();
+    
     @BeforeClass
     public static void before() {
         try {
-            if (pg == null){
-                pg = EmbeddedPostgres.start();
-            }
+            System.setProperty("datasource.url", pg.getEmbeddedPostgres().getPostgresDatabase().getConnection().getMetaData().getURL());
+            System.setProperty("flyway.datasource.url", System.getProperty("datasource.url"));
+            
+            //set up shiro
             Subject subjectUnderTest = Mockito.mock(Subject.class);
             SimplePrincipalCollection principalCollection = Mockito.mock(SimplePrincipalCollection.class);
             Mockito.when(subjectUnderTest.isAuthenticated()).thenReturn(true);
@@ -74,10 +76,6 @@ public class TestEntityIT extends AbstractShiroTest {
 
             //bind the subject to the current thread
             setSubject(subjectUnderTest);
-
-            System.setProperty("datasource.url", getDatabaseMetadata().getURL());
-            System.setProperty("flyway.datasource.url", System.getProperty("datasource.url"));
-            System.setProperty("flyway.datasource.driverClassName=", getDatabaseMetadata().getDriverName());
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -87,15 +85,5 @@ public class TestEntityIT extends AbstractShiroTest {
     public static void tearDownSubject() {
         //unbind the subject from the current thread
         clearSubject();
-        try {
-            pg.close();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    public static DatabaseMetaData getDatabaseMetadata() throws SQLException {
-
-        return pg.getPostgresDatabase().getConnection().getMetaData();
     }
 }

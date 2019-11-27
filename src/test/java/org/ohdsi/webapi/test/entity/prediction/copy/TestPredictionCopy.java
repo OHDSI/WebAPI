@@ -6,6 +6,7 @@ import org.ohdsi.webapi.prediction.dto.PredictionAnalysisDTO;
 import org.ohdsi.webapi.test.entity.prediction.BasePredictionTestEntity;
 
 import static org.junit.Assert.assertEquals;
+import static org.ohdsi.webapi.test.entity.TestConstants.COPY_PREFIX;
 
 public class TestPredictionCopy extends BasePredictionTestEntity {
 

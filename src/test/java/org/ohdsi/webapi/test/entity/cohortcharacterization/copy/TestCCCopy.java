@@ -5,6 +5,7 @@ import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
 import org.ohdsi.webapi.test.entity.cohortcharacterization.BaseCCTestEntity;
 
 import static org.junit.Assert.assertEquals;
+import static org.ohdsi.webapi.test.entity.TestConstants.COPY_PREFIX;
 
 public class TestCCCopy extends BaseCCTestEntity {
 

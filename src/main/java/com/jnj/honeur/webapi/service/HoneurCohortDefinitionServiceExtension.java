@@ -447,7 +447,7 @@ public class HoneurCohortDefinitionServiceExtension {
         String wildcardPermissionPattern = "cohortdefinition:*:get";
         return userPermissions.stream()
                 .map(PermissionEntity::getValue)
-                .anyMatch(permissionString -> permissionString.matches(wildcardPermissionPattern));
+                .anyMatch(permissionString -> permissionString.equals(wildcardPermissionPattern));
     }
 
     private List<String> getCohortDefinitionUuids(final Iterable<CohortDefinition> cohortDefinitions) {

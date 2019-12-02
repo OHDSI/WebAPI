@@ -6,7 +6,7 @@
   <groupId>org.ohdsi</groupId>
   <artifactId>WebAPI</artifactId>
   <packaging>war</packaging>
-  <version>1.4.0</version>
+  <version>1.5-SNAPSHOT</version>
   <name>WebAPI</name>
   <properties>
     <webapi.version>2.7.1</webapi.version>
@@ -747,7 +747,7 @@
     <dependency>
       <groupId>com.jnj.honeur</groupId>
       <artifactId>security</artifactId>
-      <version>1.4</version>
+      <version>1.5-SNAPSHOT</version>
     </dependency>
   </dependencies>
   <profiles>

@@ -1,0 +1,11 @@
+[
+  {
+    "code": "en",
+    "name": "English",
+    "default": true
+  },
+  {
+    "code": "ru",
+    "name": "Русский"
+  }
+]

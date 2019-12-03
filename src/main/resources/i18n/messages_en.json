@@ -1,0 +1,10 @@
+{
+  "locale": "en",
+  "navigation": {
+    "incidencerate": "Incidence Rates"
+  },
+  "incidencerate": {
+    "title": "Incidence Rate Analysis",
+    "newanalysis": "New Analysis"
+  }
+}

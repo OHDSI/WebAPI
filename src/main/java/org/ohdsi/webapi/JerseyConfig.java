@@ -9,6 +9,7 @@ import org.glassfish.jersey.server.spi.internal.ValueFactoryProvider;
 import org.ohdsi.webapi.cohortcharacterization.CcController;
 import org.ohdsi.webapi.executionengine.controller.ScriptExecutionCallbackController;
 import org.ohdsi.webapi.executionengine.controller.ScriptExecutionController;
+import org.ohdsi.webapi.i18n.I18nController;
 import org.ohdsi.webapi.service.ActivityService;
 import org.ohdsi.webapi.service.CDMResultsService;
 import org.ohdsi.webapi.service.CohortAnalysisService;
@@ -78,6 +79,7 @@ public class JerseyConfig extends ResourceConfig implements InitializingBean {
         register(MultiPartFeature.class);
         register(FeatureExtractionService.class);
         register(CcController.class);
+        register(I18nController.class);
         register(new AbstractBinder() {
             @Override
             protected void configure() {

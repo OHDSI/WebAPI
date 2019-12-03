@@ -285,8 +285,7 @@
         <version>2.18.1</version>
         <executions>
           <execution>
-            <id>failsafe-integration-tests</id>
-            <phase>integration-test</phase>
+            <phase>test</phase>
             <goals>
               <goal>integration-test</goal>
             </goals>
@@ -297,17 +296,6 @@
               <excludes>
                 <exclude>**/SecurityIT.java</exclude>
               </excludes>
-            </configuration>
-          </execution>
-          <execution>
-            <phase>test</phase>
-            <goals>
-              <goal>integration-test</goal>
-            </goals>
-            <configuration>
-              <includes>
-                <include>**/SecurityIT.java</include>
-              </includes>
             </configuration>
           </execution>
         </executions>
@@ -520,6 +508,12 @@
       <artifactId>spring-boot-starter-test</artifactId>
       <version>${spring.boot.version}</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>com.vaadin.external.google</groupId>
+          <artifactId>android-json</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>

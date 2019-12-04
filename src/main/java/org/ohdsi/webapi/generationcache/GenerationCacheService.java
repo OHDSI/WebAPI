@@ -4,10 +4,9 @@ import org.ohdsi.webapi.source.Source;
 
 public interface GenerationCacheService {
 
-    String getDesignHash(CacheableGenerationType type, String design);
-    GenerationCache getCacheOrEraseInvalid(CacheableGenerationType type, String designHash, Integer sourceId);
-    Integer getNextResultIdentifier(CacheableGenerationType type, Source source);
+    Integer getDesignHash(CacheableGenerationType type, String design);
+    GenerationCache getCacheOrEraseInvalid(CacheableGenerationType type, Integer designHash, Integer sourceId);
     String getResultsSql(GenerationCache cache);
-    GenerationCache cacheResults(CacheableGenerationType type, String designHash, Integer sourceId, Integer resultIdentifier);
-    void removeCache(CacheableGenerationType type, Source source, Integer resultIdentifier);
+    GenerationCache cacheResults(CacheableGenerationType type, Integer designHash, Integer sourceId);
+    void removeCache(CacheableGenerationType type, Source source, Integer designHash);
 }

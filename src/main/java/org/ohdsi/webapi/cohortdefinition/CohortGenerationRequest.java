@@ -9,21 +9,15 @@ public class CohortGenerationRequest {
     private Source source;
     private String sessionId;
     private String targetSchema;
-    private String targetTable;
-    private String targetIdFieldName;
     private Integer targetId;
-    private boolean generateStats;
 
-    public CohortGenerationRequest(CohortExpression expression, Source source, String sessionId, String targetSchema, String targetTable, String targetIdFieldName, Integer targetId, boolean generateStats) {
+    public CohortGenerationRequest(CohortExpression expression, Source source, String sessionId, Integer targetId, String targetSchema) {
 
         this.expression = expression;
         this.source = source;
         this.sessionId = sessionId;
-        this.targetSchema = targetSchema;
-        this.targetTable = targetTable;
-        this.targetIdFieldName = targetIdFieldName;
         this.targetId = targetId;
-        this.generateStats = generateStats;
+        this.targetSchema = targetSchema;
     }
 
     public CohortExpression getExpression() {
@@ -46,23 +40,8 @@ public class CohortGenerationRequest {
         return targetSchema;
     }
 
-    public String getTargetTable() {
-
-        return targetTable;
-    }
-
-    public String getTargetIdFieldName() {
-
-        return targetIdFieldName;
-    }
-
     public Integer getTargetId() {
 
         return targetId;
-    }
-
-    public boolean isGenerateStats() {
-
-        return generateStats;
     }
 }

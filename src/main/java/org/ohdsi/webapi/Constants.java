@@ -59,6 +59,7 @@ public interface Constants {
     String PACKAGE_FILE_NAME = "packageFilename";
     String EXECUTABLE_FILE_NAME = "executableFilename";
     String GENERATION_ID = "generation_id";
+    String DESIGN_HASH = "design_hash";
   }
 
   interface Variables {
@@ -81,6 +82,10 @@ public interface Constants {
   }
 
   interface Tables {
-    String COHORT_GENERATIONS_TABLE = "cohort_generations";
+    String COHORT_CACHE = "cohort_cache";
+    String COHORT_INCLUSION_RESULT_CACHE = "cohort_inclusion_result_cache";
+    String COHORT_INCLUSION_STATS_CACHE = "cohort_inclusion_stats_cache";
+    String COHORT_SUMMARY_STATS_CACHE = "cohort_summary_stats_cache";
+    String COHORT_CENSOR_STATS_CACHE = "cohort_censor_stats";
   }
 }

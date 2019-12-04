@@ -86,7 +86,7 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
                                         targetSchema
                                     );
 
-                                    int designHash = Integer.parseInt(this.generationCacheHelper.computeHash(cd.getDetails().getExpression()));
+                                    int designHash = this.generationCacheHelper.computeHash(cd.getDetails().getExpression());
                                     CohortGenerationUtils.insertInclusionRules(cd.getId(), cd.getExpression(), designHash, targetSchema, cancelableJdbcTemplate);
                                     
                                     GenerationCacheHelper.CacheResult res = generationCacheHelper.computeCacheIfAbsent(cd, source, generationRequestBuilder, (resId, sqls) -> {

@@ -34,23 +34,23 @@ public class GenerationCacheServiceImpl implements GenerationCacheService {
     }
 
     @Override
-    public String getDesignHash(CacheableGenerationType type, String design) {
+    public Integer getDesignHash(CacheableGenerationType type, String design) {
 
         return getProvider(type).getDesignHash(design);
     }
 
     @Override
-    public GenerationCache getCacheOrEraseInvalid(CacheableGenerationType type, String designHash, Integer sourceId) {
+    public GenerationCache getCacheOrEraseInvalid(CacheableGenerationType type, Integer designHash, Integer sourceId) {
 
         Source source = sourceRepository.findBySourceId(sourceId);
         GenerationCache generationCache = generationCacheRepository.findByTypeAndAndDesignHashAndSource(type, designHash, source, EntityGraphUtils.fromAttributePaths("source"));
         GenerationCacheProvider provider = getProvider(type);
         if (generationCache != null) {
-            String checksum = provider.getResultsChecksum(generationCache.getSource(), generationCache.getResultIdentifier());
+            String checksum = provider.getResultsChecksum(generationCache.getSource(), generationCache.getDesignHash());
             if (Objects.equals(generationCache.getResultChecksum(), checksum)) {
                 return generationCache;
             } else {
-                removeCache(generationCache.getType(), generationCache.getSource(), generationCache.getResultIdentifier());
+                removeCache(generationCache.getType(), generationCache.getSource(), generationCache.getDesignHash());
                 log.info(CACHE_INVALID, generationCache.getId());
             }
         }
@@ -60,20 +60,19 @@ public class GenerationCacheServiceImpl implements GenerationCacheService {
     @Override
     public String getResultsSql(GenerationCache cache) {
 
-        return getProvider(cache.getType()).getResultsSql(cache.getResultIdentifier());
+        return getProvider(cache.getType()).getResultsSql(cache.getDesignHash());
     }
 
     @Override
-    public GenerationCache cacheResults(CacheableGenerationType type, String designHash, Integer sourceId, Integer resultIdentifier) {
+    public GenerationCache cacheResults(CacheableGenerationType type, Integer designHash, Integer sourceId) {
 
         Source source = sourceRepository.findBySourceId(sourceId);
-        String checksum = getProvider(type).getResultsChecksum(source, resultIdentifier);
+        String checksum = getProvider(type).getResultsChecksum(source, designHash);
 
         GenerationCache generationCache = new GenerationCache();
         generationCache.setType(type);
         generationCache.setDesignHash(designHash);
         generationCache.setSource(source);
-        generationCache.setResultIdentifier(resultIdentifier);
         generationCache.setResultChecksum(checksum);
         generationCache.setCreatedDate(new Date());
 
@@ -85,12 +84,12 @@ public class GenerationCacheServiceImpl implements GenerationCacheService {
     }
 
     @Override
-    public void removeCache(CacheableGenerationType type, Source source, Integer resultIdentifier) {
+    public void removeCache(CacheableGenerationType type, Source source, Integer designHash) {
 
         // Cleanup cached results
-        getProvider(type).remove(source, resultIdentifier);
+        getProvider(type).remove(source, designHash);
         // Cleanup cache record
-        GenerationCache generationCache = generationCacheRepository.findByTypeAndSourceAndResultIdentifier(type, source, resultIdentifier, EntityGraphUtils.fromAttributePaths("source"));
+        GenerationCache generationCache = generationCacheRepository.findByTypeAndAndDesignHashAndSource(type, designHash, source, EntityGraphUtils.fromAttributePaths("source"));
         if (generationCache != null) {
             generationCacheRepository.delete(generationCache);
         }

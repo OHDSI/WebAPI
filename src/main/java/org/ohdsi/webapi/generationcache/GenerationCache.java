@@ -39,14 +39,11 @@ public class GenerationCache {
     private CacheableGenerationType type;
 
     @Column(name = "design_hash")
-    private String designHash;
+    private Integer designHash;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "source_id")
     private Source source;
-
-    @Column(name = "result_identifier")
-    private Integer resultIdentifier;
 
     @Column(name = "result_checksum")
     private String resultChecksum;
@@ -74,12 +71,12 @@ public class GenerationCache {
         this.type = type;
     }
 
-    public String getDesignHash() {
+    public Integer getDesignHash() {
 
         return designHash;
     }
 
-    public void setDesignHash(String designHash) {
+    public void setDesignHash(Integer designHash) {
 
         this.designHash = designHash;
     }
@@ -92,16 +89,6 @@ public class GenerationCache {
     public void setSource(Source source) {
 
         this.source = source;
-    }
-
-    public Integer getResultIdentifier() {
-
-        return resultIdentifier;
-    }
-
-    public void setResultIdentifier(Integer resultIdentifier) {
-
-        this.resultIdentifier = resultIdentifier;
     }
 
     public String getResultChecksum() {

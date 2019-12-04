@@ -22,7 +22,7 @@ import static org.ohdsi.webapi.Constants.Params.RESULTS_DATABASE_SCHEMA;
 @Component
 public class CohortGenerationCacheProvider extends AbstractDaoService implements GenerationCacheProvider {
 
-    private static final String CACHE_VALIDATION_TIME = "Checksum of Generation cache for resultIdentifier = {} has been calculated in {} milliseconds";
+    private static final String CACHE_VALIDATION_TIME = "Checksum of Generation cache for designHash = {} has been calculated in {} milliseconds";
 
     private static final String COHORT_CHECKSUM_SQL_PATH = "/resources/generationcache/cohort/resultsChecksum.sql";
     private static final String COHORT_RESULTS_SQL = ResourceHelper.GetResourceAsString("/resources/generationcache/cohort/results.sql");
@@ -35,7 +35,7 @@ public class CohortGenerationCacheProvider extends AbstractDaoService implements
     }
 
     @Override
-    public String getDesignHash(String design) {
+    public Integer getDesignHash(String design) {
 
         // remove elements from object that do not determine results output (names, descriptions, etc)
         CohortExpression cleanExpression = CohortExpression.fromJson(design);
@@ -47,11 +47,11 @@ public class CohortGenerationCacheProvider extends AbstractDaoService implements
         
         CohortDefinitionDetails cohortDetails = new CohortDefinitionDetails();
         cohortDetails.setExpression(Utils.serialize(cleanExpression));
-        return cohortDetails.calculateHashCode().toString();
+        return cohortDetails.calculateHashCode();
     }
 
     @Override
-    public String getResultsChecksum(Source source, Integer resultIdentifier) {
+    public String getResultsChecksum(Source source, Integer designHash) {
 
         long startTime = System.currentTimeMillis();
         PreparedStatementRenderer psr = new PreparedStatementRenderer(
@@ -60,31 +60,31 @@ public class CohortGenerationCacheProvider extends AbstractDaoService implements
                 "@" + RESULTS_DATABASE_SCHEMA,
                 SourceUtils.getResultsQualifier(source),
                 DESIGN_HASH,
-                resultIdentifier,
+                designHash,
                 SessionUtils.sessionId()
         );
         String checksum = getSourceJdbcTemplate(source).queryForObject(psr.getSql(), psr.getOrderedParams(), String.class);
-        log.info(CACHE_VALIDATION_TIME, resultIdentifier, System.currentTimeMillis() - startTime);
+        log.info(CACHE_VALIDATION_TIME, designHash, System.currentTimeMillis() - startTime);
         return checksum;
     }
 
     @Override
-    public String getResultsSql(Integer resultIdentifier) {
+    public String getResultsSql(Integer designHash) {
 
         return SqlRender.renderSql(
                 COHORT_RESULTS_SQL,
                 new String[]{DESIGN_HASH},
-                new String[]{resultIdentifier.toString()}
+                new String[]{designHash.toString()}
         );
     }
 
     @Override
-    public void remove(Source source, Integer resultIdentifier) {
+    public void remove(Source source, Integer designHash) {
 
         String sql = SqlRender.renderSql(
                 CLEANUP_SQL,
                 new String[]{RESULTS_DATABASE_SCHEMA, DESIGN_HASH},
-                new String[]{SourceUtils.getResultsQualifier(source), resultIdentifier.toString()}
+                new String[]{SourceUtils.getResultsQualifier(source), designHash.toString()}
         );
         sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
         getSourceJdbcTemplate(source).batchUpdate(SqlSplit.splitSql(sql));

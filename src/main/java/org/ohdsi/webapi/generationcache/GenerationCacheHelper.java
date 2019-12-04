@@ -33,32 +33,31 @@ public class GenerationCacheHelper {
         this.generationCacheService = generationCacheService;
     }
 
-    public String computeHash(String expression) {
+    public Integer computeHash(String expression) {
         return generationCacheService.getDesignHash(CacheableGenerationType.COHORT, expression);
     }
     public CacheResult computeCacheIfAbsent(CohortDefinition cohortDefinition, Source source, CohortGenerationRequestBuilder requestBuilder, BiConsumer<Integer, String[]> sqlExecutor) {
 
         CacheableGenerationType type = CacheableGenerationType.COHORT;
-        String designHash = computeHash(cohortDefinition.getDetails().getExpression());
+        Integer designHash = computeHash(cohortDefinition.getDetails().getExpression());
 
-        log.info("Computes cache if absent for type = {}, design = {}, source id = {}", type, designHash, source.getSourceId());
+        log.info("Computes cache if absent for type = {}, design = {}, source id = {}", type, designHash.toString(), source.getSourceId());
 
         synchronized (monitors.computeIfAbsent(new CacheableResource(type, designHash, source.getSourceId()), cr -> new Object())) {
             log.info("Retrieves or invalidates cache for cohort id = {}", cohortDefinition.getId());
             GenerationCache cache = generationCacheService.getCacheOrEraseInvalid(type, designHash, source.getSourceId());
             if (cache == null) {
-                Integer resultIdentifier = Integer.parseInt(designHash); // use the design hash as the result identifier
-                log.info("Cache is absent for cohort id = {}. Calculating with results identifier = {}", cohortDefinition.getId(), resultIdentifier);
+                log.info("Cache is absent for cohort id = {}. Calculating with design hash = {}", cohortDefinition.getId(), designHash);
                 // Ensure that there are no records in results schema with which we could mess up
-                generationCacheService.removeCache(type, source, resultIdentifier);
+                generationCacheService.removeCache(type, source, designHash);
                 CohortGenerationRequest cohortGenerationRequest = requestBuilder
                     .withExpression(cohortDefinition.getDetails().getExpressionObject())
                     .withSource(source)
-                    .withTargetId(resultIdentifier)
+                    .withTargetId(designHash)
                     .build();
                 String[] sqls = CohortGenerationUtils.buildGenerationSql(cohortGenerationRequest);
-                sqlExecutor.accept(resultIdentifier, sqls);
-                cache = generationCacheService.cacheResults(CacheableGenerationType.COHORT, designHash, source.getSourceId(), resultIdentifier);
+                sqlExecutor.accept(designHash, sqls);
+                cache = generationCacheService.cacheResults(CacheableGenerationType.COHORT, designHash, source.getSourceId());
             } else {
                 log.info(String.format(CACHE_USED, type, cohortDefinition.getId(), source.getSourceKey()));
             }
@@ -68,7 +67,7 @@ public class GenerationCacheHelper {
                     new String[]{SourceUtils.getResultsQualifier(source)}
             );
             log.info("Finished computation cache if absent for cohort id = {}", cohortDefinition.getId());
-            return new CacheResult(cache.getResultIdentifier(), sql);
+            return new CacheResult(cache.getDesignHash(), sql);
         }
     }
 
@@ -106,10 +105,10 @@ public class GenerationCacheHelper {
     private static class CacheableResource {
 
         private CacheableGenerationType type;
-        private String designHash;
+        private Integer designHash;
         private Integer sourceId;
 
-        public CacheableResource(CacheableGenerationType type, String designHash, Integer sourceId) {
+        public CacheableResource(CacheableGenerationType type, Integer designHash, Integer sourceId) {
 
             this.type = type;
             this.designHash = designHash;

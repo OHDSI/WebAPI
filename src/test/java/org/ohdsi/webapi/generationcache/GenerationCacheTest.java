@@ -224,7 +224,7 @@ public class GenerationCacheTest {
         );
 
         GenerationCache generationCache = generationCacheService.getCacheOrEraseInvalid(type, generationCacheService.getDesignHash(type, cohortDefinition.getDetails().getExpression()), source.getSourceId());
-        Assert.assertEquals("Generation sequence respects existing results", 11, (int) generationCache.getResultIdentifier());
+        Assert.assertEquals("Generation sequence respects existing results", (Integer) 11, generationCache.getDesignHash());
     }
 
     @Test
@@ -232,16 +232,16 @@ public class GenerationCacheTest {
 
         CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(INITIAL_ENTITY_ID);
         
-        String origionalHash = generationCacheHelper.computeHash(cohortDefinition.getDetails().getExpression());
+        Integer originalHash = generationCacheHelper.computeHash(cohortDefinition.getDetails().getExpression());
 
         // modify the inclusion rule name/description, but should lead to same hash result
         CohortExpression expression = CohortExpression.fromJson(cohortDefinition.getDetails().getExpression());
         expression.inclusionRules.get(0).name += "...updated name";
         expression.inclusionRules.get(0).description += "..updated description";
 
-        String updatedHash = generationCacheHelper.computeHash(Utils.serialize(expression));
+        Integer updatedHash = generationCacheHelper.computeHash(Utils.serialize(expression));
         
-        Assert.assertEquals("Expression with different name and descritpion results in same hash", origionalHash,updatedHash);
+        Assert.assertEquals("Expression with different name and descritpion results in same hash", originalHash,updatedHash);
     }
 
     private void executeCohort(AtomicBoolean isSqlExecuted, Integer resId) {

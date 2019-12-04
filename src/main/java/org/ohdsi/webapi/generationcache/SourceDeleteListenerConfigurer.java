@@ -51,6 +51,6 @@ public class SourceDeleteListenerConfigurer {
     private void clearSourceRelatedCaches(Source source) {
 
         List<GenerationCache> caches = generationCacheRepository.findAllBySourceSourceId(source.getSourceId());
-        caches.forEach(gc -> generationCacheService.removeCache(gc.getType(), source, gc.getResultIdentifier()));
+        caches.forEach(gc -> generationCacheService.removeCache(gc.getType(), source, gc.getDesignHash()));
     }
 }

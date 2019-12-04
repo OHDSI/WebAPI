@@ -6,17 +6,17 @@
   <groupId>org.ohdsi</groupId>
   <artifactId>WebAPI</artifactId>
   <packaging>war</packaging>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>2.8.0-SNAPSHOT</version>
   <name>WebAPI</name>
   <properties>
-    <webapi.version>2.8.0</webapi.version>
+    <build.number>${BUILD_NUMBER}</build.number>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jersey.version>2.14</jersey.version>
     <!-- Spring Boot manages spring.version as well -->
-    <spring.boot.version>1.5.2.RELEASE</spring.boot.version>
-    <spring.batch.version>3.0.8.RELEASE</spring.batch.version>
+    <spring.boot.version>1.5.20.RELEASE</spring.boot.version>
     <flyway.version>4.2.0</flyway.version>
     <waffle.version>1.7.3</waffle.version>
+    <circe.version>1.9.0-SNAPSHOT</circe.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
 
     <!-- Primary DataSource -->
@@ -73,20 +73,35 @@
     <security.oid.apiSecret></security.oid.apiSecret>
     <security.oid.url></security.oid.url>
     <security.oid.redirectUrl>http://localhost/index.html#/welcome/</security.oid.redirectUrl>
+    <security.kerberos.spn></security.kerberos.spn>
+    <security.kerberos.keytabPath></security.kerberos.keytabPath>
     <security.ldap.dn>cn={0},dc=example,dc=org</security.ldap.dn>
     <security.ldap.url>ldap://localhost:389</security.ldap.url>
     <security.ldap.baseDn></security.ldap.baseDn>
     <security.ldap.system.username></security.ldap.system.username>
     <security.ldap.system.password></security.ldap.system.password>
-    <security.ad.url>ldap://localhost:389</security.ad.url>
+    <security.ldap.searchString>(&amp;(objectClass=person)(CN={0}))</security.ldap.searchString>
+    <security.ldap.userMapping.displaynameAttr>displayName</security.ldap.userMapping.displaynameAttr>
+    <security.ldap.userMapping.firstnameAttr>givenName</security.ldap.userMapping.firstnameAttr>
+    <security.ldap.userMapping.middlenameAttr>initials</security.ldap.userMapping.middlenameAttr>
+    <security.ldap.userMapping.lastnameAttr>sn</security.ldap.userMapping.lastnameAttr>
+    <security.ldap.userMapping.usernameAttr>cn</security.ldap.userMapping.usernameAttr>
+    <security.ldap.searchBase>CN=Users,DC=example,DC=org</security.ldap.searchBase>
+    <security.ad.url></security.ad.url>
     <security.ad.searchBase>CN=Users,DC=example,DC=org</security.ad.searchBase>
     <security.ad.principalSuffix>@example.org</security.ad.principalSuffix>
     <security.ad.system.username></security.ad.system.username>
     <security.ad.system.password></security.ad.system.password>
-    <security.ad.searchFilter></security.ad.searchFilter>
+    <security.ad.searchFilter>(&amp;(objectClass=person)(cn=%s))</security.ad.searchFilter>
     <security.ad.ignore.partial.result.exception>true</security.ad.ignore.partial.result.exception>
     <security.ad.result.count.limit>30000</security.ad.result.count.limit> <!-- 0 means no limit -->
     <security.ad.default.import.group>public</security.ad.default.import.group>
+    <security.ad.searchString>(&amp;(objectClass=person)(userPrincipalName=%s))</security.ad.searchString>
+    <security.ad.userMapping.displaynameAttr>displayname</security.ad.userMapping.displaynameAttr>
+    <security.ad.userMapping.firstnameAttr>givenname</security.ad.userMapping.firstnameAttr>
+    <security.ad.userMapping.middlenameAttr>initials</security.ad.userMapping.middlenameAttr>
+    <security.ad.userMapping.lastnameAttr>sn</security.ad.userMapping.lastnameAttr>
+    <security.ad.userMapping.usernameAttr>cn</security.ad.userMapping.usernameAttr>
 
     <security.cas.loginUrl></security.cas.loginUrl>
     <security.cas.callbackUrl></security.cas.callbackUrl>
@@ -116,6 +131,9 @@
     <spring.datasource.hikari.connection-test-query-timeout>2000</spring.datasource.hikari.connection-test-query-timeout>
     <spring.datasource.hikari.maximum-pool-size>5</spring.datasource.hikari.maximum-pool-size>
     <spring.datasource.hikari.minimum-idle>1</spring.datasource.hikari.minimum-idle>
+    <spring.datasource.hikari.connection-timeout>5000</spring.datasource.hikari.connection-timeout>
+    <spring.datasource.hikari.register-mbeans>true</spring.datasource.hikari.register-mbeans>
+    <spring.datasource.hikari.mbean-name>authDataSource</spring.datasource.hikari.mbean-name>
 
     <!-- EMBEDDED SERVER CONFIGURATION (ServerProperties) -->
     <server.port>8080</server.port>
@@ -123,12 +141,14 @@
     <server.ssl.key-store-password></server.ssl.key-store-password>
     <server.ssl.key-password></server.ssl.key-password>
 
-    <arachne.version>1.14.0-SNAPSHOT</arachne.version>
+    <arachne.version>1.15.0-SNAPSHOT</arachne.version>
     <jersey-media-multipart.version>2.25.1</jersey-media-multipart.version>
     <execution.invalidation.period>600000</execution.invalidation.period>
+    <execution.invalidation.maxage.hours>12</execution.invalidation.maxage.hours>
     <execution.status.period>10000</execution.status.period>
 		<executionengine.url>https://localhost:8888/api/v1/analyze</executionengine.url>
 		<executionengine.token>Basic YWRtaW5Ab2R5c3NldXNpbmMuY29tOnBhc3N3b3Jk</executionengine.token>
+        <executionengine.resultExclusions></executionengine.resultExclusions>
 		<executionengine.updateStatusCallback>http://localhost:8080/WebAPI/executionservice/callbacks/submission/{id}/status/update/{password}</executionengine.updateStatusCallback>
 		<executionengine.resultCallback>http://localhost:8080/WebAPI/executionservice/callbacks/submission/{id}/result/{password}</executionengine.resultCallback>
 
@@ -157,12 +177,25 @@
 
     <!-- Sensitive Info settings -->
     <sensitiveinfo.admin.role>admin</sensitiveinfo.admin.role>
+    <!-- Use "-" for files without extension, "*" for all files, extension must not include a leading dot. Use comma to separate values.
+     In case of "*" other values will be ignored -->
+    <sensitiveinfo.analysis.extensions>txt</sensitiveinfo.analysis.extensions>
 
     <hydra.externalPackage.prediction></hydra.externalPackage.prediction>
     <hydra.externalPackage.estimation></hydra.externalPackage.estimation>
+
+    <!-- Cache Config -->
+    <spring.cache.jcache.config>classpath:config/ehcache.xml</spring.cache.jcache.config>
+    <cdm.result.cache.warming.enable>true</cdm.result.cache.warming.enable>
+    <cache.generation.invalidAfterDays>7</cache.generation.invalidAfterDays>
+    <cache.generation.cleanupInterval>60000</cache.generation.cleanupInterval>
   </properties>
   <build>
     <finalName>WebAPI</finalName>
+    <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+    <testSourceDirectory>${basedir}/src/test/java</testSourceDirectory>
+    <outputDirectory>${basedir}/target/classes</outputDirectory>
+    <testOutputDirectory>${basedir}/target/test-classes</testOutputDirectory>    
     <resources>
       <resource>
         <directory>src/main/resources</directory>
@@ -183,14 +216,16 @@
           <exclude>log4j.xml</exclude>
         </excludes>
       </resource>
-      <resource>
+    </resources>
+    <testResources>
+      <testResource>
         <directory>src/test/resources</directory>
         <filtering>true</filtering>
         <includes>
           <include>**/*.properties</include>
         </includes>
-      </resource>
-      <resource>
+      </testResource>
+      <testResource>
         <directory>src/test/resources</directory>
         <filtering>false</filtering>
         <includes>
@@ -199,8 +234,8 @@
         <excludes>
           <exclude>**/*.properties</exclude>
         </excludes>
-      </resource>
-    </resources>
+      </testResource>
+    </testResources>
     <plugins>
       <plugin>
         <groupId>org.springframework.boot</groupId>
@@ -210,19 +245,14 @@
         <configuration>
           <!-- Since we filter properties files via Maven, do not add resources. -->
           <addResources>false</addResources>
-          <!-- executable-jar
-          <classifier>exec</classifier>
-          -->
         </configuration>
-        <!-- executable-jar
         <executions>
-            <execution>
-                <goals>
-                    <goal>repackage</goal>
-                </goals>
-            </execution>
+          <execution>
+            <goals>
+              <goal>build-info</goal>
+            </goals>
+          </execution>
         </executions>
-        -->
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -231,23 +261,28 @@
         <configuration>
           <skipTests>true</skipTests>
         </configuration>
-</plugin>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.5.1</version>
+        <version>3.1</version>
         <inherited>true</inherited>
         <configuration>
           <source>1.8</source>
           <target>1.8</target>
+          <compilerArgs>
+            <!-- Prevents recompilation due to missing package-info.class, see MCOMPILER-205 -->
+            <arg>-Xpkginfo:always</arg>
+          </compilerArgs>     
         </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
-        <version>2.2</version>
+        <version>2.6</version>
         <configuration>
           <failOnMissingWebXml>false</failOnMissingWebXml>
+          <attachClasses>true</attachClasses>
         </configuration>
       </plugin>
       <plugin>
@@ -373,32 +408,6 @@
       <id>redshift</id>
       <url>http://redshift-maven-repository.s3-website-us-east-1.amazonaws.com/release</url>
     </repository>
-    <repository>
-      <id>odysseus.community.snapshots</id>
-      <name>Odysseus community snapshots</name>
-      <releases>
-        <enabled>false</enabled>
-        <updatePolicy>always</updatePolicy>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>always</updatePolicy>
-      </snapshots>
-      <url>http://repo.odysseusinc.com/artifactory/community-libs-snapshot-local</url>
-    </repository>
-    <repository>
-      <id>odysseus.community.releases</id>
-      <name>Odysseus community releases</name>
-      <releases>
-        <enabled>true</enabled>
-        <updatePolicy>always</updatePolicy>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-        <updatePolicy>always</updatePolicy>
-      </snapshots>
-      <url>http://repo.odysseusinc.com/artifactory/community-libs-release-local</url>
-    </repository>
   </repositories>
 
   <pluginRepositories>
@@ -432,7 +441,6 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter</artifactId>
-      <version>${spring.boot.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.springframework.boot</groupId>
@@ -443,43 +451,49 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
-      <version>${spring.boot.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-tomcat</artifactId>
-      <version>${spring.boot.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.springframework.batch</groupId>
-      <artifactId>spring-batch-core</artifactId>
-      <version>${spring.batch.version}</version>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-batch</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-jdbc</artifactId>
-      <version>${spring.boot.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-jersey</artifactId>
-      <version>${spring.boot.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-jpa</artifactId>
-      <version>${spring.boot.version}</version>
     </dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-cache</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>javax.cache</groupId>
+			<artifactId>cache-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ehcache</groupId>
+			<artifactId>ehcache</artifactId>
+		</dependency>
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-core</artifactId>
-      <version>5.2.13.Final</version>
+      <version>5.4.2.Final</version>
     </dependency>
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-entitymanager</artifactId>
-      <version>5.2.13.Final</version>
+      <version>5.4.2.Final</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
@@ -490,7 +504,7 @@
     <dependency>
       <groupId>org.ohdsi.sql</groupId>
       <artifactId>SqlRender</artifactId>
-      <version>1.6.1-SNAPSHOT</version>
+      <version>1.6.3-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>commons-dbutils</groupId>
@@ -500,7 +514,7 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.4</version>
+      <version>2.6</version>
     </dependency>
     <dependency>
       <groupId>com.sun.xml.security</groupId>
@@ -516,7 +530,7 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.3.2</version>
+      <version>3.9</version>
     </dependency>
     <dependency>
       <groupId>org.flywaydb</groupId>
@@ -629,12 +643,18 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>
-      <version>1.7.4-SNAPSHOT</version>
+      <version>${circe.version}</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>hydra</artifactId>
-      <version>0.0.4-SNAPSHOT</version>
+      <version>0.0.5</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.ohdsi</groupId>
+          <artifactId>circe</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.json</groupId>
@@ -644,7 +664,13 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>featureExtraction</artifactId>
-      <version>2.2.0-SNAPSHOT</version>
+      <version>2.2.4</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.ohdsi.sql</groupId>
+          <artifactId>SqlRender</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.amazon.redshift</groupId>
@@ -658,7 +684,7 @@
     <dependency>
       <groupId>com.zaxxer</groupId>
       <artifactId>HikariCP</artifactId>
-      <version>2.7.2</version>
+      <version>3.3.1</version>
     </dependency>
     <dependency>
       <groupId>com.google.code.gson</groupId>
@@ -673,6 +699,11 @@
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk15on</artifactId>
       <version>1.59</version>
+    </dependency>
+    <dependency>
+      <groupId>com.odysseusinc.arachne</groupId>
+      <artifactId>arachne-common-utils</artifactId>
+      <version>${arachne.version}</version>
     </dependency>
     <dependency>
       <groupId>com.odysseusinc.arachne</groupId>
@@ -703,21 +734,37 @@
       <groupId>com.odysseusinc</groupId>
       <artifactId>data-source-manager</artifactId>
       <version>${arachne.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.bouncycastle</groupId>
+          <artifactId>bcprov-jdk15</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
-      <artifactId>standardized-analysis-api</artifactId>
-      <version>1.2.0-SNAPSHOT</version>
+      <artifactId>standardized-analysis-specs</artifactId>
+      <version>1.2.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ohdsi</groupId>
+      <artifactId>standardized-analysis-utils</artifactId>
+      <version>1.2.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>SkeletonCohortCharacterization</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>org.ohdsi</groupId>
-      <artifactId>SkeletonCohortCharacterization</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.0.0</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.ohdsi</groupId>
+          <artifactId>standardized-analysis-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ohdsi.sql</groupId>
+          <artifactId>SqlRender</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.cosium.spring.data</groupId>
@@ -734,6 +781,12 @@
       <artifactId>jackson-annotations</artifactId>
       <version>2.8.7</version>
       <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>com.opentable.components</groupId>
+      <artifactId>otj-pg-embedded</artifactId>
+      <version>0.13.1</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
   <profiles>
@@ -865,50 +918,15 @@
       <id>webapi-impala</id>
       <properties>
         <impala.enabled>true</impala.enabled>
-				<!-- Impala JDBC driver path -->
-				<impala.classpath>...path/to/impala/jdbc/drivers...</impala.classpath>
+        <impala.driver.version>2.6.15</impala.driver.version>
+        <!-- Impala JDBC driver path -->
+		<impala.classpath>...path/to/impala/jdbc/drivers...</impala.classpath>
       </properties>
       <dependencies>
         <dependency>
-          <groupId>hive</groupId>
-          <artifactId>hive_metastore</artifactId>
-          <version>1.0.0</version>
-        </dependency>
-        <dependency>
-          <groupId>hive</groupId>
-          <artifactId>hive_service</artifactId>
-          <version>1.0.0</version>
-        </dependency>
-        <dependency>
           <groupId>com.cloudera</groupId>
-          <artifactId>ImpalaJDBC41</artifactId>
-          <version>2.5.42</version>
-        </dependency>
-        <dependency>
-          <groupId>libfb</groupId>
-          <artifactId>libfb303</artifactId>
-          <version>0.9.0</version>
-        </dependency>
-        <dependency>
-          <groupId>libthrift</groupId>
-          <artifactId>libthrift</artifactId>
-          <version>0.9.0</version>
-        </dependency>
-        <dependency>
-          <groupId>ql</groupId>
-          <artifactId>ql</artifactId>
-          <version>1.0.0</version>
-        </dependency>
-        <dependency>
-          <groupId>TCLI</groupId>
-          <artifactId>TCLI</artifactId>
-          <version>1.0.0</version>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.zookeeper</groupId>
-          <artifactId>zookeeper</artifactId>
-          <version>3.4.6</version>
-          <type>pom</type>
+          <artifactId>ImpalaJDBC42</artifactId>
+          <version>${impala.driver.version}</version>
         </dependency>
       </dependencies>
       <build>
@@ -926,94 +944,10 @@
                 </goals>
                 <configuration>
                   <groupId>com.cloudera</groupId>
-                  <artifactId>ImpalaJDBC41</artifactId>
-                  <version>2.5.41</version>
+                  <artifactId>ImpalaJDBC42</artifactId>
+                  <version>${impala.driver.version}</version>
                   <packaging>jar</packaging>
-                  <file>${impala.classpath}/ImpalaJDBC41.jar</file>
-                </configuration>
-              </execution>
-              <execution>
-                <id>hive_metastore</id>
-                <phase>initialize</phase>
-                <goals>
-                  <goal>install-file</goal>
-                </goals>
-                <configuration>
-                  <groupId>hive</groupId>
-                  <artifactId>hive_metastore</artifactId>
-                  <version>1.0.0</version>
-                  <packaging>jar</packaging>
-                  <file>${impala.classpath}/hive_metastore.jar</file>
-                </configuration>
-              </execution>
-              <execution>
-                <id>hive_service</id>
-                <phase>initialize</phase>
-                <goals>
-                  <goal>install-file</goal>
-                </goals>
-                <configuration>
-                  <groupId>hive</groupId>
-                  <artifactId>hive_service</artifactId>
-                  <version>1.0.0</version>
-                  <packaging>jar</packaging>
-                  <file>${impala.classpath}/hive_service.jar</file>
-                </configuration>
-              </execution>
-              <execution>
-                <id>libfb</id>
-                <phase>initialize</phase>
-                <goals>
-                  <goal>install-file</goal>
-                </goals>
-                <configuration>
-                  <groupId>libfb</groupId>
-                  <artifactId>libfb303</artifactId>
-                  <version>0.9.0</version>
-                  <packaging>jar</packaging>
-                  <file>${impala.classpath}/libfb303-0.9.0.jar</file>
-                </configuration>
-              </execution>
-              <execution>
-                <id>libthrift</id>
-                <phase>initialize</phase>
-                <goals>
-                  <goal>install-file</goal>
-                </goals>
-                <configuration>
-                  <groupId>libthrift</groupId>
-                  <artifactId>libthrift</artifactId>
-                  <version>0.9.0</version>
-                  <packaging>jar</packaging>
-                  <file>${impala.classpath}/libthrift-0.9.0.jar</file>
-                </configuration>
-              </execution>
-              <execution>
-                <id>ql</id>
-                <phase>initialize</phase>
-                <goals>
-                  <goal>install-file</goal>
-                </goals>
-                <configuration>
-                  <groupId>ql</groupId>
-                  <artifactId>ql</artifactId>
-                  <version>1.0.0</version>
-                  <packaging>jar</packaging>
-                  <file>${impala.classpath}/ql.jar</file>
-                </configuration>
-              </execution>
-              <execution>
-                <id>TCLI</id>
-                <phase>initialize</phase>
-                <goals>
-                  <goal>install-file</goal>
-                </goals>
-                <configuration>
-                  <groupId>TCLI</groupId>
-                  <artifactId>TCLI</artifactId>
-                  <version>1.0.0</version>
-                  <packaging>jar</packaging>
-                  <file>${impala.classpath}/TCLIServiceClient.jar</file>
+                  <file>${impala.classpath}/ImpalaJDBC42.jar</file>
                 </configuration>
               </execution>
             </executions>

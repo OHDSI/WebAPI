@@ -143,7 +143,7 @@ public class UserImportServiceImpl implements UserImportService {
           });
           result.incUpdated();
         } else {
-          userManager.registerUser(login, roles);
+          userManager.registerUser(login, user.getDisplayName(), roles);
           result.incCreated();
         }
       } catch (Exception e) {

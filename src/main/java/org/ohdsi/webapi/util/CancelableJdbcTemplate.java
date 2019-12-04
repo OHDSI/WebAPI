@@ -10,6 +10,7 @@ import org.springframework.util.StringUtils;
 import javax.sql.DataSource;
 import java.sql.*;
 import java.util.List;
+import java.util.Objects;
 
 public class CancelableJdbcTemplate extends JdbcTemplate {
 
@@ -48,7 +49,7 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
       public int[] doInStatement(Statement stmt) throws SQLException, DataAccessException {
         int[] rowsAffected = new int[sql.length];
         cancelOp.setStatement(stmt);
-        if (JdbcUtils.supportsBatchUpdates(stmt.getConnection())) {
+        if (supportsBatchUpdates(stmt.getConnection())) {
           for (String sqlStmt : sql) {
             this.currSql = appendSql(this.currSql, sqlStmt);
             stmt.addBatch(sqlStmt);
@@ -66,7 +67,12 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
             if (StringUtils.hasLength(batchExceptionSql)) {
               this.currSql = batchExceptionSql;
             }
-            throw ex;
+            SQLException reason = ex.getNextException();
+            if (Objects.nonNull(reason)) {
+              throw reason;
+            } else {
+              throw new SQLException("Failed to execute batch update", ex);
+            }
           }
         }
         else {
@@ -98,7 +104,7 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
 
   public int[] batchUpdate(StatementCancel cancelOp, List<PreparedStatementCreator> statements) {
 
-    class BatchUpdateConnectionCallback implements ConnectionCallback<int[]>, SqlProvider {
+    class BatchUpdateConnectionCallback implements ConnectionCallback<int[]> {
 
       private PreparedStatementCreator current;
 
@@ -110,11 +116,12 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
           current = statements.get(i);
           PreparedStatement query = current.createPreparedStatement(con);
           cancelOp.setStatement(query);
-          if (query.execute()) {
-            rowsAffected[i] = query.getUpdateCount();
-          } else if (!suppressApiException) {
-            throw new InvalidDataAccessApiUsageException("Invalid batch SQL statement: " + getSql());
-          }
+					if (!query.execute()) {
+						rowsAffected[i] = query.getUpdateCount();
+					}
+					else if (!suppressApiException) {
+						throw new InvalidDataAccessApiUsageException("Invalid batch SQL statement: " + getSql(current));
+					}
           query.close();
           if (cancelOp.isCanceled()) {
             break;
@@ -124,15 +131,21 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
         return rowsAffected;
       }
 
-      @Override
-      public String getSql() {
-        if (current instanceof SqlProvider) {
-          return ((SqlProvider)current).getSql();
+      private String getSql(PreparedStatementCreator statement) {
+        if (statement instanceof SqlProvider) {
+          return ((SqlProvider)statement).getSql();
         }
         return "";
       }
     }
 
     return execute(new BatchUpdateConnectionCallback());
+  }
+
+  private boolean supportsBatchUpdates(Connection connection) throws SQLException {
+
+    // NOTE:
+    // com.cloudera.impala.hivecommon.dataengine.HiveJDBCDataEngine.prepareBatch throws NOT_IMPLEMENTED exception
+    return JdbcUtils.supportsBatchUpdates(connection) && !connection.getMetaData().getURL().startsWith("jdbc:impala");
   }
 }

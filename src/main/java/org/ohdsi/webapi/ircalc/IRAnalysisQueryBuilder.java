@@ -24,19 +24,20 @@ import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.circe.vocabulary.ConceptSetExpressionQueryBuilder;
 
 import java.util.ArrayList;
+import org.ohdsi.webapi.Constants;
 
 /**
  *
  * @author Chris Knoll <cknoll@ohdsi.org>
  */
 public class IRAnalysisQueryBuilder {
-  
+
   private final static ConceptSetExpressionQueryBuilder conceptSetQueryBuilder = new ConceptSetExpressionQueryBuilder();
   private final static CohortExpressionQueryBuilder cohortExpressionQueryBuilder = new CohortExpressionQueryBuilder();
   
   private final static String PERFORM_ANALYSIS_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/incidencerate/sql/performAnalysis.sql"); 
-  private final static String STRATA_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/incidencerate/sql/strata.sql");  
-  
+  private final static String STRATA_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/incidencerate/sql/strata.sql");
+
   public static class BuildExpressionQueryOptions {
     @JsonProperty("cdmSchema")  
     public String cdmSchema;
@@ -52,7 +53,14 @@ public class IRAnalysisQueryBuilder {
 
     @JsonProperty("cohortTable")
     public String cohortTable;
-  } 
+  }
+
+  private final ObjectMapper objectMapper;
+
+  public IRAnalysisQueryBuilder(ObjectMapper objectMapper) {
+
+    this.objectMapper = objectMapper;
+  }
 
   private String getStrataQuery(CriteriaGroup strataCriteria)
   {
@@ -135,10 +143,10 @@ public class IRAnalysisQueryBuilder {
     if (options != null)
     {
       // replease query parameters with tokens
-      resultSql = StringUtils.replace(resultSql, "@cdm_database_schema", options.cdmSchema);
-      resultSql = StringUtils.replace(resultSql, "@results_database_schema", options.resultsSchema);
-      resultSql = StringUtils.replace(resultSql, "@vocabulary_database_schema", options.vocabularySchema);
-      resultSql = StringUtils.replace(resultSql, "@temp_database_schema", options.tempSchema);
+      resultSql = StringUtils.replace(resultSql, Constants.SqlSchemaPlaceholders.CDM_DATABASE_SCHEMA_PLACEHOLDER, options.cdmSchema);
+      resultSql = StringUtils.replace(resultSql, Constants.SqlSchemaPlaceholders.RESULTS_DATABASE_SCHEMA_PLACEHOLDER, options.resultsSchema);
+      resultSql = StringUtils.replace(resultSql, Constants.SqlSchemaPlaceholders.VOCABULARY_DATABASE_SCHEMA_PLACEHOLDER, options.vocabularySchema);
+      resultSql = StringUtils.replace(resultSql, Constants.SqlSchemaPlaceholders.TEMP_DATABASE_SCHEMA_PLACEHOLDER, options.tempSchema);
       resultSql = StringUtils.replace(resultSql, "@cohort_table", options.cohortTable);
     }
 
@@ -149,8 +157,7 @@ public class IRAnalysisQueryBuilder {
 
   public String buildAnalysisQuery(IncidenceRateAnalysis analyisis, BuildExpressionQueryOptions options) {
     try {
-      ObjectMapper mapper = new ObjectMapper();
-      IncidenceRateAnalysisExpression analysisExpression = mapper.readValue(analyisis.getDetails().getExpression(), IncidenceRateAnalysisExpression.class);
+      IncidenceRateAnalysisExpression analysisExpression = objectMapper.readValue(analyisis.getDetails().getExpression(), IncidenceRateAnalysisExpression.class);
       return buildAnalysisQuery(analysisExpression, analyisis.getId(), options);
     } catch (Exception e) {
       throw new RuntimeException(e);

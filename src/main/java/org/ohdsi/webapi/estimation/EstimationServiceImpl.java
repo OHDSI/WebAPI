@@ -3,7 +3,6 @@ package org.ohdsi.webapi.estimation;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.estimation.design.EstimationTypeEnum;
@@ -29,13 +28,13 @@ import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
 import org.ohdsi.webapi.service.ConceptSetService;
 import org.ohdsi.webapi.service.JobService;
-import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.service.VocabularyService;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.util.CopyUtils;
+import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.Job;
@@ -48,6 +47,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
+import javax.ws.rs.InternalServerErrorException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -135,6 +135,11 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     }
     
     @Override
+    public int getCountEstimationWithSameName(Integer id, String name) {
+        return estimationRepository.getCountEstimationWithSameName(id, name);
+    }
+    
+    @Override
     public Estimation getById(Integer id) {
         return estimationRepository.findOne(id, COMMONS_ENTITY_GRAPH);
     }
@@ -159,7 +164,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     @Override
     public Estimation updateEstimation(final int id, Estimation est) throws Exception {
 
-        Estimation estFromDB = estimationRepository.findOne(id);
+        Estimation estFromDB = getById(id);
         Date currentTime = Calendar.getInstance().getTime();
 
         est.setModifiedBy(getCurrentUser());
@@ -170,10 +175,9 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
 
         return save(est);
     }
-    
-    @Override
-    public int countLikeName(String name) {
-        return estimationRepository.countByNameStartsWith(name);
+
+    private List<String> getNamesLike(String name) {
+        return estimationRepository.findAllByNameStartsWith(name).stream().map(Estimation::getName).collect(Collectors.toList());
     }
     
     @Override
@@ -195,7 +199,6 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     @Override
     public EstimationAnalysisImpl exportAnalysis(Estimation est) {
 
-        ObjectMapper mapper = new ObjectMapper();
         EstimationAnalysisImpl expression;
         try {
             expression = Utils.deserialize(est.getSpecification(), EstimationAnalysisImpl.class);
@@ -284,6 +287,10 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     @Override
     public Estimation importAnalysis(EstimationAnalysisImpl analysis) throws Exception {
         try {
+            if (Objects.isNull(analysis.getEstimationAnalysisSettings())) {
+                log.error("Failed to import Estimation. Invalid source JSON. EstimationAnalysisSettings is empty");
+                throw new InternalServerErrorException();
+            }
             if (analysis.getEstimationAnalysisSettings().getEstimationType() != EstimationTypeEnum.COMPARATIVE_COHORT_ANALYSIS) {
                 String estimationType = analysis.getEstimationAnalysisSettings().getEstimationType().name();
                 throw new UnsupportedOperationException("Cannot import " + estimationType);
@@ -304,6 +311,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
                 CohortDefinition cd = designImportService.persistCohortOrGetExisting(conversionService.convert(analysisCohortDefinition, CohortDefinition.class), true);
                 cohortIds.put(Long.valueOf(oldId), Long.valueOf(cd.getId()));
                 analysisCohortDefinition.setId(cd.getId());
+                analysisCohortDefinition.setName(cd.getName());
                 log.debug("cohort created: " + cd.getId());
             });
 
@@ -314,6 +322,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
                int oldId = pcs.id;
                ConceptSetDTO cs = designImportService.persistConceptSet(pcs);
                pcs.id = cs.getId();
+               pcs.name = cs.getName();
                conceptSetIdMap.put(oldId, cs.getId());
                 log.debug("concept set created: " + cs.getId());
             });
@@ -362,7 +371,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
             est.setDescription(analysis.getDescription());
             est.setType(EstimationTypeEnum.COMPARATIVE_COHORT_ANALYSIS);
             est.setSpecification(Utils.serialize(analysis));
-            est.setName(getNameForCopy(analysis.getName()));
+            est.setName(NameUtils.getNameWithSuffix(analysis.getName(), this::getNamesLike));
 
             Estimation savedEstimation = this.createEstimation(est);
             return estimationRepository.findOne(savedEstimation.getId(), COMMONS_ENTITY_GRAPH);
@@ -374,7 +383,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
 
     @Override
     public String getNameForCopy(String dtoName) {
-        return CopyUtils.getNameForCopy(dtoName, this::countLikeName, estimationRepository.findByName(dtoName));
+        return NameUtils.getNameForCopy(dtoName, this::getNamesLike, estimationRepository.findByName(dtoName));
     }
 
     @Override

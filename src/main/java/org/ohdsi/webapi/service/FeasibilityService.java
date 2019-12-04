@@ -63,6 +63,7 @@ import org.ohdsi.webapi.cohortdefinition.ExpressionType;
 import org.ohdsi.webapi.feasibility.FeasibilityStudyRepository;
 import org.ohdsi.webapi.cohortdefinition.GenerateCohortTasklet;
 import org.ohdsi.webapi.GenerationStatus;
+import org.ohdsi.webapi.generationcache.GenerationCacheHelper;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
@@ -70,6 +71,7 @@ import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -103,9 +105,6 @@ public class FeasibilityService extends AbstractDaoService {
   private FeasibilityStudyRepository feasibilityStudyRepository;
 
   @Autowired
-  private CohortDefinitionService definitionService;
-
-  @Autowired
   private JobBuilderFactory jobBuilders;
 
   @Autowired
@@ -119,6 +118,15 @@ public class FeasibilityService extends AbstractDaoService {
 
   @Autowired
   private UserRepository userRepository;
+
+  @Autowired
+  private ObjectMapper objectMapper;
+
+  @Autowired
+  private GenerationCacheHelper generationCacheHelper;
+
+  @Autowired
+  private SourceService sourceService;
 
   @Context
   ServletContext context;
@@ -221,7 +229,7 @@ public class FeasibilityService extends AbstractDaoService {
 
     try {
       // all resultRule repository objects are initalized; create 'all criteria' cohort definition from index rule + inclusion rules
-      ObjectMapper mapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
+      ObjectMapper mapper = objectMapper.copy().setSerializationInclusion(JsonInclude.Include.NON_NULL);
       CohortExpression indexRuleExpression = mapper.readValue(p.getIndexRule().getDetails().getExpression(), CohortExpression.class);
 
       if (indexRuleExpression.additionalCriteria == null) {
@@ -590,14 +598,20 @@ public class FeasibilityService extends AbstractDaoService {
     final JobParameters jobParameters = builder.toJobParameters();
     final CancelableJdbcTemplate sourceJdbcTemplate = getSourceJdbcTemplate(source);
 
-    GenerateCohortTasklet indexRuleTasklet = new GenerateCohortTasklet(sourceJdbcTemplate, getTransactionTemplate(), cohortDefinitionRepository, getSourceRepository());
+    GenerateCohortTasklet indexRuleTasklet = new GenerateCohortTasklet(
+      sourceJdbcTemplate,
+      getTransactionTemplate(),
+      generationCacheHelper,
+      cohortDefinitionRepository,
+      sourceService
+    );
 
     Step generateCohortStep = stepBuilders.get("performStudy.generateIndexCohort")
             .tasklet(indexRuleTasklet)
             .exceptionHandler(new TerminateJobStepExceptionHandler())
             .build();
 
-    PerformFeasibilityTasklet simulateTasket = new PerformFeasibilityTasklet(sourceJdbcTemplate, getTransactionTemplate(), feasibilityStudyRepository);
+    PerformFeasibilityTasklet simulateTasket = new PerformFeasibilityTasklet(sourceJdbcTemplate, getTransactionTemplate(), feasibilityStudyRepository, objectMapper);
 
     Step performStudyStep = stepBuilders.get("performStudy.performStudy")
             .tasklet(simulateTasket)

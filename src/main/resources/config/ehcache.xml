@@ -1,0 +1,22 @@
+<config xmlns='http://www.ehcache.org/v3'
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:jsr107="http://www.ehcache.org/v3/jsr107"
+		xsi:schemaLocation="http://www.ehcache.org/v3 http://www.ehcache.org/schema/ehcache-core-3.0.xsd
+							http://www.ehcache.org/v3/jsr107 http://www.ehcache.org/schema/ehcache-107-ext-3.0.xsd">
+
+	<cache-template name="default">
+    <expiry>
+      <ttl unit="minutes">60</ttl>
+    </expiry>				
+		<resources>
+			<heap unit="entries">100</heap>
+		</resources>
+	</cache-template>
+	
+	<cache alias="datasources.dashboard" uses-template="default"/>
+	<cache alias="datasources.person" uses-template="default"/>	
+	<cache alias="datasources.domain" uses-template="default"/>
+	<cache alias="datasources.drilldown" uses-template="default"/>
+	<cache alias="datasources.dataDensity" uses-template="default"/>
+
+</config>

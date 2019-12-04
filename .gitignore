@@ -11,3 +11,9 @@ sandbox/
 /nbactions*.xml
 *~
 .DS_Store
+
+### Developer's personal properties ###
+**/resources/config/application*-dev-*.properties
+**/resources/config/application*-dev-*.yaml
+**/resources/config/application*-dev-*.yml
+/.vscode

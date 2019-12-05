@@ -489,14 +489,27 @@ public class VocabularyService extends AbstractDaoService {
 
     return executeSearch(defaultSourceKey, search);    
   }
+  /**
+   * @param sourceKey
+   * @param query
+   * @return
+   */
+  @Path("{sourceKey}/search/{query}")
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, @PathParam("query") String query) {
+    return this.executeSearch(sourceKey, query, null);
+  }
   
   /**
+   * @param sourceKey
    * @return
    */
   @Path("{sourceKey}/search")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, @QueryParam("query") String query) {
+  public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, @QueryParam("query") String query, @QueryParam("rows") Integer rows) {
+    if (rows == null) rows = 20000; // Revisit this.
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     VocabularyInfo vocabularyInfo = getInfo(sourceKey);
     String versionKey = vocabularyInfo.version.replace(' ', '_');

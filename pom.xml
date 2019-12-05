@@ -44,7 +44,8 @@
     <cdm.version>5</cdm.version>
     <!-- Person properties -->
     <person.viewDates>false</person.viewDates>
-
+    <!-- Full Text Search With SOLR Settings -->
+    <solr.endpoint></solr.endpoint>
     <!-- Heracles properties -->
     <heracles.smallcellcount>5</heracles.smallcellcount>
 

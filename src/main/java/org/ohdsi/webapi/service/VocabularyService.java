@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
@@ -23,6 +24,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -43,6 +45,7 @@ import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedSqlRender;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.ohdsi.webapi.util.SolrUtils;
 import org.ohdsi.webapi.vocabulary.ConceptRelationship;
 import org.ohdsi.webapi.vocabulary.ConceptSearch;
 import org.ohdsi.webapi.vocabulary.DescendentOfAncestorSearch;
@@ -65,7 +68,8 @@ import org.springframework.web.client.RestTemplate;
 public class VocabularyService extends AbstractDaoService {
 
   private static Hashtable<String, VocabularyInfo> vocabularyInfoCache = null;
-  private static HashSet<String> availableVocabularyFullTextIndices = null;
+  private static HashSet<String> availableVocabularyFullTextIndices = new HashSet<>();
+  public static final String DEFAULT_SEARCH_ROWS = "20000";
 
   @Autowired
   private SourceService sourceService;
@@ -73,29 +77,14 @@ public class VocabularyService extends AbstractDaoService {
   @Value("${datasource.driverClassName}")
   private String driver;
 
-  @Value("${solr.enabled}")
-  private boolean solrEnabled;
-
   @Value("${solr.endpoint}")
-  private String solrUrl;
+  private String solrEndpoint;
 
   @PostConstruct
   private void InitializeFullTextIndexCache() {
-    if (solrEnabled) {
-      availableVocabularyFullTextIndices = new HashSet<>();
-      RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
-      String searchEndpoint = solrUrl + "/admin/cores";
-
+    if (!StringUtils.isEmpty(solrEndpoint)) {
       try {
-        ResponseEntity<String> responseJson = restTemplate.getForEntity(searchEndpoint, String.class);
-        JSONObject responseObject = new JSONObject(responseJson.getBody());
-        JSONObject statusObject = responseObject.getJSONObject("status");
-        Iterator<String> keys = statusObject.keys();
-
-        while(keys.hasNext()) {
-          String key = keys.next();
-          availableVocabularyFullTextIndices.add(key);
-        }
+        availableVocabularyFullTextIndices = SolrUtils.getCores(solrEndpoint);
       } catch (Exception ex) {
         log.error("SOLR Core Initialization Error:  WebAPI was unable to obtain the list of available cores.", ex);
       }
@@ -498,25 +487,35 @@ public class VocabularyService extends AbstractDaoService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, @PathParam("query") String query) {
-    return this.executeSearch(sourceKey, query, null);
+    return this.executeSearch(sourceKey, query, DEFAULT_SEARCH_ROWS);
   }
   
   /**
    * @param sourceKey
+   * @param query
+   * @param rows
    * @return
    */
   @Path("{sourceKey}/search")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, @QueryParam("query") String query, @QueryParam("rows") Integer rows) {
-    if (rows == null) rows = 20000; // Revisit this.
+  public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, @QueryParam("query") String query, @DefaultValue(DEFAULT_SEARCH_ROWS) @QueryParam("rows") String rows) {
+      // Verify that the rows parameter contains an integer and is > 0
+    try {
+        Integer r = Integer.parseInt(rows);
+        if (r <= 0) {
+            throw new NumberFormatException("The rows parameter must be greater than 0");
+        }
+    } catch (NumberFormatException nfe) {
+        throw nfe;
+    }
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     VocabularyInfo vocabularyInfo = getInfo(sourceKey);
     String versionKey = vocabularyInfo.version.replace(' ', '_');
-    if (solrEnabled && availableVocabularyFullTextIndices.contains(versionKey)) {
+    if (availableVocabularyFullTextIndices.contains(versionKey)) {
       ArrayList<Concept> concepts = new ArrayList<>();
       RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
-      String searchEndpoint = solrUrl + "/" + versionKey + "/select?q=query:" + query + "&wt=json&rows=20000";
+      String searchEndpoint = solrEndpoint + "/" + versionKey + "/select?q=query:" + query + "&wt=json&rows=" + rows;
       ResponseEntity<String> responseJson = restTemplate.getForEntity(searchEndpoint, String.class);
       try {
         JSONObject jsonObject = new JSONObject(responseJson.getBody());

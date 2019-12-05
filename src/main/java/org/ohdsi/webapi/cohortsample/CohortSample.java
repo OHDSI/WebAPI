@@ -32,6 +32,8 @@ public class CohortSample extends CommonEntity<Integer> {
     @GeneratedValue(generator = "cohort_sample_generator")
     private Integer id;
 
+    private String name;
+
     @JoinColumn(name = "cohort_definition_id")
     private int cohortDefinitionId;
 

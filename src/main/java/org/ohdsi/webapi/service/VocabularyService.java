@@ -52,8 +52,10 @@ import org.ohdsi.webapi.vocabulary.DescendentOfAncestorSearch;
 import org.ohdsi.webapi.vocabulary.Domain;
 import org.ohdsi.webapi.vocabulary.RelatedConcept;
 import org.ohdsi.webapi.vocabulary.RelatedConceptSearch;
+import org.ohdsi.webapi.vocabulary.SearchProviderConfig;
 import org.ohdsi.webapi.vocabulary.Vocabulary;
 import org.ohdsi.webapi.vocabulary.VocabularyInfo;
+import org.ohdsi.webapi.vocabulary.VocabularySearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -73,6 +75,9 @@ public class VocabularyService extends AbstractDaoService {
 
   @Autowired
   private SourceService sourceService;
+  
+  @Autowired
+  private VocabularySearchService vocabSearchService;
 
   @Value("${datasource.driverClassName}")
   private String driver;
@@ -91,7 +96,7 @@ public class VocabularyService extends AbstractDaoService {
     }
   }
 
-  private final RowMapper<Concept> rowMapper = new RowMapper<Concept>() {
+  public final RowMapper<Concept> rowMapper = new RowMapper<Concept>() {
     @Override
     public Concept mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
       final Concept concept = new Concept();
@@ -487,7 +492,7 @@ public class VocabularyService extends AbstractDaoService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, @PathParam("query") String query) {
-    return this.executeSearch(sourceKey, query, DEFAULT_SEARCH_ROWS);
+    return this.executeSearch(sourceKey, query, null);
   }
   
   /**
@@ -500,7 +505,7 @@ public class VocabularyService extends AbstractDaoService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, @QueryParam("query") String query, @DefaultValue(DEFAULT_SEARCH_ROWS) @QueryParam("rows") String rows) {
-      // Verify that the rows parameter contains an integer and is > 0
+    // Verify that the rows parameter contains an integer and is > 0
     try {
         Integer r = Integer.parseInt(rows);
         if (r <= 0) {
@@ -509,59 +514,20 @@ public class VocabularyService extends AbstractDaoService {
     } catch (NumberFormatException nfe) {
         throw nfe;
     }
-    Source source = getSourceRepository().findBySourceKey(sourceKey);
-    VocabularyInfo vocabularyInfo = getInfo(sourceKey);
-    String versionKey = vocabularyInfo.version.replace(' ', '_');
-    if (availableVocabularyFullTextIndices.contains(versionKey)) {
-      ArrayList<Concept> concepts = new ArrayList<>();
-      RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
-      String searchEndpoint = solrEndpoint + "/" + versionKey + "/select?q=query:" + query + "&wt=json&rows=" + rows;
-      ResponseEntity<String> responseJson = restTemplate.getForEntity(searchEndpoint, String.class);
-      try {
-        JSONObject jsonObject = new JSONObject(responseJson.getBody());
-        JSONObject responseNode = jsonObject.getJSONObject("response");
-        JSONArray docs = responseNode.getJSONArray("docs");
-        for (int i=0; i<docs.length(); i++) {
-          Concept c = new Concept();
-          JSONObject conceptNode = docs.getJSONObject(i);
-          c.conceptName = conceptNode.getString("concept_name");
-          c.conceptId = conceptNode.getLong("id");
-          try {
-            c.conceptClassId = conceptNode.getString("concept_class_id");
-          } catch (JSONException ex) {
-            c.conceptClassId = "";
-          }
-          try {
-            c.conceptCode = conceptNode.getString("concept_code");
-          } catch (JSONException ex) {
-            c.conceptCode = "";
-          }
-          c.domainId = conceptNode.getString("domain_id");
-          try {
-            c.invalidReason = conceptNode.getString("invalid_reason");
-          } catch (JSONException ex) {
-            c.invalidReason = "V";
-          }
-          try {
-            c.standardConcept = conceptNode.getString("standard_concept");
-          } catch (JSONException ex) {
-            c.standardConcept = "N";
-          }
-          c.vocabularyId = conceptNode.getString("vocabulary_id");
-          concepts.add(c);
-        }
-      } catch (JSONException jsonException) {
-        log.error("SOLR Search Error", jsonException);
-      }
-
-      return concepts;
-    } else {
-      PreparedStatementRenderer psr = prepareExecuteSearchWithQuery(query, source);
-      return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.rowMapper);
+    
+    Collection<Concept> concepts = new ArrayList<>();
+    try {
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        VocabularyInfo vocabularyInfo = getInfo(sourceKey);
+        SearchProviderConfig searchConfig = new SearchProviderConfig(source, vocabularyInfo);
+        concepts = vocabSearchService.getSearchProvider(searchConfig).executeSearch(searchConfig, query, rows);
+    } catch (Exception ex) {
+        log.error("An error occurred during the vocabulary search", ex);
     }
+    return concepts;
   }
 
-  protected PreparedStatementRenderer prepareExecuteSearchWithQuery(String query, Source source) {
+  public PreparedStatementRenderer prepareExecuteSearchWithQuery(String query, Source source) {
 
     String resourcePath = "/resources/vocabulary/sql/search.sql";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);

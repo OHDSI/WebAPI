@@ -20,7 +20,6 @@ public class DatabaseSearchProvider implements SearchProvider {
     
     @Override
     public Collection<Concept> executeSearch(SearchProviderConfig config, String query, String rows) throws Exception {
-        System.out.println("DatabaseSearchProvider");
         PreparedStatementRenderer psr = vocabService.prepareExecuteSearchWithQuery(query, config.getSource());
         return vocabService.getSourceJdbcTemplate(config.getSource()).query(psr.getSql(), psr.getSetter(), vocabService.rowMapper);
     }

@@ -1,21 +1,26 @@
 package org.ohdsi.webapi.vocabulary;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
+import org.apache.commons.beanutils.ConvertUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.ohdsi.circe.vocabulary.Concept;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
+
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrDocumentList;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Component
 public class SolrSearchProvider implements SearchProvider {
-    @Value("${solr.endpoint}")
-    private String solrEndpoint;
+    @Autowired
+    SolrSearchClient solrSearchClient;
     
     @Override
     public boolean supports(VocabularySearchProviderType type) {
@@ -23,49 +28,47 @@ public class SolrSearchProvider implements SearchProvider {
     }
     
     @Override
-    public Collection<Concept> executeSearch(SearchProviderConfig config, String query, String rows) throws Exception {
-      System.out.println("SolrSearchProvider");
-      ArrayList<Concept> concepts = new ArrayList<>();
-      RestTemplate restTemplate = new RestTemplate();
-      String searchEndpoint = solrEndpoint + "/" + config.getVersionKey() + "/select?q=query:" + query + "&wt=json&rows=" + rows;
-      ResponseEntity<String> responseJson = restTemplate.getForEntity(searchEndpoint, String.class);
-      try {
-        JSONObject jsonObject = new JSONObject(responseJson.getBody());
-        JSONObject responseNode = jsonObject.getJSONObject("response");
-        JSONArray docs = responseNode.getJSONArray("docs");
-        for (int i=0; i<docs.length(); i++) {
-          Concept c = new Concept();
-          JSONObject conceptNode = docs.getJSONObject(i);
-          c.conceptName = conceptNode.getString("concept_name");
-          c.conceptId = conceptNode.getLong("id");
-          try {
-            c.conceptClassId = conceptNode.getString("concept_class_id");
-          } catch (JSONException ex) {
-            c.conceptClassId = "";
-          }
-          try {
-            c.conceptCode = conceptNode.getString("concept_code");
-          } catch (JSONException ex) {
-            c.conceptCode = "";
-          }
-          c.domainId = conceptNode.getString("domain_id");
-          try {
-            c.invalidReason = conceptNode.getString("invalid_reason");
-          } catch (JSONException ex) {
-            c.invalidReason = "V";
-          }
-          try {
-            c.standardConcept = conceptNode.getString("standard_concept");
-          } catch (JSONException ex) {
-            c.standardConcept = "N";
-          }
-          c.vocabularyId = conceptNode.getString("vocabulary_id");
-          concepts.add(c);
-        }
-      } catch (JSONException jsonException) {
-        throw jsonException;
-      }
+    public Collection<Concept> executeSearch(SearchProviderConfig config, String query, String rows) throws IOException, SolrServerException {
+        ArrayList<Concept> concepts = new ArrayList<>();
+        SolrClient client = solrSearchClient.getSolrClient(config.getVersionKey());
 
-      return concepts;    
+        SolrQuery q = new SolrQuery();
+        q.setQuery("query:" + query);
+        q.setStart(0);
+        q.setRows(Integer.parseInt(rows));
+
+        QueryResponse response = client.query(q);
+        SolrDocumentList results = response.getResults();
+        for (int i = 0; i < results.size(); ++i) {
+            SolrDocument d = results.get(i);
+            Concept c = new Concept();
+            c.conceptName = convertObjectToString(d.getFieldValue("concept_name"));
+            c.conceptId = convertObjectToLong(d.getFieldValue("id"));
+            c.conceptClassId = convertObjectToString(d.getFieldValue("concept_class_id"), "");
+            c.conceptCode = convertObjectToString(d.getFieldValue("concept_code"), "");
+            c.domainId = ConvertUtils.convert(d.getFieldValue("domain_id"));
+            c.invalidReason = convertObjectToString(d.getFieldValue("invalid_reason"), "V");
+            c.standardConcept = convertObjectToString(d.getFieldValue("standard_concept"), "N");
+            c.vocabularyId = ConvertUtils.convert(d.getFieldValue("vocabulary_id"));
+            concepts.add(c);
+        }        
+        
+        return concepts;
+    }
+    
+    protected String convertObjectToString(Object obj) {
+        return convertObjectToString(obj, null);
+    }
+    
+    protected String convertObjectToString(Object obj, String defaultValue) {
+        String returnVal = ConvertUtils.convert(obj);
+        if (defaultValue != null && returnVal == null) {
+            returnVal = defaultValue;
+        }
+        return returnVal;
+    }
+    
+    protected Long convertObjectToLong(Object obj) {
+        return NumberUtils.createLong(ConvertUtils.convert(obj));
     }
 }

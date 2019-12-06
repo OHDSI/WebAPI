@@ -3,15 +3,11 @@ package org.ohdsi.webapi.vocabulary;
 import java.util.HashSet;
 import java.util.List;
 import javax.annotation.PostConstruct;
-import org.apache.commons.lang.StringUtils;
 import org.ohdsi.webapi.service.VocabularyService;
-import org.ohdsi.webapi.util.SolrUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
 
 @Service
 public class VocabularySearchServiceImpl implements VocabularySearchService {
@@ -21,18 +17,18 @@ public class VocabularySearchServiceImpl implements VocabularySearchService {
     
     private static final String NO_PROVIDER_ERROR = "There is no vocabulary search provider which for sourceKey: %s";
     
-    @Value("${solr.endpoint}")
-    private String solrEndpoint;
-    
     @Autowired
     VocabularyService vocabService;
+    
+    @Autowired
+    SolrSearchClient solrSearchClient;
     
     @PostConstruct
     protected void init() {
         // Get the SOLR cores list if enabled
-        if (!StringUtils.isEmpty(solrEndpoint)) {
+        if (solrSearchClient.enabled()) {
           try {
-            availableVocabularyFullTextIndices = SolrUtils.getCores(solrEndpoint);
+            availableVocabularyFullTextIndices = solrSearchClient.getCores();
           } catch (Exception ex) {
             log.error("SOLR Core Initialization Error:  WebAPI was unable to obtain the list of available cores.", ex);
           }

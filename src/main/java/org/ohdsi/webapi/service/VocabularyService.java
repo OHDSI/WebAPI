@@ -45,7 +45,6 @@ import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedSqlRender;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
-import org.ohdsi.webapi.util.SolrUtils;
 import org.ohdsi.webapi.vocabulary.ConceptRelationship;
 import org.ohdsi.webapi.vocabulary.ConceptSearch;
 import org.ohdsi.webapi.vocabulary.DescendentOfAncestorSearch;
@@ -81,20 +80,6 @@ public class VocabularyService extends AbstractDaoService {
 
   @Value("${datasource.driverClassName}")
   private String driver;
-
-  @Value("${solr.endpoint}")
-  private String solrEndpoint;
-
-  @PostConstruct
-  private void InitializeFullTextIndexCache() {
-    if (!StringUtils.isEmpty(solrEndpoint)) {
-      try {
-        availableVocabularyFullTextIndices = SolrUtils.getCores(solrEndpoint);
-      } catch (Exception ex) {
-        log.error("SOLR Core Initialization Error:  WebAPI was unable to obtain the list of available cores.", ex);
-      }
-    }
-  }
 
   public final RowMapper<Concept> rowMapper = new RowMapper<Concept>() {
     @Override

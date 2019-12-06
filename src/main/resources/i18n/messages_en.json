@@ -1,10 +1,246 @@
 {
   "locale": "en",
+  "format": {
+    "number": "# ###.##",
+    "date": {
+      "shortdate": "MM/dd",
+      "mediumdate": "MM/dd/YYYY"
+    }
+  },
   "navigation": {
+    "pathways": "Cohort Pathways",
     "incidencerate": "Incidence Rates"
+  },
+  "datatable": {
+    "language": {
+      "decimal":        "",
+      "emptyTable":     "No data available in table",
+      "info":           "Showing _START_ to _END_ of _TOTAL_ entries",
+      "infoEmpty":      "Showing 0 to 0 of 0 entries",
+      "infoFiltered":   "(filtered from _MAX_ total entries)",
+      "infoPostFix":    "",
+      "thousands":      ",",
+      "lengthMenu":     "Show _MENU_ entries",
+      "loadingRecords": "Loading...",
+      "processing":     "Processing...",
+      "search":         "Filter:",
+      "zeroRecords":    "No matching records found",
+      "paginate": {
+        "first":      "First",
+        "last":       "Last",
+        "next":       "Next",
+        "previous":   "Previous"
+      },
+      "aria": {
+        "sortAscending":  ": activate to sort column ascending",
+        "sortDescending": ": activate to sort column descending"
+      }
+    }
+  },
+  "components": {
+    "cohort-definition-browser": {
+      "facets": {
+        "lastModified": "Последнее изменение",
+        "author": "Автор"
+      }
+    },
+    "filter-panel": {
+      "title": "Filter panel",
+      "buttons": {
+        "apply": "Apply",
+        "clear": "Clear"
+      }
+    },
+    "export": {
+      "progress": "export in progress"
+    },
+    "import": {
+      "button": "Import",
+      "denied": "Import is not permitted",
+      "progress": "import in progress"
+    },
+    "linked-cohort-list": {
+      "defaultTitle": "Cohort definitions",
+      "defaultNewItemLabel": "Import",
+      "dialog": {
+        "title": "Choose a Cohort definition"
+      },
+      "table": {
+        "actions": {
+          "edit": "Edit cohort",
+          "remove": "Remove"
+        },
+        "columns": {
+          "id": "ID",
+          "name": "Name"
+        }
+      }
+    },
+    "linked-entity-list": {
+      "defaultNewItemLabel": "Импорт"
+    }
+  },
+  "facets": {
+    "date" : {
+      "justNow": "Just Now",
+      "within24Hours": "Within 24 Hours",
+      "thisWeek": "This Week",
+      "lastWeek": "Last Week",
+      "others": "2+ Weeks Ago"
+    }
   },
   "incidencerate": {
     "title": "Incidence Rate Analysis",
     "newanalysis": "New Analysis"
+  },
+  "pathways": {
+    "title": "Cohort Pathways",
+    "newanalysis": "New Pathway Analysis",
+    "browser": {
+      "grid": {
+        "facets": {
+          "created": "Created",
+          "updated": "Updated",
+          "author": "Author"
+        }
+      },
+      "table": {
+        "columns": {
+          "id": "Id",
+          "name": "Name",
+          "created": "Created",
+          "updated": "Updated",
+          "author": "Author"
+        }
+      }
+    },
+    "manager": {
+      "loading": "Loading Cohort Pathway Analysis...",
+      "caption": "Cohort Pathway #",
+      "messages": {
+        "createACopy": "Create a copy of this Pathway Analysis",
+        "nameIsEmpty": "Cohort Pathway name is empty"
+      },
+      "tabs": {
+        "design": "Design",
+        "executions": "Executions",
+        "utilities": "Utilities"
+      },
+      "design": {
+        "description": "<b>Cohort Pathway</b> is defined as the process of generating an aggregated sequence of transitions between the Event Cohorts among those people in the Target Cohorts.",
+        "targetCohorts": {
+          "title": "Target Cohorts",
+          "description": "Each of the Target Cohorts will be analyized for the pathways through the event cohorts."
+        },
+        "eventCohorts": {
+          "title": "Event Cohorts",
+          "description": "Each Event Cohort defines the step in a pathway that may occur for a person in the Target Cohort."
+        },
+        "analysisSettings": {
+          "title": "Analysis Settings",
+          "description": "The following set of parameters will be used when performing the pathway analysis.",
+          "combinationWindow": {
+            "title": "Combination Window:",
+            "description": "Window of time when two event cohorts need to overlap to be considered a combination."
+          },
+          "minimumCellCount": {
+            "title": "Minimum cell count:",
+            "description": "Minimum number of subjects in the target cohort for a given event in order to be counted in the pathway."
+          },
+          "maximumPathLength": {
+            "title": "Maximum path length:",
+            "description": "Maximum number of steps in a given pathway to be included in the sunburst plot."
+          }
+        }
+      },
+      "executions": {
+        "title": "Executions",
+        "buttons": {
+          "generate": "Generate",
+          "viewLatestResult": "View latest result",
+          "allExecutions": "All executions",
+          "cancel": "Cancel",
+          "pending": "Pending"
+        },
+        "dialogs": {
+          "design": {
+            "title": "Design",
+            "loadError": "Unable to load design"
+          },
+          "exitMessage": {
+            "title": "Execution Exit Message"
+          }
+        },
+        "table": {
+          "columns": {
+            "date": "Date",
+            "design": {
+              "title": "Design",
+              "value": "(same as now)"
+            },
+            "status": {
+              "title": "Status",
+              "values": {
+                "FAILED": "FAILED",
+                "COMPLETED": "COMPLETED",
+                "STOPPED": "STOPPED",
+                "CANCELED": "CANCELED",
+                "PENDING": "PENDING",
+                "RUNNING": "RUNNING"
+              }
+            },
+            "duration": "Duration",
+            "results": {
+              "title": "Results",
+              "values": {
+                "text": "View reports",
+                "empty": "-"
+              }
+            }
+          }
+        },
+        "tooltips": {
+          "permissions": "Not enough permissions to generate"
+        },
+        "results": {
+          "title": "Pathway Report for",
+          "date": "Date:",
+          "design": "Design:",
+          "details": {
+            "title": "Path details",
+            "table": {
+              "columns": {
+                "name": "Name",
+                "remain": "% Remain",
+                "diff": "% Diff"
+              }
+            },
+            "noPath": "No path selected: click path to see details."
+          },
+          "diagram": {
+            "title": "Sunburst plot"
+          },
+          "filters": {
+            "cohorts": "Cohorts"
+          },
+          "legend": {
+            "title": "Legend",
+            "targetCohort": "Target Cohort",
+            "targetCohortCount": "Target cohort count:",
+            "personsCount": "Persons with pathways count:",
+            "personsPortion": "Persons with pathways portion:",
+            "eventCohort": "Event Cohort"
+          },
+          "noPathways": "No pathways were found"
+        }
+      }
+    },
+    "utilities": {
+      "title": "Utilities",
+      "buttons": {
+        "export": "Export",
+        "import": "Import"
+      }
+    }
   }
 }

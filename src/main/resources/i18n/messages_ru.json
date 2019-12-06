@@ -1,0 +1,255 @@
+{
+  "locale": "ru",
+  "format": {
+    "number": "# ###,##",
+    "date": {
+      "shortdate": "dd.MM",
+      "mediumdate": "dd.MM.YYYY"
+    }
+  },
+  "navigation": {
+    "pathways": "Исходы когорты",
+    "incidencerate": "Инцидентность"
+  },
+  "datatable": {
+    "language": {
+      "decimal":        "",
+      "emptyTable":     "В таблице нет данных",
+      "info":           "Показано с _START_ по _END_ из _TOTAL_ записей",
+      "infoEmpty":      "Показано с 0 по 0 из 0 записей",
+      "infoFiltered":   "(отфильтровано из _MAX_ записей)",
+      "infoPostFix":    "",
+      "thousands":      ",",
+      "lengthMenu":     "Показывать по _MENU_ записей",
+      "loadingRecords": "Загружается...",
+      "processing":     "Обрабатывается...",
+      "search":         "Фильтр:",
+      "zeroRecords":    "Подходящие записи не найдены",
+      "paginate": {
+        "first":      "Первая",
+        "last":       "Последняя",
+        "next":       "Дальше",
+        "previous":   "Назад"
+      },
+      "aria": {
+        "sortAscending":  ": нажмите для сортировки по возрастанию",
+        "sortDescending": ": нажмите для сортировки по убыванию"
+      }
+    }
+  },
+  "components": {
+    "cohort-definition-browser": {
+      "facets": {
+        "lastModified": "Последнее изменение",
+        "author": "Автор"
+      },
+      "table": {
+        "columns": {
+          "id": "ИД",
+          "name": "Наименование",
+          "created": "Создано",
+          "updated": "Изменено",
+          "author": "Автор"
+        }
+      }
+    },
+    "filter-panel": {
+      "title": "Фильтрация",
+      "buttons": {
+        "apply": "Применить",
+        "clear": "Сбросить"
+      }
+    },
+    "export": {
+      "progress": "экспорт в процессе"
+    },
+    "import": {
+      "button": "Импорт",
+      "denied": "Отсутствуют права на импорт",
+      "progress": "импорт в процессе"
+    },
+    "linked-cohort-list": {
+      "defaultTitle": "Когорты",
+      "defaultNewItemLabel": "Импорт",
+      "dialog": {
+        "title": "Выберите когорту"
+      },
+      "table": {
+        "actions": {
+          "edit": "Правка когорты",
+          "remove": "Удалить"
+        },
+        "columns": {
+          "id": "ИД",
+          "name": "Наименование"
+        }
+      }
+    },
+    "linked-entity-list": {
+      "defaultNewItemLabel": "Импорт"
+    }
+  },
+  "facets": {
+    "date" : {
+      "justNow": "Только что",
+      "within24Hours": "В последние 24 часа",
+      "thisWeek": "На этой неделе",
+      "lastWeek": "На прошлой неделе",
+      "others": "Более 2 недель назад"
+    }
+  },
+  "incidencerate": {
+    "title": "Анализ инцидентности",
+    "newanalysis": "Новый анализ"
+  },
+  "pathways": {
+    "title": "Анализы Исходов Когорты",
+    "newanalysis": "Новый Анализ Исходов",
+    "browser": {
+      "grid": {
+        "facets": {
+          "created": "Создано",
+          "updated": "Изменено",
+          "author": "Автор"
+        }
+      },
+      "table": {
+        "columns": {
+          "id": "Ид",
+          "name": "Наименование",
+          "created": "Создано",
+          "updated": "Изменено",
+          "author": "Автор"
+        }
+      }
+    },
+    "manager": {
+      "loading": "Загружается Анализ Исходов Когорты...",
+      "caption": "Анализ Исходов Когорты №",
+      "messages": {
+        "createACopy": "Создать копию данного Анализа",
+        "nameIsEmpty": "Наименование Анализа не заполнено"
+      },
+      "tabs": {
+        "design": "Дизайн",
+        "executions": "Исследования",
+        "utilities": "Дополнительно"
+      },
+      "design": {
+        "description": "<b>Анализ Исходов Когорты</b> определяется как процесс генерации аггрегированной последовательности переходов между Когортой Событий среди людей из Целевых Когорт.",
+        "targetCohorts":{
+          "title": "Целевые Когорты",
+          "description": "Каждая из Целевых когорт будет проанализирована по исходам из когорт событий."
+        },
+        "eventCohorts": {
+          "title": "Когорты Событий",
+          "description": "Каждая из Когорт Событий определяет возможный исход для персон из Целевой Когорты."
+        },
+        "analysisSettings": {
+          "title": "Настройки Анализа",
+          "description": "Данный набор параметров будет использован при выполнении анализа исходов.",
+          "combinationWindow": {
+            "title": "Окно Сочетания:",
+            "description": "Временные рамки в течение которых два события из когорт событий должны перекрываться, чтобы считаться сочетанием."
+          },
+          "minimumCellCount": {
+            "title": "Мин. размер ячейки:",
+            "description": "Минимальное количество субъектов из целевой когорты участвующих в событии чтобы быть включенными в анализ."
+          },
+          "maximumPathLength": {
+            "title": "Макс. длина пути:",
+            "description": "Максимальное количество шагов в данном анализе, которые будут отображены на диаграмме."
+          }
+        }
+      },
+      "executions": {
+        "title": "Исследования",
+        "buttons": {
+          "generate": "Исследовать",
+          "viewLatestResult": "Показать последний результат",
+          "allExecutions": "Все исследования",
+          "cancel": "Отменить",
+          "pending": "В очереди"
+        },
+        "dialogs": {
+          "design": {
+            "title": "Дизайн",
+            "loadError": "Не удалось загрузить дизайн"
+          },
+          "exitMessage": {
+            "title": "Сообщение об ошибке"
+          }
+        },
+        "table": {
+          "columns": {
+            "date": "Дата",
+            "design": {
+              "title": "Дизайн",
+              "value": "(текущий)"
+            },
+            "status": {
+              "title": "Статус",
+              "values": {
+                "FAILED": "ОШИБКА",
+                "COMPLETED": "ГОТОВ",
+                "STOPPED": "ОСТАНОВЛЕН",
+                "CANCELED": "ОТМЕНЕН",
+                "PENDING": "В ОЧЕРЕДИ",
+                "RUNNING": "ВЫПОЛНЯЕТСЯ"
+              }
+            },
+            "duration": "Длительность",
+            "results": {
+              "title": "Результаты",
+              "values": {
+                "text": "Показать отчеты",
+                "empty": "-"
+              }
+            }
+          }
+        },
+        "tooltips": {
+          "permissions": "Недостаточно прав для запуска исследования"
+        },
+        "results": {
+          "title": "Отчет по Исследованию для",
+          "date": "Дата:",
+          "design": "Дизайн:",
+          "details": {
+            "title": "Подробности",
+            "table": {
+              "columns": {
+                "name": "Имя",
+                "remain": "% Осталось",
+                "diff": "% Разн"
+              }
+            },
+            "noPath": "Исход не выбран: щёлкните по исходу для просмотра деталей."
+          },
+          "diagram": {
+            "title": "Диаграмма"
+          },
+          "filters": {
+            "cohorts": "Когорты"
+          },
+          "legend": {
+            "title": "Легенда",
+            "targetCohort": "Целевая Когорта",
+            "targetCohortCount": "Записей в целевой когорте:",
+            "personsCount": "К-во персон с исходами:",
+            "personsPortion": "Доля персон с исходами:",
+            "eventCohort": "Когорта Событий"
+          },
+          "noPathways": "Исходы в результате исследования не были найдены"
+        }
+      }
+    },
+    "utilities": {
+      "title": "Дополнительно",
+      "buttons": {
+        "export": "Экспорт",
+        "import": "Импорт"
+      }
+    }
+  }
+}

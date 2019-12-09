@@ -13,6 +13,7 @@ import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.AnalysisGenerationInfoEntity;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.common.generation.TransactionalTasklet;
+import org.ohdsi.webapi.i18n.I18nService;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
@@ -96,6 +97,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     private final JobService jobService;
     private final GenericConversionService genericConversionService;
     private final StepBuilderFactory stepBuilderFactory;
+    private final I18nService i18nService;
 		
 		private final List<String> STEP_COLUMNS = Arrays.asList(new String[]{"step_1", "step_2", "step_3", "step_4", "step_5", "step_6", "step_7", "step_8", "step_9", "step_10"});
 
@@ -121,7 +123,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
             GenerationUtils generationUtils,
             JobService jobService,
             @Qualifier("conversionService") GenericConversionService genericConversionService,
-            StepBuilderFactory stepBuilderFactory) {
+            StepBuilderFactory stepBuilderFactory,
+            I18nService i18nService) {
 
         this.pathwayAnalysisRepository = pathwayAnalysisRepository;
         this.pathwayAnalysisGenerationRepository = pathwayAnalysisGenerationRepository;
@@ -130,6 +133,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         this.entityManager = entityManager;
         this.jobService = jobService;
         this.genericConversionService = genericConversionService;
+        this.i18nService = i18nService;
         this.security = security;
         this.designImportService = designImportService;
         this.analysisGenerationInfoEntityRepository = analysisGenerationInfoEntityRepository;
@@ -367,7 +371,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         Source source = getSourceRepository().findBySourceId(sourceId);
 
         JobParametersBuilder builder = new JobParametersBuilder();
-        builder.addString(JOB_NAME, String.format("Generating Pathway Analysis %d using %s (%s)", pathwayAnalysisId, source.getSourceName(), source.getSourceKey()));
+        builder.addString(JOB_NAME, String.format(i18nService.translate("pathways.manager.messages.generating", "Generating Pathway Analysis %d using %s (%s)"), pathwayAnalysisId, source.getSourceName(), source.getSourceKey()));
         builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
         builder.addString(PATHWAY_ANALYSIS_ID, pathwayAnalysis.getId().toString());
         builder.addString(JOB_AUTHOR, getCurrentUserLogin());

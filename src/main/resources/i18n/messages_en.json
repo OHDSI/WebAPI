@@ -146,7 +146,9 @@
         "alreadyExists": "A cohort pathway with this name already exists. Please choose a different name.",
         "beforeClose": "Your changes are not saved. Would you like to continue?",
         "deleteConfirmation": "Are you sure?",
-        "saveFailed": "An error occurred while attempting to save a cohort pathway."
+        "saveFailed": "An error occurred while attempting to save a cohort pathway.",
+        "notfound": "There is no pathway analysis with id = %d.",
+        "generating": "Generating Pathway Analysis %d using %s (%s)"
       },
       "tabs": {
         "design": "Design",
@@ -214,7 +216,8 @@
                 "STOPPED": "STOPPED",
                 "CANCELED": "CANCELED",
                 "PENDING": "PENDING",
-                "RUNNING": "RUNNING"
+                "RUNNING": "RUNNING",
+                "STARTED": "STARTED"
               }
             },
             "duration": "Duration",

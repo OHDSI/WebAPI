@@ -3,6 +3,8 @@ package org.ohdsi.webapi.i18n;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ohdsi.circe.helper.ResourceHelper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 
 import javax.annotation.PostConstruct;
@@ -23,18 +25,11 @@ import java.util.Objects;
 @Controller
 public class I18nController {
 
+  @Value("${i18n.defaultLocale}")
   private String defaultLocale = "en";
 
-  private List<LocaleDTO> availableLocales;
-
-  @PostConstruct
-  public void init() throws IOException {
-
-    String json = ResourceHelper.GetResourceAsString("/i18n/locales.json");
-    ObjectMapper objectMapper = new ObjectMapper();
-    JavaType type = objectMapper.getTypeFactory().constructCollectionType(List.class, LocaleDTO.class);
-    availableLocales = objectMapper.readValue(json, type);
-  }
+  @Autowired
+  private I18nService i18nService;
 
   @GET
   @Path("/")
@@ -45,18 +40,13 @@ public class I18nController {
     if (locale == null || !isLocaleSupported(locale.getLanguage())) {
       locale = Locale.forLanguageTag(defaultLocale);
     }
-    String resourcePath = String.format("/i18n/messages_%s.json", locale.getLanguage());
-    URL resourceURL = this.getClass().getResource(resourcePath);
-    String messages = "";
-    if (resourceURL != null) {
-      messages = ResourceHelper.GetResourceAsString(resourcePath);
-    }
+    String messages = i18nService.getLocaleResource(locale);
     return Response.ok(messages).build();
   }
 
   private boolean isLocaleSupported(String code) {
 
-    return availableLocales.stream().anyMatch(l -> Objects.equals(code, l.getCode()));
+    return i18nService.getAvailableLocales().stream().anyMatch(l -> Objects.equals(code, l.getCode()));
   }
 
   @GET
@@ -64,6 +54,6 @@ public class I18nController {
   @Produces(MediaType.APPLICATION_JSON)
   public List<LocaleDTO> getAvailableLocales() {
 
-    return availableLocales;
+    return i18nService.getAvailableLocales();
   }
 }

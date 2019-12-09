@@ -185,6 +185,9 @@
 
     <!-- Cache Config -->
     <spring.cache.jcache.config>classpath:config/ehcache.xml</spring.cache.jcache.config>
+
+    <!-- I18n -->
+    <i18n.defaultLocale>en</i18n.defaultLocale>
   </properties>
   <build>
     <finalName>WebAPI</finalName>

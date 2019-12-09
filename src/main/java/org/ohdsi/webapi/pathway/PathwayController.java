@@ -6,16 +6,12 @@ import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
+import org.ohdsi.webapi.i18n.I18nService;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnalysisConverter;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisGenerationEntity;
-import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
-import org.ohdsi.webapi.pathway.dto.PathwayAnalysisExportDTO;
-import org.ohdsi.webapi.pathway.dto.PathwayCodeDTO;
-import org.ohdsi.webapi.pathway.dto.PathwayPopulationEventDTO;
-import org.ohdsi.webapi.pathway.dto.PathwayPopulationResultsDTO;
-import org.ohdsi.webapi.pathway.dto.TargetCohortPathwaysDTO;
+import org.ohdsi.webapi.pathway.dto.*;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
 import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.source.Source;
@@ -28,16 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.Collections;
 import java.util.List;
@@ -54,15 +41,17 @@ public class PathwayController {
     private PathwayService pathwayService;
     private final SourceService sourceService;
     private final CommonGenerationSensitiveInfoService<CommonGenerationDTO> sensitiveInfoService;
+    private final I18nService i18nService;
 
     @Autowired
-    public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService) {
+    public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService, I18nService i18nService) {
 
         this.conversionService = conversionService;
         this.converterUtils = converterUtils;
         this.pathwayService = pathwayService;
         this.sourceService = sourceService;
         this.sensitiveInfoService = sensitiveInfoService;
+      this.i18nService = i18nService;
     }
 
     @POST
@@ -135,7 +124,7 @@ public class PathwayController {
     public PathwayAnalysisDTO get(@PathParam("id") final Integer id) {
 
         PathwayAnalysisEntity pathwayAnalysis = pathwayService.getById(id);
-        ExceptionUtils.throwNotFoundExceptionIfNull(pathwayAnalysis, String.format("There is no pathway analysis with id = %d.", id));
+        ExceptionUtils.throwNotFoundExceptionIfNull(pathwayAnalysis, String.format(i18nService.translate("pathways.manager.messages.notfound", "There is no pathway analysis with id = %d."), id));
         Map<Integer, Integer> eventCodes = pathwayService.getEventCohortCodes(pathwayAnalysis);
 
         PathwayAnalysisDTO dto = conversionService.convert(pathwayAnalysis, PathwayAnalysisDTO.class);

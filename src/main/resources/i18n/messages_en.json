@@ -4,7 +4,10 @@
     "number": "# ###.##",
     "date": {
       "shortdate": "MM/dd",
-      "mediumdate": "MM/dd/YYYY"
+      "mediumdate": "MM/dd/YYYY",
+      "datetime": "MM/DD/YYYY h:mm A",
+      "minutes": "min",
+      "seconds": "sec"
     }
   },
   "navigation": {
@@ -38,6 +41,16 @@
     }
   },
   "components": {
+    "access-denied": {
+      "forbidden": {
+        "message1": "You do not have access to this feature.",
+        "message2": "For more information on how to get access please contact the System Administrator."
+      },
+      "unauthenticated": {
+        "message": "This feature is protected. Please,",
+        "login": "log in"
+      }
+    },
     "cohort-definition-browser": {
       "facets": {
         "lastModified": "Последнее изменение",
@@ -78,6 +91,14 @@
     },
     "linked-entity-list": {
       "defaultNewItemLabel": "Импорт"
+    },
+    "modal-exit-message": {
+      "buttons": {
+        "copyToClipboard": "Copy To Clipboard"
+      },
+      "messages": {
+        "copiedToClipboard": "Copied To Clipboard!"
+      }
     }
   },
   "facets": {
@@ -96,6 +117,7 @@
   "pathways": {
     "title": "Cohort Pathways",
     "newanalysis": "New Pathway Analysis",
+    "defaultName": "New Cohort Pathway",
     "browser": {
       "grid": {
         "facets": {
@@ -119,7 +141,11 @@
       "caption": "Cohort Pathway #",
       "messages": {
         "createACopy": "Create a copy of this Pathway Analysis",
-        "nameIsEmpty": "Cohort Pathway name is empty"
+        "nameIsEmpty": "Cohort Pathway name is empty",
+        "alreadyExists": "A cohort pathway with this name already exists. Please choose a different name.",
+        "beforeClose": "Your changes are not saved. Would you like to continue?",
+        "deleteConfirmation": "Are you sure?",
+        "saveFailed": "An error occurred while attempting to save a cohort pathway."
       },
       "tabs": {
         "design": "Design",
@@ -155,6 +181,7 @@
       },
       "executions": {
         "title": "Executions",
+        "loading": "loading",
         "buttons": {
           "generate": "Generate",
           "viewLatestResult": "View latest result",
@@ -206,6 +233,7 @@
           "title": "Pathway Report for",
           "date": "Date:",
           "design": "Design:",
+          "loading": "loading",
           "details": {
             "title": "Path details",
             "table": {
@@ -233,13 +261,14 @@
           },
           "noPathways": "No pathways were found"
         }
-      }
-    },
-    "utilities": {
-      "title": "Utilities",
-      "buttons": {
-        "export": "Export",
-        "import": "Import"
+      },
+      "utilities": {
+        "title": "Utilities",
+        "buttons": {
+          "export": "Export",
+          "import": "Import"
+        },
+        "loading": "loading"
       }
     }
   }

@@ -3,8 +3,11 @@
   "format": {
     "number": "# ###,##",
     "date": {
-      "shortdate": "dd.MM",
-      "mediumdate": "dd.MM.YYYY"
+      "shortdate": "DD.MM",
+      "mediumdate": "DD.MM.YYYY",
+      "datetime": "DD.MM.YYYY HH:mm",
+      "minutes": "мин",
+      "seconds": "сек"
     }
   },
   "navigation": {
@@ -38,6 +41,16 @@
     }
   },
   "components": {
+    "access-denied": {
+      "forbidden": {
+        "message1": "You do not have access to this feature.",
+        "message2": "For more information on how to get access please contact the System Administrator."
+      },
+      "unauthenticated": {
+        "message": "Доступ к этому разделу ограничен. Пожалуйста,",
+        "login": "войдите"
+      }
+    },
     "cohort-definition-browser": {
       "facets": {
         "lastModified": "Последнее изменение",
@@ -87,6 +100,14 @@
     },
     "linked-entity-list": {
       "defaultNewItemLabel": "Импорт"
+    },
+    "modal-exit-message": {
+      "buttons": {
+        "copyToClipboard": "Скопировать в буфер"
+      },
+      "messages": {
+        "copiedToClipboard": "Скопировано в буфер!"
+      }
     }
   },
   "facets": {
@@ -105,6 +126,7 @@
   "pathways": {
     "title": "Анализы Исходов Когорты",
     "newanalysis": "Новый Анализ Исходов",
+    "defaultName": "Новый Анализ Исходов",
     "browser": {
       "grid": {
         "facets": {
@@ -128,7 +150,11 @@
       "caption": "Анализ Исходов Когорты №",
       "messages": {
         "createACopy": "Создать копию данного Анализа",
-        "nameIsEmpty": "Наименование Анализа не заполнено"
+        "nameIsEmpty": "Наименование Анализа не заполнено",
+        "alreadyExists": "Анализ с таким именем уже существует. Пожалуста, выберите другое наименование.",
+        "beforeClose": "Ваши изменения не сохранены. Вы хотите продолжить?",
+        "deleteConfirmation": "Вы уверены?",
+        "saveFailed": "При сохранении анализа произошла ошибка."
       },
       "tabs": {
         "design": "Дизайн",
@@ -164,6 +190,7 @@
       },
       "executions": {
         "title": "Исследования",
+        "loading": "загружается",
         "buttons": {
           "generate": "Исследовать",
           "viewLatestResult": "Показать последний результат",
@@ -215,6 +242,7 @@
           "title": "Отчет по Исследованию для",
           "date": "Дата:",
           "design": "Дизайн:",
+          "loading": "загружается",
           "details": {
             "title": "Подробности",
             "table": {
@@ -242,13 +270,14 @@
           },
           "noPathways": "Исходы в результате исследования не были найдены"
         }
-      }
-    },
-    "utilities": {
-      "title": "Дополнительно",
-      "buttons": {
-        "export": "Экспорт",
-        "import": "Импорт"
+      },
+      "utilities": {
+        "title": "Дополнительно",
+        "buttons": {
+          "export": "Экспорт",
+          "import": "Импорт"
+        },
+        "loading": "загружается"
       }
     }
   }

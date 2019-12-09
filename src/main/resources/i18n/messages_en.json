@@ -118,6 +118,7 @@
     "title": "Cohort Pathways",
     "newanalysis": "New Pathway Analysis",
     "defaultName": "New Cohort Pathway",
+    "loading": "Loading Pathway Analysis list...",
     "browser": {
       "grid": {
         "facets": {

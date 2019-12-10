@@ -46,6 +46,7 @@
     <person.viewDates>false</person.viewDates>
     <!-- Full Text Search With SOLR Settings -->
     <solr.endpoint></solr.endpoint>
+    <solr.query.prefix>{!complexphrase inOrder=true}</solr.query.prefix>
     <solr.version>8.3.1</solr.version>
     <!-- Heracles properties -->
     <heracles.smallcellcount>5</heracles.smallcellcount>

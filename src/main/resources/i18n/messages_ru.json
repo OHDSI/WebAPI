@@ -11,8 +11,20 @@
     }
   },
   "navigation": {
+    "home": "Начало",
+    "datasources": "Источники данных",
+    "search": "Поиск",
+    "conceptsets": "Наборы концепций",
+    "cohortdefinitions": "Когорты",
+    "characterizations": "Характеристики",
     "pathways": "Исходы когорты",
-    "incidencerate": "Инцидентность"
+    "incidencerate": "Инцидентность",
+    "profiles": "Профили",
+    "estimation": "Оценочный анализ",
+    "prediction": "Прогнозирование",
+    "jobs": "Задания",
+    "configuration": "Конфигурация",
+    "feedback": "Обратная связь"
   },
   "datatable": {
     "language": {
@@ -240,7 +252,8 @@
           }
         },
         "tooltips": {
-          "permissions": "Недостаточно прав для запуска исследования"
+          "generatePermissions": "Недостаточно прав для запуска исследования",
+          "viewPermissions": "Недостаточно прав для просмотра результатов"
         },
         "results": {
           "title": "Отчет по Исследованию для",

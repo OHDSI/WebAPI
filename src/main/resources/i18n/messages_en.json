@@ -11,8 +11,19 @@
     }
   },
   "navigation": {
+    "home": "Home",
+    "datasources": "Data Sources",
+    "conceptsets": "Concept Sets",
+    "cohortdefinitions": "Cohort Definitions",
+    "characterizations": "Characterizations",
     "pathways": "Cohort Pathways",
-    "incidencerate": "Incidence Rates"
+    "incidencerate": "Incidence Rates",
+    "profiles": "Profiles",
+    "estimation": "Estimation",
+    "prediction": "Prediction",
+    "jobs": "Jobs",
+    "configuration": "Configuration",
+    "feedback": "Feedback"
   },
   "datatable": {
     "language": {
@@ -231,7 +242,8 @@
           }
         },
         "tooltips": {
-          "permissions": "Not enough permissions to generate"
+          "generatePermissions": "Not enough permissions to generate",
+          "viewPermissions": "Not enough permissions to view results"
         },
         "results": {
           "title": "Pathway Report for",

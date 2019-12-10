@@ -26,6 +26,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Properties;
 
 /**
@@ -84,6 +87,23 @@ public class DataAccessConfig {
                 logger.info("error loading {} driver. {}", driverName, ex.getMessage());
             }
         }
+
+        // Redshift driver can be loaded first because it is mentioned in manifest file -
+        // put the redshift driver at the end so that it doesn't
+        // conflict with postgres queries
+        java.util.Enumeration<Driver> drivers =  DriverManager.getDrivers();
+        while (drivers.hasMoreElements()) {
+            Driver d = drivers.nextElement();
+            if (d.getClass().getName().contains("com.amazon.redshift.jdbc")) {
+                try {
+                    DriverManager.deregisterDriver(d);
+                    DriverManager.registerDriver(d);
+                } catch (SQLException e) {
+                    throw new RuntimeException("Could not deregister redshift driver", e);
+                }
+            }
+        }
+
         return ds;
         //return new org.apache.tomcat.jdbc.pool.DataSource(pc);
     }

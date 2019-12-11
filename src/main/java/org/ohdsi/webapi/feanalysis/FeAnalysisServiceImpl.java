@@ -79,9 +79,26 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
         FeAnalysisWithCriteriaEntity newAnalysis = newAnalysis(analysis);
         newAnalysis.setDesign(Collections.emptyList());
         final FeAnalysisWithCriteriaEntity entityWithMainFields = saveNew(newAnalysis);
+        if (createOrUpdateConceptSetEntity(entityWithMainFields, analysis.getConceptSetEntity())) {
+            analysisRepository.save(entityWithMainFields);
+        }
         final List<FeAnalysisCriteriaEntity> criteriaList = createCriteriaListForAnalysis(entityWithMainFields, analysis.getDesign());
         entityWithMainFields.setDesign(criteriaList);
         return entityWithMainFields;
+    }
+
+    private boolean createOrUpdateConceptSetEntity(FeAnalysisWithCriteriaEntity analysis, FeAnalysisConcepsetEntity modifiedConceptSet) {
+
+        if (Objects.nonNull(modifiedConceptSet)) {
+            FeAnalysisConcepsetEntity concepsetEntity = Optional.ofNullable(analysis.getConceptSetEntity())
+                    .orElseGet(FeAnalysisConcepsetEntity::new);
+            concepsetEntity.setFeatureAnalysis(analysis);
+            concepsetEntity.setRawExpression(modifiedConceptSet.getRawExpression());
+            analysis.setConceptSetEntity(concepsetEntity);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private <T extends FeAnalysisEntity> T saveNew(T entity) {
@@ -129,13 +146,7 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
                   savedWithCriteria = (FeAnalysisWithCriteriaEntity) savedEntity;
           removeFeAnalysisCriteriaEntities(savedWithCriteria, updatedWithCriteriaEntity);
           updatedWithCriteriaEntity.getDesign().forEach(criteria -> criteria.setFeatureAnalysis(savedWithCriteria));
-          if (Objects.nonNull(updatedWithCriteriaEntity.getConceptSetEntity())) {
-            FeAnalysisConcepsetEntity concepsetEntity = Optional.ofNullable(((FeAnalysisWithCriteriaEntity) savedEntity).getConceptSetEntity())
-                    .orElseGet(FeAnalysisConcepsetEntity::new);
-            concepsetEntity.setFeatureAnalysis(savedWithCriteria);
-            concepsetEntity.setRawExpression(updatedWithCriteriaEntity.getConceptSetEntity().getRawExpression());
-            savedWithCriteria.setConceptSetEntity(concepsetEntity);
-          }
+          createOrUpdateConceptSetEntity((FeAnalysisWithCriteriaEntity) savedEntity, updatedWithCriteriaEntity.getConceptSetEntity());
         }
         savedEntity.setDesign(updatedEntity.getDesign());
         if (Objects.nonNull(updatedEntity.getDomain())) {

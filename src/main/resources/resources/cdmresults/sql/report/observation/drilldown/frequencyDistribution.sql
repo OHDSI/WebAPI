@@ -1,7 +1,7 @@
 SELECT 
 	c1.concept_id								AS concept_id,
 	c1.concept_name								AS concept_name,
-	CAST(ROUND((100.0*num.count_value / denom.count_value), 0) AS INT) AS y_num_persons,
+	100.0*num.count_value / denom.count_value AS y_num_persons,
 	num.stratum_2								AS x_count
 FROM 
 	(SELECT count_value FROM @results_database_schema.achilles_results WHERE analysis_id = 1) denom,

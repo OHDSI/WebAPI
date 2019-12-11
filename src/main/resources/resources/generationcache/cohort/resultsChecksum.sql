@@ -14,20 +14,8 @@ WITH partials AS (
       )
     ) AS line,
     subject_id AS sort_by
-  FROM @results_database_schema.cohort_generations
-  WHERE generation_id = @generation_id
-
-  UNION ALL
-
-  SELECT
-    CONCAT(
-      ISNULL(CAST(rule_sequence AS VARCHAR), ' '),
-      ISNULL(CAST(name AS VARCHAR), ' '),
-      ISNULL(CAST(description AS VARCHAR), ' ')
-    ),
-    rule_sequence AS sort_by
-  FROM @results_database_schema.cohort_inclusion
-  WHERE generation_id = @generation_id
+  FROM @results_database_schema.cohort_cache
+  WHERE design_hash = @design_hash
 
   UNION ALL
 
@@ -38,8 +26,8 @@ WITH partials AS (
       ISNULL(CAST(person_count AS VARCHAR), ' ')
     ),
     mode_id AS sort_by
-  FROM @results_database_schema.cohort_inclusion_result
-  WHERE generation_id = @generation_id
+  FROM @results_database_schema.cohort_inclusion_result_cache
+  WHERE design_hash = @design_hash
 
   UNION ALL
 
@@ -52,8 +40,8 @@ WITH partials AS (
       ISNULL(CAST(person_total AS VARCHAR), ' ')
     ),
     rule_sequence AS sort_by
-  FROM @results_database_schema.cohort_inclusion_stats
-  WHERE generation_id = @generation_id
+  FROM @results_database_schema.cohort_inclusion_stats_cache
+  WHERE design_hash = @design_hash
 
   UNION ALL
 
@@ -64,14 +52,14 @@ WITH partials AS (
       ISNULL(CAST(final_count AS VARCHAR), ' ')
     ),
     mode_id AS sort_by
-  FROM @results_database_schema.cohort_summary_stats
-  WHERE generation_id = @generation_id
+  FROM @results_database_schema.cohort_summary_stats_cache
+  WHERE design_hash = @design_hash
 
   UNION ALL
 
   SELECT ISNULL(CAST(lost_count AS VARCHAR), ' '), 0
-  FROM @results_database_schema.cohort_censor_stats
-  WHERE generation_id = @generation_id
+  FROM @results_database_schema.cohort_censor_stats_cache
+  WHERE design_hash = @design_hash
 )
 SELECT AVG(
   CAST(CAST(CONVERT(VARBINARY, HASHBYTES('MD5',line), 1) AS INT) AS BIGINT)

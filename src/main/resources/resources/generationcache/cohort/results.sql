@@ -1,1 +1,1 @@
-SELECT * FROM @results_database_schema.cohort_generations WHERE generation_id = @generation_id
+SELECT * FROM @results_database_schema.cohort_cache WHERE design_hash = @design_hash

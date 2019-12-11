@@ -2,6 +2,7 @@ package org.ohdsi.webapi.cohortcharacterization;
 
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationRequestBuilder;
+import org.ohdsi.webapi.cohortdefinition.CohortGenerationUtils;
 import org.ohdsi.webapi.generationcache.GenerationCacheHelper;
 import org.ohdsi.webapi.service.CohortGenerationService;
 import org.ohdsi.webapi.source.SourceService;
@@ -27,7 +28,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.Params.*;
-import static org.ohdsi.webapi.Constants.Tables.COHORT_GENERATIONS_TABLE;
 
 public class GenerateLocalCohortTasklet implements StoppableTasklet {
 
@@ -83,11 +83,12 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
                                     String sessionId = SessionUtils.sessionId();
                                     CohortGenerationRequestBuilder generationRequestBuilder = new CohortGenerationRequestBuilder(
                                         sessionId,
-                                        targetSchema,
-                                        COHORT_GENERATIONS_TABLE,
-                                        GENERATION_ID,
-                                        false
+                                        targetSchema
                                     );
+
+                                    int designHash = this.generationCacheHelper.computeHash(cd.getDetails().getExpression());
+                                    CohortGenerationUtils.insertInclusionRules(cd.getId(), cd.getExpression(), designHash, targetSchema, cancelableJdbcTemplate);
+                                    
                                     GenerationCacheHelper.CacheResult res = generationCacheHelper.computeCacheIfAbsent(cd, source, generationRequestBuilder, (resId, sqls) -> {
                                         try {
                                             generationCacheHelper.runCancelableCohortGeneration(cancelableJdbcTemplate, stmtCancel, sqls);

@@ -7,17 +7,26 @@ import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.hydra.Hydra;
+import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
+import org.ohdsi.webapi.analysis.AnalysisConceptSet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
+import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.AnalysisExecutionSupport;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.conceptset.ConceptSetCrossReferenceImpl;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
+import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
+import org.ohdsi.webapi.job.GeneratesNotification;
+import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.prediction.domain.PredictionGenerationEntity;
 import org.ohdsi.webapi.prediction.repository.PredictionAnalysisGenerationRepository;
 import org.ohdsi.webapi.prediction.repository.PredictionAnalysisRepository;
 import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl;
-import org.ohdsi.webapi.service.*;
+import org.ohdsi.webapi.service.ConceptSetService;
+import org.ohdsi.webapi.service.JobService;
+import org.ohdsi.webapi.service.VocabularyService;
+import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
@@ -30,6 +39,7 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
@@ -99,7 +109,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     private DesignImportService designImportService;
     
     @Autowired
-    private ConversionService conversionService;    
+    private ConversionService conversionService;
     
     private final String EXEC_SCRIPT = ResourceHelper.GetResourceAsString("/resources/prediction/r/runAnalysis.R");
 

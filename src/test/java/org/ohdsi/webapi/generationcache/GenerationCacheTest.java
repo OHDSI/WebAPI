@@ -2,22 +2,18 @@ package org.ohdsi.webapi.generationcache;
 
 import com.odysseusinc.arachne.commons.types.DBMSType;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
-import com.opentable.db.postgres.junit.EmbeddedPostgresRules;
-import com.opentable.db.postgres.junit.SingleInstancePostgresRule;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.AbstractInMemoryTest;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
@@ -29,10 +25,7 @@ import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.sql.DataSource;
 import java.io.File;
@@ -52,10 +45,7 @@ import static org.ohdsi.webapi.Constants.Params.DESIGN_HASH;
 import static org.ohdsi.webapi.Constants.Params.RESULTS_DATABASE_SCHEMA;
 
 
-@SpringBootTest
-@RunWith(SpringRunner.class)
-@TestPropertySource(locations = "/in-memory-webapi.properties")
-public class GenerationCacheTest {
+public class GenerationCacheTest extends AbstractInMemoryTest {
 
     private static final String CDM_SQL = ResourceHelper.GetResourceAsString("/cdm-postgresql-ddl.sql");
     private static final String COHORT_JSON = ResourceHelper.GetResourceAsString("/generationcache/cohort/cohortIbuprofenOlder50.json");
@@ -65,9 +55,6 @@ public class GenerationCacheTest {
     private static final String EUNOMIA_CSV_ZIP = "/eunomia.csv.zip";
     private static final String CDM_SCHEMA_NAME = "cdm";
     private static final String RESULT_SCHEMA_NAME = "results";
-
-    @ClassRule
-    public static SingleInstancePostgresRule pg = EmbeddedPostgresRules.singleInstance();
 
     @Autowired
     private GenerationCacheService generationCacheService;
@@ -83,8 +70,6 @@ public class GenerationCacheTest {
 
     @Autowired
     private CohortDefinitionRepository cohortDefinitionRepository;
-
-    private static JdbcTemplate jdbcTemplate;
 
     private static final Collection<String> COHORT_DDL_FILE_PATHS = Arrays.asList(
 		// cohort generation results
@@ -103,19 +88,6 @@ public class GenerationCacheTest {
     );
 
     private CohortGenerationRequestBuilder cohortGenerationRequestBuilder;
-
-    @BeforeClass
-    public static void beforeClass() {
-
-//        prepareCdmSchema();
-        jdbcTemplate = new JdbcTemplate(getDataSource());
-        try {
-            System.setProperty("datasource.url", getDataSource().getConnection().getMetaData().getURL());
-            System.setProperty("flyway.datasource.url", System.getProperty("datasource.url"));
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
 
     @Before
     public void setUp() throws SQLException {
@@ -351,11 +323,6 @@ public class GenerationCacheTest {
         String resultSql = getResultTablesSql();
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         jdbcTemplate.batchUpdate(SqlSplit.splitSql(resultSql));
-    }
-
-    private static DataSource getDataSource() {
-
-        return pg.getEmbeddedPostgres().getPostgresDatabase();
     }
 
     private static String getCdmSql() throws IOException, ZipException {

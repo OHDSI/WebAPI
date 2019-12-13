@@ -1,31 +1,20 @@
 package org.ohdsi.webapi.cohortcharacterization.dto;
 
+import org.ohdsi.webapi.cohortcharacterization.report.Report;
+
 import java.util.List;
 
 public class GenerationResults {
-
-    private List<CcResult> results;
-    private Long totalCount;
+    private List<Report> reports;
     private Float prevalenceThreshold;
+    private int count;
 
-    public List<CcResult> getResults() {
-
-        return results;
+    public List<Report> getReports() {
+        return reports;
     }
 
-    public void setResults(List<CcResult> results) {
-
-        this.results = results;
-    }
-
-    public Long getTotalCount() {
-
-        return totalCount;
-    }
-
-    public void setTotalCount(Long totalCount) {
-
-        this.totalCount = totalCount;
+    public void setReports(List<Report> reports) {
+        this.reports = reports;
     }
 
     public Float getPrevalenceThreshold() {
@@ -36,5 +25,13 @@ public class GenerationResults {
     public void setPrevalenceThreshold(Float prevalenceThreshold) {
 
         this.prevalenceThreshold = prevalenceThreshold;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
+    }
+
+    public int getCount() {
+        return count;
     }
 }

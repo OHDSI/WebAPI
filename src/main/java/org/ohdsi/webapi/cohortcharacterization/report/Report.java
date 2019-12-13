@@ -26,9 +26,9 @@ public class Report {
     public Report(String analysisName, Integer analysisId, AnalysisResultItem resultItem) {
         this.analysisName = analysisName;
         this.analysisId = analysisId;
-        this.items = resultItem.exportItems;
-        cohorts = resultItem.cohorts;
-        domainIds = resultItem.domainIds;
+        this.items = resultItem.getExportItems();
+        cohorts = resultItem.getCohorts();
+        domainIds = resultItem.getDomainIds();
     }
 
     public Report(String analysisName, List<AnalysisResultItem> simpleResultSummary) {
@@ -38,9 +38,9 @@ public class Report {
         items = new HashSet<>();
         simpleResultSummary.stream()
                 .forEach(item -> {
-                    domainIds.addAll(item.domainIds);
-                    cohorts.addAll(item.cohorts);
-                    items.addAll(item.exportItems);
+                    domainIds.addAll(item.getDomainIds());
+                    cohorts.addAll(item.getCohorts());
+                    items.addAll(item.getExportItems());
                 });
     }
 

@@ -6,26 +6,24 @@ import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class AnalysisItem {
     // Key is covariate id and strata id
-    private Map<Pair<Long, Long>, CovariateStrataItem> map = new HashMap();
+    private Map<Pair<Long, Long>, List<CcResult>> map = new HashMap<>();
     private CcResultType type;
     private String name;
     private String faType;
 
-    public CovariateStrataItem getOrCreateCovariateItem(Long covariateId, Long strataId) {
+    public List<CcResult> getOrCreateCovariateItem(Long covariateId, Long strataId) {
         Pair<Long, Long> key = new ImmutablePair<>(covariateId, strataId);
-        CovariateStrataItem covariateStrataItem = map.get(key);
-        if (covariateStrataItem == null) {
-            covariateStrataItem = new CovariateStrataItem();
-            map.put(key, covariateStrataItem);
-        }
-        return covariateStrataItem;
+        map.putIfAbsent(key, new ArrayList<>());
+        return map.get(key);
     }
 
     public void setType(CcResultType resultType) {
@@ -58,12 +56,13 @@ public class AnalysisItem {
         Set<String> domainIds = new HashSet<>();
         Set<Pair<Integer, String>> cohorts = new HashSet<>();
         ItemFactory factory = new ItemFactory();
-        for (CovariateStrataItem covariateStrataItem : map.values()) {
-            for (CcResult ccResult : covariateStrataItem.getResults()) {
+        for (List<CcResult> results : map.values()) {
+            for (CcResult ccResult : results) {
                 CohortDefinition cohortDef = definitionMap.get(ccResult.getCohortId());
                 ExportItem item = factory.createItem(ccResult, cohortDef.getName());
-                item.domainId = feAnalysisMap.get(ccResult.getAnalysisName());
-                domainIds.add(item.domainId);
+                String domainId = feAnalysisMap.get(ccResult.getAnalysisName());
+                item.setDomainId(domainId);
+                domainIds.add(domainId);
                 cohorts.add(new ImmutablePair<>(cohortDef.getId(), cohortDef.getName()));
                 values.add(item);
             }
@@ -79,11 +78,11 @@ public class AnalysisItem {
         cohorts.add(new ImmutablePair<>(firstCohortDef.getId(), firstCohortDef.getName()));
         cohorts.add(new ImmutablePair<>(secondCohortDef.getId(), secondCohortDef.getName()));
         ItemFactory factory = new ItemFactory();
-        for (CovariateStrataItem covariateStrataItem : map.values()) {
+        for (List<CcResult> results : map.values()) {
             // create default items, because we can have result for only one cohort
             ExportItem first = null;
             ExportItem second = null;
-            for (CcResult ccResult : covariateStrataItem.getResults()) {
+            for (CcResult ccResult : results) {
                 if (ccResult.getCohortId() == firstCohortDef.getId()) {
                     first = factory.createItem(ccResult, firstCohortDef.getName());
                 } else {
@@ -98,8 +97,9 @@ public class AnalysisItem {
                 comparativeItem = new ComparativeItem((PrevalenceItem) first, (PrevalenceItem) second,
                         firstCohortDef, secondCohortDef);
             }
-            comparativeItem.domainId = feAnalysisMap.get(comparativeItem.analysisName);
-            domainIds.add(comparativeItem.domainId);
+            String domainId = feAnalysisMap.get(comparativeItem.getAnalysisName());
+            comparativeItem.setDomainId(domainId);
+            domainIds.add(domainId);
             values.add(comparativeItem);
         }
         return new AnalysisResultItem(domainIds, cohorts, values);

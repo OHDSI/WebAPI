@@ -74,6 +74,9 @@ public class CohortCharacterizationServiceTest {
     private CcService ccService;
 
     @Autowired
+    private CcController ccController;
+
+    @Autowired
     private SourceRepository sourceRepository;
 
     @ClassRule
@@ -83,12 +86,16 @@ public class CohortCharacterizationServiceTest {
 
     private static final Collection<String> COHORT_DDL_FILE_PATHS = Arrays.asList(
             "/ddl/results/cohort.sql",
-            "/ddl/results/cohort_generations.sql",
+            "/ddl/results/cohort_cache.sql",
             "/ddl/results/cohort_inclusion.sql",
             "/ddl/results/cohort_inclusion_result.sql",
             "/ddl/results/cohort_inclusion_stats.sql",
+            "/ddl/results/cohort_inclusion_result_cache.sql",
+            "/ddl/results/cohort_inclusion_stats_cache.sql",
             "/ddl/results/cohort_summary_stats.sql",
+            "/ddl/results/cohort_summary_stats_cache.sql",
             "/ddl/results/cohort_censor_stats.sql",
+            "/ddl/results/cohort_censor_stats_cache.sql",
             "/ddl/results/cohort_characterizations.sql"
     );
 
@@ -183,7 +190,7 @@ public class CohortCharacterizationServiceTest {
         request.setSummary(paramItem.isSummary);
         request.setComparative(paramItem.isComparative);
 
-        Response response = ccService.exportExecutionResult(id, request);
+        Response response = ccController.exportGenerationsResults(id, request);
         assertEquals(200, response.getStatus());
 
         ByteArrayOutputStream baos = (ByteArrayOutputStream) response.getEntity();

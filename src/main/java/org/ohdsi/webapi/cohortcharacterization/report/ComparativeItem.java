@@ -6,17 +6,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ComparativeItem extends ExportItem<ComparativeItem> {
-    public final boolean hasFirstItem;
-    public final boolean hasSecondItem;
-    public final Integer targetCohortId;
-    public final String targetCohortName;
-    public final Long targetCount;
-    public final Double targetPct;
-    public final Integer comparatorCohortId;
-    public final String comparatorCohortName;
-    public final Long comparatorCount;
-    public final Double comparatorPct;
-    public final double diff;
+    private final boolean hasFirstItem;
+    private final boolean hasSecondItem;
+    private final Integer targetCohortId;
+    private final String targetCohortName;
+    private final Long targetCount;
+    private final Double targetPct;
+    private final Integer comparatorCohortId;
+    private final String comparatorCohortName;
+    private final Long comparatorCount;
+    private final Double comparatorPct;
+    private final double diff;
 
     public ComparativeItem(PrevalenceItem firstItem, PrevalenceItem secondItem, CohortDefinition firstCohortDef,
                            CohortDefinition secondCohortDef) {
@@ -45,17 +45,17 @@ public class ComparativeItem extends ExportItem<ComparativeItem> {
     protected List<String> getValueList() {
         // Do not use parent function as this report has its own order of columns
         List<String> values = new ArrayList<>();
-        values.add(String.valueOf(this.analysisId));
-        values.add(this.analysisName);
-        values.add(String.valueOf(this.strataId));
-        values.add(this.strataName);
+        values.add(String.valueOf(this.getAnalysisId()));
+        values.add(this.getAnalysisName());
+        values.add(String.valueOf(this.getStrataId()));
+        values.add(this.getStrataName());
         values.add(String.valueOf(targetCohortId));
         values.add(targetCohortName);
         values.add(String.valueOf(comparatorCohortId));
         values.add(comparatorCohortName);
-        values.add(String.valueOf(this.covariateId));
-        values.add(this.covariateName);
-        values.add(this.covariateShortName);
+        values.add(String.valueOf(this.getCovariateId()));
+        values.add(this.getCovariateName());
+        values.add(this.getCovariateShortName());
         values.add(this.targetCount != null ? String.valueOf(this.targetCount) : "0");
         values.add(this.targetPct != null ? String.valueOf(this.targetPct) : "0");
         values.add(this.comparatorCount != null ? String.valueOf(this.comparatorCount) : "0");
@@ -66,9 +66,9 @@ public class ComparativeItem extends ExportItem<ComparativeItem> {
 
     @Override
     public int compareTo(ComparativeItem that) {
-        int res = analysisId.compareTo(that.analysisId);
+        int res = getAnalysisId().compareTo(that.getAnalysisId());
         if (res == 0) {
-            covariateName.compareToIgnoreCase(that.covariateName);
+            getCovariateName().compareToIgnoreCase(that.getCovariateName());
         }
         return res;
     }
@@ -92,5 +92,49 @@ public class ComparativeItem extends ExportItem<ComparativeItem> {
         result = 31 * result + (targetCohortId != null ? targetCohortId.hashCode() : 0);
         result = 31 * result + (comparatorCohortId != null ? comparatorCohortId.hashCode() : 0);
         return result;
+    }
+
+    public boolean isHasFirstItem() {
+        return hasFirstItem;
+    }
+
+    public boolean isHasSecondItem() {
+        return hasSecondItem;
+    }
+
+    public Integer getTargetCohortId() {
+        return targetCohortId;
+    }
+
+    public String getTargetCohortName() {
+        return targetCohortName;
+    }
+
+    public Long getTargetCount() {
+        return targetCount;
+    }
+
+    public Double getTargetPct() {
+        return targetPct;
+    }
+
+    public Integer getComparatorCohortId() {
+        return comparatorCohortId;
+    }
+
+    public String getComparatorCohortName() {
+        return comparatorCohortName;
+    }
+
+    public Long getComparatorCount() {
+        return comparatorCount;
+    }
+
+    public Double getComparatorPct() {
+        return comparatorPct;
+    }
+
+    public double getDiff() {
+        return diff;
     }
 }

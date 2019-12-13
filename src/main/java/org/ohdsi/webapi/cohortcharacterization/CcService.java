@@ -12,7 +12,6 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import javax.ws.rs.core.Response;
 import java.io.OutputStream;
 import java.util.List;
 
@@ -65,7 +64,7 @@ public interface CcService {
 
     Long getCCResultsTotalCount(Long id);
 
-    Response exportExecutionResult(Long generationId, ExportExecutionResultRequest params);
+    GenerationResults exportExecutionResult(Long generationId, ExportExecutionResultRequest params);
 
     GenerationResults findData(final Long generationId, ExecutionResultRequest params);
 }

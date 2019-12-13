@@ -3,7 +3,6 @@ package org.ohdsi.webapi.cohortcharacterization;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableList;
-import com.opencsv.CSVWriter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
@@ -28,9 +27,7 @@ import org.ohdsi.webapi.cohortcharacterization.dto.ExecutionResultRequest;
 import org.ohdsi.webapi.cohortcharacterization.dto.ExportExecutionResultRequest;
 import org.ohdsi.webapi.cohortcharacterization.dto.GenerationResults;
 import org.ohdsi.webapi.cohortcharacterization.report.AnalysisItem;
-import org.ohdsi.webapi.cohortcharacterization.report.AnalysisMap;
 import org.ohdsi.webapi.cohortcharacterization.report.AnalysisResultItem;
-import org.ohdsi.webapi.cohortcharacterization.report.CovariateStrataItem;
 import org.ohdsi.webapi.cohortcharacterization.report.Report;
 import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
 import org.ohdsi.webapi.cohortcharacterization.repository.CcConceptSetRepository;
@@ -86,18 +83,15 @@ import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.StringWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -108,8 +102,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import static org.ohdsi.analysis.cohortcharacterization.design.CcResultType.DISTRIBUTION;
 import static org.ohdsi.analysis.cohortcharacterization.design.CcResultType.PREVALENCE;
@@ -587,7 +579,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     @Override
     @DataSourceAccess
-    public Response exportExecutionResult(@CcGenerationId final Long generationId, ExportExecutionResultRequest params) {
+    public GenerationResults exportExecutionResult(@CcGenerationId final Long generationId, ExportExecutionResultRequest params) {
         GenerationResults res = findResult(generationId, params);
 
         if (params.isFilterUsed()) {
@@ -597,7 +589,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                     .collect(Collectors.toList()));
         }
 
-        return prepareExecutionResultResponse(res.getReports());
+        return res;
     }
 
     @Override
@@ -659,18 +651,19 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         List<CcResult> ccResults = findResults(generationId, params);
 
         // create initial structure and fill with results
-        AnalysisMap analysisMap = new AnalysisMap();
+        Map<Integer, AnalysisItem> analysisMap = new HashMap<>();
         ccResults
                 .stream()
                 .forEach(ccResult -> {
                     if (ccResult instanceof CcPrevalenceStat) {
-                        AnalysisItem analysisItem = analysisMap.getOrCreateAnalysisItem(ccResult.getAnalysisId());
+                        analysisMap.putIfAbsent(ccResult.getAnalysisId(), new AnalysisItem());
+                        AnalysisItem analysisItem = analysisMap.get(ccResult.getAnalysisId());
                         analysisItem.setType(ccResult.getResultType());
                         analysisItem.setName(ccResult.getAnalysisName());
                         analysisItem.setFaType(ccResult.getFaType());
-                        CovariateStrataItem covariateStrataItem = analysisItem.getOrCreateCovariateItem(
+                        List<CcResult> results = analysisItem.getOrCreateCovariateItem(
                                 ((CcPrevalenceStat) ccResult).getCovariateId(), ccResult.getStrataId());
-                        covariateStrataItem.getResults().add(ccResult);
+                        results.add(ccResult);
                     }
                 });
 
@@ -687,7 +680,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         return res;
     }
 
-    private List<Report> prepareReportData(AnalysisMap analysisMap, Set<CohortDefinition> cohortDefs,
+    private List<Report> prepareReportData(Map<Integer, AnalysisItem> analysisMap, Set<CohortDefinition> cohortDefs,
                                            Set<FeAnalysisEntity> featureAnalyses) {
         // Create map to get cohort name by its id
         final Map<Integer, CohortDefinition> definitionMap = cohortDefs.stream()
@@ -705,7 +698,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             // do not create summary reports when only one analyses is present
             boolean ignoreSummary = analysisMap.keySet().size() == 1;
             for (Integer analysisId : analysisMap.keySet()) {
-                AnalysisItem analysisItem = analysisMap.getOrCreateAnalysisItem(analysisId);
+                analysisMap.putIfAbsent(analysisId, new AnalysisItem());
+                AnalysisItem analysisItem = analysisMap.get(analysisId);
                 AnalysisResultItem resultItem = analysisItem.getSimpleItems(definitionMap, feAnalysisMap);
                 Report simpleReport = new Report(analysisItem.getName(), analysisId, resultItem);
                 simpleReport.faType = analysisItem.getFaType();
@@ -766,50 +760,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
-    }
-
-    private Response prepareExecutionResultResponse(List<Report> reports) {
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
-             ZipOutputStream zos = new ZipOutputStream(baos)) {
-
-            for (Report report : reports) {
-                createZipEntry(zos, report);
-            }
-
-            zos.closeEntry();
-            baos.flush();
-
-            return Response
-                    .ok(baos)
-                    .type(MediaType.APPLICATION_OCTET_STREAM)
-                    .header("Content-Disposition", String.format("attachment; filename=\"%s\"", "reports.zip"))
-                    .build();
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    private void createZipEntry(ZipOutputStream zos, Report report) throws IOException {
-        StringWriter sw = new StringWriter();
-        CSVWriter csvWriter = new CSVWriter(sw, ',', CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.NO_ESCAPE_CHARACTER);
-        csvWriter.writeAll(report.header);
-        csvWriter.writeAll(report.getResultArray());
-        csvWriter.flush();
-
-        String filename = report.analysisName;
-        if (report.isComparative) {
-            filename = "Export comparison (" + filename + ")";
-        } else {
-            filename = "Export (" + filename + ")";
-        }
-        // trim the name so it can be opened by archiver,
-        // -1 is for dot character
-        if (filename.length() >= 64) {
-            filename = filename.substring(0, 63);
-        }
-        ZipEntry resultsEntry = new ZipEntry(filename + ".csv");
-        zos.putNextEntry(resultsEntry);
-        zos.write(sw.getBuffer().toString().getBytes());
     }
 
     @Override

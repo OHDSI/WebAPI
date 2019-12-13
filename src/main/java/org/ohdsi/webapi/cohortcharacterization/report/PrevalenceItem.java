@@ -6,11 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PrevalenceItem<T extends PrevalenceItem> extends ExportItem<T> {
-    public final Integer cohortId;
-    public final String cohortName;
-    public final Long count;
-    public final Double pct;
-    public final Double avg;
+    protected final Integer cohortId;
+    protected final String cohortName;
+    protected final Long count;
+    protected final Double pct;
+    protected final Double avg;
 
     public PrevalenceItem(CcPrevalenceStat prevalenceStat, String cohortName) {
         super(prevalenceStat);
@@ -24,15 +24,15 @@ public class PrevalenceItem<T extends PrevalenceItem> extends ExportItem<T> {
     @Override
     protected List<String> getValueList() {
         List<String> values = new ArrayList<>();
-        values.add(String.valueOf(this.analysisId));
-        values.add(this.analysisName);
-        values.add(String.valueOf(this.strataId));
-        values.add(this.strataName);
+        values.add(String.valueOf(this.getAnalysisId()));
+        values.add(this.getAnalysisName());
+        values.add(String.valueOf(this.getStrataId()));
+        values.add(this.getStrataName());
         values.add(String.valueOf(this.cohortId));
         values.add(this.cohortName);
-        values.add(String.valueOf(this.covariateId));
-        values.add(this.covariateName);
-        values.add(this.covariateShortName);
+        values.add(String.valueOf(this.getCovariateId()));
+        values.add(this.getCovariateName());
+        values.add(this.getCovariateShortName());
         values.add(String.valueOf(this.count));
         values.add(String.valueOf(this.pct));
         return values;
@@ -59,9 +59,9 @@ public class PrevalenceItem<T extends PrevalenceItem> extends ExportItem<T> {
 
     @Override
     public int compareTo(PrevalenceItem that) {
-        int res = analysisId.compareTo(that.analysisId);
+        int res = getAnalysisId().compareTo(that.getAnalysisId());
         if (res == 0) {
-            covariateName.compareToIgnoreCase(that.covariateName);
+            getCovariateName().compareToIgnoreCase(that.getCovariateName());
         }
         if (res == 0) {
             res = cohortName.compareToIgnoreCase(that.cohortName);

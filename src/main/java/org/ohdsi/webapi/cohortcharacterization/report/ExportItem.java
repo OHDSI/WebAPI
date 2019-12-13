@@ -8,23 +8,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class ExportItem<T extends ExportItem> implements Comparable<T> {
-    public final Integer analysisId;
-    public final String analysisName;
-    public final Long strataId;
-    public final String strataName;
-    public final Long covariateId;
-    public final String covariateName;
-    public final String covariateShortName;
-    public final String faType;
-    public String domainId;
-    public final Long conceptId;
-    public final String conceptName;
+    private final Integer analysisId;
+    private final String analysisName;
+    private final Long strataId;
+    private final String strataName;
+    private final Long covariateId;
+    private final String covariateName;
+    private final String covariateShortName;
+    private final String faType;
+    private String domainId;
+    private final Long conceptId;
+    private final String conceptName;
 
     public ExportItem(CcPrevalenceStat ccResult) {
         this.analysisId = ccResult.getAnalysisId();
         this.analysisName = ccResult.getAnalysisName();
         this.strataId = ccResult.getStrataId();
-        this.strataName = getStrataName(ccResult.getStrataName());
+        this.strataName = getStrataNameOrDefault(ccResult.getStrataName());
         this.covariateId = ccResult.getCovariateId();
         this.covariateName = ccResult.getCovariateName();
         this.covariateShortName = extractMeaningfulCovariateName(ccResult.getCovariateName());
@@ -34,16 +34,16 @@ public abstract class ExportItem<T extends ExportItem> implements Comparable<T> 
     }
 
     public ExportItem(PrevalenceItem item) {
-        this.analysisId = item.analysisId;
-        this.analysisName = item.analysisName;
-        this.strataId = item.strataId;
-        this.strataName = getStrataName(item.strataName);;
-        this.covariateId = item.covariateId;
-        this.covariateName = item.covariateName;
-        this.covariateShortName = extractMeaningfulCovariateName(item.covariateName);
-        this.faType = item.faType;
-        this.conceptId = item.conceptId;
-        this.conceptName = item.conceptName;
+        this.analysisId = item.getAnalysisId();
+        this.analysisName = item.getAnalysisName();
+        this.strataId = item.getStrataId();
+        this.strataName = getStrataNameOrDefault(item.getStrataName());
+        this.covariateId = item.getCovariateId();
+        this.covariateName = item.getCovariateName();
+        this.covariateShortName = extractMeaningfulCovariateName(item.getCovariateName());
+        this.faType = item.getFaType();
+        this.conceptId = item.getConceptId();
+        this.conceptName = item.getConceptName();
     }
 
     protected List<String> getValueList() {
@@ -88,7 +88,7 @@ public abstract class ExportItem<T extends ExportItem> implements Comparable<T> 
         }
     }
 
-    protected String getStrataName(String value) {
+    protected String getStrataNameOrDefault(String value) {
         return StringUtils.isNotEmpty(value) ? value : "All stratas";
     }
 
@@ -106,7 +106,6 @@ public abstract class ExportItem<T extends ExportItem> implements Comparable<T> 
         if (analysisId != null ? !analysisId.equals(that.analysisId) : that.analysisId != null) return false;
         if (strataId != null ? !strataId.equals(that.strataId) : that.strataId != null) return false;
         if (covariateId != null ? !covariateId.equals(that.covariateId) : that.covariateId != null) return false;
-        if (domainId != null ? !domainId.equals(that.domainId) : that.domainId != null) return false;
         if (conceptId != null ? !conceptId.equals(that.conceptId) : that.conceptId != null) return false;
         return conceptName != null ? conceptName.equals(that.conceptName) : that.conceptName == null;
     }
@@ -116,8 +115,55 @@ public abstract class ExportItem<T extends ExportItem> implements Comparable<T> 
         int result = analysisId != null ? analysisId.hashCode() : 0;
         result = 31 * result + (strataId != null ? strataId.hashCode() : 0);
         result = 31 * result + (covariateId != null ? covariateId.hashCode() : 0);
-        result = 31 * result + (domainId != null ? domainId.hashCode() : 0);
         result = 31 * result + (conceptId != null ? conceptId.hashCode() : 0);
         return result;
+    }
+
+    public Integer getAnalysisId() {
+        return analysisId;
+    }
+
+    public String getAnalysisName() {
+        return analysisName;
+    }
+
+    public Long getStrataId() {
+        return strataId;
+    }
+
+    public String getStrataName() {
+        return strataName;
+    }
+
+    public Long getCovariateId() {
+        return covariateId;
+    }
+
+    public String getCovariateName() {
+        return covariateName;
+    }
+
+    public String getCovariateShortName() {
+        return covariateShortName;
+    }
+
+    public String getFaType() {
+        return faType;
+    }
+
+    public String getDomainId() {
+        return domainId;
+    }
+
+    public void setDomainId(String domainId) {
+        this.domainId = domainId;
+    }
+
+    public Long getConceptId() {
+        return conceptId;
+    }
+
+    public String getConceptName() {
+        return conceptName;
     }
 }

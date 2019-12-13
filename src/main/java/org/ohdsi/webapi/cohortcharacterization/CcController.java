@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
+import com.odysseusinc.arachne.commons.utils.CommonFilenameUtils;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import com.opencsv.CSVWriter;
 import org.ohdsi.analysis.Utils;
@@ -314,6 +315,7 @@ public class CcController {
         if (filename.length() >= 64) {
             filename = filename.substring(0, 63);
         }
+        filename = CommonFilenameUtils.sanitizeFilename(filename);
         ZipEntry resultsEntry = new ZipEntry(filename + ".csv");
         zos.putNextEntry(resultsEntry);
         zos.write(sw.getBuffer().toString().getBytes());

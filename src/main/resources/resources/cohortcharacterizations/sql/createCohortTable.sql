@@ -4,4 +4,4 @@ create table @temp_database_schema.@target_table
   SUBJECT_ID bigint NOT NULL,
   cohort_start_date date NOT NULL,
   cohort_end_date date NOT NULL
-)
+);

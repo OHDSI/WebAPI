@@ -118,7 +118,7 @@ events AS (
 	LEFT JOIN #collapsed_dates_events e ON e.subject_id = tp.subject_id
 	WHERE (e.cohort_start_date <= tp.cohort_date AND e.cohort_end_date >= tp.next_cohort_date)
 ) 
-SELECT SUM(POWER(2, e.event_cohort_index)) as combo_id,  subject_id , cohort_start_date, cohort_end_date
+SELECT cast(SUM(POWER(cast(2 as bigint), e.event_cohort_index)) as bigint) as combo_id,  subject_id , cohort_start_date, cohort_end_date
 into #combo_events
 FROM events e
 GROUP BY subject_id, cohort_start_date, cohort_end_date;

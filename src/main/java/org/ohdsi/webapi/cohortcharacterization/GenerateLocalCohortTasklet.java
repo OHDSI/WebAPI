@@ -71,23 +71,22 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
 
         Map<String, Object> jobParameters = chunkContext.getStepContext().getJobParameters();
         Source source = sourceService.findBySourceId(Integer.valueOf(jobParameters.get(SOURCE_ID).toString()));
-        String targetSchema = SourceUtils.getTempQualifier(source);
+        String resultSchema = SourceUtils.getResultsQualifier(source);
         String targetTable = jobParameters.get(TARGET_TABLE).toString();
 
         Collection<CohortDefinition> cohortDefinitions = cohortGetter.apply(chunkContext);
 
         List<CompletableFuture> executions = cohortDefinitions.stream()
                 .map(cd ->
-                        CompletableFuture.supplyAsync(
-                                () -> {
+                        CompletableFuture.supplyAsync(() -> {
                                     String sessionId = SessionUtils.sessionId();
                                     CohortGenerationRequestBuilder generationRequestBuilder = new CohortGenerationRequestBuilder(
                                         sessionId,
-                                        targetSchema
+                                        resultSchema
                                     );
 
                                     int designHash = this.generationCacheHelper.computeHash(cd.getDetails().getExpression());
-                                    CohortGenerationUtils.insertInclusionRules(cd.getId(), cd.getExpression(), designHash, targetSchema, cancelableJdbcTemplate);
+                                    CohortGenerationUtils.insertInclusionRules(cd.getId(), cd.getExpression(), designHash, resultSchema, cancelableJdbcTemplate);
                                     
                                     GenerationCacheHelper.CacheResult res = generationCacheHelper.computeCacheIfAbsent(cd, source, generationRequestBuilder, (resId, sqls) -> {
                                         try {

@@ -2,41 +2,50 @@ FROM maven:3.6-jdk-8 as builder
 
 WORKDIR /code
 
+ARG MAVEN_PROFILE=webapi-postgresql
+
 # Download dependencies
 COPY pom.xml /code/
-RUN mvn package -Pwebapi-postgresql -DskipTests
+RUN mvn package -P${MAVEN_PROFILE} -DskipTests
 
-# Compile code
+# Compile code and repackage it
 COPY src /code/src
-RUN mvn package -Pwebapi-postgresql -DskipTests
+RUN mvn package -P${MAVEN_PROFILE} -DskipTests \
+    && mkdir war \
+    && mv target/WebAPI.war war \
+    && cd war \
+    && unzip WebAPI.war \
+    && rm WebAPI.war
 
-# OHDSI WebAPI and ATLAS web application running in a Tomcat 8 server on Java JRE 8
-FROM tomcat:8-jre8
+# OHDSI WebAPI and ATLAS web application running as a Spring Boot application with Java 11
+FROM openjdk:11
 
 MAINTAINER Lee Evans - www.ltscomputingllc.com
 
-ENV JAVA_OPTS=-Djava.security.egd=file:///dev/./urandom
-ENV TOMCAT_ADMIN_PASSWORD=password
+# Any Java options to pass along, e.g. memory, garbage collection, etc.
+ENV JAVA_OPTS=""
+# Additional classpath parameters to pass along. If provided, start with colon ":"
+ENV CLASSPATH=""
+# Default Java options. The first entry is a fix for when java reads secure random numbers:
+# in a containerized system using /dev/random may reduce entropy too much, causing slowdowns.
+# https://ruleoftech.com/2016/avoiding-jvm-delays-caused-by-random-number-generation
+ENV DEFAULT_JAVA_OPTS="-Djava.security.egd=file:///dev/./urandom"
 
-# set working directory to the Tomcat server webapps directory
-WORKDIR /usr/local/tomcat/webapps
+# set working directory to a fixed WebAPI directory
+WORKDIR /var/lib/ohdsi/webapi
 
-# install the bash shell deploy script that supervisord will run whenever the container is started
-COPY docker/deploy-script.sh /usr/local/tomcat/bin/
-
-# add a Tomcat server management web UI 'admin' user with default 'abc123' password!
-COPY docker/tomcat-users.xml /usr/local/tomcat/conf/
-
-COPY docker/entrypoint.sh /entrypoint.sh
-
-RUN chmod +x /usr/local/tomcat/bin/deploy-script.sh /entrypoint.sh
-
-# deploy the latest OHDSI WebAPI war file from the OHDSI CI Nexus repository (built from GitHub OHDSI WebAPI released branch)
-COPY --from=builder /code/target/WebAPI.war /usr/local/tomcat/webapps/
-
-# run supervisord to execute the deploy script (which also starts the tomcat server)
-CMD ["/usr/local/tomcat/bin/deploy-script.sh"]
-
-ENTRYPOINT ["/entrypoint.sh"]
+# deploy the just built OHDSI WebAPI war file
+# copy resources in order of fewest changes to most changes.
+# This way, the libraries step is not duplicated if the dependencies
+# do not change.
+COPY --from=builder /code/war/WEB-INF/lib*/* WEB-INF/lib/
+COPY --from=builder /code/war/org org
+COPY --from=builder /code/war/WEB-INF/classes WEB-INF/classes
+COPY --from=builder /code/war/META-INF META-INF
 
 EXPOSE 8080
+
+# Directly run the code as a WAR.
+CMD java ${DEFAULT_JAVA_OPTS} ${JAVA_OPTS} \
+    -cp ".:WebAPI.jar:WEB-INF/lib/*.jar${CLASSPATH}" \
+    org.springframework.boot.loader.WarLauncher

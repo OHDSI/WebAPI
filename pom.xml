@@ -316,6 +316,7 @@
         <configuration>
           <!-- Since we filter properties files via Maven, do not add resources. -->
           <addResources>false</addResources>
+          <mainClass>org.ohdsi.webapi.WebApi</mainClass>
           <additionalProperties>
             <git.branch>${git.branch}</git.branch>
             <git.commit.id>${git.commit.id.abbrev}</git.commit.id>
@@ -328,7 +329,7 @@
         <executions>
           <execution>
             <goals>
-              <goal>build-info</goal>
+              <goal>repackage</goal>
             </goals>
           </execution>
         </executions>
@@ -518,11 +519,12 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-tomcat</artifactId>
-      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-tomcat</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -535,6 +537,10 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-jersey</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-undertow</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>

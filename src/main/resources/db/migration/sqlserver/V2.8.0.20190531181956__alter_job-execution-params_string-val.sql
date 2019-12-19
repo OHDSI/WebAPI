@@ -4,9 +4,6 @@ DROP VIEW ${ohdsiSchema}.pathway_analysis_generation;
 DROP VIEW ${ohdsiSchema}.prediction_analysis_generation;
 DROP VIEW ${ohdsiSchema}.user_import_job_history;
 
-ALTER TABLE ${ohdsiSchema}.batch_job_execution_params ALTER COLUMN string_val VARCHAR(MAX);
-GO
-
 ALTER TABLE ${ohdsiSchema}.user_import_job ADD user_roles VARCHAR(MAX);
 GO
 

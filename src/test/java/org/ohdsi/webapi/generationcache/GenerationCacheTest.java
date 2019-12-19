@@ -2,20 +2,18 @@ package org.ohdsi.webapi.generationcache;
 
 import com.odysseusinc.arachne.commons.types.DBMSType;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
-import com.opentable.db.postgres.junit.EmbeddedPostgresRules;
-import com.opentable.db.postgres.junit.SingleInstancePostgresRule;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.ohdsi.analysis.Utils;
+import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.AbstractInMemoryTest;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
@@ -27,10 +25,7 @@ import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.sql.DataSource;
 import java.io.File;
@@ -46,14 +41,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static org.ohdsi.webapi.Constants.Params.GENERATION_ID;
+import static org.ohdsi.webapi.Constants.Params.DESIGN_HASH;
 import static org.ohdsi.webapi.Constants.Params.RESULTS_DATABASE_SCHEMA;
-import static org.ohdsi.webapi.Constants.Tables.COHORT_GENERATIONS_TABLE;
 
-@SpringBootTest
-@RunWith(SpringRunner.class)
-@TestPropertySource(locations = "/in-memory-webapi.properties")
-public class GenerationCacheTest {
+
+public class GenerationCacheTest extends AbstractInMemoryTest {
 
     private static final String CDM_SQL = ResourceHelper.GetResourceAsString("/cdm-postgresql-ddl.sql");
     private static final String COHORT_JSON = ResourceHelper.GetResourceAsString("/generationcache/cohort/cohortIbuprofenOlder50.json");
@@ -63,9 +55,6 @@ public class GenerationCacheTest {
     private static final String EUNOMIA_CSV_ZIP = "/eunomia.csv.zip";
     private static final String CDM_SCHEMA_NAME = "cdm";
     private static final String RESULT_SCHEMA_NAME = "results";
-
-    @ClassRule
-    public static SingleInstancePostgresRule pg = EmbeddedPostgresRules.singleInstance();
 
     @Autowired
     private GenerationCacheService generationCacheService;
@@ -82,32 +71,23 @@ public class GenerationCacheTest {
     @Autowired
     private CohortDefinitionRepository cohortDefinitionRepository;
 
-    private static JdbcTemplate jdbcTemplate;
-
     private static final Collection<String> COHORT_DDL_FILE_PATHS = Arrays.asList(
-            "/ddl/results/cohort.sql",
-            "/ddl/results/cohort_generations.sql",
-            "/ddl/results/cohort_inclusion.sql",
-            "/ddl/results/cohort_inclusion_result.sql",
-            "/ddl/results/cohort_inclusion_stats.sql",
-            "/ddl/results/cohort_summary_stats.sql",
-            "/ddl/results/cohort_censor_stats.sql"
+		// cohort generation results
+		"/ddl/results/cohort.sql",
+		"/ddl/results/cohort_censor_stats.sql",
+		"/ddl/results/cohort_inclusion.sql",
+		"/ddl/results/cohort_inclusion_result.sql",
+		"/ddl/results/cohort_inclusion_stats.sql",
+		"/ddl/results/cohort_summary_stats.sql",
+		// cohort generation cache
+		"/ddl/results/cohort_cache.sql",
+		"/ddl/results/cohort_censor_stats_cache.sql",
+		"/ddl/results/cohort_inclusion_result_cache.sql",
+		"/ddl/results/cohort_inclusion_stats_cache.sql",
+		"/ddl/results/cohort_summary_stats_cache.sql"
     );
 
     private CohortGenerationRequestBuilder cohortGenerationRequestBuilder;
-
-    @BeforeClass
-    public static void beforeClass() {
-
-//        prepareCdmSchema();
-        jdbcTemplate = new JdbcTemplate(getDataSource());
-        try {
-            System.setProperty("datasource.url", getDataSource().getConnection().getMetaData().getURL());
-            System.setProperty("flyway.datasource.url", System.getProperty("datasource.url"));
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
 
     @Before
     public void setUp() throws SQLException {
@@ -163,7 +143,7 @@ public class GenerationCacheTest {
 
         // Generation after results were corrupted
 
-        jdbcTemplate.execute(String.format("DELETE FROM %s.cohort_generations;", RESULT_SCHEMA_NAME));
+        jdbcTemplate.execute(String.format("DELETE FROM %s.cohort_cache;", RESULT_SCHEMA_NAME));
 
         isSqlExecuted.set(false);
 
@@ -216,26 +196,31 @@ public class GenerationCacheTest {
         );
 
         GenerationCache generationCache = generationCacheService.getCacheOrEraseInvalid(type, generationCacheService.getDesignHash(type, cohortDefinition.getDetails().getExpression()), source.getSourceId());
-        Assert.assertEquals("Generation sequence respects existing results", 11, (int) generationCache.getResultIdentifier());
+        Assert.assertEquals("Generation sequence respects existing results", (Integer) 11, generationCache.getDesignHash());
     }
 
     @Test
-    public void checkResultIdentifiersGeneration() {
+    public void checkHashEquivalence() {
 
-        CacheableGenerationType type = CacheableGenerationType.COHORT;
-        Source source = sourceRepository.findBySourceId(INITIAL_ENTITY_ID);
+        CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(INITIAL_ENTITY_ID);
+        
+        Integer originalHash = generationCacheHelper.computeHash(cohortDefinition.getDetails().getExpression());
 
-        Integer firstId = generationCacheService.getNextResultIdentifier(type, source);
-        Integer secondId = generationCacheService.getNextResultIdentifier(type, source);
+        // modify the inclusion rule name/description, but should lead to same hash result
+        CohortExpression expression = CohortExpression.fromJson(cohortDefinition.getDetails().getExpression());
+        expression.inclusionRules.get(0).name += "...updated name";
+        expression.inclusionRules.get(0).description += "..updated description";
 
-        Assert.assertTrue("Result identifier increases on each retrieval", firstId < secondId);
+        Integer updatedHash = generationCacheHelper.computeHash(Utils.serialize(expression));
+        
+        Assert.assertEquals("Expression with different name and descritpion results in same hash", originalHash,updatedHash);
     }
 
     private void executeCohort(AtomicBoolean isSqlExecuted, Integer resId) {
 
         String mockSqlList = SqlRender.renderSql(
                 INSERT_COHORT_RESULTS_SQL,
-                new String[]{RESULTS_DATABASE_SCHEMA, GENERATION_ID},
+                new String[]{RESULTS_DATABASE_SCHEMA, DESIGN_HASH},
                 new String[]{RESULT_SCHEMA_NAME, resId.toString()}
         );
 
@@ -248,7 +233,7 @@ public class GenerationCacheTest {
 
         String cohortCountsSql = SqlRender.renderSql(
                 COHORT_COUNTS_SQL,
-                new String[]{RESULTS_DATABASE_SCHEMA, GENERATION_ID},
+                new String[]{RESULTS_DATABASE_SCHEMA, DESIGN_HASH},
                 new String[]{RESULT_SCHEMA_NAME, generationId.toString()}
         );
         return jdbcTemplate.queryForMap(cohortCountsSql)
@@ -259,11 +244,11 @@ public class GenerationCacheTest {
 
     private boolean checkCohortCounts(Map<String, Long> counts) {
 
-        return counts.get("cohort_generations_record_count") == 1
-                && counts.get("cohort_inclusion_count") == 1
+        return counts.get("cohort_record_count") == 1
                 && counts.get("cohort_inclusion_result_count") == 1
                 && counts.get("cohort_inclusion_stats_count") == 1
-                && counts.get("cohort_summary_stats_count") == 1;
+                && counts.get("cohort_summary_stats_count") == 1
+                && counts.get("cohort_censor_stats_count") == 0;
     }
 
     private CohortDefinition getCohortDefinition() {
@@ -318,10 +303,7 @@ public class GenerationCacheTest {
 
         return new CohortGenerationRequestBuilder(
                 SessionUtils.sessionId(),
-                SourceUtils.getResultsQualifier(source),
-                COHORT_GENERATIONS_TABLE,
-                GENERATION_ID,
-                true
+                SourceUtils.getResultsQualifier(source)
         );
     }
 
@@ -341,11 +323,6 @@ public class GenerationCacheTest {
         String resultSql = getResultTablesSql();
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         jdbcTemplate.batchUpdate(SqlSplit.splitSql(resultSql));
-    }
-
-    private static DataSource getDataSource() {
-
-        return pg.getEmbeddedPostgres().getPostgresDatabase();
     }
 
     private static String getCdmSql() throws IOException, ZipException {

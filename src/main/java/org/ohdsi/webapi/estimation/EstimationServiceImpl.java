@@ -12,8 +12,11 @@ import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression.ConceptSetItem;
 import org.ohdsi.hydra.Hydra;
+import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
+import org.ohdsi.webapi.analysis.AnalysisConceptSet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
+import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.AnalysisExecutionSupport;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.conceptset.ConceptSetCrossReferenceImpl;
@@ -23,16 +26,20 @@ import org.ohdsi.webapi.estimation.comparativecohortanalysis.specification.Targe
 import org.ohdsi.webapi.estimation.domain.EstimationGenerationEntity;
 import org.ohdsi.webapi.estimation.repository.EstimationAnalysisGenerationRepository;
 import org.ohdsi.webapi.estimation.repository.EstimationRepository;
-import org.ohdsi.webapi.estimation.specification.*;
+import org.ohdsi.webapi.estimation.specification.EstimationAnalysisImpl;
+import org.ohdsi.webapi.estimation.specification.NegativeControlImpl;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
+import org.ohdsi.webapi.job.GeneratesNotification;
+import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.service.ConceptSetService;
 import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.service.VocabularyService;
-import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
+import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
+import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.EntityUtils;
@@ -41,6 +48,7 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
@@ -57,15 +65,10 @@ import java.util.stream.Collectors;
 import static org.ohdsi.webapi.Constants.GENERATE_ESTIMATION_ANALYSIS;
 import static org.ohdsi.webapi.Constants.Params.ESTIMATION_ANALYSIS_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
-import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
-import org.ohdsi.webapi.analysis.AnalysisConceptSet;
-import org.ohdsi.webapi.common.DesignImportService;
-import org.ohdsi.webapi.service.dto.ConceptSetDTO;
-import org.springframework.core.convert.ConversionService;
 
 @Service
 @Transactional
-public class EstimationServiceImpl extends AnalysisExecutionSupport implements EstimationService {
+public class EstimationServiceImpl extends AnalysisExecutionSupport implements EstimationService, GeneratesNotification {
     
     private static final String CONCEPT_SET_XREF_KEY_TARGET_COMPARATOR_OUTCOME = "estimationAnalysisSettings.analysisSpecification.targetComparatorOutcomes";
     private static final String CONCEPT_SET_XREF_KEY_NEGATIVE_CONTROL_OUTCOMES = "negativeControlOutcomes";
@@ -402,7 +405,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
 
     @Override
     @DataSourceAccess
-    public void runGeneration(Estimation estimation, @SourceKey String sourceKey) throws IOException {
+    public JobExecutionResource runGeneration(Estimation estimation, @SourceKey String sourceKey) throws IOException {
 
         final Source source = sourceService.findBySourceKey(sourceKey);
         final Integer analysisId = estimation.getId();
@@ -431,7 +434,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
                 analysisFiles
         ).build();
 
-        jobService.runJob(generateAnalysisJob, builder.toJobParameters());
+        return jobService.runJob(generateAnalysisJob, builder.toJobParameters());
     }
 
     @Override
@@ -461,5 +464,15 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         entityManager.refresh(analysis);
         analysis = getById(analysis.getId());
         return analysis;
+    }
+
+    @Override
+    public String getJobName() {
+        return GENERATE_ESTIMATION_ANALYSIS;
+    }
+
+    @Override
+    public String getExecutionFoldingKey() {
+        return ESTIMATION_ANALYSIS_ID;
     }
 }

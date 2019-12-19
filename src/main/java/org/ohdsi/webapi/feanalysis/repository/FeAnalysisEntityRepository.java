@@ -9,9 +9,6 @@ import java.util.List;
 public interface FeAnalysisEntityRepository extends BaseFeAnalysisEntityRepository<FeAnalysisEntity> {
     @Query("Select fe FROM FeAnalysisEntity fe WHERE fe.name LIKE ?1 ESCAPE '\\'")
     List<FeAnalysisEntity> findAllByNameStartsWith(String pattern);
-    
-    @Query("Select fe FROM FeAnalysisEntity fe WHERE fe.design = ?1")
-    List<FeAnalysisEntity> findByDesign(String design);    
 
     @Query("SELECT COUNT(fe) FROM FeAnalysisEntity fe WHERE fe.name = :name and fe.id <> :id")
     int getCountFeWithSameName(@Param("id") Integer id, @Param("name") String name);

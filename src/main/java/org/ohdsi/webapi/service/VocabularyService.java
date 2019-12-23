@@ -469,7 +469,7 @@ public class VocabularyService extends AbstractDaoService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, @PathParam("query") String query) {
-    return this.executeSearch(sourceKey, query, null);
+    return this.executeSearch(sourceKey, query, DEFAULT_SEARCH_ROWS);
   }
   
   /**

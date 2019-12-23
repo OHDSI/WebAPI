@@ -16,7 +16,7 @@ public class Report {
     @JsonIgnore
     public List<String[]> header;
     public Set<String> domainIds;
-    public Set<Pair<Integer, String>> cohorts;
+    public Set<Cohort> cohorts;
     public Set<ExportItem> items;
     public boolean isComparative;
     public boolean isSummary;
@@ -36,7 +36,7 @@ public class Report {
         domainIds = new HashSet<>();
         cohorts = new HashSet<>();
         items = new HashSet<>();
-        simpleResultSummary.stream()
+        simpleResultSummary
                 .forEach(item -> {
                     domainIds.addAll(item.getDomainIds());
                     cohorts.addAll(item.getCohorts());
@@ -49,7 +49,7 @@ public class Report {
         return items
                 .stream()
                 .sorted()
-                .map(x -> x.getValueArray())
+                .map(ExportItem::getValueArray)
                 .collect(Collectors.toList());
     }
 }

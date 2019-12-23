@@ -10,6 +10,7 @@ import org.ohdsi.analysis.WithId;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.circe.helper.ResourceHelper;
+import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.hydra.Hydra;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.JobInvalidator;
@@ -132,6 +133,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     private final static List<String> INCOMPLETE_STATUSES = ImmutableList.of(BatchStatus.STARTED, BatchStatus.STARTING, BatchStatus.STOPPING, BatchStatus.UNKNOWN)
             .stream().map(BatchStatus::name).collect(Collectors.toList());
+
+    private Map<String, FeatureExtraction.PrespecAnalysis> prespecAnalysisMap = FeatureExtraction.getNameToPrespecAnalysis();
 
     private final EntityGraph defaultEntityGraph = EntityUtils.fromAttributePaths(
             "cohortDefinitions",
@@ -548,14 +551,12 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         return ccGenerationRepository.findByStatusIn(INCOMPLETE_STATUSES);
     }
 
-    @Override
-    @DataSourceAccess
-    public List<CcResult> findResults(@CcGenerationId final Long generationId, ExecutionResultRequest params) {
+    protected List<CcResult> findResults(final Long generationId, ExecutionResultRequest params) {
         final CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
                 .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
         final Source source = generationEntity.getSource();
-        String analysis = params.getAnalysisIds().stream().map(x -> String.valueOf(x)).collect(Collectors.joining(","));
-        String cohorts = params.getCohortIds().stream().map(x -> String.valueOf(x)).collect(Collectors.joining(","));
+        String analysis = params.getAnalysisIds().stream().map(String::valueOf).collect(Collectors.joining(","));
+        String cohorts = params.getCohortIds().stream().map(String::valueOf).collect(Collectors.joining(","));
         String generationResults = sourceAwareSqlRender.renderSql(source.getSourceId(), QUERY_RESULTS, PARAMETERS_RESULTS_FILTERED,
                 new String[]{String.valueOf(generationId), String.valueOf(params.getThresholdValuePct()),
                         analysis, cohorts, SourceUtils.getVocabularyQualifier(source)});
@@ -608,7 +609,9 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         return res;
     }
 
-    public GenerationResults findResult(final Long generationId, ExecutionResultRequest params) {
+    @Override
+    @DataSourceAccess
+    public GenerationResults findResult(@CcGenerationId final Long generationId, ExecutionResultRequest params) {
         if (params.isFilterUsed()) {
             // in case of filtering and nothing was selected in any list
             if (params.getAnalysisIds().isEmpty()
@@ -621,32 +624,36 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         }
         CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
                 .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
-        Set<FeAnalysisEntity> featureAnalyses = generationEntity.getCohortCharacterization().getFeatureAnalyses();
 
         CohortCharacterizationEntity characterization = generationEntity.getCohortCharacterization();
         Set<CohortDefinition> cohortDefs = characterization.getCohorts();
+        Set<FeAnalysisEntity> featureAnalyses = characterization.getFeatureAnalyses();
 
-        // if filter is not used then it must be initializaed first
+        // if filter is not used then it must be initialized first
         if (!params.isFilterUsed()) {
-            params.setCohortIds(generationEntity.getCohortCharacterization().getCohortDefinitions().stream()
-                    .map(cd -> cd.getId()).collect(Collectors.toList()));
-            params.setAnalysisIds(generationEntity.getCohortCharacterization().getFeatureAnalyses().stream()
-                    .map(fa -> fa.getId()).collect(Collectors.toList()));
+            params.setCohortIds(characterization.getCohortDefinitions().stream()
+                    .map(CohortDefinition::getId).collect(Collectors.toList()));
+            params.setAnalysisIds(featureAnalyses.stream().map(this::mapFeatureAnalysisId).collect(Collectors.toList()));
             params.setDomainIds(generationEntity.getCohortCharacterization().getFeatureAnalyses().stream()
                     .map(fa -> fa.getDomain().toString()).distinct().collect(Collectors.toList()));
+        } else {
+            List<Integer> analysisIds = params.getAnalysisIds().stream().map(analysisId -> {
+              FeAnalysisEntity fe = featureAnalyses.stream()
+                    .filter(fa -> Objects.equals(fa.getId(), analysisId))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException(String.format("Feature with id=%s not found in analysis", analysisId)));
+              return mapFeatureAnalysisId(fe);
+            }).collect(Collectors.toList());
+            params.setAnalysisIds(analysisIds);
         }
         // remove domains which cannot be used as corresponding analyses are not selected
         params.getDomainIds().removeIf(s ->
-                !featureAnalyses.stream()
-                        .filter(fe -> fe.getDomain().toString().equals(s) && params.getAnalysisIds().contains(fe.getId()))
-                        .findAny()
-                        .isPresent());
+                featureAnalyses.stream()
+                        .noneMatch(fe -> fe.getDomain().toString().equals(s) && params.getAnalysisIds().contains(mapFeatureAnalysisId(fe))));
         // remove analyses which cannot be used as corresponding domains are not selected
         params.getAnalysisIds().removeIf(s ->
-                !featureAnalyses.stream()
-                        .filter(fe -> fe.getId().equals(s) && params.getDomainIds().contains(fe.getDomain().toString()))
-                        .findAny()
-                        .isPresent());
+                featureAnalyses.stream()
+                        .noneMatch(fe -> mapFeatureAnalysisId(fe).equals(s) && params.getDomainIds().contains(fe.getDomain().toString())));
 
         List<CcResult> ccResults = findResults(generationId, params);
 
@@ -654,6 +661,14 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         Map<Integer, AnalysisItem> analysisMap = new HashMap<>();
         ccResults
                 .stream()
+                .peek(cc -> {
+                  if (StandardFeatureAnalysisType.PRESET.toString().equals(cc.getFaType())) {
+                    featureAnalyses.stream()
+                            .filter(fa -> Objects.equals(fa.getDesign(), cc.getAnalysisName()))
+                            .findFirst()
+                            .ifPresent(v -> cc.setAnalysisId(v.getId()));
+                  }
+                })
                 .forEach(ccResult -> {
                     if (ccResult instanceof CcPrevalenceStat) {
                         analysisMap.putIfAbsent(ccResult.getAnalysisId(), new AnalysisItem());
@@ -680,6 +695,26 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         return res;
     }
 
+    private Integer mapFeatureAnalysisId(FeAnalysisEntity feAnalysis) {
+
+      if (feAnalysis.isPreset()) {
+         return prespecAnalysisMap.values().stream().filter(p -> Objects.equals(p.analysisName, feAnalysis.getDesign()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(String.format("Preset analysis with id=%s does not exist", feAnalysis.getId())))
+                .analysisId;
+      } else {
+        return feAnalysis.getId();
+      }
+    }
+
+    private String mapFeatureName(FeAnalysisEntity entity) {
+
+      if (StandardFeatureAnalysisType.PRESET == entity.getType()) {
+        return entity.getDesign().toString();
+      }
+      return entity.getName();
+    }
+
     private List<Report> prepareReportData(Map<Integer, AnalysisItem> analysisMap, Set<CohortDefinition> cohortDefs,
                                            Set<FeAnalysisEntity> featureAnalyses) {
         // Create map to get cohort name by its id
@@ -687,7 +722,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                 .collect(Collectors.toMap(CohortDefinition::getId, Function.identity()));
         // Create map to get feature analyses by its name
         final Map<String, String> feAnalysisMap = featureAnalyses.stream()
-                .collect(Collectors.toMap(FeAnalysisEntity::getName, entity -> entity.getDomain().toString()));
+                .collect(Collectors.toMap(this::mapFeatureName, entity -> entity.getDomain().toString()));
 
         List<Report> reports = new ArrayList<>();
         try {

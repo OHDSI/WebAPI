@@ -6,10 +6,10 @@ import java.util.Set;
 
 public class AnalysisResultItem {
     private Set<String> domainIds;
-    private Set<Pair<Integer, String>> cohorts;
+    private Set<Cohort> cohorts;
     private Set<ExportItem> exportItems;
 
-    public AnalysisResultItem(Set<String> domainIds, Set<Pair<Integer, String>> cohorts,
+    public AnalysisResultItem(Set<String> domainIds, Set<Cohort> cohorts,
                               Set<ExportItem> exportItems) {
         this.domainIds = domainIds;
         this.cohorts = cohorts;
@@ -20,7 +20,7 @@ public class AnalysisResultItem {
         return domainIds;
     }
 
-    public Set<Pair<Integer, String>> getCohorts() {
+    public Set<Cohort> getCohorts() {
         return cohorts;
     }
 

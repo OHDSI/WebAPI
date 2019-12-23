@@ -6,12 +6,7 @@ import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class AnalysisItem {
     // Key is covariate id and strata id
@@ -54,7 +49,7 @@ public class AnalysisItem {
                                              Map<String, String> feAnalysisMap) {
         Set<ExportItem> values = new HashSet<>();
         Set<String> domainIds = new HashSet<>();
-        Set<Pair<Integer, String>> cohorts = new HashSet<>();
+        Set<Cohort> cohorts = new HashSet<>();
         ItemFactory factory = new ItemFactory();
         for (List<CcResult> results : map.values()) {
             for (CcResult ccResult : results) {
@@ -63,7 +58,7 @@ public class AnalysisItem {
                 String domainId = feAnalysisMap.get(ccResult.getAnalysisName());
                 item.setDomainId(domainId);
                 domainIds.add(domainId);
-                cohorts.add(new ImmutablePair<>(cohortDef.getId(), cohortDef.getName()));
+                cohorts.add(new Cohort(cohortDef.getId(), cohortDef.getName()));
                 values.add(item);
             }
         }
@@ -74,16 +69,16 @@ public class AnalysisItem {
                                                   Map<String, String> feAnalysisMap) {
         Set<ExportItem> values = new HashSet<>();
         Set<String> domainIds = new HashSet<>();
-        Set<Pair<Integer, String>> cohorts = new HashSet<>();
-        cohorts.add(new ImmutablePair<>(firstCohortDef.getId(), firstCohortDef.getName()));
-        cohorts.add(new ImmutablePair<>(secondCohortDef.getId(), secondCohortDef.getName()));
+        Set<Cohort> cohorts = new HashSet<>();
+        cohorts.add(new Cohort(firstCohortDef.getId(), firstCohortDef.getName()));
+        cohorts.add(new Cohort(secondCohortDef.getId(), secondCohortDef.getName()));
         ItemFactory factory = new ItemFactory();
         for (List<CcResult> results : map.values()) {
             // create default items, because we can have result for only one cohort
             ExportItem first = null;
             ExportItem second = null;
             for (CcResult ccResult : results) {
-                if (ccResult.getCohortId() == firstCohortDef.getId()) {
+                if (Objects.equals(ccResult.getCohortId(), firstCohortDef.getId())) {
                     first = factory.createItem(ccResult, firstCohortDef.getName());
                 } else {
                     second = factory.createItem(ccResult, secondCohortDef.getName());

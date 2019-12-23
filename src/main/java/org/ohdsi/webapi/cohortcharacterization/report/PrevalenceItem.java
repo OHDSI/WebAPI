@@ -69,6 +69,26 @@ public class PrevalenceItem<T extends PrevalenceItem> extends ExportItem<T> {
         return res;
     }
 
+    public Long getCount() {
+        return count;
+    }
+
+    public Double getPct() {
+        return pct;
+    }
+
+    public Double getAvg() {
+        return avg;
+    }
+
+    public Integer getCohortId() {
+        return cohortId;
+    }
+
+    public String getCohortName() {
+        return cohortName;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

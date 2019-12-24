@@ -1,0 +1,2 @@
+INSERT INTO ${ohdsiSchema}.fe_analysis(id, type, name, domain, descr, value, design, is_locked, stat_type)
+    values (${ohdsiSchema}.fe_analysis_sequence.nextval, 'PRESET', 'Hospital Frailty Risk Score', 'CONDITION', 'The Hospital Frailty Risk Score score using all conditions prior to the window end.', null, 'Hfrs', 1, 'DISTRIBUTION');

@@ -773,6 +773,14 @@
           <groupId>org.ohdsi.sql</groupId>
           <artifactId>SqlRender</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.ohdsi</groupId>
+          <artifactId>circe</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ohdsi</groupId>
+          <artifactId>featureExtraction</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>

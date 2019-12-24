@@ -299,7 +299,7 @@ public class CcController {
 
     private void createZipEntry(ZipOutputStream zos, Report report) throws IOException {
         StringWriter sw = new StringWriter();
-        CSVWriter csvWriter = new CSVWriter(sw, ',', CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.NO_ESCAPE_CHARACTER);
+        CSVWriter csvWriter = new CSVWriter(sw, ',', CSVWriter.DEFAULT_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER);
         csvWriter.writeAll(report.header);
         csvWriter.writeAll(report.getResultArray());
         csvWriter.flush();

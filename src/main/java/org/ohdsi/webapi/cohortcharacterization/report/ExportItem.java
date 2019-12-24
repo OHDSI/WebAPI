@@ -1,12 +1,21 @@
 package org.ohdsi.webapi.cohortcharacterization.report;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = ComparativeDistributionItem.class),
+        @JsonSubTypes.Type(value = ComparativeItem.class),
+        @JsonSubTypes.Type(value = DistributionItem.class),
+        @JsonSubTypes.Type(value = PrevalenceItem.class)
+})
 public abstract class ExportItem<T extends ExportItem> implements Comparable<T> {
     private final Integer analysisId;
     private final String analysisName;

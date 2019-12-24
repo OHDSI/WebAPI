@@ -23,7 +23,7 @@ public class JobHistoryItemToDTOConverter implements Converter<UserImportJobHist
     dto.setEndTime(source.getEndTime());
     dto.setExitMessage(source.getExitMessage());
     dto.setJobTitle(source.getJobName());
-    dto.setProviderType(source.getProviderType());
+    dto.setProviderType(source.getUserImport() != null ? source.getUserImport().getProviderType() : null);
     dto.setStartTime(source.getStartTime());
     dto.setStatus(source.getStatus());
     dto.setExitCode(source.getExitCode());

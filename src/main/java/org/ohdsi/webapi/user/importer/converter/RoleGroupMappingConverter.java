@@ -57,6 +57,7 @@ public class RoleGroupMappingConverter {
     RoleEntity roleEntity = new RoleEntity();
     roleEntity.setName(role.role);
     roleEntity.setId(role.id);
+    roleEntity.setSystemRole(role.systemRole);
     return roleEntity;
   }
 }

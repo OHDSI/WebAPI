@@ -3,8 +3,7 @@ package org.ohdsi.webapi.user.importer.service;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.user.importer.model.AtlasUserRoles;
-import org.ohdsi.webapi.user.importer.model.LdapProviderType;
-import org.ohdsi.webapi.user.importer.model.RoleGroupMapping;
+import org.ohdsi.webapi.user.importer.model.UserImportJob;
 import org.ohdsi.webapi.user.importer.model.UserImportResult;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.ExitStatus;
@@ -15,7 +14,6 @@ import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 public class UserImportTasklet extends BaseUserImportTasklet<UserImportResult> implements StepExecutionListener {
@@ -30,17 +28,15 @@ public class UserImportTasklet extends BaseUserImportTasklet<UserImportResult> i
   }
 
   @Override
-  protected UserImportResult doUserImportTask(ChunkContext chunkContext, LdapProviderType providerType, Boolean preserveRoles, RoleGroupMapping roleGroupMapping) {
+  protected UserImportResult doUserImportTask(ChunkContext chunkContext, UserImportJob userImportJob) {
 
     if (Objects.isNull(users)) {
-      Map<String, Object> jobParameters = chunkContext.getStepContext().getJobParameters();
-      String userRolesJson = (String) jobParameters.get(Constants.Params.USER_ROLES);
-      if (Objects.isNull(userRolesJson)) {
+      if (Objects.isNull(userImportJob.getUserRoles())) {
         throw new IllegalArgumentException("userRoles is required for user import task");
       }
-      users = Utils.deserialize(userRolesJson, factory -> factory.constructCollectionType(List.class, AtlasUserRoles.class));
+      users = Utils.deserialize(userImportJob.getUserRoles(), factory -> factory.constructCollectionType(List.class, AtlasUserRoles.class));
     }
-    return result = userImportService.importUsers(users, preserveRoles);
+    return result = userImportService.importUsers(users, userImportJob.getPreserveRoles());
   }
 
   @Override

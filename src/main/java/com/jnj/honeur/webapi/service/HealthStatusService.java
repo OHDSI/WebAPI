@@ -71,6 +71,6 @@ public class HealthStatusService {
 
     @PostConstruct
     public void initIt() throws Exception {
-        System.out.println("HEALTH STATUS CONTROLLER CREATED");
+        log.info("HEALTH STATUS CONTROLLER CREATED");
     }
 }

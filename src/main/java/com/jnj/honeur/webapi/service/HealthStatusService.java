@@ -21,18 +21,21 @@ import java.util.HashMap;
 
 @Component("healthStatusController")
 @Path("/health-status")
-@ConditionalOnProperty(name = "webapi.central", havingValue = "true")
 public class HealthStatusService {
 
     private final Log log = LogFactory.getLog(getClass());
 
-    @Autowired
+    @Autowired(required = false)
     private LiferayApiClient liferayApiClient;
+
     @Autowired
     private StorageServiceClient storageServiceClient;
 
     @Value("${security.cas.loginUrl}")
     private String casLoginUrl;
+
+    @Value("${webapi.central}")
+    private boolean isCentral;
 
     @GET
     @Path("/")
@@ -41,11 +44,12 @@ public class HealthStatusService {
         HashMap<String, String> components = new HashMap<>();
 
         if (transitive) {
-            components.put("CAS", String.valueOf(healthCheckCAS()));
-
             components.put("HONEUR Storage Service", String.valueOf(storageServiceClient.healthCheck()));
 
-            components.put("Liferay", String.valueOf(liferayApiClient.healthCheck()));
+            if(isCentral){
+                components.put("CAS", String.valueOf(healthCheckCAS()));
+                components.put("Liferay", String.valueOf(liferayApiClient.healthCheck()));
+            }
         }
 
         if (components.values().stream().anyMatch(statusCode -> !statusCode.equals("200"))) {

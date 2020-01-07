@@ -185,7 +185,7 @@ public class EstimationController {
         packageName = "estimation" + String.valueOf(id);
     }
 
-    EstimationAnalysisImpl analysis = null;//this.exportAnalysis(id);
+    EstimationAnalysisImpl analysis = this.exportAnalysis(id);
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
     service.hydrateAnalysis(analysis, packageName, baos);

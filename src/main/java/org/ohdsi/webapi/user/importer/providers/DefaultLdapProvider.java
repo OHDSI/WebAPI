@@ -45,13 +45,13 @@ public class DefaultLdapProvider extends AbstractLdapProvider {
   @Value("${security.ldap.system.username}")
   private String systemUsername;
 
-  @Value("${security.ldap.referral}")
+  @Value("${security.ldap.referral:#{null}}")
   private String referral;
 
   @Value("${security.ldap.system.password}")
   private String systemPassword;
 
-  @Value("${security.ldap.ignore.partial.result.exception}")
+  @Value("${security.ldap.ignore.partial.result.exception:false}")
   private Boolean ldapIgnorePartialResultException;
 
   private static final Set<String> GROUP_CLASSES = ImmutableSet.of("groupOfUniqueNames", "groupOfNames");

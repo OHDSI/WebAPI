@@ -42,10 +42,10 @@ public class ActiveDirectoryProvider extends AbstractLdapProvider {
   @Value("${security.ad.system.password}")
   private String adSystemPassword;
 
-  @Value("${security.ad.referral}")
+  @Value("${security.ad.referral:#{null}}")
   private String referral;
 
-  @Value("${security.ad.ignore.partial.result.exception}")
+  @Value("${security.ad.ignore.partial.result.exception:false}")
   private Boolean adIgnorePartialResultException;
 
   @Value("${security.ad.result.count.limit:30000}")

@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.FormattableUtils;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 import org.ohdsi.sql.SqlSplit;

@@ -1,28 +1,14 @@
 package org.ohdsi.webapi.cohortsample;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.ws.rs.Consumes;
-
-@Entity(name = "CohortSampleElement")
 public class SampleElement {
-    @Id
-    @Column(name = "id")
-    private Integer id;
-
-    @Column(name = "cohort_sample_id")
     private int sampleId;
 
     private int rank;
 
-    @Column(name = "person_id")
     private long personId;
 
-    @Column(name = "gender_concept_id")
     private long genderConceptId;
 
-    @Column(name = "age")
     private int age;
 
     public int getSampleId() {

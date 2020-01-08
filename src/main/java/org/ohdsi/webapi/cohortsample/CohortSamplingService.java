@@ -38,7 +38,7 @@ public class CohortSamplingService extends AbstractDaoService {
     public List<CohortSample> findSamples(Source source, int cohortDefinitionId) {
         JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
         return jdbcTemplate.query(
-                new PreparedStatementRenderer(source, "/resources/cohortsample/findSampleByCohortDefinitionId.sql",
+                new PreparedStatementRenderer(source, "/resources/cohortsample/sql/findSampleByCohortDefinitionId.sql",
                         "results_schema", source.getTableQualifier(SourceDaimon.DaimonType.Results),
                         "cohortDefinitionId", cohortDefinitionId
                 ).getSql(), sampleRowMapper);
@@ -47,7 +47,7 @@ public class CohortSamplingService extends AbstractDaoService {
     public List<SampleElement> findSampleElements(Source source, int cohortSampleId) {
         JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
         return jdbcTemplate.query(
-                new PreparedStatementRenderer(source, "/resources/cohortsample/findElementsByCohortSampleId.sql",
+                new PreparedStatementRenderer(source, "/resources/cohortsample/sql/findElementsByCohortSampleId.sql",
                         "results_schema", source.getTableQualifier(SourceDaimon.DaimonType.Results),
                         "cohortSampleId", cohortSampleId
                 ).getSql(), elementRowMapper);
@@ -56,7 +56,7 @@ public class CohortSamplingService extends AbstractDaoService {
     public CohortSample findSample(Source source, int cohortSampleId) {
         JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
         List<CohortSample> samples = jdbcTemplate.query(
-                new PreparedStatementRenderer(source, "/resources/cohortsample/findSampleById.sql",
+                new PreparedStatementRenderer(source, "/resources/cohortsample/sql/findSampleById.sql",
                         "results_schema", source.getTableQualifier(SourceDaimon.DaimonType.Results),
                         "cohortSampleId", cohortSampleId
                 ).getSql(), sampleRowMapper);
@@ -169,27 +169,17 @@ public class CohortSamplingService extends AbstractDaoService {
     public void deleteSample(Source source, int sampleId) {
         JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
         String resultsSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-        String[] statements = new String[] {
-            new PreparedStatementRenderer(
-                    source,
-                    "/resources/cohortsample/sql/deleteSampleById.sql",
-                    "results_schema",
-                    resultsSchema,
-                    "cohortSampleId",
-                    sampleId)
-                    .getSql(),
-            new PreparedStatementRenderer(
-                    source,
-                    "/resources/cohortsample/sql/deleteElementsBySampleId.sql",
-                    "results_schema",
-                    resultsSchema,
-                    "cohortSampleId",
-                    sampleId)
-                    .getSql()
-        };
+        String sql = new PreparedStatementRenderer(
+                source,
+                "/resources/cohortsample/sql/deleteSampleById.sql",
+                "results_schema",
+                resultsSchema,
+                "cohortSampleId",
+                sampleId)
+                .getSql();
 
         transactionTemplate.execute((TransactionCallback<Void>) transactionStatus -> {
-            jdbcTemplate.batchUpdate(statements);
+            jdbcTemplate.update(sql);
             return null;
         });
     }

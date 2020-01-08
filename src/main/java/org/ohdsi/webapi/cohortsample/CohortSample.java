@@ -1,58 +1,24 @@
 package org.ohdsi.webapi.cohortsample;
 
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-import org.ohdsi.webapi.model.CommonEntity;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OrderColumn;
-import javax.persistence.Table;
 import java.util.List;
 
-@Entity(name = "CohortSample")
-@Table(name = "cohort_sample")
-public class CohortSample extends CommonEntity<Integer> {
-    @Id
-    @GenericGenerator(
-            name = "cohort_sample_generator",
-            strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
-            parameters = {
-                    @Parameter(name = "sequence_name", value = "cohort_sample_sequence"),
-                    @Parameter(name = "increment_size", value = "1")
-            }
-    )
-    @GeneratedValue(generator = "cohort_sample_generator")
+public class CohortSample {
     private Integer id;
 
     private String name;
 
-    @JoinColumn(name = "cohort_definition_id")
     private int cohortDefinitionId;
 
-    @Column(name = "age_min")
     private Integer ageMin;
 
-    @Column(name = "age_max")
     private Integer ageMax;
 
-    @Column(name = "gender_concept_id")
     private Integer genderConceptId;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderColumn(name = "rank")
     private List<SampleElement> elements;
 
     private int size;
 
-    @Override
     public Integer getId() {
         return this.id;
     }

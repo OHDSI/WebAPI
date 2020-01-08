@@ -42,6 +42,9 @@ public class ActiveDirectoryProvider extends AbstractLdapProvider {
   @Value("${security.ad.system.password}")
   private String adSystemPassword;
 
+  @Value("${security.ad.referral}")
+  private String referral;
+
   @Value("${security.ad.ignore.partial.result.exception}")
   private Boolean adIgnorePartialResultException;
 
@@ -65,6 +68,7 @@ public class ActiveDirectoryProvider extends AbstractLdapProvider {
     contextSource.setUserDn(dequote(adSystemUsername));
     contextSource.setPassword(dequote(adSystemPassword));
     contextSource.setCacheEnvironmentProperties(false);
+    contextSource.setReferral(dequote(referral));
     contextSource.setAuthenticationStrategy(new SimpleDirContextAuthenticationStrategy());
     contextSource.setAuthenticationSource(new AuthenticationSource() {
       @Override

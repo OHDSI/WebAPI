@@ -15,6 +15,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -43,8 +44,8 @@ public class CohortSampleService {
     @Path("/")
     @GET
     public List<CohortSample> listCohortSamples(
-            @QueryParam("cohortDefinitionId") int cohortDefinitionId,
-            @QueryParam("sourceKey") String sourceKey
+            @PathParam("cohortDefinitionId") int cohortDefinitionId,
+            @PathParam("sourceKey") String sourceKey
     ) {
         Source source = getSource(sourceKey);
         return this.samplingService.findSamples(source, cohortDefinitionId);
@@ -53,8 +54,8 @@ public class CohortSampleService {
     @Path("/{sampleId}")
     @GET
     public CohortSample getCohortSample(
-            @QueryParam("sourceKey") String sourceKey,
-            @QueryParam("sampleId") int sampleId
+            @PathParam("sourceKey") String sourceKey,
+            @PathParam("sampleId") int sampleId
     ) {
         Source source = getSource(sourceKey);
         CohortSample sample = samplingService.findSample(source, sampleId);
@@ -70,8 +71,8 @@ public class CohortSampleService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public CohortSample createCohortSample(
-            @QueryParam("sourceKey") String sourceKey,
-            @QueryParam("cohortDefinitionId") int cohortDefinitionId,
+            @PathParam("sourceKey") String sourceKey,
+            @PathParam("cohortDefinitionId") int cohortDefinitionId,
             SampleParametersDTO sampleParameters
     ) {
         Source source = getSource(sourceKey);
@@ -84,8 +85,8 @@ public class CohortSampleService {
     @Path("/{sampleId}")
     @DELETE
     public Response deleteCohortSample(
-            @QueryParam("sourceKey") String sourceKey,
-            @QueryParam("sampleId") int sampleId
+            @PathParam("sourceKey") String sourceKey,
+            @PathParam("sampleId") int sampleId
     ) {
         Source source = getSource(sourceKey);
         samplingService.deleteSample(source, sampleId);

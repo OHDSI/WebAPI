@@ -46,6 +46,6 @@ COPY --from=builder /code/war/META-INF META-INF
 EXPOSE 8080
 
 # Directly run the code as a WAR.
-CMD java ${DEFAULT_JAVA_OPTS} ${JAVA_OPTS} \
+CMD exec java ${DEFAULT_JAVA_OPTS} ${JAVA_OPTS} \
     -cp ".:WebAPI.jar:WEB-INF/lib/*.jar${CLASSPATH}" \
     org.springframework.boot.loader.WarLauncher

@@ -2,7 +2,7 @@ package org.ohdsi.webapi.service;
 
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortsample.CohortSample;
-import org.ohdsi.webapi.cohortsample.CohortSamplingService;
+import org.ohdsi.webapi.cohortsample.CohortSampleElementService;
 import org.ohdsi.webapi.cohortsample.dto.SampleParametersDTO;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
@@ -17,7 +17,6 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -27,12 +26,12 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 public class CohortSampleService {
     private final CohortDefinitionRepository cohortDefinitionRepository;
-    private final CohortSamplingService samplingService;
+    private final CohortSampleElementService samplingService;
     private final SourceRepository sourceRepository;
 
     @Autowired
     public CohortSampleService(
-            CohortSamplingService samplingService,
+            CohortSampleElementService samplingService,
             SourceRepository sourceRepository,
             CohortDefinitionRepository cohortDefinitionRepository
     ) {

@@ -7,6 +7,7 @@ import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.StatementCallback;
@@ -24,47 +25,8 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class CohortSamplingService extends AbstractDaoService {
-    private final static CohortSampleRowMapper sampleRowMapper = new CohortSampleRowMapper();
-    private final static CohortSampleElementRowMapper elementRowMapper = new CohortSampleElementRowMapper();
-    private final TransactionTemplate transactionTemplate;
-
-    @Autowired
-    public CohortSamplingService(
-            TransactionTemplate transactionTemplate) {
-        this.transactionTemplate = transactionTemplate;
-    }
-
-    public List<CohortSample> findSamples(Source source, int cohortDefinitionId) {
-        JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
-        return jdbcTemplate.query(
-                new PreparedStatementRenderer(source, "/resources/cohortsample/sql/findSampleByCohortDefinitionId.sql",
-                        "results_schema", source.getTableQualifier(SourceDaimon.DaimonType.Results),
-                        "cohortDefinitionId", cohortDefinitionId
-                ).getSql(), sampleRowMapper);
-    }
-
-    public List<SampleElement> findSampleElements(Source source, int cohortSampleId) {
-        JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
-        return jdbcTemplate.query(
-                new PreparedStatementRenderer(source, "/resources/cohortsample/sql/findElementsByCohortSampleId.sql",
-                        "results_schema", source.getTableQualifier(SourceDaimon.DaimonType.Results),
-                        "cohortSampleId", cohortSampleId
-                ).getSql(), elementRowMapper);
-    }
-
-    public CohortSample findSample(Source source, int cohortSampleId) {
-        JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
-        List<CohortSample> samples = jdbcTemplate.query(
-                new PreparedStatementRenderer(source, "/resources/cohortsample/sql/findSampleById.sql",
-                        "results_schema", source.getTableQualifier(SourceDaimon.DaimonType.Results),
-                        "cohortSampleId", cohortSampleId
-                ).getSql(), sampleRowMapper);
-        if (samples == null || samples.isEmpty()) {
-            throw new NotFoundException("Cohort sample with ID " + cohortSampleId + " does not exist.");
-        }
-        return samples.get(0);
-    }
+public interface CohortSampleRepository extends CrudRepository<CohortSample, Integer> {
+    List<CohortSample> findByCohortDefinitionIdAndSourceId(int cohortDefinitionId, int sourceId);
 
     public CohortSample createSample(Source source, int cohortDefinitionId, SampleParametersDTO sampleParameters) {
         JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
@@ -169,19 +131,30 @@ public class CohortSamplingService extends AbstractDaoService {
     public void deleteSample(Source source, int sampleId) {
         JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
         String resultsSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-        String sql = new PreparedStatementRenderer(
-                source,
-                "/resources/cohortsample/sql/deleteSampleById.sql",
-                "results_schema",
-                resultsSchema,
-                "cohortSampleId",
-                sampleId)
-                .getSql();
-
+        String[] statements = new String[] {
+                new PreparedStatementRenderer(
+                        source,
+                        "/resources/cohortsample/sql/deleteSampleById.sql",
+                        "results_schema",
+                        resultsSchema,
+                        "cohortSampleId",
+                        sampleId)
+                        .getSql(),
+                new PreparedStatementRenderer(
+                        source,
+                        "/resources/cohortsample/sql/deleteElementsBySampleId.sql",
+                        "results_schema",
+                        resultsSchema,
+                        "cohortSampleId",
+                        sampleId)
+                        .getSql()
+        };
         transactionTemplate.execute((TransactionCallback<Void>) transactionStatus -> {
             jdbcTemplate.update(sql);
+            jdbcTemplate.batchUpdate(statements);
             return null;
         });
+
     }
 
     private static class CohortSampleRowMapper implements RowMapper<CohortSample> {

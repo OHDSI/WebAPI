@@ -14,8 +14,9 @@ CREATE TABLE ${ohdsiSchema}.cohort_sample(
     modified_by_id       INTEGER,
     modified_date        DATETIMEOFFSET,
     CONSTRAINT fk_cohort_sample_definition_id FOREIGN KEY (cohort_definition_id)
-        REFERENCES ${ohdsiSchema}.cohort_definition (cohort_definition_id) ON DELETE CASCADE,
+        REFERENCES ${ohdsiSchema}.cohort_definition (id) ON DELETE CASCADE,
     CONSTRAINT fk_cohort_sample_source_id FOREIGN KEY (source_id)
-        REFERENCES ${ohdsiSchema}.source (source_id) ON DELETE CASCADE,
-    INDEX idx_cohort_sample_source (cohort_definition_id, source_id)
+        REFERENCES ${ohdsiSchema}.source (source_id) ON DELETE CASCADE
 );
+
+CREATE INDEX idx_cohort_sample_source ON ${ohdsiSchema}.cohort_sample (cohort_definition_id, source_id);

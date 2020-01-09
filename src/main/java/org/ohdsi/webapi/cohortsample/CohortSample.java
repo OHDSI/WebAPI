@@ -8,8 +8,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.util.List;
 
 @Entity(name = "CohortSample")
@@ -30,8 +30,11 @@ public class CohortSample extends CommonEntity<Integer> {
     @Column
     private String name;
 
-    @JoinColumn(name = "cohort_definition_id")
+    @Column(name = "cohort_definition_id")
     private int cohortDefinitionId;
+
+    @Column(name = "source_id")
+    private int sourceId;
 
     @Column(name = "age_min")
     private Integer ageMin;
@@ -44,6 +47,9 @@ public class CohortSample extends CommonEntity<Integer> {
 
     @Column
     private int size;
+
+    @Transient
+    private List<SampleElement> elements;
 
     public Integer getId() {
         return this.id;
@@ -111,5 +117,13 @@ public class CohortSample extends CommonEntity<Integer> {
         } else {
             this.genderConceptId = genderConceptId;
         }
+    }
+
+    public int getSourceId() {
+        return sourceId;
+    }
+
+    public void setSourceId(Integer sourceId) {
+        this.sourceId = sourceId;
     }
 }

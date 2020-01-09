@@ -2,7 +2,8 @@ package org.ohdsi.webapi.service;
 
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortsample.CohortSample;
-import org.ohdsi.webapi.cohortsample.CohortSampleElementService;
+import org.ohdsi.webapi.cohortsample.CohortSampleRepository;
+import org.ohdsi.webapi.cohortsample.CohortSamplingService;
 import org.ohdsi.webapi.cohortsample.dto.SampleParametersDTO;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
@@ -26,15 +27,18 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 public class CohortSampleService {
     private final CohortDefinitionRepository cohortDefinitionRepository;
-    private final CohortSampleElementService samplingService;
+    private final CohortSampleRepository sampleRepository;
+    private final CohortSamplingService samplingService;
     private final SourceRepository sourceRepository;
 
     @Autowired
     public CohortSampleService(
-            CohortSampleElementService samplingService,
+            CohortSampleRepository sampleRepository,
+            CohortSamplingService samplingService,
             SourceRepository sourceRepository,
             CohortDefinitionRepository cohortDefinitionRepository
     ) {
+        this.sampleRepository = sampleRepository;
         this.samplingService = samplingService;
         this.sourceRepository = sourceRepository;
         this.cohortDefinitionRepository = cohortDefinitionRepository;
@@ -47,20 +51,19 @@ public class CohortSampleService {
             @PathParam("sourceKey") String sourceKey
     ) {
         Source source = getSource(sourceKey);
-        return this.samplingService.findSamples(source, cohortDefinitionId);
+        return this.sampleRepository.findByCohortDefinitionIdAndSourceId(cohortDefinitionId, source.getId());
     }
 
     @Path("/{sampleId}")
     @GET
     public CohortSample getCohortSample(
-            @PathParam("sourceKey") String sourceKey,
-            @PathParam("sampleId") int sampleId
+            @PathParam("sampleId") Integer sampleId
     ) {
-        Source source = getSource(sourceKey);
-        CohortSample sample = samplingService.findSample(source, sampleId);
+        CohortSample sample = sampleRepository.findOne(sampleId);
         if (sample == null) {
             throw new NotFoundException("Cohort sample with ID " + sampleId + " not found");
         }
+        Source source = sourceRepository.findBySourceId(sample.getSourceId());
         sample.setElements(this.samplingService.findSampleElements(source, sampleId));
         return sample;
     }
@@ -74,6 +77,7 @@ public class CohortSampleService {
             @PathParam("cohortDefinitionId") int cohortDefinitionId,
             SampleParametersDTO sampleParameters
     ) {
+        sampleParameters.validate();
         Source source = getSource(sourceKey);
         if (cohortDefinitionRepository.findOne(cohortDefinitionId) == null) {
             throw new NotFoundException("Cohort definition " + cohortDefinitionId + " does not exist.");

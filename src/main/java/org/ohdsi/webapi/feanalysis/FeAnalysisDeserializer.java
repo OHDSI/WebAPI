@@ -39,27 +39,27 @@ public class FeAnalysisDeserializer extends JsonDeserializer<FeAnalysisDTO> {
         FeAnalysisDTO dto = createDto(node);
 
         final JsonNode name = node.get("name");
-        if (name != null) {
+        if (name != null && !name.isNull()) {
             dto.setName(name.textValue());    
         }
 
         final JsonNode description = node.get("description");
-        if (description != null) {
+        if (description != null && !name.isNull()) {
             dto.setDescription(description.textValue());    
         }
 
         final JsonNode descr = node.get("descr");
-        if (descr != null) {
+        if (descr != null && !descr.isNull()) {
             dto.setDescription(descr.textValue());
         }
 
         final JsonNode id = node.get("id");
-        if (id != null) {
+        if (id != null && !id.isNull()) {
             dto.setId(id.intValue());
         }
 
         final JsonNode domain = node.get("domain");
-        if (domain != null) {
+        if (domain != null && !domain.isNull()) {
             final String domainString = domain.textValue();
             dto.setDomain(StandardFeatureAnalysisDomain.valueOf(domainString));
         }
@@ -97,7 +97,7 @@ public class FeAnalysisDeserializer extends JsonDeserializer<FeAnalysisDTO> {
     private StandardFeatureAnalysisType getType(JsonNode jsonNode) {
         final JsonNode type = jsonNode.get("type");
         StandardFeatureAnalysisType result = null;
-        if (Objects.nonNull(type)) {
+        if (Objects.nonNull(type) && !type.isNull()) {
             result = StandardFeatureAnalysisType.valueOf(type.textValue());
         }
         return result;

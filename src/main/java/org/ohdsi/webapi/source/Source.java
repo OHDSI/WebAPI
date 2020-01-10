@@ -38,6 +38,7 @@ import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Where;
+import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
 
 /**
@@ -48,7 +49,7 @@ import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
 @Table(name="source")
 @SQLDelete(sql = "UPDATE {h-schema}source SET deleted_date = current_timestamp WHERE SOURCE_ID = ?")
 @Where(clause = "deleted_date IS NULL")
-public class Source implements Serializable {
+public class Source extends CommonEntity<Integer> implements Serializable {
 
   public static final String MASQUERADED_USERNAME = "<username>";
   public static final String MASQUERADED_PASSWORD = "<password>";
@@ -260,5 +261,11 @@ public class Source implements Serializable {
               ", krbAuthMethod=" + krbAuthMethod;
     }
     return source;
+  }
+
+  @Override
+  public Integer getId() {
+
+    return sourceId;
   }
 }

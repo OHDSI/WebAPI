@@ -3,7 +3,6 @@ package org.ohdsi.webapi.estimation;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.common.SourceMapKey;
-import org.ohdsi.webapi.common.analyses.CommonAnalysisDTO;
 import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
 import org.ohdsi.webapi.estimation.domain.EstimationGenerationEntity;
@@ -11,8 +10,9 @@ import org.ohdsi.webapi.estimation.dto.EstimationDTO;
 import org.ohdsi.webapi.estimation.dto.EstimationShortDTO;
 import org.ohdsi.webapi.estimation.specification.EstimationAnalysisImpl;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
-import org.ohdsi.webapi.service.SourceService;
-import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +20,17 @@ import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
 
 import javax.transaction.Transactional;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
@@ -187,12 +197,12 @@ public class EstimationController {
   @Path("{id}/generation/{sourceKey}")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public void runGeneration(@PathParam("id") Integer analysisId,
-                            @PathParam("sourceKey") String sourceKey) throws IOException {
+  public JobExecutionResource runGeneration(@PathParam("id") Integer analysisId,
+                                            @PathParam("sourceKey") String sourceKey) throws IOException {
 
     Estimation analysis = service.getAnalysis(analysisId);
     ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format(NO_ESTIMATION_MESSAGE, analysisId));
-    service.runGeneration(analysis, sourceKey);
+    return service.runGeneration(analysis, sourceKey);
   }
 
   @GET
@@ -200,7 +210,7 @@ public class EstimationController {
   @Produces(MediaType.APPLICATION_JSON)
   public List<ExecutionBasedGenerationDTO> getGenerations(@PathParam("id") Integer analysisId) {
 
-    Map<String, SourceInfo> sourcesMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_KEY);
+    Map<String, Source> sourcesMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_KEY);
     return sensitiveInfoService.filterSensitiveInfo(converterUtils.convertList(service.getEstimationGenerations(analysisId), ExecutionBasedGenerationDTO.class),
             info -> Collections.singletonMap(Constants.Variables.SOURCE, sourcesMap.get(info.getSourceKey())));
   }

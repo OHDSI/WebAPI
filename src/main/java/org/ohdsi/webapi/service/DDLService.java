@@ -49,29 +49,42 @@ public class DDLService {
 	public static final String TEMP_SCHEMA = "oracle_temp_schema";
 
 	private static final Collection<String> RESULT_DDL_FILE_PATHS = Arrays.asList(
+		// cohort generation results
 		"/ddl/results/cohort.sql",
-		"/ddl/results/cohort_features.sql",
-		"/ddl/results/cohort_features_analysis_ref.sql",
-		"/ddl/results/cohort_features_dist.sql",
-		"/ddl/results/cohort_features_ref.sql",
+		"/ddl/results/cohort_censor_stats.sql",
 		"/ddl/results/cohort_inclusion.sql",
 		"/ddl/results/cohort_inclusion_result.sql",
 		"/ddl/results/cohort_inclusion_stats.sql",
 		"/ddl/results/cohort_summary_stats.sql",
-		"/ddl/results/cohort_censor_stats.sql",
+		// cohort generation cache
+		"/ddl/results/cohort_cache.sql",
+		"/ddl/results/cohort_censor_stats_cache.sql",
+		"/ddl/results/cohort_inclusion_result_cache.sql",
+		"/ddl/results/cohort_inclusion_stats_cache.sql",
+		"/ddl/results/cohort_summary_stats_cache.sql",
+		// cohort features
+		"/ddl/results/cohort_features.sql",
+		"/ddl/results/cohort_features_analysis_ref.sql",
+		"/ddl/results/cohort_features_dist.sql",
+		"/ddl/results/cohort_features_ref.sql",
+		// cohort feasibility analysis
 		"/ddl/results/feas_study_inclusion_stats.sql",
 		"/ddl/results/feas_study_index_stats.sql",
 		"/ddl/results/feas_study_result.sql",
+		// cohort reports (heracles)
 		"/ddl/results/heracles_analysis.sql",
 		"/ddl/results/heracles_heel_results.sql",
 		"/ddl/results/heracles_results.sql",
 		"/ddl/results/heracles_results_dist.sql",
+		"/ddl/results/heracles_periods.sql",
+		// incidence rates
 		"/ddl/results/ir_analysis_dist.sql",
 		"/ddl/results/ir_analysis_result.sql",
 		"/ddl/results/ir_analysis_strata_stats.sql",
 		"/ddl/results/ir_strata.sql",
-		"/ddl/results/heracles_periods.sql",
+		// characterization
 		"/ddl/results/cohort_characterizations.sql",
+		// pathways
 		"/ddl/results/pathway_analysis_codes.sql",
 		"/ddl/results/pathway_analysis_events.sql",
 		"/ddl/results/pathway_analysis_paths.sql",
@@ -178,12 +191,13 @@ public class DDLService {
 	private String translateSqlFile(String sql, String dialect, Map<String, String> params) {
 
 		SourceStatement statement = new SourceStatement();
-		statement.targetDialect = dialect.toLowerCase();
-		statement.oracleTempSchema = params.get(TEMP_SCHEMA);
-		statement.sql = sql;
-		statement.parameters = new HashMap<>(params);
+		statement.setTargetDialect(dialect.toLowerCase()) ;
+		statement.setOracleTempSchema(params.get(TEMP_SCHEMA));
+		statement.setSql(sql);
+		statement.getParameters().putAll(params);
+
 		TranslatedStatement translatedStatement = translateSQL(statement);
-		return translatedStatement.targetSQL;
+		return translatedStatement.getTargetSQL();
 	}
 
 }

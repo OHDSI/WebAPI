@@ -17,6 +17,7 @@ package org.ohdsi.webapi.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.shiro.authz.UnauthorizedException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.messaging.support.ErrorMessage;
 
@@ -50,7 +51,9 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
             String cause = ex.getCause().getCause().getMessage();
             cause = cause.substring(cause.indexOf(DETAIL) + DETAIL.length());
             ex = new RuntimeException(cause);
-        } else if (ex instanceof NotFoundException) {
+        } else if (ex instanceof UnauthorizedException) {
+            responseStatus = Status.FORBIDDEN;
+        } if (ex instanceof NotFoundException) {
             responseStatus = Status.NOT_FOUND;
         } else {
             responseStatus = Status.INTERNAL_SERVER_ERROR;

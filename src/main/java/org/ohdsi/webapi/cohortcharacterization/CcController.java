@@ -1,12 +1,41 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
+import com.odysseusinc.arachne.commons.utils.CommonFilenameUtils;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
+import com.opencsv.CSVWriter;
+import org.ohdsi.analysis.Utils;
+import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
+import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
+import org.ohdsi.featureExtraction.FeatureExtraction;
+import org.ohdsi.webapi.Constants;
+import org.ohdsi.webapi.Pagination;
+import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
+import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcShortDTO;
+import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
+import org.ohdsi.webapi.cohortcharacterization.dto.ExportExecutionResultRequest;
+import org.ohdsi.webapi.cohortcharacterization.dto.GenerationResults;
+import org.ohdsi.webapi.cohortcharacterization.report.Report;
+import org.ohdsi.webapi.common.SourceMapKey;
+import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
+import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
+import org.ohdsi.webapi.feanalysis.FeAnalysisService;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
+import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceService;
+import org.ohdsi.webapi.util.ExceptionUtils;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -19,33 +48,16 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
-import org.ohdsi.analysis.Utils;
-import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
-import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
-import org.ohdsi.featureExtraction.FeatureExtraction;
-import org.ohdsi.webapi.Constants;
-import org.ohdsi.webapi.Pagination;
-import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
-import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
-import org.ohdsi.webapi.cohortcharacterization.dto.*;
-import org.ohdsi.webapi.common.SourceMapKey;
-import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
-import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
-import org.ohdsi.webapi.feanalysis.FeAnalysisService;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
-import org.ohdsi.webapi.job.JobExecutionResource;
-import org.ohdsi.webapi.service.SourceService;
-import org.ohdsi.webapi.source.SourceInfo;
-import org.ohdsi.webapi.util.ExceptionUtils;
-import org.springframework.core.convert.ConversionService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Path("/cohort-characterization")
 @Controller
@@ -204,7 +216,7 @@ public class CcController {
     @Consumes(MediaType.APPLICATION_JSON)
     public List<CommonGenerationDTO> getGenerationList(@PathParam("id") final Long id) {
 
-        Map<String, SourceInfo> sourcesMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_KEY);
+        Map<String, Source> sourcesMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_KEY);
         return sensitiveInfoService.filterSensitiveInfo(converterUtils.convertList(service.findGenerationsByCcId(id), CommonGenerationDTO.class),
                 info -> Collections.singletonMap(Constants.Variables.SOURCE, sourcesMap.get(info.getSourceKey())));
     }
@@ -238,14 +250,75 @@ public class CcController {
     }
 
     @GET
+    @Path("/generation/{generationId}/result/count")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Long getGenerationsResults( @PathParam("generationId") final Long generationId) {
+        return service.getCCResultsTotalCount(generationId);
+    }
+
+    @POST
     @Path("/generation/{generationId}/result")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public List<CcResult> getGenerationsResults(
-            @PathParam("generationId") final Long generationId, @DefaultValue("0.01") @QueryParam("thresholdLevel") final float thresholdLevel) {
-        List<CcResult> ccResults = service.findResults(generationId, thresholdLevel);
-        convertPresetAnalysesToLocal(ccResults);
-        return ccResults;
+    public GenerationResults getGenerationsResults(
+            @PathParam("generationId") final Long generationId, @RequestBody ExportExecutionResultRequest params) {
+        return service.findData(generationId, params);
+    }
+
+    @POST
+    @Path("/generation/{generationId}/result/export")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response exportGenerationsResults(
+            @PathParam("generationId") final Long generationId, ExportExecutionResultRequest params) {
+        GenerationResults res = service.exportExecutionResult(generationId, params);
+        return prepareExecutionResultResponse(res.getReports());
+    }
+
+    private Response prepareExecutionResultResponse(List<Report> reports) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+             ZipOutputStream zos = new ZipOutputStream(baos)) {
+
+            for (Report report : reports) {
+                createZipEntry(zos, report);
+            }
+
+            zos.closeEntry();
+            baos.flush();
+
+            return Response
+                    .ok(baos)
+                    .type(MediaType.APPLICATION_OCTET_STREAM)
+                    .header("Content-Disposition", String.format("attachment; filename=\"%s\"", "reports.zip"))
+                    .build();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private void createZipEntry(ZipOutputStream zos, Report report) throws IOException {
+        StringWriter sw = new StringWriter();
+        CSVWriter csvWriter = new CSVWriter(sw, ',', CSVWriter.DEFAULT_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER);
+        csvWriter.writeAll(report.header);
+        csvWriter.writeAll(report.getResultArray());
+        csvWriter.flush();
+
+        String filename = report.analysisName;
+        if (report.isComparative) {
+            filename = "Export comparison (" + filename + ")";
+        } else {
+            filename = "Export (" + filename + ")";
+        }
+        // trim the name so it can be opened by archiver,
+        // -1 is for dot character
+        if (filename.length() >= 64) {
+            filename = filename.substring(0, 63);
+        }
+        filename = CommonFilenameUtils.sanitizeFilename(filename);
+        ZipEntry resultsEntry = new ZipEntry(filename + ".csv");
+        zos.putNextEntry(resultsEntry);
+        zos.write(sw.getBuffer().toString().getBytes());
     }
 
     @GET

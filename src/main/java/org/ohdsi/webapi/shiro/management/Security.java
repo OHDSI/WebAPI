@@ -16,10 +16,6 @@ public abstract class Security {
   public static final String SOURCE_ACCESS_PERMISSION = "source:%s:access";
   public static String PROFILE_VIEW_DATES_PERMISSION = "*:person:*:get:dates";
 
-  public abstract void addSourceRole(String sourceKey) throws Exception;
-
-  public abstract void removeSourceRole(String sourceKey) throws Exception;
-
   public abstract String getSubject();
 
   public abstract Set<Realm> getRealms();

@@ -2,6 +2,7 @@ package org.ohdsi.webapi.shiro.management;
 
 import org.apache.shiro.realm.Realm;
 import org.ohdsi.webapi.Constants;
+import org.ohdsi.webapi.security.model.EntityPermissionSchemaResolver;
 import org.ohdsi.webapi.shiro.filters.GoogleIapJwtAuthFilter;
 import org.ohdsi.webapi.shiro.realms.JwtAuthRealm;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,6 +35,11 @@ public class AtlasGoogleSecurity extends AtlasSecurity {
     // gcloud compute backend-services describe my-backend-service --global --format="value(id)"
     @Value("${security.googleIap.backendServiceId}")
     private Long googleBackendServiceId;
+
+    public AtlasGoogleSecurity(EntityPermissionSchemaResolver permissionSchemaResolver) {
+
+        super(permissionSchemaResolver);
+    }
 
     @Override
     protected FilterChainBuilder getFilterChainBuilder() {

@@ -7,21 +7,31 @@ import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.hydra.Hydra;
+import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
+import org.ohdsi.webapi.analysis.AnalysisConceptSet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
+import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.AnalysisExecutionSupport;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.conceptset.ConceptSetCrossReferenceImpl;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
+import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
+import org.ohdsi.webapi.job.GeneratesNotification;
+import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.prediction.domain.PredictionGenerationEntity;
 import org.ohdsi.webapi.prediction.repository.PredictionAnalysisGenerationRepository;
 import org.ohdsi.webapi.prediction.repository.PredictionAnalysisRepository;
 import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl;
-import org.ohdsi.webapi.service.*;
+import org.ohdsi.webapi.service.ConceptSetService;
+import org.ohdsi.webapi.service.JobService;
+import org.ohdsi.webapi.service.VocabularyService;
+import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -29,6 +39,7 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
@@ -44,18 +55,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.GENERATE_PREDICTION_ANALYSIS;
-import static org.ohdsi.webapi.Constants.Params.*;
-
-import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
-import org.ohdsi.webapi.analysis.AnalysisConceptSet;
-import org.ohdsi.webapi.common.DesignImportService;
-import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
-import org.ohdsi.webapi.service.dto.ConceptSetDTO;
-import org.springframework.core.convert.ConversionService;
+import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
+import static org.ohdsi.webapi.Constants.Params.PREDICTION_ANALYSIS_ID;
 
 @Service
 @Transactional
-public class PredictionServiceImpl extends AnalysisExecutionSupport implements PredictionService {
+public class PredictionServiceImpl extends AnalysisExecutionSupport implements PredictionService, GeneratesNotification {
 
     private static final EntityGraph DEFAULT_ENTITY_GRAPH = EntityGraphUtils.fromAttributePaths("source", "analysisExecution.resultFiles");
 
@@ -310,8 +315,8 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     
     @Override
     @DataSourceAccess
-    public void runGeneration(final PredictionAnalysis predictionAnalysis,
-                              @SourceKey final String sourceKey) throws IOException {
+    public JobExecutionResource runGeneration(final PredictionAnalysis predictionAnalysis,
+                                              @SourceKey final String sourceKey) throws IOException {
 
         final Source source = sourceService.findBySourceKey(sourceKey);
         final Integer predictionAnalysisId = predictionAnalysis.getId();
@@ -341,7 +346,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
                 analysisFiles
         ).build();
 
-        jobService.runJob(generateAnalysisJob, builder.toJobParameters());
+        return jobService.runJob(generateAnalysisJob, builder.toJobParameters());
     }
 
     @Override
@@ -371,5 +376,15 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         entityManager.refresh(analysis);
         analysis = getById(analysis.getId());
         return analysis;
+    }
+
+    @Override
+    public String getJobName() {
+        return GENERATE_PREDICTION_ANALYSIS;
+    }
+
+    @Override
+    public String getExecutionFoldingKey() {
+        return PREDICTION_ANALYSIS_ID;
     }
 }

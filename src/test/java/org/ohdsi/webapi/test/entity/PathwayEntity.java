@@ -56,7 +56,7 @@ public class PathwayEntity extends TestImport {
     @Override
     protected PathwayAnalysisDTO createEntity(String name) {
 
-        return createEntity(createAndInitDTO(name));
+        return createEntity(createAndInitIncomingEntity(name));
     }
 
     @Override
@@ -66,7 +66,7 @@ public class PathwayEntity extends TestImport {
     }
 
     @Override
-    protected PathwayAnalysisDTO createAndInitDTO(String name) {
+    protected PathwayAnalysisDTO createAndInitIncomingEntity(String name) {
 
         PathwayAnalysisDTO dto = new PathwayAnalysisDTO();
         dto.setName(name);
@@ -94,15 +94,15 @@ public class PathwayEntity extends TestImport {
     }
 
     @Override
-    protected Object convertToDTO(Object entity) {
+    protected Object getExportEntity(Object entity) {
 
         return conversionService.convert(entity, PathwayAnalysisExportDTO.class);
     }
 
     @Override
-    protected void setDtoName(Object dto, String name) {
+    protected void setExportName(Object entity, String name) {
 
-        ((PathwayAnalysisExportDTO) dto).setName(name);
+        ((PathwayAnalysisExportDTO) entity).setName(name);
     }
 
     @Override

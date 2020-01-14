@@ -42,7 +42,7 @@ public class PredictionEntity extends TestImport {
     }
 
     @Override
-    protected Object createCopy(Object dto) throws Exception {
+    protected Object createCopy(Object dto) {
 
         return plpController.copy(((PredictionAnalysisDTO) dto).getId());
     }
@@ -54,7 +54,7 @@ public class PredictionEntity extends TestImport {
     }
 
     @Override
-    protected void initFirstDTO() throws Exception {
+    protected void initFirstDTO() {
 
         firstSavedDTO = createEntity(NEW_TEST_ENTITY);
     }
@@ -66,19 +66,19 @@ public class PredictionEntity extends TestImport {
     }
 
     @Override
-    protected PredictionAnalysisDTO createEntity(String name) throws Exception {
+    protected PredictionAnalysisDTO createEntity(String name) {
 
-        return createEntity(createAndInitDTO(name));
+        return createEntity(createAndInitIncomingEntity(name));
     }
 
     @Override
-    protected PredictionAnalysisDTO createEntity(Object dto) throws Exception {
+    protected PredictionAnalysisDTO createEntity(Object dto) {
 
         return plpController.createAnalysis((PredictionAnalysis) dto);
     }
 
     @Override
-    protected Object createAndInitDTO(String name) {
+    protected Object createAndInitIncomingEntity(String name) {
 
         PredictionAnalysis predictionAnalysis = new PredictionAnalysis();
         predictionAnalysis.setName(name);
@@ -105,15 +105,15 @@ public class PredictionEntity extends TestImport {
     }
 
     @Override
-    protected Object convertToDTO(Object entity) {
+    protected Object getExportEntity(Object entity) {
 
         return plpController.exportAnalysis(((PredictionAnalysis) entity).getId());
     }
 
     @Override
-    protected void setDtoName(Object dto, String name) {
+    protected void setExportName(Object entity, String name) {
 
-        ((PatientLevelPredictionAnalysisImpl) dto).setName(name);
+        ((PatientLevelPredictionAnalysisImpl) entity).setName(name);
     }
 
     @Override

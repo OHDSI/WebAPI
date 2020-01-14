@@ -12,13 +12,13 @@ public abstract class TestImport extends TestCopy {
 
     protected abstract Object getEntity(int id);
 
-    protected abstract Object convertToDTO(Object entity);
+    protected abstract Object getExportEntity(Object entity);
 
-    protected abstract void setDtoName(Object dto, String name);
+    protected abstract void setExportName(Object entity, String name);
 
     protected abstract Object doImport(Object dto) throws Exception;
 
-    protected abstract Object createAndInitDTO(String name);
+    protected abstract Object createAndInitIncomingEntity(String name);
 
     protected abstract Object createEntity(Object dto) throws Exception;
 
@@ -27,11 +27,11 @@ public abstract class TestImport extends TestCopy {
 
         //Arrange
         Object savedEntity = getEntity(getDtoId(getFirstSavedDTO()));
-        Object exportDTO = convertToDTO(savedEntity);
-        setDtoName(exportDTO, SOME_UNIQUE_TEST_NAME);
+        Object exportedEntity = getExportEntity(savedEntity);
+        setExportName(exportedEntity, SOME_UNIQUE_TEST_NAME);
 
         //Action
-        Object firstImport = doImport(exportDTO);
+        Object firstImport = doImport(exportedEntity);
 
         //Assert
         assertEquals(SOME_UNIQUE_TEST_NAME, getDtoName(firstImport));
@@ -42,12 +42,12 @@ public abstract class TestImport extends TestCopy {
 
         //Arrange
         Object savedEntity = getEntity(getDtoId(getFirstSavedDTO()));
-        Object exportDTO = convertToDTO(savedEntity);
+        Object exportDTO = getExportEntity(savedEntity);
 
         //Action
         Object firstImport = doImport(exportDTO);
         //reset dto
-        exportDTO = convertToDTO(savedEntity);
+        exportDTO = getExportEntity(savedEntity);
         Object secondImport = doImport(exportDTO);
 
         //Assert
@@ -60,17 +60,17 @@ public abstract class TestImport extends TestCopy {
 
         //Arrange
         Object firstCreatedEntity = getEntity(getDtoId(getFirstSavedDTO()));
-        Object firstExportDTO = convertToDTO(firstCreatedEntity);
+        Object firstExportDTO = getExportEntity(firstCreatedEntity);
 
-        Object secondIncomingDTO = createAndInitDTO(NEW_TEST_ENTITY + " (1)");
+        Object secondIncomingEntity = createAndInitIncomingEntity(NEW_TEST_ENTITY + " (1)");
         //save "New test entity (1)" to DB
-        createEntity(secondIncomingDTO);
+        createEntity(secondIncomingEntity);
 
-        Object thirdIncomingDTO = createAndInitDTO(NEW_TEST_ENTITY + " (1) (2)");
+        Object thirdIncomingEntity = createAndInitIncomingEntity(NEW_TEST_ENTITY + " (1) (2)");
         //save "New test entity (1) (2)" to DB
-        Object thirdSavedDTO = createEntity(thirdIncomingDTO);
+        Object thirdSavedDTO = createEntity(thirdIncomingEntity);
         Object thirdCreatedEntity = getEntity(getDtoId(thirdSavedDTO));
-        Object thirdExportDTO = convertToDTO(thirdCreatedEntity);
+        Object thirdExportDTO = getExportEntity(thirdCreatedEntity);
 
         //Action
         //import of "New test entity"
@@ -78,12 +78,12 @@ public abstract class TestImport extends TestCopy {
         //import of "New test entity (1) (2)"
         Object secondImport = doImport(thirdExportDTO);
 
-        Object fourthIncomingDTO = createAndInitDTO(NEW_TEST_ENTITY + " (1) (2) (2)");
+        Object fourthIncomingEntity = createAndInitIncomingEntity(NEW_TEST_ENTITY + " (1) (2) (2)");
         //save "New test entity (1) (2) (2)" to DB
-        createEntity(fourthIncomingDTO);
+        createEntity(fourthIncomingEntity);
 
         //reset dto
-        thirdExportDTO = convertToDTO(thirdCreatedEntity);
+        thirdExportDTO = getExportEntity(thirdCreatedEntity);
         //import of "New test entity (1) (2)"
         Object thirdImport = doImport(thirdExportDTO);
 

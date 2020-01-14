@@ -60,7 +60,7 @@ public class CCEntity extends TestImport {
     @Override
     protected CohortCharacterizationDTO createEntity(String name) {
 
-        return createEntity(createAndInitDTO(name));
+        return createEntity(createAndInitIncomingEntity(name));
     }
 
     @Override
@@ -70,7 +70,7 @@ public class CCEntity extends TestImport {
     }
 
     @Override
-    protected CohortCharacterizationDTO createAndInitDTO(String name) {
+    protected CohortCharacterizationDTO createAndInitIncomingEntity(String name) {
 
         CohortCharacterizationDTO dto = new CohortCharacterizationDTO();
         dto.setName(name);
@@ -90,15 +90,15 @@ public class CCEntity extends TestImport {
     }
 
     @Override
-    protected Object convertToDTO(Object entity) {
+    protected Object getExportEntity(Object entity) {
 
         return conversionService.convert(entity, CcExportDTO.class);
     }
 
     @Override
-    protected void setDtoName(Object dto, String name) {
+    protected void setExportName(Object entity, String name) {
 
-        ((CcExportDTO) dto).setName(name);
+        ((CcExportDTO) entity).setName(name);
     }
 
     @Override

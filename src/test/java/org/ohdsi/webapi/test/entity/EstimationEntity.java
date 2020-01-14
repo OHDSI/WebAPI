@@ -106,7 +106,7 @@ public class EstimationEntity extends TestImport {
     @Override
     protected EstimationDTO createEntity(String name) throws Exception {
 
-        return createEntity(createAndInitDTO(name));
+        return createEntity(createAndInitIncomingEntity(name));
     }
 
     @Override
@@ -116,7 +116,7 @@ public class EstimationEntity extends TestImport {
     }
 
     @Override
-    protected Estimation createAndInitDTO(String name) {
+    protected Estimation createAndInitIncomingEntity(String name) {
 
         Estimation estimation = new Estimation();
         estimation.setName(name);
@@ -144,15 +144,15 @@ public class EstimationEntity extends TestImport {
     }
 
     @Override
-    protected Object convertToDTO(Object entity) {
+    protected Object getExportEntity(Object entity) {
 
         return pleController.exportAnalysis(((Estimation) entity).getId());
     }
 
     @Override
-    protected void setDtoName(Object dto, String name) {
+    protected void setExportName(Object entity, String name) {
 
-        ((EstimationAnalysisImpl) dto).setName(name);
+        ((EstimationAnalysisImpl) entity).setName(name);
     }
 
     @Override

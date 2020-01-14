@@ -22,13 +22,13 @@ import org.ohdsi.webapi.test.entity.PredictionEntity;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
         
-//        ConceptSetEntity.class,
-//        CohortDefinitionEntity.class,
-        CCEntity.class
-//        IREntity.class,
-//        PathwayEntity.class,
-//        EstimationEntity.class,
-//        PredictionEntity.class
+        ConceptSetEntity.class,
+        CohortDefinitionEntity.class,
+        CCEntity.class,
+        IREntity.class,
+        PathwayEntity.class,
+        EstimationEntity.class,
+        PredictionEntity.class
 })
 public class EntityIT extends AbstractShiroTest {
 

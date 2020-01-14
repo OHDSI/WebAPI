@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.test.entity;
+package org.ohdsi.webapi.test;
 
 public class TestConstants {
     public final static String COPY_PREFIX = "COPY OF: ";

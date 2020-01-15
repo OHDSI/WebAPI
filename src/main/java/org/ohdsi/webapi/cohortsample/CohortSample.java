@@ -36,6 +36,9 @@ public class CohortSample extends CommonEntity<Integer> {
     @Column(name = "source_id")
     private int sourceId;
 
+    @Column(name = "age_mode")
+    private String ageMode;
+
     @Column(name = "age_min")
     private Integer ageMin;
 
@@ -88,11 +91,7 @@ public class CohortSample extends CommonEntity<Integer> {
     }
 
     public void setAgeMin(Integer ageMin) {
-        if (ageMin == 0) {
-            this.ageMin = null;
-        } else {
-            this.ageMin = ageMin;
-        }
+        this.ageMin = ageMin;
     }
 
     public Integer getAgeMax() {
@@ -100,11 +99,7 @@ public class CohortSample extends CommonEntity<Integer> {
     }
 
     public void setAgeMax(Integer ageMax) {
-        if (ageMax == 0) {
-            this.ageMax = null;
-        } else {
-            this.ageMax = ageMax;
-        }
+        this.ageMax = ageMax;
     }
 
     public Integer getGenderConceptId() {
@@ -112,7 +107,7 @@ public class CohortSample extends CommonEntity<Integer> {
     }
 
     public void setGenderConceptId(Integer genderConceptId) {
-        if (genderConceptId == 0) {
+        if (genderConceptId == null || genderConceptId == 0) {
             this.genderConceptId = null;
         } else {
             this.genderConceptId = genderConceptId;
@@ -123,7 +118,23 @@ public class CohortSample extends CommonEntity<Integer> {
         return sourceId;
     }
 
-    public void setSourceId(Integer sourceId) {
+    public void setSourceId(int sourceId) {
         this.sourceId = sourceId;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getAgeMode() {
+        return ageMode;
+    }
+
+    public void setAgeMode(String ageMode) {
+        this.ageMode = ageMode;
     }
 }

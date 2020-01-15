@@ -8,6 +8,7 @@ CREATE TABLE ${ohdsiSchema}.cohort_sample(
     size                 NUMBER(9) NOT NULL,
     age_min              NUMBER(4) NULL,
     age_max              NUMBER(4) NULL,
+    age_mode             VARCHAR(24),
     gender_concept_id    NUMBER(19) NULL,
     created_by_id        INTEGER,
     created_date         DATETIMEOFFSET,

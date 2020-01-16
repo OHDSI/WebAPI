@@ -1,8 +1,7 @@
 package org.ohdsi.webapi.cohortsample.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.ohdsi.webapi.cohortsample.SampleElement;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.user.dto.UserDTO;
 
 import java.util.Date;
 import java.util.List;
@@ -10,11 +9,11 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CohortSampleDTO {
     private int id;
+    private String name;
     private int size;
 
-
     private Date createdDate;
-    private UserEntity createdBy;
+    private UserDTO createdBy;
     private int cohortDefinitionId;
     private int sourceId;
     private SampleParametersDTO.AgeDTO age;
@@ -30,7 +29,7 @@ public class CohortSampleDTO {
         this.id = id;
     }
 
-    public Date setCreatedDate() {
+    public Date getCreatedDate() {
         return createdDate;
     }
 
@@ -38,11 +37,11 @@ public class CohortSampleDTO {
         this.createdDate = createdDate;
     }
 
-    public UserEntity getCreatedBy() {
+    public UserDTO getCreatedBy() {
         return createdBy;
     }
 
-    public void setCreatedBy(UserEntity createdBy) {
+    public void setCreatedBy(UserDTO createdBy) {
         this.createdBy = createdBy;
     }
 
@@ -92,5 +91,13 @@ public class CohortSampleDTO {
 
     public void setGender(SampleParametersDTO.GenderDTO gender) {
         this.gender = gender;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
     }
 }

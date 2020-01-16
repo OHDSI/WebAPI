@@ -4,8 +4,10 @@ import org.ohdsi.webapi.cohortsample.dto.CohortSampleDTO;
 import org.ohdsi.webapi.cohortsample.dto.SampleElementDTO;
 import org.ohdsi.webapi.cohortsample.dto.SampleParametersDTO;
 import org.ohdsi.webapi.service.AbstractDaoService;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.user.dto.UserDTO;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -19,12 +21,16 @@ import javax.ws.rs.NotFoundException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.ohdsi.webapi.cohortsample.dto.SampleParametersDTO.GenderDTO.GENDER_FEMALE_CONCEPT_ID;
+import static org.ohdsi.webapi.cohortsample.dto.SampleParametersDTO.GenderDTO.GENDER_MALE_CONCEPT_ID;
 
 @Component
 public class CohortSamplingService extends AbstractDaoService {
@@ -83,20 +89,33 @@ public class CohortSamplingService extends AbstractDaoService {
 
         SampleParametersDTO.GenderDTO gender = sampleParameters.getGender();
         if (gender != null) {
-            sample.setGenderConceptId(gender.getConceptId());
+            StringBuilder sb = new StringBuilder(12);
+            for (Integer conceptId : gender.getConceptIds()) {
+                if (sb.length() > 0) {
+                    sb.append(',');
+                }
+                sb.append(conceptId);
+            }
+            if (gender.isOtherNonBinary()) {
+                if (sb.length() > 0) {
+                    sb.append(',');
+                }
+                sb.append(-1);
+            }
+            sample.setGenderConceptIds(sb.toString());
         }
         sample.setCreatedBy(getCurrentUser());
         sample.setCreatedDate(new Date());
 
-        log.info("Sampling elements");
-        final List<SampleElement> elements = sampleElements(sample, jdbcTemplate, source);
+        log.info("Sampling {} elements for cohort {}", sampleParameters.getSize(), cohortDefinitionId);
+        final List<SampleElement> elements = sampleElements(sampleParameters, sample, jdbcTemplate, source);
 
         if (elements.size() < sample.getSize()) {
             sample.setSize(elements.size());
         }
 
         transactionTemplate.execute((TransactionCallback<Void>) transactionStatus -> {
-            log.info("Saving sample");
+            log.debug("Saving {} sample elements for cohort {}", sample.getSize(), cohortDefinitionId);
             CohortSample updatedSample = sampleRepository.save(sample);
             insertSampledElements(source, jdbcTemplate, updatedSample.getId(), elements);
 
@@ -109,11 +128,19 @@ public class CohortSamplingService extends AbstractDaoService {
     public CohortSampleDTO sampleToSampleDTO(CohortSample sample, List<SampleElement> elements) {
         CohortSampleDTO sampleDTO = new CohortSampleDTO();
         sampleDTO.setId(sample.getId());
+        sampleDTO.setName(sample.getName());
         sampleDTO.setSize(sample.getSize());
         sampleDTO.setCohortDefinitionId(sample.getCohortDefinitionId());
         sampleDTO.setSourceId(sample.getSourceId());
         sampleDTO.setCreatedDate(sample.getCreatedDate());
-        sampleDTO.setCreatedBy(sample.getCreatedBy());
+        UserEntity createdBy = sample.getCreatedBy();
+        if (createdBy != null) {
+            UserDTO userDto = new UserDTO();
+            userDto.setId(createdBy.getId());
+            userDto.setLogin(createdBy.getLogin());
+            userDto.setName(createdBy.getName());
+            sampleDTO.setCreatedBy(userDto);
+        }
 
         SampleParametersDTO.AgeMode ageMode = SampleParametersDTO.AgeMode.fromSerialName(sample.getAgeMode());
         if (ageMode != null) {
@@ -137,10 +164,19 @@ public class CohortSamplingService extends AbstractDaoService {
             }
             sampleDTO.setAge(age);
         }
-        if (sample.getGenderConceptId() != null) {
-            SampleParametersDTO.GenderDTO gender = new SampleParametersDTO.GenderDTO();
-            gender.setConceptId(sample.getGenderConceptId());
-            sampleDTO.setGender(gender);
+        if (sample.getGenderConceptIds() != null && !sample.getGenderConceptIds().isEmpty()) {
+            List<Integer> conceptIds = Arrays.stream(sample.getGenderConceptIds().split(","))
+                    .map(Integer::valueOf)
+                    .collect(Collectors.toList());
+
+            SampleParametersDTO.GenderDTO genderDto = new SampleParametersDTO.GenderDTO();
+
+            if (conceptIds.remove(Integer.valueOf(-1))) {
+                genderDto.setOtherNonBinary(true);
+            }
+
+            genderDto.setConceptIds(conceptIds);
+            sampleDTO.setGender(genderDto);
         }
 
         sampleDTO.setElements(sampleElementToDTO(elements));
@@ -195,7 +231,7 @@ public class CohortSamplingService extends AbstractDaoService {
         jdbcTemplate.batchUpdate(statement, variables);
     }
 
-    private List<SampleElement> sampleElements(CohortSample sample, JdbcTemplate jdbcTemplate, Source source) {
+    private List<SampleElement> sampleElements(SampleParametersDTO sampleParametersDTO, CohortSample sample, JdbcTemplate jdbcTemplate, Source source) {
         StringBuilder expressionBuilder = new StringBuilder();
         Map<String, Object> sqlVariables = new LinkedHashMap<>();
 
@@ -238,9 +274,38 @@ public class CohortSamplingService extends AbstractDaoService {
             }
         }
 
-        if (sample.getGenderConceptId() != null) {
-            expressionBuilder.append(" AND p.gender_concept_id = @gender_concept_id");
-            sqlVariables.put("gender_concept_id", sample.getGenderConceptId());
+        SampleParametersDTO.GenderDTO gender = sampleParametersDTO.getGender();
+        if (gender != null) {
+            List<Integer> conceptIds = gender.getConceptIds();
+            if (gender.isOtherNonBinary()) {
+                if (conceptIds.size() == 0) {
+                    expressionBuilder.append(" AND p.gender_concept_id NOT IN (")
+                            .append(GENDER_MALE_CONCEPT_ID)
+                            .append(',')
+                            .append(GENDER_FEMALE_CONCEPT_ID)
+                            .append(')');
+                } else if (conceptIds.size() == 1) {
+                    if (conceptIds.get(0) == GENDER_FEMALE_CONCEPT_ID) {
+                        expressionBuilder.append(" AND p.gender_concept_id <> ")
+                                .append(GENDER_MALE_CONCEPT_ID);
+
+                    } else {
+                        expressionBuilder.append(" AND p.gender_concept_id <> ")
+                                .append(GENDER_FEMALE_CONCEPT_ID);
+                    }
+                }
+                // else: all genders are selected
+            } else if (!conceptIds.isEmpty()) {
+                expressionBuilder.append(" AND p.gender_concept_id IN (");
+                for (int i = 0; i < conceptIds.size(); i++) {
+                    if (i > 0) {
+                        expressionBuilder.append(',');
+                    }
+                    expressionBuilder.append(conceptIds.get(i));
+                }
+                expressionBuilder.append(')');
+            }
+            // else: all genders are selected
         }
 
         String[] parameterKeys = new String[] { "results_schema", "CDM_schema", "expression"};

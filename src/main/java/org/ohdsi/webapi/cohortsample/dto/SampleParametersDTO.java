@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import javax.ws.rs.BadRequestException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 public class SampleParametersDTO {
@@ -29,6 +32,11 @@ public class SampleParametersDTO {
         if (age != null) {
             if (!age.validate()) {
                 age = null;
+            }
+        }
+        if (gender != null) {
+            if (!gender.validate()) {
+                gender = null;
             }
         }
     }
@@ -95,7 +103,35 @@ public class SampleParametersDTO {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class GenderDTO {
+        public final static int GENDER_MALE_CONCEPT_ID = 8507;
+        public final static int GENDER_FEMALE_CONCEPT_ID = 8532;
+
         private Integer conceptId;
+
+        private List<Integer> conceptIds;
+
+        private boolean otherNonBinary = false;
+
+        public boolean validate() {
+            if (conceptIds == null) {
+                conceptIds = new ArrayList<>();
+            } else if (conceptIds.contains(null)) {
+                conceptIds.removeIf(Objects::isNull);
+            }
+            if (conceptId != null) {
+                conceptIds.add(conceptId);
+                conceptId = null;
+            }
+
+            if (!isOtherNonBinary() && conceptIds.isEmpty()) {
+                return false;
+            }
+
+            if (isOtherNonBinary()) {
+                conceptIds.removeIf(i -> i != GENDER_MALE_CONCEPT_ID && i != GENDER_FEMALE_CONCEPT_ID);
+            }
+            return true;
+        }
 
         public Integer getConceptId() {
             return conceptId;
@@ -103,6 +139,22 @@ public class SampleParametersDTO {
 
         public void setConceptId(Integer conceptId) {
             this.conceptId = conceptId;
+        }
+
+        public List<Integer> getConceptIds() {
+            return conceptIds;
+        }
+
+        public void setConceptIds(List<Integer> conceptIds) {
+            this.conceptIds = conceptIds;
+        }
+
+        public boolean isOtherNonBinary() {
+            return otherNonBinary;
+        }
+
+        public void setOtherNonBinary(boolean otherNonBinary) {
+            this.otherNonBinary = otherNonBinary;
         }
     }
 

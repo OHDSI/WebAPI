@@ -45,8 +45,8 @@ public class CohortSample extends CommonEntity<Integer> {
     @Column(name = "age_max")
     private Integer ageMax;
 
-    @Column(name = "gender_concept_id")
-    private Integer genderConceptId;
+    @Column(name = "gender_concept_ids")
+    private String genderConceptIds;
 
     @Column
     private int size;
@@ -102,16 +102,12 @@ public class CohortSample extends CommonEntity<Integer> {
         this.ageMax = ageMax;
     }
 
-    public Integer getGenderConceptId() {
-        return genderConceptId;
+    public String getGenderConceptIds() {
+        return genderConceptIds;
     }
 
-    public void setGenderConceptId(Integer genderConceptId) {
-        if (genderConceptId == null || genderConceptId == 0) {
-            this.genderConceptId = null;
-        } else {
-            this.genderConceptId = genderConceptId;
-        }
+    public void setGenderConceptIds(String genderConceptIds) {
+        this.genderConceptIds = genderConceptIds;
     }
 
     public int getSourceId() {

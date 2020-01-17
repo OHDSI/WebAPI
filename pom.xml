@@ -358,7 +358,7 @@
     <repository>
       <id>central</id>
       <name>Central Repository</name>
-      <url>http://repo.maven.apache.org/maven2/ </url>
+      <url>https://repo.maven.apache.org/maven2/ </url>
     </repository>
     <repository>
       <id>ohdsi</id>
@@ -384,7 +384,7 @@
     <repository>
       <id>springsource.releases</id>
       <name>SpringSource GA Repository</name>
-      <url>http://repo.springsource.org/release</url>
+      <url>https://repo.springsource.org/release</url>
       <releases>
         <enabled>true</enabled>
       </releases>

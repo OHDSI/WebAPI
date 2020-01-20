@@ -12,6 +12,8 @@ public class SampleElement {
 
     private int age;
 
+    private Integer recordCount;
+
     public int getSampleId() {
         return sampleId;
     }
@@ -50,5 +52,13 @@ public class SampleElement {
 
     public void setAge(int age) {
         this.age = age;
+    }
+
+    public Integer getRecordCount() {
+        return recordCount;
+    }
+
+    public void setRecordCount(Integer recordCount) {
+        this.recordCount = recordCount;
     }
 }

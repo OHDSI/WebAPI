@@ -58,7 +58,8 @@ public class CohortSamplingService extends AbstractDaoService {
     public List<SampleElement> findSampleElements(Source source, int cohortSampleId) {
         JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
         PreparedStatementRenderer renderer = new PreparedStatementRenderer(source, "/resources/cohortsample/sql/findElementsByCohortSampleId.sql",
-                "results_schema", source.getTableQualifier(SourceDaimon.DaimonType.Results),
+                new String[] {"results_schema", "CDM_schema"},
+                new String[] { source.getTableQualifier(SourceDaimon.DaimonType.Results), source.getTableQualifier(SourceDaimon.DaimonType.CDM) },
                 "cohortSampleId", cohortSampleId);
         return jdbcTemplate.query(renderer.getSql(), renderer.getOrderedParams(), elementRowMapper);
     }
@@ -213,6 +214,7 @@ public class CohortSamplingService extends AbstractDaoService {
                     elementDTO.setPersonId(el.getPersonId());
                     elementDTO.setAge(el.getAge());
                     elementDTO.setGenderConceptId(el.getGenderConceptId());
+                    elementDTO.setRecordCount(el.getRecordCount());
                     return elementDTO;
                 })
                 .collect(Collectors.toList());
@@ -314,7 +316,7 @@ public class CohortSamplingService extends AbstractDaoService {
                                 .append(GENDER_FEMALE_CONCEPT_ID);
                     }
                 }
-                // else: all genders are selected
+                // else: all genders are selected, no where statement needed
             } else if (!conceptIds.isEmpty()) {
                 expressionBuilder.append(" AND p.gender_concept_id IN (");
                 for (int i = 0; i < conceptIds.size(); i++) {
@@ -325,7 +327,7 @@ public class CohortSamplingService extends AbstractDaoService {
                 }
                 expressionBuilder.append(')');
             }
-            // else: all genders are selected
+            // else: all genders are selected, no where statement needed
         }
 
         String[] parameterKeys = new String[] { "results_schema", "CDM_schema", "expression"};
@@ -395,6 +397,7 @@ public class CohortSamplingService extends AbstractDaoService {
             sample.setPersonId(rs.getInt("person_id"));
             sample.setGenderConceptId(rs.getInt("gender_concept_id"));
             sample.setAge(rs.getInt("age"));
+            sample.setRecordCount(rs.getInt("record_count"));
             return sample;
         }
     }

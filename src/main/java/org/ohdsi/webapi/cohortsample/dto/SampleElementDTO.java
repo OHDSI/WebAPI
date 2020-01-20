@@ -30,6 +30,8 @@ public class SampleElementDTO {
      */
     private int age;
 
+    private Integer recordCount;
+
     public Integer getSampleId() {
         return sampleId;
     }
@@ -68,5 +70,13 @@ public class SampleElementDTO {
 
     public void setAge(int age) {
         this.age = age;
+    }
+
+    public Integer getRecordCount() {
+        return recordCount;
+    }
+
+    public void setRecordCount(Integer recordCount) {
+        this.recordCount = recordCount;
     }
 }

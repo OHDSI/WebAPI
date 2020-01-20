@@ -69,7 +69,7 @@ public class CohortSampleService {
             throw new NotFoundException("Cohort sample with ID " + sampleId + " not found");
         }
         Source source = sourceRepository.findBySourceId(sample.getSourceId());
-        List<SampleElement> elements = this.samplingService.findSampleElements(source, sampleId);
+        List<SampleElement> elements = this.samplingService.findSampleElements(source, sampleId, true);
         return samplingService.sampleToSampleDTO(sample, elements);
     }
 

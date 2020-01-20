@@ -53,14 +53,24 @@ public class CohortSamplingService extends AbstractDaoService {
      * Find all sample elements of a sample.
      * @param source Source to use
      * @param cohortSampleId sample ID of the elements.
+     * @param withRecordCounts whether to return record counts. This makes the query much slower.
      * @return list of elements.
      */
-    public List<SampleElement> findSampleElements(Source source, int cohortSampleId) {
+    public List<SampleElement> findSampleElements(Source source, int cohortSampleId, boolean withRecordCounts) {
         JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
-        PreparedStatementRenderer renderer = new PreparedStatementRenderer(source, "/resources/cohortsample/sql/findElementsByCohortSampleId.sql",
-                new String[] {"results_schema", "CDM_schema"},
-                new String[] { source.getTableQualifier(SourceDaimon.DaimonType.Results), source.getTableQualifier(SourceDaimon.DaimonType.CDM) },
-                "cohortSampleId", cohortSampleId);
+        PreparedStatementRenderer renderer;
+
+        if (withRecordCounts) {
+            renderer = new PreparedStatementRenderer(source, "/resources/cohortsample/sql/findElementsByCohortSampleIdWithCounts.sql",
+                    new String[]{"results_schema", "CDM_schema"},
+                    new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results), source.getTableQualifier(SourceDaimon.DaimonType.CDM)},
+                    "cohortSampleId", cohortSampleId);
+        } else {
+            renderer = new PreparedStatementRenderer(source, "/resources/cohortsample/sql/findElementsByCohortSampleId.sql",
+                    "results_schema",
+                    source.getTableQualifier(SourceDaimon.DaimonType.Results),
+                    "cohortSampleId", cohortSampleId);
+        }
         return jdbcTemplate.query(renderer.getSql(), renderer.getOrderedParams(), elementRowMapper);
     }
 

@@ -8,17 +8,48 @@ import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CohortSampleDTO {
+    /** Cohort sample ID. */
     private int id;
+    /** Cohort sample name. */
     private String name;
+    /**
+     * Actual sample size. This may be different from the size specified by the user if not enough
+     * persons could be found matching the criteria.
+     */
     private int size;
 
+    /**
+     * Date that the sample was created.
+     */
     private Date createdDate;
+
+    /**
+     * User that created the sample. If no login system is used, this is null.
+     */
     private UserDTO createdBy;
+
+    /**
+     * Cohort definition ID that was sampled.
+     */
     private int cohortDefinitionId;
+    /**
+     * Source ID that was sampled.
+     */
     private int sourceId;
+
+    /**
+     * Age criteria used to create the sample.
+     */
     private SampleParametersDTO.AgeDTO age;
+
+    /**
+     * Gender criteria used to create the sample.
+     */
     private SampleParametersDTO.GenderDTO gender;
 
+    /**
+     * Actually sampled elements.
+     */
     private List<SampleElementDTO> elements;
 
     public int getId() {

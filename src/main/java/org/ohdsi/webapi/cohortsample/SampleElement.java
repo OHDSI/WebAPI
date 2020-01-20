@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.cohortsample;
 
+/** A single person that is part of a given sample. */
 public class SampleElement {
     private int sampleId;
 

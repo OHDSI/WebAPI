@@ -4,14 +4,30 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SampleElementDTO {
+    /**
+     * Sample ID that this element belongs to. May be null if this object is part of a
+     * {@link CohortSampleDTO} object.
+     */
     private Integer sampleId;
 
+    /**
+     * Rank of the object within the sample. This establishes order between elements.
+     */
     private int rank;
 
+    /**
+     * Person ID of the element.
+     */
     private long personId;
 
+    /**
+     * Gender ID of the person.
+     */
     private long genderConceptId;
 
+    /**
+     * Age of the person.
+     */
     private int age;
 
     public Integer getSampleId() {

@@ -32,6 +32,9 @@ import java.util.stream.Stream;
 import static org.ohdsi.webapi.cohortsample.dto.SampleParametersDTO.GenderDTO.GENDER_FEMALE_CONCEPT_ID;
 import static org.ohdsi.webapi.cohortsample.dto.SampleParametersDTO.GenderDTO.GENDER_MALE_CONCEPT_ID;
 
+/**
+ * Service to do manage samples of a cohort definition.
+ */
 @Component
 public class CohortSamplingService extends AbstractDaoService {
     private final TransactionTemplate transactionTemplate;
@@ -46,6 +49,12 @@ public class CohortSamplingService extends AbstractDaoService {
         this.sampleRepository = sampleRepository;
     }
 
+    /**
+     * Find all sample elements of a sample.
+     * @param source Source to use
+     * @param cohortSampleId sample ID of the elements.
+     * @return list of elements.
+     */
     public List<SampleElement> findSampleElements(Source source, int cohortSampleId) {
         JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
         PreparedStatementRenderer renderer = new PreparedStatementRenderer(source, "/resources/cohortsample/sql/findElementsByCohortSampleId.sql",
@@ -54,6 +63,13 @@ public class CohortSamplingService extends AbstractDaoService {
         return jdbcTemplate.query(renderer.getSql(), renderer.getOrderedParams(), elementRowMapper);
     }
 
+    /**
+     * Create a new sample in given source and cohort definition, using sample parameters.
+     * @param source Source to use
+     * @param cohortDefinitionId cohort definition ID to sample
+     * @param sampleParameters parameters to define the sample
+     * @return list of elements.
+     */
     public CohortSampleDTO createSample(Source source, int cohortDefinitionId, SampleParametersDTO sampleParameters) {
         JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
 
@@ -125,6 +141,7 @@ public class CohortSamplingService extends AbstractDaoService {
         return sampleToSampleDTO(sample, elements);
     }
 
+    /** Convert a given sample with given elements to a DTO. */
     public CohortSampleDTO sampleToSampleDTO(CohortSample sample, List<SampleElement> elements) {
         CohortSampleDTO sampleDTO = new CohortSampleDTO();
         sampleDTO.setId(sample.getId());
@@ -183,6 +200,7 @@ public class CohortSamplingService extends AbstractDaoService {
         return sampleDTO;
     }
 
+    /** Convert given sample elements DTOs. */
     private List<SampleElementDTO> sampleElementToDTO(List<SampleElement> elements) {
         if (elements == null) {
             return null;
@@ -200,6 +218,7 @@ public class CohortSamplingService extends AbstractDaoService {
                 .collect(Collectors.toList());
     }
 
+    /** Insert elements that have been sampled. */
     private void insertSampledElements(Source source, JdbcTemplate jdbcTemplate, int sampleId, List<SampleElement> elements) {
         if (elements.isEmpty()) {
             return;
@@ -231,6 +250,7 @@ public class CohortSamplingService extends AbstractDaoService {
         jdbcTemplate.batchUpdate(statement, variables);
     }
 
+    /** Sample elements based on parameters. */
     private List<SampleElement> sampleElements(SampleParametersDTO sampleParametersDTO, CohortSample sample, JdbcTemplate jdbcTemplate, Source source) {
         StringBuilder expressionBuilder = new StringBuilder();
         Map<String, Object> sqlVariables = new LinkedHashMap<>();
@@ -336,6 +356,7 @@ public class CohortSamplingService extends AbstractDaoService {
         });
     }
 
+    /** Delete a sample and its elements. */
     public void deleteSample(int cohortDefinitionId, Source source, int sampleId) {
         JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
         String resultsSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
@@ -364,6 +385,7 @@ public class CohortSamplingService extends AbstractDaoService {
         });
     }
 
+    /** Maps a SQL result to a sample element. */
     private static class CohortSampleElementRowMapper implements RowMapper<SampleElement> {
         @Override
         public SampleElement mapRow(ResultSet rs, int rowNum) throws SQLException {

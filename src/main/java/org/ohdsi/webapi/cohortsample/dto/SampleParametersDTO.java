@@ -13,12 +13,21 @@ public class SampleParametersDTO {
     private static final int SIZE_MAX = 500;
     private static final int AGE_MAX = 500;
 
+    /** Sample size. */
     private int size;
+    /** Sample name. */
     private String name;
+
+    /** Gender criteria. */
     private GenderDTO gender;
 
+    /** Age criteria. */
     private AgeDTO age;
 
+    /**
+     * Validate this DTO.
+     * @throws BadRequestException if the DTO is not valid.
+     */
     public void validate() {
         if (name == null) {
             throw new BadRequestException("Sample must have a name");
@@ -29,15 +38,11 @@ public class SampleParametersDTO {
         if (size > SIZE_MAX) {
             throw new BadRequestException("sample parameter size must fall in the range (1, " + SIZE_MAX + ")");
         }
-        if (age != null) {
-            if (!age.validate()) {
-                age = null;
-            }
+        if (age != null && !age.validate()) {
+            age = null;
         }
-        if (gender != null) {
-            if (!gender.validate()) {
-                gender = null;
-            }
+        if (gender != null && !gender.validate()) {
+            gender = null;
         }
     }
 
@@ -112,6 +117,10 @@ public class SampleParametersDTO {
 
         private boolean otherNonBinary = false;
 
+        /**
+         * Validate this DTO.
+         * @return true if this DTO contains any information, false otherwise.
+         */
         public boolean validate() {
             if (conceptIds == null) {
                 conceptIds = new ArrayList<>();
@@ -165,6 +174,11 @@ public class SampleParametersDTO {
         private Integer value;
         private AgeMode mode;
 
+        /**
+         * Validate this DTO.
+         * @return true if this DTO contains any information, false otherwise.
+         * @throws BadRequestException if the DTO is not valid.
+         */
         public boolean validate() {
             if (mode == null) {
                 if (min != null || max != null || value != null) {
@@ -180,25 +194,25 @@ public class SampleParametersDTO {
                 case GREATER_THAN_OR_EQUAL:
                 case EQUAL_TO:
                     if (value == null) {
-                        throw new BadRequestException("Cannot use single age comparison mode " + mode + " without age property.");
+                        throw new BadRequestException("Cannot use single age comparison mode " + mode.getSerialName() + " without age property.");
                     }
                     if (min != null || max != null) {
-                        throw new BadRequestException("Cannot use age range property with comparison mode " + mode + ".");
+                        throw new BadRequestException("Cannot use age range property with comparison mode " + mode.getSerialName() + ".");
                     }
                     break;
                 case BETWEEN:
                 case NOT_BETWEEN:
                     if (min == null || max == null) {
-                        throw new BadRequestException("Cannot use age range comparison mode " + mode + " without ageMin and ageMax properties.");
+                        throw new BadRequestException("Cannot use age range comparison mode " + mode.getSerialName() + " without ageMin and ageMax properties.");
                     }
                     if (value != null) {
-                        throw new BadRequestException("Cannot use single age property with comparison mode " + mode + ".");
+                        throw new BadRequestException("Cannot use single age property with comparison mode " + mode.getSerialName() + ".");
                     }
                     if (min < 0) {
                         throw new BadRequestException("Minimum age may not be less than 0");
                     }
                     if (max >= AGE_MAX) {
-                        throw new BadRequestException("Minimum age must be smaller than " + AGE_MAX);
+                        throw new BadRequestException("Maximum age must be smaller than " + AGE_MAX);
                     }
                     if (min > max) {
                         throw new BadRequestException("Maximum age " + max + " may not be less than minimum age " + min);

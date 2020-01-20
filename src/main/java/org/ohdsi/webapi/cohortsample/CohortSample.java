@@ -12,6 +12,9 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.util.List;
 
+/**
+ * Cohort sample details.
+ */
 @Entity(name = "CohortSample")
 @Table(name = "cohort_sample")
 public class CohortSample extends CommonEntity<Integer> {

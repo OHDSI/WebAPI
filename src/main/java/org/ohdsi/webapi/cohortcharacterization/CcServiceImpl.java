@@ -38,6 +38,7 @@ import org.ohdsi.webapi.cohortcharacterization.repository.CcRepository;
 import org.ohdsi.webapi.cohortcharacterization.repository.CcStrataRepository;
 import org.ohdsi.webapi.cohortcharacterization.specification.CohortCharacterizationImpl;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.event.CohortDefinitionChangedEvent;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.AnalysisGenerationInfoEntity;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
@@ -46,6 +47,7 @@ import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
+import org.ohdsi.webapi.feanalysis.event.FeAnalysisChangedEvent;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.service.AbstractDaoService;
@@ -72,6 +74,7 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.env.Environment;
@@ -261,6 +264,23 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         savedEntity.setModifiedDate(modifiedDate);
 
         return repository.save(savedEntity);
+    }
+
+    @EventListener
+    @Transactional
+    @Override
+    public void onCohortDefinitionChanged(CohortDefinitionChangedEvent event) {
+
+        List<CohortCharacterizationEntity> ccList = repository.findByCohortDefinition(event.getCohortDefinition());
+        ccList.forEach(this::saveCc);
+    }
+
+    @EventListener
+    @Transactional
+    public void onFeAnalysisChanged(FeAnalysisChangedEvent event) {
+
+        List<CohortCharacterizationEntity> ccList = repository.findByFeatureAnalysis(event.getFeAnalysis());
+        ccList.forEach(this::saveCc);
     }
 
     @Override

@@ -8,9 +8,13 @@ import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
 import org.ohdsi.webapi.cohortcharacterization.dto.ExecutionResultRequest;
 import org.ohdsi.webapi.cohortcharacterization.dto.ExportExecutionResultRequest;
 import org.ohdsi.webapi.cohortcharacterization.dto.GenerationResults;
+import org.ohdsi.webapi.cohortdefinition.event.CohortDefinitionChangedEvent;
+import org.ohdsi.webapi.feanalysis.event.FeAnalysisChangedEvent;
 import org.ohdsi.webapi.job.JobExecutionResource;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.io.OutputStream;
 import java.util.List;
@@ -67,4 +71,10 @@ public interface CcService {
     GenerationResults exportExecutionResult(Long generationId, ExportExecutionResultRequest params);
 
     GenerationResults findData(final Long generationId, ExecutionResultRequest params);
+
+    @EventListener
+    void onCohortDefinitionChanged(CohortDefinitionChangedEvent event);
+
+    @EventListener
+    void onFeAnalysisChanged(FeAnalysisChangedEvent event);
 }

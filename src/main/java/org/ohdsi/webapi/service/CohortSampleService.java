@@ -14,14 +14,17 @@ import org.springframework.stereotype.Component;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -62,14 +65,17 @@ public class CohortSampleService {
     @Path("/{sampleId}")
     @GET
     public CohortSampleDTO getCohortSample(
-            @PathParam("sampleId") Integer sampleId
+            @PathParam("sampleId") Integer sampleId,
+            @DefaultValue("") @QueryParam("fields") String fields
     ) {
         CohortSample sample = sampleRepository.findOne(sampleId);
         if (sample == null) {
             throw new NotFoundException("Cohort sample with ID " + sampleId + " not found");
         }
+        List<String> returnFields = Arrays.asList(fields.split(","));
+        boolean withRecordCounts = returnFields.contains("recordCount");
         Source source = sourceRepository.findBySourceId(sample.getSourceId());
-        List<SampleElement> elements = this.samplingService.findSampleElements(source, sampleId, true);
+        List<SampleElement> elements = this.samplingService.findSampleElements(source, sampleId, withRecordCounts);
         return samplingService.sampleToSampleDTO(sample, elements);
     }
 

@@ -361,7 +361,7 @@
     <repository>
       <id>central</id>
       <name>Central Repository</name>
-      <url>http://repo.maven.apache.org/maven2/ </url>
+      <url>https://repo.maven.apache.org/maven2/</url>
     </repository>
     <repository>
       <id>ohdsi</id>
@@ -639,7 +639,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>hydra</artifactId>
-      <version>0.0.6</version>
+      <version>0.0.7</version>
       <exclusions>
         <exclusion>
           <groupId>org.ohdsi</groupId>

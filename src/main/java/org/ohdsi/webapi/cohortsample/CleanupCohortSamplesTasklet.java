@@ -24,7 +24,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
@@ -75,25 +74,30 @@ public class CleanupCohortSamplesTasklet implements Tasklet {
     private int mapSource(Source source, int cohortDefinitionId) {
         try {
             String resultSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-            transactionTemplate.execute(transactionStatus -> {
+            return transactionTemplate.execute(transactionStatus -> {
                 List<CohortSample> samples = sampleRepository.findByCohortDefinitionIdAndSourceId(cohortDefinitionId, source.getId());
-                sampleRepository.delete(samples);
-                String cohortSampleId = samples.stream()
-                        .map(s -> s.getId().toString())
-                        .collect(Collectors.joining(","));
+                if (samples.isEmpty()) {
+                    return 0;
+                }
 
-                String sql = new PreparedStatementRenderer(
+                sampleRepository.delete(samples);
+
+                int[] cohortSampleIds = samples.stream()
+                        .mapToInt(CohortSample::getId)
+                        .toArray();
+
+                PreparedStatementRenderer renderer = new PreparedStatementRenderer(
                         source,
                         "/resources/cohortsample/sql/deleteSampleElementsById.sql",
                         "results_schema",
                         resultSchema,
                         "cohortSampleId",
-                        cohortSampleId).getSql();
+                        cohortSampleIds);
 
-                samplingService.getSourceJdbcTemplate(source).update(sql, cohortSampleId);
-                return null;
+                samplingService.getSourceJdbcTemplate(source)
+                        .update(renderer.getSql(), renderer.getOrderedParams());
+                return cohortSampleIds.length;
             });
-            return 1;
         } catch (Exception e) {
             log.error("Error deleting samples for cohort: {}, cause: {}", cohortDefinitionId, e.getMessage());
             return 0;

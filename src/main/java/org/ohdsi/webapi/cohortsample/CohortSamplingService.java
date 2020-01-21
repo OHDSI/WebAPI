@@ -3,18 +3,20 @@ package org.ohdsi.webapi.cohortsample;
 import org.ohdsi.webapi.cohortsample.dto.CohortSampleDTO;
 import org.ohdsi.webapi.cohortsample.dto.SampleElementDTO;
 import org.ohdsi.webapi.cohortsample.dto.SampleParametersDTO;
+import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.user.dto.UserDTO;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
@@ -39,15 +41,21 @@ import static org.ohdsi.webapi.cohortsample.dto.SampleParametersDTO.GenderDTO.GE
  */
 @Component
 public class CohortSamplingService extends AbstractDaoService {
-    private final TransactionTemplate transactionTemplate;
     private final CohortSampleRepository sampleRepository;
+    private final JobBuilderFactory jobBuilders;
+    private final StepBuilderFactory stepBuilders;
+    private final JobTemplate jobTemplate;
 
     @Autowired
     public CohortSamplingService(
-            TransactionTemplate transactionTemplate,
-            CohortSampleRepository sampleRepository) {
-        this.transactionTemplate = transactionTemplate;
+            CohortSampleRepository sampleRepository,
+            JobBuilderFactory jobBuilders,
+            StepBuilderFactory stepBuilders,
+            JobTemplate jobTemplate) {
         this.sampleRepository = sampleRepository;
+        this.jobBuilders = jobBuilders;
+        this.stepBuilders = stepBuilders;
+        this.jobTemplate = jobTemplate;
     }
 
     /**
@@ -145,7 +153,7 @@ public class CohortSamplingService extends AbstractDaoService {
             sample.setSize(elements.size());
         }
 
-        transactionTemplate.execute((TransactionCallback<Void>) transactionStatus -> {
+        getTransactionTemplate().execute((TransactionCallback<Void>) transactionStatus -> {
             log.debug("Saving {} sample elements for cohort {}", sample.getSize(), cohortDefinitionId);
             CohortSample updatedSample = sampleRepository.save(sample);
             insertSampledElements(source, jdbcTemplate, updatedSample.getId(), elements);
@@ -394,35 +402,27 @@ public class CohortSamplingService extends AbstractDaoService {
             throw new BadRequestException("Source " + sample.getSourceId() + " does not match provided source " + source.getId());
         }
 
-        transactionTemplate.execute((TransactionCallback<Void>) transactionStatus -> {
+        getTransactionTemplate().execute((TransactionCallback<Void>) transactionStatus -> {
             sampleRepository.delete(sampleId);
             jdbcTemplate.update(sql, sampleId);
             return null;
         });
     }
 
-    public void deleteSamples(int cohortDefinitionId, Source source) {
-        JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
-        String resultsSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+    public void launchDeleteSamplesTasklet(int cohortDefinitionId) {
+        CleanupCohortSamplesTasklet tasklet = createDeleteSamplesTasklet();
 
-        transactionTemplate.execute(transactionStatus -> {
-            List<CohortSample> samples = sampleRepository.findByCohortDefinitionIdAndSourceId(cohortDefinitionId, source.getId());
-            sampleRepository.delete(samples);
-            String cohortSampleId = samples.stream()
-                    .map(s -> s.getId().toString())
-                    .collect(Collectors.joining(","))
+        tasklet.launch(jobBuilders, stepBuilders, jobTemplate, cohortDefinitionId);
+    }
 
-            String sql = new PreparedStatementRenderer(
-                    source,
-                    "/resources/cohortsample/sql/deleteSampleElementsById.sql",
-                    "results_schema",
-                    resultsSchema,
-                    "cohortSampleId",
-                    cohortSampleId).getSql();
+    public void launchDeleteSamplesTasklet(int cohortDefinitionId, int sourceId) {
+        CleanupCohortSamplesTasklet tasklet = createDeleteSamplesTasklet();
 
-            jdbcTemplate.update(sql, cohortSampleId);
-            return null;
-        });
+        tasklet.launch(jobBuilders, stepBuilders, jobTemplate, cohortDefinitionId, sourceId);
+    }
+
+    public CleanupCohortSamplesTasklet createDeleteSamplesTasklet() {
+        return new CleanupCohortSamplesTasklet(getTransactionTemplate(), getSourceRepository(), this, sampleRepository);
     }
 
     /** Maps a SQL result to a sample element. */

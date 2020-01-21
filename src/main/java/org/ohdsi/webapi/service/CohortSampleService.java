@@ -120,8 +120,8 @@ public class CohortSampleService {
         if (cohortDefinitionRepository.findOne(cohortDefinitionId) == null) {
             throw new NotFoundException("Cohort definition " + cohortDefinitionId + " does not exist.");
         }
-        samplingService.deleteSamples(cohortDefinitionId, source);
-        return Response.status(Response.Status.NO_CONTENT).build();
+        samplingService.launchDeleteSamplesTasklet(cohortDefinitionId, source.getId());
+        return Response.status(Response.Status.ACCEPTED).build();
     }
 
     private Source getSource(String sourceKey) {

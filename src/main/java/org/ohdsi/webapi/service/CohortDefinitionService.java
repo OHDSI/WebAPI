@@ -20,6 +20,7 @@ import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.*;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
+import org.ohdsi.webapi.cohortsample.CleanupCohortSamplesTasklet;
 import org.ohdsi.webapi.cohortsample.CohortSamplingService;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
@@ -439,7 +440,7 @@ public class CohortDefinitionService extends AbstractDaoService {
     currentDefinition.setModifiedBy(modifier);
     currentDefinition.setModifiedDate(currentTime);
 
-    sourceService.getSources().forEach(source -> this.samplingService.deleteSamples(id, source));
+    this.samplingService.launchDeleteSamplesTasklet(id);
 
     this.cohortDefinitionRepository.save(currentDefinition);
     return getCohortDefinition(id);
@@ -563,6 +564,7 @@ public class CohortDefinitionService extends AbstractDaoService {
                     });
                 });
                 cohortDefinitionRepository.delete(def);
+                samplingService.launchDeleteSamplesTasklet(id);
             } else {
                 log.warn("Failed to delete Cohort Definition with ID = {}", id);
             }
@@ -583,8 +585,14 @@ public class CohortDefinitionService extends AbstractDaoService {
 			.tasklet(cleanupTasklet)
 			.build();
 
-		SimpleJobBuilder cleanupJobBuilder = jobBuilders.get("cleanupCohort")
-			.start(cleanupStep);
+        CleanupCohortSamplesTasklet cleanupSamplesTasklet = samplingService.createDeleteSamplesTasklet();
+        Step cleanupSamplesStep = stepBuilders.get("cohortDefinition.cleanupSamples")
+                .tasklet(cleanupSamplesTasklet)
+                .build();
+
+        SimpleJobBuilder cleanupJobBuilder = jobBuilders.get("cleanupCohort")
+			.start(cleanupStep)
+                .next(cleanupSamplesStep);
 
 		Job cleanupCohortJob = cleanupJobBuilder.build();
 

@@ -22,6 +22,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,7 +41,6 @@ import static org.ohdsi.webapi.cohortsample.dto.SampleParametersDTO.GenderDTO.GE
 public class CohortSamplingService extends AbstractDaoService {
     private final TransactionTemplate transactionTemplate;
     private final CohortSampleRepository sampleRepository;
-    private final CohortSampleElementRowMapper elementRowMapper = new CohortSampleElementRowMapper();
 
     @Autowired
     public CohortSamplingService(
@@ -59,19 +60,22 @@ public class CohortSamplingService extends AbstractDaoService {
     public List<SampleElement> findSampleElements(Source source, int cohortSampleId, boolean withRecordCounts) {
         JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
         PreparedStatementRenderer renderer;
+        Collection<String> optionalFields;
 
         if (withRecordCounts) {
             renderer = new PreparedStatementRenderer(source, "/resources/cohortsample/sql/findElementsByCohortSampleIdWithCounts.sql",
                     new String[]{"results_schema", "CDM_schema"},
                     new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results), source.getTableQualifier(SourceDaimon.DaimonType.CDM)},
                     "cohortSampleId", cohortSampleId);
+            optionalFields = Collections.singleton("record_count");
         } else {
             renderer = new PreparedStatementRenderer(source, "/resources/cohortsample/sql/findElementsByCohortSampleId.sql",
                     "results_schema",
                     source.getTableQualifier(SourceDaimon.DaimonType.Results),
                     "cohortSampleId", cohortSampleId);
+            optionalFields = Collections.emptySet();
         }
-        return jdbcTemplate.query(renderer.getSql(), renderer.getOrderedParams(), elementRowMapper);
+        return jdbcTemplate.query(renderer.getSql(), renderer.getOrderedParams(), new CohortSampleElementRowMapper(optionalFields));
     }
 
     /**
@@ -397,8 +401,38 @@ public class CohortSamplingService extends AbstractDaoService {
         });
     }
 
+    public void deleteSamples(int cohortDefinitionId, Source source) {
+        JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
+        String resultsSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
+
+        transactionTemplate.execute(transactionStatus -> {
+            List<CohortSample> samples = sampleRepository.findByCohortDefinitionIdAndSourceId(cohortDefinitionId, source.getId());
+            sampleRepository.delete(samples);
+            String cohortSampleId = samples.stream()
+                    .map(s -> s.getId().toString())
+                    .collect(Collectors.joining(","))
+
+            String sql = new PreparedStatementRenderer(
+                    source,
+                    "/resources/cohortsample/sql/deleteSampleElementsById.sql",
+                    "results_schema",
+                    resultsSchema,
+                    "cohortSampleId",
+                    cohortSampleId).getSql();
+
+            jdbcTemplate.update(sql, cohortSampleId);
+            return null;
+        });
+    }
+
     /** Maps a SQL result to a sample element. */
     private static class CohortSampleElementRowMapper implements RowMapper<SampleElement> {
+        private final Collection<String> optionalFields;
+
+        CohortSampleElementRowMapper(Collection<String> optionalFields) {
+            this.optionalFields = optionalFields;
+        }
+
         @Override
         public SampleElement mapRow(ResultSet rs, int rowNum) throws SQLException {
             SampleElement sample = new SampleElement();
@@ -407,7 +441,9 @@ public class CohortSamplingService extends AbstractDaoService {
             sample.setPersonId(rs.getInt("person_id"));
             sample.setGenderConceptId(rs.getInt("gender_concept_id"));
             sample.setAge(rs.getInt("age"));
-            sample.setRecordCount(rs.getInt("record_count"));
+            if (optionalFields.contains("record_count")) {
+                sample.setRecordCount(rs.getInt("record_count"));
+            }
             return sample;
         }
     }

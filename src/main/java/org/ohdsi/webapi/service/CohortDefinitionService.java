@@ -20,6 +20,7 @@ import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.*;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
+import org.ohdsi.webapi.cohortsample.CohortSamplingService;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.common.sensitiveinfo.CohortGenerationSensitiveInfoService;
@@ -135,6 +136,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 
   @Autowired
   private ObjectMapper objectMapper;
+
+  @Autowired
+  private CohortSamplingService samplingService;
 
   @PersistenceContext
   protected EntityManager entityManager;
@@ -434,6 +438,8 @@ public class CohortDefinitionService extends AbstractDaoService {
             .getDetails().setExpression(Utils.serialize(def.getExpression()));
     currentDefinition.setModifiedBy(modifier);
     currentDefinition.setModifiedDate(currentTime);
+
+    sourceService.getSources().forEach(source -> this.samplingService.deleteSamples(id, source));
 
     this.cohortDefinitionRepository.save(currentDefinition);
     return getCohortDefinition(id);

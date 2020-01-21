@@ -66,7 +66,7 @@ public class CohortSampleService {
     @GET
     public CohortSampleDTO getCohortSample(
             @PathParam("sampleId") Integer sampleId,
-            @DefaultValue("") @QueryParam("fields") String fields
+            @DefaultValue("recordCount") @QueryParam("fields") String fields
     ) {
         CohortSample sample = sampleRepository.findOne(sampleId);
         if (sample == null) {
@@ -107,6 +107,20 @@ public class CohortSampleService {
             throw new NotFoundException("Cohort definition " + cohortDefinitionId + " does not exist.");
         }
         samplingService.deleteSample(cohortDefinitionId, source, sampleId);
+        return Response.status(Response.Status.NO_CONTENT).build();
+    }
+
+    @Path("/")
+    @DELETE
+    public Response deleteCohortSamples(
+            @PathParam("sourceKey") String sourceKey,
+            @PathParam("cohortDefinitionId") int cohortDefinitionId
+    ) {
+        Source source = getSource(sourceKey);
+        if (cohortDefinitionRepository.findOne(cohortDefinitionId) == null) {
+            throw new NotFoundException("Cohort definition " + cohortDefinitionId + " does not exist.");
+        }
+        samplingService.deleteSamples(cohortDefinitionId, source);
         return Response.status(Response.Status.NO_CONTENT).build();
     }
 

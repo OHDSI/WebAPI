@@ -173,6 +173,9 @@
 
     <spring.batch.taskExecutor.corePoolSize>10</spring.batch.taskExecutor.corePoolSize>
     <spring.batch.taskExecutor.maxPoolSize>20</spring.batch.taskExecutor.maxPoolSize>
+    <spring.batch.taskExecutor.queueCapacity>2147483647</spring.batch.taskExecutor.queueCapacity>
+    <spring.batch.taskExecutor.threadGroupName></spring.batch.taskExecutor.threadGroupName>
+    <spring.batch.taskExecutor.threadNamePrefix></spring.batch.taskExecutor.threadNamePrefix>
 
     <!-- Sensitive Info settings -->
     <sensitiveinfo.admin.role>admin</sensitiveinfo.admin.role>

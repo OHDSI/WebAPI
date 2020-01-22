@@ -5,10 +5,12 @@ import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import java.util.Date;
 import java.util.List;
@@ -31,8 +33,9 @@ public class NotificationController {
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional(readOnly = true)
-    public List<JobExecutionResource> list() {
-        return service.findLast10().stream().map(this::toDTO).collect(Collectors.toList());
+    public List<JobExecutionResource> list(
+            @QueryParam("hideCompleted") @DefaultValue("false") boolean hideCompleted) {
+        return service.findLast10(hideCompleted).stream().map(this::toDTO).collect(Collectors.toList());
     }
 
     @GET

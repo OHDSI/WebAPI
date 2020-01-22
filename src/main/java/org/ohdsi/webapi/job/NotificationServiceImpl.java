@@ -5,6 +5,7 @@ import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.springframework.batch.admin.service.SearchableJobExecutionDao;
+import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -47,7 +48,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public List<JobExecution> findLast10() {
+    public List<JobExecution> findLast10(boolean hideCompleted) {
         final Map<String, JobExecution> result = new HashMap<>();
         for (int start = 0; result.size() < MAX_SIZE; start += PAGE_SIZE) {
             final List<JobExecution> page = jobExecutionDao.getJobExecutions(start, PAGE_SIZE);
@@ -55,6 +56,10 @@ public class NotificationServiceImpl implements NotificationService {
                 break;
             }
             for (JobExecution jobExec: page) {
+                // ignore completed jobs when user does not want to see them
+                if (hideCompleted && BatchStatus.COMPLETED.equals(jobExec.getStatus())) {
+                    continue;
+                }
                 if (isInWhiteList(jobExec) && isMine(jobExec)) {
                     result.merge(getFoldingKey(jobExec), jobExec, (x, y) -> {
                         final Date xStartTime = x.getStartTime();

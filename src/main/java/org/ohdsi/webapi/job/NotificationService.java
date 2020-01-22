@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.List;
 
 public interface NotificationService {
-    List<JobExecution> findLast10();
+    List<JobExecution> findLast10(boolean hideCompleted);
 
     Date getLastViewedTime() throws Exception;
 

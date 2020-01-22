@@ -66,6 +66,7 @@ SELECT
     when e.cohort_start_date = e.cohort_end_date then CAST(dateadd(d,1,e.cohort_end_date) AS DATETIME) /* cast is required for BigQuery */
     else e.cohort_end_date
   end cohort_end_date
+INTO #collapsed_dates_events
 FROM
   (SELECT DISTINCT
     event.event_cohort_index,
@@ -75,7 +76,6 @@ FROM
 FROM #raw_events event
   LEFT JOIN #date_replacements start_dr ON start_dr.subject_id = event.subject_id AND start_dr.cohort_date = event.cohort_start_date
   LEFT JOIN #date_replacements end_dr ON end_dr.subject_id = event.subject_id AND end_dr.cohort_date = event.cohort_end_date) e
-INTO #collapsed_dates_events
 ;
 
 /*

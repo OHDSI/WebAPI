@@ -6,5 +6,3 @@ CREATE TABLE @results_schema.cohort_sample_element(
     age int,
     gender_concept_id int
 );
-
-CREATE INDEX idx_cohort_sample_element_rank ON @results_schema.cohort_sample_element (cohort_sample_id, rank);

@@ -1,15 +1,20 @@
 package org.ohdsi.webapi.service;
 
+import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
-import org.ohdsi.webapi.cohortsample.CohortSampleRepository;
+import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
+import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfoId;
+import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfoRepository;
 import org.ohdsi.webapi.cohortsample.CohortSamplingService;
 import org.ohdsi.webapi.cohortsample.dto.CohortSampleDTO;
+import org.ohdsi.webapi.cohortsample.dto.CohortSampleListDTO;
 import org.ohdsi.webapi.cohortsample.dto.SampleParametersDTO;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -30,31 +35,42 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 public class CohortSampleService {
     private final CohortDefinitionRepository cohortDefinitionRepository;
-    private final CohortSampleRepository sampleRepository;
+    private final CohortGenerationInfoRepository generationInfoRepository;
     private final CohortSamplingService samplingService;
     private final SourceRepository sourceRepository;
 
     @Autowired
     public CohortSampleService(
-            CohortSampleRepository sampleRepository,
             CohortSamplingService samplingService,
             SourceRepository sourceRepository,
-            CohortDefinitionRepository cohortDefinitionRepository
+            CohortDefinitionRepository cohortDefinitionRepository,
+            CohortGenerationInfoRepository generationInfoRepository
     ) {
-        this.sampleRepository = sampleRepository;
         this.samplingService = samplingService;
         this.sourceRepository = sourceRepository;
         this.cohortDefinitionRepository = cohortDefinitionRepository;
+        this.generationInfoRepository = generationInfoRepository;
     }
 
     @Path("/")
     @GET
-    public List<CohortSampleDTO> listCohortSamples(
+    public CohortSampleListDTO listCohortSamples(
             @PathParam("cohortDefinitionId") int cohortDefinitionId,
             @PathParam("sourceKey") String sourceKey
     ) {
         Source source = getSource(sourceKey);
-        return this.samplingService.listSamples(cohortDefinitionId, source.getId());
+        CohortSampleListDTO result = new CohortSampleListDTO();
+
+        result.setCohortDefinitionId(cohortDefinitionId);
+        result.setSourceId(source.getId());
+
+        CohortGenerationInfo generationInfo = generationInfoRepository.findOne(
+                new CohortGenerationInfoId(cohortDefinitionId, source.getId()));
+        result.setGenerationStatus(generationInfo != null ? generationInfo.getStatus() : null);
+
+        result.setSamples(this.samplingService.listSamples(cohortDefinitionId, source.getId()));
+
+        return result;
     }
 
     @Path("/{sampleId}")
@@ -80,6 +96,11 @@ public class CohortSampleService {
         Source source = getSource(sourceKey);
         if (cohortDefinitionRepository.findOne(cohortDefinitionId) == null) {
             throw new NotFoundException("Cohort definition " + cohortDefinitionId + " does not exist.");
+        }
+        CohortGenerationInfo generationInfo = generationInfoRepository.findOne(
+                new CohortGenerationInfoId(cohortDefinitionId, source.getId()));
+        if (generationInfo == null || generationInfo.getStatus() != GenerationStatus.COMPLETE) {
+            throw new BadRequestException("Cohort is not yet generated");
         }
         return samplingService.createSample(source, cohortDefinitionId, sampleParameters);
     }

@@ -13,3 +13,4 @@ CREATE INDEX idx_heracles_periods_startdate ON @results_schema.heracles_periods 
 CREATE INDEX idx_heracles_periods_end_date ON @results_schema.heracles_periods (period_end_date);
 
 CREATE INDEX idx_concept_id_varchar ON @vocab_schema.concept (CAST(concept_id AS VARCHAR));
+CREATE INDEX idx_cohort_sample_element_rank ON @results_schema.cohort_sample_element (cohort_sample_id, rank);

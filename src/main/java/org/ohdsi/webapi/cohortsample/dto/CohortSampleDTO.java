@@ -31,11 +31,11 @@ public class CohortSampleDTO {
     /**
      * Cohort definition ID that was sampled.
      */
-    private int cohortDefinitionId;
+    private Integer cohortDefinitionId;
     /**
      * Source ID that was sampled.
      */
-    private int sourceId;
+    private Integer sourceId;
 
     /**
      * Age criteria used to create the sample.
@@ -76,19 +76,19 @@ public class CohortSampleDTO {
         this.createdBy = createdBy;
     }
 
-    public int getCohortDefinitionId() {
+    public Integer getCohortDefinitionId() {
         return cohortDefinitionId;
     }
 
-    public void setCohortDefinitionId(int cohortDefinitionId) {
+    public void setCohortDefinitionId(Integer cohortDefinitionId) {
         this.cohortDefinitionId = cohortDefinitionId;
     }
 
-    public int getSourceId() {
+    public Integer getSourceId() {
         return sourceId;
     }
 
-    public void setSourceId(int sourceId) {
+    public void setSourceId(Integer sourceId) {
         this.sourceId = sourceId;
     }
 

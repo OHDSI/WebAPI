@@ -60,7 +60,7 @@ public class CohortSamplingService extends AbstractDaoService {
 
     public List<CohortSampleDTO> listSamples(int cohortDefinitionId, int sourceId) {
         return sampleRepository.findByCohortDefinitionIdAndSourceId(cohortDefinitionId, sourceId).stream()
-                .map(sample -> sampleToSampleDTO(sample, null))
+                .map(sample -> sampleToSampleDTO(sample, null, false))
                 .collect(Collectors.toList());
     }
 
@@ -72,7 +72,7 @@ public class CohortSamplingService extends AbstractDaoService {
         }
         Source source = getSourceRepository().findBySourceId(sample.getSourceId());
         List<SampleElement> sampleElements = findSampleElements(source, sample.getId(), withRecordCounts);
-        return sampleToSampleDTO(sample, sampleElements);
+        return sampleToSampleDTO(sample, sampleElements, true);
     }
 
     /**
@@ -178,17 +178,19 @@ public class CohortSamplingService extends AbstractDaoService {
             return null;
         });
 
-        return sampleToSampleDTO(sample, elements);
+        return sampleToSampleDTO(sample, elements, true);
     }
 
     /** Convert a given sample with given elements to a DTO. */
-    private CohortSampleDTO sampleToSampleDTO(CohortSample sample, List<SampleElement> elements) {
+    private CohortSampleDTO sampleToSampleDTO(CohortSample sample, List<SampleElement> elements, boolean includeIds) {
         CohortSampleDTO sampleDTO = new CohortSampleDTO();
         sampleDTO.setId(sample.getId());
         sampleDTO.setName(sample.getName());
         sampleDTO.setSize(sample.getSize());
-        sampleDTO.setCohortDefinitionId(sample.getCohortDefinitionId());
-        sampleDTO.setSourceId(sample.getSourceId());
+        if (includeIds) {
+            sampleDTO.setCohortDefinitionId(sample.getCohortDefinitionId());
+            sampleDTO.setSourceId(sample.getSourceId());
+        }
         sampleDTO.setCreatedDate(sample.getCreatedDate());
         UserEntity createdBy = sample.getCreatedBy();
         if (createdBy != null) {

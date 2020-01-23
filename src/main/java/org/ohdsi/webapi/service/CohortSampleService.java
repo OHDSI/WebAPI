@@ -1,10 +1,8 @@
 package org.ohdsi.webapi.service;
 
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
-import org.ohdsi.webapi.cohortsample.CohortSample;
 import org.ohdsi.webapi.cohortsample.CohortSampleRepository;
 import org.ohdsi.webapi.cohortsample.CohortSamplingService;
-import org.ohdsi.webapi.cohortsample.SampleElement;
 import org.ohdsi.webapi.cohortsample.dto.CohortSampleDTO;
 import org.ohdsi.webapi.cohortsample.dto.SampleParametersDTO;
 import org.ohdsi.webapi.source.Source;
@@ -26,7 +24,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Path("/cohortsample/{cohortDefinitionId}/{sourceKey}")
 @Component
@@ -57,9 +54,7 @@ public class CohortSampleService {
             @PathParam("sourceKey") String sourceKey
     ) {
         Source source = getSource(sourceKey);
-        return this.sampleRepository.findByCohortDefinitionIdAndSourceId(cohortDefinitionId, source.getId()).stream()
-                .map(s -> samplingService.sampleToSampleDTO(s, null))
-                .collect(Collectors.toList());
+        return this.samplingService.listSamples(cohortDefinitionId, source.getId());
     }
 
     @Path("/{sampleId}")
@@ -68,15 +63,9 @@ public class CohortSampleService {
             @PathParam("sampleId") Integer sampleId,
             @DefaultValue("recordCount") @QueryParam("fields") String fields
     ) {
-        CohortSample sample = sampleRepository.findOne(sampleId);
-        if (sample == null) {
-            throw new NotFoundException("Cohort sample with ID " + sampleId + " not found");
-        }
         List<String> returnFields = Arrays.asList(fields.split(","));
         boolean withRecordCounts = returnFields.contains("recordCount");
-        Source source = sourceRepository.findBySourceId(sample.getSourceId());
-        List<SampleElement> elements = this.samplingService.findSampleElements(source, sampleId, withRecordCounts);
-        return samplingService.sampleToSampleDTO(sample, elements);
+        return this.samplingService.getSample(sampleId, withRecordCounts);
     }
 
     @Path("/")

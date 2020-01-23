@@ -58,6 +58,23 @@ public class CohortSamplingService extends AbstractDaoService {
         this.jobTemplate = jobTemplate;
     }
 
+    public List<CohortSampleDTO> listSamples(int cohortDefinitionId, int sourceId) {
+        return sampleRepository.findByCohortDefinitionIdAndSourceId(cohortDefinitionId, sourceId).stream()
+                .map(sample -> sampleToSampleDTO(sample, null))
+                .collect(Collectors.toList());
+    }
+
+
+    public CohortSampleDTO getSample(int sampleId, boolean withRecordCounts) {
+        CohortSample sample = sampleRepository.findById(sampleId);
+        if (sample == null) {
+            throw new NotFoundException("Cohort sample with ID " + sampleId + " not found");
+        }
+        Source source = getSourceRepository().findBySourceId(sample.getSourceId());
+        List<SampleElement> sampleElements = findSampleElements(source, sample.getId(), withRecordCounts);
+        return sampleToSampleDTO(sample, sampleElements);
+    }
+
     /**
      * Find all sample elements of a sample.
      * @param source Source to use
@@ -65,7 +82,7 @@ public class CohortSamplingService extends AbstractDaoService {
      * @param withRecordCounts whether to return record counts. This makes the query much slower.
      * @return list of elements.
      */
-    public List<SampleElement> findSampleElements(Source source, int cohortSampleId, boolean withRecordCounts) {
+    private List<SampleElement> findSampleElements(Source source, int cohortSampleId, boolean withRecordCounts) {
         JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
         PreparedStatementRenderer renderer;
         Collection<String> optionalFields;
@@ -165,7 +182,7 @@ public class CohortSamplingService extends AbstractDaoService {
     }
 
     /** Convert a given sample with given elements to a DTO. */
-    public CohortSampleDTO sampleToSampleDTO(CohortSample sample, List<SampleElement> elements) {
+    private CohortSampleDTO sampleToSampleDTO(CohortSample sample, List<SampleElement> elements) {
         CohortSampleDTO sampleDTO = new CohortSampleDTO();
         sampleDTO.setId(sample.getId());
         sampleDTO.setName(sample.getName());

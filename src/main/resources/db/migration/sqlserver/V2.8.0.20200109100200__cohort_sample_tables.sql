@@ -1,13 +1,13 @@
 CREATE SEQUENCE ${ohdsiSchema}.cohort_sample_sequence;
 
 CREATE TABLE ${ohdsiSchema}.cohort_sample(
-    id                   NUMBER(19) PRIMARY KEY CLUSTERED NOT NULL,
+    id                   BIGINT PRIMARY KEY CLUSTERED NOT NULL,
     name                 VARCHAR(255) NOT NULL,
     cohort_definition_id INTEGER NOT NULL,
     source_id            INTEGER NOT NULL,
-    size                 NUMBER(9) NOT NULL,
-    age_min              NUMBER(4) NULL,
-    age_max              NUMBER(4) NULL,
+    size                 INT NOT NULL,
+    age_min              SMALLINT NULL,
+    age_max              SMALLINT NULL,
     age_mode             VARCHAR(24),
     gender_concept_ids   VARCHAR(255) NULL,
     created_by_id        INTEGER,

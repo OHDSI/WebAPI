@@ -1,6 +1,8 @@
 package org.ohdsi.webapi.cohortsample;
 
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -10,5 +12,9 @@ import java.util.List;
  */
 @Component
 public interface CohortSampleRepository extends CrudRepository<CohortSample, Integer> {
-    List<CohortSample> findByCohortDefinitionIdAndSourceId(int cohortDefinitionId, int sourceId);
+    @Query("SELECT c FROM CohortSample c LEFT JOIN FETCH c.createdBy WHERE c.id = :id")
+    CohortSample findById(@Param("id") int cohortSampleId);
+
+    @Query("SELECT c FROM CohortSample c LEFT JOIN FETCH c.createdBy WHERE c.cohortDefinitionId = :cohortDefinitionId AND c.sourceId = :sourceId")
+    List<CohortSample> findByCohortDefinitionIdAndSourceId(@Param("cohortDefinitionId") int cohortDefinitionId, @Param("sourceId") int sourceId);
 }

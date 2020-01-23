@@ -2,6 +2,7 @@ package org.ohdsi.webapi.security.model;
 
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortsample.CohortSample;
 import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.estimation.Estimation;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
@@ -20,7 +21,8 @@ public enum EntityType {
     INCIDENCE_RATE(IncidenceRateAnalysis.class),
     SOURCE(Source.class),
     ESTIMATION(Estimation.class),
-    PREDICTION(PredictionAnalysis.class);
+    PREDICTION(PredictionAnalysis.class),
+    COHORT_SAMPLE(CohortSample.class);
 
     private final Class<? extends CommonEntity> entityClass;
 

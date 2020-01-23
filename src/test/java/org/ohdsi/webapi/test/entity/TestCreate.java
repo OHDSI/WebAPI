@@ -39,7 +39,7 @@ public abstract class TestCreate {
     public abstract void tearDownDB();
 
     @Test
-    public void testCreateWithDuplicateName() {
+    public void shouldNotCreateEntityWithDuplicateName() {
         //Action
         try {
             createEntity(NEW_TEST_ENTITY);

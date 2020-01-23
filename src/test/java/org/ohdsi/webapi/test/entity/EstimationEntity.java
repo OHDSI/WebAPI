@@ -51,7 +51,7 @@ public class EstimationEntity extends TestImport {
     }
 
     @Test
-    public void testImportWhenHashcodesOfCDsAndCSsAreDifferent() throws Exception {
+    public void shouldImportWhenHashcodesOfCDsAndCSsAreDifferent() throws Exception {
 
         //Arrange
         File pleFile = new File("src/test/resources/ple-example-for-import.json");

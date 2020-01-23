@@ -17,7 +17,7 @@ public abstract class TestCopy extends TestCreate {
     protected abstract Object getFirstSavedDTO();
 
     @Test
-    public void testUsualCopy() throws Exception {
+    public void shouldCopyWithUniqueName() throws Exception {
 
         //Action
         Object copy = createCopy(getFirstSavedDTO());
@@ -27,7 +27,7 @@ public abstract class TestCopy extends TestCreate {
     }
 
     @Test
-    public void testCopyOfCopy() throws Exception {
+    public void shouldCopyFromCopy() throws Exception {
 
         //Action
         Object firstCopy = createCopy(getFirstSavedDTO());
@@ -38,7 +38,7 @@ public abstract class TestCopy extends TestCreate {
     }
 
     @Test
-    public void testSeveralCopiesOfOriginal() throws Exception {
+    public void shouldCopySeveralTimesOriginal() throws Exception {
 
         //Action
         Object firstCopy = createCopy(getFirstSavedDTO());
@@ -53,7 +53,7 @@ public abstract class TestCopy extends TestCreate {
     @Parameters({
             "abcde, abc, abc", "abcde (1), abcde, abcde (2)"
     })
-    public void testCopyOfPartlySameName(String firstName, String secondName, String assertionName) throws Exception {
+    public void shouldCopyOfPartlySameName(String firstName, String secondName, String assertionName) throws Exception {
 
         //Arrange
         createEntity(COPY_PREFIX + firstName);

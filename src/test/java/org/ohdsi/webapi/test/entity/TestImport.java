@@ -23,7 +23,7 @@ public abstract class TestImport extends TestCopy {
     protected abstract Object createEntity(Object dto) throws Exception;
 
     @Test
-    public void testImportUniqueName() throws Exception {
+    public void shouldImportUniqueName() throws Exception {
 
         //Arrange
         Object savedEntity = getEntity(getDtoId(getFirstSavedDTO()));
@@ -38,7 +38,7 @@ public abstract class TestImport extends TestCopy {
     }
 
     @Test
-    public void testImportWithTheSameName() throws Exception {
+    public void shouldImportWithTheSameName() throws Exception {
 
         //Arrange
         Object savedEntity = getEntity(getDtoId(getFirstSavedDTO()));
@@ -56,7 +56,7 @@ public abstract class TestImport extends TestCopy {
     }
 
     @Test
-    public void testImportWhenEntityWithNameExists() throws Exception {
+    public void shouldImportWhenEntityWithNameExists() throws Exception {
 
         //Arrange
         Object firstCreatedEntity = getEntity(getDtoId(getFirstSavedDTO()));

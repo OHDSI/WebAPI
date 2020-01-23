@@ -48,7 +48,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public List<JobExecution> findLast10(boolean hideCompleted) {
+    public List<JobExecution> findLast10(List<BatchStatus> hideStatuses) {
         final Map<String, JobExecution> result = new HashMap<>();
         for (int start = 0; result.size() < MAX_SIZE; start += PAGE_SIZE) {
             final List<JobExecution> page = jobExecutionDao.getJobExecutions(start, PAGE_SIZE);
@@ -57,7 +57,7 @@ public class NotificationServiceImpl implements NotificationService {
             }
             for (JobExecution jobExec: page) {
                 // ignore completed jobs when user does not want to see them
-                if (hideCompleted && BatchStatus.COMPLETED.equals(jobExec.getStatus())) {
+                if (hideStatuses.contains(jobExec.getStatus())) {
                     continue;
                 }
                 if (isInWhiteList(jobExec) && isMine(jobExec)) {

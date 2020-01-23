@@ -1,17 +1,19 @@
 package org.ohdsi.webapi.job;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,8 +36,14 @@ public class NotificationController {
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional(readOnly = true)
     public List<JobExecutionResource> list(
-            @QueryParam("hideCompleted") @DefaultValue("false") boolean hideCompleted) {
-        return service.findLast10(hideCompleted).stream().map(this::toDTO).collect(Collectors.toList());
+            @QueryParam("hide_statuses") String hideStatuses) {
+        List<BatchStatus> statuses = new ArrayList<>();
+        if (StringUtils.isNotEmpty(hideStatuses)) {
+            for (String status : hideStatuses.split(",")) {
+                statuses.add(BatchStatus.valueOf(status));
+            }
+        }
+        return service.findLast10(statuses).stream().map(this::toDTO).collect(Collectors.toList());
     }
 
     @GET

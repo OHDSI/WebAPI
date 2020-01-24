@@ -4,20 +4,15 @@ import static org.junit.Assert.assertEquals;
 import static org.ohdsi.webapi.test.TestConstants.COPY_PREFIX;
 import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
 
-import junitparams.Parameters;
-import org.junit.Test;
+public interface TestCopy extends EntityMethods{
 
-public abstract class TestCopy extends TestCreate {
+    Object createCopy(Object dto) throws Exception;
 
-    protected abstract Object createCopy(Object dto) throws Exception;
+    String getDtoName(Object dto);
 
-    protected abstract String getDtoName(Object dto);
-
-
-    protected abstract Object getFirstSavedDTO();
-
-    @Test
-    public void shouldCopyWithUniqueName() throws Exception {
+    Object getFirstSavedDTO();
+    
+    default void shouldCopyWithUniqueName() throws Exception {
 
         //Action
         Object copy = createCopy(getFirstSavedDTO());
@@ -25,9 +20,8 @@ public abstract class TestCopy extends TestCreate {
         //Assert
         assertEquals(COPY_PREFIX + NEW_TEST_ENTITY, getDtoName(copy));
     }
-
-    @Test
-    public void shouldCopyFromCopy() throws Exception {
+    
+    default void shouldCopyFromCopy() throws Exception {
 
         //Action
         Object firstCopy = createCopy(getFirstSavedDTO());
@@ -36,9 +30,8 @@ public abstract class TestCopy extends TestCreate {
         //Assert
         assertEquals(COPY_PREFIX + COPY_PREFIX + NEW_TEST_ENTITY, getDtoName(secondCopy));
     }
-
-    @Test
-    public void shouldCopySeveralTimesOriginal() throws Exception {
+    
+    default void shouldCopySeveralTimesOriginal() throws Exception {
 
         //Action
         Object firstCopy = createCopy(getFirstSavedDTO());
@@ -48,12 +41,8 @@ public abstract class TestCopy extends TestCreate {
         assertEquals(COPY_PREFIX + NEW_TEST_ENTITY, getDtoName(firstCopy));
         assertEquals(COPY_PREFIX + NEW_TEST_ENTITY + " (1)", getDtoName(secondCopy));
     }
-
-    @Test
-    @Parameters({
-            "abcde, abc, abc", "abcde (1), abcde, abcde (2)"
-    })
-    public void shouldCopyOfPartlySameName(String firstName, String secondName, String assertionName) throws Exception {
+    
+    default void shouldCopyOfPartlySameName(String firstName, String secondName, String assertionName) throws Exception {
 
         //Arrange
         createEntity(COPY_PREFIX + firstName);

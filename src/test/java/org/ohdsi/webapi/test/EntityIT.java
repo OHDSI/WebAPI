@@ -21,7 +21,6 @@ import org.ohdsi.webapi.test.entity.PredictionEntity;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        
         ConceptSetEntity.class,
         CohortDefinitionEntity.class,
         CCEntity.class,
@@ -34,13 +33,14 @@ public class EntityIT extends AbstractShiroTest {
 
     @ClassRule
     public static SingleInstancePostgresRule pg = EmbeddedPostgresRules.singleInstance();
-    
+
     @BeforeClass
     public static void before() {
+
         try {
             System.setProperty("datasource.url", pg.getEmbeddedPostgres().getPostgresDatabase().getConnection().getMetaData().getURL());
             System.setProperty("flyway.datasource.url", System.getProperty("datasource.url"));
-            
+
             //set up shiro
             Subject subjectUnderTest = Mockito.mock(Subject.class);
             SimplePrincipalCollection principalCollection = Mockito.mock(SimplePrincipalCollection.class);

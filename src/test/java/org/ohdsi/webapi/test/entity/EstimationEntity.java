@@ -4,10 +4,16 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.ohdsi.analysis.Utils;
+import org.ohdsi.webapi.WebApi;
 import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetailsRepository;
 import org.ohdsi.webapi.estimation.Estimation;
@@ -17,15 +23,17 @@ import org.ohdsi.webapi.estimation.dto.EstimationDTO;
 import org.ohdsi.webapi.estimation.repository.EstimationRepository;
 import org.ohdsi.webapi.estimation.specification.EstimationAnalysisImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.ConversionService;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 
 import static org.junit.Assert.assertEquals;
 import static org.ohdsi.analysis.estimation.design.EstimationTypeEnum.COMPARATIVE_COHORT_ANALYSIS;
 import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
 
-public class EstimationEntity extends TestImport {
-    @Autowired
-    protected ConversionService conversionService;
+@RunWith(JUnitParamsRunner.class)
+@SpringBootTest(classes = WebApi.class)
+@TestPropertySource(locations = "/in-memory-webapi.properties")
+public class EstimationEntity implements TestCreate, TestCopy, TestImport {
     @Autowired
     protected EstimationController pleController;
     @Autowired
@@ -44,10 +52,79 @@ public class EstimationEntity extends TestImport {
         PLE_SPECIFICATION = FileUtils.readFileToString(ple_spec, StandardCharsets.UTF_8);
     }
 
+    // in JUnit 4 it's impossible to mark methods inside interface with annotations, it was implemented in JUnit 5. After upgrade it's needed
+    // to mark interface methods with @Test, @Before, @After and to remove them from this class
+    @After
     @Override
     public void tearDownDB() {
 
         pleRepository.deleteAll();
+    }
+
+    @Before
+    @Override
+    public void init() throws Exception {
+
+        TestCreate.super.init();
+    }
+
+    @Test
+    @Override
+    public void shouldNotCreateEntityWithDuplicateName() {
+
+        TestCreate.super.shouldNotCreateEntityWithDuplicateName();
+    }
+
+    @Test
+    @Override
+    public void shouldCopyWithUniqueName() throws Exception {
+
+        TestCopy.super.shouldCopyWithUniqueName();
+    }
+
+    @Test
+    @Override
+    public void shouldCopyFromCopy() throws Exception {
+
+        TestCopy.super.shouldCopyFromCopy();
+    }
+
+    @Test
+    @Override
+    public void shouldCopySeveralTimesOriginal() throws Exception {
+
+        TestCopy.super.shouldCopySeveralTimesOriginal();
+    }
+
+    @Test
+    @Parameters({
+            "abcde, abc, abc", "abcde (1), abcde, abcde (2)"
+    })
+    @Override
+    public void shouldCopyOfPartlySameName(String firstName, String secondName, String assertionName) throws Exception {
+
+        TestCopy.super.shouldCopyOfPartlySameName(firstName, secondName, assertionName);
+    }
+
+    @Test
+    @Override
+    public void shouldImportUniqueName() throws Exception {
+
+        TestImport.super.shouldImportUniqueName();
+    }
+
+    @Test
+    @Override
+    public void shouldImportWithTheSameName() throws Exception {
+
+        TestImport.super.shouldImportWithTheSameName();
+    }
+
+    @Test
+    @Override
+    public void shouldImportWhenEntityWithNameExists() throws Exception {
+
+        TestImport.super.shouldImportWhenEntityWithNameExists();
     }
 
     @Test
@@ -80,43 +157,43 @@ public class EstimationEntity extends TestImport {
     }
 
     @Override
-    protected Object createCopy(Object dto) throws Exception {
+    public Object createCopy(Object dto) throws Exception {
 
         return pleController.copy(((EstimationDTO) dto).getId());
     }
 
     @Override
-    protected String getDtoName(Object dto) {
+    public String getDtoName(Object dto) {
 
         return ((EstimationDTO) dto).getName();
     }
 
     @Override
-    protected void initFirstDTO() throws Exception {
+    public void initFirstDTO() throws Exception {
 
         firstSavedDTO = createEntity(NEW_TEST_ENTITY);
     }
 
     @Override
-    protected Object getFirstSavedDTO() {
+    public Object getFirstSavedDTO() {
 
         return firstSavedDTO;
     }
 
     @Override
-    protected EstimationDTO createEntity(String name) throws Exception {
+    public EstimationDTO createEntity(String name) throws Exception {
 
         return createEntity(createAndInitIncomingEntity(name));
     }
 
     @Override
-    protected EstimationDTO createEntity(Object dto) throws Exception {
+    public EstimationDTO createEntity(Object dto) throws Exception {
 
         return pleController.createEstimation((Estimation) dto);
     }
 
     @Override
-    protected Estimation createAndInitIncomingEntity(String name) {
+    public Estimation createAndInitIncomingEntity(String name) {
 
         Estimation estimation = new Estimation();
         estimation.setName(name);
@@ -126,37 +203,37 @@ public class EstimationEntity extends TestImport {
     }
 
     @Override
-    protected String getConstraintName() {
+    public String getConstraintName() {
 
         return "uq_es_name";
     }
 
     @Override
-    protected Integer getDtoId(Object dto) {
+    public Integer getDtoId(Object dto) {
 
         return ((EstimationDTO) dto).getId();
     }
 
     @Override
-    protected Object getEntity(int id) {
+    public Object getEntity(int id) {
 
         return pleService.getAnalysis(id);
     }
 
     @Override
-    protected Object getExportEntity(Object entity) {
+    public Object getExportEntity(Object entity) {
 
         return pleController.exportAnalysis(((Estimation) entity).getId());
     }
 
     @Override
-    protected void setExportName(Object entity, String name) {
+    public void setExportName(Object entity, String name) {
 
         ((EstimationAnalysisImpl) entity).setName(name);
     }
 
     @Override
-    protected Object doImport(Object dto) throws Exception {
+    public Object doImport(Object dto) throws Exception {
 
         return pleController.importAnalysis((EstimationAnalysisImpl) dto);
     }

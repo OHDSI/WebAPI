@@ -4,26 +4,27 @@ import static org.junit.Assert.assertEquals;
 import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
 import static org.ohdsi.webapi.test.TestConstants.SOME_UNIQUE_TEST_NAME;
 
-import org.junit.Test;
+public interface TestImport extends EntityMethods{
 
-public abstract class TestImport extends TestCopy {
+    Integer getDtoId(Object dto);
 
-    protected abstract Integer getDtoId(Object dto);
+    String getDtoName(Object dto);
 
-    protected abstract Object getEntity(int id);
+    Object getEntity(int id);
 
-    protected abstract Object getExportEntity(Object entity);
+    Object getExportEntity(Object entity);
 
-    protected abstract void setExportName(Object entity, String name);
+    void setExportName(Object entity, String name);
 
-    protected abstract Object doImport(Object dto) throws Exception;
+    Object doImport(Object dto) throws Exception;
 
-    protected abstract Object createAndInitIncomingEntity(String name);
+    Object createAndInitIncomingEntity(String name);
 
-    protected abstract Object createEntity(Object dto) throws Exception;
+    Object createEntity(Object dto) throws Exception;
 
-    @Test
-    public void shouldImportUniqueName() throws Exception {
+    Object getFirstSavedDTO();
+
+    default void shouldImportUniqueName() throws Exception {
 
         //Arrange
         Object savedEntity = getEntity(getDtoId(getFirstSavedDTO()));
@@ -37,8 +38,7 @@ public abstract class TestImport extends TestCopy {
         assertEquals(SOME_UNIQUE_TEST_NAME, getDtoName(firstImport));
     }
 
-    @Test
-    public void shouldImportWithTheSameName() throws Exception {
+    default void shouldImportWithTheSameName() throws Exception {
 
         //Arrange
         Object savedEntity = getEntity(getDtoId(getFirstSavedDTO()));
@@ -55,8 +55,7 @@ public abstract class TestImport extends TestCopy {
         assertEquals(NEW_TEST_ENTITY + " (2)", getDtoName(secondImport));
     }
 
-    @Test
-    public void shouldImportWhenEntityWithNameExists() throws Exception {
+    default void shouldImportWhenEntityWithNameExists() throws Exception {
 
         //Arrange
         Object firstCreatedEntity = getEntity(getDtoId(getFirstSavedDTO()));

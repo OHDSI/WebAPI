@@ -1,6 +1,8 @@
 package org.ohdsi.webapi.job;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.core.convert.support.GenericConversionService;
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 @Controller
 @Transactional
 public class NotificationController {
+    private static final Logger log = LoggerFactory.getLogger(NotificationController.class);
 
     private final NotificationService service;
     private final GenericConversionService conversionService;
@@ -40,7 +43,11 @@ public class NotificationController {
         List<BatchStatus> statuses = new ArrayList<>();
         if (StringUtils.isNotEmpty(hideStatuses)) {
             for (String status : hideStatuses.split(",")) {
-                statuses.add(BatchStatus.valueOf(status));
+                try {
+                    statuses.add(BatchStatus.valueOf(status));
+                } catch (IllegalArgumentException e) {
+                    log.warn("Invalid argument passed as batch status: {}", status);
+                }
             }
         }
         return service.findLast10(statuses).stream().map(this::toDTO).collect(Collectors.toList());

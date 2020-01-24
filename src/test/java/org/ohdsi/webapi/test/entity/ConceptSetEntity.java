@@ -43,6 +43,7 @@ public class ConceptSetEntity implements TestCreate, TestCopy {
         TestCreate.super.init();
     }
 
+    //region test methods
     @Test
     @Override
     public void shouldNotCreateEntityWithDuplicateName() {
@@ -80,6 +81,7 @@ public class ConceptSetEntity implements TestCreate, TestCopy {
 
         TestCopy.super.shouldCopyOfPartlySameName(firstName, secondName, assertionName);
     }
+    //endregion
 
     @Override
     public Object createCopy(Object dto) {

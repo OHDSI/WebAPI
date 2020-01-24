@@ -68,6 +68,7 @@ public class EstimationEntity implements TestCreate, TestCopy, TestImport {
         TestCreate.super.init();
     }
 
+    //region test methods
     @Test
     @Override
     public void shouldNotCreateEntityWithDuplicateName() {
@@ -155,6 +156,7 @@ public class EstimationEntity implements TestCreate, TestCopy, TestImport {
         assertEquals("Acute myocardial infarction events (1)", cds.get(2).getName());
         assertEquals("Angioedema events (1)", cds.get(3).getName());
     }
+    //endregion
 
     @Override
     public Object createCopy(Object dto) throws Exception {

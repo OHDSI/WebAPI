@@ -34,7 +34,7 @@ public class CCEntity implements TestCreate, TestCopy, TestImport {
     private CohortCharacterizationDTO firstSavedDTO;
 
     // in JUnit 4 it's impossible to mark methods inside interface with annotations, it was implemented in JUnit 5. After upgrade it's needed
-    // to mark interface methods with @Test, @Before, @After and to remove themn from this class
+    // to mark interface methods with @Test, @Before, @After and to remove them from this class
     @Before
     @Override
     public void init() throws Exception {
@@ -49,6 +49,7 @@ public class CCEntity implements TestCreate, TestCopy, TestImport {
         ccRepository.deleteAll();
     }
 
+    //region test methods
     @Test
     @Override
     public void shouldNotCreateEntityWithDuplicateName() {
@@ -107,6 +108,7 @@ public class CCEntity implements TestCreate, TestCopy, TestImport {
 
         TestImport.super.shouldImportWhenEntityWithNameExists();
     }
+    //endregion
 
     @Override
     public Object createCopy(Object dto) {

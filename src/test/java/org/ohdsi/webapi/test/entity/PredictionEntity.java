@@ -60,6 +60,7 @@ public class PredictionEntity implements TestCreate, TestCopy, TestImport {
         TestCreate.super.init();
     }
 
+    //region test methods
     @Test
     @Override
     public void shouldNotCreateEntityWithDuplicateName() {
@@ -118,6 +119,7 @@ public class PredictionEntity implements TestCreate, TestCopy, TestImport {
 
         TestImport.super.shouldImportWhenEntityWithNameExists();
     }
+    //endregion
 
     @Override
     public Object createCopy(Object dto) {

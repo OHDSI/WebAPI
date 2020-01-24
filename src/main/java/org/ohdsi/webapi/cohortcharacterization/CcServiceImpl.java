@@ -596,6 +596,9 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     @Override
     @DataSourceAccess
     public GenerationResults findData(@CcGenerationId final Long generationId, ExecutionResultRequest params) {
+        if (params.getShowEmptyResults()) {
+          params.setThresholdValuePct(0.0f); //Don't cut threshold results when all results requested
+        }
         GenerationResults res = findResult(generationId, params);
         boolean hasComparativeReports = res.getReports().stream()
                 .anyMatch(report -> report.isComparative);

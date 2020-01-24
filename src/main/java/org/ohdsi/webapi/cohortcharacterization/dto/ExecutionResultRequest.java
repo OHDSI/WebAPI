@@ -23,6 +23,9 @@ public class ExecutionResultRequest {
     @JsonProperty("isSummary")
     private Boolean isSummary;
 
+    @JsonProperty("showEmptyResults")
+    private Boolean isShowEmptyResults = false;
+
     public List<Integer> getCohortIds() {
         if(cohortIds == null) {
             return Collections.emptyList();
@@ -74,5 +77,13 @@ public class ExecutionResultRequest {
 
     public void setSummary(Boolean summary) {
         isSummary = summary;
+    }
+
+    public Boolean getShowEmptyResults() {
+        return isShowEmptyResults;
+    }
+
+    public void setShowEmptyResults(Boolean showEmptyResults) {
+        isShowEmptyResults = showEmptyResults;
     }
 }

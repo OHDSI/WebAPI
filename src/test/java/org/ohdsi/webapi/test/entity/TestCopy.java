@@ -4,54 +4,56 @@ import static org.junit.Assert.assertEquals;
 import static org.ohdsi.webapi.test.TestConstants.COPY_PREFIX;
 import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
 
-public interface TestCopy extends EntityMethods{
+import org.ohdsi.webapi.CommonDTO;
 
-    Object createCopy(Object dto) throws Exception;
+public interface TestCopy <T extends CommonDTO> extends EntityMethods{
 
-    String getDtoName(Object dto);
+    T createCopy(T dto) throws Exception;
 
-    Object getFirstSavedDTO();
+    T createEntity(String name) throws Exception;
+
+    T getFirstSavedDTO();
     
     default void shouldCopyWithUniqueName() throws Exception {
 
         //Action
-        Object copy = createCopy(getFirstSavedDTO());
+        T copy = createCopy(getFirstSavedDTO());
 
         //Assert
-        assertEquals(COPY_PREFIX + NEW_TEST_ENTITY, getDtoName(copy));
+        assertEquals(COPY_PREFIX + NEW_TEST_ENTITY, copy.getName());
     }
     
     default void shouldCopyFromCopy() throws Exception {
 
         //Action
-        Object firstCopy = createCopy(getFirstSavedDTO());
-        Object secondCopy = createCopy(firstCopy);
+        T firstCopy = createCopy(getFirstSavedDTO());
+        T secondCopy = createCopy(firstCopy);
 
         //Assert
-        assertEquals(COPY_PREFIX + COPY_PREFIX + NEW_TEST_ENTITY, getDtoName(secondCopy));
+        assertEquals(COPY_PREFIX + COPY_PREFIX + NEW_TEST_ENTITY, secondCopy.getName());
     }
     
     default void shouldCopySeveralTimesOriginal() throws Exception {
 
         //Action
-        Object firstCopy = createCopy(getFirstSavedDTO());
-        Object secondCopy = createCopy(getFirstSavedDTO());
+        T firstCopy = createCopy(getFirstSavedDTO());
+        T secondCopy = createCopy(getFirstSavedDTO());
 
         //Assert
-        assertEquals(COPY_PREFIX + NEW_TEST_ENTITY, getDtoName(firstCopy));
-        assertEquals(COPY_PREFIX + NEW_TEST_ENTITY + " (1)", getDtoName(secondCopy));
+        assertEquals(COPY_PREFIX + NEW_TEST_ENTITY, firstCopy.getName());
+        assertEquals(COPY_PREFIX + NEW_TEST_ENTITY + " (1)", secondCopy.getName());
     }
     
     default void shouldCopyOfPartlySameName(String firstName, String secondName, String assertionName) throws Exception {
 
         //Arrange
         createEntity(COPY_PREFIX + firstName);
-        Object savedDTO = createEntity(secondName);
+        T savedDTO = createEntity(secondName);
 
         //Action
-        Object copy = createCopy(savedDTO);
+        T copy = createCopy(savedDTO);
 
         //Assert
-        assertEquals(COPY_PREFIX + assertionName, getDtoName(copy));
+        assertEquals(COPY_PREFIX + assertionName, copy.getName());
     }
 }

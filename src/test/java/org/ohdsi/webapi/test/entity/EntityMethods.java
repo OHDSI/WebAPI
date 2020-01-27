@@ -1,12 +1,13 @@
 package org.ohdsi.webapi.test.entity;
 
+import org.ohdsi.webapi.CommonDTO;
 import org.springframework.test.context.TestContextManager;
 
-public interface EntityMethods {
+public interface EntityMethods <T extends CommonDTO> {
 
     void initFirstDTO() throws Exception;
 
-    Object createEntity(String name) throws Exception;
+    T createEntity(String name) throws Exception;
 
     default void init() throws Exception {
 

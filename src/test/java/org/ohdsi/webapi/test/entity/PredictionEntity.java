@@ -14,6 +14,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ohdsi.webapi.WebApi;
+import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.prediction.PredictionAnalysis;
 import org.ohdsi.webapi.prediction.PredictionController;
 import org.ohdsi.webapi.prediction.PredictionService;
@@ -22,12 +23,15 @@ import org.ohdsi.webapi.prediction.repository.PredictionAnalysisRepository;
 import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.test.context.TestPropertySource;
 
 @RunWith(JUnitParamsRunner.class)
 @SpringBootTest(classes = WebApi.class)
 @TestPropertySource(locations = "/in-memory-webapi.properties")
-public class PredictionEntity implements TestCreate, TestCopy, TestImport {
+public class PredictionEntity implements TestCreate, TestCopy<PredictionAnalysisDTO>, TestImport<PredictionAnalysisDTO, PatientLevelPredictionAnalysisImpl> {
+    @Autowired
+    protected ConversionService conversionService;
     @Autowired
     protected PredictionController plpController;
     @Autowired
@@ -122,15 +126,9 @@ public class PredictionEntity implements TestCreate, TestCopy, TestImport {
     //endregion
 
     @Override
-    public Object createCopy(Object dto) {
+    public PredictionAnalysisDTO createCopy(PredictionAnalysisDTO dto) {
 
-        return plpController.copy(((PredictionAnalysisDTO) dto).getId());
-    }
-
-    @Override
-    public String getDtoName(Object dto) {
-
-        return ((PredictionAnalysisDTO) dto).getName();
+        return plpController.copy(dto.getId());
     }
 
     @Override
@@ -140,7 +138,7 @@ public class PredictionEntity implements TestCreate, TestCopy, TestImport {
     }
 
     @Override
-    public Object getFirstSavedDTO() {
+    public PredictionAnalysisDTO getFirstSavedDTO() {
 
         return firstSavedDTO;
     }
@@ -152,18 +150,25 @@ public class PredictionEntity implements TestCreate, TestCopy, TestImport {
     }
 
     @Override
-    public PredictionAnalysisDTO createEntity(Object dto) {
+    public PredictionAnalysisDTO createEntity(PredictionAnalysisDTO dto) {
 
-        return plpController.createAnalysis((PredictionAnalysis) dto);
+        PredictionAnalysis prediction = createPrediction(dto.getName());
+        return plpController.createAnalysis(prediction);
     }
 
     @Override
-    public Object createAndInitIncomingEntity(String name) {
+    public PredictionAnalysisDTO createAndInitIncomingEntity(String name) {
 
-        PredictionAnalysis predictionAnalysis = new PredictionAnalysis();
-        predictionAnalysis.setName(name);
-        predictionAnalysis.setSpecification(PLP_SPECIFICATION);
-        return predictionAnalysis;
+        PredictionAnalysis predictionAnalysis = createPrediction(name);
+        return conversionService.convert(predictionAnalysis, PredictionAnalysisDTO.class);
+    }
+
+    private PredictionAnalysis createPrediction(String name) {
+
+        PredictionAnalysis prediction = new PredictionAnalysis();
+        prediction.setName(name);
+        prediction.setSpecification(PLP_SPECIFICATION);
+        return prediction;
     }
 
     @Override
@@ -173,32 +178,20 @@ public class PredictionEntity implements TestCreate, TestCopy, TestImport {
     }
 
     @Override
-    public Integer getDtoId(Object dto) {
-
-        return ((PredictionAnalysisDTO) dto).getId();
-    }
-
-    @Override
-    public Object getEntity(int id) {
+    public CommonEntity getEntity(int id) {
 
         return plpService.getAnalysis(id);
     }
 
     @Override
-    public Object getExportEntity(Object entity) {
+    public PatientLevelPredictionAnalysisImpl getExportEntity(CommonEntity entity) {
 
-        return plpController.exportAnalysis(((PredictionAnalysis) entity).getId());
+        return plpController.exportAnalysis(entity.getId().intValue());
     }
 
     @Override
-    public void setExportName(Object entity, String name) {
+    public PredictionAnalysisDTO doImport(PatientLevelPredictionAnalysisImpl dto) throws Exception {
 
-        ((PatientLevelPredictionAnalysisImpl) entity).setName(name);
-    }
-
-    @Override
-    public Object doImport(Object dto) throws Exception {
-
-        return plpController.importAnalysis((PatientLevelPredictionAnalysisImpl) dto);
+        return plpController.importAnalysis(dto);
     }
 }

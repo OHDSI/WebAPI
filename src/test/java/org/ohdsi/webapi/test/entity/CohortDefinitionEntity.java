@@ -19,7 +19,7 @@ import org.springframework.test.context.TestPropertySource;
 @RunWith(JUnitParamsRunner.class)
 @SpringBootTest(classes = WebApi.class)
 @TestPropertySource(locations = "/in-memory-webapi.properties")
-public class CohortDefinitionEntity implements TestCreate, TestCopy {
+public class CohortDefinitionEntity implements TestCreate, TestCopy<CohortDTO> {
     @Autowired
     private CohortDefinitionService cdService;
     @Autowired
@@ -83,15 +83,9 @@ public class CohortDefinitionEntity implements TestCreate, TestCopy {
     //endregion
 
     @Override
-    public Object createCopy(Object dto) {
+    public CohortDTO createCopy(CohortDTO dto) {
 
-        return cdService.copy(((CohortDTO) dto).getId());
-    }
-
-    @Override
-    public String getDtoName(Object dto) {
-
-        return ((CohortDTO) dto).getName();
+        return cdService.copy(dto.getId());
     }
 
     @Override
@@ -101,7 +95,7 @@ public class CohortDefinitionEntity implements TestCreate, TestCopy {
     }
 
     @Override
-    public Object getFirstSavedDTO() {
+    public CohortDTO getFirstSavedDTO() {
 
         return firstSavedDTO;
     }

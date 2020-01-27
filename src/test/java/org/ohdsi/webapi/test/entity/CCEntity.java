@@ -11,9 +11,11 @@ import org.junit.runner.RunWith;
 import org.ohdsi.webapi.WebApi;
 import org.ohdsi.webapi.cohortcharacterization.CcController;
 import org.ohdsi.webapi.cohortcharacterization.CcService;
+import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
 import org.ohdsi.webapi.cohortcharacterization.repository.CcRepository;
+import org.ohdsi.webapi.model.CommonEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.convert.ConversionService;
@@ -22,7 +24,7 @@ import org.springframework.test.context.TestPropertySource;
 @RunWith(JUnitParamsRunner.class)
 @SpringBootTest(classes = WebApi.class)
 @TestPropertySource(locations = "/in-memory-webapi.properties")
-public class CCEntity implements TestCreate, TestCopy, TestImport {
+public class CCEntity implements TestCreate, TestCopy<CohortCharacterizationDTO>, TestImport<CohortCharacterizationDTO, CcExportDTO> {
     @Autowired
     protected ConversionService conversionService;
     @Autowired
@@ -111,15 +113,9 @@ public class CCEntity implements TestCreate, TestCopy, TestImport {
     //endregion
 
     @Override
-    public Object createCopy(Object dto) {
+    public CohortCharacterizationDTO createCopy(CohortCharacterizationDTO dto) {
 
-        return ccController.copy(((CohortCharacterizationDTO) dto).getId());
-    }
-
-    @Override
-    public String getDtoName(Object dto) {
-
-        return ((CohortCharacterizationDTO) dto).getName();
+        return ccController.copy(dto.getId());
     }
 
     @Override
@@ -129,7 +125,7 @@ public class CCEntity implements TestCreate, TestCopy, TestImport {
     }
 
     @Override
-    public Object getFirstSavedDTO() {
+    public CohortCharacterizationDTO getFirstSavedDTO() {
 
         return firstSavedDTO;
     }
@@ -147,9 +143,9 @@ public class CCEntity implements TestCreate, TestCopy, TestImport {
     }
 
     @Override
-    public CohortCharacterizationDTO createEntity(Object dto) {
+    public CohortCharacterizationDTO createEntity(CohortCharacterizationDTO dto) {
 
-        return ccController.create((CohortCharacterizationDTO) dto);
+        return ccController.create(dto);
     }
 
     @Override
@@ -161,32 +157,20 @@ public class CCEntity implements TestCreate, TestCopy, TestImport {
     }
 
     @Override
-    public Integer getDtoId(Object dto) {
-
-        return ((CohortCharacterizationDTO) dto).getId().intValue();
-    }
-
-    @Override
-    public Object getEntity(int id) {
+    public CohortCharacterizationEntity getEntity(int id) {
 
         return ccService.findByIdWithLinkedEntities((long) id);
     }
 
     @Override
-    public Object getExportEntity(Object entity) {
+    public CcExportDTO getExportEntity(CommonEntity entity) {
 
         return conversionService.convert(entity, CcExportDTO.class);
     }
 
     @Override
-    public void setExportName(Object entity, String name) {
+    public CohortCharacterizationDTO doImport(CcExportDTO dto) {
 
-        ((CcExportDTO) entity).setName(name);
-    }
-
-    @Override
-    public Object doImport(Object dto) {
-
-        return ccController.doImport((CcExportDTO) dto);
+        return ccController.doImport(dto);
     }
 }

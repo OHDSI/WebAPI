@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ohdsi.webapi.WebApi;
+import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.pathway.PathwayController;
 import org.ohdsi.webapi.pathway.PathwayService;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
@@ -24,7 +25,7 @@ import org.springframework.test.context.TestPropertySource;
 @RunWith(JUnitParamsRunner.class)
 @SpringBootTest(classes = WebApi.class)
 @TestPropertySource(locations = "/in-memory-webapi.properties")
-public class PathwayEntity implements TestCreate, TestCopy, TestImport {
+public class PathwayEntity implements TestCreate, TestCopy<PathwayAnalysisDTO>, TestImport<PathwayAnalysisDTO, PathwayAnalysisExportDTO> {
     @Autowired
     protected ConversionService conversionService;
     @Autowired
@@ -113,15 +114,9 @@ public class PathwayEntity implements TestCreate, TestCopy, TestImport {
     //endregion
 
     @Override
-    public Object createCopy(Object dto) {
+    public PathwayAnalysisDTO createCopy(PathwayAnalysisDTO dto) {
 
-        return pwController.copy(((PathwayAnalysisDTO) dto).getId());
-    }
-
-    @Override
-    public String getDtoName(Object dto) {
-
-        return ((PathwayAnalysisDTO) dto).getName();
+        return pwController.copy(dto.getId());
     }
 
     @Override
@@ -131,7 +126,7 @@ public class PathwayEntity implements TestCreate, TestCopy, TestImport {
     }
 
     @Override
-    public Object getFirstSavedDTO() {
+    public PathwayAnalysisDTO getFirstSavedDTO() {
 
         return firstSavedDTO;
     }
@@ -143,9 +138,9 @@ public class PathwayEntity implements TestCreate, TestCopy, TestImport {
     }
 
     @Override
-    public PathwayAnalysisDTO createEntity(Object dto) {
+    public PathwayAnalysisDTO createEntity(PathwayAnalysisDTO dto) {
 
-        return pwController.create((PathwayAnalysisDTO) dto);
+        return pwController.create(dto);
     }
 
     @Override
@@ -165,32 +160,20 @@ public class PathwayEntity implements TestCreate, TestCopy, TestImport {
     }
 
     @Override
-    public Integer getDtoId(Object dto) {
-
-        return ((PathwayAnalysisDTO) dto).getId();
-    }
-
-    @Override
-    public Object getEntity(int id) {
+    public CommonEntity getEntity(int id) {
 
         return pwService.getById(id);
     }
 
     @Override
-    public Object getExportEntity(Object entity) {
+    public PathwayAnalysisExportDTO getExportEntity(CommonEntity entity) {
 
         return conversionService.convert(entity, PathwayAnalysisExportDTO.class);
     }
 
     @Override
-    public void setExportName(Object entity, String name) {
+    public PathwayAnalysisDTO doImport(PathwayAnalysisExportDTO dto) {
 
-        ((PathwayAnalysisExportDTO) entity).setName(name);
-    }
-
-    @Override
-    public Object doImport(Object dto) {
-
-        return pwController.importAnalysis((PathwayAnalysisExportDTO) dto);
+        return pwController.importAnalysis(dto);
     }
 }

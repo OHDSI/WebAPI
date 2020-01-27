@@ -4,91 +4,88 @@ import static org.junit.Assert.assertEquals;
 import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
 import static org.ohdsi.webapi.test.TestConstants.SOME_UNIQUE_TEST_NAME;
 
-public interface TestImport extends EntityMethods{
+import org.ohdsi.webapi.CommonDTO;
+import org.ohdsi.webapi.model.CommonEntity;
 
-    Integer getDtoId(Object dto);
+public interface TestImport <T extends CommonDTO, U extends CommonDTO> extends EntityMethods{
 
-    String getDtoName(Object dto);
+    CommonEntity getEntity(int id);
 
-    Object getEntity(int id);
+    U getExportEntity(CommonEntity entity);
 
-    Object getExportEntity(Object entity);
+    T doImport(U dto) throws Exception;
 
-    void setExportName(Object entity, String name);
+    T createAndInitIncomingEntity(String name);
 
-    Object doImport(Object dto) throws Exception;
+    T createEntity(T dto) throws Exception;
 
-    Object createAndInitIncomingEntity(String name);
-
-    Object createEntity(Object dto) throws Exception;
-
-    Object getFirstSavedDTO();
+    T getFirstSavedDTO();
 
     default void shouldImportUniqueName() throws Exception {
 
         //Arrange
-        Object savedEntity = getEntity(getDtoId(getFirstSavedDTO()));
-        Object exportedEntity = getExportEntity(savedEntity);
-        setExportName(exportedEntity, SOME_UNIQUE_TEST_NAME);
+        CommonEntity savedEntity = getEntity(getFirstSavedDTO().getId().intValue());
+        U exportedEntity = getExportEntity(savedEntity);
+        exportedEntity.setName(SOME_UNIQUE_TEST_NAME);
 
         //Action
-        Object firstImport = doImport(exportedEntity);
+        T firstImport = doImport(exportedEntity);
 
         //Assert
-        assertEquals(SOME_UNIQUE_TEST_NAME, getDtoName(firstImport));
+        assertEquals(SOME_UNIQUE_TEST_NAME, firstImport.getName());
     }
 
     default void shouldImportWithTheSameName() throws Exception {
 
         //Arrange
-        Object savedEntity = getEntity(getDtoId(getFirstSavedDTO()));
-        Object exportDTO = getExportEntity(savedEntity);
+        CommonEntity savedEntity = getEntity(getFirstSavedDTO().getId().intValue());
+        U exportDTO = getExportEntity(savedEntity);
 
         //Action
-        Object firstImport = doImport(exportDTO);
+        T firstImport = doImport(exportDTO);
         //reset dto
         exportDTO = getExportEntity(savedEntity);
-        Object secondImport = doImport(exportDTO);
+        T secondImport = doImport(exportDTO);
 
         //Assert
-        assertEquals(NEW_TEST_ENTITY + " (1)", getDtoName(firstImport));
-        assertEquals(NEW_TEST_ENTITY + " (2)", getDtoName(secondImport));
+        assertEquals(NEW_TEST_ENTITY + " (1)", firstImport.getName());
+        assertEquals(NEW_TEST_ENTITY + " (2)", secondImport.getName());
     }
 
     default void shouldImportWhenEntityWithNameExists() throws Exception {
 
         //Arrange
-        Object firstCreatedEntity = getEntity(getDtoId(getFirstSavedDTO()));
-        Object firstExportDTO = getExportEntity(firstCreatedEntity);
+        CommonEntity firstCreatedEntity = getEntity(getFirstSavedDTO().getId().intValue());
+        U firstExportDTO = getExportEntity(firstCreatedEntity);
 
-        Object secondIncomingEntity = createAndInitIncomingEntity(NEW_TEST_ENTITY + " (1)");
+        T secondIncomingEntity = createAndInitIncomingEntity(NEW_TEST_ENTITY + " (1)");
         //save "New test entity (1)" to DB
         createEntity(secondIncomingEntity);
 
-        Object thirdIncomingEntity = createAndInitIncomingEntity(NEW_TEST_ENTITY + " (1) (2)");
+        T thirdIncomingEntity = createAndInitIncomingEntity(NEW_TEST_ENTITY + " (1) (2)");
         //save "New test entity (1) (2)" to DB
-        Object thirdSavedDTO = createEntity(thirdIncomingEntity);
-        Object thirdCreatedEntity = getEntity(getDtoId(thirdSavedDTO));
-        Object thirdExportDTO = getExportEntity(thirdCreatedEntity);
+        T thirdSavedDTO = createEntity(thirdIncomingEntity);
+        CommonEntity thirdCreatedEntity = getEntity(thirdSavedDTO.getId().intValue());
+        U thirdExportDTO = getExportEntity(thirdCreatedEntity);
 
         //Action
         //import of "New test entity"
-        Object firstImport = doImport(firstExportDTO);
+        T firstImport = doImport(firstExportDTO);
         //import of "New test entity (1) (2)"
-        Object secondImport = doImport(thirdExportDTO);
+        T secondImport = doImport(thirdExportDTO);
 
-        Object fourthIncomingEntity = createAndInitIncomingEntity(NEW_TEST_ENTITY + " (1) (2) (2)");
+        T fourthIncomingEntity = createAndInitIncomingEntity(NEW_TEST_ENTITY + " (1) (2) (2)");
         //save "New test entity (1) (2) (2)" to DB
         createEntity(fourthIncomingEntity);
 
         //reset dto
         thirdExportDTO = getExportEntity(thirdCreatedEntity);
         //import of "New test entity (1) (2)"
-        Object thirdImport = doImport(thirdExportDTO);
+        T thirdImport = doImport(thirdExportDTO);
 
         //Assert
-        assertEquals(NEW_TEST_ENTITY + " (2)", getDtoName(firstImport));
-        assertEquals(NEW_TEST_ENTITY + " (1) (2) (1)", getDtoName(secondImport));
-        assertEquals(NEW_TEST_ENTITY + " (1) (2) (3)", getDtoName(thirdImport));
+        assertEquals(NEW_TEST_ENTITY + " (2)", firstImport.getName());
+        assertEquals(NEW_TEST_ENTITY + " (1) (2) (1)", secondImport.getName());
+        assertEquals(NEW_TEST_ENTITY + " (1) (2) (3)", thirdImport.getName());
     }
 }

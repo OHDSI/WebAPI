@@ -20,7 +20,7 @@ import org.springframework.test.context.TestPropertySource;
 @RunWith(JUnitParamsRunner.class)
 @SpringBootTest(classes = WebApi.class)
 @TestPropertySource(locations = "/in-memory-webapi.properties")
-public class ConceptSetEntity implements TestCreate, TestCopy {
+public class ConceptSetEntity implements TestCreate, TestCopy<ConceptSetDTO> {
     @Autowired
     protected ConceptSetService csService;
     @Autowired
@@ -84,17 +84,10 @@ public class ConceptSetEntity implements TestCreate, TestCopy {
     //endregion
 
     @Override
-    public Object createCopy(Object dto) {
-
-        ConceptSetDTO castedDTO = (ConceptSetDTO) dto;
-        castedDTO.setName(csService.getNameForCopy(castedDTO.getId()).get(COPY_NAME));
-        return csService.createConceptSet(castedDTO);
-    }
-
-    @Override
-    public String getDtoName(Object dto) {
-
-        return ((ConceptSetDTO) dto).getName();
+    public ConceptSetDTO createCopy(ConceptSetDTO dto) {
+        
+        dto.setName(csService.getNameForCopy(dto.getId()).get(COPY_NAME));
+        return csService.createConceptSet(dto);
     }
 
     @Override
@@ -104,7 +97,7 @@ public class ConceptSetEntity implements TestCreate, TestCopy {
     }
 
     @Override
-    public Object getFirstSavedDTO() {
+    public ConceptSetDTO getFirstSavedDTO() {
 
         return firstSavedDTO;
     }

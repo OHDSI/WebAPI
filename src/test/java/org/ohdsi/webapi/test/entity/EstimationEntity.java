@@ -22,8 +22,10 @@ import org.ohdsi.webapi.estimation.EstimationService;
 import org.ohdsi.webapi.estimation.dto.EstimationDTO;
 import org.ohdsi.webapi.estimation.repository.EstimationRepository;
 import org.ohdsi.webapi.estimation.specification.EstimationAnalysisImpl;
+import org.ohdsi.webapi.model.CommonEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.test.context.TestPropertySource;
 
 import static org.junit.Assert.assertEquals;
@@ -33,7 +35,9 @@ import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
 @RunWith(JUnitParamsRunner.class)
 @SpringBootTest(classes = WebApi.class)
 @TestPropertySource(locations = "/in-memory-webapi.properties")
-public class EstimationEntity implements TestCreate, TestCopy, TestImport {
+public class EstimationEntity implements TestCreate, TestCopy<EstimationDTO>, TestImport<EstimationDTO,EstimationAnalysisImpl> {
+    @Autowired
+    protected ConversionService conversionService;
     @Autowired
     protected EstimationController pleController;
     @Autowired
@@ -159,15 +163,9 @@ public class EstimationEntity implements TestCreate, TestCopy, TestImport {
     //endregion
 
     @Override
-    public Object createCopy(Object dto) throws Exception {
+    public EstimationDTO createCopy(EstimationDTO dto) throws Exception {
 
-        return pleController.copy(((EstimationDTO) dto).getId());
-    }
-
-    @Override
-    public String getDtoName(Object dto) {
-
-        return ((EstimationDTO) dto).getName();
+        return pleController.copy(dto.getId());
     }
 
     @Override
@@ -177,7 +175,7 @@ public class EstimationEntity implements TestCreate, TestCopy, TestImport {
     }
 
     @Override
-    public Object getFirstSavedDTO() {
+    public EstimationDTO getFirstSavedDTO() {
 
         return firstSavedDTO;
     }
@@ -189,13 +187,20 @@ public class EstimationEntity implements TestCreate, TestCopy, TestImport {
     }
 
     @Override
-    public EstimationDTO createEntity(Object dto) throws Exception {
+    public EstimationDTO createEntity(EstimationDTO dto) throws Exception {
 
-        return pleController.createEstimation((Estimation) dto);
+        Estimation estimation = createEstimation(dto.getName());
+        return pleController.createEstimation(estimation);
     }
 
     @Override
-    public Estimation createAndInitIncomingEntity(String name) {
+    public EstimationDTO createAndInitIncomingEntity(String name) {
+
+        Estimation estimation = createEstimation(name);
+        return conversionService.convert(estimation, EstimationDTO.class);
+    }
+
+    private Estimation createEstimation(String name) {
 
         Estimation estimation = new Estimation();
         estimation.setName(name);
@@ -211,32 +216,20 @@ public class EstimationEntity implements TestCreate, TestCopy, TestImport {
     }
 
     @Override
-    public Integer getDtoId(Object dto) {
-
-        return ((EstimationDTO) dto).getId();
-    }
-
-    @Override
-    public Object getEntity(int id) {
+    public CommonEntity getEntity(int id) {
 
         return pleService.getAnalysis(id);
     }
 
     @Override
-    public Object getExportEntity(Object entity) {
+    public EstimationAnalysisImpl getExportEntity(CommonEntity entity) {
 
-        return pleController.exportAnalysis(((Estimation) entity).getId());
+        return pleController.exportAnalysis(entity.getId().intValue());
     }
 
     @Override
-    public void setExportName(Object entity, String name) {
+    public EstimationDTO doImport(EstimationAnalysisImpl dto) throws Exception {
 
-        ((EstimationAnalysisImpl) entity).setName(name);
-    }
-
-    @Override
-    public Object doImport(Object dto) throws Exception {
-
-        return pleController.importAnalysis((EstimationAnalysisImpl) dto);
+        return pleController.importAnalysis(dto);
     }
 }

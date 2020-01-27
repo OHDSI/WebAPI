@@ -19,7 +19,7 @@ import org.springframework.test.context.TestPropertySource;
 @RunWith(JUnitParamsRunner.class)
 @SpringBootTest(classes = WebApi.class)
 @TestPropertySource(locations = "/in-memory-webapi.properties")
-public class IREntity implements TestCreate, TestCopy {
+public class IREntity implements TestCreate, TestCopy<IRAnalysisDTO> {
     @Autowired
     protected IRAnalysisResource irAnalysisResource;
     @Autowired
@@ -83,15 +83,9 @@ public class IREntity implements TestCreate, TestCopy {
     //endregion
 
     @Override
-    public Object createCopy(Object dto) {
+    public IRAnalysisDTO createCopy(IRAnalysisDTO dto) {
 
-        return irAnalysisResource.copy(((IRAnalysisDTO) dto).getId());
-    }
-
-    @Override
-    public String getDtoName(Object dto) {
-
-        return ((IRAnalysisDTO) dto).getName();
+        return irAnalysisResource.copy(dto.getId());
     }
 
     @Override
@@ -101,7 +95,7 @@ public class IREntity implements TestCreate, TestCopy {
     }
 
     @Override
-    public Object getFirstSavedDTO() {
+    public IRAnalysisDTO getFirstSavedDTO() {
 
         return firstSavedDTO;
     }

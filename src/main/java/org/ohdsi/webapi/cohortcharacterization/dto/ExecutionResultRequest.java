@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class ExecutionResultRequest {
     private static final Float DEFAULT_THRESHOLD = 0.01f;
@@ -80,7 +81,7 @@ public class ExecutionResultRequest {
     }
 
     public Boolean getShowEmptyResults() {
-        return isShowEmptyResults;
+        return Objects.nonNull(isShowEmptyResults) ? isShowEmptyResults : false;
     }
 
     public void setShowEmptyResults(Boolean showEmptyResults) {

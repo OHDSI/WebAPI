@@ -1,11 +1,5 @@
 package org.ohdsi.webapi.user.importer.providers;
 
-import static org.ohdsi.webapi.user.importer.providers.OhdsiLdapUtils.getCriteria;
-import static org.ohdsi.webapi.user.importer.providers.OhdsiLdapUtils.valueAsString;
-
-import java.util.List;
-import java.util.function.Supplier;
-
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.user.importer.model.LdapGroup;
 import org.ohdsi.webapi.user.importer.model.LdapObject;
@@ -17,6 +11,12 @@ import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.WhitespaceWildcardsFilter;
 import org.springframework.ldap.support.LdapUtils;
 
+import java.util.List;
+import java.util.function.Supplier;
+
+import static org.ohdsi.webapi.user.importer.providers.OhdsiLdapUtils.getCriteria;
+import static org.ohdsi.webapi.user.importer.providers.OhdsiLdapUtils.valueAsString;
+
 public abstract class AbstractLdapProvider implements LdapProvider {
 
   public static final String OBJECTCLASS_ATTR = "objectclass";
@@ -27,7 +27,7 @@ public abstract class AbstractLdapProvider implements LdapProvider {
 
     LdapTemplate ldapTemplate = getLdapTemplate();
     AndFilter filter = new AndFilter();
-    filter.and(getCriteria(OBJECTCLASS_ATTR, getGroupClasses()));
+//    filter.and(getCriteria(OBJECTCLASS_ATTR, getGroupClasses()));
     filter.and(new WhitespaceWildcardsFilter(CN_ATTR, searchStr));
     return ldapTemplate.search(LdapUtils.emptyLdapName(), filter.encode(), getAttributesMapper(LdapGroup::new));
   }

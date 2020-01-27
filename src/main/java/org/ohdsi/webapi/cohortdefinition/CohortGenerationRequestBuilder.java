@@ -9,18 +9,12 @@ public class CohortGenerationRequestBuilder {
     private Source source;
     private String sessionId;
     private String targetSchema;
-    private String targetTable;
-    private String targetIdFieldName;
     private Integer targetId;
-    private boolean generateStats;
 
-    public CohortGenerationRequestBuilder(String sessionId, String targetSchema, String targetTable, String targetIdFieldName, boolean generateStats) {
+    public CohortGenerationRequestBuilder(String sessionId, String targetSchema) {
 
         this.sessionId = sessionId;
         this.targetSchema = targetSchema;
-        this.targetTable = targetTable;
-        this.targetIdFieldName = targetIdFieldName;
-        this.generateStats = generateStats;
     }
 
     public CohortGenerationRequestBuilder withSource(Source source) {
@@ -47,6 +41,6 @@ public class CohortGenerationRequestBuilder {
             throw new RuntimeException("CohortGenerationRequest should contain non-null expression, source and targetId");
         }
 
-        return new CohortGenerationRequest(expression, source, sessionId, targetSchema, targetTable, targetIdFieldName, targetId, generateStats);
+        return new CohortGenerationRequest(expression, source, sessionId, targetId, targetSchema);
     }
 }

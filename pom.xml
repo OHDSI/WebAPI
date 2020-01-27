@@ -44,7 +44,10 @@
     <cdm.version>5</cdm.version>
     <!-- Person properties -->
     <person.viewDates>false</person.viewDates>
-
+    <!-- Full Text Search With SOLR Settings -->
+    <solr.endpoint></solr.endpoint>
+    <solr.query.prefix>{!complexphrase inOrder=true}</solr.query.prefix>
+    <solr.version>8.3.1</solr.version>
     <!-- Heracles properties -->
     <heracles.smallcellcount>5</heracles.smallcellcount>
 
@@ -192,6 +195,10 @@
   </properties>
   <build>
     <finalName>WebAPI</finalName>
+    <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+    <testSourceDirectory>${basedir}/src/test/java</testSourceDirectory>
+    <outputDirectory>${basedir}/target/classes</outputDirectory>
+    <testOutputDirectory>${basedir}/target/test-classes</testOutputDirectory>    
     <resources>
       <resource>
         <directory>src/main/resources</directory>
@@ -212,14 +219,16 @@
           <exclude>log4j.xml</exclude>
         </excludes>
       </resource>
-      <resource>
+    </resources>
+    <testResources>
+      <testResource>
         <directory>src/test/resources</directory>
         <filtering>true</filtering>
         <includes>
           <include>**/*.properties</include>
         </includes>
-      </resource>
-      <resource>
+      </testResource>
+      <testResource>
         <directory>src/test/resources</directory>
         <filtering>false</filtering>
         <includes>
@@ -228,8 +237,8 @@
         <excludes>
           <exclude>**/*.properties</exclude>
         </excludes>
-      </resource>
-    </resources>
+      </testResource>
+    </testResources>
     <plugins>
       <plugin>
         <groupId>org.springframework.boot</groupId>
@@ -364,7 +373,7 @@
     <repository>
       <id>central</id>
       <name>Central Repository</name>
-      <url>http://repo.maven.apache.org/maven2/ </url>
+      <url>https://repo.maven.apache.org/maven2/ </url>
     </repository>
     <repository>
       <id>ohdsi</id>
@@ -520,6 +529,12 @@
       <artifactId>spring-boot-starter-test</artifactId>
       <version>${spring.boot.version}</version>
       <scope>test</scope>
+        <exclusions>
+            <exclusion>
+                <groupId>com.vaadin.external.google</groupId>
+                <artifactId>android-json</artifactId>
+            </exclusion>
+        </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -534,7 +549,7 @@
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
-      <version>4.3.6</version>
+      <version>4.5.10</version>
     </dependency>
     <dependency>
       <groupId>commons-httpclient</groupId>
@@ -642,7 +657,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>hydra</artifactId>
-      <version>0.0.5</version>
+      <version>0.0.7</version>
       <exclusions>
         <exclusion>
           <groupId>org.ohdsi</groupId>
@@ -758,6 +773,14 @@
           <groupId>org.ohdsi.sql</groupId>
           <artifactId>SqlRender</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.ohdsi</groupId>
+          <artifactId>circe</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ohdsi</groupId>
+          <artifactId>featureExtraction</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -781,6 +804,12 @@
       <artifactId>otj-pg-embedded</artifactId>
       <version>0.13.1</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.solr</groupId>
+        <artifactId>solr-solrj</artifactId>
+        <version>8.3.1</version>
+      <type>jar</type>
     </dependency>
   </dependencies>
   <profiles>

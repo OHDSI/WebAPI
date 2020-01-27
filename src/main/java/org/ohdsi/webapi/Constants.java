@@ -13,6 +13,7 @@ public interface Constants {
   String WARM_CACHE = "warmCache";
   String WARM_CACHE_BY_USER = "warmCacheByUser";
   String USERS_IMPORT = "usersImport";
+  String JOB_IS_ALREADY_SCHEDULED = "Job for provider %s is already scheduled";
 
   String FAILED = ExitStatus.FAILED.getExitCode();
   String CANCELED = "CANCELED";
@@ -50,15 +51,14 @@ public interface Constants {
     String TARGET_COHORT_ID = "target_cohort_id";
     String GENERATE_STATS = "generate_stats";
     String JOB_START_TIME = "time";
+    String USER_IMPORT_ID = "user_import_id";
     String USER_ROLES = "userRoles";
-    String LDAP_PROVIDER = "provider";
-    String ROLE_GROUP_MAPPING = "roleGroupMapping";
-    String PRESERVE_ROLES = "preserveRoles";
     String SESSION_ID = "sessionId";
     String PACKAGE_NAME = "packageName";
     String PACKAGE_FILE_NAME = "packageFilename";
     String EXECUTABLE_FILE_NAME = "executableFilename";
     String GENERATION_ID = "generation_id";
+    String DESIGN_HASH = "design_hash";
   }
 
   interface Variables {
@@ -81,6 +81,10 @@ public interface Constants {
   }
 
   interface Tables {
-    String COHORT_GENERATIONS_TABLE = "cohort_generations";
+    String COHORT_CACHE = "cohort_cache";
+    String COHORT_INCLUSION_RESULT_CACHE = "cohort_inclusion_result_cache";
+    String COHORT_INCLUSION_STATS_CACHE = "cohort_inclusion_stats_cache";
+    String COHORT_SUMMARY_STATS_CACHE = "cohort_summary_stats_cache";
+    String COHORT_CENSOR_STATS_CACHE = "cohort_censor_stats";
   }
 }

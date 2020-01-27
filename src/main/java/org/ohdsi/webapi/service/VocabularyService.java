@@ -10,11 +10,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
@@ -44,8 +46,10 @@ import org.ohdsi.webapi.vocabulary.DescendentOfAncestorSearch;
 import org.ohdsi.webapi.vocabulary.Domain;
 import org.ohdsi.webapi.vocabulary.RelatedConcept;
 import org.ohdsi.webapi.vocabulary.RelatedConceptSearch;
+import org.ohdsi.webapi.vocabulary.SearchProviderConfig;
 import org.ohdsi.webapi.vocabulary.Vocabulary;
 import org.ohdsi.webapi.vocabulary.VocabularyInfo;
+import org.ohdsi.webapi.vocabulary.VocabularySearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -53,22 +57,23 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
-/**
- * @author fdefalco
- */
 @Path("vocabulary/")
 @Component
 public class VocabularyService extends AbstractDaoService {
 
   private static Hashtable<String, VocabularyInfo> vocabularyInfoCache = null;
+  public static final String DEFAULT_SEARCH_ROWS = "20000";
 
   @Autowired
   private SourceService sourceService;
+  
+  @Autowired
+  private VocabularySearchService vocabSearchService;
 
   @Value("${datasource.driverClassName}")
   private String driver;
-  
-  private final RowMapper<Concept> rowMapper = new RowMapper<Concept>() {
+
+  public final RowMapper<Concept> rowMapper = new RowMapper<Concept>() {
     @Override
     public Concept mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
       final Concept concept = new Concept();
@@ -368,8 +373,6 @@ public class VocabularyService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, ConceptSearch search) {
-    Tracker.trackActivity(ActivityType.Search, search.query);
-
     Source source = getSourceRepository().findBySourceKey(sourceKey);
 
     PreparedStatementRenderer psr = prepareExecuteSearch(search, source);
@@ -457,8 +460,8 @@ public class VocabularyService extends AbstractDaoService {
 
     return executeSearch(defaultSourceKey, search);    
   }
-  
   /**
+   * @param sourceKey
    * @param query
    * @return
    */
@@ -466,13 +469,42 @@ public class VocabularyService extends AbstractDaoService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, @PathParam("query") String query) {
-    Tracker.trackActivity(ActivityType.Search, query);
-    Source source = getSourceRepository().findBySourceKey(sourceKey);
-    PreparedStatementRenderer psr = prepareExecuteSearchWithQuery(query, source);
-    return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.rowMapper);
+    return this.executeSearch(sourceKey, query, DEFAULT_SEARCH_ROWS);
+  }
+  
+  /**
+   * @param sourceKey
+   * @param query
+   * @param rows
+   * @return
+   */
+  @Path("{sourceKey}/search")
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, @QueryParam("query") String query, @DefaultValue(DEFAULT_SEARCH_ROWS) @QueryParam("rows") String rows) {
+    // Verify that the rows parameter contains an integer and is > 0
+    try {
+        Integer r = Integer.parseInt(rows);
+        if (r <= 0) {
+            throw new NumberFormatException("The rows parameter must be greater than 0");
+        }
+    } catch (NumberFormatException nfe) {
+        throw nfe;
+    }
+    
+    Collection<Concept> concepts = new ArrayList<>();
+    try {
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        VocabularyInfo vocabularyInfo = getInfo(sourceKey);
+        SearchProviderConfig searchConfig = new SearchProviderConfig(source, vocabularyInfo);
+        concepts = vocabSearchService.getSearchProvider(searchConfig).executeSearch(searchConfig, query, rows);
+    } catch (Exception ex) {
+        log.error("An error occurred during the vocabulary search", ex);
+    }
+    return concepts;
   }
 
-  protected PreparedStatementRenderer prepareExecuteSearchWithQuery(String query, Source source) {
+  public PreparedStatementRenderer prepareExecuteSearchWithQuery(String query, Source source) {
 
     String resourcePath = "/resources/vocabulary/sql/search.sql";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);

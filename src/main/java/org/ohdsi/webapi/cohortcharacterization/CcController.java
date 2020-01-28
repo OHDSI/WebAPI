@@ -257,6 +257,15 @@ public class CcController {
         return service.getCCResultsTotalCount(generationId);
     }
 
+    @GET
+    @Path("/generation/{generationId}/result")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public List<CcResult> getGenerationsResults(
+            @PathParam("generationId") final Long generationId, @DefaultValue("0.01") @QueryParam("thresholdLevel") final float thresholdLevel) {
+        return service.findResultAsList(generationId, thresholdLevel);
+    }
+    
     @POST
     @Path("/generation/{generationId}/result")
     @Produces(MediaType.APPLICATION_JSON)

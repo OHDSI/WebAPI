@@ -608,7 +608,24 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         res.setPrevalenceThreshold(params.getThresholdValuePct());
         return res;
     }
-
+    
+    @Override
+    @DataSourceAccess
+    public List<CcResult> findResultAsList(@CcGenerationId final Long generationId, float thresholdLevel) {
+        ExecutionResultRequest params = new ExecutionResultRequest();
+        CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
+                .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
+        CohortCharacterizationEntity characterization = generationEntity.getCohortCharacterization();
+        params.setThresholdValuePct(thresholdLevel);
+        params.setCohortIds(characterization.getCohortDefinitions().stream()
+                .map(CohortDefinition::getId).collect(Collectors.toList()));
+        params.setAnalysisIds(characterization.getFeatureAnalyses().stream()
+                .map(this::mapFeatureAnalysisId).collect(Collectors.toList()));
+        params.setDomainIds(generationEntity.getCohortCharacterization().getFeatureAnalyses().stream()
+                .map(fa -> fa.getDomain().toString()).distinct().collect(Collectors.toList()));
+        return findResults(generationId, params);
+    }
+    
     @Override
     @DataSourceAccess
     public GenerationResults findResult(@CcGenerationId final Long generationId, ExecutionResultRequest params) {

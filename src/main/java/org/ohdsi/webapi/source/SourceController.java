@@ -76,7 +76,14 @@ public class SourceController extends AbstractDaoService {
     sourceService.ensureSourceEncrypted();
     return getSources();
   }
-
+  
+  @Path("priorityVocabulary")	
+  @GET	
+  @Produces(MediaType.APPLICATION_JSON)	
+  public SourceInfo getPriorityVocabularySourceInfo() {	
+    return new SourceInfo(sourceService.getPrioritySourceForDaimon(SourceDaimon.DaimonType.Vocabulary));
+  }
+  
   @Path("{key}")
   @GET
   @Produces(MediaType.APPLICATION_JSON)

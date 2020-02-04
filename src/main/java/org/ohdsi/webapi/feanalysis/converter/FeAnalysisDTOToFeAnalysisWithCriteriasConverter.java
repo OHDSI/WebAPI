@@ -35,6 +35,10 @@ public class FeAnalysisDTOToFeAnalysisWithCriteriasConverter extends BaseFeAnaly
         concepsetEntity.setFeatureAnalysis(baseEntity);
         concepsetEntity.setRawExpression(Utils.serialize(source.getConceptSets()));
         baseEntity.setConceptSetEntity(concepsetEntity);
+        FeAnalysisAggregateDTO aggregateDTO = source.getAggregate();
+        if (Objects.nonNull(aggregateDTO)) {
+            baseEntity.setAggregate(conversionService.convert(aggregateDTO, FeAnalysisAggregateEntity.class));
+        }
     }
 
     @Override

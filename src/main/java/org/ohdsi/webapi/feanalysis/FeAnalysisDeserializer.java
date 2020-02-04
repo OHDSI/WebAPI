@@ -18,6 +18,7 @@ import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisD
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.webapi.feanalysis.dto.BaseFeAnalysisCriteriaDTO;
+import org.ohdsi.webapi.feanalysis.dto.FeAnalysisAggregateDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisWithConceptSetDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,6 +74,13 @@ public class FeAnalysisDeserializer extends JsonDeserializer<FeAnalysisDTO> {
                 JsonNode statType = node.get("statType");
                 if (statType != null) {
                     dto.setStatType(CcResultType.valueOf(statType.textValue()));
+                }
+                if (CcResultType.DISTRIBUTION == dto.getStatType()) {
+                    JsonNode aggregate = node.get("aggregate");
+                    if (!aggregate.isNull()) {
+                        FeAnalysisAggregateDTO aggregateValue = objectMapper.readValue(aggregate.traverse(), FeAnalysisAggregateDTO.class);
+                        ((FeAnalysisWithConceptSetDTO)dto).setAggregate(aggregateValue);
+                    }
                 }
                 final List<BaseFeAnalysisCriteriaDTO> list = new ArrayList<>();
                 for (final JsonNode jsonNode : design) {

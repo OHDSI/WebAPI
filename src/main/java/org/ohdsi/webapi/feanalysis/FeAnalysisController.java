@@ -4,7 +4,9 @@ import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.common.OptionDTO;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisAggregateEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
+import org.ohdsi.webapi.feanalysis.dto.FeAnalysisAggregateDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
 import org.springframework.core.convert.ConversionService;
@@ -16,6 +18,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Path("/feature-analysis")
 @Controller
@@ -95,12 +98,24 @@ public class FeAnalysisController {
         return convertFeAnalysisToDto(feAnalysis);
     }
 
+    @GET
+    @Path("/aggregates")
+    public List<FeAnalysisAggregateDTO> listAggregates() {
+        return service.findAggregates().stream()
+                .map(this::convertFeAnalysisAggregateToDto)
+                .collect(Collectors.toList());
+    }
+
     private FeAnalysisShortDTO convertFeAnaysisToShortDto(final FeatureAnalysis entity) {
         return conversionService.convert(entity, FeAnalysisShortDTO.class);
     }
 
     private FeAnalysisDTO convertFeAnalysisToDto(final FeatureAnalysis entity) {
         return conversionService.convert(entity, FeAnalysisDTO.class);
+    }
+
+    private FeAnalysisAggregateDTO convertFeAnalysisAggregateToDto(final FeAnalysisAggregateEntity entity) {
+        return conversionService.convert(entity, FeAnalysisAggregateDTO.class);
     }
 
 }

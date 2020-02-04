@@ -4,9 +4,11 @@ import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
+import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysisWithCriteria;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.feanalysis.domain.*;
+import org.ohdsi.webapi.feanalysis.repository.FeAnalysisAggregateRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisCriteriaRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisEntityRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisWithStringEntityRepository;
@@ -29,6 +31,7 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     private FeAnalysisEntityRepository analysisRepository;
     private FeAnalysisCriteriaRepository criteriaRepository;
     private FeAnalysisWithStringEntityRepository stringAnalysisRepository;
+    private FeAnalysisAggregateRepository aggregateRepository;
 
     private final EntityGraph defaultEntityGraph = EntityUtils.fromAttributePaths(
             "createdBy",
@@ -37,11 +40,13 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
 
     public FeAnalysisServiceImpl(
             final FeAnalysisEntityRepository analysisRepository,
-            final FeAnalysisCriteriaRepository criteriaRepository, 
-            final FeAnalysisWithStringEntityRepository stringAnalysisRepository) {
+            final FeAnalysisCriteriaRepository criteriaRepository,
+            final FeAnalysisWithStringEntityRepository stringAnalysisRepository,
+            FeAnalysisAggregateRepository aggregateRepository) {
         this.analysisRepository = analysisRepository;
         this.criteriaRepository = criteriaRepository;
         this.stringAnalysisRepository = stringAnalysisRepository;
+        this.aggregateRepository = aggregateRepository;
     }
 
     @Override
@@ -149,6 +154,9 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
           createOrUpdateConceptSetEntity((FeAnalysisWithCriteriaEntity) savedEntity, updatedWithCriteriaEntity.getConceptSetEntity());
         }
         savedEntity.setDesign(updatedEntity.getDesign());
+        if (savedEntity instanceof FeAnalysisWithCriteriaEntity && updatedEntity instanceof FeAnalysisWithCriteriaEntity) {
+            ((FeAnalysisWithCriteriaEntity)savedEntity).setAggregate(((FeAnalysisWithCriteriaEntity)updatedEntity).getAggregate());
+        }
         if (Objects.nonNull(updatedEntity.getDomain())) {
             savedEntity.setDomain(updatedEntity.getDomain());
         }
@@ -226,5 +234,11 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
         if (entity.getLocked() == Boolean.TRUE) {
             throw new IllegalArgumentException(String.format("Feature analysis %s is locked.", entity.getName()));
         }
+    }
+
+    @Override
+    public List<FeAnalysisAggregateEntity> findAggregates() {
+
+        return aggregateRepository.findAll();
     }
 }

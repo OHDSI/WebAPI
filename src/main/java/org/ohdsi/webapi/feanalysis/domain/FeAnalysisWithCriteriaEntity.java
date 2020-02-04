@@ -18,6 +18,10 @@ public abstract class FeAnalysisWithCriteriaEntity<T extends FeAnalysisCriteriaE
     @OneToOne(fetch = FetchType.EAGER, mappedBy = "featureAnalysis", cascade = CascadeType.ALL)
     private FeAnalysisConcepsetEntity conceptSetEntity;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "fe_aggregate_id")
+    private FeAnalysisAggregateEntity aggregate;
+
     public FeAnalysisWithCriteriaEntity() {
         super();
     }
@@ -47,5 +51,14 @@ public abstract class FeAnalysisWithCriteriaEntity<T extends FeAnalysisCriteriaE
     public List<ConceptSet> getConceptSets() {
 
         return Objects.nonNull(this.conceptSetEntity) ? this.conceptSetEntity.getConceptSets() : Collections.emptyList();
+    }
+
+    @Override
+    public FeAnalysisAggregateEntity getAggregate() {
+        return aggregate;
+    }
+
+    public void setAggregate(FeAnalysisAggregateEntity aggregate) {
+        this.aggregate = aggregate;
     }
 }

@@ -11,11 +11,7 @@ import java.util.List;
 
 interface GenerationCacheRepository extends EntityGraphJpaRepository<GenerationCache, Integer> {
 
-    GenerationCache findByTypeAndAndDesignHashAndSource(CacheableGenerationType type, String designCache, Source source, EntityGraph entityGraph);
-    GenerationCache findByTypeAndSourceAndResultIdentifier(CacheableGenerationType type, Source source, Integer resultIdentifier, EntityGraph entityGraph);
+    GenerationCache findByTypeAndAndDesignHashAndSource(CacheableGenerationType type, Integer designHash, Source source, EntityGraph entityGraph);
     List<GenerationCache> findAllByCreatedDateBefore(Date date, EntityGraph entityGraph);
     List<GenerationCache> findAllBySourceSourceId(int source);
-
-    @Query("SELECT MAX(gc.resultIdentifier) FROM GenerationCache gc WHERE gc.type = :type AND gc.source.sourceId = :sourceId")
-    Integer findMaxResultIdentifier(@Param("type") CacheableGenerationType type, @Param("sourceId") Integer sourceId);
 }

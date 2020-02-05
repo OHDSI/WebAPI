@@ -33,7 +33,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.util.Map;
 
 import static org.ohdsi.webapi.Constants.Params.*;
-import static org.ohdsi.webapi.Constants.Tables.COHORT_GENERATIONS_TABLE;
 
 /**
  *
@@ -68,19 +67,18 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
     Integer sourceId = Integer.parseInt(jobParams.get(SOURCE_ID).toString());
     String targetSchema = jobParams.get(TARGET_DATABASE_SCHEMA).toString();
     String sessionId = jobParams.getOrDefault(SESSION_ID, SessionUtils.sessionId()).toString();
-    Boolean generateStats = Boolean.valueOf(jobParams.get(GENERATE_STATS).toString());
 
     CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(cohortDefinitionId);
     Source source = sourceService.findBySourceId(sourceId);
 
     CohortGenerationRequestBuilder generationRequestBuilder = new CohortGenerationRequestBuilder(
         sessionId,
-        targetSchema,
-        COHORT_GENERATIONS_TABLE,
-        GENERATION_ID,
-        generateStats
+        targetSchema
     );
 
+    int designHash = this.generationCacheHelper.computeHash(cohortDefinition.getDetails().getExpression());
+    CohortGenerationUtils.insertInclusionRules(cohortDefinitionId, cohortDefinition.getExpression(), designHash, targetSchema, jdbcTemplate);
+    
     GenerationCacheHelper.CacheResult res = generationCacheHelper.computeCacheIfAbsent(
         cohortDefinition,
         source,
@@ -90,7 +88,7 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
 
     String sql = SqlRender.renderSql(
         copyGenerationIntoCohortTableSql,
-        new String[]{ RESULTS_DATABASE_SCHEMA, COHORT_DEFINITION_ID, GENERATION_ID },
+        new String[]{ RESULTS_DATABASE_SCHEMA, COHORT_DEFINITION_ID, DESIGN_HASH },
         new String[]{ targetSchema, cohortDefinition.getId().toString(), res.getIdentifier().toString() }
     );
     sql = SqlTranslate.translateSql(sql, source.getSourceDialect());

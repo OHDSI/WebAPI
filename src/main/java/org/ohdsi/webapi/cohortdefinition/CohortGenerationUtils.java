@@ -1,6 +1,8 @@
 package org.ohdsi.webapi.cohortdefinition;
 
-import com.google.common.base.MoreObjects;
+import org.apache.commons.lang3.StringUtils;
+
+import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.InclusionRule;
 import org.ohdsi.sql.SqlRender;
@@ -8,62 +10,80 @@ import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.SourceUtils;
+import org.springframework.jdbc.core.JdbcTemplate;
+
 
 import java.util.List;
 
-import static org.ohdsi.webapi.Constants.Params.COHORT_ID_FIELD_NAME;
-import static org.ohdsi.webapi.Constants.Params.TARGET_COHORT_ID;
 import static org.ohdsi.webapi.Constants.Params.TARGET_DATABASE_SCHEMA;
+import static org.ohdsi.webapi.Constants.Params.DESIGN_HASH;
+
+import static org.ohdsi.webapi.Constants.Tables.COHORT_CACHE;
+import static org.ohdsi.webapi.Constants.Tables.COHORT_CENSOR_STATS_CACHE;
+import static org.ohdsi.webapi.Constants.Tables.COHORT_INCLUSION_RESULT_CACHE;
+import static org.ohdsi.webapi.Constants.Tables.COHORT_INCLUSION_STATS_CACHE;
+import static org.ohdsi.webapi.Constants.Tables.COHORT_SUMMARY_STATS_CACHE;
 
 public class CohortGenerationUtils {
 
+  public static void insertInclusionRules(int cohortId, CohortExpression expression, int designHash, String targetSchema, JdbcTemplate jdbcTemplate) {
+
+    String deleteSql = String.format("DELETE FROM %s.cohort_inclusion WHERE cohort_definition_id = %d", targetSchema, cohortId);
+    jdbcTemplate.update(deleteSql);
+
+    String insertSql = StringUtils.replace("INSERT INTO @target_schema.cohort_inclusion (cohort_definition_id, design_hash, rule_sequence, name, description) VALUES (?,?,?,?,?)", "@target_schema", targetSchema);
+    List<InclusionRule> inclusionRules = expression.inclusionRules;
+    for (int i = 0; i< inclusionRules.size(); i++)
+    {
+      InclusionRule r = inclusionRules.get(i);
+      jdbcTemplate.update(insertSql, new Object[] { cohortId, designHash, i, r.name, r.description});
+    }
+  }
+  
   public static String[] buildGenerationSql(CohortGenerationRequest request) {
 
     Source source = request.getSource();
 
     String cdmSchema = SourceUtils.getCdmQualifier(source);
     String vocabSchema = SourceUtils.getVocabQualifierOrNull(source);
-    String resultsSchema = SourceUtils.getResultsQualifier(source);
 
     CohortExpressionQueryBuilder expressionQueryBuilder = new CohortExpressionQueryBuilder();
     StringBuilder sqlBuilder = new StringBuilder();
 
     CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
-    options.cohortIdFieldName = request.getTargetIdFieldName();
+    options.cohortIdFieldName = DESIGN_HASH;
     options.cohortId = request.getTargetId();
     options.cdmSchema = cdmSchema;
-    options.resultSchema = resultsSchema;
-    options.targetTable = request.getTargetSchema() + "." + request.getTargetTable();
     options.vocabularySchema = vocabSchema;
-    options.generateStats = request.isGenerateStats();
+    options.generateStats = true; // always generate with stats
 
     final String oracleTempSchema = SourceUtils.getTempQualifier(source);
 
-    if (request.isGenerateStats()) {
-
-      String deleteSql = "DELETE FROM @target_database_schema.cohort_inclusion WHERE @cohort_id_field_name = @target_cohort_id;";
-      sqlBuilder.append(deleteSql).append("\n");
-
-      String insertSql = "INSERT INTO @target_database_schema.cohort_inclusion (@cohort_id_field_name, rule_sequence, name, description) SELECT @target_cohort_id as @cohort_id_field_name, @iteration as rule_sequence, CAST('@ruleName' as VARCHAR(255)) as name, CAST('@ruleDescription' as VARCHAR(1000)) as description;";
-
-      String[] names = new String[]{"iteration", "ruleName", "ruleDescription"};
-      List<InclusionRule> inclusionRules = request.getExpression().inclusionRules;
-      for (int i = 0; i < inclusionRules.size(); i++) {
-        InclusionRule r = inclusionRules.get(i);
-        String[] values = new String[]{((Integer) i).toString(), r.name, MoreObjects.firstNonNull(r.description, "")};
-
-        String inclusionRuleSql = SqlRender.renderSql(insertSql, names, values);
-        sqlBuilder.append(inclusionRuleSql).append("\n");
-      }
-    }
-
     String expressionSql = expressionQueryBuilder.buildExpressionQuery(request.getExpression(), options);
+    expressionSql = SqlRender.renderSql(
+      expressionSql,
+      new String[] {"target_cohort_table", 
+        "results_database_schema.cohort_inclusion_result", 
+        "results_database_schema.cohort_inclusion_stats", 
+        "results_database_schema.cohort_summary_stats", 
+        "results_database_schema.cohort_censor_stats",
+        "results_database_schema.cohort_inclusion" 
+      },
+      new String[] {
+        COHORT_CACHE, 
+        "@target_database_schema." + COHORT_INCLUSION_RESULT_CACHE, 
+        "@target_database_schema." + COHORT_INCLUSION_STATS_CACHE, 
+        "@target_database_schema." + COHORT_SUMMARY_STATS_CACHE, 
+        "@target_database_schema." + COHORT_CENSOR_STATS_CACHE,
+        "@target_database_schema.cohort_inclusion"
+      }
+    );
     sqlBuilder.append(expressionSql);
 
     String renderedSql = SqlRender.renderSql(
       sqlBuilder.toString(),
-      new String[] {TARGET_DATABASE_SCHEMA, COHORT_ID_FIELD_NAME, TARGET_COHORT_ID},
-      new String[]{request.getTargetSchema(), request.getTargetIdFieldName(), request.getTargetId().toString()}
+      new String[] {TARGET_DATABASE_SCHEMA},
+      new String[]{request.getTargetSchema()}
     );
     String translatedSql = SqlTranslate.translateSql(renderedSql, source.getSourceDialect(), request.getSessionId(), oracleTempSchema);
     return SqlSplit.splitSql(translatedSql);

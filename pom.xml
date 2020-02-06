@@ -192,6 +192,12 @@
     <cdm.result.cache.warming.enable>true</cdm.result.cache.warming.enable>
     <cache.generation.invalidAfterDays>7</cache.generation.invalidAfterDays>
     <cache.generation.cleanupInterval>60000</cache.generation.cleanupInterval>
+
+    <!-- Build info -->
+    <buildinfo.atlas.milestone.id>22</buildinfo.atlas.milestone.id>
+    <buildinfo.webapi.milestone.id>25</buildinfo.webapi.milestone.id>
+    <buildinfo.atlas.release.tag>*</buildinfo.atlas.release.tag>
+    <buildinfo.webapi.release.tag>*</buildinfo.webapi.release.tag>
   </properties>
   <build>
     <finalName>WebAPI</finalName>
@@ -241,6 +247,22 @@
     </testResources>
     <plugins>
       <plugin>
+        <groupId>pl.project13.maven</groupId>
+        <artifactId>git-commit-id-plugin</artifactId>
+        <version>4.0.0</version>
+        <executions>
+          <execution>
+            <phase>validate</phase>
+            <goals>
+              <goal>revision</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <generateGitPropertiesFile>false</generateGitPropertiesFile>
+        </configuration>
+      </plugin>
+      <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <version>${spring.boot.version}</version>
@@ -248,6 +270,14 @@
         <configuration>
           <!-- Since we filter properties files via Maven, do not add resources. -->
           <addResources>false</addResources>
+          <additionalProperties>
+            <git.branch>${git.branch}</git.branch>
+            <git.commit.id>${git.commit.id.abbrev}</git.commit.id>
+            <atlas.milestone.id>${buildinfo.atlas.milestone.id}</atlas.milestone.id>
+            <webapi.milestone.id>${buildinfo.webapi.milestone.id}</webapi.milestone.id>
+            <atlas.release.tag>${buildinfo.atlas.release.tag}</atlas.release.tag>
+            <webapi.release.tag>${buildinfo.webapi.release.tag}</webapi.release.tag>
+          </additionalProperties>
         </configuration>
         <executions>
           <execution>

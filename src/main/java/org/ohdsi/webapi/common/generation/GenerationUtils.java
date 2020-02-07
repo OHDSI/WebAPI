@@ -148,6 +148,9 @@ public class GenerationUtils extends AbstractDaoService {
 
         final String sessionId = SessionUtils.sessionId();
         addSessionParams(builder, sessionId);
+        
+        JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
+        DropCohortTableListener dropCohortTableListener = new DropCohortTableListener(jdbcTemplate, transactionTemplate, sourceService, sourceAwareSqlRender);
 
         CreateAnalysisTasklet createAnalysisTasklet = new CreateAnalysisTasklet(executionService, source.getSourceKey(), analysisFiles);
         RunExecutionEngineTasklet runExecutionEngineTasklet = new RunExecutionEngineTasklet(executionService, source, analysisFiles);
@@ -169,6 +172,7 @@ public class GenerationUtils extends AbstractDaoService {
                 .start(createAnalysisExecutionStep)
                 .next(runExecutionStep)
                 .next(waitCallbackStep)
+                .listener(dropCohortTableListener)
                 .listener(new AutoremoveJobListener(jobService));
     }
 }

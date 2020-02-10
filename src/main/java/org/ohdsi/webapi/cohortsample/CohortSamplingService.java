@@ -64,7 +64,6 @@ public class CohortSamplingService extends AbstractDaoService {
                 .collect(Collectors.toList());
     }
 
-
     public CohortSampleDTO getSample(int sampleId, boolean withRecordCounts) {
         CohortSample sample = sampleRepository.findById(sampleId);
         if (sample == null) {
@@ -73,6 +72,10 @@ public class CohortSamplingService extends AbstractDaoService {
         Source source = getSourceRepository().findBySourceId(sample.getSourceId());
         List<SampleElement> sampleElements = findSampleElements(source, sample.getId(), withRecordCounts);
         return sampleToSampleDTO(sample, sampleElements, true);
+    }
+
+    public int countSamples(int cohortDefinitionId) {
+        return sampleRepository.countSamples(cohortDefinitionId);
     }
 
     /**

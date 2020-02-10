@@ -17,4 +17,7 @@ public interface CohortSampleRepository extends CrudRepository<CohortSample, Int
 
     @Query("SELECT c FROM CohortSample c LEFT JOIN FETCH c.createdBy WHERE c.cohortDefinitionId = :cohortDefinitionId AND c.sourceId = :sourceId")
     List<CohortSample> findByCohortDefinitionIdAndSourceId(@Param("cohortDefinitionId") int cohortDefinitionId, @Param("sourceId") int sourceId);
+
+    @Query("SELECT count(c.id) FROM CohortSample c WHERE c.cohortDefinitionId = :cohortDefinitionId")
+    int countSamples(@Param("cohortDefinitionId") int cohortDefinitionId);
 }

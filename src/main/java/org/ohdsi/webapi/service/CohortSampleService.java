@@ -27,10 +27,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
-@Path("/cohortsample/{cohortDefinitionId}/{sourceKey}")
+@Path("/cohortsample")
 @Component
 @Produces(MediaType.APPLICATION_JSON)
 public class CohortSampleService {
@@ -52,7 +51,7 @@ public class CohortSampleService {
         this.generationInfoRepository = generationInfoRepository;
     }
 
-    @Path("/")
+    @Path("/{cohortDefinitionId}/{sourceKey}")
     @GET
     public CohortSampleListDTO listCohortSamples(
             @PathParam("cohortDefinitionId") int cohortDefinitionId,
@@ -73,7 +72,7 @@ public class CohortSampleService {
         return result;
     }
 
-    @Path("/{sampleId}")
+    @Path("/{cohortDefinitionId}/{sourceKey}/{sampleId}")
     @GET
     public CohortSampleDTO getCohortSample(
             @PathParam("sampleId") Integer sampleId,
@@ -84,7 +83,16 @@ public class CohortSampleService {
         return this.samplingService.getSample(sampleId, withRecordCounts);
     }
 
-    @Path("/")
+    @Path("/has-samples/{cohortDefinitionId}")
+    @GET
+    public Map<String, Boolean> hasSamples(
+            @PathParam("cohortDefinitionId") int cohortDefinitionId
+    ) {
+        int nSamples = this.samplingService.countSamples(cohortDefinitionId);
+        return Collections.singletonMap("hasSamples", nSamples > 0);
+    }
+
+    @Path("/{cohortDefinitionId}/{sourceKey}")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public CohortSampleDTO createCohortSample(
@@ -105,7 +113,7 @@ public class CohortSampleService {
         return samplingService.createSample(source, cohortDefinitionId, sampleParameters);
     }
 
-    @Path("/{sampleId}")
+    @Path("/{cohortDefinitionId}/{sourceKey}/{sampleId}")
     @DELETE
     public Response deleteCohortSample(
             @PathParam("sourceKey") String sourceKey,
@@ -120,7 +128,7 @@ public class CohortSampleService {
         return Response.status(Response.Status.NO_CONTENT).build();
     }
 
-    @Path("/")
+    @Path("/{cohortDefinitionId}/{sourceKey}")
     @DELETE
     public Response deleteCohortSamples(
             @PathParam("sourceKey") String sourceKey,

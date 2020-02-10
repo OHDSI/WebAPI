@@ -308,32 +308,32 @@ public class CohortSamplingService extends AbstractDaoService {
         if (ageMode != null) {
             switch (ageMode) {
                 case LESS_THAN:
-                    expressionBuilder.append(" AND cast(year(c.cohort_start_date) - p.year_of_birth as int) < @age");
-                    sqlVariables.put("age", sample.getAgeMax());
+                    expressionBuilder.append(" AND age < @age_max");
+                    sqlVariables.put("age_max", sample.getAgeMax());
                     break;
                 case LESS_THAN_OR_EQUAL:
-                    expressionBuilder.append(" AND cast(year(c.cohort_start_date) - p.year_of_birth as int) <= @age");
-                    sqlVariables.put("age", sample.getAgeMax());
+                    expressionBuilder.append(" AND age <= @age_max");
+                    sqlVariables.put("age_max", sample.getAgeMax());
                     break;
                 case GREATER_THAN:
-                    expressionBuilder.append(" AND cast(year(c.cohort_start_date) - p.year_of_birth as int) > @age");
-                    sqlVariables.put("age", sample.getAgeMin());
+                    expressionBuilder.append(" AND age > @age_min");
+                    sqlVariables.put("age_min", sample.getAgeMin());
                     break;
                 case GREATER_THAN_OR_EQUAL:
-                    expressionBuilder.append(" AND cast(year(c.cohort_start_date) - p.year_of_birth as int) >= @age");
-                    sqlVariables.put("age", sample.getAgeMin());
+                    expressionBuilder.append(" AND age >= @age_min");
+                    sqlVariables.put("age_min", sample.getAgeMin());
                     break;
                 case EQUAL_TO:
-                    expressionBuilder.append(" AND cast(year(c.cohort_start_date) - p.year_of_birth as int) = @age");
-                    sqlVariables.put("age", sample.getAgeMin());
+                    expressionBuilder.append(" AND age = @age_equal");
+                    sqlVariables.put("age_equal", sample.getAgeMin());
                     break;
                 case BETWEEN:
-                    expressionBuilder.append(" AND cast(year(c.cohort_start_date) - p.year_of_birth as int) <= @age_max AND cast(year(c.cohort_start_date) - p.year_of_birth as int) >= @age_min");
+                    expressionBuilder.append(" AND age <= @age_max AND age >= @age_min");
                     sqlVariables.put("age_min", sample.getAgeMin());
                     sqlVariables.put("age_max", sample.getAgeMax());
                     break;
                 case NOT_BETWEEN:
-                    expressionBuilder.append(" AND cast(year(c.cohort_start_date) - p.year_of_birth as int) > @age_max AND cast(year(c.cohort_start_date) - p.year_of_birth as int) < @age_min");
+                    expressionBuilder.append(" AND age > @age_max OR age < @age_min");
                     sqlVariables.put("age_min", sample.getAgeMin());
                     sqlVariables.put("age_max", sample.getAgeMax());
                     break;

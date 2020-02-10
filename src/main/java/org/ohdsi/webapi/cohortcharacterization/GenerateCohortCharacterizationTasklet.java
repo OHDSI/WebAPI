@@ -91,7 +91,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
          *
          * Therefore, there are two ways:
          * - either precisely group SQLs into statements so that temp tables aren't re-used in a single statement,
-         * - or use ‘permenant temporary tables’
+         * - or use ‘permanent temporary tables’
          *
          * The second option looks better since such SQL could be exported and executed manually,
          * which is not the case with the first option.

@@ -144,7 +144,7 @@
     <server.ssl.key-store-password></server.ssl.key-store-password>
     <server.ssl.key-password></server.ssl.key-password>
 
-    <arachne.version>1.15.0-SNAPSHOT</arachne.version>
+    <arachne.version>1.16.0-SNAPSHOT</arachne.version>
     <jersey-media-multipart.version>2.25.1</jersey-media-multipart.version>
     <execution.invalidation.period>600000</execution.invalidation.period>
     <execution.invalidation.maxage.hours>12</execution.invalidation.maxage.hours>
@@ -192,13 +192,15 @@
     <cdm.result.cache.warming.enable>true</cdm.result.cache.warming.enable>
     <cache.generation.invalidAfterDays>7</cache.generation.invalidAfterDays>
     <cache.generation.cleanupInterval>60000</cache.generation.cleanupInterval>
+    <SqlRender.version>1.6.3-SNAPSHOT</SqlRender.version>
+    <hive-jdbc.version>3.1.2</hive-jdbc.version>
   </properties>
   <build>
     <finalName>WebAPI</finalName>
     <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
     <testSourceDirectory>${basedir}/src/test/java</testSourceDirectory>
     <outputDirectory>${basedir}/target/classes</outputDirectory>
-    <testOutputDirectory>${basedir}/target/test-classes</testOutputDirectory>    
+    <testOutputDirectory>${basedir}/target/test-classes</testOutputDirectory>
     <resources>
       <resource>
         <directory>src/main/resources</directory>
@@ -276,7 +278,7 @@
           <compilerArgs>
             <!-- Prevents recompilation due to missing package-info.class, see MCOMPILER-205 -->
             <arg>-Xpkginfo:always</arg>
-          </compilerArgs>     
+          </compilerArgs>
         </configuration>
       </plugin>
       <plugin>
@@ -507,7 +509,7 @@
     <dependency>
       <groupId>org.ohdsi.sql</groupId>
       <artifactId>SqlRender</artifactId>
-      <version>1.6.3-SNAPSHOT</version>
+      <version>${SqlRender.version}</version>
     </dependency>
     <dependency>
       <groupId>commons-dbutils</groupId>
@@ -780,6 +782,10 @@
         <exclusion>
           <groupId>org.ohdsi</groupId>
           <artifactId>featureExtraction</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ohdsi.sql</groupId>
+          <artifactId>SqlRender</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -1117,6 +1123,96 @@
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <id>webapi-hive</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hive</groupId>
+          <artifactId>hive-jdbc</artifactId>
+          <version>${hive-jdbc.version}</version>
+          <exclusions>
+            <exclusion>
+              <groupId>org.apache.tomcat</groupId>
+              <artifactId>*</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>org.eclipse.jetty</groupId>
+              <artifactId>*</artifactId>
+            </exclusion>
+            <exclusion>
+              <artifactId>slf4j-log4j12</artifactId>
+              <groupId>org.slf4j</groupId>
+            </exclusion>
+            <exclusion>
+              <artifactId>log4j</artifactId>
+              <groupId>log4j</groupId>
+            </exclusion>
+            <exclusion>
+              <artifactId>servlet-api</artifactId>
+              <groupId>javax.servlet</groupId>
+            </exclusion>
+            <exclusion>
+              <groupId>com.zaxxer</groupId>
+              <artifactId>HikariCP</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>com.zaxxer</groupId>
+              <artifactId>HikariCP-java7</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>javax.ws.rs</groupId>
+              <artifactId>javax.ws.rs-api</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>com.sun.jersey</groupId>
+              <artifactId>jersey-server</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>com.sun.jersey</groupId>
+              <artifactId>jersey-core</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>com.sun.jersey</groupId>
+              <artifactId>jersey-client</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>com.sun.jersey</groupId>
+              <artifactId>jersey-json</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>com.tdunning</groupId>
+              <artifactId>json</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+        <dependency>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-server</artifactId>
+          <version>1.19.4</version>
+        </dependency>
+        <dependency>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-core</artifactId>
+          <version>1.19.4</version>
+          <exclusions>
+            <exclusion>
+              <groupId>javax.ws.rs</groupId>
+              <artifactId>jsr311-api</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+        <dependency>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-client</artifactId>
+          <version>1.19.4</version>
+        </dependency>
+        <dependency>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-json</artifactId>
+          <version>1.19.4</version>
+        </dependency>
+      </dependencies>
     </profile>
   </profiles>
 </project>

@@ -12,7 +12,7 @@
                 <datasource.ohdsi.schema>${WEBAPI_SCHEMA}</datasource.ohdsi.schema>
                 <datasource.username>ohdsi_app_user</datasource.username>
                 <datasource.password>${WEBAPI_USER_PW}</datasource.password>
-                <flyway.datasource.driverClassName>org.postgresql.Driver</flyway.datasource.driverClassName>
+                <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
                 <flyway.datasource.url>${OHDSI_DATASOURCE_URL}</flyway.datasource.url>
                 <flyway.datasource.username>ohdsi_admin_user</flyway.datasource.username>
                 <flyway.datasource.password>${WEBAPI_ADMIN_PW}</flyway.datasource.password>

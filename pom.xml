@@ -11,12 +11,15 @@
   <properties>
     <build.number>${BUILD_NUMBER}</build.number>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jersey.version>2.14</jersey.version>
     <!-- Spring Boot manages spring.version as well -->
     <spring.boot.version>1.5.20.RELEASE</spring.boot.version>
     <flyway.version>4.2.0</flyway.version>
     <waffle.version>1.7.3</waffle.version>
     <circe.version>1.9.0-SNAPSHOT</circe.version>
+    <jersey.version>2.14</jersey.version>
+    <SqlRender.version>1.6.3-SNAPSHOT</SqlRender.version>
+    <hive-jdbc.version>3.1.2</hive-jdbc.version>
+    
     <start-class>org.ohdsi.webapi.WebApi</start-class>
 
     <!-- Primary DataSource -->
@@ -56,7 +59,7 @@
     <kerberos.configPath>/etc/krb5.conf</kerberos.configPath>
     <kerberos.kinitPath></kerberos.kinitPath>
 
-		<spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
+    <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
     <spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
     <spring.profiles.active>default</spring.profiles.active>
 
@@ -149,17 +152,16 @@
     <execution.invalidation.period>600000</execution.invalidation.period>
     <execution.invalidation.maxage.hours>12</execution.invalidation.maxage.hours>
     <execution.status.period>10000</execution.status.period>
-		<executionengine.url>https://localhost:8888/api/v1/analyze</executionengine.url>
-		<executionengine.token>Basic YWRtaW5Ab2R5c3NldXNpbmMuY29tOnBhc3N3b3Jk</executionengine.token>
-        <executionengine.resultExclusions></executionengine.resultExclusions>
-		<executionengine.updateStatusCallback>http://localhost:8080/WebAPI/executionservice/callbacks/submission/{id}/status/update/{password}</executionengine.updateStatusCallback>
-		<executionengine.resultCallback>http://localhost:8080/WebAPI/executionservice/callbacks/submission/{id}/result/{password}</executionengine.resultCallback>
-
+    <executionengine.url>https://localhost:8888/api/v1/analyze</executionengine.url>
+    <executionengine.token>Basic YWRtaW5Ab2R5c3NldXNpbmMuY29tOnBhc3N3b3Jk</executionengine.token>
+    <executionengine.resultExclusions></executionengine.resultExclusions>
+    <executionengine.updateStatusCallback>http://localhost:8080/WebAPI/executionservice/callbacks/submission/{id}/status/update/{password}</executionengine.updateStatusCallback>
+    <executionengine.resultCallback>http://localhost:8080/WebAPI/executionservice/callbacks/submission/{id}/result/{password}</executionengine.resultCallback>
 
     <!-- PASSWORD ENCRYPTION -->
     <jasypt.encryptor.enabled>false</jasypt.encryptor.enabled>
     <jasypt.encryptor.password></jasypt.encryptor.password>
-		<jasypt.encryptor.algorithm>PBEWithMD5AndDES</jasypt.encryptor.algorithm>
+    <jasypt.encryptor.algorithm>PBEWithMD5AndDES</jasypt.encryptor.algorithm>
                 
     <!-- ORGANIZATION SETTINGS -->
     <organization.name>OHDSI</organization.name>
@@ -192,8 +194,12 @@
     <cdm.result.cache.warming.enable>true</cdm.result.cache.warming.enable>
     <cache.generation.invalidAfterDays>7</cache.generation.invalidAfterDays>
     <cache.generation.cleanupInterval>60000</cache.generation.cleanupInterval>
-    <SqlRender.version>1.6.3-SNAPSHOT</SqlRender.version>
-    <hive-jdbc.version>3.1.2</hive-jdbc.version>
+
+    <!-- Build info -->
+    <buildinfo.atlas.milestone.id>22</buildinfo.atlas.milestone.id>
+    <buildinfo.webapi.milestone.id>25</buildinfo.webapi.milestone.id>
+    <buildinfo.atlas.release.tag>*</buildinfo.atlas.release.tag>
+    <buildinfo.webapi.release.tag>*</buildinfo.webapi.release.tag>
   </properties>
   <build>
     <finalName>WebAPI</finalName>
@@ -243,6 +249,22 @@
     </testResources>
     <plugins>
       <plugin>
+        <groupId>pl.project13.maven</groupId>
+        <artifactId>git-commit-id-plugin</artifactId>
+        <version>4.0.0</version>
+        <executions>
+          <execution>
+            <phase>validate</phase>
+            <goals>
+              <goal>revision</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <generateGitPropertiesFile>false</generateGitPropertiesFile>
+        </configuration>
+      </plugin>
+      <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <version>${spring.boot.version}</version>
@@ -250,6 +272,14 @@
         <configuration>
           <!-- Since we filter properties files via Maven, do not add resources. -->
           <addResources>false</addResources>
+          <additionalProperties>
+            <git.branch>${git.branch}</git.branch>
+            <git.commit.id>${git.commit.id.abbrev}</git.commit.id>
+            <atlas.milestone.id>${buildinfo.atlas.milestone.id}</atlas.milestone.id>
+            <webapi.milestone.id>${buildinfo.webapi.milestone.id}</webapi.milestone.id>
+            <atlas.release.tag>${buildinfo.atlas.release.tag}</atlas.release.tag>
+            <webapi.release.tag>${buildinfo.webapi.release.tag}</webapi.release.tag>
+          </additionalProperties>
         </configuration>
         <executions>
           <execution>

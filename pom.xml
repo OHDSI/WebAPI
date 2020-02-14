@@ -192,6 +192,7 @@
     <cdm.result.cache.warming.enable>true</cdm.result.cache.warming.enable>
     <cache.generation.invalidAfterDays>7</cache.generation.invalidAfterDays>
     <cache.generation.cleanupInterval>60000</cache.generation.cleanupInterval>
+    <cache.generation.useAsync>false</cache.generation.useAsync>
   </properties>
   <build>
     <finalName>WebAPI</finalName>

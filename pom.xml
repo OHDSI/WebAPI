@@ -451,8 +451,11 @@
     </dependencies>
   </dependencyManagement>
   <dependencies>
-    <!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-actuator</artifactId>
-    <version>${spring.boot.version}</version> </dependency> -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+      <version>${spring.boot.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter</artifactId>
@@ -747,6 +750,11 @@
     <dependency>
       <groupId>com.jnj.honeur</groupId>
       <artifactId>security</artifactId>
+      <version>1.5-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.jnj.honeur</groupId>
+      <artifactId>dependency-checker</artifactId>
       <version>1.5-SNAPSHOT</version>
     </dependency>
   </dependencies>

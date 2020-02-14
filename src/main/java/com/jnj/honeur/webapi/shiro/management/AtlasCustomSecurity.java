@@ -401,6 +401,8 @@ public class AtlasCustomSecurity extends AtlasSecurity {
                 .addPath("/user/cas/callback", SSL, HANDLE_CAS, UPDATE_TOKEN, SEND_TOKEN_IN_URL)
 
                 .addRestPath("/health-status")
+                .addRestPath("/actuator/health/liveness", SSL, CORS, FORCE_SESSION_CREATION)
+                .addRestPath("/actuator/health/readyness", SSL, CORS, FORCE_SESSION_CREATION)
                 .addRestPath("/cohortdefinition/uuids")
                 .addProtectedRestPath("/cohortdefinition/hss/select", CREATE_PERMISSIONS_ON_IMPORT_COHORT_DEFINITION)
                 .addProtectedRestPath("/cohortdefinition/", CREATE_COHORT_DEFINITION)

@@ -5,6 +5,7 @@
             <properties>
                 <central>true</central>
                 <honeur.enabled>true</honeur.enabled>
+                <storage.server.base.url>${STORAGE_SERVER_BASE_URL}</storage.server.base.url>
                 <hss.url>${STORAGE_SERVER_BASE_URL}/api</hss.url>
                 <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
                 <datasource.dialect>postgresql</datasource.dialect>

@@ -23,6 +23,8 @@ import org.ohdsi.webapi.cohortcharacterization.report.Report;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
+import org.ohdsi.webapi.conceptset.ConceptSetExport;
+import org.ohdsi.webapi.conceptset.ExportUtil;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
@@ -30,6 +32,7 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.ExceptionUtils;
+import org.ohdsi.webapi.util.HttpUtils;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -37,25 +40,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -194,6 +185,18 @@ public class CcController {
     @Consumes(MediaType.APPLICATION_JSON)
     public String export(@PathParam("id") final Long id) {
         return service.serializeCc(id);
+    }
+
+    @GET
+    @Path("/{id}/export/conceptset")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response exportConceptSets(@PathParam("id") final Long id) {
+
+        CohortCharacterizationEntity cc = service.findById(id);
+        Optional.ofNullable(cc).orElseThrow(NotFoundException::new);
+        List<ConceptSetExport> exportList = service.exportConceptSets(cc);
+        ByteArrayOutputStream stream = ExportUtil.writeConceptSetExportToCSVAndZip(exportList);
+        return HttpUtils.respondBinary(stream, String.format("cc_%d_export.zip", id));
     }
     
     @POST

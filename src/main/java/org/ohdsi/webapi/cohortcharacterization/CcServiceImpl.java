@@ -41,6 +41,7 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.AnalysisGenerationInfoEntity;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
+import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
@@ -48,13 +49,14 @@ import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
-import org.ohdsi.webapi.service.AbstractDaoService;
+import org.ohdsi.webapi.service.AbstractVocabularyService;
 import org.ohdsi.webapi.service.FeatureExtractionService;
 import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.shiro.annotations.CcGenerationId;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
@@ -115,7 +117,7 @@ import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
 @Service
 @Transactional
 @DependsOn({"ccExportDTOToCcEntityConverter", "cohortDTOToCohortDefinitionConverter", "feAnalysisDTOToFeAnalysisConverter"})
-public class CcServiceImpl extends AbstractDaoService implements CcService, GeneratesNotification {
+public class CcServiceImpl extends AbstractVocabularyService implements CcService, GeneratesNotification {
 
     private static final String GENERATION_NOT_FOUND_ERROR = "generation cannot be found by id %d";
     private static final String[] PARAMETERS_RESULTS = {"cohort_characterization_generation_id", "threshold_level", "vocabulary_schema"};
@@ -893,7 +895,16 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         return COHORT_CHARACTERIZATION_ID;
     }
 
-    private List<CcResult> getGenerationResults(final Source source, final String translatedSql) {
+    @Override
+    public List<ConceptSetExport> exportConceptSets(CohortCharacterization cohortCharacterization) {
+
+        SourceInfo prioritySource = new SourceInfo(getPriorityVocabularySource());
+        return cohortCharacterization.getStrataConceptSets().stream()
+                .map(cs -> exportConceptSet(cs, prioritySource))
+                .collect(Collectors.toList());
+    }
+
+  private List<CcResult> getGenerationResults(final Source source, final String translatedSql) {
         return this.getSourceJdbcTemplate(source).query(translatedSql, (rs, rowNum) -> {
             final String type = rs.getString("type");
             if (StringUtils.equals(type, DISTRIBUTION.toString())) {

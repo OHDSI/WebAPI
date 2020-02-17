@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.ohdsi.circe.vocabulary.Concept;
@@ -31,7 +32,7 @@ import org.ohdsi.circe.vocabulary.ConceptSetExpression;
  */
 public class ExportUtil {
   
-  public static ByteArrayOutputStream writeConceptSetExportToCSVAndZip(ArrayList<ConceptSetExport> conceptSetExportList) throws RuntimeException {
+  public static ByteArrayOutputStream writeConceptSetExportToCSVAndZip(List<ConceptSetExport> conceptSetExportList) throws RuntimeException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     ZipOutputStream zos = new ZipOutputStream(baos);
     StringWriter sw;

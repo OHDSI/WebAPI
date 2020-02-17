@@ -8,6 +8,7 @@ import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
 import org.ohdsi.webapi.cohortcharacterization.dto.ExecutionResultRequest;
 import org.ohdsi.webapi.cohortcharacterization.dto.ExportExecutionResultRequest;
 import org.ohdsi.webapi.cohortcharacterization.dto.GenerationResults;
+import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -65,6 +66,8 @@ public interface CcService {
     void cancelGeneration(Long id, String sourceKey);
 
     Long getCCResultsTotalCount(Long id);
+
+    List<ConceptSetExport> exportConceptSets(CohortCharacterization cohortCharacterization);
 
     GenerationResults exportExecutionResult(Long generationId, ExportExecutionResultRequest params);
 

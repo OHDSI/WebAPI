@@ -19,8 +19,9 @@ import java.util.List;
 @Component
 public class V2_8_0_20191106092815__migrateEventFAType implements ApplicationContextAwareSpringMigration {
     private final static String UPDATE_VALUE_SQL = ResourceHelper.GetResourceAsString(
-            "/db/migration/java/V2_8_0_20191106092815__migrateEventFAType/updateFaType.sql"
-    );
+            "/db/migration/java/V2_8_0_20191106092815__migrateEventFAType/updateFaType.sql");
+    private final static String UPDATE_VALUE_IMPALA_SQL = ResourceHelper.GetResourceAsString(
+            "/db/migration/java/V2_8_0_20191106092815__migrateEventFAType/updateFaTypeImpala.sql");
     private static final Logger log = LoggerFactory.getLogger(V2_8_0_20191106092815__migrateEventFAType.class);
 
     private final SourceRepository sourceRepository;
@@ -57,8 +58,14 @@ public class V2_8_0_20191106092815__migrateEventFAType implements ApplicationCon
             String resultsSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
             String[] params = new String[]{"results_schema"};
             String[] values = new String[]{resultsSchema};
-            String translatedSql = SqlRender.renderSql(UPDATE_VALUE_SQL, params, values);
-            jdbcTemplate.batchUpdate(translatedSql);
+            String translatedSql;
+            // Impala can't update non-kudu tables, so use special script with temp table
+            if (Source.IMPALA_DATASOURCE.equals(source.getSourceDialect())) {
+                translatedSql = SqlRender.renderSql(UPDATE_VALUE_IMPALA_SQL, params, values);
+            } else {
+                translatedSql = SqlRender.renderSql(UPDATE_VALUE_SQL, params, values);
+            }
+            jdbcTemplate.execute(translatedSql);
         }
     }
 }

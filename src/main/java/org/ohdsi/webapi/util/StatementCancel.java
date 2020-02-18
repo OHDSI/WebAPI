@@ -9,7 +9,7 @@ public class StatementCancel {
   private Statement statement;
   private boolean canceled = false;
 
-  public synchronized void setStatement(Statement statement) {
+  public void setStatement(Statement statement) {
     if (this.canceled) {
         throw new StatementCancelException();
     }

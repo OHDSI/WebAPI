@@ -1127,7 +1127,7 @@ AssertionResult.setFailure(running == &quot;COMPLETE&quot; &amp;&amp; inValid); 
           <stringProp name="HTTPSampler.port"></stringProp>
           <stringProp name="HTTPSampler.protocol"></stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">${WebAPICentralHost}/health-status</stringProp>
+          <stringProp name="HTTPSampler.path">${WebAPICentralHost}/actuator/health/liveness</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>

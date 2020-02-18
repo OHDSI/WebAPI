@@ -244,17 +244,4 @@ public class StorageServiceClient {
             set("Authorization", authHeader);
         }});
     }
-
-    public int healthCheck() {
-        final RestTemplate restTemplate = new RestTemplate();
-        String serviceUrl = storageServiceApi + "/health-status?transitive=false";
-
-        try {
-            ResponseEntity<String> response = restTemplate.getForEntity(serviceUrl, String.class);
-            return response.getStatusCode().value();
-        } catch (RestClientException e) {
-            LOGGER.warn(e.getMessage(), e);
-            return HttpStatus.INTERNAL_SERVER_ERROR.value();
-        }
-    }
 }

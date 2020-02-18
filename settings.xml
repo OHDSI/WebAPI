@@ -3,9 +3,9 @@
         <profile>
             <id>central</id>
             <properties>
+                <spring.profiles.active>default,central</spring.profiles.active>
                 <central>true</central>
                 <honeur.enabled>true</honeur.enabled>
-                <storage.server.base.url>${STORAGE_SERVER_BASE_URL}</storage.server.base.url>
                 <hss.url>${STORAGE_SERVER_BASE_URL}/api</hss.url>
                 <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
                 <datasource.dialect>postgresql</datasource.dialect>
@@ -53,6 +53,7 @@
         <profile>
             <id>remote</id>
             <properties>
+                <spring.profiles.active>default,remote</spring.profiles.active>
                 <central>false</central>
                 <honeur.enabled>true</honeur.enabled>
                 <hss.url>${STORAGE_SERVER_BASE_URL}/api</hss.url>
@@ -82,6 +83,7 @@
         <profile>
             <id>remote-secure</id>
             <properties>
+                <spring.profiles.active>default,remote</spring.profiles.active>
                 <central>false</central>
                 <honeur.enabled>true</honeur.enabled>
                 <hss.url>${STORAGE_SERVER_BASE_URL}/api</hss.url>

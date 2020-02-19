@@ -16,7 +16,7 @@
  * Authors: Alexandr Ryabokon, Vitaly Koulakov
  *
  */
-package org.ohdsi.webapi.shiro.filters;
+package org.ohdsi.webapi.shiro.filters.auth;
 
 import org.ohdsi.webapi.shiro.tokens.LdapUsernamePasswordToken;
 import org.springframework.context.ApplicationEventPublisher;

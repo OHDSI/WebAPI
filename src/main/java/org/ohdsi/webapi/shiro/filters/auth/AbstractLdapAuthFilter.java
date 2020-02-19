@@ -16,7 +16,7 @@
  * Authors: Alexandr Ryabokon
  *
  */
-package org.ohdsi.webapi.shiro.filters;
+package org.ohdsi.webapi.shiro.filters.auth;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -24,6 +24,7 @@ import javax.servlet.ServletResponse;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.UsernamePasswordToken;
+import org.ohdsi.webapi.shiro.filters.AuthenticatingPropagationFilter;
 import org.springframework.context.ApplicationEventPublisher;
 
 public abstract class AbstractLdapAuthFilter<T extends UsernamePasswordToken> extends AuthenticatingPropagationFilter {

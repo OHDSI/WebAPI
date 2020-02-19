@@ -26,7 +26,9 @@ import org.apache.shiro.realm.ldap.LdapContextFactory;
 import org.apache.shiro.realm.ldap.LdapUtils;
 import org.ohdsi.webapi.shiro.Entities.UserPrincipal;
 import org.ohdsi.webapi.shiro.mapper.UserMapper;
+import org.ohdsi.webapi.shiro.tokens.ActiveDirectoryUsernamePasswordToken;
 import org.ohdsi.webapi.shiro.tokens.LdapUsernamePasswordToken;
+import org.ohdsi.webapi.shiro.tokens.SpnegoToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,8 +56,7 @@ public class LdapRealm extends JndiLdapRealm {
 
     @Override
     public boolean supports(AuthenticationToken token) {
-
-        return token instanceof LdapUsernamePasswordToken;
+        return token != null &&  token.getClass() == LdapUsernamePasswordToken.class;
     }
 
     protected AuthenticationInfo queryForAuthenticationInfo(AuthenticationToken token,

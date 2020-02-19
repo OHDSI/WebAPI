@@ -19,7 +19,7 @@
     <jersey.version>2.14</jersey.version>
     <SqlRender.version>1.6.3-SNAPSHOT</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
-    
+
     <start-class>org.ohdsi.webapi.WebApi</start-class>
 
     <!-- Primary DataSource -->
@@ -194,6 +194,7 @@
     <cdm.result.cache.warming.enable>true</cdm.result.cache.warming.enable>
     <cache.generation.invalidAfterDays>7</cache.generation.invalidAfterDays>
     <cache.generation.cleanupInterval>60000</cache.generation.cleanupInterval>
+    <cache.generation.useAsync>false</cache.generation.useAsync>
 
     <!-- Build info -->
     <buildinfo.atlas.milestone.id>22</buildinfo.atlas.milestone.id>

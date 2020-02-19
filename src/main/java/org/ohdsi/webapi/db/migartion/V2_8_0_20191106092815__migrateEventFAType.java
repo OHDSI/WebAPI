@@ -3,6 +3,7 @@ package org.ohdsi.webapi.db.migartion;
 import com.odysseusinc.arachne.commons.config.flyway.ApplicationContextAwareSpringMigration;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
+import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -44,7 +45,6 @@ public class V2_8_0_20191106092815__migrateEventFAType implements ApplicationCon
                         CancelableJdbcTemplate jdbcTemplate = migrationDAO.getSourceJdbcTemplate(source);
 
                         this.migrationDAO.updateColumnValue(source, jdbcTemplate);
-
                     } catch (Exception e) {
                         log.error(String.format("Failed to update fa type value for source: %s (%s)", source.getSourceName(), source.getSourceKey()));
                         throw e;
@@ -65,7 +65,9 @@ public class V2_8_0_20191106092815__migrateEventFAType implements ApplicationCon
             } else {
                 translatedSql = SqlRender.renderSql(UPDATE_VALUE_SQL, params, values);
             }
-            jdbcTemplate.execute(translatedSql);
+            for (String sql: SqlSplit.splitSql(translatedSql)) {
+                jdbcTemplate.execute(sql);
+            }
         }
     }
 }

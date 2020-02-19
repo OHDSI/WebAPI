@@ -20,11 +20,13 @@ package org.ohdsi.webapi.service;
 
 import static org.ohdsi.webapi.service.SqlRenderService.translateSQL;
 
+import com.odysseusinc.arachne.commons.types.DBMSType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -47,38 +49,56 @@ public class DDLService {
 	public static final String TEMP_SCHEMA = "oracle_temp_schema";
 
 	private static final Collection<String> RESULT_DDL_FILE_PATHS = Arrays.asList(
+		// cohort generation results
 		"/ddl/results/cohort.sql",
-		"/ddl/results/cohort_features.sql",
-		"/ddl/results/cohort_features_analysis_ref.sql",
-		"/ddl/results/cohort_features_dist.sql",
-		"/ddl/results/cohort_features_ref.sql",
+		"/ddl/results/cohort_censor_stats.sql",
 		"/ddl/results/cohort_inclusion.sql",
 		"/ddl/results/cohort_inclusion_result.sql",
 		"/ddl/results/cohort_inclusion_stats.sql",
 		"/ddl/results/cohort_summary_stats.sql",
-		"/ddl/results/cohort_censor_stats.sql",
+		// cohort generation cache
+		"/ddl/results/cohort_cache.sql",
+		"/ddl/results/cohort_censor_stats_cache.sql",
+		"/ddl/results/cohort_inclusion_result_cache.sql",
+		"/ddl/results/cohort_inclusion_stats_cache.sql",
+		"/ddl/results/cohort_summary_stats_cache.sql",
+		// cohort features
+		"/ddl/results/cohort_features.sql",
+		"/ddl/results/cohort_features_analysis_ref.sql",
+		"/ddl/results/cohort_features_dist.sql",
+		"/ddl/results/cohort_features_ref.sql",
+		// cohort feasibility analysis
 		"/ddl/results/feas_study_inclusion_stats.sql",
 		"/ddl/results/feas_study_index_stats.sql",
 		"/ddl/results/feas_study_result.sql",
+		// cohort reports (heracles)
 		"/ddl/results/heracles_analysis.sql",
 		"/ddl/results/heracles_heel_results.sql",
 		"/ddl/results/heracles_results.sql",
 		"/ddl/results/heracles_results_dist.sql",
+		"/ddl/results/heracles_periods.sql",
+		// incidence rates
 		"/ddl/results/ir_analysis_dist.sql",
 		"/ddl/results/ir_analysis_result.sql",
 		"/ddl/results/ir_analysis_strata_stats.sql",
 		"/ddl/results/ir_strata.sql",
-		"/ddl/results/heracles_periods.sql",
+		// characterization
 		"/ddl/results/cohort_characterizations.sql",
+		// pathways
 		"/ddl/results/pathway_analysis_codes.sql",
 		"/ddl/results/pathway_analysis_events.sql",
 		"/ddl/results/pathway_analysis_paths.sql",
 		"/ddl/results/pathway_analysis_stats.sql"
 	);
 
+	private static final String INIT_HERACLES_PERIODS = "/ddl/results/init_heracles_periods.sql";
+
 	public static final Collection<String> RESULT_INIT_FILE_PATHS = Arrays.asList(
-		"/ddl/results/init_heracles_analysis.sql",
-		"/ddl/results/init_heracles_periods.sql"
+			"/ddl/results/init_heracles_analysis.sql", INIT_HERACLES_PERIODS
+	);
+
+	public static final Collection<String> HIVE_RESULT_INIT_FILE_PATHS = Arrays.asList(
+			"/ddl/results/init_hive_heracles_analysis.sql", INIT_HERACLES_PERIODS
 	);
 
 	public static final Collection<String> INIT_CONCEPT_HIERARCHY_FILE_PATHS = Arrays.asList(
@@ -123,7 +143,15 @@ public class DDLService {
 			put(TEMP_SCHEMA, oracleTempSchema);
 		}};
 
-		return generateSQL(dialect, params, resultDDLFilePaths, RESULT_INIT_FILE_PATHS, RESULT_INDEX_FILE_PATHS);
+		return generateSQL(dialect, params, resultDDLFilePaths, getResultInitFilePaths(dialect), RESULT_INDEX_FILE_PATHS);
+	}
+
+	private Collection<String> getResultInitFilePaths(String dialect) {
+		if (Objects.equals(DBMSType.HIVE.getOhdsiDB(), dialect)) {
+			return HIVE_RESULT_INIT_FILE_PATHS;
+		} else {
+			return RESULT_INIT_FILE_PATHS;
+		}
 	}
 
 	@GET

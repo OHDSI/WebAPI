@@ -6,16 +6,20 @@
   <groupId>org.ohdsi</groupId>
   <artifactId>WebAPI</artifactId>
   <packaging>war</packaging>
-  <version>2.7.5</version>
+  <version>2.8.0-SNAPSHOT</version>
   <name>WebAPI</name>
   <properties>
-    <webapi.version>2.7.5</webapi.version>
+    <build.number>${BUILD_NUMBER}</build.number>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jersey.version>2.14</jersey.version>
     <!-- Spring Boot manages spring.version as well -->
     <spring.boot.version>1.5.20.RELEASE</spring.boot.version>
     <flyway.version>4.2.0</flyway.version>
     <waffle.version>1.7.3</waffle.version>
+    <circe.version>1.9.0-SNAPSHOT</circe.version>
+    <jersey.version>2.14</jersey.version>
+    <SqlRender.version>1.6.3-SNAPSHOT</SqlRender.version>
+    <hive-jdbc.version>3.1.2</hive-jdbc.version>
+
     <start-class>org.ohdsi.webapi.WebApi</start-class>
 
     <!-- Primary DataSource -->
@@ -43,7 +47,10 @@
     <cdm.version>5</cdm.version>
     <!-- Person properties -->
     <person.viewDates>false</person.viewDates>
-
+    <!-- Full Text Search With SOLR Settings -->
+    <solr.endpoint></solr.endpoint>
+    <solr.query.prefix>{!complexphrase inOrder=true}</solr.query.prefix>
+    <solr.version>8.3.1</solr.version>
     <!-- Heracles properties -->
     <heracles.smallcellcount>5</heracles.smallcellcount>
 
@@ -52,7 +59,7 @@
     <kerberos.configPath>/etc/krb5.conf</kerberos.configPath>
     <kerberos.kinitPath></kerberos.kinitPath>
 
-		<spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
+    <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
     <spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
     <spring.profiles.active>default</spring.profiles.active>
 
@@ -140,22 +147,21 @@
     <server.ssl.key-store-password></server.ssl.key-store-password>
     <server.ssl.key-password></server.ssl.key-password>
 
-    <arachne.version>1.14.1-alpha2</arachne.version>
+    <arachne.version>1.16.0-SNAPSHOT</arachne.version>
     <jersey-media-multipart.version>2.25.1</jersey-media-multipart.version>
     <execution.invalidation.period>600000</execution.invalidation.period>
     <execution.invalidation.maxage.hours>12</execution.invalidation.maxage.hours>
     <execution.status.period>10000</execution.status.period>
-		<executionengine.url>https://localhost:8888/api/v1/analyze</executionengine.url>
-		<executionengine.token>Basic YWRtaW5Ab2R5c3NldXNpbmMuY29tOnBhc3N3b3Jk</executionengine.token>
-        <executionengine.resultExclusions></executionengine.resultExclusions>
-		<executionengine.updateStatusCallback>http://localhost:8080/WebAPI/executionservice/callbacks/submission/{id}/status/update/{password}</executionengine.updateStatusCallback>
-		<executionengine.resultCallback>http://localhost:8080/WebAPI/executionservice/callbacks/submission/{id}/result/{password}</executionengine.resultCallback>
-
+    <executionengine.url>https://localhost:8888/api/v1/analyze</executionengine.url>
+    <executionengine.token>Basic YWRtaW5Ab2R5c3NldXNpbmMuY29tOnBhc3N3b3Jk</executionengine.token>
+    <executionengine.resultExclusions></executionengine.resultExclusions>
+    <executionengine.updateStatusCallback>http://localhost:8080/WebAPI/executionservice/callbacks/submission/{id}/status/update/{password}</executionengine.updateStatusCallback>
+    <executionengine.resultCallback>http://localhost:8080/WebAPI/executionservice/callbacks/submission/{id}/result/{password}</executionengine.resultCallback>
 
     <!-- PASSWORD ENCRYPTION -->
     <jasypt.encryptor.enabled>false</jasypt.encryptor.enabled>
     <jasypt.encryptor.password></jasypt.encryptor.password>
-		<jasypt.encryptor.algorithm>PBEWithMD5AndDES</jasypt.encryptor.algorithm>
+    <jasypt.encryptor.algorithm>PBEWithMD5AndDES</jasypt.encryptor.algorithm>
                 
     <!-- ORGANIZATION SETTINGS -->
     <organization.name>OHDSI</organization.name>
@@ -185,12 +191,26 @@
 
     <!-- Cache Config -->
     <spring.cache.jcache.config>classpath:config/ehcache.xml</spring.cache.jcache.config>
+    <cdm.result.cache.warming.enable>true</cdm.result.cache.warming.enable>
+    <cache.generation.invalidAfterDays>7</cache.generation.invalidAfterDays>
+    <cache.generation.cleanupInterval>60000</cache.generation.cleanupInterval>
+    <cache.generation.useAsync>false</cache.generation.useAsync>
+
+    <!-- Build info -->
+    <buildinfo.atlas.milestone.id>22</buildinfo.atlas.milestone.id>
+    <buildinfo.webapi.milestone.id>25</buildinfo.webapi.milestone.id>
+    <buildinfo.atlas.release.tag>*</buildinfo.atlas.release.tag>
+    <buildinfo.webapi.release.tag>*</buildinfo.webapi.release.tag>
 
     <!-- I18n -->
     <i18n.defaultLocale>en</i18n.defaultLocale>
   </properties>
   <build>
     <finalName>WebAPI</finalName>
+    <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+    <testSourceDirectory>${basedir}/src/test/java</testSourceDirectory>
+    <outputDirectory>${basedir}/target/classes</outputDirectory>
+    <testOutputDirectory>${basedir}/target/test-classes</testOutputDirectory>
     <resources>
       <resource>
         <directory>src/main/resources</directory>
@@ -211,14 +231,16 @@
           <exclude>log4j.xml</exclude>
         </excludes>
       </resource>
-      <resource>
+    </resources>
+    <testResources>
+      <testResource>
         <directory>src/test/resources</directory>
         <filtering>true</filtering>
         <includes>
           <include>**/*.properties</include>
         </includes>
-      </resource>
-      <resource>
+      </testResource>
+      <testResource>
         <directory>src/test/resources</directory>
         <filtering>false</filtering>
         <includes>
@@ -227,9 +249,25 @@
         <excludes>
           <exclude>**/*.properties</exclude>
         </excludes>
-      </resource>
-    </resources>
+      </testResource>
+    </testResources>
     <plugins>
+      <plugin>
+        <groupId>pl.project13.maven</groupId>
+        <artifactId>git-commit-id-plugin</artifactId>
+        <version>4.0.0</version>
+        <executions>
+          <execution>
+            <phase>validate</phase>
+            <goals>
+              <goal>revision</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <generateGitPropertiesFile>false</generateGitPropertiesFile>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
@@ -238,19 +276,22 @@
         <configuration>
           <!-- Since we filter properties files via Maven, do not add resources. -->
           <addResources>false</addResources>
-          <!-- executable-jar
-          <classifier>exec</classifier>
-          -->
+          <additionalProperties>
+            <git.branch>${git.branch}</git.branch>
+            <git.commit.id>${git.commit.id.abbrev}</git.commit.id>
+            <atlas.milestone.id>${buildinfo.atlas.milestone.id}</atlas.milestone.id>
+            <webapi.milestone.id>${buildinfo.webapi.milestone.id}</webapi.milestone.id>
+            <atlas.release.tag>${buildinfo.atlas.release.tag}</atlas.release.tag>
+            <webapi.release.tag>${buildinfo.webapi.release.tag}</webapi.release.tag>
+          </additionalProperties>
         </configuration>
-        <!-- executable-jar
         <executions>
-            <execution>
-                <goals>
-                    <goal>repackage</goal>
-                </goals>
-            </execution>
+          <execution>
+            <goals>
+              <goal>build-info</goal>
+            </goals>
+          </execution>
         </executions>
-        -->
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -259,21 +300,25 @@
         <configuration>
           <skipTests>true</skipTests>
         </configuration>
-</plugin>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.5.1</version>
+        <version>3.1</version>
         <inherited>true</inherited>
         <configuration>
           <source>1.8</source>
           <target>1.8</target>
+          <compilerArgs>
+            <!-- Prevents recompilation due to missing package-info.class, see MCOMPILER-205 -->
+            <arg>-Xpkginfo:always</arg>
+          </compilerArgs>
         </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
-        <version>2.2</version>
+        <version>2.6</version>
         <configuration>
           <failOnMissingWebXml>false</failOnMissingWebXml>
           <attachClasses>true</attachClasses>
@@ -315,7 +360,7 @@
       <plugin>
         <groupId>com.qmino</groupId>
         <artifactId>miredot-plugin</artifactId>
-        <version>2.1.2</version>
+        <version>2.2</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -362,11 +407,6 @@
 
   <repositories>
     <repository>
-      <id>central</id>
-      <name>Central Repository</name>
-      <url>http://repo.maven.apache.org/maven2/ </url>
-    </repository>
-    <repository>
       <id>ohdsi</id>
       <name>repo.ohdsi.org</name>
       <url>http://repo.ohdsi.org:8085/nexus/content/repositories/releases</url>
@@ -401,6 +441,11 @@
     <repository>
       <id>redshift</id>
       <url>http://redshift-maven-repository.s3-website-us-east-1.amazonaws.com/release</url>
+    </repository>
+    <repository>
+      <id>miredot</id>
+      <name>Miredot Releases</name>
+      <url>http://nexus.qmino.com/content/repositories/miredot</url>
     </repository>
   </repositories>
 
@@ -498,7 +543,7 @@
     <dependency>
       <groupId>org.ohdsi.sql</groupId>
       <artifactId>SqlRender</artifactId>
-      <version>1.6.3</version>
+      <version>${SqlRender.version}</version>
     </dependency>
     <dependency>
       <groupId>commons-dbutils</groupId>
@@ -508,7 +553,7 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.4</version>
+      <version>2.6</version>
     </dependency>
     <dependency>
       <groupId>com.sun.xml.security</groupId>
@@ -520,11 +565,17 @@
       <artifactId>spring-boot-starter-test</artifactId>
       <version>${spring.boot.version}</version>
       <scope>test</scope>
+        <exclusions>
+            <exclusion>
+                <groupId>com.vaadin.external.google</groupId>
+                <artifactId>android-json</artifactId>
+            </exclusion>
+        </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.3.2</version>
+      <version>3.9</version>
     </dependency>
     <dependency>
       <groupId>org.flywaydb</groupId>
@@ -534,7 +585,7 @@
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
-      <version>4.3.6</version>
+      <version>4.5.10</version>
     </dependency>
     <dependency>
       <groupId>commons-httpclient</groupId>
@@ -637,12 +688,12 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>
-      <version>1.8.3</version>
+      <version>${circe.version}</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>hydra</artifactId>
-      <version>0.0.6</version>
+      <version>0.0.7</version>
       <exclusions>
         <exclusion>
           <groupId>org.ohdsi</groupId>
@@ -743,16 +794,28 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>standardized-analysis-utils</artifactId>
-      <version>1.2.1</version>
+      <version>1.2.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>SkeletonCohortCharacterization</artifactId>
-      <version>1.0.0</version>
+      <version>1.1.0-SNAPSHOT</version>
       <exclusions>
         <exclusion>
           <groupId>org.ohdsi</groupId>
           <artifactId>standardized-analysis-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ohdsi.sql</groupId>
+          <artifactId>SqlRender</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ohdsi</groupId>
+          <artifactId>circe</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ohdsi</groupId>
+          <artifactId>featureExtraction</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.ohdsi.sql</groupId>
@@ -775,6 +838,23 @@
       <artifactId>jackson-annotations</artifactId>
       <version>2.8.7</version>
       <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>com.opentable.components</groupId>
+      <artifactId>otj-pg-embedded</artifactId>
+      <version>0.13.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.solr</groupId>
+        <artifactId>solr-solrj</artifactId>
+        <version>8.3.1</version>
+      <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>com.qmino</groupId>
+      <artifactId>miredot-annotations</artifactId>
+      <version>1.5.0</version>
     </dependency>
   </dependencies>
   <profiles>
@@ -1077,6 +1157,96 @@
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <id>webapi-hive</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hive</groupId>
+          <artifactId>hive-jdbc</artifactId>
+          <version>${hive-jdbc.version}</version>
+          <exclusions>
+            <exclusion>
+              <groupId>org.apache.tomcat</groupId>
+              <artifactId>*</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>org.eclipse.jetty</groupId>
+              <artifactId>*</artifactId>
+            </exclusion>
+            <exclusion>
+              <artifactId>slf4j-log4j12</artifactId>
+              <groupId>org.slf4j</groupId>
+            </exclusion>
+            <exclusion>
+              <artifactId>log4j</artifactId>
+              <groupId>log4j</groupId>
+            </exclusion>
+            <exclusion>
+              <artifactId>servlet-api</artifactId>
+              <groupId>javax.servlet</groupId>
+            </exclusion>
+            <exclusion>
+              <groupId>com.zaxxer</groupId>
+              <artifactId>HikariCP</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>com.zaxxer</groupId>
+              <artifactId>HikariCP-java7</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>javax.ws.rs</groupId>
+              <artifactId>javax.ws.rs-api</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>com.sun.jersey</groupId>
+              <artifactId>jersey-server</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>com.sun.jersey</groupId>
+              <artifactId>jersey-core</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>com.sun.jersey</groupId>
+              <artifactId>jersey-client</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>com.sun.jersey</groupId>
+              <artifactId>jersey-json</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>com.tdunning</groupId>
+              <artifactId>json</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+        <dependency>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-server</artifactId>
+          <version>1.19.4</version>
+        </dependency>
+        <dependency>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-core</artifactId>
+          <version>1.19.4</version>
+          <exclusions>
+            <exclusion>
+              <groupId>javax.ws.rs</groupId>
+              <artifactId>jsr311-api</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+        <dependency>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-client</artifactId>
+          <version>1.19.4</version>
+        </dependency>
+        <dependency>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-json</artifactId>
+          <version>1.19.4</version>
+        </dependency>
+      </dependencies>
     </profile>
   </profiles>
 </project>

@@ -88,10 +88,10 @@ public class UserImportJob extends ArachneJob {
   }
 
   public String getUserRoles() {
-        return userRoles;
-    }
+    return userRoles;
+  }
 
   public void setUserRoles(String userRoles) {
-        this.userRoles = userRoles;
-    }
+    this.userRoles = userRoles;
+  }
 }

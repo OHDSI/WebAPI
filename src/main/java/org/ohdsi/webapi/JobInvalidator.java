@@ -9,10 +9,12 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @Component
+@DependsOn("flyway")
 public class JobInvalidator {
 
     public static final String INVALIDATED_BY_SYSTEM_EXIT_MESSAGE = "Invalidated by system";

@@ -5,7 +5,7 @@ import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfo
 import org.ohdsi.webapi.common.generation.AnalysisTasklet;
 import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnalysisConverter;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
-import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.source.Source;

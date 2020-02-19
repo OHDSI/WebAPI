@@ -1,8 +1,11 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
+import com.odysseusinc.arachne.commons.types.DBMSType;
+import java.util.Objects;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
 import org.ohdsi.webapi.util.SourceUtils;
@@ -44,8 +47,12 @@ public class DropCohortTableListener extends JobExecutionListenerSupport {
     final Source source = sourceService.findBySourceId(sourceId);
     final String resultsQualifier = SourceUtils.getResultsQualifier(source);
     final String tempQualifier = SourceUtils.getTempQualifier(source, resultsQualifier);
-    jdbcTemplate.execute(SqlTranslate.translateSql(sql, source.getSourceDialect(), null, tempQualifier));
+    String toRemove = SqlTranslate.translateSql(sql, source.getSourceDialect(), null, tempQualifier);
 
+    if (Objects.equals(DBMSType.HIVE.getOhdsiDB(), source.getSourceDialect())){
+      toRemove = StringUtils.remove(toRemove, ';');
+    }
+    jdbcTemplate.execute(toRemove);
     return null;
   }
 

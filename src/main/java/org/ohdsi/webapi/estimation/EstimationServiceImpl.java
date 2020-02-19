@@ -30,9 +30,11 @@ import org.ohdsi.webapi.estimation.specification.EstimationAnalysisImpl;
 import org.ohdsi.webapi.estimation.specification.NegativeControlImpl;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
+import org.ohdsi.webapi.job.GeneratesNotification;
+import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.service.ConceptSetService;
 import org.ohdsi.webapi.service.JobService;
-import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.service.VocabularyService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
@@ -72,7 +74,7 @@ import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 
 @Service
 @Transactional
-public class EstimationServiceImpl extends AnalysisExecutionSupport implements EstimationService {
+public class EstimationServiceImpl extends AnalysisExecutionSupport implements EstimationService, GeneratesNotification {
     
     private static final String CONCEPT_SET_XREF_KEY_TARGET_COMPARATOR_OUTCOME = "estimationAnalysisSettings.analysisSpecification.targetComparatorOutcomes";
     private static final String CONCEPT_SET_XREF_KEY_NEGATIVE_CONTROL_OUTCOMES = "negativeControlOutcomes";
@@ -412,7 +414,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
 
     @Override
     @DataSourceAccess
-    public void runGeneration(Estimation estimation, @SourceKey String sourceKey) throws IOException {
+    public JobExecutionResource runGeneration(Estimation estimation, @SourceKey String sourceKey) throws IOException {
 
         final Source source = sourceService.findBySourceKey(sourceKey);
         final Integer analysisId = estimation.getId();
@@ -441,7 +443,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
                 analysisFiles
         ).build();
 
-        jobService.runJob(generateAnalysisJob, builder.toJobParameters());
+        return jobService.runJob(generateAnalysisJob, builder.toJobParameters());
     }
 
     @Override
@@ -471,5 +473,15 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         entityManager.refresh(analysis);
         analysis = getById(analysis.getId());
         return analysis;
+    }
+
+    @Override
+    public String getJobName() {
+        return GENERATE_ESTIMATION_ANALYSIS;
+    }
+
+    @Override
+    public String getExecutionFoldingKey() {
+        return ESTIMATION_ANALYSIS_ID;
     }
 }

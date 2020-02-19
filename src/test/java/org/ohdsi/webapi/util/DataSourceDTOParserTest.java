@@ -28,6 +28,7 @@ public class DataSourceDTOParserTest {
             "OAuthPvtKeyPath=C:\\SecureFiles\\ServiceKeyFile.p12;";
     public static final String ORACLE_WO_PWD_CONN_STR = "jdbc:oracle:thin:@myhost:1521:orcl";
     public static final String ORACLE_WITH_PWD_CONN_STR = "jdbc:oracle:thin:scott/tiger@myhost:1521:orcl";
+    public static final String HIVE_CONN_STR = "jdbc:hive2://sandbox-hdp.hortonworks.com:2181/synpuf_531_orc;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2";
 
     @Test
     public void parseDTO() {
@@ -103,6 +104,12 @@ public class DataSourceDTOParserTest {
         assertThat(dto.getConnectionString(), is(ORACLE_WITH_PWD_CONN_STR));
         assertThat(dto.getUsername(), is("scott"));
         assertThat(dto.getPassword(), is("tiger"));
+
+        dto = DataSourceDTOParser.parseDTO(getHiveSource());
+        assertThat(dto.getType(), is(DBMSType.HIVE));
+        assertThat(dto.getConnectionString(), is(HIVE_CONN_STR));
+        assertThat(dto.getUsername(), is(nullValue()));
+        assertThat(dto.getPassword(), is(nullValue()));
     }
 
     private Source getPostgreSQLPasswordSource() {
@@ -188,6 +195,13 @@ public class DataSourceDTOParserTest {
         Source source = new Source();
         source.setSourceDialect("postgresql");
         source.setSourceConnection(PGSQL_CONN_STR);
+        return source;
+    }
+
+    private Source getHiveSource() {
+        Source source = new Source();
+        source.setSourceDialect("hive");
+        source.setSourceConnection(HIVE_CONN_STR);
         return source;
     }
 }

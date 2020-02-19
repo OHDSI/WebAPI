@@ -4,11 +4,6 @@ DROP VIEW ${ohdsiSchema}.pathway_analysis_generation;
 DROP VIEW ${ohdsiSchema}.prediction_analysis_generation;
 DROP VIEW ${ohdsiSchema}.user_import_job_history;
 
-ALTER TABLE ${ohdsiSchema}.batch_job_execution_params ADD (clob_string_val CLOB);
-UPDATE ${ohdsiSchema}.batch_job_execution_params SET clob_string_val = string_val;
-ALTER TABLE ${ohdsiSchema}.batch_job_execution_params DROP (string_val);
-ALTER TABLE ${ohdsiSchema}.batch_job_execution_params RENAME COLUMN clob_string_val TO string_val;
-
 ALTER TABLE ${ohdsiSchema}.user_import_job ADD (user_roles VARCHAR);
 
 CREATE OR REPLACE VIEW ${ohdsiSchema}.cc_generation as

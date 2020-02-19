@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.executionengine.service;
 
 import com.odysseusinc.arachne.execution_engine_common.util.CommonFileUtils;
-import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.FileUtils;
@@ -156,11 +156,9 @@ public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractS
 
             // Delete archive volumes
             ZipFile zipFile = new ZipFile(zipPath.toFile());
-            List<String> filenames = zipFile.getSplitZipFiles();
-            filenames.forEach(filename -> {
-                File file = new File(filename);
-                file.delete();
-            });
+            zipFile
+                    .getSplitZipFiles()
+                    .forEach(File::delete);
 
             Files.list(temporaryDir.toPath()).forEach(path -> {
                 try {
@@ -170,10 +168,10 @@ public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractS
                 }
             });
             CommonFileUtils.compressAndSplit(temporaryDir, zipPath.toFile(), null);
-        } catch (IOException e) {
-            LOGGER.error("File writing error", e);
         } catch (ZipException e) {
             LOGGER.error("Error unzipping file", e);
+        } catch (IOException e) {
+            LOGGER.error("File writing error", e);
         } finally {
             FileUtils.deleteQuietly(temporaryDir);
         }

@@ -8,11 +8,10 @@ WHERE pathway_analysis_generation_id = @generation_id AND target_cohort_id = @pa
 * SELECT 1 AS cohort_definition_id, 1 AS cohort_index UNION ALL ...
 */
 
-select id, event_cohort_index, subject_id, CAST(cohort_start_date AS DATETIME) AS cohort_start_date, CAST(cohort_end_date AS DATETIME) AS cohort_end_date
+select event_cohort_index, subject_id, CAST(cohort_start_date AS DATETIME) AS cohort_start_date, CAST(cohort_end_date AS DATETIME) AS cohort_end_date
 INTO #raw_events
 FROM (
-	SELECT ROW_NUMBER() OVER (ORDER BY e.cohort_start_date) AS id,
-	  ec.cohort_index AS event_cohort_index,
+	SELECT ec.cohort_index AS event_cohort_index,
 	  e.subject_id,
 	  e.cohort_start_date,
 	  dateadd(d, 1, e.cohort_end_date) as cohort_end_date
@@ -56,7 +55,7 @@ WHERE cohort_date <> replacement_date;
 */
 
 SELECT
-  e.id,
+  ROW_NUMBER() OVER (ORDER BY e.cohort_start_date) AS id,
   e.event_cohort_index,
   e.subject_id,
   e.cohort_start_date,
@@ -67,9 +66,9 @@ SELECT
     when e.cohort_start_date = e.cohort_end_date then CAST(dateadd(d,1,e.cohort_end_date) AS DATETIME) /* cast is required for BigQuery */
     else e.cohort_end_date
   end cohort_end_date
+INTO #collapsed_dates_events
 FROM
-  (SELECT
-    event.id,
+  (SELECT DISTINCT
     event.event_cohort_index,
     event.subject_id,
     COALESCE(start_dr.replacement_date, event.cohort_start_date) cohort_start_date,
@@ -77,7 +76,6 @@ FROM
 FROM #raw_events event
   LEFT JOIN #date_replacements start_dr ON start_dr.subject_id = event.subject_id AND start_dr.cohort_date = event.cohort_start_date
   LEFT JOIN #date_replacements end_dr ON end_dr.subject_id = event.subject_id AND end_dr.cohort_date = event.cohort_end_date) e
-INTO #collapsed_dates_events
 ;
 
 /*
@@ -91,36 +89,36 @@ into
   |A--|A--|
       |B--|B--|
 
-or 
+or
   |A--------------|
       |B-----|
-into   
+into
   |A--|A-----|A---|
       |B-----|
 */
 
-WITH 
+WITH
 cohort_dates AS (
-	SELECT DISTINCT subject_id, cohort_date 
+	SELECT DISTINCT subject_id, cohort_date
 	FROM (
-		  SELECT subject_id, cohort_start_date cohort_date FROM #collapsed_dates_events 
-		  UNION 
+		  SELECT subject_id, cohort_start_date cohort_date FROM #collapsed_dates_events
+		  UNION
 		  SELECT subject_id,cohort_end_date cohort_date FROM #collapsed_dates_events
 		  ) all_dates
 ),
 time_periods AS (
 	SELECT subject_id, cohort_date, LEAD(cohort_date,1) over (PARTITION BY subject_id ORDER BY cohort_date ASC) next_cohort_date
-	FROM cohort_dates 
+	FROM cohort_dates
 	GROUP BY subject_id, cohort_date
 
 ),
 events AS (
-	SELECT tp.subject_id, event_cohort_index, cohort_date cohort_start_date, next_cohort_date cohort_end_date  
+	SELECT tp.subject_id, event_cohort_index, cohort_date cohort_start_date, next_cohort_date cohort_end_date
 	FROM time_periods tp
 	LEFT JOIN #collapsed_dates_events e ON e.subject_id = tp.subject_id
 	WHERE (e.cohort_start_date <= tp.cohort_date AND e.cohort_end_date >= tp.next_cohort_date)
-) 
-SELECT SUM(POWER(2, e.event_cohort_index)) as combo_id,  subject_id , cohort_start_date, cohort_end_date
+)
+SELECT cast(SUM(POWER(cast(2 as bigint), e.event_cohort_index)) as bigint) as combo_id,  subject_id , cohort_start_date, cohort_end_date
 into #combo_events
 FROM events e
 GROUP BY subject_id, cohort_start_date, cohort_end_date;

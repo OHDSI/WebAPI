@@ -1,17 +1,19 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.List;
-
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
+import org.ohdsi.webapi.cohortcharacterization.dto.ExecutionResultRequest;
+import org.ohdsi.webapi.cohortcharacterization.dto.ExportExecutionResultRequest;
+import org.ohdsi.webapi.cohortcharacterization.dto.GenerationResults;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.io.OutputStream;
+import java.util.List;
 
 public interface CcService {
     CohortCharacterizationEntity createCc(CohortCharacterizationEntity entity);
@@ -19,13 +21,13 @@ public interface CcService {
     CohortCharacterizationEntity updateCc(CohortCharacterizationEntity entity);
 
     int getCountCcWithSameName(Long id, String name);
-    
+
     void deleteCc(Long ccId);
 
     CohortCharacterizationEntity importCc(CohortCharacterizationEntity entity);
 
     String getNameForCopy(String dtoName);
-    
+
     String getNameWithSuffix(String dtoName);
 
     String serializeCc(Long id);
@@ -50,7 +52,9 @@ public interface CcService {
 
     List<CcGenerationEntity> findGenerationsByCcIdAndSource(Long id, String sourceKey);
 
-    List<CcResult> findResults(Long generationId, float thresholdLevel);
+    GenerationResults findResult(Long generationId, ExecutionResultRequest params);
+    
+    List<CcResult> findResultAsList(Long generationId, float thresholdLevel);
 
     List<CcPrevalenceStat> getPrevalenceStatsByGenerationId(final Long id, Long analysisId, final Long cohortId, final Long covariateId);
 
@@ -59,4 +63,10 @@ public interface CcService {
     void deleteCcGeneration(Long generationId);
 
     void cancelGeneration(Long id, String sourceKey);
+
+    Long getCCResultsTotalCount(Long id);
+
+    GenerationResults exportExecutionResult(Long generationId, ExportExecutionResultRequest params);
+
+    GenerationResults findData(final Long generationId, ExecutionResultRequest params);
 }

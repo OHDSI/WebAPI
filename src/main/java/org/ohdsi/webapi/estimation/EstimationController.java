@@ -1,6 +1,8 @@
 package org.ohdsi.webapi.estimation;
 
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
+import com.qmino.miredot.annotations.MireDotIgnore;
+import com.qmino.miredot.annotations.ReturnType;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
@@ -10,8 +12,9 @@ import org.ohdsi.webapi.estimation.dto.EstimationDTO;
 import org.ohdsi.webapi.estimation.dto.EstimationShortDTO;
 import org.ohdsi.webapi.estimation.specification.EstimationAnalysisImpl;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
-import org.ohdsi.webapi.service.SourceService;
-import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,8 +104,9 @@ public class EstimationController {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public EstimationDTO createEstimation(Estimation est) throws Exception {
-    Estimation estimation = service.createEstimation(est);
-    return reloadAndConvert(estimation.getId());
+
+    Estimation estWithId = service.createEstimation(est);
+    return conversionService.convert(estWithId, EstimationDTO.class);
   }
 
   @PUT
@@ -111,8 +115,8 @@ public class EstimationController {
   @Consumes(MediaType.APPLICATION_JSON)
   public EstimationDTO updateEstimation(@PathParam("id") final int id, Estimation est) throws Exception {
 
-    service.updateEstimation(id, est);
-    return reloadAndConvert(id);
+    Estimation updatedEst = service.updateEstimation(id, est);
+    return conversionService.convert(updatedEst, EstimationDTO.class);
   }
 
   @GET
@@ -121,8 +125,8 @@ public class EstimationController {
   @Transactional
   public EstimationDTO copy(@PathParam("id") final int id) throws Exception {
 
-    Estimation estimation = service.copy(id);
-    return reloadAndConvert(estimation.getId());
+    Estimation est = service.copy(id);
+    return conversionService.convert(est, EstimationDTO.class);
   }
 
   @GET
@@ -138,6 +142,7 @@ public class EstimationController {
   @GET
   @Path("{id}/export")
   @Produces(MediaType.APPLICATION_JSON)
+  @ReturnType("java.lang.Object")
   public EstimationAnalysisImpl exportAnalysis(@PathParam("id") int id) {
 
     Estimation estimation = service.getAnalysis(id);
@@ -153,15 +158,16 @@ public class EstimationController {
   @Path("import")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
+  @MireDotIgnore // @BodyType("java.lang.Object") doesn't fix the issue
   public EstimationDTO importAnalysis(EstimationAnalysisImpl analysis) throws Exception {
 
       if (Objects.isNull(analysis)) {
           LOGGER.error("Failed to import Estimation, empty or not valid source JSON");
           throw new InternalServerErrorException();
       }
-      Estimation estimation = service.importAnalysis(analysis);
-      return reloadAndConvert(estimation.getId());
-  }  
+      Estimation importedEstimation = service.importAnalysis(analysis);
+      return conversionService.convert(importedEstimation, EstimationDTO.class);
+  }
 
   /**
    * Download an R package to execute the estimation study
@@ -195,12 +201,12 @@ public class EstimationController {
   @Path("{id}/generation/{sourceKey}")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public void runGeneration(@PathParam("id") Integer analysisId,
-                            @PathParam("sourceKey") String sourceKey) throws IOException {
+  public JobExecutionResource runGeneration(@PathParam("id") Integer analysisId,
+                                            @PathParam("sourceKey") String sourceKey) throws IOException {
 
     Estimation analysis = service.getAnalysis(analysisId);
     ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format(NO_ESTIMATION_MESSAGE, analysisId));
-    service.runGeneration(analysis, sourceKey);
+    return service.runGeneration(analysis, sourceKey);
   }
 
   @GET
@@ -208,7 +214,7 @@ public class EstimationController {
   @Produces(MediaType.APPLICATION_JSON)
   public List<ExecutionBasedGenerationDTO> getGenerations(@PathParam("id") Integer analysisId) {
 
-    Map<String, SourceInfo> sourcesMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_KEY);
+    Map<String, Source> sourcesMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_KEY);
     return sensitiveInfoService.filterSensitiveInfo(converterUtils.convertList(service.getEstimationGenerations(analysisId), ExecutionBasedGenerationDTO.class),
             info -> Collections.singletonMap(Constants.Variables.SOURCE, sourcesMap.get(info.getSourceKey())));
   }
@@ -235,10 +241,4 @@ public class EstimationController {
             .header("Content-Disposition", "attachment; filename=\"" + archive.getName() + "\"")
             .build();
   }
-
-    private EstimationDTO reloadAndConvert(Integer id) {
-        // Before conversion entity must be refreshed to apply entity graphs
-        Estimation estimation = service.getById(id);
-        return conversionService.convert(estimation, EstimationDTO.class);
-    }
 }

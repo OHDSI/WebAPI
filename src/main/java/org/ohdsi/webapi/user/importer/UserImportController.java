@@ -118,8 +118,8 @@ public class UserImportController {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public UserImportJobDTO importUsers(List<AtlasUserRoles> users,
-                                @QueryParam("provider") String provider,
-                                @DefaultValue("TRUE") @QueryParam("preserve") Boolean preserveRoles) {
+                                        @QueryParam("provider") String provider,
+                                        @DefaultValue("TRUE") @QueryParam("preserve") Boolean preserveRoles) {
         LdapProviderType providerType = LdapProviderType.fromValue(provider);
 
         UserImportJobDTO jobDto = new UserImportJobDTO();

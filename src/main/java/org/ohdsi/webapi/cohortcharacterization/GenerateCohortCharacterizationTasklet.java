@@ -24,7 +24,7 @@ import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConvert
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
 import org.ohdsi.webapi.common.generation.AnalysisTasklet;
-import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.source.Source;
@@ -91,7 +91,7 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
          *
          * Therefore, there are two ways:
          * - either precisely group SQLs into statements so that temp tables aren't re-used in a single statement,
-         * - or use ‘permenant temporary tables’
+         * - or use ‘permanent temporary tables’
          *
          * The second option looks better since such SQL could be exported and executed manually,
          * which is not the case with the first option.

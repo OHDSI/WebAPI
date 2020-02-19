@@ -2,6 +2,7 @@ package org.ohdsi.webapi.pathway;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.google.common.base.MoreObjects;
+import com.odysseusinc.arachne.commons.types.DBMSType;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Hibernate;
 import org.ohdsi.circe.helper.ResourceHelper;
@@ -30,7 +31,7 @@ import org.ohdsi.webapi.pathway.repository.PathwayAnalysisEntityRepository;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisGenerationRepository;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.JobService;
-import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.PathwayAnalysisGenerationId;
@@ -77,6 +78,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.ohdsi.webapi.Constants.GENERATE_PATHWAY_ANALYSIS;
+import static org.ohdsi.webapi.Constants.Params.GENERATION_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_AUTHOR;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Params.PATHWAY_ANALYSIS_ID;
@@ -98,7 +100,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     private final GenericConversionService genericConversionService;
     private final StepBuilderFactory stepBuilderFactory;
     private final I18nService i18nService;
-		
+
 		private final List<String> STEP_COLUMNS = Arrays.asList(new String[]{"step_1", "step_2", "step_3", "step_4", "step_5", "step_6", "step_7", "step_8", "step_9", "step_10"});
 
     private final EntityGraph defaultEntityGraph = EntityUtils.fromAttributePaths(
@@ -323,7 +325,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         pathwayAnalysis.getTargetCohorts().forEach(tc -> {
 
             String[] params = new String[]{
-                    "generation_id",
+                    GENERATION_ID,
                     "event_cohort_id_index_map",
                     "temp_database_schema",
                     "target_database_schema",
@@ -331,7 +333,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
                     "pathway_target_cohort_id",
                     "max_depth",
                     "combo_window",
-                    "allow_repeats"
+                    "allow_repeats",
+                    "isHive"
             };
             String[] values = new String[]{
                     generationId.toString(),
@@ -342,7 +345,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
                     tc.getCohortDefinition().getId().toString(),
                     pathwayAnalysis.getMaxDepth().toString(),
                     MoreObjects.firstNonNull(pathwayAnalysis.getCombinationWindow(), 1).toString(),
-                    String.valueOf(pathwayAnalysis.isAllowRepeats())
+                    String.valueOf(pathwayAnalysis.isAllowRepeats()),
+                    String.valueOf(Objects.equals(DBMSType.HIVE.getOhdsiDB(), source.getSourceDialect()))
             };
 
             String renderedSql = SqlRender.renderSql(analysisSql, params, values);
@@ -493,7 +497,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 			PreparedStatementRenderer pathwayCodesPsr = new PreparedStatementRenderer(
 							source, "/resources/pathway/getPathwayCodeLookup.sql", "target_database_schema",
 							source.getTableQualifier(SourceDaimon.DaimonType.Results),
-							new String[] { "generation_id" },
+							new String[] { GENERATION_ID },
 							new Object[] { generationId}
 			);
 			List<PathwayCode> pathwayCodes = getSourceJdbcTemplate(source).query(pathwayCodesPsr.getSql(), pathwayCodesPsr.getOrderedParams(), codeRowMapper);
@@ -502,7 +506,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 			PreparedStatementRenderer pathwayStatsPsr = new PreparedStatementRenderer(
 							source, "/resources/pathway/getPathwayStats.sql", "target_database_schema",
 							source.getTableQualifier(SourceDaimon.DaimonType.Results),
-							new String[] { "generation_id" },
+							new String[] { GENERATION_ID },
 							new Object[] { generationId}
 			);
 			List<CohortPathways> cohortStats = getSourceJdbcTemplate(source).query(pathwayStatsPsr.getSql(), pathwayStatsPsr.getOrderedParams(), pathwayStatsRowMapper);
@@ -511,7 +515,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 			PreparedStatementRenderer pathwayResultsPsr = new PreparedStatementRenderer(
 							source, "/resources/pathway/getPathwayResults.sql", "target_database_schema",
 							source.getTableQualifier(SourceDaimon.DaimonType.Results),
-							new String[] { "generation_id" },
+							new String[] { GENERATION_ID },
 							new Object[] { generationId}
 			);
 			Map<Integer, Map<String, Integer>> pathwayResults = 

@@ -47,6 +47,8 @@ public interface Constants {
     String TEMP_DATABASE_SCHEMA = "temp_database_schema";
     String TARGET_DIALECT = "target_dialect";
     String TARGET_TABLE = "target_table";
+    String COHORT_ID_FIELD_NAME = "cohort_id_field_name";
+    String TARGET_COHORT_ID = "target_cohort_id";
     String GENERATE_STATS = "generate_stats";
     String JOB_START_TIME = "time";
     String USER_IMPORT_ID = "user_import_id";
@@ -55,6 +57,8 @@ public interface Constants {
     String PACKAGE_NAME = "packageName";
     String PACKAGE_FILE_NAME = "packageFilename";
     String EXECUTABLE_FILE_NAME = "executableFilename";
+    String GENERATION_ID = "generation_id";
+    String DESIGN_HASH = "design_hash";
   }
 
   interface Variables {
@@ -75,5 +79,13 @@ public interface Constants {
   interface Templates {
 
     String ENTITY_COPY_PREFIX = "COPY OF: %s";
+  }
+
+  interface Tables {
+    String COHORT_CACHE = "cohort_cache";
+    String COHORT_INCLUSION_RESULT_CACHE = "cohort_inclusion_result_cache";
+    String COHORT_INCLUSION_STATS_CACHE = "cohort_inclusion_stats_cache";
+    String COHORT_SUMMARY_STATS_CACHE = "cohort_summary_stats_cache";
+    String COHORT_CENSOR_STATS_CACHE = "cohort_censor_stats_cache";
   }
 }

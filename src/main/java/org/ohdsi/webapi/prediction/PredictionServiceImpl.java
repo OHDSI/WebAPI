@@ -17,21 +17,23 @@ import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.conceptset.ConceptSetCrossReferenceImpl;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
+import org.ohdsi.webapi.job.GeneratesNotification;
+import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.prediction.domain.PredictionGenerationEntity;
 import org.ohdsi.webapi.prediction.repository.PredictionAnalysisGenerationRepository;
 import org.ohdsi.webapi.prediction.repository.PredictionAnalysisRepository;
 import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl;
 import org.ohdsi.webapi.service.ConceptSetService;
 import org.ohdsi.webapi.service.JobService;
-import org.ohdsi.webapi.service.SourceService;
 import org.ohdsi.webapi.service.VocabularyService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.util.EntityUtils;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.NameUtils;
+import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -49,13 +51,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.GENERATE_PREDICTION_ANALYSIS;
@@ -64,7 +60,7 @@ import static org.ohdsi.webapi.Constants.Params.PREDICTION_ANALYSIS_ID;
 
 @Service
 @Transactional
-public class PredictionServiceImpl extends AnalysisExecutionSupport implements PredictionService {
+public class PredictionServiceImpl extends AnalysisExecutionSupport implements PredictionService, GeneratesNotification {
 
     private static final EntityGraph DEFAULT_ENTITY_GRAPH = EntityGraphUtils.fromAttributePaths("source", "analysisExecution.resultFiles");
 
@@ -147,7 +143,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         // Fields with information about modifications have to be reseted
         pred.setModifiedBy(null);
         pred.setModifiedDate(null);
-    
+
         return save(pred);
     }
 
@@ -322,8 +318,8 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     
     @Override
     @DataSourceAccess
-    public void runGeneration(final PredictionAnalysis predictionAnalysis,
-                              @SourceKey final String sourceKey) throws IOException {
+    public JobExecutionResource runGeneration(final PredictionAnalysis predictionAnalysis,
+                                              @SourceKey final String sourceKey) throws IOException {
 
         final Source source = sourceService.findBySourceKey(sourceKey);
         final Integer predictionAnalysisId = predictionAnalysis.getId();
@@ -353,7 +349,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
                 analysisFiles
         ).build();
 
-        jobService.runJob(generateAnalysisJob, builder.toJobParameters());
+        return jobService.runJob(generateAnalysisJob, builder.toJobParameters());
     }
 
     @Override
@@ -383,5 +379,15 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         entityManager.refresh(analysis);
         analysis = getById(analysis.getId());
         return analysis;
+    }
+
+    @Override
+    public String getJobName() {
+        return GENERATE_PREDICTION_ANALYSIS;
+    }
+
+    @Override
+    public String getExecutionFoldingKey() {
+        return PREDICTION_ANALYSIS_ID;
     }
 }

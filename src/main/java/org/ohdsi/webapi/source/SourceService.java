@@ -15,11 +15,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
 import javax.annotation.PostConstruct;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -124,6 +120,22 @@ public class SourceService extends AbstractDaoService {
         }
 
         return null;
+    }
+
+    public Map<SourceDaimon.DaimonType, Source> getPriorityDaimons() {
+
+        Map<Integer, Boolean> checkedSources = new HashMap<>();
+        Map<SourceDaimon.DaimonType, Source> priorityDaimons = new HashMap<>();
+        Arrays.asList(SourceDaimon.DaimonType.values()).forEach(d -> {
+
+            List<Source> sources = sourceRepository.findAllSortedByDiamonPrioirty(d);
+            Optional<Source> source = sources.stream().filter(s -> checkedSources.computeIfAbsent(s.getSourceId(),
+                    v -> sourceAccessor.hasAccess(s)
+                            && connectionAvailability.computeIfAbsent(s, this::checkConnectionSafe)))
+                    .findFirst();
+            source.map(s -> priorityDaimons.put(d, s));
+        });
+        return priorityDaimons;
     }
 
     public Source getPriorityVocabularySource() {

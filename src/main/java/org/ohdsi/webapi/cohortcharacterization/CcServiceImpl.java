@@ -12,6 +12,7 @@ import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisT
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.hydra.Hydra;
+import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.JobInvalidator;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
@@ -608,7 +609,24 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         res.setPrevalenceThreshold(params.getThresholdValuePct());
         return res;
     }
-
+    
+    @Override
+    @DataSourceAccess
+    public List<CcResult> findResultAsList(@CcGenerationId final Long generationId, float thresholdLevel) {
+        ExecutionResultRequest params = new ExecutionResultRequest();
+        CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
+                .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
+        CohortCharacterizationEntity characterization = generationEntity.getCohortCharacterization();
+        params.setThresholdValuePct(thresholdLevel);
+        params.setCohortIds(characterization.getCohortDefinitions().stream()
+                .map(CohortDefinition::getId).collect(Collectors.toList()));
+        params.setAnalysisIds(characterization.getFeatureAnalyses().stream()
+                .map(this::mapFeatureAnalysisId).collect(Collectors.toList()));
+        params.setDomainIds(generationEntity.getCohortCharacterization().getFeatureAnalyses().stream()
+                .map(fa -> fa.getDomain().toString()).distinct().collect(Collectors.toList()));
+        return findResults(generationId, params);
+    }
+    
     @Override
     @DataSourceAccess
     public GenerationResults findResult(@CcGenerationId final Long generationId, ExecutionResultRequest params) {
@@ -808,6 +826,10 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         String prevalenceStats = sourceAwareSqlRender.renderSql(source.getSourceId(), QUERY_PREVALENCE_STATS, PREVALENCE_STATS_PARAMS,
                 new String[]{ cdmSchema, resultSchema, String.valueOf(id), String.valueOf(analysisId), String.valueOf(cohortId), String.valueOf(covariateId) });
         String translatedSql = SqlTranslate.translateSql(prevalenceStats, source.getSourceDialect(), SessionUtils.sessionId(), tempSchema);
+        String[] stmts = SqlSplit.splitSql(translatedSql);
+        if (stmts.length == 1) { // Some DBMS like HIVE fails when a single statement ends with dot-comma
+            translatedSql = StringUtils.removeEnd(translatedSql.trim(), ";");
+        }
         return getSourceJdbcTemplate(source).query(translatedSql, (rs, rowNum) -> {
             CcPrevalenceStat stat = new CcPrevalenceStat();
             stat.setAvg(rs.getDouble("stat_value"));

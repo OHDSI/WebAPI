@@ -53,6 +53,8 @@ public interface CcService {
     List<CcGenerationEntity> findGenerationsByCcIdAndSource(Long id, String sourceKey);
 
     GenerationResults findResult(Long generationId, ExecutionResultRequest params);
+    
+    List<CcResult> findResultAsList(Long generationId, float thresholdLevel);
 
     List<CcPrevalenceStat> getPrevalenceStatsByGenerationId(final Long id, Long analysisId, final Long cohortId, final Long covariateId);
 

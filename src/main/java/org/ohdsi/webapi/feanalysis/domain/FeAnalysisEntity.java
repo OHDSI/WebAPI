@@ -32,7 +32,7 @@ import org.ohdsi.webapi.model.CommonEntity;
 @Table(name = "fe_analysis")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorFormula(
-        "CASE WHEN type = 'CRITERIA_SET' THEN CONCAT(type,'_',stat_type)" +
+        "CASE WHEN type = 'CRITERIA_SET' THEN CONCAT(CONCAT(type,'_'),stat_type) " +
           "ELSE type END"
 )
 public abstract class FeAnalysisEntity<T> extends CommonEntity<Integer> implements FeatureAnalysis<T, Integer>, Comparable<FeAnalysisEntity<String>> {

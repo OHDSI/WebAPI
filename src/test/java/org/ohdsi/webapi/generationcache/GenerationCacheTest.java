@@ -180,26 +180,6 @@ public class GenerationCacheTest extends AbstractInMemoryTest {
     }
 
     @Test
-    public void checkCachingWithPrefilledResults() {
-
-        CacheableGenerationType type = CacheableGenerationType.COHORT;
-        CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(INITIAL_ENTITY_ID);
-        Source source = sourceRepository.findBySourceId(INITIAL_ENTITY_ID);
-
-        executeCohort(new AtomicBoolean(), 10);
-
-        generationCacheHelper.computeCacheIfAbsent(
-                cohortDefinition,
-                source,
-                cohortGenerationRequestBuilder,
-                (resId, sqls) -> {}
-        );
-
-        GenerationCache generationCache = generationCacheService.getCacheOrEraseInvalid(type, generationCacheService.getDesignHash(type, cohortDefinition.getDetails().getExpression()), source.getSourceId());
-        Assert.assertEquals("Generation sequence respects existing results", (Integer) 11, generationCache.getDesignHash());
-    }
-
-    @Test
     public void checkHashEquivalence() {
 
         CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(INITIAL_ENTITY_ID);

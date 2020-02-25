@@ -15,8 +15,6 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
-import java.util.*;
-
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -33,6 +31,12 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
+
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Map;
+import java.util.Objects;
 
 import static org.ohdsi.webapi.Constants.Params.TARGET_DATABASE_SCHEMA;
 
@@ -81,29 +85,33 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 		TransactionStatus completeStatus = this.transactionTemplate.getTransactionManager().getTransaction(completeTx);      
 		CohortDefinition df = this.cohortDefinitionRepository.findOne(defId);
 		CohortGenerationInfo info = findBySourceId(df.getGenerationInfoList(), sourceId);
-		info.setExecutionDuration((int)(je.getEndTime().getTime() - je.getStartTime().getTime()));
-		info.setStatus(GenerationStatus.COMPLETE);
+        if (Objects.nonNull(info)) {
+            if (Objects.nonNull(je.getEndTime()) && Objects.nonNull(je.getStartTime())) {
+                info.setExecutionDuration((int) (je.getEndTime().getTime() - je.getStartTime().getTime()));
+            }
+            info.setStatus(GenerationStatus.COMPLETE);
 
-		if (je.getStatus() == BatchStatus.FAILED || je.getStatus() == BatchStatus.STOPPED) {
-			info.setIsValid(false);
-			info.setRecordCount(null);
-			info.setPersonCount(null);
-			info.setCanceled(je.getStepExecutions().stream().anyMatch(se -> Objects.equals(Constants.CANCELED, se.getExitStatus().getExitCode())));
-			info.setFailMessage(StringUtils.abbreviateMiddle(je.getAllFailureExceptions().get(0).getMessage(),"... [truncated] ...",2000));
-		} else {
-			info.setIsValid(true);
-			info.setFailMessage(null);
+            if (je.getStatus() == BatchStatus.FAILED || je.getStatus() == BatchStatus.STOPPED) {
+                info.setIsValid(false);
+                info.setRecordCount(null);
+                info.setPersonCount(null);
+                info.setCanceled(je.getStepExecutions().stream().anyMatch(se -> Objects.equals(Constants.CANCELED, se.getExitStatus().getExitCode())));
+                info.setFailMessage(StringUtils.abbreviateMiddle(je.getAllFailureExceptions().get(0).getMessage(), "... [truncated] ...", 2000));
+            } else {
+                info.setIsValid(true);
+                info.setFailMessage(null);
 
-			// query summary results from source
-			String statsQuery = "SELECT count(distinct subject_id) as person_count, count(*) as record_count from @cohort_table where cohort_definition_id = @cohort_definition_id";
-			String statsSql = SqlTranslate.translateSql(statsQuery, source.getSourceDialect(), null, null);
-			String renderedSql = SqlRender.renderSql(statsSql, new String[]{"cohort_table", "cohort_definition_id"}, new String[]{cohortTable, defId.toString()});
-      Map<String, Object> stats = this.sourceTemplate.queryForMap(renderedSql);
-			info.setPersonCount(Long.parseLong(stats.get("person_count").toString()));
-			info.setRecordCount(Long.parseLong(stats.get("record_count").toString()));
-		}
-		
-		this.cohortDefinitionRepository.save(df);
+                // query summary results from source
+                String statsQuery = "SELECT count(distinct subject_id) as person_count, count(*) as record_count from @cohort_table where cohort_definition_id = @cohort_definition_id";
+                String statsSql = SqlTranslate.translateSql(statsQuery, source.getSourceDialect(), null, null);
+                String renderedSql = SqlRender.renderSql(statsSql, new String[]{"cohort_table", "cohort_definition_id"}, new String[]{cohortTable, defId.toString()});
+                Map<String, Object> stats = this.sourceTemplate.queryForMap(renderedSql);
+                info.setPersonCount(Long.parseLong(stats.get("person_count").toString()));
+                info.setRecordCount(Long.parseLong(stats.get("record_count").toString()));
+            }
+
+            this.cohortDefinitionRepository.save(df);
+        }
 		this.transactionTemplate.getTransactionManager().commit(completeStatus);
 	}
 

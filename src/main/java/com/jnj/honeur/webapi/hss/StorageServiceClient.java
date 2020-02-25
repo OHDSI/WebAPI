@@ -207,7 +207,7 @@ public class StorageServiceClient {
                             JsonNode.class);
             return new TokenContext(tokenResponse.getBody().path("token").asText(), tokenResponse.getHeaders().getFirst("Set-Cookie").replace("userFingerprint=", ""));
         } catch (Exception e) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "CAS login failed: Wrong storage service user credentials");
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "CAS login failed: Wrong storage service user credentials, or storage service user has been disabled");
         }
     }
 

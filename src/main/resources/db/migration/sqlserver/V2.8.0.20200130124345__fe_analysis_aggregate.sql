@@ -11,7 +11,7 @@ CREATE TABLE ${ohdsiSchema}.fe_analysis_aggregate(
   CONSTRAINT pk_fe_aggregate PRIMARY KEY(id)
 );
 
-ALTER TABLE ${ohdsiSchema}.fe_analysis ADD fe_aggregate_id INTEGER;
+ALTER TABLE ${ohdsiSchema}.fe_analysis_criteria ADD fe_aggregate_id INTEGER;
 
 INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(name, domain, agg_function, expression, agg_query, is_default) VALUES
   ('Events count', null, 'COUNT', '*', null, 1),
@@ -25,15 +25,17 @@ INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(name, domain, agg_function, exp
   ('Distinct drug concepts per person', 'DRUG', 'COUNT', 'DISTINCT drug_concept_id', 'join drug_exposure de on de.person_id = v.person_id and de.drug_exposure_start_date >= E.start_date and de.drug_exposure_end_date <= E.end_date', 0);
 
 UPDATE
-  ${ohdsiSchema}.fe_analysis
+  ${ohdsiSchema}.fe_analysis_criteria
 SET
   fe_aggregate_id = ag.id
 FROM
+  ${ohdsiSchema}.fe_analysis_criteria feac JOIN
+  ${ohdsiSchema}.fe_analysis fea ON fea.id = feac.fe_analysis_id,
   ${ohdsiSchema}.fe_analysis_aggregate ag
 WHERE
   ag.name = 'Events count'
-  AND [type] = 'CRITERIA_SET'
-  AND stat_type = 'DISTRIBUTION';
+  AND fea.type = 'CRITERIA_SET'
+  AND fea.stat_type = 'DISTRIBUTION';
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
     SELECT NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'feature-analysis:aggregates:get', 'List available aggregates for Feature Analyses';

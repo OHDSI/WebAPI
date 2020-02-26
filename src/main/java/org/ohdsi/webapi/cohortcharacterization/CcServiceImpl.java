@@ -942,6 +942,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         stat.setP75(rs.getDouble("p75_value"));
         stat.setP90(rs.getDouble("p90_value"));
         stat.setMax(rs.getDouble("max_value"));
+        stat.setAggregateId(rs.getInt("aggregate_id"));
+        stat.setAggregateName(rs.getString("aggregate_name"));
     }
 
     private List<Integer> importAnalyses(final CohortCharacterizationEntity entity, final CohortCharacterizationEntity persistedEntity) {

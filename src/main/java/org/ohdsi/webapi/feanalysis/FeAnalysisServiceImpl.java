@@ -154,9 +154,6 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
           createOrUpdateConceptSetEntity((FeAnalysisWithCriteriaEntity) savedEntity, updatedWithCriteriaEntity.getConceptSetEntity());
         }
         savedEntity.setDesign(updatedEntity.getDesign());
-        if (savedEntity instanceof FeAnalysisWithCriteriaEntity && updatedEntity instanceof FeAnalysisWithCriteriaEntity) {
-            ((FeAnalysisWithCriteriaEntity)savedEntity).setAggregate(((FeAnalysisWithCriteriaEntity)updatedEntity).getAggregate());
-        }
         if (Objects.nonNull(updatedEntity.getDomain())) {
             savedEntity.setDomain(updatedEntity.getDomain());
         }

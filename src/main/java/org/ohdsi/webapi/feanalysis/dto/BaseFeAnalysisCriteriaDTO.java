@@ -16,6 +16,9 @@ public abstract class BaseFeAnalysisCriteriaDTO {
   @JsonProperty("name")
   private String name;
 
+  @JsonProperty("aggregate")
+  private FeAnalysisAggregateDTO aggregate;
+
   public BaseFeAnalysisCriteriaDTO() {
   }
 
@@ -38,5 +41,13 @@ public abstract class BaseFeAnalysisCriteriaDTO {
 
   public void setName(final String name) {
       this.name = name;
+  }
+
+  public FeAnalysisAggregateDTO getAggregate() {
+    return aggregate;
+  }
+
+  public void setAggregate(FeAnalysisAggregateDTO aggregate) {
+    this.aggregate = aggregate;
   }
 }

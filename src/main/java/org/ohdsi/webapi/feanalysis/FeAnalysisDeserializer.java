@@ -75,13 +75,6 @@ public class FeAnalysisDeserializer extends JsonDeserializer<FeAnalysisDTO> {
                 if (statType != null) {
                     dto.setStatType(CcResultType.valueOf(statType.textValue()));
                 }
-                if (CcResultType.DISTRIBUTION == dto.getStatType()) {
-                    JsonNode aggregate = node.get("aggregate");
-                    if (!aggregate.isNull()) {
-                        FeAnalysisAggregateDTO aggregateValue = objectMapper.readValue(aggregate.traverse(), FeAnalysisAggregateDTO.class);
-                        ((FeAnalysisWithConceptSetDTO)dto).setAggregate(aggregateValue);
-                    }
-                }
                 final List<BaseFeAnalysisCriteriaDTO> list = new ArrayList<>();
                 for (final JsonNode jsonNode : design) {
                     list.add(convert(jsonNode));

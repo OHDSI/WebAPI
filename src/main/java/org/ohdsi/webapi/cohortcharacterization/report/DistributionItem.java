@@ -14,6 +14,8 @@ public class DistributionItem extends PrevalenceItem<DistributionItem> {
     private final Double p75;
     private final Double p90;
     private final Double max;
+    private final Integer aggregateId;
+    private final String aggregateName;
 
     public DistributionItem(CcDistributionStat distributionStat, String cohortName) {
         super(distributionStat, cohortName);
@@ -25,6 +27,8 @@ public class DistributionItem extends PrevalenceItem<DistributionItem> {
         this.p75 = distributionStat.getP75();
         this.p90 = distributionStat.getP90();
         this.max = distributionStat.getMax();
+        this.aggregateId = distributionStat.getAggregateId();
+        this.aggregateName = distributionStat.getAggregateName();
     }
 
     @Override
@@ -96,5 +100,13 @@ public class DistributionItem extends PrevalenceItem<DistributionItem> {
 
     public Double getMax() {
         return max;
+    }
+
+    public Integer getAggregateId() {
+        return aggregateId;
+    }
+
+    public String getAggregateName() {
+        return aggregateName;
     }
 }

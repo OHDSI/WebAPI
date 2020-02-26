@@ -13,6 +13,8 @@ public class CcDistributionStat extends CcPrevalenceStat implements Distribution
     private Double p75;
     private Double p90;
     private Double max;
+    private Integer aggregateId;
+    private String aggregateName;
     
     @Override
     public Double getAvg() {
@@ -102,5 +104,21 @@ public class CcDistributionStat extends CcPrevalenceStat implements Distribution
     public void setMax(final Double max) {
 
         this.max = max;
+    }
+
+    public Integer getAggregateId() {
+        return aggregateId;
+    }
+
+    public void setAggregateId(Integer aggregateId) {
+        this.aggregateId = aggregateId;
+    }
+
+    public String getAggregateName() {
+        return aggregateName;
+    }
+
+    public void setAggregateName(String aggregateName) {
+        this.aggregateName = aggregateName;
     }
 }

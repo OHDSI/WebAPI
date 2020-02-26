@@ -2,6 +2,8 @@ package org.ohdsi.webapi.cohortcharacterization.report;
 
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 
+import java.util.Objects;
+
 public class ComparativeDistributionItem extends ComparativeItem {
     private final Double targetStdDev;
     private final Double targetMin;
@@ -23,9 +25,16 @@ public class ComparativeDistributionItem extends ComparativeItem {
     private final Double comparatorMax;
     private final Double comparatorAvg;
 
+    private final Integer aggregateId;
+    private final String aggregateName;
+
     public ComparativeDistributionItem(DistributionItem firstItem, DistributionItem secondItem, CohortDefinition firstCohortDef,
                                        CohortDefinition secondCohortDef) {
         super(firstItem, secondItem, firstCohortDef, secondCohortDef);
+
+        DistributionItem item = Objects.nonNull(firstItem) ? firstItem : secondItem;
+        this.aggregateId = item.getAggregateId();
+        this.aggregateName = item.getAggregateName();
 
         this.targetStdDev = firstItem != null ? firstItem.getStdDev() : null;
         this.targetMin = firstItem != null ? firstItem.getMin() : null;
@@ -118,5 +127,13 @@ public class ComparativeDistributionItem extends ComparativeItem {
 
     public Double getComparatorAvg() {
         return comparatorAvg;
+    }
+
+    public Integer getAggregateId() {
+        return aggregateId;
+    }
+
+    public String getAggregateName() {
+        return aggregateName;
     }
 }

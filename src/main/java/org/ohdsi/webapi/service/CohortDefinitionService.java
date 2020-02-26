@@ -440,8 +440,6 @@ public class CohortDefinitionService extends AbstractDaoService {
     currentDefinition.setModifiedBy(modifier);
     currentDefinition.setModifiedDate(currentTime);
 
-    this.samplingService.launchDeleteSamplesTasklet(id);
-
     this.cohortDefinitionRepository.save(currentDefinition);
     return getCohortDefinition(id);
   }
@@ -460,6 +458,8 @@ public class CohortDefinitionService extends AbstractDaoService {
 
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOne(id);
+
+    this.samplingService.launchDeleteSamplesTasklet(id, source.getSourceId());
 
     return cohortGenerationService.generateCohortViaJob(currentDefinition, source, Objects.nonNull(includeFeatures));
   }

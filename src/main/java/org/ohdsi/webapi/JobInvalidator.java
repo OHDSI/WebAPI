@@ -1,8 +1,7 @@
 package org.ohdsi.webapi;
 
-import java.util.Calendar;
-import javax.annotation.PostConstruct;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
+import org.springframework.batch.admin.service.SearchableJobExecutionDao;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobExecution;
@@ -12,6 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.annotation.PostConstruct;
+import java.util.Calendar;
+
 @Component
 public class JobInvalidator {
 
@@ -20,22 +22,25 @@ public class JobInvalidator {
     private final JobExplorer jobExplorer;
     private final JobRepository jobRepository;
     private final TransactionTemplate transactionTemplateRequiresNew;
+    private final SearchableJobExecutionDao jobExecutionDao;
 
     @Autowired
-    public JobInvalidator(JobExplorer explorer, JobRepository repository, TransactionTemplate transactionTemplateRequiresNew) {
+    public JobInvalidator(JobExplorer explorer, JobRepository repository, TransactionTemplate transactionTemplateRequiresNew,
+                          SearchableJobExecutionDao jobExecutionDao) {
 
         this.jobExplorer = explorer;
         this.jobRepository = repository;
         this.transactionTemplateRequiresNew = transactionTemplateRequiresNew;
+        this.jobExecutionDao = jobExecutionDao;
     }
 
     @PostConstruct
     private void invalidateGenerations() {
         transactionTemplateRequiresNew.execute(s -> {
-            jobExplorer.getJobNames().forEach(name ->
-                    jobExplorer
-                            .findRunningJobExecutions(name)
-                            .forEach(this::invalidationJobExecution));
+            jobExecutionDao.getRunningJobExecutions().stream()
+                    // do not invalidate currently running jobs such as warming cache
+                    .filter(job -> BatchStatus.STARTING.equals(job.getStatus()))
+                    .forEach(this::invalidationJobExecution);
             return null;
         });
     }

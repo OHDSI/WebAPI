@@ -5,7 +5,6 @@ import org.springframework.batch.admin.service.SearchableJobExecutionDao;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -19,16 +18,13 @@ public class JobInvalidator {
 
     public static final String INVALIDATED_BY_SYSTEM_EXIT_MESSAGE = "Invalidated by system";
 
-    private final JobExplorer jobExplorer;
     private final JobRepository jobRepository;
     private final TransactionTemplate transactionTemplateRequiresNew;
     private final SearchableJobExecutionDao jobExecutionDao;
 
     @Autowired
-    public JobInvalidator(JobExplorer explorer, JobRepository repository, TransactionTemplate transactionTemplateRequiresNew,
+    public JobInvalidator(JobRepository repository, TransactionTemplate transactionTemplateRequiresNew,
                           SearchableJobExecutionDao jobExecutionDao) {
-
-        this.jobExplorer = explorer;
         this.jobRepository = repository;
         this.transactionTemplateRequiresNew = transactionTemplateRequiresNew;
         this.jobExecutionDao = jobExecutionDao;
@@ -46,7 +42,7 @@ public class JobInvalidator {
     }
 
     public void invalidateJobExecutionById(ExecutionEngineAnalysisStatus executionEngineAnalysisStatus) {
-        JobExecution job = jobExplorer.getJobExecution(executionEngineAnalysisStatus.getExecutionEngineGeneration().getId());
+        JobExecution job = jobExecutionDao.getJobExecution(executionEngineAnalysisStatus.getExecutionEngineGeneration().getId());
         invalidationJobExecution(job);
     }
 

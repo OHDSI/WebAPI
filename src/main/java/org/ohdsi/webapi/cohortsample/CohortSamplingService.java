@@ -345,24 +345,24 @@ public class CohortSamplingService extends AbstractDaoService {
             List<Integer> conceptIds = gender.getConceptIds();
             if (gender.isOtherNonBinary()) {
                 if (conceptIds.size() == 0) {
-                    expressionBuilder.append(" AND p.gender_concept_id NOT IN (")
+                    expressionBuilder.append(" AND gender_concept_id NOT IN (")
                             .append(GENDER_MALE_CONCEPT_ID)
                             .append(',')
                             .append(GENDER_FEMALE_CONCEPT_ID)
                             .append(')');
                 } else if (conceptIds.size() == 1) {
                     if (conceptIds.get(0) == GENDER_FEMALE_CONCEPT_ID) {
-                        expressionBuilder.append(" AND p.gender_concept_id <> ")
+                        expressionBuilder.append(" AND gender_concept_id <> ")
                                 .append(GENDER_MALE_CONCEPT_ID);
 
                     } else {
-                        expressionBuilder.append(" AND p.gender_concept_id <> ")
+                        expressionBuilder.append(" AND gender_concept_id <> ")
                                 .append(GENDER_FEMALE_CONCEPT_ID);
                     }
                 }
                 // else: all genders are selected, no where statement needed
             } else if (!conceptIds.isEmpty()) {
-                expressionBuilder.append(" AND p.gender_concept_id IN (");
+                expressionBuilder.append(" AND gender_concept_id IN (");
                 for (int i = 0; i < conceptIds.size(); i++) {
                     if (i > 0) {
                         expressionBuilder.append(',');

@@ -33,10 +33,7 @@ public class JobInvalidator {
     @PostConstruct
     private void invalidateGenerations() {
         transactionTemplateRequiresNew.execute(s -> {
-            jobExecutionDao.getRunningJobExecutions().stream()
-                    // do not invalidate currently running jobs such as warming cache
-                    .filter(job -> BatchStatus.STARTING.equals(job.getStatus()))
-                    .forEach(this::invalidationJobExecution);
+            jobExecutionDao.getRunningJobExecutions().forEach(this::invalidationJobExecution);
             return null;
         });
     }

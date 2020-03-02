@@ -124,16 +124,23 @@ public class SourceService extends AbstractDaoService {
 
     public Map<SourceDaimon.DaimonType, Source> getPriorityDaimons() {
 
-        Map<Integer, Boolean> checkedSources = new HashMap<>();
+        class SourceValidator {
+            private Map<Integer, Boolean> checkedSources = new HashMap<>();
+
+            private boolean isSourceAvaialble(Source source) {
+                return checkedSources.computeIfAbsent(source.getSourceId(),
+                        v -> sourceAccessor.hasAccess(source) && connectionAvailability.computeIfAbsent(source, SourceService.this::checkConnectionSafe));
+            }
+        }
+
+        SourceValidator sourceValidator = new SourceValidator();
         Map<SourceDaimon.DaimonType, Source> priorityDaimons = new HashMap<>();
         Arrays.asList(SourceDaimon.DaimonType.values()).forEach(d -> {
 
             List<Source> sources = sourceRepository.findAllSortedByDiamonPrioirty(d);
-            Optional<Source> source = sources.stream().filter(s -> checkedSources.computeIfAbsent(s.getSourceId(),
-                    v -> sourceAccessor.hasAccess(s)
-                            && connectionAvailability.computeIfAbsent(s, this::checkConnectionSafe)))
+            Optional<Source> source = sources.stream().filter(sourceValidator::isSourceAvaialble)
                     .findFirst();
-            source.map(s -> priorityDaimons.put(d, s));
+            source.ifPresent(s -> priorityDaimons.put(d, s));
         });
         return priorityDaimons;
     }

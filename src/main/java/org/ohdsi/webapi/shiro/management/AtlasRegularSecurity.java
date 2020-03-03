@@ -1,11 +1,44 @@
 package org.ohdsi.webapi.shiro.management;
 
 import static com.odysseusinc.arachne.commons.utils.QuoteUtils.dequote;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.*;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.AD_FILTER;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.AUTHZ;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CAS_AUTHC;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CORS;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.FACEBOOK_AUTHC;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.FORCE_SESSION_CREATION;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.GITHUB_AUTHC;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.GOOGLE_AUTHC;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.HANDLE_CAS;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.HANDLE_UNSUCCESSFUL_OAUTH;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.JDBC_FILTER;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.JWT_AUTHC;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.KERBEROS_FILTER;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.LDAP_FILTER;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.LOGOUT;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.NEGOTIATE_AUTHC;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_CACHE;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_SESSION_CREATION;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.OAUTH_CALLBACK;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.OIDC_AUTH;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.RUN_AS;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.SEND_TOKEN_IN_HEADER;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.SEND_TOKEN_IN_REDIRECT;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.SEND_TOKEN_IN_URL;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.SSL;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.UPDATE_TOKEN;
 
 import io.buji.pac4j.filter.CallbackFilter;
 import io.buji.pac4j.filter.SecurityFilter;
 import io.buji.pac4j.realm.Pac4jRealm;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.Set;
+import javax.naming.Context;
+import javax.servlet.Filter;
+import javax.sql.DataSource;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.activedirectory.ActiveDirectoryRealm;
@@ -15,7 +48,19 @@ import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.security.model.EntityPermissionSchemaResolver;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
-import org.ohdsi.webapi.shiro.filters.*;
+import org.ohdsi.webapi.shiro.filters.CasHandleFilter;
+import org.ohdsi.webapi.shiro.filters.LogoutFilter;
+import org.ohdsi.webapi.shiro.filters.RedirectOnFailedOAuthFilter;
+import org.ohdsi.webapi.shiro.filters.RunAsFilter;
+import org.ohdsi.webapi.shiro.filters.SendTokenInHeaderFilter;
+import org.ohdsi.webapi.shiro.filters.SendTokenInRedirectFilter;
+import org.ohdsi.webapi.shiro.filters.SendTokenInUrlFilter;
+import org.ohdsi.webapi.shiro.filters.UpdateAccessTokenFilter;
+import org.ohdsi.webapi.shiro.filters.auth.ActiveDirectoryAuthFilter;
+import org.ohdsi.webapi.shiro.filters.auth.AtlasJwtAuthFilter;
+import org.ohdsi.webapi.shiro.filters.auth.JdbcAuthFilter;
+import org.ohdsi.webapi.shiro.filters.auth.KerberosAuthFilter;
+import org.ohdsi.webapi.shiro.filters.auth.LdapAuthFilter;
 import org.ohdsi.webapi.shiro.mapper.ADUserMapper;
 import org.ohdsi.webapi.shiro.mapper.LdapUserMapper;
 import org.ohdsi.webapi.shiro.realms.ADRealm;
@@ -46,20 +91,11 @@ import org.springframework.stereotype.Component;
 import waffle.shiro.negotiate.NegotiateAuthenticationFilter;
 import waffle.shiro.negotiate.NegotiateAuthenticationRealm;
 
-import javax.naming.Context;
-import javax.servlet.Filter;
-import javax.sql.DataSource;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.Set;
-
 @Component
 @ConditionalOnProperty(name = "security.provider", havingValue = Constants.SecurityProviders.REGULAR)
 @DependsOn("flyway")
 public class AtlasRegularSecurity extends AtlasSecurity {
-    
+
     private final Logger logger = LoggerFactory.getLogger(AtlasRegularSecurity.class);
 
     @Value("${security.token.expiration}")
@@ -156,19 +192,19 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
     @Value("${security.oid.redirectUrl}")
     private String redirectUrl;
-    
+
     @Value("${security.cas.loginUrl}")
     private String casLoginUrl;
-    
+
     @Value("${security.cas.callbackUrl}")
     private String casCallbackUrl;
-    
+
     @Value("${security.cas.serverUrl}")
     private String casServerUrl;
-    
+
     @Value("${security.cas.cassvcs}")
     private String casSvcs;
-    
+
     @Value("${security.cas.casticket}")
     private String casticket;
 
@@ -198,29 +234,16 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         filters.put(SEND_TOKEN_IN_REDIRECT, new SendTokenInRedirectFilter(redirectUrl));
 
         filters.put(RUN_AS, new RunAsFilter(userRepository));
+
         // OAuth
-        //
-        Google2Client googleClient = new Google2Client(this.googleApiKey, this.googleApiSecret);
-        googleClient.setScope(Google2Client.Google2Scope.EMAIL);
-
-        FacebookClient facebookClient = new FacebookClient(this.facebookApiKey, this.facebookApiSecret);
-        facebookClient.setScope("email");
-        facebookClient.setFields("email");
-
-        GitHubClient githubClient = new GitHubClient(this.githubApiKey, this.githubApiSecret);
-        githubClient.setScope("user:email");
-
-        OidcConfiguration configuration = oidcConfCreator.build();
-        OidcClient oidcClient = new OidcClient(configuration);
-
         Config cfg =
                 new Config(
                         new Clients(
                                 this.oauthApiCallback
-                                , googleClient
-                                , facebookClient
-                                , githubClient
-                                , oidcClient
+                                , getGoogle2Client()
+                                , getFacebookClient()
+                                , getGitHubClient()
+                                , getOidcClient()
                                 // ... put new clients here and then assign them to filters ...
                         )
                 );
@@ -250,9 +273,9 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         callbackFilter.setConfig(cfg);
         filters.put(OAUTH_CALLBACK, callbackFilter);
         filters.put(HANDLE_UNSUCCESSFUL_OAUTH, new RedirectOnFailedOAuthFilter(this.oauthUiCallback));
-        
+
         this.setUpCAS(filters);
-        
+
         return filters;
     }
 
@@ -268,9 +291,9 @@ public class AtlasRegularSecurity extends AtlasSecurity {
                 .setAuthzFilter(AUTHZ)
                 // login/logout
                 .addRestPath("/user/login/openid", FORCE_SESSION_CREATION, OIDC_AUTH, UPDATE_TOKEN, SEND_TOKEN_IN_REDIRECT)
-                .addRestPath("/user/login/windows",NEGOTIATE_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
+                .addRestPath("/user/login/windows", NEGOTIATE_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
                 .addRestPath("/user/login/kerberos", KERBEROS_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
-                .addRestPath("/user/login/db",  JDBC_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
+                .addRestPath("/user/login/db", JDBC_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
                 .addRestPath("/user/login/ldap", LDAP_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
                 .addRestPath("/user/login/ad", AD_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
                 .addRestPath("/user/refresh", JWT_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
@@ -305,6 +328,34 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         return realms;
     }
 
+    private OidcClient getOidcClient() {
+
+        OidcConfiguration configuration = oidcConfCreator.build();
+        return new OidcClient(configuration);
+    }
+
+    private GitHubClient getGitHubClient() {
+
+        GitHubClient githubClient = new GitHubClient(this.githubApiKey, this.githubApiSecret);
+        githubClient.setScope("user:email");
+        return githubClient;
+    }
+
+    private FacebookClient getFacebookClient() {
+
+        FacebookClient facebookClient = new FacebookClient(this.facebookApiKey, this.facebookApiSecret);
+        facebookClient.setScope("email");
+        facebookClient.setFields("email");
+        return facebookClient;
+    }
+
+    private Google2Client getGoogle2Client() {
+
+        Google2Client googleClient = new Google2Client(this.googleApiKey, this.googleApiSecret);
+        googleClient.setScope(Google2Client.Google2Scope.EMAIL);
+        return googleClient;
+    }
+
     private JndiLdapRealm ldapRealm() {
         JndiLdapRealm realm = new LdapRealm(ldapSearchString, ldapSearchBase, ldapUserMapper);
         realm.setUserDnTemplate(dequote(userDnTemplate));
@@ -333,14 +384,14 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         }
         return null;
     }
-    
+
     private void setUpCAS(Map<FilterTemplates, Filter> filters) {
         try {
             /**
              * CAS config
              */
             CasConfiguration casConf = new CasConfiguration();
-            
+
             String casLoginUrlString;
             if (casSvcs != null && !"".equals(casSvcs)) {
                 casLoginUrlString = casLoginUrl + "?cassvc=" + casSvcs + "&casurl="
@@ -350,13 +401,13 @@ public class AtlasRegularSecurity extends AtlasSecurity {
                         + URLEncoder.encode(casCallbackUrl, StandardCharsets.UTF_8.name());
             }
             casConf.setLoginUrl(casLoginUrlString);
-            
+
             Cas20ServiceTicketValidator cas20Validator = new Cas20ServiceTicketValidator(casServerUrl);
             casConf.setTicketValidator(cas20Validator);
-            
+
             CasClient casClient = new CasClient(casConf);
             Config casCfg = new Config(new Clients(casCallbackUrl, casClient));
-            
+
             /**
              * CAS filter
              */
@@ -364,13 +415,13 @@ public class AtlasRegularSecurity extends AtlasSecurity {
             casAuthnFilter.setConfig(casCfg);
             casAuthnFilter.setClients("CasClient");
             filters.put(CAS_AUTHC, casAuthnFilter);
-            
+
             /**
              * CAS callback filter
              */
             CasHandleFilter casHandleFilter = new CasHandleFilter(cas20Validator, casCallbackUrl, casticket);
             filters.put(HANDLE_CAS, casHandleFilter);
-            
+
         } catch (UnsupportedEncodingException e) {
             this.logger.error("Atlas security filter errors: {}", e);
         }

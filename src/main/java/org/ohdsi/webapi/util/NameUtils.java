@@ -26,7 +26,7 @@ public final class NameUtils {
         Pattern p = Pattern.compile(Pattern.quote(dtoName) + " \\(([0-9]+)\\)");
         nameList.stream()
                 .map(n -> {
-                    if (Objects.equals(n, dtoName)) {
+                    if (n.equalsIgnoreCase(dtoName)) {
                         return "0";
                     } else {
                         Matcher m = p.matcher(n);

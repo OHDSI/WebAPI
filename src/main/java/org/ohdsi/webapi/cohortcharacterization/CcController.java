@@ -3,6 +3,7 @@ package org.ohdsi.webapi.cohortcharacterization;
 import com.odysseusinc.arachne.commons.utils.CommonFilenameUtils;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import com.opencsv.CSVWriter;
+import com.qmino.miredot.annotations.ReturnType;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
@@ -71,7 +72,7 @@ public class CcController {
     private final CommonGenerationSensitiveInfoService<CommonGenerationDTO> sensitiveInfoService;
     private final SourceService sourceService;
 
-    CcController(
+    public CcController(
             final CcService service,
             final FeAnalysisService feAnalysisService,
             final ConversionService conversionService,
@@ -253,14 +254,24 @@ public class CcController {
     @Path("/generation/{generationId}/result/count")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Long getGenerationsResults( @PathParam("generationId") final Long generationId) {
+    public Long getGenerationsResultsCount( @PathParam("generationId") final Long generationId) {
         return service.getCCResultsTotalCount(generationId);
     }
 
+    @GET
+    @Path("/generation/{generationId}/result")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public List<CcResult> getGenerationsResults(
+            @PathParam("generationId") final Long generationId, @DefaultValue("0.01") @QueryParam("thresholdLevel") final float thresholdLevel) {
+        return service.findResultAsList(generationId, thresholdLevel);
+    }
+    
     @POST
     @Path("/generation/{generationId}/result")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @ReturnType("java.lang.Object")
     public GenerationResults getGenerationsResults(
             @PathParam("generationId") final Long generationId, @RequestBody ExportExecutionResultRequest params) {
         return service.findData(generationId, params);

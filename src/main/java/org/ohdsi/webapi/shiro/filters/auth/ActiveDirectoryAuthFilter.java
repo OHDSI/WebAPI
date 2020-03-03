@@ -16,7 +16,7 @@
  * Authors: Alexandr Ryabokon
  *
  */
-package org.ohdsi.webapi.shiro.filters;
+package org.ohdsi.webapi.shiro.filters.auth;
 
 import org.ohdsi.webapi.shiro.tokens.ActiveDirectoryUsernamePasswordToken;
 import org.springframework.context.ApplicationEventPublisher;

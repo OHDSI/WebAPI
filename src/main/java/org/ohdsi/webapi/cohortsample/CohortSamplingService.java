@@ -78,6 +78,10 @@ public class CohortSamplingService extends AbstractDaoService {
         return sampleRepository.countSamples(cohortDefinitionId);
     }
 
+    public int countSamples(int cohortDefinitionId, int sourceId) {
+        return sampleRepository.countSamples(cohortDefinitionId, sourceId);
+    }
+
     /**
      * Find all sample elements of a sample.
      * @param source Source to use

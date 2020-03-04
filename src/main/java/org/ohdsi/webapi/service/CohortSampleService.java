@@ -66,6 +66,7 @@ public class CohortSampleService {
         CohortGenerationInfo generationInfo = generationInfoRepository.findOne(
                 new CohortGenerationInfoId(cohortDefinitionId, source.getId()));
         result.setGenerationStatus(generationInfo != null ? generationInfo.getStatus() : null);
+        result.setIsValid(generationInfo != null && generationInfo.isIsValid());
 
         result.setSamples(this.samplingService.listSamples(cohortDefinitionId, source.getId()));
 
@@ -89,6 +90,17 @@ public class CohortSampleService {
             @PathParam("cohortDefinitionId") int cohortDefinitionId
     ) {
         int nSamples = this.samplingService.countSamples(cohortDefinitionId);
+        return Collections.singletonMap("hasSamples", nSamples > 0);
+    }
+    
+    @Path("/has-samples/{cohortDefinitionId}/{sourceKey}")
+    @GET
+    public Map<String, Boolean> hasSamples(
+            @PathParam("sourceKey") String sourceKey,
+            @PathParam("cohortDefinitionId") int cohortDefinitionId
+    ) {
+        Source source = getSource(sourceKey);
+        int nSamples = this.samplingService.countSamples(cohortDefinitionId, source.getId());
         return Collections.singletonMap("hasSamples", nSamples > 0);
     }
 

@@ -91,6 +91,17 @@ public class CohortSampleService {
         int nSamples = this.samplingService.countSamples(cohortDefinitionId);
         return Collections.singletonMap("hasSamples", nSamples > 0);
     }
+    
+    @Path("/has-samples/{cohortDefinitionId}/{sourceKey}")
+    @GET
+    public Map<String, Boolean> hasSamples(
+            @PathParam("sourceKey") String sourceKey,
+            @PathParam("cohortDefinitionId") int cohortDefinitionId
+    ) {
+        Source source = getSource(sourceKey);
+        int nSamples = this.samplingService.countSamples(cohortDefinitionId, source.getId());
+        return Collections.singletonMap("hasSamples", nSamples > 0);
+    }
 
     @Path("/{cohortDefinitionId}/{sourceKey}")
     @POST

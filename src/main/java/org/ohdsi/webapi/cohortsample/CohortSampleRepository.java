@@ -20,4 +20,7 @@ public interface CohortSampleRepository extends CrudRepository<CohortSample, Int
 
     @Query("SELECT count(c.id) FROM CohortSample c WHERE c.cohortDefinitionId = :cohortDefinitionId")
     int countSamples(@Param("cohortDefinitionId") int cohortDefinitionId);
+
+    @Query("SELECT count(c.id) FROM CohortSample c WHERE c.cohortDefinitionId = :cohortDefinitionId AND c.sourceId = :sourceId")
+    int countSamples(@Param("cohortDefinitionId") int cohortDefinitionId, @Param("sourceId") int sourceId);
 }

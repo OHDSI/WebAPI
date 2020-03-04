@@ -66,6 +66,7 @@ public class CohortSampleService {
         CohortGenerationInfo generationInfo = generationInfoRepository.findOne(
                 new CohortGenerationInfoId(cohortDefinitionId, source.getId()));
         result.setGenerationStatus(generationInfo != null ? generationInfo.getStatus() : null);
+        result.setIsValid(generationInfo != null && generationInfo.isIsValid());
 
         result.setSamples(this.samplingService.listSamples(cohortDefinitionId, source.getId()));
 

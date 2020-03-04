@@ -8,6 +8,7 @@ public class CohortSampleListDTO {
     private int cohortDefinitionId;
     private int sourceId;
     private GenerationStatus generationStatus;
+    private boolean isValid;
     private List<CohortSampleDTO> samples;
 
     public int getCohortDefinitionId() {
@@ -32,6 +33,14 @@ public class CohortSampleListDTO {
 
     public void setGenerationStatus(GenerationStatus generationStatus) {
         this.generationStatus = generationStatus;
+    }
+
+    public boolean isValid() {
+        return isValid;
+    }
+
+    public void setIsValid(boolean valid) {
+        isValid = valid;
     }
 
     public List<CohortSampleDTO> getSamples() {

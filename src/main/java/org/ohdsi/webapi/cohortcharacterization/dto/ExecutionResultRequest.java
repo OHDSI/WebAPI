@@ -1,13 +1,13 @@
 package org.ohdsi.webapi.cohortcharacterization.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.ohdsi.webapi.Constants;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 public class ExecutionResultRequest {
-    private static final Float DEFAULT_THRESHOLD = 0.01f;
 
     @JsonProperty("cohortIds")
     private List<Integer> cohortIds;
@@ -65,7 +65,7 @@ public class ExecutionResultRequest {
     }
 
     public Float getThresholdValuePct() {
-        return thresholdValuePct != null ? thresholdValuePct : DEFAULT_THRESHOLD;
+        return thresholdValuePct != null ? thresholdValuePct : Constants.DEFAULT_THRESHOLD;
     }
 
     public void setThresholdValuePct(Float thresholdValuePct) {
@@ -81,7 +81,7 @@ public class ExecutionResultRequest {
     }
 
     public Boolean getShowEmptyResults() {
-        return Objects.nonNull(isShowEmptyResults) ? isShowEmptyResults : false;
+        return Boolean.TRUE.equals(isShowEmptyResults);
     }
 
     public void setShowEmptyResults(Boolean showEmptyResults) {

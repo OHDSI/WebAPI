@@ -132,6 +132,15 @@
     <security.duration.initial>10</security.duration.initial>
     <security.duration.increment>10</security.duration.increment>
 
+    <security.saml.entityId>com:odysseusinc:atlas:sp</security.saml.entityId>
+    <security.saml.idpMetadataLocation></security.saml.idpMetadataLocation>
+    <security.saml.keyManager.keyStoreFile></security.saml.keyManager.keyStoreFile>
+    <security.saml.keyManager.storePassword></security.saml.keyManager.storePassword>
+    <security.saml.keyManager.defaultKey></security.saml.keyManager.defaultKey>
+    <security.saml.keyManager.passwords.arachnenetwork></security.saml.keyManager.passwords.arachnenetwork>
+    <security.saml.metadataLocation></security.saml.metadataLocation>
+    <security.saml.callbackUrl></security.saml.callbackUrl>
+    <security.saml.sloUrl></security.saml.sloUrl>
 
     <spring.datasource.hikari.connection-test-query>SELECT 1</spring.datasource.hikari.connection-test-query>
     <spring.datasource.hikari.connection-test-query-timeout>2000</spring.datasource.hikari.connection-test-query-timeout>
@@ -680,6 +689,11 @@
     <dependency>
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-oidc</artifactId>
+      <version>1.9.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.pac4j</groupId>
+      <artifactId>pac4j-saml</artifactId>
       <version>1.9.2</version>
     </dependency>
     <dependency>

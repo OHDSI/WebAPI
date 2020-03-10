@@ -64,8 +64,8 @@
     },
     "cohort-definition-browser": {
       "facets": {
-        "lastModified": "Последнее изменение",
-        "author": "Автор"
+        "lastModified": "Last modified",
+        "author": "Author"
       }
     },
     "filter-panel": {
@@ -101,8 +101,9 @@
       }
     },
     "linked-entity-list": {
-      "defaultNewItemLabel": "Импорт"
+      "defaultNewItemLabel": "Import"
     },
+    "loading": "loading",
     "modal-exit-message": {
       "buttons": {
         "copyToClipboard": "Copy To Clipboard"
@@ -110,6 +111,27 @@
       "messages": {
         "copiedToClipboard": "Copied To Clipboard!"
       }
+    },
+    "user-bar": {
+      "signin": "Sign In",
+      "signout": "Sign Out"
+    },
+    "welcome": {
+      "close": "Close",
+      "loggedIn": "Logged in as '<%= login %>'",
+      "loggedInExp": "Logged in as '<%= login %>' (exp: <%= expiration %>)",
+      "messages": {
+        "badCredentials": "Bad credentials",
+        "loginFailed": "Login failed",
+        "expired": "Your session has expired. Please login again.",
+        "refresh": "Your session has expired. Please refresh a page to continue."
+      },
+      "runas": "Run as",
+      "signin-with": "Sign In with:",
+      "signout": "Sign Out",
+      "submit": "Submit",
+      "username": "Username",
+      "wait": "Please wait..."
     }
   },
   "facets": {
@@ -120,6 +142,30 @@
       "lastWeek": "Last Week",
       "others": "2+ Weeks Ago"
     }
+  },
+  "home": {
+    "description": "ATLAS is an open source application developed as a part of <a href=\"http://www.ohdsi.org\" target=\"_new\">OHDSI</a> intended to provide a unified interface to patient level data and analytics.",
+    "documentation": {
+      "title": "Documentation",
+      "text": "The ATLAS user guide can be found <a target=\"_new\" href=\"http://www.ohdsi.org/web/wiki/doku.php?id=documentation:software:atlas\">here</a>."
+    },
+    "gettingStarted": {
+      "title": "Getting Started",
+      "newCohort": {
+        "button": "Define a New Cohort",
+        "description": "Begin performing research by defining the group of people you intend to study"
+      },
+      "vocabulary": {
+        "button": "Search the Vocabulary",
+        "description": "Search the different ontologies used to describe patient level data around the world"
+      }
+    },
+    "releaseNotes": {
+      "title": "Release Notes",
+      "issues": "<br/> This latest release contains <%= issues %> feature enhancements and issue resolutions:"
+    },
+    "title": "Home",
+    "welcome": "Welcome to ATLAS."
   },
   "incidencerate": {
     "title": "Incidence Rate Analysis",

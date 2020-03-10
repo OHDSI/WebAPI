@@ -113,6 +113,7 @@
     "linked-entity-list": {
       "defaultNewItemLabel": "Импорт"
     },
+    "loading": "идёт загрузка",
     "modal-exit-message": {
       "buttons": {
         "copyToClipboard": "Скопировать в буфер"
@@ -120,6 +121,27 @@
       "messages": {
         "copiedToClipboard": "Скопировано в буфер!"
       }
+    },
+    "user-bar": {
+      "signin": "Войти",
+      "signout": "Выйти"
+    },
+    "welcome": {
+      "close": "Закрыть",
+      "loggedIn": "Пользователь зашел как '<%= login %>'",
+      "loggedInExp": "Пользователь зашел как '<%= login %>' (до: <%= expiration %>)",
+      "messages": {
+        "badCredentials": "Неверное имя пользователя или пароль",
+        "loginFailed": "Ошибка входа",
+        "expired": "Ваша сессия истекла. Пожалуйста войдите заново.",
+        "refresh": "Ваша сессия истекла. Пожалуйста обновите страницу."
+      },
+      "runas": "Войти как",
+      "signin-with": "Войти с помощью:",
+      "signout": "Выйти",
+      "submit": "Отправить",
+      "username": "Имя пользователя",
+      "wait": "Пожалуйста подождите..."
     }
   },
   "facets": {
@@ -130,6 +152,30 @@
       "lastWeek": "На прошлой неделе",
       "others": "Более 2 недель назад"
     }
+  },
+  "home": {
+    "description": "АТЛАС это продукт с открытым исходным кодом, разработанный в рамках <a href=\"http://www.ohdsi.org\" target=\"_new\">OHDSI</a>, предоставляющий доступ к данным пациентов и аналитике.",
+    "documentation": {
+      "title": "Документация",
+      "text": "Руководство пользователя АТЛАС можно найти <a target=\"_new\" href=\"http://www.ohdsi.org/web/wiki/doku.php?id=documentation:software:atlas\">здесь</a>."
+    },
+    "gettingStarted": {
+      "title": "Начало работы",
+      "newCohort": {
+        "button": "Создать Новую Когорту",
+        "description": "Начать исследование с определения группы людей, которых вы хотите изучить"
+      },
+      "vocabulary": {
+        "button": "Поиск по Словарю",
+        "description": "Найти различные онтологии, используемые для описания данных пациента по всему миру"
+      }
+    },
+    "releaseNotes": {
+      "title": "Примечания к Релизу",
+      "issues": "<br/> Данный релиз содержит <%= issues %> улучшений и исправлений:"
+    },
+    "title": "Начало",
+    "welcome": "Добро пожаловать в Атлас."
   },
   "incidencerate": {
     "title": "Анализ инцидентности",

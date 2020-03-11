@@ -1,14 +1,20 @@
 package org.ohdsi.webapi.shiro.management;
 
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.AUTHZ;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CORS;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.FORCE_SESSION_CREATION;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.JWT_AUTHC;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_CACHE;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_SESSION_CREATION;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.SSL;
+
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.servlet.Filter;
-
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.web.filter.authz.SslFilter;
@@ -30,14 +36,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import waffle.shiro.negotiate.NegotiateAuthenticationStrategy;
 
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.AUTHZ;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CORS;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.FORCE_SESSION_CREATION;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.JWT_AUTHC;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_CACHE;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_SESSION_CREATION;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.SSL;
-
 /**
  *
  * @author gennadiy.anisimov
@@ -52,10 +50,10 @@ public abstract class AtlasSecurity extends Security {
   protected PermissionManager authorizer;
 
   @Autowired
-  SourceRepository sourceRepository;
+  protected SourceRepository sourceRepository;
 
   @Autowired
-  OidcConfCreator oidcConfCreator;
+  protected OidcConfCreator oidcConfCreator;
 
   @Value("${server.port}")
   private int sslPort;
@@ -128,7 +126,7 @@ public abstract class AtlasSecurity extends Security {
   }
 
   @Override
-  public Authenticator getAuthenticator() {
+  public ModularRealmAuthenticator getAuthenticator() {
     ModularRealmAuthenticator authenticator = new ModularRealmAuthenticator();
     authenticator.setAuthenticationStrategy(new NegotiateAuthenticationStrategy());
 

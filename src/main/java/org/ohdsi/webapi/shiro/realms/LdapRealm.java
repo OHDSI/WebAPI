@@ -56,9 +56,11 @@ public class LdapRealm extends JndiLdapRealm {
 
     @Override
     public boolean supports(AuthenticationToken token) {
-        return token != null &&  token.getClass() == LdapUsernamePasswordToken.class;
+
+        return token != null && token.getClass() == LdapUsernamePasswordToken.class;
     }
 
+    @Override
     protected AuthenticationInfo queryForAuthenticationInfo(AuthenticationToken token,
                                                             LdapContextFactory ldapContextFactory)
             throws NamingException {
@@ -79,7 +81,7 @@ public class LdapRealm extends JndiLdapRealm {
             LdapUtils.closeContext(ctx);
         }
     }
-
+    @Override
     protected AuthenticationInfo createAuthenticationInfo(AuthenticationToken token, Object ldapPrincipal,
                                                           Object ldapCredentials, LdapContext ldapContext) {
         return new SimpleAuthenticationInfo(ldapPrincipal, token.getCredentials(), getName());

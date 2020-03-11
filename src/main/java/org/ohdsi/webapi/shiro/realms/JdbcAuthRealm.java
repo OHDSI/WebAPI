@@ -50,7 +50,8 @@ public class JdbcAuthRealm extends JdbcRealm {
 
     @Override
     public boolean supports(AuthenticationToken token) {
-        return token != null &&  token.getClass() == UsernamePasswordToken.class;
+
+        return token != null && token.getClass() == UsernamePasswordToken.class;
     }
 
     @Override

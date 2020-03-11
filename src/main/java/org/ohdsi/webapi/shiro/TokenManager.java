@@ -48,11 +48,12 @@ public class TokenManager {
             .compact();
   }
 
+
   public static String getSubject(String jwt) throws JwtException {
     return getBody(jwt).getSubject();
   }
 
-  private static Claims getBody(String jwt) {
+  public static Claims getBody(String jwt) {
 
     // Get untrusted subject for secret key retrieval
     String untrustedSubject = getUntrustedSubject(jwt);

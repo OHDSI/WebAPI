@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.shiro;
 
 import java.util.Collection;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.authz.ModularRealmAuthorizer;
 import org.apache.shiro.realm.Realm;
@@ -19,6 +20,8 @@ public class AtlasWebSecurityManager extends LockoutWebSecurityManager {
         super(lockoutPolicy);
 
         ModularRealmAuthorizer authorizer = new ModularRealmAuthorizer();
+        this.setRealms(CollectionUtils.union(authenticationRealms, authorizationRealms));
+
         authenticator.setRealms(authenticationRealms);
         authorizer.setRealms(authorizationRealms);
 

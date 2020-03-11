@@ -51,6 +51,17 @@
       }
     }
   },
+  "executionStatus": {
+    "values": {
+      "FAILED": "FAILED",
+      "COMPLETED": "COMPLETED",
+      "STOPPED": "STOPPED",
+      "CANCELED": "CANCELED",
+      "PENDING": "PENDING",
+      "RUNNING": "RUNNING",
+      "STARTED": "STARTED"
+    }
+  },
   "components": {
     "access-denied": {
       "forbidden": {
@@ -141,6 +152,171 @@
       "thisWeek": "This Week",
       "lastWeek": "Last Week",
       "others": "2+ Weeks Ago"
+    }
+  },
+  "cc": {
+    "title": "Cohort Characterizations",
+    "new": "New",
+    "defaultName": "New Characterization",
+    "loading": "Loading Cohort Characterization list...",
+    "list": {
+      "columns": {
+        "id": "Id",
+        "name": "Name",
+        "created": "Created",
+        "updated": "Updated",
+        "author": "Author"
+      },
+      "facets": {
+        "created": "Created",
+        "updated": "Updated",
+        "author": "Author"
+      }
+    },
+    "tabs": {
+      "characterizations": {
+        "title": "Characterizations",
+        "newLabel": "Characterization"
+      },
+      "featureAnalyses": {
+        "title": "Feature analyses",
+        "newLabel": "Feature analysis"
+      }
+    },
+    "viewEdit": {
+      "caption": "Characterization #",
+      "loading": "Loading Cohort Characterization...",
+      "buttons": {
+        "access": "Configure access",
+        "copy": "Create a copy of this cohort characterization"
+      },
+      "messages": {
+        "nameIsEmpty": "Characterization name is empty."
+      },
+      "tabs": {
+        "design": "Design",
+        "executions": "Executions",
+        "utilities": "Utilities"
+      },
+      "design": {
+        "loading": "Loading Cohort Characterization design...",
+        "description": "<b>Cohort characterization</b> is defined as the process of generating cohort level descriptive summary statistics from person level covariate data. Summary statistics of these person level covariates may be count, mean, sd, var, min, max, median, range, and quantiles. In addition, covariates during a period may be stratified into temporal units of time for time-series analysis such as fixed intervals of time relative to cohort_start_date (e.g. every 7 days, every 30 days etc.), or in absolute calendar intervals such as calendar-week, calendar-month, calendar-quarter, calendar-year.",
+        "fa": {
+          "title": "Feature analyses",
+          "actions": {
+            "remove": "Remove"
+          },
+          "columns": {
+            "id": "ID",
+            "name": "Name",
+            "description": "Description",
+            "actions": "Actions"
+          }
+        },
+        "faParams": {
+          "title": "Feature analyses parameters",
+          "newLabel": "New parameter",
+          "columns": {
+            "name": "Name",
+            "value": "Value",
+            "actions": "Actions"
+          }
+        },
+        "subgroups": {
+          "title": "Subgroup analyses",
+          "new": "New subgroup",
+          "nosubgroups": "No subgroups defined",
+          "subgroupOnly": "Calculate subgroup analyses only",
+          "namePlaceholder": "Subgroup name",
+          "stratifiedByPlaceholder": "Stratified by",
+          "messages": {
+            "nameIsEmpty": "Subgroup name is empty.",
+            "nameIsNotUnique": "Subgroup name is duplicated."
+          }
+        }
+      },
+      "executions": {
+        "title": "Executions",
+        "loading": "Loading executions...",
+        "designModal": {
+          "title": "Design"
+        },
+        "exitModal": {
+          "title": "Execution Exit Message"
+        },
+        "buttons": {
+          "generate": "Generate",
+          "cancel": "Cancel",
+          "pending": "Pending",
+          "latestResult": "View latest result",
+          "allExecutions": "All executions (<%= submissions %>)"
+        },
+        "table": {
+          "columns": {
+            "date": "Date",
+            "design": "Design",
+            "status": "Status",
+            "duration": "Duration",
+            "results": {
+              "title": "Results",
+              "values": {
+                "text": "View reports",
+                "empty": "-"
+              }
+            }
+          }
+        },
+        "messages": {
+          "permissions": "Not enough permissions to generate, changes not saved or no cohorts found"
+        }
+      },
+      "results": {
+        "loading": "Loading execution results...",
+        "title": "Reports for <%= sourceName %>",
+        "detail": {
+          "date": "Date:",
+          "design": "Design:",
+          "results": {
+            "label": "Results:",
+            "text": "<%= reports %> reports"
+          }
+        },
+        "filters": {
+          "cohorts": "Cohorts",
+          "analyses": "Analyses",
+          "domains": "Domains"
+        },
+        "threshold": {
+          "label": "Filter results to covariates with prevalence greater than:",
+          "placeholder": "Threshold value",
+          "apply": "Apply",
+          "text": "Viewing most prevalent <%= resultsCountFiltered %> of total <%= totalResultsCount %> records"
+        },
+        "exportAll": "Export all",
+        "table": {
+          "buttons": {
+            "export": "Export",
+            "exportComparison": "Export comparison"
+          },
+          "columns": {
+            "conceptId": "Concept ID",
+            "covariate": "Covariate",
+            "explore": "Explore",
+            "count": "Count",
+            "pct": "Pct",
+            "avg": "Avg",
+            "stdev": "Std Dev",
+            "min": "Min",
+            "p10": "P10",
+            "p25": "P25",
+            "median": "Median",
+            "p75": "P75",
+            "p90": "P90",
+            "max": "Max",
+            "strata": "Strata"
+          }
+        }
+      }
     }
   },
   "home": {
@@ -266,16 +442,7 @@
               "value": "(same as now)"
             },
             "status": {
-              "title": "Status",
-              "values": {
-                "FAILED": "FAILED",
-                "COMPLETED": "COMPLETED",
-                "STOPPED": "STOPPED",
-                "CANCELED": "CANCELED",
-                "PENDING": "PENDING",
-                "RUNNING": "RUNNING",
-                "STARTED": "STARTED"
-              }
+              "title": "Status"
             },
             "duration": "Duration",
             "results": {

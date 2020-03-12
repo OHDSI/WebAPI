@@ -21,15 +21,18 @@ import org.ohdsi.webapi.test.entity.PredictionEntity;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
+        SecurityIT.class,
+        JobServiceIT.class,
+        VocabularyServiceIT.class,
         ConceptSetEntity.class,
         CohortDefinitionEntity.class,
         CCEntity.class,
         IREntity.class,
         PathwayEntity.class,
         EstimationEntity.class,
-        PredictionEntity.class
+        PredictionEntity.class        
 })
-public class EntityIT extends AbstractShiroTest {
+public class ITEntity extends AbstractShiroTest {
 
     @ClassRule
     public static SingleInstancePostgresRule pg = EmbeddedPostgresRules.singleInstance();

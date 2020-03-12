@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+    <source
+            source_id="1"
+            source_name="SynPUF 110k (PostgreS)"
+            source_key="110k"
+            source_connection="jdbc:postgresql://149.56.22.37:5440/synpuf_110k"
+            source_dialect="postgresql"
+            username="ohdsi"
+            password="ohdsi"
+    />
+    
+    <cohort_definition
+            id="1"
+            name="Clopidogrel"        
+    />
+    <source_daimon
+            source_daimon_id="1"
+            source_id="1"
+            daimon_type="0"
+            table_qualifier="five_three_plus"
+            priority="0"
+    />
+    <source_daimon
+            source_daimon_id="2"
+            source_id="1"
+            daimon_type="1"
+            table_qualifier="five_three_plus"
+            priority="0"
+    />
+    <source_daimon
+            source_daimon_id="3"
+            source_id="1"
+            daimon_type="2"
+            table_qualifier="five_three_plus_results"
+            priority="0"
+    />
+</dataset>

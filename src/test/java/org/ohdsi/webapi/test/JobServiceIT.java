@@ -1,5 +1,8 @@
 package org.ohdsi.webapi.test;
 
+import com.github.springtestdbunit.annotation.DatabaseOperation;
+import com.github.springtestdbunit.annotation.DatabaseSetup;
+import com.github.springtestdbunit.annotation.DatabaseTearDown;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,9 +19,7 @@ import org.springframework.retry.policy.TimeoutRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.Assert;
 
-/**
- *
- */
+@DatabaseTearDown(value = "/database/empty.xml", type = DatabaseOperation.DELETE_ALL)
 public class JobServiceIT extends WebApiIT {
     
     @Value("${exampleservice.endpoint}")
@@ -34,10 +35,11 @@ public class JobServiceIT extends WebApiIT {
     private String endpointJobExecutionAlternative;
     
     @Test
+    @DatabaseSetup("/database/source.xml")
     public void createAndFindJob() {
         //create/queue job
         final ResponseEntity<JobExecutionResource> postEntity = getRestTemplate().postForEntity(this.endpointExample, null,
-            JobExecutionResource.class);//TODO 409 or other errors prevent deserialization...
+            JobExecutionResource.class);
         assertOk(postEntity);
         final JobExecutionResource postExecution = postEntity.getBody();
         assertJobExecution(postExecution);

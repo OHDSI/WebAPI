@@ -2,6 +2,8 @@ package org.ohdsi.webapi.pathway;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.google.common.base.MoreObjects;
+import com.odysseusinc.arachne.commons.types.DBMSType;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Hibernate;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
@@ -28,7 +30,6 @@ import org.ohdsi.webapi.pathway.repository.PathwayAnalysisEntityRepository;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisGenerationRepository;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.JobService;
-import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.PathwayAnalysisGenerationId;
@@ -36,8 +37,9 @@ import org.ohdsi.webapi.shiro.annotations.SourceId;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
-import org.ohdsi.webapi.util.NameUtils;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.EntityUtils;
+import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.SourceUtils;
@@ -53,6 +55,7 @@ import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,7 +75,6 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.StringUtils;
 
 import static org.ohdsi.webapi.Constants.GENERATE_PATHWAY_ANALYSIS;
 import static org.ohdsi.webapi.Constants.Params.GENERATION_ID;
@@ -80,7 +82,6 @@ import static org.ohdsi.webapi.Constants.Params.JOB_AUTHOR;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Params.PATHWAY_ANALYSIS_ID;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
-import org.springframework.jdbc.core.ResultSetExtractor;
 
 @Service
 @Transactional
@@ -325,7 +326,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
                     "pathway_target_cohort_id",
                     "max_depth",
                     "combo_window",
-                    "allow_repeats"
+                    "allow_repeats",
+                    "isHive"
             };
             String[] values = new String[]{
                     generationId.toString(),
@@ -336,7 +338,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
                     tc.getCohortDefinition().getId().toString(),
                     pathwayAnalysis.getMaxDepth().toString(),
                     MoreObjects.firstNonNull(pathwayAnalysis.getCombinationWindow(), 1).toString(),
-                    String.valueOf(pathwayAnalysis.isAllowRepeats())
+                    String.valueOf(pathwayAnalysis.isAllowRepeats()),
+                    String.valueOf(Objects.equals(DBMSType.HIVE.getOhdsiDB(), source.getSourceDialect()))
             };
 
             String renderedSql = SqlRender.renderSql(analysisSql, params, values);
@@ -408,11 +411,12 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     @Override
     @DataSourceAccess
     public void cancelGeneration(Integer pathwayAnalysisId, @SourceId Integer sourceId) {
-
-        jobService.cancelJobExecution(GENERATE_PATHWAY_ANALYSIS, j -> {
+        jobService.cancelJobExecution(j -> {
             JobParameters jobParameters = j.getJobParameters();
+            String jobName = j.getJobInstance().getJobName();
             return Objects.equals(jobParameters.getString(PATHWAY_ANALYSIS_ID), Integer.toString(pathwayAnalysisId))
-                    && Objects.equals(jobParameters.getString(SOURCE_ID), String.valueOf(sourceId));
+                    && Objects.equals(jobParameters.getString(SOURCE_ID), String.valueOf(sourceId))
+                    && Objects.equals(GENERATE_PATHWAY_ANALYSIS, jobName);
         });
     }
 

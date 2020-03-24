@@ -1,6 +1,8 @@
 package org.ohdsi.webapi;
 
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.admin.service.SearchableJobExecutionDao;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.ExitStatus;
@@ -15,6 +17,8 @@ import java.util.Calendar;
 
 @Component
 public class JobInvalidator {
+
+    private static final Logger log = LoggerFactory.getLogger(JobInvalidator.class);
 
     public static final String INVALIDATED_BY_SYSTEM_EXIT_MESSAGE = "Invalidated by system";
 
@@ -40,7 +44,13 @@ public class JobInvalidator {
 
     public void invalidateJobExecutionById(ExecutionEngineAnalysisStatus executionEngineAnalysisStatus) {
         JobExecution job = jobExecutionDao.getJobExecution(executionEngineAnalysisStatus.getExecutionEngineGeneration().getId());
+        if (job == null || job.getJobId() == null) {
+            log.error("Cannot invalidate job. There is no job for execution-engine-analysis-status with id = {}", executionEngineAnalysisStatus.getId());
+            return;
+        }
+
         invalidationJobExecution(job);
+
     }
 
     public void invalidationJobExecution(JobExecution job) {

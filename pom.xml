@@ -642,7 +642,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>hydra</artifactId>
-      <version>0.0.7</version>
+      <version>0.0.10</version>
       <exclusions>
         <exclusion>
           <groupId>org.ohdsi</groupId>

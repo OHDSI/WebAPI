@@ -7,5 +7,13 @@
   {
     "code": "ru",
     "name": "Русский"
+  },
+  {
+    "code": "ko",
+    "name": "한국인"
+  },
+  {
+    "code": "code",
+    "name": "Code"
   }
 ]

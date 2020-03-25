@@ -1,0 +1,2044 @@
+{
+  "components": {
+    "linked-entity-list": {
+      "defaultNewItemLabel": "가져오기"
+    },
+    "linked-cohort-list": {
+      "dialog": {
+        "title": "선택하는 집단 정의"
+      },
+      "defaultNewItemLabel": "가져오기",
+      "defaultTitle": "Cohort 정의",
+      "table": {
+        "columns": {
+          "name": "이름",
+          "id": "ID"
+        },
+        "actions": {
+          "edit": "편집 동",
+          "remove": "제거"
+        }
+      }
+    },
+    "import": {
+      "button": "가져오기",
+      "progress": "가져오는 중",
+      "denied": "수입이 허용되지 않습"
+    },
+    "browser": {
+      "buttons": {
+        "deselect-all": "모두 선택 취소",
+        "select-all": "모두 선택"
+      },
+      "table": {
+        "columns": {
+          "author": "저자",
+          "created": "성",
+          "name": "이름",
+          "description": "설명",
+          "id": "Id",
+          "updated": "업데이트"
+        }
+      },
+      "facets": {
+        "author": "저자",
+        "created": "성",
+        "domain": "도메인",
+        "type": "유형",
+        "updated": "업데이트"
+      }
+    },
+    "user-bar": {
+      "signin": "로그인",
+      "signout": "로그아웃"
+    },
+    "access-denied": {
+      "unauthenticated": {
+        "message": "이 기능은 보호됩니다. 하십시오",
+        "login": "로그인"
+      },
+      "forbidden": {
+        "message2": "자세한 내용하는 방법에 액세스하십시오 시스템 관리자에게 문의하십시오.",
+        "message1": "당신 없이 기능에 액세스 할 수 있습니다."
+      }
+    },
+    "cohort-definition-browser": {
+      "facets": {
+        "author": "저자",
+        "lastModified": "마지막으로 수정"
+      }
+    },
+    "loading": "로드",
+    "filter-panel": {
+      "buttons": {
+        "apply": "적용",
+        "clear": "취소"
+      },
+      "title": "필터 위원회"
+    },
+    "welcome": {
+      "runas": "실행",
+      "loggedInExp": "로그인이'<%= login %>)",
+      "wait": "잠시만 기다려 주세요...",
+      "submit": "제출",
+      "loggedIn": "로그인이'<%= login %>",
+      "messages": {
+        "expired": "개인정보취급방침에 대한 추가 정보 다시 로그인하십시오.",
+        "badCredentials": "나쁜 자격",
+        "loginFailed": "로그인",
+        "refresh": "개인정보취급방침에 대한 추가 정보 십시오 페이지를 새로 고침을 계속합니다."
+      },
+      "signout": "로그아웃",
+      "signin-with": "Sign In with:",
+      "close": "닫기",
+      "username": "사용자 이름"
+    },
+    "export": {
+      "progress": "내보내에서 진행"
+    },
+    "modal-exit-message": {
+      "buttons": {
+        "copyToClipboard": "클립보드 복사"
+      },
+      "messages": {
+        "copiedToClipboard": "에 복사합니다."
+      }
+    }
+  },
+  "datatable": {
+    "language": {
+      "loadingRecords": "Loading...",
+      "aria": {
+        "sortDescending": ":활성화를 정렬 열 descending",
+        "sortAscending": ":활성화를 정렬하려면 열을 오름차순"
+      },
+      "zeroRecords": "일치하는 레코드를 발견",
+      "infoEmpty": "보 0 0 0 항목",
+      "paginate": {
+        "next": "다음",
+        "last": "마지막",
+        "previous": "이전",
+        "first": "첫째"
+      },
+      "infoFiltered": "(필터링에서 _MAX_ 총 항목)",
+      "lengthMenu": "쇼 _MENU_ 항목",
+      "thousands": "",
+      "infoPostFix": "",
+      "search": "Filter:",
+      "processing": "Processing...",
+      "emptyTable": "데이터 없음에서 사용할 수 있는 테이블",
+      "decimal": "",
+      "info": "을 보여주는 _START_ 을 _END_ 의 _TOTAL_ 항목"
+    }
+  },
+  "facets": {
+    "date": {
+      "thisWeek": "이번 주",
+      "justNow": "지금",
+      "others": "2+주 전",
+      "lastWeek": "지난 주",
+      "within24Hours": "24 시간 이내에"
+    }
+  },
+  "format": {
+    "date": {
+      "seconds": "sec",
+      "datetime": "MM/DD/YYYY h:m m A",
+      "minutes": "min",
+      "mediumdate": "MM/dd/YYYY",
+      "shortdate": "MM/dd"
+    },
+    "number": "# ###.##"
+  },
+  "home": {
+    "releaseNotes": {
+      "title": "릴리즈 노트",
+      "issues": "<br/>이 최신 버전을 포함 <%= issues %> 기능 향상 및 문제점 해결책:"
+    },
+    "documentation": {
+      "text": "아틀라스는 사용자 가이드를 찾을 수 있습니다<a target=\"_new\"href=\"http://www.ohdsi.org/web/wiki/doku.php?id=documentation:software:atlas\">여기</a>.",
+      "title": "문서"
+    },
+    "description": "아틀라스는 오픈 소스 개발 프로그램의 일환으로<a href=\"http://www.ohdsi.org\"target=\"_new\">OHDSI</a>를 제공하기 위한 통합 인터페이스 환자 레벨의 데이터 및 분석입니다.",
+    "gettingStarted": {
+      "newCohort": {
+        "button": "새로운 정의 코호트",
+        "description": "시작을 수행하는 연구를 정의하여 이 그룹의 사람들을하고자 연구"
+      },
+      "vocabulary": {
+        "button": "검색 어휘",
+        "description": "검색에 다른 온톨로지를 설명하는 데 사용되는 환자 레벨의 데이터 전 세계"
+      },
+      "title": "시작하기"
+    },
+    "title": "홈",
+    "welcome": "환 ATLAS."
+  },
+  "incidencerate": {
+    "newanalysis": "New 분석",
+    "title": "률 분석"
+  },
+  "locale": {
+    "locale": "에"
+  },
+  "navigation": {
+    "configuration": "구성",
+    "jobs": "직업",
+    "profiles": "프로필",
+    "conceptsets": "개념 설정",
+    "pathways": "코호트로",
+    "characterizations": "특성화",
+    "home": "홈",
+    "estimation": "Estimation",
+    "feedback": "피드백",
+    "incidencerate": "요금이 발생률",
+    "datasources": "데이터 소스",
+    "prediction": "예측",
+    "cohortdefinitions": "Cohort 정의"
+  },
+  "pathways": {
+    "newanalysis": "새로운 길 분석",
+    "manager": {
+      "executions": {
+        "buttons": {
+          "cancel": "취소",
+          "allExecutions": "모든 실행",
+          "viewLatestResult": "최신 보기 결과",
+          "pending": "류",
+          "generate": "성"
+        },
+        "title": "실행",
+        "loading": "로드",
+        "results": {
+          "date": "날짜:",
+          "diagram": {
+            "title": "자기 비치는 햇살 음모"
+          },
+          "noPathways": "아 경로 발견되었다",
+          "legend": {
+            "eventCohort": "이벤트 코호트",
+            "targetCohortCount": "대상 집단 수:",
+            "personsCount": "사람과 함께 경로의 개수:",
+            "personsPortion": "사람으로부:",
+            "targetCohort": "대상 집단",
+            "title": "Legend"
+          },
+          "design": "디자인:",
+          "details": {
+            "noPath": "없는 경로를 선택한 경로를 클릭 자세한 내용을 볼 수 있습니다.",
+            "title": "경로 정보",
+            "table": {
+              "columns": {
+                "remain": "%유지",
+                "name": "이름",
+                "diff": "%Diff"
+              }
+            }
+          },
+          "filters": {
+            "cohorts": "코호"
+          },
+          "title": "통로 보고서",
+          "loading": "로드"
+        },
+        "table": {
+          "columns": {
+            "duration": "기간",
+            "date": "날짜",
+            "design": {
+              "title": "디자인",
+              "value": "(지금과 같은)"
+            },
+            "results": {
+              "values": {
+                "text": "보고서 보기",
+                "empty": "-"
+              },
+              "title": "결과"
+            },
+            "status": {
+              "values": {
+                "COMPLETED": "완료",
+                "FAILED": "실패",
+                "RUNNING": "실행",
+                "STOPPED": "을 중지",
+                "STARTED": "시",
+                "CANCELED": "취소",
+                "PENDING": "류"
+              },
+              "title": "상태"
+            }
+          }
+        },
+        "dialogs": {
+          "design": {
+            "loadError": "로드할 수 없 디자인",
+            "title": "디자인"
+          },
+          "exitMessage": {
+            "title": "실행 출시"
+          }
+        },
+        "tooltips": {
+          "viewPermissions": "지 충분한 권한을 보기 결과",
+          "generatePermissions": "지 충분한 권한을 생성"
+        }
+      },
+      "design": {
+        "analysisSettings": {
+          "maximumPathLength": {
+            "description": "최대 수의 단계에서 지정된 경로에 포함되는 햇살을 줄거리입니다.",
+            "title": "최대 경로 길이:"
+          },
+          "combinationWindow": {
+            "description": "창의의 시간을 할 때 두 가지 행사 집단에 필요 겹치는 것으로 간주합니다.",
+            "title": "조합 창:"
+          },
+          "description": "다음 설정의 매개 변수를 사용될 때 수행하는 통로 분석한다.",
+          "title": "분석 설정",
+          "minimumCellCount": {
+            "description": "의 최소 숫자는 과목에서 대상 집단에 주어진 이벤트하기 위해 계산되는 길에.",
+            "title": "최소 cell count:"
+          }
+        },
+        "eventCohorts": {
+          "description": "각 이벤트 집단을 정의하는 단계로 발생할 수 있는 사람을 위해서는 대상이 있음을 시사한다.",
+          "title": "이벤트는 동료"
+        },
+        "targetCohorts": {
+          "description": "각각의 대상 동료 될 것입니다 analyized 에 대한 경로를 통해 이벤트를 동료.",
+          "title": "대상 집단"
+        },
+        "description": "<b>일대 길</b>으로 정의하는 과정을 생성하는 집계된 시퀀스의 전환 이벤트를 동료 그 사람들 사이에 대상의 동료."
+      },
+      "tabs": {
+        "executions": "실행",
+        "design": "디자인",
+        "utilities": "유틸리티"
+      },
+      "messages": {
+        "deleteConfirmation": "하시겠습니까?",
+        "beforeClose": "귀하의 변경 내용이 저장되지 않습니다. 계속 사용하시겠습니까?",
+        "notfound": "은 없을 통해 분석 id=%d.",
+        "generating": "생성하는 통로 분석%d%s 를 사용하여(%s)",
+        "alreadyExists": "대 경로 이름으로 이미 존재합니다. 다른 이름을 선택하시기 바랍니다.",
+        "createACopy": "의 복사본을 만들고 이것을 통해 분석",
+        "saveFailed": "는 동안 오류가 발생했을 저장하려고 시도하는 집단의 통로입니다.",
+        "nameIsEmpty": "동세대 경로 이름은 빈"
+      },
+      "caption": "집단 통#",
+      "loading": "선적 코호트를 통해 분석...",
+      "utilities": {
+        "buttons": {
+          "import": "가져오기",
+          "export": "내보내기"
+        },
+        "title": "유틸리티",
+        "loading": "로드"
+      }
+    },
+    "browser": {
+      "grid": {
+        "facets": {
+          "author": "저자",
+          "created": "성",
+          "updated": "업데이트"
+        }
+      },
+      "table": {
+        "columns": {
+          "author": "저자",
+          "created": "성",
+          "name": "이름",
+          "id": "Id",
+          "updated": "업데이트"
+        }
+      }
+    },
+    "loading": "선적 경로 분석 list...",
+    "title": "코호트로",
+    "defaultName": "코호트를 통로"
+  },
+  "cc": {
+    "new": "뉴",
+    "browser": {
+      "table": {
+        "columns": {
+          "author": "저자",
+          "created": "성",
+          "name": "이름",
+          "updated": "업데이트"
+        }
+      }
+    },
+    "tabs": {
+      "featureAnalyses": {
+        "newLabel": "기능 분석",
+        "title": "기능 분석"
+      },
+      "characterizations": {
+        "newLabel": "특성화",
+        "title": "특성화"
+      }
+    },
+    "list": {
+      "columns": {
+        "id": "Id"
+      },
+      "facets": {
+        "created": "성",
+        "author": "저자",
+        "updated": "업데이트"
+      }
+    },
+    "loading": "선적 코호트 특성화 목록...",
+    "title": "Cohort 특성화",
+    "defaultName": "코호트를 통로",
+    "viewEdit": {
+      "executions": {
+        "exitModal": {
+          "title": "실행 출시"
+        },
+        "buttons": {
+          "allExecutions": "모든 실행(<%=submissions%>",
+          "cancel": "취소",
+          "pending": "류",
+          "latestResult": "최신 보기 결과",
+          "generate": "성"
+        },
+        "messages": {
+          "permissions": "지 충분한 권한을 생성,변하지 않는 저장하거나무 집단 발견"
+        },
+        "loading": "선적 실행...",
+        "title": "실행",
+        "table": {
+          "columnsresults": {
+            "title": "결과",
+            "results": {
+              "values": {
+                "text": "보고서 보기",
+                "empty": "-"
+              }
+            }
+          },
+          "columnsstatus": "상태",
+          "columns": {
+            "date": "날짜",
+            "design": "디자인"
+          },
+          "columnsduration": "기간"
+        },
+        "designModal": {
+          "title": "디자인"
+        }
+      },
+      "buttons": {
+        "access": "액세스 구성",
+        "copy": "의 복사본을 만들이 집단 특성화"
+      },
+      "design": {
+        "subgroups": {
+          "add": {
+            "device-exposure": {
+              "criteria": {
+                "quantity": {
+                  "text": "수량",
+                  "option": {
+                    "description": "필터 기기 노출에 의해 수량입니다.",
+                    "text": "추가 수량 기준"
+                  }
+                },
+                "gender": {
+                  "text": "으로 성별:",
+                  "option": {
+                    "description": "필터 기기 노출에 성을 기반으로합니다.",
+                    "text": "추가별 기준"
+                  }
+                },
+                "unique-device-id": {
+                  "text": "고유한 장치 ID",
+                  "option": {
+                    "description": "필터 기기 노출에 의해 장치의 고유 Id 입니다.",
+                    "text": "추가 고유 Id 조건"
+                  }
+                },
+                "index-data": {
+                  "text": "Index 날짜는 장치를 참조하의 노출 <%= conceptSetName %>."
+                },
+                "device-source-concept": {
+                  "text": "장치 소스 개념은",
+                  "option": {
+                    "description": "필터 기기 노출에 의해 장치 소스 개념입니다.",
+                    "text": "추가 장치 소스 개념 조건"
+                  }
+                },
+                "occurrence-start-date": {
+                  "text": "발생 시작가:",
+                  "option": {
+                    "description": "필터 기기 노출에 의한 노출 날짜를 시작합니다.",
+                    "text": "추가 시작 날짜가 기준"
+                  }
+                },
+                "provider-specialty": {
+                  "text": "공급자의 전문 분야:",
+                  "option": {
+                    "description": "필터 기기 노출에 따라 공급자 전문입니다.",
+                    "text": "추가 공급자의 특별 조건"
+                  }
+                },
+                "occurrence-end-date": {
+                  "text": "발생을 끝입니다:",
+                  "option": {
+                    "description": "필터 기기 노출에 의한 노출 수 있습니다.",
+                    "text": "추가 끝 날짜가 기준"
+                  }
+                },
+                "correlated-criteria": {
+                  "option": {
+                    "description": "적용되는 기준을 사용하여 장치에 노출로 색인 이벤트",
+                    "text": "추가 중첩된 기준..."
+                  }
+                },
+                "device-type": {
+                  "text": "장치 유형",
+                  "option": {
+                    "description": "필터 기기 노출에 의한 노출 유형입니다.",
+                    "text": "추가 장치 유형을 기준"
+                  }
+                },
+                "first": {
+                  "option": {
+                    "description": "제한 노출 장치를 먼저 노출에는 역사입니다.",
+                    "text": "추가 먼저 노출기준"
+                  }
+                },
+                "age": {
+                  "text": "나이로",
+                  "option": {
+                    "description": "필터 기기 노출에 의 연령에서 발생합니다.",
+                    "text": "추가 연령에서 발생한 기준"
+                  }
+                },
+                "default-concept-name": "모든 장치",
+                "visit-type": {
+                  "text": "방문으로 발생하의:",
+                  "option": {
+                    "description": "필터 기기 노출에 따라 방문의 발생에 노출됩니다.",
+                    "text": "추가 방문하는 조건"
+                  }
+                }
+              },
+              "device-exposure-of": "장치에 노출의"
+            },
+            "drug-era": {
+              "criteria": {
+                "era-end-date": {
+                  "text": "시대는 끝입니다:",
+                  "option": {
+                    "description": "필터 약물 시대에 의해 시대를 끝 날짜",
+                    "text": "추가 시대는 끝 날짜가 기준"
+                  }
+                },
+                "era-start-date": {
+                  "text": "시대의 시작은:",
+                  "option": {
+                    "description": "필터 약물 시대에 의해 시대를 날짜를 시작합니다.",
+                    "text": "추가 시대의 시작일 기준"
+                  }
+                },
+                "era-length": {
+                  "text": "으로 시대 길이",
+                  "option": {
+                    "description": "필터 약물 시대에 의해 시대 기간이 있습니다.",
+                    "text": "추가 시대 길이가 기준"
+                  }
+                },
+                "gender": {
+                  "text": "으로 성별:",
+                  "option": {
+                    "description": "필터 약물 시대 성을 기반으로합니다.",
+                    "text": "추가별 기준"
+                  }
+                },
+                "age-at-end": {
+                  "text": "나이로에서 년대 말",
+                  "option": {
+                    "description": "필터 약물 시대에 의해 연령 시대가 끝났다.",
+                    "text": "추가대에서 시대가 끝 기준"
+                  }
+                },
+                "index-data": {
+                  "text": "Index 날짜를 참조하는 약물의 시대 <%= conceptSetName %>."
+                },
+                "of": "약품의 시대",
+                "age-at-start": {
+                  "text": "나이에 세 시대에서 시작",
+                  "option": {
+                    "description": "필터 약물 시대에 의해 시대 시대에서 시작합니다.",
+                    "text": "추가 시대 시대에서 시작 조건"
+                  }
+                },
+                "correlatedCriteria": {
+                  "option": {
+                    "description": "적용되는 기준을 사용하여 약물 시대의 인덱스로 이벤트",
+                    "text": "추가 중첩된 기준..."
+                  }
+                },
+                "occurrence-count": {
+                  "text": "로 노출이 계산",
+                  "option": {
+                    "description": "필터 약물 시대에 노출을 계산합니다.",
+                    "text": "추가 시대 노출 수준"
+                  }
+                },
+                "default-concept-name": "모든 약품",
+                "first": {
+                  "option": {
+                    "description": "제약 시대는 최초의 노출에는 역사입니다.",
+                    "text": "추가 먼저 노출기준"
+                  }
+                }
+              }
+            },
+            "observation-period": {
+              "criteria": {
+                "with": "관측 기간은 다음과 같은 기준들을 만족:",
+                "period-start-date": {
+                  "text": "관측 기간 시작:",
+                  "option": {
+                    "description": "필터 관측 기간으로 날짜를 시작합니다.",
+                    "text": "추가 기간 시작일 기준"
+                  }
+                },
+                "period-type": {
+                  "text": "기간 형식은:",
+                  "option": {
+                    "description": "필터 Obsevation 기간을 입력하기만 하면 됩니다.",
+                    "text": "추가 기간의 유형을 기준"
+                  }
+                },
+                "age-at-end": {
+                  "text": "나이로에서 년 기간의 종료",
+                  "option": {
+                    "description": "필터에 의한 기간대에 끝났다.",
+                    "text": "추가대 끝에 조건"
+                  }
+                },
+                "correlated-criteria": {
+                  "option": {
+                    "description": "적용되는 기준을 사용하여 관측 기간으로 색인 이벤트",
+                    "text": "추가 중첩된 기준..."
+                  }
+                },
+                "age-at-start": {
+                  "text": "나이로에서 년 기간 시작",
+                  "option": {
+                    "description": "필터에 의한 기간대에서 시작합니다.",
+                    "text": "추가대에서 시작 조건"
+                  }
+                },
+                "period-length": {
+                  "days": "일입니다.",
+                  "text": "와 지속 기간",
+                  "option": {
+                    "description": "필터 관측 기간 동안 기간이 있습니다.",
+                    "text": "추가 기간의 길이 조건"
+                  }
+                },
+                "period-end-date": {
+                  "text": "관측 기간의 끝입니다:",
+                  "option": {
+                    "description": "필터 관측 기간에 의해 만들 수 있습니다.",
+                    "text": "추가 기간의 종료일 기준"
+                  }
+                },
+                "user-defined-period": {
+                  "text": "를 사용하여 지정된 기간:",
+                  "option": {
+                    "description": "시작 및 종료 날짜를 지정하여 사용에 대한 관측 기간입니다.",
+                    "text": "지정 시작 및 끝 날짜"
+                  }
+                },
+                "first": {
+                  "text": "제한된 환자에게 처음 관측 기간",
+                  "option": {
+                    "description": "한 관측기간을 먼저 기간에서 역사입니다.",
+                    "text": "첫 번째 관측 기간 기준"
+                  }
+                }
+              }
+            },
+            "drug-exposure": {
+              "criteria": {
+                "dose-unit": {
+                  "text": "용량 단위:",
+                  "option": {
+                    "description": "필터 약 노출에 의한 복용량 단위입니다.",
+                    "text": "추가 복용량 단위 기준"
+                  }
+                },
+                "days-supply": {
+                  "text": "일 Supply",
+                  "option": {
+                    "description": "필터 약 노출에 의한 일을 공급합니다.",
+                    "text": "일을 추가 공급 기준"
+                  }
+                },
+                "quantity": {
+                  "text": "수량",
+                  "option": {
+                    "description": "필터 약 노출에 의해 수량입니다.",
+                    "text": "추가 수량 기준"
+                  }
+                },
+                "gender": {
+                  "text": "으로 성별:",
+                  "option": {
+                    "description": "필터 마약 노출을 성을 기반으로합니다.",
+                    "text": "추가별 기준"
+                  }
+                },
+                "lot-number": {
+                  "text": "많은 번호",
+                  "option": {
+                    "description": "필터 약 노출에 의한 것입니다.",
+                    "text": "추가 많은 수 조건"
+                  }
+                },
+                "index-data": {
+                  "text": "Index 날짜를 참조하는 약물의 노출 <%= conceptSetName %>."
+                },
+                "drug-type": {
+                  "text": "약물 유형",
+                  "option": {
+                    "description": "필터 약 노출에 의 약물 유형입니다.",
+                    "text": "추가 약물 유형을 기준"
+                  }
+                },
+                "occurrence-start-date": {
+                  "text": "발생 시작가:",
+                  "option": {
+                    "description": "필터 약 노출에 의하여 마약 노출 날짜를 시작합니다.",
+                    "text": "추가 시작 날짜가 기준"
+                  }
+                },
+                "drug-source-concept": {
+                  "text": "약 소스 개념은:",
+                  "option": {
+                    "description": "필터 약 노출에 의해 약물을 소스 개념입니다.",
+                    "text": "추가 약 원본 개념 조건"
+                  }
+                },
+                "provider-specialty": {
+                  "text": "공급자의 전문 분야:",
+                  "option": {
+                    "description": "필터 약 노출에 따라 공급자 전문입니다.",
+                    "text": "추가 공급자의 특별 조건"
+                  }
+                },
+                "effective-drug-dose": {
+                  "text": "효과적인 약물 투여",
+                  "option": {
+                    "description": "필터 약 노출에 의해 효과적인 복용량입니다.",
+                    "text": "추가 유효 용량 조건"
+                  }
+                },
+                "refills": {
+                  "text": "로필",
+                  "option": {
+                    "description": "필터 약 노출에 의해 보충에.",
+                    "text": "추가필 조건"
+                  }
+                },
+                "route-concept": {
+                  "text": "로 개념입니다:",
+                  "option": {
+                    "description": "필터 약 노출에 의해 경로입니다.",
+                    "text": "추가로 기준"
+                  }
+                },
+                "occurrence-end-date": {
+                  "text": "발생을 끝입니다:",
+                  "option": {
+                    "description": "필터 약 노출에 의하여 마약 노출을 끝 날짜",
+                    "text": "추가 끝 날짜가 기준"
+                  }
+                },
+                "correlated-criteria": {
+                  "option": {
+                    "description": "적용되는 기준을 사용하여 약한 노출로 색인 이벤트",
+                    "text": "추가 중첩된 기준..."
+                  }
+                },
+                "age": {
+                  "text": "나이로",
+                  "option": {
+                    "description": "필터 약 노출에 의 연령에서 발생합니다.",
+                    "text": "추가 연령에서 발생한 기준"
+                  }
+                },
+                "default-concept-name": "모든 약품",
+                "first": {
+                  "option": {
+                    "description": "제약 노출을 먼저 노출에는 역사입니다.",
+                    "text": "추가 먼저 노출기준"
+                  }
+                },
+                "stop-reason": {
+                  "text": "를 중지와 함께 이유",
+                  "option": {
+                    "description": "필터 약 노출에 의해 정지 이유입니다.",
+                    "text": "추가 정지 이유가 기준"
+                  }
+                },
+                "visit-type": {
+                  "text": "방문으로 발생하의:",
+                  "option": {
+                    "description": "필터 마약 노출을 기반으로 방문 발생하는 약물의 노출이 있습니다.",
+                    "text": "추가 방문하는 조건"
+                  }
+                }
+              },
+              "of": "약 노출의"
+            },
+            "death": {
+              "criteria": {
+                "death-date": {
+                  "text": "발생 시작가:",
+                  "option": {
+                    "description": "필터에 의해 죽음에 날짜입니다.",
+                    "text": "추가 죽음에 날짜가 기준"
+                  }
+                },
+                "nest-criteria": {
+                  "option": {
+                    "description": "적용되는 기준을 사용하여 죽음 발생의 인덱스로 이벤트를...",
+                    "text": "추가 중첩된 기준..."
+                  }
+                },
+                "gender": {
+                  "text": "으로 성별:",
+                  "option": {
+                    "description": "필터 죽음 성을 기반으로합니다.",
+                    "text": "추가별 기준"
+                  }
+                },
+                "index-data": {
+                  "text": "Index 날짜를 의미 죽음의 이벤트 <%= conceptSetName %>."
+                },
+                "death-type": {
+                  "text": "죽음 유형",
+                  "option": {
+                    "description": "필터에 의해 죽음의 유형입니다.",
+                    "text": "추가 죽음의 유형을 기준"
+                  }
+                },
+                "age": {
+                  "text": "나이로",
+                  "option": {
+                    "description": "필터에 의해 나이에 죽음입니다.",
+                    "text": "추가 연령에서 발생한 기준"
+                  }
+                },
+                "default-concept-name": "모든 죽음에",
+                "cause-of-death-source-concept": {
+                  "text": "죽음의 소스 개념은",
+                  "option": {
+                    "description": "필터에 의해 죽음을 죽음의 소스 개념입니다.",
+                    "text": "추가 죽음의 원인은 소스 개념 조건"
+                  }
+                }
+              },
+              "from": "죽음에서 발생"
+            },
+            "observation": {
+              "criteria": {
+                "gender": {
+                  "text": "으로 성별:",
+                  "option": {
+                    "description": "필터 관측 성을 기반으로합니다.",
+                    "text": "추가별 기준"
+                  }
+                },
+                "value-as-number": {
+                  "text": "으로 값으로 번호",
+                  "option": {
+                    "description": "필터를 관찰하여 가치 숫자입니다.",
+                    "text": "추가 값을 수가 기준"
+                  }
+                },
+                "observation-source-concept": {
+                  "text": "관찰 원본 개념입니다:",
+                  "option": {
+                    "description": "필터를 관찰하여 원본 개념입니다.",
+                    "text": "추가 관찰 원본 개념 조건"
+                  }
+                },
+                "index-data": {
+                  "text": "Index 날짜를 참조 관 <%= conceptSetName %>."
+                },
+                "occurrence-start-date": {
+                  "text": "발생 시작가:",
+                  "option": {
+                    "description": "필터 관찰합니다.",
+                    "text": "추가 관찰 날짜가 기준"
+                  }
+                },
+                "provider-specialty": {
+                  "text": "공급자의 전문 분야:",
+                  "option": {
+                    "description": "필터 관측 기반 공급자 전문입니다.",
+                    "text": "추가 공급자의 특별 조건"
+                  }
+                },
+                "unit": {
+                  "text": "단위:",
+                  "option": {
+                    "description": "필터를 관찰하여 단위입니다.",
+                    "text": "추가 기준"
+                  }
+                },
+                "qualifier": {
+                  "text": "으로 한정:",
+                  "option": {
+                    "description": "필터를 관찰하여 규정이다.",
+                    "text": "추가 한정자 조건"
+                  }
+                },
+                "correlated-criteria": {
+                  "option": {
+                    "description": "적용되는 기준을 사용하여 전망대의 인덱스로 이벤트",
+                    "text": "추가 중첩된 기준..."
+                  }
+                },
+                "of": "관찰",
+                "observation-type": {
+                  "text": "관찰 유형",
+                  "option": {
+                    "description": "필터를 관찰하여 이 유형입니다.",
+                    "text": "추가 관찰형 조건"
+                  }
+                },
+                "value-as-string": {
+                  "text": "와 값을 문자열",
+                  "option": {
+                    "description": "필터를 관찰하여 값을 문자열입니다.",
+                    "text": "추가 값을 문자열 조건"
+                  }
+                },
+                "value-as-concept": {
+                  "text": "으로 값은 개념으로 사용:",
+                  "option": {
+                    "description": "필터를 관찰하여 값으로 개념입니다.",
+                    "text": "추가 값은 개념으로 기준"
+                  }
+                },
+                "first": {
+                  "option": {
+                    "description": "관찰 제한 첫 발생합니다.",
+                    "text": "먼저 추가 기준을 관찰"
+                  }
+                },
+                "age": {
+                  "text": "나이로",
+                  "option": {
+                    "description": "필터 조건이 발생하여 연령에서 발생합니다.",
+                    "text": "추가 연령에서 발생한 기준"
+                  }
+                },
+                "default-concept-name": "관찰",
+                "visit-type": {
+                  "text": "방문으로 발생하의:",
+                  "option": {
+                    "description": "필터 관측 기반으로 방문의 발생을 관찰합니다.",
+                    "text": "추가 방문하는 조건"
+                  }
+                }
+              }
+            },
+            "condition-occurrence": {
+              "criteria": {
+                "age-at-occurrence": {
+                  "text": "나이로",
+                  "option": {
+                    "description": "필터 조건이 발생하여 연령에서 발생합니다.",
+                    "text": "추가 연령에서 발생"
+                  }
+                },
+                "provider-specialty": {
+                  "text": "공급자의 전문 분야:",
+                  "option": {
+                    "description": "필터 조건 발생에 기반 공급자 전문입니다.",
+                    "text": "공급자 추가 전문"
+                  }
+                },
+                "gender": {
+                  "text": "으로 성별:",
+                  "option": {
+                    "description": "필터 조건 발생에 성을 기반으로합니다.",
+                    "text": "추가 Gender"
+                  }
+                },
+                "index-data": {
+                  "text": "Index 날짜를 참조 조건의 발생 <%= conceptSetName %>.",
+                  "default-name": "어떤 조건"
+                },
+                "first-diagnosis": {
+                  "option": {
+                    "description": "제한 조건이 발생하는 새로운 진단입니다.",
+                    "text": "추가 첫 번째 진단"
+                  }
+                },
+                "condition-type": {
+                  "text": "상태 유형",
+                  "option": {
+                    "description": "필터 상태 발생 조건에 의해 유형입니다.",
+                    "text": "추가 조건"
+                  }
+                },
+                "nested-criteria": {
+                  "option": {
+                    "description": "적용되는 기준을 사용하여 조건이 발생 인덱스로 이벤트",
+                    "text": "추가 중첩된 기준..."
+                  }
+                },
+                "visit": {
+                  "text": "방문으로 발생하의:",
+                  "option": {
+                    "description": "필터 조건 발생에 기초한 방문의 발생을 진단한다.",
+                    "text": "추가 방문"
+                  }
+                },
+                "condition-end-date": {
+                  "text": "발생을 끝입니다:",
+                  "option": {
+                    "description": "필터 상태 발생 조건에 의해 끝 날짜",
+                    "text": "추가 조건은 끝 날짜"
+                  }
+                },
+                "stop-reason": {
+                  "text": "를 중지와 함께 이유",
+                  "option": {
+                    "description": "필터 조건 발생에 의해 정지 이유입니다.",
+                    "text": "추가 정지 이유"
+                  }
+                },
+                "condition-start-date": {
+                  "text": "발생 시작가:",
+                  "option": {
+                    "description": "필터 상태 발생 조건에 의해 날짜를 시작합니다.",
+                    "text": "추가 조건이 시작 날짜"
+                  }
+                },
+                "condition-source-concept": {
+                  "text": "상태로 소스 개념은",
+                  "option": {
+                    "description": "필터 상태 발생 조건에 의해 소스 개념입니다.",
+                    "text": "추가 조건은 원본 개념"
+                  }
+                }
+              },
+              "condition-occurrence-of": "는 조건의 발생"
+            },
+            "location-region": {
+              "criteria": {
+                "end-date": {
+                  "text": "말입니다:",
+                  "option": {
+                    "description": "필터 위치 날짜 때 사람이 완성되는 거",
+                    "text": "추가 끝 날짜가 기준"
+                  }
+                },
+                "index-data": {
+                  "text": "Index 날짜를 참조하는 위치의 영역 <%= conceptSetName %>."
+                },
+                "correlated-criteria": {
+                  "option": {
+                    "description": "적용되는 기준을 사용하여 위치 지역의 인덱스로 이벤트",
+                    "text": "추가 중첩된 기준..."
+                  }
+                },
+                "of": "위치 지역",
+                "start-date": {
+                  "text": "시작가:",
+                  "option": {
+                    "description": "필터 위치 날짜 때 사람이 살기 시작했가",
+                    "text": "추가 시작 날짜가 기준"
+                  }
+                },
+                "default-concept-name": "모든 지역"
+              }
+            },
+            "speciment": {
+              "criteria": {
+                "of": "표본의"
+              }
+            },
+            "measurement": {
+              "criteria": {
+                "gender": {
+                  "text": "으로 성별:",
+                  "option": {
+                    "description": "필터를 측정 성을 기반으로합니다.",
+                    "text": "추가별 기준"
+                  }
+                },
+                "value-as-number": {
+                  "text": "으로 값으로 번호",
+                  "option": {
+                    "description": "필터를 측정하여 가치 숫자입니다.",
+                    "text": "추가 값을 수가 기준"
+                  }
+                },
+                "range-low": {
+                  "text": "와 낮은 범위",
+                  "option": {
+                    "description": "필터 낮은 측정 범위에 있습니다.",
+                    "text": "추가 낮은 범위를 기준"
+                  }
+                },
+                "index-data": {
+                  "text": "Index 날짜를 참조하의 측정 <%= conceptSetName %>."
+                },
+                "operator": {
+                  "text": "측정 값 연산자입니다:",
+                  "option": {
+                    "description": "필터를 측정하여 연산자입니다.",
+                    "text": "추가 운영 표준"
+                  }
+                },
+                "range-low-ratio": {
+                  "text": "와 범위가 낮은 비율",
+                  "option": {
+                    "description": "필터에 의해 측정 비율의 값으로 번호를 범위 낮습니다.",
+                    "text": "추가 낮은 범위의 비율 조건"
+                  }
+                },
+                "provider-specialty": {
+                  "text": "공급자의 전문 분야:",
+                  "option": {
+                    "description": "필터 기반으로 측정을 공급자 전문입니다.",
+                    "text": "추가 공급자의 특별 조건"
+                  }
+                },
+                "unit": {
+                  "text": "단위:",
+                  "option": {
+                    "description": "필터를 측정합니다.",
+                    "text": "추가 기준"
+                  }
+                },
+                "abnormal": {
+                  "text": "과 비정상 결과",
+                  "option": {
+                    "description": "필터를 측정하는 사람들을 포함하는 가을 외부의 정상적인 범위입니다.",
+                    "text": "를 추가 비정상 결과 조건"
+                  }
+                },
+                "occurrence-start": {
+                  "text": "발생 시작가:",
+                  "option": {
+                    "description": "필터를 측정합니다.",
+                    "text": "추가 측정 날짜 표준"
+                  }
+                },
+                "measurement-type": {
+                  "text": "측정 유형",
+                  "option": {
+                    "description": "필터를 측정하여 측정 유형입니다.",
+                    "text": "추가 측정 기준을 유형"
+                  }
+                },
+                "correlated-criteria": {
+                  "option": {
+                    "description": "적용되는 기준을 사용하여 측정하는 인덱스를 이벤트",
+                    "text": "추가 중첩된 기준..."
+                  }
+                },
+                "of": "의 측정",
+                "measurement-source-concept": {
+                  "text": "측정 소스 개념은",
+                  "option": {
+                    "description": "필터를 측정하여 측정을 소스 개념입니다.",
+                    "text": "추가 측정 원본 개념 조건"
+                  }
+                },
+                "range-high": {
+                  "text": "으로 범위를 높",
+                  "option": {
+                    "description": "필터를 측정하여 측정 유형입니다.",
+                    "text": "추가 높은 범위를 기준"
+                  }
+                },
+                "value-as-concept": {
+                  "text": "값으로는 개념입니다:",
+                  "option": {
+                    "description": "필터를 측정하여 값으로 개념입니다.",
+                    "text": "추가 값은 개념으로 기준"
+                  }
+                },
+                "range-high-ratio": {
+                  "text": "범위에 높은 비율",
+                  "option": {
+                    "description": "필터에 의해 측정 비율의 값으로 번호를 범위를 높습니다.",
+                    "text": "추가 높은 범위의 비율 조건"
+                  }
+                },
+                "age": {
+                  "text": "나이로",
+                  "option": {
+                    "description": "필터를 측정하여 연령에서 발생합니다.",
+                    "text": "추가 연령에서 발생한 기준"
+                  }
+                },
+                "first": {
+                  "option": {
+                    "description": "제한 조치하는 첫번째 발사합니다.",
+                    "text": "먼저 추가 측정 기준"
+                  }
+                },
+                "default-concept-name": "모든 측정",
+                "visit-type": {
+                  "text": "방문의:",
+                  "option": {
+                    "description": "필터를 측정을 기반으로 방문의 발생을 측정합니다.",
+                    "text": "추가 방문하는 조건"
+                  }
+                }
+              }
+            },
+            "dose-era": {
+              "criteria": {
+                "age-at-era": {
+                  "text": "나이로에서 년대 말",
+                  "option": {
+                    "description": "필터 약물 시대에 의해 연령 시대가 끝났다.",
+                    "text": "추가대에서 시대가 끝 기준"
+                  }
+                },
+                "era-start-date": {
+                  "text": "시대의 시작은:",
+                  "option": {
+                    "description": "필터를 복용량 시대에 의해 시대를 날짜를 시작합니다.",
+                    "text": "추가 시대의 시작일 기준"
+                  }
+                },
+                "unit": {
+                  "text": "단위:",
+                  "option": {
+                    "description": "필터를 복용량 시대에 의하여 단위입니다.",
+                    "text": "추가 복용량 단위 기준"
+                  }
+                },
+                "era-end-date": {
+                  "text": "시대는 끝입니다:",
+                  "option": {
+                    "description": "필터를 복용량 시대에 의해 시대를 끝 날짜",
+                    "text": "추가 시대는 끝 날짜가 기준"
+                  }
+                },
+                "era-length": {
+                  "text": "으로 시대 길이",
+                  "option": {
+                    "description": "필터 약물 시대에 의해 시대 기간이 있습니다.",
+                    "text": "추가 시대 길이가 기준"
+                  }
+                },
+                "gender": {
+                  "text": "으로 성별:",
+                  "option": {
+                    "description": "필터 약물 시대 성을 기반으로합니다.",
+                    "text": "추가별 기준"
+                  }
+                },
+                "index-data": {
+                  "text": "Index 날짜를 의미량의 시대 <%= conceptSetName %>."
+                },
+                "correlated-criteria": {
+                  "option": {
+                    "description": "적용되는 기준을 사용하여 복용량 시대의 인덱스로 이벤트",
+                    "text": "추가 중첩된 기준..."
+                  }
+                },
+                "age-at-start": {
+                  "text": "나이에 세 시대에서 시작",
+                  "option": {
+                    "description": "필터 약물 시대에 의해 시대 시대에서 시작합니다.",
+                    "text": "추가 시대 시대에서 시작 조건"
+                  }
+                },
+                "dose-value": {
+                  "text": "과 함께 복용 가치",
+                  "option": {
+                    "description": "필터를 복용량 시대에 의해 복용량 값입니다.",
+                    "text": "추가 복용량 값을 기준"
+                  }
+                },
+                "first": {
+                  "option": {
+                    "description": "제한 복용량 시대의 새로운 노출이 있습니다.",
+                    "text": "추가 먼저 노출기준"
+                  }
+                },
+                "default-concept-name": "어떤 시대 용량"
+              },
+              "of": "량의 시대"
+            },
+            "demographic": {
+              "criteria": {
+                "event-end-date": {
+                  "text": "발생을 끝입니다:",
+                  "option": {
+                    "description": "이벤트 필터링하여 끝 날짜",
+                    "text": "이벤트 추가 끝 날짜가 기준"
+                  }
+                },
+                "race": {
+                  "text": "으로 경주의:",
+                  "option": {
+                    "description": "필터링 이벤트를 성을 기반으로합니다.",
+                    "text": "추가 기준 레이스"
+                  }
+                },
+                "ethnicity": {
+                  "text": "와 함께 민족의:",
+                  "option": {
+                    "description": "이벤트 필터링에 기반한 인종입니다.",
+                    "text": "추가 민족을 조건"
+                  }
+                },
+                "gender": {
+                  "text": "으로 성별:",
+                  "option": {
+                    "description": "필터링 이벤트를 성을 기반으로합니다.",
+                    "text": "추가별 기준"
+                  }
+                },
+                "event-start-date": {
+                  "text": "발생 시작가:",
+                  "option": {
+                    "description": "이벤트 필터링으로 날짜를 시작합니다.",
+                    "text": "이벤트 추가 시작 날짜가 기준"
+                  }
+                },
+                "age": {
+                  "text": "나이로",
+                  "option": {
+                    "description": "필터를 기반으로 이벤트이다.",
+                    "text": "추가 기준 연령"
+                  }
+                }
+              }
+            },
+            "procedure-occurrence": {
+              "add": {
+                "any-condition": "어떤 조건"
+              },
+              "criteria": {
+                "quantity": {
+                  "text": "수량",
+                  "option": {
+                    "description": "필터 절차에 의해 발생량입니다.",
+                    "text": "추가 수량 기준"
+                  }
+                },
+                "gender": {
+                  "text": "으로 성별:",
+                  "option": {
+                    "description": "필터 절차 발생 성을 기반으로합니다.",
+                    "text": "추가별 기준"
+                  }
+                },
+                "index-data": {
+                  "text": "Index 날짜를 참조 절차의 <%= conceptSetName %>."
+                },
+                "modifier": {
+                  "text": "수정자입니다:",
+                  "option": {
+                    "description": "필터 절차가 발생하여 수 있게 되었습니다.",
+                    "text": "추가 수정자 조건"
+                  }
+                },
+                "occurrence-start-date": {
+                  "text": "발생 시작가:",
+                  "option": {
+                    "description": "필터 절차에 의해 발생하는 절차 날짜를 시작합니다.",
+                    "text": "추가 시작 날짜가 기준"
+                  }
+                },
+                "provider-specialty": {
+                  "text": "공급자의 전문 분야:",
+                  "option": {
+                    "description": "필터 절차 발생에 기반 공급자 전문입니다.",
+                    "text": "추가 공급자의 특별 조건"
+                  }
+                },
+                "procedure-type": {
+                  "text": "절차 유형",
+                  "option": {
+                    "description": "필터 절차에 의해 발생하는 절차 형식입니다.",
+                    "text": "추가 절차를 입력 조건"
+                  }
+                },
+                "procedure-source-concept": {
+                  "text": "절차 소스 개념은:",
+                  "option": {
+                    "description": "필터 절차에 의해 발생하는 절차 소스 개념입니다.",
+                    "text": "추가 절차 소스 개념 조건"
+                  }
+                },
+                "correlated-criteria": {
+                  "option": {
+                    "description": "적용 기준 절차를 사용하여 발생 인덱스로 이벤트",
+                    "text": "추가 중첩된 기준..."
+                  }
+                },
+                "age": {
+                  "text": "나이:",
+                  "option": {
+                    "description": "필터 절차가 발생하여 연령에서 발생합니다.",
+                    "text": "추가 연령에서 발생한 기준"
+                  }
+                },
+                "first": {
+                  "text": "을 위한 첫 번째 시간에서는 사람",
+                  "option": {
+                    "description": "제한 절차에 발생하는 첫 번째 절차에서 역사입니다.",
+                    "text": "추가 첫 번째 절차를 조건"
+                  }
+                },
+                "default-concept-name": "모든 절차",
+                "visit-type": {
+                  "text": "방문으로 발생하의:",
+                  "option": {
+                    "description": "필터 프로시저 항목을 기반으로 방문의 발생 절차입니다.",
+                    "text": "추가 방문하는 조건"
+                  }
+                }
+              },
+              "of": "절차의 발생을"
+            },
+            "visit-occurrence": {
+              "criteria": {
+                "gender": {
+                  "text": "으로 성별:",
+                  "option": {
+                    "description": "필터를 방문 발생 성을 기반으로합니다.",
+                    "text": "추가별 기준"
+                  }
+                },
+                "visit-length": {
+                  "text": "방문 시간",
+                  "option": {
+                    "description": "필터를 방문하 발생으로 기간이 있습니다.",
+                    "text": "추가 방문 길이가 기준"
+                  }
+                },
+                "index-data": {
+                  "text": "Index 날짜를 참조하의 방문 <%= conceptSetName %>."
+                },
+                "visit-source-concept": {
+                  "text": "문 소스 개념은",
+                  "option": {
+                    "description": "필터를 방문하 발생으로 방문하는 소스 개념입니다.",
+                    "text": "추가 방문 원본 개념 조건"
+                  }
+                },
+                "place-of-service-distance": {
+                  "text": "거리와 장소에서 서비스의 환자",
+                  "option": {
+                    "description": "필터를 방문하 발생으로부터의 거리에 따라 서비스의 장소로 환자입니다.",
+                    "text": "추가 서비스의 장소로 거리를 기준"
+                  }
+                },
+                "occurrence-start-date": {
+                  "text": "발생 시작가:",
+                  "option": {
+                    "description": "필터를 방문 발생 조건에 의해 날짜를 시작합니다.",
+                    "text": "추가 시작 날짜가 기준"
+                  }
+                },
+                "place-of-service-location": {
+                  "text": "과 서비스의 장소에 위치하고 있:",
+                  "option": {
+                    "description": "필터를 방문 발생에 기반하는 서비스의 장소는 위치입니다.",
+                    "text": "추가치 서비스의 위치를 기준"
+                  }
+                },
+                "provider-specialty": {
+                  "text": "공급자의 전문 분야:",
+                  "option": {
+                    "description": "필터를 방문 발생에 기반 공급자 전문입니다.",
+                    "text": "추가 공급자의 특별 조건"
+                  }
+                },
+                "place-of-service": {
+                  "text": "의 장소로의 서비스:",
+                  "option": {
+                    "description": "필터를 방문하는 항목을 장소를 기반으로 합의 서비스입니다.",
+                    "text": "추가소 서비스 기준"
+                  }
+                },
+                "occurrence-end-date": {
+                  "text": "발생을 끝입니다:",
+                  "option": {
+                    "description": "필터를 방문 발생에 의하여 조건이 끝나는 날짜",
+                    "text": "추가 끝 날짜가 기준"
+                  }
+                },
+                "correlated-criteria": {
+                  "option": {
+                    "description": "적용되는 기준을 사용하여 발생을 방문의 인덱스로 이벤트",
+                    "text": "추가 중첩된 기준..."
+                  }
+                },
+                "age": {
+                  "text": "나이로",
+                  "option": {
+                    "description": "필터를 방문 발생하여 연령에서 발생합니다.",
+                    "text": "추가 연령에서 발생한 기준"
+                  }
+                },
+                "first": {
+                  "option": {
+                    "description": "한 발생을 방문하는 첫 번째 방문합니다.",
+                    "text": "추가 첫 방문 기준"
+                  }
+                },
+                "default-concept-name": "어떤 방문",
+                "visit-type": {
+                  "text": "방문 유형",
+                  "option": {
+                    "description": "필터 상태 발생 조건에 의해 유형입니다.",
+                    "text": "추가 방문형 조건"
+                  }
+                }
+              },
+              "of": "방문의 발생을"
+            },
+            "common": {
+              "add-attribute": "추가 특성을...",
+              "first": "을 위한 첫 번째 시간에서는 사람"
+            },
+            "specimen": {
+              "criteria": {
+                "quantity": {
+                  "text": "수량",
+                  "option": {
+                    "description": "필터를 관찰하여 수 있습니다.",
+                    "text": "추가 수량 기준"
+                  }
+                },
+                "gender": {
+                  "text": "으로 성별:",
+                  "option": {
+                    "description": "필터 표본 성을 기반으로합니다.",
+                    "text": "추가별 기준"
+                  }
+                },
+                "index-data": {
+                  "text": "Index 날짜를 의미의 표본 <%= conceptSetName %>."
+                },
+                "occurrence-start-date": {
+                  "text": "발생 시작가:",
+                  "option": {
+                    "description": "필터 견본니다.",
+                    "text": "추가 표본에는 날짜 표준"
+                  }
+                },
+                "source-id": {
+                  "text": "와 소스는 ID",
+                  "option": {
+                    "description": "필터 견본에 의해 소스 ID.",
+                    "text": "추가 소스 ID 조건"
+                  }
+                },
+                "unit": {
+                  "text": "단위:",
+                  "option": {
+                    "description": "필터 표본 의 단위입니다.",
+                    "text": "추가 기준"
+                  }
+                },
+                "disease-status": {
+                  "text": "질병 상태:",
+                  "option": {
+                    "description": "필터 표본으로 질병 상태입니다.",
+                    "text": "추가 질병 상태 기준"
+                  }
+                },
+                "correlated-criteria": {
+                  "option": {
+                    "description": "적용되는 기준을 사용하여 표본의 인덱스로 이벤트",
+                    "text": "추가 중첩된 기준..."
+                  }
+                },
+                "specimen-type": {
+                  "text": "시편 종류",
+                  "option": {
+                    "description": "필터 견본에 의해 유형입니다.",
+                    "text": "추가 견본 유형을 기준"
+                  }
+                },
+                "first": {
+                  "option": {
+                    "description": "제한 표본 처음 발견에서 역사입니다.",
+                    "text": "먼저 추가 기준 발생을"
+                  }
+                },
+                "default-concept-name": "모든 견본",
+                "age": {
+                  "text": "나이로",
+                  "option": {
+                    "description": "필터 표본 의 연령에서 발생합니다.",
+                    "text": "추가 연령에서 발생한 기준"
+                  }
+                },
+                "anatomic-site": {
+                  "text": "해부학 사이트:",
+                  "option": {
+                    "description": "필터 견본에 의해 해부학 사이트입니다.",
+                    "text": "추가 해부학적 사이트 기준"
+                  }
+                }
+              }
+            },
+            "payer-plan-period": {
+              "note": "참고:지불인 계획 기간 기준은에서만 사용할 수 있 CDM v5.3 니다.",
+              "criteria": {
+                "payer-concept": {
+                  "text": "자 개념입니다",
+                  "option": {
+                    "description": "필터담자 계획은 기간에 의해 지불인 개념입니다.",
+                    "text": "를 추가 지불자 개념 조건"
+                  }
+                },
+                "period-start-date": {
+                  "text": "지불 계획은 기간 시작:",
+                  "option": {
+                    "description": "필터 지불 계획에 의한 기간 날짜를 시작합니다.",
+                    "text": "추가 기간 시작일 기준"
+                  }
+                },
+                "gender": {
+                  "text": "으로 성별:",
+                  "option": {
+                    "description": "필터담자 계획은 기간 동안 성을 기반으로합니다.",
+                    "text": "추가별 기준"
+                  }
+                },
+                "age-at-end": {
+                  "text": "나이로에서 기간 종료",
+                  "option": {
+                    "description": "필터에 의한 기간대에 끝났다.",
+                    "text": "추가대 끝에 조건"
+                  }
+                },
+                "ageperiod-length": {
+                  "text": "와 지속 기간",
+                  "option": {
+                    "description": "필터 지불 계획에서 기간을 기간",
+                    "text": "추가 기간의 길이 조건"
+                  }
+                },
+                "pla-source-concept": {
+                  "text": "계획은 소스 개념은",
+                  "option": {
+                    "description": "필터담자 계획은 기간 계획에 의해 소스 개념입니다.",
+                    "text": "추가 계획을 소스 개념 조건"
+                  }
+                },
+                "stop-reason-source-concept": {
+                  "text": "지 이유는 원본 개념은",
+                  "option": {
+                    "description": "필터 지불 계획에 의한 기간 중 이유는 원본 개념입니다.",
+                    "text": "추가 정지 이유는 원본 개념 조건"
+                  }
+                },
+                "period-end-date": {
+                  "text": "지불 계획에 기간이 끝:",
+                  "option": {
+                    "description": "필터담자 계획은 기간에 의해 만들 수 있습니다.",
+                    "text": "추가 기간의 종료일 기준"
+                  }
+                },
+                "payer-source-concept": {
+                  "text": "지불 소스 개념은",
+                  "option": {
+                    "description": "필터 지불 계획에 의한 기간자본의 개념입니다.",
+                    "text": "를 추가 지불 원본 개념 조건"
+                  }
+                },
+                "with": "지불 계획은 기간은 다음과 같은 기준들을 만족:",
+                "sponsor-source-concept": {
+                  "text": "스폰서 원본 개념은",
+                  "option": {
+                    "description": "필터 지급 기간 계획에 의해 스폰서 원본 개념입니다.",
+                    "text": "추가 스폰서가 원본 개념 조건"
+                  }
+                },
+                "correlated-criteria": {
+                  "option": {
+                    "description": "적용되는 기준을 사용하여 지불인랜 기간 인덱스 이벤트이다.",
+                    "text": "추가 중첩된 기준..."
+                  }
+                },
+                "plan-concept": {
+                  "text": "계획 개념입니다",
+                  "option": {
+                    "text": "필터담자 계획은 기간 계획에 의해 개념입니다."
+                  }
+                },
+                "age-at-start": {
+                  "text": "나이로에서 기간 시작",
+                  "option": {
+                    "description": "필터에 의한 기간대에서 시작합니다.",
+                    "text": "추가대에서 시작 조건"
+                  }
+                },
+                "stop-reason-concept": {
+                  "text": "지 이유는 개념입니다",
+                  "option": {
+                    "description": "필터 지불 계획에 의한 기간 중 이유는 개념입니다.",
+                    "text": "추가 정지 이유는 개념을 기준"
+                  }
+                },
+                "sponsor-concept": {
+                  "text": "스폰서 개념입니다",
+                  "option": {
+                    "description": "필터 지급 기간 계획에 의해 스폰서 개념입니다.",
+                    "text": "추가 스폰서 개념을 조건"
+                  }
+                },
+                "user-defined-period": {
+                  "text": "를 사용하여 지정된 기간:",
+                  "option": {
+                    "description": "지정 시작 및 끝 날짜를 위한 사용자 계획은 기간입니다.",
+                    "text": "지정 시작 및 끝 날짜"
+                  }
+                },
+                "first": {
+                  "text": "제한되는 환자가 먼저 지급 기간 계획",
+                  "option": {
+                    "description": "한 지불을 계획하는 기간 최초의 기간에서 역사입니다.",
+                    "text": "첫째로 지불을 계획하는 기간 기준"
+                  }
+                },
+                "default-concept-name": "Index 날짜를 참조 지불자 계획은 기간입니다."
+              }
+            },
+            "drop-down": {
+              "title": "추가 기준은 그룹..."
+            },
+            "condition-era": {
+              "criteria": {
+                "end-date": {
+                  "text": "시대는 끝입니다:",
+                  "option": {
+                    "description": "필터 조건 시대에 의해 시대를 끝 날짜",
+                    "text": "추가 끝 날짜가 기준"
+                  }
+                },
+                "gender": {
+                  "text": "으로 성별:",
+                  "option": {
+                    "description": "필터 조건 시대의 성을 기반으로합니다.",
+                    "text": "추가별 기준"
+                  }
+                },
+                "era-length": {
+                  "text": "으로 시대 길이",
+                  "option": {
+                    "description": "필터 조건 시대에 의해 시대 기간이 있습니다.",
+                    "text": "추가 시대 길이가 기준"
+                  }
+                },
+                "index-data": {
+                  "text": "Index 날짜를 참조 조건의 시대 <%= conceptSetName %>.",
+                  "default-name": "어떤 조건"
+                },
+                "age-at-era-end": {
+                  "text": "나이로에서 년대 말",
+                  "option": {
+                    "description": "필터 조건 시대에 의해 연령 시대가 끝났다.",
+                    "text": "추가대에서 시대가 끝 기준"
+                  }
+                },
+                "first-diagnosis": {
+                  "option": {
+                    "description": "제한 조건 시대의 첫 번째 진단 시대에서 역사입니다.",
+                    "text": "먼저 추가 기준을 진단"
+                  }
+                },
+                "era-condition-count": {
+                  "text": "으로 발생 횟수",
+                  "option": {
+                    "description": "필터 조건 시대의 조건에 의해 계산합니다.",
+                    "text": "추가 조건 시대 수준"
+                  }
+                },
+                "start-date": {
+                  "text": "시대의 시작은:",
+                  "option": {
+                    "description": "필터 조건 시대에 의해 시대를 날짜를 시작합니다.",
+                    "text": "추가 시작 날짜가 기준"
+                  }
+                },
+                "nested-criteria": {
+                  "option": {
+                    "description": "적용되는 기준을 사용하여 조건 시대의 인덱스로 이벤트를...",
+                    "text": "추가 중첩된 기준..."
+                  }
+                },
+                "age-at-era-start": {
+                  "text": "나이에 세 시대에서 시작",
+                  "option": {
+                    "description": "필터 조건 시대에 의해 시대 시대에서 시작합니다.",
+                    "text": "추가 시대 시대에서 시작 조건"
+                  }
+                }
+              },
+              "of": "는 조건의 시대"
+            }
+          },
+          "new": {
+            "button": "새로운 부분군",
+            "criteria": {
+              "condition": {
+                "start": "가",
+                "end": "다음의 조건:"
+              }
+            }
+          },
+          "component": {
+            "criteria-group": {
+              "button": {
+                "having": "가",
+                "delete-group": "그룹 삭제",
+                "delete-criteria": "삭제 기준"
+              },
+              "with": "가",
+              "restrict-to-the-same-visit-occurrence": "을 제한하는 동일한 방문 발생을",
+              "using-distinct": "를 사용하여 별개",
+              "occurrences-of": "항목:",
+              "allow-events-from-outside-observation-period": "용 이벤트를 외부에서 관측 기간",
+              "using-all": "를 사용하여 모든",
+              "between": "사"
+            },
+            "date-range": {
+              "on-or-before": "에서 또는 이전",
+              "not-between": "지 않은 사",
+              "before": "기",
+              "on-or-after": "후",
+              "after": "후에",
+              "between": "사",
+              "on": "에"
+            },
+            "index-date": {
+              "options": {
+                "index-end-date": "index 끝 날짜",
+                "event-starts": "이벤트 시작",
+                "index-start-date": "인덱스 시작일",
+                "event-ends": "이벤트"
+              }
+            },
+            "concept-set-selector": {
+              "clear-concept-set": "명확한 개념정",
+              "import-concept": "가져오기 개념 설정"
+            },
+            "window-day": {
+              "options": {
+                "all": "모든"
+              }
+            },
+            "numeric-range": {
+              "equal": "동",
+              "not-between": "지 않은 사",
+              "grate-then": "보다 크",
+              "less-or-equal": "작거나 같음",
+              "less-then": "보",
+              "between": "크거나 같음",
+              "grate-or-equal": "크거나 같음"
+            },
+            "result-limit": {
+              "options": {
+                "all-events": "모든 이벤트",
+                "earliest-event": "초기 이벤트",
+                "last-event": "최근 이벤트"
+              }
+            },
+            "criteria-group-template": {
+              "with-the-following-event-criteria": "다음과 같은 이벤트 조건:",
+              "and": "고",
+              "add additional constraint": "추가 제약 조건",
+              "where": "가",
+              "delete": "삭제 기준",
+              "between": "사"
+            },
+            "window-coeff": {
+              "options": {
+                "before": "기",
+                "at-most": "에서 가장",
+                "after": "후에",
+                "exactly": "정확히",
+                "at-least": "도"
+              }
+            },
+            "group-type": {
+              "options": {
+                "all": "에서 가장",
+                "any": "모",
+                "at-least": "도"
+              }
+            },
+            "windowed-criteria": {
+              "where": "가",
+              "restrict-to-the-same-visit-occurence": "을 제한하는 동일한 방문 발생을",
+              "add-additional-constraint": "추가 제약 조건"
+            },
+            "yes-no": {
+              "options": {
+                "no": "No",
+                "yes": "네"
+              }
+            },
+            "domain-type-exclude": {
+              "options": {
+                "is-not-any-of": "지의",
+                "is-any-of": "의"
+              }
+            },
+            "window-input-template": {
+              "and": "고",
+              "days": "일",
+              "placeholder": {
+                "all": "모든"
+              }
+            }
+          },
+          "subgroupOnly": "계산군 분석만",
+          "stratifiedByPlaceholder": "에 의해 층화",
+          "definition-viewercomponent": {
+            "criteria-group-template": {
+              "with-the-following-event-criteria": "다음과 같은 이벤트 조건:",
+              "occurring-within-the-same-visit": "내에서 발생하는 동일한 방문",
+              "having": "가",
+              "having-capital": "가",
+              "and": "고",
+              "of-the-following-criteria": "다음의 조건:",
+              "where": "가",
+              "occurrence": "발생",
+              "between": "사"
+            },
+            "window-input": {
+              "and": "고",
+              "days": "일"
+            }
+          },
+          "nosubgroups": "No 하위 정의",
+          "messages": {
+            "name-is-not-unique": "하위 그룹 이름이 중복됩니다.",
+            "name-is-empty": "하위 그룹의 이름은 비어 있습니다."
+          },
+          "namePlaceholder": "Strata 이름",
+          "placeholder": {
+            "new": "새로운 부분군"
+          },
+          "title": "군 분석"
+        },
+        "faParams": {
+          "import": {
+            "buttons": {
+              "cancel": "취소",
+              "import": "가져오기"
+            }
+          },
+          "columns": {
+            "name": "이름",
+            "value": "값",
+            "actions": "행동"
+          },
+          "newLabel": "새로운 매개 변수",
+          "title": "기능분석 매개 변수"
+        },
+        "description": "<b>코호트 특성화</b>으로 정의 프로세스를 생성하는 집단 수준을 설명 요약 통계에서 사람은 수준의 공변량 데이터입니다. 요약 통계의 이러한 사람은 수준의 관심 될 수 있습 횟수,평균,sd,var,최소값,최대값,평균,범위 및 변위치. 또한,공변량 기간 동안 수 있습 층상으로 시간 단위의 시간에 대한 시계열 분석과 같은 고정된 시간 간격에 상대적인 cohort_start_date(예를 들어 모든 7 일,30 일마다 등입니다.",
+        "fa": {
+          "columns": {
+            "name": "이름",
+            "description": "설명",
+            "id": "ID",
+            "actions": "행동"
+          },
+          "title": "기능 분석",
+          "actions": {
+            "remove": "제거"
+          }
+        },
+        "loading": "선적 코호트 특성화 디자인..."
+      },
+      "tabs": {
+        "executions": "실행",
+        "design": "디자인",
+        "utilities": "유틸리티"
+      },
+      "caption": "특성 분석#",
+      "messages": {
+        "nameIsEmpty": "특성화 이름은 비어 있습니다."
+      },
+      "utilities": {
+        "buttons": {
+          "import": "가져오기",
+          "export": "내보내기"
+        },
+        "title": "유틸리티"
+      },
+      "results": {
+        "exportAll": "모두 내보내기",
+        "threshold": {
+          "apply": "적용",
+          "placeholder": "임계값",
+          "text": "시청 가장 널리 <%=resultsCountFiltered%> 기록",
+          "label": "결과 필터링하는 공변량으로 유병률이 더 보다:"
+        },
+        "filters": {
+          "analyses": "석",
+          "domains": "도메인",
+          "cohorts": "코호"
+        },
+        "detail": {
+          "date": "날짜:",
+          "design": "디자인:",
+          "results": {
+            "text": "<%= reports %> 보고서",
+            "label": "결과:"
+          }
+        },
+        "loading": "선적 실행 결과를...",
+        "title": "텍스트:'보고서에 대한 <%= sourceName %>",
+        "table": {
+          "buttons": {
+            "exportComparison": "내보내기 비교",
+            "export": "내보내기"
+          },
+          "columns": {
+            "pct": "Pct",
+            "explore": "험",
+            "max": "Max",
+            "p90": "P90",
+            "count": "계산",
+            "strata": "Strata",
+            "p10": "P10",
+            "p75": "P75",
+            "covariate": "공변량",
+            "p25": "P25",
+            "avg": "Avg",
+            "min": "Min",
+            "median": "Median",
+            "conceptId": "개념 ID",
+            "stdev": "Std Dev"
+          }
+        }
+      }
+    }
+  }
+}

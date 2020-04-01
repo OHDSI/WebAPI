@@ -3,6 +3,9 @@ package org.ohdsi.webapi.pathway;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.Pagination;
+import org.ohdsi.webapi.check.CheckResult;
+import org.ohdsi.webapi.check.Checker;
+import org.ohdsi.webapi.check.checker.pathway.PathwayChecker;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
@@ -17,8 +20,8 @@ import org.ohdsi.webapi.pathway.dto.PathwayPopulationEventDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayPopulationResultsDTO;
 import org.ohdsi.webapi.pathway.dto.TargetCohortPathwaysDTO;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
-import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
@@ -273,5 +276,30 @@ public class PathwayController {
                 .collect(Collectors.toList());
 
         return new PathwayPopulationResultsDTO(eventCodeDtos, pathwayDtos);
+    }
+
+    @GET
+    @Path("/{id}/check")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public CheckResult check(@PathParam("id") Integer id){
+        PathwayAnalysisEntity pathwayAnalysis = pathwayService.getById(id);
+        ExceptionUtils.throwNotFoundExceptionIfNull(pathwayAnalysis, String.format("There is no pathway analysis with id = %d.", id));
+        PathwayAnalysisDTO pathwayAnalysisDTO = conversionService.convert(pathwayAnalysis, PathwayAnalysisDTO.class);
+
+        return runChecks(id, pathwayAnalysisDTO);
+    }
+
+    @POST
+    @Path("/{id}/check")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public CheckResult runDiagnostics(@PathParam("id") Integer id, PathwayAnalysisDTO pathwayAnalysisDTO){
+        return runChecks(id, pathwayAnalysisDTO);
+    }
+
+    private CheckResult runChecks(Integer id, PathwayAnalysisDTO dto) {
+        Checker<PathwayAnalysisDTO> checker = new PathwayChecker();
+        return new CheckResult<Integer>(id, checker.check(dto));
     }
 }

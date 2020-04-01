@@ -10,6 +10,9 @@ import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisT
 import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.Pagination;
+import org.ohdsi.webapi.check.Checker;
+import org.ohdsi.webapi.check.CheckResult;
+import org.ohdsi.webapi.check.checker.characterization.CharacterizationChecker;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
@@ -194,6 +197,31 @@ public class CcController {
     @Consumes(MediaType.APPLICATION_JSON)
     public String export(@PathParam("id") final Long id) {
         return service.serializeCc(id);
+    }
+
+    @GET
+    @Path("/{id}/check")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public CheckResult check(@PathParam("id") Long id){
+        CohortCharacterizationEntity cc = service.findByIdWithLinkedEntities(id);
+        ExceptionUtils.throwNotFoundExceptionIfNull(cc, String.format("There is no cohort characterization with id = %d.", id));
+        CohortCharacterizationDTO characterizationDTO = convertCcToDto(cc);
+
+        return runChecks(id, characterizationDTO);
+    }
+
+    @POST
+    @Path("/{id}/check")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public CheckResult runDiagnostics(@PathParam("id") Long id, CohortCharacterizationDTO characterizationDTO){
+        return runChecks(id, characterizationDTO);
+    }
+
+    private CheckResult runChecks(Long id, CohortCharacterizationDTO dto) {
+        Checker<CohortCharacterizationDTO> checker = new CharacterizationChecker();
+        return new CheckResult<>(id, checker.check(dto));
     }
     
     @POST

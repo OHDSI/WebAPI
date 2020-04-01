@@ -29,6 +29,9 @@ import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.GenerationStatus;
+import org.ohdsi.webapi.check.CheckResult;
+import org.ohdsi.webapi.check.Checker;
+import org.ohdsi.webapi.check.checker.ir.IRChecker;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
@@ -590,6 +593,26 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
     return result;
   }
+
+    @Override
+    @Transactional
+    public CheckResult check(int id){
+        IncidenceRateAnalysis a = this.irAnalysisRepository.findOne(id);
+        ExceptionUtils.throwNotFoundExceptionIfNull(a, String.format(NO_INCIDENCE_RATE_ANALYSIS_MESSAGE, id));
+        IRAnalysisDTO irAnalysisDTO = conversionService.convert(a, IRAnalysisDTO.class);
+
+        return runChecks(id, irAnalysisDTO);
+    }
+
+    @Override
+    public CheckResult runDiagnostics(int id, IRAnalysisDTO irAnalysisDTO){
+        return runChecks(id, irAnalysisDTO);
+    }
+
+    private CheckResult runChecks(Integer id, IRAnalysisDTO dto) {
+        Checker<IRAnalysisDTO> checker = new IRChecker();
+        return new CheckResult<Integer>(id, checker.check(dto));
+    }
 
   @Override
   @Transactional

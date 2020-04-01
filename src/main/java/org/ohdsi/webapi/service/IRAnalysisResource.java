@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.service;
 
+import org.ohdsi.webapi.check.CheckResult;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.ircalc.AnalysisReport;
 import org.ohdsi.webapi.job.JobExecutionResource;
@@ -147,4 +148,16 @@ public interface IRAnalysisResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public GenerateSqlResult generateSql(IRAnalysisService.GenerateSqlRequest request);
+
+    @GET
+    @Path("/{id}/check")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public CheckResult check(@PathParam("id") int id);
+
+    @POST
+    @Path("/{id}/check")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public CheckResult runDiagnostics(@PathParam("id") int id, IRAnalysisDTO irAnalysisDTO);
 }

@@ -4,6 +4,9 @@ import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import com.qmino.miredot.annotations.MireDotIgnore;
 import com.qmino.miredot.annotations.ReturnType;
 import org.ohdsi.webapi.Constants;
+import org.ohdsi.webapi.check.CheckResult;
+import org.ohdsi.webapi.check.Checker;
+import org.ohdsi.webapi.check.checker.estimation.EstimationChecker;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
@@ -241,4 +244,29 @@ public class EstimationController {
             .header("Content-Disposition", "attachment; filename=\"" + archive.getName() + "\"")
             .build();
   }
+
+    @GET
+    @Path("/{id}/check")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public CheckResult check(@PathParam("id") Integer id){
+        Estimation est = service.getAnalysis(id);
+        ExceptionUtils.throwNotFoundExceptionIfNull(est, String.format(NO_ESTIMATION_MESSAGE, id));
+        EstimationDTO estimationDTO = conversionService.convert(est, EstimationDTO.class);
+
+        return runChecks(id, estimationDTO);
+    }
+
+    @POST
+    @Path("/{id}/check")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public CheckResult runDiagnostics(@PathParam("id") Integer id, EstimationDTO estimationDTO){
+        return runChecks(id, estimationDTO);
+    }
+
+    private CheckResult runChecks(Integer id, EstimationDTO dto) {
+        Checker<EstimationDTO> checker = new EstimationChecker();
+        return new CheckResult<Integer>(id, checker.check(dto));
+    }
 }

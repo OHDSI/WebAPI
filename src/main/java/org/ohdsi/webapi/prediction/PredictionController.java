@@ -3,6 +3,9 @@ package org.ohdsi.webapi.prediction;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.Constants;
+import org.ohdsi.webapi.check.CheckResult;
+import org.ohdsi.webapi.check.Checker;
+import org.ohdsi.webapi.check.checker.prediction.PredictionChecker;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.analyses.CommonAnalysisDTO;
 import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
@@ -21,7 +24,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
@@ -226,4 +239,28 @@ public class PredictionController {
             .build();
   }
 
+    @GET
+    @Path("/{id}/check")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public CheckResult check(@PathParam("id") Integer id){
+        PredictionAnalysis analysis = service.getAnalysis(id);
+        ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format(NO_PREDICTION_ANALYSIS_MESSAGE, id));
+        PredictionAnalysisDTO predictionAnalysisDTO = conversionService.convert(analysis, PredictionAnalysisDTO.class);
+
+        return runChecks(id, predictionAnalysisDTO);
+    }
+
+    @POST
+    @Path("/{id}/check")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public CheckResult runDiagnostics(@PathParam("id") Integer id, PredictionAnalysisDTO predictionAnalysisDTO){
+        return runChecks(id, predictionAnalysisDTO);
+    }
+
+    private CheckResult runChecks(Integer id, PredictionAnalysisDTO dto) {
+        Checker<PredictionAnalysisDTO> checker = new PredictionChecker();
+        return new CheckResult<Integer>(id, checker.check(dto));
+    }
 }

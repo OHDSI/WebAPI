@@ -17,8 +17,6 @@ import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.webapi.Constants;
-import org.ohdsi.webapi.check.CheckResult;
-import org.ohdsi.webapi.check.checker.cohort.CohortChecker;
 import org.ohdsi.webapi.cohortdefinition.CleanupCohortTasklet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
@@ -720,11 +718,6 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Transactional
   public CheckResultDTO getCheckResults(@PathParam("id") int id) {
-      CohortDefinition d = this.cohortDefinitionRepository.findOneWithDetail(id);
-      ExceptionUtils.throwNotFoundExceptionIfNull(d, String.format("There is no cohort definition with id = %d.", id));
-      CohortDTO dto = conversionService.convert(d, CohortDTO.class);
-      CheckResult result = runChecks1(id, dto);
-
     CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(id);
     String expression = cohortDefinition.getDetails().getExpression();
     return runChecks(id, expression);
@@ -738,9 +731,4 @@ public class CohortDefinitionService extends AbstractDaoService {
   public CheckResultDTO runDiagnostics(@PathParam("id") int id, CohortExpression expression){
       return runChecks(id, expression);
   }
-
-    private CheckResult runChecks1(int id, CohortDTO dto) {
-        org.ohdsi.webapi.check.Checker checker1 = new CohortChecker();
-        return new CheckResult<Integer>(id, checker1.check(dto));
-    }
 }

@@ -20,8 +20,8 @@
                 <flyway.locations>classpath:db/migration/postgresql,classpath:db/extension/honeur</flyway.locations>
                 <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
                 <liferay.url>${LIFERAY_SERVER_BASE_URL}</liferay.url>
-                <liferay.user>${WEBAPI_LIFERAY_USER}</liferay.user>
-                <liferay.password>${WEBAPI_LIFERAY_PASSWORD}</liferay.password>
+                <liferay.user>${LIFERAY_SERVICE_USER_USERNAME}</liferay.user>
+                <liferay.password>${LIFERAY_SERVICE_USER_PASSWORD}</liferay.password>
                 <liferay.company.web.id>${WEBAPI_LIFERAY_COMPANY_WEB_ID}</liferay.company.web.id>
                 <jasypt.encryptor.enabled>true</jasypt.encryptor.enabled>
                 <jasypt.encryptor.algorithm>PBEWithSHAAndTwofish-CBC</jasypt.encryptor.algorithm>
@@ -158,8 +158,8 @@
                 <flyway.datasource.password>${OHDSI_ADMIN_USER}</flyway.datasource.password>
                 <datasource.url>${OHDSI_DATASOURCE_URL}</datasource.url>
                 <liferay.url>${LIFERAY_SERVER_BASE_URL}</liferay.url>
-                <liferay.user>${WEBAPI_LIFERAY_USER}</liferay.user>
-                <liferay.password>${WEBAPI_LIFERAY_PASSWORD}</liferay.password>
+                <liferay.user>${LIFERAY_SERVICE_USER_USERNAME}</liferay.user>
+                <liferay.password>${LIFERAY_SERVICE_USER_PASSWORD}</liferay.password>
                 <hss.url>${STORAGE_SERVER_BASE_URL}/api</hss.url>
                 <security.cas.loginUrl>${CAS_SERVER_LOGIN_URL}</security.cas.loginUrl>
                 <security.cas.callbackUrl>${WEBAPI_CAS_CALLBACK_URL}</security.cas.callbackUrl>
@@ -184,8 +184,8 @@
                 <datasource.ohdsi.schema>webapi_remote</datasource.ohdsi.schema>
                 <datasource.url>${OHDSI_DATASOURCE_URL}</datasource.url>
                 <liferay.url>${LIFERAY_SERVER_BASE_URL}</liferay.url>
-                <liferay.user>${WEBAPI_LIFERAY_USER}</liferay.user>
-                <liferay.password>${WEBAPI_LIFERAY_PASSWORD}</liferay.password>
+                <liferay.user>${LIFERAY_SERVICE_USER_USERNAME}</liferay.user>
+                <liferay.password>${LIFERAY_SERVICE_USER_PASSWORD}</liferay.password>
                 <hss.url>${STORAGE_SERVER_BASE_URL}/api</hss.url>
                 <security.enabled>false</security.enabled>
                 <security.cas.loginUrl>${CAS_SERVER_LOGIN_URL}</security.cas.loginUrl>

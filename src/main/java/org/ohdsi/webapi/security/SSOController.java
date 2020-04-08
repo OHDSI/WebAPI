@@ -43,6 +43,8 @@ public class SSOController {
     private String metadataLocation;
     @Value("${security.saml.sloUrl}")
     private String sloUri;
+    @Value("${security.origin}")
+    private String origin;
 
     @GET
     @Path("/saml-metadata")
@@ -63,7 +65,7 @@ public class SSOController {
     @Path("/slo")
     public Response logout() throws URISyntaxException {
         return Response.status(302)
-                .header("Access-Control-Allow-Origin", "http://localhost")
+                .header("Access-Control-Allow-Origin", this.origin)
                 .location(new URI(sloUri))
                 .build();
     }

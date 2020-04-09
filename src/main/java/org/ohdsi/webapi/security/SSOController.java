@@ -22,6 +22,7 @@
 
 package org.ohdsi.webapi.security;
 
+import com.google.common.net.HttpHeaders;
 import org.apache.commons.io.IOUtils;
 import org.pac4j.core.context.HttpConstants;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,11 +56,11 @@ public class SSOController {
 
         ClassPathResource resource = new ClassPathResource(metadataLocation);
         final InputStream is = resource.getInputStream();
-        response.setContentType("application/xml");
-        response.setHeader("Content-type", "application/xml");
-        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-        response.setHeader("Pragma", "no-cache");
-        response.setHeader("Expires", "0");
+        response.setContentType(MediaType.APPLICATION_XML);
+        response.setHeader(HttpHeaders.CONTENT_TYPE, "application/xml");
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate");
+        response.setHeader(HttpHeaders.PRAGMA, "no-cache");
+        response.setHeader(HttpHeaders.EXPIRES, "0");
         IOUtils.copy(is, response.getOutputStream());
         response.flushBuffer();
     }
@@ -66,7 +68,7 @@ public class SSOController {
     @GET
     @Path("/slo")
     public Response logout() throws URISyntaxException {
-        return Response.status(302)
+        return Response.status(HttpConstants.TEMP_REDIRECT)
                 .header(HttpConstants.ACCESS_CONTROL_ALLOW_ORIGIN_HEADER, this.origin)
                 .location(new URI(sloUri))
                 .build();

@@ -22,6 +22,8 @@
 
 package org.ohdsi.webapi.security;
 
+import org.apache.commons.io.IOUtils;
+import org.pac4j.core.context.HttpConstants;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Controller;
@@ -57,7 +59,7 @@ public class SSOController {
         response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         response.setHeader("Pragma", "no-cache");
         response.setHeader("Expires", "0");
-        org.apache.commons.io.IOUtils.copy(is, response.getOutputStream());
+        IOUtils.copy(is, response.getOutputStream());
         response.flushBuffer();
     }
 
@@ -65,7 +67,7 @@ public class SSOController {
     @Path("/slo")
     public Response logout() throws URISyntaxException {
         return Response.status(302)
-                .header("Access-Control-Allow-Origin", this.origin)
+                .header(HttpConstants.ACCESS_CONTROL_ALLOW_ORIGIN_HEADER, this.origin)
                 .location(new URI(sloUri))
                 .build();
     }

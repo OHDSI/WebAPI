@@ -16,7 +16,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import static org.ohdsi.webapi.shiro.management.AtlasSecurity.AUTH_CLIENT_ATTRIBUTE;
 import static org.ohdsi.webapi.shiro.management.AtlasSecurity.AUTH_CLIENT_SAML;
@@ -39,9 +38,8 @@ public class SamlHandleFilter extends AtlasAuthFilter {
     protected AuthenticationToken createToken(ServletRequest servletRequest,
                                               ServletResponse servletResponse) throws Exception {
         final ShiroHttpServletRequest request = (ShiroHttpServletRequest) servletRequest;
-        HttpSession session = request.getSession();
         AuthenticationToken token = null;
-        if (session != null) {
+        if (request.getSession() != null) {
             if (!SecurityUtils.getSubject().isAuthenticated()) {
                 try {
                     request.setAttribute(AUTH_CLIENT_ATTRIBUTE, AUTH_CLIENT_SAML);

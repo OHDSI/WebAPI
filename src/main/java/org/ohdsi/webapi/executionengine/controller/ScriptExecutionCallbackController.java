@@ -18,9 +18,11 @@ import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
 import org.ohdsi.webapi.executionengine.repository.AnalysisResultFileContentRepository;
 import org.ohdsi.webapi.executionengine.repository.ExecutionEngineGenerationRepository;
 import org.ohdsi.webapi.executionengine.service.AnalysisResultFileContentSensitiveInfoService;
+import org.ohdsi.webapi.executionengine.service.ArchiveService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,16 +53,23 @@ public class ScriptExecutionCallbackController {
 
     private final AnalysisResultFileContentSensitiveInfoService sensitiveInfoService;
 
+    private final ArchiveService archiveService;
+
+    @Value("${analysis.result.zipChunkSizeMb}")
+    private int zipChunkSizeMb;
+
     @Autowired
     public ScriptExecutionCallbackController(ExecutionEngineGenerationRepository executionEngineGenerationRepository,
                                              AnalysisExecutionRepository analysisExecutionRepository,
                                              AnalysisResultFileContentRepository analysisResultFileContentRepository,
-                                             AnalysisResultFileContentSensitiveInfoService sensitiveInfoService) {
+                                             AnalysisResultFileContentSensitiveInfoService sensitiveInfoService,
+                                             ArchiveService archiveService) {
 
         this.executionEngineGenerationRepository = executionEngineGenerationRepository;
         this.analysisExecutionRepository = analysisExecutionRepository;
         this.analysisResultFileContentRepository = analysisResultFileContentRepository;
         this.sensitiveInfoService = sensitiveInfoService;
+        this.archiveService = archiveService;
     }
 
     @Path(value = "submission/{id}/status/update/{password}")
@@ -163,7 +172,9 @@ public class ScriptExecutionCallbackController {
         // We have to filter all files for current execution because of possibility of archives split into volumes
         // Volumes will be removed during decompressing and compressing
         contentList = sensitiveInfoService.filterSensitiveInfo(contentList, variables);
-        return analysisResultFileContentRepository.save(contentList.getFiles());
+
+        List<AnalysisResultFileContent> resultFileContents = archiveService.splitZipArchivesIntoMultiplyVolumes(contentList.getFiles(), zipChunkSizeMb);
+        return analysisResultFileContentRepository.save(resultFileContents);
     }
 
 }

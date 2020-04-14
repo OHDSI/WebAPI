@@ -63,7 +63,7 @@ public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractS
 
     @Override
     /**
-     * This method not only filter sensitive info, it also repack all zip archives with volume size zipChunkSizeMb
+     * This method not only filters sensitive info but also repackages zip archives to the multivalue archive with defined volume size (zipChunkSizeMb)
      */
     public AnalysisResultFileContentList filterSensitiveInfo(AnalysisResultFileContentList source, Map<String, Object> variables, boolean isAdmin) {
 

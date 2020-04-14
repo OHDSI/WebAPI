@@ -3,13 +3,14 @@ package org.ohdsi.webapi.executionengine.service;
 import com.odysseusinc.arachne.execution_engine_common.util.CommonFileUtils;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
-import org.apache.commons.collections.map.HashedMap;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.ohdsi.webapi.common.sensitiveinfo.AbstractSensitiveInfoService;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFileContent;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFileContentList;
+import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -29,16 +30,21 @@ import static com.google.common.io.Files.createTempDir;
 public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractSensitiveInfoService implements AnalysisResultFileContentSensitiveInfoService {
     private final String EXTENSION_ALL = "*";
     private final String EXTENSION_EMPTY = "-";
+
     private final String EXTENSION_ZIP = "zip";
-    private static final String ZIP_VOLUME_EXT_PATTERN = "z[0-9]";
+    private static final String ZIP_VOLUME_EXT_PATTERN = "z[0-9]*\\b";
 
     private Set<String> sensitiveExtensions;
 
     @Value("${sensitiveinfo.analysis.extensions}")
     private String[] sensitiveAnalysisExtensions;
 
+    @Value("${sensitiveinfo.analysis.zip-chunk-size-mb}")
+    private int zipChunkSizeMb;
+
     @PostConstruct
     public void init() {
+
         super.init();
         sensitiveExtensions = new HashSet<>();
         if (sensitiveAnalysisExtensions != null && sensitiveAnalysisExtensions.length > 0) {
@@ -56,33 +62,34 @@ public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractS
     }
 
     @Override
-    // IMPORTANT: All volumes of multivolume archives will be merged into one volume
+    /**
+     * This method not only filter sensitive info, it also repack all zip archives with volume size zipChunkSizeMb
+     */
     public AnalysisResultFileContentList filterSensitiveInfo(AnalysisResultFileContentList source, Map<String, Object> variables, boolean isAdmin) {
+
+        if (CollectionUtils.isEmpty(source.getFiles())) {
+            return source;
+        }
+
         File temporaryDir = createTempDir();
         try {
-            // Save all files to be able to process multivolume archives
-            Map<AnalysisResultFileContent, Path> paths = saveFiles(temporaryDir, source.getFiles());
-            paths.forEach((file, path) -> {
-                // Archive volumes will be processed as entire archive
-                if(!isArchiveVolume(path)) {
-                    processFile(path, variables);
-                }
-            });
-            for(Iterator<Map.Entry<AnalysisResultFileContent, Path>> iter = paths.entrySet().iterator(); iter.hasNext();) {
-                Map.Entry<AnalysisResultFileContent, Path> entry = iter.next();
-                AnalysisResultFileContent fileContent = entry.getKey();
-                Path path = entry.getValue();
-                // If file does not exist then it was a part of multivolume archive and was deleted
-                if(path.toFile().exists()) {
-                    byte[] content = Files.readAllBytes(path);
-                    fileContent.setContents(content);
-                } else {
-                    // Path contains information about archive volume, must be deleted
-                    // because we create new archive without volumes
-                    iter.remove();
+            Map<Path, AnalysisResultFileContent> savedFiles = saveFilesToProcessMultivolumeArchives(temporaryDir, source.getFiles());
+
+            savedFiles.keySet().stream()
+                    .filter(path -> !isArchiveVolume(path))
+                    .forEach(path -> processFile(path, variables));
+
+            source.getFiles().clear();
+
+            for (File file : temporaryDir.listFiles()) {
+                Path path = file.toPath();
+                AnalysisResultFileContent analysisResultFileContent = getAnalysisResultFileOrCreatNewForZipVolume(path, savedFiles);
+                if (analysisResultFileContent != null) {
+                    analysisResultFileContent.setContents(Files.readAllBytes(path));
+                    source.getFiles().add(analysisResultFileContent);
                 }
             }
-            source.getFiles().retainAll(paths.keySet());
+
         } catch (Exception e) {
             LOGGER.error("Files filtering error", e);
             source.setHasErrors(true);
@@ -94,16 +101,41 @@ public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractS
 
     @Override
     public boolean isAdmin() {
+
         return false;
     }
 
-    private Map<AnalysisResultFileContent, Path> saveFiles(File tempDir, List<AnalysisResultFileContent> files) throws Exception{
-        Map<AnalysisResultFileContent, Path> paths = new HashedMap();
+    public void setZipChunkSizeMb(int zipChunkSizeMb) {
+
+        this.zipChunkSizeMb = zipChunkSizeMb;
+    }
+
+    private AnalysisResultFileContent getAnalysisResultFileOrCreatNewForZipVolume(Path path, Map<Path, AnalysisResultFileContent> filePathWithResultFileContent) {
+
+        if (isArchiveVolume(path)) {
+
+            ExecutionEngineAnalysisStatus execution = filePathWithResultFileContent.values().stream().map(f -> f.getAnalysisResultFile().getExecution()).findAny().orElse(null);
+
+            AnalysisResultFileContent analysisResultFileContent = new AnalysisResultFileContent();
+            AnalysisResultFile analysisResultFile = new AnalysisResultFile();
+            analysisResultFile.setFileName(path.getFileName().toString());
+            analysisResultFile.setMediaType("application");
+            analysisResultFile.setExecution(execution);
+            analysisResultFileContent.setAnalysisResultFile(analysisResultFile);
+            return analysisResultFileContent;
+        }
+        return filePathWithResultFileContent.get(path);
+    }
+
+    private Map<Path, AnalysisResultFileContent> saveFilesToProcessMultivolumeArchives(File tempDir, List<AnalysisResultFileContent> files) throws Exception {
+
+        Map<Path, AnalysisResultFileContent> paths = new HashMap<>();
+
         for (AnalysisResultFileContent file : files) {
             try {
                 AnalysisResultFile analysisResultFile = file.getAnalysisResultFile();
                 Path path = new File(tempDir, analysisResultFile.getFileName()).toPath();
-                paths.put(file, path);
+                paths.put(path, file);
                 Files.write(path, file.getContents(), StandardOpenOption.CREATE_NEW);
             } catch (Exception e) {
                 LOGGER.error("File writing error for file with id: {}", file.getAnalysisResultFile().getId(), e);
@@ -114,6 +146,7 @@ public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractS
     }
 
     private Path doFilterSensitiveInfo(Path path, Map<String, Object> variables) throws IOException {
+
         if (isFilteringRequired(path)) {
             byte[] bytes = Files.readAllBytes(path);
             final String value = filterSensitiveInfo(new String(bytes), variables, isAdmin());
@@ -123,18 +156,27 @@ public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractS
     }
 
     private boolean isArchiveVolume(Path path) {
-        String extension = FilenameUtils.getExtension(path.getFileName().toString());
+
+        String filename = path.getFileName().toString();
+        return isArchiveVolume(filename);
+    }
+
+    private boolean isArchiveVolume(String filename) {
+
+        String extension = FilenameUtils.getExtension(filename);
         Pattern pattern = Pattern.compile(ZIP_VOLUME_EXT_PATTERN);
         Matcher matcher = pattern.matcher(extension);
         return matcher.find();
     }
 
     private boolean isFilteringRequired(Path path) {
+
         return checkExtension(FilenameUtils.getExtension(path.getFileName().toString()));
     }
 
     private boolean checkExtension(String extension) {
-        if(sensitiveExtensions.contains(EXTENSION_ALL)) {
+
+        if (sensitiveExtensions.contains(EXTENSION_ALL)) {
             return true;
         }
         if (extension == null || extension.isEmpty()) {
@@ -145,11 +187,13 @@ public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractS
     }
 
     private boolean isArchive(String filename) {
+
         String extension = FilenameUtils.getExtension(filename);
         return EXTENSION_ZIP.equalsIgnoreCase(extension);
     }
 
     private void processArchive(Path zipPath, Map<String, Object> variables) {
+
         File temporaryDir = createTempDir();
         try {
             CommonFileUtils.unzipFiles(zipPath.toFile(), temporaryDir);
@@ -180,6 +224,7 @@ public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractS
     }
 
     private void process(Path path, Map<String, Object> variables) throws IOException {
+
         if (path.toFile().isDirectory()) {
             Files.list(path).forEach(child -> {
                 try {
@@ -195,12 +240,17 @@ public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractS
 
     private void processFile(Path path, Map<String, Object> variables) {
         try {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("File for process: {}", path.toString());
+            }
+
             if (isArchive(path.getFileName().toString())) {
                 // If file is archive - decompress it first
                 processArchive(path, variables);
-            } else {
+            } else if (!isArchiveVolume(path)) {
                 doFilterSensitiveInfo(path, variables);
             }
+
         } catch (IOException e) {
             LOGGER.error("File filtering error: '{}'", path.getFileName().toString(), e);
         }

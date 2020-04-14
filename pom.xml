@@ -182,7 +182,7 @@
     <!-- Use "-" for files without extension, "*" for all files, extension must not include a leading dot. Use comma to separate values.
      In case of "*" other values will be ignored -->
     <sensitiveinfo.analysis.extensions>txt</sensitiveinfo.analysis.extensions>
-
+    <sensitiveinfo.analysis.zip-chunk-size-mb>700</sensitiveinfo.analysis.zip-chunk-size-mb>
     <hydra.externalPackage.prediction></hydra.externalPackage.prediction>
     <hydra.externalPackage.estimation></hydra.externalPackage.estimation>
 

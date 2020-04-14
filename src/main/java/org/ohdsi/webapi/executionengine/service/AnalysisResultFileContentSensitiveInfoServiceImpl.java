@@ -32,7 +32,7 @@ public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractS
     private final String EXTENSION_EMPTY = "-";
 
     private final String EXTENSION_ZIP = "zip";
-    private static final String ZIP_VOLUME_EXT_PATTERN = "z[0-9]*\\b";
+    private static final String ZIP_VOLUME_EXT_PATTERN = "z[0-9]+$";
 
     private Set<String> sensitiveExtensions;
 
@@ -213,7 +213,8 @@ public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractS
                     LOGGER.error("File processing error: {}", path.getFileName().toString(), e);
                 }
             });
-            CommonFileUtils.compressAndSplit(temporaryDir, zipPath.toFile(), null);
+            long chunkSize = zipChunkSizeMb * 1024 * 1024;
+            CommonFileUtils.compressAndSplit(temporaryDir, zipPath.toFile(), chunkSize);
         } catch (IOException e) {
             LOGGER.error("File writing error", e);
         } catch (ZipException e) {

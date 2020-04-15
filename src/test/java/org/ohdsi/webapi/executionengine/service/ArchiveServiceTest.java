@@ -1,11 +1,10 @@
 package org.ohdsi.webapi.executionengine.service;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.compress.utils.IOUtils;
@@ -13,7 +12,6 @@ import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFileContent;
-import org.ohdsi.webapi.executionengine.entity.AnalysisResultFileContentList;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
 
 public class ArchiveServiceTest {
@@ -38,7 +36,7 @@ public class ArchiveServiceTest {
     }
 
     @Test
-    public void splitZipArchivesIntoMultiplyVolumes() throws Exception {
+    public void splitZipArchivesIntoMultiplyVolumes() {
 
         List<AnalysisResultFileContent> resultFileContents = archiveService.splitZipArchivesIntoMultiplyVolumes(this.resultFileContents, 1);
         List<String> fileNamesAfterFilterSensitiveInfoMethod = resultFileContents.stream().map(f -> f.getAnalysisResultFile().getFileName()).collect(Collectors.toList());
@@ -50,7 +48,7 @@ public class ArchiveServiceTest {
 
 
     @Test
-    public void splitZipArchivesIntoMultiplyVolumes2() throws Exception {
+    public void splitZipArchivesIntoMultiplyVolumesThereIsNothingToSplit() {
 
         List<AnalysisResultFileContent> resultFileContents = archiveService.splitZipArchivesIntoMultiplyVolumes(this.resultFileContents, 5);
         List<String> fileNamesAfterFilterSensitiveInfoMethod = resultFileContents.stream().map(f -> f.getAnalysisResultFile().getFileName()).collect(Collectors.toList());

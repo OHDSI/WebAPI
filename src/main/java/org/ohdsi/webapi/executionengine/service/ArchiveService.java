@@ -10,17 +10,19 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.ohdsi.webapi.exception.AtlasException;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFileContent;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
@@ -46,24 +48,24 @@ public class ArchiveService {
         List<AnalysisResultFileContent> resultFileContents = new ArrayList<>();
         File temporaryDir = createTempDir();
         try {
-            Map<Path, AnalysisResultFileContent> savedFiles = saveFilesToProcessArchives(temporaryDir, fileContents);
+            Map<Path, AnalysisResultFileContent> zipFilesSavedInTempDir = fileContents.stream()
+                    .filter(content -> isArchive(content.getAnalysisResultFile().getFileName()))
+                    .filter(content -> content.getContents().length > megabyteToByte(zipChunkSizeMb))
+                    .collect(Collectors.toMap(
+                            content -> createFileInTempDir(temporaryDir, content),
+                            content -> content
+                    ));
 
-            savedFiles.keySet().stream()
-                    .filter(ArchiveService::isArchive)
-                    .forEach(zipPath ->
-                            processArchive(zipPath, zipChunkSizeMb)
-                    );
+            zipFilesSavedInTempDir.keySet()
+                    .forEach(zipPath -> repackZipWithMultivalue(zipPath, zipChunkSizeMb));
+            ExecutionEngineAnalysisStatus execution =
+                    fileContents.stream().map(f -> f.getAnalysisResultFile().getExecution()).findAny().orElse(null);
 
-            ExecutionEngineAnalysisStatus execution = fileContents.stream().map(f -> f.getAnalysisResultFile().getExecution()).findAny().orElse(null);
+            List<AnalysisResultFileContent> contentsWithoutHugeZipFiles = ListUtils.removeAll(fileContents, zipFilesSavedInTempDir.values());
+            List<AnalysisResultFileContent> contentsForHugeZipFiles = updateContentForZipAndZipVolumeFiles(temporaryDir, zipFilesSavedInTempDir, execution);
 
-            for (File file : temporaryDir.listFiles()) {
-                Path path = file.toPath();
-                AnalysisResultFileContent analysisResultFileContent = getAnalysisResultFileOrCreatNewForZipVolume(path, savedFiles, execution);
-                if (analysisResultFileContent != null) {
-                    analysisResultFileContent.setContents(Files.readAllBytes(path));
-                    resultFileContents.add(analysisResultFileContent);
-                }
-            }
+            resultFileContents = ListUtils.union(contentsWithoutHugeZipFiles, contentsForHugeZipFiles);
+
         } catch (Exception e) {
             LOGGER.error("Cannot split archives", e);
         } finally {
@@ -104,8 +106,8 @@ public class ArchiveService {
         return EXTENSION_ZIP.equalsIgnoreCase(extension);
     }
 
-    //this is known bug for zip4j library https://stackoverflow.com/q/29989451/1167673
-    //most likely it already fixed in the latest version of the library
+    //this is a known bug for zip4j library https://stackoverflow.com/q/29989451/1167673
+    //most likely it is already fixed in the latest version of the library
     public static File fixWrongNameForZ10Volume(String filename) {
 
         if (filename.endsWith("z010")) {
@@ -114,6 +116,20 @@ public class ArchiveService {
         }
         return new File(filename);
 
+    }
+
+    private List<AnalysisResultFileContent> updateContentForZipAndZipVolumeFiles(File temporaryDir, Map<Path, AnalysisResultFileContent> savedHugeZipFiles, ExecutionEngineAnalysisStatus execution) throws IOException {
+
+        List<AnalysisResultFileContent> resultFileContents = new ArrayList<>();
+        for (File file : temporaryDir.listFiles()) {
+            Path path = file.toPath();
+            AnalysisResultFileContent analysisResultFileContent = getAnalysisResultFileOrCreatNewForZipVolume(path, savedHugeZipFiles, execution);
+            if (analysisResultFileContent != null) {
+                analysisResultFileContent.setContents(Files.readAllBytes(path));
+                resultFileContents.add(analysisResultFileContent);
+            }
+        }
+        return resultFileContents;
     }
 
     private AnalysisResultFileContent getAnalysisResultFileOrCreatNewForZipVolume(Path path, Map<Path, AnalysisResultFileContent> filePathWithResultFileContent, ExecutionEngineAnalysisStatus execution) {
@@ -131,25 +147,20 @@ public class ArchiveService {
         return filePathWithResultFileContent.get(path);
     }
 
-    private Map<Path, AnalysisResultFileContent> saveFilesToProcessArchives(File tempDir, List<AnalysisResultFileContent> files) throws Exception {
+    private Path createFileInTempDir(File tempDir, AnalysisResultFileContent file) {
 
-        Map<Path, AnalysisResultFileContent> paths = new HashMap<>();
-
-        for (AnalysisResultFileContent file : files) {
-            try {
-                AnalysisResultFile analysisResultFile = file.getAnalysisResultFile();
-                Path path = new File(tempDir, analysisResultFile.getFileName()).toPath();
-                Files.write(path, file.getContents(), StandardOpenOption.CREATE_NEW);
-                paths.put(path, file);
-            } catch (Exception e) {
-                LOGGER.error("File writing error for file with id: {}", file.getAnalysisResultFile().getId(), e);
-                throw e;
-            }
+        try {
+            AnalysisResultFile analysisResultFile = file.getAnalysisResultFile();
+            Path path = new File(tempDir, analysisResultFile.getFileName()).toPath();
+            Files.write(path, file.getContents(), StandardOpenOption.CREATE_NEW);
+            return path;
+        } catch (Exception e) {
+            LOGGER.error("File writing error for file with id: {}", file.getAnalysisResultFile().getId(), e);
+            throw new AtlasException(e);
         }
-        return paths;
     }
 
-    private void processArchive(Path zipPath, int zipChunkSizeMb) {
+    private void repackZipWithMultivalue(Path zipPath, int zipChunkSizeMb) {
 
         File temporaryDir = createTempDir();
         try {
@@ -157,8 +168,11 @@ public class ArchiveService {
 
             deleteZipWithVolumes(zipPath);
 
-            long chunkSize = zipChunkSizeMb * 1024 * 1024;
-            CommonFileUtils.compressAndSplit(temporaryDir, zipPath.toFile(), chunkSize);
+            CommonFileUtils.compressAndSplit(
+                    temporaryDir,
+                    zipPath.toFile(),
+                    (long) megabyteToByte(zipChunkSizeMb)
+            );
         } catch (IOException e) {
             LOGGER.error("File writing error", e);
         } catch (ZipException e) {
@@ -168,5 +182,8 @@ public class ArchiveService {
         }
     }
 
+    private int megabyteToByte(int zipChunkSizeMb) {
 
+        return zipChunkSizeMb * 1024 * 1024;
+    }
 }

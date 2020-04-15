@@ -21,6 +21,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.exception.AtlasException;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
@@ -58,11 +59,9 @@ public class ArchiveService {
 
             zipFilesSavedInTempDir.keySet()
                     .forEach(zipPath -> repackZipWithMultivalue(zipPath, zipChunkSizeMb));
-            ExecutionEngineAnalysisStatus execution =
-                    fileContents.stream().map(f -> f.getAnalysisResultFile().getExecution()).findAny().orElse(null);
 
             List<AnalysisResultFileContent> contentsWithoutHugeZipFiles = ListUtils.removeAll(fileContents, zipFilesSavedInTempDir.values());
-            List<AnalysisResultFileContent> contentsForHugeZipFiles = updateContentForZipAndZipVolumeFiles(temporaryDir, zipFilesSavedInTempDir, execution);
+            List<AnalysisResultFileContent> contentsForHugeZipFiles = updateContentForZipAndZipVolumeFiles(temporaryDir, zipFilesSavedInTempDir);
 
             resultFileContents = ListUtils.union(contentsWithoutHugeZipFiles, contentsForHugeZipFiles);
 
@@ -118,7 +117,13 @@ public class ArchiveService {
 
     }
 
-    private List<AnalysisResultFileContent> updateContentForZipAndZipVolumeFiles(File temporaryDir, Map<Path, AnalysisResultFileContent> savedHugeZipFiles, ExecutionEngineAnalysisStatus execution) throws IOException {
+    private List<AnalysisResultFileContent> updateContentForZipAndZipVolumeFiles(File temporaryDir, Map<Path, AnalysisResultFileContent> savedHugeZipFiles) throws IOException {
+
+        if (ArrayUtils.isEmpty(temporaryDir.listFiles())) {
+            return Collections.emptyList();
+        }
+        ExecutionEngineAnalysisStatus execution =
+                savedHugeZipFiles.values().stream().map(f -> f.getAnalysisResultFile().getExecution()).findAny().orElse(null);
 
         List<AnalysisResultFileContent> resultFileContents = new ArrayList<>();
         for (File file : temporaryDir.listFiles()) {

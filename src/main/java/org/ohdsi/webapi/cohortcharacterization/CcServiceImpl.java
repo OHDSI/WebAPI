@@ -630,16 +630,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     @Override
     @DataSourceAccess
     public GenerationResults findResult(@CcGenerationId final Long generationId, ExecutionResultRequest params) {
-        if (params.isFilterUsed()) {
-            // in case of filtering and nothing was selected in any list
-            if (params.getAnalysisIds().isEmpty()
-                    || params.getCohortIds().isEmpty()
-                    || params.getDomainIds().isEmpty()) {
-                GenerationResults res = new GenerationResults();
-                res.setReports(Collections.emptyList());
-                return res;
-            }
-        }
         CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
                 .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
 

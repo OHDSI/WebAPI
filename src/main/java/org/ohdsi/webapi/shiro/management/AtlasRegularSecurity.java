@@ -36,6 +36,7 @@ import org.pac4j.cas.client.CasClient;
 import org.pac4j.cas.config.CasConfiguration;
 import org.pac4j.core.client.Clients;
 import org.pac4j.core.config.Config;
+import org.pac4j.core.http.callback.PathParameterCallbackUrlResolver;
 import org.pac4j.oauth.client.FacebookClient;
 import org.pac4j.oauth.client.GitHubClient;
 import org.pac4j.oauth.client.Google2Client;
@@ -232,7 +233,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         // OAuth
         //
         Google2Client googleClient = new Google2Client(this.googleApiKey, this.googleApiSecret);
-        googleClient.setScope(Google2Client.Google2Scope.EMAIL);
+        googleClient.setScope(Google2Client.Google2Scope.EMAIL_AND_PROFILE);
 
         FacebookClient facebookClient = new FacebookClient(this.facebookApiKey, this.facebookApiSecret);
         facebookClient.setScope("email");
@@ -243,6 +244,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
         OidcConfiguration configuration = oidcConfCreator.build();
         OidcClient oidcClient = new OidcClient(configuration);
+        oidcClient.setCallbackUrlResolver(new PathParameterCallbackUrlResolver());
 
         Config cfg =
                 new Config(
@@ -383,7 +385,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
             casConf.setLoginUrl(casLoginUrlString);
             
             Cas20ServiceTicketValidator cas20Validator = new Cas20ServiceTicketValidator(casServerUrl);
-            casConf.setTicketValidator(cas20Validator);
+            casConf.setDefaultTicketValidator(cas20Validator);
             
             CasClient casClient = new CasClient(casConf);
             Config casCfg = new Config(new Clients(casCallbackUrl, casClient));

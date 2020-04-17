@@ -34,8 +34,10 @@ import org.ohdsi.webapi.shiro.realms.LdapRealm;
 import org.ohdsi.webapi.user.importer.providers.LdapProvider;
 import org.pac4j.cas.client.CasClient;
 import org.pac4j.cas.config.CasConfiguration;
+import org.pac4j.core.client.Client;
 import org.pac4j.core.client.Clients;
 import org.pac4j.core.config.Config;
+import org.pac4j.core.http.callback.PathParameterCallbackUrlResolver;
 import org.pac4j.oauth.client.FacebookClient;
 import org.pac4j.oauth.client.GitHubClient;
 import org.pac4j.oauth.client.Google2Client;
@@ -60,8 +62,7 @@ import javax.sql.DataSource;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static com.odysseusinc.arachne.commons.utils.QuoteUtils.dequote;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.AD_FILTER;
@@ -232,7 +233,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         // OAuth
         //
         Google2Client googleClient = new Google2Client(this.googleApiKey, this.googleApiSecret);
-        googleClient.setScope(Google2Client.Google2Scope.EMAIL);
+        googleClient.setScope(Google2Client.Google2Scope.EMAIL_AND_PROFILE);
 
         FacebookClient facebookClient = new FacebookClient(this.facebookApiKey, this.facebookApiSecret);
         facebookClient.setScope("email");
@@ -243,16 +244,22 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
         OidcConfiguration configuration = oidcConfCreator.build();
         OidcClient oidcClient = new OidcClient(configuration);
+        oidcClient.setCallbackUrlResolver(new PathParameterCallbackUrlResolver());
+        List<Client> clients = new ArrayList<>(Arrays.asList(
+                googleClient,
+                facebookClient,
+                githubClient
+                // ... put new clients here and then assign them to filters ...
+        ));
+        if (StringUtils.isNotBlank(configuration.getClientId())) {
+            clients.add(oidcClient);
+        }
 
         Config cfg =
                 new Config(
                         new Clients(
-                                this.oauthApiCallback
-                                , googleClient
-                                , facebookClient
-                                , githubClient
-                                , oidcClient
-                                // ... put new clients here and then assign them to filters ...
+                                this.oauthApiCallback,
+                                clients
                         )
                 );
 
@@ -383,7 +390,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
             casConf.setLoginUrl(casLoginUrlString);
             
             Cas20ServiceTicketValidator cas20Validator = new Cas20ServiceTicketValidator(casServerUrl);
-            casConf.setTicketValidator(cas20Validator);
+            casConf.setDefaultTicketValidator(cas20Validator);
             
             CasClient casClient = new CasClient(casConf);
             Config casCfg = new Config(new Clients(casCallbackUrl, casClient));

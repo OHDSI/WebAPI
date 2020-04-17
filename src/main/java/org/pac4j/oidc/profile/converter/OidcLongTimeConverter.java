@@ -32,8 +32,8 @@ public class OidcLongTimeConverter implements AttributeConverter<Date> {
 
     public Date convert(Object attribute) {
         if (attribute instanceof Long) {
-            long seconds = (Long) attribute;
-            return new Date(seconds * 1000L);
+            long milliseconds = (Long) attribute * 1000L;
+            return new Date(milliseconds);
         } else if (attribute instanceof String) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss'Z'");
 

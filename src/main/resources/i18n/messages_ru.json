@@ -164,6 +164,101 @@
       "others": "Более 2 недель назад"
     }
   },
+  "cs": {
+    "manager": {
+      "tabs": {
+        "conceptSetExpression": "Опредение набора концептов",
+        "includedSourceCodes": "Исходный код",
+        "Export": "Экспорт",
+        "Compare": "Сравнение",
+        "includedConcepts": "Включенные концепты",
+        "exploreEvidence": "Исследовать Evidence"
+      },
+      "includedConceptSets": {
+        "standardConceptCaption": "Стандартный концепт",
+        "standardConcept": "Стандартный концепт",
+        "vocabulary": "Словарь",
+        "code": "Код",
+        "domain": "Домен",
+        "name": "Имя",
+        "ancestors": "Предки",
+        "class": "Класс",
+        "invalidReason": "Причина невалидности",
+        "hasRecords": "Есть записи",
+        "hasDescendantRecords": "Есть записи-потомки"
+      },
+      "expression": {
+        "standard": "Стандартный",
+        "conceptCode": "Код концепта",
+        "standardConceptCode": "Стардартный код концепта",
+        "classification": "Классификация",
+        "descendants": "Наследники",
+        "changeColumns": "Изменить колонки",
+        "showAllColumns": "Показать все колонки",
+        "standardConceptCaption": "Стандартный концепт",
+        "conceptName": "Имя концепта",
+        "nonStandard": "Нестандартный",
+        "domain": "Домен",
+        "mapped": "Mapped",
+        "conceptId": "Id концепта",
+        "exclude": "Исключить",
+        "resetColumns": "Сбросить колонки"
+      },
+      "recordCounts": "Количество записей",
+      "recordCountsAcrossSources": "Количество записей из разных источников",
+      "hierarchy": "Иерархия",
+      "caption": "Набор концепций №",
+      "noHierarchyFoundMessage": "Для нестандартных концептов иерархий не найдено",
+      "details": "Детали",
+      "relatedConcepts": "Связанные концепты",
+      "loading": "загрузка",
+      "nameEmptyWarning": "Имя набора не может быть пустым.",
+      "csAlreadyExistsMessage": "Набор концептов с таким именем уже существует. Пожалуйста, выберите другое имя.",
+      "csDeleteConfirmMessage": "Удалить набор концептов? Предупреждение: это действие необратимо.",
+      "csNotSavedConfirmMessage": "Изменения не сохранены. Продолжить?",
+      "conceptsRemovedMessage": "Следующие концепты были удалены, поскольку оптимизированная версия уже их содержит.",
+      "optimizedConceptSetHeading": "Оптимизированный набор концептов",
+      "saveOptions": "Параметры сохранения",
+      "cancelButton": "Отмена",
+      "optimize": "Оптимизировать",
+      "conceptsRemovedHeading": "Наборы концептов удалены",
+      "csSaveErrorMessage": "Ошибка сохранения набора концептов.",
+      "saveButton": "Сохранить",
+      "pleaseReviewMessage": "Пожалуйста пересмотрите параметры оптимизации и сохранения",
+      "pleaseProvideNameMessage": "Пожалуйста, назовите ваш новый набор концептов:",
+      "resetColumnsButton": "Сброс",
+      "showAllColumnsButton": "Показать все",
+      "csUnableToSaveMessage": "Невозможно сохранить набор концептов",
+      "overwriteOption": "Перезаписать текущий набор концепов",
+      "fullyOptimizedMessage": "Текущее определение набора концептов полностью оптимизировано.",
+      "createOption": "Создать новый набор концептов",
+      "changeColumnsButton": "Изменить колонки",
+      "attemptingToFindMessage": "Попытка найти оптимальное определение для текущего набора концептов..."
+    },
+    "browser": {
+      "exportInstructions": "Инструкция:",
+      "exportInstructionsText": "Выберите наборы концептов в таблице. Затем нажмите кнопку «Экспорт наборов концепций», которая запустит скачивание в новом окне.",
+      "caption": "Наборы концепций",
+      "exportConceptSetsNumber": "Наборы концепций, выбранных для экспорта.",
+      "saveWarning": "Изменения когорты не сохранятся. Хотите продолжить?",
+      "tabs": {
+        "list": "Список",
+        "export": "Экспорт"
+      },
+      "compare": {
+        "heading": "Сравнение наборов концептов",
+        "headingMessage": "Сравнение двух наборов концептов на предмет содержания общих концептов",
+        "tableHeader": {
+          "vocabulary": "Словарь",
+          "code": "Код",
+          "match": "Совпадение",
+          "name": "Имя",
+          "class": "Класс",
+          "domainId": "Id домена"
+        }
+      }
+    }
+  },
   "cc": {
     "title": "Характеризация Когорт",
     "new": "Создать",

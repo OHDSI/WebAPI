@@ -62,10 +62,7 @@ import javax.sql.DataSource;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static com.odysseusinc.arachne.commons.utils.QuoteUtils.dequote;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.AD_FILTER;
@@ -248,12 +245,12 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         OidcConfiguration configuration = oidcConfCreator.build();
         OidcClient oidcClient = new OidcClient(configuration);
         oidcClient.setCallbackUrlResolver(new PathParameterCallbackUrlResolver());
-        List<Client> clients = Arrays.asList(
+        List<Client> clients = new ArrayList<>(Arrays.asList(
                 googleClient,
                 facebookClient,
                 githubClient
                 // ... put new clients here and then assign them to filters ...
-        );
+        ));
         if (StringUtils.isNotBlank(configuration.getClientId())) {
             clients.add(oidcClient);
         }

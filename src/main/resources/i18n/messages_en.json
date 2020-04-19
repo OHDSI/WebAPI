@@ -226,6 +226,15 @@
       "csAlreadyExistsMessage": "A concept set with this name already exists. Please choose a different name."
     },
     "browser": {
+      "newConceptSetButton": "New Concept Set",
+      "exportConceptSetsButton": "Export Concept Sets",
+      "table": {
+        "created": "Created",
+        "author": "Author",
+        "modified": "Modified",
+        "id": "Id",
+        "title": "Title"
+      },
       "compare": {
         "headingMessage": "Use this utility to compare the contents of two concept sets to see which concepts they may share.",
         "heading": "Concept Set Comparison",

@@ -28,38 +28,57 @@ public class PathwayValidator<T extends PathwayAnalysisDTO> extends RuleValidato
     @Override
     protected void buildInternal() {
         // Target cohorts
-        Rule<T> targetCohortRule = createRuleWithDefaultValidator(createPath("target cohorts"), reporter)
-                .setValueAccessor(BasePathwayAnalysisDTO::getTargetCohorts)
-                .build();
-        rules.add(targetCohortRule);
+        prepareTargetCohortsRule();
 
         // Event cohorts
-        Rule<T> eventCohortRule = createRuleWithDefaultValidator(createPath("event cohorts"), reporter)
-                .setValueAccessor(BasePathwayAnalysisDTO::getEventCohorts);
-        rules.add(eventCohortRule);
+        prepareEventCohortsRule();
 
         // Combination window
-        Rule<T> combinationWindowRule = createRuleWithDefaultValidator(createPath("combination window"), reporter)
-                .setValueAccessor(BasePathwayAnalysisDTO::getCombinationWindow)
-                .setErrorTemplate("must be greater or equal to 0")
-                .addValidator(new PredicateValidator<Integer>()
-                        .setPredicate(v -> v >= 0));
-        rules.add(combinationWindowRule);
+        prepareCombinationWindowRule();
 
         // Cell count window
-        Rule<T> cellCountRule = createRuleWithDefaultValidator(createPath("minimum cell count"), reporter)
-                .setValueAccessor(BasePathwayAnalysisDTO::getMinCellCount)
-                .setErrorTemplate("must be greater or equal to 0")
-                .addValidator(new PredicateValidator<Integer>()
-                        .setPredicate(v -> v >= 0));
-        rules.add(cellCountRule);
+        prepareCellCountWindowRule();
 
         // Maximum path length
-        Rule<T> maxPathLengthRule = createRuleWithDefaultValidator(createPath("maximum path length"), reporter)
+        prepareMaxPathLengthRule();
+    }
+
+    private void prepareMaxPathLengthRule() {
+        Rule<T> rule = createRuleWithDefaultValidator(createPath("maximum path length"), reporter)
                 .setValueAccessor(BasePathwayAnalysisDTO::getMaxDepth)
                 .setErrorTemplate("must be between 1 and 10")
                 .addValidator(new PredicateValidator<Integer>()
                         .setPredicate(v -> v >= 1 && v <= 10));
-        rules.add(maxPathLengthRule);
+        rules.add(rule);
+    }
+
+    private void prepareCellCountWindowRule() {
+        Rule<T> rule = createRuleWithDefaultValidator(createPath("minimum cell count"), reporter)
+                .setValueAccessor(BasePathwayAnalysisDTO::getMinCellCount)
+                .setErrorTemplate("must be greater or equal to 0")
+                .addValidator(new PredicateValidator<Integer>()
+                        .setPredicate(v -> v >= 0));
+        rules.add(rule);
+    }
+
+    private void prepareCombinationWindowRule() {
+        Rule<T> rule = createRuleWithDefaultValidator(createPath("combination window"), reporter)
+                .setValueAccessor(BasePathwayAnalysisDTO::getCombinationWindow)
+                .setErrorTemplate("must be greater or equal to 0")
+                .addValidator(new PredicateValidator<Integer>()
+                        .setPredicate(v -> v >= 0));
+        rules.add(rule);
+    }
+
+    private void prepareEventCohortsRule() {
+        Rule<T> rule = createRuleWithDefaultValidator(createPath("event cohorts"), reporter)
+                .setValueAccessor(BasePathwayAnalysisDTO::getEventCohorts);
+        rules.add(rule);
+    }
+
+    private void prepareTargetCohortsRule() {
+        Rule<T> rule = createRuleWithDefaultValidator(createPath("target cohorts"), reporter)
+                .setValueAccessor(BasePathwayAnalysisDTO::getTargetCohorts);
+        rules.add(rule);
     }
 }

@@ -28,6 +28,11 @@ import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisI
 public class PredictionValidator<T extends PredictionAnalysisDTO> extends RuleValidator<T> {
     @Override
     protected void buildInternal() {
+        // Analysis expression
+        prepareAnalysisExpressionRule();
+    }
+
+    private void prepareAnalysisExpressionRule() {
         ValueAccessor<T> expressionAccessor = t -> {
             try {
                 return Utils.deserialize(t.getSpecification(), PatientLevelPredictionAnalysisImpl.class);
@@ -36,10 +41,9 @@ public class PredictionValidator<T extends PredictionAnalysisDTO> extends RuleVa
             }
         };
 
-        // Analysis expression
-        Rule<T> expressionRule = createRuleWithDefaultValidator(createPath(), reporter)
+        Rule<T> rule = createRuleWithDefaultValidator(createPath("specification"), reporter)
                 .setValueAccessor(expressionAccessor)
                 .addValidator(new PredictionSpecificationValidator());
-        rules.add(expressionRule);
+        rules.add(rule);
     }
 }

@@ -26,9 +26,13 @@ public class EstimationAnalysisSpecificationValidator<T extends ComparativeCohor
     @Override
     protected void buildInternal() {
         // Target comparator outcome
-        Rule<T> targetCohortRule =
+        prepareTargetComparatorRule();
+    }
+
+    private void prepareTargetComparatorRule() {
+        Rule<T> rule =
                 createRuleWithDefaultValidator(createPath("target comparator outcome"), reporter)
                         .setValueAccessor(ComparativeCohortAnalysis::getTargetComparatorOutcomes);
-        rules.add(targetCohortRule);
+        rules.add(rule);
     }
 }

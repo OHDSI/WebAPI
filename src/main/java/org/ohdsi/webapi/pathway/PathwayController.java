@@ -278,28 +278,12 @@ public class PathwayController {
         return new PathwayPopulationResultsDTO(eventCodeDtos, pathwayDtos);
     }
 
-    @GET
-    @Path("/{id}/check")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public CheckResult check(@PathParam("id") Integer id){
-        PathwayAnalysisEntity pathwayAnalysis = pathwayService.getById(id);
-        ExceptionUtils.throwNotFoundExceptionIfNull(pathwayAnalysis, String.format("There is no pathway analysis with id = %d.", id));
-        PathwayAnalysisDTO pathwayAnalysisDTO = conversionService.convert(pathwayAnalysis, PathwayAnalysisDTO.class);
-
-        return runChecks(id, pathwayAnalysisDTO);
-    }
-
     @POST
-    @Path("/{id}/check")
+    @Path("/check")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public CheckResult runDiagnostics(@PathParam("id") Integer id, PathwayAnalysisDTO pathwayAnalysisDTO){
-        return runChecks(id, pathwayAnalysisDTO);
-    }
-
-    private CheckResult runChecks(Integer id, PathwayAnalysisDTO dto) {
+    public CheckResult runDiagnostics(PathwayAnalysisDTO pathwayAnalysisDTO){
         Checker<PathwayAnalysisDTO> checker = new PathwayChecker();
-        return new CheckResult<Integer>(id, checker.check(dto));
+        return new CheckResult(checker.check(pathwayAnalysisDTO));
     }
 }

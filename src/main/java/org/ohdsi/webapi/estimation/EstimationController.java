@@ -245,28 +245,12 @@ public class EstimationController {
             .build();
   }
 
-    @GET
-    @Path("/{id}/check")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public CheckResult check(@PathParam("id") Integer id){
-        Estimation est = service.getAnalysis(id);
-        ExceptionUtils.throwNotFoundExceptionIfNull(est, String.format(NO_ESTIMATION_MESSAGE, id));
-        EstimationDTO estimationDTO = conversionService.convert(est, EstimationDTO.class);
-
-        return runChecks(id, estimationDTO);
-    }
-
     @POST
-    @Path("/{id}/check")
+    @Path("/check")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public CheckResult runDiagnostics(@PathParam("id") Integer id, EstimationDTO estimationDTO){
-        return runChecks(id, estimationDTO);
-    }
-
-    private CheckResult runChecks(Integer id, EstimationDTO dto) {
+    public CheckResult runDiagnostics(EstimationDTO estimationDTO){
         Checker<EstimationDTO> checker = new EstimationChecker();
-        return new CheckResult<Integer>(id, checker.check(dto));
+        return new CheckResult(checker.check(estimationDTO));
     }
 }

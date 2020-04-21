@@ -26,13 +26,21 @@ public class IRAnalysisExpressionValidator<T extends IncidenceRateAnalysisExpres
     @Override
     protected void buildInternal() {
         // Target cohorts
-        Rule<T> targetCohortRule = createRuleWithDefaultValidator(createPath("target cohorts"), reporter)
-                .setValueAccessor(t -> t.targetIds);
-        rules.add(targetCohortRule);
+        prepareTargetCohortsRule();
 
         // Outcome cohorts
-        Rule<T> eventCohortRule = createRuleWithDefaultValidator(createPath("outcome cohorts"), reporter)
+        prepareOutcomeCohortsRule();
+    }
+
+    private void prepareOutcomeCohortsRule() {
+        Rule<T> rule = createRuleWithDefaultValidator(createPath("outcome cohorts"), reporter)
                 .setValueAccessor(t -> t.outcomeIds);
-        rules.add(eventCohortRule);
+        rules.add(rule);
+    }
+
+    private void prepareTargetCohortsRule() {
+        Rule<T> rule = createRuleWithDefaultValidator(createPath("target cohorts"), reporter)
+                .setValueAccessor(t -> t.targetIds);
+        rules.add(rule);
     }
 }

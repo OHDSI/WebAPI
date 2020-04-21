@@ -28,6 +28,11 @@ import org.ohdsi.webapi.estimation.specification.EstimationAnalysisImpl;
 public class EstimationValidator<T extends EstimationDTO> extends RuleValidator<T> {
     @Override
     protected void buildInternal() {
+        // Analysis expression
+        prepareAnalysisExpressionRule();
+    }
+
+    private void prepareAnalysisExpressionRule() {
         ValueAccessor<T> expressionAccessor = t -> {
             try {
                 return Utils.deserialize(t.getSpecification(), EstimationAnalysisImpl.class);
@@ -36,10 +41,9 @@ public class EstimationValidator<T extends EstimationDTO> extends RuleValidator<
             }
         };
 
-        // Analysis expression
-        Rule<T> expressionRule = createRuleWithDefaultValidator(createPath(), reporter)
+        Rule<T> rule = createRuleWithDefaultValidator(createPath(), reporter)
                 .setValueAccessor(expressionAccessor)
                 .addValidator(new EstimationSpecificationValidator());
-        rules.add(expressionRule);
+        rules.add(rule);
     }
 }

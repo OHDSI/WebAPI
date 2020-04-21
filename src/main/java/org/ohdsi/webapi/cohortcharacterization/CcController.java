@@ -199,31 +199,15 @@ public class CcController {
         return service.serializeCc(id);
     }
 
-    @GET
-    @Path("/{id}/check")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public CheckResult check(@PathParam("id") Long id){
-        CohortCharacterizationEntity cc = service.findByIdWithLinkedEntities(id);
-        ExceptionUtils.throwNotFoundExceptionIfNull(cc, String.format("There is no cohort characterization with id = %d.", id));
-        CohortCharacterizationDTO characterizationDTO = convertCcToDto(cc);
-
-        return runChecks(id, characterizationDTO);
-    }
-
     @POST
-    @Path("/{id}/check")
+    @Path("/check")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public CheckResult runDiagnostics(@PathParam("id") Long id, CohortCharacterizationDTO characterizationDTO){
-        return runChecks(id, characterizationDTO);
+    public CheckResult runDiagnostics(CohortCharacterizationDTO characterizationDTO){
+        Checker<CohortCharacterizationDTO> checker = new CharacterizationChecker();
+        return new CheckResult(checker.check(characterizationDTO));
     }
 
-    private CheckResult runChecks(Long id, CohortCharacterizationDTO dto) {
-        Checker<CohortCharacterizationDTO> checker = new CharacterizationChecker();
-        return new CheckResult<>(id, checker.check(dto));
-    }
-    
     @POST
     @Path("/{id}/generation/{sourceKey}")
     @Produces(MediaType.APPLICATION_JSON)

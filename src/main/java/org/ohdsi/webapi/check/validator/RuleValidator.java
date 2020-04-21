@@ -10,10 +10,8 @@ public abstract class RuleValidator<T> extends Validator<T> {
     protected List<Rule<T>> rules = new ArrayList<>();
 
     protected Rule<T> createRuleWithDefaultValidator(Path path, WarningReporter reporter) {
-        Rule<T> rule = new Rule<T>(path, reporter);
-        // add default validator
-        rule.addValidator(new NotNullNotEmptyValidator());
-        return rule;
+        return new Rule<T>(path, reporter)
+                .addValidator(new NotNullNotEmptyValidator());
     }
 
     protected Rule<T> createRule(Path path, WarningReporter reporter) {

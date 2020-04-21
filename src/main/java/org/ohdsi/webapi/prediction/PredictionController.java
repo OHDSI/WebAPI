@@ -239,28 +239,12 @@ public class PredictionController {
             .build();
   }
 
-    @GET
-    @Path("/{id}/check")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public CheckResult check(@PathParam("id") Integer id){
-        PredictionAnalysis analysis = service.getAnalysis(id);
-        ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format(NO_PREDICTION_ANALYSIS_MESSAGE, id));
-        PredictionAnalysisDTO predictionAnalysisDTO = conversionService.convert(analysis, PredictionAnalysisDTO.class);
-
-        return runChecks(id, predictionAnalysisDTO);
-    }
-
     @POST
-    @Path("/{id}/check")
+    @Path("/check")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public CheckResult runDiagnostics(@PathParam("id") Integer id, PredictionAnalysisDTO predictionAnalysisDTO){
-        return runChecks(id, predictionAnalysisDTO);
-    }
-
-    private CheckResult runChecks(Integer id, PredictionAnalysisDTO dto) {
+    public CheckResult runDiagnostics(PredictionAnalysisDTO predictionAnalysisDTO){
         Checker<PredictionAnalysisDTO> checker = new PredictionChecker();
-        return new CheckResult<Integer>(id, checker.check(dto));
+        return new CheckResult(checker.check(predictionAnalysisDTO));
     }
 }

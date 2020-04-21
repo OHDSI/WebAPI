@@ -27,15 +27,23 @@ public class CharacterizationValidator<T extends CohortCharacterizationDTO> exte
     @Override
     protected void buildInternal() {
         // Cohorts
-        Rule<T> cohortRule =
-                createRuleWithDefaultValidator(createPath("cohorts"), reporter)
-                        .setValueAccessor(BaseCcDTO::getCohorts);
-        rules.add(cohortRule);
+        prepareCohortRule();
 
         // Feature Analyses
-        Rule<T> faRule =
+        prepareFeatureAnalysesRule();
+    }
+
+    private void prepareFeatureAnalysesRule() {
+        Rule<T> rule =
                 createRuleWithDefaultValidator(createPath("feature analyses"), reporter)
                         .setValueAccessor(BaseCcDTO::getFeatureAnalyses);
-        rules.add(faRule);
+        rules.add(rule);
+    }
+
+    private void prepareCohortRule() {
+        Rule<T> rule =
+                createRuleWithDefaultValidator(createPath("cohorts"), reporter)
+                        .setValueAccessor(BaseCcDTO::getCohorts);
+        rules.add(rule);
     }
 }

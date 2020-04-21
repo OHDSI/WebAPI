@@ -26,15 +26,34 @@ public class PredictionSpecificationValidator<T extends PatientLevelPredictionAn
     @Override
     protected void buildInternal() {
         // Target cohorts
-        Rule<T> targetCohortRule =
-                createRuleWithDefaultValidator(createPath("target cohorts"), reporter)
-                        .setValueAccessor(PatientLevelPredictionAnalysis::getTargetIds);
-        rules.add(targetCohortRule);
+        prepareTargetCohortsRule();
 
         // Outcome cohorts
-        Rule<T> eventCohortRule =
+        prepareOutcomeCohortsRule();
+
+        // Run plp args
+        prepareRunPlpArgsRule();
+    }
+
+    private void prepareRunPlpArgsRule() {
+        Rule<T> rule =
+                createRuleWithDefaultValidator(createPath("settings"), reporter)
+                        .setValueAccessor(PatientLevelPredictionAnalysis::getRunPlpArgs)
+                        .addValidator(new RunPlpArgsValidator());
+        rules.add(rule);
+    }
+
+    private void prepareOutcomeCohortsRule() {
+        Rule<T> rule =
                 createRuleWithDefaultValidator(createPath("outcome cohorts"), reporter)
                         .setValueAccessor(PatientLevelPredictionAnalysis::getOutcomeIds);
-        rules.add(eventCohortRule);
+        rules.add(rule);
+    }
+
+    private void prepareTargetCohortsRule() {
+        Rule<T> rule =
+                createRuleWithDefaultValidator(createPath("target cohorts"), reporter)
+                        .setValueAccessor(PatientLevelPredictionAnalysis::getTargetIds);
+        rules.add(rule);
     }
 }

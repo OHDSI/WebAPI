@@ -595,23 +595,9 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   }
 
     @Override
-    @Transactional
-    public CheckResult check(int id){
-        IncidenceRateAnalysis a = this.irAnalysisRepository.findOne(id);
-        ExceptionUtils.throwNotFoundExceptionIfNull(a, String.format(NO_INCIDENCE_RATE_ANALYSIS_MESSAGE, id));
-        IRAnalysisDTO irAnalysisDTO = conversionService.convert(a, IRAnalysisDTO.class);
-
-        return runChecks(id, irAnalysisDTO);
-    }
-
-    @Override
-    public CheckResult runDiagnostics(int id, IRAnalysisDTO irAnalysisDTO){
-        return runChecks(id, irAnalysisDTO);
-    }
-
-    private CheckResult runChecks(Integer id, IRAnalysisDTO dto) {
+    public CheckResult runDiagnostics(IRAnalysisDTO irAnalysisDTO){
         Checker<IRAnalysisDTO> checker = new IRChecker();
-        return new CheckResult<Integer>(id, checker.check(dto));
+        return new CheckResult(checker.check(irAnalysisDTO));
     }
 
   @Override

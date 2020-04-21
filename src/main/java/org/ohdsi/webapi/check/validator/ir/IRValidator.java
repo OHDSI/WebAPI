@@ -28,6 +28,11 @@ import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
 public class IRValidator<T extends IRAnalysisDTO> extends RuleValidator<T> {
     @Override
     protected void buildInternal() {
+        // Analysis expression
+        prepareAnalysisExpressionRule();
+    }
+
+    private void prepareAnalysisExpressionRule() {
         ValueAccessor<T> expressionAccessor = t -> {
             try {
                 return Utils.deserialize(t.getExpression(), IncidenceRateAnalysisExpression.class);
@@ -36,10 +41,9 @@ public class IRValidator<T extends IRAnalysisDTO> extends RuleValidator<T> {
             }
         };
 
-        // Analysis expression
-        Rule<T> expressionRule = createRuleWithDefaultValidator(createPath(), reporter)
+        Rule<T> rule = createRuleWithDefaultValidator(createPath(), reporter)
                 .setValueAccessor(expressionAccessor)
                 .addValidator(new IRAnalysisExpressionValidator());
-        rules.add(expressionRule);
+        rules.add(rule);
     }
 }

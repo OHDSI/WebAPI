@@ -25,19 +25,19 @@ public class Rule<T> {
     }
 
     public Rule<T> setErrorTemplate(String errorTemplate) {
-        // Check error template of validator and set it to errorTemplate in case of null
+        // Check validator errorTemplate and set it to new errorTemplate
         this.validators.forEach(v -> {
             // Do not change the error template if it is already set
             if (v.getDefaultErrorTemplate().equals(v.getErrorTemplate())) {
                 v.setErrorTemplate(errorTemplate);
             }
         });
-        this.errorTemplate = "%s - " + errorTemplate;
+        this.errorTemplate = errorTemplate;
         return this;
     }
 
     public Rule<T> addValidator(Validator validator) {
-        if (Objects.isNull(validator.getErrorTemplate())
+        if ((validator.getDefaultErrorTemplate().equals(validator.getErrorTemplate()))
                 && Objects.nonNull(this.errorTemplate)) {
             validator.setErrorTemplate(this.errorTemplate);
         }

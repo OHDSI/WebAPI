@@ -26,10 +26,14 @@ public class EstimationSettingsValidator<T extends EstimationAnalysisSettings> e
     @Override
     protected void buildInternal() {
         // Analysis specification
-        Rule<T> targetCohortRule =
+        prepareAnalysisSprecificationRule();
+    }
+
+    private void prepareAnalysisSprecificationRule() {
+        Rule<T> rule =
                 createRuleWithDefaultValidator(createPath(), reporter)
                         .setValueAccessor(EstimationAnalysisSettings::getAnalysisSpecification)
                         .addValidator(new EstimationAnalysisSpecificationValidator());
-        rules.add(targetCohortRule);
+        rules.add(rule);
     }
 }

@@ -241,6 +241,9 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     @Value("${security.cas.casticket}")
     private String casticket;
 
+    @Value("${security.saml.emabled:false}")
+    private boolean samlEnabled;
+
     public AtlasRegularSecurity(EntityPermissionSchemaResolver permissionSchemaResolver) {
 
         super(permissionSchemaResolver);
@@ -308,7 +311,9 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         filters.put(HANDLE_UNSUCCESSFUL_OAUTH, new RedirectOnFailedOAuthFilter(this.oauthUiCallback));
 
         this.setUpCAS(filters);
-        this.setUpSaml(filters);
+        if (this.samlEnabled) {
+            this.setUpSaml(filters);
+        }
 
         return filters;
     }
@@ -336,11 +341,16 @@ public class AtlasRegularSecurity extends AtlasSecurity {
                 .addOAuthPath("/user/oauth/google", GOOGLE_AUTHC)
                 .addOAuthPath("/user/oauth/facebook", FACEBOOK_AUTHC)
                 .addOAuthPath("/user/oauth/github", GITHUB_AUTHC)
-                .addPath("/user/login/saml", SSL, CORS, FORCE_SESSION_CREATION, SAML_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_URL)
                 .addPath("/user/login/cas", SSL, CORS, FORCE_SESSION_CREATION, CAS_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_URL)
                 .addPath("/user/oauth/callback", SSL, HANDLE_UNSUCCESSFUL_OAUTH, OAUTH_CALLBACK)
-                .addPath("/user/cas/callback", SSL, HANDLE_CAS, UPDATE_TOKEN, SEND_TOKEN_IN_URL)
-                .addPath("/user/saml/callback", SSL, HANDLE_SAML, UPDATE_TOKEN, SEND_TOKEN_IN_URL);
+                .addPath("/user/cas/callback", SSL, HANDLE_CAS, UPDATE_TOKEN, SEND_TOKEN_IN_URL);
+
+        if (this.samlEnabled) {
+            filterChainBuilder
+                    .addPath("/user/login/saml", SSL, CORS, FORCE_SESSION_CREATION, SAML_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_URL);
+            filterChainBuilder
+                    .addPath("/user/saml/callback", SSL, HANDLE_SAML, UPDATE_TOKEN, SEND_TOKEN_IN_URL);
+        }
 
         setupProtectedPaths(filterChainBuilder);
 

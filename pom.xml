@@ -133,6 +133,7 @@
     <security.duration.initial>10</security.duration.initial>
     <security.duration.increment>10</security.duration.increment>
 
+    <security.saml.emabled>false</security.saml.emabled>
     <security.saml.entityId>com:odysseusinc:atlas:sp</security.saml.entityId>
     <security.saml.idpMetadataLocation></security.saml.idpMetadataLocation>
     <security.saml.keyManager.keyStoreFile></security.saml.keyManager.keyStoreFile>

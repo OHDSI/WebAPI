@@ -127,7 +127,7 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
         initTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(initTx);
         CohortDefinition df = this.cohortDefinitionRepository.findOne(defId);
-        CohortGenerationInfo info = findBySourceId(df.getGenerationInfoList(), sourceId);
+        CohortGenerationInfo info = findBySourceId(df, sourceId);
         info.setIsValid(false);
         info.setStartTime(startTime);
         info.setStatus(GenerationStatus.RUNNING);

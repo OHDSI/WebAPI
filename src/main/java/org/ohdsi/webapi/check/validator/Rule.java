@@ -14,11 +14,6 @@ public class Rule<T, V> {
     private Path path;
     private WarningReporter reporter;
 
-//    public Rule(Path path, WarningReporter reporter) {
-//        this.path = path;
-//        this.reporter = reporter;
-//    }
-
     public Rule<T, V> setPath(Path path) {
         this.path = path;
         return this;

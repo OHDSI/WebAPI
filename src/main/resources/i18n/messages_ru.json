@@ -185,10 +185,78 @@
       "others": "Более 2 недель назад"
     }
   },
+  "search": {
+    "headingTitle": "Поиск",
+    "tabs": {
+      "search": "Поиск",
+      "import": "Импорт"
+    },
+    "placeholder": "Введите здесь ключевые слова для поиска",
+    "buttonTitle": "Поиск",
+    "loadingMessage": {
+      "loading": "Загружаются",
+      "domains": "домены",
+      "vocabularies": "словари",
+      "searchResults":  "результаты поиска"
+    },
+    "advancedOptions": "Расширенные параметры поиска",
+    "clearAllSelections": "Очистить выделение",
+    "domains": "Домены",
+    "vocabularies": "Словари",
+    "standard": "Стандартный",
+    "nonStandard":"Нестандартный",
+    "classification": "Классификация",
+    "noVocabulariesAvailable": "Нет доступных словарей",
+    "noDomainsAvailable": "Нет доступных доменов",
+    "noResultsFoundFor": "Ничего не найдено для",
+    "options": {
+      "standardConcept": "Стандартная концепция",
+      "hasRecords": "Есть записи",
+      "vocabulary": "Словарь",
+      "domain": "Домен",
+      "class": "Класс",
+      "hasDescendantRecords": "Еть записи-потомки",
+      "invalidReason": "Причина невалидности"
+    },
+    "columns": {
+      "id": "Id",
+      "code": "Код",
+      "name": "Имя",
+      "standardConceptCaption": "Стандартная концепция",
+      "vocabulary": "Словарь",
+      "domain": "Домен",
+      "class": "Класс"
+    },
+    "import": {
+      "clickToClear": "очистить",
+      "conceptIdentifiers": "Идентификаторы концепций",
+      "enterSourceCodes": "Введите исходный код",
+      "importConceptSetExpression": "Импорт определения набора концепций",
+      "importConceptIdentifiers": "Импорт идентификаторов концепций",
+      "conceptSetExpressionJSON": "JSON определение набора концепций",
+      "conceptSet": "Набор концепций",
+      "sourceCodes": "Исходный код",
+      "importedConceptSetExpression": "Импортированное определение набора концепций",
+      "enterConceptIdentifiers": "Введите идентификаторы концепций",
+      "importSourceCodes": "Импорт исходного кода",
+      "unableToParseConceptIdentifiers": "Невозможно распарсить идентификаторы концепций",
+      "conceptSetTable": {
+        "id": "Id",
+        "code": "Код",
+        "name": "Имя",
+        "domain": "Домен",
+        "standardConceptCode": "Код стандартной концепции",
+        "standardConceptCaption": "Стандартная концепция",
+        "mapped": "Mapped",
+        "exclude": "Исключить",
+        "descendants": "Потомки"
+      }
+    }
+  },
   "cs": {
     "manager": {
       "tabs": {
-        "conceptSetExpression": "Опредение набора концепций",
+        "conceptSetExpression": "Определение набора концепций",
         "includedSourceCodes": "Исходный код",
         "Export": "Экспорт",
         "Compare": "Сравнение",

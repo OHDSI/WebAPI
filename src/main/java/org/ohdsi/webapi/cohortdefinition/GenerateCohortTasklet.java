@@ -15,19 +15,24 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
+import java.util.concurrent.ConcurrentHashMap;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.common.generation.CancelableTasklet;
+import org.ohdsi.webapi.generationcache.CacheableGenerationType;
 import org.ohdsi.webapi.generationcache.GenerationCacheHelper;
+import org.ohdsi.webapi.generationcache.GenerationCacheHelper.CacheableResource;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.slf4j.LoggerFactory;
+import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.StoppableTasklet;
+import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Map;
@@ -44,6 +49,7 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
   private final GenerationCacheHelper generationCacheHelper;
   private final CohortDefinitionRepository cohortDefinitionRepository;
   private final SourceService sourceService;
+  private static final Map<CacheableResource, Object> monitors = new ConcurrentHashMap<>();
 
   public GenerateCohortTasklet(
           final CancelableJdbcTemplate jdbcTemplate,
@@ -93,5 +99,20 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
     );
     sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
     return SqlSplit.splitSql(sql);
+  }
+
+  @Override
+  public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
+
+      Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
+      Integer sourceId = Integer.parseInt(jobParams.get(SOURCE_ID).toString());
+      Integer cohortDefinitionId = Integer.valueOf(jobParams.get(COHORT_DEFINITION_ID).toString());
+      CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(cohortDefinitionId);
+      int designHash = this.generationCacheHelper.computeHash(cohortDefinition.getDetails().getExpression());
+      Object monitor = monitors.computeIfAbsent(new CacheableResource(CacheableGenerationType.COHORT, designHash, sourceId), o -> new Object());
+      
+      synchronized (monitor) {
+      return super.execute(contribution, chunkContext);
+    }
   }
 }

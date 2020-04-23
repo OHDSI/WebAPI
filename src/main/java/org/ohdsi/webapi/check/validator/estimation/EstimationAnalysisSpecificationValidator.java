@@ -1,4 +1,3 @@
-
 package org.ohdsi.webapi.check.validator.estimation;
 
 import org.ohdsi.analysis.Utils;
@@ -9,9 +8,12 @@ import org.ohdsi.webapi.check.validator.Rule;
 import org.ohdsi.webapi.check.validator.RuleValidator;
 import org.ohdsi.webapi.check.validator.ValueGetter;
 import org.ohdsi.webapi.check.validator.common.DuplicateValidator;
-import org.ohdsi.webapi.check.validator.common.ForEachValidator;
+import org.ohdsi.webapi.check.validator.common.IterableForEachValidator;
+import org.ohdsi.webapi.check.validator.common.NotNullNotEmptyValidator;
 import org.ohdsi.webapi.check.validator.common.PredicateValidator;
 import org.ohdsi.webapi.estimation.comparativecohortanalysis.specification.CohortMethodAnalysisImpl;
+
+import java.util.Collection;
 
 public class EstimationAnalysisSpecificationValidator<T extends ComparativeCohortAnalysis> extends RuleValidator<T> {
     @Override
@@ -35,18 +37,20 @@ public class EstimationAnalysisSpecificationValidator<T extends ComparativeCohor
         });
         tcoValidator.setErrorMessage("no target, comparator or outcome");
 
-        Rule<T> rule =
-                createRuleWithDefaultValidator(createPath("target comparator outcome"), reporter)
-                        .setValueGetter(ComparativeCohortAnalysis::getTargetComparatorOutcomes)
-                        .addValidator(new ForEachValidator<TargetComparatorOutcomes>()
-                                .setValidator(tcoValidator))
-                        .addValidator(new DuplicateValidator<TargetComparatorOutcomes>()
-                                .setElementGetter(t -> t.getTargetId() + "," + t.getComparatorId()));
+        Rule<T, Collection<? extends TargetComparatorOutcomes>> rule = new Rule<T, Collection<? extends TargetComparatorOutcomes>>()
+                .setPath(createPath("target comparator outcome"))
+                .setReporter(reporter)
+                .setValueGetter(ComparativeCohortAnalysis::getTargetComparatorOutcomes)
+                .addValidator(new NotNullNotEmptyValidator<>())
+                .addValidator(new IterableForEachValidator<TargetComparatorOutcomes>()
+                        .setValidator(tcoValidator))
+                .addValidator(new DuplicateValidator<TargetComparatorOutcomes, String>()
+                        .setElementGetter(t -> t.getTargetId() + "," + t.getComparatorId()));
         rules.add(rule);
     }
 
     private void prepareAnalysisSettingsRule() {
-        ValueGetter<CohortMethodAnalysis> elementGetter = value -> {
+        ValueGetter<CohortMethodAnalysis, String> elementGetter = value -> {
             CohortMethodAnalysisImpl analysis = ((CohortMethodAnalysisImpl) value);
             Integer analysisId = analysis.getAnalysisId();
             String description = analysis.getDescription();
@@ -64,11 +68,13 @@ public class EstimationAnalysisSpecificationValidator<T extends ComparativeCohor
             return json;
         };
 
-        Rule<T> rule =
-                createRuleWithDefaultValidator(createPath("analysis settings"), reporter)
-                        .setValueGetter(ComparativeCohortAnalysis::getCohortMethodAnalysisList)
-                        .addValidator(new DuplicateValidator<CohortMethodAnalysis>()
-                                .setElementGetter(elementGetter));
+        Rule<T, Collection<? extends CohortMethodAnalysis>> rule = new Rule<T, Collection<? extends CohortMethodAnalysis>>()
+                .setPath(createPath("analysis settings"))
+                .setReporter(reporter)
+                .setValueGetter(ComparativeCohortAnalysis::getCohortMethodAnalysisList)
+                .addValidator(new NotNullNotEmptyValidator<>())
+                .addValidator(new DuplicateValidator<CohortMethodAnalysis, String>()
+                        .setElementGetter(elementGetter));
         rules.add(rule);
     }
 }

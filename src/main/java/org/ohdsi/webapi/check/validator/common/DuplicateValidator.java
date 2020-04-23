@@ -6,14 +6,14 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class DuplicateValidator<T> extends PredicateValidator<Collection<? extends T>> {
+public class DuplicateValidator<T, V> extends PredicateValidator<Collection<? extends T>> {
     private static final String DUPLICATE = "%s - duplicate values";
 
-    private ValueGetter<T> elementGetter;
+    private ValueGetter<T, V> elementGetter;
 
     public DuplicateValidator() {
         setPredicate(t -> {
-            Set<Object> set = new HashSet<>();
+            Set<V> set = new HashSet<V>();
             for (T value : t) {
                 set.add(elementGetter.get(value));
             }
@@ -21,7 +21,7 @@ public class DuplicateValidator<T> extends PredicateValidator<Collection<? exten
         });
     }
 
-    public DuplicateValidator<T> setElementGetter(ValueGetter<T> elementGetter) {
+    public DuplicateValidator<T, V> setElementGetter(ValueGetter<T, V> elementGetter) {
         this.elementGetter = elementGetter;
         return this;
     }

@@ -7,24 +7,34 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class Rule<T> {
-    private final List<Validator> validators = new ArrayList<>();
-    private ValueGetter<T> valueGetter = (t) -> t;
+public class Rule<T, V> {
+    private final List<Validator<V>> validators = new ArrayList<>();
+    private ValueGetter<T, V> valueGetter;
     private String errorMessage;
-    private final Path path;
-    private final WarningReporter reporter;
+    private Path path;
+    private WarningReporter reporter;
 
-    public Rule(Path path, WarningReporter reporter) {
+//    public Rule(Path path, WarningReporter reporter) {
+//        this.path = path;
+//        this.reporter = reporter;
+//    }
+
+    public Rule<T, V> setPath(Path path) {
         this.path = path;
-        this.reporter = reporter;
+        return this;
     }
 
-    public Rule<T> setValueGetter(ValueGetter<T> valueGetter) {
+    public Rule<T, V> setReporter(WarningReporter reporter) {
+        this.reporter = reporter;
+        return this;
+    }
+
+    public Rule<T, V> setValueGetter(ValueGetter<T, V> valueGetter) {
         this.valueGetter = valueGetter;
         return this;
     }
 
-    public Rule<T> setErrorMessage(String errorMessage) {
+    public Rule<T, V> setErrorMessage(String errorMessage) {
         this.validators.forEach(v -> {
             // Do not change the error message of the validator if it is already changed
             if (v.isErrorMessageInitial()) {
@@ -35,7 +45,7 @@ public class Rule<T> {
         return this;
     }
 
-    public Rule<T> addValidator(Validator validator) {
+    public Rule<T, V> addValidator(Validator<V> validator) {
         // if validator error message is not changed and rule message is set
         // change validator message to rule message
         if (!validator.isErrorMessageInitial() && Objects.nonNull(this.errorMessage)) {
@@ -55,7 +65,7 @@ public class Rule<T> {
     public boolean validate(T value) {
         return this.validators.stream()
                 .map(v -> {
-                    Object valueToValidate = valueGetter.get(value);
+                    V valueToValidate = valueGetter.get(value);
                     boolean isValid = true;
                     if (valueToValidate != null ||
                             v instanceof NotNullNotEmptyValidator) {
@@ -66,7 +76,7 @@ public class Rule<T> {
                 .reduce(true, (left, right) -> left && right);
     }
 
-    public Rule<T> build() {
+    public Rule<T, V> build() {
         this.validators.forEach(Validator::build);
         return this;
     }

@@ -1,22 +1,19 @@
 package org.ohdsi.webapi.check.validator;
 
-import org.ohdsi.webapi.check.validator.common.NotNullNotEmptyValidator;
-import org.ohdsi.webapi.check.warning.WarningReporter;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class RuleValidator<T> extends Validator<T> {
-    protected List<Rule<T>> rules = new ArrayList<>();
+    protected List<Rule<T, ?>> rules = new ArrayList<>();
 
-    protected Rule<T> createRuleWithDefaultValidator(Path path, WarningReporter reporter) {
-        return new Rule<T>(path, reporter)
-                .addValidator(new NotNullNotEmptyValidator());
-    }
-
-    protected Rule<T> createRule(Path path, WarningReporter reporter) {
-        return new Rule<T>(path, reporter);
-    }
+//    protected <V> Rule<T, V> createRuleWithDefaultValidator(Path path, WarningReporter reporter) {
+//        return new Rule<T, V>(path, reporter)
+//                .addValidator(new NotNullNotEmptyValidator<>());
+//    }
+//
+//    protected <V> Rule<T, V> createRule(Path path, WarningReporter reporter) {
+//        return new Rule<T, V>(path, reporter);
+//    }
 
     @Override
     public boolean validate(T value) {

@@ -3,6 +3,7 @@ package org.ohdsi.webapi.check.validator.estimation;
 import org.ohdsi.analysis.estimation.design.PositiveControlSynthesisArgs;
 import org.ohdsi.webapi.check.validator.Rule;
 import org.ohdsi.webapi.check.validator.RuleValidator;
+import org.ohdsi.webapi.check.validator.common.NotNullNotEmptyValidator;
 import org.ohdsi.webapi.check.validator.common.PredicateValidator;
 
 public class PositiveControlSynthesisArgsValidator<T extends PositiveControlSynthesisArgs> extends RuleValidator<T> {
@@ -34,82 +35,98 @@ public class PositiveControlSynthesisArgsValidator<T extends PositiveControlSynt
     }
 
     private void prepareMinOutcomeCountForInjectionRule() {
-        Rule<T> rule =
-                createRuleWithDefaultValidator(createPath("minimum number of outcome events required to inject a signal"), reporter)
-                        .setErrorMessage("must be greater or equal to 0")
-                        .setValueGetter(PositiveControlSynthesisArgs::getMinOutcomeCountForInjection)
-                        .addValidator(new PredicateValidator<Integer>()
-                                .setPredicate(v -> v >= 0));
+        Rule<T, Integer> rule = new Rule<T, Integer>()
+                .setPath(createPath("minimum number of outcome events required to inject a signal"))
+                .setReporter(reporter)
+                .setErrorMessage("must be greater or equal to 0")
+                .setValueGetter(PositiveControlSynthesisArgs::getMinOutcomeCountForInjection)
+                .addValidator(new NotNullNotEmptyValidator<>())
+                .addValidator(new PredicateValidator<Integer>()
+                        .setPredicate(v -> v >= 0));
         rules.add(rule);
     }
 
     private void prepareMinOutcomeCountForModelRule() {
-        Rule<T> rule =
-                createRuleWithDefaultValidator(createPath("minimum number of outcome events required to build a model"), reporter)
-                        .setErrorMessage("must be greater or equal to 0")
-                        .setValueGetter(PositiveControlSynthesisArgs::getMinOutcomeCountForModel)
-                        .addValidator(new PredicateValidator<Integer>()
-                                .setPredicate(v -> v >= 0));
+        Rule<T, Integer> rule = new Rule<T, Integer>()
+                .setPath(createPath("minimum number of outcome events required to build a model"))
+                .setReporter(reporter)
+                .setErrorMessage("must be greater or equal to 0")
+                .setValueGetter(PositiveControlSynthesisArgs::getMinOutcomeCountForModel)
+                .addValidator(new NotNullNotEmptyValidator<>())
+                .addValidator(new PredicateValidator<Integer>()
+                        .setPredicate(v -> v >= 0));
         rules.add(rule);
     }
 
     private void prepareOutcomeIdOffsetRule() {
-        Rule<T> rule =
-                createRuleWithDefaultValidator(createPath("first new outcome ID that is to be created"), reporter)
-                        .setErrorMessage("must be greater or equal to 0")
-                        .setValueGetter(PositiveControlSynthesisArgs::getOutputIdOffset)
-                        .addValidator(new PredicateValidator<Integer>()
-                                .setPredicate(v -> v >= 0));
+        Rule<T, Integer> rule = new Rule<T, Integer>()
+                .setPath(createPath("first new outcome ID that is to be created"))
+                .setReporter(reporter)
+                .setErrorMessage("must be greater or equal to 0")
+                .setValueGetter(PositiveControlSynthesisArgs::getOutputIdOffset)
+                .addValidator(new NotNullNotEmptyValidator<>())
+                .addValidator(new PredicateValidator<Integer>()
+                        .setPredicate(v -> v >= 0));
         rules.add(rule);
     }
 
     private void prepareRatioBetweenTargetAndInjectedRule() {
-        Rule<T> rule =
-                createRuleWithDefaultValidator(createPath("allowed ratio between target and injected signal size"), reporter)
-                        .setErrorMessage("must be greater or equal to 0")
-                        .setValueGetter(PositiveControlSynthesisArgs::getPrecision)
-                        .addValidator(new PredicateValidator<Float>()
-                                .setPredicate(v -> v >= 0));
+        Rule<T, Float> rule = new Rule<T, Float>()
+                .setPath(createPath("allowed ratio between target and injected signal size"))
+                .setReporter(reporter)
+                .setErrorMessage("must be greater or equal to 0")
+                .setValueGetter(PositiveControlSynthesisArgs::getPrecision)
+                .addValidator(new NotNullNotEmptyValidator<>())
+                .addValidator(new PredicateValidator<Float>()
+                        .setPredicate(v -> v >= 0));
         rules.add(rule);
     }
 
     private void prepareMaxPeopleFitModelRule() {
-        Rule<T> rule =
-                createRuleWithDefaultValidator(createPath("maximum number of people used to fit an outcome model"), reporter)
-                        .setErrorMessage("must be greater or equal to 0")
-                        .setValueGetter(PositiveControlSynthesisArgs::getMaxSubjectsForModel)
-                        .addValidator(new PredicateValidator<Integer>()
-                                .setPredicate(v -> v >= 0));
+        Rule<T, Integer> rule = new Rule<T, Integer>()
+                .setPath(createPath("maximum number of people used to fit an outcome model"))
+                .setReporter(reporter)
+                .setErrorMessage("must be greater or equal to 0")
+                .setValueGetter(PositiveControlSynthesisArgs::getMaxSubjectsForModel)
+                .addValidator(new NotNullNotEmptyValidator<>())
+                .addValidator(new PredicateValidator<Integer>()
+                        .setPredicate(v -> v >= 0));
         rules.add(rule);
     }
 
     private void prepareMinRequiredObservationRule() {
-        Rule<T> rule =
-                createRuleWithDefaultValidator(createPath("minimum required continuous observation time"), reporter)
-                        .setErrorMessage("must be greater or equal to 0")
-                        .setValueGetter(PositiveControlSynthesisArgs::getWashoutPeriod)
-                        .addValidator(new PredicateValidator<Integer>()
-                                .setPredicate(v -> v >= 0));
+        Rule<T, Integer> rule = new Rule<T, Integer>()
+                .setPath(createPath("minimum required continuous observation time"))
+                .setReporter(reporter)
+                .setErrorMessage("must be greater or equal to 0")
+                .setValueGetter(PositiveControlSynthesisArgs::getWashoutPeriod)
+                .addValidator(new NotNullNotEmptyValidator<>())
+                .addValidator(new PredicateValidator<Integer>()
+                        .setPredicate(v -> v >= 0));
         rules.add(rule);
     }
 
     private void prepareWindowEndRule() {
-        Rule<T> rule =
-                createRuleWithDefaultValidator(createPath("time-at-risk window end"), reporter)
-                        .setErrorMessage("must be greater or equal to 0")
-                        .setValueGetter(PositiveControlSynthesisArgs::getRiskWindowEnd)
-                        .addValidator(new PredicateValidator<Integer>()
-                                .setPredicate(v -> v >= 0));
+        Rule<T, Integer> rule = new Rule<T, Integer>()
+                .setPath(createPath("time-at-risk window end"))
+                .setReporter(reporter)
+                .setErrorMessage("must be greater or equal to 0")
+                .setValueGetter(PositiveControlSynthesisArgs::getRiskWindowEnd)
+                .addValidator(new NotNullNotEmptyValidator<>())
+                .addValidator(new PredicateValidator<Integer>()
+                        .setPredicate(v -> v >= 0));
         rules.add(rule);
     }
 
     private void prepareWindowStartRule() {
-        Rule<T> rule =
-                createRuleWithDefaultValidator(createPath("time-at-risk window start"), reporter)
-                        .setErrorMessage("must be greater or equal to 0")
-                        .setValueGetter(PositiveControlSynthesisArgs::getRiskWindowStart)
-                        .addValidator(new PredicateValidator<Integer>()
-                                .setPredicate(v -> v >= 0));
+        Rule<T, Integer> rule = new Rule<T, Integer>()
+                .setPath(createPath("time-at-risk window start"))
+                .setReporter(reporter)
+                .setErrorMessage("must be greater or equal to 0")
+                .setValueGetter(PositiveControlSynthesisArgs::getRiskWindowStart)
+                .addValidator(new NotNullNotEmptyValidator<>())
+                .addValidator(new PredicateValidator<Integer>()
+                        .setPredicate(v -> v >= 0));
         rules.add(rule);
     }
 }

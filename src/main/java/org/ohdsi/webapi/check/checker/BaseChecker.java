@@ -15,19 +15,18 @@ public abstract class BaseChecker<T> implements Checker<T> {
     public final List<Warning> check(T value) {
         List<Warning> warnings = new ArrayList<>();
 
-        Rule<T> rule = createRule(getReporter(warnings), getValidator());
+        Rule<T, T> rule = new Rule<T, T>()
+                .setPath(Path.createPath())
+                .setReporter(getReporter(warnings))
+                .setValueGetter(t -> t)
+                .addValidator(getValidator())
+                .build();
         rule.validate(value);
 
         return warnings;
     }
 
     protected abstract Validator<T> getValidator();
-
-    private Rule<T> createRule(WarningReporter reporter, Validator<T> validator) {
-        return new Rule<T>(Path.createPath(), reporter)
-                .addValidator(validator)
-                .build();
-    }
 
     private WarningReporter getReporter(List<Warning> warnings) {
         return (severity, template, params) ->

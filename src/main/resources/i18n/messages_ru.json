@@ -67,6 +67,23 @@
       "STARTED": "ВЫПОЛНЯЕТСЯ"
     }
   },
+  "const": {
+    "relatedSourcecodesOptions": {
+      "vocabulary": "Словарь",
+      "invalidReason": "Причина невалидности",
+      "class": "Класс",
+      "domain": "Домен"
+    },
+    "relatedSourcecodesColumns": {
+      "id": "Id",
+      "code": "Код",
+      "name": "Название",
+      "class": "Класс",
+      "standardConceptCaption": "Стандартная концепция",
+      "domain": "Домен",
+      "vocabulary": "Словарь"
+    }
+  },
   "components": {
     "access-denied": {
       "forbidden": {
@@ -176,7 +193,7 @@
         "Export": "Экспорт",
         "Compare": "Сравнение",
         "includedConcepts": "Включенные концепции",
-        "exploreEvidence": "Исследовать Evidence"
+        "exploreEvidence": "Исследовать Свидетельство"
       },
       "includedConceptSets": {
         "standardConceptCaption": "Стандартная концепция",
@@ -190,6 +207,49 @@
         "invalidReason": "Причина невалидности",
         "hasRecords": "Есть записи",
         "hasDescendantRecords": "Есть записи-потомки"
+      },
+      "exploreEvidence": {
+        "title": "Исследование Свидетельства:",
+        "deletedCcMessage1": "Набор концепаций",
+        "deletedCcMessage2": "был удален. Пожалуйста, выберите другой набор концепций.",
+        "drugLabelsFound": "Найдено меток лекарств",
+        "noEvidenceFoundFor": "Не найдено свидетельств для",
+        "anchor1": "Получение Negative Controls из ATLAS",
+        "anchor2": "Высокоуровневая информация по Negative Controls",
+        "anchor3": "Дополнительные ресурсы",
+        "drugLabelEvidenceDetails": "подробности",
+        "drugLabelEvidenceOf": "из",
+        "includeLabel": "Какие концепты вы хотите включить как известные negative controls? (необязательно)",
+        "evidenceSources": "Источники Свидетельства",
+        "viewDatabaseRecordCounts": "Просмотр количества записей в БД (RC) и количества записей-потомков (DRC) для:",
+        "generationSettings": "Настройки генерации",
+        "generate": "Сгенерировать",
+        "generated": "Сгенерировано",
+        "generationStatus": "Статус генерации",
+        "generationDuration": "Продолжительность генерации",
+        "additionalInformation": "Дополнительная информаций:",
+        "excludeLabel": "Какие концепты вы хотите исключить как известные positive controls? (необязательно)",
+        "loadingEvidence": "загрузка Свидетельства",
+        "viewingEvidence": "Спросмотр Свидетельства",
+        "evidenceForAll": "Свидетельство для всех",
+        "chooseAConceptSet": "Выберите набор концепций",
+        "loading": "загрузка",
+        "drugLabelEvidence": "Свидетельств меток лекарств:",
+        "drugLabelEvidenceFound": "Найдено",
+        "drugLabelsNotFound": "Меток лекарств не найдено",
+        "drugLabelEvidenceEnd": "меток лекарств в CEM.",
+        "saveNewButton": "Сохранить новый набор концепций из списка ниже",
+        "viewEvidence": "Просмотр Свидетельства",
+        "evidenceForAllFor": "для",
+        "message1": "Свидетельство происходит из",
+        "message2": "Основа Свидетельства состоит из Свидетельства, найденного в опубликованнай литературе."
+      },
+      "export": {
+        "conceptSetExpressionJSON": "JSON набора концепций",
+        "conceptIdentiferList": "Список идентификаторов концепций",
+        "includedConceptIdentiferList": "Список идентификаторов включенных концепций",
+        "copiedToClipboard!": "Скопировано в буфер обмена!",
+        "exportToCSV": "Экспортировать в CSV"
       },
       "expression": {
         "standard": "Стандартный",

@@ -23,8 +23,12 @@ import java.util.function.Function;
 
 public interface ConditionalOperations<T, V> {
     ExecutiveOperations<T, V> when(Function<T, Boolean> condition);
+
     ExecutiveOperations<T, V> isA(Class<?> clazz);
+
     ConditionalOperations<T, V> orElse(Consumer<T> consumer);
+
     ConditionalOperations<T, V> orElseReturn(Function<T, V> function);
+
     V value();
 }

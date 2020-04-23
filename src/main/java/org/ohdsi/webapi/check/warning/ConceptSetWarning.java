@@ -8,8 +8,8 @@ import java.util.Objects;
 
 public class ConceptSetWarning extends BaseWarning implements Warning {
 
-    private String template;
-    private ConceptSet conceptSet;
+    private final String template;
+    private final ConceptSet conceptSet;
 
     public ConceptSetWarning(WarningSeverity severity, String template, ConceptSet conceptSet) {
 

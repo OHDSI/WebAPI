@@ -9,10 +9,7 @@ public class PredicateValidator<T> extends Validator<T> {
 
     private Predicate<T> predicate;
 
-    public PredicateValidator() {
-    }
-
-    public PredicateValidator setPredicate(Predicate<T> predicate) {
+    public PredicateValidator<T> setPredicate(Predicate<T> predicate) {
         this.predicate = predicate;
         return this;
     }
@@ -26,7 +23,7 @@ public class PredicateValidator<T> extends Validator<T> {
         return isValid;
     }
 
-    protected String getDefaultErrorTemplate() {
+    protected String getDefaultErrorMessage() {
         return INVALID;
     }
 }

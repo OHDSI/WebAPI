@@ -18,7 +18,7 @@ public class NotNullNotEmptyValidator<T> extends Validator<T> {
             if (value instanceof Collection) {
                 isValid = ((Collection) value).size() > 0;
             } else if (value instanceof String) {
-                isValid = ((String) value).isEmpty();
+                isValid = !((String) value).isEmpty();
             } else if (value.getClass().isArray()) {
                 isValid = Array.getLength(value) > 0;
             }
@@ -29,7 +29,7 @@ public class NotNullNotEmptyValidator<T> extends Validator<T> {
         return isValid;
     }
 
-    protected String getDefaultErrorTemplate() {
+    protected String getDefaultErrorMessage() {
         return NULL_OR_EMPTY;
     }
 }

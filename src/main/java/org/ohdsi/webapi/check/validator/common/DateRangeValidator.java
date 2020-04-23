@@ -14,7 +14,6 @@ public class DateRangeValidator<T extends DateRange> extends Validator<DateRange
     private static final String EMPTY_START_VALUE = "%s - empty start value";
     private static final String EMPTY_END_VALUE = "%s - empty end value";
     private static final String START_GREATER_THAN_END = "%s - start value greater than end";
-    private static final String START_IS_NEGATIVE = "%s - start value is negative";
     private static final String DATE_IS_INVALID = "%s - invalid date value";
 
     @Override

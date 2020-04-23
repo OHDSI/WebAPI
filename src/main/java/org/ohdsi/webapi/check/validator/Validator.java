@@ -4,30 +4,27 @@ import org.ohdsi.webapi.check.warning.WarningReporter;
 import org.ohdsi.webapi.check.warning.WarningSeverity;
 
 public abstract class Validator<T> {
-    private final static String DEFAULT_ERROR_TEMPLATE = "%s - error";
+    private final static String DEFAULT_ERROR_MESSAGE = "%s - error";
     protected Path path;
     protected WarningReporter reporter;
     protected WarningSeverity severity = WarningSeverity.CRITICAL;
-    private String errorTemplate;
-
-    public Validator() {
-    }
+    private String errorMessage;
 
     public void setSeverity(WarningSeverity severity) {
         this.severity = severity;
     }
 
-    public Validator setErrorTemplate(String errorTemplate) {
-        this.errorTemplate = "%s - " + errorTemplate;
+    public Validator<T> setErrorMessage(String errorMessage) {
+        this.errorMessage = "%s - " + errorMessage;
         return this;
     }
 
-    protected String getDefaultErrorTemplate() {
-        return DEFAULT_ERROR_TEMPLATE;
+    protected String getDefaultErrorMessage() {
+        return DEFAULT_ERROR_MESSAGE;
     }
 
-    protected String getErrorTemplate() {
-        return this.errorTemplate != null ? this.errorTemplate : getDefaultErrorTemplate();
+    protected String getErrorMessage() {
+        return this.errorMessage != null ? this.errorMessage : getDefaultErrorMessage();
     }
 
     public abstract boolean validate(T value);
@@ -57,11 +54,11 @@ public abstract class Validator<T> {
     }
 
     protected void fillErrorReport() {
-        reporter.add(this.severity, getErrorTemplate(), path.getPath());
+        reporter.add(this.severity, getErrorMessage(), path.getPath());
     }
 
-    protected void fillErrorReport(String template) {
-        reporter.add(this.severity, template, path.getPath());
+    public boolean isErrorMessageInitial() {
+        return getDefaultErrorMessage().equals(getErrorMessage());
     }
 
     public void build() {

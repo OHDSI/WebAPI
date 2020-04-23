@@ -7,11 +7,6 @@ import org.ohdsi.webapi.prediction.dto.PredictionAnalysisDTO;
 
 public class PredictionChecker extends BaseChecker<PredictionAnalysisDTO> {
     @Override
-    protected String getName(PredictionAnalysisDTO value) {
-        return value.getName();
-    }
-
-    @Override
     protected Validator<PredictionAnalysisDTO> getValidator() {
         return new PredictionValidator<>();
     }

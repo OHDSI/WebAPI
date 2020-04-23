@@ -13,27 +13,24 @@ import java.util.List;
 
 public abstract class BaseChecker<T> implements Checker<T> {
     public final List<Warning> check(T value) {
-        List<Warning> warnings = new ArrayList();
+        List<Warning> warnings = new ArrayList<>();
 
-        Rule<T> rule = createRule(getName(value), getReporter(warnings), getValidator());
+        Rule<T> rule = createRule(getReporter(warnings), getValidator());
         rule.validate(value);
 
         return warnings;
     }
 
-    protected abstract String getName(T value);
-
     protected abstract Validator<T> getValidator();
 
-    protected Rule<T> createRule(String name, WarningReporter reporter, Validator<T> validator) {
-        return new Rule<T>(Path.createPath(name), reporter)
+    private Rule<T> createRule(WarningReporter reporter, Validator<T> validator) {
+        return new Rule<T>(Path.createPath(), reporter)
                 .addValidator(validator)
                 .build();
     }
 
-    protected WarningReporter getReporter(List<Warning> warnings) {
-        return (severity, template, params) -> {
-            warnings.add(new DefaultWarning(severity, String.format(template, params)));
-        };
+    private WarningReporter getReporter(List<Warning> warnings) {
+        return (severity, template, params) ->
+                warnings.add(new DefaultWarning(severity, String.format(template, params)));
     }
 }

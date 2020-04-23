@@ -9,11 +9,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class IRChecker extends BaseChecker<IRAnalysisDTO> {
     @Override
-    protected String getName(IRAnalysisDTO value) {
-        return value.getName();
-    }
-
-    @Override
     protected Validator<IRAnalysisDTO> getValidator() {
         return new IRValidator<>();
     }

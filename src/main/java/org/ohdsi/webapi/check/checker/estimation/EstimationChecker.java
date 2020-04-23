@@ -7,11 +7,6 @@ import org.ohdsi.webapi.estimation.dto.EstimationDTO;
 
 public class EstimationChecker extends BaseChecker<EstimationDTO> {
     @Override
-    protected String getName(EstimationDTO value) {
-        return value.getName();
-    }
-
-    @Override
     protected Validator<EstimationDTO> getValidator() {
         return new EstimationValidator<>();
     }

@@ -8,38 +8,38 @@ import java.util.List;
 import java.util.Objects;
 
 public class Rule<T> {
-    private List<Validator> validators = new ArrayList<>();
-    private ValueAccessor<T> valueAccessor = (t) -> t;
-    private String errorTemplate;
-    protected Path path;
-    protected WarningReporter reporter;
+    private final List<Validator> validators = new ArrayList<>();
+    private ValueGetter<T> valueGetter = (t) -> t;
+    private String errorMessage;
+    private final Path path;
+    private final WarningReporter reporter;
 
     public Rule(Path path, WarningReporter reporter) {
         this.path = path;
         this.reporter = reporter;
     }
 
-    public Rule<T> setValueAccessor(ValueAccessor<T> valueAccessor) {
-        this.valueAccessor = valueAccessor;
+    public Rule<T> setValueGetter(ValueGetter<T> valueGetter) {
+        this.valueGetter = valueGetter;
         return this;
     }
 
-    public Rule<T> setErrorTemplate(String errorTemplate) {
-        // Check validator errorTemplate and set it to new errorTemplate
+    public Rule<T> setErrorMessage(String errorMessage) {
         this.validators.forEach(v -> {
-            // Do not change the error template if it is already set
-            if (v.getDefaultErrorTemplate().equals(v.getErrorTemplate())) {
-                v.setErrorTemplate(errorTemplate);
+            // Do not change the error message of the validator if it is already changed
+            if (v.isErrorMessageInitial()) {
+                v.setErrorMessage(errorMessage);
             }
         });
-        this.errorTemplate = errorTemplate;
+        this.errorMessage = errorMessage;
         return this;
     }
 
     public Rule<T> addValidator(Validator validator) {
-        if ((validator.getDefaultErrorTemplate().equals(validator.getErrorTemplate()))
-                && Objects.nonNull(this.errorTemplate)) {
-            validator.setErrorTemplate(this.errorTemplate);
+        // if validator error message is not changed and rule message is set
+        // change validator message to rule message
+        if (!validator.isErrorMessageInitial() && Objects.nonNull(this.errorMessage)) {
+            validator.setErrorMessage(this.errorMessage);
         }
         if (Objects.isNull(validator.getPath())) {
             validator.setPath(path);
@@ -55,10 +55,10 @@ public class Rule<T> {
     public boolean validate(T value) {
         return this.validators.stream()
                 .map(v -> {
-                    Object valueToValidate = valueAccessor.get(value);
+                    Object valueToValidate = valueGetter.get(value);
                     boolean isValid = true;
                     if (valueToValidate != null ||
-                            NotNullNotEmptyValidator.class.isInstance(v)) {
+                            v instanceof NotNullNotEmptyValidator) {
                         isValid = v.validate(valueToValidate);
                     }
                     return isValid;

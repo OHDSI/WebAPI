@@ -4,16 +4,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public abstract class BaseWarning implements Warning {
 
-    private WarningSeverity severity;
+    private final WarningSeverity severity;
 
     public BaseWarning(WarningSeverity severity) {
-
         this.severity = severity;
     }
 
     @JsonProperty("severity")
     public WarningSeverity getSeverity() {
-
         return severity;
     }
 }

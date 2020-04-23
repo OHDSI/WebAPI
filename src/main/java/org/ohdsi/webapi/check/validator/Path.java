@@ -9,7 +9,7 @@ import java.util.Objects;
 public class Path {
     private static final String DEFAULT_SEPARATOR = " :: ";
 
-    private List<String> items;
+    private final List<String> items;
 
     private Path(List<String> items) {
         this.items = items;
@@ -30,6 +30,10 @@ public class Path {
 
     public static Path createPath(String item) {
         return createPath(null, item);
+    }
+
+    public static Path createPath() {
+        return createPath(null);
     }
 
     public String getPath() {

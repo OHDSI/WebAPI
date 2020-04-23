@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.check;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.ohdsi.webapi.check.warning.Warning;
 
 import java.util.List;
@@ -11,6 +12,7 @@ public class CheckResult {
         this.warnings = warnings;
     }
 
+    @JsonProperty("warnings")
     public List<Warning> getWarnings() {
         return warnings;
     }

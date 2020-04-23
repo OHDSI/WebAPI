@@ -21,8 +21,10 @@ package org.ohdsi.webapi.check.operations;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public interface ExecutiveOperations<T,V> {
+public interface ExecutiveOperations<T, V> {
     ConditionalOperations<T, V> then(Consumer<T> consumer);
+
     ConditionalOperations<T, V> then(Execution execution);
+
     ConditionalOperations<T, V> thenReturn(Function<T, V> function);
 }

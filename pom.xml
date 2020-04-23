@@ -985,7 +985,7 @@
         <impala.enabled>true</impala.enabled>
         <impala.driver.version>2.6.15</impala.driver.version>
         <!-- Impala JDBC driver path -->
-		<impala.classpath>...path/to/impala/jdbc/drivers...</impala.classpath>
+		<impala.classpath>C:\projects\OHDSI\drivers\impala</impala.classpath>
       </properties>
       <dependencies>
         <dependency>

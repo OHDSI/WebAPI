@@ -7,11 +7,6 @@ import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
 
 public class PathwayChecker extends BaseChecker<PathwayAnalysisDTO> {
     @Override
-    protected String getName(PathwayAnalysisDTO value) {
-        return value.getName();
-    }
-
-    @Override
     protected Validator<PathwayAnalysisDTO> getValidator() {
         return new PathwayValidator<>();
     }

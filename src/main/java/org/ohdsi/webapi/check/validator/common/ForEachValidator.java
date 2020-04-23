@@ -7,24 +7,25 @@ import org.ohdsi.webapi.check.warning.WarningReporter;
 
 import java.util.Collection;
 
-public class ForEachValidator<T, V> extends Validator<Object> {
-    private final Validator<T> validator;
+public class ForEachValidator<T> extends Validator<Object> {
+    private Validator<T> validator;
 
-    public ForEachValidator(Validator<T> validator) {
+    public ForEachValidator<T> setValidator(Validator<T> validator) {
         this.validator = validator;
+        return this;
     }
 
     @Override
     public boolean validate(Object value) {
         Collection<T> values;
         if (value.getClass().isArray()) {
-            values = Lists.<T>newArrayList((T[])value);
-        } else if (value instanceof Collection){
-            values = (Collection<T>)value;
-        } else if (value instanceof Iterable){
-            values = Lists.<T>newArrayList((Iterable)value);
+            values = Lists.newArrayList((T[]) value);
+        } else if (value instanceof Collection) {
+            values = (Collection<T>) value;
+        } else if (value instanceof Iterable) {
+            values = Lists.newArrayList((Iterable<T>) value);
         } else
-            throw new RuntimeException("value must be of collection or array type");
+            throw new RuntimeException("value must be of collection, iterable or array type");
         return values.stream()
                 .map(validator::validate)
                 .reduce(true, (left, right) -> left && right);
@@ -36,9 +37,9 @@ public class ForEachValidator<T, V> extends Validator<Object> {
     }
 
     @Override
-    public Validator setErrorTemplate(String errorTemplate) {
-        this.validator.setErrorTemplate(errorTemplate);
-        return super.setErrorTemplate(errorTemplate);
+    public ForEachValidator<T> setErrorMessage(String errorMessage) {
+        this.validator.setErrorMessage(errorMessage);
+        return this;
     }
 
     @Override

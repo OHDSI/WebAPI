@@ -8,7 +8,7 @@ public class NegativeControlOutcomeCohortExpressionValidator<T extends NegativeC
     @Override
     protected void buildInternal() {
         // Occurrence type
-        prepareCccurrenceTypeRule();
+        prepareOccurrenceTypeRule();
 
         // Detect on descendants
         prepareDetectOnDescendantsRule();
@@ -20,24 +20,24 @@ public class NegativeControlOutcomeCohortExpressionValidator<T extends NegativeC
         prepareDomainsRule();
     }
 
-    private void prepareCccurrenceTypeRule() {
+    private void prepareOccurrenceTypeRule() {
         Rule<T> rule =
                 createRuleWithDefaultValidator(createPath("type of occurrence of the event when selecting from the domain"), reporter)
-                        .setValueAccessor(NegativeControlOutcomeCohortExpression::getOccurrenceType);
+                        .setValueGetter(NegativeControlOutcomeCohortExpression::getOccurrenceType);
         rules.add(rule);
     }
 
     private void prepareDetectOnDescendantsRule() {
         Rule<T> rule =
                 createRuleWithDefaultValidator(createPath("using of descendant concepts for the negative control outcome"), reporter)
-                        .setValueAccessor(NegativeControlOutcomeCohortExpression::getDetectOnDescendants);
+                        .setValueGetter(NegativeControlOutcomeCohortExpression::getDetectOnDescendants);
         rules.add(rule);
     }
 
     private void prepareDomainsRule() {
         Rule<T> rule =
                 createRuleWithDefaultValidator(createPath("domains to detect negative control outcomes"), reporter)
-                        .setValueAccessor(NegativeControlOutcomeCohortExpression::getDomains);
+                        .setValueGetter(NegativeControlOutcomeCohortExpression::getDomains);
         rules.add(rule);
     }
 }

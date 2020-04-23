@@ -8,7 +8,8 @@ import java.time.format.DateTimeParseException;
 import java.util.Objects;
 
 public class Comparisons {
-    public Comparisons() {}
+    public Comparisons() {
+    }
 
     public static Boolean isDateValid(String date) {
         try {

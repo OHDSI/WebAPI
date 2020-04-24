@@ -23,6 +23,7 @@ import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConvert
 import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.ExportExecutionResultRequest;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.generationcache.GenerationCacheTest;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.source.Source;
@@ -45,10 +46,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.junit.Assert.assertEquals;
@@ -150,35 +148,44 @@ public class CohortCharacterizationServiceTest {
         Data data = Utils.deserialize(paramData, typeRef);
 
         for (ParamItem paramItem : data.paramItems) {
-            checkRequest(generationEntity.getId(), paramItem);
+            checkRequest(entity, generationEntity.getId(), paramItem);
         }
     }
 
-    private void checkRequest(Long id, ParamItem paramItem) throws IOException {
+    private void checkRequest(CohortCharacterizationEntity entity, Long generationId, ParamItem paramItem) throws IOException {
         String dataItemMessage = String.format("Checking dataitem %s", paramItem.toString());
-        ZipFile zipFile = getZipFile(id, paramItem);
-        if (paramItem.fileItems.isEmpty()) {
-            // File is empty
-            assertFalse(dataItemMessage, zipFile.isValidZipFile());
-        } else {
-            assertTrue(dataItemMessage, zipFile.isValidZipFile());
+        try {
+            ZipFile zipFile = getZipFile(generationId, paramItem);
+            if (paramItem.fileItems.isEmpty()) {
+                // File is empty
+                assertFalse(dataItemMessage, zipFile.isValidZipFile());
+            } else {
+                // File should not be empty
+                assertTrue(dataItemMessage, zipFile.isValidZipFile());
+                Path tempDir = Files.createTempDirectory(String.valueOf(System.currentTimeMillis()));
+                tempDir.toFile().deleteOnExit();
+                zipFile.extractAll(tempDir.toAbsolutePath().toString());
+                assertEquals(dataItemMessage, paramItem.fileItems.size(), tempDir.toFile().listFiles().length);
 
-            Path tempDir = Files.createTempDirectory(String.valueOf(System.currentTimeMillis()));
-            tempDir.toFile().deleteOnExit();
-            zipFile.extractAll(tempDir.toAbsolutePath().toString());
-            assertEquals(dataItemMessage, paramItem.fileItems.size(), tempDir.toFile().listFiles().length);
+                for (File file : tempDir.toFile().listFiles()) {
+                    String fileMessage = String.format("Checking filename %s for dataitem %s", file.getName(), paramItem.toString());
+                    Optional<FileItem> fileItem = paramItem.fileItems.stream()
+                            .filter(f -> f.fileName.equals(file.getName()))
+                            .findAny();
+                    assertTrue(fileMessage, fileItem.isPresent());
 
-            for (File file : tempDir.toFile().listFiles()) {
-                String fileMessage = String.format("Checking filename %s for dataitem %s", file.getName(), paramItem.toString());
-                Optional<FileItem> fileItem = paramItem.fileItems.stream()
-                        .filter(f -> f.fileName.equals(file.getName()))
-                        .findAny();
-                assertTrue(fileMessage, fileItem.isPresent());
-
-                long count = Files.lines(file.toPath()).count();
-                // include header line
-                assertEquals(fileMessage, fileItem.get().lineCount + 1, count);
+                    long count = Files.lines(file.toPath()).count();
+                    // include header line
+                    assertEquals(fileMessage, fileItem.get().lineCount + 1, count);
+                }
             }
+        } catch (IllegalArgumentException e) {
+            // Exception should be thrown when parameter of feature is invalid
+            int analysisId = paramItem.analysisIds.stream().filter(
+                aid -> entity.getFeatureAnalyses().stream().noneMatch(fa -> Objects.equals(fa.getId(), aid))
+            ).findFirst().get();
+            String expectedMessage = String.format("Feature with id=%s not found in analysis", analysisId);
+            assertEquals(dataItemMessage, e.getMessage(), expectedMessage);
         }
     }
 

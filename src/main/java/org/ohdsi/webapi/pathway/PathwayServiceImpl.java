@@ -14,7 +14,6 @@ import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.AnalysisGenerationInfoEntity;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.common.generation.TransactionalTasklet;
-import org.ohdsi.webapi.i18n.I18nService;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
@@ -31,7 +30,6 @@ import org.ohdsi.webapi.pathway.repository.PathwayAnalysisEntityRepository;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisGenerationRepository;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.JobService;
-import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.PathwayAnalysisGenerationId;
@@ -39,6 +37,7 @@ import org.ohdsi.webapi.shiro.annotations.SourceId;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
@@ -99,8 +98,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     private final JobService jobService;
     private final GenericConversionService genericConversionService;
     private final StepBuilderFactory stepBuilderFactory;
-    private final I18nService i18nService;
-
+		
 		private final List<String> STEP_COLUMNS = Arrays.asList(new String[]{"step_1", "step_2", "step_3", "step_4", "step_5", "step_6", "step_7", "step_8", "step_9", "step_10"});
 
     private final EntityGraph defaultEntityGraph = EntityUtils.fromAttributePaths(
@@ -125,8 +123,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
             GenerationUtils generationUtils,
             JobService jobService,
             @Qualifier("conversionService") GenericConversionService genericConversionService,
-            StepBuilderFactory stepBuilderFactory,
-            I18nService i18nService) {
+            StepBuilderFactory stepBuilderFactory) {
 
         this.pathwayAnalysisRepository = pathwayAnalysisRepository;
         this.pathwayAnalysisGenerationRepository = pathwayAnalysisGenerationRepository;
@@ -135,7 +132,6 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         this.entityManager = entityManager;
         this.jobService = jobService;
         this.genericConversionService = genericConversionService;
-        this.i18nService = i18nService;
         this.security = security;
         this.designImportService = designImportService;
         this.analysisGenerationInfoEntityRepository = analysisGenerationInfoEntityRepository;
@@ -167,9 +163,6 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         newAnalysis.setCreatedBy(getCurrentUser());
         newAnalysis.setCreatedDate(new Date());
-        // Fields with information about modifications have to be reseted
-        newAnalysis.setModifiedBy(null);
-        newAnalysis.setModifiedDate(null);
         return save(newAnalysis);
     }
 
@@ -375,7 +368,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         Source source = getSourceRepository().findBySourceId(sourceId);
 
         JobParametersBuilder builder = new JobParametersBuilder();
-        builder.addString(JOB_NAME, String.format(i18nService.translate("pathways.manager.messages.generating", "Generating Pathway Analysis %d using %s (%s)"), pathwayAnalysisId, source.getSourceName(), source.getSourceKey()));
+        builder.addString(JOB_NAME, String.format("Generating Pathway Analysis %d using %s (%s)", pathwayAnalysisId, source.getSourceName(), source.getSourceKey()));
         builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
         builder.addString(PATHWAY_ANALYSIS_ID, pathwayAnalysis.getId().toString());
         builder.addString(JOB_AUTHOR, getCurrentUserLogin());
@@ -418,11 +411,12 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     @Override
     @DataSourceAccess
     public void cancelGeneration(Integer pathwayAnalysisId, @SourceId Integer sourceId) {
-
-        jobService.cancelJobExecution(GENERATE_PATHWAY_ANALYSIS, j -> {
+        jobService.cancelJobExecution(j -> {
             JobParameters jobParameters = j.getJobParameters();
+            String jobName = j.getJobInstance().getJobName();
             return Objects.equals(jobParameters.getString(PATHWAY_ANALYSIS_ID), Integer.toString(pathwayAnalysisId))
-                    && Objects.equals(jobParameters.getString(SOURCE_ID), String.valueOf(sourceId));
+                    && Objects.equals(jobParameters.getString(SOURCE_ID), String.valueOf(sourceId))
+                    && Objects.equals(GENERATE_PATHWAY_ANALYSIS, jobName);
         });
     }
 

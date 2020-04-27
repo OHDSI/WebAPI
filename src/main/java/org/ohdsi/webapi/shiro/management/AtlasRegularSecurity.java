@@ -11,6 +11,7 @@ import org.apache.shiro.realm.ldap.JndiLdapRealm;
 import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
+import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.filters.*;
 import org.ohdsi.webapi.shiro.mapper.ADUserMapper;
 import org.ohdsi.webapi.shiro.mapper.LdapUserMapper;
@@ -174,6 +175,9 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     private String casticket;
 
     private RestTemplate restTemplate = new RestTemplate();
+
+    @Autowired
+    private PermissionManager permissionManager;
     
     @Override
     public Map<FilterTemplates, Filter> getFilters() {
@@ -184,7 +188,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         filters.put(UPDATE_TOKEN, new UpdateAccessTokenFilter(this.authorizer, this.defaultRoles, this.tokenExpirationIntervalInSeconds,
                 this.redirectUrl));
 
-        filters.put(ACCESS_AUTHC, new GoogleAccessTokenFilter(restTemplate));
+        filters.put(ACCESS_AUTHC, new GoogleAccessTokenFilter(restTemplate, permissionManager, Collections.emptySet()));
         filters.put(JWT_AUTHC, new AtlasJwtAuthFilter());
         filters.put(JDBC_FILTER, new JdbcAuthFilter(eventPublisher));
         filters.put(KERBEROS_FILTER, new KerberosAuthFilter());

@@ -162,6 +162,7 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
     }
 
     private void saveFilesToTempDir(File tempDir, List<AnalysisFile> files) {
+
         files.forEach(file -> {
             try (OutputStream out = new FileOutputStream(new File(tempDir, file.getFileName()))) {
                 IOUtils.write(file.getContents(), out);
@@ -244,6 +245,7 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
 
     @Override
     public void invalidateExecutions(Date invalidateDate) {
+
         getTransactionTemplateRequiresNew().execute(status -> {
             logger.info("Invalidating execution engine based analyses");
             List<ExecutionEngineAnalysisStatus> executions = analysisExecutionRepository.findAllInvalidAnalysis(invalidateDate, ScriptExecutionServiceImpl.INVALIDATE_STATUSES);
@@ -259,6 +261,7 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
 
     @PostConstruct
     public void invalidateOutdatedAnalyses() {
+
         invalidateExecutions(new Date());
     }
 
@@ -275,10 +278,10 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
         File archive = tempDirectory.resolve(fileName).toFile();
         archive.deleteOnExit();
 
-        try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(archive))) {
+        try(ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(archive))) {
             List<AnalysisResultFile> outputFiles = analysisExecution.getResultFiles(); //outputFileRepository.findByExecutionId(analysisExecution.getId());
 
-            for (AnalysisResultFile resultFile : outputFiles) {
+            for(AnalysisResultFile resultFile : outputFiles) {
                 if (isResultArchive(resultFile)) {
                     addEntitiesFromZip(zos, resultFile, tempDirectory);
                 } else {
@@ -293,7 +296,7 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
     private boolean isResultArchive(AnalysisResultFile resultFile) {
 
         return StringUtils.endsWithIgnoreCase(FilenameUtils.getExtension(resultFile.getFileName()), "zip") &&
-               StringUtils.containsIgnoreCase(resultFile.getFileName(), "result");
+                StringUtils.containsIgnoreCase(resultFile.getFileName(), "result");
     }
 
     private void addEntityFromFile(ZipOutputStream zos, AnalysisResultFile resultFile) throws IOException {
@@ -310,15 +313,15 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
         File zipFile = tempDirectory.resolve(resultFile.getFileName()).toFile();
         FileUtils.writeByteArrayToFile(zipFile, resultFile.getContents());
 
-        try (ZipFile zin = new ZipFile(zipFile)) {
+        try(ZipFile zin = new ZipFile(zipFile)) {
             zin.stream().forEach(inEntry -> {
-                try {
+                try{
                     ZipEntry outEntry = new ZipEntry(inEntry.getName());
                     outEntry.setSize(inEntry.getSize());
                     zos.putNextEntry(outEntry);
                     zos.write(IOUtils.toByteArray(zin.getInputStream(inEntry)));
                     zos.closeEntry();
-                } catch (Exception ex) {
+                }catch (Exception ex) {
                     logger.debug("Cannot repack zip entity{}", inEntry.getName(), ex);
                 }
             });

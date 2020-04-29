@@ -120,6 +120,7 @@
 
     <security.googleIap.cloudProjectId></security.googleIap.cloudProjectId>
     <security.googleIap.backendServiceId></security.googleIap.backendServiceId>
+    <security.google.accessToken.enabled>false</security.google.accessToken.enabled>
 
     <security.cors.enabled>true</security.cors.enabled>
     <security.maxLoginAttempts>3</security.maxLoginAttempts>

@@ -28,7 +28,7 @@
   },
   "datatable": {
     "language": {
-      "decimal": "",
+      "decimal": "десятичный",
       "emptyTable": "В таблице нет данных",
       "info": "Показано с _START_ по _END_ из _TOTAL_ записей",
       "infoEmpty": "Показано с 0 по 0 из 0 записей",
@@ -67,6 +67,26 @@
       "STARTED": "ВЫПОЛНЯЕТСЯ"
     }
   },
+  "options": {
+    "atMost": "В большинстве",
+    "exactly": "Точно",
+    "atLeast": "Как минимум",
+    "all": "Все",
+    "before": "Перед",
+    "after": "После",
+    "any": "любой",
+    "allEvents": "Все события",
+    "earliestEvents": "Самое раннее событие",
+    "latestEvents": "Последнее мероприятие",
+    "yes": "Да",
+    "no": "Нет",
+    "isAnyOf": "любой из",
+    "isNotAnyOf": "это не какой-либо из",
+    "indexStartDate": "дата начала индекса",
+    "indexEndDate": "дата окончания индекса",
+    "eventStarts": "событие начинается",
+    "eventEnds": "событие заканчивается"
+  },
   "const": {
     "relatedSourcecodesOptions": {
       "vocabulary": "Словарь",
@@ -87,8 +107,8 @@
   "components": {
     "access-denied": {
       "forbidden": {
-        "message1": "You do not have access to this feature.",
-        "message2": "For more information on how to get access please contact the System Administrator."
+        "message1": "У вас нет доступа к этой функции.",
+        "message2": "Для получения дополнительной информации о том, как получить доступ, пожалуйста, свяжитесь с системным администратором."
       },
       "unauthenticated": {
         "message": "Доступ к этому разделу ограничен. Пожалуйста,",
@@ -174,6 +194,340 @@
       "submit": "Отправить",
       "username": "Имя пользователя",
       "wait": "Пожалуйста подождите..."
+    },
+    "atlasCohortEditor": {
+      "enterCohortPlaceholder": "Введите описание определения когорты здесь",
+      "importConceptSet": "Импортировать набор концепций из репозитория ..."
+    },
+    "cohortExpressionEditor": {
+      "cohortEntryEvents": "События входа",
+      "cohortEntryEventsText_1": "События - это записанные наблюдения с указанием времени для людей, такие как воздействие наркотиков, условия, процедуры, измерения и посещения. Все события имеют дату начала и дату окончания, хотя некоторые события могут иметь дату начала и дату окончания с одинаковым значением (например, процедуры или измерения).",
+      "inclusionCriteria": "Критерии включения",
+      "inclusionCriteriaText": "The qualifying cohort will be defined as all persons who have an initial event, satisfy the initial event inclusion criteria, and fulfill all additional qualifying inclusion criteria. Each qualifying inclusion criteria will be evaluated to determine the impact of the criteria on the attrition of persons from the initial cohort.",
+      "cohortExit": "Выход из когорты",
+      "cohortExitText_1": "Для всех квалификационных событий должна быть спецификация того, когда каждое событие заканчивается присутствием в когорте. По умолчанию событие заканчивается в конце периода наблюдения, содержащего соответствующее исходное событие, но также могут быть указаны даты окончания события:",
+      "cohortExitTitle_1": "Даты окончания мероприятия",
+      "cohortExitText_2": "Квалификационное начальное событие может быть установлено как завершающееся после фиксированного периода времени относительно даты начала или окончания события, или дата окончания может быть основана на конце непрерывного воздействия набора лекарств, определенных набором понятий.",
+      "cohortExitTitle_2": "Цензура События",
+      "cohortExitText_3": "Критерии могут быть использованы для оповещения об окончании события. Если между датой начала и окончания квалифицируемого события определено цензурное событие, в качестве даты выхода будет использоваться дата цензурного события.",
+      "cohortEntryEventsText_2": "События, имеющие любой из следующих критериев:",
+      "addInitialEvent": "Добавить начальное событие",
+      "deleteCriteria": "Удалить критерии",
+      "cohortEntryEventsText_3": "с непрерывным наблюдением не менее",
+      "cohortEntryEventsText_4": "дней до и",
+      "cohortEntryEventsText_5": "дней после даты индекса",
+      "cohortEntryEventsText_6": "Ограничить начальные события до:",
+      "cohortEntryEventsText_7": "на человека.",
+      "restrictInitialEventsTitle": "Ограничить начальные события до:",
+      "removeRestriction": "Удалить начальное ограничение события",
+      "restrictInitialEventsButton": "Ограничить начальные события",
+
+      "inclusionCriteriaTitle" : "Критерии включения",
+      "newInclusionCriteria": "Новые критерии включения",
+      "inclusionCriteriaText_1": "Ограничить квалификационные события:",
+
+      "cohortExitTitle": "Выход из когорты",
+      "eventPersistence": "Постоянство события:",
+      "censoringEvents": "Цензура События:",
+      "cohortExitText_4": "Выход из группы на основе следующих критериев:",
+      "addCensoringEvent": "Добавить событие цензуры",
+      "cohortExitText_5": "События цензуры не выбраны.",
+
+      "cohortErasTitle": "Когорт Эра",
+      "cohortErasText_1": "Укажите размер разрыва коллапса эпохи:",
+      "cohortErasText_2": "Даты начала когорты левого цензора в",
+      "cohortErasText_3": "Дата окончания когорты правого цензора",
+      "addTrimmingOptions": "добавить параметры обрезки ...",
+      "unnamedCriteria": "Безымянный критерий",
+      "copyOf": "Копия:"
+    },
+    "conditionEra": {
+      "criteriaText_1": "состояние эпохи",
+      "addAttribute": "Добавить атрибут ...",
+      "attributeText_1": "впервые в истории человека",
+      "attributeText_2": "эра начала это:",
+      "attributeText_3": "конец эпохи это:",
+      "attributeText_4": "с количеством появлений",
+      "attributeText_5": "с длиной эры",
+      "attributeText_6": "с возрастом в годах в начале эры",
+      "attributeText_7": "с возрастом в годах в конце эры",
+      "attributeText_8": "с полом:",
+      "attributeText_9": "дней",
+      "anyConditionButton": "Любое условие",
+      "returnText_1": "Дата индекса относится к условию эпохи"
+    },
+    "conditionOccurrence": {
+      "conditionOccurrenceText_1": "возникновение условия",
+      "addAttribute": "Добавить атрибут...",
+      "anyCondition": "Любое условие",
+      "conditionOccurrenceText_2": "впервые в истории человека",
+      "conditionOccurrenceText_3": "Начало вхождения:",
+      "conditionOccurrenceText_4": "Конец появления:",
+      "conditionType": "Тип условия",
+      "conditionOccurrenceText_5": "с причиной остановки",
+      "conditionOccurrenceText_6": "Концепция источника условия",
+      "conditionOccurrenceText_7": "с возрастом",
+      "conditionOccurrenceText_8": "с полом:",
+      "conditionOccurrenceText_9": "со специальностью поставщика:",
+      "conditionOccurrenceText_10": "с посещением:"
+
+    },
+    "conditionDeath": {
+      "anyDeath": "Любая смерть",
+      "addAttribute": "Добавить атрибут ...",
+      "deathType": "Тип смерти",
+      "conditionDeathText_1": "случай смерти от",
+      "conditionDeathText_2": "Начало вхождения:",
+      "conditionDeathText_3": "Концепция источника смерти",
+      "conditionDeathText_4": "с возрастом",
+      "conditionDeathText_5": "с полом:"
+    },
+    "conditionDevice": {
+      "anyDevice": "Любое устройство",
+      "addAttribute": "Добавить атрибут ...",
+      "deviceType": "Тип устройства",
+      "conditionDeviceText_1": "устройство воздействия",
+      "conditionDeviceText_2": "впервые в истории человека",
+      "conditionDeviceText_3": "Начало вхождения:",
+      "conditionDeviceText_4": "Конец появления:",
+      "conditionDeviceText_5": "с уникальным идентификатором устройства",
+      "conditionDeviceText_6": "с количеством",
+      "conditionDeviceText_7": "Концепция источника устройства",
+      "conditionDeviceText_8": "с возрастом",
+      "conditionDeviceText_9": "с полом:",
+      "conditionDeviceText_10": "со специальностью поставщика:",
+      "conditionDeviceText_11": "с посещением:"
+    },
+    "conditionDose": {
+      "anyDrug": "Любой наркотик",
+      "addAttribute": "Добавить атрибут...",
+      "conditionDoseText_1": "эра дозы",
+      "conditionDoseText_2": "впервые в истории человека",
+      "conditionDoseText_3": "эра начала это:",
+      "conditionDoseText_4": "Конец эпохи это:",
+      "conditionDoseText_5": "с блоком:",
+      "conditionDoseText_6": "с величиной дозы",
+      "conditionDoseText_7": "с длиной эры",
+      "conditionDoseText_8": "с возрастом в годах в начале эры",
+      "conditionDoseText_9": "с возрастом в годах в конце эры",
+      "conditionDoseText_10": "с полом:"
+    },
+    "conditionDrug": {
+      "anyDrug": "Любой наркотик",
+      "addAttribute": "Добавить атрибут...",
+      "conditionDrugText_1": "и другая эра",
+      "conditionDrugText_2": "впервые в истории человека",
+      "conditionDrugText_3": "эра начала это:",
+      "conditionDrugText_4": "Конец эпохи это:",
+      "conditionDrugText_5": "с учетом воздействия",
+      "conditionDrugText_6": "с разрывом дней",
+      "conditionDrugText_7": "дней",
+      "conditionDrugText_8": "с длиной эры",
+      "conditionDrugText_9": "с возрастом в годах в начале эры",
+      "conditionDrugText_10": "с возрастом в годах в конце эры",
+      "conditionDrugText_11": "с полом:"
+    },
+    "conditionDrugExposure": {
+      "anyDrug": "Любой наркотик",
+      "addAttribute": "Добавить атрибут...",
+      "drugType": "Тип лекарства",
+      "conditionDrugExposureText_1": "a drug exposure of",
+      "conditionDrugExposureText_2": "впервые в истории человека",
+      "conditionDrugExposureText_3": "начало появления:",
+      "conditionDrugExposureText_4": "конец вхождения:",
+      "conditionDrugExposureText_5": "с причиной остановки",
+      "conditionDrugExposureText_6": "с добавками",
+      "conditionDrugExposureText_7": "с количеством",
+      "conditionDrugExposureText_8": "с поставками дней",
+      "conditionDrugExposureText_9": "Концепция маршрута это:",
+      "conditionDrugExposureText_10": "с эффективной дозой препарата",
+      "conditionDrugExposureText_11": "Единица дозы является:",
+      "conditionDrugExposureText_12": "с номером лота",
+      "conditionDrugExposureText_13": "Концепция источника наркотиков:",
+      "conditionDrugExposureText_14": "с возрастом",
+      "conditionDrugExposureText_15": "с полом:",
+      "conditionDrugExposureText_16": "со специальностью поставщика:",
+      "conditionDrugExposureText_17": "с посещением:"
+    },
+    "conditionMeasurement": {
+      "anyMeasurement": "Любое измерение",
+      "addAttribute": "Добавить атрибут...",
+      "measurementType": "Тип измерения",
+      "conditionMeasurementText_1": "измерение",
+      "conditionMeasurementText_2": "впервые в истории человека",
+      "conditionMeasurementText_3": "начало появления:",
+      "conditionMeasurementText_5": "Оператор значения измерения:",
+      "conditionMeasurementText_6": "со значением как число",
+      "conditionMeasurementText_7": "Ценность как Концепция:",
+      "conditionMeasurementText_8": "Единица:",
+      "conditionMeasurementText_9": "с низким диапазоном",
+      "conditionMeasurementText_10": "с диапазоном низкого отношения",
+      "conditionMeasurementText_11": "с высоким диапазоном",
+      "conditionMeasurementText_12": "with Range High Ratio",
+      "conditionMeasurementText_13": "с ненормальным результатом",
+      "conditionMeasurementText_14": "Концепция источника измерения",
+      "conditionMeasurementText_15": "с возрастом",
+      "conditionMeasurementText_16": "с полом:",
+      "conditionMeasurementText_17": "со специальностью поставщика:",
+      "conditionMeasurementText_18": "с посещением:"
+    },
+    "conditionObservation": {
+      "anyObservation": "Любое Наблюдение",
+      "addAttribute": "Добавить атрибут...",
+      "observationType": "Тип наблюдения",
+      "conditionObservationText_1": "наблюдение",
+      "conditionObservationText_2": "впервые в истории человека",
+      "conditionObservationText_3": "начало появления:",
+      "conditionObservationText_4": "со значением как число",
+      "conditionObservationText_5": "со значением как строка",
+      "conditionObservationText_6": "с ценностью как концепцией:",
+      "conditionObservationText_7": "с классификатором:",
+      "conditionObservationText_8": "с блоком:",
+      "conditionObservationText_9": "Концепция источника наблюдения:",
+      "conditionObservationText_10": "с возрастом",
+      "conditionObservationText_11": "с полом:",
+      "conditionObservationText_12": "с специальностью поставщика:",
+      "conditionObservationText_13": "с посещением:"
+    },
+    "conditionObservationPeriod": {
+      "addAttribute": "Добавить атрибут...",
+      "conditionObservationText_1": "Периоды наблюдения по следующим критериям:",
+      "conditionObservationText_2": "ограничен первым периодом наблюдения пациентов",
+      "conditionObservationText_3": "используя указанный период:",
+      "conditionObservationText_4": "начало периода наблюдения:",
+      "conditionObservationText_5": "конец периода наблюдения:",
+      "conditionObservationText_6": "Тип периода:",
+      "conditionObservationText_7": "с возрастом в годах на начало периода",
+      "conditionObservationText_8": "с возрастом в годах на конец периода",
+      "conditionObservationText_9": "с продолжительностью периода",
+      "conditionObservationText_10": "дней."
+    },
+    "conditionPayerPlanPeriod": {
+      "anyPayer": "Любой плательщик",
+      "anyPlan": "Любой план",
+      "anySponsor": "Любой Спонсор",
+      "anyStopReason": "Любая причина остановки",
+      "anyPayerSource": "Любой источник плательщика",
+      "anyPlanSource": "Любой источник плана",
+      "anySponsorSource": "Любой Спонсор Источник",
+      "anyStopReasonSource": "Любой источник причины остановки",
+      "addAttribute": "Добавить атрибут...",
+      "conditionPayerPlanText_1": "периоды плана плательщика по следующим критериям:",
+      "conditionPayerPlanText_2": "ограничено периодом плана первого плательщика пациентов",
+      "conditionPayerPlanText_3": "с возрастом в начале периода",
+      "conditionPayerPlanText_4": "с возрастом на конец периода",
+      "conditionPayerPlanText_5": "с продолжительностью периода",
+      "conditionPayerPlanText_6": "с полом:",
+      "conditionPayerPlanText_7": "используя указанный период",
+      "conditionPayerPlanText_8": "Начало периода действия плана плательщика:",
+      "conditionPayerPlanText_9": "Конец периода действия плана плательщика:",
+      "conditionPayerPlanText_10": "Концепция плательщика",
+      "conditionPayerPlanText_11": "Концепция плана",
+      "conditionPayerPlanText_12": "Концепция спонсора",
+      "conditionPayerPlanText_13": "Остановить причину",
+      "conditionPayerPlanText_14": "Концепция источника плательщика",
+      "conditionPayerPlanText_15": "Концепция источника плана",
+      "conditionPayerPlanText_16": "Спонсор Источник Концепция",
+      "conditionPayerPlanText_17": "Стоп Причина Источник Концепция",
+      "conditionPayerPlanText_18": "Примечание. Критерии периода плана плательщика доступны только в CDM v5.3 и более поздних версиях."
+    },
+    "conditionProcedureOccurrence": {
+      "addAttribute": "Добавить атрибут...",
+      "anyProcedure": "Любая процедура",
+      "procedureType": "Тип процедуры",
+      "conditionProcedureOccurrenceText_1": "процедура возникновения",
+      "conditionProcedureOccurrenceText_2": "впервые в истории человека",
+      "conditionProcedureOccurrenceText_3": "Начало вхождения:",
+      "conditionProcedureOccurrenceText_4": "Модификатор это:",
+      "conditionProcedureOccurrenceText_5": "с количеством",
+      "conditionProcedureOccurrenceText_6": "Концепция источника процедуры:",
+      "conditionProcedureOccurrenceText_7": "с возрастом:",
+      "conditionProcedureOccurrenceText_8": "с полом:",
+      "conditionProcedureOccurrenceText_9": "со специальностью поставщика:",
+      "conditionProcedureOccurrenceText_10": "с посещением:"
+    },
+    "conditionSpecimen": {
+      "addAttribute": "Добавить атрибут...",
+      "anySpecimen": "Любой образец",
+      "specimenType": "v",
+      "conditionSpecimeText_1": "образец",
+      "conditionSpecimeText_2": "впервые в истории человека",
+      "conditionSpecimeText_3": "Начало вхождения:",
+      "conditionSpecimeText_4": "с количеством",
+      "conditionSpecimeText_5": "с блоком:",
+      "conditionSpecimeText_6": "с анатомическим сайтом:",
+      "conditionSpecimeText_7": "со статусом заболевания:",
+      "conditionSpecimeText_8": "с идентификатором источника",
+      "conditionSpecimeText_9": "с возрастом",
+      "conditionSpecimeText_10": "с полом:"
+    },
+    "conditionVisit": {
+      "addAttribute": "Добавить атрибут...",
+      "anyVisit": "Любое посещение",
+      "visitType": "Тип посещения",
+      "anyLocation": "Любое место",
+      "conditionSpecimeText_1": "посещение",
+      "conditionSpecimeText_2": "впервые в истории человека",
+      "conditionSpecimeText_3": "Начало вхождения:",
+      "conditionSpecimeText_4": "Конец появления:",
+      "conditionSpecimeText_5": "Визит Источник Концепция",
+      "conditionSpecimeText_6": "с продолжительностью посещения",
+      "conditionSpecimeText_7": "с возрастом",
+      "conditionSpecimeText_8": "с полом:",
+      "conditionSpecimeText_9": "со специальностью поставщика:",
+      "conditionSpecimeText_10": "с местом службы:",
+      "conditionSpecimeText_11": "с местом обслуживания, расположенным в:",
+      "conditionSpecimeText_12": "с расстоянием от места службы до пациента"
+    },
+    "dateRange": {
+      "before": "Перед",
+      "onOrBefore": "Или раньше",
+      "on": "На",
+      "after": "После",
+      "onOrAfter": "На или после",
+      "between": "Между",
+      "notBetween": "Не между",
+      "and": "и",
+      "placeholder": "ГГГГ-ММ-ДД"
+    },
+    "numericRange": {
+      "lessThan": "Меньше, чем",
+      "lessOrEqualTo": "Меньше или равно",
+      "equalTo": "Равно",
+      "greaterThan": "Больше чем",
+      "greaterOrEqualTo": "Больше или равно",
+      "between": "Между",
+      "notBetween": "Не между"
+    },
+    "conceptPicker": {
+      "addButton": "Добавить",
+      "importButton": "Импортировать",
+      "importConcepts": "Импортировать понятия",
+      "done": "Выполнено",
+      "selectConcept": "Выберите концепцию",
+      "search": "Поиск",
+      "waitMessage": "Пожалуйста, подождите, пока провайдер словарного запаса не начинает..."
+    },
+    "criteriaGroup": {
+      "having": "имеющий",
+      "followingCriteria": "из следующих критериев:",
+      "addCriteria": "Добавить критерии в группу ...",
+      "withFollowingCriteria": "со следующими критериями события:",
+      "deleteCriteria": "Удалить критерии"
+    },
+    "demographicCriteria": {
+      "addAttribute": "Добавить атрибут ...",
+      "withAge": "с возрастом",
+      "withGenderOf": "с полом:",
+      "withRaceOf": "с расой:",
+      "withEthnicity": "с этнической принадлежностью:",
+      "occurrenceStart": "Начало вхождения:",
+      "occurrenceEnd": "Конец появления:"
+    },
+    "conceptSetSelector": {
+      "importConcept": "Импортировать концепцию",
+      "clearConceptSet": "Очистить концепцию",
+      "searchWithTripleDots": "Поиск..."
     }
   },
   "facets": {
@@ -877,6 +1231,698 @@
           "import": "Импорт"
         },
         "loading": "загружается"
+      }
+    }
+  },
+  "cohortDefinitions": {
+    "title": "Определения когорт",
+    "newDefinition": "Новая когорта",
+    "newDefinitionTitle": "Создать новую когорту",
+    "closeYourCurrentCohort": "Пожалуйста, закройте текущее определение когорты перед созданием нового",
+    "cohort": {
+      "newCohortPlaceholder": "Новое определение когорты",
+      "saveCohortTitle": "Сохранить определение когорты",
+      "closeCohortTitle": "Закрыть определение когорты",
+      "createCopyCohortTitle": "Создать копию этого определения когорты",
+      "getLinkCohortTitle": "Получить ссылку на это определение когорты",
+      "configureAccessTitle": "Настроить доступ",
+      "deleteTitle": "Удалить",
+      "emptyName": "Название определения группы пусто",
+      "tabs": {
+        "definition": "Определение",
+        "conceptSets": "Наборы концепций",
+        "generation": "Поколение",
+        "reporting": "Составление отчетов",
+        "explore": "Проводить исследования",
+        "export": "Экспорт",
+        "messages": "Сообщения"
+      },
+      "panels": {
+        "definition": {
+          "enterCohortPlaceholder": "Введите описание определения когорты здесь",
+          "importConceptSet": "Импортировать набор концепций из репозитория ..."
+        },
+        "newConceptSet": "Новая концепция",
+        "import": "Импортировать",
+        "exportAllToCSV": "Экспортировать все наборы концепций в CSV"
+      },
+      "modals": {
+        "analysisTypes": {
+          "title": "Типы анализа",
+          "bold_1": "Быстрый анализ",
+          "text_1": "Проводит минимальный анализ, чтобы получить быстрый обзор года рождения этой группы, демографических данных, эпох лекарств и состояний. (по оценкам: 10 минут)",
+          "bold_2": "Использование здравоохранения",
+          "text_2": "Запускает анализы для предоставления отчетов об экспозиции, посещении и использовании наркотиков. (по оценкам: 10 - 40 минут)",
+          "bold_3": "Полный анализ",
+          "text_3": "Запускает полный набор отчетов о характеристиках. (по оценкам: 60 минут)"
+        },
+        "linkToCohortDefinition": {
+          "title": "Ссылка на определение когорты",
+          "text_1": "Эта ссылка может использоваться для доступа к этому определению когорты непосредственно из Web API из других инструментов, таких как R, а также для импорта через экземпляры ATLAS."
+        },
+        "cohortDefinition": {
+          "title": "Определение когорты",
+          "text_1": "Когорта определяется как набор лиц, удовлетворяющих одному или нескольким критериям включения в течение определенного периода времени. Один человек может претендовать на одну группу несколько раз в течение непересекающихся интервалов времени. Когорты строятся в ATLAS путем указания критериев входа в когорту и критериев выхода из когорты. Критерии входа в когорту включают в себя выбор одного или нескольких начальных событий, которые определяют дату начала для записи в когорте, и, при необходимости, указание дополнительных критериев включения, которые отфильтровывают для соответствующих событий. Критерии выхода из группы применяются к каждой записи в группе, чтобы определить дату окончания, когда эпизод этого человека больше не подходит для этой группы."
+        },
+        "importConceptSet": {
+          "title": "Импортировать набор концепций из репозитория ..."
+        }
+      }
+    },
+    "cohortId": "Когорта #",
+    "noConceptSets": "No concept sets to export",
+    "saveDefinitionBefore": "You must save the definition before you can export",
+    "const": {
+      "periods": {
+        "ww": "Eженедельно",
+        "mm": "Eжемесячно",
+        "qq": "Квартальный",
+        "yy": "Ежегодный"
+      },
+      "periodType": "Период",
+      "rollups": {
+        "rollupUtilizationVisit": "Просмотры",
+        "rollupUtilizationDrug": "Лекарства"
+      }
+    }
+  },
+  "const": {
+    "relatedSourcecodesOptions": {
+      "vocabulary": "Словарь",
+      "invalidReason": "Причина невалидности",
+      "class": "Класс",
+      "domain": "Домен"
+    },
+    "relatedSourcecodesColumns": {
+      "id": "Id",
+      "code": "Код",
+      "name": "Название",
+      "class": "Класс",
+      "standardConceptCaption": "Стандартная концепция",
+      "domain": "Домен",
+      "vocabulary": "Словарь"
+    },
+    "eventsList": {
+      "addConditionEra": {
+        "title": "Добавить условие Эра",
+        "desc_initial": "Найти пациентов с определенным диагнозом эпохи.",
+        "desc_censoring": "Выйти из когорты, основанной на диагнозе эпохи.",
+        "desc_group": "Найти пациентов с конкретными условиями эпохи."
+      },
+      "addConditionOccurrence": {
+        "title": "Добавить условие возникновения",
+        "desc_initial": "Найти пациентов с конкретными диагнозами.",
+        "desc_censoring": "Выйти из когорты на основании диагнозов.",
+        "desc_group": "Найти пациентов с конкретными условиями."
+      },
+      "addDeath": {
+        "title": "Добавить смерть",
+        "desc_initial": "Найти пациентов на основании смерти.",
+        "desc_censoring": "Выйти из когорты в зависимости от смерти.",
+        "desc_group": "Найти пациентов на основании смерти."
+      },
+      "addDeviceExposure": {
+        "title": "Добавить экспозицию устройства",
+        "desc_initial": "Поиск пациентов на основе воздействия устройства.",
+        "desc_censoring": "Выход из когорты в зависимости от воздействия устройства.",
+        "desc_group": "Поиск пациентов на основе воздействия устройства."
+      },
+      "addDoseEra": {
+        "title": "Добавить эру дозы",
+        "desc_initial": "Найти пациентов с дозами эры.",
+        "desc_censoring": "Выйти из когорты в зависимости от дозы.",
+        "desc_group": "Найти пациентов с дозами эры."
+      },
+      "addDrugEra": {
+        "title": "Добавить эпоху наркотиков",
+        "desc_initial": "Найти пациентов с воздействием наркотиков с течением времени.",
+        "desc_censoring": "Выход из когорты по наркотикам со временем.",
+        "desc_group": "Найти пациентов с наркотиками эпох."
+      },
+      "addDrugExposure": {
+        "title": "Добавить наркотик воздействия",
+        "desc_initial": "Найти пациентов с воздействием определенных наркотиков или классов наркотиков.",
+        "desc_censoring": "Выход из когорты в зависимости от воздействия определенных наркотиков или классов наркотиков.",
+        "desc_group": "Найти пациентов с воздействием определенных наркотиков или классов наркотиков."
+      },
+      "addMeasurement": {
+        "title": "Добавить измерение",
+        "desc_initial": "Найти пациентов на основе измерений.",
+        "desc_censoring": "Выйти из когорты на основе измерений.",
+        "desc_group": "Найти пациентов на основе измерений."
+      },
+      "addObservation": {
+        "title": "Добавить наблюдение",
+        "desc_initial": "Find patients based on observations.",
+        "desc_censoring": "Exit cohort based on lab tests or other observations.",
+        "desc_group": "Find patients based on observations."
+      },
+      "addObservationPeriod": {
+        "title": "Добавить период наблюдения",
+        "desc_initial": "Find patients based on Observation Period.",
+        "desc_group": "Find patients based on observation periods."
+      },
+      "addPayerPlanPeriod": {
+        "title": "Добавить период плана плательщика",
+        "desc_initial": "Find patients based on Payer Plan Period.",
+        "desc_censoring": "Find patients based on Payer Plan Period.",
+        "desc_group": "Find patients based on Payer Plan Period."
+      },
+      "addProcedureOccurrence": {
+        "title": "Добавление процедуры вхождения",
+        "desc_initial": "Find patients that experienced a specific procedure.",
+        "desc_censoring": "Exit cohort based on procedures.",
+        "desc_group": "Find patients that experienced a specific procedure."
+      },
+      "addSpecimen": {
+        "title": "Добавить образец",
+        "desc_initial": "Find patients based on Specimen.",
+        "desc_censoring": "Find patients based on Specimen.",
+        "desc_group": "Find patients based on specimen."
+      },
+      "addVisit": {
+        "title": "Добавить визит",
+        "desc_initial": "Find patients based on visit information.",
+        "desc_censoring": "Exit cohort based on visit information.",
+        "desc_group": "Find patients based on visit information.",
+        "title_occurrence": "Добавить визит",
+        "desc_occurrence": "Filter Condition Occurrences based on visit occurrence of diagnosis.",
+        "title_deviceexposure": "Добавить визит",
+        "desc_deviceexposure": "Filter Device Exposures based on visit occurrence of exposure.",
+        "title_drugexposure": "Добавить визит",
+        "desc_drugexposure": "Filter Drug Exposures based on visit occurrence of drug exposure.",
+        "title_measurement": "Добавить визит",
+        "desc_measurement": "Filter Measurements based on visit occurrence of measurement.",
+        "title_observation": "Добавить визит",
+        "desc_observation": "Filter Observations based on visit occurrence of observation.",
+        "title_procedureoccurrence": "Добавить визит",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences based on visit occurrence of procedure."
+      },
+      "addFirstDiagnosis": {
+        "title_era": "Добавить первый диагноз",
+        "desc_era": "Ограничьте Эры Условий первой эрой диагноза в истории.",
+        "title_occurrence": "Добавить первый диагноз",
+        "desc_occurrence": "Предельное состояние Появление нового диагноза.",
+        "title_deviceexposure": "Добавить критерии первого воздействия",
+        "desc_deviceexposure": "Ограничить воздействие устройства на первое воздействие в истории.",
+        "title_dose": "Добавить критерии первого воздействия",
+        "desc_dose": "Ограничьте дозу Era до нового воздействия.",
+        "title_drug": "Добавить критерии первого воздействия",
+        "desc_drug": "Ограничьте Эры Наркотиков первым воздействием в истории.",
+        "title_drugexposure": "Добавить критерии первого воздействия",
+        "desc_drugexposure": "Ограничить воздействие наркотиков первым воздействием в истории.",
+        "title_measurement": "Добавить критерии первого измерения",
+        "desc_measurement": "Предельные меры для первого появления в истории.",
+        "title_observation": "Добавить первые критерии наблюдения",
+        "desc_observation": "Ограничить наблюдения первым случаем.",
+        "title_observationperiod": "Критерии первого периода наблюдения",
+        "desc_observationperiod": "Ограничить период наблюдения первым периодом в истории.",
+        "title_payerplan": "Критерии периода действия плана первого плательщика",
+        "desc_payerplan": "Ограничить период плана плательщика первым периодом в истории.",
+        "title_procedureoccurrence": "Добавить критерии первой процедуры",
+        "desc_procedureoccurrence": "Предельная процедура Происшествия к первой процедуре в истории.",
+        "title_specimen": "Добавить критерии первого появления",
+        "desc_specimen": "Ограничить образец первым в истории.",
+        "title_visit": "Добавить критерии первого посещения",
+        "desc_visit": "Ограниченный визит Происходит до первого посещения."
+      },
+      "addAgeAtStart": {
+        "title_era": "Добавить Возраст в Эру Начальные Критерии",
+        "desc_era": "Состояние фильтра Эры по возрасту в начале эры.",
+        "title_dose": "Добавить Возраст в Эру Начальные Критерии",
+        "desc_dose": "Отфильтруйте наркотик Эры по возрасту в начале эры.",
+        "title_drug": "Добавить Возраст в Эру Начальные Критерии",
+        "desc_drug": "Отфильтруйте наркотик Эры по возрасту в начале эры.",
+        "title_observationperiod": "Добавить возраст в начале критерии",
+        "desc_observationperiod": "Фильтровать периоды по возрасту при запуске.",
+        "title_payerplan": "Добавить возраст в начале критерии",
+        "desc_payerplan": "Фильтровать периоды по возрасту при запуске."
+      },
+      "addAgeAtEnd": {
+        "title_era": "Добавить возраст на конец эры Критерии",
+        "desc_era": "Условия фильтра Эры по возрасту в конце эры.",
+        "title_dose": "Добавить возраст на конец эры Критерии",
+        "desc_dose": "Отфильтруйте наркотик Эры по возрасту в конце эры.",
+        "title_drug": "Добавить возраст на конец эры Критерии",
+        "desc_drug": "Отфильтруйте наркотик Эры по возрасту в конце эры.",
+        "title_observationperiod": "Добавить возраст в конце критерия",
+        "desc_observationperiod": "Фильтровать периоды по возрасту в конце.",
+        "title_payerplan": "Добавить возраст в конце критерия",
+        "desc_payerplan": "Фильтровать периоды по возрасту в конце."
+      },
+      "addGender": {
+        "title_era": "Добавить гендерные критерии",
+        "desc_era": "Эра условия фильтра на основе пола.",
+        "title_occurrence": "Добавить гендерные критерии",
+        "desc_occurrence": "Фильтровать вхождения в зависимости от пола.",
+        "title_death": "Добавить гендерные критерии",
+        "desc_death": "Фильтровать смерти на основе пола.",
+        "title_deviceexposure": "Добавить гендерные критерии",
+        "desc_deviceexposure": "Фильтр устройств воздействия на основе пола.",
+        "title_dose": "Добавить гендерные критерии",
+        "desc_dose": "Filter Drug Eras based on Gender.",
+        "title_drug": "Добавить гендерные критерии",
+        "desc_drug": "Filter Drug Eras based on Gender.",
+        "title_drugexposure": "Добавить гендерные критерии",
+        "desc_drugexposure": "Filter Drug Exposures based on Gender.",
+        "title_measurement": "Добавить гендерные критерии",
+        "desc_measurement": "Filter Measurements based on Gender.",
+        "title_observation": "Добавить гендерные критерии",
+        "desc_observation": "Filter Observations based on Gender.",
+        "title_payerplan": "Добавить гендерные критерии",
+        "desc_payerplan": "Filter Payer Plan Periods based on Gender.",
+        "title_procedureoccurrence": "Добавить гендерные критерии",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences based on Gender.",
+        "title_specimen": "Добавить гендерные критерии",
+        "desc_specimen": "Filter specimens based on Gender.",
+        "title_visit": "Добавить гендерные критерии",
+        "desc_visit": "Filter Visit Occurrences based on Gender."
+      },
+      "addStartDate": {
+        "title_era": "Добавить критерии даты начала",
+        "desc_era": "Filter Condition Eras by the Era Start Date.",
+        "title_occurrence": "Добавить критерии даты начала",
+        "desc_occurrence": "Filter Condition Occurrences by the Condition Start Date.",
+        "title_deviceexposure": "Добавить критерии даты начала",
+        "desc_deviceexposure": "Filter Device Exposures by the Exposure Start Date.",
+        "title_dose": "Добавить критерии даты начала",
+        "desc_dose": "Filter Dose Eras by the Era Start Date.",
+        "title_drug": "Добавить критерии даты начала",
+        "desc_drug": "Filter Drug Eras by the Era Start Date.",
+        "title_drugexposure": "Добавить критерии даты начала",
+        "desc_drugexposure": "Filter Drug Exposures by the Drug Exposure Start Date.",
+        "title_observationperiod": "Добавить критерии даты начала",
+        "desc_observationperiod": "Filter Observation Periods by Start Date.",
+        "title_payerplan": "Добавить критерии даты начала",
+        "desc_payerplan": "Filter Payer Plan Periods by Start Date.",
+        "title_visit": "Добавить критерии даты начала",
+        "desc_visit": "Filter Visit Occurrences by the Condition Start Date."
+
+      },
+      "addEndDate": {
+        "title_era": "Добавить критерии даты окончания",
+        "desc_era": "Filter Condition Eras by the Era End Date",
+        "title_occurrence": "Добавить дату окончания условия",
+        "desc_occurrence": "Filter Condition Occurrences by the Condition End Date.",
+        "title_deviceexposure": "Добавить критерии даты окончания",
+        "desc_deviceexposure": "Filter Device Exposures by the Exposure End Date.",
+        "title_dose": "Добавить критерии даты окончания эры",
+        "desc_dose": "Filter Dose Eras  by the Era End Date",
+        "title_drug": "Добавить критерии даты окончания эры",
+        "desc_drug": "Filter Drug Eras  by the Era End Date.",
+        "title_drugexposure": "Добавить критерии даты окончания",
+        "desc_drugexposure": "Filter Drug Exposures  by the Drug Exposure End Date.",
+        "title_observationperiod": "Добавить критерии даты окончания периода",
+        "desc_observationperiod": "Filter Observation Periods by End Date.",
+        "title_payerplan": "Добавить критерии даты окончания периода",
+        "desc_payerplan": "Filter Payer Plan Periods by End Date.",
+        "title_visit": "Добавить критерии даты окончания",
+        "desc_visit": "Filter Visit Occurrences  by the Condition End Date."
+      },
+      "addConditonCount": {
+        "title_era": "Добавить критерии подсчета эры",
+        "desc_era": "Filter Condition Eras by the Condition Count.",
+        "title_drug": "Добавить критерий подсчета эры",
+        "desc_drug": "Filter Drug Eras by the Exposure Count."
+      },
+      "addLength": {
+        "title_era": "Добавить критерии длины эры",
+        "desc_era": "Filter Condition Eras by the Era duration.",
+        "title_dose": "Добавить критерии длины эры",
+        "desc_dose": "Filter Drug Eras by the Era duration.",
+        "title_drug": "Добавить критерии длины эры",
+        "desc_drug": "Filter Drug Eras by the Era duration.",
+        "title_observationperiod": "Добавить критерии длины периода",
+        "desc_observationperiod": "Filter Observation Periods by duration.",
+        "title_payerplan": "Добавить критерии длины периода",
+        "desc_payerplan": "Filter Payer Plan Periods by duration.",
+        "title_visit": "Добавить критерии продолжительности посещения",
+        "desc_visit": "Filter Visit Occurrences by duration."
+      },
+      "addNested": {
+        "title_era": "Добавить вложенные критерии ...",
+        "desc_era": "Apply criteria using the condition era as the index event",
+        "title_occurrence": "Добавить вложенные критерии ...",
+        "desc_occurrence": "Apply criteria using the condition occurrence as the index event.",
+        "title_death": "Добавить вложенные критерии ...",
+        "desc_death": "Apply criteria using the death occurrence as the index event.",
+        "title_deviceexposure": "Добавить вложенные критерии ...",
+        "desc_deviceexposure": "Apply criteria using the device exposure as the index event.",
+        "title_dose": "Добавить вложенные критерии ...",
+        "desc_dose": "Apply criteria using the dose era as the index event.",
+        "title_drug": "Добавить вложенные критерии ...",
+        "desc_drug": "Apply criteria using the drug era as the index event.",
+        "title_drugexposure": "Добавить вложенные критерии ...",
+        "desc_drugexposure": "Apply criteria using the drug exposure as the index event.",
+        "title_measurement": "Добавить вложенные критерии ...",
+        "desc_measurement": "Apply criteria using the measurement as the index event.",
+        "title_observation": "Добавить вложенные критерии ...",
+        "desc_observation": "Apply criteria using the observation as the index event",
+        "title_observationperiod": "Добавить вложенные критерии ...",
+        "desc_observationperiod": "Apply criteria using the observation period as the index event.",
+        "title_payerplan": "Добавить вложенные критерии ...",
+        "desc_payerplan": "Apply criteria using the payer plan period as the index event.",
+        "title_procedureoccurrence": "Добавить вложенные критерии ...",
+        "desc_procedureoccurrence": "Apply criteria using the procedure occurrence as the index event.",
+        "title_specimen": "Добавить вложенные критерии ...",
+        "desc_specimen": "Apply criteria using the specimen as the index event.",
+        "title_visit": "Добавить вложенные критерии ...",
+        "desc_visit": "Filter Visit Occurrences based on provider specialty."
+      },
+      "addAge": {
+        "title_occurrence": "Добавить возраст при возникновении",
+        "desc_occurrence": "Filter Condition Occurrences by age at occurrence.",
+        "title_death": "Добавить возраст при возникновении",
+        "desc_death": "Filter by age at death.",
+        "title_deviceexposure": "Добавить возраст при возникновении",
+        "desc_deviceexposure": "Filter Device Exposures by age at occurrence.",
+        "title_drugexposure": "Добавить возраст при возникновении",
+        "desc_drugexposure": "Filter Drug Exposures by age at occurrence.",
+        "title_measurement": "Добавить возраст при возникновении",
+        "desc_measurement": "Filter Measurements by age at occurrence.",
+        "title_observation": "Добавить возраст при возникновении",
+        "desc_observation": "Filter Condition Occurrences by age at occurrence.",
+        "title_procedureoccurrence": "Добавить возраст при возникновении",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences by age at occurrence.",
+        "title_specimen": "Добавить возраст при возникновении",
+        "desc_specimen": "Filter specimens by age at occurrence.",
+        "title_visit": "Добавить возраст при возникновении",
+        "desc_visit": "Filter Visit Occurrences by age at occurrence."
+      },
+      "addType": {
+        "title_occurrence": "Добавить тип условия",
+        "desc_occurrence": "Filter Condition Occurrences  by the Condition Type.",
+        "title_death": "Добавить критерии типа смерти",
+        "desc_death": "Filter by Death Type.",
+        "title_deviceexposure": "Добавить критерии типа устройства",
+        "desc_deviceexposure": "Filter Device Exposures by the Exposure Type.",
+        "title_drugexposure": "Добавить критерии типа устройства",
+        "desc_drugexposure": "Filter Drug Exposures by the Drug Type.",
+        "title_measurement": "Добавить критерии типа измерения",
+        "desc_measurement": "Filter Measurements by the Measurement Type.",
+        "title_observation": "Добавить критерии типа наблюдения",
+        "desc_observation": "Filter Observations by the Type.",
+        "title_observationperiod": "Добавить критерии типа периода",
+        "desc_observationperiod": "Filter Obsevation Periods by Type.",
+        "title_procedureoccurrence": "Добавить критерии типа процедуры",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences  by the Procedure Type.",
+        "title_specimen": "Добавить критерий типа образца",
+        "desc_specimen": "Filter Specimen by the Type.",
+        "title_visit": "Добавить критерии посещения типа",
+        "desc_visit": "Filter Condition Occurrences  by the Condition Type."
+      },
+      "addStopReason": {
+        "title_occurrence": "Add Stop Reason",
+        "desc_occurrence": "Filter Condition Occurrences  by the Stop Reason.",
+        "title_drugexposure": "Add Stop Reason Criteria",
+        "desc_drugexposure": "Filter Drug Exposures by the Stop Reason."
+      },
+      "addPayerConcept": {
+        "title_payerplan": "Add Payer Concept Criteria",
+        "desc_payerplan": "Filter Payer Plan Periods by Payer Concept."
+      },
+      "addPlanConcept": {
+        "title_payerplan": "Add Plan Concept Criteria",
+        "desc_payerplan": "Filter Payer Plan Periods by Plan Concept."
+      },
+      "addSponsorConcept": {
+        "title_payerplan": "Add Sponsor Concept Criteria",
+        "desc_payerplan": "Filter Payer Plan Periods by Sponsor Concept."
+      },
+      "addStopReasonConcept": {
+        "title_payerplan": "Add Stop Reason Concept Criteria",
+        "desc_payerplan": "Filter Payer Plan Periods by Stop Reason Concept."
+      },
+      "addPayerSourceConcept": {
+        "title_payerplan": "Add Payer Source Concept Criteria",
+        "desc_payerplan": "Filter Payer Plan Periods by Payer Source Concept."
+      },
+      "addPlanSourceConcept": {
+        "title_payerplan": "Add Plan Source Concept Criteria",
+        "desc_payerplan": "Filter Payer Plan Periods by Plan Source Concept."
+      },
+      "addSponsorSourceConcept": {
+        "title_payerplan": "Add Sponsor Source Concept Criteria",
+        "desc_payerplan": "Filter Payer Plan Periods by Sponsor Source Concept."
+      },
+      "addStopReasonSourceConcept": {
+        "title_payerplan": "Add Stop Reason Source Concept Criteria",
+        "desc_payerplan": "Filter Payer Plan Periods by Stop Reason Source Concept."
+      },
+      "addSourceConcept": {
+        "title_occurrence": "Add Condition Source Concept",
+        "desc_occurrence": "Filter Condition Occurrences  by the Condition Source Concept.",
+        "title_death": "Add Cause of Death Source Concept Criteria",
+        "desc_death": "Filter Death by the Death Source Concept.",
+        "title_deviceexposure": "Add Device Source Concept Criteria",
+        "desc_deviceexposure": "Filter Device Exposures by the Device Source Concept.",
+        "title_measurement": "Add Measurement Source Concept Criteria",
+        "desc_measurement": "Filter Measurements by the Measurement Source Concept.",
+        "title_observation": "Add Observation Source Concept Criteria",
+        "desc_observation": "Filter Observations by the Source Concept.",
+        "title_procedureoccurrence": "Add Procedure Source Concept Criteria",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences  by the Procedure Source Concept.",
+        "title_visit": "Add Visit Source Concept Criteria",
+        "desc_visit": "Filter Visit Occurrences by the Visit Source Concept."
+      },
+      "addProviderSpecialty": {
+        "title_occurrence": "Add Provider Specialty",
+        "desc_occurrence": "Filter Condition Occurrences based on provider specialty.",
+        "title_deviceexposure": "Add Provider Specialty Criteria",
+        "desc_deviceexposure": "Filter Device Exposures based on provider specialty.",
+        "title_drugexposure": "Add Provider Specialty Criteria",
+        "desc_drugexposure": "Filter Drug Exposures based on provider specialty.",
+        "title_measurement": "Add Provider Specialty Criteria",
+        "desc_measurement": "Filter Measurements based on provider specialty.",
+        "title_observation": "Add Provider Specialty Criteria",
+        "desc_observation": "Filter Observations based on provider specialty.",
+        "title_procedureoccurrence": "Add Provider Specialty Criteria",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences based on provider specialty.",
+        "title_visit": "Add Provider Specialty Criteria",
+        "desc_visit": "Filter Visit Occurrences based on provider specialty."
+      },
+      "addDate": {
+        "title_death": "Add Death Date Criteria",
+        "desc_death": "Filter Death by Date.",
+        "title_measurement": "Add Measurement Date Criteria",
+        "desc_measurement": "Filter Measurements by Date.",
+        "title_observation": "Add Observation Date Criteria",
+        "desc_observation": "Filter Observations by Date.",
+        "title_procedureoccurrence": "Add Start Date Criteria",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences by the Procedure Start Date.",
+        "title_specimen": "Add Specimen Date Criteria",
+        "desc_specimen": "Filter Specimen by Date."
+      },
+      "addUniqueId": {
+        "title_deviceexposure": "Add Unique Id Criteria",
+        "desc_deviceexposure": "Filter Device Exposures by Device Unique Id."
+      },
+      "addQuantity": {
+        "title_deviceexposure": "Add Quantity Criteria",
+        "desc_deviceexposure": "Filter Device Exposures by Quantity.",
+        "title_drugexposure": "Add Quantity Criteria",
+        "desc_drugexposure": "Filter Drug Exposures by Quantity.",
+        "title_procedureoccurrence": "Add Quantity Criteria",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences  by Quantity.",
+        "title_specimen": "Add Quantity Criteria",
+        "desc_specimen": "Filter Observations  by the Quantity."
+      },
+      "addUnit": {
+        "title_dose": "Add Dose Unit Criteria",
+        "desc_dose": "Filter Dose Eras by the Unit.",
+        "title_drugexposure": "Add Dose Unit Criteria",
+        "desc_drugexposure": "Filter Drug Exposures by Dose Unit.",
+        "title_measurement": "Add Unit Criteria",
+        "desc_measurement": "Filter Measurements by the Unit.",
+        "title_observation": "Add Unit Criteria",
+        "desc_observation": "Filter Observations by Unit.",
+        "title_specimen": "Add Unit Criteria",
+        "desc_specimen": "Filter Specimens by Unit."
+      },
+      "addValue": {
+        "title_dose": "Add Dose Value Criteria",
+        "desc_dose": "Filter Dose Eras by the dose value.",
+        "title_measurement": "Add Value as Number Criteria",
+        "desc_measurement": "Filter Measurements by Value as Number.",
+        "title_observation": "Add Value As Number Criteria",
+        "desc_observation": "Filter Observations  by the Value As Number."
+      },
+      "addRefills": {
+        "title_drugexposure": "Add Refills Criteria",
+        "desc_drugexposure": "Filter Drug Exposures by Refills."
+      },
+      "addDaysSupply": {
+        "title_drugexposure": "Add Days Supply Criteria",
+        "desc_drugexposure": "Filter Drug Exposures by Days Supply."
+      },
+      "addRoute": {
+        "title_drugexposure": "Add Route Criteria",
+        "desc_drugexposure": "Filter Drug Exposures by Route."
+      },
+      "addEffective": {
+        "title_drugexposure": "Add Effective Dose Criteria",
+        "desc_drugexposure": "Filter Drug Exposures by Effective Dose."
+      },
+      "addLotNumber": {
+        "title_drugexposure": "Add Lot Number Criteria",
+        "desc_drugexposure": "Filter Drug Exposures by Lot Number."
+      },
+      "addSource": {
+        "title_drugexposure": "Add Drug Source Concept Criteria",
+        "desc_drugexposure": "Filter Drug Exposures by the Drug Source Concept."
+      },
+      "addOperator": {
+        "title_measurement": "Add Operator Criteria",
+        "desc_measurement": "Filter Measurements by Operator."
+      },
+      "addValueAsString": {
+        "title_observation": "Add Value As String Criteria",
+        "desc_observation": "Filter Observations by the Value As String."
+      },
+      "addValueAsConcept": {
+        "title_measurement": "Add Value as Concept Criteria",
+        "desc_measurement": "Filter Measurements by Value as Concept.",
+        "title_observation": "Add Value as Concept Criteria",
+        "desc_observation": "Filter Observations by the Value As Concept."
+      },
+      "addAbnormal": {
+        "title_measurement": "Add Abnormal Result Criteria",
+        "desc_measurement": "Filter Measurements to include those which fall outside of normal range."
+      },
+      "addRangeLow": {
+        "title_measurement": "Add Low Range Criteria",
+        "desc_measurement": "Filter Measurements Low Range."
+      },
+      "addRangeHigh": {
+        "title_measurement": "Add High Range Criteria",
+        "desc_measurement": "Filter Measurements by the Measurement Type."
+      },
+      "addRangeLowRatio": {
+        "title_measurement": "Add Low Range Ratio Criteria",
+        "desc_measurement": "Filter Measurements by the Ratio of Value as Number to Range Low."
+      },
+      "addRangeHighRatio": {
+        "title_measurement": "Add High Range Ratio Criteria",
+        "desc_measurement": "Filter Measurements by the Ratio of Value as Number to Range High."
+      },
+      "addQualifier": {
+        "title_observation": "Add Qualifier Criteria",
+        "desc_observation": "Filter Observations by Qualifier."
+      },
+      "addUserDefined": {
+        "title_observationperiod": "Specify Start and End Dates",
+        "desc_observationperiod": "Specify start and end date to use for the Observation Period.",
+        "title_payerplan": "Specify Start and End Dates",
+        "desc_payerplan": "Specify start and end dates to use for Payer Plan Period."
+      },
+      "addModifier": {
+        "title_procedureoccurrence": "Add Modifier Criteria",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences  by the Modifier."
+      },
+      "addAnatomicSite": {
+        "title_specimen": "Add Anatomic Site Criteria",
+        "desc_specimen": "Filter Specimens by the Anatomic Site."
+      },
+      "addDiseaseStatus": {
+        "title_specimen": "Add Disease Status Criteria",
+        "desc_specimen": "Filter Specimens by the Disease Status."
+      },
+      "addSourceId": {
+        "title_specimen": "Add Source ID Criteria",
+        "desc_specimen": "Filter Specimens by the Source ID."
+      },
+
+      "addPlaceService": {
+        "title_visit": "Add Place of Service Criteria",
+        "desc_visit": "Filter Visit Occurrences based on Place of Service."
+      },
+      "addPlaceServiceLocation": {
+        "title_visit": "Add Place of Service Location Criteria",
+        "desc_visit": "Add Place of Service Distance Criteria"
+      },
+      "addPlaceServiceDistance": {
+        "title_visit": "Add Place of Service Location Criteria",
+        "desc_visit": "Filter Visit Occurrences based on distance from Place of Service to Patient."
+      }
+    },
+    "newEntityNames": {
+      "characterization": "Новая характеристика",
+      "featureAnalysis": "New Feature Analysis",
+      "cohortDefinition": "Анализ новых функций",
+      "incidenceRate": "Новый анализ уровня заболеваемости",
+      "pathway": "New Cohort Pathway",
+      "ple": "Новый анализ оценки уровня населения",
+      "conceptSet": "Новая концепция",
+      "plp": "Новый анализ прогноза уровня пациента"
+    }
+  },
+  "pages": {
+    "cohortDefinitionManager": {
+      "newCohortPlaceholder": "Новое определение когорты",
+      "saveCohortTitle": "Сохранить определение когорты",
+      "closeCohortTitle": "Закрыть определение когорты",
+      "createCopyCohortTitle": "Создать копию этого определения когорты",
+      "getLinkCohortTitle": "Получить ссылку на это определение когорты",
+      "configureAccessTitle": "Настроить доступ",
+      "deleteTitle": "Удалить",
+      "emptyName": "Название определения группы пусто",
+      "tabs": {
+        "definition": "Определение",
+        "conceptSets": "Наборы концепций",
+        "generation": "Поколение",
+        "reporting": "Составление отчетов",
+        "explore": "Проводить исследования",
+        "export": "Экспорт",
+        "messages": "Сообщения"
+      },
+      "panels": {
+        "noConceptSets": "Нет концепций для экспорта",
+        "import": "Импортировать",
+        "export": "Экспортировать",
+        "conceptSetExpression": "Понятие набора выражений",
+        "includedConcepts": "Включенные понятия",
+        "includedSourceCodes": "Включенные исходные коды",
+        "exportAllToCSV": "Экспортировать все наборы концепций в CSV",
+        "name": "Имя:",
+        "deleteConceptSet": "Удалить набор концепций",
+        "copyToConceptSetRepository": "Копировать в репозиторий наборов концепций",
+        "closeConceptSet": "Закрыть концепцию",
+        "conceptSetExpressionJSON": "Понятие набора выражений JSON",
+        "copyToClipboard": "Скопировать в буфер обмена",
+        "copiedToClipboard": "Скопировано в буфер обмена!",
+        "conceptIdentiferList": "Список идентификаторов концепций",
+        "includedConceptIdentiferList": "Включенный список идентификаторов концепций",
+        "conceptIdentifiers": "Идентификаторы концепции",
+        "sourceCodes": "Исходные коды",
+        "conceptSet": "Концепция Набор",
+        "repository": "Репозиторий",
+        "enterConceptIdentifiers": "Введите идентификаторы концепции",
+        "clickToClear": "нажмите, чтобы очистить",
+        "importConceptIdentifiers": "Идентификаторы концепций импорта",
+        "enterSourceCodes": "Введите исходные коды",
+        "importSourceCodes": "Импортировать исходные коды",
+        "importConceptSetExpression": "Импортировать выражение набора выражений",
+        "textView": "Просмотр текста",
+        "graphicalView": "Графический вид",
+        "json": "JSON",
+        "sql": "SQL",
+        "appendix_1": "Приложение 1: Определения концептуального набора",
+        "availableCDMSources": "Доступные источники CDM",
+        "sourceName": "Имя источника",
+        "generationStatus": "Статус поколения",
+        "people": "люди",
+        "records": "документация",
+        "generated": "Сформирован",
+        "generationDuration": "Продолжительность поколения",
+        "generate": "генерировать",
+        "cancel": "Отмена",
+        "hideReports": "Скрыть отчеты",
+        "viewReports": "Просмотр отчетов",
+        "reportSelections": "Выбор отчетов",
+        "fullAnalysis": "Полный анализ",
+        "quickAnalysis": "Быстрый анализ",
+        "utilization": "Использование"
+
       }
     }
   }

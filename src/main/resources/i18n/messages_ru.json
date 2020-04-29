@@ -88,6 +88,33 @@
     "eventEnds": "событие заканчивается"
   },
   "components": {
+    "textFilter": {
+      "startsWith": "Начиная с",
+      "contains": "Содержащие",
+      "endsWith": "Окончание с",
+      "notStartsWith": "Не начиная с",
+      "notContains": "Не содержащие",
+      "notEndsWith": "Не заканчивается"
+    },
+    "period": {
+      "starting": "начало",
+      "andEnding ": "и окончание"
+    },
+    "inclusionRuleEditor": {
+      "unnamedCriteria": "Безымянный критерий",
+      "copy": "копия",
+      "delete": "удалять"
+    },
+    "feasibilityReportViewer": {
+      "feasibilityReportViewerText_1": "Скорость матча",
+      "feasibilityReportViewerText_2": "Матчи",
+      "feasibilityReportViewerText_3": "Утерян от цензуры",
+      "feasibilityReportViewerText_4": "Всего событий",
+      "feasibilityReportViewerText_5": "Сводные статистические данные:",
+      "feasibilityReportViewerText_6": "Переключиться на вид истощения",
+      "feasibilityReportViewerText_7": "Переключиться на пересечение",
+      "feasibilityReportViewerText_8": "Не определены правила включения для этого определения когорты."
+    },
     "access-denied": {
       "forbidden": {
         "message1": "У вас нет доступа к этой функции.",
@@ -496,7 +523,42 @@
       "followingCriteria": "из следующих критериев:",
       "addCriteria": "Добавить критерии в группу ...",
       "withFollowingCriteria": "со следующими критериями события:",
-      "deleteCriteria": "Удалить критерии"
+      "deleteCriteria": "Удалить критерии",
+      "deleteGroup": "Удалить группу",
+      "with": "с",
+      "usingDistinct": "используя различные",
+      "usingAll": "используя все",
+      "occurrencesOf": "появления:",
+      "where": "где",
+      "between": "между",
+      "and": "а также",
+      "addAdditionalConstraint": "добавить дополнительное ограничение",
+      "criteriaGroupText_1": "ограничить одно и то же посещение",
+      "criteriaGroupText_2": "разрешить события за пределами периода наблюдения"
+    },
+    "customEraStrategy": {
+      "customEraStrategyText_1": "Continuous Exposure Persistence:",
+      "customEraStrategyText_2": "Specify a concept set that contains one or more drugs.  A drug era will be derived from all drug exposure events for any of the drugs within the concept set, using the specified persistence window as a maximum allowable gap in days between successive exposure events and adding a specified surveillance window to the final exposure event.  If no exposure event end date is provided, then an exposure event end date is inferred to be event start date + days supply in cases when days supply is available or event start date + 1 day otherwise. This event persistence assures that the cohort end date will be no greater than the drug era end date.",
+      "customEraStrategyText_3": "Concept set containing the drug(s) of interest:",
+      "customEraStrategyText_4": "Persistence window:  allow for a maximum of",
+      "customEraStrategyText_5": "Surveillance window: add ",
+      "customEraStrategyText_6": "days to the end of the era of persistence exposure as an additional period of surveillance prior to cohort exit.",
+      "customEraStrategyText_7": "Use days supply and exposure end date for exposure duration.",
+      "customEraStrategyText_8": "change",
+      "customEraStrategyText_9": "Force drug exposure days suply to: ",
+      "customEraStrategyText_10": "days."
+    },
+    "dateOffsetStrategy": {
+      "customEraStrategyText_1": "Fixed Duration Persistence:",
+      "customEraStrategyText_2": "The event end date is derived from adding a number of days to the event's start or end date. If an offset is added to the event's start date, all cohort episodes will have the same fixed duration (subject to further censoring).  If an offset is added to the event's end date, persons in the cohort may have varying cohort duration times due to the varying event durations (such as eras of persistent drug exposure or visit length of stay).  This event persistence assures that the cohort end date will be no greater than the selected index event date, plus the days offset.",
+      "customEraStrategyText_3": "Event date to offset from:",
+      "customEraStrategyText_4": "Number of days offset:",
+      "customEraStrategyText_5": "days"
+    },
+    "windowInput": {
+      "windowInputText_1": "All",
+      "windowInputText_2": "days",
+      "windowInputText_3": "and"
     },
     "demographicCriteria": {
       "addAttribute": "Добавить атрибут ...",
@@ -1258,6 +1320,14 @@
         "desc_censoring": "Find patients based on Specimen.",
         "desc_group": "Find patients based on specimen."
       },
+      "addLocationRegion": {
+        "title": "Add Location Region",
+        "desc_group": "Find patients within geographical area."
+      },
+      "addGroup": {
+        "title": "Add Group",
+        "desc_group": "Add a group to combine criteria using and/or relationships."
+      },
       "addVisit": {
         "title": "Добавить визит",
         "desc_initial": "Find patients based on visit information.",
@@ -1354,7 +1424,9 @@
         "title_specimen": "Добавить гендерные критерии",
         "desc_specimen": "Filter specimens based on Gender.",
         "title_visit": "Добавить гендерные критерии",
-        "desc_visit": "Filter Visit Occurrences based on Gender."
+        "desc_visit": "Filter Visit Occurrences based on Gender.",
+        "title_demographic": "Добавить гендерные критерии",
+        "desc_demographic": "Фильтровать события по полу."
       },
       "addStartDate": {
         "title_era": "Добавить критерии даты начала",
@@ -1374,7 +1446,9 @@
         "title_payerplan": "Добавить критерии даты начала",
         "desc_payerplan": "Filter Payer Plan Periods by Start Date.",
         "title_visit": "Добавить критерии даты начала",
-        "desc_visit": "Filter Visit Occurrences by the Condition Start Date."
+        "desc_visit": "Filter Visit Occurrences by the Condition Start Date.",
+        "title_demographic": "Добавить критерии даты начала",
+        "desc_demographic": "Фильтровать события по дате начала."
         
       },
       "addEndDate": {
@@ -1395,13 +1469,23 @@
         "title_payerplan": "Добавить критерии даты окончания периода",
         "desc_payerplan": "Filter Payer Plan Periods by End Date.",
         "title_visit": "Добавить критерии даты окончания",
-        "desc_visit": "Filter Visit Occurrences  by the Condition End Date."
+        "desc_visit": "Filter Visit Occurrences  by the Condition End Date.",
+        "title_demographic": "Добавить критерий даты окончания мероприятия",
+        "desc_demographic": "Фильтровать события по дате окончания."
       },
       "addConditonCount": {
         "title_era": "Добавить критерии подсчета эры",
         "desc_era": "Filter Condition Eras by the Condition Count.",
         "title_drug": "Добавить критерий подсчета эры",
         "desc_drug": "Filter Drug Eras by the Exposure Count."
+      },
+      "addRace": {
+        "title_demographic": "Add Race Criteria",
+        "desc_demographic": "Filter events based on Race."
+      },
+      "addEthnicity": {
+        "title_demographic": "Add Ethnicity Criteria",
+        "desc_demographic": "Filter events based on Ethnicity."
       },
       "addLength": {
         "title_era": "Добавить критерии длины эры",
@@ -1465,7 +1549,9 @@
         "title_specimen": "Добавить возраст при возникновении",
         "desc_specimen": "Filter specimens by age at occurrence.",
         "title_visit": "Добавить возраст при возникновении",
-        "desc_visit": "Filter Visit Occurrences by age at occurrence."
+        "desc_visit": "Filter Visit Occurrences by age at occurrence.",
+        "title_demographic": "Add Age Criteria",
+        "desc_demographic": "Filter events based on age."
       },
       "addType": {
         "title_occurrence": "Добавить тип условия",

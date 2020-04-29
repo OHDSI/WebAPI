@@ -83,6 +83,33 @@
     "eventEnds": "event ends"
   },
   "components": {
+    "textFilter": {
+      "startsWith": "Starting With",
+      "contains": "Containing",
+      "endsWith": "Ending With",
+      "notStartsWith": "Not Starting With",
+      "notContains": "Not Containing",
+      "notEndsWith": "Not Ending With"
+    },
+    "period": {
+      "starting": "starting",
+      "andEnding ": "and ending"
+    },
+    "inclusionRuleEditor": {
+      "unnamedCriteria": "Unnamed Criteria",
+      "copy": "Copy",
+      "delete": "Delete"
+    },
+    "feasibilityReportViewer": {
+      "feasibilityReportViewerText_1": "Match Rate",
+      "feasibilityReportViewerText_2": "Matches",
+      "feasibilityReportViewerText_3": "Lost from censoring",
+      "feasibilityReportViewerText_4": "Total Events",
+      "feasibilityReportViewerText_5": "Summary Statistics:",
+      "feasibilityReportViewerText_6": "Switch to attrition view",
+      "feasibilityReportViewerText_7": "Switch to intersect view",
+      "feasibilityReportViewerText_8": "No inclusion rules specified for this cohort definition."
+    },
     "access-denied": {
       "forbidden": {
         "message1": "You do not have access to this feature.",
@@ -488,7 +515,50 @@
       "followingCriteria": "of the following criteria:",
       "addCriteria": "Add criteria to group...",
       "withFollowingCriteria": "with the following event criteria:",
-      "deleteCriteria": "Delete Criteria"
+      "deleteCriteria": "Delete Criteria",
+      "deleteGroup": "Delete Group",
+      "with": "with",
+      "usingDistinct": "using distinct",
+      "usingAll": "using all",
+      "occurrencesOf": "occurrences of:",
+      "where": "where",
+      "between": "between",
+      "and": "and",
+      "addAdditionalConstraint": "add additional constraint",
+      "criteriaGroupText_1": "restrict to the same visit occurrence",
+      "criteriaGroupText_2": "allow events from outside observation period"
+    },
+    "customEraStrategy": {
+      "customEraStrategyText_1": "Continuous Exposure Persistence:",
+      "customEraStrategyText_2": "Specify a concept set that contains one or more drugs.  A drug era will be derived from all drug exposure events for any of the drugs within the concept set, using the specified persistence window as a maximum allowable gap in days between successive exposure events and adding a specified surveillance window to the final exposure event.  If no exposure event end date is provided, then an exposure event end date is inferred to be event start date + days supply in cases when days supply is available or event start date + 1 day otherwise. This event persistence assures that the cohort end date will be no greater than the drug era end date.",
+      "customEraStrategyText_3": "Concept set containing the drug(s) of interest:",
+      "customEraStrategyText_4": "Persistence window:  allow for a maximum of",
+      "customEraStrategyText_5": "Surveillance window: add ",
+      "customEraStrategyText_6": "days to the end of the era of persistence exposure as an additional period of surveillance prior to cohort exit.",
+      "customEraStrategyText_7": "Use days supply and exposure end date for exposure duration.",
+      "customEraStrategyText_8": "change",
+      "customEraStrategyText_9": "Force drug exposure days suply to: ",
+      "customEraStrategyText_10": "days."
+    },
+    "dateOffsetStrategy": {
+      "dateOffsetStrategyText_1": "Fixed Duration Persistence:",
+      "dateOffsetStrategyText_2": "The event end date is derived from adding a number of days to the event's start or end date. If an offset is added to the event's start date, all cohort episodes will have the same fixed duration (subject to further censoring).  If an offset is added to the event's end date, persons in the cohort may have varying cohort duration times due to the varying event durations (such as eras of persistent drug exposure or visit length of stay).  This event persistence assures that the cohort end date will be no greater than the selected index event date, plus the days offset.",
+      "dateOffsetStrategyText_3": "Event date to offset from:",
+      "dateOffsetStrategyText_4": "Number of days offset:",
+      "dateOffsetStrategyText_5": "days"
+    },
+    "windowInput": {
+      "windowInputText_1": "All",
+      "windowInputText_2": "days",
+      "windowInputText_3": "and"
+    },
+    "windowedCriteria": {
+      "windowedCriteriaText_1": "where",
+      "windowedCriteriaText_2": "between",
+      "windowedCriteriaText_3": "and",
+      "windowedCriteriaText_4": "add additional constraint",
+      "windowedCriteriaText_5": "restrict to the same visit occurrence",
+      "windowedCriteriaText_6": "ignore observation period"
     },
     "demographicCriteria": {
       "addAttribute": "Add attribute...",
@@ -1119,6 +1189,14 @@
         "desc_censoring": "Find patients based on Specimen.",
         "desc_group": "Find patients based on specimen."
       },
+      "addLocationRegion": {
+        "title": "Add Location Region",
+        "desc_group": "Find patients within geographical area."
+      },
+      "addGroup": {
+        "title": "Add Group",
+        "desc_group": "Add a group to combine criteria using and/or relationships."
+      },
       "addVisit": {
         "title": "Add Visit",
         "desc_initial": "Find patients based on visit information.",
@@ -1215,7 +1293,9 @@
         "title_specimen": "Add Gender Criteria",
         "desc_specimen": "Filter specimens based on Gender.",
         "title_visit": "Add Gender Criteria",
-        "desc_visit": "Filter Visit Occurrences based on Gender."
+        "desc_visit": "Filter Visit Occurrences based on Gender.",
+        "title_demographic": "Add Gender Criteria",
+        "desc_demographic": "Filter events based on Gender."
       },
       "addStartDate": {
         "title_era": "Add Start Date Criteria",
@@ -1235,7 +1315,9 @@
         "title_payerplan": "Add Period Start Date Criteria",
         "desc_payerplan": "Filter Payer Plan Periods by Start Date.",
         "title_visit": "Add Start Date Criteria",
-        "desc_visit": "Filter Visit Occurrences by the Condition Start Date."
+        "desc_visit": "Filter Visit Occurrences by the Condition Start Date.",
+        "title_demographic": "Add Start Date Criteria",
+        "desc_demographic": "Filter events based by Start Date."
         
       },
       "addEndDate": {
@@ -1256,13 +1338,23 @@
         "title_payerplan": "Add Period End Date Criteria",
         "desc_payerplan": "Filter Payer Plan Periods by End Date.",
         "title_visit": "Add End Date Criteria",
-        "desc_visit": "Filter Visit Occurrences  by the Condition End Date."
+        "desc_visit": "Filter Visit Occurrences  by the Condition End Date.",
+        "title_demographic": "Add Event End Date Criteria",
+        "desc_demographic": "Filter events based by End Date."
       },
       "addConditonCount": {
         "title_era": "Add Era Conditon Count Criteria",
         "desc_era": "Filter Condition Eras by the Condition Count.",
         "title_drug": "Add Era Exposure Count Criteria",
         "desc_drug": "Filter Drug Eras by the Exposure Count."
+      },
+      "addRace": {
+        "title_demographic": "Add Race Criteria",
+        "desc_demographic": "Filter events based on Race."
+      },
+      "addEthnicity": {
+        "title_demographic": "Add Ethnicity Criteria",
+        "desc_demographic": "Filter events based on Ethnicity."
       },
       "addLength": {
         "title_era": "Add Era Length Criteria",
@@ -1326,7 +1418,9 @@
         "title_specimen": "Add Age at Occurrence Criteria",
         "desc_specimen": "Filter specimens by age at occurrence.",
         "title_visit": "Add Age at Occurrence Criteria",
-        "desc_visit": "Filter Visit Occurrences by age at occurrence."
+        "desc_visit": "Filter Visit Occurrences by age at occurrence.",
+        "title_demographic": "Add Age Criteria",
+        "desc_demographic": "Filter events based on age."
       },
       "addType": {
         "title_occurrence": "Add Condition Type",
@@ -1550,7 +1644,6 @@
         "title_specimen": "Add Source ID Criteria",
         "desc_specimen": "Filter Specimens by the Source ID."
       },
-
       "addPlaceService": {
         "title_visit": "Add Place of Service Criteria",
         "desc_visit": "Filter Visit Occurrences based on Place of Service."

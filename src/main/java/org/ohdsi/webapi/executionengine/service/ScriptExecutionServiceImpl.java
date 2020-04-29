@@ -4,11 +4,15 @@ import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisReques
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestStatusDTO;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
 import com.odysseusinc.arachne.execution_engine_common.util.CommonFileUtils;
+import java.nio.file.Path;
+import java.util.zip.ZipFile;
 import jersey.repackaged.com.google.common.collect.ImmutableList;
 import jersey.repackaged.com.google.common.collect.ImmutableMap;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
@@ -124,11 +128,11 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
             File tempDir = Files.createTempDirectory(TEMPDIR_PREFIX).toFile();
             try {
                 saveFilesToTempDir(tempDir, files);
-                try(MultiPart multiPart = buildRequest(buildAnalysisRequest(executionId, dataSourceData, updatePassword, executableFilename), tempDir)) {
+                try (MultiPart multiPart = buildRequest(buildAnalysisRequest(executionId, dataSourceData, updatePassword, executableFilename), tempDir)) {
 
                     File zipFile = new File(tempDir, REQUEST_FILENAME);
                     CommonFileUtils.compressAndSplit(tempDir, zipFile, null);
-                    try(InputStream in = new FileInputStream(zipFile)) {
+                    try (InputStream in = new FileInputStream(zipFile)) {
                         StreamDataBodyPart filePart = new StreamDataBodyPart("file", in, zipFile.getName());
                         multiPart.bodyPart(filePart);
 
@@ -145,7 +149,7 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
             } finally {
                 FileUtils.deleteQuietly(tempDir);
             }
-        }catch (ZipException | IOException e) {
+        } catch (ZipException | IOException e) {
             log.error("Failed to compress request files", e);
             throw new InternalServerErrorException(e);
         }
@@ -159,7 +163,7 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
 
     private void saveFilesToTempDir(File tempDir, List<AnalysisFile> files) {
         files.forEach(file -> {
-            try(OutputStream out = new FileOutputStream(new File(tempDir, file.getFileName()))) {
+            try (OutputStream out = new FileOutputStream(new File(tempDir, file.getFileName()))) {
                 IOUtils.write(file.getContents(), out);
             } catch (IOException e) {
                 log.error("Cannot build request to ExecutionEngine", e);
@@ -273,15 +277,51 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
 
         try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(archive))) {
             List<AnalysisResultFile> outputFiles = analysisExecution.getResultFiles(); //outputFileRepository.findByExecutionId(analysisExecution.getId());
+
             for (AnalysisResultFile resultFile : outputFiles) {
-                ZipEntry entry = new ZipEntry(resultFile.getFileName());
-                entry.setSize(resultFile.getContents().length);
-                zos.putNextEntry(entry);
-                zos.write(resultFile.getContents());
-                zos.closeEntry();
+                if (isResultArchive(resultFile)) {
+                    addEntitiesFromZip(zos, resultFile, tempDirectory);
+                } else {
+                    addEntityFromFile(zos, resultFile);
+                }
             }
         }
 
         return archive;
+    }
+
+    private boolean isResultArchive(AnalysisResultFile resultFile) {
+
+        return StringUtils.endsWithIgnoreCase(FilenameUtils.getExtension(resultFile.getFileName()), "zip") &&
+               StringUtils.containsIgnoreCase(resultFile.getFileName(), "result");
+    }
+
+    private void addEntityFromFile(ZipOutputStream zos, AnalysisResultFile resultFile) throws IOException {
+
+        ZipEntry entry = new ZipEntry(resultFile.getFileName());
+        entry.setSize(resultFile.getContents().length);
+        zos.putNextEntry(entry);
+        zos.write(resultFile.getContents());
+        zos.closeEntry();
+    }
+
+    private void addEntitiesFromZip(ZipOutputStream zos, AnalysisResultFile resultFile, Path tempDirectory) throws IOException {
+
+        File zipFile = tempDirectory.resolve(resultFile.getFileName()).toFile();
+        FileUtils.writeByteArrayToFile(zipFile, resultFile.getContents());
+
+        try (ZipFile zin = new ZipFile(zipFile)) {
+            zin.stream().forEach(inEntry -> {
+                try {
+                    ZipEntry outEntry = new ZipEntry(inEntry.getName());
+                    outEntry.setSize(inEntry.getSize());
+                    zos.putNextEntry(outEntry);
+                    zos.write(IOUtils.toByteArray(zin.getInputStream(inEntry)));
+                    zos.closeEntry();
+                } catch (Exception ex) {
+                    logger.debug("Cannot repack zip entity{}", inEntry.getName(), ex);
+                }
+            });
+        }
     }
 }

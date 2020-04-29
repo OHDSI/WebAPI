@@ -62,6 +62,26 @@
       "STARTED": "STARTED"
     }
   },
+  "options": {
+    "atMost": "At most",
+    "exactly": "Exactly",
+    "atLeast": "At least",
+    "all": "All",
+    "before": "Before",
+    "after": "After",
+    "any": "Any",
+    "allEvents": "All events",
+    "earliestEvents": "Earliest event",
+    "latestEvents": "Latest event",
+    "yes": "Yes",
+    "no": "No",
+    "isAnyOf": "is any of",
+    "isNotAnyOf": "is not any of",
+    "indexStartDate": "index start date",
+    "indexEndDate": "index end date",
+    "eventStarts": "event starts",
+    "eventEnds": "event ends"
+  },
   "components": {
     "access-denied": {
       "forbidden": {
@@ -77,6 +97,15 @@
       "facets": {
         "lastModified": "Last modified",
         "author": "Author"
+      },
+      "table": {
+        "columns": {
+          "id": "ID",
+          "name": "Name",
+          "created": "Created",
+          "updated": "Updated",
+          "author": "Author"
+        }
       }
     },
     "filter-panel": {
@@ -143,6 +172,332 @@
       "submit": "Submit",
       "username": "Username",
       "wait": "Please wait..."
+    },
+    "atlasCohortEditor": {
+      "enterCohortPlaceholder": "Enter a cohort definition description here",
+      "importConceptSet": "Import Concept Set From Repository..."
+    },
+    "cohortExpressionEditor": { 
+      "cohortEntryEvents": "Cohort Entry Events",
+      "cohortEntryEventsText_1": "'Events are recorded time-stamped observations for the persons, such as drug exposures, conditions, procedures, measurements and visits. All events have a start date and end date, though some events may have a start date and end date with the same value (such as procedures or measurements).'",
+      "inclusionCriteria": "Inclusion Criteria",
+      "inclusionCriteriaText": "The qualifying cohort will be defined as all persons who have an initial event, satisfy the initial event inclusion criteria, and fulfill all additional qualifying inclusion criteria. Each qualifying inclusion criteria will be evaluated to determine the impact of the criteria on the attrition of persons from the initial cohort.",
+      "cohortExit": "Cohort Exit",
+      "cohortExitText_1": "For all qualifying events, there must be a specification of when each event ends presence in the cohort. By default, an event ends at the end of the observation period containing the qualifying initial event, but event end dates may be also be specified:",
+      "cohortExitTitle_1": "Event End Dates",
+      "cohortExitText_2": "The qualifying initial event can be set to end after a fixed time period relative to the event start or end date, or the end date can be based on the end of a continuous exposure to a set of drugs identified by a concept set.",
+      "cohortExitTitle_2": "Censoring Events",
+      "cohortExitText_3": "Criteria can be used to signal the end of an event.  If a censoring event is identified between a qualifying event's start and end date, the date of the censoring event will be used as the exit date.",
+      "cohortEntryEventsText_2": "Events having any of the following criteria:",
+      "addInitialEvent": "Add Initial Event",
+      "deleteCriteria": "Delete Criteria",
+      "cohortEntryEventsText_3": "with continuous observation of at least",
+      "cohortEntryEventsText_4": "days before and",
+      "cohortEntryEventsText_5": "days after event index date",
+      "cohortEntryEventsText_6": "Limit initial events to:",
+      "cohortEntryEventsText_7": "per person.",
+      "restrictInitialEventsTitle": "Restrict intial events to:",
+      "removeRestriction": "Remove initial event restriction",
+      "restrictInitialEventsButton": "Restrict initial events",
+
+      "inclusionCriteriaTitle" : "Inclusion Criteria",
+      "newInclusionCriteria": "New inclusion criteria",
+      "inclusionCriteriaText_1": "Limit qualifying events to:",
+
+      "cohortExitTitle": "Cohort Exit",
+      "eventPersistence": "Event Persistence:",
+      "censoringEvents": "Censoring Events:",
+      "cohortExitText_4": "Exit Cohort based on the following criteria:",
+      "addCensoringEvent": "Add Censoring Event",
+      "cohortExitText_5": "No censoring events selected.",
+
+      "cohortErasTitle": "Cohort Eras",
+      "cohortErasText_1": "Specify era collapse gap size:",
+      "cohortErasText_2": "Left censor cohort start dates to",
+      "cohortErasText_3": "Right censor cohort end dates to",
+      "addTrimmingOptions": "add trimming options..."
+    },
+    "conditionEra": {
+      "criteriaText_1": "a condition era of",
+      "addAttribute": "Add attribute...",
+      "attributeText_1": "for the first time in the person's history",
+      "attributeText_2": "era start is:",
+      "attributeText_3": "era end is:",
+      "attributeText_4": "with occurrence count",
+      "attributeText_5": "with era length",
+      "attributeText_6": "with age in years at era start",
+      "attributeText_7": "with age in years at era end",
+      "attributeText_8": "with a gender of:",
+      "attributeText_9": "days",
+      "anyConditionButton": "Any Condition",
+      "returnText_1": "The index date refers to the condition era of"
+    },
+    "conditionOccurrence": {
+      "conditionOccurrenceText_1": "a condition occurrence of",
+      "addAttribute": "Add attribute...",
+      "anyCondition": "Any Condition",
+      "conditionType": "Condition Type",
+      "conditionOccurrenceText_2": "for the first time in the person's history",
+      "conditionOccurrenceText_3": "occurrence start is:",
+      "conditionOccurrenceText_4": "occurrence end is:",
+      "conditionOccurrenceText_5": "with a Stop Reason",
+      "conditionOccurrenceText_6": "Condition Source Concept is",
+      "conditionOccurrenceText_7": "with age",
+      "conditionOccurrenceText_8": "with a gender of:",
+      "conditionOccurrenceText_9": "with a Provider Specialty of:",
+      "conditionOccurrenceText_10": "with a Visit occurrence of:"
+    },
+    "conditionDeath": {
+      "anyDeath": "Any Death",
+      "addAttribute": "Add attribute...",
+      "deathType": "Death type",
+      "conditionDeathText_1": "a death occurrence from",
+      "conditionDeathText_2": "occurrence start is:",
+      "conditionDeathText_3": "Death Source Concept is",
+      "conditionDeathText_4": "with age",
+      "conditionDeathText_5": "with a gender of:"
+    },
+    "conditionDevice": {
+      "anyDevice": "Any Device",
+      "addAttribute": "Add attribute...",
+      "deviceType": "Device type",
+      "conditionDeviceText_1": "a device exposure of",
+      "conditionDeviceText_2": "for the first time in the person's history",
+      "conditionDeviceText_3": "occurrence start is:",
+      "conditionDeviceText_4": "occurrence end is:",
+      "conditionDeviceText_5": "with a Unique Device ID",
+      "conditionDeviceText_6": "with quantity",
+      "conditionDeviceText_7": "Device Source Concept is",
+      "conditionDeviceText_8": "with age",
+      "conditionDeviceText_9": "with a gender of:",
+      "conditionDeviceText_10": "with a Provider Specialty of:",
+      "conditionDeviceText_11": "with a Visit occurrence of:"
+    },
+    "conditionDose": {
+      "anyDrug": "Any Drug",
+      "addAttribute": "Add attribute...",
+      "conditionDoseText_1": "a dose era of",
+      "conditionDoseText_2": "for the first time in the person's history",
+      "conditionDoseText_3": "era start is:",
+      "conditionDoseText_4": "era end is:",
+      "conditionDoseText_5": "with Unit:",
+      "conditionDoseText_6": "with dose value",
+      "conditionDoseText_7": "with era length",
+      "conditionDoseText_8": "with age in years at era start",
+      "conditionDoseText_9": "with age in years at era end",
+      "conditionDoseText_10": "with a gender of:"
+    },
+    "conditionDrug": {
+      "anyDrug": "Any Drug",
+      "addAttribute": "Add attribute...",
+      "conditionDrugText_1": "a drug era of",
+      "conditionDrugText_2": "for the first time in the person's history",
+      "conditionDrugText_3": "era start is:",
+      "conditionDrugText_4": "era end is:",
+      "conditionDrugText_5": "with exposure count",
+      "conditionDrugText_6": "with gap days of",
+      "conditionDrugText_7": "days",
+      "conditionDrugText_8": "with era length",
+      "conditionDrugText_9": "with age in years at era start",
+      "conditionDrugText_10": "with age in years at era end",
+      "conditionDrugText_11": "with a gender of:"
+    },
+    "conditionDrugExposure": {
+      "anyDrug": "Any Drug",
+      "addAttribute": "Add attribute...",
+      "drugType": "Drug type",
+      "conditionDrugExposureText_1": "a drug exposure of",
+      "conditionDrugExposureText_2": "for the first time in the person's history",
+      "conditionDrugExposureText_3": "occurrence start is:",
+      "conditionDrugExposureText_4": "occurrence end is:",
+      "conditionDrugExposureText_5": "with a Stop Reason",
+      "conditionDrugExposureText_6": "with Refills",
+      "conditionDrugExposureText_7": "with Quantity",
+      "conditionDrugExposureText_8": "with Days Supply",
+      "conditionDrugExposureText_9": "Route Concept is:",
+      "conditionDrugExposureText_10": "with Effective Drug Dose",
+      "conditionDrugExposureText_11": "Dose Unit is:",
+      "conditionDrugExposureText_12": "with a Lot Number",
+      "conditionDrugExposureText_13": "Drug Source Concept is:",
+      "conditionDrugExposureText_14": "with age",
+      "conditionDrugExposureText_15": "with a gender of:",
+      "conditionDrugExposureText_16": "with a Provider Specialty of:",
+      "conditionDrugExposureText_17": "with a Visit occurrence of:"
+    },
+    "conditionMeasurement": {
+      "anyMeasurement": "Any Measurement",
+      "addAttribute": "Add attribute...",
+      "measurementType": "Measurement type",
+      "conditionMeasurementText_1": "a measurement of",
+      "conditionMeasurementText_2": "for the first time in the person's history",
+      "conditionMeasurementText_3": "occurrence start is:",
+      "conditionMeasurementText_5": "Measurement Value Operator is:",
+      "conditionMeasurementText_6": "with value as number",
+      "conditionMeasurementText_7": "Value as Concept is:",
+      "conditionMeasurementText_8": "Unit is:",
+      "conditionMeasurementText_9": "with Range Low",
+      "conditionMeasurementText_10": "with Range Low Ratio",
+      "conditionMeasurementText_11": "with Range High",
+      "conditionMeasurementText_12": "with Range High Ratio",
+      "conditionMeasurementText_13": "with an abnormal result",
+      "conditionMeasurementText_14": "Measurement Source Concept is",
+      "conditionMeasurementText_15": "with age",
+      "conditionMeasurementText_16": "with a gender of:",
+      "conditionMeasurementText_17": "with a Provider Specialty of:",
+      "conditionMeasurementText_18": "with a Visit of:"
+    },
+    "conditionObservation": {
+      "anyObservation": "Any Observation",
+      "addAttribute": "Add attribute...",
+      "observationType": "Observation type",
+      "conditionObservationText_1": "an observation of",
+      "conditionObservationText_2": "for the first time in the person's history",
+      "conditionObservationText_3": "occurrence start is:",
+      "conditionObservationText_4": "with Value as Number",
+      "conditionObservationText_5": "with Value as String",
+      "conditionObservationText_6": "with Value as Concept:",
+      "conditionObservationText_7": "with Qualifier:",
+      "conditionObservationText_8": "with Unit:",
+      "conditionObservationText_9": "Observation Source Concept is:",
+      "conditionObservationText_10": "with age",
+      "conditionObservationText_11": "with a gender of:",
+      "conditionObservationText_12": "with a Provider Specialty of:",
+      "conditionObservationText_13": "with a Visit occurrence of:"
+    },
+    "conditionObservationPeriod": {
+      "addAttribute": "Add attribute...",
+      "conditionObservationText_1": "observation periods with the following criteria:",
+      "conditionObservationText_2": "limited to the patients first observation period",
+      "conditionObservationText_3": "using specified period:",
+      "conditionObservationText_4": "observation period start is:",
+      "conditionObservationText_5": "observation period end is:",
+      "conditionObservationText_6": "Period Type is:",
+      "conditionObservationText_7": "with age in years at period start",
+      "conditionObservationText_8": "with age in years at period end",
+      "conditionObservationText_9": "with period duration",
+      "conditionObservationText_10": "days."
+    },
+    "conditionPayerPlanPeriod": {
+      "anyPayer": "Any Payer",
+      "anyPlan": "Any Plan",
+      "anySponsor": "Any Sponsor",
+      "anyStopReason": "Any Stop Reason",
+      "anyPayerSource": "Any Payer Source",
+      "anyPlanSource": "Any Plan Source",
+      "anySponsorSource": "Any Sponsor Source",
+      "anyStopReasonSource": "Any Stop Reason Source",
+      "addAttribute": "Add attribute...",
+      "conditionPayerPlanText_1": "payer plan periods with the following criteria:",
+      "conditionPayerPlanText_2": "limited to the patients first payer plan period",
+      "conditionPayerPlanText_3": "with age at period start",
+      "conditionPayerPlanText_4": "with age at period end",
+      "conditionPayerPlanText_5": "with period duration",
+      "conditionPayerPlanText_6": "with a gender of:",
+      "conditionPayerPlanText_7": "using specified period",
+      "conditionPayerPlanText_8": "payer plan period start is:",
+      "conditionPayerPlanText_9": "payer plan period end is:",
+      "conditionPayerPlanText_10": "Payer Concept is",
+      "conditionPayerPlanText_11": "Plan Concept is",
+      "conditionPayerPlanText_12": "Sponsor Concept is",
+      "conditionPayerPlanText_13": "Stop Reason Concept is",
+      "conditionPayerPlanText_14": "Payer Source Concept is",
+      "conditionPayerPlanText_15": "Plan Source Concept is",
+      "conditionPayerPlanText_16": "Sponsor Source Concept is",
+      "conditionPayerPlanText_17": "Stop Reason Source Concept is",
+      "conditionPayerPlanText_18": "Note: Payer Plan Period criteria is only available in CDM v5.3 and later."
+    },
+    "conditionProcedureOccurrence": {
+      "addAttribute": "Add attribute...",
+      "anyProcedure": "Any Procedure",
+      "procedureType": "Procedure Type",
+      "conditionProcedureOccurrenceText_1": "a procedure occurrence of",
+      "conditionProcedureOccurrenceText_2": "for the first time in the person's history",
+      "conditionProcedureOccurrenceText_3": "occurrence start is:",
+      "conditionProcedureOccurrenceText_4": "Modifier is:",
+      "conditionProcedureOccurrenceText_5": "with quantity",
+      "conditionProcedureOccurrenceText_6": "Procedure Source Concept is:",
+      "conditionProcedureOccurrenceText_7": "with age:",
+      "conditionProcedureOccurrenceText_8": "with a gender of:",
+      "conditionProcedureOccurrenceText_9": "with a Provider Specialty of:",
+      "conditionProcedureOccurrenceText_10": "with a Visit occurrence of:"
+    },
+    "conditionSpecimen": {
+      "addAttribute": "Add attribute...",
+      "anySpecimen": "Any Specimen",
+      "specimenType": "Specimen Type",
+      "conditionSpecimeText_1": "a specimen of",
+      "conditionSpecimeText_2": "for the first time in the person's history",
+      "conditionSpecimeText_3": "occurrence start is:",
+      "conditionSpecimeText_4": "with Quantity",
+      "conditionSpecimeText_5": "with Unit:",
+      "conditionSpecimeText_6": "with Anatomic Site:",
+      "conditionSpecimeText_7": "with Disease Status:",
+      "conditionSpecimeText_8": "with Source ID",
+      "conditionSpecimeText_9": "with age",
+      "conditionSpecimeText_10": "with a gender of:"
+    },
+    "conditionVisit": {
+      "addAttribute": "Add attribute...",
+      "anyVisit": "Any visit",
+      "visitType": "Visit Type",
+      "anyLocation": "Any Location",
+      "conditionSpecimeText_1": "a visit occurrence of",
+      "conditionSpecimeText_2": "for the first time in the person's history",
+      "conditionSpecimeText_3": "occurrence start is:",
+      "conditionSpecimeText_4": "occurrence end is:",
+      "conditionSpecimeText_5": "Visit Source Concept is",
+      "conditionSpecimeText_6": "with visit duration",
+      "conditionSpecimeText_7": "with age",
+      "conditionSpecimeText_8": "with a gender of:",
+      "conditionSpecimeText_9": "with a Provider Specialty of:",
+      "conditionSpecimeText_10": "with a Place of Service of:",
+      "conditionSpecimeText_11": "with a Place of Service located in:",
+      "conditionSpecimeText_12": "with distance from a Place of Service to Patient"
+    },
+    "dateRange": {
+      "before": "Before",
+      "onOrBefore": "On or Before",
+      "on": "On",
+      "after": "After",
+      "onOrAfter": "On or After",
+      "between": "Between",
+      "notBetween": "Not Between",
+      "and": "and",
+      "placeholder": "YYYY-MM-DD"
+    },
+    "numericRange": {
+      "lessThan": "Less Than",
+      "lessOrEqualTo": "Less Or Equal To",
+      "equalTo": "EqualTo",
+      "greaterThan": "Greater Than",
+      "greaterOrEqualTo": "Greater or Equal To",
+      "between": "Between",
+      "notBetween": "Not Between"
+    },
+    "conceptPicker": {
+      "addButton": "Add",
+      "importButton": "Import",
+      "importConcepts": "Import Concepts",
+      "done": "Done",
+      "selectConcept": "Select concept",
+      "search": "Search",
+      "waitMessage": "Please wait while the Vocabulary Provider initalizes..."
+    },
+    "criteriaGroup": {
+      "having": "having",
+      "followingCriteria": "of the following criteria:",
+      "addCriteria": "Add criteria to group...",
+      "withFollowingCriteria": "with the following event criteria:",
+      "deleteCriteria": "Delete Criteria"
+    },
+    "demographicCriteria": {
+      "addAttribute": "Add attribute...",
+      "withAge": "with age",
+      "withGenderOf": "with a gender of:",
+      "withRaceOf": "with a race of:",
+      "withEthnicity": "with a ethnicity of:",
+      "occurrenceStart": "occurrence start is:",
+      "occurrenceEnd": "occurrence end is:"
     }
   },
   "facets": {
@@ -500,5 +855,633 @@
         "loading": "loading"
       }
     }
+  },
+  "cohortDefinitions": {
+    "title": "Cohort Definitions",
+    "newDefinition": "New Cohort",
+    "newDefinitionTitle": "Create a new cohort definition",
+    "closeYourCurrentCohort": "Please close your current cohort definition before creating a new one",
+    "cohort": {
+      "newCohortPlaceholder": "New Cohort Definition",
+      "saveCohortTitle": "Save cohort definition",
+      "closeCohortTitle": "Close cohort definition",
+      "createCopyCohortTitle": "Create a copy of this cohort definition",
+      "getLinkCohortTitle": "Get a link to this cohort definition",
+      "configureAccessTitle": "Configure access",
+      "deleteTitle": "Delete",
+      "emptyName": "Cohort Definition name is empty",
+      "tabs": {
+        "definition": "Definition",
+        "conceptSets": "Concept Sets",
+        "generation": "Generation",
+        "reporting": "Reporting",
+        "explore": "Explore",
+        "export": "Export",
+        "messages": "Messages"
+      },
+      "panels": {
+        "definition": {
+          "enterCohortPlaceholder": "Enter a cohort definition description here",
+          "importConceptSet": "Import Concept Set From Repository..."
+        },
+        "newConceptSet": "New Concept Set",
+        "import": "Import",
+        "exportAllToCSV": "Export All Concept Sets To CSV"
+      },
+      "modals": {
+        "analysisTypes": {
+          "title": "Analysis Types",
+          "bold_1": "Quick Analysis",
+          "text_1": "Runs minimal analysis to provide a quick overview of this cohort's year of birth, demographics, drug eras and condition eras. (estimated: 10 minutes)",
+          "bold_2": "Healthcare Utilization",
+          "text_2": "Runs analyses to provide Exposure, Visit and Drug Utilization reports. (estimated: 10 - 40 minutes)",
+          "bold_3": "Full Analysis",
+          "text_3": "Runs a complete set of characterization reports. (estimated: 60 minutes)"
+        },
+        "linkToCohortDefinition": {
+          "title": "Link to Cohort Definition",
+          "text_1": "This link can be used to access this cohort definition directly from the WebAPI from other tools like R as well as for importing across ATLAS instances."
+        },
+        "cohortDefinition": {
+          "title": "Cohort Definition",
+          "text_1": "A cohort is defined as the set of persons satisfying one or more inclusion criteria for a duration of time. One person may qualify for one cohort multiple times during non-overlapping time intervals. Cohorts are constructed in ATLAS by specifying cohort entry criteria and cohort exit criteria. Cohort entry criteria involve selecting one or more initial events, which determine the start date for cohort entry, and optionally specifying additional inclusion criteria which filter to the qualifying events. Cohort exit criteria are applied to each cohort entry record to determine the end date when the person’s episode no longer qualifies for the cohort."
+        },
+        "importConceptSet": {
+          "title": "Import Concept Set From Repository..."
+        }
+      }
+    },
+    "cohortId": "Cohort #",
+    "noConceptSets": "No concept sets to export",
+    "saveDefinitionBefore": "You must save the definition before you can export",
+    "const": {
+      "periods": {
+        "ww": "Weekly",
+        "mm": "Monthly",
+        "qq": "Quarterly",
+        "yy": "Yearly"
+      },
+      "periodType": "Period type",
+      "rollups": {
+        "rollupUtilizationVisit": "Visits",
+        "rollupUtilizationDrug": "Drugs"
+      }
+    }
+  },
+  "const": {
+    "eventsList": {
+      "addConditionEra": {
+        "title": "Add Condition Era",
+        "desc_initial": "Find patients with specific diagosis era.",
+        "desc_censoring": "Exit cohort based on diagosis era.",
+        "desc_group": "Find patients with specific condition era."
+      },
+      "addConditionOccurrence": {
+        "title": "Add Condition Occurrence",
+        "desc_initial": "Find patients with specific diagnoses.",
+        "desc_censoring": "Exit cohort based on  diagnoses.",
+        "desc_group": "Find patients with specific conditions."
+      },
+      "addDeath": {
+        "title": "Add Death",
+        "desc_initial": "Find patients based on death.",
+        "desc_censoring": "Exit cohort based on  death.",
+        "desc_group": "Find patients based on death."
+      },
+      "addDeviceExposure": {
+        "title": "Add Device Exposure",
+        "desc_initial": "Find patients based on device exposure.",
+        "desc_censoring": "Exit cohort based on  device exposure.",
+        "desc_group": "Find patients based on device exposure."
+      },
+      "addDoseEra": {
+        "title": "Add Dose Era",
+        "desc_initial": "Find patients with dose eras.",
+        "desc_censoring": "Exit cohort based on dose eras.",
+        "desc_group": "Find patients with dose eras."
+      },
+      "addDrugEra": {
+        "title": "Add Drug Era",
+        "desc_initial": "Find patients with with exposure to drugs over time.",
+        "desc_censoring": "Exit cohort based on drugs over time.",
+        "desc_group": "Find patients with drug eras."
+      },
+      "addDrugExposure": {
+        "title": "Add Drug Exposure",
+        "desc_initial": "Find patients with exposure to specific drugs or drug classes.",
+        "desc_censoring": "Exit cohort based on exposure to specific drugs or drug classes.",
+        "desc_group": "Find patients with exposure to specific drugs or drug classes."
+      },
+      "addMeasurement": {
+        "title": "Add Measurement",
+        "desc_initial": "Find patients based on Measurement.",
+        "desc_censoring": "Exit cohort based on Measurement.",
+        "desc_group": "Find patients based on measurements."
+      },
+      "addObservation": {
+        "title": "Add Observation",
+        "desc_initial": "Find patients based on observations.",
+        "desc_censoring": "Exit cohort based on lab tests or other observations.",
+        "desc_group": "Find patients based on observations."
+      },
+      "addObservationPeriod": {
+        "title": "Add Observation Period",
+        "desc_initial": "Find patients based on Observation Period.",
+        "desc_group": "Find patients based on observation periods."
+      },
+      "addPayerPlanPeriod": {
+        "title": "Add Payer Plan Period",
+        "desc_initial": "Find patients based on Payer Plan Period.",
+        "desc_censoring": "Find patients based on Payer Plan Period.",
+        "desc_group": "Find patients based on Payer Plan Period."
+      },
+      "addProcedureOccurrence": {
+        "title": "Add Procedure Occurrence",
+        "desc_initial": "Find patients that experienced a specific procedure.",
+        "desc_censoring": "Exit cohort based on procedures.",
+        "desc_group": "Find patients that experienced a specific procedure."
+      },
+      "addSpecimen": {
+        "title": "Add Specimen",
+        "desc_initial": "Find patients based on Specimen.",
+        "desc_censoring": "Find patients based on Specimen.",
+        "desc_group": "Find patients based on specimen."
+      },
+      "addVisit": {
+        "title": "Add Visit",
+        "desc_initial": "Find patients based on visit information.",
+        "desc_censoring": "Exit cohort based on visit information.",
+        "desc_group": "Find patients based on visit information.",
+        "title_occurrence": "Add Visit",
+        "desc_occurrence": "Filter Condition Occurrences based on visit occurrence of diagnosis.",
+        "title_deviceexposure": "Add Visit Criteria",
+        "desc_deviceexposure": "Filter Device Exposures based on visit occurrence of exposure.",
+        "title_drugexposure": "Add Visit Criteria",
+        "desc_drugexposure": "Filter Drug Exposures based on visit occurrence of drug exposure.",
+        "title_measurement": "Add Visit Criteria",
+        "desc_measurement": "Filter Measurements based on visit occurrence of measurement.",
+        "title_observation": "Add Visit Criteria",
+        "desc_observation": "Filter Observations based on visit occurrence of observation.",
+        "title_procedureoccurrence": "Add Visit Criteria",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences based on visit occurrence of procedure."
+      },
+      "addFirstDiagnosis": {
+        "title_era": "Add First Diagnosis Criteria",
+        "desc_era": "Limit Condition Eras to first diagnosis era in history.",
+        "title_occurrence": "Add First Diagnosis",
+        "desc_occurrence": "Limit Condition Occurrences to new diagnosis.",
+        "title_deviceexposure": "Add First Exposure Criteria",
+        "desc_deviceexposure": "Limit Device Exposures to first exposure in history.",
+        "title_dose": "Add First Exposure Criteria",
+        "desc_dose": "Limit Dose Era to new exposure.",
+        "title_drug": "Add First Exposure Criteria",
+        "desc_drug": "Limit Drug Eras to first exposure in history.",
+        "title_drugexposure": "Add First Exposure Criteria",
+        "desc_drugexposure": "Limit Drug Exposures to the first exposure in history.",
+        "title_measurement": "Add First Measure Criteria",
+        "desc_measurement": "Limit Measures to first occurrence in history.",
+        "title_observation": "Add First Observation Criteria",
+        "desc_observation": "Limit Observations to the first occurrence.",
+        "title_observationperiod": "First Observation Period Criteria",
+        "desc_observationperiod": "Limit Observation Period to first period in history.",
+        "title_payerplan": "First Payer Plan Period Criteria",
+        "desc_payerplan": "Limit Payer Plan Period to first period in history.",
+        "title_procedureoccurrence": "Add First Procedure Criteria",
+        "desc_procedureoccurrence": "Limit Procedure Occurrences to first procedure in history.",
+        "title_specimen": "Add First Occurrence Criteria",
+        "desc_specimen": "Limit Specimen to the first occurrence in history.",
+        "title_visit": "Add First Visit Criteria",
+        "desc_visit": "Limit Visit Occurrences to the first visit."
+      },
+      "addAgeAtStart": {
+        "title_era": "Add Age at Era Start Criteria",
+        "desc_era": "Filter Condition Eras by age at era start.",
+        "title_dose": "Add Age at Era Start Criteria",
+        "desc_dose": "Filter Drug Eras by age at era start.",
+        "title_drug": "Add Age at Era Start Criteria",
+        "desc_drug": "Filter Drug Eras by age at era start.",
+        "title_observationperiod": "Add Age at Start Criteria",
+        "desc_observationperiod": "Filter Periods by Age at Start.",
+        "title_payerplan": "Add Age at Start Criteria",
+        "desc_payerplan": "Filter Periods by Age at Start."
+      },
+      "addAgeAtEnd": {
+        "title_era": "Add Age at Era End Criteria",
+        "desc_era": "Filter Condition Eras by age at era end.",
+        "title_dose": "Add Age at Era End Criteria",
+        "desc_dose": "Filter Drug Eras by age at era end.",
+        "title_drug": "Add Age at Era End Criteria",
+        "desc_drug": "Filter Drug Eras by age at era end.",
+        "title_observationperiod": "Add Age at End Criteria",
+        "desc_observationperiod": "Filter Periods by age at End.",
+        "title_payerplan": "Add Age at End Criteria",
+        "desc_payerplan": "Filter Periods by Age at End."
+      },
+      "addGender": {
+        "title_era": "Add Gender Criteria",
+        "desc_era": "Filter Condition Eras based on Gender.",
+        "title_occurrence": "Add Gender",
+        "desc_occurrence": "Filter Condition Occurrences based on Gender.",
+        "title_death": "Add Gender Criteria",
+        "desc_death": "Filter Deaths based on Gender.",
+        "title_deviceexposure": "Add Gender Criteria",
+        "desc_deviceexposure": "Filter Device Exposures based on Gender.",
+        "title_dose": "Add Gender Criteria",
+        "desc_dose": "Filter Drug Eras based on Gender.",
+        "title_drug": "Add Gender Criteria",
+        "desc_drug": "Filter Drug Eras based on Gender.",
+        "title_drugexposure": "Add Gender Criteria",
+        "desc_drugexposure": "Filter Drug Exposures based on Gender.",
+        "title_measurement": "Add Gender Criteria",
+        "desc_measurement": "Filter Measurements based on Gender.",
+        "title_observation": "Add Gender Criteria",
+        "desc_observation": "Filter Observations based on Gender.",
+        "title_payerplan": "Add Gender Criteria",
+        "desc_payerplan": "Filter Payer Plan Periods based on Gender.",
+        "title_procedureoccurrence": "Add Gender Criteria",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences based on Gender.",
+        "title_specimen": "Add Gender Criteria",
+        "desc_specimen": "Filter specimens based on Gender.",
+        "title_visit": "Add Gender Criteria",
+        "desc_visit": "Filter Visit Occurrences based on Gender."
+      },
+      "addStartDate": {
+        "title_era": "Add Start Date Criteria",
+        "desc_era": "Filter Condition Eras by the Era Start Date.",
+        "title_occurrence": "Add Condition Start Date",
+        "desc_occurrence": "Filter Condition Occurrences by the Condition Start Date.",
+        "title_deviceexposure": "Add Start Date Criteria",
+        "desc_deviceexposure": "Filter Device Exposures by the Exposure Start Date.",
+        "title_dose": "Add Era Start Date Criteria",
+        "desc_dose": "Filter Dose Eras by the Era Start Date.",
+        "title_drug": "Add Era Start Date Criteria",
+        "desc_drug": "Filter Drug Eras by the Era Start Date.",
+        "title_drugexposure": "Add Start Date Criteria",
+        "desc_drugexposure": "Filter Drug Exposures by the Drug Exposure Start Date.",
+        "title_observationperiod": "Add Period Start Date Criteria",
+        "desc_observationperiod": "Filter Observation Periods by Start Date.",
+        "title_payerplan": "Add Period Start Date Criteria",
+        "desc_payerplan": "Filter Payer Plan Periods by Start Date.",
+        "title_visit": "Add Start Date Criteria",
+        "desc_visit": "Filter Visit Occurrences by the Condition Start Date."
+        
+      },
+      "addEndDate": {
+        "title_era": "Add End Date Criteria",
+        "desc_era": "Filter Condition Eras by the Era End Date",
+        "title_occurrence": "Add Condition End Date",
+        "desc_occurrence": "Filter Condition Occurrences by the Condition End Date.",
+        "title_deviceexposure": "Add End Date Criteria",
+        "desc_deviceexposure": "Filter Device Exposures by the Exposure End Date.",
+        "title_dose": "Add Era End Date Criteria",
+        "desc_dose": "Filter Dose Eras  by the Era End Date",
+        "title_drug": "Add Era End Date Criteria",
+        "desc_drug": "Filter Drug Eras  by the Era End Date.",
+        "title_drugexposure": "Add End Date Criteria",
+        "desc_drugexposure": "Filter Drug Exposures  by the Drug Exposure End Date.",
+        "title_observationperiod": "Add Period End Date Criteria",
+        "desc_observationperiod": "Filter Observation Periods by End Date.",
+        "title_payerplan": "Add Period End Date Criteria",
+        "desc_payerplan": "Filter Payer Plan Periods by End Date.",
+        "title_visit": "Add End Date Criteria",
+        "desc_visit": "Filter Visit Occurrences  by the Condition End Date."
+      },
+      "addConditonCount": {
+        "title_era": "Add Era Conditon Count Criteria",
+        "desc_era": "Filter Condition Eras by the Condition Count.",
+        "title_drug": "Add Era Exposure Count Criteria",
+        "desc_drug": "Filter Drug Eras by the Exposure Count."
+      },
+      "addLength": {
+        "title_era": "Add Era Length Criteria",
+        "desc_era": "Filter Condition Eras by the Era duration.",
+        "title_dose": "Add Era Length Criteria",
+        "desc_dose": "Filter Drug Eras by the Era duration.",
+        "title_drug": "Add Era Length Criteria",
+        "desc_drug": "Filter Drug Eras by the Era duration.",
+        "title_observationperiod": "Add Period Length Criteria",
+        "desc_observationperiod": "Filter Observation Periods by duration.",
+        "title_payerplan": "Add Period Length Criteria",
+        "desc_payerplan": "Filter Payer Plan Periods by duration.",
+        "title_visit": "Add Visit Length Criteria",
+        "desc_visit": "Filter Visit Occurrences by duration."
+      },
+      "addNested": {
+        "title_era": "Add Nested Criteria...",
+        "desc_era": "Apply criteria using the condition era as the index event",
+        "title_occurrence": "Add Nested Criteria...",
+        "desc_occurrence": "Apply criteria using the condition occurrence as the index event.",
+        "title_death": "Add Nested Criteria...",
+        "desc_death": "Apply criteria using the death occurrence as the index event.",
+        "title_deviceexposure": "Add Nested Criteria...",
+        "desc_deviceexposure": "Apply criteria using the device exposure as the index event.",
+        "title_dose": "Add Nested Criteria...",
+        "desc_dose": "Apply criteria using the dose era as the index event.",
+        "title_drug": "Add Nested Criteria...",
+        "desc_drug": "Apply criteria using the drug era as the index event.",
+        "title_drugexposure": "Add Nested Criteria...",
+        "desc_drugexposure": "Apply criteria using the drug exposure as the index event.",
+        "title_measurement": "Add Nested Criteria...",
+        "desc_measurement": "Apply criteria using the measurement as the index event.",
+        "title_observation": "Add Nested Criteria...",
+        "desc_observation": "Apply criteria using the observation as the index event",
+        "title_observationperiod": "Add Nested Criteria...",
+        "desc_observationperiod": "Apply criteria using the observation period as the index event.",
+        "title_payerplan": "Add Nested Criteria...",
+        "desc_payerplan": "Apply criteria using the payer plan period as the index event.",
+        "title_procedureoccurrence": "Add Nested Criteria...",
+        "desc_procedureoccurrence": "Apply criteria using the procedure occurrence as the index event.",
+        "title_specimen": "Add Nested Criteria...",
+        "desc_specimen": "Apply criteria using the specimen as the index event.",
+        "title_visit": "Add Nested Criteria...",
+        "desc_visit": "Filter Visit Occurrences based on provider specialty."
+      },
+      "addAge": {
+        "title_occurrence": "Add Age at Occurrence",
+        "desc_occurrence": "Filter Condition Occurrences by age at occurrence.",
+        "title_death": "Add Age at Occurrence Criteria",
+        "desc_death": "Filter by age at death.",
+        "title_deviceexposure": "Add Age at Occurrence Criteria",
+        "desc_deviceexposure": "Filter Device Exposures by age at occurrence.",
+        "title_drugexposure": "Add Age at Occurrence Criteria",
+        "desc_drugexposure": "Filter Drug Exposures by age at occurrence.",
+        "title_measurement": "Add Age at Occurrence Criteria",
+        "desc_measurement": "Filter Measurements by age at occurrence.",
+        "title_observation": "Add Age at Occurrence Criteria",
+        "desc_observation": "Filter Condition Occurrences by age at occurrence.",
+        "title_procedureoccurrence": "Add Age at Occurrence Criteria",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences by age at occurrence.",
+        "title_specimen": "Add Age at Occurrence Criteria",
+        "desc_specimen": "Filter specimens by age at occurrence.",
+        "title_visit": "Add Age at Occurrence Criteria",
+        "desc_visit": "Filter Visit Occurrences by age at occurrence."
+      },
+      "addType": {
+        "title_occurrence": "Add Condition Type",
+        "desc_occurrence": "Filter Condition Occurrences  by the Condition Type.",
+        "title_death": "Add Death Type Criteria",
+        "desc_death": "Filter by Death Type.",
+        "title_deviceexposure": "Add Device Type Criteria",
+        "desc_deviceexposure": "Filter Device Exposures by the Exposure Type.",
+        "title_drugexposure": "Add Drug Type Criteria",
+        "desc_drugexposure": "Filter Drug Exposures by the Drug Type.",
+        "title_measurement": "Add Measurement Type Criteria",
+        "desc_measurement": "Filter Measurements by the Measurement Type.",
+        "title_observation": "Add Observation Type Criteria",
+        "desc_observation": "Filter Observations by the Type.",
+        "title_observationperiod": "Add Period Type Criteria",
+        "desc_observationperiod": "Filter Obsevation Periods by Type.",
+        "title_procedureoccurrence": "Add Procedure Type Criteria",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences  by the Procedure Type.",
+        "title_specimen": "Add Specimen Type Criteria",
+        "desc_specimen": "Filter Specimen by the Type.",
+        "title_visit": "Add Visit Type Criteria",
+        "desc_visit": "Filter Condition Occurrences  by the Condition Type."
+      },
+      "addStopReason": {
+        "title_occurrence": "Add Stop Reason",
+        "desc_occurrence": "Filter Condition Occurrences  by the Stop Reason.",
+        "title_drugexposure": "Add Stop Reason Criteria",
+        "desc_drugexposure": "Filter Drug Exposures by the Stop Reason."
+      },
+      "addPayerConcept": {
+        "title_payerplan": "Add Payer Concept Criteria",
+        "desc_payerplan": "Filter Payer Plan Periods by Payer Concept."
+      },
+      "addPlanConcept": {
+        "title_payerplan": "Add Plan Concept Criteria",
+        "desc_payerplan": "Filter Payer Plan Periods by Plan Concept."
+      },
+      "addSponsorConcept": {
+        "title_payerplan": "Add Sponsor Concept Criteria",
+        "desc_payerplan": "Filter Payer Plan Periods by Sponsor Concept."
+      },
+      "addStopReasonConcept": {
+        "title_payerplan": "Add Stop Reason Concept Criteria",
+        "desc_payerplan": "Filter Payer Plan Periods by Stop Reason Concept."
+      },
+      "addPayerSourceConcept": {
+        "title_payerplan": "Add Payer Source Concept Criteria",
+        "desc_payerplan": "Filter Payer Plan Periods by Payer Source Concept."
+      },
+      "addPlanSourceConcept": {
+        "title_payerplan": "Add Plan Source Concept Criteria",
+        "desc_payerplan": "Filter Payer Plan Periods by Plan Source Concept."
+      },
+      "addSponsorSourceConcept": {
+        "title_payerplan": "Add Sponsor Source Concept Criteria",
+        "desc_payerplan": "Filter Payer Plan Periods by Sponsor Source Concept."
+      },
+      "addStopReasonSourceConcept": {
+        "title_payerplan": "Add Stop Reason Source Concept Criteria",
+        "desc_payerplan": "Filter Payer Plan Periods by Stop Reason Source Concept."
+      },
+      "addSourceConcept": {
+        "title_occurrence": "Add Condition Source Concept",
+        "desc_occurrence": "Filter Condition Occurrences  by the Condition Source Concept.",
+        "title_death": "Add Cause of Death Source Concept Criteria",
+        "desc_death": "Filter Death by the Death Source Concept.",
+        "title_deviceexposure": "Add Device Source Concept Criteria",
+        "desc_deviceexposure": "Filter Device Exposures by the Device Source Concept.",
+        "title_measurement": "Add Measurement Source Concept Criteria",
+        "desc_measurement": "Filter Measurements by the Measurement Source Concept.",
+        "title_observation": "Add Observation Source Concept Criteria",
+        "desc_observation": "Filter Observations by the Source Concept.",
+        "title_procedureoccurrence": "Add Procedure Source Concept Criteria",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences  by the Procedure Source Concept.",
+        "title_visit": "Add Visit Source Concept Criteria",
+        "desc_visit": "Filter Visit Occurrences by the Visit Source Concept."
+      },
+      "addProviderSpecialty": {
+        "title_occurrence": "Add Provider Specialty",
+        "desc_occurrence": "Filter Condition Occurrences based on provider specialty.",
+        "title_deviceexposure": "Add Provider Specialty Criteria",
+        "desc_deviceexposure": "Filter Device Exposures based on provider specialty.",
+        "title_drugexposure": "Add Provider Specialty Criteria",
+        "desc_drugexposure": "Filter Drug Exposures based on provider specialty.",
+        "title_measurement": "Add Provider Specialty Criteria",
+        "desc_measurement": "Filter Measurements based on provider specialty.",
+        "title_observation": "Add Provider Specialty Criteria",
+        "desc_observation": "Filter Observations based on provider specialty.",
+        "title_procedureoccurrence": "Add Provider Specialty Criteria",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences based on provider specialty.",
+        "title_visit": "Add Provider Specialty Criteria",
+        "desc_visit": "Filter Visit Occurrences based on provider specialty."
+      },
+      "addDate": {
+        "title_death": "Add Death Date Criteria",
+        "desc_death": "Filter Death by Date.",
+        "title_measurement": "Add Measurement Date Criteria",
+        "desc_measurement": "Filter Measurements by Date.",
+        "title_observation": "Add Observation Date Criteria",
+        "desc_observation": "Filter Observations by Date.",
+        "title_procedureoccurrence": "Add Start Date Criteria",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences by the Procedure Start Date.",
+        "title_specimen": "Add Specimen Date Criteria",
+        "desc_specimen": "Filter Specimen by Date."
+      },
+      "addUniqueId": {
+        "title_deviceexposure": "Add Unique Id Criteria",
+        "desc_deviceexposure": "Filter Device Exposures by Device Unique Id."
+      },
+      "addQuantity": {
+        "title_deviceexposure": "Add Quantity Criteria",
+        "desc_deviceexposure": "Filter Device Exposures by Quantity.",
+        "title_drugexposure": "Add Quantity Criteria",
+        "desc_drugexposure": "Filter Drug Exposures by Quantity.",
+        "title_procedureoccurrence": "Add Quantity Criteria",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences  by Quantity.",
+        "title_specimen": "Add Quantity Criteria",
+        "desc_specimen": "Filter Observations  by the Quantity."
+      },
+      "addUnit": {
+        "title_dose": "Add Dose Unit Criteria",
+        "desc_dose": "Filter Dose Eras by the Unit.",
+        "title_drugexposure": "Add Dose Unit Criteria",
+        "desc_drugexposure": "Filter Drug Exposures by Dose Unit.",
+        "title_measurement": "Add Unit Criteria",
+        "desc_measurement": "Filter Measurements by the Unit.",
+        "title_observation": "Add Unit Criteria",
+        "desc_observation": "Filter Observations by Unit.",
+        "title_specimen": "Add Unit Criteria",
+        "desc_specimen": "Filter Specimens by Unit."
+      },
+      "addValue": {
+        "title_dose": "Add Dose Value Criteria",
+        "desc_dose": "Filter Dose Eras by the dose value.",
+        "title_measurement": "Add Value as Number Criteria",
+        "desc_measurement": "Filter Measurements by Value as Number.",
+        "title_observation": "Add Value As Number Criteria",
+        "desc_observation": "Filter Observations  by the Value As Number."
+      },
+      "addRefills": {
+        "title_drugexposure": "Add Refills Criteria",
+        "desc_drugexposure": "Filter Drug Exposures by Refills."
+      },
+      "addDaysSupply": {
+        "title_drugexposure": "Add Days Supply Criteria",
+        "desc_drugexposure": "Filter Drug Exposures by Days Supply."
+      },
+      "addRoute": {
+        "title_drugexposure": "Add Route Criteria",
+        "desc_drugexposure": "Filter Drug Exposures by Route."
+      },
+      "addEffective": {
+        "title_drugexposure": "Add Effective Dose Criteria",
+        "desc_drugexposure": "Filter Drug Exposures by Effective Dose."
+      },
+      "addLotNumber": {
+        "title_drugexposure": "Add Lot Number Criteria",
+        "desc_drugexposure": "Filter Drug Exposures by Lot Number."
+      },
+      "addSource": {
+        "title_drugexposure": "Add Drug Source Concept Criteria",
+        "desc_drugexposure": "Filter Drug Exposures by the Drug Source Concept."
+      },
+      "addOperator": {
+        "title_measurement": "Add Operator Criteria",
+        "desc_measurement": "Filter Measurements by Operator."
+      },
+      "addValueAsString": {
+        "title_observation": "Add Value As String Criteria",
+        "desc_observation": "Filter Observations by the Value As String."
+      },
+      "addValueAsConcept": {
+        "title_measurement": "Add Value as Concept Criteria",
+        "desc_measurement": "Filter Measurements by Value as Concept.",
+        "title_observation": "Add Value as Concept Criteria",
+        "desc_observation": "Filter Observations by the Value As Concept."
+      },
+      "addAbnormal": {
+        "title_measurement": "Add Abnormal Result Criteria",
+        "desc_measurement": "Filter Measurements to include those which fall outside of normal range."
+      },
+      "addRangeLow": {
+        "title_measurement": "Add Low Range Criteria",
+        "desc_measurement": "Filter Measurements Low Range."
+      },
+      "addRangeHigh": {
+        "title_measurement": "Add High Range Criteria",
+        "desc_measurement": "Filter Measurements by the Measurement Type."
+      },
+      "addRangeLowRatio": {
+        "title_measurement": "Add Low Range Ratio Criteria",
+        "desc_measurement": "Filter Measurements by the Ratio of Value as Number to Range Low."
+      },
+      "addRangeHighRatio": {
+        "title_measurement": "Add High Range Ratio Criteria",
+        "desc_measurement": "Filter Measurements by the Ratio of Value as Number to Range High."
+      },
+      "addQualifier": {
+        "title_observation": "Add Qualifier Criteria",
+        "desc_observation": "Filter Observations by Qualifier."
+      },
+      "addUserDefined": {
+        "title_observationperiod": "Specify Start and End Dates",
+        "desc_observationperiod": "Specify start and end date to use for the Observation Period.",
+        "title_payerplan": "Specify Start and End Dates",
+        "desc_payerplan": "Specify start and end dates to use for Payer Plan Period."
+      },
+      "addModifier": {
+        "title_procedureoccurrence": "Add Modifier Criteria",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences  by the Modifier."
+      },
+      "addAnatomicSite": {
+        "title_specimen": "Add Anatomic Site Criteria",
+        "desc_specimen": "Filter Specimens by the Anatomic Site."
+      },
+      "addDiseaseStatus": {
+        "title_specimen": "Add Disease Status Criteria",
+        "desc_specimen": "Filter Specimens by the Disease Status."
+      },
+      "addSourceId": {
+        "title_specimen": "Add Source ID Criteria",
+        "desc_specimen": "Filter Specimens by the Source ID."
+      },
+
+      "addPlaceService": {
+        "title_visit": "Add Place of Service Criteria",
+        "desc_visit": "Filter Visit Occurrences based on Place of Service."
+      },
+      "addPlaceServiceLocation": {
+        "title_visit": "Add Place of Service Location Criteria",
+        "desc_visit": "Add Place of Service Distance Criteria"
+      },
+      "addPlaceServiceDistance": {
+        "title_visit": "Add Place of Service Location Criteria",
+        "desc_visit": "Filter Visit Occurrences based on distance from Place of Service to Patient."
+      },
+
+      "addAgeCriteria": {
+        "title": "Add Age Criteria",
+        "desc": "Filter events based on age."
+      },
+      "addEventStartDateCriteria": {
+        "title": "Add Event Start Date Criteria",
+        "desc": "Filter Events by Start Date."
+      },
+      "addEventEndDateCriteria": {
+        "title": "Add Event End Date Criteria",
+        "desc": "Filter Events by End Date."
+      },
+      "addRaceCriteria": {
+        "title": "Add Race Criteria",
+        "desc": "Filter events based on Gender."
+      },
+      "addEthnicityCriteria": {
+        "title": "Add Ethnicity Criteria",
+        "desc": "Filter events based on Ethnicity."
+      },
+    "newEntityNames": {
+      "characterization": "New Characterization",
+      "featureAnalysis": "New Feature Analysis",
+      "cohortDefinition": "New Cohort Definition",
+      "incidenceRate": "New Incidence Rate Analysis",
+      "pathway": "New Cohort Pathway",
+      "ple": "New Population Level Estimation Analysis",
+      "conceptSet": "New Concept Set",
+      "plp": "New Patient Level Prediction Analysis"
+    }
   }
+}
 }

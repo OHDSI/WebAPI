@@ -2041,5 +2041,187 @@
         }
       }
     }
+  },
+  "cohortDefinitions": {
+    "title": "cohortDefinitions.title",
+    "newDefinition": "cohortDefinitions.newDefinition",
+    "newDefinitionTitle": "cohortDefinitions.newDefinitionTitle",
+    "closeYourCurrentCohort": "cohortDefinitions.closeYourCurrentCohort",
+    "cohort": {
+      "newCohortPlaceholder": "cohortDefinitions.cohort.newCohortPlaceholder",
+      "saveCohortTitle": "cohortDefinitions.cohort.saveCohortTitle",
+      "closeCohortTitle": "cohortDefinitions.cohort.closeCohortTitle",
+      "createCopyCohortTitle": "cohortDefinitions.cohort.createCopyCohortTitle",
+      "getLinkCohortTitle": "cohortDefinitions.cohort.getLinkCohortTitle",
+      "configureAccessTitle": "cohortDefinitions.cohort.configureAccessTitle",
+      "deleteTitle": "cohortDefinitions.cohort.deleteTitle",
+      "emptyName": "cohortDefinitions.cohort.emptyName",
+      "tabs": {
+        "definition": "cohortDefinitions.cohort.tabs.definition",
+        "conceptSets": "cohortDefinitions.cohort.tabs.conceptSets",
+        "generation": "cohortDefinitions.cohort.tabs.generation",
+        "reporting": "cohortDefinitions.cohort.tabs.reporting",
+        "explore": "cohortDefinitions.cohort.tabs.explore",
+        "export": "cohortDefinitions.cohort.tabs.export",
+        "messages": "cohortDefinitions.cohort.tabs.messages"
+      },
+      "panels": {
+        "definition": {
+          "enterCohortPlaceholder": "cohortDefinitions.cohort.panels.definition.enterCohortPlaceholder",
+          "importConceptSet": "cohortDefinitions.cohort.panels.definition.importConceptSet",
+          "cohortExpressionEditor": { 
+            "cohortEntryEvents": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.cohortEntryEvents",
+            "cohortEntryEventsText_1": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.cohortEntryEventsText_1",
+            "inclusionCriteria": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.inclusionCriteria",
+            "inclusionCriteriaText": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.inclusionCriteriaText",
+            "cohortExit": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.cohortExit",
+            "cohortExitText_1": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.cohortExitText_1",
+            "cohortExitTitle_1": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.cohortExitTitle_1",
+            "cohortExitText_2": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.cohortExitText_2",
+            "cohortExitTitle_2": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.cohortExitTitle_2",
+            "cohortExitText_3": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.cohortExitText_3",
+            "cohortEntryEventsText_2": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.cohortEntryEventsText_2",
+            "addInitialEvent": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.addInitialEvent",
+            "deleteCriteria": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.deleteCriteria",
+            "cohortEntryEventsText_3": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.cohortEntryEventsText_3",
+            "cohortEntryEventsText_4": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.cohortEntryEventsText_4",
+            "cohortEntryEventsText_5": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.cohortEntryEventsText_5",
+            "cohortEntryEventsText_6": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.cohortEntryEventsText_6",
+            "cohortEntryEventsText_7": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.cohortEntryEventsText_7",
+            "restrictInitialEventsTitle": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.restrictInitialEventsTitle",
+            "removeRestriction": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.removeRestriction",
+            "restrictInitialEventsButton": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.restrictInitialEventsButton",
+
+            "inclusionCriteriaTitle" : "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.inclusionCriteriaTitle",
+            "newInclusionCriteria": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.newInclusionCriteria",
+            "inclusionCriteriaText_1": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.inclusionCriteriaText_1",
+
+            "cohortExitTitle": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.cohortExitTitle",
+            "eventPersistence": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.eventPersistence",
+            "censoringEvents": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.censoringEvents",
+            "cohortExitText_4": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.cohortExitText_4",
+            "addCensoringEvent": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.addCensoringEvent",
+            "cohortExitText_5": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.cohortExitText_5",
+
+            "cohortErasTitle": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.cohortErasTitle",
+            "cohortErasText_1": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.cohortErasText_1",
+            "cohortErasText_2": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.cohortErasText_2",
+            "cohortErasText_3": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.cohortErasText_3",
+            "addTrimmingOptions": "cohortDefinitions.cohort.panels.definition.cohortExpressionEditor.addTrimmingOptions"
+          }
+        },
+        "newConceptSet": "cohortDefinitions.cohort.panels.definition.newConceptSet",
+        "import": "cohortDefinitions.cohort.panels.definition.import",
+        "exportAllToCSV": "cohortDefinitions.cohort.panels.definition.exportAllToCSV"
+      },
+      "modals": {
+        "analysisTypes": {
+          "title": "cohortDefinitions.cohort.modals.analysisTypes.title",
+          "bold_1": "cohortDefinitions.cohort.modals.analysisTypes.bold_1",
+          "text_1": "cohortDefinitions.cohort.modals.analysisTypes.text_1",
+          "bold_2": "cohortDefinitions.cohort.modals.analysisTypes.bold_2",
+          "text_2": "cohortDefinitions.cohort.modals.analysisTypes.text_2",
+          "bold_3": "cohortDefinitions.cohort.modals.analysisTypes.bold_3",
+          "text_3": "cohortDefinitions.cohort.modals.analysisTypes.text_3"
+        },
+        "linkToCohortDefinition": {
+          "title": "cohortDefinitions.cohort.modals.linkToCohortDefinition.title",
+          "text_1": "cohortDefinitions.cohort.modals.linkToCohortDefinition.text_1"
+        },
+        "cohortDefinition": {
+          "title": "cohortDefinitions.cohort.modals.cohortDefinition.title",
+          "text_1": "cohortDefinitions.cohort.modals.cohortDefinition.text_1"
+        },
+        "importConceptSet": {
+          "title": "cohortDefinitions.cohort.modals.importConceptSet.title"
+        }
+      }
+    },
+    "cohortId": "cohortDefinitions.cohortId",
+    "noConceptSets": "cohortDefinitions.noConceptSets",
+    "saveDefinitionBefore": "cohortDefinitions.saveDefinitionBefore",
+    "const": {
+      "periods": {
+        "ww": "cohortDefinitions.const.periods.ww",
+        "mm": "cohortDefinitions.const.periods.mm",
+        "qq": "cohortDefinitions.const.periods.qq",
+        "yy": "cohortDefinitions.const.periods.yy"
+      },
+      "periodType": "cohortDefinitions.const.periodType",
+      "rollups": {
+        "rollupUtilizationVisit": "cohortDefinitions.const.rollups.rollupUtilizationVisit",
+        "rollupUtilizationDrug": "cohortDefinitions.const.rollups.rollupUtilizationDrug"
+      }
+    }
+  },
+  "const": {
+    "initialEventList": {
+      "addConditionEra": {
+        "title": "const.initialEventList.addConditionEra.title",
+        "desc": "const.initialEventList.addConditionEra.desc"
+      },
+      "addConditionOccurrence": {
+        "title": "const.initialEventList.addConditionOccurrence.title",
+        "desc": "const.initialEventList.addConditionOccurrence.desc"
+      },
+      "addDeath": {
+        "title": "const.initialEventList.addDeath.title",
+        "desc": "const.initialEventList.addDeath.desc"
+      },
+      "addDeviceExposure": {
+        "title": "const.initialEventList.addDeviceExposure.title",
+        "desc": "const.initialEventList.addDeviceExposure.desc"
+      },
+      "addDoseEra": {
+        "title": "const.initialEventList.addDoseEra.title",
+        "desc": "const.initialEventList.addDoseEra.desc"
+      },
+      "addDrugEra": {
+        "title": "const.initialEventList.addDrugEra.title",
+        "desc": "const.initialEventList.addDrugEra.desc"
+      },
+      "addDrugExposure": {
+        "title": "const.initialEventList.addDrugExposure.title",
+        "desc": "const.initialEventList.addDrugExposure.desc"
+      },
+      "addMeasurement": {
+        "title": "const.initialEventList.addMeasurement.title",
+        "desc": "const.initialEventList.addMeasurement.desc"
+      },
+      "addObservation": {
+        "title": "const.initialEventList.addObservation.title",
+        "desc": "const.initialEventList.addObservation.desc"
+      },
+      "addObservationPeriod": {
+        "title": "const.initialEventList.addObservationPeriod.title",
+        "desc": "const.initialEventList.addObservationPeriod.desc"
+      },
+      "addPayerPlanPeriod": {
+        "title": "const.initialEventList.addPayerPlanPeriod.title",
+        "desc": "const.initialEventList.addPayerPlanPeriod.desc"
+      },
+      "addProcedureOccurrence": {
+        "title": "const.initialEventList.addProcedureOccurrence.title",
+        "desc": "const.initialEventList.addProcedureOccurrence.desc"
+      },
+      "addSpecimen": {
+        "title": "const.initialEventList.addSpecimen.title",
+        "desc": "const.initialEventList.addSpecimen.desc"
+      },
+      "addVisit": {
+        "title": "const.initialEventList.addVisit.title",
+        "desc": "const.initialEventList.addVisit.desc"
+      }
+    },
+    "newEntityNames": {
+      "characterization": "const.newEntityNames.characterization",
+      "featureAnalysis": "const.newEntityNames.featureAnalysis",
+      "cohortDefinition": "const.newEntityNames.cohortDefinition",
+      "incidenceRate": "const.newEntityNames.incidenceRate",
+      "pathway": "const.newEntityNames.pathway",
+      "ple": "const.newEntityNames.ple",
+      "conceptSet": "const.newEntityNames.conceptSet",
+      "plp": "const.newEntityNames.plp"
+    }
   }
 }

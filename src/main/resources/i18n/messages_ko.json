@@ -2040,5 +2040,187 @@
         }
       }
     }
+  },
+  "cohortDefinitions": {
+    "title": "Определения когорт",
+    "newDefinition": "Новая когорта",
+    "newDefinitionTitle": "Создать новую когорту",
+    "closeYourCurrentCohort": "Пожалуйста, закройте текущее определение когорты перед созданием нового",
+    "cohort": {
+      "newCohortPlaceholder": "Новое определение когорты",
+      "saveCohortTitle": "Сохранить определение когорты",
+      "closeCohortTitle": "Закрыть определение когорты",
+      "createCopyCohortTitle": "Создать копию этого определения когорты",
+      "getLinkCohortTitle": "Получить ссылку на это определение когорты",
+      "configureAccessTitle": "Настроить доступ",
+      "deleteTitle": "Удалить",
+      "emptyName": "Название определения группы пусто",
+      "tabs": {
+        "definition": "Определение",
+        "conceptSets": "Наборы концепций",
+        "generation": "Поколение",
+        "reporting": "Составление отчетов",
+        "explore": "Проводить исследования",
+        "export": "Экспорт",
+        "messages": "Сообщения"
+      },
+      "panels": {
+        "definition": {
+          "enterCohortPlaceholder": "Введите описание определения когорты здесь",
+          "importConceptSet": "Импортировать набор концепций из репозитория ...",
+          "cohortExpressionEditor": { 
+            "cohortEntryEvents": "События входа",
+            "cohortEntryEventsText_1": "События - это записанные наблюдения с указанием времени для людей, такие как воздействие наркотиков, условия, процедуры, измерения и посещения. Все события имеют дату начала и дату окончания, хотя некоторые события могут иметь дату начала и дату окончания с одинаковым значением (например, процедуры или измерения).",
+            "inclusionCriteria": "Критерии включения",
+            "inclusionCriteriaText": "The qualifying cohort will be defined as all persons who have an initial event, satisfy the initial event inclusion criteria, and fulfill all additional qualifying inclusion criteria. Each qualifying inclusion criteria will be evaluated to determine the impact of the criteria on the attrition of persons from the initial cohort.",
+            "cohortExit": "Выход из когорты",
+            "cohortExitText_1": "Для всех квалификационных событий должна быть спецификация того, когда каждое событие заканчивается присутствием в когорте. По умолчанию событие заканчивается в конце периода наблюдения, содержащего соответствующее исходное событие, но также могут быть указаны даты окончания события:",
+            "cohortExitTitle_1": "Даты окончания мероприятия",
+            "cohortExitText_2": "Квалификационное начальное событие может быть установлено как завершающееся после фиксированного периода времени относительно даты начала или окончания события, или дата окончания может быть основана на конце непрерывного воздействия набора лекарств, определенных набором понятий.",
+            "cohortExitTitle_2": "Цензура События",
+            "cohortExitText_3": "Критерии могут быть использованы для оповещения об окончании события. Если между датой начала и окончания квалифицируемого события определено цензурное событие, в качестве даты выхода будет использоваться дата цензурного события.",
+            "cohortEntryEventsText_2": "События, имеющие любой из следующих критериев:",
+            "addInitialEvent": "Добавить начальное событие",
+            "deleteCriteria": "Удалить критерии",
+            "cohortEntryEventsText_3": "с непрерывным наблюдением не менее",
+            "cohortEntryEventsText_4": "дней до и",
+            "cohortEntryEventsText_5": "дней после даты индекса",
+            "cohortEntryEventsText_6": "Ограничить начальные события до:",
+            "cohortEntryEventsText_7": "на человека.",
+            "restrictInitialEventsTitle": "Ограничить начальные события до:",
+            "removeRestriction": "Удалить начальное ограничение события",
+            "restrictInitialEventsButton": "Ограничить начальные события",
+
+            "inclusionCriteriaTitle" : "Критерии включения",
+            "newInclusionCriteria": "Новые критерии включения",
+            "inclusionCriteriaText_1": "Ограничить квалификационные события:",
+
+            "cohortExitTitle": "Выход из когорты",
+            "eventPersistence": "Постоянство события:",
+            "censoringEvents": "Цензура События:",
+            "cohortExitText_4": "Выход из группы на основе следующих критериев:",
+            "addCensoringEvent": "Добавить событие цензуры",
+            "cohortExitText_5": "События цензуры не выбраны.",
+
+            "cohortErasTitle": "Когорт Эра",
+            "cohortErasText_1": "Укажите размер разрыва коллапса эпохи:",
+            "cohortErasText_2": "Даты начала когорты левого цензора в",
+            "cohortErasText_3": "Дата окончания когорты правого цензора",
+            "addTrimmingOptions": "добавить параметры обрезки ..."
+          }
+        },
+        "newConceptSet": "Новая концепция",
+        "import": "Импортировать",
+        "exportAllToCSV": "Экспортировать все наборы концепций в CSV"
+      },
+      "modals": {
+        "analysisTypes": {
+          "title": "Типы анализа",
+          "bold_1": "Быстрый анализ",
+          "text_1": "Проводит минимальный анализ, чтобы получить быстрый обзор года рождения этой группы, демографических данных, эпох лекарств и состояний. (по оценкам: 10 минут)",
+          "bold_2": "Использование здравоохранения",
+          "text_2": "Запускает анализы для предоставления отчетов об экспозиции, посещении и использовании наркотиков. (по оценкам: 10 - 40 минут)",
+          "bold_3": "Полный анализ",
+          "text_3": "Запускает полный набор отчетов о характеристиках. (по оценкам: 60 минут)"
+        },
+        "linkToCohortDefinition": {
+          "title": "Ссылка на определение когорты",
+          "text_1": "Эта ссылка может использоваться для доступа к этому определению когорты непосредственно из Web API из других инструментов, таких как R, а также для импорта через экземпляры ATLAS."
+        },
+        "cohortDefinition": {
+          "title": "Определение когорты",
+          "text_1": "Когорта определяется как набор лиц, удовлетворяющих одному или нескольким критериям включения в течение определенного периода времени. Один человек может претендовать на одну группу несколько раз в течение непересекающихся интервалов времени. Когорты строятся в ATLAS путем указания критериев входа в когорту и критериев выхода из когорты. Критерии входа в когорту включают в себя выбор одного или нескольких начальных событий, которые определяют дату начала для записи в когорте, и, при необходимости, указание дополнительных критериев включения, которые отфильтровывают для соответствующих событий. Критерии выхода из группы применяются к каждой записи в группе, чтобы определить дату окончания, когда эпизод этого человека больше не подходит для этой группы."
+        },
+        "importConceptSet": {
+          "title": "Импортировать набор концепций из репозитория ..."
+        }
+      }
+    },
+    "cohortId": "Когорта #",
+    "noConceptSets": "No concept sets to export",
+    "saveDefinitionBefore": "You must save the definition before you can export",
+    "const": {
+      "periods": {
+        "ww": "Eженедельно",
+        "mm": "Eжемесячно",
+        "qq": "Квартальный",
+        "yy": "Ежегодный"
+      },
+      "periodType": "Период",
+      "rollups": {
+        "rollupUtilizationVisit": "Просмотры",
+        "rollupUtilizationDrug": "Лекарства"
+      }
+    }
+  },
+  "const": {
+    "initialEventList": {
+      "addConditionEra": {
+        "title": "Добавить условие Эра",
+        "desc": "Найти пациентов с конкретным диагнозом эпохи."
+      },
+      "addConditionOccurrence": {
+        "title": "Добавить условие возникновения",
+        "desc": "Найти пациентов с конкретными диагнозами."
+      },
+      "addDeath": {
+        "title": "Add Death",
+        "desc": "Find patients based on death."
+      },
+      "addDeviceExposure": {
+        "title": "Add Device Exposure",
+        "desc": "Find patients based on device exposure."
+      },
+      "addDoseEra": {
+        "title": "Add Dose Era",
+        "desc": "Find patients with dose eras."
+      },
+      "addDrugEra": {
+        "title": "Add Drug Era",
+        "desc": "Find patients with with exposure to drugs over time."
+      },
+      "addDrugExposure": {
+        "title": "Add Drug Exposure",
+        "desc": "Find patients with exposure to specific drugs or drug classes."
+      },
+      "addMeasurement": {
+        "title": "Add Measurement",
+        "desc": "Find patients based on Measurement."
+      },
+      "addObservation": {
+        "title": "Add Observation",
+        "desc": "Find patients based on Observation Period."
+      },
+      "addObservationPeriod": {
+        "title": "Add Observation Period",
+        "desc": "Find patients based on Observation Period."
+      },
+      "addPayerPlanPeriod": {
+        "title": "Add Payer Plan Period",
+        "desc": "Find patients based on Payer Plan Period."
+      },
+      "addProcedureOccurrence": {
+        "title": "Add Procedure Occurrence",
+        "desc": "Find patients that experienced a specific procedure."
+      },
+      "addSpecimen": {
+        "title": "Add Specimen",
+        "desc": "Find patients based on Specimen."
+      },
+      "addVisit": {
+        "title": "Add Visit",
+        "desc": "Find patients based on visit information."
+      }
+    },
+    "newEntityNames": {
+      "characterization": "Новая характеристика",
+      "featureAnalysis": "New Feature Analysis",
+      "cohortDefinition": "Анализ новых функций",
+      "incidenceRate": "Новый анализ уровня заболеваемости",
+      "pathway": "New Cohort Pathway",
+      "ple": "Новый анализ оценки уровня населения",
+      "conceptSet": "Новая концепция",
+      "plp": "Новый анализ прогноза уровня пациента"
+    }
   }
 }

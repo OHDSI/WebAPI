@@ -46,6 +46,10 @@
         "next":       "Дальше",
         "previous":   "Назад"
       },
+      "buttons": {
+        "colvis": "Отображать колонки",
+        "copy": "Копировать"
+      },
       "aria": {
         "sortAscending":  ": нажмите для сортировки по возрастанию",
         "sortDescending": ": нажмите для сортировки по убыванию"
@@ -518,6 +522,229 @@
       "others": "Более 2 недель назад"
     }
   },
+  "search": {
+    "headingTitle": "Поиск",
+    "tabs": {
+      "search": "Поиск",
+      "import": "Импорт"
+    },
+    "placeholder": "Введите здесь ключевые слова для поиска",
+    "buttonTitle": "Поиск",
+    "loadingMessage": {
+      "loading": "Загружаются",
+      "domains": "домены",
+      "vocabularies": "словари",
+      "searchResults":  "результаты поиска"
+    },
+    "advancedOptions": "Расширенные параметры поиска",
+    "clearAllSelections": "Очистить выделение",
+    "domains": "Домены",
+    "vocabularies": "Словари",
+    "standard": "Стандартный",
+    "nonStandard":"Нестандартный",
+    "classification": "Классификация",
+    "noVocabulariesAvailable": "Нет доступных словарей",
+    "noDomainsAvailable": "Нет доступных доменов",
+    "noResultsFoundFor": "Ничего не найдено для",
+    "options": {
+      "standardConcept": "Стандартная концепция",
+      "hasRecords": "Есть записи",
+      "vocabulary": "Словарь",
+      "domain": "Домен",
+      "class": "Класс",
+      "hasDescendantRecords": "Еть записи-потомки",
+      "invalidReason": "Причина невалидности"
+    },
+    "columns": {
+      "id": "Id",
+      "code": "Код",
+      "name": "Имя",
+      "standardConceptCaption": "Стандартная концепция",
+      "vocabulary": "Словарь",
+      "domain": "Домен",
+      "class": "Класс"
+    },
+    "import": {
+      "clickToClear": "очистить",
+      "conceptIdentifiers": "Идентификаторы концепций",
+      "enterSourceCodes": "Введите исходный код",
+      "importConceptSetExpression": "Импорт определения набора концепций",
+      "importConceptIdentifiers": "Импорт идентификаторов концепций",
+      "conceptSetExpressionJSON": "JSON определение набора концепций",
+      "conceptSet": "Набор концепций",
+      "sourceCodes": "Исходный код",
+      "importedConceptSetExpression": "Импортированное определение набора концепций",
+      "enterConceptIdentifiers": "Введите идентификаторы концепций",
+      "importSourceCodes": "Импорт исходного кода",
+      "unableToParseConceptIdentifiers": "Невозможно распарсить идентификаторы концепций",
+      "conceptSetTable": {
+        "id": "Id",
+        "code": "Код",
+        "name": "Имя",
+        "domain": "Домен",
+        "standardConceptCode": "Код стандартной концепции",
+        "standardConceptCaption": "Стандартная концепция",
+        "mapped": "Mapped",
+        "exclude": "Исключить",
+        "descendants": "Потомки"
+      }
+    }
+  },
+  "cs": {
+    "manager": {
+      "tabs": {
+        "conceptSetExpression": "Определение набора концепций",
+        "includedSourceCodes": "Исходный код",
+        "Export": "Экспорт",
+        "Compare": "Сравнение",
+        "includedConcepts": "Включенные концепции",
+        "exploreEvidence": "Исследовать Свидетельство"
+      },
+      "includedConceptSets": {
+        "standardConceptCaption": "Стандартная концепция",
+        "standardConcept": "Стандартная концепция",
+        "vocabulary": "Словарь",
+        "code": "Код",
+        "domain": "Домен",
+        "name": "Имя",
+        "ancestors": "Предки",
+        "class": "Класс",
+        "invalidReason": "Причина невалидности",
+        "hasRecords": "Есть записи",
+        "hasDescendantRecords": "Есть записи-потомки"
+      },
+      "exploreEvidence": {
+        "title": "Исследование Свидетельства:",
+        "deletedCcMessage1": "Набор концепаций",
+        "deletedCcMessage2": "был удален. Пожалуйста, выберите другой набор концепций.",
+        "drugLabelsFound": "Найдено меток лекарств",
+        "noEvidenceFoundFor": "Не найдено свидетельств для",
+        "anchor1": "Получение Negative Controls из ATLAS",
+        "anchor2": "Высокоуровневая информация по Negative Controls",
+        "anchor3": "Дополнительные ресурсы",
+        "drugLabelEvidenceDetails": "подробности",
+        "drugLabelEvidenceOf": "из",
+        "includeLabel": "Какие концепты вы хотите включить как известные negative controls? (необязательно)",
+        "evidenceSources": "Источники Свидетельства",
+        "viewDatabaseRecordCounts": "Просмотр количества записей в БД (RC) и количества записей-потомков (DRC) для:",
+        "generationSettings": "Настройки генерации",
+        "generate": "Сгенерировать",
+        "generated": "Сгенерировано",
+        "generationStatus": "Статус генерации",
+        "generationDuration": "Продолжительность генерации",
+        "additionalInformation": "Дополнительная информаций:",
+        "excludeLabel": "Какие концепты вы хотите исключить как известные positive controls? (необязательно)",
+        "loadingEvidence": "загрузка Свидетельства",
+        "viewingEvidence": "Спросмотр Свидетельства",
+        "evidenceForAll": "Свидетельство для всех",
+        "chooseAConceptSet": "Выберите набор концепций",
+        "loading": "загрузка",
+        "drugLabelEvidence": "Свидетельств меток лекарств:",
+        "drugLabelEvidenceFound": "Найдено",
+        "drugLabelsNotFound": "Меток лекарств не найдено",
+        "drugLabelEvidenceEnd": "меток лекарств в CEM.",
+        "saveNewButton": "Сохранить новый набор концепций из списка ниже",
+        "viewEvidence": "Просмотр Свидетельства",
+        "evidenceForAllFor": "для",
+        "message1": "Свидетельство происходит из",
+        "message2": "Основа Свидетельства состоит из Свидетельства, найденного в опубликованнай литературе."
+      },
+      "export": {
+        "conceptSetExpressionJSON": "JSON набора концепций",
+        "conceptIdentiferList": "Список идентификаторов концепций",
+        "includedConceptIdentiferList": "Список идентификаторов включенных концепций",
+        "copiedToClipboard!": "Скопировано в буфер обмена!",
+        "exportToCSV": "Экспортировать в CSV"
+      },
+      "expression": {
+        "standard": "Стандартный",
+        "conceptCode": "Код концепции",
+        "standardConceptCode": "Стардартный код концепции",
+        "classification": "Классификация",
+        "descendants": "Наследники",
+        "changeColumns": "Изменить колонки",
+        "showAllColumns": "Показать все колонки",
+        "standardConceptCaption": "Стандартная концепция",
+        "conceptName": "Имя концепции",
+        "nonStandard": "Нестандартный",
+        "domain": "Домен",
+        "mapped": "Mapped",
+        "conceptId": "Id концепции",
+        "exclude": "Исключить",
+        "resetColumns": "Сбросить колонки"
+      },
+      "recordCounts": "Количество записей",
+      "recordCountsAcrossSources": "Количество записей из разных источников",
+      "hierarchy": "Иерархия",
+      "caption": "Набор концепций №",
+      "noHierarchyFoundMessage": "Для нестандартных концепция иерархий не найдено",
+      "details": "Детали",
+      "relatedConcepts": "Связанные концепции",
+      "loading": "загрузка",
+      "nameEmptyWarning": "Имя набора не может быть пустым.",
+      "csAlreadyExistsMessage": "Набор концепций с таким именем уже существует. Пожалуйста, выберите другое имя.",
+      "csDeleteConfirmMessage": "Удалить набор концепций? Предупреждение: это действие необратимо.",
+      "csNotSavedConfirmMessage": "Изменения не сохранены. Продолжить?",
+      "conceptsRemovedMessage": "Следующие концепции были удалены, поскольку оптимизированная версия уже их содержит.",
+      "optimizedConceptSetHeading": "Оптимизированный набор концепций",
+      "saveOptions": "Параметры сохранения",
+      "cancelButton": "Отмена",
+      "optimize": "Оптимизировать",
+      "conceptsRemovedHeading": "Наборы концепций удалены",
+      "csSaveErrorMessage": "Ошибка сохранения набора концепций.",
+      "saveButton": "Сохранить",
+      "pleaseReviewMessage": "Пожалуйста пересмотрите параметры оптимизации и сохранения",
+      "pleaseProvideNameMessage": "Пожалуйста, назовите ваш новый набор концепций:",
+      "resetColumnsButton": "Сброс",
+      "showAllColumnsButton": "Показать все",
+      "csUnableToSaveMessage": "Невозможно сохранить набор концепций",
+      "overwriteOption": "Перезаписать текущий набор концепций",
+      "fullyOptimizedMessage": "Текущее определение набора концепций полностью оптимизировано.",
+      "createOption": "Создать новый набор концепций",
+      "changeColumnsButton": "Изменить колонки",
+      "attemptingToFindMessage": "Попытка найти оптимальное определение для текущего набора концепций..."
+    },
+    "browser": {
+      "newConceptSetButton": "Новый набор концепций",
+      "exportConceptSetsButton": "Экспорт наборов концепций",
+      "table": {
+        "id": "Id",
+        "created": "Создано",
+        "author": "Автор",
+        "modified": "Модифицировано",
+        "title": "Название"
+      },
+      "exportInstructions": "Инструкция:",
+      "exportInstructionsText": "Выберите наборы концепций в таблице. Затем нажмите кнопку «Экспорт наборов концепций», которая запустит скачивание в новом окне.",
+      "caption": "Наборы концепций",
+      "exportConceptSetsNumber": "Наборы концепций, выбранных для экспорта.",
+      "saveWarning": "Изменения когорты не сохранятся. Хотите продолжить?",
+      "tabs": {
+        "list": "Список",
+        "export": "Экспорт"
+      },
+      "compare": {
+        "heading": "Сравнение наборов концепций",
+        "headingMessage": "Сравнение двух наборов концепций на предмет содержания общих концепций",
+        "tableHeader": {
+          "vocabulary": "Словарь",
+          "code": "Код",
+          "match": "Совпадение",
+          "name": "Имя",
+          "class": "Класс",
+          "domainId": "Id домена"
+        },
+        "viewCountMessage": "Количество записей в БД (RC) и количество записей-потомков (DRC) для:",
+        "conceptSet1": "Набор концепций 1:",
+        "compareConceptSets": "Сравнение наборов концепций",
+        "conceptSet2": "Набор концепций 2:",
+        "comparisonResults": "Результат сравнения",
+        "sameWarning": "Невозможно сравнить один и тот же набор концепций",
+        "saveMessage": "Сохранить набор концепций из списка ниже",
+        "saveWarning": "Сохраните, пожалуйста, текущий набор концепций перед сравнением."
+      }
+    }
+  },
   "cc": {
     "title": "Характеризация Когорт",
     "new": "Создать",
@@ -938,6 +1165,21 @@
     }
   },
   "const": {
+    "relatedSourcecodesOptions": {
+      "vocabulary": "Словарь",
+      "invalidReason": "Причина невалидности",
+      "class": "Класс",
+      "domain": "Домен"
+    },
+    "relatedSourcecodesColumns": {
+      "id": "Id",
+      "code": "Код",
+      "name": "Название",
+      "class": "Класс",
+      "standardConceptCaption": "Стандартная концепция",
+      "domain": "Домен",
+      "vocabulary": "Словарь"
+    },
     "eventsList": {
       "addConditionEra": {
         "title": "Добавить условие Эра",

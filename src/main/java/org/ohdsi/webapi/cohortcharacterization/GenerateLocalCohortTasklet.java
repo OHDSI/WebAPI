@@ -20,7 +20,6 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.SQLException;
-import java.time.LocalTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -109,7 +108,6 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
         if (stopped) {
             return null;
         }
-        System.out.println(LocalTime.now() + " - thread: " + Thread.currentThread().getName());
         String sessionId = SessionUtils.sessionId();
         CohortGenerationRequestBuilder generationRequestBuilder = new CohortGenerationRequestBuilder(
                 sessionId,
@@ -145,7 +143,6 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
             statementCancels.remove(stmtCancel);
         } catch (StatementCancelException ignored) {
             // this exception must be caught to prevent "FAIL" status of the job
-            System.out.println(ignored.getMessage());
         }
         return null;
     }

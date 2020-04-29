@@ -630,16 +630,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     @Override
     @DataSourceAccess
     public GenerationResults findResult(@CcGenerationId final Long generationId, ExecutionResultRequest params) {
-        if (params.isFilterUsed()) {
-            // in case of filtering and nothing was selected in any list
-            if (params.getAnalysisIds().isEmpty()
-                    || params.getCohortIds().isEmpty()
-                    || params.getDomainIds().isEmpty()) {
-                GenerationResults res = new GenerationResults();
-                res.setReports(Collections.emptyList());
-                return res;
-            }
-        }
         CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
                 .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
 
@@ -872,15 +862,17 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     @DataSourceAccess
     public void cancelGeneration(Long id, @SourceKey String sourceKey) {
 
-      Source source = getSourceRepository().findBySourceKey(sourceKey);
-      if (Objects.isNull(source)) {
-        throw new NotFoundException();
-      }
-      jobService.cancelJobExecution(getJobName(), j -> {
-        JobParameters jobParameters = j.getJobParameters();
-        return Objects.equals(jobParameters.getString(SOURCE_ID), Integer.toString(source.getSourceId()))
-                && Objects.equals(jobParameters.getString(COHORT_CHARACTERIZATION_ID), Long.toString(id));
-      });
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        if (Objects.isNull(source)) {
+            throw new NotFoundException();
+        }
+        jobService.cancelJobExecution(j -> {
+            JobParameters jobParameters = j.getJobParameters();
+            String jobName = j.getJobInstance().getJobName();
+            return Objects.equals(jobParameters.getString(SOURCE_ID), Integer.toString(source.getSourceId()))
+                    && Objects.equals(jobParameters.getString(COHORT_CHARACTERIZATION_ID), Long.toString(id))
+                    && Objects.equals(getJobName(), jobName);
+        });
     }
 
     private List<String> getNamesLike(String copyName) {

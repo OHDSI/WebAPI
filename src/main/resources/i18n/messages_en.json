@@ -509,6 +509,118 @@
       "others": "2+ Weeks Ago"
     }
   },
+  "cs": {
+    "manager": {
+      "includedConceptSets": {
+        "standardConcept": "Standard Concept",
+        "standardConceptCaption": "Standard Concept Caption",
+        "hasRecords": "Has Records",
+        "vocabulary": "Vocabulary",
+        "code": "Code",
+        "domain": "Domain",
+        "name": "Name",
+        "ancestors": "Ancestors",
+        "hasDescendantRecords": "Has Descendant Records",
+        "class": "Class",
+        "invalidReason": "Invalid Reason"
+      },
+      "tabs": {
+        "conceptSetExpression": "Concept Set Expression",
+        "includedSourceCodes": "Included Source Codes",
+        "Export": "Export",
+        "Compare": "Compare",
+        "includedConcepts": "Included Concepts",
+        "exploreEvidence": "Explore Evidence"
+      },
+      "caption": "Concept Set #",
+      "csDeleteConfirmMessage": "Delete concept set? Warning: deletion can not be undone!",
+      "csNotSavedConfirmMessage": "Your concept set changes are not saved. Would you like to continue?",
+      "conceptsRemovedMessage": "The following concepts were removed since the optimized version already includes them.",
+      "optimizedConceptSetHeading": "Optimized Concept Set",
+      "saveOptions": "Save Options",
+      "recordCountsAcrossSources": "Record Counts across Sources",
+      "cancelButton": "Cancel",
+      "optimize": "Optimize",
+      "conceptsRemovedHeading": "Concepts Removed",
+      "noHierarchyFoundMessage": "No hierarchy found for non-standard concepts.",
+      "details": "Details",
+      "csSaveErrorMessage": "An error occurred while attempting to save a concept set.",
+      "saveButton": "Save",
+      "pleaseReviewMessage": "Please review the optimized definition and options for saving.",
+      "pleaseProvideNameMessage": "Please provide a name for your new concept set:",
+      "expression": {
+        "standard": "Standard",
+        "conceptCode": "Concept Code",
+        "standardConceptCode": "Standard Concept Code",
+        "classification": "Classification",
+        "descendants": "Descendants",
+        "changeColumns": "Change Columns",
+        "showAllColumns": "Show All Columns",
+        "standardConceptCaption": "Standard Concept Caption",
+        "conceptName": "Concept Name",
+        "nonStandard": "Non-Standard",
+        "domain": "Domain",
+        "mapped": "Mapped",
+        "conceptId": "Concept Id",
+        "exclude": "Exclude",
+        "resetColumns": "Reset Columns"
+      },
+      "hierarchy": "Hierarchy",
+      "resetColumnsButton": "Reset Columns",
+      "showAllColumnsButton": "Show All Columns",
+      "csUnableToSaveMessage": "Unable to save concept set",
+      "relatedConcepts": "Related Concepts",
+      "loading": "loading",
+      "overwriteOption": "Overwrite Current Concept Set",
+      "fullyOptimizedMessage": "The current concept set definition is fully optimized.",
+      "createOption": "Create New Concept Set",
+      "changeColumnsButton": "Change Columns",
+      "recordCounts": "Record Counts",
+      "attemptingToFindMessage": "Attempting to find an optimal definition for this concept set...",
+      "nameEmptyWarning": "Concept Set name is empty.",
+      "csAlreadyExistsMessage": "A concept set with this name already exists. Please choose a different name."
+    },
+    "browser": {
+      "newConceptSetButton": "New Concept Set",
+      "exportConceptSetsButton": "Export Concept Sets",
+      "table": {
+        "created": "Created",
+        "author": "Author",
+        "modified": "Modified",
+        "id": "Id",
+        "title": "Title"
+      },
+      "compare": {
+        "headingMessage": "Use this utility to compare the contents of two concept sets to see which concepts they may share.",
+        "heading": "Concept Set Comparison",
+        "tableHeader": {
+          "vocabulary": "Vocabulary",
+          "code": "Code",
+          "match": "Match",
+          "name": "Name",
+          "class": "Class",
+          "domainId": "Domain Id"
+        },
+        "viewCountMessage": "View database record counts (RC) and descendant record counts (DRC) for:",
+        "conceptSet1": "Concept Set 1:",
+        "compareConceptSets": "Compare Concept Sets",
+        "conceptSet2": "Concept Set 2:",
+        "comparisonResults": "Comparison Results",
+        "sameWarning": "You cannot compare the same concept sets.",
+        "saveMessage": "Save New Concept Set From Selection Below",
+        "saveWarning": "You must save the current concept set before you can perform this comparison."
+      },
+      "exportInstructionsText": "Select the concept sets for export by selecting each row in the grid. When done",
+      "tabs": {
+        "list": "List",
+        "export": "Export"
+      },
+      "caption": "Concept Sets",
+      "exportInstructions": "Instructions:",
+      "exportConceptSetsNumber": "concept sets selected for export.",
+      "saveWarning": "Cohort changes are not saved. Would you like to continue?"
+    }
+  },
   "cc": {
     "title": "Cohort Characterizations",
     "new": "New",

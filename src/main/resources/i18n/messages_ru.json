@@ -28,30 +28,30 @@
   },
   "datatable": {
     "language": {
-      "decimal":        "десятичный",
-      "emptyTable":     "В таблице нет данных",
-      "info":           "Показано с _START_ по _END_ из _TOTAL_ записей",
-      "infoEmpty":      "Показано с 0 по 0 из 0 записей",
-      "infoFiltered":   "(отфильтровано из _MAX_ записей)",
-      "infoPostFix":    "",
-      "thousands":      ",",
-      "lengthMenu":     "Показывать по _MENU_ записей",
+      "decimal": "десятичный",
+      "emptyTable": "В таблице нет данных",
+      "info": "Показано с _START_ по _END_ из _TOTAL_ записей",
+      "infoEmpty": "Показано с 0 по 0 из 0 записей",
+      "infoFiltered": "(отфильтровано из _MAX_ записей)",
+      "infoPostFix": "",
+      "thousands": ",",
+      "lengthMenu": "Показывать по _MENU_ записей",
       "loadingRecords": "Загружается...",
-      "processing":     "Обрабатывается...",
-      "search":         "Фильтр:",
-      "zeroRecords":    "Подходящие записи не найдены",
+      "processing": "Обрабатывается...",
+      "search": "Фильтр:",
+      "zeroRecords": "Подходящие записи не найдены",
       "paginate": {
-        "first":      "Первая",
-        "last":       "Последняя",
-        "next":       "Дальше",
-        "previous":   "Назад"
+        "first": "Первая",
+        "last": "Последняя",
+        "next": "Дальше",
+        "previous": "Назад"
       },
       "buttons": {
         "colvis": "Отображать колонки",
         "copy": "Копировать"
       },
       "aria": {
-        "sortAscending":  ": нажмите для сортировки по возрастанию",
+        "sortAscending": ": нажмите для сортировки по возрастанию",
         "sortDescending": ": нажмите для сортировки по убыванию"
       }
     }
@@ -209,7 +209,7 @@
       "enterCohortPlaceholder": "Введите описание определения когорты здесь",
       "importConceptSet": "Импортировать набор концепций из репозитория ..."
     },
-    "cohortExpressionEditor": { 
+    "cohortExpressionEditor": {
       "cohortEntryEvents": "События входа",
       "cohortEntryEventsText_1": "События - это записанные наблюдения с указанием времени для людей, такие как воздействие наркотиков, условия, процедуры, измерения и посещения. Все события имеют дату начала и дату окончания, хотя некоторые события могут иметь дату начала и дату окончания с одинаковым значением (например, процедуры или измерения).",
       "inclusionCriteria": "Критерии включения",
@@ -231,18 +231,15 @@
       "restrictInitialEventsTitle": "Ограничить начальные события до:",
       "removeRestriction": "Удалить начальное ограничение события",
       "restrictInitialEventsButton": "Ограничить начальные события",
-
-      "inclusionCriteriaTitle" : "Критерии включения",
+      "inclusionCriteriaTitle": "Критерии включения",
       "newInclusionCriteria": "Новые критерии включения",
       "inclusionCriteriaText_1": "Ограничить квалификационные события:",
-
       "cohortExitTitle": "Выход из когорты",
       "eventPersistence": "Постоянство события:",
       "censoringEvents": "Цензура События:",
       "cohortExitText_4": "Выход из группы на основе следующих критериев:",
       "addCensoringEvent": "Добавить событие цензуры",
       "cohortExitText_5": "События цензуры не выбраны.",
-
       "cohortErasTitle": "Когорт Эра",
       "cohortErasText_1": "Укажите размер разрыва коллапса эпохи:",
       "cohortErasText_2": "Даты начала когорты левого цензора в",
@@ -280,7 +277,6 @@
       "conditionOccurrenceText_8": "с полом:",
       "conditionOccurrenceText_9": "со специальностью поставщика:",
       "conditionOccurrenceText_10": "с посещением:"
-
     },
     "conditionDeath": {
       "anyDeath": "Любая смерть",
@@ -576,12 +572,137 @@
     }
   },
   "facets": {
-    "date" : {
+    "date": {
       "justNow": "Только что",
       "within24Hours": "В последние 24 часа",
       "thisWeek": "На этой неделе",
       "lastWeek": "На прошлой неделе",
       "others": "Более 2 недель назад"
+    }
+  },
+  "dataSources": {
+    "headingTitle": "Источники данных",
+    "selectASource": "Выбрать источник данных",
+    "selectAReport": "Выбрать отчет",
+    "loadingReport": "Загрузка отчета",
+    "noPermission": "У вас недостаточно прав для просмотра этого отчета",
+    "reports": {
+      "titleTail": ". Отчет",
+      "dashboard": "Дашборд",
+      "dataDensity": "Плотность данных",
+      "person": "Люди",
+      "visit": "Визиты",
+      "conditionOccurrence": "Встречаемость состояния",
+      "conditionEra": "Эра состояния",
+      "procedure": "Процедуры",
+      "drugExposure": "Воздействие лекарств",
+      "drugEra": "Эра лекарств",
+      "measurement": "Измерения",
+      "observation": "Наблюдения",
+      "death": "Смерти",
+      "achillesHeel": "Ахиллесова пята"
+    },
+    "const": {
+      "recordsPerPerson": "Записей на человека",
+      "lengthOfEra": "Длительность эры"
+    },
+    "dashboardReport": {
+      "cumulativeObservation": "Сводные данные по обследованиям",
+      "personsWithContinuousObservationByMonth": "Люди с продолжительным обследованием по месяцам",
+      "populationByGender": "Население по полу",
+      "cdmSummary": "Сводные данные CDM",
+      "ageAtFirstObservation": "Возраст при первом обследовании",
+      "people": "Люди",
+      "age": "Возраст",
+      "percentOfPopulation": "Процент населения",
+      "date": "Дата",
+      "days": "Дни",
+      "years": "Годы"
+    },
+    "datadensityReport": {
+      "recordsPerPerson": "Записей на человека",
+      "conceptsPerPerson": "Концепций на человека",
+      "totalRows": "Всего записей",
+      "year": "Год",
+      "numberOfRecords": "Количество записей",
+      "conceptType": "Тип концепции"
+    },
+    "personReport": {
+      "yearOfBirth": "Год рождения",
+      "yearOfBirthFooter": "Количество людей в этой когорте показано относительно их года рождения.",
+      "gender": "Пол",
+      "genderFooter": "Количество людей в этой когорте с распределением по полу.",
+      "ethnicity": "Национальность",
+      "ethnicityFooter": "Количество людей в этой когорте с распределением по налиональноти.",
+      "race": "Раса",
+      "raceFooter": "Количество людей в этой когорте с распределением по расе.",
+      "year": "Год",
+      "numberOfPersons": "Количество человек"
+    },
+    "deathReport": {
+      "date": "Дата",
+      "yearOfObservation": "Год наблюдения",
+      "deathPrevalenceByAgeGenderYear": "Распространенность по возрасту",
+      "gender": "Пол",
+      "prevalencePer1000People": "Распространенность на 1000 человек",
+      "deathPrevalenceByMonth": "Распространенность по месяцам",
+      "ageAtDeath": "Возраст на момент смерти",
+      "deathByType": "Смерть по типу",
+      "ageAtFirstOccurence": "Возраст при первом вхождении",
+      "ageDecile": "Децильный коэффициент возраста"
+    },
+    "achillesHeelReport": {
+      "achillesHeelResults": "Ахиллесова пята - результаты",
+      "messageType": "Тип сообщения",
+      "message": "Сообщение"
+    },
+    "numberOfPeople": "Количество человек",
+    "prevalence": "Распространенность",
+    "treemap": {
+      "treemapTab": "Карта",
+      "legend": {
+        "colorExplanation": "(от светлого к темному = низкий к высокому), нажмите Ctrl-Click для увеличения, Alt-Click для сброса увеличения",
+        "boxSize": "Размер области:",
+        "color": "Цвет:"
+      }
+    },
+    "table": {
+      "tableTab": "Таблица",
+      "conceptId": "Id концепции",
+      "name": "Название",
+      "prevalence": "Распространенность",
+      "personCount": "Количество человек"
+    },
+    "loadingDrilldownReport": "Загрузка развернутого отчета",
+    "drilldown": {
+      "noData": "Нет данных",
+      "drilldownReport": ". Развернутый отчет",
+      "prevalence": "Распространенность",
+      "lowerLimitDistribution": "Распределение по нижней границе",
+      "upperLimitDistribution": "Распределение по верхней границе",
+      "valueAsConcept": "Значение концепции",
+      "operatorConcept": "Концепция оператор",
+      "prevalenceByMonth": "Распространенность по месяцам",
+      "type": "Тип",
+      "measurementRecordsByUnit": "Измерение записей по юнитам",
+      "measurementValueDistribution": "Распределение значений",
+      "valuesRelativeToNormalRange": "Значения относительно нормального интервала",
+      "qualifierConcept": "Спецификатор концепции",
+      "frequencyDistribution": "Распределение по частоте",
+      "ageAtFirstOccurrence": "Возраст при первом вхождении",
+      "chartFormat": {
+        "percentOfTotalNumberOfPersons": "% от общего количества человек",
+        "date": "Дата",
+        "prevalencePer1000People": "Распространенность на 100 человек",
+        "gender": "Пол",
+        "ageAtFirstOccurrence": "Возраст при первом вхождении",
+        "yearOfObservation": "Год обследования",
+        "ageDecile": "Децильный коэффициент возраста",
+        "frequencyDistribution": {
+          "xLabel1": "Количество ('x' и более ",
+          "xLabel2": ")"
+        }
+      }
     }
   },
   "search": {
@@ -596,14 +717,14 @@
       "loading": "Загружаются",
       "domains": "домены",
       "vocabularies": "словари",
-      "searchResults":  "результаты поиска"
+      "searchResults": "результаты поиска"
     },
     "advancedOptions": "Расширенные параметры поиска",
     "clearAllSelections": "Очистить выделение",
     "domains": "Домены",
     "vocabularies": "Словари",
     "standard": "Стандартный",
-    "nonStandard":"Нестандартный",
+    "nonStandard": "Нестандартный",
     "classification": "Классификация",
     "noVocabulariesAvailable": "Нет доступных словарей",
     "noDomainsAvailable": "Нет доступных доменов",
@@ -1043,7 +1164,7 @@
       },
       "design": {
         "description": "<b>Анализ Исходов Когорты</b> определяется как процесс генерации аггрегированной последовательности переходов между Когортой Событий среди людей из Целевых Когорт.",
-        "targetCohorts":{
+        "targetCohorts": {
           "title": "Целевые Когорты",
           "description": "Каждая из Целевых когорт будет проанализирована по исходам из когорт событий."
         },
@@ -1532,7 +1653,7 @@
         "desc_visit": "Filter Visit Occurrences based on provider specialty."
       },
       "addAge": {
-        "title_occurrence": "Добавить возраст при возникновении",  
+        "title_occurrence": "Добавить возраст при возникновении",
         "desc_occurrence": "Filter Condition Occurrences by age at occurrence.",
         "title_death": "Добавить возраст при возникновении",
         "desc_death": "Filter by age at death.",
@@ -1775,7 +1896,6 @@
         "title_specimen": "Add Source ID Criteria",
         "desc_specimen": "Filter Specimens by the Source ID."
       },
-
       "addPlaceService": {
         "title_visit": "Add Place of Service Criteria",
         "desc_visit": "Filter Visit Occurrences based on Place of Service."
@@ -1866,7 +1986,6 @@
         "fullAnalysis": "Полный анализ",
         "quickAnalysis": "Быстрый анализ",
         "utilization": "Использование"
-
       }
     }
   }

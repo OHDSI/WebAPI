@@ -11,19 +11,8 @@ import org.apache.shiro.realm.ldap.JndiLdapRealm;
 import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
-import org.ohdsi.webapi.shiro.filters.ActiveDirectoryAuthFilter;
-import org.ohdsi.webapi.shiro.filters.AtlasJwtAuthFilter;
-import org.ohdsi.webapi.shiro.filters.CasHandleFilter;
-import org.ohdsi.webapi.shiro.filters.JdbcAuthFilter;
-import org.ohdsi.webapi.shiro.filters.KerberosAuthFilter;
-import org.ohdsi.webapi.shiro.filters.LdapAuthFilter;
-import org.ohdsi.webapi.shiro.filters.LogoutFilter;
-import org.ohdsi.webapi.shiro.filters.RedirectOnFailedOAuthFilter;
-import org.ohdsi.webapi.shiro.filters.RunAsFilter;
-import org.ohdsi.webapi.shiro.filters.SendTokenInHeaderFilter;
-import org.ohdsi.webapi.shiro.filters.SendTokenInRedirectFilter;
-import org.ohdsi.webapi.shiro.filters.SendTokenInUrlFilter;
-import org.ohdsi.webapi.shiro.filters.UpdateAccessTokenFilter;
+import org.ohdsi.webapi.shiro.PermissionManager;
+import org.ohdsi.webapi.shiro.filters.*;
 import org.ohdsi.webapi.shiro.mapper.ADUserMapper;
 import org.ohdsi.webapi.shiro.mapper.LdapUserMapper;
 import org.ohdsi.webapi.shiro.realms.ADRealm;
@@ -53,6 +42,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 import waffle.shiro.negotiate.NegotiateAuthenticationFilter;
 import waffle.shiro.negotiate.NegotiateAuthenticationRealm;
 
@@ -65,32 +55,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static com.odysseusinc.arachne.commons.utils.QuoteUtils.dequote;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.AD_FILTER;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.AUTHZ;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CAS_AUTHC;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CORS;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.FACEBOOK_AUTHC;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.FORCE_SESSION_CREATION;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.GITHUB_AUTHC;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.GOOGLE_AUTHC;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.HANDLE_CAS;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.HANDLE_UNSUCCESSFUL_OAUTH;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.JDBC_FILTER;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.JWT_AUTHC;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.KERBEROS_FILTER;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.LDAP_FILTER;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.LOGOUT;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.NEGOTIATE_AUTHC;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_CACHE;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_SESSION_CREATION;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.OAUTH_CALLBACK;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.OIDC_AUTH;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.RUN_AS;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.SEND_TOKEN_IN_HEADER;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.SEND_TOKEN_IN_REDIRECT;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.SEND_TOKEN_IN_URL;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.SSL;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.UPDATE_TOKEN;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.*;
 
 @Component
 @ConditionalOnProperty(name = "security.provider", havingValue = Constants.SecurityProviders.REGULAR)
@@ -171,6 +136,9 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     @Value("${security.ad.ignore.partial.result.exception}")
     private Boolean adIgnorePartialResultException;
 
+    @Value("${security.google.accessToken.enabled}")
+    private Boolean googleAccessTokenEnabled;
+
     @Autowired
     @Qualifier("activeDirectoryProvider")
     private LdapProvider adLdapProvider;
@@ -208,6 +176,11 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     
     @Value("${security.cas.casticket}")
     private String casticket;
+
+    private RestTemplate restTemplate = new RestTemplate();
+
+    @Autowired
+    private PermissionManager permissionManager;
     
     @Override
     public Map<FilterTemplates, Filter> getFilters() {
@@ -218,6 +191,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         filters.put(UPDATE_TOKEN, new UpdateAccessTokenFilter(this.authorizer, this.defaultRoles, this.tokenExpirationIntervalInSeconds,
                 this.redirectUrl));
 
+        filters.put(ACCESS_AUTHC, new GoogleAccessTokenFilter(restTemplate, permissionManager, Collections.emptySet()));
         filters.put(JWT_AUTHC, new AtlasJwtAuthFilter());
         filters.put(JDBC_FILTER, new JdbcAuthFilter(eventPublisher));
         filters.put(KERBEROS_FILTER, new KerberosAuthFilter());
@@ -297,12 +271,14 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     @Override
     protected FilterChainBuilder getFilterChainBuilder() {
 
+        List<FilterTemplates> authcFilters = googleAccessTokenEnabled ? Arrays.asList(ACCESS_AUTHC, JWT_AUTHC) :
+                Collections.singletonList(JWT_AUTHC);
         // the order does matter - first match wins
         FilterChainBuilder filterChainBuilder = new FilterChainBuilder()
                 .setBeforeOAuthFilters(SSL, CORS, FORCE_SESSION_CREATION)
                 .setAfterOAuthFilters(UPDATE_TOKEN, SEND_TOKEN_IN_URL)
                 .setRestFilters(SSL, NO_SESSION_CREATION, CORS, NO_CACHE)
-                .setAuthcFilter(JWT_AUTHC)
+                .setAuthcFilter(authcFilters.toArray(new FilterTemplates[0]))
                 .setAuthzFilter(AUTHZ)
                 // login/logout
                 .addRestPath("/user/login/openid", FORCE_SESSION_CREATION, OIDC_AUTH, UPDATE_TOKEN, SEND_TOKEN_IN_REDIRECT)

@@ -7,6 +7,7 @@ public enum FilterTemplates {
     SEND_TOKEN_IN_REDIRECT("sendTokenInRedirect"),
 
     JWT_AUTHC("jwtAuthc"),
+    ACCESS_AUTHC("accessAuthc"),
     NEGOTIATE_AUTHC("negotiateAuthc"),
     GOOGLE_AUTHC("googleAuthc"),
     FACEBOOK_AUTHC("facebookAuthc"),

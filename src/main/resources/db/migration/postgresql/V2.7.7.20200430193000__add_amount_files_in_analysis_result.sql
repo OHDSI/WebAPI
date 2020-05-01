@@ -1,0 +1,1 @@
+ALTER TABLE ${ohdsiSchema}.ee_analysis_status ADD IF NOT EXISTS amount_files_in_analysis BIGINT;

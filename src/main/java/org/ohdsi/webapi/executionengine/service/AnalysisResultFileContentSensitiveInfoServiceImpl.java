@@ -21,9 +21,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 import static com.google.common.io.Files.createTempDir;
-import static org.ohdsi.webapi.executionengine.service.ArchiveService.deleteZipWithVolumes;
-import static org.ohdsi.webapi.executionengine.service.ArchiveService.isArchive;
-import static org.ohdsi.webapi.executionengine.service.ArchiveService.isArchiveVolume;
 
 @Service
 public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractSensitiveInfoService implements AnalysisResultFileContentSensitiveInfoService {
@@ -63,7 +60,7 @@ public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractS
             Map<AnalysisResultFileContent, Path> paths = saveFiles(temporaryDir, source.getFiles());
             paths.forEach((file, path) -> {
                 // Archive volumes will be processed as entire archive
-                if(!isArchiveVolume(path)) {
+                if(!AnalysisZipUtils.isArchiveVolume(path)) {
                     processFile(path, variables);
                 }
             });
@@ -146,7 +143,7 @@ public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractS
         try {
             CommonFileUtils.unzipFiles(zipPath.toFile(), temporaryDir);
 
-            deleteZipWithVolumes(zipPath);
+            AnalysisZipUtils.deleteZipWithVolumes(zipPath);
 
             Files.list(temporaryDir.toPath()).forEach(path -> {
                 try {
@@ -187,10 +184,10 @@ public class AnalysisResultFileContentSensitiveInfoServiceImpl extends AbstractS
                 LOGGER.debug("File for process: {}", path.toString());
             }
 
-            if (isArchive(path.getFileName().toString())) {
+            if (AnalysisZipUtils.isArchive(path.getFileName().toString())) {
                 // If file is archive - decompress it first
                 processArchive(path, variables);
-            } else if (!isArchiveVolume(path)) {
+            } else if (!AnalysisZipUtils.isArchiveVolume(path)) {
                 doFilterSensitiveInfo(path, variables);
             }
         } catch (IOException e) {

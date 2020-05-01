@@ -282,7 +282,7 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
             List<AnalysisResultFile> outputFiles = analysisExecution.getResultFiles(); //outputFileRepository.findByExecutionId(analysisExecution.getId());
 
             for(AnalysisResultFile resultFile : outputFiles) {
-                if (isResultArchive(resultFile)) {
+                if (AnalysisZipUtils.isResultArchive(resultFile.getFileName())) {
                     addEntitiesFromZip(zos, resultFile, tempDirectory);
                 } else {
                     addEntityFromFile(zos, resultFile);
@@ -291,12 +291,6 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
         }
 
         return archive;
-    }
-
-    private boolean isResultArchive(AnalysisResultFile resultFile) {
-
-        return StringUtils.endsWithIgnoreCase(FilenameUtils.getExtension(resultFile.getFileName()), "zip") &&
-                StringUtils.containsIgnoreCase(resultFile.getFileName(), "result");
     }
 
     private void addEntityFromFile(ZipOutputStream zos, AnalysisResultFile resultFile) throws IOException {

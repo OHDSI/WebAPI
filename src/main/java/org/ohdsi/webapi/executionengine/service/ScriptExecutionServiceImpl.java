@@ -124,15 +124,15 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
 
         final String analysisExecutionUrl = "/analyze";
         WebTarget webTarget = client.target(executionEngineURL + analysisExecutionUrl);
-        try {
+        try{
             File tempDir = Files.createTempDirectory(TEMPDIR_PREFIX).toFile();
-            try {
+            try{
                 saveFilesToTempDir(tempDir, files);
-                try (MultiPart multiPart = buildRequest(buildAnalysisRequest(executionId, dataSourceData, updatePassword, executableFilename), tempDir)) {
+                try(MultiPart multiPart = buildRequest(buildAnalysisRequest(executionId, dataSourceData, updatePassword, executableFilename), tempDir)) {
 
                     File zipFile = new File(tempDir, REQUEST_FILENAME);
                     CommonFileUtils.compressAndSplit(tempDir, zipFile, null);
-                    try (InputStream in = new FileInputStream(zipFile)) {
+                    try(InputStream in = new FileInputStream(zipFile)) {
                         StreamDataBodyPart filePart = new StreamDataBodyPart("file", in, zipFile.getName());
                         multiPart.bodyPart(filePart);
 
@@ -146,10 +146,10 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
                                         AnalysisRequestStatusDTO.class);
                     }
                 }
-            } finally {
+            }finally {
                 FileUtils.deleteQuietly(tempDir);
             }
-        } catch (ZipException | IOException e) {
+        }catch (ZipException | IOException e) {
             log.error("Failed to compress request files", e);
             throw new InternalServerErrorException(e);
         }
@@ -164,9 +164,9 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
     private void saveFilesToTempDir(File tempDir, List<AnalysisFile> files) {
 
         files.forEach(file -> {
-            try (OutputStream out = new FileOutputStream(new File(tempDir, file.getFileName()))) {
+            try(OutputStream out = new FileOutputStream(new File(tempDir, file.getFileName()))) {
                 IOUtils.write(file.getContents(), out);
-            } catch (IOException e) {
+            }catch (IOException e) {
                 log.error("Cannot build request to ExecutionEngine", e);
                 throw new InternalServerErrorException();
             }

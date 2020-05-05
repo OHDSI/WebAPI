@@ -15,37 +15,29 @@
  */
 package org.ohdsi.webapi.test.feasibility;
 
-import java.util.Date;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.WebApi;
 import org.ohdsi.webapi.feasibility.FeasibilityStudy;
 import org.ohdsi.webapi.feasibility.FeasibilityStudyRepository;
 import org.ohdsi.webapi.feasibility.StudyGenerationInfo;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
  * @author Chris Knoll <cknoll@ohdsi.org>
  */
-@RunWith(SpringRunner.class)
 @SpringBootTest(classes = WebApi.class)
 @Rollback
-public class StudyInfoTest {
-
-  @Autowired
-  private CohortDefinitionRepository cohortDefinitionRepository;
+public class StudyInfoTest extends AbstractDatabaseTest {
 
   @Autowired
   private FeasibilityStudyRepository studyRepository;
@@ -53,9 +45,7 @@ public class StudyInfoTest {
   @Autowired
   private SourceRepository sourceRepository;
   
-  @Autowired
-  private TransactionTemplate transactionTemplate;  
-  
+ 
   @PersistenceContext
   protected EntityManager entityManager;
 
@@ -63,7 +53,8 @@ public class StudyInfoTest {
   @Transactional(transactionManager="transactionManager")
   public void testStudyCRUD() {
     
-    Source source = sourceRepository.findOne(1);
+    Source source = new Source();
+    source.setSourceId(1);
     FeasibilityStudy newStudy = new FeasibilityStudy();
     newStudy.setName("Test Info Study");
     newStudy = this.studyRepository.save(newStudy);

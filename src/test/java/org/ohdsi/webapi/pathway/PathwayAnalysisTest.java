@@ -172,6 +172,34 @@ public class PathwayAnalysisTest extends AbstractDatabaseTest {
 
     return source;
   }
+  
+  private void loadPrepData(String[] datasetPaths) throws Exception {
+    final IDatabaseConnection dbUnitCon = getConnection();
+    final IDataSet ds = DataSetFactory.createDataSet(datasetPaths);
+
+    assertNotNull("No dataset found", ds);
+
+    try {
+      DatabaseOperation.CLEAN_INSERT.execute(dbUnitCon, ds); // clean load of the DB. Careful, clean means "delete the old stuff"
+    } catch (final DatabaseUnitException e) {
+      fail(e.getMessage());
+    } finally {
+      dbUnitCon.close();
+    }
+  }
+  
+  private void generateAnalysis(PathwayAnalysisEntity entity) throws Exception {
+    JobExecutionResource executionResource = pathwayService.generatePathways(entity.getId(), SOURCE_ID);
+    PathwayAnalysisGenerationEntity generationEntity;
+    while (true) {
+        generationEntity = pathwayService.getGeneration(executionResource.getExecutionId());
+        if (generationEntity.getStatus().equals("FAILED") || generationEntity.getStatus().equals("COMPLETED")) {
+            break;
+        }
+        Thread.sleep(2000L);
+    }
+    assertEquals("COMPLETED", generationEntity.getStatus());
+  }
 
   /**
    * Basic test that defines a pathway analysis with a Target cohort of the observation period start-end, 
@@ -197,38 +225,17 @@ public class PathwayAnalysisTest extends AbstractDatabaseTest {
   public void test01_simplePathway() throws Exception {
     final String[] testDataSetsPaths = new String[] { "/pathway/vocabulary.json", "/pathway/simpleTest_PREP.json" };
      
-    final IDatabaseConnection dbUnitCon = getConnection();
-    final IDataSet ds = DataSetFactory.createDataSet(testDataSetsPaths);
-
-    assertNotNull("No dataset found", ds);
-
-    try {
-      DatabaseOperation.CLEAN_INSERT.execute(dbUnitCon, ds); // clean load of the DB. Careful, clean means "delete the old stuff"
-    } catch (final DatabaseUnitException e) {
-      fail(e.getMessage());
-    } finally {
-      dbUnitCon.close();
-    }
-    
-    Integer personCount = jdbcTemplate.queryForObject(String.format("select count(*) from %s.person", CDM_SCHEMA_NAME), Integer.class);
-    assertEquals(personCount, new Integer(1));
+    loadPrepData(testDataSetsPaths);
     
     // CDM data loaded, generate pathways
     PathwayAnalysisEntity entity = converter.convertToEntityAttribute(ResourceHelper.GetResourceAsString("/pathway/simpleTest_design.json"));      
     entity = pathwayService.importAnalysis(entity);
-    JobExecutionResource executionResource = pathwayService.generatePathways(entity.getId(), SOURCE_ID);
-    PathwayAnalysisGenerationEntity generationEntity;
-    while (true) {
-        generationEntity = pathwayService.getGeneration(executionResource.getExecutionId());
-        if (generationEntity.getStatus().equals("FAILED") || generationEntity.getStatus().equals("COMPLETED")) {
-            break;
-        }
-        Thread.sleep(2000L);
-    }
-    assertEquals("COMPLETED", generationEntity.getStatus());
+    
+    generateAnalysis(entity);
     
     // Validate results
     // Load actual records from cohort table
+    final IDatabaseConnection dbUnitCon = getConnection();
     final ITable pathwayCodes = dbUnitCon.createQueryTable(RESULT_SCHEMA_NAME + ".pathway_analysis_codes", 
             String.format("SELECT code, name, is_combo from %s ORDER BY code, name, is_combo", RESULT_SCHEMA_NAME + ".pathway_analysis_codes"));
     final ITable pathwayPaths = dbUnitCon.createQueryTable(RESULT_SCHEMA_NAME + ".pathway_analysis_paths", 
@@ -280,38 +287,17 @@ public class PathwayAnalysisTest extends AbstractDatabaseTest {
   public void test02_collapseWindow() throws Exception {
     final String[] testDataSetsPaths = new String[] { "/pathway/vocabulary.json", "/pathway/collapseTest_PREP.json" };
      
-    final IDatabaseConnection dbUnitCon = getConnection();
-    final IDataSet ds = DataSetFactory.createDataSet(testDataSetsPaths);
-
-    assertNotNull("No dataset found", ds);
-
-    try {
-      DatabaseOperation.CLEAN_INSERT.execute(dbUnitCon, ds); // clean load of the DB. Careful, clean means "delete the old stuff"
-    } catch (final DatabaseUnitException e) {
-      fail(e.getMessage());
-    } finally {
-      dbUnitCon.close();
-    }
-    
-    Integer personCount = jdbcTemplate.queryForObject(String.format("select count(*) from %s.person", CDM_SCHEMA_NAME), Integer.class);
-    assertEquals(personCount, new Integer(1));
-    
+    loadPrepData(testDataSetsPaths);
+        
     // CDM data loaded, generate pathways
     PathwayAnalysisEntity entity = converter.convertToEntityAttribute(ResourceHelper.GetResourceAsString("/pathway/collapseTest_design.json"));      
     entity = pathwayService.importAnalysis(entity);
-    JobExecutionResource executionResource = pathwayService.generatePathways(entity.getId(), SOURCE_ID);
-    PathwayAnalysisGenerationEntity generationEntity;
-    while (true) {
-        generationEntity = pathwayService.getGeneration(executionResource.getExecutionId());
-        if (generationEntity.getStatus().equals("FAILED") || generationEntity.getStatus().equals("COMPLETED")) {
-            break;
-        }
-        Thread.sleep(2000L);
-    }
-    assertEquals("COMPLETED", generationEntity.getStatus());
-    
+
+    generateAnalysis(entity);
+
     // Validate results
     // Load actual records from cohort table
+    final IDatabaseConnection dbUnitCon = getConnection();
     final ITable pathwayCodes = dbUnitCon.createQueryTable(RESULT_SCHEMA_NAME + ".pathway_analysis_codes", 
             String.format("SELECT code, name, is_combo from %s ORDER BY code, name, is_combo", RESULT_SCHEMA_NAME + ".pathway_analysis_codes"));
     final ITable pathwayPaths = dbUnitCon.createQueryTable(RESULT_SCHEMA_NAME + ".pathway_analysis_paths", 

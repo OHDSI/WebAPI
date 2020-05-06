@@ -152,7 +152,7 @@
         <executionengine.resultExclusions></executionengine.resultExclusions>
 		<executionengine.updateStatusCallback>http://localhost:8080/WebAPI/executionservice/callbacks/submission/{id}/status/update/{password}</executionengine.updateStatusCallback>
 		<executionengine.resultCallback>http://localhost:8080/WebAPI/executionservice/callbacks/submission/{id}/result/{password}</executionengine.resultCallback>
-
+    <analysis.result.zipVolumeSizeMb>100</analysis.result.zipVolumeSizeMb>
 
     <!-- PASSWORD ENCRYPTION -->
     <jasypt.encryptor.enabled>false</jasypt.encryptor.enabled>
@@ -184,7 +184,6 @@
     <!-- Use "-" for files without extension, "*" for all files, extension must not include a leading dot. Use comma to separate values.
      In case of "*" other values will be ignored -->
     <sensitiveinfo.analysis.extensions>txt</sensitiveinfo.analysis.extensions>
-
     <hydra.externalPackage.prediction></hydra.externalPackage.prediction>
     <hydra.externalPackage.estimation></hydra.externalPackage.estimation>
 

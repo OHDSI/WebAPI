@@ -1,1 +1,1 @@
-ALTER TABLE ${ohdsiSchema}.ee_analysis_status ADD amount_files_in_analysis NUMBER(19);
+ALTER TABLE ${ohdsiSchema}.ee_analysis_status ADD amount_files_in_analysis INTEGER;

@@ -58,6 +58,7 @@ public class DataAccessConfig {
 		@DependsOn("defaultStringEncryptor")
     @Primary    
     public DataSource primaryDataSource() {
+        logger.info("datasource.url is: " + this.env.getRequiredProperty("datasource.url"));
         String driver = this.env.getRequiredProperty("datasource.driverClassName");
         String url = this.env.getRequiredProperty("datasource.url");
         String user = this.env.getRequiredProperty("datasource.username");

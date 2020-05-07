@@ -59,14 +59,6 @@ public class AnalysisZipUtils {
         }
     }
 
-    public static int getAmountFilesInArchive(Path analysisResultPath) throws IOException {
-
-        try (java.util.zip.ZipFile zin = new java.util.zip.ZipFile(analysisResultPath.toFile())) {
-            Long collect = zin.stream().filter(e -> !e.isDirectory()).count();
-            return collect.intValue();
-        }
-    }
-
     public static void repackZipWithMultivalue(Path zipPath, int zipVolumeSizeMb) {
 
         File temporaryDir = createTempDir();

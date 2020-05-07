@@ -1,5 +1,8 @@
 {
   "locale": "ru",
+  "common": {
+    "loading": "Загрузка"
+  },
   "format": {
     "number": "# ###,##",
     "date": {
@@ -102,8 +105,9 @@
     },
     "inclusionRuleEditor": {
       "unnamedCriteria": "Безымянный критерий",
-      "copy": "копия",
-      "delete": "удалять"
+      "copy": "Копия",
+      "delete": "Удалить",
+      "ruleDescriptionPlaceholder": "введите описание правила"
     },
     "feasibilityReportViewer": {
       "feasibilityReportViewerText_1": "Скорость матча",
@@ -148,6 +152,7 @@
       }
     },
     "export": {
+      "button": "Экспорт",
       "progress": "экспорт в процессе"
     },
     "import": {
@@ -1131,9 +1136,46 @@
     "title": "Начало",
     "welcome": "Добро пожаловать в Атлас."
   },
-  "incidencerate": {
+  "ir": {
     "title": "Анализ инцидентности",
-    "newanalysis": "Новый анализ"
+    "newanalysis": "Новый анализ",
+    "notSavedMessage": "Анализ инцидентности не сохранен. Вы действительно хотите удалить изменения?",
+    "nameIsEmpty": "Имя не может быть пустым.",
+    "tabs": {
+      "definition": "Определение",
+      "conceptSets": "Наборы концепций",
+      "generation": "Генерация",
+      "utilities": "Утилиты"
+    },
+    "editor": {
+      "studyCohorts": "Изучение когорт",
+      "targetCohorts": "Целевые когорты",
+      "outcomeCohorts": "Исходящие когорты",
+      "addTargetCohort": "Добавить целевую когорту",
+      "addOutcomeCohort": "Добавить исходящую когорту",
+      "chooseACohort": "Выберите когорту",
+      "timeAtRisk": "Время риска",
+      "timeAtRiskMessage": "Время риска определяет временное окно относительно даты начала и окончания когорты с оффсетом для принятия во внимание людей 'с риском'.",
+      "timeAtRiskStartsWith": "Время риска начинается",
+      "timeAtRiskStartDate": "дата начала",
+      "timeAtRiskEndsWith": "Время риска заканчивается",
+      "timeAtRiskEndDate": "дата окончания",
+      "timeAtRiskPlus": "плюс",
+      "timeAtRiskDays": "дней.",
+      "timeAtRiskWarningMessage": "Ошибка: дата начала позже даты оканчания",
+      "addStudyWindow": "Добавить окно изучения",
+      "noStudyWindowDefined": "Окно изучения не определено.",
+      "studyWindowBeginsOn": "Окно изучения начинается",
+      "studyWindowEndsOn": "и заканчивается",
+      "removeStudyWindow": "Удалить окно изучения",
+      "selectInclusionCriteriaMessage": "Пожалуйста выберите критерий для редактирования.",
+      "stratifyCriteria": "Критерий стратификации:",
+      "stratifyCriteriaMessage": "Вы можете добавить необязательный критерий стратификации, который разделит популяцию на уникальные группы, основываясь на удовлетворяющих им критериях.",
+      "newStratifyCriteria": "Новый критерий стратификации"
+    },
+    "cs": {
+      "modalTitle": "Выберите набор концепций"
+    }
   },
   "pathways": {
     "title": "Анализы Исходов Когорты",

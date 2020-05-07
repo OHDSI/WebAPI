@@ -517,7 +517,10 @@
       "done": "Выполнено",
       "selectConcept": "Выберите концепцию",
       "search": "Поиск",
-      "waitMessage": "Пожалуйста, подождите, пока провайдер словарного запаса не начинает..."
+      "waitMessage": "Пожалуйста, подождите, пока провайдер словарного запаса не начинает...",
+      "addSelected": "Добавить выбранные",
+      "addAndClose": "Добавить и закрыть",
+      "close": "Закрыть"
     },
     "criteriaGroup": {
       "having": "имеющий",
@@ -574,6 +577,25 @@
       "importConcept": "Импортировать концепцию",
       "clearConceptSet": "Очистить концепцию",
       "searchWithTripleDots": "Поиск..."
+    },
+    "selectSourcesBtn": {
+      "generate": "Генерировать",
+      "pickAtLeastOneSourceAlert": "Пожалкйста, выберите хотя бы один источник"
+    },
+    "conceptSetBuilder": {
+      "unnamedConceptSet": "Безымянный набор концепций",
+      "pleaseSelectCodesetToModify": "Выберите, пожалуйста, набор для модификации...",
+      "newConceptSet": "Новый набор концепций",
+      "export": "Экспорт",
+      "exportConceptSetTitle": "Экспорт набора концепций...",
+      "import": "Импорт",
+      "importConceptSetTitle": "Импорт набора концепций...",
+      "importConceptSetPlaceholder": "Импорт набора концепций",
+      "conceptSet": "Набор концепций",
+      "includedConcepts": "Включенные концепции",
+      "mappedConcepts": "Сопоставленные концепции",
+      "load": "Загрузить",
+      "delete": "Удалить"
     }
   },
   "facets": {
@@ -1141,6 +1163,10 @@
     "newanalysis": "Новый анализ",
     "notSavedMessage": "Анализ инцидентности не сохранен. Вы действительно хотите удалить изменения?",
     "nameIsEmpty": "Имя не может быть пустым.",
+    "nameConflict": "Анализ с таким имененм уже существует. Пожалуйста, выберите другое имя.",
+    "savingError": "Ошибка при сохранении анализа.",
+    "deleteConfirmation": "Действительно удалить анализ? Предупреждение: это действие необратимо!",
+    "deleteResultConfirmation": "Удалить результат генерации ",
     "tabs": {
       "definition": "Определение",
       "conceptSets": "Наборы концепций",
@@ -1175,6 +1201,35 @@
     },
     "cs": {
       "modalTitle": "Выберите набор концепций"
+    },
+    "results": {
+      "selectTargetAndOutcomeAlert": "Пожалуйста, выберите целевую и исходящую когорту.",
+      "loadingGenerationResultErrorMessage": "Ошибка генерации отчета",
+      "showingTargetCohort": "Целевая когорта:",
+      "andOutcomeCohort": "и исходящая когорта:",
+      "generationInProgress": "Генерация в процессе",
+      "accessDenied": "Доступ запрещен",
+      "exportToCsvButton": "Экспортировать в CSV",
+      "sourceName": "Имя источника",
+      "persons": "Люди",
+      "cases": "Случаи",
+      "proportion": "Пропорция",
+      "timeAtRisk": "Время риска",
+      "timeAtRiskYears": "(годы)",
+      "rate": "Отношение",
+      "started": "Запущено",
+      "duration": "Длительность",
+      "per": "за",
+      "perYears": "лет",
+      "perPersons": "чел",
+      "cancel": "Отмена",
+      "reports": "Отчеты",
+      "rerun": "Перезапуск",
+      "running": "Запущено",
+      "close": "Закрыть",
+      "canceled": "ОТМЕНЕНО",
+      "failed": "ОШИБКА",
+      "loadingSummary": "Загрузка сводных данных..."
     }
   },
   "pathways": {

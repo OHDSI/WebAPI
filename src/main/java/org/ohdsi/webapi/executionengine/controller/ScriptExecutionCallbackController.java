@@ -174,11 +174,9 @@ public class ScriptExecutionCallbackController {
         // Volumes will be removed during decompressing and compressing
         contentList = sensitiveInfoService.filterSensitiveInfo(contentList, variables);
 
-        AnalysisZipRepackService.AnalysisRepackResult analysisRepackResult = analysisZipRepackService.process(contentList.getFiles(), zipVolumeSizeMb);
-        analysisExecution.setAmountFilesInAnalysis(analysisRepackResult.getAmountFilesInAnalysis());
+        List<AnalysisResultFileContent> analysisRepackResult = analysisZipRepackService.process(contentList.getFiles(), zipVolumeSizeMb);
+        analysisResultFileContentRepository.save(analysisRepackResult);
 
-        analysisResultFileContentRepository.save(analysisRepackResult.getResultFileContents());
-        analysisExecutionRepository.save(analysisExecution);
     }
 
 }

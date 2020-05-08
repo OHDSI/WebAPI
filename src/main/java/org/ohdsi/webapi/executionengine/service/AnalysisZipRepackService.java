@@ -23,7 +23,6 @@ import org.springframework.stereotype.Service;
 /**
  * This class responsible for:
  * <li> if the analysis results file is too large, then it is split into volumes, which allows us to store huge data in DB without a headache
- * <li> It counts the number of files in the analysis
  */
 @Service
 public class AnalysisZipRepackService {
@@ -31,41 +30,39 @@ public class AnalysisZipRepackService {
     protected static final Logger LOGGER = LoggerFactory.getLogger(AnalysisZipRepackService.class);
     public static final String MEDIA_TYPE = "application";
 
-    public AnalysisRepackResult process(List<AnalysisResultFileContent> originalFileContent, int zipVolumeSizeMb) {
+    public List<AnalysisResultFileContent> process(List<AnalysisResultFileContent> originalFileContent, int zipVolumeSizeMb) {
 
         if (CollectionUtils.isEmpty(originalFileContent)) {
-            return new AnalysisRepackResult(originalFileContent);
+            return originalFileContent;
         }
 
         File temporaryDir = createTempDir();
 
-        AnalysisRepackResult analysisRepackResult = new AnalysisRepackResult(originalFileContent);
-        try {
-            AnalysisResultFileContent analysisResultZip = originalFileContent.stream()
-                    .filter(content -> AnalysisZipUtils.isResultArchive(content.getAnalysisResultFile().getFileName()))
-                    .findFirst().orElse(null);
+        List<AnalysisResultFileContent> analysisRepackResult = originalFileContent;
+        AnalysisResultFileContent analysisResultZip = originalFileContent.stream()
+                .filter(content -> AnalysisZipUtils.isResultArchive(content.getAnalysisResultFile().getFileName()))
+                .filter(content -> content.getContents().length > zipVolumeSizeMb * 1024 * 1024)
+                .findFirst().orElse(null);
 
-            if (analysisResultZip != null) {
+        if (analysisResultZip != null) {
+            try {
                 List<AnalysisResultFileContent> contentsWithoutAnalysisResultZip = originalFileContent.stream()
                         .filter(content -> !content.equals(analysisResultZip))
                         .collect(Collectors.toList());
 
                 Path analysisResultZipPath = AnalysisZipUtils.createFileInTempDir(temporaryDir, analysisResultZip.getAnalysisResultFile().getFileName(), analysisResultZip.getContents());
-                int amountFilesInAnalysis = contentsWithoutAnalysisResultZip.size() + AnalysisZipUtils.getAmountFilesInArchive(analysisResultZipPath);
 
                 AnalysisZipUtils.repackZipWithMultivalue(analysisResultZipPath, zipVolumeSizeMb);
                 List<AnalysisResultFileContent> contentsForRepackedAnalysisResultZip = getContentsForMultivalueZip(temporaryDir, analysisResultZip);
 
-                List<AnalysisResultFileContent> resultFileContents = ListUtils.union(contentsWithoutAnalysisResultZip, contentsForRepackedAnalysisResultZip);
-                analysisRepackResult = new AnalysisRepackResult(resultFileContents, amountFilesInAnalysis);
+                analysisRepackResult = ListUtils.union(contentsWithoutAnalysisResultZip, contentsForRepackedAnalysisResultZip);
+
+            } catch (Exception e) {
+                LOGGER.error("Cannot split archives", e);
+            } finally {
+                FileUtils.deleteQuietly(temporaryDir);
             }
-
-        } catch (Exception e) {
-            LOGGER.error("Cannot split archives", e);
-        } finally {
-            FileUtils.deleteQuietly(temporaryDir);
         }
-
         return analysisRepackResult;
     }
 
@@ -93,34 +90,6 @@ public class AnalysisZipRepackService {
         analysisResultFile.setMediaType(MEDIA_TYPE);
         analysisResultFile.setExecution(execution);
         return analysisResultFile;
-    }
-
-    public static class AnalysisRepackResult {
-
-        private final List<AnalysisResultFileContent> resultFileContents;
-        private final int amountFilesInAnalysis;
-
-        public AnalysisRepackResult(List<AnalysisResultFileContent> resultFileContents, int amountFilesInAnalysis) {
-
-            this.resultFileContents = CollectionUtils.isNotEmpty(resultFileContents) ? resultFileContents : Collections.emptyList();
-            this.amountFilesInAnalysis = amountFilesInAnalysis;
-        }
-
-        public AnalysisRepackResult(List<AnalysisResultFileContent> resultFileContents) {
-
-            this.resultFileContents = CollectionUtils.isNotEmpty(resultFileContents) ? resultFileContents : Collections.emptyList();
-            this.amountFilesInAnalysis = resultFileContents.size();
-        }
-
-        public List<AnalysisResultFileContent> getResultFileContents() {
-
-            return resultFileContents;
-        }
-
-        public int getAmountFilesInAnalysis() {
-
-            return amountFilesInAnalysis;
-        }
     }
 
 }

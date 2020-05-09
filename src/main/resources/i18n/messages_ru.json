@@ -805,7 +805,7 @@
         "domain": "Домен",
         "standardConceptCode": "Код стандартной концепции",
         "standardConceptCaption": "Стандартная концепция",
-        "mapped": "Mapped",
+        "mapped": "Сопоставлено",
         "exclude": "Исключить",
         "descendants": "Потомки"
       }
@@ -891,7 +891,7 @@
         "conceptName": "Имя концепции",
         "nonStandard": "Нестандартный",
         "domain": "Домен",
-        "mapped": "Mapped",
+        "mapped": "Сопоставено",
         "conceptId": "Id концепции",
         "exclude": "Исключить",
         "resetColumns": "Сбросить колонки"
@@ -957,6 +957,7 @@
           "class": "Класс",
           "domainId": "Id домена"
         },
+        "modalTitle": "Выберите набор концепций",
         "viewCountMessage": "Количество записей в БД (RC) и количество записей-потомков (DRC) для:",
         "conceptSet1": "Набор концепций 1:",
         "compareConceptSets": "Сравнение наборов концепций",

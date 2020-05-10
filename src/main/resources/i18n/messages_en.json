@@ -27,26 +27,26 @@
   },
   "datatable": {
     "language": {
-      "decimal":        "",
-      "emptyTable":     "No data available in table",
-      "info":           "Showing _START_ to _END_ of _TOTAL_ entries",
-      "infoEmpty":      "Showing 0 to 0 of 0 entries",
-      "infoFiltered":   "(filtered from _MAX_ total entries)",
-      "infoPostFix":    "",
-      "thousands":      ",",
-      "lengthMenu":     "Show _MENU_ entries",
+      "decimal": "",
+      "emptyTable": "No data available in table",
+      "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+      "infoEmpty": "Showing 0 to 0 of 0 entries",
+      "infoFiltered": "(filtered from _MAX_ total entries)",
+      "infoPostFix": "",
+      "thousands": ",",
+      "lengthMenu": "Show _MENU_ entries",
       "loadingRecords": "Loading...",
-      "processing":     "Processing...",
-      "search":         "Filter:",
-      "zeroRecords":    "No matching records found",
+      "processing": "Processing...",
+      "search": "Filter:",
+      "zeroRecords": "No matching records found",
       "paginate": {
-        "first":      "First",
-        "last":       "Last",
-        "next":       "Next",
-        "previous":   "Previous"
+        "first": "First",
+        "last": "Last",
+        "next": "Next",
+        "previous": "Previous"
       },
       "aria": {
-        "sortAscending":  ": activate to sort column ascending",
+        "sortAscending": ": activate to sort column ascending",
         "sortDescending": ": activate to sort column descending"
       }
     }
@@ -204,7 +204,7 @@
       "enterCohortPlaceholder": "Enter a cohort definition description here",
       "importConceptSet": "Import Concept Set From Repository..."
     },
-    "cohortExpressionEditor": { 
+    "cohortExpressionEditor": {
       "cohortEntryEvents": "Cohort Entry Events",
       "cohortEntryEventsText_1": "'Events are recorded time-stamped observations for the persons, such as drug exposures, conditions, procedures, measurements and visits. All events have a start date and end date, though some events may have a start date and end date with the same value (such as procedures or measurements).'",
       "inclusionCriteria": "Inclusion Criteria",
@@ -226,18 +226,15 @@
       "restrictInitialEventsTitle": "Restrict intial events to:",
       "removeRestriction": "Remove initial event restriction",
       "restrictInitialEventsButton": "Restrict initial events",
-
-      "inclusionCriteriaTitle" : "Inclusion Criteria",
+      "inclusionCriteriaTitle": "Inclusion Criteria",
       "newInclusionCriteria": "New inclusion criteria",
       "inclusionCriteriaText_1": "Limit qualifying events to:",
-
       "cohortExitTitle": "Cohort Exit",
       "eventPersistence": "Event Persistence:",
       "censoringEvents": "Censoring Events:",
       "cohortExitText_4": "Exit Cohort based on the following criteria:",
       "addCensoringEvent": "Add Censoring Event",
       "cohortExitText_5": "No censoring events selected.",
-
       "cohortErasTitle": "Cohort Eras",
       "cohortErasText_1": "Specify era collapse gap size:",
       "cohortErasText_2": "Left censor cohort start dates to",
@@ -571,7 +568,7 @@
     }
   },
   "facets": {
-    "date" : {
+    "date": {
       "justNow": "Just Now",
       "within24Hours": "Within 24 Hours",
       "thisWeek": "This Week",
@@ -1318,7 +1315,6 @@
         "desc_visit": "Filter Visit Occurrences by the Condition Start Date.",
         "title_demographic": "Add Start Date Criteria",
         "desc_demographic": "Filter events based by Start Date."
-        
       },
       "addEndDate": {
         "title_era": "Add End Date Criteria",
@@ -1656,7 +1652,6 @@
         "title_visit": "Add Place of Service Location Criteria",
         "desc_visit": "Filter Visit Occurrences based on distance from Place of Service to Patient."
       },
-
       "addAgeCriteria": {
         "title": "Add Age Criteria",
         "desc": "Filter events based on age."
@@ -1677,16 +1672,26 @@
         "title": "Add Ethnicity Criteria",
         "desc": "Filter events based on Ethnicity."
       },
-    "newEntityNames": {
-      "characterization": "New Characterization",
-      "featureAnalysis": "New Feature Analysis",
-      "cohortDefinition": "New Cohort Definition",
-      "incidenceRate": "New Incidence Rate Analysis",
-      "pathway": "New Cohort Pathway",
-      "ple": "New Population Level Estimation Analysis",
-      "conceptSet": "New Concept Set",
-      "plp": "New Patient Level Prediction Analysis"
+      "newEntityNames": {
+        "characterization": "New Characterization",
+        "featureAnalysis": "New Feature Analysis",
+        "cohortDefinition": "New Cohort Definition",
+        "incidenceRate": "New Incidence Rate Analysis",
+        "pathway": "New Cohort Pathway",
+        "ple": "New Population Level Estimation Analysis",
+        "conceptSet": "New Concept Set",
+        "plp": "New Patient Level Prediction Analysis"
+      }
     }
+  },
+  "notifications": {
+    "title": "Notifications (last <%=length%>)",
+    "explanation": "Notifications for jobs will be displayed here. A job could include cohort generation, cohort reporting, or other tasks that can take a long time to complete. This top right notification icon will highlight <i class=\"fa fa-bell pending\"></i> if you have new notifications available.",
+    "jobName": "Job Name",
+    "duration": "Duration",
+    "endTime": "End Time",
+    "status": "Status",
+    "showCompletedJobsButton": "Show Completed Jobs",
+    "hideCompletedJobsButton": "Hide Completed Jobs"
   }
-}
 }

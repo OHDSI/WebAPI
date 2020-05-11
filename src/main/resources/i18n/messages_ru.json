@@ -1,7 +1,12 @@
 {
   "locale": "ru",
   "common": {
-    "loading": "Загрузка"
+    "loading": "Загрузка",
+    "save": "Сохранить",
+    "close": "Закрыть",
+    "createACopy": "Создать копию",
+    "configureAccess": "Настроить доступ",
+    "delete": "Удалить"
   },
   "format": {
     "number": "# ###,##",
@@ -595,13 +600,25 @@
       "includedConcepts": "Включенные концепции",
       "mappedConcepts": "Сопоставленные концепции",
       "load": "Загрузить",
-      "delete": "Удалить"
+      "delete": "Удалить",
+      "removeSelected": "Удалить выбранные"
+    },
+    "copyToClipboard": {
+      "buttonText": "Скопировать в буфер обмена",
+      "messageText": "Скопировано!"
     }
   },
   "facets": {
     "caption": {
       "lastModified": "Последняя правка",
-      "author": "Автор"
+      "author": "Автор",
+      "vocabulary": "Словарь",
+      "class": "Класс",
+      "domain": "Домен",
+      "standardConcept": "Стандартная концепция",
+      "invalidReason": "Причина невалидности",
+      "hasRecords": "Есть записи",
+      "hasDescendantRecords": "Есть записи-наследники"
     },
     "date": {
       "justNow": "Только что",
@@ -614,9 +631,20 @@
   "columns": {
     "id": "Id",
     "name": "Наименование",
+    "code": "Код",
     "created": "Создано",
     "updated": "Изменено",
-    "author": "Автор"
+    "author": "Автор",
+    "conceptId": "ID концепции",
+    "conceptCode": "Код концепции",
+    "conceptName": "Имя концепции",
+    "class": "Класс",
+    "standardConceptCaption": "Стандартная концепция",
+    "domain": "Домен",
+    "vocabulary": "Словарь",
+    "exclude": "Исключить",
+    "descendants": "Наследники",
+    "mapped": "Сопоставлено"
   },
   "dataSources": {
     "headingTitle": "Источники данных",
@@ -1163,6 +1191,7 @@
   },
   "ir": {
     "title": "Анализ инцидентности",
+    "caption": "Анализ инцидентности №",
     "newanalysis": "Новый анализ",
     "notSavedMessage": "Анализ инцидентности не сохранен. Вы действительно хотите удалить изменения?",
     "nameIsEmpty": "Имя не может быть пустым.",

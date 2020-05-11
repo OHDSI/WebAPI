@@ -1162,9 +1162,6 @@
       }
     }
   },
-  "incidenceRates": {
-    "title": "Инцидентность"
-  },
   "home": {
     "description": "АТЛАС это продукт с открытым исходным кодом, разработанный в рамках <a href=\"http://www.ohdsi.org\" target=\"_new\">OHDSI</a>, предоставляющий доступ к данным пациентов и аналитике.",
     "documentation": {
@@ -1262,6 +1259,40 @@
       "canceled": "ОТМЕНЕНО",
       "failed": "ОШИБКА",
       "loadingSummary": "Загрузка сводных данных..."
+    }
+  },
+  "profiles": {
+    "title": "Профили",
+    "loadingProfile": "Загрузка данных профиля",
+    "processingProfile": "Обработка профиля",
+    "сantFind": "Не найдено",
+    "toggleChartTooltip": "Включить/выключить график",
+    "toggleTableTooltip": "Включить/выключить таблицу",
+    "highlightEventsTooltip": "Подсветка событий",
+    "eventHighlighting": "Подсветка событий",
+    "setSelectedEventsColor": "Установить цвет для выбранных событий",
+    "clearAllHighlightColors": "Очистить все цвета подстветки",
+    "clickHereToSelectACohort": "Нажмите здесь, чтобы выбрать когорту",
+    "recordCounts": "<%=count%> записей",
+    "ageAt": "Возраст <%=age%>",
+    "atIndex": "при индексировании",
+    "atStartOfObservation": "при начале наблюдений",
+    "chart": {
+      "event": "Событие: ",
+      "startDay": "День начала: ",
+      "startDate": "Дата начала: "
+    },
+    "highlightColumns": {
+      "name": "Имя концепции",
+      "domain": "Домен",
+      "totalRecords": "Всего записей"
+    },
+    "columns": {
+      "id": "ID концепции",
+      "name": "Имя концепции",
+      "domain": "Домен",
+      "startDay": "Первый день",
+      "endDay": "Последний день"
     }
   },
   "pathways": {

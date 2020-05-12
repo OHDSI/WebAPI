@@ -13,7 +13,7 @@ import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.AbstractInMemoryTest;
+import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
@@ -25,9 +25,7 @@ import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,19 +41,22 @@ import java.util.stream.Collectors;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.ohdsi.webapi.Constants.Params.DESIGN_HASH;
 import static org.ohdsi.webapi.Constants.Params.RESULTS_DATABASE_SCHEMA;
+import org.springframework.beans.factory.annotation.Value;
 
 
-public class GenerationCacheTest extends AbstractInMemoryTest {
+public class GenerationCacheTest extends AbstractDatabaseTest {
 
     private static final String CDM_SQL = ResourceHelper.GetResourceAsString("/cdm-postgresql-ddl.sql");
     private static final String COHORT_JSON = ResourceHelper.GetResourceAsString("/generationcache/cohort/cohortIbuprofenOlder50.json");
     private static final String INSERT_COHORT_RESULTS_SQL = ResourceHelper.GetResourceAsString("/generationcache/cohort/insertCohortResults.sql");
     private static final String COHORT_COUNTS_SQL = ResourceHelper.GetResourceAsString("/generationcache/cohort/queryCohortCounts.sql");
-    private static final Integer INITIAL_ENTITY_ID = 2;
     private static final String EUNOMIA_CSV_ZIP = "/eunomia.csv.zip";
     private static final String CDM_SCHEMA_NAME = "cdm";
     private static final String RESULT_SCHEMA_NAME = "results";
-
+    private static final String SOURCE_KEY = "Embedded_PG";
+    private static boolean isSetup = false;
+    private int cohortId;  // will be set to the test cohort for each test excution
+    
     @Autowired
     private GenerationCacheService generationCacheService;
 
@@ -70,7 +71,10 @@ public class GenerationCacheTest extends AbstractInMemoryTest {
 
     @Autowired
     private CohortDefinitionRepository cohortDefinitionRepository;
-
+    
+    @Value("${datasource.ohdsi.schema}")
+    private String ohdsiSchema;
+  
     private static final Collection<String> COHORT_DDL_FILE_PATHS = Arrays.asList(
 		// cohort generation results
 		"/ddl/results/cohort.sql",
@@ -92,26 +96,30 @@ public class GenerationCacheTest extends AbstractInMemoryTest {
     @Before
     public void setUp() throws SQLException {
 
-        prepareResultSchema();
+        if (!isSetup) { // one-time setup per class here
+          truncateTable(String.format("%s.%s", ohdsiSchema, "source"));
+          resetSequence(String.format("%s.%s", ohdsiSchema,"source_sequence"));         
+          sourceRepository.saveAndFlush(getCdmSource());
+          isSetup = true;
+        }
+
+        // reset cohort tables
+        truncateTable(String.format("%s.%s", ohdsiSchema, "cohort_definition_details"));
+        truncateTable(String.format("%s.%s", ohdsiSchema, "cohort_definition"));
+        resetSequence(String.format("%s.%s", ohdsiSchema, "cohort_definition_sequence"));
+        
+        cohortId = cohortDefinitionRepository.save(getCohortDefinition()).getId();
+        cohortGenerationRequestBuilder = getCohortGenerationRequestBuilder(sourceRepository.findBySourceKey(SOURCE_KEY));
         generationCacheRepository.deleteAll();
-
-        if (cohortDefinitionRepository.findOne(INITIAL_ENTITY_ID) == null) {
-            cohortDefinitionRepository.save(getCohortDefinition());
-        }
-
-        if (sourceRepository.findOne(INITIAL_ENTITY_ID) == null) {
-            sourceRepository.saveAndFlush(getCdmSource());
-        }
-
-        cohortGenerationRequestBuilder = getCohortGenerationRequestBuilder(sourceRepository.findBySourceId(INITIAL_ENTITY_ID));
+        prepareResultSchema();
     }
 
     @Test
     public void generateCohort() {
 
         AtomicBoolean isSqlExecuted = new AtomicBoolean();
-        CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(INITIAL_ENTITY_ID);
-        Source source = sourceRepository.findBySourceId(INITIAL_ENTITY_ID);
+        CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(cohortId);
+        Source source = sourceRepository.findBySourceKey(SOURCE_KEY);
 
         // Run first-time generation
 
@@ -165,8 +173,8 @@ public class GenerationCacheTest extends AbstractInMemoryTest {
     public void checkCachingWithEmptyResultSet() {
 
         CacheableGenerationType type = CacheableGenerationType.COHORT;
-        CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(INITIAL_ENTITY_ID);
-        Source source = sourceRepository.findBySourceId(INITIAL_ENTITY_ID);
+        CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(cohortId);
+        Source source = sourceRepository.findBySourceKey(SOURCE_KEY);
 
         generationCacheHelper.computeCacheIfAbsent(
                 cohortDefinition,
@@ -180,29 +188,9 @@ public class GenerationCacheTest extends AbstractInMemoryTest {
     }
 
     @Test
-    public void checkCachingWithPrefilledResults() {
-
-        CacheableGenerationType type = CacheableGenerationType.COHORT;
-        CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(INITIAL_ENTITY_ID);
-        Source source = sourceRepository.findBySourceId(INITIAL_ENTITY_ID);
-
-        executeCohort(new AtomicBoolean(), 10);
-
-        generationCacheHelper.computeCacheIfAbsent(
-                cohortDefinition,
-                source,
-                cohortGenerationRequestBuilder,
-                (resId, sqls) -> {}
-        );
-
-        GenerationCache generationCache = generationCacheService.getCacheOrEraseInvalid(type, generationCacheService.getDesignHash(type, cohortDefinition.getDetails().getExpression()), source.getSourceId());
-        Assert.assertEquals("Generation sequence respects existing results", (Integer) 11, generationCache.getDesignHash());
-    }
-
-    @Test
     public void checkHashEquivalence() {
 
-        CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(INITIAL_ENTITY_ID);
+        CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(cohortId);
         
         Integer originalHash = generationCacheHelper.computeHash(cohortDefinition.getDetails().getExpression());
 
@@ -269,7 +257,7 @@ public class GenerationCacheTest extends AbstractInMemoryTest {
 
         Source source = new Source();
         source.setSourceName("Embedded PG");
-        source.setSourceKey("Embedded_PG");
+        source.setSourceKey(SOURCE_KEY);
         source.setSourceDialect(DBMSType.POSTGRESQL.getOhdsiDB());
         source.setSourceConnection(getDataSource().getConnection().getMetaData().getURL());
         source.setUsername("postgres");
@@ -311,17 +299,13 @@ public class GenerationCacheTest extends AbstractInMemoryTest {
     // Not used in the current test set. Will be utilized for cohort generation testing
     private static void prepareCdmSchema() throws IOException, ZipException {
 
-        DataSource dataSource = getDataSource();
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         String cdmSql = getCdmSql();
         jdbcTemplate.batchUpdate("CREATE SCHEMA cdm;", cdmSql);
     }
 
     private static void prepareResultSchema() {
 
-        DataSource dataSource = getDataSource();
         String resultSql = getResultTablesSql();
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         jdbcTemplate.batchUpdate(SqlSplit.splitSql(resultSql));
     }
 

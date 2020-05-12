@@ -85,6 +85,6 @@ public interface Constants {
     String COHORT_INCLUSION_RESULT_CACHE = "cohort_inclusion_result_cache";
     String COHORT_INCLUSION_STATS_CACHE = "cohort_inclusion_stats_cache";
     String COHORT_SUMMARY_STATS_CACHE = "cohort_summary_stats_cache";
-    String COHORT_CENSOR_STATS_CACHE = "cohort_censor_stats";
+    String COHORT_CENSOR_STATS_CACHE = "cohort_censor_stats_cache";
   }
 }

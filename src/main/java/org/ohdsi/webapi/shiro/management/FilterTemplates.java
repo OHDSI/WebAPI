@@ -12,6 +12,7 @@ public enum FilterTemplates {
     FACEBOOK_AUTHC("facebookAuthc"),
     GITHUB_AUTHC("githubAuthc"),
     CAS_AUTHC("casAuthc"),
+    SAML_AUTHC("samlAuthc"),
     
 
     NO_SESSION_CREATION("noSessionCreation"),
@@ -31,6 +32,7 @@ public enum FilterTemplates {
     OAUTH_CALLBACK("oauthCallback"),
     HANDLE_UNSUCCESSFUL_OAUTH("handleUnsuccessfullOAuth"),
     HANDLE_CAS("handleCas"),
+    HANDLE_SAML("handleSaml"),
     RUN_AS("runAs");
     
     private String templateName;

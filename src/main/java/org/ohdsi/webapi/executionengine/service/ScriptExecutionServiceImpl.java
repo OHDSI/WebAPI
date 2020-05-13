@@ -1,23 +1,28 @@
 package org.ohdsi.webapi.executionengine.service;
 
+import static org.ohdsi.webapi.executionengine.service.AnalysisZipUtils.getHeadersForFilesThatWillBeAddedToZip;
+
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestDTO;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestStatusDTO;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
 import com.odysseusinc.arachne.execution_engine_common.util.CommonFileUtils;
 import java.nio.file.Path;
-import java.util.zip.ZipFile;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import jersey.repackaged.com.google.common.collect.ImmutableList;
 import jersey.repackaged.com.google.common.collect.ImmutableMap;
+import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
+import net.lingala.zip4j.model.FileHeader;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
 import org.ohdsi.webapi.JobInvalidator;
+import org.ohdsi.webapi.exception.AtlasException;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
@@ -55,8 +60,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 @Service
 @Transactional
@@ -278,47 +281,77 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
         File archive = tempDirectory.resolve(fileName).toFile();
         archive.deleteOnExit();
 
-        try(ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(archive))) {
-            List<AnalysisResultFile> outputFiles = analysisExecution.getResultFiles(); //outputFileRepository.findByExecutionId(analysisExecution.getId());
+        try {
+            ZipFile resultZip = new ZipFile(archive);
 
-            for(AnalysisResultFile resultFile : outputFiles) {
-                if (AnalysisZipUtils.isResultArchive(resultFile.getFileName())) {
-                    addEntitiesFromZip(zos, resultFile, tempDirectory);
-                } else {
-                    addEntityFromFile(zos, resultFile);
-                }
+            List<AnalysisResultFile> zipFiles = analysisExecution.getResultFiles().stream()
+                    .filter(resultFile ->
+                            AnalysisZipUtils.isResultArchive(resultFile.getFileName()) ||
+                            AnalysisZipUtils.isResultArchiveVolume(resultFile.getFileName()))
+                    .collect(Collectors.toList());
+
+            List<AnalysisResultFile> otherFiles = analysisExecution.getResultFiles().stream()
+                    .filter(resultFile -> !zipFiles.contains(resultFile))
+                    .collect(Collectors.toList());
+
+            for (AnalysisResultFile resultFile : otherFiles) {
+                addFileToZip(resultZip, resultFile);
             }
-        }
 
+            copyContentOfOneZipToAnotherZip(zipFiles, resultZip,tempDirectory);
+        } catch (ZipException e) {
+            throw new AtlasException("Cannot process zip archive result", e);
+        }
         return archive;
     }
 
-    private void addEntityFromFile(ZipOutputStream zos, AnalysisResultFile resultFile) throws IOException {
 
-        ZipEntry entry = new ZipEntry(resultFile.getFileName());
-        entry.setSize(resultFile.getContents().length);
-        zos.putNextEntry(entry);
-        zos.write(resultFile.getContents());
-        zos.closeEntry();
+    private void addFileToZip(ZipFile resultZip, AnalysisResultFile resultFile) throws ZipException {
+
+        resultZip.addStream(
+                new ByteArrayInputStream(resultFile.getContents()),
+                getHeadersForFilesThatWillBeAddedToZip(resultFile.getFileName())
+        );
     }
 
-    private void addEntitiesFromZip(ZipOutputStream zos, AnalysisResultFile resultFile, Path tempDirectory) throws IOException {
+    private void copyContentOfOneZipToAnotherZip(List<AnalysisResultFile> zipWithMultivolume, ZipFile resultZip, Path tempDirectory) throws IOException, ZipException {
 
-        File zipFile = tempDirectory.resolve(resultFile.getFileName()).toFile();
-        FileUtils.writeByteArrayToFile(zipFile, resultFile.getContents());
-
-        try(ZipFile zin = new ZipFile(zipFile)) {
-            zin.stream().forEach(inEntry -> {
-                try{
-                    ZipEntry outEntry = new ZipEntry(inEntry.getName());
-                    outEntry.setSize(inEntry.getSize());
-                    zos.putNextEntry(outEntry);
-                    zos.write(IOUtils.toByteArray(zin.getInputStream(inEntry)));
-                    zos.closeEntry();
-                }catch (Exception ex) {
-                    logger.debug("Cannot repack zip entity{}", inEntry.getName(), ex);
-                }
-            });
+        if (CollectionUtils.isEmpty(zipWithMultivolume)) {
+            return;
         }
+
+        Optional<AnalysisResultFile> zipAnalysisFileOpt = zipWithMultivolume.stream()
+                .filter(file -> AnalysisZipUtils.isArchive(file.getFileName()))
+                .findFirst();
+
+        if (zipAnalysisFileOpt.isPresent()) {
+
+            AnalysisResultFile zipAnalysisFile = zipAnalysisFileOpt.orElse(null);
+            File zipFile = saveZipFileToTempDirectory(zipAnalysisFile, tempDirectory);
+            saveZipVolumeFilesToTempDirectory(zipWithMultivolume, tempDirectory);
+            ZipFile outZipFile = new ZipFile(zipFile);
+            //getFileHeaders return not generic List, that is already fixed in the last version of library
+            for (FileHeader header : (List< FileHeader>) outZipFile.getFileHeaders()) {
+                resultZip.addStream(
+                        outZipFile.getInputStream(header),
+                        getHeadersForFilesThatWillBeAddedToZip(header.getFileName())
+                );
+            }
+        }
+    }
+
+    private void saveZipVolumeFilesToTempDirectory(List<AnalysisResultFile> resultFiles, Path tempDirectory) throws IOException {
+        for (AnalysisResultFile resultFile : resultFiles) {
+            if (AnalysisZipUtils.isResultArchiveVolume(resultFile.getFileName())) {
+                saveZipFileToTempDirectory(resultFile, tempDirectory);
+            }
+        }
+    }
+
+    private File saveZipFileToTempDirectory(AnalysisResultFile resultFile, Path tempDirectory) throws IOException {
+
+        File file = tempDirectory.resolve(resultFile.getFileName()).toFile();
+        FileUtils.writeByteArrayToFile(file, resultFile.getContents());
+        return file;
     }
 }

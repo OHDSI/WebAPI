@@ -14,6 +14,7 @@ import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.hydra.Hydra;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.JobInvalidator;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
@@ -617,6 +618,9 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     @Override
     @DataSourceAccess
     public GenerationResults findData(@CcGenerationId final Long generationId, ExecutionResultRequest params) {
+        if (params.getShowEmptyResults()) {
+          params.setThresholdValuePct(Constants.DEFAULT_THRESHOLD); //Don't cut threshold results when all results requested
+        }
         GenerationResults res = findResult(generationId, params);
         boolean hasComparativeReports = res.getReports().stream()
                 .anyMatch(report -> report.isComparative);

@@ -35,15 +35,13 @@ import org.pac4j.core.client.Client;
 import org.pac4j.core.client.Clients;
 import org.pac4j.core.config.Config;
 import org.pac4j.core.http.callback.PathParameterCallbackUrlResolver;
-import org.pac4j.core.io.Resource;
-import org.pac4j.core.util.CommonHelper;
 import org.pac4j.oauth.client.FacebookClient;
 import org.pac4j.oauth.client.GitHubClient;
 import org.pac4j.oauth.client.Google2Client;
 import org.pac4j.oidc.client.OidcClient;
 import org.pac4j.oidc.config.OidcConfiguration;
 import org.pac4j.saml.client.SAML2Client;
-import org.pac4j.saml.client.SAML2ClientConfiguration;
+import org.pac4j.saml.config.SAML2Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -393,20 +391,16 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
     private void setUpSaml(Map<FilterTemplates, Filter> filters) {
       try {
-        Resource keystorePath = CommonHelper.getResource(keyStoreFile);
-        Resource metadataLocationPath = CommonHelper.getResource(metadataLocation);
-        final SAML2ClientConfiguration cfg = new SAML2ClientConfiguration(
-                keystorePath,
-                alias,
-                null,
+        final SAML2Configuration cfg = new SAML2Configuration(
+                keyStoreFile,
                 keyStorePassword,
                 privateKeyPassword,
-                metadataLocationPath);
+                metadataLocation);
         cfg.setMaximumAuthenticationLifetime(3600);
         cfg.setServiceProviderEntityId(identityProviderEntityId);
 
         cfg.setServiceProviderMetadataPath(spMetadataLocation);
-        cfg.setDestinationBindingType(SAMLConstants.SAML2_REDIRECT_BINDING_URI);
+        cfg.setAuthnRequestBindingType(SAMLConstants.SAML2_REDIRECT_BINDING_URI);
 
         final SAML2Client saml2Client = new SAML2Client(cfg);
         Config samlCfg = new Config(new Clients(samlCallbackUrl, saml2Client));

@@ -85,7 +85,7 @@
   "components": {
     "generateComponent": {
       "generate": "Generate",
-      "generating": "Generating",
+      "generating": "Generating"
     },
     "textFilter": {
       "startsWith": "Starting With",

@@ -1,5 +1,13 @@
 {
   "locale": "ru",
+  "common": {
+    "loading": "Загрузка",
+    "save": "Сохранить",
+    "close": "Закрыть",
+    "createACopy": "Создать копию",
+    "configureAccess": "Настроить доступ",
+    "delete": "Удалить"
+  },
   "format": {
     "number": "# ###,##",
     "date": {
@@ -113,8 +121,9 @@
     },
     "inclusionRuleEditor": {
       "unnamedCriteria": "Безымянный критерий",
-      "copy": "копия",
-      "delete": "удалять"
+      "copy": "Копия",
+      "delete": "Удалить",
+      "ruleDescriptionPlaceholder": "введите описание правила"
     },
     "feasibilityReportViewer": {
       "feasibilityReportViewerText_1": "Скорость матча",
@@ -159,6 +168,7 @@
       }
     },
     "export": {
+      "button": "Экспорт",
       "progress": "экспорт в процессе"
     },
     "import": {
@@ -523,7 +533,10 @@
       "done": "Выполнено",
       "selectConcept": "Выберите концепцию",
       "search": "Поиск",
-      "waitMessage": "Пожалуйста, подождите, пока провайдер словарного запаса не начинает..."
+      "waitMessage": "Пожалуйста, подождите, пока провайдер словарного запаса не начинает...",
+      "addSelected": "Добавить выбранные",
+      "addAndClose": "Добавить и закрыть",
+      "close": "Закрыть"
     },
     "criteriaGroup": {
       "having": "имеющий",
@@ -580,9 +593,44 @@
       "importConcept": "Импортировать концепцию",
       "clearConceptSet": "Очистить концепцию",
       "searchWithTripleDots": "Поиск..."
+    },
+    "selectSourcesBtn": {
+      "generate": "Генерировать",
+      "pickAtLeastOneSourceAlert": "Пожалкйста, выберите хотя бы один источник"
+    },
+    "conceptSetBuilder": {
+      "unnamedConceptSet": "Безымянный набор концепций",
+      "pleaseSelectCodesetToModify": "Выберите, пожалуйста, набор для модификации...",
+      "newConceptSet": "Новый набор концепций",
+      "export": "Экспорт",
+      "exportConceptSetTitle": "Экспорт набора концепций...",
+      "import": "Импорт",
+      "importConceptSetTitle": "Импорт набора концепций...",
+      "importConceptSetPlaceholder": "Импорт набора концепций",
+      "conceptSet": "Набор концепций",
+      "includedConcepts": "Включенные концепции",
+      "mappedConcepts": "Сопоставленные концепции",
+      "load": "Загрузить",
+      "delete": "Удалить",
+      "removeSelected": "Удалить выбранные"
+    },
+    "copyToClipboard": {
+      "buttonText": "Скопировать в буфер обмена",
+      "messageText": "Скопировано!"
     }
   },
   "facets": {
+    "caption": {
+      "lastModified": "Последняя правка",
+      "author": "Автор",
+      "vocabulary": "Словарь",
+      "class": "Класс",
+      "domain": "Домен",
+      "standardConcept": "Стандартная концепция",
+      "invalidReason": "Причина невалидности",
+      "hasRecords": "Есть записи",
+      "hasDescendantRecords": "Есть записи-наследники"
+    },
     "date": {
       "justNow": "Только что",
       "within24Hours": "В последние 24 часа",
@@ -590,6 +638,24 @@
       "lastWeek": "На прошлой неделе",
       "others": "Более 2 недель назад"
     }
+  },
+  "columns": {
+    "id": "Id",
+    "name": "Наименование",
+    "code": "Код",
+    "created": "Создано",
+    "updated": "Изменено",
+    "author": "Автор",
+    "conceptId": "ID концепции",
+    "conceptCode": "Код концепции",
+    "conceptName": "Имя концепции",
+    "class": "Класс",
+    "standardConceptCaption": "Стандартная концепция",
+    "domain": "Домен",
+    "vocabulary": "Словарь",
+    "exclude": "Исключить",
+    "descendants": "Наследники",
+    "mapped": "Сопоставлено"
   },
   "dataSources": {
     "headingTitle": "Источники данных",
@@ -778,7 +844,7 @@
         "domain": "Домен",
         "standardConceptCode": "Код стандартной концепции",
         "standardConceptCaption": "Стандартная концепция",
-        "mapped": "Mapped",
+        "mapped": "Сопоставлено",
         "exclude": "Исключить",
         "descendants": "Потомки"
       }
@@ -809,6 +875,8 @@
       },
       "exploreEvidence": {
         "title": "Исследование Свидетельства:",
+        "invalidCsWarning": "Сохраненные вами концепции исходят из разных доменов или из домена вне условий или препаратов. Набор концепций должен содержать ТОЛЬКО условия ИЛИ препараты, чтобы запустить исследование.",
+        "noCsWarning": "Необходимо определитьнабор концепций с препаратами из словаря RxNorm на уровне класса Ingredient ИЛИ Conditions из SNOMED. Набор концепций должен содержать ТОЛЬКО условия ИЛИ препараты, чтобы запустить исследование.",
         "deletedCcMessage1": "Набор концепаций",
         "deletedCcMessage2": "был удален. Пожалуйста, выберите другой набор концепций.",
         "drugLabelsFound": "Найдено меток лекарств",
@@ -862,7 +930,7 @@
         "conceptName": "Имя концепции",
         "nonStandard": "Нестандартный",
         "domain": "Домен",
-        "mapped": "Mapped",
+        "mapped": "Сопоставлено",
         "conceptId": "Id концепции",
         "exclude": "Исключить",
         "resetColumns": "Сбросить колонки"
@@ -928,6 +996,7 @@
           "class": "Класс",
           "domainId": "Id домена"
         },
+        "modalTitle": "Выберите набор концепций",
         "viewCountMessage": "Количество записей в БД (RC) и количество записей-потомков (DRC) для:",
         "conceptSet1": "Набор концепций 1:",
         "compareConceptSets": "Сравнение наборов концепций",
@@ -1128,9 +1197,114 @@
     "title": "Начало",
     "welcome": "Добро пожаловать в Атлас."
   },
-  "incidencerate": {
+  "ir": {
     "title": "Анализ инцидентности",
-    "newanalysis": "Новый анализ"
+    "caption": "Анализ инцидентности №",
+    "newanalysis": "Новый анализ",
+    "notSavedMessage": "Анализ инцидентности не сохранен. Вы действительно хотите удалить изменения?",
+    "nameIsEmpty": "Имя не может быть пустым.",
+    "nameConflict": "Анализ с таким имененм уже существует. Пожалуйста, выберите другое имя.",
+    "savingError": "Ошибка при сохранении анализа.",
+    "deleteConfirmation": "Действительно удалить анализ? Предупреждение: это действие необратимо!",
+    "deleteResultConfirmation": "Удалить результат генерации ",
+    "tabs": {
+      "definition": "Определение",
+      "conceptSets": "Наборы концепций",
+      "generation": "Генерация",
+      "utilities": "Утилиты"
+    },
+    "editor": {
+      "studyCohorts": "Изучение когорт",
+      "targetCohorts": "Целевые когорты",
+      "outcomeCohorts": "Исходящие когорты",
+      "addTargetCohort": "Добавить целевую когорту",
+      "addOutcomeCohort": "Добавить исходящую когорту",
+      "chooseACohort": "Выберите когорту",
+      "timeAtRisk": "Время риска",
+      "timeAtRiskMessage": "Время риска определяет временное окно относительно даты начала и окончания когорты с оффсетом для принятия во внимание людей 'с риском'.",
+      "timeAtRiskStartsWith": "Время риска начинается",
+      "timeAtRiskStartDate": "дата начала",
+      "timeAtRiskEndsWith": "Время риска заканчивается",
+      "timeAtRiskEndDate": "дата окончания",
+      "timeAtRiskPlus": "плюс",
+      "timeAtRiskDays": "дней.",
+      "timeAtRiskWarningMessage": "Ошибка: дата начала позже даты оканчания",
+      "addStudyWindow": "Добавить окно изучения",
+      "noStudyWindowDefined": "Окно изучения не определено.",
+      "studyWindowBeginsOn": "Окно изучения начинается",
+      "studyWindowEndsOn": "и заканчивается",
+      "removeStudyWindow": "Удалить окно изучения",
+      "selectInclusionCriteriaMessage": "Пожалуйста выберите критерий для редактирования.",
+      "stratifyCriteria": "Критерий стратификации:",
+      "stratifyCriteriaMessage": "Вы можете добавить необязательный критерий стратификации, который разделит популяцию на уникальные группы, основываясь на удовлетворяющих им критериях.",
+      "newStratifyCriteria": "Новый критерий стратификации"
+    },
+    "cs": {
+      "modalTitle": "Выберите набор концепций"
+    },
+    "results": {
+      "selectTargetAndOutcomeAlert": "Пожалуйста, выберите целевую и исходящую когорту.",
+      "loadingGenerationResultErrorMessage": "Ошибка генерации отчета",
+      "showingTargetCohort": "Целевая когорта:",
+      "andOutcomeCohort": "и исходящая когорта:",
+      "generationInProgress": "Генерация в процессе",
+      "accessDenied": "Доступ запрещен",
+      "exportToCsvButton": "Экспортировать в CSV",
+      "sourceName": "Имя источника",
+      "persons": "Люди",
+      "cases": "Случаи",
+      "proportion": "Пропорция",
+      "timeAtRisk": "Время риска",
+      "timeAtRiskYears": "(годы)",
+      "rate": "Отношение",
+      "started": "Запущено",
+      "duration": "Длительность",
+      "per": "за",
+      "perYears": "лет",
+      "perPersons": "чел",
+      "cancel": "Отмена",
+      "reports": "Отчеты",
+      "rerun": "Перезапуск",
+      "running": "Запущено",
+      "close": "Закрыть",
+      "canceled": "ОТМЕНЕНО",
+      "failed": "ОШИБКА",
+      "loadingSummary": "Загрузка сводных данных..."
+    }
+  },
+  "profiles": {
+    "title": "Профили",
+    "loadingProfile": "Загрузка данных профиля",
+    "processingProfile": "Обработка профиля",
+    "сantFind": "Не найдено",
+    "toggleChartTooltip": "Включить/выключить график",
+    "toggleTableTooltip": "Включить/выключить таблицу",
+    "highlightEventsTooltip": "Подсветка событий",
+    "eventHighlighting": "Подсветка событий",
+    "setSelectedEventsColor": "Установить цвет для выбранных событий",
+    "clearAllHighlightColors": "Очистить все цвета подстветки",
+    "clickHereToSelectACohort": "Нажмите здесь, чтобы выбрать когорту",
+    "recordCounts": "<%=count%> записей",
+    "ageAt": "Возраст <%=age%>",
+    "atIndex": "при индексировании",
+    "atStartOfObservation": "при начале наблюдений",
+    "chart": {
+      "event": "Событие: ",
+      "startDay": "День начала: ",
+      "startDate": "Дата начала: "
+    },
+    "highlightColumns": {
+      "name": "Имя концепции",
+      "domain": "Домен",
+      "totalRecords": "Всего записей"
+    },
+    "columns": {
+      "id": "ID концепции",
+      "name": "Имя концепции",
+      "domain": "Домен",
+      "startDay": "Первый день",
+      "endDay": "Последний день"
+    }
   },
   "pathways": {
     "title": "Анализы Исходов Когорты",
@@ -1274,7 +1448,9 @@
             "eventCohort": "Когорта Событий"
           },
           "noPathways": "Исходы в результате исследования не были найдены"
-        }
+        },
+        "noCompletedExecutionsWarning": "Для источника данных еще нет завершенных исследований.",
+        "stopGenerationConfirmation": "Действительно остановить генерацию?"
       },
       "utilities": {
         "title": "Дополнительно",
@@ -1999,5 +2175,15 @@
         "utilization": "Использование"
       }
     }
+  },
+  "notifications": {
+    "title": "Уведомления (последние <%=length%>)",
+    "explanation": "Здесь будут отображены уведомления для задач. Задачи включают генерацию когорт, отчеты и другие долговременные процессы. Иконка цведомлений <i class=\"fa fa-bell pending\"></i> будет подсвечена, если есть новые уведомления.",
+    "jobName": "Имя задачи",
+    "duration": "Длительность",
+    "endTime": "Время окончания",
+    "status": "Состояние",
+    "showCompletedJobsButton": "Показать завершенные задачи",
+    "hideCompletedJobsButton": "Скрыть завершенные задачи"
   }
 }

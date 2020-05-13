@@ -1,0 +1,102 @@
+{
+  "cdm.concept": [
+    {
+      "concept_id": 1,
+      "concept_name": "Parent 1",
+      "domain_id": "CONDITION",
+      "vocabulary_id": "TestVocab",
+      "concept_class_id": "Clinical Finding",
+      "concept_code": "P1",
+      "standard_concept": "S",
+      "valid_start_date": "1900-01-01",
+      "valid_end_date": "2099-01-01"
+    },
+    {
+      "concept_id": 2,
+      "concept_name": "Child 1 [Parent: 1]",
+      "domain_id": "CONDITION",
+      "vocabulary_id": "TestVocab",
+      "concept_class_id": "Clinical Finding",
+      "concept_code": "C1P1",
+      "standard_concept": "S",
+      "valid_start_date": "1900-01-01",
+      "valid_end_date": "2099-01-01"
+    },
+    {
+      "concept_id": 3,
+      "concept_name": "Child 2 [Parent 1]",
+      "domain_id": "CONDITION",
+      "vocabulary_id": "TestVocab",
+      "concept_class_id": "Clinical Finding",
+      "concept_code": "C2P1",
+      "standard_concept": "S",
+      "valid_start_date": "1900-01-01",
+      "valid_end_date": "2099-01-01"
+    },
+    {
+      "concept_id": 4,
+      "concept_name": "Child 3 [Parent 1]",
+      "domain_id": "CONDITION",
+      "vocabulary_id": "TestVocab",
+      "concept_class_id": "Clinical Finding",
+      "concept_code": "C3P1",
+      "standard_concept": "S",
+      "valid_start_date": "1900-01-01",
+      "valid_end_date": "2099-01-01"
+    },
+    {
+      "concept_id": 5,
+      "concept_name": "Child 4 [Parent 1]",
+      "domain_id": "CONDITION",
+      "vocabulary_id": "TestVocab",
+      "concept_class_id": "Clinical Finding",
+      "concept_code": "C4P1",
+      "standard_concept": "S",
+      "valid_start_date": "1900-01-01",
+      "valid_end_date": "2099-01-01"
+    },
+    {
+      "concept_id": 6,
+      "concept_name": "Child 5 [Parent 1]",
+      "domain_id": "CONDITION",
+      "vocabulary_id": "TestVocab",
+      "concept_class_id": "Clinical Finding",
+      "concept_code": "C5P1",
+      "standard_concept": "S",
+      "valid_start_date": "1900-01-01",
+      "valid_end_date": "2099-01-01"
+    }
+  ],
+  "cdm.concept_ancestor": [
+    {
+      "ancestor_concept_id": 1,
+      "descendant_concept_id": 2,
+      "min_levels_of_separation": 1,
+      "max_levels_of_separation": 1
+    },
+    {
+      "ancestor_concept_id": 1,
+      "descendant_concept_id": 3,
+      "min_levels_of_separation": 1,
+      "max_levels_of_separation": 1
+    },
+    {
+      "ancestor_concept_id": 1,
+      "descendant_concept_id": 4,
+      "min_levels_of_separation": 1,
+      "max_levels_of_separation": 1
+    },
+    {
+      "ancestor_concept_id": 1,
+      "descendant_concept_id": 5,
+      "min_levels_of_separation": 1,
+      "max_levels_of_separation": 1
+    },
+    {
+      "ancestor_concept_id": 1,
+      "descendant_concept_id": 6,
+      "min_levels_of_separation": 1,
+      "max_levels_of_separation": 1
+    }
+  ]
+}

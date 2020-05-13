@@ -83,6 +83,10 @@
     "eventEnds": "event ends"
   },
   "components": {
+    "generateComponent": {
+      "generate": "Generate",
+      "generating": "Generating",
+    },
     "textFilter": {
       "startsWith": "Starting With",
       "contains": "Containing",
@@ -1655,28 +1659,8 @@
       "addPlaceServiceDistance": {
         "title_visit": "Add Place of Service Location Criteria",
         "desc_visit": "Filter Visit Occurrences based on distance from Place of Service to Patient."
-      },
-
-      "addAgeCriteria": {
-        "title": "Add Age Criteria",
-        "desc": "Filter events based on age."
-      },
-      "addEventStartDateCriteria": {
-        "title": "Add Event Start Date Criteria",
-        "desc": "Filter Events by Start Date."
-      },
-      "addEventEndDateCriteria": {
-        "title": "Add Event End Date Criteria",
-        "desc": "Filter Events by End Date."
-      },
-      "addRaceCriteria": {
-        "title": "Add Race Criteria",
-        "desc": "Filter events based on Gender."
-      },
-      "addEthnicityCriteria": {
-        "title": "Add Ethnicity Criteria",
-        "desc": "Filter events based on Ethnicity."
-      },
+      }
+    },
     "newEntityNames": {
       "characterization": "New Characterization",
       "featureAnalysis": "New Feature Analysis",
@@ -1686,7 +1670,25 @@
       "ple": "New Population Level Estimation Analysis",
       "conceptSet": "New Concept Set",
       "plp": "New Patient Level Prediction Analysis"
+    },
+    "relatedSourcecodesOptions": {
+      "vocabulary": "Словарь",
+      "invalidReason": "Причина невалидности",
+      "class": "Класс",
+      "domain": "Домен"
+    },
+    "relatedSourcecodesColumns": {
+      "id": "Id",
+      "code": "Код",
+      "name": "Название",
+      "class": "Класс",
+      "standardConceptCaption": "Стандартная концепция",
+      "domain": "Домен",
+      "vocabulary": "Словарь"
+    },
+    "timeAtRiskCohortDate": {
+      "cohortStartDate": "Cohort start date",
+      "cohortEndDate": "Cohort end date"
     }
   }
-}
 }

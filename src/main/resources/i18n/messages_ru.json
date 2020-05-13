@@ -88,6 +88,17 @@
     "eventEnds": "событие заканчивается"
   },
   "components": {
+    "generateComponent": {
+      "generate": "Generate",
+      "generating": "Generating"
+    },
+    "cohortConceptSetBrowser": {
+      "tableId": "Id",
+      "tableTitle": "Title",
+      "tableCreated": "Created",
+      "tableModified": "Modified",
+      "tableAuthor": "Author"
+    },
     "textFilter": {
       "startsWith": "Начиная с",
       "contains": "Содержащие",

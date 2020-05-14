@@ -19,8 +19,10 @@
     <jersey.version>2.14</jersey.version>
     <SqlRender.version>1.6.3-SNAPSHOT</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
+    <pac4j.version>1.9.2</pac4j.version>
 
     <start-class>org.ohdsi.webapi.WebApi</start-class>
+    <skipTests>true</skipTests>
 
     <!-- Primary DataSource -->
     <!-- default sql server - TODO How about making postgres the default (e.g. in line with open source tech)? -alexfranken -->
@@ -132,6 +134,15 @@
     <security.duration.initial>10</security.duration.initial>
     <security.duration.increment>10</security.duration.increment>
 
+    <security.saml.entityId>com:odysseusinc:atlas:sp</security.saml.entityId>
+    <security.saml.idpMetadataLocation></security.saml.idpMetadataLocation>
+    <security.saml.keyManager.keyStoreFile></security.saml.keyManager.keyStoreFile>
+    <security.saml.keyManager.storePassword></security.saml.keyManager.storePassword>
+    <security.saml.keyManager.defaultKey></security.saml.keyManager.defaultKey>
+    <security.saml.keyManager.passwords.arachnenetwork></security.saml.keyManager.passwords.arachnenetwork>
+    <security.saml.metadataLocation></security.saml.metadataLocation>
+    <security.saml.callbackUrl></security.saml.callbackUrl>
+    <security.saml.sloUrl></security.saml.sloUrl>
 
     <spring.datasource.hikari.connection-test-query>SELECT 1</spring.datasource.hikari.connection-test-query>
     <spring.datasource.hikari.connection-test-query-timeout>2000</spring.datasource.hikari.connection-test-query-timeout>
@@ -179,6 +190,9 @@
 
     <spring.batch.taskExecutor.corePoolSize>10</spring.batch.taskExecutor.corePoolSize>
     <spring.batch.taskExecutor.maxPoolSize>20</spring.batch.taskExecutor.maxPoolSize>
+    <spring.batch.taskExecutor.queueCapacity>2147483647</spring.batch.taskExecutor.queueCapacity>
+    <spring.batch.taskExecutor.threadGroupName></spring.batch.taskExecutor.threadGroupName>
+    <spring.batch.taskExecutor.threadNamePrefix></spring.batch.taskExecutor.threadNamePrefix>
 
     <!-- Sensitive Info settings -->
     <sensitiveinfo.admin.role>admin</sensitiveinfo.admin.role>
@@ -295,7 +309,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.18.1</version>
         <configuration>
-          <skipTests>true</skipTests>
+          <skipTests>${skipTests}</skipTests>
         </configuration>
       </plugin>
       <plugin>
@@ -352,7 +366,7 @@
           </execution>
         </executions>
         <configuration>
-          <licence>cHJvamVjdHxvcmcub2hkc2kuV2ViQVBJfDIwMjAtMDMtMzF8dHJ1ZXwtMSNNQzBDRkNNQ2R2ZEhjbDg0Z2tONVI3bHlmQ2Y4SnNkYUFoVUFoMkdtOUVFdy9RelpLVzM1V2p6a2FsdzJZV009</licence>
+          <licence>cHJvamVjdHxvcmcub2hkc2kuV2ViQVBJfDIwMjUtMDEtMDF8ZmFsc2V8LTEjTUN3Q0ZDZkowMkZrVmVSeVlBazZVbTBmNThIbE15SjRBaFEwcVZyRUZuamZMTzJ0KzFtR3E3U3lMMkFESHc9PQ==</licence>
           <restModel>
             <httpStatusCodes>
               <httpStatusCode>
@@ -660,12 +674,17 @@
     <dependency>
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-oauth</artifactId>
-      <version>1.9.2</version>
+      <version>${pac4j.version}</version>
     </dependency>
     <dependency>
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-oidc</artifactId>
-      <version>1.9.2</version>
+      <version>${pac4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.pac4j</groupId>
+      <artifactId>pac4j-saml</artifactId>
+      <version>${pac4j.version}</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
@@ -831,19 +850,13 @@
     <dependency>
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-cas</artifactId>
-      <version>1.9.2</version>
+      <version>${pac4j.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
       <version>2.8.7</version>
       <type>jar</type>
-    </dependency>
-    <dependency>
-      <groupId>com.opentable.components</groupId>
-      <artifactId>otj-pg-embedded</artifactId>
-      <version>0.13.1</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
         <groupId>org.apache.solr</groupId>
@@ -856,6 +869,24 @@
       <artifactId>miredot-annotations</artifactId>
       <version>1.5.0</version>
     </dependency>
+    <dependency>
+      <groupId>com.opentable.components</groupId>
+      <artifactId>otj-pg-embedded</artifactId>
+      <version>0.13.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.dbunit</groupId>
+      <artifactId>dbunit</artifactId>
+      <version>2.6.0</version>
+      <scope>test</scope>
+    </dependency>    
+    <dependency>
+        <groupId>com.github.mjeanroy</groupId>
+        <artifactId>dbunit-plus</artifactId>
+        <version>2.0.1</version>
+        <scope>test</scope>
+    </dependency>     
   </dependencies>
   <profiles>
     <profile>

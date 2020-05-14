@@ -100,8 +100,8 @@ public class AnalysisZipUtils {
         parameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_MAXIMUM);
         parameters.setIncludeRootFolder(false);
         parameters.setReadHiddenFiles(false);
-        parameters.setFileNameInZip(fileName);
-        parameters.setSourceExternalStream(true);
+        parameters.setSourceExternalStream(true); // Zip4j identifies that the data will not be from a file but directly from a stream
+        parameters.setFileNameInZip(fileName); // this would be the name of the file for this entry in the zip file
         return parameters;
     }
 

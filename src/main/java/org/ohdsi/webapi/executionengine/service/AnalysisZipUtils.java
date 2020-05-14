@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.ZipParameters;
+import net.lingala.zip4j.util.Zip4jConstants;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -95,8 +96,8 @@ public class AnalysisZipUtils {
     public static ZipParameters getHeadersForFilesThatWillBeAddedToZip(String fileName) {
 
         ZipParameters parameters = new ZipParameters();
-        parameters.setCompressionMethod(8);
-        parameters.setCompressionLevel(7);
+        parameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
+        parameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_MAXIMUM);
         parameters.setIncludeRootFolder(false);
         parameters.setReadHiddenFiles(false);
         parameters.setFileNameInZip(fileName);

@@ -13,6 +13,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
+import net.lingala.zip4j.model.ZipParameters;
+import net.lingala.zip4j.util.Zip4jConstants;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,6 +31,10 @@ public class AnalysisZipUtils {
     public static boolean isArchiveVolume(Path path) {
 
         String filename = path.getFileName().toString();
+        return isArchiveVolume(filename);
+    }
+
+    public static boolean isArchiveVolume(String filename) {
 
         String extension = FilenameUtils.getExtension(filename);
         Pattern pattern = Pattern.compile(ZIP_VOLUME_EXT_PATTERN);
@@ -45,6 +51,11 @@ public class AnalysisZipUtils {
     public static boolean isResultArchive(String filename) {
 
         return isArchive(filename) && StringUtils.containsIgnoreCase(filename, "result");
+    }
+
+    public static boolean isResultArchiveVolume(String filename) {
+
+        return isArchiveVolume(filename) && StringUtils.containsIgnoreCase(filename, "result");
     }
 
     public static Path createFileInTempDir(File tempDir, String fileName, byte[] contents) {
@@ -81,6 +92,19 @@ public class AnalysisZipUtils {
             FileUtils.deleteQuietly(temporaryDir);
         }
     }
+
+    public static ZipParameters getHeadersForFilesThatWillBeAddedToZip(String fileName) {
+
+        ZipParameters parameters = new ZipParameters();
+        parameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
+        parameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_MAXIMUM);
+        parameters.setIncludeRootFolder(false);
+        parameters.setReadHiddenFiles(false);
+        parameters.setSourceExternalStream(true); // Zip4j identifies that the data will not be from a file but directly from a stream
+        parameters.setFileNameInZip(fileName); // this would be the name of the file for this entry in the zip file
+        return parameters;
+    }
+
 
     public static void deleteZipWithVolumes(Path zipPath) throws ZipException {
         ZipFile zipFile = new ZipFile(zipPath.toFile());

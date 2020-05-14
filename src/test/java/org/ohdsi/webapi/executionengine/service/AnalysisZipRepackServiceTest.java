@@ -31,8 +31,8 @@ public class AnalysisZipRepackServiceTest {
         sensitiveInfoService.init();
 
         resultFileContents = Arrays.asList(
-                new AnalysisResultFileContent(execution, "analysis_result.zip", "application", getTestArchive("/sensitiveinfo/analysis_result.zip")),
-                new AnalysisResultFileContent(execution, "stdout.txt", "text/plain", getTestArchive("/sensitiveinfo/stdout.txt"))
+                new AnalysisResultFileContent(execution, "analysis_result.zip", "application", getTestArchive("/analysisresult/analysis_result.zip")),
+                new AnalysisResultFileContent(execution, "stdout.txt", "text/plain", getTestArchive("/analysisresult/stdout.txt"))
         );
     }
 
@@ -64,9 +64,9 @@ public class AnalysisZipRepackServiceTest {
     public void processThereIsNotArchiveToSplit() throws IOException {
 
         resultFileContents = Arrays.asList(
-                new AnalysisResultFileContent(execution, "stdout.txt", "text/plain", getTestArchive("/sensitiveinfo/stdout.txt")),
-                new AnalysisResultFileContent(execution, "file1.txt", "text/plain", getTestArchive("/sensitiveinfo/stdout.txt")),
-                new AnalysisResultFileContent(execution, "file2.txt", "text/plain", getTestArchive("/sensitiveinfo/stdout.txt"))
+                new AnalysisResultFileContent(execution, "stdout.txt", "text/plain", getTestArchive("/analysisresult/stdout.txt")),
+                new AnalysisResultFileContent(execution, "file1.txt", "text/plain", getTestArchive("/analysisresult/stdout.txt")),
+                new AnalysisResultFileContent(execution, "file2.txt", "text/plain", getTestArchive("/analysisresult/stdout.txt"))
         );
 
         List<AnalysisResultFileContent> analysisRepackResult = analysisZipRepackService.process(this.resultFileContents, 5);

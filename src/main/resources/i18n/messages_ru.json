@@ -660,6 +660,52 @@
         "quiet": "Тихо",
         "noisy": "Шумно"
       }
+    },
+    "featureextraction": {
+      "covariateSettingsEditor": {
+        "gender": "Пол",
+        "age": "Возраст",
+        "ageGroups": "Группы возрастов",
+        "race": "Раса",
+        "ethnicity": "Национальность",
+        "indexYear": "Год индексации",
+        "indexMonth": "Месяц индексации",
+        "priorObservationTime": "Предыдущее<br/>время наблюлений",
+        "postObservationTime": "Последующее<br/>время наблюдений",
+        "timeInCohort": "Время<br/>в когорте",
+        "indexYearMonth": "Индекс<br/>год и месяц",
+        "demographics": "Демография",
+        "timeBoundCovariates": "Ковариаты временных границ",
+        "setTheTimeWindows": "Установка временных окон для ковариат с привязкой ко времени в днях относительно индекса когорты",
+        "domain": "Домен",
+        "anyTimePrior": "Любое время до",
+        "longTerm": "Долгосрочно",
+        "mediumTerm": "Среднесрочно",
+        "shortTerm": "Краткосрочно",
+        "endDays": "Конечные дни",
+        "timeWindows": "Временные окна",
+        "allTime": "Все время",
+        "setTheTimeBoundEraCovariates": "Установка временных окон ковариатов эр",
+        "overlapping": "Пересечение",
+        "eraStart": "Начало эры",
+        "condition": "Условие",
+        "conditionGroup": "Группа условий",
+        "drug": "Лекарство",
+        "drugGroup": "Группа лекарств",
+        "distinctCount": "Distinct счет",
+        "setTheTimeBoundCovariates": "Установка временных окон ковариатов",
+        "conditionPrimaryInpatient": "Состояние - Первичное Стационарное",
+        "procedure": "Процедура",
+        "measurement": "Измерение",
+        "measurementValue": "Измерение - Значение",
+        "measurementRangeGroup": "Измерение - Группа диапазона",
+        "observation": "Наблюдение",
+        "device": "Устройство",
+        "visitCount": "Визит - счет",
+        "visitConceptCount": "Визит - число концепций",
+        "setTheIndexScoreCovariates": "Установка ковариатов индекса оценки",
+        "indexScoreType": "Тип индекса оценки"
+      }
     }
   },
   "facets": {
@@ -1541,7 +1587,7 @@
   "ple": {
     "title": "Анализ оценки уровня воздействия на население",
     "caption": "Сравнительный анализ когорты",
-    "captionNumber": "Сравнительный анализ когорты №",
+    "captionNumber": "Сравнительный анализ №",
     "nameIsEmptyWarning": "Имя анализа не может быть пустым.",
     "tabs": {
       "specification": "Спецификация",

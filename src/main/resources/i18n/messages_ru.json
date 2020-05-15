@@ -1401,6 +1401,8 @@
   },
   "profiles": {
     "title": "Профили",
+    "selectADataSource": "Выберите источник данных",
+    "personId": "ID профиля",
     "loadingProfile": "Загрузка данных профиля",
     "processingProfile": "Обработка профиля",
     "сantFind": "Не найдено",

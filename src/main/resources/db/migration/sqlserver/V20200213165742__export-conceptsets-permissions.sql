@@ -1,5 +1,8 @@
 INSERT INTO ${ohdsiSchema}.sec_permission (id, value, description)
-  SELECT NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'feature-analysis:*:export:conceptset:get', 'Get archive with Feature Analysis Concept Sets' UNION ALL
+  SELECT NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'feature-analysis:*:export:conceptset:get', 'Get archive with Feature Analysis Concept Sets'
+;
+
+INSERT INTO ${ohdsiSchema}.sec_permission (id, value, description)
   SELECT NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'cohort-characterization:*:export:conceptset:get', 'Get archive with Cohort Characterization Concept Sets'
 ;
 

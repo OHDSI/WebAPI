@@ -781,7 +781,8 @@
     "executionId": "ID генерации",
     "jobName": "Имя задания",
     "startDate": "Дата начала",
-    "endDate": "Дата окончания"
+    "endDate": "Дата окончания",
+    "totalRecords": "Всего записей"
   },
   "dataSources": {
     "headingTitle": "Источники данных",
@@ -1418,18 +1419,6 @@
       "event": "Событие: ",
       "startDay": "День начала: ",
       "startDate": "Дата начала: "
-    },
-    "highlightColumns": {
-      "name": "Имя концепции",
-      "domain": "Домен",
-      "totalRecords": "Всего записей"
-    },
-    "columns": {
-      "id": "ID концепции",
-      "name": "Имя концепции",
-      "domain": "Домен",
-      "startDay": "Первый день",
-      "endDay": "Последний день"
     }
   },
   "pathways": {

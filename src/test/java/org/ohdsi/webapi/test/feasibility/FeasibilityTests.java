@@ -20,7 +20,7 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.WebApi;
 import org.ohdsi.webapi.feasibility.InclusionRule;
 import org.ohdsi.webapi.feasibility.FeasibilityStudy;
@@ -31,17 +31,15 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
  * @author Chris Knoll <cknoll@ohdsi.org>
  */
-@RunWith(SpringRunner.class)
 @SpringBootTest(classes = WebApi.class)
 @Rollback
-public class FeasibilityTests {
+public class FeasibilityTests extends AbstractDatabaseTest {
   
   @Autowired
   private CohortDefinitionRepository cohortDefinitionRepository;
@@ -67,7 +65,7 @@ public class FeasibilityTests {
     // assign details
     defDetails.setCohortDefinition(def);
     def.setDetails(defDetails);
-    defDetails.setExpression("{\"DefinitionExpression\": \"{ some epression }\"");
+    defDetails.setExpression("{\"DefinitionExpression\": \"{ some epression }\"}");
     
     this.cohortDefinitionRepository.save(def);
     

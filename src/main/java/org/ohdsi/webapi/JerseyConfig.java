@@ -9,7 +9,9 @@ import org.glassfish.jersey.server.spi.internal.ValueFactoryProvider;
 import org.ohdsi.webapi.cohortcharacterization.CcController;
 import org.ohdsi.webapi.executionengine.controller.ScriptExecutionCallbackController;
 import org.ohdsi.webapi.executionengine.controller.ScriptExecutionController;
+import org.ohdsi.webapi.info.InfoService;
 import org.ohdsi.webapi.security.PermissionController;
+import org.ohdsi.webapi.security.SSOController;
 import org.ohdsi.webapi.service.ActivityService;
 import org.ohdsi.webapi.service.CDMResultsService;
 import org.ohdsi.webapi.service.CohortAnalysisService;
@@ -22,14 +24,13 @@ import org.ohdsi.webapi.service.EvidenceService;
 import org.ohdsi.webapi.service.FeasibilityService;
 import org.ohdsi.webapi.service.FeatureExtractionService;
 import org.ohdsi.webapi.service.IRAnalysisResource;
-import org.ohdsi.webapi.info.InfoService;
 import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.service.PersonService;
-import org.ohdsi.webapi.source.SourceController;
 import org.ohdsi.webapi.service.SqlRenderService;
 import org.ohdsi.webapi.service.TherapyPathResultsService;
 import org.ohdsi.webapi.service.UserService;
 import org.ohdsi.webapi.service.VocabularyService;
+import org.ohdsi.webapi.source.SourceController;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -79,6 +80,7 @@ public class JerseyConfig extends ResourceConfig implements InitializingBean {
         register(MultiPartFeature.class);
         register(FeatureExtractionService.class);
         register(CcController.class);
+        register(SSOController.class);
         register(PermissionController.class);
         register(new AbstractBinder() {
             @Override

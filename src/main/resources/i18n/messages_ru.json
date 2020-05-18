@@ -2087,6 +2087,13 @@
     "title": "Обратная связь",
     "pleaseContact": "Для доступа или вопросов, касающихся приложения Atlas, пожалуйста, свяжитесь с:"
   },
+  "licenseAgreement": {
+    "title": "Лицензионное соглашение",
+    "description": "Чтобы использовать SNOMED International SNOMED CT Browser и HemOnc, примите следующее лицензионное соглашение:",
+    "rejectWarning": "Без принятия этих условий вы не сможете использовать Atlas",
+    "reject": "Отказаться",
+    "accept": "Принять"
+  },
   "cohortDefinitions": {
     "title": "Определения когорт",
     "newDefinition": "Новая когорта",

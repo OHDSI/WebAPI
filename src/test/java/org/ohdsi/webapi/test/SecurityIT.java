@@ -5,7 +5,6 @@ import com.github.springtestdbunit.annotation.DatabaseOperation;
 import com.github.springtestdbunit.annotation.DatabaseSetup;
 import com.github.springtestdbunit.annotation.DatabaseTearDown;
 import com.google.common.collect.ImmutableMap;
-import org.apache.catalina.webresources.TomcatURLStreamHandlerFactory;
 import org.glassfish.jersey.server.model.Parameter;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
@@ -19,7 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -42,10 +40,12 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 @DatabaseTearDown(value = "/database/empty.xml", type = DatabaseOperation.DELETE_ALL)
 public class SecurityIT extends WebApiIT {
 
-    private Map<String, HttpStatus> EXPECTED_RESPONSE_CODES = ImmutableMap.<String, HttpStatus>builder()
+    private final Map<String, HttpStatus> EXPECTED_RESPONSE_CODES = ImmutableMap.<String, HttpStatus>builder()
             .put("/info/", HttpStatus.OK)
             .put("/ddl/results", HttpStatus.OK)
             .put("/ddl/cemresults", HttpStatus.OK)
+            .put("/saml/saml-metadata", HttpStatus.OK)
+            .put("/saml/slo", HttpStatus.FOUND)
             .build();
 
     @Autowired
@@ -61,8 +61,7 @@ public class SecurityIT extends WebApiIT {
 
     @BeforeClass
     public static void prepare() {
-
-        TomcatURLStreamHandlerFactory.disable();
+        
         System.setProperty("security.provider", "AtlasRegularSecurity");
     }
 
@@ -110,6 +109,8 @@ public class SecurityIT extends WebApiIT {
 
         if (serviceInfo.mediaTypes.contains(MediaType.TEXT_PLAIN_TYPE)) {
             return String.class;
+        } else if (serviceInfo.pathPrefix.equalsIgnoreCase("/saml/saml-metadata")) {
+            return Void.class;
         }
         return Object.class;
     }

@@ -23,10 +23,10 @@ import org.ohdsi.webapi.estimation.dto.EstimationDTO;
 import org.ohdsi.webapi.estimation.repository.EstimationRepository;
 import org.ohdsi.webapi.estimation.specification.EstimationAnalysisImpl;
 import org.ohdsi.webapi.model.CommonEntity;
+import org.ohdsi.webapi.test.ITStarter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.test.context.TestPropertySource;
 
 import static org.junit.Assert.assertEquals;
 import static org.ohdsi.analysis.estimation.design.EstimationTypeEnum.COMPARATIVE_COHORT_ANALYSIS;
@@ -34,8 +34,7 @@ import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
 
 @RunWith(JUnitParamsRunner.class)
 @SpringBootTest(classes = WebApi.class)
-@TestPropertySource(locations = "/in-memory-webapi.properties")
-public class EstimationEntity implements TestCreate, TestCopy<EstimationDTO>, TestImport<EstimationDTO,EstimationAnalysisImpl> {
+public class EstimationEntityTest extends ITStarter implements TestCreate, TestCopy<EstimationDTO>, TestImport<EstimationDTO,EstimationAnalysisImpl> {
     @Autowired
     protected ConversionService conversionService;
     @Autowired
@@ -72,7 +71,6 @@ public class EstimationEntity implements TestCreate, TestCopy<EstimationDTO>, Te
         TestCreate.super.init();
     }
 
-    //region test methods
     @Test
     @Override
     public void shouldNotCreateEntityWithDuplicateName() {
@@ -160,7 +158,6 @@ public class EstimationEntity implements TestCreate, TestCopy<EstimationDTO>, Te
         assertEquals("Acute myocardial infarction events (1)", cds.get(2).getName());
         assertEquals("Angioedema events (1)", cds.get(3).getName());
     }
-    //endregion
 
     @Override
     public EstimationDTO createCopy(EstimationDTO dto) throws Exception {

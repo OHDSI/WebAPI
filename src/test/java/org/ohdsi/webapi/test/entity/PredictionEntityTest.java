@@ -21,15 +21,14 @@ import org.ohdsi.webapi.prediction.PredictionService;
 import org.ohdsi.webapi.prediction.dto.PredictionAnalysisDTO;
 import org.ohdsi.webapi.prediction.repository.PredictionAnalysisRepository;
 import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl;
+import org.ohdsi.webapi.test.ITStarter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.test.context.TestPropertySource;
 
 @RunWith(JUnitParamsRunner.class)
 @SpringBootTest(classes = WebApi.class)
-@TestPropertySource(locations = "/in-memory-webapi.properties")
-public class PredictionEntity implements TestCreate, TestCopy<PredictionAnalysisDTO>, TestImport<PredictionAnalysisDTO, PatientLevelPredictionAnalysisImpl> {
+public class PredictionEntityTest extends ITStarter implements TestCreate, TestCopy<PredictionAnalysisDTO>, TestImport<PredictionAnalysisDTO, PatientLevelPredictionAnalysisImpl> {
     @Autowired
     protected ConversionService conversionService;
     @Autowired
@@ -64,7 +63,6 @@ public class PredictionEntity implements TestCreate, TestCopy<PredictionAnalysis
         TestCreate.super.init();
     }
 
-    //region test methods
     @Test
     @Override
     public void shouldNotCreateEntityWithDuplicateName() {
@@ -123,7 +121,6 @@ public class PredictionEntity implements TestCreate, TestCopy<PredictionAnalysis
 
         TestImport.super.shouldImportWhenEntityWithNameExists();
     }
-    //endregion
 
     @Override
     public PredictionAnalysisDTO createCopy(PredictionAnalysisDTO dto) {

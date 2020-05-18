@@ -15,17 +15,16 @@ import org.ohdsi.webapi.pathway.PathwayService;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisExportDTO;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisEntityRepository;
+import org.ohdsi.webapi.test.ITStarter;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.test.context.TestPropertySource;
 
 @RunWith(JUnitParamsRunner.class)
 @SpringBootTest(classes = WebApi.class)
-@TestPropertySource(locations = "/in-memory-webapi.properties")
-public class PathwayEntity implements TestCreate, TestCopy<PathwayAnalysisDTO>, TestImport<PathwayAnalysisDTO, PathwayAnalysisExportDTO> {
+public class PathwayEntityTest extends ITStarter implements TestCreate, TestCopy<PathwayAnalysisDTO>, TestImport<PathwayAnalysisDTO, PathwayAnalysisExportDTO> {
     @Autowired
     protected ConversionService conversionService;
     @Autowired
@@ -52,7 +51,6 @@ public class PathwayEntity implements TestCreate, TestCopy<PathwayAnalysisDTO>, 
         TestCreate.super.init();
     }
 
-    //region test methods
     @Test
     @Override
     public void shouldNotCreateEntityWithDuplicateName() {
@@ -111,7 +109,6 @@ public class PathwayEntity implements TestCreate, TestCopy<PathwayAnalysisDTO>, 
 
         TestImport.super.shouldImportWhenEntityWithNameExists();
     }
-    //endregion
 
     @Override
     public PathwayAnalysisDTO createCopy(PathwayAnalysisDTO dto) {

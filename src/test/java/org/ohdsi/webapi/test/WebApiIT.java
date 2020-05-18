@@ -4,7 +4,10 @@ import static org.junit.Assert.assertEquals;
 
 import com.github.springtestdbunit.DbUnitTestExecutionListener;
 import com.github.springtestdbunit.annotation.DbUnitConfiguration;
-import org.junit.Ignore;
+import java.io.IOException;
+import org.apache.catalina.webresources.TomcatURLStreamHandlerFactory;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.ohdsi.webapi.WebApi;
 import org.slf4j.Logger;
@@ -25,7 +28,6 @@ import org.springframework.test.context.support.DirtiesContextTestExecutionListe
 @ActiveProfiles("test")
 @DbUnitConfiguration(databaseConnection = {"primaryDataSource"})
 @TestExecutionListeners({DependencyInjectionTestExecutionListener.class, DbUnitTestExecutionListener.class, DirtiesContextTestExecutionListener.class})
-@Ignore
 public class WebApiIT {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
@@ -34,6 +36,17 @@ public class WebApiIT {
     private String baseUri;
 
     private final TestRestTemplate restTemplate = new TestRestTemplate();
+    
+    @BeforeClass
+    public static void before() throws IOException {
+        TomcatURLStreamHandlerFactory.disable();
+        ITStarter.before();
+    }
+
+    @AfterClass
+    public static void after() {
+        ITStarter.tearDownSubject();
+    }
 
     public TestRestTemplate getRestTemplate() {
 

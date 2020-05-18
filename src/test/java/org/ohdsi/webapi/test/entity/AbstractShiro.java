@@ -13,11 +13,11 @@ import org.junit.AfterClass;
 /**
  * Abstract test case enabling Shiro in test environments.
  */
-public abstract class AbstractShiroTest {
+public abstract class AbstractShiro {
 
     private static ThreadState subjectThreadState;
 
-    public AbstractShiroTest() {
+    public AbstractShiro() {
     }
 
     /**

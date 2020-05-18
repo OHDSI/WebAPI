@@ -16,15 +16,14 @@ import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
 import org.ohdsi.webapi.cohortcharacterization.repository.CcRepository;
 import org.ohdsi.webapi.model.CommonEntity;
+import org.ohdsi.webapi.test.ITStarter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.test.context.TestPropertySource;
 
 @RunWith(JUnitParamsRunner.class)
 @SpringBootTest(classes = WebApi.class)
-@TestPropertySource(locations = "/in-memory-webapi.properties")
-public class CCEntity implements TestCreate, TestCopy<CohortCharacterizationDTO>, TestImport<CohortCharacterizationDTO, CcExportDTO> {
+public class CCEntityTest extends ITStarter implements TestCreate, TestCopy<CohortCharacterizationDTO>, TestImport<CohortCharacterizationDTO, CcExportDTO> {
     @Autowired
     protected ConversionService conversionService;
     @Autowired
@@ -51,7 +50,6 @@ public class CCEntity implements TestCreate, TestCopy<CohortCharacterizationDTO>
         ccRepository.deleteAll();
     }
 
-    //region test methods
     @Test
     @Override
     public void shouldNotCreateEntityWithDuplicateName() {
@@ -110,7 +108,6 @@ public class CCEntity implements TestCreate, TestCopy<CohortCharacterizationDTO>
 
         TestImport.super.shouldImportWhenEntityWithNameExists();
     }
-    //endregion
 
     @Override
     public CohortCharacterizationDTO createCopy(CohortCharacterizationDTO dto) {

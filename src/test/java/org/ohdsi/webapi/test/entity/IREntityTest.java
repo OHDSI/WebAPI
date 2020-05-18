@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.test.entity;
 
-import static org.ohdsi.webapi.service.ConceptSetService.COPY_NAME;
 import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
 
 import junitparams.JUnitParamsRunner;
@@ -10,22 +9,21 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ohdsi.webapi.WebApi;
-import org.ohdsi.webapi.conceptset.ConceptSetRepository;
-import org.ohdsi.webapi.service.ConceptSetService;
-import org.ohdsi.webapi.service.dto.ConceptSetDTO;
+import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
+import org.ohdsi.webapi.service.IRAnalysisResource;
+import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
+import org.ohdsi.webapi.test.ITStarter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
 
 @RunWith(JUnitParamsRunner.class)
 @SpringBootTest(classes = WebApi.class)
-@TestPropertySource(locations = "/in-memory-webapi.properties")
-public class ConceptSetEntity implements TestCreate, TestCopy<ConceptSetDTO> {
+public class IREntityTest extends ITStarter implements TestCreate, TestCopy<IRAnalysisDTO> {
     @Autowired
-    protected ConceptSetService csService;
+    protected IRAnalysisResource irAnalysisResource;
     @Autowired
-    protected ConceptSetRepository csRepository;
-    private ConceptSetDTO firstSavedDTO;
+    protected IncidenceRateAnalysisRepository irRepository;
+    private IRAnalysisDTO firstSavedDTO;
 
     // in JUnit 4 it's impossible to mark methods inside interface with annotations, it was implemented in JUnit 5. After upgrade it's needed
     // to mark interface methods with @Test, @Before, @After and to remove them from this class
@@ -33,7 +31,7 @@ public class ConceptSetEntity implements TestCreate, TestCopy<ConceptSetDTO> {
     @Override
     public void tearDownDB() {
 
-        csRepository.deleteAll();
+        irRepository.deleteAll();
     }
 
     @Before
@@ -43,7 +41,6 @@ public class ConceptSetEntity implements TestCreate, TestCopy<ConceptSetDTO> {
         TestCreate.super.init();
     }
 
-    //region test methods
     @Test
     @Override
     public void shouldNotCreateEntityWithDuplicateName() {
@@ -81,13 +78,11 @@ public class ConceptSetEntity implements TestCreate, TestCopy<ConceptSetDTO> {
 
         TestCopy.super.shouldCopyOfPartlySameName(firstName, secondName, assertionName);
     }
-    //endregion
 
     @Override
-    public ConceptSetDTO createCopy(ConceptSetDTO dto) {
-        
-        dto.setName(csService.getNameForCopy(dto.getId()).get(COPY_NAME));
-        return csService.createConceptSet(dto);
+    public IRAnalysisDTO createCopy(IRAnalysisDTO dto) {
+
+        return irAnalysisResource.copy(dto.getId());
     }
 
     @Override
@@ -97,22 +92,22 @@ public class ConceptSetEntity implements TestCreate, TestCopy<ConceptSetDTO> {
     }
 
     @Override
-    public ConceptSetDTO getFirstSavedDTO() {
+    public IRAnalysisDTO getFirstSavedDTO() {
 
         return firstSavedDTO;
     }
 
     @Override
-    public ConceptSetDTO createEntity(String name) {
+    public IRAnalysisDTO createEntity(String name) {
 
-        ConceptSetDTO dto = new ConceptSetDTO();
+        IRAnalysisDTO dto = new IRAnalysisDTO();
         dto.setName(name);
-        return csService.createConceptSet(dto);
+        return irAnalysisResource.createAnalysis(dto);
     }
 
     @Override
     public String getConstraintName() {
 
-        return "uq_cs_name";
+        return "uq_ir_name";
     }
 }

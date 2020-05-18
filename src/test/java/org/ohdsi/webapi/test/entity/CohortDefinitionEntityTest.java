@@ -9,22 +9,21 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ohdsi.webapi.WebApi;
-import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
-import org.ohdsi.webapi.service.IRAnalysisResource;
-import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
+import org.ohdsi.webapi.service.CohortDefinitionService;
+import org.ohdsi.webapi.test.ITStarter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
 
 @RunWith(JUnitParamsRunner.class)
 @SpringBootTest(classes = WebApi.class)
-@TestPropertySource(locations = "/in-memory-webapi.properties")
-public class IREntity implements TestCreate, TestCopy<IRAnalysisDTO> {
+public class CohortDefinitionEntityTest extends ITStarter implements TestCreate, TestCopy<CohortDTO>{
     @Autowired
-    protected IRAnalysisResource irAnalysisResource;
+    private CohortDefinitionService cdService;
     @Autowired
-    protected IncidenceRateAnalysisRepository irRepository;
-    private IRAnalysisDTO firstSavedDTO;
+    protected CohortDefinitionRepository cdRepository;
+    private CohortDTO firstSavedDTO;
 
     // in JUnit 4 it's impossible to mark methods inside interface with annotations, it was implemented in JUnit 5. After upgrade it's needed
     // to mark interface methods with @Test, @Before, @After and to remove them from this class
@@ -32,7 +31,7 @@ public class IREntity implements TestCreate, TestCopy<IRAnalysisDTO> {
     @Override
     public void tearDownDB() {
 
-        irRepository.deleteAll();
+        cdRepository.deleteAll();
     }
 
     @Before
@@ -41,8 +40,7 @@ public class IREntity implements TestCreate, TestCopy<IRAnalysisDTO> {
 
         TestCreate.super.init();
     }
-
-    //region test methods
+    
     @Test
     @Override
     public void shouldNotCreateEntityWithDuplicateName() {
@@ -80,12 +78,11 @@ public class IREntity implements TestCreate, TestCopy<IRAnalysisDTO> {
 
         TestCopy.super.shouldCopyOfPartlySameName(firstName, secondName, assertionName);
     }
-    //endregion
 
     @Override
-    public IRAnalysisDTO createCopy(IRAnalysisDTO dto) {
+    public CohortDTO createCopy(CohortDTO dto) {
 
-        return irAnalysisResource.copy(dto.getId());
+        return cdService.copy(dto.getId());
     }
 
     @Override
@@ -95,22 +92,22 @@ public class IREntity implements TestCreate, TestCopy<IRAnalysisDTO> {
     }
 
     @Override
-    public IRAnalysisDTO getFirstSavedDTO() {
+    public CohortDTO getFirstSavedDTO() {
 
         return firstSavedDTO;
     }
 
     @Override
-    public IRAnalysisDTO createEntity(String name) {
+    public String getConstraintName() {
 
-        IRAnalysisDTO dto = new IRAnalysisDTO();
-        dto.setName(name);
-        return irAnalysisResource.createAnalysis(dto);
+        return "uq_cd_name";
     }
 
     @Override
-    public String getConstraintName() {
+    public CohortDTO createEntity(String name) {
 
-        return "uq_ir_name";
+        CohortDTO dto = new CohortDTO();
+        dto.setName(name);
+        return cdService.createCohortDefinition(dto);
     }
 }

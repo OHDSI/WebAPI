@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.test.entity;
 
+import static org.ohdsi.webapi.service.ConceptSetService.COPY_NAME;
 import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
 
 import junitparams.JUnitParamsRunner;
@@ -9,22 +10,21 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ohdsi.webapi.WebApi;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
-import org.ohdsi.webapi.service.CohortDefinitionService;
+import org.ohdsi.webapi.conceptset.ConceptSetRepository;
+import org.ohdsi.webapi.service.ConceptSetService;
+import org.ohdsi.webapi.service.dto.ConceptSetDTO;
+import org.ohdsi.webapi.test.ITStarter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
 
 @RunWith(JUnitParamsRunner.class)
 @SpringBootTest(classes = WebApi.class)
-@TestPropertySource(locations = "/in-memory-webapi.properties")
-public class CohortDefinitionEntity implements TestCreate, TestCopy<CohortDTO> {
+public class ConceptSetEntityTest extends ITStarter implements TestCreate, TestCopy<ConceptSetDTO> {
     @Autowired
-    private CohortDefinitionService cdService;
+    protected ConceptSetService csService;
     @Autowired
-    protected CohortDefinitionRepository cdRepository;
-    private CohortDTO firstSavedDTO;
+    protected ConceptSetRepository csRepository;
+    private ConceptSetDTO firstSavedDTO;
 
     // in JUnit 4 it's impossible to mark methods inside interface with annotations, it was implemented in JUnit 5. After upgrade it's needed
     // to mark interface methods with @Test, @Before, @After and to remove them from this class
@@ -32,7 +32,7 @@ public class CohortDefinitionEntity implements TestCreate, TestCopy<CohortDTO> {
     @Override
     public void tearDownDB() {
 
-        cdRepository.deleteAll();
+        csRepository.deleteAll();
     }
 
     @Before
@@ -42,7 +42,6 @@ public class CohortDefinitionEntity implements TestCreate, TestCopy<CohortDTO> {
         TestCreate.super.init();
     }
 
-    //region test methods
     @Test
     @Override
     public void shouldNotCreateEntityWithDuplicateName() {
@@ -80,12 +79,12 @@ public class CohortDefinitionEntity implements TestCreate, TestCopy<CohortDTO> {
 
         TestCopy.super.shouldCopyOfPartlySameName(firstName, secondName, assertionName);
     }
-    //endregion
 
     @Override
-    public CohortDTO createCopy(CohortDTO dto) {
-
-        return cdService.copy(dto.getId());
+    public ConceptSetDTO createCopy(ConceptSetDTO dto) {
+        
+        dto.setName(csService.getNameForCopy(dto.getId()).get(COPY_NAME));
+        return csService.createConceptSet(dto);
     }
 
     @Override
@@ -95,22 +94,22 @@ public class CohortDefinitionEntity implements TestCreate, TestCopy<CohortDTO> {
     }
 
     @Override
-    public CohortDTO getFirstSavedDTO() {
+    public ConceptSetDTO getFirstSavedDTO() {
 
         return firstSavedDTO;
     }
 
     @Override
-    public String getConstraintName() {
+    public ConceptSetDTO createEntity(String name) {
 
-        return "uq_cd_name";
+        ConceptSetDTO dto = new ConceptSetDTO();
+        dto.setName(name);
+        return csService.createConceptSet(dto);
     }
 
     @Override
-    public CohortDTO createEntity(String name) {
+    public String getConstraintName() {
 
-        CohortDTO dto = new CohortDTO();
-        dto.setName(name);
-        return cdService.createCohortDefinition(dto);
+        return "uq_cs_name";
     }
 }

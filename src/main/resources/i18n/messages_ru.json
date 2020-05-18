@@ -15,7 +15,13 @@
     "yes": "Да",
     "no": "Нет",
     "daysAbbr": "д",
-    "min": "минимум"
+    "min": "минимум",
+    "cancel": "Отмена",
+    "set": "Установить",
+    "search": "Поиск",
+    "preview": "Предпросмотр",
+    "progress": "Прогресс",
+    "refresh": "Обновить"
   },
   "format": {
     "number": "# ###,##",
@@ -742,7 +748,9 @@
       "riskWindow": "Окно Риска",
       "comparatorCohorts": "Когорты-компараторы",
       "outcomeCohorts": "Исходящие когорты",
-      "analysisName": "Имя анализа"
+      "analysisName": "Имя анализа",
+      "provider": "Провайдер",
+      "startDate": "Дата начала"
     },
     "date": {
       "justNow": "Только что",
@@ -822,7 +830,30 @@
     "jobName": "Имя задания",
     "startDate": "Дата начала",
     "endDate": "Дата окончания",
-    "totalRecords": "Всего записей"
+    "totalRecords": "Всего записей",
+    "provider": "Провайдер",
+    "enabled": "Включено",
+    "execute": "Выполнить",
+    "ends": "Окончание",
+    "lastExecuted": "Дата последнего выполенения",
+    "nextExecution": "Следующее выполнение",
+    "selected": "Выбрано",
+    "atlasRole": "Роль в Атласе",
+    "atlasRoles": "Роли в Атласе",
+    "role": "Роль",
+    "roleName": "Наименование роли",
+    "login": "Логин",
+    "groupName": "Имя группы",
+    "username": "AD/LDAP username",
+    "atlasLogin": "Логин в Атласе",
+    "adLdapUsername": "Имя пользователя AD/LDAP",
+    "included": "Включено",
+    "permission": "Разрешения",
+    "includedUsers": "Включенные пользователи",
+    "title":  "Заголовок",
+    "started":  "Запущено",
+    "finished": "Завершено",
+    "message":  "Сообщение"
   },
   "dataSources": {
     "headingTitle": "Источники данных",
@@ -1806,6 +1837,252 @@
   "jobs": {
     "refreshJobs": "Обновить список"
   },
+  "configuration": {
+    "title": "Конфигурация",
+    "changeSourcePriorities": "Менять приоритеты источника:",
+    "newSource": "Новый источник",
+    "executionEngine": "Движок генерации",
+    "browser": {
+      "table": {
+        "columns": {
+          "sourceName": "Имя источника [Ключ источника]",
+          "table-qualifiers": "Квалификаторы таблиц",
+          "dialect": "Диалект",
+          "vocabularyVersion": "Версия словаря",
+          "evidence": "Свидетельство",
+          "recordCounts": "Количество записоей (RC / DRC)",
+          "incidence": "Инцидент",
+          "checkConnection": "Проверить соединение",
+          "refreshCache": "Обновить кэш"
+        },
+        "accessDenied": "Доступ запрещен"
+      }
+    },
+    "buttons": {
+      "check": "Обновить",
+      "clearConfigurationCache": "Очистить кэш конфигурации",
+      "managePermissions": "Управление разрешениями",
+      "importUsers": "Импорт пользователей из LDAP/AD",
+      "clearServerCache": "Очистить серверный кэш"
+    },
+    "priorityOptions": {
+      "session": "В текущей сессии",
+      "application": "Во всем приложении"
+    },
+    "alerts": {
+      "clearLocalCache": "Локальное хранилище очищено. Пожалуйста, перезагрузите страницу, чтобы обновитьинформацию о конфигурации.",
+      "clearServerCache": "Серверный кэш очищен",
+      "failUpdatePrioritySourceDaimon": "Не удалось обновить демона приоритета источника"
+    },
+    "confirms": {
+      "clearServerCache": "Вы действительно хотите очистить серверный кэш?"
+    },
+    "viewEdit": {
+      "source": {
+        "title": "Источник <%=name%>",
+        "new": {
+          "placeholder": "Новый источник"
+        },
+        "validation": {
+          "empty": "Имя источника не может быть пустым"
+        },
+        "label": "Ключ источника:",
+        "placeholder": "Ключ источника",
+        "alerts": {
+          "save": {
+            "errorMessage": "Пожалуйста, свяжитесь с администратором, чтобы решить эту проблему.",
+            "error": "Источник не сохранен. <%= message %>"
+          },
+          "delete": {
+            "hasSelectedPriotirizableDaimons": "Некоторые даймоны этого источника получили наивысший приоритет и используются приложением. Выберите новые первоочередные даймоны, чтобы удалить источник."
+          },
+          "sourceSelectedError": "При выборе источника с d=<%=selectedSourceId%> произошла ошибка."
+        },
+        "confirms": {
+          "close": "Изменения не сохранены. Действительно продолжить?",
+          "delete": "Удалить источник? Это действие необратимо!"
+        }
+      },
+      "dialect": {
+        "label": "Диалект источника:",
+        "title": "Диатект источника",
+        "options": {
+          "postgresql": "PostgreSQL",
+          "sqlserver": "SQL server",
+          "oracle": "Oracle",
+          "redshift": "Amazon Redshift",
+          "bigquery": "Google BigQuery",
+          "impala": "Impala",
+          "pdw": "Microsoft PDW",
+          "netezza": "IBM Netezza",
+          "hive": "Hive LLAP"
+        }
+      },
+      "connectionString": {
+        "label": "Строка подключения:",
+        "placeholder": "Строка подключения",
+        "title": "CСтрока подключения"
+      },
+      "realm": {
+        "validation": {
+          "format": "&quot;KrbHostFQDN&quot; пустой. Пожалуйста, введите его в следующем формате: &quot;KrbHostFQDN=[value];&quot;"
+        }
+      },
+      "username": {
+        "label": "Пользователь:",
+        "placeholder": "Пользователь",
+        "title": "Пользователь",
+        "validation": {
+          "empty": "&quot;Пользователь&quot; пустой."
+        }
+      },
+      "password": {
+        "label": "Пароль:",
+        "placeholder": "Пароль",
+        "title": "Пароль"
+      },
+      "krb": {
+        "adminServer": {
+          "label": "KrbAdminServer:",
+          "placeholder": "KrbAdminServer",
+          "title": "KrbAdminServer"
+        },
+        "realm": {
+          "label": "KrbRealm:",
+          "placeholder": "KrbAdminServer",
+          "title": "KrbRealm взят из JDBC-строки подключения"
+        },
+        "hostFqdn": {
+          "label": "KrbHostFQDN:",
+          "placeholder": "KrbHostFQDN",
+          "title": "KrbHostFQDN взят из JDBC-строки подключения"
+        },
+        "authenticationMethod": {
+          "label": "Метод аутентификации Kerberos:"
+        },
+        "keytab": {
+          "label": "Keytab"
+        },
+        "buttons": {
+          "remove": "Удалить:"
+        },
+        "userPassword": {
+          "label": "Имя пользователя и пароль"
+        },
+        "password": {
+          "label": "Пароль:",
+          "placeholder": "Пароль",
+          "title": "Пароль"
+        },
+        "source-daimons": {
+          "label": "Даймоны источника"
+        }
+      },
+      "bigQuery": {
+        "password": {
+          "label": "Файл-ключ сервисного аккаунта (OAuthPvtKeyPath)"
+        },
+        "button": {
+          "remove": {
+            "label": "Удалить"
+          }
+        }
+      }
+    },
+    "userImport": {
+      "title": "Импорт пользователей из LDAP/Active Directory",
+      "importNow": "Импортировать",
+      "newScheduledImport": "Импорт по расписанию",
+      "refresh": "Refresh",
+      "loadingUserImportJobList": "Загрузка списка заданий импорта...",
+      "loadingHistory": "Загрузка истории заданий импорта...",
+      "userImportJob": "Задание импорта пользователей",
+      "tabs": {
+        "scheduler": "Планировщик",
+        "roleMapping": "Назначение соответствий ролей",
+        "jobHistory": "История заданий"
+      },
+      "scheduler": {
+        "schedule": "Расписание",
+        "enabled": "Включено",
+        "preserveAssignedRoles": "Сохранять назначенные роли",
+        "startOn": "Дата запуска:",
+        "ends": "Окончание",
+        "never": "Никогда",
+        "execute": "Выполнять:",
+        "repeat": "Повторить:",
+        "after": "После выполнений",
+        "executions": "Выполнения",
+        "on": "До даты"
+      },
+      "findGroup": "Найти группу",
+      "searchGroup": "Поиск группы",
+      "searchGroupPlaceholder": "Поиск...",
+      "wizard": {
+        "title": "Импорт пользователей",
+        "buttons": {
+          "prev": "Назад",
+          "next": "Далее",
+          "startImport": "Начать импорт"
+        },
+        "selectSource": {
+          "header": "Пожалуйста, выберите провайдера для импорта пользователей.",
+          "buttons": {
+            "details": "Детали",
+            "testСonnection": "Тест соединения"
+          },
+          "source": {
+            "activeAirectory": "Active Directory",
+            "ldap": "LDAP сервер"
+          }
+        },
+        "roleMapping": {
+          "header": "При необходимости предоставьте сопоставление групп LDAP / Active Directory ролям Atlas."
+        },
+        "import": {
+          "header": "Пожалуйста, выберите пользователей для импорта",
+          "buttons": {
+            "checkAll": "Выбрать все",
+            "uncheckAll": "Снять выбор"
+          }
+        },
+        "finalPage": {
+          "message": "Импорт пользователей завершен."
+        },
+        "editRoles": {
+          "title": "Редактирование ролей"
+        },
+        "help": {
+          "adLdapUsername": "Имя пользователя AD/LDAP",
+          "adLdapUsernameText": "Этополе соответствует полю LDAP/AD <b>Display Name</b>.",
+          "atlasLogin": "Логин Атлас",
+          "atlasLoginText": "Это поле напрямую соответствует полю LDAP/AD <b>login</b> и будет использовано в качестве логина для входа в Атлас."
+        }
+      }
+    },
+    "roles": {
+      "title": "Роли",
+      "roleTitle": "Роль <%=id%>",
+      "newRole": "Новая роль",
+      "nameIsEmpty": "Имя не может быть пустым.",
+      "importRoles": "Импорт ролей",
+      "tabs": {
+        "users": "Пользователи",
+        "permissions": "Разрешения",
+        "utilities": "Утилиты"
+      }
+    },
+    "rolesImport": {
+      "title": "Импорт ролей",
+      "emptyMessage": "Вставьте в текстовое поле JSON, содержащий определения ролей",
+      "rolesDefinitionJson": "JSON с определением ролей",
+      "processed": "Обработано <%=proc%> из <%=len%> ролей.",
+      "alertDanger": "Некоторые разрешения и пользователи в списке недоступны в этом экземпляре Atlas. Эти элементы будут отфильтрованы перед импортом.",
+      "fixJson": "Исправить JSON",
+      "alertWarning": "Некоторые из разрешений в списке содержат идентификаторы сущностей, которые не гарантируют совпадение между исходным и целевым экземплярами Atlas.",
+      "removeThePermissions": "Удалить разрешения"
+    }
+  },
   "cohortDefinitions": {
     "title": "Определения когорт",
     "newDefinition": "Новая когорта",
@@ -2448,7 +2725,39 @@
       "pathway": "Новый анализ исходов когорты",
       "ple": "Новый анализ оценки уровня населения",
       "conceptSet": "Новая концепция",
-      "plp": "Новый анализ прогноза уровня пациента"
+      "plp": "Новый анализ прогноза уровня пациента",
+      "source": "Новый источник",
+      "role": "Новая роль"
+    },
+    "weekdays": {
+      "sunday": {
+        "long": "Воскресенье",
+        "short": "Вс"
+      },
+      "monday": {
+        "long": "Понедельник",
+        "short": "Пн"
+      },
+      "tuesday": {
+        "long": "Вторник",
+        "short": "Вт"
+      },
+      "wednesday": {
+        "long": "Среда",
+        "short": "Ср"
+      },
+      "thursday": {
+        "long": "Четверг",
+        "short": "Чт"
+      },
+      "friday": {
+        "long": "Пятница",
+        "short": "Пт"
+      },
+      "saturday": {
+        "long": "Суббота",
+        "short": "Сб"
+      }
     }
   },
   "pages": {

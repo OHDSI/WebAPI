@@ -2083,6 +2083,10 @@
       "removeThePermissions": "Удалить разрешения"
     }
   },
+  "feedback": {
+    "title": "Обратная связь",
+    "pleaseContact": "Для доступа или вопросов, касающихся приложения Atlas, пожалуйста, свяжитесь с:"
+  },
   "cohortDefinitions": {
     "title": "Определения когорт",
     "newDefinition": "Новая когорта",

@@ -22,6 +22,7 @@
     <pac4j.version>1.9.2</pac4j.version>
 
     <start-class>org.ohdsi.webapi.WebApi</start-class>
+    <skipTests>true</skipTests>
 
     <!-- Primary DataSource -->
     <!-- default sql server - TODO How about making postgres the default (e.g. in line with open source tech)? -alexfranken -->
@@ -309,7 +310,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.18.1</version>
         <configuration>
-          <skipTests>true</skipTests>
+          <skipTests>${skipTests}</skipTests>
         </configuration>
       </plugin>
       <plugin>
@@ -381,7 +382,7 @@
           </execution>
         </executions>
         <configuration>
-          <licence>cHJvamVjdHxvcmcub2hkc2kuV2ViQVBJfDIwMjAtMDMtMzF8dHJ1ZXwtMSNNQzBDRkNNQ2R2ZEhjbDg0Z2tONVI3bHlmQ2Y4SnNkYUFoVUFoMkdtOUVFdy9RelpLVzM1V2p6a2FsdzJZV009</licence>
+          <licence>cHJvamVjdHxvcmcub2hkc2kuV2ViQVBJfDIwMjUtMDEtMDF8ZmFsc2V8LTEjTUN3Q0ZDZkowMkZrVmVSeVlBazZVbTBmNThIbE15SjRBaFEwcVZyRUZuamZMTzJ0KzFtR3E3U3lMMkFESHc9PQ==</licence>
           <restModel>
             <httpStatusCodes>
               <httpStatusCode>
@@ -856,12 +857,6 @@
       <type>jar</type>
     </dependency>
     <dependency>
-      <groupId>com.opentable.components</groupId>
-      <artifactId>otj-pg-embedded</artifactId>
-      <version>0.13.1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
         <groupId>org.apache.solr</groupId>
         <artifactId>solr-solrj</artifactId>
         <version>8.3.1</version>
@@ -872,6 +867,24 @@
       <artifactId>miredot-annotations</artifactId>
       <version>1.5.0</version>
     </dependency>
+    <dependency>
+      <groupId>com.opentable.components</groupId>
+      <artifactId>otj-pg-embedded</artifactId>
+      <version>0.13.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.dbunit</groupId>
+      <artifactId>dbunit</artifactId>
+      <version>2.6.0</version>
+      <scope>test</scope>
+    </dependency>    
+    <dependency>
+        <groupId>com.github.mjeanroy</groupId>
+        <artifactId>dbunit-plus</artifactId>
+        <version>2.0.1</version>
+        <scope>test</scope>
+    </dependency>     
   </dependencies>
   <profiles>
     <profile>

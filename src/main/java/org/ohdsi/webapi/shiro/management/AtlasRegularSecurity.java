@@ -347,8 +347,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
         if (this.samlEnabled) {
             filterChainBuilder
-                    .addPath("/user/login/saml", SSL, CORS, FORCE_SESSION_CREATION, SAML_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_URL);
-            filterChainBuilder
+                    .addPath("/user/login/saml", SSL, CORS, FORCE_SESSION_CREATION, SAML_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_URL)
                     .addPath("/user/saml/callback", SSL, HANDLE_SAML, UPDATE_TOKEN, SEND_TOKEN_IN_URL);
         }
 

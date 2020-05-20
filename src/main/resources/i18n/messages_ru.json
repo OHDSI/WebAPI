@@ -1219,6 +1219,9 @@
         "executions": "Исследования",
         "utilities": "Утилиты"
       },
+      "modals": {
+        "confirmChanges": "Ваши изменения не сохранены. Желаете ли вы продолжить?"
+      },
       "design": {
         "loading": "Идёт загрузка дизайна Характеризации Когорты...",
         "description": "<b>Характеризация когорты</b> это процесс генерации сводного статистического отчета распределения когорты по ковариатам. Сводный статистический отчет по ковариатам может содержать количество, среднее значение, СКО, дисперсию, минимальное или максимальное значение, медиану, диапазон значений или квантили. Дополнительно, ковариаты содержащие период могут быть распределены по времени для временных анализов, таких как фиксированные интервалы относительно cohort_start_date (например, каждые 7 дней, каждые 30 дней и т.д.), или интервалы календарных дат, такие как календарная неделя, календарный месяц, квартал или год.",
@@ -1901,6 +1904,10 @@
         "desc_censoring": "Выйти из когорты, основанной на диагнозе эпохи.",
         "desc_group": "Найти пациентов с конкретными условиями эпохи."
       },
+      "addDemographic": {
+        "title": "Добавить демографический",
+        "desc_group": "Фильтрация событий по демографическим критериям."
+      },
       "addConditionOccurrence": {
         "title": "Добавить условие возникновения",
         "desc_initial": "Найти пациентов с конкретными диагнозами.",
@@ -2060,84 +2067,84 @@
         "title_deviceexposure": "Добавить гендерные критерии",
         "desc_deviceexposure": "Фильтр устройств воздействия на основе пола.",
         "title_dose": "Добавить гендерные критерии",
-        "desc_dose": "Filter Drug Eras based on Gender.",
+        "desc_dose": "Эра фильтра наркотиков на основе пола.",
         "title_drug": "Добавить гендерные критерии",
-        "desc_drug": "Filter Drug Eras based on Gender.",
+        "desc_drug": "Эра фильтра наркотиков на основе пола.",
         "title_drugexposure": "Добавить гендерные критерии",
-        "desc_drugexposure": "Filter Drug Exposures based on Gender.",
+        "desc_drugexposure": "Фильтр воздействия наркотиков на основе пола.",
         "title_measurement": "Добавить гендерные критерии",
-        "desc_measurement": "Filter Measurements based on Gender.",
+        "desc_measurement": "Фильтр измерений на основе пола.",
         "title_observation": "Добавить гендерные критерии",
-        "desc_observation": "Filter Observations based on Gender.",
+        "desc_observation": "Фильтр наблюдений по полу.",
         "title_payerplan": "Добавить гендерные критерии",
-        "desc_payerplan": "Filter Payer Plan Periods based on Gender.",
+        "desc_payerplan": "Фильтровать периоды плана плательщика по полу.",
         "title_procedureoccurrence": "Добавить гендерные критерии",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences based on Gender.",
+        "desc_procedureoccurrence": "Процедура фильтра В зависимости от пола.",
         "title_specimen": "Добавить гендерные критерии",
-        "desc_specimen": "Filter specimens based on Gender.",
+        "desc_specimen": "Фильтровать образцы по полу.",
         "title_visit": "Добавить гендерные критерии",
-        "desc_visit": "Filter Visit Occurrences based on Gender.",
+        "desc_visit": "Фильтр посещений в зависимости от пола.",
         "title_demographic": "Добавить гендерные критерии",
         "desc_demographic": "Фильтровать события по полу."
       },
       "addStartDate": {
         "title_era": "Добавить критерии даты начала",
-        "desc_era": "Filter Condition Eras by the Era Start Date.",
+        "desc_era": "Эра условия фильтра по дате начала эры.",
         "title_occurrence": "Добавить критерии даты начала",
-        "desc_occurrence": "Filter Condition Occurrences by the Condition Start Date.",
+        "desc_occurrence": "Фильтровать вхождения условий по дате начала условия.",
         "title_deviceexposure": "Добавить критерии даты начала",
-        "desc_deviceexposure": "Filter Device Exposures by the Exposure Start Date.",
+        "desc_deviceexposure": "Фильтруйте экспозиции устройства по дате начала экспозиции.",
         "title_dose": "Добавить критерии даты начала",
-        "desc_dose": "Filter Dose Eras by the Era Start Date.",
+        "desc_dose": "Отфильтруйте эры дозы по дате начала эры.",
         "title_drug": "Добавить критерии даты начала",
-        "desc_drug": "Filter Drug Eras by the Era Start Date.",
+        "desc_drug": "Фильтровать эры наркотиков по дате начала эры.",
         "title_drugexposure": "Добавить критерии даты начала",
-        "desc_drugexposure": "Filter Drug Exposures by the Drug Exposure Start Date.",
+        "desc_drugexposure": "Фильтрация воздействия наркотиков по дате начала воздействия препарата.",
         "title_observationperiod": "Добавить критерии даты начала",
-        "desc_observationperiod": "Filter Observation Periods by Start Date.",
+        "desc_observationperiod": "Фильтруйте периоды наблюдения по дате начала.",
         "title_payerplan": "Добавить критерии даты начала",
-        "desc_payerplan": "Filter Payer Plan Periods by Start Date.",
+        "desc_payerplan": "Фильтровать периоды плана плательщика по дате начала.",
         "title_visit": "Добавить критерии даты начала",
-        "desc_visit": "Filter Visit Occurrences by the Condition Start Date.",
+        "desc_visit": "Отфильтруйте количество посещений по дате начала условия.",
         "title_demographic": "Добавить критерии даты начала",
         "desc_demographic": "Фильтровать события по дате начала."
         
       },
       "addEndDate": {
         "title_era": "Добавить критерии даты окончания",
-        "desc_era": "Filter Condition Eras by the Era End Date",
+        "desc_era": "Эра условия фильтра по дате окончания эры",
         "title_occurrence": "Добавить дату окончания условия",
-        "desc_occurrence": "Filter Condition Occurrences by the Condition End Date.",
+        "desc_occurrence": "Фильтровать вхождения условий по дате окончания условия.",
         "title_deviceexposure": "Добавить критерии даты окончания",
-        "desc_deviceexposure": "Filter Device Exposures by the Exposure End Date.",
+        "desc_deviceexposure": "Фильтруйте экспозиции устройства по дате окончания экспозиции.",
         "title_dose": "Добавить критерии даты окончания эры",
-        "desc_dose": "Filter Dose Eras  by the Era End Date",
+        "desc_dose": "Отфильтруйте эры дозы к дате окончания эры",
         "title_drug": "Добавить критерии даты окончания эры",
-        "desc_drug": "Filter Drug Eras  by the Era End Date.",
+        "desc_drug": "Отфильтруйте эры лекарств по дате окончания эры.",
         "title_drugexposure": "Добавить критерии даты окончания",
-        "desc_drugexposure": "Filter Drug Exposures  by the Drug Exposure End Date.",
+        "desc_drugexposure": "Фильтрация воздействия наркотиков по дате окончания воздействия препарата.",
         "title_observationperiod": "Добавить критерии даты окончания периода",
-        "desc_observationperiod": "Filter Observation Periods by End Date.",
+        "desc_observationperiod": "Фильтруйте периоды наблюдения по дате окончания.",
         "title_payerplan": "Добавить критерии даты окончания периода",
-        "desc_payerplan": "Filter Payer Plan Periods by End Date.",
+        "desc_payerplan": "Отфильтруйте периоды плана плательщика по дате окончания.",
         "title_visit": "Добавить критерии даты окончания",
-        "desc_visit": "Filter Visit Occurrences  by the Condition End Date.",
+        "desc_visit": "Отфильтруйте события посещения по дате окончания условия.",
         "title_demographic": "Добавить критерий даты окончания мероприятия",
         "desc_demographic": "Фильтровать события по дате окончания."
       },
       "addConditonCount": {
         "title_era": "Добавить критерии подсчета эры",
-        "desc_era": "Filter Condition Eras by the Condition Count.",
+        "desc_era": "Эра условия фильтра по количеству условий.",
         "title_drug": "Добавить критерий подсчета эры",
-        "desc_drug": "Filter Drug Eras by the Exposure Count."
+        "desc_drug": "Отфильтруйте эры наркотиков по количеству экспозиций."
       },
       "addRace": {
-        "title_demographic": "Add Race Criteria",
-        "desc_demographic": "Filter events based on Race."
+        "title_demographic": "Добавить критерии гонки",
+        "desc_demographic": "Фильтровать события по расе."
       },
       "addEthnicity": {
-        "title_demographic": "Add Ethnicity Criteria",
-        "desc_demographic": "Filter events based on Ethnicity."
+        "title_demographic": "Добавить критерии этнической принадлежности",
+        "desc_demographic": "Фильтровать события по этнической принадлежности."
       },
       "addLength": {
         "title_era": "Добавить критерии длины эры",
@@ -2228,42 +2235,42 @@
         "desc_visit": "Filter Condition Occurrences  by the Condition Type."
       },
       "addStopReason": {
-        "title_occurrence": "Add Stop Reason",
-        "desc_occurrence": "Filter Condition Occurrences  by the Stop Reason.",
-        "title_drugexposure": "Add Stop Reason Criteria",
-        "desc_drugexposure": "Filter Drug Exposures by the Stop Reason."
+        "title_occurrence": "Добавить Стоп Причина",
+        "desc_occurrence": "Фильтровать вхождения в условия по причине остановки.",
+        "title_drugexposure": "Добавить критерий остановки причины",
+        "desc_drugexposure": "Фильтрация воздействия наркотиков по причине остановки."
       },
       "addPayerConcept": {
-        "title_payerplan": "Add Payer Concept Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by Payer Concept."
+        "title_payerplan": "Добавить критерии концепции плательщика",
+        "desc_payerplan": "Фильтруйте периоды плана плательщика концепцией плательщика."
       },
       "addPlanConcept": {
-        "title_payerplan": "Add Plan Concept Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by Plan Concept."
+        "title_payerplan": "Добавить критерии концепции плана",
+        "desc_payerplan": "Фильтруйте периоды плана плательщика по концепции плана."
       },
       "addSponsorConcept": {
-        "title_payerplan": "Add Sponsor Concept Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by Sponsor Concept."
+        "title_payerplan": "Добавить концепцию спонсора",
+        "desc_payerplan": "Фильтруйте периоды плана плательщика по концепции спонсора."
       },
       "addStopReasonConcept": {
-        "title_payerplan": "Add Stop Reason Concept Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by Stop Reason Concept."
+        "title_payerplan": "Добавить критерий концепции",
+        "desc_payerplan": "Фильтруйте периоды плана плательщика концепцией причины стопа."
       },
       "addPayerSourceConcept": {
-        "title_payerplan": "Add Payer Source Concept Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by Payer Source Concept."
+        "title_payerplan": "Добавить критерии концепции источника плательщика",
+        "desc_payerplan": "Фильтруйте периоды плана плательщика по концепции источника плательщика."
       },
       "addPlanSourceConcept": {
-        "title_payerplan": "Add Plan Source Concept Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by Plan Source Concept."
+        "title_payerplan": "Добавить критерии концепции источника плана",
+        "desc_payerplan": "Фильтруйте периоды плана плательщика по концепции источника плана."
       },
       "addSponsorSourceConcept": {
-        "title_payerplan": "Add Sponsor Source Concept Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by Sponsor Source Concept."
+        "title_payerplan": "Добавить спонсорские критерии концепции источника",
+        "desc_payerplan": "Фильтруйте периоды плана плательщика по концепции источника спонсора."
       },
       "addStopReasonSourceConcept": {
-        "title_payerplan": "Add Stop Reason Source Concept Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by Stop Reason Source Concept."
+        "title_payerplan": "Добавить Стоп-причину Критерии концепции источника",
+        "desc_payerplan": "Фильтруйте периоды плана плательщика концепцией источника причины стопа."
       },
       "addSourceConcept": {
         "title_occurrence": "Add Condition Source Concept",
@@ -2310,134 +2317,134 @@
         "desc_specimen": "Filter Specimen by Date."
       },
       "addUniqueId": {
-        "title_deviceexposure": "Add Unique Id Criteria",
-        "desc_deviceexposure": "Filter Device Exposures by Device Unique Id."
+        "title_deviceexposure": "Добавить критерии уникального идентификатора",
+        "desc_deviceexposure": "Фильтрация воздействия устройства по уникальному идентификатору устройства."
       },
       "addQuantity": {
-        "title_deviceexposure": "Add Quantity Criteria",
+        "title_deviceexposure": "Добавить количественные критерии",
         "desc_deviceexposure": "Filter Device Exposures by Quantity.",
-        "title_drugexposure": "Add Quantity Criteria",
+        "title_drugexposure": "Добавить количественные критерии",
         "desc_drugexposure": "Filter Drug Exposures by Quantity.",
-        "title_procedureoccurrence": "Add Quantity Criteria",
+        "title_procedureoccurrence": "Добавить количественные критерии",
         "desc_procedureoccurrence": "Filter Procedure Occurrences  by Quantity.",
-        "title_specimen": "Add Quantity Criteria",
+        "title_specimen": "Добавить количественные критерии",
         "desc_specimen": "Filter Observations  by the Quantity."
       },
       "addUnit": {
-        "title_dose": "Add Dose Unit Criteria",
+        "title_dose": "Добавить критерии дозы",
         "desc_dose": "Filter Dose Eras by the Unit.",
-        "title_drugexposure": "Add Dose Unit Criteria",
+        "title_drugexposure": "Добавить критерии дозы",
         "desc_drugexposure": "Filter Drug Exposures by Dose Unit.",
-        "title_measurement": "Add Unit Criteria",
+        "title_measurement": "Добавить критерии объекта",
         "desc_measurement": "Filter Measurements by the Unit.",
-        "title_observation": "Add Unit Criteria",
+        "title_observation": "Добавить критерии объекта",
         "desc_observation": "Filter Observations by Unit.",
-        "title_specimen": "Add Unit Criteria",
+        "title_specimen": "Добавить критерии объекта",
         "desc_specimen": "Filter Specimens by Unit."
       },
       "addValue": {
-        "title_dose": "Add Dose Value Criteria",
+        "title_dose": "Добавить критерии стоимости дозы",
         "desc_dose": "Filter Dose Eras by the dose value.",
-        "title_measurement": "Add Value as Number Criteria",
+        "title_measurement": "Добавить значение в качестве числовых критериев",
         "desc_measurement": "Filter Measurements by Value as Number.",
-        "title_observation": "Add Value As Number Criteria",
+        "title_observation": "Добавить значение в качестве числовых критериев",
         "desc_observation": "Filter Observations  by the Value As Number."
       },
       "addRefills": {
-        "title_drugexposure": "Add Refills Criteria",
+        "title_drugexposure": "Добавить критерии пополнения",
         "desc_drugexposure": "Filter Drug Exposures by Refills."
       },
       "addDaysSupply": {
-        "title_drugexposure": "Add Days Supply Criteria",
+        "title_drugexposure": "Добавить критерии поставки дней",
         "desc_drugexposure": "Filter Drug Exposures by Days Supply."
       },
       "addRoute": {
-        "title_drugexposure": "Add Route Criteria",
+        "title_drugexposure": "Добавить критерии маршрута",
         "desc_drugexposure": "Filter Drug Exposures by Route."
       },
       "addEffective": {
-        "title_drugexposure": "Add Effective Dose Criteria",
+        "title_drugexposure": "Добавить критерии эффективной дозы",
         "desc_drugexposure": "Filter Drug Exposures by Effective Dose."
       },
       "addLotNumber": {
-        "title_drugexposure": "Add Lot Number Criteria",
+        "title_drugexposure": "Добавить критерии номера лота",
         "desc_drugexposure": "Filter Drug Exposures by Lot Number."
       },
       "addSource": {
-        "title_drugexposure": "Add Drug Source Concept Criteria",
+        "title_drugexposure": "Добавить критерии концепции источника наркотиков",
         "desc_drugexposure": "Filter Drug Exposures by the Drug Source Concept."
       },
       "addOperator": {
-        "title_measurement": "Add Operator Criteria",
+        "title_measurement": "Добавить критерии оператора",
         "desc_measurement": "Filter Measurements by Operator."
       },
       "addValueAsString": {
-        "title_observation": "Add Value As String Criteria",
+        "title_observation": "Добавить значение в качестве строковых критериев",
         "desc_observation": "Filter Observations by the Value As String."
       },
       "addValueAsConcept": {
-        "title_measurement": "Add Value as Concept Criteria",
-        "desc_measurement": "Filter Measurements by Value as Concept.",
-        "title_observation": "Add Value as Concept Criteria",
-        "desc_observation": "Filter Observations by the Value As Concept."
+        "title_measurement": "Добавить ценность как концептуальные критерии",
+        "desc_measurement": "Фильтр измерений по значению как концепция.",
+        "title_observation": "Добавить ценность как концептуальные критерии",
+        "desc_observation": "Фильтруйте наблюдения по значению как концепции."
       },
       "addAbnormal": {
-        "title_measurement": "Add Abnormal Result Criteria",
-        "desc_measurement": "Filter Measurements to include those which fall outside of normal range."
+        "title_measurement": "Добавить критерии ненормального результата",
+        "desc_measurement": "Измерения фильтра включают те, которые выходят за пределы нормального диапазона."
       },
       "addRangeLow": {
-        "title_measurement": "Add Low Range Criteria",
-        "desc_measurement": "Filter Measurements Low Range."
+        "title_measurement": "Добавить критерии низкого диапазона",
+        "desc_measurement": "Фильтр измерений нижнего диапазона."
       },
       "addRangeHigh": {
-        "title_measurement": "Add High Range Criteria",
-        "desc_measurement": "Filter Measurements by the Measurement Type."
+        "title_measurement": "Добавить критерии высокого диапазона",
+        "desc_measurement": "Фильтруйте измерения по типу измерения."
       },
       "addRangeLowRatio": {
-        "title_measurement": "Add Low Range Ratio Criteria",
-        "desc_measurement": "Filter Measurements by the Ratio of Value as Number to Range Low."
+        "title_measurement": "Добавить критерии низкого диапазона",
+        "desc_measurement": "Фильтруйте измерения по соотношению значения как числа к низкому диапазону."
       },
       "addRangeHighRatio": {
-        "title_measurement": "Add High Range Ratio Criteria",
-        "desc_measurement": "Filter Measurements by the Ratio of Value as Number to Range High."
+        "title_measurement": "Добавить критерии высокого диапазона",
+        "desc_measurement": "Фильтруйте измерения по соотношению значения как числа к высокому диапазону."
       },
       "addQualifier": {
-        "title_observation": "Add Qualifier Criteria",
-        "desc_observation": "Filter Observations by Qualifier."
+        "title_observation": "Добавить критерии квалификации",
+        "desc_observation": "Фильтр наблюдений по классификатору."
       },
       "addUserDefined": {
-        "title_observationperiod": "Specify Start and End Dates",
-        "desc_observationperiod": "Specify start and end date to use for the Observation Period.",
-        "title_payerplan": "Specify Start and End Dates",
-        "desc_payerplan": "Specify start and end dates to use for Payer Plan Period."
+        "title_observationperiod": "Укажите даты начала и окончания",
+        "desc_observationperiod": "Укажите начальную и конечную дату для использования в период наблюдения.",
+        "title_payerplan": "Укажите даты начала и окончания",
+        "desc_payerplan": "Укажите даты начала и окончания, которые будут использоваться в Период Плана Плательщика."
       },
       "addModifier": {
-        "title_procedureoccurrence": "Add Modifier Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences  by the Modifier."
+        "title_procedureoccurrence": "Добавить критерий модификатора",
+        "desc_procedureoccurrence": "Процедура фильтра Происходит по модификатору."
       },
       "addAnatomicSite": {
-        "title_specimen": "Add Anatomic Site Criteria",
-        "desc_specimen": "Filter Specimens by the Anatomic Site."
+        "title_specimen": "Добавить анатомические критерии сайта",
+        "desc_specimen": "Фильтровать образцы по анатомическому сайту."
       },
       "addDiseaseStatus": {
-        "title_specimen": "Add Disease Status Criteria",
-        "desc_specimen": "Filter Specimens by the Disease Status."
+        "title_specimen": "Добавить критерии статуса заболевания",
+        "desc_specimen": "Фильтровать образцы по состоянию болезни."
       },
       "addSourceId": {
-        "title_specimen": "Add Source ID Criteria",
-        "desc_specimen": "Filter Specimens by the Source ID."
+        "title_specimen": "Добавить критерии идентификатора источника",
+        "desc_specimen": "Фильтровать образцы по идентификатору источника."
       },
       "addPlaceService": {
-        "title_visit": "Add Place of Service Criteria",
-        "desc_visit": "Filter Visit Occurrences based on Place of Service."
+        "title_visit": "Добавить критерии обслуживания",
+        "desc_visit": "Фильтр посещений в зависимости от места обслуживания."
       },
       "addPlaceServiceLocation": {
-        "title_visit": "Add Place of Service Location Criteria",
-        "desc_visit": "Add Place of Service Distance Criteria"
+        "title_visit": "Добавить критерий расстояния до места обслуживания",
+        "desc_visit": "Добавить критерий расстояния до места обслуживания"
       },
       "addPlaceServiceDistance": {
-        "title_visit": "Add Place of Service Location Criteria",
-        "desc_visit": "Filter Visit Occurrences based on distance from Place of Service to Patient."
+        "title_visit": "Добавить место обслуживания Критерии расположения",
+        "desc_visit": "Фильтр посещений в зависимости от расстояния от места обслуживания до пациента."
       }
     },
     "newEntityNames": {

@@ -614,6 +614,12 @@
       "clearConceptSet": "Очистить концепцию",
       "searchWithTripleDots": "Поиск..."
     },
+    "conceptSetSaveModal": {
+      "saveNewConceptSet": "Сохранение нового набора концепций",
+      "conceptSetAlreadyExists": "Набор концепций уже существует",
+      "conceptSetNameLabel": "Имя набора концепций:",
+      "conceptSetNamePlaceholder": "Имя набора концепций"
+    },
     "selectSourcesBtn": {
       "generate": "Генерировать",
       "pickAtLeastOneSourceAlert": "Пожалкйста, выберите хотя бы один источник"
@@ -736,6 +742,7 @@
       "updated": "Обновлено",
       "lastModified": "Последняя правка",
       "author": "Автор",
+      "match": "Соответствие",
       "vocabulary": "Словарь",
       "class": "Класс",
       "domain": "Домен",
@@ -758,10 +765,15 @@
       "thisWeek": "На этой неделе",
       "lastWeek": "На прошлой неделе",
       "others": "Более 2 недель назад"
+    },
+    "match": {
+      "only1": "Только 1",
+      "only2": "Только 2",
+      "both": "Оба"
     }
   },
   "columns": {
-    "id": "Id",
+    "id": "ID",
     "name": "Наименование",
     "type": "Тип",
     "code": "Код",
@@ -777,9 +789,11 @@
     "standardConceptCaption": "Стандартная концепция",
     "domain": "Домен",
     "vocabulary": "Словарь",
+    "ancestors": "Предки",
     "exclude": "Исключить",
     "descendants": "Наследники",
     "mapped": "Сопоставлено",
+    "match": "Соответствие",
     "targetName": "Название целевой группы",
     "outcomeId": "Идентификатор результата",
     "outcomeName": "Название группы результатов",
@@ -1053,23 +1067,10 @@
       "tabs": {
         "conceptSetExpression": "Определение набора концепций",
         "includedSourceCodes": "Исходный код",
-        "Export": "Экспорт",
-        "Compare": "Сравнение",
+        "export": "Экспорт",
+        "compare": "Сравнение",
         "includedConcepts": "Включенные концепции",
         "exploreEvidence": "Исследовать Свидетельство"
-      },
-      "includedConceptSets": {
-        "standardConceptCaption": "Стандартная концепция",
-        "standardConcept": "Стандартная концепция",
-        "vocabulary": "Словарь",
-        "code": "Код",
-        "domain": "Домен",
-        "name": "Имя",
-        "ancestors": "Предки",
-        "class": "Класс",
-        "invalidReason": "Причина невалидности",
-        "hasRecords": "Есть записи",
-        "hasDescendantRecords": "Есть записи-потомки"
       },
       "exploreEvidence": {
         "title": "Исследование Свидетельства:",
@@ -1114,23 +1115,17 @@
         "conceptIdentiferList": "Список идентификаторов концепций",
         "includedConceptIdentiferList": "Список идентификаторов включенных концепций",
         "copiedToClipboard!": "Скопировано в буфер обмена!",
-        "exportToCSV": "Экспортировать в CSV"
+        "exportToCSV": "Экспортировать в CSV",
+        "exportingCsv": "Экспорт в CSV...",
+        "loadingForExport": "Загрузка для экспорта...",
+        "copyToClipboardButtonTitle": "Скопировать в буфер обмена"
       },
       "expression": {
         "standard": "Стандартный",
-        "conceptCode": "Код концепции",
-        "standardConceptCode": "Стардартный код концепции",
+        "nonStandard": "Нестандартный",
         "classification": "Классификация",
-        "descendants": "Наследники",
         "changeColumns": "Изменить колонки",
         "showAllColumns": "Показать все колонки",
-        "standardConceptCaption": "Стандартная концепция",
-        "conceptName": "Имя концепции",
-        "nonStandard": "Нестандартный",
-        "domain": "Домен",
-        "mapped": "Сопоставлено",
-        "conceptId": "Id концепции",
-        "exclude": "Исключить",
         "resetColumns": "Сбросить колонки"
       },
       "recordCounts": "Количество записей",
@@ -1167,13 +1162,6 @@
     "browser": {
       "newConceptSetButton": "Новый набор концепций",
       "exportConceptSetsButton": "Экспорт наборов концепций",
-      "table": {
-        "id": "Id",
-        "created": "Создано",
-        "author": "Автор",
-        "modified": "Модифицировано",
-        "title": "Название"
-      },
       "exportInstructions": "Инструкция:",
       "exportInstructionsText": "Выберите наборы концепций в таблице. Затем нажмите кнопку «Экспорт наборов концепций», которая запустит скачивание в новом окне.",
       "caption": "Наборы концепций",
@@ -1202,7 +1190,8 @@
         "comparisonResults": "Результат сравнения",
         "sameWarning": "Невозможно сравнить один и тот же набор концепций",
         "saveMessage": "Сохранить набор концепций из списка ниже",
-        "saveWarning": "Сохраните, пожалуйста, текущий набор концепций перед сравнением."
+        "saveWarning": "Сохраните, пожалуйста, текущий набор концепций перед сравнением.",
+        "saveFromComparisonNameTail": " - из сравнения"
       }
     }
   },
@@ -2167,21 +2156,6 @@
     }
   },
   "const": {
-    "relatedSourcecodesOptions": {
-      "vocabulary": "Словарь",
-      "invalidReason": "Причина невалидности",
-      "class": "Класс",
-      "domain": "Домен"
-    },
-    "relatedSourcecodesColumns": {
-      "id": "Id",
-      "code": "Код",
-      "name": "Название",
-      "class": "Класс",
-      "standardConceptCaption": "Стандартная концепция",
-      "domain": "Домен",
-      "vocabulary": "Словарь"
-    },
     "eventsList": {
       "addConditionEra": {
         "title": "Добавить условие Эра",

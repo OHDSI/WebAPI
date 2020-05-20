@@ -603,7 +603,7 @@
         "includedConcepts": "Included Concepts",
         "exploreEvidence": "Explore Evidence"
       },
-      "caption": "Concept Set #",
+      "caption": "Concept Set #<%=id%>",
       "csDeleteConfirmMessage": "Delete concept set? Warning: deletion can not be undone!",
       "csNotSavedConfirmMessage": "Your concept set changes are not saved. Would you like to continue?",
       "conceptsRemovedMessage": "The following concepts were removed since the optimized version already includes them.",

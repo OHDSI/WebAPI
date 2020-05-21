@@ -3,6 +3,7 @@ package org.ohdsi.webapi.prediction;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.helper.ResourceHelper;
@@ -33,6 +34,7 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.TempFileUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,17 +47,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import javax.ws.rs.InternalServerErrorException;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.GENERATE_PREDICTION_ANALYSIS;
@@ -67,6 +61,8 @@ import static org.ohdsi.webapi.Constants.Params.PREDICTION_ANALYSIS_ID;
 public class PredictionServiceImpl extends AnalysisExecutionSupport implements PredictionService {
 
     private static final EntityGraph DEFAULT_ENTITY_GRAPH = EntityGraphUtils.fromAttributePaths("source", "analysisExecution.resultFiles");
+
+    private static final String PREDICTION_SKELETON = "/resources/prediction/skeleton/SkeletonPredictionStudy_0.0.1.zip";
 
     private final EntityGraph COMMONS_ENTITY_GRAPH = EntityUtils.fromAttributePaths(
             "createdBy",
@@ -311,13 +307,27 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         if (packageName == null || !Utils.isAlphaNumeric(packageName)) {
             throw new IllegalArgumentException("The package name must be alphanumeric only.");
         }
-        analysis.setPackageName(packageName);
-        String studySpecs = Utils.serialize(analysis, true);
-        Hydra h = new Hydra(studySpecs);
-        if (StringUtils.isNotEmpty(extenalPackagePath)) {
-            h.setExternalSkeletonFileName(extenalPackagePath);
+        File externalFile = null;
+        try {
+            analysis.setPackageName(packageName);
+            String studySpecs = Utils.serialize(analysis, true);
+            Hydra h = new Hydra(studySpecs);
+            //TODO this fix is specific to 2.7.x version and should be removed
+            try {
+                externalFile = TempFileUtils.copyResourceToTempFile(PREDICTION_SKELETON, "plp", ".zip");
+            } catch (IOException e) {
+                log.warn("Failed to load skeleton from resource, {}. Ignored and used default", e.getMessage());
+            }
+            //end of fix
+            if (StringUtils.isNotEmpty(extenalPackagePath)) {
+                h.setExternalSkeletonFileName(extenalPackagePath);
+            } else if (Objects.nonNull(externalFile)) {
+                h.setExternalSkeletonFileName(externalFile.getAbsolutePath());
+            }
+            h.hydrate(out);
+        } finally {
+            FileUtils.deleteQuietly(externalFile);
         }
-        h.hydrate(out);
     }
     
     @Override

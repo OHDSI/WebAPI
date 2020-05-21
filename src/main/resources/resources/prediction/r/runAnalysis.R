@@ -50,7 +50,7 @@ tryCatch({
         populateShinyApp(shinyDirectory = system.file('shiny', 'PLPViewer', package = '@packageName'), resultDirectory = outputFolder)
 
         # To run PLP Viewer shiny app call:
-        # PatientLevelPrediction::viewPlp(readRDS("./ShinyApp/PLPViewer/data/Analysis_1/plpResult.rds"))
+        # PatientLevelPrediction::viewPlp(readRDS("./ShinyApp/data/Analysis_1/plpResult.rds"))
 }, finally = {
         remove.packages('@packageName')
 })

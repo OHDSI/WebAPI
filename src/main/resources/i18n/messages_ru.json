@@ -809,6 +809,9 @@
     "conceptName": "Имя концепции",
     "class": "Класс",
     "standardConceptCaption": "Стандартная концепция",
+    "standardConceptCode": "Код стандартной концепции",
+    "rc": "RC",
+    "drc": "DRC",
     "domain": "Домен",
     "vocabulary": "Словарь",
     "ancestors": "Предки",
@@ -1069,24 +1072,6 @@
     "noVocabulariesAvailable": "Нет доступных словарей",
     "noDomainsAvailable": "Нет доступных доменов",
     "noResultsFoundFor": "Ничего не найдено для",
-    "options": {
-      "standardConcept": "Стандартная концепция",
-      "hasRecords": "Есть записи",
-      "vocabulary": "Словарь",
-      "domain": "Домен",
-      "class": "Класс",
-      "hasDescendantRecords": "Еть записи-потомки",
-      "invalidReason": "Причина невалидности"
-    },
-    "columns": {
-      "id": "Id",
-      "code": "Код",
-      "name": "Имя",
-      "standardConceptCaption": "Стандартная концепция",
-      "vocabulary": "Словарь",
-      "domain": "Домен",
-      "class": "Класс"
-    },
     "import": {
       "clickToClear": "очистить",
       "conceptIdentifiers": "Идентификаторы концепций",
@@ -1099,18 +1084,7 @@
       "importedConceptSetExpression": "Импортированное определение набора концепций",
       "enterConceptIdentifiers": "Введите идентификаторы концепций",
       "importSourceCodes": "Импорт исходного кода",
-      "unableToParseConceptIdentifiers": "Невозможно распарсить идентификаторы концепций",
-      "conceptSetTable": {
-        "id": "Id",
-        "code": "Код",
-        "name": "Имя",
-        "domain": "Домен",
-        "standardConceptCode": "Код стандартной концепции",
-        "standardConceptCaption": "Стандартная концепция",
-        "mapped": "Сопоставлено",
-        "exclude": "Исключить",
-        "descendants": "Потомки"
-      }
+      "unableToParseConceptIdentifiers": "Невозможно распарсить идентификаторы концепций"
     }
   },
   "cs": {

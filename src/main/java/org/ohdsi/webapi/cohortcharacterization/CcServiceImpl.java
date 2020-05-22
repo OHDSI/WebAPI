@@ -330,8 +330,12 @@ public class CcServiceImpl extends AbstractVocabularyService implements CcServic
       if (Objects.nonNull(foundEntity.getConceptSetEntity()) && Objects.nonNull(entity.getConceptSetEntity())) {
         foundEntity.getConceptSetEntity().setRawExpression(entity.getConceptSetEntity().getRawExpression());
       } else if (Objects.nonNull(entity.getConceptSetEntity())) {
-        CcStrataConceptSetEntity savedEntity = conceptSetRepository.save(entity.getConceptSetEntity());
-        foundEntity.setConceptSetEntity(savedEntity);
+        CcStrataConceptSetEntity cse = new CcStrataConceptSetEntity();
+        cse.setCohortCharacterization(foundEntity);
+        cse.setRawExpression(entity.getConceptSetEntity().getRawExpression());
+        foundEntity.setConceptSetEntity(cse);
+      } else {
+        foundEntity.setConceptSetEntity(null);
       }
   }
 
@@ -423,7 +427,8 @@ public class CcServiceImpl extends AbstractVocabularyService implements CcServic
 
         updateParams(entity, persistedCohortCharacterization);
         updateStratas(entity, persistedCohortCharacterization);
-
+        updateConceptSet(entity, persistedCohortCharacterization);
+        
         importCohorts(entity, persistedCohortCharacterization);
         List<Integer> savedAnalysesIds = importAnalyses(entity, persistedCohortCharacterization);
 

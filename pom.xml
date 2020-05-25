@@ -22,7 +22,8 @@
     <pac4j.version>1.9.2</pac4j.version>
 
     <start-class>org.ohdsi.webapi.WebApi</start-class>
-    <skipTests>true</skipTests>
+    <skipUnitTests>true</skipUnitTests>
+    <skipITtests>true</skipITtests>
 
     <!-- Primary DataSource -->
     <!-- default sql server - TODO How about making postgres the default (e.g. in line with open source tech)? -alexfranken -->
@@ -309,7 +310,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.18.1</version>
         <configuration>
-          <skipTests>${skipTests}</skipTests>
+          <skipTests>${skipUnitTests}</skipTests>
         </configuration>
       </plugin>
       <plugin>
@@ -340,7 +341,7 @@
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>2.18.1</version>
         <configuration>
-          <skipITs>${skipTests}</skipITs>
+          <skipITs>${skipITtests}</skipITs>
         </configuration>
         <executions>
           <execution>

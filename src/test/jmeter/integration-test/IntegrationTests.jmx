@@ -44,7 +44,7 @@
           </elementProp>
           <elementProp name="CasHost" elementType="Argument">
             <stringProp name="Argument.name">CasHost</stringProp>
-            <stringProp name="Argument.value">${__P(cas.url,https://localhost:8443)}</stringProp>
+            <stringProp name="Argument.value">${__P(cas.url,https://cas-dev.honeur.org)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">The main URL of your CAS Instance</stringProp>
           </elementProp>
@@ -55,24 +55,24 @@
           </elementProp>
           <elementProp name="CasCentralCallback" elementType="Argument">
             <stringProp name="Argument.name">CasCentralCallback</stringProp>
-            <stringProp name="Argument.value">${__P(cas.central.callback.url,https://localhost:8444/WebAPI/user/oauth/cas)}</stringProp>
+            <stringProp name="Argument.value">${__P(cas.central.callback.url,https://dev.honeur.org/webapi/user/oauth/cas)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">Service Provider url</stringProp>
           </elementProp>
           <elementProp name="CasLocalCallback" elementType="Argument">
             <stringProp name="Argument.name">CasLocalCallback</stringProp>
-            <stringProp name="Argument.value">${__P(cas.local.callback.url,https://localhost:8844/WebAPI/user/login/cas)}</stringProp>
+            <stringProp name="Argument.value">${__P(cas.local.callback.url,http://52.215.165.36:8080/webapi/user/login/cas)}</stringProp>
             <stringProp name="Argument.desc">Service Provider url</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="WebAPICentralHost" elementType="Argument">
             <stringProp name="Argument.name">WebAPICentralHost</stringProp>
-            <stringProp name="Argument.value">${__P(webapi.central.url,https://localhost:8444/WebAPI)}</stringProp>
+            <stringProp name="Argument.value">${__P(webapi.central.url,https://dev.honeur.org/webapi)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="WebAPILocalHost" elementType="Argument">
             <stringProp name="Argument.name">WebAPILocalHost</stringProp>
-            <stringProp name="Argument.value">${__P(webapi.local.url,https://localhost:8844/WebAPI)}</stringProp>
+            <stringProp name="Argument.value">${__P(webapi.local.url,http://52.215.165.36:8080/webapi)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="ExpressionFile" elementType="Argument">
@@ -328,7 +328,7 @@ data = jsonSlurper.parseText(prev.getResponseDataAsString());
 success = false;
 
 for (d in data) {
- if(d.name == &quot;TEST Organization&quot;){
+ if(d.name == &quot;Site 1&quot;){
  	d.canRead = true;
  	success = true;
 	vars.put(&quot;organizationId&quot;, String.valueOf(d.organizationId));
@@ -1137,35 +1137,7 @@ AssertionResult.setFailure(running == &quot;COMPLETE&quot; &amp;&amp; inValid); 
           <stringProp name="HTTPSampler.connect_timeout"></stringProp>
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
         </HTTPSamplerProxy>
-        <hashTree>
-          <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Status code 200 Assertion" enabled="true">
-            <stringProp name="scriptLanguage">groovy</stringProp>
-            <stringProp name="parameters"></stringProp>
-            <stringProp name="filename"></stringProp>
-            <stringProp name="cacheKey">true</stringProp>
-            <stringProp name="script">import groovy.json.JsonSlurper;
-import groovy.json.internal.LazyMap;
-
-def jsonSlurper = new JsonSlurper();
-
-data = jsonSlurper.parseText(prev.getResponseDataAsString());
-succes = true;
-componentsNotAvailable = [];
-
-for (d in data){
-	if(data[d.key] != &quot;200&quot;){
-		succes = false;
-		componentsNotAvailable.push(d.key);
-	}
-}
-
-AssertionResult.setFailureMessage(&quot;Following components are not available: ${componentsNotAvailable}&quot;);
-AssertionResult.setFailure(!succes);    
-
-</stringProp>
-          </JSR223Assertion>
-          <hashTree/>
-        </hashTree>
+        <hashTree/>
         <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="HSS token" enabled="true"/>
         <hashTree>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
@@ -1614,7 +1586,7 @@ data = jsonSlurper.parseText(prev.getResponseDataAsString());
 success = false;
 
 for (d in data) {
- if(d.name == &quot;TEST Organization&quot;){
+ if(d.name == &quot;Site 1&quot;){
  	d.canRead = true;
  	success = true;
 	vars.put(&quot;organizationId&quot;, String.valueOf(d.organizationId));

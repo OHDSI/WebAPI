@@ -3,7 +3,6 @@ package org.ohdsi.webapi.cohortcharacterization;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationRequestBuilder;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationUtils;
-import org.ohdsi.webapi.generationcache.CacheableGenerationType;
 import org.ohdsi.webapi.generationcache.GenerationCacheHelper;
 import org.ohdsi.webapi.service.CohortGenerationService;
 import org.ohdsi.webapi.source.Source;
@@ -47,7 +46,6 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
     private boolean useAsyncCohortGeneration;
     private Set<StatementCancel> statementCancels = ConcurrentHashMap.newKeySet();
     private volatile boolean stopped = false;
-    private static final Map<GenerationCacheHelper.CacheableResource, Object> monitors = new ConcurrentHashMap<>();
 
     public GenerateLocalCohortTasklet(TransactionTemplate transactionTemplate,
                                       CancelableJdbcTemplate cancelableJdbcTemplate,
@@ -122,30 +120,27 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
         try {
             StatementCancel stmtCancel = new StatementCancel();
             statementCancels.add(stmtCancel);
-            Object monitor = monitors.computeIfAbsent(new GenerationCacheHelper.CacheableResource(CacheableGenerationType.COHORT, designHash, source.getSourceId()), o -> new Object());
-            synchronized (monitor) {
-                GenerationCacheHelper.CacheResult res = generationCacheHelper.computeCacheIfAbsent(cd, source, generationRequestBuilder, (resId, sqls) -> {
-                    try {
-                        generationCacheHelper.runCancelableCohortGeneration(cancelableJdbcTemplate, stmtCancel, sqls);
-                    } finally {
-                        // Usage of the same sessionId for all cohorts would cause issues in databases w/o real temp tables support
-                        // And we cannot postfix existing sessionId with some index because SqlRender requires sessionId to be only 8 symbols long
-                        // So, relying on TempTableCleanupManager.removeTempTables from GenerationTaskExceptionHandler is not an option
-                        // That's why explicit TempTableCleanupManager call is defined
-                        TempTableCleanupManager cleanupManager = new TempTableCleanupManager(
-                                cancelableJdbcTemplate,
-                                transactionTemplate,
-                                source.getSourceDialect(),
-                                sessionId,
-                                SourceUtils.getTempQualifier(source)
-                        );
-                        cleanupManager.cleanupTempTables();
-                    }
-                });
-                String sql = String.format(COPY_CACHED_RESULTS, SourceUtils.getTempQualifier(source), targetTable, cd.getId(), res.getSql());
-                cancelableJdbcTemplate.batchUpdate(stmtCancel, sql);
-                statementCancels.remove(stmtCancel);
-            }
+            GenerationCacheHelper.CacheResult res = generationCacheHelper.computeCacheIfAbsent(cd, source, generationRequestBuilder, (resId, sqls) -> {
+                try {
+                    generationCacheHelper.runCancelableCohortGeneration(cancelableJdbcTemplate, stmtCancel, sqls);
+                } finally {
+                    // Usage of the same sessionId for all cohorts would cause issues in databases w/o real temp tables support
+                    // And we cannot postfix existing sessionId with some index because SqlRender requires sessionId to be only 8 symbols long
+                    // So, relying on TempTableCleanupManager.removeTempTables from GenerationTaskExceptionHandler is not an option
+                    // That's why explicit TempTableCleanupManager call is defined
+                    TempTableCleanupManager cleanupManager = new TempTableCleanupManager(
+                            cancelableJdbcTemplate,
+                            transactionTemplate,
+                            source.getSourceDialect(),
+                            sessionId,
+                            SourceUtils.getTempQualifier(source)
+                    );
+                    cleanupManager.cleanupTempTables();
+                }
+            });
+            String sql = String.format(COPY_CACHED_RESULTS, SourceUtils.getTempQualifier(source), targetTable, cd.getId(), res.getSql());
+            cancelableJdbcTemplate.batchUpdate(stmtCancel, sql);
+            statementCancels.remove(stmtCancel);
         } catch (StatementCancelException ignored) {
             // this exception must be caught to prevent "FAIL" status of the job
         }

@@ -104,8 +104,9 @@ public class EstimationController {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public EstimationDTO createEstimation(Estimation est) throws Exception {
-    Estimation estimation = service.createEstimation(est);
-    return reloadAndConvert(estimation.getId());
+
+    Estimation estWithId = service.createEstimation(est);
+    return reloadAndConvert(estWithId.getId());
   }
 
   @PUT
@@ -124,8 +125,8 @@ public class EstimationController {
   @Transactional
   public EstimationDTO copy(@PathParam("id") final int id) throws Exception {
 
-    Estimation estimation = service.copy(id);
-    return reloadAndConvert(estimation.getId());
+    Estimation est = service.copy(id);
+    return reloadAndConvert(est.getId());
   }
 
   @GET
@@ -164,8 +165,8 @@ public class EstimationController {
           LOGGER.error("Failed to import Estimation, empty or not valid source JSON");
           throw new InternalServerErrorException();
       }
-      Estimation estimation = service.importAnalysis(analysis);
-      return reloadAndConvert(estimation.getId());
+      Estimation importedEstimation = service.importAnalysis(analysis);
+      return reloadAndConvert(importedEstimation.getId());
   }  
 
   /**

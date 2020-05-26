@@ -93,8 +93,8 @@ public class PathwayController {
 
         dto.setName(pathwayService.getNameWithSuffix(dto.getName()));
         PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
-        PathwayAnalysisEntity analysis = pathwayService.importAnalysis(pathwayAnalysis);
-        return reloadAndConvert(analysis.getId());
+        PathwayAnalysisEntity imported = pathwayService.importAnalysis(pathwayAnalysis);
+        return reloadAndConvert(imported.getId());
     }
 
     @GET

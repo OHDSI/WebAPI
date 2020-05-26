@@ -15,6 +15,8 @@
     "export": "Экспорт",
     "yes": "Да",
     "no": "Нет",
+    "and": "и",
+    "or": "или",
     "daysAbbr": "д",
     "min": "минимум",
     "max": "максимум",
@@ -24,7 +26,14 @@
     "preview": "Предпросмотр",
     "progress": "Прогресс",
     "refresh": "Обновить",
-    "median": "медиана"
+    "median": "медиана",
+    "add": "Добавить",
+    "configureAccessModal": {
+      "loadingAccessList": "Загрузка списков доступа...",
+      "addWriteAccessToRole": "Добавить разрешение на запись роли:",
+      "rolesWithWriteAccess": "Роли с разрешением на запись:",
+      "revoke": "Отозвать"
+    }
   },
   "commonErrors": {
     "browserWarning": "Пожалуйста, обратите внимание, что официально поддерживается только браузер Chrome версии не ниже v.63",
@@ -668,7 +677,8 @@
       "mappedConcepts": "Сопоставленные концепции",
       "load": "Загрузить",
       "delete": "Удалить",
-      "removeSelected": "Удалить выбранные"
+      "removeSelected": "Удалить выбранные",
+      "selectConceptSet": "Выберите набор концепций..."
     },
     "copyToClipboard": {
       "buttonText": "Скопировать в буфер обмена",
@@ -819,6 +829,7 @@
     "class": "Класс",
     "standardConceptCaption": "Стандартная концепция",
     "standardConceptCode": "Код стандартной концепции",
+    "standardType": "Тип стандарта",
     "rc": "RC",
     "drc": "DRC",
     "domain": "Домен",
@@ -944,7 +955,8 @@
     "drugId": "Концепция ОМОП",
     "drugName": "Препарат",
     "drugVocabularyId": "Концептуальный словарь",
-    "drugClass": "Концептуальный класс"
+    "drugClass": "Концептуальный класс",
+    "action": "Действие"
   },
   "filters": {
     "visit": "Посещение",

@@ -32,8 +32,8 @@ import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
-import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.EntityUtils;
+import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -51,7 +51,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.GENERATE_PREDICTION_ANALYSIS;
@@ -109,7 +115,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     private DesignImportService designImportService;
     
     @Autowired
-    private ConversionService conversionService;    
+    private ConversionService conversionService;
     
     private final String EXEC_SCRIPT = ResourceHelper.GetResourceAsString("/resources/prediction/r/runAnalysis.R");
 
@@ -140,7 +146,10 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         Date currentTime = Calendar.getInstance().getTime();
         pred.setCreatedBy(getCurrentUser());
         pred.setCreatedDate(currentTime);
-    
+        // Fields with information about modifications have to be reseted
+        pred.setModifiedBy(null);
+        pred.setModifiedDate(null);
+
         return save(pred);
     }
 

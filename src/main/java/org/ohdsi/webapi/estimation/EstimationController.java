@@ -167,7 +167,7 @@ public class EstimationController {
       }
       Estimation importedEstimation = service.importAnalysis(analysis);
       return reloadAndConvert(importedEstimation.getId());
-  }  
+  }
 
   /**
    * Download an R package to execute the estimation study

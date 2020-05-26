@@ -28,6 +28,8 @@
     "refresh": "Обновить",
     "median": "медиана",
     "add": "Добавить",
+    "selectAll": "Выбрать все",
+    "deselectAll": "Отменить выбор",
     "configureAccessModal": {
       "loadingAccessList": "Загрузка списков доступа...",
       "addWriteAccessToRole": "Добавить разрешение на запись роли:",
@@ -956,7 +958,23 @@
     "drugName": "Препарат",
     "drugVocabularyId": "Концептуальный словарь",
     "drugClass": "Концептуальный класс",
-    "action": "Действие"
+    "action": "Действие",
+    "actions": "Действия",
+    "value": "Значение",
+    "design": "Дизайн",
+    "count": "Количество",
+    "avg": "Среднее",
+    "stddev": "Std Dev",
+    "median": "Медиана",
+    "pct": "Pct",
+    "covariate": "Ковариат",
+    "explore": "Исследовать",
+    "min": "Минимум",
+    "p10": "p10",
+    "p25": "p25",
+    "p75": "p75",
+    "p90": "p90",
+    "max": "Максимум"
   },
   "filters": {
     "visit": "Посещение",
@@ -1636,23 +1654,10 @@
           }
         },
         "table": {
-          "columns": {
-            "date": "Дата",
-            "design": {
-              "title": "Дизайн",
-              "value": "(текущий)"
-            },
-            "status": {
-              "title": "Статус"
-            },
-            "duration": "Длительность",
-            "results": {
-              "title": "Результаты",
-              "values": {
-                "text": "Показать отчеты",
-                "empty": "-"
-              }
-            }
+          "designValue": "(текущий)",
+          "resultValues": {
+            "text": "Показать отчеты",
+            "empty": "-"
           }
         },
         "tooltips": {
@@ -2343,13 +2348,10 @@
     "saveDefinitionBefore": "Вы должны сохранить определение, прежде чем сможете экспортировать"
   },
   "cohortDefinitionManager": {
-    "newCohortPlaceholder": "Новое определение когорты",
     "saveCohortTitle": "Сохранить определение когорты",
     "closeCohortTitle": "Закрыть определение когорты",
     "createCopyCohortTitle": "Создать копию этого определения когорты",
     "getLinkCohortTitle": "Получить ссылку на это определение когорты",
-    "configureAccessTitle": "Настроить доступ",
-    "deleteTitle": "Удалить",
     "emptyName": "Название определения группы пусто",
     "tabs": {
       "definition": "Определение",
@@ -3139,8 +3141,8 @@
     },
     "newEntityNames": {
       "characterization": "Новая характеристика",
-      "featureAnalysis": "New Feature Analysis",
-      "cohortDefinition": "Анализ новых функций",
+      "featureAnalysis": "Новый функциональный анализ",
+      "cohortDefinition": "Новая когорта",
       "incidenceRate": "Новый анализ уровня заболеваемости",
       "pathway": "Новый анализ исходов когорты",
       "ple": "Новый анализ оценки уровня населения",

@@ -974,7 +974,9 @@
     "p25": "p25",
     "p75": "p75",
     "p90": "p90",
-    "max": "Максимум"
+    "max": "Максимум",
+    "percentRemain": "% остатка",
+    "percentDiff": "% разницы"
   },
   "filters": {
     "visit": "Посещение",
@@ -1571,24 +1573,6 @@
     "newanalysis": "Новый Анализ Исходов",
     "defaultName": "Новый Анализ Исходов",
     "loading": "Загружается список Анализов Исходов...",
-    "browser": {
-      "grid": {
-        "facets": {
-          "created": "Создано",
-          "updated": "Изменено",
-          "author": "Автор"
-        }
-      },
-      "table": {
-        "columns": {
-          "id": "Ид",
-          "name": "Наименование",
-          "created": "Создано",
-          "updated": "Изменено",
-          "author": "Автор"
-        }
-      }
-    },
     "manager": {
       "loading": "Загружается Анализ Исходов Когорты...",
       "caption": "Анализ Исходов Когорты №",
@@ -1720,13 +1704,14 @@
     "nameIsEmptyWarning": "Имя анализа не может быть пустым.",
     "tabs": {
       "specification": "Спецификация",
-      "executions": "Генерация",
+      "executions": "Исследования",
       "utilities": "Утилиты"
     },
     "spec": {
       "descriptionPlaceholder": "введите описание (не более 1000 символов)",
       "view": "Отображать:",
       "viewFull": "Все",
+      "viewFullSpecification": "Все",
       "viewComparisons": "Сравнения",
       "viewAnalysisSettings": "Настройки анализа",
       "viewEvaluationSettings": "Настройки вычислений",
@@ -2071,7 +2056,7 @@
         "execute": "Выполнять:",
         "repeat": "Повторить:",
         "after": "После выполнений",
-        "executions": "Выполнения",
+        "executions": "Исследования",
         "on": "До даты"
       },
       "findGroup": "Найти группу",

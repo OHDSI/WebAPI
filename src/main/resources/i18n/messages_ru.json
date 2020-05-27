@@ -14,8 +14,13 @@
     "import": "Импорт",
     "export": "Экспорт",
     "yes": "Да",
+    "yesExact": "Да (точно)",
+    "yesDescendant": "Да (потомок)",
+    "yesParent": "Да (родитель)",
     "no": "Нет",
     "daysAbbr": "д",
+    "and": "и",
+    "or": "или",
     "min": "минимум",
     "max": "максимум",
     "cancel": "Отмена",
@@ -24,7 +29,11 @@
     "preview": "Предпросмотр",
     "progress": "Прогресс",
     "refresh": "Обновить",
-    "median": "медиана"
+    "median": "медиана",
+    "days": "дней",
+    "none": "никто",
+    "included": "включены",
+    "excluded": "Исключенный"
   },
   "commonErrors": {
     "browserWarning": "Пожалуйста, обратите внимание, что официально поддерживается только браузер Chrome версии не ниже v.63",
@@ -110,8 +119,12 @@
     "allEvents": "Все события",
     "earliestEvents": "Самое раннее событие",
     "latestEvents": "Последнее мероприятие",
+    "startDate": "Дата начала",
+    "endDate": "Дата окончания",
     "yes": "Да",
     "no": "Нет",
+    "between": "между",
+    "notBetween": "не между",
     "isAnyOf": "любой из",
     "isNotAnyOf": "это не какой-либо из",
     "indexStartDate": "дата начала индекса",
@@ -138,24 +151,64 @@
     "allVisits": "Все посещения",
     "allVisitTypes": "Все типы посещения",
     "drugSource": "Источник наркотиков",
-    "allDrugSources": "Все источники наркотиков"
+    "allDrugSources": "Все источники наркотиков",
+    "endOfContinuousObservation": "конец непрерывного наблюдения",
+    "fixedDurationRelativeToInitialEvent": "фиксированная продолжительность относительно начального события",
+    "endOfContinuousDrugExposure": "конец непрерывного воздействия наркотиков",
+    "startsWith": "начиная с",
+    "contains": "содержащий",
+    "endsWith": "заканчивая",
+    "notStartsWith": "не начиная с",
+    "notContains": "не содержащий",
+    "notEndsWith": "не заканчивается"
   },
   "components": {
+    "evidencePairViewer": {
+      "evidencePairViewerText_1": "загрузка пар доказательств",
+      "evidencePairViewerText_2": "Если CommonEvidenceModel указал, что есть информация о ярлыке продукта для выбранной пары лекарственное средство (1 = true, 0 = false) Вы можете увидеть много этикеток продукта ниже. Количество меток не является информативным, поскольку неблагоприятное событие на одной метке должен быть на всех этикетках продукта. Таким образом, на этой странице будут показаны все ярлыки продуктов для выбранной пары лекарственное средство.",
+      "evidencePairViewerText_3": "Если CommonEvidenceModel перечислил несколько публикаций, во всплывающем окне «Просмотр доказательств» одна публикация может появляться несколько раз в приведенных ниже результатах. Это связано с тем, что для каждой пары «состояние-лекарство», которое соответствует публикации, публикация будет отображаться в списке «Просмотр доказательств».",
+      "evidencePairViewerText_4": "Нажмите здесь для получения дополнительной информации об этом списке доказательств",
+      "evidencePairViewerText_5": "Скрыть детали",
+      "evidencePairViewerText_6": "Набор понятий не помечен как действительный для получения результатов. Пожалуйста, убедитесь, что этот концептуальный набор содержит только УСЛОВИЯ или ПРЕПАРАТЫ."
+    },
+    "navigateControls": {
+      "navigateControlsText_1": "Модель общих доказательств"
+    },
+    "feasibilityAttritionReport": {
+      "attritionVisualization": "Визуализация истощения",
+      "inclusionRule": "Правило включения",
+      "percentRemain": "% оставаться",
+      "precentDiff": "% разность"
+    },
+    "feasibilityIntersectReport": {
+      "inclusionRule": "Правило включения",
+      "percentSatisfied": "% Доволен",
+      "percentToGain": "% Получить",
+      "populationVisualization": "Визуализация населения",
+      "rectSummary": "<%=size%> люди (<%=percentage%>%), <%=passCount%> критерии пройдены, <%=failCount%> критерии не пройдены."
+    },
+    "endStrategyEditor": {
+      "eventWillPersistUntil": "Событие будет продолжаться до:"
+    },
+    "endStrategyViewer": {
+      "endDateStrategy": "Конечная дата стратегии",
+      "endStrategyViewerText_1": "Стратегия конечной даты не выбрана. По умолчанию конечной датой когорты будет конец периода наблюдения, который содержит индексное событие."
+    },
     "multiInput": {
       "action": "Действие",
       "remove": "Удалить",
       "add": "Добавить"
     },
     "generateComponent": {
-      "generate": "Generate",
-      "generating": "Generating"
+      "generate": "генерировать",
+      "generating": "порождающий"
     },
     "cohortConceptSetBrowser": {
       "tableId": "Id",
-      "tableTitle": "Title",
-      "tableCreated": "Created",
-      "tableModified": "Modified",
-      "tableAuthor": "Author"
+      "tableTitle": "заглавие",
+      "tableCreated": "созданный",
+      "tableModified": "модифицированный",
+      "tableAuthor": "автор"
     },
     "textFilter": {
       "startsWith": "Начиная с",
@@ -167,7 +220,8 @@
     },
     "period": {
       "starting": "начало",
-      "andEnding ": "и окончание"
+      "andEnding": "и окончание",
+      "periodText_1": "Note: only observation periods that encompass the start and end dates will be used."
     },
     "inclusionRuleEditor": {
       "unnamedCriteria": "Безымянный критерий",
@@ -284,7 +338,7 @@
       "cohortEntryEvents": "События входа",
       "cohortEntryEventsText_1": "События - это записанные наблюдения с указанием времени для людей, такие как воздействие наркотиков, условия, процедуры, измерения и посещения. Все события имеют дату начала и дату окончания, хотя некоторые события могут иметь дату начала и дату окончания с одинаковым значением (например, процедуры или измерения).",
       "inclusionCriteria": "Критерии включения",
-      "inclusionCriteriaText": "The qualifying cohort will be defined as all persons who have an initial event, satisfy the initial event inclusion criteria, and fulfill all additional qualifying inclusion criteria. Each qualifying inclusion criteria will be evaluated to determine the impact of the criteria on the attrition of persons from the initial cohort.",
+      "inclusionCriteriaText": "Отборочная когорта будет определяться как все лица, которые имеют начальное событие, удовлетворяют начальным критериям включения в событие и отвечают всем дополнительным квалификационным критериям включения. Каждый квалификационный критерий включения будет оцениваться для определения влияния критериев на истощение людей из первоначальной когорты.",
       "cohortExit": "Выход из когорты",
       "cohortExitText_1": "Для всех квалификационных событий должна быть спецификация того, когда каждое событие заканчивается присутствием в когорте. По умолчанию событие заканчивается в конце периода наблюдения, содержащего соответствующее исходное событие, но также могут быть указаны даты окончания события:",
       "cohortExitTitle_1": "Даты окончания мероприятия",
@@ -317,7 +371,8 @@
       "cohortErasText_3": "Дата окончания когорты правого цензора",
       "addTrimmingOptions": "добавить параметры обрезки ...",
       "unnamedCriteria": "Безымянный критерий",
-      "copyOf": "Копия:"
+      "copyOf": "Копия:",
+      "noCensoring": "Нет цензуры"
     },
     "conditionEra": {
       "criteriaText_1": "состояние эпохи",
@@ -347,7 +402,10 @@
       "conditionOccurrenceText_7": "с возрастом",
       "conditionOccurrenceText_8": "с полом:",
       "conditionOccurrenceText_9": "со специальностью поставщика:",
-      "conditionOccurrenceText_10": "с посещением:"
+      "conditionOccurrenceText_10": "с посещением:",
+      "conditionOccurrenceText_11": "gender is any of:",
+      "conditionOccurrenceText_12": "provider specialty is any of:",
+      "conditionOccurrenceText_13": "visit occurrence is any of:"
     },
     "conditionDeath": {
       "anyDeath": "Любая смерть",
@@ -357,7 +415,8 @@
       "conditionDeathText_2": "Начало вхождения:",
       "conditionDeathText_3": "Концепция источника смерти",
       "conditionDeathText_4": "с возрастом",
-      "conditionDeathText_5": "с полом:"
+      "conditionDeathText_5": "с полом:",
+      "conditionDeathText_6": "пол любой из:"
     },
     "conditionDevice": {
       "anyDevice": "Любое устройство",
@@ -373,7 +432,10 @@
       "conditionDeviceText_8": "с возрастом",
       "conditionDeviceText_9": "с полом:",
       "conditionDeviceText_10": "со специальностью поставщика:",
-      "conditionDeviceText_11": "с посещением:"
+      "conditionDeviceText_11": "с посещением:",
+      "conditionDeviceText_12": "пол любой из:",
+      "conditionDeviceText_13": "Специализация провайдера:",
+      "conditionDeviceText_14": "Событием посещения является любое из:"
     },
     "conditionDose": {
       "anyDrug": "Любой наркотик",
@@ -387,7 +449,9 @@
       "conditionDoseText_7": "с длиной эры",
       "conditionDoseText_8": "с возрастом в годах в начале эры",
       "conditionDoseText_9": "с возрастом в годах в конце эры",
-      "conditionDoseText_10": "с полом:"
+      "conditionDoseText_10": "с полом:",
+      "conditionDoseText_11": "Единицей является любой из:",
+      "conditionDoseText_12": "пол любой из:"
     },
     "conditionDrug": {
       "anyDrug": "Любой наркотик",
@@ -402,7 +466,8 @@
       "conditionDrugText_8": "с длиной эры",
       "conditionDrugText_9": "с возрастом в годах в начале эры",
       "conditionDrugText_10": "с возрастом в годах в конце эры",
-      "conditionDrugText_11": "с полом:"
+      "conditionDrugText_11": "с полом:",
+      "conditionDrugText_12": "пол любой из:"
     },
     "conditionDrugExposure": {
       "anyDrug": "Любой наркотик",
@@ -424,7 +489,12 @@
       "conditionDrugExposureText_14": "с возрастом",
       "conditionDrugExposureText_15": "с полом:",
       "conditionDrugExposureText_16": "со специальностью поставщика:",
-      "conditionDrugExposureText_17": "с посещением:"
+      "conditionDrugExposureText_17": "с посещением:",
+      "conditionDrugExposureText_18": "Концепция маршрута - это любое из:",
+      "conditionDrugExposureText_19": "Единицей дозы является любая из:",
+      "conditionDrugExposureText_20": "пол любой из:",
+      "conditionDrugExposureText_21": "Специализация провайдера:",
+      "conditionDrugExposureText_22": "Событием посещения является любое из:"
     },
     "conditionMeasurement": {
       "anyMeasurement": "Любое измерение",
@@ -446,7 +516,17 @@
       "conditionMeasurementText_15": "с возрастом",
       "conditionMeasurementText_16": "с полом:",
       "conditionMeasurementText_17": "со специальностью поставщика:",
-      "conditionMeasurementText_18": "с посещением:"
+      "conditionMeasurementText_18": "с посещением:",
+      "conditionMeasurementText_19": "Оператором значения измерения является любой из:",
+      "conditionMeasurementText_20": "Значение как понятие - это любое из:",
+      "conditionMeasurementText_21": "Единицей является любой из:",
+      "conditionMeasurementText_22": "с меньшим диапазоном",
+      "conditionMeasurementText_23": "с меньшим коэффициентом дальности",
+      "conditionMeasurementText_24": "с высоким диапазоном",
+      "conditionMeasurementText_25": "с высоким коэффициентом дальности",
+      "conditionMeasurementText_26": "пол любой из:",
+      "conditionMeasurementText_27": "Специализация провайдера:",
+      "conditionMeasurementText_28": "Событием посещения является любое из:"
     },
     "conditionObservation": {
       "anyObservation": "Любое Наблюдение",
@@ -464,7 +544,13 @@
       "conditionObservationText_10": "с возрастом",
       "conditionObservationText_11": "с полом:",
       "conditionObservationText_12": "с специальностью поставщика:",
-      "conditionObservationText_13": "с посещением:"
+      "conditionObservationText_13": "с посещением:",
+      "conditionObservationText_14": "Значение как понятие - это любое из:",
+      "conditionObservationText_15": "Квалификатор является любым из:",
+      "conditionObservationText_16": "Единицей является любой из:",
+      "conditionObservationText_17": "пол любой из:",
+      "conditionObservationText_18": "Специализация провайдера:",
+      "conditionObservationText_19": "Событием посещения является любое из:"
     },
     "conditionObservationPeriod": {
       "addAttribute": "Добавить атрибут...",
@@ -477,7 +563,9 @@
       "conditionObservationText_7": "с возрастом в годах на начало периода",
       "conditionObservationText_8": "с возрастом в годах на конец периода",
       "conditionObservationText_9": "с продолжительностью периода",
-      "conditionObservationText_10": "дней."
+      "conditionObservationText_10": "дней.",
+      "conditionObservationText_11": "период наблюдения",
+      "conditionObservationText_12": "Тип периода - любой из:"
     },
     "conditionPayerPlanPeriod": {
       "anyPayer": "Любой плательщик",
@@ -506,7 +594,14 @@
       "conditionPayerPlanText_15": "Концепция источника плана",
       "conditionPayerPlanText_16": "Спонсор Источник Концепция",
       "conditionPayerPlanText_17": "Стоп Причина Источник Концепция",
-      "conditionPayerPlanText_18": "Примечание. Критерии периода плана плательщика доступны только в CDM v5.3 и более поздних версиях."
+      "conditionPayerPlanText_18": "Примечание. Критерии периода плана плательщика доступны только в CDM v5.3 и более поздних версиях.",
+      "conditionPayerPlanText_19": "период плана плательщика",
+      "conditionPayerPlanText_20": "используя указанный период:",
+      "conditionPayerPlanText_21": "начало периода",
+      "conditionPayerPlanText_22": "конец периода",
+      "conditionPayerPlanText_23": "с возрастом в начале",
+      "conditionPayerPlanText_24": "с возрастом в конце",
+      "conditionPayerPlanText_25": "пол любой из:"
     },
     "conditionProcedureOccurrence": {
       "addAttribute": "Добавить атрибут...",
@@ -521,7 +616,11 @@
       "conditionProcedureOccurrenceText_7": "с возрастом:",
       "conditionProcedureOccurrenceText_8": "с полом:",
       "conditionProcedureOccurrenceText_9": "со специальностью поставщика:",
-      "conditionProcedureOccurrenceText_10": "с посещением:"
+      "conditionProcedureOccurrenceText_10": "с посещением:",
+      "conditionProcedureOccurrenceText_11": "Модификатор является любым из:",
+      "conditionProcedureOccurrenceText_12": "пол любой из:",
+      "conditionProcedureOccurrenceText_13": "Специализация провайдера:",
+      "conditionProcedureOccurrenceText_14": "Событием посещения является любое из:"
     },
     "conditionSpecimen": {
       "addAttribute": "Добавить атрибут...",
@@ -536,7 +635,11 @@
       "conditionSpecimeText_7": "со статусом заболевания:",
       "conditionSpecimeText_8": "с идентификатором источника",
       "conditionSpecimeText_9": "с возрастом",
-      "conditionSpecimeText_10": "с полом:"
+      "conditionSpecimeText_10": "с полом:",
+      "conditionSpecimeText_11": "Единицей является любой из:",
+      "conditionSpecimeText_12": "Анатомический сайт - это любой из:",
+      "conditionSpecimeText_13": "Состояние болезни является любой из:",
+      "conditionSpecimeText_14": "пол любой из:"
     },
     "conditionVisit": {
       "addAttribute": "Добавить атрибут...",
@@ -554,7 +657,10 @@
       "conditionSpecimeText_9": "со специальностью поставщика:",
       "conditionSpecimeText_10": "с местом службы:",
       "conditionSpecimeText_11": "с местом обслуживания, расположенным в:",
-      "conditionSpecimeText_12": "с расстоянием от места службы до пациента"
+      "conditionSpecimeText_12": "с расстоянием от места службы до пациента",
+      "conditionSpecimeText_13": "с продолжительностью посещения",
+      "conditionSpecimeText_14": "пол любой из:",
+      "conditionSpecimeText_15": "Специализация провайдера:"
     },
     "dateRange": {
       "before": "Перед",
@@ -607,28 +713,41 @@
       "criteriaGroupText_2": "разрешить события за пределами периода наблюдения"
     },
     "customEraStrategy": {
-      "customEraStrategyText_1": "Continuous Exposure Persistence:",
-      "customEraStrategyText_2": "Specify a concept set that contains one or more drugs.  A drug era will be derived from all drug exposure events for any of the drugs within the concept set, using the specified persistence window as a maximum allowable gap in days between successive exposure events and adding a specified surveillance window to the final exposure event.  If no exposure event end date is provided, then an exposure event end date is inferred to be event start date + days supply in cases when days supply is available or event start date + 1 day otherwise. This event persistence assures that the cohort end date will be no greater than the drug era end date.",
-      "customEraStrategyText_3": "Concept set containing the drug(s) of interest:",
-      "customEraStrategyText_4": "Persistence window:  allow for a maximum of",
-      "customEraStrategyText_5": "Surveillance window: add ",
-      "customEraStrategyText_6": "days to the end of the era of persistence exposure as an additional period of surveillance prior to cohort exit.",
-      "customEraStrategyText_7": "Use days supply and exposure end date for exposure duration.",
-      "customEraStrategyText_8": "change",
-      "customEraStrategyText_9": "Force drug exposure days suply to: ",
-      "customEraStrategyText_10": "days."
+      "customEraStrategyText_1": "Непрерывная выдержка:",
+      "customEraStrategyText_2": "Укажите набор понятий, содержащий один или несколько препаратов. Эпоха наркотиков будет получена из всех событий воздействия наркотиков для любого из препаратов в наборе понятий, используя указанное постоянное окно в качестве максимально допустимого разрыва в днях между последовательными событиями воздействия и добавление указанного окна наблюдения к окончательному событию воздействия. Если дата окончания события воздействия не указана, то датой окончания события воздействия считается дата начала события + запас дней в случаях, когда количество дней доступно, или дата начала события + 1 день в противном случае. Постоянство этого события гарантирует, что дата окончания когорты будет не больше даты окончания эры наркотиков.",
+      "customEraStrategyText_3": "Концептуальный набор, содержащий интересующий вас препарат (ы):",
+      "customEraStrategyText_4": "Окно постоянства: максимально",
+      "customEraStrategyText_5": "Окно наблюдения: добавить ",
+      "customEraStrategyText_6": "дни до конца эры постоянного воздействия в качестве дополнительного периода наблюдения до выхода из когорты.",
+      "customEraStrategyText_7": "Используйте количество дней и дату окончания воздействия для продолжительности воздействия.",
+      "customEraStrategyText_8": "изменение",
+      "customEraStrategyText_9": "Принудительное количество дней воздействия наркотиков:",
+      "customEraStrategyText_10": "дней.",
+      "customEraStrategyText_11": "Пользовательские Критерии Эры Наркотиков",
+      "customEraStrategyText_12": "Эта стратегия создает эру наркотиков из кодов, найденных в указанном наборе понятий. Если индексное событие найдено в пределах эры, в дате окончания когорты будет использоваться дата окончания эры. В противном случае он будет использовать дату окончания периода наблюдения, которая содержит индексное событие.",
+      "customEraStrategyText_13": "Используйте дату окончания эры ",
+      "customEraStrategyText_14": "позволяющий",
+      "customEraStrategyText_15": "дни между выставками",
+      "customEraStrategyText_16": "добавление",
+      "customEraStrategyText_17": "дни после окончания воздействия",
+      "customEraStrategyText_18": "использование дней поставки и даты окончания воздействия для продолжительности воздействия.",
+      "customEraStrategyText_19": "форсирование дней воздействия лекарств на:",
+      "selectDrugConceptSet": "Выберите набор концепций лекарств"
     },
     "dateOffsetStrategy": {
-      "customEraStrategyText_1": "Fixed Duration Persistence:",
-      "customEraStrategyText_2": "The event end date is derived from adding a number of days to the event's start or end date. If an offset is added to the event's start date, all cohort episodes will have the same fixed duration (subject to further censoring).  If an offset is added to the event's end date, persons in the cohort may have varying cohort duration times due to the varying event durations (such as eras of persistent drug exposure or visit length of stay).  This event persistence assures that the cohort end date will be no greater than the selected index event date, plus the days offset.",
-      "customEraStrategyText_3": "Event date to offset from:",
-      "customEraStrategyText_4": "Number of days offset:",
-      "customEraStrategyText_5": "days"
+      "dateOffsetStrategyText_1": "Постоянная длительность:",
+      "dateOffsetStrategyText_2": "Дата окончания события определяется путем добавления количества дней к дате начала или окончания события. Если к дате начала события добавляется смещение, все эпизоды когорты будут иметь одинаковую фиксированную продолжительность (при условии дальнейшей цензуры). Если к дате окончания события добавляется смещение, люди в когорте могут иметь различное время продолжительности когорты из-за различной продолжительности события (например, периоды постоянного воздействия наркотиков или длительность пребывания в больнице). Постоянство этого события гарантирует, что дата окончания когорты будет не больше выбранной даты события индекса плюс смещение дней.",
+      "dateOffsetStrategyText_3": "Дата события для смещения от:",
+      "dateOffsetStrategyText_4": "Смещение количества дней:",
+      "dateOffsetStrategyText_5": "дней",
+      "dateOffsetStrategyText_6": "Критерии выхода из даты смещения",
+      "dateOffsetStrategyText_7": "Эта дата окончания определения когорты будет индексом события",
+      "dateOffsetStrategyText_8": "плюс"
     },
     "windowInput": {
-      "windowInputText_1": "All",
-      "windowInputText_2": "days",
-      "windowInputText_3": "and"
+      "windowInputText_1": "Все",
+      "windowInputText_2": "дней",
+      "windowInputText_3": "а также"
     },
     "demographicCriteria": {
       "addAttribute": "Добавить атрибут ...",
@@ -637,7 +756,10 @@
       "withRaceOf": "с расой:",
       "withEthnicity": "с этнической принадлежностью:",
       "occurrenceStart": "Начало вхождения:",
-      "occurrenceEnd": "Конец появления:"
+      "occurrenceEnd": "Конец появления:",
+      "demographicCriteriaText_1": "пол любой из:",
+      "demographicCriteriaText_2": "Раса это любой из:",
+      "demographicCriteriaText_3": "Этнос любой из:"
     },
     "conceptSetSelector": {
       "importConcept": "Импортировать концепцию",
@@ -764,10 +886,35 @@
         "setTheIndexScoreCovariates": "Установка ковариатов индекса оценки",
         "indexScoreType": "Тип индекса оценки"
       }
+    },
+    "cohortExpressionViewer": {
+      "initialEventCohort": "Начальная группа событий",
+      "cohortExpressionViewerText_1": "Люди, имеющие любое из следующего:",
+      "cohortExpressionViewerText_2": "с непрерывным наблюдением не менее",
+      "cohortExpressionViewerText_3": "дней до и",
+      "cohortExpressionViewerText_4": "дней после даты индекса",
+      "cohortExpressionViewerText_5": "и ограничить начальные события: ",
+      "cohortExpressionViewerText_6": "на человека",
+      "cohortExpressionViewerText_7": "Для людей, соответствующих Первичным событиям, укажите:",
+      "cohortExpressionViewerText_8": "Ограничить когорту начальных событий до:",
+      "cohortExpressionViewerText_9": "Правила включения",
+      "cohortExpressionViewerText_10": "Ограничить квалификационную когорту до:",
+      "cohortExpressionViewerText_11": "Цензура События:",
+      "cohortExpressionViewerText_12": "Выйти из группы на основе следующего:",
+      "cohortExpressionViewerText_13": "Стратегия разрушения когорты:",
+      "cohortExpressionViewerText_14": "Свернуть когорту по эпохе с размером разрыва",
+      "cohortExpressionViewerText_15": "Inclusion Criteria #(<%=index%>): <%=name%>"
+    },
+    "locationRegion": {
+      "locationRegionText_1": "область расположения",
+      "locationRegionText_2": "начало это",
+      "locationRegionText_3": "конец"
     }
   },
   "facets": {
     "caption": {
+      "mappingType": "Тип отображения",
+      "source": "Источник",
       "severity": "Строгость",
       "created": "Создано",
       "updated": "Обновлено",
@@ -788,7 +935,14 @@
       "outcomeCohorts": "Исходящие когорты",
       "analysisName": "Имя анализа",
       "provider": "Провайдер",
-      "startDate": "Дата начала"
+      "startDate": "Дата начала",
+      "errorMsg": "Ошибка",
+      "suggestedNegativeControl": "Предлагаемый отрицательный контроль",
+      "foundInPublications": "Найдено в публикациях",
+      "foundProductLabel": "Найдено на ярлыке продукта",
+      "foundInProductLabelOrPublications": "Найдено в ярлыке продукта или публикациях",
+      "signalInFaers": "Сигнал в FAERS",
+      "userSpecified": "Пользователь указан"
     },
     "date": {
       "justNow": "Только что",
@@ -816,7 +970,9 @@
     "conceptId": "ID концепции",
     "conceptCode": "Код концепции",
     "conceptName": "Имя концепции",
+    "excluded": "Исключенный",
     "class": "Класс",
+    "standardType": "Стандартный тип",
     "standardConceptCaption": "Стандартная концепция",
     "standardConceptCode": "Код стандартной концепции",
     "rc": "RC",
@@ -944,7 +1100,39 @@
     "drugId": "Концепция ОМОП",
     "drugName": "Препарат",
     "drugVocabularyId": "Концептуальный словарь",
-    "drugClass": "Концептуальный класс"
+    "drugClass": "Концептуальный класс",
+    "progress": "Прогресс",
+    "linkout": "Ссылка из",
+    "uniqueIdentifier": "Уникальный идентификатор",
+    "evidenceSource": "Источник доказательств",
+    "drugConceptId": "Идентификатор понятия наркотика",
+    "drugConceptName": "Название концепции лекарства",
+    "conditionConceptId": "Идентификатор концепции состояния",
+    "conditionConceptName": "Название концепции состояния",
+    "mappingType": "Тип отображения",
+    "suggestedNegativeControl": "Предлагаемый отрицательный контроль",
+    "sortOrder": "Порядок сортировки",
+    "publicationCountDescendant": "Количество публикаций (Потомок концепции матча)",
+    "publicationCountExact": "Количество публикаций (Точное соответствие концепции)",
+    "publicationCountParent": "Количество публикаций (Концепция родительского соответствия)",
+    "publicationCountAncestor": "Количество публикаций (Концепция Предка соответствия)",
+    "indicatedContraindicated": "Указано / Противопоказано",
+    "broadConcept": "Широкая концепция",
+    "drugInducedConcept": "Индуцированная наркотиками концепция",
+    "pregnancyConcept": "Концепция беременности",
+    "productLabelCountDescendant": "Количество меток продукта (Потомок концепции соответствия)",
+    "productLabelExact": "Метка продукта (точное совпадение концепции)",
+    "productLabelParent": "Метка продукта (родительское соответствие концепции)",
+    "productLabelAncestor": "Метка продукта (Концепция Предка Матч)",
+    "faersCountDescendant": "Счет FAERS (потомок концептуального матча)",
+    "faersCountExact": "Счет FAERS (точное совпадение концепции)",
+    "faersCountParent": "Счет FAERS (совпадение концепции родителя)",
+    "faersCountAncestor": "Счет ФАЕРС (концепция предков)",
+    "userExcluded": "Пользователь исключен",
+    "userIncluded": "Пользователь включен",
+    "optimizedOut": "Оптимизированный",
+    "notPrevalent": "Не распространен",
+    "drugLabelExists": "Наркотик существует"
   },
   "filters": {
     "visit": "Посещение",
@@ -2193,7 +2381,7 @@
         }
       }
     },
-    "runDiagnostics": "Run diagnostics",
+    "runDiagnostics": "Запустить диагностику",
     "cohortFeatureBrowser": {
       "tabs": {
         "demographics": "Демография",
@@ -2352,6 +2540,7 @@
     },
     "panels": {
       "noConceptSets": "Нет концепций для экспорта",
+      "newConceptSet": "Новая концепция",
       "import": "Импортировать",
       "export": "Экспортировать",
       "conceptSetExpression": "Понятие набора выражений",
@@ -2417,7 +2606,21 @@
     "generateHealthcareAnalyses": {
       "descr": "Анализ затрат и использования",
       "duration": "10-45 минут"
-    }
+    },
+    "cohortDefinitionManagerText_1": "Когорта не генерируется",
+    "cohortDefinitionManagerText_2": "Эта когорта не была сгенерирована в выбранном вами источнике данных. Пожалуйста, вернитесь на вкладку генерации, чтобы сгенерировать группу, прежде чем получить доступ к отчетам",
+    "cohortDefinitionManagerText_3": "Отчеты не созданы",
+    "cohortDefinitionManagerText_4": "Отчеты еще не были сгенерированы для этой группы. Пожалуйста, нажмите кнопку «Создать» ниже, чтобы сгенерировать отчеты.",
+    "cohortDefinitionManagerText_5": "Сделать выбор",
+    "cohortDefinitionManagerText_6": "Пожалуйста, сделайте выбор на панели «Выбор отчетов».",
+    "cohortDefinitionManagerText_7": "Генерация отчетов",
+    "cohortDefinitionManagerText_8": "Отчет недоступен",
+    "cohortDefinitionManagerText_9": "Запрошенный вами отчет недоступен. Пожалуйста, нажмите кнопку Создать, чтобы сгенерировать когортные отчеты для этого источника данных.",
+    "cohortDefinitionManagerText_10": "Возгласы",
+    "cohortDefinitionManagerText_11": "Система отчетов обнаружила ошибку. Пожалуйста, предоставьте следующую информацию вашей администрации ATLAS или отправьте вопрос на",
+    "cohortDefinitionManagerText_12": "Ошибка создания отчета",
+    "cohortDefinitionManagerText_13": "Подождите",
+    "cohortDefinitionManagerText_14": "Пожалуйста, подождите, пока будет загружен статус отчета."
   },
   "predictions": {
     "title": "Прогнозирование уровня пациента",
@@ -2425,7 +2628,7 @@
     "newItemPlaceholder": "Новый анализ прогноза уровня пациента",
     "emptyMessageTitle": "Имя прогноза уровня пациента пусто.",
     "descriptionPlaceholder": "введите описание здесь (не более 1000 символов)",
-    "selectCohort": "Select Cohort...",
+    "selectCohort": "Выберите группу...",
     "tabs": {
       "specification": "Спецификации",
       "executions": "Выполнения",
@@ -2828,17 +3031,17 @@
       },
       "addLength": {
         "title_era": "Добавить критерии длины эры",
-        "desc_era": "Filter Condition Eras by the Era duration.",
+        "desc_era": "Эра условия фильтра по продолжительности эры.",
         "title_dose": "Добавить критерии длины эры",
-        "desc_dose": "Filter Drug Eras by the Era duration.",
+        "desc_dose": "Фильтрация эр наркотиков по продолжительности эры.",
         "title_drug": "Добавить критерии длины эры",
-        "desc_drug": "Filter Drug Eras by the Era duration.",
+        "desc_drug": "Фильтрация эр наркотиков по продолжительности эры.",
         "title_observationperiod": "Добавить критерии длины периода",
-        "desc_observationperiod": "Filter Observation Periods by duration.",
+        "desc_observationperiod": "Фильтруйте периоды наблюдения по продолжительности.",
         "title_payerplan": "Добавить критерии длины периода",
-        "desc_payerplan": "Filter Payer Plan Periods by duration.",
+        "desc_payerplan": "Фильтровать периоды плана плательщика по продолжительности.",
         "title_visit": "Добавить критерии продолжительности посещения",
-        "desc_visit": "Filter Visit Occurrences by duration."
+        "desc_visit": "Отфильтруйте количество посещений по продолжительности."
       },
       "addNested": {
         "title_era": "Добавить вложенные критерии ...",
@@ -2953,48 +3156,48 @@
         "desc_payerplan": "Фильтруйте периоды плана плательщика концепцией источника причины стопа."
       },
       "addSourceConcept": {
-        "title_occurrence": "Add Condition Source Concept",
-        "desc_occurrence": "Filter Condition Occurrences  by the Condition Source Concept.",
-        "title_death": "Add Cause of Death Source Concept Criteria",
-        "desc_death": "Filter Death by the Death Source Concept.",
-        "title_deviceexposure": "Add Device Source Concept Criteria",
-        "desc_deviceexposure": "Filter Device Exposures by the Device Source Concept.",
-        "title_measurement": "Add Measurement Source Concept Criteria",
-        "desc_measurement": "Filter Measurements by the Measurement Source Concept.",
-        "title_observation": "Add Observation Source Concept Criteria",
-        "desc_observation": "Filter Observations by the Source Concept.",
-        "title_procedureoccurrence": "Add Procedure Source Concept Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences  by the Procedure Source Concept.",
-        "title_visit": "Add Visit Source Concept Criteria",
-        "desc_visit": "Filter Visit Occurrences by the Visit Source Concept."
+        "title_occurrence": "Добавить концепцию источника условия",
+        "desc_occurrence": "Происхождение условий фильтра по концепции источника условия.",
+        "title_death": "Добавить причину смерти Концепция источника Критерии",
+        "desc_death": "Фильтр смерти по концепции источника смерти.",
+        "title_deviceexposure": "Добавить критерий концепции источника устройства",
+        "desc_deviceexposure": "Воздействия устройства фильтра по концепции источника устройства.",
+        "title_measurement": "Добавить критерии концепции источника измерения",
+        "desc_measurement": "Фильтр измерений по концепции источника измерений.",
+        "title_observation": "Добавить критерии концепции источника наблюдения",
+        "desc_observation": "Фильтр наблюдений по концепции источника.",
+        "title_procedureoccurrence": "Добавить процедуру Исходные критерии концепции",
+        "desc_procedureoccurrence": "Фильтровать вхождения процедуры по концепции источника процедуры.",
+        "title_visit": "Добавить критерий концепции посещения источника",
+        "desc_visit": "Отфильтруйте события посещения по концепции источника посещения."
       },
       "addProviderSpecialty": {
-        "title_occurrence": "Add Provider Specialty",
-        "desc_occurrence": "Filter Condition Occurrences based on provider specialty.",
-        "title_deviceexposure": "Add Provider Specialty Criteria",
-        "desc_deviceexposure": "Filter Device Exposures based on provider specialty.",
-        "title_drugexposure": "Add Provider Specialty Criteria",
-        "desc_drugexposure": "Filter Drug Exposures based on provider specialty.",
-        "title_measurement": "Add Provider Specialty Criteria",
-        "desc_measurement": "Filter Measurements based on provider specialty.",
-        "title_observation": "Add Provider Specialty Criteria",
-        "desc_observation": "Filter Observations based on provider specialty.",
-        "title_procedureoccurrence": "Add Provider Specialty Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences based on provider specialty.",
-        "title_visit": "Add Provider Specialty Criteria",
-        "desc_visit": "Filter Visit Occurrences based on provider specialty."
+        "title_occurrence": "Добавить специальность провайдера",
+        "desc_occurrence": "Условие фильтра Происходит в зависимости от специализации поставщика.",
+        "title_deviceexposure": "Добавить Критерии Специальности Провайдера",
+        "desc_deviceexposure": "Фильтрация устройств на основе специализации поставщика.",
+        "title_drugexposure": "Добавить Критерии Специальности Провайдера",
+        "desc_drugexposure": "Фильтр воздействия наркотиков на основе специализации поставщика.",
+        "title_measurement": "Добавить Критерии Специальности Провайдера",
+        "desc_measurement": "Фильтр измерений на основе специализации поставщика.",
+        "title_observation": "Добавить Критерии Специальности Провайдера",
+        "desc_observation": "Фильтр наблюдений на основе специализации поставщика.",
+        "title_procedureoccurrence": "Добавить Критерии Специальности Провайдера",
+        "desc_procedureoccurrence": "Процедура фильтра Случаи, основанные на специальности поставщика.",
+        "title_visit": "Добавить Критерии Специальности Провайдера",
+        "desc_visit": "Фильтр посещений в зависимости от специальности поставщика."
       },
       "addDate": {
-        "title_death": "Add Death Date Criteria",
-        "desc_death": "Filter Death by Date.",
-        "title_measurement": "Add Measurement Date Criteria",
-        "desc_measurement": "Filter Measurements by Date.",
-        "title_observation": "Add Observation Date Criteria",
-        "desc_observation": "Filter Observations by Date.",
-        "title_procedureoccurrence": "Add Start Date Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences by the Procedure Start Date.",
-        "title_specimen": "Add Specimen Date Criteria",
-        "desc_specimen": "Filter Specimen by Date."
+        "title_death": "Добавить критерии даты смерти",
+        "desc_death": "Фильтр смерти по дате.",
+        "title_measurement": "Добавить критерий даты измерения",
+        "desc_measurement": "Фильтр измерений по дате.",
+        "title_observation": "Добавить критерии даты наблюдения",
+        "desc_observation": "Фильтр наблюдений по дате.",
+        "title_procedureoccurrence": "Добавить критерии даты начала",
+        "desc_procedureoccurrence": "Фильтровать вхождения процедуры по дате начала процедуры.",
+        "title_specimen": "Добавить критерий даты образца",
+        "desc_specimen": "Фильтровать образец по дате."
       },
       "addUniqueId": {
         "title_deviceexposure": "Добавить критерии уникального идентификатора",
@@ -3002,65 +3205,65 @@
       },
       "addQuantity": {
         "title_deviceexposure": "Добавить количественные критерии",
-        "desc_deviceexposure": "Filter Device Exposures by Quantity.",
+        "desc_deviceexposure": "Воздействие устройства фильтра по количеству.",
         "title_drugexposure": "Добавить количественные критерии",
-        "desc_drugexposure": "Filter Drug Exposures by Quantity.",
+        "desc_drugexposure": "Фильтрация воздействия наркотиков по количеству.",
         "title_procedureoccurrence": "Добавить количественные критерии",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences  by Quantity.",
+        "desc_procedureoccurrence": "Процедура фильтра По количеству.",
         "title_specimen": "Добавить количественные критерии",
-        "desc_specimen": "Filter Observations  by the Quantity."
+        "desc_specimen": "Фильтровать наблюдения по количеству."
       },
       "addUnit": {
         "title_dose": "Добавить критерии дозы",
-        "desc_dose": "Filter Dose Eras by the Unit.",
+        "desc_dose": "Отфильтруйте эры дозы с помощью устройства.",
         "title_drugexposure": "Добавить критерии дозы",
-        "desc_drugexposure": "Filter Drug Exposures by Dose Unit.",
+        "desc_drugexposure": "Фильтр воздействия наркотиков по единице дозы.",
         "title_measurement": "Добавить критерии объекта",
-        "desc_measurement": "Filter Measurements by the Unit.",
+        "desc_measurement": "Фильтр измерений по единице.",
         "title_observation": "Добавить критерии объекта",
-        "desc_observation": "Filter Observations by Unit.",
+        "desc_observation": "Фильтровать наблюдения по единицам.",
         "title_specimen": "Добавить критерии объекта",
-        "desc_specimen": "Filter Specimens by Unit."
+        "desc_specimen": "Фильтровать образцы по единицам."
       },
       "addValue": {
         "title_dose": "Добавить критерии стоимости дозы",
-        "desc_dose": "Filter Dose Eras by the dose value.",
+        "desc_dose": "Отфильтруйте эры дозы по величине дозы.",
         "title_measurement": "Добавить значение в качестве числовых критериев",
-        "desc_measurement": "Filter Measurements by Value as Number.",
+        "desc_measurement": "Фильтруйте измерения по значению как число.",
         "title_observation": "Добавить значение в качестве числовых критериев",
-        "desc_observation": "Filter Observations  by the Value As Number."
+        "desc_observation": "Фильтруйте наблюдения по значению как числу."
       },
       "addRefills": {
         "title_drugexposure": "Добавить критерии пополнения",
-        "desc_drugexposure": "Filter Drug Exposures by Refills."
+        "desc_drugexposure": "Фильтрация воздействия наркотиков по заправкам."
       },
       "addDaysSupply": {
         "title_drugexposure": "Добавить критерии поставки дней",
-        "desc_drugexposure": "Filter Drug Exposures by Days Supply."
+        "desc_drugexposure": "Фильтр воздействия наркотиков по дням поставок."
       },
       "addRoute": {
         "title_drugexposure": "Добавить критерии маршрута",
-        "desc_drugexposure": "Filter Drug Exposures by Route."
+        "desc_drugexposure": "Фильтрация воздействия наркотиков по маршруту."
       },
       "addEffective": {
         "title_drugexposure": "Добавить критерии эффективной дозы",
-        "desc_drugexposure": "Filter Drug Exposures by Effective Dose."
+        "desc_drugexposure": "Фильтрация воздействия лекарств по эффективной дозе."
       },
       "addLotNumber": {
         "title_drugexposure": "Добавить критерии номера лота",
-        "desc_drugexposure": "Filter Drug Exposures by Lot Number."
+        "desc_drugexposure": "Фильтрация воздействия наркотиков по номеру лота."
       },
       "addSource": {
         "title_drugexposure": "Добавить критерии концепции источника наркотиков",
-        "desc_drugexposure": "Filter Drug Exposures by the Drug Source Concept."
+        "desc_drugexposure": "Воздействия наркотиков фильтра по концепции источника наркотиков."
       },
       "addOperator": {
         "title_measurement": "Добавить критерии оператора",
-        "desc_measurement": "Filter Measurements by Operator."
+        "desc_measurement": "Фильтр измерений по оператору."
       },
       "addValueAsString": {
         "title_observation": "Добавить значение в качестве строковых критериев",
-        "desc_observation": "Filter Observations by the Value As String."
+        "desc_observation": "Фильтруйте наблюдения по значению в виде строки."
       },
       "addValueAsConcept": {
         "title_measurement": "Добавить ценность как концептуальные критерии",
@@ -3129,7 +3332,7 @@
     },
     "newEntityNames": {
       "characterization": "Новая характеристика",
-      "featureAnalysis": "New Feature Analysis",
+      "featureAnalysis": "Анализ новых функций",
       "cohortDefinition": "Анализ новых функций",
       "incidenceRate": "Новый анализ уровня заболеваемости",
       "pathway": "Новый анализ исходов когорты",

@@ -38,6 +38,7 @@
       "loadingRecords": "Loading...",
       "processing": "Processing...",
       "search": "Filter:",
+      "searchPlaceholder": "Search...",
       "zeroRecords": "No matching records found",
       "paginate": {
         "first": "First",

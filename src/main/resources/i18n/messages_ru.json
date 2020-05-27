@@ -33,7 +33,16 @@
     "days": "дней",
     "none": "никто",
     "included": "включены",
-    "excluded": "Исключенный"
+    "excluded": "Исключенный",
+    "add": "Добавить",
+    "selectAll": "Выбрать все",
+    "deselectAll": "Отменить выбор",
+    "configureAccessModal": {
+      "loadingAccessList": "Загрузка списков доступа...",
+      "addWriteAccessToRole": "Добавить разрешение на запись роли:",
+      "rolesWithWriteAccess": "Роли с разрешением на запись:",
+      "revoke": "Отозвать"
+    }
   },
   "commonErrors": {
     "browserWarning": "Пожалуйста, обратите внимание, что официально поддерживается только браузер Chrome версии не ниже v.63",
@@ -790,7 +799,8 @@
       "mappedConcepts": "Сопоставленные концепции",
       "load": "Загрузить",
       "delete": "Удалить",
-      "removeSelected": "Удалить выбранные"
+      "removeSelected": "Удалить выбранные",
+      "selectConceptSet": "Выберите набор концепций..."
     },
     "copyToClipboard": {
       "buttonText": "Скопировать в буфер обмена",
@@ -1132,7 +1142,26 @@
     "userIncluded": "Пользователь включен",
     "optimizedOut": "Оптимизированный",
     "notPrevalent": "Не распространен",
-    "drugLabelExists": "Наркотик существует"
+    "drugLabelExists": "Наркотик существует",
+    "action": "Действие",
+    "actions": "Действия",
+    "value": "Значение",
+    "design": "Дизайн",
+    "count": "Количество",
+    "avg": "Среднее",
+    "stddev": "Std Dev",
+    "median": "Медиана",
+    "pct": "Pct",
+    "covariate": "Ковариат",
+    "explore": "Исследовать",
+    "min": "Минимум",
+    "p10": "p10",
+    "p25": "p25",
+    "p75": "p75",
+    "p90": "p90",
+    "max": "Максимум",
+    "percentRemain": "% остатка",
+    "percentDiff": "% разницы"
   },
   "filters": {
     "visit": "Посещение",
@@ -1316,8 +1345,7 @@
         "title": "Исследование Свидетельства:",
         "invalidCsWarning": "Сохраненные вами концепции исходят из разных доменов или из домена вне условий или препаратов. Набор концепций должен содержать ТОЛЬКО условия ИЛИ препараты, чтобы запустить исследование.",
         "noCsWarning": "Необходимо определитьнабор концепций с препаратами из словаря RxNorm на уровне класса Ingredient ИЛИ Conditions из SNOMED. Набор концепций должен содержать ТОЛЬКО условия ИЛИ препараты, чтобы запустить исследование.",
-        "deletedCcMessage1": "Набор концепаций",
-        "deletedCcMessage2": "был удален. Пожалуйста, выберите другой набор концепций.",
+        "deletedCcMessage": "Набор концепаций (<%=cs%>) был удален. Пожалуйста, выберите другой набор концепций.",
         "drugLabelsFound": "Найдено меток лекарств",
         "noEvidenceFoundFor": "Не найдено свидетельств для",
         "anchor1": "Получение Negative Controls из ATLAS",
@@ -1622,7 +1650,8 @@
     },
     "releaseNotes": {
       "title": "Примечания к Релизу",
-      "issues": "<br/> Данный релиз содержит <%= issues %> улучшений и исправлений:"
+      "issues": "Данный релиз содержит <b><%=issues%></b> улучшений и исправлений:",
+      "loadingReleaseInfo": "Загрузка данных о Релизе"
     },
     "title": "Начало",
     "welcome": "Добро пожаловать в Атлас."
@@ -1689,10 +1718,8 @@
       "rate": "Отношение",
       "started": "Запущено",
       "duration": "Длительность",
-      "per": "за",
-      "perYears": "лет",
-      "perPersons": "чел",
-      "cancel": "Отмена",
+      "perYears": "на <%=multiplier%> лет",
+      "perPersons": "на <%=multiplier%> человек",
       "reports": "Отчеты",
       "rerun": "Перезапуск",
       "running": "Запущено",
@@ -1731,24 +1758,6 @@
     "newanalysis": "Новый Анализ Исходов",
     "defaultName": "Новый Анализ Исходов",
     "loading": "Загружается список Анализов Исходов...",
-    "browser": {
-      "grid": {
-        "facets": {
-          "created": "Создано",
-          "updated": "Изменено",
-          "author": "Автор"
-        }
-      },
-      "table": {
-        "columns": {
-          "id": "Ид",
-          "name": "Наименование",
-          "created": "Создано",
-          "updated": "Изменено",
-          "author": "Автор"
-        }
-      }
-    },
     "manager": {
       "loading": "Загружается Анализ Исходов Когорты...",
       "caption": "Анализ Исходов Когорты №",
@@ -1814,23 +1823,10 @@
           }
         },
         "table": {
-          "columns": {
-            "date": "Дата",
-            "design": {
-              "title": "Дизайн",
-              "value": "(текущий)"
-            },
-            "status": {
-              "title": "Статус"
-            },
-            "duration": "Длительность",
-            "results": {
-              "title": "Результаты",
-              "values": {
-                "text": "Показать отчеты",
-                "empty": "-"
-              }
-            }
+          "designValue": "(текущий)",
+          "resultValues": {
+            "text": "Показать отчеты",
+            "empty": "-"
           }
         },
         "tooltips": {
@@ -1893,13 +1889,14 @@
     "nameIsEmptyWarning": "Имя анализа не может быть пустым.",
     "tabs": {
       "specification": "Спецификация",
-      "executions": "Генерация",
+      "executions": "Исследования",
       "utilities": "Утилиты"
     },
     "spec": {
       "descriptionPlaceholder": "введите описание (не более 1000 символов)",
       "view": "Отображать:",
       "viewFull": "Все",
+      "viewFullSpecification": "Все",
       "viewComparisons": "Сравнения",
       "viewAnalysisSettings": "Настройки анализа",
       "viewEvaluationSettings": "Настройки вычислений",
@@ -2244,7 +2241,7 @@
         "execute": "Выполнять:",
         "repeat": "Повторить:",
         "after": "После выполнений",
-        "executions": "Выполнения",
+        "executions": "Исследования",
         "on": "До даты"
       },
       "findGroup": "Найти группу",
@@ -2521,13 +2518,10 @@
     "saveDefinitionBefore": "Вы должны сохранить определение, прежде чем сможете экспортировать"
   },
   "cohortDefinitionManager": {
-    "newCohortPlaceholder": "Новое определение когорты",
     "saveCohortTitle": "Сохранить определение когорты",
     "closeCohortTitle": "Закрыть определение когорты",
     "createCopyCohortTitle": "Создать копию этого определения когорты",
     "getLinkCohortTitle": "Получить ссылку на это определение когорты",
-    "configureAccessTitle": "Настроить доступ",
-    "deleteTitle": "Удалить",
     "emptyName": "Название определения группы пусто",
     "tabs": {
       "definition": "Определение",
@@ -3332,8 +3326,8 @@
     },
     "newEntityNames": {
       "characterization": "Новая характеристика",
-      "featureAnalysis": "Анализ новых функций",
-      "cohortDefinition": "Анализ новых функций",
+      "featureAnalysis": "Новый функциональный анализ",
+      "cohortDefinition": "Новая когорта",
       "incidenceRate": "Новый анализ уровня заболеваемости",
       "pathway": "Новый анализ исходов когорты",
       "ple": "Новый анализ оценки уровня населения",

@@ -118,7 +118,7 @@
       "CANCELED": "ОТМЕНЕН",
       "PENDING": "В ОЧЕРЕДИ",
       "RUNNING": "ВЫПОЛНЯЕТСЯ",
-      "STARTED": "ВЫПОЛНЯЕТСЯ"
+      "STARTED": "ЗАПУЩЕН"
     }
   },
   "options": {
@@ -252,7 +252,7 @@
       "feasibilityReportViewerText_7": "Переключиться на пересечение",
       "feasibilityReportViewerText_8": "Не определены правила включения для этого определения когорты."
     },
-    "access-denied": {
+    "accessDenied": {
       "forbidden": {
         "message1": "У вас нет доступа к этой функции.",
         "message2": "Для получения дополнительной информации о том, как получить доступ, пожалуйста, свяжитесь с системным администратором."
@@ -262,22 +262,7 @@
         "login": "войдите"
       }
     },
-    "cohort-definition-browser": {
-      "facets": {
-        "lastModified": "Последнее изменение",
-        "author": "Автор"
-      },
-      "table": {
-        "columns": {
-          "id": "ИД",
-          "name": "Наименование",
-          "created": "Создано",
-          "updated": "Изменено",
-          "author": "Автор"
-        }
-      }
-    },
-    "filter-panel": {
+    "filterPanel": {
       "title": "Фильтрация",
       "buttons": {
         "apply": "Применить",
@@ -293,7 +278,7 @@
       "denied": "Отсутствуют права на импорт",
       "progress": "импорт в процессе"
     },
-    "linked-cohort-list": {
+    "linkedCohortList": {
       "defaultTitle": "Когорты",
       "defaultNewItemLabel": "Импорт",
       "dialog": {
@@ -303,18 +288,14 @@
         "actions": {
           "edit": "Правка когорты",
           "remove": "Удалить"
-        },
-        "columns": {
-          "id": "ИД",
-          "name": "Наименование"
         }
       }
     },
-    "linked-entity-list": {
+    "linkedEntityList": {
       "defaultNewItemLabel": "Импорт"
     },
     "loading": "идёт загрузка",
-    "modal-exit-message": {
+    "modalExitMessage": {
       "buttons": {
         "copyToClipboard": "Скопировать в буфер"
       },
@@ -322,7 +303,7 @@
         "copiedToClipboard": "Скопировано в буфер!"
       }
     },
-    "user-bar": {
+    "userBar": {
       "signin": "Войти",
       "signout": "Выйти"
     },
@@ -337,10 +318,11 @@
         "refresh": "Ваша сессия истекла. Пожалуйста обновите страницу."
       },
       "runas": "Войти как",
-      "signin-with": "Войти с помощью:",
+      "signinWith": "Войти с помощью:",
       "signout": "Выйти",
       "submit": "Отправить",
       "username": "Имя пользователя",
+      "password": "Пароль",
       "wait": "Пожалуйста подождите..."
     },
     "atlasCohortEditor": {
@@ -807,6 +789,7 @@
       "selectConceptSet": "Выберите набор концепций..."
     },
     "copyToClipboard": {
+      "title": "Скопировать в буфер обмена",
       "buttonText": "Скопировать в буфер обмена",
       "messageText": "Скопировано!"
     },
@@ -1191,6 +1174,7 @@
     "selectASource": "Выбрать источник данных",
     "selectAReport": "Выбрать отчет",
     "loadingReport": "Загрузка отчета",
+    "errorLoadingReport": "Ошибка загрузки отчета",
     "noPermission": "У вас недостаточно прав для просмотра этого отчета",
     "reports": {
       "titleTail": ". Отчет",
@@ -1664,7 +1648,7 @@
     "nameConflict": "Анализ с таким имененм уже существует. Пожалуйста, выберите другое имя.",
     "savingError": "Ошибка при сохранении анализа.",
     "deleteConfirmation": "Действительно удалить анализ? Предупреждение: это действие необратимо!",
-    "deleteResultConfirmation": "Удалить результат генерации ",
+    "deleteResultConfirmation": "Удалить результат генерации <%=name%>?",
     "tabs": {
       "definition": "Определение",
       "conceptSets": "Наборы концепций",
@@ -2135,11 +2119,6 @@
         "placeholder": "Строка подключения",
         "title": "Строка подключения"
       },
-      "realm": {
-        "validation": {
-          "format": "\"KrbHostFQDN\" пустой. Пожалуйста, введите его в следующем формате: \"KrbHostFQDN=[value]\""
-        }
-      },
       "username": {
         "label": "Пользователь:",
         "placeholder": "Пользователь",
@@ -2188,6 +2167,10 @@
         },
         "sourceDaimons": {
           "label": "Даймоны источника"
+        },
+        "validation": {
+          "host": "\"KrbHostFQDN\" is empty. Please specify it in the following format: \"KrbHostFQDN=[value];\"",
+          "realm": "\"KrbRealm\" is empty. Please specify it in the following format: \"KrbRealm=[value];\""
         }
       },
       "bigQuery": {

@@ -13,7 +13,6 @@ import org.ohdsi.webapi.feanalysis.event.FeAnalysisChangedEvent;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisCriteriaRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisEntityRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisWithStringEntityRepository;
-import org.ohdsi.webapi.service.AbstractVocabularyService;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.springframework.context.ApplicationEventPublisher;
@@ -22,19 +21,22 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import org.ohdsi.webapi.service.AbstractDaoService;
+import org.ohdsi.webapi.service.VocabularyService;
 
 @Service
 @Transactional(readOnly = true)
-public class FeAnalysisServiceImpl extends AbstractVocabularyService implements FeAnalysisService {
+public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnalysisService {
     
-    private FeAnalysisEntityRepository analysisRepository;
-    private FeAnalysisCriteriaRepository criteriaRepository;
-    private FeAnalysisWithStringEntityRepository stringAnalysisRepository;
+    private final FeAnalysisEntityRepository analysisRepository;
+    private final FeAnalysisCriteriaRepository criteriaRepository;
+    private final FeAnalysisWithStringEntityRepository stringAnalysisRepository;
+    private final VocabularyService vocabularyService;
+    
     private final ApplicationEventPublisher eventPublisher;
 
     private final EntityGraph defaultEntityGraph = EntityUtils.fromAttributePaths(
@@ -46,10 +48,12 @@ public class FeAnalysisServiceImpl extends AbstractVocabularyService implements 
             final FeAnalysisEntityRepository analysisRepository,
             final FeAnalysisCriteriaRepository criteriaRepository,
             final FeAnalysisWithStringEntityRepository stringAnalysisRepository,
+            final VocabularyService vocabularyService,
             ApplicationEventPublisher eventPublisher) {
         this.analysisRepository = analysisRepository;
         this.criteriaRepository = criteriaRepository;
         this.stringAnalysisRepository = stringAnalysisRepository;
+        this.vocabularyService = vocabularyService;
         this.eventPublisher = eventPublisher;
     }
 
@@ -207,10 +211,10 @@ public class FeAnalysisServiceImpl extends AbstractVocabularyService implements 
     @Override
     public List<ConceptSetExport> exportConceptSets(FeAnalysisWithCriteriaEntity<?> analysisEntity) {
 
-        SourceInfo sourceInfo = new SourceInfo(getPriorityVocabularySource());
+        SourceInfo sourceInfo = new SourceInfo(vocabularyService.getPriorityVocabularySource());
         List<ConceptSet> conceptSets = analysisEntity.getConceptSets();
         return conceptSets.stream()
-                .map(cs -> exportConceptSet(cs, sourceInfo))
+                .map(cs -> vocabularyService.exportConceptSet(cs, sourceInfo))
                 .collect(Collectors.toList());
     }
 

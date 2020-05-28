@@ -105,6 +105,7 @@ import java.util.stream.Stream;
 import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
+import org.ohdsi.webapi.source.SourceService;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
@@ -113,12 +114,9 @@ import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
  */
 @Path("/cohortdefinition")
 @Component
-public class CohortDefinitionService extends AbstractVocabularyService {
+public class CohortDefinitionService extends AbstractDaoService {
 
   private static final CohortExpressionQueryBuilder queryBuilder = new CohortExpressionQueryBuilder();
-
-  @Autowired
-  private Security security;
 
   @Autowired
   private CohortDefinitionRepository cohortDefinitionRepository;
@@ -161,6 +159,12 @@ public class CohortDefinitionService extends AbstractVocabularyService {
 
   @Autowired
   private ApplicationEventPublisher eventPublisher;
+  
+  @Autowired 
+  private SourceService sourceService;
+
+  @Autowired 
+  private VocabularyService vocabularyService;
 
   @PersistenceContext
   protected EntityManager entityManager;
@@ -626,7 +630,7 @@ public class CohortDefinitionService extends AbstractVocabularyService {
     }
 
     return Arrays.stream(expression.conceptSets)
-            .map(cs -> exportConceptSet(cs, vocabSource))
+            .map(cs -> vocabularyService.exportConceptSet(cs, vocabSource))
             .collect(Collectors.toList());
   }
 

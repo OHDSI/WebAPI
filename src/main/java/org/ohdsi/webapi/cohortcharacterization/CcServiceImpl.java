@@ -53,7 +53,6 @@ import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
 import org.ohdsi.webapi.feanalysis.event.FeAnalysisChangedEvent;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
-import org.ohdsi.webapi.service.AbstractVocabularyService;
 import org.ohdsi.webapi.service.FeatureExtractionService;
 import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.shiro.annotations.CcGenerationId;
@@ -97,7 +96,6 @@ import java.io.OutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -118,11 +116,13 @@ import static org.ohdsi.webapi.Constants.Params.COHORT_CHARACTERIZATION_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_AUTHOR;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
+import org.ohdsi.webapi.service.AbstractDaoService;
+import org.ohdsi.webapi.service.VocabularyService;
 
 @Service
 @Transactional
 @DependsOn({"ccExportDTOToCcEntityConverter", "cohortDTOToCohortDefinitionConverter", "feAnalysisDTOToFeAnalysisConverter"})
-public class CcServiceImpl extends AbstractVocabularyService implements CcService, GeneratesNotification {
+public class CcServiceImpl extends AbstractDaoService implements CcService, GeneratesNotification {
 
     private static final String GENERATION_NOT_FOUND_ERROR = "generation cannot be found by id %d";
     private static final String[] PARAMETERS_RESULTS = {"cohort_characterization_generation_id", "threshold_level", "vocabulary_schema"};
@@ -171,25 +171,26 @@ public class CcServiceImpl extends AbstractVocabularyService implements CcServic
                 "Comparator count", "Comparator percent", "Std. Diff Of Mean"});
     }};
 
-    private CcRepository repository;
-    private CcParamRepository paramRepository;
-    private CcStrataRepository strataRepository;
-    private CcConceptSetRepository conceptSetRepository;
-    private FeAnalysisService analysisService;
-    private CcGenerationEntityRepository ccGenerationRepository;
-    private FeatureExtractionService featureExtractionService;
-    private DesignImportService designImportService;
-    private AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository;
-    private SourceService sourceService;
-    private GenerationUtils generationUtils;
-    private EntityManager entityManager;
-    private ApplicationEventPublisher eventPublisher;
+    private final CcRepository repository;
+    private final CcParamRepository paramRepository;
+    private final CcStrataRepository strataRepository;
+    private final CcConceptSetRepository conceptSetRepository;
+    private final FeAnalysisService analysisService;
+    private final CcGenerationEntityRepository ccGenerationRepository;
+    private final FeatureExtractionService featureExtractionService;
+    private final DesignImportService designImportService;
+    private final AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository;
+    private final SourceService sourceService;
+    private final GenerationUtils generationUtils;
+    private final EntityManager entityManager;
+    private final ApplicationEventPublisher eventPublisher;
 
     private final JobRepository jobRepository;
     private final SourceAwareSqlRender sourceAwareSqlRender;
     private final JobService jobService;
     private final JobInvalidator jobInvalidator;
     private final GenericConversionService genericConversionService;
+    private final VocabularyService vocabularyService;
 
     private final Environment env;
 
@@ -212,6 +213,7 @@ public class CcServiceImpl extends AbstractVocabularyService implements CcServic
             final JobService jobService,
             final ApplicationEventPublisher eventPublisher,
             final JobInvalidator jobInvalidator,
+            final VocabularyService vocabularyService,
             @Qualifier("conversionService") final GenericConversionService genericConversionService,
             Environment env) {
         this.repository = ccRepository;
@@ -231,6 +233,7 @@ public class CcServiceImpl extends AbstractVocabularyService implements CcServic
         this.jobService = jobService;
         this.eventPublisher = eventPublisher;
         this.jobInvalidator = jobInvalidator;
+        this.vocabularyService = vocabularyService;
         this.genericConversionService = genericConversionService;
         this.env = env;
         SerializedCcToCcConverter.setConversionService(conversionService);
@@ -924,9 +927,9 @@ public class CcServiceImpl extends AbstractVocabularyService implements CcServic
     @Override
     public List<ConceptSetExport> exportConceptSets(CohortCharacterization cohortCharacterization) {
 
-        SourceInfo prioritySource = new SourceInfo(getPriorityVocabularySource());
+        SourceInfo prioritySource = new SourceInfo(vocabularyService.getPriorityVocabularySource());
         return cohortCharacterization.getStrataConceptSets().stream()
-                .map(cs -> exportConceptSet(cs, prioritySource))
+                .map(cs -> vocabularyService.exportConceptSet(cs, prioritySource))
                 .collect(Collectors.toList());
     }
 

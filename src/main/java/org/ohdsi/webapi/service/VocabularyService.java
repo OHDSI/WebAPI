@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
@@ -24,6 +25,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
@@ -33,11 +35,13 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.activity.Activity.ActivityType;
 import org.ohdsi.webapi.activity.Tracker;
 import org.ohdsi.webapi.conceptset.ConceptSetComparison;
+import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetOptimizationResult;
 import org.ohdsi.webapi.service.vocabulary.ConceptSetStrategy;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.PreparedSqlRender;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.vocabulary.ConceptRelationship;
@@ -52,6 +56,7 @@ import org.ohdsi.webapi.vocabulary.VocabularyInfo;
 import org.ohdsi.webapi.vocabulary.VocabularySearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
@@ -70,6 +75,9 @@ public class VocabularyService extends AbstractDaoService {
   @Autowired
   private VocabularySearchService vocabSearchService;
 
+  @Autowired
+  protected GenericConversionService conversionService;
+  
   @Value("${datasource.driverClassName}")
   private String driver;
 
@@ -94,6 +102,25 @@ public class VocabularyService extends AbstractDaoService {
     return Objects.nonNull(vocabSource) ? vocabSource.getSourceKey() : null;
   }
 
+  public Source getPriorityVocabularySource() {
+
+    Source source = sourceService.getPriorityVocabularySource();
+    if (Objects.isNull(source)) {
+      throw new ForbiddenException();
+    }
+    return source;
+  }
+
+  public ConceptSetExport exportConceptSet(ConceptSet conceptSet, SourceInfo vocabSource) {
+
+    ConceptSetExport export = conversionService.convert(conceptSet, ConceptSetExport.class);
+    // Lookup the identifiers
+    export.identifierConcepts = executeIncludedConceptLookup(vocabSource.sourceKey, conceptSet.expression);
+    // Lookup the mapped items
+    export.mappedConcepts = executeMappedLookup(vocabSource.sourceKey, conceptSet.expression);
+    return export;
+  }
+  
   /**
    * @summary Calculates ancestors for the given descendants
    * 

@@ -59,16 +59,6 @@
     "noSources": "В текущем WebAPI не определено ни одного источника.<br/>Пожалуйста, добавьте источники на странице <a href=\"#/configure\">конфигурации</a>.",
     "webapiConnectError": "Ошибка соединения с WebAPI.<br/>Чтобы решить эту проблему, пожалуйста, свяжитесь с администратором."
   },
-  "format": {
-    "number": "# ###,##",
-    "date": {
-      "shortdate": "DD.MM",
-      "mediumdate": "DD.MM.YYYY",
-      "datetime": "DD.MM.YYYY HH:mm",
-      "minutes": "мин",
-      "seconds": "сек"
-    }
-  },
   "navigation": {
     "home": "Начало",
     "datasources": "Источники данных",
@@ -84,48 +74,6 @@
     "jobs": "Задания",
     "configuration": "Конфигурация",
     "feedback": "Обратная связь"
-  },
-  "datatable": {
-    "language": {
-      "decimal": "десятичный",
-      "emptyTable": "В таблице нет данных",
-      "info": "Показано с _START_ по _END_ из _TOTAL_ записей",
-      "infoEmpty": "Показано с 0 по 0 из 0 записей",
-      "infoFiltered": "(отфильтровано из _MAX_ записей)",
-      "infoPostFix": "",
-      "thousands": ",",
-      "lengthMenu": "Показывать по _MENU_ записей",
-      "loadingRecords": "Загружается...",
-      "processing": "Обрабатывается...",
-      "search": "Фильтр:",
-      "searchPlaceholder": "Поиск...",
-      "zeroRecords": "Подходящие записи не найдены",
-      "paginate": {
-        "first": "Первая",
-        "last": "Последняя",
-        "next": "Дальше",
-        "previous": "Назад"
-      },
-      "buttons": {
-        "colvis": "Отображать колонки",
-        "copy": "Копировать"
-      },
-      "aria": {
-        "sortAscending": ": нажмите для сортировки по возрастанию",
-        "sortDescending": ": нажмите для сортировки по убыванию"
-      }
-    }
-  },
-  "executionStatus": {
-    "values": {
-      "FAILED": "ОШИБКА",
-      "COMPLETED": "ГОТОВ",
-      "STOPPED": "ОСТАНОВЛЕН",
-      "CANCELED": "ОТМЕНЕН",
-      "PENDING": "В ОЧЕРЕДИ",
-      "RUNNING": "ВЫПОЛНЯЕТСЯ",
-      "STARTED": "ЗАПУЩЕН"
-    }
   },
   "options": {
     "atMost": "В большинстве",
@@ -222,13 +170,6 @@
       "generate": "генерировать",
       "generating": "порождающий"
     },
-    "cohortConceptSetBrowser": {
-      "tableId": "Id",
-      "tableTitle": "заглавие",
-      "tableCreated": "созданный",
-      "tableModified": "модифицированный",
-      "tableAuthor": "автор"
-    },
     "textFilter": {
       "startsWith": "Начиная с",
       "contains": "Содержащие",
@@ -300,7 +241,6 @@
     "linkedEntityList": {
       "defaultNewItemLabel": "Импорт"
     },
-    "loading": "идёт загрузка",
     "userBar": {
       "signin": "Войти",
       "signout": "Выйти"
@@ -366,7 +306,8 @@
       "unnamedCriteria": "Безымянный критерий",
       "copyOf": "Копия:",
       "noCensoring": "Нет цензуры",
-      "indexMessage": "Дата индекса относится к событию из критериев вхождения в группу."
+      "indexMessage": "Дата индекса относится к событию из критериев вхождения в группу.",
+      "days": "дней"
     },
     "conditionEra": {
       "criteriaText_1": "состояние эпохи",
@@ -665,7 +606,7 @@
       "between": "Между",
       "notBetween": "Не между",
       "and": "и",
-      "placeholder": "ГГГГ-ММ-ДД"
+      "firstPlaceholder": "ГГГГ-ММ-ДД"
     },
     "numericRange": {
       "lessThan": "Меньше, чем",

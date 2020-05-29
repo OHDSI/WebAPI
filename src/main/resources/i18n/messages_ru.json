@@ -40,6 +40,8 @@
     "deselectAll": "Отменить выбор",
     "notEnoughPermissions": "Недостаточно прав",
     "noChangesToPersist": "Нет изменений для сохранения",
+    "copyToClipboard": "Скопировать в буфер обмена",
+    "copiedToClipboard": "Скопировано!",
     "configureAccessModal": {
       "loadingAccessList": "Загрузка списков доступа...",
       "addWriteAccessToRole": "Добавить разрешение на запись роли:",
@@ -295,14 +297,6 @@
       "defaultNewItemLabel": "Импорт"
     },
     "loading": "идёт загрузка",
-    "modalExitMessage": {
-      "buttons": {
-        "copyToClipboard": "Скопировать в буфер"
-      },
-      "messages": {
-        "copiedToClipboard": "Скопировано в буфер!"
-      }
-    },
     "userBar": {
       "signin": "Войти",
       "signout": "Выйти"
@@ -787,11 +781,6 @@
       "delete": "Удалить",
       "removeSelected": "Удалить выбранные",
       "selectConceptSet": "Выберите набор концепций..."
-    },
-    "copyToClipboard": {
-      "title": "Скопировать в буфер обмена",
-      "buttonText": "Скопировать в буфер обмена",
-      "messageText": "Скопировано!"
     },
     "cyclops": {
       "controlEditor": {
@@ -1385,11 +1374,9 @@
         "conceptSetExpressionJSON": "JSON набора концепций",
         "conceptIdentiferList": "Список идентификаторов концепций",
         "includedConceptIdentiferList": "Список идентификаторов включенных концепций",
-        "copiedToClipboard!": "Скопировано в буфер обмена!",
         "exportToCSV": "Экспортировать в CSV",
         "exportingCsv": "Экспорт в CSV...",
-        "loadingForExport": "Загрузка для экспорта...",
-        "copyToClipboardButtonTitle": "Скопировать в буфер обмена"
+        "loadingForExport": "Загрузка для экспорта..."
       },
       "expression": {
         "standard": "Стандартный",
@@ -1633,7 +1620,7 @@
     },
     "releaseNotes": {
       "title": "Примечания к Релизу",
-      "issues": "Данный релиз содержит <b><%=issues%></b> улучшений и исправлений:",
+      "issues": "<br/> Данный релиз содержит <b><%=issues%></b> улучшений и исправлений:",
       "loadingReleaseInfo": "Загрузка данных о Релизе"
     },
     "title": "Начало",
@@ -2512,8 +2499,6 @@
       "copyToConceptSetRepository": "Копировать в репозиторий наборов концепций",
       "closeConceptSet": "Закрыть концепцию",
       "conceptSetExpressionJSON": "Понятие набора выражений JSON",
-      "copyToClipboard": "Скопировать в буфер обмена",
-      "copiedToClipboard": "Скопировано в буфер обмена!",
       "conceptIdentiferList": "Список идентификаторов концепций",
       "includedConceptIdentiferList": "Включенный список идентификаторов концепций",
       "conceptIdentifiers": "Идентификаторы концепции",

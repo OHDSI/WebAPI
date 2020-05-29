@@ -115,7 +115,7 @@
       "feasibilityReportViewerText_7": "Switch to intersect view",
       "feasibilityReportViewerText_8": "No inclusion rules specified for this cohort definition."
     },
-    "access-denied": {
+    "accessDenied": {
       "forbidden": {
         "message1": "You do not have access to this feature.",
         "message2": "For more information on how to get access please contact the System Administrator."
@@ -877,7 +877,7 @@
     },
     "releaseNotes": {
       "title": "Release Notes",
-      "issues": "<br/> This latest release contains <%= issues %> feature enhancements and issue resolutions:"
+      "issues": "<br/> This latest release contains <b><%= issues %></b> feature enhancements and issue resolutions:"
     },
     "title": "Home",
     "welcome": "Welcome to ATLAS."

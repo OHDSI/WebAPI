@@ -9,6 +9,7 @@
     "copy": "Копировать",
     "createACopy": "Создать копию",
     "configureAccess": "Настроить доступ",
+    "accessDenied": "Доступ запрещен",
     "delete": "Удалить",
     "download": "Скачать",
     "import": "Импорт",
@@ -40,6 +41,10 @@
     "created": "созданный",
     "modified": "модифицированный",
     "on": "на",
+    "notEnoughPermissions": "Недостаточно прав",
+    "noChangesToPersist": "Нет изменений для сохранения",
+    "copyToClipboard": "Скопировать в буфер обмена",
+    "copiedToClipboard": "Скопировано!",
     "configureAccessModal": {
       "loadingAccessList": "Загрузка списков доступа...",
       "addWriteAccessToRole": "Добавить разрешение на запись роли:",
@@ -93,6 +98,7 @@
       "loadingRecords": "Загружается...",
       "processing": "Обрабатывается...",
       "search": "Фильтр:",
+      "searchPlaceholder": "Поиск...",
       "zeroRecords": "Подходящие записи не найдены",
       "paginate": {
         "first": "Первая",
@@ -118,7 +124,7 @@
       "CANCELED": "ОТМЕНЕН",
       "PENDING": "В ОЧЕРЕДИ",
       "RUNNING": "ВЫПОЛНЯЕТСЯ",
-      "STARTED": "ВЫПОЛНЯЕТСЯ"
+      "STARTED": "ЗАПУЩЕН"
     }
   },
   "options": {
@@ -252,7 +258,7 @@
       "feasibilityReportViewerText_7": "Переключиться на пересечение",
       "feasibilityReportViewerText_8": "Не определены правила включения для этого определения когорты."
     },
-    "access-denied": {
+    "accessDenied": {
       "forbidden": {
         "message1": "У вас нет доступа к этой функции.",
         "message2": "Для получения дополнительной информации о том, как получить доступ, пожалуйста, свяжитесь с системным администратором."
@@ -262,22 +268,7 @@
         "login": "войдите"
       }
     },
-    "cohort-definition-browser": {
-      "facets": {
-        "lastModified": "Последнее изменение",
-        "author": "Автор"
-      },
-      "table": {
-        "columns": {
-          "id": "ИД",
-          "name": "Наименование",
-          "created": "Создано",
-          "updated": "Изменено",
-          "author": "Автор"
-        }
-      }
-    },
-    "filter-panel": {
+    "filterPanel": {
       "title": "Фильтрация",
       "buttons": {
         "apply": "Применить",
@@ -293,7 +284,7 @@
       "denied": "Отсутствуют права на импорт",
       "progress": "импорт в процессе"
     },
-    "linked-cohort-list": {
+    "linkedCohortList": {
       "defaultTitle": "Когорты",
       "defaultNewItemLabel": "Импорт",
       "dialog": {
@@ -303,26 +294,14 @@
         "actions": {
           "edit": "Правка когорты",
           "remove": "Удалить"
-        },
-        "columns": {
-          "id": "ИД",
-          "name": "Наименование"
         }
       }
     },
-    "linked-entity-list": {
+    "linkedEntityList": {
       "defaultNewItemLabel": "Импорт"
     },
     "loading": "идёт загрузка",
-    "modal-exit-message": {
-      "buttons": {
-        "copyToClipboard": "Скопировать в буфер"
-      },
-      "messages": {
-        "copiedToClipboard": "Скопировано в буфер!"
-      }
-    },
-    "user-bar": {
+    "userBar": {
       "signin": "Войти",
       "signout": "Выйти"
     },
@@ -337,10 +316,11 @@
         "refresh": "Ваша сессия истекла. Пожалуйста обновите страницу."
       },
       "runas": "Войти как",
-      "signin-with": "Войти с помощью:",
+      "signinWith": "Войти с помощью:",
       "signout": "Выйти",
       "submit": "Отправить",
       "username": "Имя пользователя",
+      "password": "Пароль",
       "wait": "Пожалуйста подождите..."
     },
     "atlasCohortEditor": {
@@ -807,10 +787,6 @@
       "removeSelected": "Удалить выбранные",
       "selectConceptSet": "Выберите набор концепций..."
     },
-    "copyToClipboard": {
-      "buttonText": "Скопировать в буфер обмена",
-      "messageText": "Скопировано!"
-    },
     "cyclops": {
       "controlEditor": {
         "maxIterations": "Максимальное количество итераций Cyclops, которое нужно предпринять, прежде чем возвращать ошибку, из-за которой не удалось выполнить схождение:",
@@ -958,7 +934,8 @@
       "foundProductLabel": "Найдено на ярлыке продукта",
       "foundInProductLabelOrPublications": "Найдено в ярлыке продукта или публикациях",
       "signalInFaers": "Сигнал в FAERS",
-      "userSpecified": "Пользователь указан"
+      "userSpecified": "Пользователь указан",
+      "type": "Тип"
     },
     "date": {
       "justNow": "Только что",
@@ -971,6 +948,11 @@
       "only1": "Только 1",
       "only2": "Только 2",
       "both": "Оба"
+    },
+    "type": {
+      "preset": "Пресет",
+      "criteriaSet": "Набор критериев",
+      "custom": "Пользовательский"
     }
   },
   "columns": {
@@ -1167,7 +1149,16 @@
     "p90": "p90",
     "max": "Максимум",
     "percentRemain": "% остатка",
-    "percentDiff": "% разницы"
+    "percentDiff": "% разницы",
+    "sourceName": "Имя источника [Ключ источника]",
+    "table-qualifiers": "Квалификаторы таблиц",
+    "dialect": "Диалект",
+    "vocabularyVersion": "Версия словаря",
+    "evidence": "Свидетельство",
+    "recordCounts": "Количество записоей (RC / DRC)",
+    "incidence": "Инцидент",
+    "checkConnection": "Проверить соединение",
+    "refreshCache": "Обновить кэш"
   },
   "filters": {
     "visit": "Посещение",
@@ -1178,6 +1169,7 @@
     "selectASource": "Выбрать источник данных",
     "selectAReport": "Выбрать отчет",
     "loadingReport": "Загрузка отчета",
+    "errorLoadingReport": "Ошибка загрузки отчета",
     "noPermission": "У вас недостаточно прав для просмотра этого отчета",
     "reports": {
       "titleTail": ". Отчет",
@@ -1388,11 +1380,9 @@
         "conceptSetExpressionJSON": "JSON набора концепций",
         "conceptIdentiferList": "Список идентификаторов концепций",
         "includedConceptIdentiferList": "Список идентификаторов включенных концепций",
-        "copiedToClipboard!": "Скопировано в буфер обмена!",
         "exportToCSV": "Экспортировать в CSV",
         "exportingCsv": "Экспорт в CSV...",
-        "loadingForExport": "Загрузка для экспорта...",
-        "copyToClipboardButtonTitle": "Скопировать в буфер обмена"
+        "loadingForExport": "Загрузка для экспорта..."
       },
       "expression": {
         "standard": "Стандартный",
@@ -1474,20 +1464,6 @@
     "new": "Создать",
     "defaultName": "Новая Характеризация",
     "loading": "Загружается список Характеризаций Когорт...",
-    "list": {
-      "columns": {
-        "id": "Ид",
-        "name": "Наименование",
-        "created": "Создано",
-        "updated": "Изменено",
-        "author": "Автор"
-      },
-      "facets": {
-        "created": "Создано",
-        "updated": "Изменено",
-        "author": "Автор"
-      }
-    },
     "tabs": {
       "characterizations": {
         "title": "Характеризации",
@@ -1501,17 +1477,13 @@
     "viewEdit": {
       "caption": "Характеризация №",
       "loading": "Идёт загрузка Характеризации Когорты...",
-      "buttons": {
-        "access": "Настроить доступ",
-        "copy": "Создать копию данной характеризации"
-      },
       "messages": {
         "nameIsEmpty": "Наименование характеризации не заполнено."
       },
       "tabs": {
         "design": "Дизайн",
         "executions": "Исследования",
-        "utilities": "Утилиты"
+        "utilities": "Дополнительно"
       },
       "modals": {
         "confirmChanges": "Ваши изменения не сохранены. Желаете ли вы продолжить?"
@@ -1523,27 +1495,22 @@
           "title": "Функциональные анализы",
           "actions": {
             "remove": "Удалить"
-          },
-          "columns": {
-            "id": "ИД",
-            "name": "Наименование",
-            "description": "Описание",
-            "actions": "Действия"
           }
         },
         "faParams": {
           "title": "Параметры функциональных анализов",
           "newLabel": "Новый параметр",
-          "columns": {
-            "name": "Наименование",
-            "value": "Значение",
-            "actions": "Действия"
+          "modal": {
+            "title": "Создание нового параметра",
+            "submit": "Создать",
+            "namePlaceholder": "Имя",
+            "valuePlaceholder": "Значение"
           }
         },
         "subgroups": {
           "title": "Анализы подгрупп",
-          "new": "Новая подгруппа",
-          "nosubgroups": "Подгруппы не назначены",
+          "newSubgroup": "Новая подгруппа",
+          "noSubgroups": "Подгруппы не назначены",
           "subgroupOnly": "Вычислять только анализы подгрупп",
           "namePlaceholder": "Наименование подгруппы",
           "stratifiedByPlaceholder": "Сделать срез по",
@@ -1570,27 +1537,20 @@
           "allExecutions": "Все исследования (<%= submissions %>)"
         },
         "table": {
-          "columns": {
-            "date": "Дата",
-            "design": "Дизайн",
-            "status": "Статус",
-            "duration": "Длительность",
-            "results": {
-              "title": "Результаты",
-              "values": {
-                "text": "Показать отчеты",
-                "empty": "-"
-              }
-            }
-          }
+          "viewReports": "Показать отчеты"
         },
         "messages": {
           "permissions": "Не достаточно прав для выполнения, изменения не сохранены или когорты не определены в анализе"
         }
       },
+      "utilities": {
+        "title": "Дополнительно"
+      },
       "results": {
         "loading": "Идёт загрузка результатов исследования...",
         "title": "Отчеты для <%= sourceName %>",
+        "showAllResults": "Показать все результаты",
+        "hideEmptyResults": "Скрыть пустые результаты",
         "detail": {
           "date": "Дата:",
           "design": "Дизайн:",
@@ -1615,26 +1575,36 @@
           "buttons": {
             "export": "Экспорт",
             "exportComparison": "Экспорт сравнения"
-          },
-          "columns": {
-            "conceptId": "ИД Концепции",
-            "covariate": "Ковариат",
-            "explore": "Обзор",
-            "count": "Кол-во",
-            "pct": "Пцт",
-            "avg": "Сред",
-            "stdev": "СКО",
-            "min": "Мин",
-            "p10": "П10",
-            "p25": "П25",
-            "median": "Медиана",
-            "p75": "П75",
-            "p90": "П90",
-            "max": "Макс",
-            "strata": "Срез"
           }
         }
       }
+    },
+    "fa": {
+      "loadingList": "Загрузка списка функциональных анализов...",
+      "retrievingList": "Получение списка функциональных анализов...",
+      "caption": "Функциональный анализ №<%=id%>",
+      "designOrNameAreEmpty": "Дизайн или имя - пустые",
+      "unsavedConfirmation": "Изменения не сохранены. Продолжить?",
+      "nameExistsAlert": "Анализ с таким именем уже существует. Пожалуйста, выберите другое имя.",
+      "saveError": "Ошибка сохранения анализа.",
+      "nameIsEmpty": "Имя функционального анализа пустое",
+      "description": "Описание",
+      "domain": "Домен:",
+      "design": "Дизайн",
+      "preset": "Пресет",
+      "criteria": "Критерий",
+      "custom": "Пользовательский",
+      "featureExtractionPresetName": "Имя пресета",
+      "analysisType": "Тип анализа",
+      "addCriteriaFeature": "Добавить критерий",
+      "addNewCriteria": "Добавить новый критерий...",
+      "criteriaName": "Имя критерия",
+      "analysisSql": "SQL анализа",
+      "copySqlToClipboard": "Скопировать SQL шаблона в бфер обмена",
+      "copiedToClipboard": "Скопировано!",
+      "availableVariables": "Доступные переменные",
+      "availableVariablesNote": "переменные, определенные в параметрах Характеризации",
+      "selectConceptSet": "Выберите набор концепций..."
     }
   },
   "home": {
@@ -1656,7 +1626,7 @@
     },
     "releaseNotes": {
       "title": "Примечания к Релизу",
-      "issues": "Данный релиз содержит <b><%=issues%></b> улучшений и исправлений:",
+      "issues": "<br/> Данный релиз содержит <b><%=issues%></b> улучшений и исправлений:",
       "loadingReleaseInfo": "Загрузка данных о Релизе"
     },
     "title": "Начало",
@@ -1671,7 +1641,7 @@
     "nameConflict": "Анализ с таким имененм уже существует. Пожалуйста, выберите другое имя.",
     "savingError": "Ошибка при сохранении анализа.",
     "deleteConfirmation": "Действительно удалить анализ? Предупреждение: это действие необратимо!",
-    "deleteResultConfirmation": "Удалить результат генерации ",
+    "deleteResultConfirmation": "Удалить результат генерации <%=name%>?",
     "tabs": {
       "definition": "Определение",
       "conceptSets": "Наборы концепций",
@@ -2077,24 +2047,8 @@
     "changeSourcePriorities": "Менять приоритеты источника:",
     "newSource": "Новый источник",
     "executionEngine": "Движок генерации",
-    "browser": {
-      "table": {
-        "columns": {
-          "sourceName": "Имя источника [Ключ источника]",
-          "table-qualifiers": "Квалификаторы таблиц",
-          "dialect": "Диалект",
-          "vocabularyVersion": "Версия словаря",
-          "evidence": "Свидетельство",
-          "recordCounts": "Количество записоей (RC / DRC)",
-          "incidence": "Инцидент",
-          "checkConnection": "Проверить соединение",
-          "refreshCache": "Обновить кэш"
-        },
-        "accessDenied": "Доступ запрещен"
-      }
-    },
     "buttons": {
-      "check": "Обновить",
+      "check": "Проверка",
       "clearConfigurationCache": "Очистить кэш конфигурации",
       "managePermissions": "Управление разрешениями",
       "importUsers": "Импорт пользователей из LDAP/AD",
@@ -2140,7 +2094,7 @@
       },
       "dialect": {
         "label": "Диалект источника:",
-        "title": "Диатект источника",
+        "title": "Диалект источника",
         "options": {
           "postgresql": "PostgreSQL",
           "sqlserver": "SQL server",
@@ -2156,19 +2110,14 @@
       "connectionString": {
         "label": "Строка подключения:",
         "placeholder": "Строка подключения",
-        "title": "CСтрока подключения"
-      },
-      "realm": {
-        "validation": {
-          "format": "&quot;KrbHostFQDN&quot; пустой. Пожалуйста, введите его в следующем формате: &quot;KrbHostFQDN=[value];&quot;"
-        }
+        "title": "Строка подключения"
       },
       "username": {
         "label": "Пользователь:",
         "placeholder": "Пользователь",
         "title": "Пользователь",
         "validation": {
-          "empty": "&quot;Пользователь&quot; пустой."
+          "empty": "Поле \"Пользователь\" не может быть пустым."
         }
       },
       "password": {
@@ -2209,8 +2158,12 @@
           "placeholder": "Пароль",
           "title": "Пароль"
         },
-        "source-daimons": {
+        "sourceDaimons": {
           "label": "Даймоны источника"
+        },
+        "validation": {
+          "host": "\"KrbHostFQDN\" is empty. Please specify it in the following format: \"KrbHostFQDN=[value];\"",
+          "realm": "\"KrbRealm\" is empty. Please specify it in the following format: \"KrbRealm=[value];\""
         }
       },
       "bigQuery": {
@@ -2346,7 +2299,7 @@
       "tabs": {
         "definition": "Определение",
         "conceptSets": "Наборы концепций",
-        "generation": "Поколение",
+        "generation": "Генерация",
         "reporting": "Составление отчетов",
         "explore": "Проводить исследования",
         "export": "Экспорт",
@@ -2532,7 +2485,7 @@
     "tabs": {
       "definition": "Определение",
       "conceptSets": "Наборы концепций",
-      "generation": "Поколение",
+      "generation": "Генерация",
       "reporting": "Составление отчетов",
       "explore": "Проводить исследования",
       "export": "Экспорт",
@@ -2555,8 +2508,6 @@
       "copyToConceptSetRepository": "Копировать в репозиторий наборов концепций",
       "closeConceptSet": "Закрыть концепцию",
       "conceptSetExpressionJSON": "Понятие набора выражений JSON",
-      "copyToClipboard": "Скопировать в буфер обмена",
-      "copiedToClipboard": "Скопировано в буфер обмена!",
       "conceptIdentiferList": "Список идентификаторов концепций",
       "includedConceptIdentiferList": "Включенный список идентификаторов концепций",
       "conceptIdentifiers": "Идентификаторы концепции",

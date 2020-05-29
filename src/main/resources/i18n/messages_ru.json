@@ -392,7 +392,8 @@
       "conditionOccurrenceText_10": "с посещением:",
       "conditionOccurrenceText_11": "gender is any of:",
       "conditionOccurrenceText_12": "provider specialty is any of:",
-      "conditionOccurrenceText_13": "visit occurrence is any of:"
+      "conditionOccurrenceText_13": "visit occurrence is any of:",
+      "indexDataText": "Дата индекса относится к условию возникновения <%= conceptSetName %>"
     },
     "conditionDeath": {
       "anyDeath": "Любая смерть",
@@ -403,7 +404,8 @@
       "conditionDeathText_3": "Концепция источника смерти",
       "conditionDeathText_4": "с возрастом",
       "conditionDeathText_5": "с полом:",
-      "conditionDeathText_6": "пол любой из:"
+      "conditionDeathText_6": "пол любой из:",
+      "indexDataText": "Дата индекса относится к событию смерти <%= conceptSetName %>."
     },
     "conditionDevice": {
       "anyDevice": "Любое устройство",
@@ -422,10 +424,12 @@
       "conditionDeviceText_11": "с посещением:",
       "conditionDeviceText_12": "пол любой из:",
       "conditionDeviceText_13": "Специализация провайдера:",
-      "conditionDeviceText_14": "Событием посещения является любое из:"
+      "conditionDeviceText_14": "Событием посещения является любое из:",
+      "indexDataText": "Дата индекса относится к экспозиции устройства <%= conceptSetName %>"
     },
     "conditionDose": {
       "anyDrug": "Любой наркотик",
+      "anyDoseEra": "Любая эра дозы",
       "addAttribute": "Добавить атрибут...",
       "conditionDoseText_1": "эра дозы",
       "conditionDoseText_2": "впервые в истории человека",
@@ -438,7 +442,8 @@
       "conditionDoseText_9": "с возрастом в годах в конце эры",
       "conditionDoseText_10": "с полом:",
       "conditionDoseText_11": "Единицей является любой из:",
-      "conditionDoseText_12": "пол любой из:"
+      "conditionDoseText_12": "пол любой из:",
+      "indexDataText": "Дата индекса относится к эре дозы <%= conceptSetName %>."
     },
     "conditionDrug": {
       "anyDrug": "Любой наркотик",
@@ -454,7 +459,8 @@
       "conditionDrugText_9": "с возрастом в годах в начале эры",
       "conditionDrugText_10": "с возрастом в годах в конце эры",
       "conditionDrugText_11": "с полом:",
-      "conditionDrugText_12": "пол любой из:"
+      "conditionDrugText_12": "пол любой из:",
+      "indexDataText": "Дата индекса относится к эре наркотиков <%= conceptSetName %>."
     },
     "conditionDrugExposure": {
       "anyDrug": "Любой наркотик",
@@ -481,7 +487,8 @@
       "conditionDrugExposureText_19": "Единицей дозы является любая из:",
       "conditionDrugExposureText_20": "пол любой из:",
       "conditionDrugExposureText_21": "Специализация провайдера:",
-      "conditionDrugExposureText_22": "Событием посещения является любое из:"
+      "conditionDrugExposureText_22": "Событием посещения является любое из:",
+      "indexDataText": "Дата индекса относится к воздействию наркотиков на <%= conceptSetName %>."
     },
     "conditionMeasurement": {
       "anyMeasurement": "Любое измерение",
@@ -513,7 +520,8 @@
       "conditionMeasurementText_25": "с высоким коэффициентом дальности",
       "conditionMeasurementText_26": "пол любой из:",
       "conditionMeasurementText_27": "Специализация провайдера:",
-      "conditionMeasurementText_28": "Событием посещения является любое из:"
+      "conditionMeasurementText_28": "Событием посещения является любое из:",
+      "indexDataText": "Дата индекса относится к измерению <%= conceptSetName %>."
     },
     "conditionObservation": {
       "anyObservation": "Любое Наблюдение",
@@ -537,7 +545,8 @@
       "conditionObservationText_16": "Единицей является любой из:",
       "conditionObservationText_17": "пол любой из:",
       "conditionObservationText_18": "Специализация провайдера:",
-      "conditionObservationText_19": "Событием посещения является любое из:"
+      "conditionObservationText_19": "Событием посещения является любое из:",
+      "indexDataText": "Дата индекса относится к наблюдению за <%= conceptSetName %>."
     },
     "conditionObservationPeriod": {
       "addAttribute": "Добавить атрибут...",
@@ -588,7 +597,8 @@
       "conditionPayerPlanText_22": "конец периода",
       "conditionPayerPlanText_23": "с возрастом в начале",
       "conditionPayerPlanText_24": "с возрастом в конце",
-      "conditionPayerPlanText_25": "пол любой из:"
+      "conditionPayerPlanText_25": "пол любой из:",
+      "indexDataText": "Дата индекса относится к периоду плана плательщика."
     },
     "conditionProcedureOccurrence": {
       "addAttribute": "Добавить атрибут...",
@@ -607,7 +617,8 @@
       "conditionProcedureOccurrenceText_11": "Модификатор является любым из:",
       "conditionProcedureOccurrenceText_12": "пол любой из:",
       "conditionProcedureOccurrenceText_13": "Специализация провайдера:",
-      "conditionProcedureOccurrenceText_14": "Событием посещения является любое из:"
+      "conditionProcedureOccurrenceText_14": "Событием посещения является любое из:",
+      "indexDataText": "Дата индекса относится к процедуре <%= conceptSetName %>."
     },
     "conditionSpecimen": {
       "addAttribute": "Добавить атрибут...",
@@ -626,7 +637,8 @@
       "conditionSpecimeText_11": "Единицей является любой из:",
       "conditionSpecimeText_12": "Анатомический сайт - это любой из:",
       "conditionSpecimeText_13": "Состояние болезни является любой из:",
-      "conditionSpecimeText_14": "пол любой из:"
+      "conditionSpecimeText_14": "пол любой из:",
+      "indexDataText": "Дата индекса относится к образцу <%= conceptSetName %>."
     },
     "conditionVisit": {
       "addAttribute": "Добавить атрибут...",
@@ -647,7 +659,8 @@
       "conditionSpecimeText_12": "с расстоянием от места службы до пациента",
       "conditionSpecimeText_13": "с продолжительностью посещения",
       "conditionSpecimeText_14": "пол любой из:",
-      "conditionSpecimeText_15": "Специализация провайдера:"
+      "conditionSpecimeText_15": "Специализация провайдера:",
+      "indexDataText": "Дата индекса относится к посещению <%= conceptSetName %>."
     },
     "dateRange": {
       "before": "Перед",
@@ -1529,70 +1542,6 @@
           "messages": {
             "nameIsEmpty": "Наименование подгруппы не заполнено.",
             "nameIsNotUnique": "Наименование подгруппы не уникально."
-          },
-          "add": {
-            "condition-occurrence": {
-              "criteria": {
-                "index-data": {
-                  "default-name": "Any Condition"
-                }
-              }
-            },
-            "death": {
-              "criteria": {
-                "default-concept-name": "Any Death"
-              }
-            },
-            "device-exposure": {
-              "criteria": {
-                "default-concept-name": "Any Device"
-              }
-            },
-            "dose-era": {
-              "criteria": {
-                "default-concept-name": "Any Dose Era"
-              }
-            },
-            "drug-era": {
-              "criteria": {
-                "default-concept-name": "Any Drug"
-              }
-            },
-            "drug-exposure": {
-              "criteria": {
-                "default-concept-name": "Any Drug"
-              }
-            },
-            "measurement": {
-              "criteria": {
-                "default-concept-name": "Any Measurement"
-              }
-            },
-            "observation": {
-              "criteria": {
-                "default-concept-name": "Any Observation"
-              }
-            },
-            "payer-plan-period": {
-              "criteria": {
-                "default-concept-name": "The index date refers to the payer plan period."
-              }
-            },
-            "procedure-occurrence": {
-              "criteria": {
-                "default-concept-name": "Any Procedure"
-              }
-            },
-            "specimen": {
-              "criteria": {
-                "default-concept-name": "Any Specimen"
-              }
-            },
-            "visit-occurrence": {
-              "criteria": {
-                "default-concept-name": "Any Visit"
-              }
-            }
           }
         }
       },

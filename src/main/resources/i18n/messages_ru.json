@@ -891,9 +891,35 @@
     },
     "locationRegion": {
       "anyLocationRegion": "Любой регион",
-      "locationRegionText_1": "область расположения",
-      "locationRegionText_2": "начало это",
-      "locationRegionText_3": "конец"
+      "criteria": {
+        "of": "регион местоположения",
+        "correlatedCriteria": {
+          "option": {
+            "description": "Применить критерии, используя регион местоположения в качестве события индекса",
+            "text": "Добавить вложенный критерий..."
+          }
+        },
+        "startDate": {
+          "option": {
+            "description": "Фильтровать регионы по дате, когда человек начал там жить",
+            "text": "Добавить критерий даты начала..."
+          },
+          "text": "начитается:"
+        },
+        "endDate": {
+          "option": {
+            "description": "Фильтровать регионы по дате, когда человек закончил там жить",
+            "text": "Добавить критерий даты окончания..."
+          },
+          "text": "заканчивается:"
+        },
+        "indexData": {
+          "text": "Дата индекса относится к региону расположения <%= conceptSetName %>."
+        }
+      }
+    },
+    "common": {
+      "addAttribute": "Добавить атрибут..."
     }
   },
   "facets": {
@@ -1447,8 +1473,12 @@
   "cc": {
     "title": "Характеризация Когорт",
     "new": "Создать",
-    "defaultName": "Новая Характеризация",
     "loading": "Загружается список Характеризаций Когорт...",
+    "modals": {
+      "confirmChanges": "Ваши изменения не сохранены. Желаете ли вы продолжить?",
+      "selectConceptSet": "Выбрать набор концепций...",
+      "chooseAFeatureAnalyses": "Выбрать функциональные анализы..."
+    },
     "tabs": {
       "characterizations": {
         "title": "Характеризации",
@@ -1469,9 +1499,6 @@
         "design": "Дизайн",
         "executions": "Исследования",
         "utilities": "Дополнительно"
-      },
-      "modals": {
-        "confirmChanges": "Ваши изменения не сохранены. Желаете ли вы продолжить?"
       },
       "design": {
         "loading": "Идёт загрузка дизайна Характеризации Когорты...",
@@ -1502,6 +1529,70 @@
           "messages": {
             "nameIsEmpty": "Наименование подгруппы не заполнено.",
             "nameIsNotUnique": "Наименование подгруппы не уникально."
+          },
+          "add": {
+            "condition-occurrence": {
+              "criteria": {
+                "index-data": {
+                  "default-name": "Any Condition"
+                }
+              }
+            },
+            "death": {
+              "criteria": {
+                "default-concept-name": "Any Death"
+              }
+            },
+            "device-exposure": {
+              "criteria": {
+                "default-concept-name": "Any Device"
+              }
+            },
+            "dose-era": {
+              "criteria": {
+                "default-concept-name": "Any Dose Era"
+              }
+            },
+            "drug-era": {
+              "criteria": {
+                "default-concept-name": "Any Drug"
+              }
+            },
+            "drug-exposure": {
+              "criteria": {
+                "default-concept-name": "Any Drug"
+              }
+            },
+            "measurement": {
+              "criteria": {
+                "default-concept-name": "Any Measurement"
+              }
+            },
+            "observation": {
+              "criteria": {
+                "default-concept-name": "Any Observation"
+              }
+            },
+            "payer-plan-period": {
+              "criteria": {
+                "default-concept-name": "The index date refers to the payer plan period."
+              }
+            },
+            "procedure-occurrence": {
+              "criteria": {
+                "default-concept-name": "Any Procedure"
+              }
+            },
+            "specimen": {
+              "criteria": {
+                "default-concept-name": "Any Specimen"
+              }
+            },
+            "visit-occurrence": {
+              "criteria": {
+                "default-concept-name": "Any Visit"
+              }
+            }
           }
         }
       },

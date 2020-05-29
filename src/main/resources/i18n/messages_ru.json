@@ -37,12 +37,16 @@
     "add": "Добавить",
     "selectAll": "Выбрать все",
     "deselectAll": "Отменить выбор",
+    "created": "созданный",
+    "modified": "модифицированный",
+    "on": "на",
     "configureAccessModal": {
       "loadingAccessList": "Загрузка списков доступа...",
       "addWriteAccessToRole": "Добавить разрешение на запись роли:",
       "rolesWithWriteAccess": "Роли с разрешением на запись:",
       "revoke": "Отозвать"
-    }
+    },
+    "unspecified": "НЕОПРЕДЕЛЕННЫЕ!"
   },
   "commonErrors": {
     "browserWarning": "Пожалуйста, обратите внимание, что официально поддерживается только браузер Chrome версии не ниже v.63",
@@ -230,7 +234,7 @@
     "period": {
       "starting": "начало",
       "andEnding": "и окончание",
-      "periodText_1": "Note: only observation periods that encompass the start and end dates will be used."
+      "periodText_1": "Примечание: будут использоваться только периоды наблюдения, включающие даты начала и окончания."
     },
     "inclusionRuleEditor": {
       "unnamedCriteria": "Безымянный критерий",
@@ -381,7 +385,8 @@
       "addTrimmingOptions": "добавить параметры обрезки ...",
       "unnamedCriteria": "Безымянный критерий",
       "copyOf": "Копия:",
-      "noCensoring": "Нет цензуры"
+      "noCensoring": "Нет цензуры",
+      "indexMessage": "Дата индекса относится к событию из критериев вхождения в группу."
     },
     "conditionEra": {
       "criteriaText_1": "состояние эпохи",
@@ -482,7 +487,7 @@
       "anyDrug": "Любой наркотик",
       "addAttribute": "Добавить атрибут...",
       "drugType": "Тип лекарства",
-      "conditionDrugExposureText_1": "a drug exposure of",
+      "conditionDrugExposureText_1": "наркотическое воздействие",
       "conditionDrugExposureText_2": "впервые в истории человека",
       "conditionDrugExposureText_3": "начало появления:",
       "conditionDrugExposureText_4": "конец вхождения:",
@@ -913,9 +918,10 @@
       "cohortExpressionViewerText_12": "Выйти из группы на основе следующего:",
       "cohortExpressionViewerText_13": "Стратегия разрушения когорты:",
       "cohortExpressionViewerText_14": "Свернуть когорту по эпохе с размером разрыва",
-      "cohortExpressionViewerText_15": "Inclusion Criteria #(<%=index%>): <%=name%>"
+      "cohortExpressionViewerText_15": "Критерии включения #(<%=index%>): <%=name%>"
     },
     "locationRegion": {
+      "anyLocationRegion": "Любой регион",
       "locationRegionText_1": "область расположения",
       "locationRegionText_2": "начало это",
       "locationRegionText_3": "конец"
@@ -2532,6 +2538,9 @@
       "export": "Экспорт",
       "messages": "Сообщения"
     },
+    "selectReport": "Выбор отчета",
+    "heraclesHeel": "Heracles Heel",
+    "failedWithoutAnyMessage": "Не удалось без какого-либо сообщения",
     "panels": {
       "noConceptSets": "Нет концепций для экспорта",
       "newConceptSet": "Новая концепция",

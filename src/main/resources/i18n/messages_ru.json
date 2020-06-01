@@ -67,9 +67,6 @@
     "import": "Импорт",
     "export": "Экспорт",
     "yes": "Да",
-    "yesExact": "Да (точно)",
-    "yesDescendant": "Да (потомок)",
-    "yesParent": "Да (родитель)",
     "no": "Нет",
     "daysAbbr": "д",
     "and": "и",
@@ -84,9 +81,6 @@
     "refresh": "Обновить",
     "median": "медиана",
     "days": "дней",
-    "none": "никто",
-    "included": "включены",
-    "excluded": "Исключенный",
     "add": "Добавить",
     "selectAll": "Выбрать все",
     "deselectAll": "Отменить выбор",
@@ -178,7 +172,13 @@
     "endsWith": "заканчивая",
     "notStartsWith": "не начиная с",
     "notContains": "не содержащий",
-    "notEndsWith": "не заканчивается"
+    "notEndsWith": "не заканчивается",
+    "yesExact": "Да (точно)",
+    "yesDescendant": "Да (потомок)",
+    "yesParent": "Да (родитель)",
+    "included": "Включеный",
+    "excluded": "Исключенный",
+    "none": "ни один"
   },
   "components": {
     "authorship": {

@@ -74,10 +74,8 @@
     "delete": "Delete",
     "deselectAll": "Deselect All",
     "download": "Download",
-    "excluded": "Excluded",
     "export": "Export",
     "import": "Import",
-    "included": "Included",
     "loading": "Loading",
     "loadingWithDots": "Loading...",
     "max": "Max",
@@ -85,7 +83,6 @@
     "min": "min",
     "no": "No",
     "noChangesToPersist": "No changes to persist",
-    "none": "None",
     "notEnoughPermissions": "Not enough permissions",
     "or": "or",
     "preview": "Preview",
@@ -98,9 +95,6 @@
     "unsaved": "(unsaved)",
     "unspecified": "UNSPECIFIED!",
     "yes": "Yes",
-    "yesDescendant": "Yes (Descendant)",
-    "yesExact": "Yes (Exact)",
-    "yesParent": "Yes (Parent)",
     "noneSelectedText": "Nothing selected",
     "noneResultsText": "No matches found for {0}"
   },
@@ -178,7 +172,13 @@
     "vocabulary": "Vocabulary",
     "ww": "Weekly",
     "yes": "Yes",
-    "yy": "Yearly"
+    "yy": "Yearly",
+    "yesDescendant": "Yes (Descendant)",
+    "yesExact": "Yes (Exact)",
+    "yesParent": "Yes (Parent)",
+    "included": "Included",
+    "excluded": "Excluded",
+    "none": "None"
   },
   "components": {
     "authorship": {

@@ -1120,6 +1120,10 @@
         "desc_censoring": "Exit cohort based on diagosis era.",
         "desc_group": "Find patients with specific condition era."
       },
+      "addDemographic": {
+        "title": "Add Demographic",
+        "desc_group": "Filter events based on demographic criteria."
+      },
       "addConditionOccurrence": {
         "title": "Add Condition Occurrence",
         "desc_initial": "Find patients with specific diagnoses.",

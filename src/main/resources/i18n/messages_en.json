@@ -94,9 +94,7 @@
     "set": "Set",
     "unsaved": "(unsaved)",
     "unspecified": "UNSPECIFIED!",
-    "yes": "Yes",
-    "noneSelectedText": "Nothing selected",
-    "noneResultsText": "No matches found for {0}"
+    "yes": "Yes"
   },
   "commonErrors": {
     "noSources": "The current WebAPI has no sources defined.<br/>Please add one or more on <a href=\"#/configure\">configuration</a> page.",
@@ -950,6 +948,10 @@
     },
     "common": {
       "addAttribute": "Add Attribute..."
+    },
+    "multiSelect": {
+      "noneSelectedText": "Nothing selected",
+      "noneResultsText": "No matches found for {0}"
     }
   },
   "facets": {

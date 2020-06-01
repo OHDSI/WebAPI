@@ -94,9 +94,7 @@
       "rolesWithWriteAccess": "Роли с разрешением на запись:",
       "revoke": "Отозвать"
     },
-    "unspecified": "НЕОПРЕДЕЛЕННЫЕ!",
-    "noneSelectedText": "Ничего не выбрано",
-    "noneResultsText": "Не найдено совпадений для {0}"
+    "unspecified": "НЕОПРЕДЕЛЕННЫЕ!"
   },
   "commonErrors": {
     "browserWarning": "Пожалуйста, обратите внимание, что официально поддерживается только браузер Chrome версии не ниже v.63",
@@ -950,6 +948,10 @@
     },
     "common": {
       "addAttribute": "Добавить атрибут..."
+    },
+    "multiSelect": {
+      "noneSelectedText": "Ничего не выбрано",
+      "noneResultsText": "Не найдено совпадений для {0}"
     }
   },
   "facets": {

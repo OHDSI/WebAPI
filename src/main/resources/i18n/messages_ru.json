@@ -90,9 +90,6 @@
     "add": "Добавить",
     "selectAll": "Выбрать все",
     "deselectAll": "Отменить выбор",
-    "created": "созданный",
-    "modified": "модифицированный",
-    "on": "на",
     "notEnoughPermissions": "Недостаточно прав",
     "noChangesToPersist": "Нет изменений для сохранения",
     "copyToClipboard": "Скопировать в буфер обмена",
@@ -183,9 +180,11 @@
   },
   "components": {
     "authorship": {
-      "on": "на",
-      "byCreated": "по <%=createdBy%>",
-      "byModified": "по <%=modifiedBy%>"
+      "created": "создано:",
+      "modified": "изменено:",
+      "on": " ",
+      "byCreated": "<%=createdBy%>",
+      "byModified": "<%=modifiedBy%>"
     },
     "windowedCriteria": {
       "windowedCriteriaText_1": "где",
@@ -709,6 +708,7 @@
     },
     "criteriaGroup": {
       "having": "имеющий",
+      "havingCapital": "Имеющий",
       "followingCriteria": "из следующих критериев:",
       "addCriteria": "Добавить критерии в группу ...",
       "withFollowingCriteria": "со следующими критериями события:",
@@ -718,12 +718,14 @@
       "usingDistinct": "используя различные",
       "usingAll": "используя все",
       "occurrencesOf": "появления:",
+      "occurrenceOf": "появление:",
       "where": "где",
       "between": "между",
       "and": "а также",
       "addAdditionalConstraint": "добавить дополнительное ограничение",
       "criteriaGroupText_1": "ограничить одно и то же посещение",
-      "criteriaGroupText_2": "разрешить события за пределами периода наблюдения"
+      "criteriaGroupText_2": "разрешить события за пределами периода наблюдения",
+      "occurringWithinTheSameVisit": "встречаемое в пределах того же посещения"
     },
     "customEraStrategy": {
       "customEraStrategyText_1": "Непрерывная выдержка:",

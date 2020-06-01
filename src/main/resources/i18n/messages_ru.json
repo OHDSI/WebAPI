@@ -182,6 +182,19 @@
     "notEndsWith": "не заканчивается"
   },
   "components": {
+    "authorship": {
+      "on": "на",
+      "byCreated": "по <%=createdBy%>",
+      "byModified": "по <%=modifiedBy%>"
+    },
+    "windowedCriteria": {
+      "windowedCriteriaText_1": "где",
+      "windowedCriteriaText_2": "между",
+      "windowedCriteriaText_3": "а также",
+      "windowedCriteriaText_4": "добавить дополнительное ограничение",
+      "windowedCriteriaText_5": "ограничить одно и то же посещение",
+      "windowedCriteriaText_6": "игнорировать период наблюдения"
+    },
     "evidencePairViewer": {
       "evidencePairViewerText_1": "загрузка пар доказательств",
       "evidencePairViewerText_2": "Если CommonEvidenceModel указал, что есть информация о ярлыке продукта для выбранной пары лекарственное средство (1 = true, 0 = false) Вы можете увидеть много этикеток продукта ниже. Количество меток не является информативным, поскольку неблагоприятное событие на одной метке должен быть на всех этикетках продукта. Таким образом, на этой странице будут показаны все ярлыки продуктов для выбранной пары лекарственное средство.",

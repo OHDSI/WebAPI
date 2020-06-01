@@ -1205,7 +1205,8 @@
     "recordCounts": "Количество записоей (RC / DRC)",
     "incidence": "Инцидент",
     "checkConnection": "Проверить соединение",
-    "refreshCache": "Обновить кэш"
+    "refreshCache": "Обновить кэш",
+    "strata": "Срез"
   },
   "filters": {
     "visit": "Посещение",
@@ -1519,7 +1520,6 @@
     },
     "viewEdit": {
       "caption": "Характеризация №",
-      "loading": "Идёт загрузка Характеризации Когорты...",
       "messages": {
         "nameIsEmpty": "Наименование характеризации не заполнено."
       },
@@ -1572,12 +1572,13 @@
         "buttons": {
           "generate": "Выполнить",
           "cancel": "Отменить",
-          "pending": "Ожидает",
           "latestResult": "Последний результат",
           "allExecutions": "Все исследования (<%= submissions %>)"
         },
         "table": {
-          "viewReports": "Показать отчеты"
+          "viewReports": "Показать отчеты",
+          "sameAsNow": "(текущий)",
+          "empty": "-"
         },
         "messages": {
           "permissions": "Не достаточно прав для выполнения, изменения не сохранены или когорты не определены в анализе"
@@ -1613,7 +1614,6 @@
         "exportAll": "Экспортировать все",
         "table": {
           "buttons": {
-            "export": "Экспорт",
             "exportComparison": "Экспорт сравнения"
           }
         }
@@ -1771,21 +1771,17 @@
   },
   "pathways": {
     "title": "Анализы Исходов Когорты",
-    "newanalysis": "Новый Анализ Исходов",
-    "defaultName": "Новый Анализ Исходов",
     "loading": "Загружается список Анализов Исходов...",
     "manager": {
       "loading": "Загружается Анализ Исходов Когорты...",
       "caption": "Анализ Исходов Когорты №",
       "messages": {
-        "createACopy": "Создать копию данного Анализа",
         "nameIsEmpty": "Наименование Анализа не заполнено",
         "alreadyExists": "Анализ с таким именем уже существует. Пожалуста, выберите другое наименование.",
         "beforeClose": "Ваши изменения не сохранены. Вы хотите продолжить?",
         "deleteConfirmation": "Вы уверены?",
         "saveFailed": "При сохранении анализа произошла ошибка.",
-        "notfound": "Анализ Исходов с Ид = %d не найден.",
-        "generating": "Выполняется Анализ Исходов %d на источнике данных %s (%s)"
+        "notfound": "Анализ Исходов с Ид = %d не найден."
       },
       "tabs": {
         "design": "Дизайн",
@@ -1821,13 +1817,10 @@
       },
       "executions": {
         "title": "Исследования",
-        "loading": "загружается",
         "buttons": {
           "generate": "Исследовать",
           "viewLatestResult": "Показать последний результат",
-          "allExecutions": "Все исследования",
-          "cancel": "Отменить",
-          "pending": "В очереди"
+          "allExecutions": "Все исследования"
         },
         "dialogs": {
           "design": {
@@ -1853,16 +1846,8 @@
           "title": "Отчет по Исследованию для",
           "date": "Дата:",
           "design": "Дизайн:",
-          "loading": "загружается",
           "details": {
             "title": "Подробности",
-            "table": {
-              "columns": {
-                "name": "Имя",
-                "remain": "% Осталось",
-                "diff": "% Разн"
-              }
-            },
             "noPath": "Исход не выбран: щёлкните по исходу для просмотра деталей."
           },
           "diagram": {
@@ -1885,12 +1870,7 @@
         "stopGenerationConfirmation": "Действительно остановить генерацию?"
       },
       "utilities": {
-        "title": "Дополнительно",
-        "buttons": {
-          "export": "Экспорт",
-          "import": "Импорт"
-        },
-        "loading": "загружается"
+        "title": "Дополнительно"
       }
     }
   },
@@ -2221,7 +2201,6 @@
       "title": "Импорт пользователей из LDAP/Active Directory",
       "importNow": "Импортировать",
       "newScheduledImport": "Импорт по расписанию",
-      "refresh": "Refresh",
       "loadingUserImportJobList": "Загрузка списка заданий импорта...",
       "loadingHistory": "Загрузка истории заданий импорта...",
       "userImportJob": "Задание импорта пользователей",
@@ -2257,10 +2236,10 @@
           "header": "Пожалуйста, выберите провайдера для импорта пользователей.",
           "buttons": {
             "details": "Детали",
-            "testСonnection": "Тест соединения"
+            "testConnection": "Тест соединения"
           },
           "source": {
-            "activeAirectory": "Active Directory",
+            "activeDirectory": "Active Directory",
             "ldap": "LDAP сервер"
           }
         },
@@ -3375,7 +3354,6 @@
     "endTime": "Время окончания",
     "status": "Состояние",
     "showCompletedJobsButton": "Показать завершенные задачи",
-    "hideCompletedJobsButton": "Скрыть завершенные задачи",
-    "nearestNeighbors": "K Ближайшие соседи"
+    "hideCompletedJobsButton": "Скрыть завершенные задачи"
   }
 }

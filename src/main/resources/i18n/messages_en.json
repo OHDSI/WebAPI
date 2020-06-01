@@ -1,30 +1,5 @@
 {
   "locale": "en",
-  "format": {
-    "number": "# ###.##",
-    "date": {
-      "shortdate": "MM/dd",
-      "mediumdate": "MM/dd/YYYY",
-      "datetime": "MM/DD/YYYY h:mm A",
-      "minutes": "min",
-      "seconds": "sec"
-    }
-  },
-  "navigation": {
-    "home": "Home",
-    "datasources": "Data Sources",
-    "conceptsets": "Concept Sets",
-    "cohortdefinitions": "Cohort Definitions",
-    "characterizations": "Characterizations",
-    "pathways": "Cohort Pathways",
-    "incidencerate": "Incidence Rates",
-    "profiles": "Profiles",
-    "estimation": "Estimation",
-    "prediction": "Prediction",
-    "jobs": "Jobs",
-    "configuration": "Configuration",
-    "feedback": "Feedback"
-  },
   "datatable": {
     "language": {
       "decimal": "",
@@ -46,10 +21,24 @@
         "next": "Next",
         "previous": "Previous"
       },
+      "buttons": {
+        "colvis": "Show columns",
+        "copy": "Copy"
+      },
       "aria": {
         "sortAscending": ": activate to sort column ascending",
         "sortDescending": ": activate to sort column descending"
       }
+    }
+  },
+  "format": {
+    "number": "# ###.##",
+    "date": {
+      "shortdate": "MM/dd",
+      "mediumdate": "MM/dd/YYYY",
+      "datetime": "MM/DD/YYYY h:mm A",
+      "minutes": "min",
+      "seconds": "sec"
     }
   },
   "executionStatus": {
@@ -63,47 +52,707 @@
       "STARTED": "STARTED"
     }
   },
-  "options": {
-    "atMost": "At most",
-    "exactly": "Exactly",
-    "atLeast": "At least",
-    "all": "All",
-    "before": "Before",
-    "after": "After",
-    "any": "Any",
-    "allEvents": "All events",
-    "earliestEvents": "Earliest event",
-    "latestEvents": "Latest event",
-    "yes": "Yes",
+  "common": {
+    "accessDenied": "Access denied",
+    "add": "Add",
+    "and": "and",
+    "cancel": "Cancel",
+    "close": "Close",
+    "configureAccess": "Configure access",
+    "configureAccessModal": {
+      "addWriteAccessToRole": "Add write access to role:",
+      "loadingAccessList": "Loading access list...",
+      "revoke": "Revoke",
+      "rolesWithWriteAccess": "Roles with write access:"
+    },
+    "copiedToClipboard": "Copied To Clipboard!",
+    "copy": "Copy",
+    "copyToClipboard": "Copy to clipboard",
+    "createACopy": "Create a copy",
+    "days": "days.",
+    "daysAbbr": "d",
+    "delete": "Delete",
+    "deselectAll": "Deselect All",
+    "download": "Download",
+    "excluded": "Excluded",
+    "export": "Export",
+    "import": "Import",
+    "included": "Included",
+    "loading": "Loading",
+    "loadingWithDots": "Loading...",
+    "max": "Max",
+    "median": "Median",
+    "min": "min",
     "no": "No",
+    "noChangesToPersist": "No changes to persist",
+    "none": "None",
+    "notEnoughPermissions": "Not enough permissions",
+    "or": "or",
+    "preview": "Preview",
+    "progress": "Progress",
+    "refresh": "Refresh",
+    "save": "Save",
+    "search": "Search",
+    "selectAll": "Select All",
+    "set": "Set",
+    "unsaved": "(unsaved)",
+    "unspecified": "UNSPECIFIED!",
+    "yes": "Yes') : ko.i18n('common.no",
+    "yesDescendant": "Yes (Descendant)",
+    "yesExact": "Yes (Exact)",
+    "yesParent": "Yes (Parent)"
+  },
+  "commonErrors": {
+    "noSources": "The current WebAPI has no sources defined.<br/>Please add one or more on <a href=\"#/configure\">configuration</a> page.",
+    "webapiConnectError": "Unable to connect to an instance of the WebAPI.<br/>Please contact your administrator to resolve this issue.",
+    "browserWarning": "Note that only Chrome browser newer than v.63 is officially supported",
+    "initFailed": "Application initialization failed"
+  },
+  "navigation": {
+    "characterizations": "Characterizations",
+    "cohortdefinitions": "Cohort Definitions",
+    "conceptsets": "Concept Sets",
+    "configuration": "Configuration",
+    "datasources": "Data Sources",
+    "estimation": "Estimation",
+    "feedback": "Feedback",
+    "home": "Home",
+    "incidencerate": "Incidence Rates",
+    "jobs": "Jobs",
+    "pathways": "Cohort Pathways",
+    "prediction": "Prediction",
+    "profiles": "Profiles",
+    "search": "Search"
+  },
+  "options": {
+    "after": "After",
+    "all": "all",
+    "allDrugSources": "All drug sources",
+    "allEvents": "all events",
+    "allVisitTypes": "All visit types",
+    "allVisits": "All visits",
+    "any": "any",
+    "atLeast": "at least",
+    "atMost": "at most",
+    "before": "Before",
+    "between": "between",
+    "class": "Class",
+    "contains": "containing",
+    "domains": "Domain",
+    "drugSource": "Drug Source",
+    "earliestEvents": "earliest event",
+    "endDate": "end date",
+    "endOfContinuousDrugExposure": "end of a continuous drug exposure",
+    "endOfContinuousObservation": "end of continuous observation",
+    "endsWith": "ending with",
+    "eventEnds": "event ends",
+    "eventStarts": "event starts",
+    "exactly": "exactly",
+    "fixedDurationRelativeToInitialEvent": "fixed duration relative to initial event",
+    "hasDescendantRecords": "Has Descendant Records",
+    "hasRecords": "Has Records",
+    "indexEndDate": "index end date",
+    "indexStartDate": "index start date",
+    "invalidReason": "Invalid Reason",
     "isAnyOf": "is any of",
     "isNotAnyOf": "is not any of",
-    "indexStartDate": "index start date",
-    "indexEndDate": "index end date",
-    "eventStarts": "event starts",
-    "eventEnds": "event ends"
+    "latestEvents": "latest event",
+    "mm": "Monthly",
+    "no": "No",
+    "notBetween": "not between",
+    "notContains": "not containing",
+    "notEndsWith": "not ending with",
+    "notStartsWith": "not starting with",
+    "periodType": "Period type",
+    "periods": "Periods",
+    "qq": "Quarterly",
+    "reports": "Reports",
+    "rollupUtilizationDrug": "Drugs",
+    "rollupUtilizationVisit": "Visits",
+    "rollups": "Rollups",
+    "standardConcept": "Standard Concept",
+    "startDate": "start date",
+    "startsWith": "starting with",
+    "vocabulary": "Vocabulary",
+    "ww": "Weekly",
+    "yes": "Yes",
+    "yy": "Yearly"
   },
   "components": {
-    "generateComponent": {
-      "generate": "Generate",
-      "generating": "Generating"
+    "authorship": {
+      "created": "created",
+      "modified": "modified",
+      "on": "on",
+      "byCreated": "by <%=createdBy%>",
+      "byModified": "by <%=modifiedBy%>"
     },
-    "textFilter": {
-      "startsWith": "Starting With",
-      "contains": "Containing",
-      "endsWith": "Ending With",
-      "notStartsWith": "Not Starting With",
-      "notContains": "Not Containing",
-      "notEndsWith": "Not Ending With"
+    "accessDenied": {
+      "forbidden": {
+        "message1": "You do not have access to this feature.",
+        "message2": "For more information on how to get access please contact the System Administrator."
+      },
+      "unauthenticated": {
+        "login": "log in",
+        "message": "This feature is protected. Please"
+      }
     },
-    "period": {
-      "starting": "starting",
-      "andEnding ": "and ending"
+    "atlasCohortEditor": {
+      "enterCohortPlaceholder": "Enter a cohort definition description here",
+      "importConceptSet": "Import Concept Set From Repository..."
     },
-    "inclusionRuleEditor": {
-      "unnamedCriteria": "Unnamed Criteria",
-      "copy": "Copy",
-      "delete": "Delete"
+    "cohortExpressionEditor": {
+      "addCensoringEvent": "Add Censoring Event...",
+      "addInitialEvent": "Add Initial Event...",
+      "addTrimmingOptions": "add trimming options...",
+      "censoringEvents": "Censoring Events:",
+      "cohortEntryEvents": "Cohort Entry Events",
+      "cohortEntryEventsText_1": "Events are recorded time-stamped observations for the persons",
+      "cohortEntryEventsText_2": "Events having any of the following criteria:",
+      "cohortEntryEventsText_3": "with continuous observation of at least",
+      "cohortEntryEventsText_4": "days before and",
+      "cohortEntryEventsText_5": "days after event index date",
+      "cohortEntryEventsText_6": "Limit initial events to:",
+      "cohortEntryEventsText_7": "per person.",
+      "cohortErasText_1": "Specify era collapse gap size:",
+      "cohortErasText_2": "Left censor cohort start dates to",
+      "cohortErasText_3": "Right censor cohort end dates to",
+      "cohortErasTitle": "Cohort Eras",
+      "cohortExit": "Cohort Exit",
+      "cohortExitText_1": "For all qualifying events",
+      "cohortExitText_2": "The qualifying initial event can be set to end after a fixed time period relative to the event start or end date",
+      "cohortExitText_3": "Criteria can be used to signal the end of an event.  If a censoring event is identified between a qualifying event's start and end date",
+      "cohortExitText_4": "Exit Cohort based on the following criteria:",
+      "cohortExitText_5": "No censoring events selected.",
+      "cohortExitTitle": "Cohort Exit",
+      "cohortExitTitle_1": "Event End Dates",
+      "cohortExitTitle_2": "Censoring Events",
+      "copyOf": "Copy of: ",
+      "days": "days",
+      "deleteCriteria": "Delete Criteria",
+      "eventPersistence": "Event Persistence:",
+      "inclusionCriteria": "Inclusion Criteria",
+      "inclusionCriteriaText": "The qualifying cohort will be defined as all persons who have an initial event",
+      "inclusionCriteriaText_1": "Limit qualifying events to:",
+      "inclusionCriteriaTitle": "Inclusion Criteria",
+      "indexMessage": "The index date refers to the event from the Cohort Entry criteria.",
+      "newInclusionCriteria": "New inclusion criteria",
+      "noCensoring": "No Censoring",
+      "removeRestriction": "Remove initial event restriction",
+      "restrictInitialEventsButton": "Restrict initial events",
+      "restrictInitialEventsTitle": "Restrict intial events to:",
+      "unnamedCriteria": "Unnamed Criteria"
+    },
+    "cohortExpressionViewer": {
+      "cohortExpressionViewerText_1": "People having any of the following:",
+      "cohortExpressionViewerText_10": "Limit qualifying cohort to:",
+      "cohortExpressionViewerText_11": "Censoring Events:",
+      "cohortExpressionViewerText_12": "Exit Cohort based on the following:",
+      "cohortExpressionViewerText_13": "Cohort Collapse Strategy:",
+      "cohortExpressionViewerText_14": "Collapse cohort by era with a gap size of ",
+      "cohortExpressionViewerText_15": "Inclusion Criteria #(<%=index%>): <%=name%>",
+      "cohortExpressionViewerText_2": "with continuous observation of at least",
+      "cohortExpressionViewerText_3": "days prior and ",
+      "cohortExpressionViewerText_4": "days after event index date",
+      "cohortExpressionViewerText_5": "and limit initial events to: ",
+      "cohortExpressionViewerText_6": "per person.",
+      "cohortExpressionViewerText_7": "For people matching the Primary Events",
+      "cohortExpressionViewerText_8": "Limit cohort of initial events to:",
+      "cohortExpressionViewerText_9": "Inclusion Rules",
+      "initialEventCohort": "Initial Event Cohort"
+    },
+    "conceptPicker": {
+      "addAndClose": "Add And Close",
+      "addButton": "Add",
+      "addSelected": "Add Selected",
+      "close": "Close",
+      "done": "Done",
+      "importButton": "Import",
+      "importConcepts": "Import Concepts",
+      "search": "Search",
+      "selectConcept": "Select Concept",
+      "waitMessage": "Please wait while the Vocabulary Provider initalizes..."
+    },
+    "conceptSetBuilder": {
+      "conceptSet": "Concept Set",
+      "delete": "Delete",
+      "export": "Export",
+      "exportConceptSetTitle": "Export Concept Set...",
+      "import": "Import",
+      "importConceptSetPlaceholder": "Import Concept Set",
+      "importConceptSetTitle": "Import Concept Set...",
+      "includedConcepts": "Included Concepts",
+      "load": "Load",
+      "mappedConcepts": "Mapped Concepts",
+      "newConceptSet": "New Concept Set",
+      "pleaseSelectCodesetToModify": "Please select codeset to modify...",
+      "removeSelected": "Remove Selected",
+      "selectConceptSet": "Select Concept Set...",
+      "unnamedConceptSet": "Unnamed Concept Set"
+    },
+    "conceptSetSaveModal": {
+      "conceptSetAlreadyExists": "Concept Set already exists",
+      "conceptSetNameLabel": "Concept Set Name:",
+      "conceptSetNamePlaceholder": "Concept Set Name",
+      "saveNewConceptSet": "Save New Concept Set"
+    },
+    "conceptSetSelector": {
+      "clearConceptSet": "Clear Concept Set",
+      "importConcept": "Import Concept Set",
+      "searchWithTripleDots": "Search..."
+    },
+    "conditionDeath": {
+      "addAttribute": "Add attribute...",
+      "anyDeath": "Any Death",
+      "conditionDeathText_1": "a death occurrence from",
+      "conditionDeathText_2": "occurrence start is:",
+      "conditionDeathText_3": "Death Source Concept is",
+      "conditionDeathText_4": "with age",
+      "conditionDeathText_5": "with a gender of:",
+      "conditionDeathText_6": "gender is any of:",
+      "deathType": "Death Type",
+      "indexDataText": "The index date refers to the death event of <%= conceptSetName %>."
+    },
+    "conditionDevice": {
+      "addAttribute": "Add attribute...",
+      "anyDevice": "Any Device",
+      "conditionDeviceText_1": "a device exposure of",
+      "conditionDeviceText_10": "with a Provider Specialty of:",
+      "conditionDeviceText_11": "with a Visit occurrence of:",
+      "conditionDeviceText_12": "gender is any of:",
+      "conditionDeviceText_13": "provider specialty is any of:",
+      "conditionDeviceText_14": "visit occurrence is any of:",
+      "conditionDeviceText_2": "for the first time in the person's history",
+      "conditionDeviceText_3": "occurrence start is:",
+      "conditionDeviceText_4": "occurrence end is:",
+      "conditionDeviceText_5": "with a Unique Device ID",
+      "conditionDeviceText_6": "with quantity",
+      "conditionDeviceText_7": "Device Source Concept is",
+      "conditionDeviceText_8": "with age",
+      "conditionDeviceText_9": "with a gender of:",
+      "deviceType": "Device Type",
+      "indexDataText": "The index date refers to the device exposure of <%= conceptSetName %>."
+    },
+    "conditionDose": {
+      "addAttribute": "Add attribute...",
+      "anyDoseEra": "Any Dose Era",
+      "anyDrug": "Any Drug",
+      "conditionDoseText_1": "a dose era of",
+      "conditionDoseText_10": "with a gender of:",
+      "conditionDoseText_11": "unit is any of:",
+      "conditionDoseText_12": "gender is any of:",
+      "conditionDoseText_2": "for the first time in the person's history",
+      "conditionDoseText_3": "era start is:",
+      "conditionDoseText_4": "era end is:",
+      "conditionDoseText_5": "with Unit:",
+      "conditionDoseText_6": "with dose value",
+      "conditionDoseText_7": "with era length",
+      "conditionDoseText_8": "with age in years at era start",
+      "conditionDoseText_9": "with age in years at era end",
+      "indexDataText": "The index date refers to the dose era of <%= conceptSetName %>."
+    },
+    "conditionDrug": {
+      "addAttribute": "Add attribute...",
+      "anyDrug": "Any Drug",
+      "conditionDrugText_1": "a drug era of",
+      "conditionDrugText_10": "with age in years at era end",
+      "conditionDrugText_11": "with a gender of:",
+      "conditionDrugText_12": "gender is any of:",
+      "conditionDrugText_2": "for the first time in the person's history",
+      "conditionDrugText_3": "era start is:",
+      "conditionDrugText_4": "era end is:",
+      "conditionDrugText_5": "with exposure count",
+      "conditionDrugText_6": "with gap days of",
+      "conditionDrugText_7": "days",
+      "conditionDrugText_8": "with era length",
+      "conditionDrugText_9": "with age in years at era start",
+      "indexDataText": "The index date refers to the drug era of <%= conceptSetName %>."
+    },
+    "conditionDrugExposure": {
+      "addAttribute": "Add attribute...",
+      "anyDrug": "Any Drug",
+      "conditionDrugExposureText_1": "a drug exposure of",
+      "conditionDrugExposureText_10": "with Effective Drug Dose",
+      "conditionDrugExposureText_11": "Dose Unit is:",
+      "conditionDrugExposureText_12": "with a Lot Number",
+      "conditionDrugExposureText_13": "Drug Source Concept is:",
+      "conditionDrugExposureText_14": "with age",
+      "conditionDrugExposureText_15": "with a gender of:",
+      "conditionDrugExposureText_16": "with a Provider Specialty of:",
+      "conditionDrugExposureText_17": "with a Visit occurrence of:",
+      "conditionDrugExposureText_18": "route concept is any of:",
+      "conditionDrugExposureText_19": "dose unit is any of:",
+      "conditionDrugExposureText_2": "for the first time in the person's history",
+      "conditionDrugExposureText_20": "gender is any of:",
+      "conditionDrugExposureText_21": "provider specialty is any of:",
+      "conditionDrugExposureText_22": "visit occurrence is any of:",
+      "conditionDrugExposureText_3": "occurrence start is:",
+      "conditionDrugExposureText_4": "occurrence end is:",
+      "conditionDrugExposureText_5": "with a Stop Reason",
+      "conditionDrugExposureText_6": "with Refills",
+      "conditionDrugExposureText_7": "with Quantity",
+      "conditionDrugExposureText_8": "with Days Supply",
+      "conditionDrugExposureText_9": "Route Concept is:",
+      "drugType": "Drug Type",
+      "indexDataText": "The index date refers to the drug exposure of <%= conceptSetName %>."
+    },
+    "conditionEra": {
+      "addAttribute": "Add attribute...",
+      "anyConditionButton": "Any Condition",
+      "attributeText_1": "for the first time in the person's history",
+      "attributeText_2": "era start is:",
+      "attributeText_3": "era end is:",
+      "attributeText_4": "with occurrence count",
+      "attributeText_5": "with era length",
+      "attributeText_6": "with age in years at era start",
+      "attributeText_7": "with age in years at era end",
+      "attributeText_8": "with a gender of:",
+      "attributeText_9": "days",
+      "criteriaText_1": "a condition era of",
+      "returnText_1": "The index date refers to the condition era of"
+    },
+    "conditionMeasurement": {
+      "addAttribute": "Add attribute...",
+      "anyMeasurement": "Any Measurement",
+      "conditionMeasurementText_1": "a measurement of",
+      "conditionMeasurementText_10": "with Range Low Ratio",
+      "conditionMeasurementText_11": "with Range High",
+      "conditionMeasurementText_12": "with Range High Ratio",
+      "conditionMeasurementText_13": "with an abnormal result",
+      "conditionMeasurementText_14": "Measurement Source Concept is",
+      "conditionMeasurementText_15": "with age",
+      "conditionMeasurementText_16": "with a gender of:",
+      "conditionMeasurementText_17": "with a Provider Specialty of:",
+      "conditionMeasurementText_18": "with a Visit of:",
+      "conditionMeasurementText_19": "measurement value operator is any of:",
+      "conditionMeasurementText_2": "for the first time in the person's history",
+      "conditionMeasurementText_20": "value as concept is any of:",
+      "conditionMeasurementText_21": "unit is any of:",
+      "conditionMeasurementText_22": "with lower range",
+      "conditionMeasurementText_23": "with lower range ratio",
+      "conditionMeasurementText_24": "with high range",
+      "conditionMeasurementText_25": "with high range ratio",
+      "conditionMeasurementText_26": "gender is any of:",
+      "conditionMeasurementText_27": "provider specialty is any of:",
+      "conditionMeasurementText_28": "visit occurrence is any of:",
+      "conditionMeasurementText_3": "occurrence start is:",
+      "conditionMeasurementText_5": "Measurement Value Operator is:",
+      "conditionMeasurementText_6": "with value as number",
+      "conditionMeasurementText_7": "Value as Concept is:",
+      "conditionMeasurementText_8": "Unit is:",
+      "conditionMeasurementText_9": "with Range Low",
+      "measurementType": "Measurement Type",
+      "indexDataText": "The index date refers to the measurement of <%= conceptSetName %>."
+    },
+    "conditionObservation": {
+      "addAttribute": "Add attribute...",
+      "anyObservation": "Any Observation",
+      "conditionObservationText_1": "an observation of",
+      "conditionObservationText_10": "with age",
+      "conditionObservationText_11": "with a gender of:",
+      "conditionObservationText_12": "with a Provider Specialty of:",
+      "conditionObservationText_13": "with a Visit occurrence of:",
+      "conditionObservationText_14": "value as concept is any of:",
+      "conditionObservationText_15": "qualifier is any of:",
+      "conditionObservationText_16": "unit is any of:",
+      "conditionObservationText_17": "gender is any of:",
+      "conditionObservationText_18": "provider specialty is any of:",
+      "conditionObservationText_19": "visit occurrence is any of:",
+      "conditionObservationText_2": "for the first time in the person's history",
+      "conditionObservationText_3": "occurrence start is:",
+      "conditionObservationText_4": "with Value as Number",
+      "conditionObservationText_5": "with Value as String",
+      "conditionObservationText_6": "with Value as Concept:",
+      "conditionObservationText_7": "with Qualifier:",
+      "conditionObservationText_8": "with Unit:",
+      "conditionObservationText_9": "Observation Source Concept is:",
+      "observationType": "Observation Type",
+      "indexDataText": "The index date refers to the observation of <%= conceptSetName %>."
+    },
+    "conditionObservationPeriod": {
+      "addAttribute": "Add attribute...",
+      "conditionObservationText_1": "observation periods with the following criteria:",
+      "conditionObservationText_10": "days.",
+      "conditionObservationText_11": "an observation period",
+      "conditionObservationText_12": "period type is any of:",
+      "conditionObservationText_2": "limited to the patients first observation period",
+      "conditionObservationText_3": "using specified period:",
+      "conditionObservationText_4": "observation period start is:",
+      "conditionObservationText_5": "observation period end is:",
+      "conditionObservationText_6": "Period Type is:",
+      "conditionObservationText_7": "with age in years at period start",
+      "conditionObservationText_8": "with age in years at period end",
+      "conditionObservationText_9": "with period duration"
+    },
+    "conditionOccurrence": {
+      "addAttribute": "Add attribute...",
+      "anyCondition": "Any Condition",
+      "conditionOccurrenceText_1": "a condition occurrence of",
+      "conditionOccurrenceText_10": "with a Visit occurrence of:",
+      "conditionOccurrenceText_11": "gender is any of:",
+      "conditionOccurrenceText_12": "provider specialty is any of:",
+      "conditionOccurrenceText_13": "visit occurrence is any of:",
+      "conditionOccurrenceText_2": "for the first time in the person's history",
+      "conditionOccurrenceText_3": "occurrence start is:",
+      "conditionOccurrenceText_4": "occurrence end is:",
+      "conditionOccurrenceText_5": "with a Stop Reason",
+      "conditionOccurrenceText_6": "Condition Source Concept is",
+      "conditionOccurrenceText_7": "with age",
+      "conditionOccurrenceText_8": "with a gender of:",
+      "conditionOccurrenceText_9": "with a Provider Specialty of:",
+      "conditionType": "Condition Type",
+      "indexDataText": "The index date refers to the condition occurrence of <%= conceptSetName %>."
+    },
+    "conditionPayerPlanPeriod": {
+      "addAttribute": "Add attribute...",
+      "anyPayer": "Any Payer",
+      "anyPayerSource": "Any Payer Source",
+      "anyPlan": "Any Plan",
+      "anyPlanSource": "Any Plan Source",
+      "anySponsor": "Any Sponsor",
+      "anySponsorSource": "Any Sponsor Source",
+      "anyStopReason": "Any Stop Reason",
+      "anyStopReasonSource": "Any Stop Reason Source",
+      "conditionPayerPlanText_1": "payer plan periods with the following criteria:",
+      "conditionPayerPlanText_10": "Payer Concept is",
+      "conditionPayerPlanText_11": "Plan Concept is",
+      "conditionPayerPlanText_12": "Sponsor Concept is",
+      "conditionPayerPlanText_13": "Stop Reason Concept is",
+      "conditionPayerPlanText_14": "Payer Source Concept is",
+      "conditionPayerPlanText_15": "Plan Source Concept is",
+      "conditionPayerPlanText_16": "Sponsor Source Concept is",
+      "conditionPayerPlanText_17": "Stop Reason Source Concept is",
+      "conditionPayerPlanText_18": "Note: Payer Plan Period criteria is only available in CDM v5.3 and later.",
+      "conditionPayerPlanText_19": "a payer plan period",
+      "conditionPayerPlanText_2": "limited to the patients first payer plan period",
+      "conditionPayerPlanText_20": "using specified period:",
+      "conditionPayerPlanText_21": "period start is",
+      "conditionPayerPlanText_22": "period end is",
+      "conditionPayerPlanText_23": "with age at start",
+      "conditionPayerPlanText_24": "with age at end",
+      "conditionPayerPlanText_25": "gender is any of:",
+      "conditionPayerPlanText_3": "with age at period start",
+      "conditionPayerPlanText_4": "with age at period end",
+      "conditionPayerPlanText_5": "with period duration",
+      "conditionPayerPlanText_6": "with a gender of:",
+      "conditionPayerPlanText_7": "using specified period:",
+      "conditionPayerPlanText_8": "payer plan period start is:",
+      "conditionPayerPlanText_9": "payer plan period end is:",
+      "indexDataText": "The index date refers to the payer plan period."
+    },
+    "conditionProcedureOccurrence": {
+      "addAttribute": "Add attribute...",
+      "anyProcedure": "Any Procedure",
+      "conditionProcedureOccurrenceText_1": "a procedure occurrence of",
+      "conditionProcedureOccurrenceText_10": "with a Visit occurrence of:",
+      "conditionProcedureOccurrenceText_11": "modifier is any of:",
+      "conditionProcedureOccurrenceText_12": "gender is any of:",
+      "conditionProcedureOccurrenceText_13": "provider specialty is any of:",
+      "conditionProcedureOccurrenceText_14": "visit occurrence is any of:",
+      "conditionProcedureOccurrenceText_2": "for the first time in the person's history",
+      "conditionProcedureOccurrenceText_3": "occurrence start is:",
+      "conditionProcedureOccurrenceText_4": "Modifier is:",
+      "conditionProcedureOccurrenceText_5": "with quantity",
+      "conditionProcedureOccurrenceText_6": "Procedure Source Concept is:",
+      "conditionProcedureOccurrenceText_7": "with age:",
+      "conditionProcedureOccurrenceText_8": "with a gender of:",
+      "conditionProcedureOccurrenceText_9": "with a Provider Specialty of:",
+      "procedureType": "Procedure Type",
+      "indexDataText": "The index date refers to the procedure of <%= conceptSetName %>."
+    },
+    "conditionSpecimen": {
+      "addAttribute": "Add attribute...",
+      "anySpecimen": "Any Specimen",
+      "conditionSpecimeText_1": "a specimen of",
+      "conditionSpecimeText_10": "with a gender of:",
+      "conditionSpecimeText_11": "unit is any of:",
+      "conditionSpecimeText_12": "anatomic site is any of:",
+      "conditionSpecimeText_13": "disease status is any of:",
+      "conditionSpecimeText_14": "gender is any of:",
+      "conditionSpecimeText_2": "for the first time in the person's history",
+      "conditionSpecimeText_3": "occurrence start is:",
+      "conditionSpecimeText_4": "with Quantity",
+      "conditionSpecimeText_5": "with Unit:",
+      "conditionSpecimeText_6": "with Anatomic Site:",
+      "conditionSpecimeText_7": "with Disease Status:",
+      "conditionSpecimeText_8": "with Source ID",
+      "conditionSpecimeText_9": "with age",
+      "specimenType": "Specimen Type",
+      "indexDataText": "The index date refers to the specimen of <%= conceptSetName %>."
+    },
+    "conditionVisit": {
+      "addAttribute": "Add attribute...",
+      "anyLocation": "Any Location",
+      "anyVisit": "Any Visit",
+      "conditionSpecimeText_1": "a visit occurrence of",
+      "conditionSpecimeText_10": "with a Place of Service of:",
+      "conditionSpecimeText_11": "with a Place of Service located in:",
+      "conditionSpecimeText_12": "with distance from a Place of Service to Patient",
+      "conditionSpecimeText_13": "with visit length",
+      "conditionSpecimeText_14": "gender is any of:",
+      "conditionSpecimeText_15": "provider specialty is any of:",
+      "conditionSpecimeText_2": "for the first time in the person's history",
+      "conditionSpecimeText_3": "occurrence start is:",
+      "conditionSpecimeText_4": "occurrence end is:",
+      "conditionSpecimeText_5": "Visit Source Concept is",
+      "conditionSpecimeText_6": "with visit duration",
+      "conditionSpecimeText_7": "with age",
+      "conditionSpecimeText_8": "with a gender of:",
+      "conditionSpecimeText_9": "with a Provider Specialty of:",
+      "visitType": "Visit Type",
+      "indexDataText": "The index date refers to the visit of <%= conceptSetName %>."
+    },
+    "criteriaGroup": {
+      "addAdditionalConstraint": "add additional constraint",
+      "addCriteria": "Add criteria to group...",
+      "and": "and",
+      "between": "between",
+      "criteriaGroupText_1": "restrict to the same visit occurrence",
+      "criteriaGroupText_2": "allow events from outside observation period",
+      "deleteCriteria": "Delete Criteria",
+      "deleteGroup": "Delete Group",
+      "followingCriteria": "of the following criteria:",
+      "having": "having",
+      "havingCapital": "Having",
+      "occurrencesOf": "occurrences of:",
+      "occurrenceOf": "occurrence of:",
+      "usingAll": "using all",
+      "usingDistinct": "using distinct",
+      "where": "where",
+      "with": "with",
+      "withFollowingCriteria": "with the following event criteria:",
+      "occurringWithinTheSameVisit": "occurring within the same visit"
+    },
+    "customEraStrategy": {
+      "customEraStrategyText_1": "Continuous Exposure Persistence:",
+      "customEraStrategyText_10": "Force drug exposure days suply to:",
+      "customEraStrategyText_11": "days.",
+      "customEraStrategyText_12": "This strategy creates a drug era from the codes found in the specified concept set. If the index event is found within an era",
+      "customEraStrategyText_13": "Use the era end date of",
+      "customEraStrategyText_14": "allowing",
+      "customEraStrategyText_15": "days between exposures",
+      "customEraStrategyText_16": "adding",
+      "customEraStrategyText_17": "days after exposure end",
+      "customEraStrategyText_18": "using days supply and exposure end date for exposure duration.",
+      "customEraStrategyText_19": "forcing drug exposure days suply to:",
+      "customEraStrategyText_2": "Specify a concept set that contains one or more drugs.  A drug era will be derived from all drug exposure events for any of the drugs within the concept set",
+      "customEraStrategyText_3": "Concept set containing the drug(s) of interest:",
+      "customEraStrategyText_4": "Persistence window: allow for a maximum of ",
+      "customEraStrategyText_5": "days between exposure records when inferring the era of persistence exposure",
+      "customEraStrategyText_6": "Surveillance window: add ",
+      "customEraStrategyText_7": "days to the end of the era of persistence exposure as an additional period of surveillance prior to cohort exit.",
+      "customEraStrategyText_8": "Use days supply and exposure end date for exposure duration. ",
+      "customEraStrategyText_9": "change",
+      "selectDrugConceptSet": "Select Drug Concept Set"
+    },
+    "cyclops": {
+      "controlEditor": {
+        "convergenceType": "Select the convergence type:",
+        "crossValidationSearchType": "Select the cross validation search type:",
+        "initialBound": "Initial bound:",
+        "lowerPrior": "Lower prior variance limit:",
+        "maxBoundCount": "Max bound count:",
+        "maxIterations": "Maximum iterations of Cyclops to attempt before returning a failed-to-converge error.",
+        "maxRelativeChange": "Maximum relative change in convergence criterion from successive iterations to achieve convergence.",
+        "nameOfExchangeableSamplingUnit": "Name of exchangeable sampling unit. Option <i>byPid</i> selects entire strata. Option <i>byRow</i> selects single rows. If set to <i>auto</i>",
+        "noiseLevel": "Noise level for Cyclops screen output:",
+        "numberOfRandomFolds": "Number of random folds to employ in cross validation:",
+        "numberOfRepetitions": "Number of repetitions of <%=num%>-fold cross validation:",
+        "numberOfSteps": "Number of steps:",
+        "resetAllCoefficients": "Reset all coefficients to 0 between model fits under cross-validation:",
+        "sizeMultiplier": "Size multiplier for active set:",
+        "startingVariance": "Starting variance for auto-search cross-validation; -1 = use estimate based on data:",
+        "umberOfRepetitionsOfData": "Number of repetitions of data for cross validation:",
+        "upperPrior": "Upper prior variance limit:",
+        "useTheKarush": "Use the Karush-Kuhn-Tucker conditions to limit search:"
+      },
+      "options": {
+        "auto": "Auto",
+        "gradient": "Gradient",
+        "grid": "Grid",
+        "hierarchical": "Hierarchical",
+        "lange": "Lange",
+        "laplace": "Laplace",
+        "mittal": "Mittal",
+        "noisy": "Noisy",
+        "none": "None",
+        "normal": "Normal",
+        "quiet": "Quiet",
+        "silent": "Silent"
+      },
+      "prior": {
+        "crossValidation": "Perform cross-validation to determine prior-variance:",
+        "distribution": "Specify the prior distribution:",
+        "distributionVariance": "Specify the prior distribution variance:",
+        "interceptCoefficient": "Force intercept coefficient into prior:",
+        "mapping": "Child-to-parent mapping for a hierarchical prior:",
+        "neighborhoods": "A list of first-order neighborhoods for a partially fused prior:",
+        "vector": "Specify a vector of numbers or covariate Ids to exclude from prior:"
+      }
+    },
+    "dateOffsetStrategy": {
+      "dateOffsetStrategyText_6": "Date Offset Exit Criteria",
+      "dateOffsetStrategyText_7": "This cohort defintion end date will be the index event's",
+      "dateOffsetStrategyText_8": "plus",
+      "dateOffsetStrategyText_1": "Fixed Duration Persistence:",
+      "dateOffsetStrategyText_2": "The event end date is derived from adding a number of days to the event's start or end date. If an offset is added to the event's start date",
+      "dateOffsetStrategyText_3": "Event date to offset from:",
+      "dateOffsetStrategyText_4": "Number of days offset:",
+      "dateOffsetStrategyText_5": "days"
+    },
+    "dateRange": {
+      "after": "after",
+      "and": "and",
+      "before": "before",
+      "between": "between",
+      "firstPlaceholder": "YYYY-MM-DD",
+      "notBetween": "not between",
+      "on": "on",
+      "onOrAfter": "on or after",
+      "onOrBefore": "on or Before"
+    },
+    "demographicCriteria": {
+      "addAttribute": "Add attribute...",
+      "demographicCriteriaText_1": "gender is any of:",
+      "demographicCriteriaText_2": "race is any of:",
+      "demographicCriteriaText_3": "ethnicity is any of:",
+      "occurrenceEnd": "occurrence end is:",
+      "occurrenceStart": "occurrence start is:",
+      "withAge": "with age",
+      "withEthnicity": "with a ethnicity of:",
+      "withGenderOf": "with a gender of:",
+      "withRaceOf": "with a race of:"
+    },
+    "endStrategyEditor": {
+      "eventWillPersistUntil": "Event will persist until:"
+    },
+    "endStrategyViewer": {
+      "endDateStrategy": "End Date Strategy",
+      "endStrategyViewerText_1": "No end date strategy selected. By default"
+    },
+    "evidencePairViewer": {
+      "evidencePairViewerText_1": "loading evidence pairs",
+      "evidencePairViewerText_2": "If CommonEvidenceModel has indicated there is product label information for the selected drug-condition pair (1 = true",
+      "evidencePairViewerText_3": "If the CommonEvidenceModel has listed a number of publications",
+      "evidencePairViewerText_4": "Click here for more information about this evidence list",
+      "evidencePairViewerText_5": "Hide details",
+      "evidencePairViewerText_6": "The concept set is not marked as valid to generate results. Please make sure this concept set contains only CONDITIONS or DRUGS."
+    },
+    "export": {
+      "button": "Export",
+      "progress": "export in progress"
+    },
+    "feasibilityAttritionReport": {
+      "attritionVisualization": "Attrition Visualization",
+      "inclusionRule": "Inclusion Rule",
+      "percentRemain": "% Remain",
+      "precentDiff": "% Diff"
+    },
+    "feasibilityIntersectReport": {
+      "inclusionRule": "Inclusion Rule",
+      "percentSatisfied": "% Satisfied",
+      "percentToGain": "% To-Gain",
+      "populationVisualization": "Population Visualization",
+      "rectSummary": "<%=size%> people (<%=percentage%>%)"
     },
     "feasibilityReportViewer": {
       "feasibilityReportViewerText_1": "Match Rate",
@@ -115,49 +764,77 @@
       "feasibilityReportViewerText_7": "Switch to intersect view",
       "feasibilityReportViewerText_8": "No inclusion rules specified for this cohort definition."
     },
-    "accessDenied": {
-      "forbidden": {
-        "message1": "You do not have access to this feature.",
-        "message2": "For more information on how to get access please contact the System Administrator."
-      },
-      "unauthenticated": {
-        "message": "This feature is protected. Please,",
-        "login": "log in"
+    "featureextraction": {
+      "covariateSettingsEditor": {
+        "age": "Age",
+        "ageGroups": "Age Groups",
+        "allTime": "All Time",
+        "anyTimePrior": "Any Time Prior",
+        "condition": "Condition",
+        "conditionGroup": "Condition Group",
+        "conditionPrimaryInpatient": "Condition - Primary Inpatient",
+        "demographics": "Demographics",
+        "device": "Device",
+        "distinctCount": "Distinct Count",
+        "domain": "Domain",
+        "drug": "Drug",
+        "drugGroup": "Drug Group",
+        "endDays": "End Days",
+        "eraStart": "Era Start",
+        "ethnicity": "Ethnicity",
+        "gender": "Gender",
+        "indexMonth": "Index Month",
+        "indexScoreType": "Index Score Type",
+        "indexYear": "Index Year",
+        "indexYearMonth": "Index<br/>Year & Month",
+        "longTerm": "Long Term",
+        "measurement": "Measurement",
+        "measurementRangeGroup": "Measurement - Range Group",
+        "measurementValue": "Measurement - Value",
+        "mediumTerm": "Medium Term",
+        "observation": "Observation",
+        "overlapping": "Overlapping",
+        "postObservationTime": "Post<br/>Observation Time",
+        "priorObservationTime": "Prior<br/>Observation Time",
+        "procedure": "Procedure",
+        "race": "Race",
+        "setTheIndexScoreCovariates": "Set the index score covariates",
+        "setTheTimeBoundCovariates": "Set the time bound covariates",
+        "setTheTimeBoundEraCovariates": "Set the time bound era covariates",
+        "setTheTimeWindows": "Set the time windows for the time bound covariates in days relative to the cohort index",
+        "shortTerm": "Short Term",
+        "timeBoundCovariates": "Time bound covariates",
+        "timeInCohort": "Time<br/>In Cohort",
+        "timeWindows": "Time Windows",
+        "visitConceptCount": "Visit - Concept Count",
+        "visitCount": "Visit - Count"
       }
     },
-    "cohort-definition-browser": {
-      "facets": {
-        "lastModified": "Last modified",
-        "author": "Author"
-      },
-      "table": {
-        "columns": {
-          "id": "ID",
-          "name": "Name",
-          "created": "Created",
-          "updated": "Updated",
-          "author": "Author"
-        }
-      }
-    },
-    "filter-panel": {
-      "title": "Filter panel",
+    "filterPanel": {
       "buttons": {
         "apply": "Apply",
         "clear": "Clear"
-      }
+      },
+      "title": "Filter panel"
     },
-    "export": {
-      "progress": "export in progress"
+    "generateComponent": {
+      "generate": "Generate",
+      "generating": "Generating..."
     },
     "import": {
       "button": "Import",
       "denied": "Import is not permitted",
       "progress": "import in progress"
     },
-    "linked-cohort-list": {
-      "defaultTitle": "Cohort definitions",
+    "inclusionRuleEditor": {
+      "copy": "Copy",
+      "delete": "Delete",
+      "ruleDescriptionPlaceholder": "enter an inclusion rule description",
+      "unnamedCriteria": "Unnamed Criteria"
+    },
+    "linkedCohortList": {
       "defaultNewItemLabel": "Import",
+      "defaultTitle": "Cohort definition",
       "dialog": {
         "title": "Choose a Cohort definition"
       },
@@ -165,389 +842,96 @@
         "actions": {
           "edit": "Edit cohort",
           "remove": "Remove"
-        },
-        "columns": {
-          "id": "ID",
-          "name": "Name"
         }
       }
     },
-    "linked-entity-list": {
+    "linkedEntityList": {
       "defaultNewItemLabel": "Import"
     },
-    "loading": "loading",
-    "modal-exit-message": {
-      "buttons": {
-        "copyToClipboard": "Copy To Clipboard"
-      },
-      "messages": {
-        "copiedToClipboard": "Copied To Clipboard!"
+    "locationRegion": {
+      "anyLocationRegion": "Any Location region",
+      "criteria": {
+        "of": "a location region of",
+        "correlatedCriteria": {
+          "option": {
+            "description": "Apply criteria using the location region as the index event",
+            "text": "Add Nested Criteria..."
+          }
+        },
+        "startDate": {
+          "option": {
+            "description": "Filter Locations by date when Person started living there",
+            "text": "Add Start Date Criteria..."
+          },
+          "text": "start is:"
+        },
+        "endDate": {
+          "option": {
+            "description": "Filter Locations by date when Person finished living there",
+            "text": "Add End Date Criteria..."
+          },
+          "text": "end is:"
+        },
+        "indexData": {
+          "text": "The index date refers to the location region of <%= conceptSetName %>."
+        }
       }
     },
-    "user-bar": {
+    "multiInput": {
+      "action": "Action",
+      "add": "Add",
+      "remove": "Remove"
+    },
+    "navigateControls": {
+      "navigateControlsText_1": "Common Evidence Model"
+    },
+    "numericRange": {
+      "between": "Between",
+      "equalTo": "Equal To",
+      "greaterOrEqualTo": "Greater or Equal To",
+      "greaterThan": "Greater Than",
+      "lessOrEqualTo": "Less or Equal To",
+      "lessThan": "Less Than",
+      "notBetween": "Not Between"
+    },
+    "period": {
+      "andEnding": "and ending",
+      "periodText_1": "Note: only observation periods that encompass the start and end dates will be used.",
+      "starting": "starting"
+    },
+    "selectSourcesBtn": {
+      "generate": "Generate",
+      "pickAtLeastOneSourceAlert": "Pick at least one source to generate"
+    },
+    "textFilter": {
+      "contains": "Containing",
+      "endsWith": "Ending With",
+      "notContains": "Not Containing",
+      "notEndsWith": "Not Ending With",
+      "notStartsWith": "Not Starting With",
+      "startsWith": "Starting With"
+    },
+    "userBar": {
       "signin": "Sign In",
       "signout": "Sign Out"
     },
     "welcome": {
       "close": "Close",
-      "loggedIn": "Logged in as '<%= login %>'",
-      "loggedInExp": "Logged in as '<%= login %>' (exp: <%= expiration %>)",
+      "loggedIn": "Logged in as '<%=login%>",
+      "loggedInExp": "Logged in as '<%=login%>' (exp: <%=expiration%>)",
       "messages": {
         "badCredentials": "Bad credentials",
-        "loginFailed": "Login failed",
         "expired": "Your session has expired. Please login again.",
+        "loginFailed": "Login failed",
         "refresh": "Your session has expired. Please refresh a page to continue."
       },
+      "password": "Password",
       "runas": "Run as",
-      "signin-with": "Sign In with:",
+      "signinWith": "Sign In with:",
       "signout": "Sign Out",
       "submit": "Submit",
       "username": "Username",
       "wait": "Please wait..."
-    },
-    "atlasCohortEditor": {
-      "enterCohortPlaceholder": "Enter a cohort definition description here",
-      "importConceptSet": "Import Concept Set From Repository..."
-    },
-    "cohortExpressionEditor": {
-      "cohortEntryEvents": "Cohort Entry Events",
-      "cohortEntryEventsText_1": "'Events are recorded time-stamped observations for the persons, such as drug exposures, conditions, procedures, measurements and visits. All events have a start date and end date, though some events may have a start date and end date with the same value (such as procedures or measurements).'",
-      "inclusionCriteria": "Inclusion Criteria",
-      "inclusionCriteriaText": "The qualifying cohort will be defined as all persons who have an initial event, satisfy the initial event inclusion criteria, and fulfill all additional qualifying inclusion criteria. Each qualifying inclusion criteria will be evaluated to determine the impact of the criteria on the attrition of persons from the initial cohort.",
-      "cohortExit": "Cohort Exit",
-      "cohortExitText_1": "For all qualifying events, there must be a specification of when each event ends presence in the cohort. By default, an event ends at the end of the observation period containing the qualifying initial event, but event end dates may be also be specified:",
-      "cohortExitTitle_1": "Event End Dates",
-      "cohortExitText_2": "The qualifying initial event can be set to end after a fixed time period relative to the event start or end date, or the end date can be based on the end of a continuous exposure to a set of drugs identified by a concept set.",
-      "cohortExitTitle_2": "Censoring Events",
-      "cohortExitText_3": "Criteria can be used to signal the end of an event.  If a censoring event is identified between a qualifying event's start and end date, the date of the censoring event will be used as the exit date.",
-      "cohortEntryEventsText_2": "Events having any of the following criteria:",
-      "addInitialEvent": "Add Initial Event",
-      "deleteCriteria": "Delete Criteria",
-      "cohortEntryEventsText_3": "with continuous observation of at least",
-      "cohortEntryEventsText_4": "days before and",
-      "cohortEntryEventsText_5": "days after event index date",
-      "cohortEntryEventsText_6": "Limit initial events to:",
-      "cohortEntryEventsText_7": "per person.",
-      "restrictInitialEventsTitle": "Restrict intial events to:",
-      "removeRestriction": "Remove initial event restriction",
-      "restrictInitialEventsButton": "Restrict initial events",
-      "inclusionCriteriaTitle": "Inclusion Criteria",
-      "newInclusionCriteria": "New inclusion criteria",
-      "inclusionCriteriaText_1": "Limit qualifying events to:",
-      "cohortExitTitle": "Cohort Exit",
-      "eventPersistence": "Event Persistence:",
-      "censoringEvents": "Censoring Events:",
-      "cohortExitText_4": "Exit Cohort based on the following criteria:",
-      "addCensoringEvent": "Add Censoring Event",
-      "cohortExitText_5": "No censoring events selected.",
-      "cohortErasTitle": "Cohort Eras",
-      "cohortErasText_1": "Specify era collapse gap size:",
-      "cohortErasText_2": "Left censor cohort start dates to",
-      "cohortErasText_3": "Right censor cohort end dates to",
-      "addTrimmingOptions": "add trimming options..."
-    },
-    "conditionEra": {
-      "criteriaText_1": "a condition era of",
-      "addAttribute": "Add attribute...",
-      "attributeText_1": "for the first time in the person's history",
-      "attributeText_2": "era start is:",
-      "attributeText_3": "era end is:",
-      "attributeText_4": "with occurrence count",
-      "attributeText_5": "with era length",
-      "attributeText_6": "with age in years at era start",
-      "attributeText_7": "with age in years at era end",
-      "attributeText_8": "with a gender of:",
-      "attributeText_9": "days",
-      "anyConditionButton": "Any Condition",
-      "returnText_1": "The index date refers to the condition era of"
-    },
-    "conditionOccurrence": {
-      "conditionOccurrenceText_1": "a condition occurrence of",
-      "addAttribute": "Add attribute...",
-      "anyCondition": "Any Condition",
-      "conditionType": "Condition Type",
-      "conditionOccurrenceText_2": "for the first time in the person's history",
-      "conditionOccurrenceText_3": "occurrence start is:",
-      "conditionOccurrenceText_4": "occurrence end is:",
-      "conditionOccurrenceText_5": "with a Stop Reason",
-      "conditionOccurrenceText_6": "Condition Source Concept is",
-      "conditionOccurrenceText_7": "with age",
-      "conditionOccurrenceText_8": "with a gender of:",
-      "conditionOccurrenceText_9": "with a Provider Specialty of:",
-      "conditionOccurrenceText_10": "with a Visit occurrence of:"
-    },
-    "conditionDeath": {
-      "anyDeath": "Any Death",
-      "addAttribute": "Add attribute...",
-      "deathType": "Death type",
-      "conditionDeathText_1": "a death occurrence from",
-      "conditionDeathText_2": "occurrence start is:",
-      "conditionDeathText_3": "Death Source Concept is",
-      "conditionDeathText_4": "with age",
-      "conditionDeathText_5": "with a gender of:"
-    },
-    "conditionDevice": {
-      "anyDevice": "Any Device",
-      "addAttribute": "Add attribute...",
-      "deviceType": "Device type",
-      "conditionDeviceText_1": "a device exposure of",
-      "conditionDeviceText_2": "for the first time in the person's history",
-      "conditionDeviceText_3": "occurrence start is:",
-      "conditionDeviceText_4": "occurrence end is:",
-      "conditionDeviceText_5": "with a Unique Device ID",
-      "conditionDeviceText_6": "with quantity",
-      "conditionDeviceText_7": "Device Source Concept is",
-      "conditionDeviceText_8": "with age",
-      "conditionDeviceText_9": "with a gender of:",
-      "conditionDeviceText_10": "with a Provider Specialty of:",
-      "conditionDeviceText_11": "with a Visit occurrence of:"
-    },
-    "conditionDose": {
-      "anyDrug": "Any Drug",
-      "addAttribute": "Add attribute...",
-      "conditionDoseText_1": "a dose era of",
-      "conditionDoseText_2": "for the first time in the person's history",
-      "conditionDoseText_3": "era start is:",
-      "conditionDoseText_4": "era end is:",
-      "conditionDoseText_5": "with Unit:",
-      "conditionDoseText_6": "with dose value",
-      "conditionDoseText_7": "with era length",
-      "conditionDoseText_8": "with age in years at era start",
-      "conditionDoseText_9": "with age in years at era end",
-      "conditionDoseText_10": "with a gender of:"
-    },
-    "conditionDrug": {
-      "anyDrug": "Any Drug",
-      "addAttribute": "Add attribute...",
-      "conditionDrugText_1": "a drug era of",
-      "conditionDrugText_2": "for the first time in the person's history",
-      "conditionDrugText_3": "era start is:",
-      "conditionDrugText_4": "era end is:",
-      "conditionDrugText_5": "with exposure count",
-      "conditionDrugText_6": "with gap days of",
-      "conditionDrugText_7": "days",
-      "conditionDrugText_8": "with era length",
-      "conditionDrugText_9": "with age in years at era start",
-      "conditionDrugText_10": "with age in years at era end",
-      "conditionDrugText_11": "with a gender of:"
-    },
-    "conditionDrugExposure": {
-      "anyDrug": "Any Drug",
-      "addAttribute": "Add attribute...",
-      "drugType": "Drug type",
-      "conditionDrugExposureText_1": "a drug exposure of",
-      "conditionDrugExposureText_2": "for the first time in the person's history",
-      "conditionDrugExposureText_3": "occurrence start is:",
-      "conditionDrugExposureText_4": "occurrence end is:",
-      "conditionDrugExposureText_5": "with a Stop Reason",
-      "conditionDrugExposureText_6": "with Refills",
-      "conditionDrugExposureText_7": "with Quantity",
-      "conditionDrugExposureText_8": "with Days Supply",
-      "conditionDrugExposureText_9": "Route Concept is:",
-      "conditionDrugExposureText_10": "with Effective Drug Dose",
-      "conditionDrugExposureText_11": "Dose Unit is:",
-      "conditionDrugExposureText_12": "with a Lot Number",
-      "conditionDrugExposureText_13": "Drug Source Concept is:",
-      "conditionDrugExposureText_14": "with age",
-      "conditionDrugExposureText_15": "with a gender of:",
-      "conditionDrugExposureText_16": "with a Provider Specialty of:",
-      "conditionDrugExposureText_17": "with a Visit occurrence of:"
-    },
-    "conditionMeasurement": {
-      "anyMeasurement": "Any Measurement",
-      "addAttribute": "Add attribute...",
-      "measurementType": "Measurement type",
-      "conditionMeasurementText_1": "a measurement of",
-      "conditionMeasurementText_2": "for the first time in the person's history",
-      "conditionMeasurementText_3": "occurrence start is:",
-      "conditionMeasurementText_5": "Measurement Value Operator is:",
-      "conditionMeasurementText_6": "with value as number",
-      "conditionMeasurementText_7": "Value as Concept is:",
-      "conditionMeasurementText_8": "Unit is:",
-      "conditionMeasurementText_9": "with Range Low",
-      "conditionMeasurementText_10": "with Range Low Ratio",
-      "conditionMeasurementText_11": "with Range High",
-      "conditionMeasurementText_12": "with Range High Ratio",
-      "conditionMeasurementText_13": "with an abnormal result",
-      "conditionMeasurementText_14": "Measurement Source Concept is",
-      "conditionMeasurementText_15": "with age",
-      "conditionMeasurementText_16": "with a gender of:",
-      "conditionMeasurementText_17": "with a Provider Specialty of:",
-      "conditionMeasurementText_18": "with a Visit of:"
-    },
-    "conditionObservation": {
-      "anyObservation": "Any Observation",
-      "addAttribute": "Add attribute...",
-      "observationType": "Observation type",
-      "conditionObservationText_1": "an observation of",
-      "conditionObservationText_2": "for the first time in the person's history",
-      "conditionObservationText_3": "occurrence start is:",
-      "conditionObservationText_4": "with Value as Number",
-      "conditionObservationText_5": "with Value as String",
-      "conditionObservationText_6": "with Value as Concept:",
-      "conditionObservationText_7": "with Qualifier:",
-      "conditionObservationText_8": "with Unit:",
-      "conditionObservationText_9": "Observation Source Concept is:",
-      "conditionObservationText_10": "with age",
-      "conditionObservationText_11": "with a gender of:",
-      "conditionObservationText_12": "with a Provider Specialty of:",
-      "conditionObservationText_13": "with a Visit occurrence of:"
-    },
-    "conditionObservationPeriod": {
-      "addAttribute": "Add attribute...",
-      "conditionObservationText_1": "observation periods with the following criteria:",
-      "conditionObservationText_2": "limited to the patients first observation period",
-      "conditionObservationText_3": "using specified period:",
-      "conditionObservationText_4": "observation period start is:",
-      "conditionObservationText_5": "observation period end is:",
-      "conditionObservationText_6": "Period Type is:",
-      "conditionObservationText_7": "with age in years at period start",
-      "conditionObservationText_8": "with age in years at period end",
-      "conditionObservationText_9": "with period duration",
-      "conditionObservationText_10": "days."
-    },
-    "conditionPayerPlanPeriod": {
-      "anyPayer": "Any Payer",
-      "anyPlan": "Any Plan",
-      "anySponsor": "Any Sponsor",
-      "anyStopReason": "Any Stop Reason",
-      "anyPayerSource": "Any Payer Source",
-      "anyPlanSource": "Any Plan Source",
-      "anySponsorSource": "Any Sponsor Source",
-      "anyStopReasonSource": "Any Stop Reason Source",
-      "addAttribute": "Add attribute...",
-      "conditionPayerPlanText_1": "payer plan periods with the following criteria:",
-      "conditionPayerPlanText_2": "limited to the patients first payer plan period",
-      "conditionPayerPlanText_3": "with age at period start",
-      "conditionPayerPlanText_4": "with age at period end",
-      "conditionPayerPlanText_5": "with period duration",
-      "conditionPayerPlanText_6": "with a gender of:",
-      "conditionPayerPlanText_7": "using specified period",
-      "conditionPayerPlanText_8": "payer plan period start is:",
-      "conditionPayerPlanText_9": "payer plan period end is:",
-      "conditionPayerPlanText_10": "Payer Concept is",
-      "conditionPayerPlanText_11": "Plan Concept is",
-      "conditionPayerPlanText_12": "Sponsor Concept is",
-      "conditionPayerPlanText_13": "Stop Reason Concept is",
-      "conditionPayerPlanText_14": "Payer Source Concept is",
-      "conditionPayerPlanText_15": "Plan Source Concept is",
-      "conditionPayerPlanText_16": "Sponsor Source Concept is",
-      "conditionPayerPlanText_17": "Stop Reason Source Concept is",
-      "conditionPayerPlanText_18": "Note: Payer Plan Period criteria is only available in CDM v5.3 and later."
-    },
-    "conditionProcedureOccurrence": {
-      "addAttribute": "Add attribute...",
-      "anyProcedure": "Any Procedure",
-      "procedureType": "Procedure Type",
-      "conditionProcedureOccurrenceText_1": "a procedure occurrence of",
-      "conditionProcedureOccurrenceText_2": "for the first time in the person's history",
-      "conditionProcedureOccurrenceText_3": "occurrence start is:",
-      "conditionProcedureOccurrenceText_4": "Modifier is:",
-      "conditionProcedureOccurrenceText_5": "with quantity",
-      "conditionProcedureOccurrenceText_6": "Procedure Source Concept is:",
-      "conditionProcedureOccurrenceText_7": "with age:",
-      "conditionProcedureOccurrenceText_8": "with a gender of:",
-      "conditionProcedureOccurrenceText_9": "with a Provider Specialty of:",
-      "conditionProcedureOccurrenceText_10": "with a Visit occurrence of:"
-    },
-    "conditionSpecimen": {
-      "addAttribute": "Add attribute...",
-      "anySpecimen": "Any Specimen",
-      "specimenType": "Specimen Type",
-      "conditionSpecimeText_1": "a specimen of",
-      "conditionSpecimeText_2": "for the first time in the person's history",
-      "conditionSpecimeText_3": "occurrence start is:",
-      "conditionSpecimeText_4": "with Quantity",
-      "conditionSpecimeText_5": "with Unit:",
-      "conditionSpecimeText_6": "with Anatomic Site:",
-      "conditionSpecimeText_7": "with Disease Status:",
-      "conditionSpecimeText_8": "with Source ID",
-      "conditionSpecimeText_9": "with age",
-      "conditionSpecimeText_10": "with a gender of:"
-    },
-    "conditionVisit": {
-      "addAttribute": "Add attribute...",
-      "anyVisit": "Any visit",
-      "visitType": "Visit Type",
-      "anyLocation": "Any Location",
-      "conditionSpecimeText_1": "a visit occurrence of",
-      "conditionSpecimeText_2": "for the first time in the person's history",
-      "conditionSpecimeText_3": "occurrence start is:",
-      "conditionSpecimeText_4": "occurrence end is:",
-      "conditionSpecimeText_5": "Visit Source Concept is",
-      "conditionSpecimeText_6": "with visit duration",
-      "conditionSpecimeText_7": "with age",
-      "conditionSpecimeText_8": "with a gender of:",
-      "conditionSpecimeText_9": "with a Provider Specialty of:",
-      "conditionSpecimeText_10": "with a Place of Service of:",
-      "conditionSpecimeText_11": "with a Place of Service located in:",
-      "conditionSpecimeText_12": "with distance from a Place of Service to Patient"
-    },
-    "dateRange": {
-      "before": "Before",
-      "onOrBefore": "On or Before",
-      "on": "On",
-      "after": "After",
-      "onOrAfter": "On or After",
-      "between": "Between",
-      "notBetween": "Not Between",
-      "and": "and",
-      "placeholder": "YYYY-MM-DD"
-    },
-    "numericRange": {
-      "lessThan": "Less Than",
-      "lessOrEqualTo": "Less Or Equal To",
-      "equalTo": "EqualTo",
-      "greaterThan": "Greater Than",
-      "greaterOrEqualTo": "Greater or Equal To",
-      "between": "Between",
-      "notBetween": "Not Between"
-    },
-    "conceptPicker": {
-      "addButton": "Add",
-      "importButton": "Import",
-      "importConcepts": "Import Concepts",
-      "done": "Done",
-      "selectConcept": "Select concept",
-      "search": "Search",
-      "waitMessage": "Please wait while the Vocabulary Provider initalizes..."
-    },
-    "criteriaGroup": {
-      "having": "having",
-      "followingCriteria": "of the following criteria:",
-      "addCriteria": "Add criteria to group...",
-      "withFollowingCriteria": "with the following event criteria:",
-      "deleteCriteria": "Delete Criteria",
-      "deleteGroup": "Delete Group",
-      "with": "with",
-      "usingDistinct": "using distinct",
-      "usingAll": "using all",
-      "occurrencesOf": "occurrences of:",
-      "where": "where",
-      "between": "between",
-      "and": "and",
-      "addAdditionalConstraint": "add additional constraint",
-      "criteriaGroupText_1": "restrict to the same visit occurrence",
-      "criteriaGroupText_2": "allow events from outside observation period"
-    },
-    "customEraStrategy": {
-      "customEraStrategyText_1": "Continuous Exposure Persistence:",
-      "customEraStrategyText_2": "Specify a concept set that contains one or more drugs.  A drug era will be derived from all drug exposure events for any of the drugs within the concept set, using the specified persistence window as a maximum allowable gap in days between successive exposure events and adding a specified surveillance window to the final exposure event.  If no exposure event end date is provided, then an exposure event end date is inferred to be event start date + days supply in cases when days supply is available or event start date + 1 day otherwise. This event persistence assures that the cohort end date will be no greater than the drug era end date.",
-      "customEraStrategyText_3": "Concept set containing the drug(s) of interest:",
-      "customEraStrategyText_4": "Persistence window:  allow for a maximum of",
-      "customEraStrategyText_5": "Surveillance window: add ",
-      "customEraStrategyText_6": "days to the end of the era of persistence exposure as an additional period of surveillance prior to cohort exit.",
-      "customEraStrategyText_7": "Use days supply and exposure end date for exposure duration.",
-      "customEraStrategyText_8": "change",
-      "customEraStrategyText_9": "Force drug exposure days suply to: ",
-      "customEraStrategyText_10": "days."
-    },
-    "dateOffsetStrategy": {
-      "dateOffsetStrategyText_1": "Fixed Duration Persistence:",
-      "dateOffsetStrategyText_2": "The event end date is derived from adding a number of days to the event's start or end date. If an offset is added to the event's start date, all cohort episodes will have the same fixed duration (subject to further censoring).  If an offset is added to the event's end date, persons in the cohort may have varying cohort duration times due to the varying event durations (such as eras of persistent drug exposure or visit length of stay).  This event persistence assures that the cohort end date will be no greater than the selected index event date, plus the days offset.",
-      "dateOffsetStrategyText_3": "Event date to offset from:",
-      "dateOffsetStrategyText_4": "Number of days offset:",
-      "dateOffsetStrategyText_5": "days"
     },
     "windowInput": {
       "windowInputText_1": "All",
@@ -562,256 +946,640 @@
       "windowedCriteriaText_5": "restrict to the same visit occurrence",
       "windowedCriteriaText_6": "ignore observation period"
     },
-    "demographicCriteria": {
-      "addAttribute": "Add attribute...",
-      "withAge": "with age",
-      "withGenderOf": "with a gender of:",
-      "withRaceOf": "with a race of:",
-      "withEthnicity": "with a ethnicity of:",
-      "occurrenceStart": "occurrence start is:",
-      "occurrenceEnd": "occurrence end is:"
+    "common": {
+      "addAttribute": "Add Attribute..."
     }
   },
   "facets": {
+    "caption": {
+      "analysisName": "Analysis Name",
+      "author": "Author",
+      "class": "Class",
+      "comparatorCohorts": "Comparator Cohorts",
+      "created": "Created",
+      "domain": "Domain",
+      "drugLabelExists": "Suggested Negative Control",
+      "errorMsg": "Error Msg",
+      "foundInProductLabelOrPublications": "Found in Product Label Or Publications",
+      "foundInPublications": "Found in Publications",
+      "foundProductLabel": "Found on Product Label",
+      "hasDescendantRecords": "Has Descendant Records",
+      "hasRecords": "Has Records",
+      "invalidReason": "Invalid Reason",
+      "lastModified": "Last Modified",
+      "mappingType": "Mapping Type",
+      "match": "Match",
+      "modelName": "Model Name",
+      "outcomeCohorts": "Outcome Cohorts",
+      "provider": "Provider",
+      "riskWindow": "Risk Window",
+      "signalInFaers": "Signal in FAERS",
+      "source": "Source",
+      "standardConcept": "Standard Concept",
+      "startDate": "Start date",
+      "targetCohorts": "Target Cohorts",
+      "type": "Type",
+      "updated": "Updated",
+      "userSpecified": "User Specified",
+      "vocabulary": "Vocabulary"
+    },
     "date": {
       "justNow": "Just Now",
-      "within24Hours": "Within 24 Hours",
-      "thisWeek": "This Week",
       "lastWeek": "Last Week",
-      "others": "2+ Weeks Ago"
+      "other": "2+ Weeks Ago",
+      "others": "2+ Weeks Ago",
+      "thisWeek": "This Week",
+      "within24Hours": "Within 24 Hours"
+    },
+    "match": {
+      "both": "Both",
+      "only1": "1 Only",
+      "only2": "2 Only"
+    },
+    "type": {
+      "preset": "Preset",
+      "criteriaSet": "Criteria set",
+      "custom": "custom"
     }
   },
+  "columns": {
+    "action": "Action",
+    "actions": "Actions",
+    "adLdapUsername": "AD/LDAP username",
+    "adjustmentStrategy": "Adjustment Strategy",
+    "allowed": "Allowed cost",
+    "allowedChargedRatio": "Allowed /Charged",
+    "allowedPmPm": "Allowed cost PMPM",
+    "analysis": "Analysis",
+    "analysisId": "Anaylsis Id",
+    "analysisName": "Analysis Name",
+    "ancestors": "Ancestors",
+    "atlasLogin": "Atlas Login",
+    "atlasRole": "Atlas role",
+    "atlasRoles": "Atlas roles",
+    "author": "Author",
+    "avg": "Avg",
+    "avgValue": "Avg",
+    "binary": "Binary",
+    "broadConcept": "Broad Concept",
+    "charged": "Charged cost",
+    "chargedPmPm": "Charged cost PMPM",
+    "checkConnection": "Check connection",
+    "class": "Class",
+    "code": "Code",
+    "comparator": "Comparator",
+    "comparatorCohortName": "Comparator Cohort Name",
+    "comparatorId": "Comparator Id",
+    "conceptCode": "Concept Code",
+    "conceptId": "Concept Id",
+    "conceptName": "Concept Name",
+    "conditionConceptId": "Condition Concept Id",
+    "conditionConceptName": "Condition Concept Name",
+    "copy": "Copy",
+    "count": "Count",
+    "countValue": "Count Value",
+    "covariate": "Covariate",
+    "covariateId": "Covariate Id",
+    "covariateName": "Covariate Name",
+    "covariateSettings": "Covariate Settings",
+    "created": "Created",
+    "date": "Date",
+    "daysSupplyAvg": "Avg. Days of Supply",
+    "daysSupplyPer1000PerYear": "Days of Supply /1K /Year",
+    "daysSupplyTotal": "Days of Supply",
+    "descendants": "Descendants",
+    "description": "Description",
+    "design": "Design",
+    "dialect": "Dialect",
+    "distance": "Distance",
+    "domain": "Domain",
+    "drc": "DRC",
+    "drugClass": "Concept class",
+    "drugConceptId": "Drug Concept Id",
+    "drugConceptName": "Drug Concept Name",
+    "drugId": "OMOP Concept",
+    "drugInducedConcept": "Drug Induced Concept",
+    "drugLabelExists": "Drug Label Exists",
+    "drugName": "Drug",
+    "drugVocabularyId": "Concept vocabulary",
+    "duration": "Duration",
+    "enabled": "Enabled",
+    "endDate": "End Date",
+    "endDay": "End Day",
+    "ends": "Ends",
+    "evidence": "Evidence",
+    "evidenceSource": "Evidence Source",
+    "exclCovariates": "Excl Covariates",
+    "exclude": "Exclude",
+    "excluded": "Excluded",
+    "execute": "Execute",
+    "executionId": "Execution Id",
+    "explore": "Explore",
+    "exposurePct": "Percent Exposed",
+    "exposureAvg": "Average Exposure Years per 1,000 persons",
+    "exposureTotal": "Total Exposure in Years",
+    "faersCountAncestor": "FAERS Count (Ancestor Concept Match)",
+    "faersCountDescendant": "FAERS Count (Descendant Concept Match)",
+    "faersCountExact": "FAERS Count (Exact Concept Match)",
+    "faersCountParent": "FAERS Count (Parent Concept Match)",
+    "finished": "Finished",
+    "firstExposureOnly": "First Exposure Only",
+    "groupName": "Group name",
+    "id": "Id",
+    "incidence": "Incidence",
+    "inclCovariates": "Incl Covariates",
+    "includeAllOutcomes": "Include All Outcomes",
+    "included": "Included",
+    "includedUsers": "Included users",
+    "indicatedContraindicated": "Indicated / Contraindicated",
+    "jobName": "Job Name",
+    "lastExecuted": "Last executed",
+    "lengthOfStayAvg": "Avg. Days of Stay",
+    "lengthOfStayTotal": "Days of Stay",
+    "linkout": "Linkout",
+    "login": "Login",
+    "mapped": "Mapped",
+    "mappingType": "Mapping Type",
+    "match": "Match",
+    "max": "Max",
+    "median": "Median",
+    "message": "Message",
+    "min": "Min",
+    "minimumTimeAtRisk": "Minimum Time At Risk",
+    "model": "Model",
+    "modelName": "Model Name",
+    "modelSettings": "Model Settings",
+    "modified": "Modified",
+    "name": "Name",
+    "ncOutcomes": "NC Outcomes",
+    "nextExecution": "Next execution",
+    "no": "No",
+    "notPrevalent": "Not Prevalent",
+    "optimizedOut": "Optimized Out",
+    "options": "Options",
+    "outcomeCohortName": "Outcome Cohort Name",
+    "outcomeId": "Outcome Id",
+    "outcomeModel": "Outcome Model",
+    "outcomeName": "Outcome Cohort Name",
+    "outcomes": "Outcomes",
+    "p10": "P10",
+    "p25": "P25",
+    "p75": "P75",
+    "p90": "P90",
+    "paid": "Paid cost",
+    "paidAllowedRatio": "Paid /Allowed",
+    "paidPmPm": "Paid cost PMPM",
+    "pct": "Pct",
+    "perOfCohort": "% of cohort",
+    "percentDiff": "% Diff",
+    "percentRemain": "% Remain",
+    "periodEnd": "Period end",
+    "periodStart": "Period start",
+    "permission": "Permissions",
+    "person": "Person",
+    "personsCount": "Persons",
+    "personsPct": "Persons %",
+    "pregnancyConcept": "Pregnancy Concept",
+    "priorOutcomeLookback": "Prior Outcome Lookback",
+    "productLabelAncestor": "Product Label (Ancestor Concept Match)",
+    "productLabelCountDescendant": "Product Label Count (Descendant Concept Match)",
+    "productLabelExact": "Product Label (Exact Concept Match)",
+    "productLabelParent": "Product Label (Parent Concept Match)",
+    "progress": "Progress",
+    "provider": "Provider",
+    "publicationCountAncestor": "Publication Count (Ancestor Concept Match)",
+    "publicationCountDescendant": "Publication Count (Descendant Concept Match)",
+    "publicationCountExact": "Publication Count (Exact Concept Match)",
+    "publicationCountParent": "Publication Count (Parent Concept Match)",
+    "quantityAvg": "Avg. Quantity",
+    "quantityPer1000PerYear": "Quantity /1K /Year",
+    "quantityTotal": "Total Quantity",
+    "rc": "RC",
+    "recordCounts": "Record Counts (RC / DRC)",
+    "refreshCache": "Refresh cache",
+    "relationshipType": "Relationship Type",
+    "remove": "Remove",
+    "removeSubjectsWithPriorOutcome": "Remove Subjects With Prior Outcome",
+    "requireTimeAtRisk": "Require Time At Risk",
+    "results": "Results",
+    "riskWindowEnd": "Risk Window End",
+    "riskWindowStart": "Risk Window Start",
+    "role": "Role",
+    "roleName": "Role name",
+    "selected": "Selected",
+    "severity": "Severity",
+    "sortOrder": "Sort Order",
+    "sourceName": "Source Name [Source Key]",
+    "standardConceptCaption": "Standard Concept Caption",
+    "standardConceptCode": "Standard Concept Code",
+    "standardType": "Standard Type",
+    "startDate": "Start date",
+    "startDay": "Start Day",
+    "started": "Started",
+    "status": "Status",
+    "stddev": "Std Dev",
+    "strata": "Strata",
+    "suggestedNegativeControl": "Suggested Negative Control",
+    "tableQualifiers": "Table Qualifiers",
+    "target": "Target",
+    "targetCohortName": "Target Cohort Name",
+    "targetId": "Target Id",
+    "targetName": "Target Cohort Name",
+    "temporal": "Temporal",
+    "time": "Time",
+    "timeAtRisk": "Time At Risk",
+    "timeAtRiskEnd": "Time At Risk End",
+    "timeAtRiskStart": "Time At Risk Start",
+    "timeWindow": "Time Window",
+    "title": "Title",
+    "totalRecords": "Total Records",
+    "type": "Type",
+    "uniqueIdentifier": "Unique Identifier",
+    "updated": "Updated",
+    "userExcluded": "User Excluded",
+    "userIncluded": "User Included",
+    "value": "Value",
+    "visitsCount": "Records",
+    "visitsPer1000": "Records/1K",
+    "visitsPer1000PerYear": "Records/1K/Year",
+    "visitsPer1000WithVisits": "Records/1K +record",
+    "vocabulary": "Vocabulary",
+    "vocabularyVersion": "Vocabulary Version",
+    "washoutPeriod": "Washout Period",
+    "yes": "Yes"
+  },
+  "filters": {
+    "visit": "Visit",
+    "visitType": "Visit type"
+  },
+  "dataSources": {
+    "achillesHeelReport": {
+      "achillesHeelResults": "Achilles Heel Results",
+      "message": "Message",
+      "messageType": "Message Type"
+    },
+    "const": {
+      "lengthOfEra": "Length of era",
+      "recordsPerPerson": "Records per person"
+    },
+    "dashboardReport": {
+      "age": "Age",
+      "ageAtFirstObservation": "Age at First Observation",
+      "cdmSummary": "CDM Summary",
+      "cumulativeObservation": "Cumulative Observation",
+      "date": "Date",
+      "days": "Days",
+      "people": "People",
+      "percentOfPopulation": "Percent of Population",
+      "personsWithContinuousObservationByMonth": "Persons With Continuous Observation By Month",
+      "populationByGender": "Population by Gender",
+      "years": "Years"
+    },
+    "datadensityReport": {
+      "conceptType": "Concept Type",
+      "conceptsPerPerson": "Concepts per Person",
+      "numberOfRecords": "# of Records",
+      "recordsPerPerson": "Records Per Person",
+      "totalRows": "Total Rows",
+      "year": "Year"
+    },
+    "deathReport": {
+      "ageAtDeath": "Age at Death",
+      "ageAtFirstOccurence": "Age at first occurence",
+      "ageDecile": "Age Decile",
+      "date": "Date",
+      "deathByType": "Death by Type",
+      "deathPrevalenceByAgeGenderYear": "Death Prevalence by Age",
+      "deathPrevalenceByMonth": "Death Prevalence by Month",
+      "gender": "Gender",
+      "prevalencePer1000People": "Prevalence Per 1000 People",
+      "yearOfObservation": "Year of Observation"
+    },
+    "drilldown": {
+      "ageAtFirstOccurrence": "Age at First Occurrence",
+      "chartFormat": {
+        "ageAtFirstOccurrence": "Age at First Occurrence",
+        "ageDecile": "Age Decile",
+        "date": "Date",
+        "frequencyDistribution": {
+          "xLabel1": "Count (\"x\" or more ",
+          "xLabel2": "s)"
+        },
+        "gender": "Gender",
+        "percentOfTotalNumberOfPersons": "% of total number of persons",
+        "prevalencePer1000People": "Prevalence per 1000 People",
+        "yearOfObservation": "Year of Observation"
+      },
+      "drilldownReport": "Drilldown Report",
+      "frequencyDistribution": "Frequency Distribution",
+      "lowerLimitDistribution": "Lower limit Distribution",
+      "measurementRecordsByUnit": "Measurement Records by Unit",
+      "measurementValueDistribution": "Measurement Value Distribution",
+      "noData": "No data",
+      "operatorConcept": "Operator Concept",
+      "prevalence": "Prevalence",
+      "prevalenceByMonth": "Prevalence by Month",
+      "qualifierConcept": "Qualifier Concept",
+      "type": "Type",
+      "upperLimitDistribution": "Upper Limit Distribution",
+      "valueAsConcept": "Value As Concept",
+      "valuesRelativeToNormalRange": "Values Relative to Normal Range"
+    },
+    "errorLoadingReport": "Error loading report",
+    "headingTitle": "Data Sources",
+    "loadingDrilldownReport": "Loading Drilldown Report",
+    "loadingReport": "Loading report",
+    "noPermission": "You have no permissions to see this report",
+    "numberOfPeople": "Number of People",
+    "personReport": {
+      "ethnicity": "Ethnicity",
+      "ethnicityFooter": "The number of people in this cohort stratified by ethnicity.",
+      "gender": "Gender",
+      "genderFooter": "The number of people in this cohort stratified by gender.",
+      "numberOfPersons": "# of Persons",
+      "race": "Race",
+      "raceFooter": "The number of people in this cohort stratified by race.",
+      "year": "Year",
+      "yearOfBirth": "Year of Birth",
+      "yearOfBirthFooter": "The number of people in this cohort shown with respect to their year of birth."
+    },
+    "prevalence": "Prevalence",
+    "reports": {
+      "achillesHeel": "Achilles Heel",
+      "conditionEra": "Condition Era",
+      "conditionOccurrence": "Condition Occurrence",
+      "dashboard": "Dashboard",
+      "dataDensity": "Data Density",
+      "death": "Death",
+      "drugEra": "Drug Era",
+      "drugExposure": "Drug Exposure",
+      "measurement": "Measurement",
+      "observation": "Observation",
+      "person": "Person",
+      "procedure": "Procedure",
+      "titleTail": " Report",
+      "visit": "Visit"
+    },
+    "selectAReport": "Select a Report",
+    "selectASource": "Select a Source",
+    "table": {
+      "conceptId": "Concept Id",
+      "name": "Name",
+      "personCount": "Person Count",
+      "prevalence": "Prevalence",
+      "tableTab": "Table"
+    },
+    "treemap": {
+      "legend": {
+        "boxSize": "Box Size:",
+        "color": "Color:",
+        "colorExplanation": "(Light to Dark = Low to High)"
+      },
+      "treemapTab": "Treemap"
+    }
+  },
+  "search": {
+    "advancedOptions": "Advanced Options",
+    "buttonTitle": "Search",
+    "classification": "Classification",
+    "clearAllSelections": "Clear All Selections",
+    "domains": "Domains",
+    "headingTitle": "Search",
+    "import": {
+      "clickToClear": "click to clear",
+      "conceptIdentifiers": "Concept Identifiers",
+      "conceptSet": "Concept Set",
+      "conceptSetExpressionJSON": "Concept Set Expression JSON",
+      "enterConceptIdentifiers": "Enter Concept Identifiers",
+      "enterSourceCodes": "Enter Source Codes",
+      "importConceptIdentifiers": "Import Concept Identifiers",
+      "importConceptSetExpression": "Import Concept Set Expression",
+      "importSourceCodes": "Import Source Codes",
+      "importedConceptSetExpression": "Imported Concept Set Expression",
+      "sourceCodes": "Source Codes",
+      "unableToParseConceptIdentifiers": "Unable to parse Concept Identifiers"
+    },
+    "loadingMessage": {
+      "domains": "domains",
+      "loading": "Loading",
+      "searchResults": "search results",
+      "vocabularies": "vocabularies"
+    },
+    "noDomainsAvailable": "No domains available",
+    "noResultsFoundFor": "No results found for",
+    "noVocabulariesAvailable": "No vocabularies available",
+    "nonStandard": "Non-Standard",
+    "placeholder": "Type your search here",
+    "standard": "Standard",
+    "tabs": {
+      "import": "Import",
+      "search": "Search"
+    },
+    "vocabularies": "Vocabularies"
+  },
   "cs": {
-    "manager": {
-      "includedConceptSets": {
-        "standardConcept": "Standard Concept",
-        "standardConceptCaption": "Standard Concept Caption",
-        "hasRecords": "Has Records",
-        "vocabulary": "Vocabulary",
-        "code": "Code",
-        "domain": "Domain",
-        "name": "Name",
-        "ancestors": "Ancestors",
-        "hasDescendantRecords": "Has Descendant Records",
-        "class": "Class",
-        "invalidReason": "Invalid Reason"
+    "browser": {
+      "caption": "Concept Sets",
+      "compare": {
+        "compareConceptSets": "Compare Concept Sets",
+        "comparisonResults": "Comparison Results",
+        "conceptSet1": "Concept Set 1:",
+        "conceptSet2": "Concept Set 2:",
+        "heading": "Concept Set Comparison",
+        "headingMessage": "Use this utility to compare the contents of two concept sets to see which concepts they may share.",
+        "modalTitle": "Choose a concept set",
+        "sameWarning": "You cannot compare the same concept sets.",
+        "saveFromComparisonNameTail": " - From Comparison",
+        "saveMessage": "Save New Concept Set From Selection Below",
+        "saveWarning": "You must save the current concept set before you can perform this comparison.",
+        "viewCountMessage": "View database record counts (RC) and descendant record counts (DRC) for:"
       },
+      "exportConceptSetsButton": "Export Concept Sets",
+      "exportConceptSetsNumber": "concept sets selected for export.",
+      "exportInstructions": "Instructions:",
+      "exportInstructionsText": "Select the concept sets for export by selecting each row in the grid. When done",
+      "saveWarning": "Cohort changes are not saved. Would you like to continue?",
       "tabs": {
-        "conceptSetExpression": "Concept Set Expression",
-        "includedSourceCodes": "Included Source Codes",
-        "Export": "Export",
-        "Compare": "Compare",
-        "includedConcepts": "Included Concepts",
-        "exploreEvidence": "Explore Evidence"
-      },
+        "export": "Export",
+        "list": "List"
+      }
+    },
+    "manager": {
+      "attemptingToFindMessage": "Attempting to find an optimal definition for this concept set...",
+      "cancelButton": "Cancel",
       "caption": "Concept Set #<%=id%>",
+      "changeColumnsButton": "Change Columns",
+      "conceptsRemovedHeading": "Concepts Removed",
+      "conceptsRemovedMessage": "The following concepts were removed since the optimized version already includes them.",
+      "createOption": "Create New Concept Set",
+      "csAlreadyExistsMessage": "A concept set with this name already exists. Please choose a different name.",
       "csDeleteConfirmMessage": "Delete concept set? Warning: deletion can not be undone!",
       "csNotSavedConfirmMessage": "Your concept set changes are not saved. Would you like to continue?",
-      "conceptsRemovedMessage": "The following concepts were removed since the optimized version already includes them.",
-      "optimizedConceptSetHeading": "Optimized Concept Set",
-      "saveOptions": "Save Options",
-      "recordCountsAcrossSources": "Record Counts across Sources",
-      "cancelButton": "Cancel",
-      "optimize": "Optimize",
-      "conceptsRemovedHeading": "Concepts Removed",
-      "noHierarchyFoundMessage": "No hierarchy found for non-standard concepts.",
-      "details": "Details",
       "csSaveErrorMessage": "An error occurred while attempting to save a concept set.",
-      "saveButton": "Save",
-      "pleaseReviewMessage": "Please review the optimized definition and options for saving.",
-      "pleaseProvideNameMessage": "Please provide a name for your new concept set:",
-      "expression": {
-        "standard": "Standard",
-        "conceptCode": "Concept Code",
-        "standardConceptCode": "Standard Concept Code",
-        "classification": "Classification",
-        "descendants": "Descendants",
-        "changeColumns": "Change Columns",
-        "showAllColumns": "Show All Columns",
-        "standardConceptCaption": "Standard Concept Caption",
-        "conceptName": "Concept Name",
-        "nonStandard": "Non-Standard",
-        "domain": "Domain",
-        "mapped": "Mapped",
-        "conceptId": "Concept Id",
-        "exclude": "Exclude",
-        "resetColumns": "Reset Columns"
-      },
-      "hierarchy": "Hierarchy",
-      "resetColumnsButton": "Reset Columns",
-      "showAllColumnsButton": "Show All Columns",
       "csUnableToSaveMessage": "Unable to save concept set",
-      "relatedConcepts": "Related Concepts",
-      "loading": "loading",
-      "overwriteOption": "Overwrite Current Concept Set",
+      "details": "Details",
+      "exploreEvidence": {
+        "additionalInformation": "Additional Information:",
+        "anchor1": "Obtaining Negative Controls from ATLAS",
+        "anchor2": "High level information on negative controls processing",
+        "anchor3": "Additional resources",
+        "chooseAConceptSet": "Choose a Concept Set",
+        "deletedCcMessage": "The concept set specified (#<%=cs%>) was deleted. Please select a different concept set.",
+        "drugLabelEvidence": "Drug Label Evidence:",
+        "drugLabelEvidenceDetails": "details",
+        "drugLabelEvidenceEnd": "drug labels in CEM.",
+        "drugLabelEvidenceFound": "Found",
+        "drugLabelEvidenceOf": "of",
+        "drugLabelsFound": "Drug Labels Found",
+        "drugLabelsNotFound": "Drug Labels Not Found",
+        "evidenceForAll": "Evidence for all",
+        "evidenceForAllFor": "for",
+        "evidenceSources": "Evidence Sources",
+        "excludeLabel": "What concepts do you want to exclude as known positive controls? (Optional)",
+        "generate": "Generate",
+        "generated": "Generated",
+        "generationDuration": "Generation Duration",
+        "generationSettings": "Generation Settings",
+        "generationStatus": "Generation Status",
+        "includeLabel": "What concepts do you want to include as known negative controls? (Optional)",
+        "invalidCsWarning": "Your saved concepts come from multiple domains or from a domain outside of conditions or drugs. The concept set must contain ONLY conditions OR drugs in order to explore evidence.",
+        "loadingEvidence": "loading evidence",
+        "message1": "Evidence comes from the",
+        "message2": "The evidence base is comprised of evidence found in published literature",
+        "noCsWarning": "You must define a concept set with drugs found in the RxNorm vocabulary at the Ingredient class level OR Conditions from SNOMED. The concept set must contain ONLY conditions OR drugs in order to explore evidence.",
+        "noEvidenceFoundFor": "No evidence found for",
+        "saveNewButton": "Save New Concept Set From Selection Below",
+        "title": "Explore Evidence:",
+        "viewDatabaseRecordCounts": "View database record counts (RC) and descendant record counts (DRC) for:",
+        "viewEvidence": "View Evidence",
+        "viewingEvidence": "Viewing Evidence"
+      },
+      "export": {
+        "conceptIdentiferList": "Concept Identifer List",
+        "conceptSetExpressionJSON": "Concept Set Expression JSON",
+        "exportToCSV": "Export To CSV",
+        "exportingCsv": "Exporting CSV...",
+        "includedConceptIdentiferList": "Included Concept Identifer List",
+        "loadingForExport": "Loading for export..."
+      },
+      "expression": {
+        "changeColumns": "Change Columns",
+        "classification": "Classification",
+        "nonStandard": "Non-Standard",
+        "resetColumns": "Reset Columns",
+        "showAllColumns": "Show All Columns",
+        "standard": "Standard"
+      },
       "fullyOptimizedMessage": "The current concept set definition is fully optimized.",
-      "createOption": "Create New Concept Set",
-      "changeColumnsButton": "Change Columns",
-      "recordCounts": "Record Counts",
-      "attemptingToFindMessage": "Attempting to find an optimal definition for this concept set...",
+      "hierarchy": "Hierarchy",
       "nameEmptyWarning": "Concept Set name is empty.",
-      "csAlreadyExistsMessage": "A concept set with this name already exists. Please choose a different name."
-    },
-    "browser": {
-      "newConceptSetButton": "New Concept Set",
-      "exportConceptSetsButton": "Export Concept Sets",
-      "table": {
-        "created": "Created",
-        "author": "Author",
-        "modified": "Modified",
-        "id": "Id",
-        "title": "Title"
-      },
-      "compare": {
-        "headingMessage": "Use this utility to compare the contents of two concept sets to see which concepts they may share.",
-        "heading": "Concept Set Comparison",
-        "tableHeader": {
-          "vocabulary": "Vocabulary",
-          "code": "Code",
-          "match": "Match",
-          "name": "Name",
-          "class": "Class",
-          "domainId": "Domain Id"
-        },
-        "viewCountMessage": "View database record counts (RC) and descendant record counts (DRC) for:",
-        "conceptSet1": "Concept Set 1:",
-        "compareConceptSets": "Compare Concept Sets",
-        "conceptSet2": "Concept Set 2:",
-        "comparisonResults": "Comparison Results",
-        "sameWarning": "You cannot compare the same concept sets.",
-        "saveMessage": "Save New Concept Set From Selection Below",
-        "saveWarning": "You must save the current concept set before you can perform this comparison."
-      },
-      "exportInstructionsText": "Select the concept sets for export by selecting each row in the grid. When done",
+      "noHierarchyFoundMessage": "No hierarchy found for non-standard concepts.",
+      "optimize": "Optimize",
+      "optimizedConceptSetHeading": "Optimized Concept Set",
+      "overwriteOption": "Overwrite Current Concept Set",
+      "pleaseProvideNameMessage": "Please provide a name for your new concept set:",
+      "pleaseReviewMessage": "Please review the optimized definition and options for saving.",
+      "recordCounts": "Record Counts",
+      "recordCountsAcrossSources": "Record Counts across Sources",
+      "relatedConcepts": "Related Concepts",
+      "resetColumnsButton": "Reset Columns",
+      "saveButton": "Save",
+      "saveOptions": "Save Options",
+      "showAllColumnsButton": "Show All Columns",
       "tabs": {
-        "list": "List",
-        "export": "Export"
-      },
-      "caption": "Concept Sets",
-      "exportInstructions": "Instructions:",
-      "exportConceptSetsNumber": "concept sets selected for export.",
-      "saveWarning": "Cohort changes are not saved. Would you like to continue?"
+        "compare": "Compare",
+        "conceptSetExpression": "Concept Set Expression",
+        "exploreEvidence": "Explore Evidence",
+        "export": "Export",
+        "includedConcepts": "Included Concepts",
+        "includedSourceCodes": "Included Source Codes"
+      }
+    },
+    "modal": {
+      "title": "Concept List"
     }
   },
   "cc": {
     "title": "Cohort Characterizations",
     "new": "New",
-    "defaultName": "New Characterization",
     "loading": "Loading Cohort Characterization list...",
-    "list": {
-      "columns": {
-        "id": "Id",
-        "name": "Name",
-        "created": "Created",
-        "updated": "Updated",
-        "author": "Author"
-      },
-      "facets": {
-        "created": "Created",
-        "updated": "Updated",
-        "author": "Author"
-      }
+    "modals": {
+      "confirmChanges": "Your changes are not saved. Would you like to continue?",
+      "selectConceptSet": "Select Concept Set...",
+      "chooseAFeatureAnalyses": "Choose a Feature Analyses..."
     },
     "tabs": {
       "characterizations": {
-        "title": "Characterizations",
-        "newLabel": "Characterization"
+        "newLabel": "Characterization",
+        "title": "Characterizations"
       },
       "featureAnalyses": {
-        "title": "Feature analyses",
-        "newLabel": "Feature analysis"
+        "newLabel": "Feature analysis",
+        "title": "Feature analyses"
       }
     },
     "viewEdit": {
       "caption": "Characterization #",
-      "loading": "Loading Cohort Characterization...",
-      "buttons": {
-        "access": "Configure access",
-        "copy": "Create a copy of this cohort characterization"
-      },
-      "messages": {
-        "nameIsEmpty": "Characterization name is empty."
-      },
-      "tabs": {
-        "design": "Design",
-        "executions": "Executions",
-        "utilities": "Utilities"
-      },
       "design": {
-        "loading": "Loading Cohort Characterization design...",
-        "description": "<b>Cohort characterization</b> is defined as the process of generating cohort level descriptive summary statistics from person level covariate data. Summary statistics of these person level covariates may be count, mean, sd, var, min, max, median, range, and quantiles. In addition, covariates during a period may be stratified into temporal units of time for time-series analysis such as fixed intervals of time relative to cohort_start_date (e.g. every 7 days, every 30 days etc.), or in absolute calendar intervals such as calendar-week, calendar-month, calendar-quarter, calendar-year.",
+        "description": "<b>Cohort characterization</b> is defined as the process of generating cohort level descriptive summary statistics from person level covariate data. Summary statistics of these person level covariates may be count",
         "fa": {
-          "title": "Feature analyses",
           "actions": {
             "remove": "Remove"
           },
-          "columns": {
-            "id": "ID",
-            "name": "Name",
-            "description": "Description",
-            "actions": "Actions"
-          }
+          "title": "Feature analyses"
         },
         "faParams": {
-          "title": "Feature analyses parameters",
+          "modal": {
+            "namePlaceholder": "Name",
+            "submit": "Submit",
+            "title": "Create new parameter",
+            "valuePlaceholder": "Value"
+          },
           "newLabel": "New parameter",
-          "columns": {
-            "name": "Name",
-            "value": "Value",
-            "actions": "Actions"
-          }
+          "title": "Feature analyses parameters"
         },
+        "loading": "Loading Cohort Characterization design...",
         "subgroups": {
-          "title": "Subgroup analyses",
-          "new": "New subgroup",
-          "nosubgroups": "No subgroups defined",
-          "subgroupOnly": "Calculate subgroup analyses only",
-          "namePlaceholder": "Subgroup name",
-          "stratifiedByPlaceholder": "Stratified by",
           "messages": {
             "nameIsEmpty": "Subgroup name is empty.",
             "nameIsNotUnique": "Subgroup name is duplicated."
-          }
+          },
+          "namePlaceholder": "Strata name",
+          "newSubgroup": "New subgroup",
+          "noSubgroups": "No subgroups defined",
+          "stratifiedByPlaceholder": "Stratified by",
+          "subgroupOnly": "Calculate subgroup analyses only",
+          "title": "Subgroup analyses"
         }
       },
       "executions": {
-        "title": "Executions",
-        "loading": "Loading executions...",
+        "buttons": {
+          "allExecutions": "All executions (<%=submissions%>)",
+          "cancel": "Cancel",
+          "generate": "Generate",
+          "latestResult": "View latest result"
+        },
         "designModal": {
           "title": "Design"
         },
         "exitModal": {
           "title": "Execution Exit Message"
         },
-        "buttons": {
-          "generate": "Generate",
-          "cancel": "Cancel",
-          "pending": "Pending",
-          "latestResult": "View latest result",
-          "allExecutions": "All executions (<%= submissions %>)"
+        "loading": "Loading executions...",
+        "messages": {
+          "permissions": "Not enough permissions to generate"
         },
         "table": {
-          "columns": {
-            "date": "Date",
-            "design": "Design",
-            "status": "Status",
-            "duration": "Duration",
-            "results": {
-              "title": "Results",
-              "values": {
-                "text": "View reports",
-                "empty": "-"
-              }
-            }
-          }
+          "viewReports": "View reports",
+          "sameAsNow": "(same as now)",
+          "empty": "-"
         },
-        "messages": {
-          "permissions": "Not enough permissions to generate, changes not saved or no cohorts found"
-        }
+        "title": "Executions"
+      },
+      "messages": {
+        "nameIsEmpty": "Characterization name is empty."
       },
       "results": {
-        "loading": "Loading execution results...",
-        "title": "Reports for <%= sourceName %>",
         "detail": {
           "date": "Date:",
           "design": "Design:",
@@ -820,198 +1588,240 @@
             "text": "<%= reports %> reports"
           }
         },
+        "exportAll": "Export all",
         "filters": {
-          "cohorts": "Cohorts",
           "analyses": "Analyses",
+          "cohorts": "Cohorts",
           "domains": "Domains"
         },
-        "threshold": {
-          "label": "Filter results to covariates with prevalence greater than:",
-          "placeholder": "Threshold value",
-          "apply": "Apply",
-          "text": "Viewing most prevalent <%= resultsCountFiltered %> of total <%= totalResultsCount %> records"
-        },
-        "exportAll": "Export all",
+        "hideEmptyResults": "Hide Empty Results",
+        "loading": "Loading execution results...",
+        "showAllResults": "Show All Results",
         "table": {
           "buttons": {
-            "export": "Export",
             "exportComparison": "Export comparison"
-          },
-          "columns": {
-            "conceptId": "Concept ID",
-            "covariate": "Covariate",
-            "explore": "Explore",
-            "count": "Count",
-            "pct": "Pct",
-            "avg": "Avg",
-            "stdev": "Std Dev",
-            "min": "Min",
-            "p10": "P10",
-            "p25": "P25",
-            "median": "Median",
-            "p75": "P75",
-            "p90": "P90",
-            "max": "Max",
-            "strata": "Strata"
           }
-        }
-      }
-    }
-  },
-  "home": {
-    "description": "ATLAS is an open source application developed as a part of <a href=\"http://www.ohdsi.org\" target=\"_new\">OHDSI</a> intended to provide a unified interface to patient level data and analytics.",
-    "documentation": {
-      "title": "Documentation",
-      "text": "The ATLAS user guide can be found <a target=\"_new\" href=\"http://www.ohdsi.org/web/wiki/doku.php?id=documentation:software:atlas\">here</a>."
-    },
-    "gettingStarted": {
-      "title": "Getting Started",
-      "newCohort": {
-        "button": "Define a New Cohort",
-        "description": "Begin performing research by defining the group of people you intend to study"
-      },
-      "vocabulary": {
-        "button": "Search the Vocabulary",
-        "description": "Search the different ontologies used to describe patient level data around the world"
-      }
-    },
-    "releaseNotes": {
-      "title": "Release Notes",
-      "issues": "<br/> This latest release contains <b><%= issues %></b> feature enhancements and issue resolutions:"
-    },
-    "title": "Home",
-    "welcome": "Welcome to ATLAS."
-  },
-  "incidencerate": {
-    "title": "Incidence Rate Analysis",
-    "newanalysis": "New Analysis"
-  },
-  "pathways": {
-    "title": "Cohort Pathways",
-    "newanalysis": "New Pathway Analysis",
-    "defaultName": "New Cohort Pathway",
-    "loading": "Loading Pathway Analysis list...",
-    "browser": {
-      "grid": {
-        "facets": {
-          "created": "Created",
-          "updated": "Updated",
-          "author": "Author"
-        }
-      },
-      "table": {
-        "columns": {
-          "id": "Id",
-          "name": "Name",
-          "created": "Created",
-          "updated": "Updated",
-          "author": "Author"
-        }
-      }
-    },
-    "manager": {
-      "loading": "Loading Cohort Pathway Analysis...",
-      "caption": "Cohort Pathway #",
-      "messages": {
-        "createACopy": "Create a copy of this Pathway Analysis",
-        "nameIsEmpty": "Cohort Pathway name is empty",
-        "alreadyExists": "A cohort pathway with this name already exists. Please choose a different name.",
-        "beforeClose": "Your changes are not saved. Would you like to continue?",
-        "deleteConfirmation": "Are you sure?",
-        "saveFailed": "An error occurred while attempting to save a cohort pathway.",
-        "notfound": "There is no pathway analysis with id = %d.",
-        "generating": "Generating Pathway Analysis %d using %s (%s)"
+        },
+        "threshold": {
+          "apply": "Apply",
+          "label": "Filter results to covariates with prevalence greater than:",
+          "placeholder": "Threshold value",
+          "text": "Viewing most prevalent <%=resultsCountFiltered%> of total <%=totalResultsCount%> records"
+        },
+        "title": "Reports for <%= sourceName %>"
       },
       "tabs": {
         "design": "Design",
         "executions": "Executions",
         "utilities": "Utilities"
       },
+      "utilities": {
+        "title": "Utilities"
+      }
+    },
+    "fa": {
+      "addCriteriaFeature": "Add Criteria feature",
+      "addNewCriteria": "Add New Criteria...",
+      "analysisSql": "Analysis SQL:",
+      "analysisType": "Analysis type:",
+      "availableVariables": "Available variables:",
+      "availableVariablesNote": "all variables specified in Cohort Characterization parameters",
+      "caption": "Feature Analysis #<%=id%>",
+      "copiedToClipboard": "Copied To Clipboard!",
+      "copySqlToClipboard": "Copy Analysis SQL Template To Clipboard",
+      "criteria": "Criteria",
+      "criteriaName": "Criteria name",
+      "custom": "Custom",
+      "description": "Description",
+      "design": "Design",
+      "designOrNameAreEmpty": "Design or Name are empty",
+      "domain": "Domain:",
+      "featureExtractionPresetName": "FeatureExtraction preset name:",
+      "loadingList": "Loading Feature Analysis list...",
+      "nameExistsAlert": "A feature analysis with this name already exists. Please choose a different name.",
+      "nameIsEmpty": "Feature Analysis name is empty.",
+      "preset": "Preset",
+      "retrievingList": "Retrieving feature analyses list...",
+      "saveError": "An error occurred while attempting to save a feature analysis.",
+      "selectConceptSet": "Select Concept Set...",
+      "unsavedConfirmation": "Your changes are not saved. Would you like to continue?"
+    }
+  },
+  "home": {
+    "description": "ATLAS is an open source application developed as a part of <a href='http://www.ohdsi.org' target='_new'>OHDSI</a> intended to provide a unified interface to patient level data and analytics.",
+    "documentation": {
+      "text": "The ATLAS user guide can be found <a target='_new' href='http://www.ohdsi.org/web/wiki/doku.php?id=documentation:software:atlas'>here</a>.",
+      "title": "Documentation"
+    },
+    "gettingStarted": {
+      "newCohort": {
+        "button": "Define a New Cohort",
+        "description": "Begin performing research by defining the group of people you intend to study"
+      },
+      "title": "Getting Started",
+      "vocabulary": {
+        "button": "Search the Vocabulary",
+        "description": "Search the different ontologies used to describe patient level data around the world"
+      }
+    },
+    "releaseNotes": {
+      "issues": "This latest release contains <b><%=issues%></b> feature enhancements and issue resolutions:",
+      "loadingReleaseInfo": "Loading release info",
+      "title": "Release Notes"
+    },
+    "title": "Home",
+    "welcome": "Welcome to ATLAS."
+  },
+  "ir": {
+    "caption": "Incidence Rate Analysis #",
+    "cs": {
+      "modalTitle": "Select Concept Set..."
+    },
+    "deleteConfirmation": "Delete incidence rate analysis? Warning: deletion can not be undone!",
+    "deleteResultConfirmation": "Do you really want to remove result of <%=name%>?",
+    "editor": {
+      "addOutcomeCohort": "Add Outcome Cohort",
+      "addStudyWindow": "Add Study Window",
+      "addTargetCohort": "Add Target Cohort",
+      "chooseACohort": "Choose a Cohort",
+      "newStratifyCriteria": "New stratify criteria",
+      "noStudyWindowDefined": "No study window defined.",
+      "outcomeCohorts": "Outcome Cohorts",
+      "removeStudyWindow": "Remove Study Window",
+      "selectInclusionCriteriaMessage": "Please select a qualifying inclusion criteria to edit.",
+      "stratifyCriteria": "Stratify Criteria:",
+      "stratifyCriteriaMessage": "You can provide optional stratification criteria to the analysis that will divide the population into unique groups based on their satisified criteria.",
+      "studyCohorts": "Study Cohorts",
+      "studyWindowBeginsOn": "Study window begins on",
+      "studyWindowEndsOn": "and ends on",
+      "targetCohorts": "Target Cohorts",
+      "timeAtRisk": "Time At Risk",
+      "timeAtRiskDays": "days.",
+      "timeAtRiskEndDate": "end date",
+      "timeAtRiskEndsWith": "Time at risk ends with",
+      "timeAtRiskMessage": "Time at risk defines the time window relative to the cohort start or end date with an offset to consider the person 'at risk' of the outcome.",
+      "timeAtRiskPlus": "plus",
+      "timeAtRiskStartDate": "start date",
+      "timeAtRiskStartsWith": "Time at risk starts with",
+      "timeAtRiskWarningMessage": "Error: Time at risk starts on or after time at risk end"
+    },
+    "nameConflict": "An incidence rate with this name already exists. Please choose a different name.",
+    "nameIsEmpty": "Incidence Rate Analysis name is empty.",
+    "newanalysis": "New Analysis",
+    "notSavedMessage": "Incidence Rate Analysis changes are not saved. Would you like to continue?",
+    "results": {
+      "accessDenied": "Access denied",
+      "andOutcomeCohort": "and outcome cohort:",
+      "canceled": "CANCELED",
+      "cases": "Cases",
+      "close": "Close",
+      "duration": "Duration",
+      "exportToCsvButton": "Export Analysis to CSV",
+      "failed": "FAILED",
+      "generationInProgress": "Generation is in progress",
+      "loadingGenerationResultErrorMessage": "There was an error while loading generation result reports",
+      "loadingSummary": "Loading summary...",
+      "perPersons": "per <%=multiplier%> persons",
+      "perYears": "per <%=multiplier%> years",
+      "persons": "Persons",
+      "proportion": "Proportion",
+      "rate": "Rate",
+      "reports": "Reports",
+      "rerun": "Rerun",
+      "running": "Running",
+      "selectTargetAndOutcomeAlert": "You should select at least one target and outcome cohort to generate",
+      "showingTargetCohort": "Showing target cohort:",
+      "sourceName": "Source Name",
+      "started": "Started",
+      "timeAtRisk": "Time At Risk",
+      "timeAtRiskYears": "(years)"
+    },
+    "savingError": "An error occurred while attempting to save an incidence rate.",
+    "tabs": {
+      "conceptSets": "Concept Sets",
+      "definition": "Definition",
+      "generation": "Generation",
+      "utilities": "Utilities"
+    },
+    "title": "Incidence Rate Analysis"
+  },
+  "profiles": {
+    "ageAt": "Age <%=age%>",
+    "atIndex": "at index",
+    "atStartOfObservation": "at start of observation",
+    "chart": {
+      "event": "Event: ",
+      "startDate": "Start Date: ",
+      "startDay": "Start Day: "
+    },
+    "clearAllHighlightColors": "clear all highlight colors",
+    "clickHereToSelectACohort": "Click Here to Select a Cohort",
+    "eventHighlighting": "Event Highlighting",
+    "highlightEventsTooltip": "highlight events",
+    "loadingProfile": "loading profile data from database",
+    "personId": "Person Id",
+    "processingProfile": "processing profile data",
+    "recordCounts": "<%=count%> events",
+    "selectADataSource": "Select a Data Source",
+    "setSelectedEventsColor": "set selected events color",
+    "title": "Profiles",
+    "toggleChartTooltip": "toggle chart display",
+    "toggleTableTooltip": "toggle table display",
+    "сantFind": "Can't find"
+  },
+  "pathways": {
+    "loading": "Loading Pathway Analysis list...",
+    "manager": {
+      "caption": "Cohort Pathway #",
       "design": {
-        "description": "<b>Cohort Pathway</b> is defined as the process of generating an aggregated sequence of transitions between the Event Cohorts among those people in the Target Cohorts.",
-        "targetCohorts": {
-          "title": "Target Cohorts",
-          "description": "Each of the Target Cohorts will be analyized for the pathways through the event cohorts."
-        },
-        "eventCohorts": {
-          "title": "Event Cohorts",
-          "description": "Each Event Cohort defines the step in a pathway that may occur for a person in the Target Cohort."
-        },
         "analysisSettings": {
-          "title": "Analysis Settings",
-          "description": "The following set of parameters will be used when performing the pathway analysis.",
           "combinationWindow": {
-            "title": "Combination Window:",
-            "description": "Window of time when two event cohorts need to overlap to be considered a combination."
+            "description": "Window of time when two event cohorts need to overlap to be considered a combination.",
+            "title": "Combination Window:"
+          },
+          "description": "The following set of parameters will be used when performing the pathway analysis.",
+          "maximumPathLength": {
+            "description": "Maximum number of steps in a given pathway to be included in the sunburst plot.",
+            "title": "Maximum path length:"
           },
           "minimumCellCount": {
-            "title": "Minimum cell count:",
-            "description": "Minimum number of subjects in the target cohort for a given event in order to be counted in the pathway."
+            "description": "Minimum number of subjects in the target cohort for a given event in order to be counted in the pathway.",
+            "title": "Minimum cell count:"
           },
-          "maximumPathLength": {
-            "title": "Maximum path length:",
-            "description": "Maximum number of steps in a given pathway to be included in the sunburst plot."
-          }
+          "title": "Analysis Settings"
+        },
+        "description": "<b>Cohort Pathway</b> is defined as the process of generating an aggregated sequence of transitions between the Event Cohorts among those people in the Target Cohorts.",
+        "eventCohorts": {
+          "description": "Each Event Cohort defines the step in a pathway that may occur for a person in the Target Cohort.",
+          "title": "Event Cohorts"
+        },
+        "targetCohorts": {
+          "description": "Each of the Target Cohorts will be analyized for the pathways through the event cohorts.",
+          "title": "Target Cohorts"
         }
       },
       "executions": {
-        "title": "Executions",
-        "loading": "loading",
         "buttons": {
-          "generate": "Generate",
-          "viewLatestResult": "View latest result",
           "allExecutions": "All executions",
-          "cancel": "Cancel",
-          "pending": "Pending"
+          "generate": "Generate",
+          "viewLatestResult": "View latest result"
         },
         "dialogs": {
           "design": {
-            "title": "Design",
-            "loadError": "Unable to load design"
+            "loadError": "Unable to load design",
+            "title": "Design"
           },
           "exitMessage": {
             "title": "Execution Exit Message"
           }
         },
-        "table": {
-          "columns": {
-            "date": "Date",
-            "design": {
-              "title": "Design",
-              "value": "(same as now)"
-            },
-            "status": {
-              "title": "Status"
-            },
-            "duration": "Duration",
-            "results": {
-              "title": "Results",
-              "values": {
-                "text": "View reports",
-                "empty": "-"
-              }
-            }
-          }
-        },
-        "tooltips": {
-          "generatePermissions": "Not enough permissions to generate",
-          "viewPermissions": "Not enough permissions to view results"
-        },
+        "noCompletedExecutionsWarning": "There is no completed executions for the data source yet",
         "results": {
-          "title": "Pathway Report for",
           "date": "Date:",
           "design": "Design:",
-          "loading": "loading",
           "details": {
-            "title": "Path details",
-            "table": {
-              "columns": {
-                "name": "Name",
-                "remain": "% Remain",
-                "diff": "% Diff"
-              }
-            },
-            "noPath": "No path selected: click path to see details."
+            "noPath": "No path selected: click path to see details.",
+            "title": "Path details"
           },
           "diagram": {
             "title": "Sunburst plot"
@@ -1020,97 +1830,748 @@
             "cohorts": "Cohorts"
           },
           "legend": {
-            "title": "Legend",
-            "targetCohort": "Target Cohort",
-            "targetCohortCount": "Target cohort count:",
+            "eventCohort": "Event Cohorts",
             "personsCount": "Persons with pathways count:",
             "personsPortion": "Persons with pathways portion:",
-            "eventCohort": "Event Cohort"
+            "targetCohort": "Target Cohort",
+            "targetCohortCount": "Target cohort count:",
+            "title": "Legend"
           },
-          "noPathways": "No pathways were found"
+          "noPathways": "No pathways were found",
+          "title": "Pathways Analysis for"
+        },
+        "stopGenerationConfirmation": "Do you want to stop generation?",
+        "table": {
+          "designValue": "(same as now)",
+          "resultValues": {
+            "empty": "-",
+            "text": "View reports"
+          }
+        },
+        "title": "Executions",
+        "tooltips": {
+          "generatePermissions": "Not enough permissions to generate",
+          "viewPermissions": "Not enough permissions to view results"
         }
       },
+      "loading": "Loading Cohort Pathway Analysis...",
+      "messages": {
+        "alreadyExists": "A cohort pathway with this name already exists. Please choose a different name.",
+        "beforeClose": "Your changes are not saved. Would you like to continue?",
+        "deleteConfirmation": "Are you sure?",
+        "nameIsEmpty": "Cohort Pathway name is empty.",
+        "saveFailed": "An error occurred while attempting to save a cohort pathway.",
+        "notfound": "There is no pathway analysis with id = %d."
+      },
+      "tabs": {
+        "design": "Design",
+        "executions": "Executions",
+        "utilities": "Utilities"
+      },
       "utilities": {
-        "title": "Utilities",
+        "title": "Utilities"
+      }
+    },
+    "title": "Cohort Pathways"
+  },
+  "ple": {
+    "analysisExistsAlert": "An estimation analysis with this name already exists. Please choose a different name.",
+    "analysisSaveErrorAlert": "An error occurred while attempting to save an estimation analysis.",
+    "caption": "Comparative Cohort Analysis",
+    "captionNumber": "Comparative Cohort Analysis #",
+    "changesNotSavedConfirmation": "Estimation Analysis changes are not saved. Would you like to continue?",
+    "deleteConfirmation": "Delete estimation specification? Warning: deletion can not be undone!",
+    "exec": {
+      "allExec": "All executions (<%=len%>)",
+      "downloadLatestResult": "Download latest result",
+      "generate": "Generate",
+      "generating": "Generating...",
+      "generations": "Generations",
+      "loadingGenerations": "Loading generations...",
+      "notPermitted": "Not enough permissions to generate or changes were not saved or Execution Engine is not available",
+      "notPermittedToVieweResults": "Not enough permissions to view results"
+    },
+    "nameIsEmptyWarning": "Population Level Effect Estimation name is empty.",
+    "spec": {
+      "addAnalysisSettings": "Add Analysis Settings",
+      "addComparisons": "Add Comparisons",
+      "addOutcome": "Add Outcome",
+      "analysisName": "Analysis name:",
+      "analysisSettings": "Analysis Settings",
+      "analysisSettingsDescription": "Add or update the analysis settings",
+      "chooseYourComparatorCohort": "Choose your comparator cohort:",
+      "chooseYourOutcomeCohorts:": "Choose your outcome cohorts:",
+      "chooseYourTargetCohort": "Choose your target cohort:",
+      "clickToViewDetails": "Click to view details",
+      "comparison": "Comparison",
+      "comparisonDescription": "Add or update the target",
+      "conceptsToExcludeLabel": "Concepts to <b>exclude</b> when constructing the covariates to be used in this study.*",
+      "conceptsToExcludeNoteAnalysis": "* Concepts defined here are combined with those defined in the Comparisons section.",
+      "conceptsToExcludeNoteComparisons": "* Concepts defined here are combined with those defined in the Analysis settings section.",
+      "conceptsToIncludeLabel": "Concepts to <b>include</b> when constructing the covariates to be used in this study. (Leave blank if you want to include every concept).*",
+      "conceptsToIncludeNoteAnalysis": "* Concepts defined here are combined with those defined in the Comparisons section.",
+      "conceptsToIncludeNoteComparisons": "* Concepts defined here are combined with those defined in the Analysis settings section.",
+      "controlSettings": "Control Settings",
+      "covariateSelection": "Covariate selection",
+      "covariateSettings": "Covariate Settings",
+      "descriptionPlaceholder": "enter a description here (1000 characters max)",
+      "evaluationSettings": "Evaluation Settings",
+      "evaluationSettingsPanel": {
+        "additionalSettings": "Additional Settings",
+        "advancedSettingsStartsHere": "Advanced Settings start here",
+        "allowedRatio": "The allowed ratio between target and injected signal size:",
+        "daysFrom": "days from",
+        "daysFromCohortStartDate": "days from cohort start date",
+        "defineTimeAtRiskWindowEnd": "Define the time-at-risk window end:",
+        "defineTimeAtRiskWindowStart": "Define the time-at-risk window start",
+        "effectSizes": "What effect sizes should be inserted:",
+        "firstOutcomeToBeCreated": "What should be the first new outcome ID that is to be created?",
+        "maxNumberOfPeopleToFit": "Maximum number of people used to fit an outcome model:",
+        "minNumberOfOutcomeEventsToBuildAModel": "Minimum number of outcome events required to build a model:",
+        "minNumberofOutcomeEventsToInjectASignal": "Minimum number of outcome events required to inject a signal.",
+        "minimumRequiredTime": "The minimum required continuous observation time (in days) prior to exposure:",
+        "modelType": "Model Type:",
+        "negativeControl": "Negative Control Outcome Cohort Definition",
+        "negativeControlDesc": "This expression will define the criteria for inclusion and duration of time for cohorts intended for use as negative control outcomes.",
+        "onlyFirstExposure": "Should only the first exposure per subject be included?",
+        "onlyFirstOutcome": "Should only the first outcome per person be considered when modeling the outcome?",
+        "positiveControl": "Positive Control Synthesis",
+        "positiveControlPerform": "Should we perform positive control synthesis? (to calibrate confidence intervals)",
+        "removePeopleWithPrior": "Remove people with prior outcomes?",
+        "typeOfOccurence": "The type of occurrence of the event when selecting from the domain.",
+        "whatDomains": "What domains should be considered to detect negative control outcomes? (Hold control to select multiple domains)",
+        "whenTrueDescendantConcepts": "When true"
+      },
+      "from": "from",
+      "negativeControlConceptSet": "Negative control concept set:",
+      "newAnalysis": "New analysis",
+      "options": {
+        "all": "All",
+        "allOccurrences": "All occurrences",
+        "byPercent": "By Percent",
+        "cohortEndDate": "cohort end date",
+        "cohortStartDate": "cohort start date",
+        "comparator": "Comparator",
+        "condition": "Condition",
+        "coxProportionalHazards": "Cox proportional hazards",
+        "device": "Device",
+        "drug": "Drug",
+        "firstOccurrence": "First occurrence",
+        "keepAll": "Keep All",
+        "keepFirst": "Keep First",
+        "logisticRegression": "Logistic regression",
+        "matchOnPropensityScore": "Match on propensity score",
+        "matching": "<%=ratio%>:1 matching",
+        "measurement": "Measurement",
+        "none": "None",
+        "observation": "Observation",
+        "poisson": "Poisson",
+        "poissonRegression": "Poisson regression",
+        "procedure": "Procedure",
+        "propensityScore": "Propensity score",
+        "removeAll": "Remove All",
+        "standardized": "Standardized",
+        "standardizedLogit": "Standardized Logit",
+        "stratification": "Stratification (stratum: <%=stratum%>)",
+        "stratifyOnPropensityScore": "Stratify on propensity score",
+        "survival": "Survival",
+        "target": "Target",
+        "toEquipoise": "To Equipoise",
+        "visit": "Visit"
+      },
+      "outcomeModel": "Outcome Model",
+      "outcomeModelPanel": {
+        "covariates": "Should the covariates also be included in the outcome model?",
+        "regression": "Should the regression be conditioned on the strata defined in the population object (e.g. by matching or stratifying on propensity scores)?",
+        "regularization": "Use regularization when fitting the outcome model? *",
+        "regularizationNote": "* Regularization will not be applied to the exposure of interest",
+        "statisticalModel": "Specify the statistical model used to estimate the risk of outcome between target and comparator cohorts:",
+        "weighting": "Use inverse probability of treatment weighting?"
+      },
+      "prior": "Prior",
+      "propensityScoreAdjustment": "Propensity Score Adjustment",
+      "propensityScoreAdjustmentPanel": {
+        "baseSelection": "What is the base selection of subjects where the strata bounds are to be determined? Strata are defined as equally-sized strata inside this selection.",
+        "caliperForMatching": "What is the caliper for matching:",
+        "caliperScale": "What is the caliper scale:",
+        "covariateIdsMatch": "One or more covariate IDs in the cohortMethodData object on which subjects should be also matched.",
+        "covariateIdsPlaceholder": "One or more covariate IDs",
+        "covariateIdsStratify": "One or more covariate IDs in the cohortMethodData object on which subjects should be also stratified.",
+        "howManyStrata": "Into how many strata should the propensity score be divided? The boundaries of the strata are automatically defined to contain equal numbers of target persons:",
+        "howToTrim": "How do you want to trim your cohorts based on the propensity score distribution?",
+        "lowerAndUpperBound": "Specify the lower and upper bound on the preference score for keeping persons (specify as: min %",
+        "matchingOrStratification": "Do you want to perform matching or stratification?",
+        "maxNumberOfPeople": "What is the maximum number of people to include in the propensity score model when fitting? Setting this number to 0 means no down-sampling will be applied:",
+        "maximumNumberOfPersons": "What is the maximum number of persons in the comparator arm to be matched to each person in the target arm within the defined caliper? (0 = means no maximum - all comparators will be assigned to a target person):",
+        "testEachCovariate": "Test each covariate for correlation with the target assignment? If any covariate has an unusually high correlation (either positive or negative)",
+        "trimFraction": "Trim Fraction (1-100%):",
+        "useRegularization": "Use regularization when fitting the propensity model?"
+      },
+      "selectCohort": "Select Cohort...",
+      "selectConceptSet": "Select Concept Set...",
+      "selectCovariates": "Select Covariates...",
+      "studyPopulation": "Study Population",
+      "studyPopulationPanel": {
+        "cohortCap": "If either the target or the comparator cohort is larger than this number it will be sampled to this size. (0 for this value indicates no maximum size)",
+        "daysPriorOutcomes": "How many days should we look back when identifying prior outcomes?",
+        "endDate": "Study end date - a calendar date specifying the maximum date that a cohort index can appear (leave blank to use all time). <b>Important</b>: the study end date is also used to truncate risk windows",
+        "minimumObservations": "The minimum required continuous observation time (in days) prior to index date for a person to be included in the cohort.",
+        "onlyFirst": "Should only the first exposure per subject be included?",
+        "removeDuplicates": "Remove subjects that are in both the target and comparator cohort?",
+        "removeSubjectsPriorRiskWindow": "Remove subjects that have the outcome prior to the risk window start?",
+        "restrictToPeriod": "Restrict the study to the period when both exposures are present in the data? (E.g. when both drugs are on the market)",
+        "startDate": "Study start date - a calendar date specifying the minimum date that a cohort index can appear (leave blank to use all time):",
+        "subjectInMultipleCohorts": "If a subject is in multiple cohorts"
+      },
+      "timeAtRisk": "Time At Risk",
+      "timeAtRiskPanel": {
+        "daysFrom": "days from",
+        "defineTheTimeAtRiskWindowEnd": "Define the time-at-risk window end:",
+        "defineTheTimeAtRiskWindowStart": "Define the time-at-risk window start",
+        "minimumNumberOfDaysAtRisk": "The minimum number of days at risk?"
+      },
+      "usingCovariates": "Using OHDSI covariates for propensity score model.",
+      "view": "View:",
+      "viewAnalysisSettings": "Analysis Settings",
+      "viewComparisons": "Comparisons",
+      "viewEvaluationSettings": "Evaluation Settings",
+      "viewFull": "All",
+      "viewFullSpecification": "Full Specification"
+    },
+    "tabs": {
+      "executions": "Executions",
+      "specification": "Specification",
+      "utilities": "Utilities"
+    },
+    "title": "Population Level Effect Estimation",
+    "util": {
+      "downloadNameNote": "<b>Please Note:</b> The package name should consist of alphanumeric characters only. No spaces or special characters are permitted.",
+      "downloadNote": "Please provide a name for the study package and click download to obtain the study package in ZIP format.",
+      "downloadPackage": "Download Study Package",
+      "downloadProblemsNote": "Please see the downloads area to review problems with your analysis specification. These must be corrected before you can export your definition.",
+      "issueComparison": "You must specify at least 1 target",
+      "issueComparisonAndAnalysis": "You must specify at least 1 valid comparison and analysis setting.",
+      "issueDuplicate": "Your study contains duplicate values in one of the following areas: Comparisons or Analysis Settings.",
+      "issueNotSaved": "You must save your analysis before you can review & download.",
+      "issues": "Your study has the following issues that prevent you from reviewing the full specification details and downloading the study package:",
+      "packageNamePlaceholder": "Package name...",
+      "reviewDownload": "Review & Download",
+      "reviewFullSpec": "Review Full Study Specification"
+    }
+  },
+  "jobs": {
+    "refreshJobs": "Refresh Jobs"
+  },
+  "configuration": {
+    "alerts": {
+      "clearLocalCache": "Local Storage has been cleared.  Please refresh the page to reload configuration information.",
+      "clearServerCache": "Server cache has been cleared.",
+      "failUpdatePrioritySourceDaimon": "Failed to update priority source daimon"
+    },
+    "buttons": {
+      "check": "refresh",
+      "clearConfigurationCache": "Clear Configuration Cache",
+      "clearServerCache": "Clear Server Cache",
+      "importUsers": "Import Users from LDAP/AD",
+      "managePermissions": "Manage Permissions"
+    },
+    "changeSourcePriorities": "Change source priorities in:",
+    "confirms": {
+      "clearServerCache": "Are you sure you want to clear the server cache?"
+    },
+    "executionEngine": "Execution engine",
+    "newSource": "New Source",
+    "priorityOptions": {
+      "application": "Whole Application",
+      "session": "Current Session"
+    },
+    "roles": {
+      "importRoles": "Import roles",
+      "nameIsEmpty": "Role name is empty.",
+      "newRole": "New role",
+      "roleTitle": "Role #<%=id%>",
+      "tabs": {
+        "permissions": "Permissions",
+        "users": "Users",
+        "utilities": "Utilities"
+      },
+      "title": "Roles"
+    },
+    "rolesImport": {
+      "alertDanger": "Some of permissions and users in the list are not available on this instance of Atlas. These items will be filtered before importing.",
+      "alertWarning": "Some of permissions in the list contain specific entity IDs which are not guaranteed to match between source and target Atlas instances.",
+      "emptyMessage": "Insert JSON containig roles definitions in the textarea",
+      "fixJson": "Fix JSON",
+      "processed": "Created <%=proc> of <%=len%> roles.",
+      "removeThePermissions": "Remove the permissions",
+      "rolesDefinitionJson": "Roles definition JSON",
+      "title": "Import roles"
+    },
+    "title": "Configuration",
+    "userImport": {
+      "findGroup": "Find Group",
+      "importNow": "Import Now",
+      "loadingHistory": "Loading User Import Job History...",
+      "loadingUserImportJobList": "Loading User Import Job List...",
+      "newScheduledImport": "New Scheduled Import",
+      "scheduler": {
+        "after": "After",
+        "enabled": "Enabled",
+        "ends": "Ends",
+        "execute": "Execute:",
+        "executions": "executions",
+        "never": "Never",
+        "on": "On",
+        "preserveAssignedRoles": "Preserve assigned roles",
+        "repeat": "Repeat on:",
+        "schedule": "Schedule",
+        "startOn": "Start on:"
+      },
+      "searchGroup": "Search group:",
+      "searchGroupPlaceholder": "Search...",
+      "tabs": {
+        "jobHistory": "Job History",
+        "roleMapping": "Role Mapping",
+        "scheduler": "Scheduler"
+      },
+      "title": "Import Users from LDAP/Active Directory",
+      "userImportJob": "User Import Job",
+      "wizard": {
         "buttons": {
-          "export": "Export",
-          "import": "Import"
+          "next": "Next",
+          "prev": "Prev",
+          "startImport": "Start import"
         },
-        "loading": "loading"
+        "editRoles": {
+          "title": "Edit roles"
+        },
+        "finalPage": {
+          "message": "Import of users was finished."
+        },
+        "help": {
+          "adLdapUsername": "AD/LDAP Username",
+          "adLdapUsernameText": "This field is mapped from LDAP/AD <b>Display Name</b> field.",
+          "atlasLogin": "Atlas Login",
+          "atlasLoginText": "This field is mapped directly from LDAP/AD <b>login</b> field and would be used as login for Atlas."
+        },
+        "import": {
+          "buttons": {
+            "checkAll": "Check all",
+            "uncheckAll": "Uncheck all"
+          },
+          "header": "Please"
+        },
+        "roleMapping": {
+          "header": "Please"
+        },
+        "selectSource": {
+          "buttons": {
+            "details": "Details",
+            "testConnection": "Test connection"
+          },
+          "header": "Please",
+          "source": {
+            "activeDirectory": "Active Directory",
+            "ldap": "LDAP server"
+          }
+        },
+        "title": "Importing users"
+      }
+    },
+    "viewEdit": {
+      "bigQuery": {
+        "button": {
+          "remove": {
+            "label": "Remove"
+          }
+        },
+        "password": {
+          "label": "Service account key file (OAuthPvtKeyPath)"
+        }
+      },
+      "connectionString": {
+        "label": "Connection string:",
+        "placeholder": "Connection string",
+        "title": "Connection string"
+      },
+      "dialect": {
+        "label": "Source dialect:",
+        "options": {
+          "bigquery": "Google BigQuery",
+          "hive": "Hive LLAP",
+          "impala": "Impala",
+          "netezza": "IBM Netezza",
+          "oracle": "Oracle",
+          "pdw": "Microsoft PDW",
+          "postgresql": "PostgreSQL",
+          "redshift": "Amazon Redshift",
+          "sqlserver": "SQL server"
+        },
+        "title": "Source dialect"
+      },
+      "krb": {
+        "adminServer": {
+          "label": "KrbAdminServer:",
+          "placeholder": "KrbAdminServer",
+          "title": "KrbAdminServer"
+        },
+        "authenticationMethod": {
+          "label": "Kerberos authentication method:"
+        },
+        "buttons": {
+          "remove": "Remove:"
+        },
+        "hostFqdn": {
+          "label": "KrbHostFQDN:",
+          "placeholder": "KrbHostFQDN",
+          "title": "KrbHostFQDN was parsed from jdbc link"
+        },
+        "keytab": {
+          "label": "Keytab"
+        },
+        "password": {
+          "label": "Password:",
+          "placeholder": "Password",
+          "title": "Password"
+        },
+        "realm": {
+          "label": "KrbRealm:",
+          "placeholder": "KrbAdminServer",
+          "title": "KrbRealm was parsed from jdbc link"
+        },
+        "sourceDaimons": {
+          "label": "Source daimons"
+        },
+        "userPassword": {
+          "label": "User name and password"
+        },
+        "validation": {
+          "host": "&quot;KrbHostFQDN&quot; is empty. Please specify it in the following format: &quot;KrbHostFQDN=[value];&quot;",
+          "realm": "&quot;KrbRealm&quot; is empty. Please specify it in the following format: &quot;KrbRealm=[value];&quot;"
+        }
+      },
+      "password": {
+        "label": "Password:",
+        "placeholder": "Password",
+        "title": "Password"
+      },
+      "source": {
+        "alerts": {
+          "save": {
+            "error": "The Source was not saved. <%= message %>",
+            "errorMessage": "Please contact your administrator to resolve this issue."
+          },
+          "delete": {
+            "hasSelectedPriotirizableDaimons": "Some daimons of this source were given highest priority and are in use by application. Select new top-priority diamons to delete the source."
+          },
+          "sourceSelectedError": "An error occurred while attempting to get a source with id=<%=selectedSourceId%>."
+        },
+        "confirms": {
+          "close": "Source changes are not saved. Would you like to continue?",
+          "delete": "Delete source? Warning: deletion can not be undone!"
+        },
+        "label": "Source Key:",
+        "new": {
+          "placeholder": "New Source"
+        },
+        "placeholder": "Source key",
+        "title": "Source <%=name%>",
+        "validation": {
+          "empty": "Source name is empty"
+        }
+      },
+      "username": {
+        "label": "Username:",
+        "placeholder": "Username",
+        "title": "Username",
+        "validation": {
+          "empty": "&quot;Username&quot; is empty."
+        }
       }
     }
   },
+  "feedback": {
+    "pleaseContact": "For access or questions concerning the Atlas application please contact:",
+    "title": "Feedback"
+  },
+  "licenseAgreement": {
+    "accept": "Accept",
+    "description": "In order to use the SNOMED International SNOMED CT Browser and HemOnc",
+    "reject": "Reject",
+    "rejectWarning": "Without accepting this terms & conditions you can't use Atlas",
+    "title": "License Agreement"
+  },
+  "cohortDefinitionManager": {
+    "closeCohortTitle": "Close cohort definition",
+    "cohortDefinitionManagerText_1": "Cohort Not Generated",
+    "cohortDefinitionManagerText_10": "Whoops",
+    "cohortDefinitionManagerText_11": "The reporting system has encountered an error. Please provide the following details to your ATLAS administration team or submit an issue on ",
+    "cohortDefinitionManagerText_12": "Create Reporting Job Failed",
+    "cohortDefinitionManagerText_13": "Please Wait",
+    "cohortDefinitionManagerText_14": "Please wait while for the report status to be loaded.",
+    "cohortDefinitionManagerText_2": "This cohort has not been generated in the data source you selected. Please return to the generation tab to generate the cohort before accessing reporting.",
+    "cohortDefinitionManagerText_3": "Reports Not Generated",
+    "cohortDefinitionManagerText_4": "Reports have not yet been generated for this cohort. Please click the generate button below to generate the reports.",
+    "cohortDefinitionManagerText_5": "Make a Selection",
+    "cohortDefinitionManagerText_6": "Please make a selection in the Report Selections panel.",
+    "cohortDefinitionManagerText_7": "Generating Reports",
+    "cohortDefinitionManagerText_8": "Report Unavailable",
+    "cohortDefinitionManagerText_9": "The report you requested is not available. Please click the generate button to generate cohort reports for this data source.",
+    "confirms": {
+      "close": "Your cohort changes are not saved. Would you like to continue?",
+      "delete": "Delete cohort definition? Warning: deletion can not be undone!",
+      "generateAnalyses": "This will run <%=descr%> and may take about <%=duration%>. Are you sure?",
+      "save": "Cohort definition cannot be deleted because it is referenced in some analysis.",
+      "saveAlert": "A cohort definition with this name already exists. Please choose a different name."
+    },
+    "createCopyCohortTitle": "Create a copy of this cohort definition",
+    "emptyName": "Cohort Definition name is empty",
+    "failedWithoutAnyMessage": "Failed without any message",
+    "generateAllAnalyses": {
+      "descr": "all analyses",
+      "duration": "60-90 minutes"
+    },
+    "generateHealthcareAnalyses": {
+      "descr": "the Cost and Utilization analyses",
+      "duration": "10-45 minutes"
+    },
+    "generateQuickAnalysis": {
+      "descr": "minimal analyses set to provide a quick overview of the cohort",
+      "duration": "10 minutes"
+    },
+    "getLinkCohortTitle": "Get a link to this cohort definition",
+    "heraclesHeel": "Heracles Heel",
+    "panels": {
+      "appendix_1": "Appendix 1: Concept Set Definitions",
+      "availableCDMSources": "Available CDM Sources",
+      "cancel": "Cancel",
+      "clickToClear": "click to clear",
+      "closeConceptSet": "Close Concept Set",
+      "conceptIdentiferList": "Concept Identifer List",
+      "conceptIdentifiers": "Concept Identifiers",
+      "conceptSet": "Concept Set",
+      "conceptSetExpression": "Concept Set Expression",
+      "conceptSetExpressionJSON": "Concept Set Expression JSON",
+      "copyToConceptSetRepository": "Copy To Concept Set Repository",
+      "deleteConceptSet": "Delete Concept Set",
+      "enterConceptIdentifiers": "Enter Concept Identifiers",
+      "enterSourceCodes": "Enter Source Codes",
+      "export": "Export",
+      "exportAllToCSV": "Export All Concept Sets To CSV",
+      "fullAnalysis": "Full Analysis",
+      "generate": "Generate",
+      "generated": "Generated",
+      "generationDuration": "Generation Duration",
+      "generationStatus": "Generation Status",
+      "graphicalView": "Graphical View",
+      "hideReports": "Hide Reports",
+      "import": "Import",
+      "importConceptIdentifiers": "Import Concept Identifiers",
+      "importConceptSetExpression": "Import Concept Set Expression",
+      "importSourceCodes": "Import Source Codes",
+      "includedConceptIdentiferList": "Included Concept Identifer List",
+      "includedConcepts": "Included Concepts",
+      "includedSourceCodes": "Included Source Codes",
+      "json": "JSON",
+      "name": "Name:",
+      "newConceptSet": "New Concept Set",
+      "people": "People",
+      "quickAnalysis": "Quick Analysis",
+      "records": "Records",
+      "reload": "Reload",
+      "reportSelections": "Report Selections",
+      "repository": "Repository",
+      "sourceCodes": "Source Codes",
+      "sourceName": "Source Name",
+      "sql": "SQL",
+      "textView": "Text View",
+      "utilization": "Utilization",
+      "viewReports": "View Reports"
+    },
+    "saveCohortTitle": "Save cohort definition",
+    "selectReport": "Select a Report",
+    "tabs": {
+      "conceptSets": "Concept Sets",
+      "definition": "Definition",
+      "explore": "Explore",
+      "export": "Export",
+      "generation": "Generation",
+      "messages": "Messages",
+      "reporting": "Reporting"
+    }
+  },
   "cohortDefinitions": {
-    "title": "Cohort Definitions",
-    "newDefinition": "New Cohort",
-    "newDefinitionTitle": "Create a new cohort definition",
     "closeYourCurrentCohort": "Please close your current cohort definition before creating a new one",
     "cohort": {
-      "newCohortPlaceholder": "New Cohort Definition",
-      "saveCohortTitle": "Save cohort definition",
-      "closeCohortTitle": "Close cohort definition",
-      "createCopyCohortTitle": "Create a copy of this cohort definition",
-      "getLinkCohortTitle": "Get a link to this cohort definition",
-      "configureAccessTitle": "Configure access",
-      "deleteTitle": "Delete",
-      "emptyName": "Cohort Definition name is empty",
-      "tabs": {
-        "definition": "Definition",
-        "conceptSets": "Concept Sets",
-        "generation": "Generation",
-        "reporting": "Reporting",
-        "explore": "Explore",
-        "export": "Export",
-        "messages": "Messages"
-      },
-      "panels": {
-        "definition": {
-          "enterCohortPlaceholder": "Enter a cohort definition description here",
-          "importConceptSet": "Import Concept Set From Repository..."
-        },
-        "newConceptSet": "New Concept Set",
-        "import": "Import",
-        "exportAllToCSV": "Export All Concept Sets To CSV"
-      },
       "modals": {
         "analysisTypes": {
-          "title": "Analysis Types",
           "bold_1": "Quick Analysis",
-          "text_1": "Runs minimal analysis to provide a quick overview of this cohort's year of birth, demographics, drug eras and condition eras. (estimated: 10 minutes)",
           "bold_2": "Healthcare Utilization",
-          "text_2": "Runs analyses to provide Exposure, Visit and Drug Utilization reports. (estimated: 10 - 40 minutes)",
           "bold_3": "Full Analysis",
-          "text_3": "Runs a complete set of characterization reports. (estimated: 60 minutes)"
-        },
-        "linkToCohortDefinition": {
-          "title": "Link to Cohort Definition",
-          "text_1": "This link can be used to access this cohort definition directly from the WebAPI from other tools like R as well as for importing across ATLAS instances."
+          "text_1": "Runs minimal analysis to provide a quick overview of this cohort's year of birth",
+          "text_2": "Runs analyses to provide Exposure",
+          "text_3": "Runs a complete set of characterization reports. (estimated: 60 minutes)",
+          "title": "Analysis Types"
         },
         "cohortDefinition": {
-          "title": "Cohort Definition",
-          "text_1": "A cohort is defined as the set of persons satisfying one or more inclusion criteria for a duration of time. One person may qualify for one cohort multiple times during non-overlapping time intervals. Cohorts are constructed in ATLAS by specifying cohort entry criteria and cohort exit criteria. Cohort entry criteria involve selecting one or more initial events, which determine the start date for cohort entry, and optionally specifying additional inclusion criteria which filter to the qualifying events. Cohort exit criteria are applied to each cohort entry record to determine the end date when the person’s episode no longer qualifies for the cohort."
+          "text_1": "A cohort is defined as the set of persons satisfying one or more inclusion criteria for a duration of time. One person may qualify for one cohort multiple times during non-overlapping time intervals. Cohorts are constructed in ATLAS by specifying cohort entry criteria and cohort exit criteria. Cohort entry criteria involve selecting one or more initial events",
+          "title": "Cohort Definition"
         },
         "importConceptSet": {
           "title": "Import Concept Set From Repository..."
+        },
+        "linkToCohortDefinition": {
+          "text_1": "This link can be used to access this cohort definition directly from the WebAPI from other tools like R as well as for importing across ATLAS instances.",
+          "title": "Link to Cohort Definition"
+        }
+      },
+      "panels": {
+        "definition": {
+          "cohortExpressionEditor": {
+            "cohortEntryEventsText_7": "per person."
+          }
         }
       }
     },
-    "cohortId": "Cohort #",
-    "noConceptSets": "No concept sets to export",
-    "saveDefinitionBefore": "You must save the definition before you can export",
-    "const": {
-      "periods": {
-        "ww": "Weekly",
-        "mm": "Monthly",
-        "qq": "Quarterly",
-        "yy": "Yearly"
-      },
-      "periodType": "Period type",
-      "rollups": {
-        "rollupUtilizationVisit": "Visits",
-        "rollupUtilizationDrug": "Drugs"
+    "cohortFeatureBrowser": {
+      "cohortFeatureBrowserText_1": "Long Term:",
+      "cohortFeatureBrowserText_2": "365 day lookback.",
+      "cohortFeatureBrowserText_3": "Medium Term:",
+      "cohortFeatureBrowserText_4": "180d lookback ",
+      "cohortFeatureBrowserText_5": "Short Term:",
+      "cohortFeatureBrowserText_6": "30d lookback.",
+      "cohortFeatureBrowserText_7": "Overlapping:",
+      "cohortFeatureBrowserText_8": "Event spans cohort start date.",
+      "cohortFeatureBrowserText_9": "Exploring concept hierarchy for:",
+      "tabs": {
+        "conditions": "Conditions",
+        "demographics": "Demographic",
+        "distributions": "Distributions",
+        "drugs": "Drugs",
+        "measurements": "Measurements",
+        "observations": "Observations",
+        "procedures": "Procedures"
       }
-    }
+    },
+    "cohortId": "Cohort #<%=id%>",
+    "cohortreports": {
+      "inclusionReport": "Inclusion Report",
+      "inclusionReportFor": "Inclusion Report for",
+      "tabs": {
+        "byEvents": "By Events",
+        "byPerson": "By Person"
+      }
+    },
+    "costUtilization": {
+      "allowedCharged": "Allowed/Charged",
+      "allowedCost": "Allowed cost",
+      "allowedCostPmpm": "Allowed cost pmpm",
+      "averageLengthOfStay": "Average Length of Stay (in days)",
+      "chargedCost": "Charged cost",
+      "chargedCostPMPM": "Charged cost PMPM",
+      "costUtilizationText_1": "Save as CSV",
+      "displayCharts": "Displayed charts:",
+      "drugUtilDetailedText_1": "Return to the drugs summary",
+      "drugUtilSummaryText_1": "Click on a drug to get detailed statistics:",
+      "drugUtilText_1": "Summary for all drugs",
+      "drugUtilText_2": "Detailed drug report for",
+      "exposure1kYear": "Exposure/p 1k/year",
+      "paidAllowed": "Paid/Allowed",
+      "paidCost": "Paid cost",
+      "paidCostPMPM": "Paid Cost PMPM",
+      "periodStart": "Period start",
+      "personCount": "Person Count",
+      "personExposureText_1": "Person Count",
+      "personExposureText_2": "Total Exposure in Years",
+      "personExposureText_3": "Average Exposure Years per 1",
+      "personExposureText_4": "Detailed statistics are not available",
+      "personPercent": "Person Percent",
+      "recordsPer1000": "Records per 1",
+      "recordsPer1000PerYear": "Records per 1",
+      "recordsPer1000WithRecord": "Records per 1",
+      "reportManager": {
+        "reportManagerText_1": "Cohort Reporting",
+        "reportManagerText_10": "Race",
+        "reportManagerText_11": "Ethnicity",
+        "reportManagerText_12": "Report Not implemented",
+        "reportManagerText_14": "Prevalence by Month",
+        "reportManagerText_15": "Cohort Start",
+        "reportManagerText_16": "Persons in Cohort from Start to End",
+        "reportManagerText_17": "Number of Persons by Duration from Cohort Start to Cohort End",
+        "reportManagerText_18": "Distribution of Age at Cohort Start by Cohort Start Year",
+        "reportManagerText_19": "Age Distributions",
+        "reportManagerText_2": "Choose Cohort Definition",
+        "reportManagerText_20": "Distribution of Age at Cohort Start by Gender",
+        "reportManagerText_21": "Age at Index",
+        "reportManagerText_22": "Tornado",
+        "reportManagerText_23": "Sample Profiles",
+        "reportManagerText_24": "Select a Bar from the Tornado Plot to view Sample Profiles for that Strata.",
+        "reportManagerText_25": "Condition Prevalence",
+        "reportManagerText_26": "Table",
+        "reportManagerText_27": "Treemap",
+        "reportManagerText_28": "Box Size: Prevalence",
+        "reportManagerText_29": "Drilldown Report",
+        "reportManagerText_3": "Data Completeness",
+        "reportManagerText_30": "Drugs by Index Date ",
+        "reportManagerText_31": "Age at First Observation",
+        "reportManagerText_32": "The distribution of age at first observation in the cohort.",
+        "reportManagerText_33": "Age by Gender",
+        "reportManagerText_34": "The distribution of age at first observation in the cohort stratified by gender.",
+        "reportManagerText_35": "Observation Length",
+        "reportManagerText_36": "Distribution of total observation time in cohort.",
+        "reportManagerText_37": "Observation Length by Gender",
+        "reportManagerText_38": "Distribution of total observation time in cohort by gender.",
+        "reportManagerText_39": "Observation Length by Age Decile",
+        "reportManagerText_4": "Care Site",
+        "reportManagerText_40": "Observation Periods per Person",
+        "reportManagerText_41": "Persons With Continuous Observation By Month",
+        "reportManagerText_42": "Condition Era Prevalence",
+        "reportManagerText_43": "Condition Era Prevalence by Month",
+        "reportManagerText_44": "Age at First Diagnosis",
+        "reportManagerText_45": "Length of Condition Era",
+        "reportManagerText_46": "Procedure Prevalence",
+        "reportManagerText_47": "Condition Prevalence",
+        "reportManagerText_48": "Condition Prevalence by Month",
+        "reportManagerText_49": "Condition Type",
+        "reportManagerText_5": "Entropy by Date",
+        "reportManagerText_50": "Drug Era Prevalence",
+        "reportManagerText_51": "Drug Era Prevalence by Month",
+        "reportManagerText_52": "Age at First Exposure by Gender",
+        "reportManagerText_53": "Length of Era Distribution",
+        "reportManagerText_54": "Drug Exposure",
+        "reportManagerText_55": "Drug Exposure Prevalence",
+        "reportManagerText_56": "Drug Exposure Prevalence by Month",
+        "reportManagerText_57": "Age at First Exposure",
+        "reportManagerText_58": "Days Supply Distribution",
+        "reportManagerText_59": "Quantity Distribution",
+        "reportManagerText_6": "Year of Birth",
+        "reportManagerText_60": "Refills Distribution",
+        "reportManagerText_61": "Drugs by Type",
+        "reportManagerText_62": "Procedure Prevalence",
+        "reportManagerText_63": "Procedure Prevalence by Month",
+        "reportManagerText_64": "Procedures by Type",
+        "reportManagerText_65": "Age at First Occurrence",
+        "reportManagerText_66": "Death Prevalence by Age",
+        "reportManagerText_67": "Death Prevalence by Month",
+        "reportManagerText_68": "Death Details",
+        "reportManagerText_69": "Age at Death",
+        "reportManagerText_7": "The number of people in this cohort shown with respect to their year of birth.",
+        "reportManagerText_70": "Death by Type",
+        "reportManagerText_71": "Click Here to Choose a Cohort",
+        "reportManagerText_8": "Demographics",
+        "reportManagerText_9": "Gender"
+      },
+      "saveAsCSV": "Save as CSV",
+      "totalExposure": "Total Exposure in years",
+      "totalLengthOfStay": "Total length of stay (in days)",
+      "totalRecords": "Total Records"
+    },
+    "newDefinition": "New Cohort",
+    "newDefinitionTitle": "Create a new cohort definition",
+    "noConceptSets": "No concept sets to export",
+    "runDiagnostics": "Run diagnostics",
+    "saveDefinitionBefore": "You must save the definition before you can export",
+    "title": "Cohort Definitions"
   },
   "const": {
     "eventsList": {
@@ -1664,42 +3125,199 @@
     },
     "newEntityNames": {
       "characterization": "New Characterization",
-      "featureAnalysis": "New Feature Analysis",
       "cohortDefinition": "New Cohort Definition",
+      "conceptSet": "New Concept Set",
+      "featureAnalysis": "New Feature Analysis",
       "incidenceRate": "New Incidence Rate Analysis",
       "pathway": "New Cohort Pathway",
       "ple": "New Population Level Estimation Analysis",
-      "conceptSet": "New Concept Set",
-      "plp": "New Patient Level Prediction Analysis"
+      "plp": "New Patient Level Prediction Analysis",
+      "role": "New Role",
+      "source": "New Source"
     },
-    "relatedSourcecodesOptions": {
-      "vocabulary": "Словарь",
-      "invalidReason": "Причина невалидности",
-      "class": "Класс",
-      "domain": "Домен"
-    },
-    "relatedSourcecodesColumns": {
-      "id": "Id",
-      "code": "Код",
-      "name": "Название",
-      "class": "Класс",
-      "standardConceptCaption": "Стандартная концепция",
-      "domain": "Домен",
-      "vocabulary": "Словарь"
-    },
-    "timeAtRiskCohortDate": {
-      "cohortStartDate": "Cohort start date",
-      "cohortEndDate": "Cohort end date"
+    "weekdays": {
+      "friday": {
+        "long": "Friday",
+        "short": "FR"
+      },
+      "monday": {
+        "long": "Monday",
+        "short": "MO"
+      },
+      "saturday": {
+        "long": "Saturday",
+        "short": "SA"
+      },
+      "sunday": {
+        "long": "Sunday",
+        "short": "SU"
+      },
+      "thursday": {
+        "long": "Thursday",
+        "short": "TH"
+      },
+      "tuesday": {
+        "long": "Tuesday",
+        "short": "TU"
+      },
+      "wednesday": {
+        "long": "Wednesday",
+        "short": "WE"
+      }
     }
   },
   "notifications": {
-    "title": "Notifications (last <%=length%>)",
-    "explanation": "Notifications for jobs will be displayed here. A job could include cohort generation, cohort reporting, or other tasks that can take a long time to complete. This top right notification icon will highlight <i class=\"fa fa-bell pending\"></i> if you have new notifications available.",
-    "jobName": "Job Name",
     "duration": "Duration",
-    "endTime": "End Time",
+    "endTime": "End time",
+    "explanation": "Notifications for jobs will be displayed here. A job could include cohort generation",
+    "hideCompletedJobsButton": "Hide completed jobs",
+    "jobName": "Job Name",
+    "showCompletedJobsButton": "Show completed jobs",
     "status": "Status",
-    "showCompletedJobsButton": "Show Completed Jobs",
-    "hideCompletedJobsButton": "Hide Completed Jobs"
+    "title": "Notifications (last <%=length%>>)"
+  },
+  "predictions": {
+    "analysisSettings": "Analysis Settings",
+    "confirmChanges": "Patient level prediction changes are not saved. Would you like to continue?",
+    "covariateSettingsDesc": "Add or update the covariate settings",
+    "covariateSettingsTitle": "Covariate Settings",
+    "descriptionPlaceholder": "enter a description here (1000 characters max)",
+    "downloadLatestResult": "Download latest result",
+    "downloadStudyPackage": "Download Study Package",
+    "editors": {
+      "evaluationEditorText_1": "Specify how to split the test/train set:",
+      "evaluationEditorText_2": "Percentage of the data to be used as the test set (0-100%):",
+      "evaluationEditorText_3": "The number of folds used in the cross validation:",
+      "evaluationEditorText_4": "The seed used to split the test/train set when using a person type testSplit (optional):",
+      "executionEditorText_1": "Perform sampling:",
+      "executionEditorText_2": "How many patients to use for a subset?",
+      "executionEditorText_3": "Minimum covariate occurrence: If a covariate occurs in a fraction of the target population less than this value",
+      "executionEditorText_4": "Normalize covariates:",
+      "populationCovariatePlaceholder": "Covariate IDs",
+      "populationEditorText_1": "Define the time-at-risk window start",
+      "populationEditorText_2": "Should descendant concepts be added to the list of included concepts?",
+      "populationEditorText_3": "What concepts do you want to exclude in baseline covariates in the propensity score model? (Leave blank if you want to include everything)",
+      "populationEditorText_4": "Should subjects without time at risk be removed?",
+      "populationEditorText_5": "Minimum time at risk:",
+      "populationEditorText_6": "Include people with outcomes who are not observed for the whole at risk period?",
+      "populationEditorText_7": "Should only the first exposure per subject be included?",
+      "populationEditorText_8": "Remove patients who have observed the outcome prior to cohort entry?",
+      "populationEditorText_9": "How many days to look back from cohort entry for the outcome?",
+      "populationSelectCovariates": "Select Covariates",
+      "predictionEditorText_1": "What concepts do you want to include in baseline covariates in the propensity score model? (Leave blank if you want to include everything)"
+    },
+    "emptyMessageTitle": "Patient Level Prediction name is empty.",
+    "export": "Export",
+    "fullAnalysisList": "Full Analysis List",
+    "generate": "Generate",
+    "generating": "Generating...",
+    "generations": "Generations",
+    "import": "Import",
+    "inputTypes": {
+      "adaBoostSettings": {
+        "desc_learningRate": "Learning rate shrinks the contribution of each classifier. There is a trade-off between learning rate and nEstimators.",
+        "desc_nEstimators": "The maximum number of estimators at which boosting is terminated",
+        "name_learningRate": "Learning rate",
+        "name_nEstimators": "Maximum number of estimators"
+      },
+      "decisionTreeSettings": {
+        "desc_classWeight": "Class weight",
+        "desc_maxDepth": "Maximum number of interactions - a large value will lead to slow model training",
+        "desc_minImpurityDecrease": "Threshold for early stopping in tree growth. A node will split if its impurity is above the threshold",
+        "desc_minSamplesLeaf": "The minimum number of samples per leaf",
+        "desc_minSamplesSplit": "The minimum samples per split",
+        "desc_plot": "The minimum samples per split",
+        "name_classWeight": "Class weight",
+        "name_maxDepth": "Max depth",
+        "name_minImpurityDecrease": "Minimum impurity split",
+        "name_minSamplesLeaf": "Minimum samples per leaf",
+        "name_minSamplesSplit": "Minimum samples per split",
+        "name_plot": "Minimum samples per split"
+      },
+      "gradientBoostingMachineSettings": {
+        "desc_learnRate": "The boosting learn rate",
+        "desc_maxDepth": "Maximum number of interactions - a large value will lead to slow model training",
+        "desc_minRows": "The minimum number of rows required at each end node of the tree",
+        "desc_nthread": "The number of computer threads to use (how many cores do you have?)",
+        "desc_ntrees": "The number of trees to build",
+        "name_learnRate": "Boosting learn rate",
+        "name_maxDepth": "Maximum number of interactions",
+        "name_minRows": "Minimum number of rows",
+        "name_nthread": "Computer threads for computation",
+        "name_ntrees": "Trees to build"
+      },
+      "knnSettings": {
+        "desc_k": "The number of neighbors to consider",
+        "name_k": "Number of neighbors"
+      },
+      "lassoLogisticRegressionSettings": {
+        "desc": "A single value used as the starting value for the automatic lambda search",
+        "name": "Starting value for the automatic lambda search"
+      },
+      "mlpSettings": {
+        "desc_alpha": "The l2 regularisation",
+        "desc_size": "The number of hidden nodes",
+        "name_alpha": "Alpha",
+        "name_size": "Number of hidden nodes"
+      },
+      "randomForestSettings": {
+        "desc_maxDepth": "Maximum number of interactions - a large value will lead to slow model training",
+        "desc_mtries": "The number of features to include in each tree (-1 defaults to square root of total features)",
+        "desc_ntrees": "The number of trees to build",
+        "desc_varImp": "Perform an initial variable selection prior to fitting the model to select the useful variables",
+        "name_maxDepth": "Max depth",
+        "name_mtries": "Number of tree features",
+        "name_ntrees": "Number of tress to build",
+        "name_varImp": "Perform an initial variable selection"
+      }
+    },
+    "item": {
+      "addCovariateSettings": "Add Covariate Settings",
+      "addModelSettings": "Add Model Settings",
+      "addOutcomeCohort": "Add Outcome Cohort",
+      "addPopulationSettings": "Add Population Settings",
+      "addTargetCohort": "Add Target Cohort",
+      "all": "All",
+      "analysisSettings": "Analysis Settings",
+      "covariateSettings": "Covariate Settings",
+      "executionSettings": "Execution Settings",
+      "modelSettings": "Model Settings",
+      "outcomeCohort": "Outcome Cohorts",
+      "populationSettings": "Population Settings",
+      "predictionProblemSettings": "Prediction Problem Settings",
+      "targetCohort": "Target Cohorts",
+      "trainingSettings": "Training Settings",
+      "view": "View:"
+    },
+    "itemId": "Patient Level Prediction #",
+    "modelSettingsDesc": "Use the options below to edit the model settings",
+    "naiveMessage": "There are no settings to edit for Naive Bayes",
+    "newItem": "New Patient Level Prediction",
+    "newItemPlaceholder": "New Patient Level Prediction Analysis",
+    "notEnoughPermissions": "Not enough permissions to view results",
+    "notEnoughPermissionsToGenerate": "Not enough permissions to generate or changes were not saved or Execution Engine is not available",
+    "pleaseNote": "Please Note:",
+    "populationSettingsDesc": "Add or update the population settings",
+    "populationSettingsTitle": "Population Settings",
+    "predictionProblemSettings": "Prediction Problem Settings",
+    "resetToDefault": "Reset to default",
+    "reviewAndDownload": "Review & Download",
+    "reviewFullStudy": "Review Full Study Specification",
+    "selectCohort": "Select Cohort...",
+    "tabs": {
+      "executions": "Executions",
+      "specification": "Specification",
+      "utilities": "Utilities"
+    },
+    "title": "Patient Level Prediction",
+    "usingDefault": "Using default",
+    "utilitiesText_1": "Your study has the following issues that prevent you from reviewing the full specification details and downloading the study package:",
+    "utilitiesText_2": "You must specify at least 1 of each: Target Cohort",
+    "utilitiesText_3": "Your study contains duplicate values in one of the following areas: Model Settings",
+    "utilitiesText_4": "You must save your analysis before you can review & download.",
+    "utilitiesText_5": "Please review the full study specification below and scroll down the page to download the study package.",
+    "utilitiesText_6": "Please provide a name for the study package and click &quot;download&quot; to obtain the study package in ZIP format.",
+    "utilitiesText_7": "The package name should consist of alphanumeric characters only. No spaces or special characters are permitted.",
+    "utilitiesText_8": "Please see the downloads area to review problems with your analysis specification. These must be corrected before you can export your definition."
   }
 }

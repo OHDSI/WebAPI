@@ -100,7 +100,9 @@
       "rolesWithWriteAccess": "Роли с разрешением на запись:",
       "revoke": "Отозвать"
     },
-    "unspecified": "НЕОПРЕДЕЛЕННЫЕ!"
+    "unspecified": "НЕОПРЕДЕЛЕННЫЕ!",
+    "noneSelectedText": "Ничего не выбрано",
+    "noneResultsText": "Не найдено совпадений для {0}"
   },
   "commonErrors": {
     "browserWarning": "Пожалуйста, обратите внимание, что официально поддерживается только браузер Chrome версии не ниже v.63",
@@ -1206,7 +1208,9 @@
     "incidence": "Инцидент",
     "checkConnection": "Проверить соединение",
     "refreshCache": "Обновить кэш",
-    "strata": "Срез"
+    "strata": "Срез",
+    "prevalence": "Распространенность",
+    "personCount": "Количество человек"
   },
   "filters": {
     "visit": "Посещение",
@@ -1300,11 +1304,7 @@
       }
     },
     "table": {
-      "tableTab": "Таблица",
-      "conceptId": "Id концепции",
-      "name": "Название",
-      "prevalence": "Распространенность",
-      "personCount": "Количество человек"
+      "tableTab": "Таблица"
     },
     "loadingDrilldownReport": "Загрузка развернутого отчета",
     "drilldown": {

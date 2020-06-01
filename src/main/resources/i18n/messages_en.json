@@ -97,10 +97,12 @@
     "set": "Set",
     "unsaved": "(unsaved)",
     "unspecified": "UNSPECIFIED!",
-    "yes": "Yes') : ko.i18n('common.no",
+    "yes": "Yes",
     "yesDescendant": "Yes (Descendant)",
     "yesExact": "Yes (Exact)",
-    "yesParent": "Yes (Parent)"
+    "yesParent": "Yes (Parent)",
+    "noneSelectedText": "Nothing selected",
+    "noneResultsText": "No matches found for {0}"
   },
   "commonErrors": {
     "noSources": "The current WebAPI has no sources defined.<br/>Please add one or more on <a href=\"#/configure\">configuration</a> page.",
@@ -1138,8 +1140,10 @@
     "permission": "Permissions",
     "person": "Person",
     "personsCount": "Persons",
+    "personCount": "Person Count",
     "personsPct": "Persons %",
     "pregnancyConcept": "Pregnancy Concept",
+    "prevalence": "Prevalence",
     "priorOutcomeLookback": "Prior Outcome Lookback",
     "productLabelAncestor": "Product Label (Ancestor Concept Match)",
     "productLabelCountDescendant": "Product Label Count (Descendant Concept Match)",
@@ -1323,17 +1327,13 @@
     "selectAReport": "Select a Report",
     "selectASource": "Select a Source",
     "table": {
-      "conceptId": "Concept Id",
-      "name": "Name",
-      "personCount": "Person Count",
-      "prevalence": "Prevalence",
       "tableTab": "Table"
     },
     "treemap": {
       "legend": {
         "boxSize": "Box Size:",
         "color": "Color:",
-        "colorExplanation": "(Light to Dark = Low to High)"
+        "colorExplanation": "(Light to Dark = Low to High), Use Ctrl-Click to Zoom, Alt-Click to Reset Zoom"
       },
       "treemapTab": "Treemap"
     }

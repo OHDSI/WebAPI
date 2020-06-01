@@ -34,7 +34,8 @@ import org.pac4j.cas.config.CasConfiguration;
 import org.pac4j.core.client.Client;
 import org.pac4j.core.client.Clients;
 import org.pac4j.core.config.Config;
-import org.pac4j.core.http.callback.PathParameterCallbackUrlResolver;
+import org.pac4j.core.http.callback.CallbackUrlResolver;
+import org.pac4j.core.http.callback.QueryParameterCallbackUrlResolver;
 import org.pac4j.oauth.client.FacebookClient;
 import org.pac4j.oauth.client.GitHubClient;
 import org.pac4j.oauth.client.Google2Client;
@@ -248,7 +249,10 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
         // OAuth
         //
+        CallbackUrlResolver urlResolver = new QueryParameterCallbackUrlResolver();
         Google2Client googleClient = new Google2Client(this.googleApiKey, this.googleApiSecret);
+        googleClient.setCallbackUrl(oauthApiCallback);
+        googleClient.setCallbackUrlResolver(urlResolver);
         googleClient.setScope(Google2Client.Google2Scope.EMAIL_AND_PROFILE);
 
         FacebookClient facebookClient = new FacebookClient(this.facebookApiKey, this.facebookApiSecret);
@@ -260,7 +264,8 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
         OidcConfiguration configuration = oidcConfCreator.build();
         OidcClient oidcClient = new OidcClient(configuration);
-        oidcClient.setCallbackUrlResolver(new PathParameterCallbackUrlResolver());
+        oidcClient.setCallbackUrl(oauthApiCallback);
+        oidcClient.setCallbackUrlResolver(urlResolver);
         List<Client> clients = new ArrayList<>(Arrays.asList(
                 googleClient,
                 facebookClient,

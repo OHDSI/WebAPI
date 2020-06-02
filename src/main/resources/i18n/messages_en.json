@@ -1397,7 +1397,7 @@
       "exportConceptSetsButton": "Export Concept Sets",
       "exportConceptSetsNumber": "concept sets selected for export.",
       "exportInstructions": "Instructions:",
-      "exportInstructionsText": "Select the concept sets for export by selecting each row in the grid. When done",
+      "exportInstructionsText": "Select the concept sets for export by selecting each row in the grid. When done, use the 'Export Concept Sets' button which will start the download in a new window.",
       "saveWarning": "Cohort changes are not saved. Would you like to continue?",
       "tabs": {
         "export": "Export",

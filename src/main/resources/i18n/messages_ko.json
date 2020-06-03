@@ -12,8 +12,8 @@
       "lengthMenu": "Show _MENU_ entries",
       "loadingRecords": "Loading...",
       "processing": "Processing...",
-      "search": "Filter:",
-      "searchPlaceholder": "Search...",
+      "search": "검색:",
+      "searchPlaceholder": "검색...",
       "zeroRecords": "No matching records found",
       "paginate": {
         "first": "First",
@@ -74,8 +74,8 @@
     "delete": "Delete",
     "deselectAll": "Deselect All",
     "download": "Download",
-    "export": "Export",
-    "import": "Import",
+    "export": "내보내기",
+    "import": "불러오기",
     "loading": "Loading",
     "loadingWithDots": "Loading...",
     "max": "Max",
@@ -89,7 +89,7 @@
     "progress": "Progress",
     "refresh": "Refresh",
     "save": "Save",
-    "search": "Search",
+    "search": "검색",
     "selectAll": "Select All",
     "set": "Set",
     "unsaved": "(unsaved)",
@@ -120,19 +120,19 @@
   },
   "options": {
     "after": "After",
-    "all": "all",
+    "all": "모두",
     "allDrugSources": "All drug sources",
-    "allEvents": "all events",
+    "allEvents": "모든 이벤트",
     "allVisitTypes": "All visit types",
     "allVisits": "All visits",
-    "any": "any",
-    "atLeast": "at least",
-    "atMost": "at most",
+    "any": "어느 하나",
+    "atLeast": "최소",
+    "atMost": "최대",
     "before": "Before",
     "between": "between",
     "contains": "containing",
     "drugSource": "Drug Source",
-    "earliestEvents": "earliest event",
+    "earliestEvents": "최초 이벤트",
     "endDate": "end date",
     "endOfContinuousDrugExposure": "end of a continuous drug exposure",
     "endOfContinuousObservation": "end of continuous observation",
@@ -145,7 +145,7 @@
     "indexStartDate": "index start date",
     "isAnyOf": "is any of",
     "isNotAnyOf": "is not any of",
-    "latestEvents": "latest event",
+    "latestEvents": "마지막 이벤트",
     "mm": "Monthly",
     "no": "No",
     "notBetween": "not between",
@@ -198,44 +198,44 @@
     },
     "cohortExpressionEditor": {
       "addCensoringEvent": "Add Censoring Event...",
-      "addInitialEvent": "Add Initial Event...",
+      "addInitialEvent": "초기 이벤트 추가...",
       "addTrimmingOptions": "add trimming options...",
       "censoringEvents": "Censoring Events:",
-      "cohortEntryEvents": "Cohort Entry Events",
+      "cohortEntryEvents": "코호트 진입 이벤트",
       "cohortEntryEventsText_1": "Events are recorded time-stamped observations for the persons",
-      "cohortEntryEventsText_2": "Events having any of the following criteria:",
-      "cohortEntryEventsText_3": "with continuous observation of at least",
-      "cohortEntryEventsText_4": "days before and",
-      "cohortEntryEventsText_5": "days after event index date",
-      "cohortEntryEventsText_6": "Limit initial events to:",
+      "cohortEntryEventsText_2": "다음 기준 중 어떠한 하나의 기준을 만족하는 이벤트 :",
+      "cohortEntryEventsText_3": "이벤트 기준 시점로부터 최소",
+      "cohortEntryEventsText_4": "일 이전과",
+      "cohortEntryEventsText_5": "일 이후의 연속적인 관찰기간을 가짐.",
+      "cohortEntryEventsText_6": "사람마다 이니셜 이벤트를  다음으로 제한함:",
       "cohortEntryEventsText_7": "per person.",
       "cohortErasText_1": "Specify era collapse gap size:",
       "cohortErasText_2": "Left censor cohort start dates to",
       "cohortErasText_3": "Right censor cohort end dates to",
-      "cohortErasTitle": "Cohort Eras",
-      "cohortExit": "Cohort Exit",
+      "cohortErasTitle": "코호트 에라 기준",
+      "cohortExit": "코호트 종료 기준",
       "cohortExitText_1": "For all qualifying events",
       "cohortExitText_2": "The qualifying initial event can be set to end after a fixed time period relative to the event start or end date",
       "cohortExitText_3": "Criteria can be used to signal the end of an event.  If a censoring event is identified between a qualifying event's start and end date",
       "cohortExitText_4": "Exit Cohort based on the following criteria:",
       "cohortExitText_5": "No censoring events selected.",
-      "cohortExitTitle": "Cohort Exit",
+      "cohortExitTitle": "코호트 종료 기준",
       "cohortExitTitle_1": "Event End Dates",
       "cohortExitTitle_2": "Censoring Events",
       "copyOf": "Copy of: ",
       "days": "days",
       "deleteCriteria": "Delete Criteria",
       "eventPersistence": "Event Persistence:",
-      "inclusionCriteria": "Inclusion Criteria",
+      "inclusionCriteria": "포함 기준",
       "inclusionCriteriaText": "The qualifying cohort will be defined as all persons who have an initial event",
       "inclusionCriteriaText_1": "Limit qualifying events to:",
-      "inclusionCriteriaTitle": "Inclusion Criteria",
+      "inclusionCriteriaTitle": "포함 기준",
       "indexMessage": "The index date refers to the event from the Cohort Entry criteria.",
       "newInclusionCriteria": "New inclusion criteria",
       "noCensoring": "No Censoring",
-      "removeRestriction": "Remove initial event restriction",
+      "removeRestriction": "이니셜 이벤트 의 제한 조건 제거",
       "restrictInitialEventsButton": "Restrict initial events",
-      "restrictInitialEventsTitle": "Restrict intial events to:",
+      "restrictInitialEventsTitle": "이니셜 이벤트 의 제한 조건",
       "unnamedCriteria": "Unnamed Criteria"
     },
     "cohortExpressionViewer": {
@@ -245,7 +245,7 @@
       "cohortExpressionViewerText_12": "Exit Cohort based on the following:",
       "cohortExpressionViewerText_13": "Cohort Collapse Strategy:",
       "cohortExpressionViewerText_14": "Collapse cohort by era with a gap size of ",
-      "cohortExpressionViewerText_15": "Inclusion Criteria #(<%=index%>): <%=name%>",
+      "cohortExpressionViewerText_15": "포함 기준 #(<%=index%>): <%=name%>",
       "cohortExpressionViewerText_2": "with continuous observation of at least",
       "cohortExpressionViewerText_3": "days prior and ",
       "cohortExpressionViewerText_4": "days after event index date",
@@ -262,24 +262,24 @@
       "addSelected": "Add Selected",
       "close": "Close",
       "done": "Done",
-      "importButton": "Import",
+      "importButton": "불러오기",
       "importConcepts": "Import Concepts",
-      "search": "Search",
+      "search": "검색",
       "selectConcept": "Select Concept",
       "waitMessage": "Please wait while the Vocabulary Provider initalizes..."
     },
     "conceptSetBuilder": {
       "conceptSet": "Concept Set",
       "delete": "Delete",
-      "export": "Export",
+      "export": "내보내기",
       "exportConceptSetTitle": "Export Concept Set...",
-      "import": "Import",
+      "import": "불러오기",
       "importConceptSetPlaceholder": "Import Concept Set",
       "importConceptSetTitle": "Import Concept Set...",
       "includedConcepts": "Included Concepts",
       "load": "Load",
       "mappedConcepts": "Mapped Concepts",
-      "newConceptSet": "New Concept Set",
+      "newConceptSet": "새로운 컨셉 세트",
       "pleaseSelectCodesetToModify": "Please select codeset to modify...",
       "removeSelected": "Remove Selected",
       "selectConceptSet": "Select Concept Set...",
@@ -294,10 +294,10 @@
     "conceptSetSelector": {
       "clearConceptSet": "Clear Concept Set",
       "importConcept": "Import Concept Set",
-      "searchWithTripleDots": "Search..."
+      "searchWithTripleDots": "검색..."
     },
     "conditionDeath": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "속성 추가",
       "anyDeath": "Any Death",
       "conditionDeathText_1": "a death occurrence from",
       "conditionDeathText_2": "occurrence start is:",
@@ -309,7 +309,7 @@
       "indexDataText": "The index date refers to the death event of <%= conceptSetName %>."
     },
     "conditionDevice": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "속성 추가",
       "anyDevice": "Any Device",
       "conditionDeviceText_1": "a device exposure of",
       "conditionDeviceText_10": "with a Provider Specialty of:",
@@ -329,7 +329,7 @@
       "indexDataText": "The index date refers to the device exposure of <%= conceptSetName %>."
     },
     "conditionDose": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "속성 추가",
       "anyDoseEra": "Any Dose Era",
       "anyDrug": "Any Drug",
       "conditionDoseText_1": "a dose era of",
@@ -347,7 +347,7 @@
       "indexDataText": "The index date refers to the dose era of <%= conceptSetName %>."
     },
     "conditionDrug": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "속성 추가",
       "anyDrug": "Any Drug",
       "conditionDrugText_1": "a drug era of",
       "conditionDrugText_10": "with age in years at era end",
@@ -364,7 +364,7 @@
       "indexDataText": "The index date refers to the drug era of <%= conceptSetName %>."
     },
     "conditionDrugExposure": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "속성 추가",
       "anyDrug": "Any Drug",
       "conditionDrugExposureText_1": "a drug exposure of",
       "conditionDrugExposureText_10": "with Effective Drug Dose",
@@ -392,7 +392,7 @@
       "indexDataText": "The index date refers to the drug exposure of <%= conceptSetName %>."
     },
     "conditionEra": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "속성 추가",
       "anyConditionButton": "Any Condition",
       "attributeText_1": "for the first time in the person's history",
       "attributeText_2": "era start is:",
@@ -407,7 +407,7 @@
       "returnText_1": "The index date refers to the condition era of"
     },
     "conditionMeasurement": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "속성 추가",
       "anyMeasurement": "Any Measurement",
       "conditionMeasurementText_1": "a measurement of",
       "conditionMeasurementText_10": "with Range Low Ratio",
@@ -440,7 +440,7 @@
       "indexDataText": "The index date refers to the measurement of <%= conceptSetName %>."
     },
     "conditionObservation": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "속성 추가",
       "anyObservation": "Any Observation",
       "conditionObservationText_1": "an observation of",
       "conditionObservationText_10": "with age",
@@ -465,7 +465,7 @@
       "indexDataText": "The index date refers to the observation of <%= conceptSetName %>."
     },
     "conditionObservationPeriod": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "속성 추가",
       "conditionObservationText_1": "observation periods with the following criteria:",
       "conditionObservationText_10": "days.",
       "conditionObservationText_11": "an observation period",
@@ -480,7 +480,7 @@
       "conditionObservationText_9": "with period duration"
     },
     "conditionOccurrence": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "속성 추가",
       "anyCondition": "Any Condition",
       "conditionOccurrenceText_1": "a condition occurrence of",
       "conditionOccurrenceText_10": "with a Visit occurrence of:",
@@ -499,7 +499,7 @@
       "indexDataText": "The index date refers to the condition occurrence of <%= conceptSetName %>."
     },
     "conditionPayerPlanPeriod": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "속성 추가",
       "anyPayer": "Any Payer",
       "anyPayerSource": "Any Payer Source",
       "anyPlan": "Any Plan",
@@ -536,7 +536,7 @@
       "indexDataText": "The index date refers to the payer plan period."
     },
     "conditionProcedureOccurrence": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "속성 추가",
       "anyProcedure": "Any Procedure",
       "conditionProcedureOccurrenceText_1": "a procedure occurrence of",
       "conditionProcedureOccurrenceText_10": "with a Visit occurrence of:",
@@ -556,7 +556,7 @@
       "indexDataText": "The index date refers to the procedure of <%= conceptSetName %>."
     },
     "conditionSpecimen": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "속성 추가",
       "anySpecimen": "Any Specimen",
       "conditionSpecimeText_1": "a specimen of",
       "conditionSpecimeText_10": "with a gender of:",
@@ -576,7 +576,7 @@
       "indexDataText": "The index date refers to the specimen of <%= conceptSetName %>."
     },
     "conditionVisit": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "속성 추가",
       "anyLocation": "Any Location",
       "anyVisit": "Any Visit",
       "conditionSpecimeText_1": "a visit occurrence of",
@@ -599,16 +599,16 @@
     },
     "criteriaGroup": {
       "addAdditionalConstraint": "add additional constraint",
-      "addCriteria": "Add criteria to group...",
+      "addCriteria": "그룹에 기준 추가...",
       "and": "and",
       "between": "between",
       "criteriaGroupText_1": "restrict to the same visit occurrence",
       "criteriaGroupText_2": "allow events from outside observation period",
       "deleteCriteria": "Delete Criteria",
       "deleteGroup": "Delete Group",
-      "followingCriteria": "of the following criteria:",
-      "having": "having",
-      "havingCapital": "Having",
+      "followingCriteria": "를 만족해야 합니다:",
+      "having": "다음 조건 중",
+      "havingCapital": "다음 조건 중",
       "occurrencesOf": "occurrences of:",
       "occurrenceOf": "occurrence of:",
       "usingAll": "using all",
@@ -707,7 +707,7 @@
       "onOrBefore": "on or Before"
     },
     "demographicCriteria": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "속성 추가",
       "demographicCriteriaText_1": "gender is any of:",
       "demographicCriteriaText_2": "race is any of:",
       "demographicCriteriaText_3": "ethnicity is any of:",
@@ -734,7 +734,7 @@
       "evidencePairViewerText_6": "The concept set is not marked as valid to generate results. Please make sure this concept set contains only CONDITIONS or DRUGS."
     },
     "export": {
-      "button": "Export",
+      "button": "내보내기",
       "progress": "export in progress"
     },
     "feasibilityAttritionReport": {
@@ -818,7 +818,7 @@
       "generating": "Generating..."
     },
     "import": {
-      "button": "Import",
+      "button": "불러오기",
       "denied": "Import is not permitted",
       "progress": "import in progress"
     },
@@ -829,7 +829,7 @@
       "unnamedCriteria": "Unnamed Criteria"
     },
     "linkedCohortList": {
-      "defaultNewItemLabel": "Import",
+      "defaultNewItemLabel": "불러오기",
       "defaultTitle": "Cohort definition",
       "dialog": {
         "title": "Choose a Cohort definition"
@@ -842,7 +842,7 @@
       }
     },
     "linkedEntityList": {
-      "defaultNewItemLabel": "Import"
+      "defaultNewItemLabel": "불러오기"
     },
     "locationRegion": {
       "anyLocationRegion": "Any Location region",
@@ -930,7 +930,7 @@
       "wait": "Please wait..."
     },
     "windowInput": {
-      "windowInputText_1": "All",
+      "windowInputText_1": "모두",
       "windowInputText_2": "days",
       "windowInputText_3": "and"
     },
@@ -943,7 +943,7 @@
       "windowedCriteriaText_6": "ignore observation period"
     },
     "common": {
-      "addAttribute": "Add Attribute..."
+      "addAttribute": "속성 추가"
     },
     "multiSelect": {
       "noneSelectedText": "Nothing selected",
@@ -1040,15 +1040,15 @@
     "covariate": "Covariate",
     "covariateId": "Covariate Id",
     "covariateName": "Covariate Name",
-    "covariateSettings": "Covariate Settings",
+    "covariateSettings": "공변량 설정",
     "created": "생성",
     "date": "Date",
     "daysSupplyAvg": "Avg. Days of Supply",
     "daysSupplyPer1000PerYear": "Days of Supply /1K /Year",
     "daysSupplyTotal": "Days of Supply",
     "descendants": "Descendants",
-    "description": "Description",
-    "design": "Design",
+    "description": "설명",
+    "design": "설계",
     "dialect": "Dialect",
     "distance": "Distance",
     "domain": "Domain",
@@ -1109,7 +1109,7 @@
     "modelName": "Model Name",
     "modelSettings": "Model Settings",
     "modified": "수정",
-    "name": "Name",
+    "name": "이름",
     "ncOutcomes": "NC Outcomes",
     "nextExecution": "Next execution",
     "no": "No",
@@ -1188,7 +1188,7 @@
     "targetName": "Target Cohort Name",
     "temporal": "Temporal",
     "time": "Time",
-    "timeAtRisk": "Time At Risk",
+    "timeAtRisk": "위험 노출 기간",
     "timeAtRiskEnd": "Time At Risk End",
     "timeAtRiskStart": "Time At Risk Start",
     "timeWindow": "Time Window",
@@ -1333,7 +1333,7 @@
   },
   "search": {
     "advancedOptions": "Advanced Options",
-    "buttonTitle": "Search",
+    "buttonTitle": "검색",
     "classification": "Classification",
     "clearAllSelections": "Clear All Selections",
     "domains": "Domains",
@@ -1365,14 +1365,14 @@
     "placeholder": "Type your search here",
     "standard": "Standard",
     "tabs": {
-      "import": "Import",
-      "search": "Search"
+      "import": "불러오기",
+      "search": "검색"
     },
     "vocabularies": "Vocabularies"
   },
   "cs": {
     "browser": {
-      "caption": "Concept Sets",
+      "caption": "컨셉 세트",
       "compare": {
         "compareConceptSets": "Compare Concept Sets",
         "comparisonResults": "Comparison Results",
@@ -1393,7 +1393,7 @@
       "exportInstructionsText": "그리드에서 각 행을 선택하여 내보낼 컨셉 세트를 선택하십시오. 완료되면 '컨셉 세트 내보내기'버튼을 사용하여 새 창에서 다운로드를 시작하십시오.",
       "saveWarning": "Cohort changes are not saved. Would you like to continue?",
       "tabs": {
-        "export": "Export",
+        "export": "내보내기",
         "list": "List"
       }
     },
@@ -1493,7 +1493,7 @@
     }
   },
   "cc": {
-    "title": "Cohort Characterizations",
+    "title": "코호트 특성",
     "new": "New",
     "loading": "Loading Cohort Characterization list...",
     "modals": {
@@ -1504,11 +1504,11 @@
     "tabs": {
       "characterizations": {
         "newLabel": "Characterization",
-        "title": "Characterizations"
+        "title": "특성"
       },
       "featureAnalyses": {
         "newLabel": "Feature analysis",
-        "title": "Feature analyses"
+        "title": "특성 분석"
       }
     },
     "viewEdit": {
@@ -1519,17 +1519,17 @@
           "actions": {
             "remove": "Remove"
           },
-          "title": "Feature analyses"
+          "title": "특성 분석"
         },
         "faParams": {
           "modal": {
-            "namePlaceholder": "Name",
+            "namePlaceholder": "이름",
             "submit": "Submit",
             "title": "Create new parameter",
             "valuePlaceholder": "Value"
           },
-          "newLabel": "New parameter",
-          "title": "Feature analyses parameters"
+          "newLabel": "새 파라미터",
+          "title": "특성 분석 파라미터"
         },
         "loading": "Loading Cohort Characterization design...",
         "subgroups": {
@@ -1538,11 +1538,11 @@
             "nameIsNotUnique": "Subgroup name is duplicated."
           },
           "namePlaceholder": "Strata name",
-          "newSubgroup": "New subgroup",
+          "newSubgroup": "새 하위집단",
           "noSubgroups": "No subgroups defined",
           "stratifiedByPlaceholder": "Stratified by",
           "subgroupOnly": "Calculate subgroup analyses only",
-          "title": "Subgroup analyses"
+          "title": "하위 집단 분석"
         }
       },
       "executions": {
@@ -1550,10 +1550,10 @@
           "allExecutions": "All executions (<%=submissions%>)",
           "cancel": "Cancel",
           "generate": "Generate",
-          "latestResult": "View latest result"
+          "latestResult": "마지막 결과보기"
         },
         "designModal": {
-          "title": "Design"
+          "title": "설계"
         },
         "exitModal": {
           "title": "Execution Exit Message"
@@ -1567,7 +1567,7 @@
           "sameAsNow": "(same as now)",
           "empty": "-"
         },
-        "title": "Executions"
+        "title": "실행"
       },
       "messages": {
         "nameIsEmpty": "Characterization name is empty."
@@ -1575,7 +1575,7 @@
       "results": {
         "detail": {
           "date": "Date:",
-          "design": "Design:",
+          "design": "설계:",
           "results": {
             "label": "Results:",
             "text": "<%= reports %> reports"
@@ -1604,12 +1604,12 @@
         "title": "Reports for <%= sourceName %>"
       },
       "tabs": {
-        "design": "Design",
+        "design": "설계",
         "executions": "Executions",
-        "utilities": "Utilities"
+        "utilities": "유틸리티"
       },
       "utilities": {
-        "title": "Utilities"
+        "title": "유틸리티"
       }
     },
     "fa": {
@@ -1625,8 +1625,8 @@
       "criteria": "Criteria",
       "criteriaName": "Criteria name",
       "custom": "Custom",
-      "description": "Description",
-      "design": "Design",
+      "description": "설명",
+      "design": "설계",
       "designOrNameAreEmpty": "Design or Name are empty",
       "domain": "Domain:",
       "featureExtractionPresetName": "FeatureExtraction preset name:",
@@ -1688,7 +1688,7 @@
       "studyWindowBeginsOn": "Study window begins on",
       "studyWindowEndsOn": "and ends on",
       "targetCohorts": "Target Cohorts",
-      "timeAtRisk": "Time At Risk",
+      "timeAtRisk": "위험 노출 기간",
       "timeAtRiskDays": "days.",
       "timeAtRiskEndDate": "end date",
       "timeAtRiskEndsWith": "Time at risk ends with",
@@ -1726,7 +1726,7 @@
       "showingTargetCohort": "Showing target cohort:",
       "sourceName": "Source Name",
       "started": "Started",
-      "timeAtRisk": "Time At Risk",
+      "timeAtRisk": "위험 노출 기간",
       "timeAtRiskYears": "(years)"
     },
     "savingError": "An error occurred while attempting to save an incidence rate.",
@@ -1757,7 +1757,7 @@
     "recordCounts": "<%=count%> events",
     "selectADataSource": "Select a Data Source",
     "setSelectedEventsColor": "set selected events color",
-    "title": "Profiles",
+    "title": "프로필",
     "toggleChartTooltip": "toggle chart display",
     "toggleTableTooltip": "toggle table display",
     "сantFind": "Can't find"
@@ -1781,7 +1781,7 @@
             "description": "Minimum number of subjects in the target cohort for a given event in order to be counted in the pathway.",
             "title": "Minimum cell count:"
           },
-          "title": "Analysis Settings"
+          "title": "분석 설정"
         },
         "description": "<b>Cohort Pathway</b> is defined as the process of generating an aggregated sequence of transitions between the Event Cohorts among those people in the Target Cohorts.",
         "eventCohorts": {
@@ -1797,12 +1797,12 @@
         "buttons": {
           "allExecutions": "All executions",
           "generate": "Generate",
-          "viewLatestResult": "View latest result"
+          "viewLatestResult": "마지막 결과보기"
         },
         "dialogs": {
           "design": {
             "loadError": "Unable to load design",
-            "title": "Design"
+            "title": "설계"
           },
           "exitMessage": {
             "title": "Execution Exit Message"
@@ -1811,7 +1811,7 @@
         "noCompletedExecutionsWarning": "There is no completed executions for the data source yet",
         "results": {
           "date": "Date:",
-          "design": "Design:",
+          "design": "설계:",
           "details": {
             "noPath": "No path selected: click path to see details.",
             "title": "Path details"
@@ -1841,7 +1841,7 @@
             "text": "View reports"
           }
         },
-        "title": "Executions",
+        "title": "실행",
         "tooltips": {
           "generatePermissions": "Not enough permissions to generate",
           "viewPermissions": "Not enough permissions to view results"
@@ -1857,15 +1857,15 @@
         "notfound": "There is no pathway analysis with id = %d."
       },
       "tabs": {
-        "design": "Design",
-        "executions": "Executions",
-        "utilities": "Utilities"
+        "design": "설계",
+        "executions": "실행",
+        "utilities": "유틸리티"
       },
       "utilities": {
-        "title": "Utilities"
+        "title": "유틸리티"
       }
     },
-    "title": "Cohort Pathways"
+    "title": "코호트 경로"
   },
   "ple": {
     "analysisExistsAlert": "An estimation analysis with this name already exists. Please choose a different name.",
@@ -1879,18 +1879,18 @@
       "downloadLatestResult": "Download latest result",
       "generate": "Generate",
       "generating": "Generating...",
-      "generations": "Generations",
+      "generations": "생성",
       "loadingGenerations": "Loading generations...",
       "notPermitted": "Not enough permissions to generate or changes were not saved or Execution Engine is not available",
       "notPermittedToVieweResults": "Not enough permissions to view results"
     },
     "nameIsEmptyWarning": "Population Level Effect Estimation name is empty.",
     "spec": {
-      "addAnalysisSettings": "Add Analysis Settings",
-      "addComparisons": "Add Comparisons",
+      "addAnalysisSettings": "분석 설정을 추가",
+      "addComparisons": "비교 코호트 추가",
       "addOutcome": "Add Outcome",
       "analysisName": "Analysis name:",
-      "analysisSettings": "Analysis Settings",
+      "analysisSettings": "분석 설정",
       "analysisSettingsDescription": "Add or update the analysis settings",
       "chooseYourComparatorCohort": "Choose your comparator cohort:",
       "chooseYourOutcomeCohorts:": "Choose your outcome cohorts:",
@@ -1904,11 +1904,11 @@
       "conceptsToIncludeLabel": "Concepts to <b>include</b> when constructing the covariates to be used in this study. (Leave blank if you want to include every concept).*",
       "conceptsToIncludeNoteAnalysis": "* Concepts defined here are combined with those defined in the Comparisons section.",
       "conceptsToIncludeNoteComparisons": "* Concepts defined here are combined with those defined in the Analysis settings section.",
-      "controlSettings": "Control Settings",
+      "controlSettings": "제어 설정",
       "covariateSelection": "Covariate selection",
-      "covariateSettings": "Covariate Settings",
+      "covariateSettings": "공변량 설정",
       "descriptionPlaceholder": "enter a description here (1000 characters max)",
-      "evaluationSettings": "Evaluation Settings",
+      "evaluationSettings": "평가 설정",
       "evaluationSettingsPanel": {
         "additionalSettings": "Additional Settings",
         "advancedSettingsStartsHere": "Advanced Settings start here",
@@ -1924,11 +1924,11 @@
         "minNumberofOutcomeEventsToInjectASignal": "Minimum number of outcome events required to inject a signal.",
         "minimumRequiredTime": "The minimum required continuous observation time (in days) prior to exposure:",
         "modelType": "Model Type:",
-        "negativeControl": "Negative Control Outcome Cohort Definition",
+        "negativeControl": "음성 대조군 결과 코호트 정의",
         "negativeControlDesc": "This expression will define the criteria for inclusion and duration of time for cohorts intended for use as negative control outcomes.",
         "onlyFirstExposure": "Should only the first exposure per subject be included?",
         "onlyFirstOutcome": "Should only the first outcome per person be considered when modeling the outcome?",
-        "positiveControl": "Positive Control Synthesis",
+        "positiveControl": "양성 대조군 합성",
         "positiveControlPerform": "Should we perform positive control synthesis? (to calibrate confidence intervals)",
         "removePeopleWithPrior": "Remove people with prior outcomes?",
         "typeOfOccurence": "The type of occurrence of the event when selecting from the domain.",
@@ -1939,7 +1939,7 @@
       "negativeControlConceptSet": "Negative control concept set:",
       "newAnalysis": "New analysis",
       "options": {
-        "all": "All",
+        "all": "모두",
         "allOccurrences": "All occurrences",
         "byPercent": "By Percent",
         "cohortEndDate": "cohort end date",
@@ -1981,8 +1981,8 @@
         "statisticalModel": "Specify the statistical model used to estimate the risk of outcome between target and comparator cohorts:",
         "weighting": "Use inverse probability of treatment weighting?"
       },
-      "prior": "Prior",
-      "propensityScoreAdjustment": "Propensity Score Adjustment",
+      "prior": "사전 정보",
+      "propensityScoreAdjustment": "성향 점수 보정",
       "propensityScoreAdjustmentPanel": {
         "baseSelection": "What is the base selection of subjects where the strata bounds are to be determined? Strata are defined as equally-sized strata inside this selection.",
         "caliperForMatching": "What is the caliper for matching:",
@@ -2003,7 +2003,7 @@
       "selectCohort": "Select Cohort...",
       "selectConceptSet": "Select Concept Set...",
       "selectCovariates": "Select Covariates...",
-      "studyPopulation": "Study Population",
+      "studyPopulation": "연구 모집단",
       "studyPopulationPanel": {
         "cohortCap": "If either the target or the comparator cohort is larger than this number it will be sampled to this size. (0 for this value indicates no maximum size)",
         "daysPriorOutcomes": "How many days should we look back when identifying prior outcomes?",
@@ -2016,7 +2016,7 @@
         "startDate": "Study start date - a calendar date specifying the minimum date that a cohort index can appear (leave blank to use all time):",
         "subjectInMultipleCohorts": "If a subject is in multiple cohorts"
       },
-      "timeAtRisk": "Time At Risk",
+      "timeAtRisk": "위험 노출 기간",
       "timeAtRiskPanel": {
         "daysFrom": "days from",
         "defineTheTimeAtRiskWindowEnd": "Define the time-at-risk window end:",
@@ -2025,16 +2025,16 @@
       },
       "usingCovariates": "Using OHDSI covariates for propensity score model.",
       "view": "View:",
-      "viewAnalysisSettings": "Analysis Settings",
-      "viewComparisons": "Comparisons",
-      "viewEvaluationSettings": "Evaluation Settings",
-      "viewFull": "All",
+      "viewAnalysisSettings": "분석 설정",
+      "viewComparisons": "비교 코호트",
+      "viewEvaluationSettings": "평가 설정",
+      "viewFull": "모두",
       "viewFullSpecification": "Full Specification"
     },
     "tabs": {
-      "executions": "Executions",
-      "specification": "Specification",
-      "utilities": "Utilities"
+      "executions": "실행",
+      "specification": "사양",
+      "utilities": "유틸리티"
     },
     "title": "Population Level Effect Estimation",
     "util": {
@@ -2086,7 +2086,7 @@
       "tabs": {
         "permissions": "Permissions",
         "users": "Users",
-        "utilities": "Utilities"
+        "utilities": "유틸리티"
       },
       "title": "Roles"
     },
@@ -2100,7 +2100,7 @@
       "rolesDefinitionJson": "Roles definition JSON",
       "title": "Import roles"
     },
-    "title": "Configuration",
+    "title": "환경설정",
     "userImport": {
       "findGroup": "Find Group",
       "importNow": "Import Now",
@@ -2285,7 +2285,7 @@
   },
   "feedback": {
     "pleaseContact": "For access or questions concerning the Atlas application please contact:",
-    "title": "Feedback"
+    "title": "피드백"
   },
   "licenseAgreement": {
     "accept": "Accept",
@@ -2375,16 +2375,16 @@
         "deleteConceptSet": "Delete Concept Set",
         "enterConceptIdentifiers": "Enter Concept Identifiers",
         "enterSourceCodes": "Enter Source Codes",
-        "export": "Export",
+        "export": "내보내기",
         "exportAllToCSV": "Export All Concept Sets To CSV",
         "fullAnalysis": "Full Analysis",
         "generate": "Generate",
         "generated": "Generated",
         "generationDuration": "Generation Duration",
         "generationStatus": "Generation Status",
-        "graphicalView": "Graphical View",
+        "graphicalView": "그래픽 보기",
         "hideReports": "Hide Reports",
-        "import": "Import",
+        "import": "불러오기",
         "importConceptIdentifiers": "Import Concept Identifiers",
         "importConceptSetExpression": "Import Concept Set Expression",
         "importSourceCodes": "Import Source Codes",
@@ -2392,8 +2392,8 @@
         "includedConcepts": "Included Concepts",
         "includedSourceCodes": "Included Source Codes",
         "json": "JSON",
-        "name": "Name:",
-        "newConceptSet": "New Concept Set",
+        "name": "이름:",
+        "newConceptSet": "새로운 컨셉 세트",
         "people": "People",
         "quickAnalysis": "Quick Analysis",
         "records": "Records",
@@ -2403,20 +2403,20 @@
         "sourceCodes": "Source Codes",
         "sourceName": "Source Name",
         "sql": "SQL",
-        "textView": "Text View",
-        "utilization": "Utilization",
+        "textView": "텍스트 보기",
+        "utilization": "이용",
         "viewReports": "View Reports"
       },
       "saveCohortTitle": "Save cohort definition",
       "selectReport": "Select a Report",
       "tabs": {
-        "conceptSets": "Concept Sets",
-        "definition": "Definition",
+        "conceptSets": "컨셉 세트",
+        "definition": "정의",
         "explore": "Explore",
-        "export": "Export",
-        "generation": "Generation",
+        "export": "내보내기",
+        "generation": "생성",
         "messages": "Messages",
-        "reporting": "Reporting"
+        "reporting": "레포팅"
       }
     },
     "cohortFeatureBrowser": {
@@ -2563,12 +2563,12 @@
     "noConceptSets": "No concept sets to export",
     "runDiagnostics": "Run diagnostics",
     "saveDefinitionBefore": "You must save the definition before you can export",
-    "title": "Cohort Definitions"
+    "title": "코호트 정의"
   },
   "const": {
     "eventsList": {
       "addConditionEra": {
-        "title": "Add Condition Era",
+        "title": "Condition Era 추가 ",
         "desc_initial": "Find patients with specific diagosis era.",
         "desc_censoring": "Exit cohort based on diagosis era.",
         "desc_group": "Find patients with specific condition era."
@@ -3118,7 +3118,7 @@
     "newEntityNames": {
       "characterization": "New Characterization",
       "cohortDefinition": "New Cohort Definition",
-      "conceptSet": "New Concept Set",
+      "conceptSet": "새로운 컨셉 세트",
       "featureAnalysis": "New Feature Analysis",
       "incidenceRate": "New Incidence Rate Analysis",
       "pathway": "New Cohort Pathway",
@@ -3170,13 +3170,13 @@
   },
   "predictions": {
     "allExecutions": "All executions (<%=length%>)",
-    "analysisSettings": "Analysis Settings",
+    "analysisSettings": "분석 설정",
     "confirmCatchSave": "An error occurred while attempting to save a prediction analysis.",
     "confirmChanges": "Patient level prediction changes are not saved. Would you like to continue?",
     "confirmDelete": "Delete patient level prediction specification? Warning: deletion can not be undone!",
     "confirmSave": "A prediction analysis with this name already exists. Please choose a different name.",
     "covariateSettingsDesc": "Add or update the covariate settings",
-    "covariateSettingsTitle": "Covariate Settings",
+    "covariateSettingsTitle": "공변량 설정",
     "descriptionPlaceholder": "enter a description here (1000 characters max)",
     "downloadLatestResult": "Download latest result",
     "downloadStudyPackage": "Download Study Package",
@@ -3209,12 +3209,12 @@
       "predictionSelectCovariates": "Select Covariates"
     },
     "emptyMessageTitle": "Patient Level Prediction name is empty.",
-    "export": "Export",
+    "export": "내보내기",
     "fullAnalysisList": "Full Analysis List",
     "generate": "Generate",
     "generating": "Generating...",
-    "generations": "Generations",
-    "import": "Import",
+    "generations": "생성",
+    "import": "불러오기",
     "inputTypes": {
       "adaBoost": "Ada Boost",
       "adaBoostSettings": {
@@ -3282,21 +3282,21 @@
       }
     },
     "item": {
-      "addCovariateSettings": "Add Covariate Settings",
-      "addModelSettings": "Add Model Settings",
+      "addCovariateSettings": "공변량 설정 추가",
+      "addModelSettings": "모델 설정 추가",
       "addOutcomeCohort": "Add Outcome Cohort",
-      "addPopulationSettings": "Add Population Settings",
+      "addPopulationSettings": "모집단 설정 추가",
       "addTargetCohort": "Add Target Cohort",
-      "all": "All",
-      "analysisSettings": "Analysis Settings",
-      "covariateSettings": "Covariate Settings",
-      "executionSettings": "Execution Settings",
+      "all": "모두",
+      "analysisSettings": "분석 설정",
+      "covariateSettings": "공변량 설정",
+      "executionSettings": "실행 설정",
       "modelSettings": "Model Settings",
       "outcomeCohort": "Outcome Cohorts",
-      "populationSettings": "Population Settings",
-      "predictionProblemSettings": "Prediction Problem Settings",
+      "populationSettings": "모집단 설정",
+      "predictionProblemSettings": "예측 문제 설정",
       "targetCohort": "Target Cohorts",
-      "trainingSettings": "Training Settings",
+      "trainingSettings": "트레이닝 설정",
       "view": "View:"
     },
     "itemId": "Patient Level Prediction #",
@@ -3309,16 +3309,16 @@
     "notEnoughPermissionsToGenerate": "Not enough permissions to generate or changes were not saved or Execution Engine is not available",
     "pleaseNote": "Please Note:",
     "populationSettingsDesc": "Add or update the population settings",
-    "populationSettingsTitle": "Population Settings",
-    "predictionProblemSettings": "Prediction Problem Settings",
+    "populationSettingsTitle": "모집단 설정",
+    "predictionProblemSettings": "예측 문제 설정",
     "resetToDefault": "Reset to default",
-    "reviewAndDownload": "Review & Download",
+    "reviewAndDownload": "리뷰 & 다운로드",
     "reviewFullStudy": "Review Full Study Specification",
     "selectCohort": "Select Cohort...",
     "tabs": {
-      "executions": "Executions",
-      "specification": "Specification",
-      "utilities": "Utilities"
+      "executions": "실행",
+      "specification": "사양",
+      "utilities": "유틸리티"
     },
     "title": "Patient Level Prediction",
     "usingDefault": "Using default",

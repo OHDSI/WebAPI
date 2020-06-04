@@ -1,24 +1,21 @@
 package org.ohdsi.webapi.feanalysis.converter;
 
-import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
+import org.ohdsi.webapi.service.converters.BaseCommonEntityToDTOConverter;
 
 import static org.ohdsi.webapi.util.ConversionUtils.convertMetadata;
 
-public abstract class BaseFeAnalysisEntityToFeAnalysisDTOConverter<T extends FeAnalysisShortDTO> extends BaseConversionServiceAwareConverter<FeAnalysisEntity, T> {
+public abstract class BaseFeAnalysisEntityToFeAnalysisDTOConverter<T extends FeAnalysisShortDTO> extends
+        BaseCommonEntityToDTOConverter<FeAnalysisEntity, T> {
 
-  @Override
-  public T convert(FeAnalysisEntity source) {
-    T dto = createResultObject(source);
-    dto.setType(source.getType());
-    dto.setName(source.getName());
-    dto.setId(source.getId());
-    dto.setDomain(source.getDomain());
-    dto.setDescription(source.getDescr());
-    dto.setStatType(source.getStatType());
-    convertMetadata(source, dto);
-
-    return dto;
-  }
+    @Override
+    public void doConvert(FeAnalysisEntity source, T target) {
+        target.setType(source.getType());
+        target.setName(source.getName());
+        target.setId(source.getId());
+        target.setDomain(source.getDomain());
+        target.setDescription(source.getDescr());
+        target.setStatType(source.getStatType());
+    }
 }

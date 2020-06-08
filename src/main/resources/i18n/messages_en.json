@@ -216,7 +216,7 @@
       "cohortExit": "Cohort Exit",
       "cohortExitText_1": "For all qualifying events",
       "cohortExitText_2": "The qualifying initial event can be set to end after a fixed time period relative to the event start or end date",
-      "cohortExitText_3": "Criteria can be used to signal the end of an event.  If a censoring event is identified between a qualifying event's start and end date",
+      "cohortExitText_3": "Criteria can be used to signal the end of an event. If a censoring event is identified between a qualifying event's start and end date",
       "cohortExitText_4": "Exit Cohort based on the following criteria:",
       "cohortExitText_5": "No censoring events selected.",
       "cohortExitTitle": "Cohort Exit",
@@ -630,7 +630,7 @@
       "customEraStrategyText_17": "days after exposure end",
       "customEraStrategyText_18": "using days supply and exposure end date for exposure duration.",
       "customEraStrategyText_19": "forcing drug exposure days suply to:",
-      "customEraStrategyText_2": "Specify a concept set that contains one or more drugs.  A drug era will be derived from all drug exposure events for any of the drugs within the concept set",
+      "customEraStrategyText_2": "Specify a concept set that contains one or more drugs. A drug era will be derived from all drug exposure events for any of the drugs within the concept set",
       "customEraStrategyText_3": "Concept set containing the drug(s) of interest:",
       "customEraStrategyText_4": "Persistence window: allow for a maximum of ",
       "customEraStrategyText_5": "days between exposure records when inferring the era of persistence exposure",
@@ -649,7 +649,7 @@
         "maxBoundCount": "Max bound count:",
         "maxIterations": "Maximum iterations of Cyclops to attempt before returning a failed-to-converge error.",
         "maxRelativeChange": "Maximum relative change in convergence criterion from successive iterations to achieve convergence.",
-        "nameOfExchangeableSamplingUnit": "Name of exchangeable sampling unit. Option <i>byPid</i> selects entire strata. Option <i>byRow</i> selects single rows. If set to <i>auto</i>",
+        "nameOfExchangeableSamplingUnit": "Name of exchangeable sampling unit. Option <i>byPid</i> selects entire strata. Option <i>byRow</i> selects single rows. If set to <i>auto</i>, <i>byRow</i> will be used for all models except conditional models where the average number of rows per stratum is smaller than the number of strata:",
         "noiseLevel": "Noise level for Cyclops screen output:",
         "numberOfRandomFolds": "Number of random folds to employ in cross validation:",
         "numberOfRepetitions": "Number of repetitions of <%=num%>-fold cross validation:",
@@ -1685,11 +1685,13 @@
       "stratifyCriteria": "Stratify Criteria:",
       "stratifyCriteriaMessage": "You can provide optional stratification criteria to the analysis that will divide the population into unique groups based on their satisified criteria.",
       "studyCohorts": "Study Cohorts",
-      "studyWindowBeginsOn": "Study window begins on",
-      "studyWindowEndsOn": "and ends on",
+      "studyWindowText1": "Study window begins on",
+      "studyWindowText2": "and ends on",
+      "studyWindowText3": ".",
       "targetCohorts": "Target Cohorts",
       "timeAtRisk": "Time At Risk",
-      "timeAtRiskDays": "days.",
+      "timeAtRiskStartsWithDays": "days.",
+      "timeAtRiskEndsWithDays": "days.",
       "timeAtRiskEndDate": "end date",
       "timeAtRiskEndsWith": "Time at risk ends with",
       "timeAtRiskMessage": "Time at risk defines the time window relative to the cohort start or end date with an offset to consider the person 'at risk' of the outcome.",
@@ -1897,7 +1899,7 @@
       "chooseYourTargetCohort": "Choose your target cohort:",
       "clickToViewDetails": "Click to view details",
       "comparison": "Comparison",
-      "comparisonDescription": "Add or update the target",
+      "comparisonDescription": "Add or update the target, comparator, outcome(s) cohorts and negative control outcomes",
       "conceptsToExcludeLabel": "Concepts to <b>exclude</b> when constructing the covariates to be used in this study.*",
       "conceptsToExcludeNoteAnalysis": "* Concepts defined here are combined with those defined in the Comparisons section.",
       "conceptsToExcludeNoteComparisons": "* Concepts defined here are combined with those defined in the Analysis settings section.",
@@ -1916,7 +1918,7 @@
         "daysFrom": "days from",
         "daysFromCohortStartDate": "days from cohort start date",
         "defineTimeAtRiskWindowEnd": "Define the time-at-risk window end:",
-        "defineTimeAtRiskWindowStart": "Define the time-at-risk window start",
+        "defineTimeAtRiskWindowStart": "Define the time-at-risk window start, relative to target/comparator cohort entry:",
         "effectSizes": "What effect sizes should be inserted:",
         "firstOutcomeToBeCreated": "What should be the first new outcome ID that is to be created?",
         "maxNumberOfPeopleToFit": "Maximum number of people used to fit an outcome model:",
@@ -1996,7 +1998,7 @@
         "matchingOrStratification": "Do you want to perform matching or stratification?",
         "maxNumberOfPeople": "What is the maximum number of people to include in the propensity score model when fitting? Setting this number to 0 means no down-sampling will be applied:",
         "maximumNumberOfPersons": "What is the maximum number of persons in the comparator arm to be matched to each person in the target arm within the defined caliper? (0 = means no maximum - all comparators will be assigned to a target person):",
-        "testEachCovariate": "Test each covariate for correlation with the target assignment? If any covariate has an unusually high correlation (either positive or negative)",
+        "testEachCovariate": "Test each covariate for correlation with the target assignment? If any covariate has an unusually high correlation (either positive or negative), this will throw an error.",
         "trimFraction": "Trim Fraction (1-100%):",
         "useRegularization": "Use regularization when fitting the propensity model?"
       },
@@ -2014,13 +2016,13 @@
         "removeSubjectsPriorRiskWindow": "Remove subjects that have the outcome prior to the risk window start?",
         "restrictToPeriod": "Restrict the study to the period when both exposures are present in the data? (E.g. when both drugs are on the market)",
         "startDate": "Study start date - a calendar date specifying the minimum date that a cohort index can appear (leave blank to use all time):",
-        "subjectInMultipleCohorts": "If a subject is in multiple cohorts"
+        "subjectInMultipleCohorts": "If a subject is in multiple cohorts, should time-at-risk be censored when the new time-at-risk start to prevent overlap?"
       },
       "timeAtRisk": "Time At Risk",
       "timeAtRiskPanel": {
         "daysFrom": "days from",
         "defineTheTimeAtRiskWindowEnd": "Define the time-at-risk window end:",
-        "defineTheTimeAtRiskWindowStart": "Define the time-at-risk window start",
+        "defineTheTimeAtRiskWindowStart": "Define the time-at-risk window start, relative to target/comparator cohort entry:",
         "minimumNumberOfDaysAtRisk": "The minimum number of days at risk?"
       },
       "usingCovariates": "Using OHDSI covariates for propensity score model.",
@@ -2057,12 +2059,12 @@
   },
   "configuration": {
     "alerts": {
-      "clearLocalCache": "Local Storage has been cleared.  Please refresh the page to reload configuration information.",
+      "clearLocalCache": "Local Storage has been cleared. Please refresh the page to reload configuration information.",
       "clearServerCache": "Server cache has been cleared.",
       "failUpdatePrioritySourceDaimon": "Failed to update priority source daimon"
     },
     "buttons": {
-      "check": "refresh",
+      "check": "check",
       "clearConfigurationCache": "Clear Configuration Cache",
       "clearServerCache": "Clear Server Cache",
       "importUsers": "Import Users from LDAP/AD",
@@ -2580,19 +2582,19 @@
       "addConditionOccurrence": {
         "title": "Add Condition Occurrence",
         "desc_initial": "Find patients with specific diagnoses.",
-        "desc_censoring": "Exit cohort based on  diagnoses.",
+        "desc_censoring": "Exit cohort based on diagnoses.",
         "desc_group": "Find patients with specific conditions."
       },
       "addDeath": {
         "title": "Add Death",
         "desc_initial": "Find patients based on death.",
-        "desc_censoring": "Exit cohort based on  death.",
+        "desc_censoring": "Exit cohort based on death.",
         "desc_group": "Find patients based on death."
       },
       "addDeviceExposure": {
         "title": "Add Device Exposure",
         "desc_initial": "Find patients based on device exposure.",
-        "desc_censoring": "Exit cohort based on  device exposure.",
+        "desc_censoring": "Exit cohort based on device exposure.",
         "desc_group": "Find patients based on device exposure."
       },
       "addDoseEra": {
@@ -2786,17 +2788,17 @@
         "title_deviceexposure": "Add End Date Criteria",
         "desc_deviceexposure": "Filter Device Exposures by the Exposure End Date.",
         "title_dose": "Add Era End Date Criteria",
-        "desc_dose": "Filter Dose Eras  by the Era End Date",
+        "desc_dose": "Filter Dose Eras by the Era End Date",
         "title_drug": "Add Era End Date Criteria",
-        "desc_drug": "Filter Drug Eras  by the Era End Date.",
+        "desc_drug": "Filter Drug Eras by the Era End Date.",
         "title_drugexposure": "Add End Date Criteria",
-        "desc_drugexposure": "Filter Drug Exposures  by the Drug Exposure End Date.",
+        "desc_drugexposure": "Filter Drug Exposures by the Drug Exposure End Date.",
         "title_observationperiod": "Add Period End Date Criteria",
         "desc_observationperiod": "Filter Observation Periods by End Date.",
         "title_payerplan": "Add Period End Date Criteria",
         "desc_payerplan": "Filter Payer Plan Periods by End Date.",
         "title_visit": "Add End Date Criteria",
-        "desc_visit": "Filter Visit Occurrences  by the Condition End Date.",
+        "desc_visit": "Filter Visit Occurrences by the Condition End Date.",
         "title_demographic": "Add Event End Date Criteria",
         "desc_demographic": "Filter events based by End Date."
       },
@@ -2856,7 +2858,7 @@
         "title_specimen": "Add Nested Criteria...",
         "desc_specimen": "Apply criteria using the specimen as the index event.",
         "title_visit": "Add Nested Criteria...",
-        "desc_visit": "Filter Visit Occurrences based on provider specialty."
+        "desc_visit": "Apply criteria using the visit occurrence as the index event."
       },
       "addAge": {
         "title_occurrence": "Add Age at Occurrence",
@@ -2882,7 +2884,7 @@
       },
       "addType": {
         "title_occurrence": "Add Condition Type",
-        "desc_occurrence": "Filter Condition Occurrences  by the Condition Type.",
+        "desc_occurrence": "Filter Condition Occurrences by the Condition Type.",
         "title_death": "Add Death Type Criteria",
         "desc_death": "Filter by Death Type.",
         "title_deviceexposure": "Add Device Type Criteria",
@@ -2894,17 +2896,17 @@
         "title_observation": "Add Observation Type Criteria",
         "desc_observation": "Filter Observations by the Type.",
         "title_observationperiod": "Add Period Type Criteria",
-        "desc_observationperiod": "Filter Obsevation Periods by Type.",
+        "desc_observationperiod": "Filter Observation Periods by Type.",
         "title_procedureoccurrence": "Add Procedure Type Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences  by the Procedure Type.",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences by the Procedure Type.",
         "title_specimen": "Add Specimen Type Criteria",
         "desc_specimen": "Filter Specimen by the Type.",
         "title_visit": "Add Visit Type Criteria",
-        "desc_visit": "Filter Condition Occurrences  by the Condition Type."
+        "desc_visit": "Filter Condition Occurrences by the Condition Type."
       },
       "addStopReason": {
         "title_occurrence": "Add Stop Reason",
-        "desc_occurrence": "Filter Condition Occurrences  by the Stop Reason.",
+        "desc_occurrence": "Filter Condition Occurrences by the Stop Reason.",
         "title_drugexposure": "Add Stop Reason Criteria",
         "desc_drugexposure": "Filter Drug Exposures by the Stop Reason."
       },
@@ -2942,7 +2944,7 @@
       },
       "addSourceConcept": {
         "title_occurrence": "Add Condition Source Concept",
-        "desc_occurrence": "Filter Condition Occurrences  by the Condition Source Concept.",
+        "desc_occurrence": "Filter Condition Occurrences by the Condition Source Concept.",
         "title_death": "Add Cause of Death Source Concept Criteria",
         "desc_death": "Filter Death by the Death Source Concept.",
         "title_deviceexposure": "Add Device Source Concept Criteria",
@@ -2952,7 +2954,7 @@
         "title_observation": "Add Observation Source Concept Criteria",
         "desc_observation": "Filter Observations by the Source Concept.",
         "title_procedureoccurrence": "Add Procedure Source Concept Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences  by the Procedure Source Concept.",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences by the Procedure Source Concept.",
         "title_visit": "Add Visit Source Concept Criteria",
         "desc_visit": "Filter Visit Occurrences by the Visit Source Concept."
       },
@@ -2994,9 +2996,9 @@
         "title_drugexposure": "Add Quantity Criteria",
         "desc_drugexposure": "Filter Drug Exposures by Quantity.",
         "title_procedureoccurrence": "Add Quantity Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences  by Quantity.",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences by Quantity.",
         "title_specimen": "Add Quantity Criteria",
-        "desc_specimen": "Filter Observations  by the Quantity."
+        "desc_specimen": "Filter Observations by the Quantity."
       },
       "addUnit": {
         "title_dose": "Add Dose Unit Criteria",
@@ -3016,7 +3018,7 @@
         "title_measurement": "Add Value as Number Criteria",
         "desc_measurement": "Filter Measurements by Value as Number.",
         "title_observation": "Add Value As Number Criteria",
-        "desc_observation": "Filter Observations  by the Value As Number."
+        "desc_observation": "Filter Observations by the Value As Number."
       },
       "addRefills": {
         "title_drugexposure": "Add Refills Criteria",
@@ -3088,7 +3090,7 @@
       },
       "addModifier": {
         "title_procedureoccurrence": "Add Modifier Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences  by the Modifier."
+        "desc_procedureoccurrence": "Filter Procedure Occurrences by the Modifier."
       },
       "addAnatomicSite": {
         "title_specimen": "Add Anatomic Site Criteria",
@@ -3108,10 +3110,10 @@
       },
       "addPlaceServiceLocation": {
         "title_visit": "Add Place of Service Location Criteria",
-        "desc_visit": "Add Place of Service Distance Criteria"
+        "desc_visit": "Filter Visit Occurrences based on where Place of Service is located."
       },
       "addPlaceServiceDistance": {
-        "title_visit": "Add Place of Service Location Criteria",
+        "title_visit": "Add Place of Service Distance Criteria",
         "desc_visit": "Filter Visit Occurrences based on distance from Place of Service to Patient."
       }
     },
@@ -3203,7 +3205,7 @@
         "predictionEditorText_1": "What concepts do you want to include in baseline covariates in the propensity score model? (Leave blank if you want to include everything)",
         "predictionEditorText_2": "Should descendant concepts be added to the list of included concepts?",
         "predictionEditorText_3": "What concepts do you want to exclude in baseline covariates in the propensity score model? (Leave blank if you want to include everything)",
-        "predictionEditorText_4": "Should descendant concepts be added to the list of included concepts?",
+        "predictionEditorText_4": "Should descendant concepts be added to the list of excluded concepts?",
         "predictionEditorText_5": "A comma delimited list of covariate IDs that should be restricted to:",
         "predictionSelectConceptSet": "Select Concept Set...",
         "predictionSelectCovariates": "Select Covariates"

@@ -4,12 +4,12 @@
     "language": {
       "decimal": "",
       "emptyTable": "No data available in table",
-      "info": "Showing _START_ to _END_ of _TOTAL_ entries",
-      "infoEmpty": "Showing 0 to 0 of 0 entries",
+      "info": "_TOTAL_ 가지 항목 중 _START_~_END_개 표시",
+      "infoEmpty": "0가지 항목  중 0~0개 표시",
       "infoFiltered": "(filtered from _MAX_ total entries)",
       "infoPostFix": "",
       "thousands": ",",
-      "lengthMenu": "Show _MENU_ entries",
+      "lengthMenu": "_MENU_ 가지 항목 표시",
       "loadingRecords": "Loading...",
       "processing": "Processing...",
       "search": "검색:",
@@ -23,7 +23,7 @@
       },
       "buttons": {
         "colvis": "Show columns",
-        "copy": "Copy"
+        "copy": "복사하기"
       },
       "aria": {
         "sortAscending": ": activate to sort column ascending",
@@ -66,7 +66,7 @@
       "rolesWithWriteAccess": "Roles with write access:"
     },
     "copiedToClipboard": "Copied To Clipboard!",
-    "copy": "Copy",
+    "copy": "복사하기",
     "copyToClipboard": "Copy to clipboard",
     "createACopy": "Create a copy",
     "days": "days.",
@@ -81,7 +81,7 @@
     "max": "Max",
     "median": "Median",
     "min": "min",
-    "no": "No",
+    "no": "아니오",
     "noChangesToPersist": "No changes to persist",
     "notEnoughPermissions": "Not enough permissions",
     "or": "or",
@@ -94,7 +94,7 @@
     "set": "Set",
     "unsaved": "(unsaved)",
     "unspecified": "UNSPECIFIED!",
-    "yes": "Yes",
+    "yes": "예",
     "menu": "Menu",
     "noData": "No data"
   },
@@ -149,7 +149,7 @@
     "isNotAnyOf": "is not any of",
     "latestEvents": "마지막 이벤트",
     "mm": "Monthly",
-    "no": "No",
+    "no": "아니오",
     "notBetween": "not between",
     "notContains": "not containing",
     "notEndsWith": "not ending with",
@@ -164,7 +164,7 @@
     "startDate": "start date",
     "startsWith": "starting with",
     "ww": "Weekly",
-    "yes": "Yes",
+    "yes": "예",
     "yy": "Yearly",
     "yesDescendant": "Yes (Descendant)",
     "yesExact": "Yes (Exact)",
@@ -212,7 +212,7 @@
       "cohortEntryEventsText_3": "이벤트 기준 시점로부터 최소",
       "cohortEntryEventsText_4": "일 이전과",
       "cohortEntryEventsText_5": "일 이후의 연속적인 관찰기간을 가짐.",
-      "cohortEntryEventsText_6": "사람마다 이니셜 이벤트를  다음으로 제한함:",
+      "cohortEntryEventsText_6": "사람마다 이니셜 이벤트를 다음으로 제한함:",
       "cohortEntryEventsText_7": "per person.",
       "cohortErasText_1": "Specify era collapse gap size:",
       "cohortErasText_2": "Left censor cohort start dates to",
@@ -221,7 +221,7 @@
       "cohortExit": "코호트 종료 기준",
       "cohortExitText_1": "For all qualifying events",
       "cohortExitText_2": "The qualifying initial event can be set to end after a fixed time period relative to the event start or end date",
-      "cohortExitText_3": "Criteria can be used to signal the end of an event.  If a censoring event is identified between a qualifying event's start and end date",
+      "cohortExitText_3": "Criteria can be used to signal the end of an event. If a censoring event is identified between a qualifying event's start and end date",
       "cohortExitText_4": "Exit Cohort based on the following criteria:",
       "cohortExitText_5": "No censoring events selected.",
       "cohortExitTitle": "코호트 종료 기준",
@@ -241,7 +241,7 @@
       "removeRestriction": "이니셜 이벤트 의 제한 조건 제거",
       "restrictInitialEventsButton": "Restrict initial events",
       "restrictInitialEventsTitle": "이니셜 이벤트 의 제한 조건",
-      "unnamedCriteria": "Unnamed Criteria"
+      "unnamedCriteria": "명명되지 않은 기준"
     },
     "cohortExpressionViewer": {
       "cohortExpressionViewerText_1": "People having any of the following:",
@@ -282,12 +282,12 @@
       "importConceptSetPlaceholder": "Import Concept Set",
       "importConceptSetTitle": "Import Concept Set...",
       "includedConcepts": "Included Concepts",
-      "load": "Load",
+      "load": "불러오기",
       "mappedConcepts": "Mapped Concepts",
-      "newConceptSet": "새로운 컨셉 세트",
-      "pleaseSelectCodesetToModify": "Please select codeset to modify...",
+      "newConceptSet": "새로운 컨셉 모음",
+      "pleaseSelectCodesetToModify": "수정할 코드셋을 선택해 주세요.",
       "removeSelected": "Remove Selected",
-      "selectConceptSet": "Select Concept Set...",
+      "selectConceptSet": "컨셉 세트 선택하기",
       "unnamedConceptSet": "Unnamed Concept Set"
     },
     "conceptSetSaveModal": {
@@ -635,7 +635,7 @@
       "customEraStrategyText_17": "days after exposure end",
       "customEraStrategyText_18": "using days supply and exposure end date for exposure duration.",
       "customEraStrategyText_19": "forcing drug exposure days suply to:",
-      "customEraStrategyText_2": "Specify a concept set that contains one or more drugs.  A drug era will be derived from all drug exposure events for any of the drugs within the concept set",
+      "customEraStrategyText_2": "Specify a concept set that contains one or more drugs. A drug era will be derived from all drug exposure events for any of the drugs within the concept set",
       "customEraStrategyText_3": "Concept set containing the drug(s) of interest:",
       "customEraStrategyText_4": "Persistence window: allow for a maximum of ",
       "customEraStrategyText_5": "days between exposure records when inferring the era of persistence exposure",
@@ -647,24 +647,24 @@
     },
     "cyclops": {
       "controlEditor": {
-        "convergenceType": "Select the convergence type:",
-        "crossValidationSearchType": "Select the cross validation search type:",
-        "initialBound": "Initial bound:",
+        "convergenceType": "수렴(convergence) 유형을 선택합니다.",
+        "crossValidationSearchType": "교차 검증 검색 유형을 선택합니다:",
+        "initialBound": "이니셜 bound:",
         "lowerPrior": "Lower prior variance limit:",
-        "maxBoundCount": "Max bound count:",
-        "maxIterations": "Maximum iterations of Cyclops to attempt before returning a failed-to-converge error.",
-        "maxRelativeChange": "Maximum relative change in convergence criterion from successive iterations to achieve convergence.",
-        "nameOfExchangeableSamplingUnit": "Name of exchangeable sampling unit. Option <i>byPid</i> selects entire strata. Option <i>byRow</i> selects single rows. If set to <i>auto</i>",
-        "noiseLevel": "Noise level for Cyclops screen output:",
-        "numberOfRandomFolds": "Number of random folds to employ in cross validation:",
-        "numberOfRepetitions": "Number of repetitions of <%=num%>-fold cross validation:",
+        "maxBoundCount": "최대 bound 수:",
+        "maxIterations": "수렴에 실패했다는 오류를 반환하기 전 Cyclops를 최대 몇 번 까지 반복하시겠습니까?",
+        "maxRelativeChange": "연속적인 반복으로 수렴(convergence)을 얻고자 할 때, 수렴의 기준을 만족하기 위해 상대적인 변화를 최대 얼마나 허용하시겠습니까?",
+        "nameOfExchangeableSamplingUnit": "교환 가능한 샘플링 유닛 이름. \"byPid\" 옵션은 전체 계층을 선택합니다. \"byRow\" 옵션은 단일 행을 선택합니다. \"auto\"으로 설정된 경우, 계층당 평균 행 수가 계층 수보다 작은 조건부 모델(conditional models)을 제외한 모든 모델에 \"byRow\"가 사용됩니다.",
+        "noiseLevel": "Cyclops 화면 출력에 대한 노이즈 수준:",
+        "numberOfRandomFolds": "교차 검증에 사용할 랜덤 폴드의 수:",
+        "numberOfRepetitions": "<%=num%>-fold 교차 유효성 검사의 반복 횟수:",
         "numberOfSteps": "Number of steps:",
-        "resetAllCoefficients": "Reset all coefficients to 0 between model fits under cross-validation:",
+        "resetAllCoefficients": "교차 검증 시 모델 적합 간에 모든 계수를 0으로 재설정합니다.",
         "sizeMultiplier": "Size multiplier for active set:",
-        "startingVariance": "Starting variance for auto-search cross-validation; -1 = use estimate based on data:",
-        "umberOfRepetitionsOfData": "Number of repetitions of data for cross validation:",
+        "startingVariance": "자동 검색 교차 검증을 위한 시작 분산; -1 = 데이터 기반의 추정치를 사용합니다:",
+        "umberOfRepetitionsOfData": "교차 검증을 위한 데이터의 반복 횟수:",
         "upperPrior": "Upper prior variance limit:",
-        "useTheKarush": "Use the Karush-Kuhn-Tucker conditions to limit search:"
+        "useTheKarush": "Karush-Kuhn-Tucker conditions 을 사용하여 검색을 제한합니다:"
       },
       "options": {
         "auto": "Auto",
@@ -681,13 +681,13 @@
         "silent": "Silent"
       },
       "prior": {
-        "crossValidation": "Perform cross-validation to determine prior-variance:",
-        "distribution": "Specify the prior distribution:",
-        "distributionVariance": "Specify the prior distribution variance:",
-        "interceptCoefficient": "Force intercept coefficient into prior:",
+        "crossValidation": "사전 분산을 확인하기 위해 교차 검증을 수행합니다:",
+        "distribution": "사전 분포를 정의합니다:",
+        "distributionVariance": "사전 분포의 분산을 정의합니다:",
+        "interceptCoefficient": "Prior로 절편 계수(intercept coefficient)를 강제함:",
         "mapping": "Child-to-parent mapping for a hierarchical prior:",
-        "neighborhoods": "A list of first-order neighborhoods for a partially fused prior:",
-        "vector": "Specify a vector of numbers or covariate Ids to exclude from prior:"
+        "neighborhoods": "부분적으로 융합된 Prior의 1차 이웃 관계 리스트:",
+        "vector": "사전에 제외할 숫자 또는 공변량 ID의 벡터를 정의합니다:"
       }
     },
     "dateOffsetStrategy": {
@@ -874,7 +874,7 @@
       "title": "Filter panel"
     },
     "generateComponent": {
-      "generate": "Generate",
+      "generate": "생성",
       "generating": "Generating..."
     },
     "import": {
@@ -883,16 +883,16 @@
       "progress": "import in progress"
     },
     "inclusionRuleEditor": {
-      "copy": "Copy",
+      "copy": "복사하기",
       "delete": "Delete",
-      "ruleDescriptionPlaceholder": "enter an inclusion rule description",
-      "unnamedCriteria": "Unnamed Criteria"
+      "ruleDescriptionPlaceholder": "포함 규칙에 대한 설명을 입력합니다",
+      "unnamedCriteria": "명명되지 않은 기준"
     },
     "linkedCohortList": {
       "defaultNewItemLabel": "불러오기",
       "defaultTitle": "Cohort definition",
       "dialog": {
-        "title": "Choose a Cohort definition"
+        "title": "코호트 정의 선택하기"
       },
       "table": {
         "actions": {
@@ -911,20 +911,20 @@
         "correlatedCriteria": {
           "option": {
             "description": "Apply criteria using the location region as the index event",
-            "text": "Add Nested Criteria..."
+            "text": "Nested 기준 추가..."
           }
         },
         "startDate": {
           "option": {
             "description": "Filter Locations by date when Person started living there",
-            "text": "Add Start Date Criteria..."
+            "text": "Start Date 기준 추가..."
           },
           "text": "start is:"
         },
         "endDate": {
           "option": {
             "description": "Filter Locations by date when Person finished living there",
-            "text": "Add End Date Criteria..."
+            "text": "End Date 기준 추가..."
           },
           "text": "end is:"
         },
@@ -956,7 +956,7 @@
       "starting": "starting"
     },
     "selectSourcesBtn": {
-      "generate": "Generate",
+      "generate": "생성",
       "pickAtLeastOneSourceAlert": "Pick at least one source to generate"
     },
     "textFilter": {
@@ -1030,14 +1030,14 @@
       "mappingType": "Mapping Type",
       "match": "Match",
       "modelName": "Model Name",
-      "outcomeCohorts": "Outcome Cohorts",
+      "outcomeCohorts": "결과 코호트",
       "provider": "Provider",
       "riskWindow": "Risk Window",
       "signalInFaers": "Signal in FAERS",
       "source": "Source",
       "standardConcept": "표준 컨셉",
       "startDate": "Start date",
-      "targetCohorts": "Target Cohorts",
+      "targetCohorts": "표적 코호트",
       "type": "Type",
       "updated": "Updated",
       "userSpecified": "User Specified",
@@ -1065,7 +1065,7 @@
     "action": "Action",
     "actions": "Actions",
     "adLdapUsername": "AD/LDAP username",
-    "adjustmentStrategy": "Adjustment Strategy",
+    "adjustmentStrategy": "조절 전략",
     "allowed": "Allowed cost",
     "allowedChargedRatio": "Allowed /Charged",
     "allowedPmPm": "Allowed cost PMPM",
@@ -1086,7 +1086,7 @@
     "checkConnection": "Check connection",
     "class": "Class",
     "code": "Code",
-    "comparator": "Comparator",
+    "comparator": "비교군",
     "comparatorCohortName": "Comparator Cohort Name",
     "comparatorId": "Comparator Id",
     "conceptCode": "Concept Code",
@@ -1094,7 +1094,7 @@
     "conceptName": "Concept Name",
     "conditionConceptId": "Condition Concept Id",
     "conditionConceptName": "Condition Concept Name",
-    "copy": "Copy",
+    "copy": "복사하기",
     "count": "Count",
     "countValue": "Count Value",
     "covariate": "Covariate",
@@ -1164,23 +1164,23 @@
     "median": "Median",
     "message": "Message",
     "min": "Min",
-    "minimumTimeAtRisk": "Minimum Time At Risk",
+    "minimumTimeAtRisk": "최소 위험 노출 기간",
     "model": "Model",
     "modelName": "Model Name",
     "modelSettings": "Model Settings",
     "modified": "수정",
     "name": "이름",
-    "ncOutcomes": "NC Outcomes",
+    "ncOutcomes": "음성 대조군 결과",
     "nextExecution": "Next execution",
-    "no": "No",
+    "no": "아니오",
     "notPrevalent": "Not Prevalent",
     "optimizedOut": "Optimized Out",
     "options": "Options",
     "outcomeCohortName": "Outcome Cohort Name",
     "outcomeId": "Outcome Id",
-    "outcomeModel": "Outcome Model",
+    "outcomeModel": "결과 모델",
     "outcomeName": "Outcome Cohort Name",
-    "outcomes": "Outcomes",
+    "outcomes": "결과",
     "p10": "P10",
     "p25": "P25",
     "p75": "P75",
@@ -1196,8 +1196,8 @@
     "periodStart": "Period start",
     "permission": "Permissions",
     "person": "Person",
-    "personsCount": "Persons",
-    "personCount": "Person Count",
+    "personsCount": "환자수",
+    "personCount": "환자수",
     "personsPct": "Persons %",
     "pregnancyConcept": "Pregnancy Concept",
     "prevalence": "Prevalence",
@@ -1216,10 +1216,10 @@
     "quantityPer1000PerYear": "Quantity /1K /Year",
     "quantityTotal": "Total Quantity",
     "rc": "RC",
-    "recordCounts": "Record Counts (RC / DRC)",
-    "refreshCache": "Refresh cache",
+    "recordCounts": "기록 수 (RC / DRC)",
+    "refreshCache": "캐시 새로 고침",
     "relationshipType": "Relationship Type",
-    "remove": "Remove",
+    "remove": "제거",
     "removeSubjectsWithPriorOutcome": "Remove Subjects With Prior Outcome",
     "requireTimeAtRisk": "Require Time At Risk",
     "results": "Results",
@@ -1230,7 +1230,7 @@
     "selected": "Selected",
     "severity": "Severity",
     "sortOrder": "Sort Order",
-    "sourceName": "Source Name [Source Key]",
+    "sourceName": "소스 이름 [소스 키]",
     "standardConceptCaption": "Standard Concept Caption",
     "standardConceptCode": "Standard Concept Code",
     "standardType": "Standard Type",
@@ -1241,16 +1241,16 @@
     "stddev": "Std Dev",
     "strata": "Strata",
     "suggestedNegativeControl": "Suggested Negative Control",
-    "tableQualifiers": "Table Qualifiers",
-    "target": "Target",
+    "tableQualifiers": "테이블 Qualifiers",
+    "target": "대상군",
     "targetCohortName": "Target Cohort Name",
     "targetId": "Target Id",
     "targetName": "Target Cohort Name",
     "temporal": "Temporal",
     "time": "Time",
     "timeAtRisk": "위험 노출 기간",
-    "timeAtRiskEnd": "Time At Risk End",
-    "timeAtRiskStart": "Time At Risk Start",
+    "timeAtRiskEnd": "위험 노출 기간 종료일",
+    "timeAtRiskStart": "위험 노출 기간 시작일",
     "timeWindow": "Time Window",
     "title": "표제",
     "totalRecords": "Total Records",
@@ -1265,9 +1265,9 @@
     "visitsPer1000PerYear": "Records/1K/Year",
     "visitsPer1000WithVisits": "Records/1K +record",
     "vocabulary": "Vocabulary",
-    "vocabularyVersion": "Vocabulary Version",
+    "vocabularyVersion": "용어 버전",
     "washoutPeriod": "Washout Period",
-    "yes": "Yes"
+    "yes": "예"
   },
   "dataSources": {
     "achillesHeelReport": {
@@ -1401,7 +1401,7 @@
     "import": {
       "clickToClear": "삭제하려면 클릭",
       "conceptIdentifiers": "컨셉 식별자",
-      "conceptSet": "컨셉  세트",
+      "conceptSet": "컨셉 세트",
       "conceptSetExpressionJSON": "Concept Set Expression JSON",
       "enterConceptIdentifiers": "컨셉 식별자를 입력하세요",
       "enterSourceCodes": "Enter Source Codes",
@@ -1489,7 +1489,7 @@
         "evidenceForAllFor": "for",
         "evidenceSources": "Evidence Sources",
         "excludeLabel": "What concepts do you want to exclude as known positive controls? (Optional)",
-        "generate": "Generate",
+        "generate": "생성",
         "generated": "Generated",
         "generationDuration": "Generation Duration",
         "generationSettings": "Generation Settings",
@@ -1558,7 +1558,7 @@
     "loading": "Loading Cohort Characterization list...",
     "modals": {
       "confirmChanges": "Your changes are not saved. Would you like to continue?",
-      "selectConceptSet": "Select Concept Set...",
+      "selectConceptSet": "컨셉 세트 선택하기",
       "chooseAFeatureAnalyses": "Choose a Feature Analyses..."
     },
     "tabs": {
@@ -1609,7 +1609,7 @@
         "buttons": {
           "allExecutions": "All executions (<%=submissions%>)",
           "cancel": "Cancel",
-          "generate": "Generate",
+          "generate": "생성",
           "latestResult": "마지막 결과보기"
         },
         "designModal": {
@@ -1696,7 +1696,7 @@
       "preset": "Preset",
       "retrievingList": "Retrieving feature analyses list...",
       "saveError": "An error occurred while attempting to save a feature analysis.",
-      "selectConceptSet": "Select Concept Set...",
+      "selectConceptSet": "컨셉 세트 선택하기",
       "unsavedConfirmation": "Your changes are not saved. Would you like to continue?"
     }
   },
@@ -1728,34 +1728,36 @@
   "ir": {
     "caption": "Incidence Rate Analysis #",
     "cs": {
-      "modalTitle": "Select Concept Set..."
+      "modalTitle": "컨셉 세트 선택하기"
     },
     "deleteConfirmation": "Delete incidence rate analysis? Warning: deletion can not be undone!",
     "deleteResultConfirmation": "Do you really want to remove result of <%=name%>?",
     "editor": {
-      "addOutcomeCohort": "Add Outcome Cohort",
-      "addStudyWindow": "Add Study Window",
-      "addTargetCohort": "Add Target Cohort",
+      "addOutcomeCohort": "결과 코호트 추가",
+      "addStudyWindow": "연구 기간 범위 추가",
+      "addTargetCohort": "표적 코호트 추가",
       "chooseACohort": "Choose a Cohort",
-      "newStratifyCriteria": "New stratify criteria",
-      "noStudyWindowDefined": "No study window defined.",
-      "outcomeCohorts": "Outcome Cohorts",
-      "removeStudyWindow": "Remove Study Window",
-      "selectInclusionCriteriaMessage": "Please select a qualifying inclusion criteria to edit.",
+      "newStratifyCriteria": "새로운 계층화 기준",
+      "noStudyWindowDefined": "연구 기간 범위를 정의하지 않습니다.",
+      "outcomeCohorts": "결과 코호트",
+      "removeStudyWindow": "연구 기간 범위 삭제",
+      "selectInclusionCriteriaMessage": "편집할 적격  포함 기준을 선택하십시오.",
       "stratifyCriteria": "Stratify Criteria:",
-      "stratifyCriteriaMessage": "You can provide optional stratification criteria to the analysis that will divide the population into unique groups based on their satisified criteria.",
+      "stratifyCriteriaMessage": "계층화 기준 : 충족 기준을 기반으로 모집단을 고유 그룹으로 나누는 분석에 선택적 계층화 기준을 제공할 수 있습니다.",
       "studyCohorts": "Study Cohorts",
-      "studyWindowBeginsOn": "Study window begins on",
-      "studyWindowEndsOn": "and ends on",
-      "targetCohorts": "Target Cohorts",
+      "studyWindowText1": "연구 기간 범위는",
+      "studyWindowText2": "에서 시작하여",
+      "studyWindowText3": "종료됩니다.",
+      "targetCohorts": "표적 코호트",
       "timeAtRisk": "위험 노출 기간",
-      "timeAtRiskDays": "days.",
-      "timeAtRiskEndDate": "end date",
-      "timeAtRiskEndsWith": "Time at risk ends with",
-      "timeAtRiskMessage": "Time at risk defines the time window relative to the cohort start or end date with an offset to consider the person 'at risk' of the outcome.",
-      "timeAtRiskPlus": "plus",
-      "timeAtRiskStartDate": "start date",
-      "timeAtRiskStartsWith": "Time at risk starts with",
+      "timeAtRiskStartsWithDays": "일을 더해서 시작합니다.",
+      "timeAtRiskEndsWithDays": "일을 더해서 종료됩니다.",
+      "timeAtRiskEndDate": "종료일",
+      "timeAtRiskEndsWith": "위험 노출 기간은",
+      "timeAtRiskMessage": "위험 노출 기간(Time at risk)은 결과 변수 \"위험에 노출된\" 환자를 고려하는 상쇄로, 코호트 시작일 또는 종료일에 대한 시간 범위로 정의합니다.",
+      "timeAtRiskPlus": "에",
+      "timeAtRiskStartDate": "시작일",
+      "timeAtRiskStartsWith": "위험 노출 기간은",
       "timeAtRiskWarningMessage": "Error: Time at risk starts on or after time at risk end"
     },
     "nameConflict": "An incidence rate with this name already exists. Please choose a different name.",
@@ -1764,30 +1766,30 @@
     "notSavedMessage": "Incidence Rate Analysis changes are not saved. Would you like to continue?",
     "results": {
       "accessDenied": "Access denied",
-      "andOutcomeCohort": "and outcome cohort:",
+      "andOutcomeCohort": "와 결과 코호트:",
       "canceled": "CANCELED",
-      "cases": "Cases",
+      "cases": "이벤트 환자수",
       "close": "Close",
-      "duration": "Duration",
-      "exportToCsvButton": "Export Analysis to CSV",
+      "duration": "생성 작업 시간",
+      "exportToCsvButton": "CSV 파일로 분석결과 내보내기",
       "failed": "FAILED",
       "generationInProgress": "Generation is in progress",
       "loadingGenerationResultErrorMessage": "There was an error while loading generation result reports",
       "loadingSummary": "Loading summary...",
-      "perPersons": "per <%=multiplier%> persons",
-      "perYears": "per <%=multiplier%> years",
-      "persons": "Persons",
+      "perPersons": "환자 <%=multiplier%>명 당",
+      "perYears": "<%=multiplier%>년 당",
+      "persons": "환자수",
       "proportion": "Proportion",
       "rate": "Rate",
       "reports": "Reports",
-      "rerun": "Rerun",
+      "rerun": "재실행",
       "running": "Running",
       "selectTargetAndOutcomeAlert": "You should select at least one target and outcome cohort to generate",
-      "showingTargetCohort": "Showing target cohort:",
-      "sourceName": "Source Name",
-      "started": "Started",
+      "showingTargetCohort": "표적 코호트 표시:",
+      "sourceName": "사용된 데이터베이스 소스 이름",
+      "started": "생성 시작 시간",
       "timeAtRisk": "위험 노출 기간",
-      "timeAtRiskYears": "(years)"
+      "timeAtRiskYears": "(년수)"
     },
     "savingError": "An error occurred while attempting to save an incidence rate.",
     "tabs": {
@@ -1815,7 +1817,7 @@
     "personId": "Person Id",
     "processingProfile": "processing profile data",
     "recordCounts": "<%=count%> events",
-    "selectADataSource": "Select a Data Source",
+    "selectADataSource": "데이터 소스를 선택하십시오.",
     "setSelectedEventsColor": "set selected events color",
     "title": "프로필",
     "toggleChartTooltip": "toggle chart display",
@@ -1850,13 +1852,13 @@
         },
         "targetCohorts": {
           "description": "Each of the Target Cohorts will be analyized for the pathways through the event cohorts.",
-          "title": "Target Cohorts"
+          "title": "표적 코호트"
         }
       },
       "executions": {
         "buttons": {
           "allExecutions": "All executions",
-          "generate": "Generate",
+          "generate": "생성",
           "viewLatestResult": "마지막 결과보기"
         },
         "dialogs": {
@@ -1930,14 +1932,14 @@
   "ple": {
     "analysisExistsAlert": "An estimation analysis with this name already exists. Please choose a different name.",
     "analysisSaveErrorAlert": "An error occurred while attempting to save an estimation analysis.",
-    "caption": "Comparative Cohort Analysis",
-    "captionNumber": "Comparative Cohort Analysis #",
+    "caption": "코호트 비교 분석",
+    "captionNumber": "코호트 비교 분석 #",
     "changesNotSavedConfirmation": "Estimation Analysis changes are not saved. Would you like to continue?",
     "deleteConfirmation": "Delete estimation specification? Warning: deletion can not be undone!",
     "exec": {
       "allExec": "All executions (<%=len%>)",
       "downloadLatestResult": "Download latest result",
-      "generate": "Generate",
+      "generate": "생성",
       "generating": "Generating...",
       "generations": "생성",
       "loadingGenerations": "Loading generations...",
@@ -1946,18 +1948,18 @@
     },
     "nameIsEmptyWarning": "Population Level Effect Estimation name is empty.",
     "spec": {
-      "addAnalysisSettings": "분석 설정을 추가",
-      "addComparisons": "비교 코호트 추가",
-      "addOutcome": "Add Outcome",
+      "addAnalysisSettings": "분석 설정 추가",
+      "addComparisons": "비교군 추가",
+      "addOutcome": "결과 코호트 추가",
       "analysisName": "Analysis name:",
       "analysisSettings": "분석 설정",
       "analysisSettingsDescription": "Add or update the analysis settings",
-      "chooseYourComparatorCohort": "Choose your comparator cohort:",
-      "chooseYourOutcomeCohorts:": "Choose your outcome cohorts:",
-      "chooseYourTargetCohort": "Choose your target cohort:",
-      "clickToViewDetails": "Click to view details",
-      "comparison": "Comparison",
-      "comparisonDescription": "Add or update the target",
+      "chooseYourComparatorCohort": "대조 코호트 선택하기:",
+      "chooseYourOutcomeCohorts:": "결과 코호트 선택하기:",
+      "chooseYourTargetCohort": "표적 코호트 선택 하기:",
+      "clickToViewDetails": "자세한 내용을 보려면 클릭하십시오.",
+      "comparison": "비교",
+      "comparisonDescription": "표적, 대조, 결과(들) 코호트과  음성 대조군 결과를 추가 또는 갱신합니다.",
       "conceptsToExcludeLabel": "Concepts to <b>exclude</b> when constructing the covariates to be used in this study.*",
       "conceptsToExcludeNoteAnalysis": "* Concepts defined here are combined with those defined in the Comparisons section.",
       "conceptsToExcludeNoteComparisons": "* Concepts defined here are combined with those defined in the Analysis settings section.",
@@ -1965,7 +1967,7 @@
       "conceptsToIncludeNoteAnalysis": "* Concepts defined here are combined with those defined in the Comparisons section.",
       "conceptsToIncludeNoteComparisons": "* Concepts defined here are combined with those defined in the Analysis settings section.",
       "controlSettings": "제어 설정",
-      "covariateSelection": "Covariate selection",
+      "covariateSelection": "공변량 선택",
       "covariateSettings": "공변량 설정",
       "descriptionPlaceholder": "enter a description here (1000 characters max)",
       "evaluationSettings": "평가 설정",
@@ -1973,10 +1975,10 @@
         "additionalSettings": "Additional Settings",
         "advancedSettingsStartsHere": "Advanced Settings start here",
         "allowedRatio": "The allowed ratio between target and injected signal size:",
-        "daysFrom": "days from",
-        "daysFromCohortStartDate": "days from cohort start date",
-        "defineTimeAtRiskWindowEnd": "Define the time-at-risk window end:",
-        "defineTimeAtRiskWindowStart": "Define the time-at-risk window start",
+        "daysFrom": "일 수",
+        "daysFromCohortStartDate": "일 수 코호트 시작 일로부터",
+        "defineTimeAtRiskWindowEnd": "위험 노출 기간의 종료일을 정의하십시오.",
+        "defineTimeAtRiskWindowStart": "위험 노출 기간의 시작일을 표적/대조 코호트의 코호트 시작 날짜와 관련해 정의하십시오",
         "effectSizes": "What effect sizes should be inserted:",
         "firstOutcomeToBeCreated": "What should be the first new outcome ID that is to be created?",
         "maxNumberOfPeopleToFit": "Maximum number of people used to fit an outcome model:",
@@ -1996,100 +1998,100 @@
         "whenTrueDescendantConcepts": "When true"
       },
       "from": "from",
-      "negativeControlConceptSet": "Negative control concept set:",
+      "negativeControlConceptSet": "사용할 음성대조군 결과를 선택하기:",
       "newAnalysis": "New analysis",
       "options": {
-        "all": "모두",
+        "all": "전체",
         "allOccurrences": "All occurrences",
-        "byPercent": "By Percent",
-        "cohortEndDate": "cohort end date",
-        "cohortStartDate": "cohort start date",
-        "comparator": "Comparator",
+        "byPercent": "Percent에 따라",
+        "cohortEndDate": "코호트 종료 일로부터",
+        "cohortStartDate": "코호트 시작 일로부터",
+        "comparator": "대조 코호트",
         "condition": "Condition",
-        "coxProportionalHazards": "Cox proportional hazards",
+        "coxProportionalHazards": "콕스 비례 위험 모형",
         "device": "Device",
         "drug": "Drug",
         "firstOccurrence": "First occurrence",
-        "keepAll": "Keep All",
-        "keepFirst": "Keep First",
-        "logisticRegression": "Logistic regression",
-        "matchOnPropensityScore": "Match on propensity score",
+        "keepAll": "전체 유지",
+        "keepFirst": "첫번째 해당만 유지",
+        "logisticRegression": "로지스틱 회귀 분석",
+        "matchOnPropensityScore": "성향 점수로 매칭",
         "matching": "<%=ratio%>:1 matching",
         "measurement": "Measurement",
-        "none": "None",
+        "none": "안함",
         "observation": "Observation",
         "poisson": "Poisson",
-        "poissonRegression": "Poisson regression",
+        "poissonRegression": "포아송 회귀 분석",
         "procedure": "Procedure",
         "propensityScore": "Propensity score",
-        "removeAll": "Remove All",
+        "removeAll": "전체 제거",
         "standardized": "Standardized",
         "standardizedLogit": "Standardized Logit",
         "stratification": "Stratification (stratum: <%=stratum%>)",
-        "stratifyOnPropensityScore": "Stratify on propensity score",
+        "stratifyOnPropensityScore": "성향 점수로 계층화",
         "survival": "Survival",
-        "target": "Target",
-        "toEquipoise": "To Equipoise",
+        "target": "표적 코호트",
+        "toEquipoise": "Equipoise에 따라",
         "visit": "Visit"
       },
-      "outcomeModel": "Outcome Model",
+      "outcomeModel": "결과 모델 설정",
       "outcomeModelPanel": {
         "covariates": "Should the covariates also be included in the outcome model?",
-        "regression": "Should the regression be conditioned on the strata defined in the population object (e.g. by matching or stratifying on propensity scores)?",
+        "regression": "회귀분석은 모집단 대상자에서 정의된 계층에 따라 조절되어야 합니까? (예: 성향 점수로 매칭 또는 계층화 함으로써)",
         "regularization": "Use regularization when fitting the outcome model? *",
         "regularizationNote": "* Regularization will not be applied to the exposure of interest",
-        "statisticalModel": "Specify the statistical model used to estimate the risk of outcome between target and comparator cohorts:",
-        "weighting": "Use inverse probability of treatment weighting?"
+        "statisticalModel": "표적 코호트와 대조 코호트 간의 결과 위험도 평가에 사용될 통계 모델을 정의하십시오:",
+        "weighting": "처리 가중치의 역확률(IPTW, inverse probability of treatment weighting)을 사용합니까?"
       },
       "prior": "사전 정보",
       "propensityScoreAdjustment": "성향 점수 보정",
       "propensityScoreAdjustmentPanel": {
-        "baseSelection": "What is the base selection of subjects where the strata bounds are to be determined? Strata are defined as equally-sized strata inside this selection.",
+        "baseSelection": "어떤 대상을 기준으로 계층을 결정할 것입니까? 계층은 동일한 크기로 정의됩니다.",
         "caliperForMatching": "What is the caliper for matching:",
         "caliperScale": "What is the caliper scale:",
         "covariateIdsMatch": "One or more covariate IDs in the cohortMethodData object on which subjects should be also matched.",
         "covariateIdsPlaceholder": "One or more covariate IDs",
         "covariateIdsStratify": "One or more covariate IDs in the cohortMethodData object on which subjects should be also stratified.",
-        "howManyStrata": "Into how many strata should the propensity score be divided? The boundaries of the strata are automatically defined to contain equal numbers of target persons:",
-        "howToTrim": "How do you want to trim your cohorts based on the propensity score distribution?",
+        "howManyStrata": "성향 점수는 몇 개의 계층으로 나누겠습니까? 계층의 경계는 동일한 수의 표적 인원을 포함하도록 자동으로 정의됩니다.",
+        "howToTrim": "성향 점수 분포를 기반으로 코호트를 어떻게 잘라(trim)내시겠습니까?",
         "lowerAndUpperBound": "Specify the lower and upper bound on the preference score for keeping persons (specify as: min %",
-        "matchingOrStratification": "Do you want to perform matching or stratification?",
-        "maxNumberOfPeople": "What is the maximum number of people to include in the propensity score model when fitting? Setting this number to 0 means no down-sampling will be applied:",
+        "matchingOrStratification": "매칭 또는 계층화(stratification)를 수행하시겠습니까?",
+        "maxNumberOfPeople": "적절한 성향 점수 모델에 포함할 최대 환자수는 몇 명입니까? 이 숫자를 0으로 설정하면 down-sampling이 적용되지 않습니다.",
         "maximumNumberOfPersons": "What is the maximum number of persons in the comparator arm to be matched to each person in the target arm within the defined caliper? (0 = means no maximum - all comparators will be assigned to a target person):",
-        "testEachCovariate": "Test each covariate for correlation with the target assignment? If any covariate has an unusually high correlation (either positive or negative)",
+        "testEachCovariate": "할당된 타겟(표적)과 각 공변량들의 상관관계를 검사하겠습니까? 공변량이 비정상적으로 높은 상관 관계 값(양수 또는 음수)를 갖는다면 오류를 발생시킬 것입니다.",
         "trimFraction": "Trim Fraction (1-100%):",
         "useRegularization": "Use regularization when fitting the propensity model?"
       },
-      "selectCohort": "Select Cohort...",
-      "selectConceptSet": "Select Concept Set...",
+      "selectCohort": "코호트 선택하기",
+      "selectConceptSet": "컨셉 세트 선택하기",
       "selectCovariates": "Select Covariates...",
       "studyPopulation": "연구 모집단",
       "studyPopulationPanel": {
-        "cohortCap": "If either the target or the comparator cohort is larger than this number it will be sampled to this size. (0 for this value indicates no maximum size)",
+        "cohortCap": "표적 또는 대조 코호트가 설정한 값보다 큰 경우, 설정한 값 크기로 샘플링됩니다. (이 값이 0이면 최대 크기가 없음을 나타냅니다)",
         "daysPriorOutcomes": "How many days should we look back when identifying prior outcomes?",
-        "endDate": "Study end date - a calendar date specifying the maximum date that a cohort index can appear (leave blank to use all time). <b>Important</b>: the study end date is also used to truncate risk windows",
-        "minimumObservations": "The minimum required continuous observation time (in days) prior to index date for a person to be included in the cohort.",
-        "onlyFirst": "Should only the first exposure per subject be included?",
-        "removeDuplicates": "Remove subjects that are in both the target and comparator cohort?",
-        "removeSubjectsPriorRiskWindow": "Remove subjects that have the outcome prior to the risk window start?",
-        "restrictToPeriod": "Restrict the study to the period when both exposures are present in the data? (E.g. when both drugs are on the market)",
-        "startDate": "Study start date - a calendar date specifying the minimum date that a cohort index can appear (leave blank to use all time):",
-        "subjectInMultipleCohorts": "If a subject is in multiple cohorts"
+        "endDate": "연구 종료 날짜- 코호트 기준이 나타날 수있는 최대의 날짜를 지정하는 calendar date (모든 기간을 사용하려면 비워 두십시오). <b>중요</b>: 연구 종료일은 risk에 노출된 기간을 줄이는 데에도 사용되므로, 연구 종료일 이후의 결과는 고려되지 않습니다:",
+        "minimumObservations": "코호트에 포함될 환자의 기준 날짜 이전에 최소 요구되는 연속 관찰 시간",
+        "onlyFirst": "대상자의  첫 번째 노출만 포함됩니까?",
+        "removeDuplicates": "표적 및 대조 코호트에 모두 포함된 대상자를 제거하겠습니까?",
+        "removeSubjectsPriorRiskWindow": "위험 노출 기간 이전, 결과가 발생한 대상자를 제거합니까?",
+        "restrictToPeriod": "두가지의 노출이 모두 관찰되는 기간을 분석에서 제한하시겠습니까?",
+        "startDate": "연구 시작 날짜- 코호트 기준이 나타날 수있는 최소의 날짜를 지정하는 calendar date(모든 기간을 사용하려면 비워 두십시오):",
+        "subjectInMultipleCohorts": "만일 대상자가 여러 코호트에 중복되어 포함되어 있다면, 새로운 위험 노출 기간이 겹치지 않도록 위험 노출 기간을 중도 절단을 하시겠습니까?"
       },
       "timeAtRisk": "위험 노출 기간",
       "timeAtRiskPanel": {
-        "daysFrom": "days from",
-        "defineTheTimeAtRiskWindowEnd": "Define the time-at-risk window end:",
-        "defineTheTimeAtRiskWindowStart": "Define the time-at-risk window start",
-        "minimumNumberOfDaysAtRisk": "The minimum number of days at risk?"
+        "daysFrom": "일 수",
+        "defineTheTimeAtRiskWindowEnd": "위험 노출 기간의 종료일을 정의하십시오.",
+        "defineTheTimeAtRiskWindowStart": "위험 노출 기간의 시작일을 표적/대조 코호트의 코호트 시작 날짜와 관련해 정의하십시오",
+        "minimumNumberOfDaysAtRisk": "최소 위험 노출 기간을 몇 일동안으로 설정하시겠습니까?"
       },
-      "usingCovariates": "Using OHDSI covariates for propensity score model.",
+      "usingCovariates": "성향 점수 모델에 OHDSI 공변량을 사용합니다.",
       "view": "View:",
       "viewAnalysisSettings": "분석 설정",
-      "viewComparisons": "비교 코호트",
+      "viewComparisons": "비교",
       "viewEvaluationSettings": "평가 설정",
       "viewFull": "모두",
-      "viewFullSpecification": "Full Specification"
+      "viewFullSpecification": "전체 보기"
     },
     "tabs": {
       "executions": "실행",
@@ -2113,17 +2115,17 @@
     }
   },
   "jobs": {
-    "refreshJobs": "Refresh Jobs"
+    "refreshJobs": "작업 새로 고침"
   },
   "configuration": {
     "alerts": {
-      "clearLocalCache": "Local Storage has been cleared.  Please refresh the page to reload configuration information.",
+      "clearLocalCache": "Local Storage has been cleared. Please refresh the page to reload configuration information.",
       "clearServerCache": "Server cache has been cleared.",
       "failUpdatePrioritySourceDaimon": "Failed to update priority source daimon"
     },
     "buttons": {
       "check": "refresh",
-      "clearConfigurationCache": "Clear Configuration Cache",
+      "clearConfigurationCache": "구성 캐시 지우기",
       "clearServerCache": "Clear Server Cache",
       "importUsers": "Import Users from LDAP/AD",
       "managePermissions": "Manage Permissions"
@@ -2323,11 +2325,11 @@
           "close": "Source changes are not saved. Would you like to continue?",
           "delete": "Delete source? Warning: deletion can not be undone!"
         },
-        "label": "Source Key:",
+        "label": "소스 키:",
         "new": {
           "placeholder": "New Source"
         },
-        "placeholder": "Source key",
+        "placeholder": "소스 키",
         "title": "Source <%=name%>",
         "validation": {
           "empty": "Source name is empty"
@@ -2438,7 +2440,7 @@
         "export": "내보내기",
         "exportAllToCSV": "Export All Concept Sets To CSV",
         "fullAnalysis": "Full Analysis",
-        "generate": "Generate",
+        "generate": "생성",
         "generated": "Generated",
         "generationDuration": "Generation Duration",
         "generationStatus": "Generation Status",
@@ -2453,7 +2455,7 @@
         "includedSourceCodes": "Included Source Codes",
         "json": "JSON",
         "name": "이름:",
-        "newConceptSet": "새로운 컨셉 세트",
+        "newConceptSet": "새로운 컨셉 모음",
         "people": "People",
         "quickAnalysis": "Quick Analysis",
         "records": "Records",
@@ -2461,7 +2463,7 @@
         "reportSelections": "Report Selections",
         "repository": "Repository",
         "sourceCodes": "Source Codes",
-        "sourceName": "Source Name",
+        "sourceName": "소스 이름",
         "sql": "SQL",
         "textView": "텍스트 보기",
         "utilization": "이용",
@@ -2629,560 +2631,560 @@
     "eventsList": {
       "addConditionEra": {
         "title": "Condition Era 추가 ",
-        "desc_initial": "Find patients with specific diagosis era.",
+        "desc_initial": "특정 진단 기간을 가진 환자를 찾습니다.",
         "desc_censoring": "Exit cohort based on diagosis era.",
-        "desc_group": "Find patients with specific condition era."
+        "desc_group": "특정 Condition Era에 따라 환자를 찾습니다."
       },
       "addDemographic": {
-        "title": "Add Demographic",
-        "desc_group": "Filter events based on demographic criteria."
+        "title": "Demographic 추가 ",
+        "desc_group": "인구 통계학적 기준을 기반으로 이벤트를 필터링합니다."
       },
       "addConditionOccurrence": {
-        "title": "Add Condition Occurrence",
-        "desc_initial": "Find patients with specific diagnoses.",
-        "desc_censoring": "Exit cohort based on  diagnoses.",
-        "desc_group": "Find patients with specific conditions."
+        "title": "Condition Occurrence 추가",
+        "desc_initial": "특정 진단을 가진 환자를 찾습니다.",
+        "desc_censoring": "Exit cohort based on diagnoses.",
+        "desc_group": "특정 진단을 가진 환자를 찾습니다."
       },
       "addDeath": {
-        "title": "Add Death",
-        "desc_initial": "Find patients based on death.",
-        "desc_censoring": "Exit cohort based on  death.",
-        "desc_group": "Find patients based on death."
+        "title": "Death 추가",
+        "desc_initial": "Death를 기반으로 환자를 찾습니다.",
+        "desc_censoring": "Exit cohort based on death.",
+        "desc_group": "Death를 기반으로 환자를 찾습니다."
       },
       "addDeviceExposure": {
-        "title": "Add Device Exposure",
-        "desc_initial": "Find patients based on device exposure.",
-        "desc_censoring": "Exit cohort based on  device exposure.",
-        "desc_group": "Find patients based on device exposure."
+        "title": "Device Exposure 추가",
+        "desc_initial": "Device exposure에 따라 환자를 찾습니다.",
+        "desc_censoring": "Exit cohort based on device exposure.",
+        "desc_group": "Device exposure에 따라 환자를 찾습니다."
       },
       "addDoseEra": {
-        "title": "Add Dose Era",
-        "desc_initial": "Find patients with dose eras.",
+        "title": "Dose Era 추가",
+        "desc_initial": "Dose Era에 따라 환자를 찾습니다.",
         "desc_censoring": "Exit cohort based on dose eras.",
-        "desc_group": "Find patients with dose eras."
+        "desc_group": "Dose Era에 따라 환자를 찾습니다."
       },
       "addDrugEra": {
-        "title": "Add Drug Era",
-        "desc_initial": "Find patients with with exposure to drugs over time.",
+        "title": "Drug Era 추가",
+        "desc_initial": "시간이 지남에 따라 약물에 노출된  환자를 찾습니다.",
         "desc_censoring": "Exit cohort based on drugs over time.",
-        "desc_group": "Find patients with drug eras."
+        "desc_group": "Drug Era에 따라 환자를 찾습니다."
       },
       "addDrugExposure": {
-        "title": "Add Drug Exposure",
-        "desc_initial": "Find patients with exposure to specific drugs or drug classes.",
+        "title": "Drug Exposure 추가",
+        "desc_initial": "특정 Drug나 약 종류에 노출된 환자를 찾습니다.",
         "desc_censoring": "Exit cohort based on exposure to specific drugs or drug classes.",
-        "desc_group": "Find patients with exposure to specific drugs or drug classes."
+        "desc_group": "특정 Drug나 약 종류에 노출된 환자를 찾습니다."
       },
       "addMeasurement": {
-        "title": "Add Measurement",
-        "desc_initial": "Find patients based on Measurement.",
+        "title": "Measurement 추가",
+        "desc_initial": "Measurement을 기반으로 환자를 찾습니다..",
         "desc_censoring": "Exit cohort based on Measurement.",
-        "desc_group": "Find patients based on measurements."
+        "desc_group": "Measurements을 기반으로 환자를 찾습니다."
       },
       "addObservation": {
-        "title": "Add Observation",
-        "desc_initial": "Find patients based on observations.",
+        "title": "Observation 추가",
+        "desc_initial": "Lab tests 또는 다른 observation을 기반으로 환자를 찾습니다.",
         "desc_censoring": "Exit cohort based on lab tests or other observations.",
-        "desc_group": "Find patients based on observations."
+        "desc_group": "Lab tests 또는 다른 observation을 기반으로 환자를 찾습니다."
       },
       "addObservationPeriod": {
-        "title": "Add Observation Period",
-        "desc_initial": "Find patients based on Observation Period.",
-        "desc_group": "Find patients based on observation periods."
+        "title": "Observation Period 추가",
+        "desc_initial": "Observation Period를 기반으로 환자를 찾습니다.",
+        "desc_group": "Observation Period를 기반으로 환자를 찾습니다."
       },
       "addPayerPlanPeriod": {
-        "title": "Add Payer Plan Period",
-        "desc_initial": "Find patients based on Payer Plan Period.",
-        "desc_censoring": "Find patients based on Payer Plan Period.",
-        "desc_group": "Find patients based on Payer Plan Period."
+        "title": "Payer Plan Period 추가",
+        "desc_initial": "Payer Plan Period에 따라 환자를 찾습니다.",
+        "desc_censoring": "Payer Plan Period에 따라 환자를 찾습니다.",
+        "desc_group": "Payer Plan Period에 따라 환자를 찾습니다."
       },
       "addProcedureOccurrence": {
-        "title": "Add Procedure Occurrence",
-        "desc_initial": "Find patients that experienced a specific procedure.",
+        "title": "Procedure  Occurrence 추가",
+        "desc_initial": "특정 procedure를 경험한 환자를 찾습니다.",
         "desc_censoring": "Exit cohort based on procedures.",
-        "desc_group": "Find patients that experienced a specific procedure."
+        "desc_group": "특정 procedure를 경험한 환자를 찾습니다."
       },
       "addSpecimen": {
-        "title": "Add Specimen",
-        "desc_initial": "Find patients based on Specimen.",
-        "desc_censoring": "Find patients based on Specimen.",
-        "desc_group": "Find patients based on specimen."
+        "title": "Specimen 추가",
+        "desc_initial": "Specimen을 기반으로 환자를 찾습니다.",
+        "desc_censoring": "Specimen을 기반으로 환자를 찾습니다.",
+        "desc_group": "Specimen을 기반으로 환자를 찾습니다."
       },
       "addLocationRegion": {
-        "title": "Add Location Region",
-        "desc_group": "Find patients within geographical area."
+        "title": "Location Region 추가",
+        "desc_group": "지리적 영역 내에서 환자를 찾습니다."
       },
       "addGroup": {
-        "title": "Add Group",
-        "desc_group": "Add a group to combine criteria using and/or relationships."
+        "title": "그룹 추가",
+        "desc_group": "그리고 / 또는'의 관계를 사용하여 기준들을 결합하기 위해 그룹 추가"
       },
       "addVisit": {
-        "title": "Add Visit",
-        "desc_initial": "Find patients based on visit information.",
+        "title": "Visit 추가",
+        "desc_initial": "Visit 정보를 기반으로 환자를 찾습니다.",
         "desc_censoring": "Exit cohort based on visit information.",
-        "desc_group": "Find patients based on visit information.",
-        "title_occurrence": "Add Visit",
-        "desc_occurrence": "Filter Condition Occurrences based on visit occurrence of diagnosis.",
-        "title_deviceexposure": "Add Visit Criteria",
-        "desc_deviceexposure": "Filter Device Exposures based on visit occurrence of exposure.",
-        "title_drugexposure": "Add Visit Criteria",
-        "desc_drugexposure": "Filter Drug Exposures based on visit occurrence of drug exposure.",
-        "title_measurement": "Add Visit Criteria",
-        "desc_measurement": "Filter Measurements based on visit occurrence of measurement.",
-        "title_observation": "Add Visit Criteria",
-        "desc_observation": "Filter Observations based on visit occurrence of observation.",
-        "title_procedureoccurrence": "Add Visit Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences based on visit occurrence of procedure."
+        "desc_group": "Visit 정보를 기반으로 환자를 찾습니다.",
+        "title_occurrence": "Visit 추가",
+        "desc_occurrence": "진단이 발생한 방문에 따라 Condition occurrence를 필터링합니다.",
+        "title_deviceexposure": "Visit 기준 추가",
+        "desc_deviceexposure": "의료기기 노출이 발생된 방문을 기반으로 Device Exposure을 필터링합니다.",
+        "title_drugexposure": "Visit 기준 추가",
+        "desc_drugexposure": "약물 노출이 발생한 방문에 따라 Drug Exposure를 필터링합니다.",
+        "title_measurement": "Visit 조건 추가",
+        "desc_measurement": "발생 방문일에 따라 Measurement를 필터링합니다.",
+        "title_observation": "Visit 조건 추가",
+        "desc_observation": "관찰이 발생한 방문을 기반으로 Observation을 필터링합니다.",
+        "title_procedureoccurrence": "Visit 조건 추가",
+        "desc_procedureoccurrence": "Procedure  발생 방문을 기반으로 Procedure Occurrence를 필터링합니다."
       },
       "addFirstDiagnosis": {
-        "title_era": "Add First Diagnosis Criteria",
-        "desc_era": "Limit Condition Eras to first diagnosis era in history.",
-        "title_occurrence": "Add First Diagnosis",
-        "desc_occurrence": "Limit Condition Occurrences to new diagnosis.",
-        "title_deviceexposure": "Add First Exposure Criteria",
-        "desc_deviceexposure": "Limit Device Exposures to first exposure in history.",
-        "title_dose": "Add First Exposure Criteria",
-        "desc_dose": "Limit Dose Era to new exposure.",
-        "title_drug": "Add First Exposure Criteria",
-        "desc_drug": "Limit Drug Eras to first exposure in history.",
-        "title_drugexposure": "Add First Exposure Criteria",
-        "desc_drugexposure": "Limit Drug Exposures to the first exposure in history.",
-        "title_measurement": "Add First Measure Criteria",
-        "desc_measurement": "Limit Measures to first occurrence in history.",
-        "title_observation": "Add First Observation Criteria",
-        "desc_observation": "Limit Observations to the first occurrence.",
-        "title_observationperiod": "First Observation Period Criteria",
-        "desc_observationperiod": "Limit Observation Period to first period in history.",
-        "title_payerplan": "First Payer Plan Period Criteria",
-        "desc_payerplan": "Limit Payer Plan Period to first period in history.",
-        "title_procedureoccurrence": "Add First Procedure Criteria",
-        "desc_procedureoccurrence": "Limit Procedure Occurrences to first procedure in history.",
-        "title_specimen": "Add First Occurrence Criteria",
-        "desc_specimen": "Limit Specimen to the first occurrence in history.",
-        "title_visit": "Add First Visit Criteria",
-        "desc_visit": "Limit Visit Occurrences to the first visit."
+        "title_era": "최초 진단 기준 추가",
+        "desc_era": "Condition Era를 환자의 전체 기록중 가장 처음 받은 진단으로 제한합니다.",
+        "title_occurrence": "First Diagnosis 추가",
+        "desc_occurrence": "새로운 진단만으로 Condition occurrences를 제한합니다.",
+        "title_deviceexposure": "First Exposure 기준 추가",
+        "desc_deviceexposure": "Device Exposure을 기록내 최초 exposure로 제한합니다.",
+        "title_dose": "First Exposure 조건 추가",
+        "desc_dose": "Dose Era를 최초 exposure로 제한합니다",
+        "title_drug": "First Exposure 기준 추가",
+        "desc_drug": "Drug Era를 기록 내 첫 약물 노출로 제한합니다.",
+        "title_drugexposure": "First Exposure 기준 추가",
+        "desc_drugexposure": "Drug Exposure을 기록 내 첫 약물 노출로  제한합니다.",
+        "title_measurement": "첫 측정(검사) 기준 추가",
+        "desc_measurement": "Measure을 기록 내 첫 발생 건으로 제한합니다.",
+        "title_observation": "First Observation 조건 추가",
+        "desc_observation": "Observation을 첫 발생으로 제한합니다.",
+        "title_observationperiod": "First Observation Period 조건",
+        "desc_observationperiod": "Observation Period을 기록 내 첫 기간으로 제한합니다.",
+        "title_payerplan": "First Payer Plan Period 조건",
+        "desc_payerplan": "Payer Plan Period을 기록 내 첫 기간으로 제한합니다.",
+        "title_procedureoccurrence": "First Procedure 조건 추가",
+        "desc_procedureoccurrence": "Procedure Occurrence를 기록 내 첫 검사로 제한합니다.",
+        "title_specimen": "First Occurrence 기준 추가",
+        "desc_specimen": "Specimen을 기록 내 첫 발생으로 제한합니다.",
+        "title_visit": "First Visit 조건 추가",
+        "desc_visit": "Visit occurrence를 첫 방문으로 제한합니다."
       },
       "addAgeAtStart": {
-        "title_era": "Add Age at Era Start Criteria",
-        "desc_era": "Filter Condition Eras by age at era start.",
-        "title_dose": "Add Age at Era Start Criteria",
-        "desc_dose": "Filter Drug Eras by age at era start.",
-        "title_drug": "Add Age at Era Start Criteria",
+        "title_era": "Era start 당시 Age 기준 추가",
+        "desc_era": "Era start 당시의 나이를 기준으로 Condition Era를 필터링합니다.",
+        "title_dose": "Age at Era Start 조건 추가",
+        "desc_dose": "Era 시작 연령에 따라 Dose Era를 필터링합니다.",
+        "title_drug": "Era start 당시 Age 기준 추가",
         "desc_drug": "Filter Drug Eras by age at era start.",
-        "title_observationperiod": "Add Age at Start Criteria",
-        "desc_observationperiod": "Filter Periods by Age at Start.",
-        "title_payerplan": "Add Age at Start Criteria",
-        "desc_payerplan": "Filter Periods by Age at Start."
+        "title_observationperiod": "Age at Start 조건",
+        "desc_observationperiod": "관찰기간이 시작되는 연령에 따라 Period를 필터링합니다.",
+        "title_payerplan": "Age at Start 조건 추가",
+        "desc_payerplan": "Payer Plan Period가 시작되는 연령에 따라 Period를 필터링합니다."
       },
       "addAgeAtEnd": {
-        "title_era": "Add Age at Era End Criteria",
-        "desc_era": "Filter Condition Eras by age at era end.",
-        "title_dose": "Add Age at Era End Criteria",
-        "desc_dose": "Filter Drug Eras by age at era end.",
-        "title_drug": "Add Age at Era End Criteria",
-        "desc_drug": "Filter Drug Eras by age at era end.",
-        "title_observationperiod": "Add Age at End Criteria",
-        "desc_observationperiod": "Filter Periods by age at End.",
-        "title_payerplan": "Add Age at End Criteria",
-        "desc_payerplan": "Filter Periods by Age at End."
+        "title_era": "Era end 당시 Age 기준 추가",
+        "desc_era": "Era end 당시의 나이를 기준으로 Condition Era를 필터링합니다.",
+        "title_dose": "Age at Era End 조건 추가",
+        "desc_dose": "Era 종료 연령에 따라 Dose Era를 필터링합니다.",
+        "title_drug": "Age at Era End 기준 추가",
+        "desc_drug": "Era 종료 연령에 따라 Drug Era를 필터링합니다.",
+        "title_observationperiod": "Age End 조건 추가",
+        "desc_observationperiod": "관찰기간이 종료되는 연령에 따라 Period를 필터링합니다.",
+        "title_payerplan": "Age at End 조건 추가",
+        "desc_payerplan": "Payer Plan Period가 종료되는 연령에 따라 Period를 필터링합니다."
       },
       "addGender": {
-        "title_era": "Add Gender Criteria",
-        "desc_era": "Filter Condition Eras based on Gender.",
-        "title_occurrence": "Add Gender",
-        "desc_occurrence": "Filter Condition Occurrences based on Gender.",
-        "title_death": "Add Gender Criteria",
-        "desc_death": "Filter Deaths based on Gender.",
-        "title_deviceexposure": "Add Gender Criteria",
-        "desc_deviceexposure": "Filter Device Exposures based on Gender.",
-        "title_dose": "Add Gender Criteria",
-        "desc_dose": "Filter Drug Eras based on Gender.",
-        "title_drug": "Add Gender Criteria",
-        "desc_drug": "Filter Drug Eras based on Gender.",
-        "title_drugexposure": "Add Gender Criteria",
-        "desc_drugexposure": "Filter Drug Exposures based on Gender.",
-        "title_measurement": "Add Gender Criteria",
-        "desc_measurement": "Filter Measurements based on Gender.",
-        "title_observation": "Add Gender Criteria",
-        "desc_observation": "Filter Observations based on Gender.",
-        "title_payerplan": "Add Gender Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods based on Gender.",
-        "title_procedureoccurrence": "Add Gender Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences based on Gender.",
-        "title_specimen": "Add Gender Criteria",
-        "desc_specimen": "Filter specimens based on Gender.",
-        "title_visit": "Add Gender Criteria",
-        "desc_visit": "Filter Visit Occurrences based on Gender.",
-        "title_demographic": "Add Gender Criteria",
-        "desc_demographic": "Filter events based on Gender."
+        "title_era": "Gender 기준 추가",
+        "desc_era": "성별을 기반으로 Condition Era를 필터링합니다.",
+        "title_occurrence": "Gender 추가",
+        "desc_occurrence": "성별에 따라 Condition occurrence를 필터링합니다.",
+        "title_death": "Gender 기준 추가",
+        "desc_death": "성별을 기반으로 사망을 필터링합니다.",
+        "title_deviceexposure": "Gender 기준 추가",
+        "desc_deviceexposure": "성별을 기반으로 Device Exposure을 필터링합니다.",
+        "title_dose": "Gender 기준 추가",
+        "desc_dose": "성별에 따라 Dose Era를 필터링합니다.",
+        "title_drug": "Gender 기준 추가",
+        "desc_drug": "성별을 기반으로 Drug Era를 필터링합니다.",
+        "title_drugexposure": "Gender 기준 추가",
+        "desc_drugexposure": "Drug Exposure를 필터링합니다.",
+        "title_measurement": "Gender 조건 추가",
+        "desc_measurement": "성별 조건에 따라 Measurement를 필터링합니다.",
+        "title_observation": "Gender 조건 추가",
+        "desc_observation": "성별에 따라 Observation을 필터링합니다.",
+        "title_payerplan": "Gender 조건 추가",
+        "desc_payerplan": "Gender을 기반으로 에 따라 Payer Plan Period를 필터링합니다.",
+        "title_procedureoccurrence": "Gender 조건 추가",
+        "desc_procedureoccurrence": "Gender을 기반으로 Procedure Occurrence를 필터링합니다.",
+        "title_specimen": "Gender 조건 추가",
+        "desc_specimen": "Gender을 기반으로  Specimen을 필터링합니다.",
+        "title_visit": "Gender 조건 추가",
+        "desc_visit": "성별에 따라 Visit occurrence를 필터링합니다.",
+        "title_demographic": "Gender 기준 추가",
+        "desc_demographic": "성별을 기반으로 이벤트를 필터링합니다."
       },
       "addStartDate": {
-        "title_era": "Add Start Date Criteria",
-        "desc_era": "Filter Condition Eras by the Era Start Date.",
-        "title_occurrence": "Add Condition Start Date",
-        "desc_occurrence": "Filter Condition Occurrences by the Condition Start Date.",
-        "title_deviceexposure": "Add Start Date Criteria",
+        "title_era": "Start Date 기준 추가",
+        "desc_era": "Era Start Date에 따라 Condition Era를 필터링합니다.",
+        "title_occurrence": "Condition Start Date 추가",
+        "desc_occurrence": "Condition 시작일에 따라 Condition occurrence를 필터링합니다.",
+        "title_deviceexposure": "Start Date 기준 추가",
         "desc_deviceexposure": "Filter Device Exposures by the Exposure Start Date.",
-        "title_dose": "Add Era Start Date Criteria",
-        "desc_dose": "Filter Dose Eras by the Era Start Date.",
-        "title_drug": "Add Era Start Date Criteria",
-        "desc_drug": "Filter Drug Eras by the Era Start Date.",
-        "title_drugexposure": "Add Start Date Criteria",
-        "desc_drugexposure": "Filter Drug Exposures by the Drug Exposure Start Date.",
-        "title_observationperiod": "Add Period Start Date Criteria",
-        "desc_observationperiod": "Filter Observation Periods by Start Date.",
-        "title_payerplan": "Add Period Start Date Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by Start Date.",
-        "title_visit": "Add Start Date Criteria",
-        "desc_visit": "Filter Visit Occurrences by the Condition Start Date.",
-        "title_demographic": "Add Start Date Criteria",
-        "desc_demographic": "Filter events based by Start Date."
+        "title_dose": "Era Start Date 조건 추가",
+        "desc_dose": "Era 시작일에 따라 Dose Era를 필터링합니다.",
+        "title_drug": "Era Start 기준 추가",
+        "desc_drug": "Era 시작일에 따라 Drug Era를 필터링합니다.",
+        "title_drugexposure": "Start Date 기준 추가",
+        "desc_drugexposure": "약물노출 시작일에 따라 Drug Exposure를 필터링합니다.",
+        "title_observationperiod": "Period Start Date 조건 추가",
+        "desc_observationperiod": "시작일에 따라 Observation Period를 필터링합니다.",
+        "title_payerplan": "Period Start Date조건 추가",
+        "desc_payerplan": "시작일에 따라 Payer Plan Period를 필터링합니다.",
+        "title_visit": "Start Date 기준 추가",
+        "desc_visit": "진단받은 시작일에 따라 Visit occurrence를 필터링합니다.",
+        "title_demographic": "Event Start Date 기준 추가",
+        "desc_demographic": "시작일에 따라 이벤트를 필터링합니다."
       },
       "addEndDate": {
-        "title_era": "Add End Date Criteria",
-        "desc_era": "Filter Condition Eras by the Era End Date",
-        "title_occurrence": "Add Condition End Date",
-        "desc_occurrence": "Filter Condition Occurrences by the Condition End Date.",
-        "title_deviceexposure": "Add End Date Criteria",
+        "title_era": "End Date 기준 추가",
+        "desc_era": "Era End Date에 따라 Condition Era를 필터링합니다.",
+        "title_occurrence": "Condition End Date 추가",
+        "desc_occurrence": "Condition 종료일에 따라 Condition occurrence를 필터링합니다.",
+        "title_deviceexposure": "End Date 기준 추가",
         "desc_deviceexposure": "Filter Device Exposures by the Exposure End Date.",
-        "title_dose": "Add Era End Date Criteria",
-        "desc_dose": "Filter Dose Eras  by the Era End Date",
-        "title_drug": "Add Era End Date Criteria",
-        "desc_drug": "Filter Drug Eras  by the Era End Date.",
-        "title_drugexposure": "Add End Date Criteria",
-        "desc_drugexposure": "Filter Drug Exposures  by the Drug Exposure End Date.",
-        "title_observationperiod": "Add Period End Date Criteria",
-        "desc_observationperiod": "Filter Observation Periods by End Date.",
-        "title_payerplan": "Add Period End Date Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by End Date.",
-        "title_visit": "Add End Date Criteria",
-        "desc_visit": "Filter Visit Occurrences  by the Condition End Date.",
-        "title_demographic": "Add Event End Date Criteria",
-        "desc_demographic": "Filter events based by End Date."
+        "title_dose": "Era End Date 조건 추가",
+        "desc_dose": "Era 종료일에 따라 Dose Era를 필터링합니다",
+        "title_drug": "Era End 기준 추가",
+        "desc_drug": "Era 종료일에 따라 Drug Era를 필터링합니다.",
+        "title_drugexposure": "End Date 기준 추가",
+        "desc_drugexposure": "Filter Drug Exposures by the Drug Exposure End Date.",
+        "title_observationperiod": "Period End Date 조건 추가",
+        "desc_observationperiod": "종료일에 따라 Observation Period를 필터링합니다.",
+        "title_payerplan": "Period End Date 조건 추가",
+        "desc_payerplan": "종료일에 따라 Payer Plan Period를 필터링합니다.",
+        "title_visit": "End Date 기준 추가",
+        "desc_visit": "진단받은 종료일에 따라 Visit occurrence를 필터링합니다.",
+        "title_demographic": "Event End 기준 추가",
+        "desc_demographic": "종료일에 따라 이벤트를 필터링합니다."
       },
       "addConditonCount": {
-        "title_era": "Add Era Conditon Count Criteria",
-        "desc_era": "Filter Condition Eras by the Condition Count.",
-        "title_drug": "Add Era Exposure Count Criteria",
-        "desc_drug": "Filter Drug Eras by the Exposure Count."
+        "title_era": "Era Condition Count 기준 추가",
+        "desc_era": "Condition Count에 따라 Condition Era를 필터링합니다.",
+        "title_drug": "Era Exposure Count 조건 추가",
+        "desc_drug": "약물 노출에 따라 Drug Era를 필터링합니다."
       },
       "addRace": {
-        "title_demographic": "Add Race Criteria",
-        "desc_demographic": "Filter events based on Race."
+        "title_demographic": "Race 기준 추가",
+        "desc_demographic": "인종에 따라 이벤트를 필터링합니다."
       },
       "addEthnicity": {
-        "title_demographic": "Add Ethnicity Criteria",
-        "desc_demographic": "Filter events based on Ethnicity."
+        "title_demographic": "Ethnicity 기준 추가",
+        "desc_demographic": "민족에 따라 이벤트를 필터링합니다."
       },
       "addLength": {
-        "title_era": "Add Era Length Criteria",
-        "desc_era": "Filter Condition Eras by the Era duration.",
-        "title_dose": "Add Era Length Criteria",
-        "desc_dose": "Filter Drug Eras by the Era duration.",
-        "title_drug": "Add Era Length Criteria",
-        "desc_drug": "Filter Drug Eras by the Era duration.",
-        "title_observationperiod": "Add Period Length Criteria",
-        "desc_observationperiod": "Filter Observation Periods by duration.",
-        "title_payerplan": "Add Period Length Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by duration.",
-        "title_visit": "Add Visit Length Criteria",
-        "desc_visit": "Filter Visit Occurrences by duration."
+        "title_era": "Era Length 기준 추가",
+        "desc_era": "Era의 기간에 따라 Condition Era를 필터링합니다.",
+        "title_dose": "Era Length 조건 추가",
+        "desc_dose": "지속된 기간에 따라 Dose Era를 필터링합니다.",
+        "title_drug": "Era Length 기준 추가",
+        "desc_drug": "Era 기간에 따라 Drug Era를 필터링합니다.",
+        "title_observationperiod": "Period Length 조건 추가",
+        "desc_observationperiod": "지속된 기간에 따라 Observation Period를 필터링합니다.",
+        "title_payerplan": "Period Length 조건 추가",
+        "desc_payerplan": "지속된 기간에 따라 Payer Plan Period를 필터링합니다.",
+        "title_visit": "Visit Length 기준 추가",
+        "desc_visit": "지속된 기간에 따라 Visit occurrence를 필터링합니다."
       },
       "addNested": {
-        "title_era": "Add Nested Criteria...",
-        "desc_era": "Apply criteria using the condition era as the index event",
-        "title_occurrence": "Add Nested Criteria...",
-        "desc_occurrence": "Apply criteria using the condition occurrence as the index event.",
-        "title_death": "Add Nested Criteria...",
-        "desc_death": "Apply criteria using the death occurrence as the index event.",
-        "title_deviceexposure": "Add Nested Criteria...",
-        "desc_deviceexposure": "Apply criteria using the device exposure as the index event.",
-        "title_dose": "Add Nested Criteria...",
-        "desc_dose": "Apply criteria using the dose era as the index event.",
-        "title_drug": "Add Nested Criteria...",
-        "desc_drug": "Apply criteria using the drug era as the index event.",
-        "title_drugexposure": "Add Nested Criteria...",
-        "desc_drugexposure": "Apply criteria using the drug exposure as the index event.",
-        "title_measurement": "Add Nested Criteria...",
-        "desc_measurement": "Apply criteria using the measurement as the index event.",
-        "title_observation": "Add Nested Criteria...",
-        "desc_observation": "Apply criteria using the observation as the index event",
-        "title_observationperiod": "Add Nested Criteria...",
-        "desc_observationperiod": "Apply criteria using the observation period as the index event.",
-        "title_payerplan": "Add Nested Criteria...",
-        "desc_payerplan": "Apply criteria using the payer plan period as the index event.",
-        "title_procedureoccurrence": "Add Nested Criteria...",
-        "desc_procedureoccurrence": "Apply criteria using the procedure occurrence as the index event.",
-        "title_specimen": "Add Nested Criteria...",
-        "desc_specimen": "Apply criteria using the specimen as the index event.",
-        "title_visit": "Add Nested Criteria...",
-        "desc_visit": "Filter Visit Occurrences based on provider specialty."
+        "title_era": "Nested 기준 추가...",
+        "desc_era": "Condition Era를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_occurrence": "Nested 기준 추가...",
+        "desc_occurrence": "Condition occurrence를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_death": "Nested 기준 추가...",
+        "desc_death": "Death를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_deviceexposure": "Nested 기준 추가...",
+        "desc_deviceexposure": "Device Exposure를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_dose": "Nested 기준 추가...",
+        "desc_dose": "Dose Era를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_drug": "Nested 기준 추가...",
+        "desc_drug": "Drug Era를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_drugexposure": "Nested 기준 추가...",
+        "desc_drugexposure": "Drug Exposure를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_measurement": "Nested 기준 추가...",
+        "desc_measurement": "Measurements를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_observation": "Nested 기준 추가...",
+        "desc_observation": "Observations를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_observationperiod": "Nested 기준 추가...",
+        "desc_observationperiod": "Observation Periods를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_payerplan": "Nested 기준 추가...",
+        "desc_payerplan": "Payer Plan Periods를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_procedureoccurrence": "Nested 기준 추가...",
+        "desc_procedureoccurrence": "Procedure occurrence를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_specimen": "Nested 기준 추가...",
+        "desc_specimen": "Specimens를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_visit": "Nested 기준 추가...",
+        "desc_visit": "Visit Occurrences를 기준 시점으로 사용하여 기준을 적용합니다."
       },
       "addAge": {
-        "title_occurrence": "Add Age at Occurrence",
-        "desc_occurrence": "Filter Condition Occurrences by age at occurrence.",
-        "title_death": "Add Age at Occurrence Criteria",
-        "desc_death": "Filter by age at death.",
-        "title_deviceexposure": "Add Age at Occurrence Criteria",
-        "desc_deviceexposure": "Filter Device Exposures by age at occurrence.",
-        "title_drugexposure": "Add Age at Occurrence Criteria",
-        "desc_drugexposure": "Filter Drug Exposures by age at occurrence.",
-        "title_measurement": "Add Age at Occurrence Criteria",
-        "desc_measurement": "Filter Measurements by age at occurrence.",
-        "title_observation": "Add Age at Occurrence Criteria",
-        "desc_observation": "Filter Condition Occurrences by age at occurrence.",
-        "title_procedureoccurrence": "Add Age at Occurrence Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences by age at occurrence.",
-        "title_specimen": "Add Age at Occurrence Criteria",
-        "desc_specimen": "Filter specimens by age at occurrence.",
-        "title_visit": "Add Age at Occurrence Criteria",
-        "desc_visit": "Filter Visit Occurrences by age at occurrence.",
-        "title_demographic": "Add Age Criteria",
-        "desc_demographic": "Filter events based on age."
+        "title_occurrence": "Age at Occurrence 추가",
+        "desc_occurrence": "진단일 당시 연령에 따라 Condition occurrence를 필터링합니다.",
+        "title_death": "Age at Occurrence 기준 추가",
+        "desc_death": "사망 발생 연령에 따라 필터링합니다.",
+        "title_deviceexposure": "Age at Occurrence 기준 추가",
+        "desc_deviceexposure": "발생 연령에 따라 Device Exposure을 필터링합니다.",
+        "title_drugexposure": "Age at Occurrence 기준 추가",
+        "desc_drugexposure": "약물 노출 발생 연령에 따라 Drug Exposure를 필터링합니다.",
+        "title_measurement": "Age at Occurrence 조건 추가",
+        "desc_measurement": "발생 연령에 따라 Measurement를 필터링합니다.",
+        "title_observation": "Age at Occurrence 조건 추가",
+        "desc_observation": "발생 연령에 따라 Condition Occurrence를 필터링합니다.",
+        "title_procedureoccurrence": "Age at Occurrence 조건 추가",
+        "desc_procedureoccurrence": "발생 연령에 따라 Procedure Occurrence를 필터링합니다.",
+        "title_specimen": "Age at Occurrence 조건 추가",
+        "desc_specimen": "발생 시작 연령에 따라 Specimen을 필터링합니다.",
+        "title_visit": "Age at Occurrence 조건 추가",
+        "desc_visit": "방문 발생 연령에 따라 Visit occurrence를 필터링합니다.",
+        "title_demographic": "Age 기준 추가",
+        "desc_demographic": "연령을 기반으로 이벤트를 필터링합니다."
       },
       "addType": {
-        "title_occurrence": "Add Condition Type",
-        "desc_occurrence": "Filter Condition Occurrences  by the Condition Type.",
-        "title_death": "Add Death Type Criteria",
-        "desc_death": "Filter by Death Type.",
-        "title_deviceexposure": "Add Device Type Criteria",
+        "title_occurrence": "Condition Type 추가",
+        "desc_occurrence": "Condition Type에 따라 Condition occurrence를 필터링합니다.",
+        "title_death": "Death Type 기준 추가",
+        "desc_death": "Death Type에 따라 사망을 필터링합니다.",
+        "title_deviceexposure": "Device Type 기준 추가",
         "desc_deviceexposure": "Filter Device Exposures by the Exposure Type.",
-        "title_drugexposure": "Add Drug Type Criteria",
-        "desc_drugexposure": "Filter Drug Exposures by the Drug Type.",
-        "title_measurement": "Add Measurement Type Criteria",
-        "desc_measurement": "Filter Measurements by the Measurement Type.",
-        "title_observation": "Add Observation Type Criteria",
-        "desc_observation": "Filter Observations by the Type.",
-        "title_observationperiod": "Add Period Type Criteria",
-        "desc_observationperiod": "Filter Obsevation Periods by Type.",
-        "title_procedureoccurrence": "Add Procedure Type Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences  by the Procedure Type.",
-        "title_specimen": "Add Specimen Type Criteria",
-        "desc_specimen": "Filter Specimen by the Type.",
-        "title_visit": "Add Visit Type Criteria",
-        "desc_visit": "Filter Condition Occurrences  by the Condition Type."
+        "title_drugexposure": "Drug Type 기준 추가",
+        "desc_drugexposure": "Drug Type에 따라 Drug Exposure를 필터링합니다.",
+        "title_measurement": "Measurement Type 조건 추가",
+        "desc_measurement": "Measurement Type에 따라 Measurement를 필터링합니다.",
+        "title_observation": "Observation Type 조건 추가",
+        "desc_observation": "관찰된 형태에 따라 Observation을 필터링합니다.",
+        "title_observationperiod": "Period Type 조건 추가",
+        "desc_observationperiod": "Period Type에 따라 Observation Period를 필터링합니다.",
+        "title_procedureoccurrence": "Procedure Type 조건 추가",
+        "desc_procedureoccurrence": "Procedure Type에 따라 Procedure Occurrence를 필터링합니다.",
+        "title_specimen": "Specimen Type 조건 추가",
+        "desc_specimen": "Type에 따라 Specimen을 필터링합니다.",
+        "title_visit": "Visit Type 기준 추가",
+        "desc_visit": "Condition Type에 따라 Visit occurrence를 필터링합니다."
       },
       "addStopReason": {
-        "title_occurrence": "Add Stop Reason",
-        "desc_occurrence": "Filter Condition Occurrences  by the Stop Reason.",
-        "title_drugexposure": "Add Stop Reason Criteria",
-        "desc_drugexposure": "Filter Drug Exposures by the Stop Reason."
+        "title_occurrence": "Stop Reason 추가",
+        "desc_occurrence": "Stop Reason 에 따라 Condition occurrence를 필터링합니다.",
+        "title_drugexposure": "Stop Reason 조건 추가",
+        "desc_drugexposure": "Stop reason에 따라 Drug Exposure를 필터링합니다."
       },
       "addPayerConcept": {
-        "title_payerplan": "Add Payer Concept Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by Payer Concept."
+        "title_payerplan": "Payer Concept 조건 추가",
+        "desc_payerplan": "Payer Concept에 따라 Payer Plan Period를 필터링합니다."
       },
       "addPlanConcept": {
-        "title_payerplan": "Add Plan Concept Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by Plan Concept."
+        "title_payerplan": "Plan Concept 조건 추가",
+        "desc_payerplan": "Plan Concept에 따라 Payer Plan Period를 필터링합니다."
       },
       "addSponsorConcept": {
-        "title_payerplan": "Add Sponsor Concept Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by Sponsor Concept."
+        "title_payerplan": "Sponsor Concept 조건 추가",
+        "desc_payerplan": "Sponsor Concept에 따라 Payer Plan Period를 필터링합니다."
       },
       "addStopReasonConcept": {
-        "title_payerplan": "Add Stop Reason Concept Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by Stop Reason Concept."
+        "title_payerplan": "Stop Reason Concept 조건 추가",
+        "desc_payerplan": "Stop Reason Concept에 따라 Payer Plan Period를 필터링합니다."
       },
       "addPayerSourceConcept": {
-        "title_payerplan": "Add Payer Source Concept Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by Payer Source Concept."
+        "title_payerplan": "Payer Source Concept 조건 추가",
+        "desc_payerplan": "Payer Source Concept에 따라 Payer Plan Period를 필터링합니다."
       },
       "addPlanSourceConcept": {
-        "title_payerplan": "Add Plan Source Concept Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by Plan Source Concept."
+        "title_payerplan": "Plan Source Concept 조건 추가",
+        "desc_payerplan": "Plan Source Concept에 따라 Payer Plan Period를 필터링합니다."
       },
       "addSponsorSourceConcept": {
-        "title_payerplan": "Add Sponsor Source Concept Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by Sponsor Source Concept."
+        "title_payerplan": "Sponsor Source Concept 조건 추가",
+        "desc_payerplan": "Sponsor Source Concept에 따라 Payer Plan Period를 필터링합니다."
       },
       "addStopReasonSourceConcept": {
-        "title_payerplan": "Add Stop Reason Source Concept Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by Stop Reason Source Concept."
+        "title_payerplan": "Stop Reason Source Concept 조건 추가",
+        "desc_payerplan": "Stop Reason Source Concept에 따라 Payer Plan Period를 필터링합니다."
       },
       "addSourceConcept": {
-        "title_occurrence": "Add Condition Source Concept",
-        "desc_occurrence": "Filter Condition Occurrences  by the Condition Source Concept.",
-        "title_death": "Add Cause of Death Source Concept Criteria",
-        "desc_death": "Filter Death by the Death Source Concept.",
-        "title_deviceexposure": "Add Device Source Concept Criteria",
-        "desc_deviceexposure": "Filter Device Exposures by the Device Source Concept.",
-        "title_measurement": "Add Measurement Source Concept Criteria",
-        "desc_measurement": "Filter Measurements by the Measurement Source Concept.",
-        "title_observation": "Add Observation Source Concept Criteria",
-        "desc_observation": "Filter Observations by the Source Concept.",
-        "title_procedureoccurrence": "Add Procedure Source Concept Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences  by the Procedure Source Concept.",
-        "title_visit": "Add Visit Source Concept Criteria",
-        "desc_visit": "Filter Visit Occurrences by the Visit Source Concept."
+        "title_occurrence": "Condition Source Concept 추가",
+        "desc_occurrence": "Condition Source Concept 에 따라 Condition occurrence를 필터링합니다.",
+        "title_death": "Cause of Death Source Concept 기준 추가",
+        "desc_death": "Death Source Concept에 따라 사망을 필터링합니다.",
+        "title_deviceexposure": "Device Source Concept 조건 추가",
+        "desc_deviceexposure": "Device Source Concept에 따라 Device Exposure을 필터링합니다.",
+        "title_measurement": "Measurement Source Concept 조건 추가",
+        "desc_measurement": "Measurement Source Concept에 따라 Measurement를 필터링합니다.",
+        "title_observation": "Observation Source Concept 조건 추가",
+        "desc_observation": "Source Concept에 따라 Observation을 필터링합니다.",
+        "title_procedureoccurrence": "Procedure Source Concept 조건 추가",
+        "desc_procedureoccurrence": "Procedure Source Concept에 따라 Procedure Occurrence를 필터링합니다.",
+        "title_visit": "Visit Source Concept 조건 추가",
+        "desc_visit": "Visit Source Concept에 따라 Visit occurrence를 필터링합니다."
       },
       "addProviderSpecialty": {
-        "title_occurrence": "Add Provider Specialty",
-        "desc_occurrence": "Filter Condition Occurrences based on provider specialty.",
-        "title_deviceexposure": "Add Provider Specialty Criteria",
-        "desc_deviceexposure": "Filter Device Exposures based on provider specialty.",
-        "title_drugexposure": "Add Provider Specialty Criteria",
-        "desc_drugexposure": "Filter Drug Exposures based on provider specialty.",
-        "title_measurement": "Add Provider Specialty Criteria",
-        "desc_measurement": "Filter Measurements based on provider specialty.",
-        "title_observation": "Add Provider Specialty Criteria",
-        "desc_observation": "Filter Observations based on provider specialty.",
-        "title_procedureoccurrence": "Add Provider Specialty Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences based on provider specialty.",
-        "title_visit": "Add Provider Specialty Criteria",
-        "desc_visit": "Filter Visit Occurrences based on provider specialty."
+        "title_occurrence": "Provider Specialty 추가",
+        "desc_occurrence": "의료서비스 제공자의 전공을 기반으로 Condition occurrence를 필터링합니다.",
+        "title_deviceexposure": "Provider Specialty 기준 추가",
+        "desc_deviceexposure": "의료서비스 제공자의 전공을 기반으로 Condition occurrence를 필터링합니다.",
+        "title_drugexposure": "Provider Specialty 기준 추가",
+        "desc_drugexposure": "의료서비스 제공자의 전공을 기반으로 Drug Exposure를 필터링합니다.",
+        "title_measurement": "Provider Specialty 기준 추가",
+        "desc_measurement": "의료서비스 제공자의 전공을 기반으로 Measurement를 필터링합니다.",
+        "title_observation": "Provider Specialty 기준 추가",
+        "desc_observation": "의료서비스 제공자의 전공을 기반으로 Observation를 필터링합니다.",
+        "title_procedureoccurrence": "Provider Specialty 기준 추가",
+        "desc_procedureoccurrence": "의료서비스 제공자의 전공을 기반으로 Procedure Occurrence를 필터링합니다.",
+        "title_visit": "Provider Specialty 조건 추가",
+        "desc_visit": "의료서비스 제공자의 전공을 기반으로  Visit occurrence를 필터링합니다."
       },
       "addDate": {
-        "title_death": "Add Death Date Criteria",
-        "desc_death": "Filter Death by Date.",
-        "title_measurement": "Add Measurement Date Criteria",
-        "desc_measurement": "Filter Measurements by Date.",
-        "title_observation": "Add Observation Date Criteria",
-        "desc_observation": "Filter Observations by Date.",
-        "title_procedureoccurrence": "Add Start Date Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences by the Procedure Start Date.",
-        "title_specimen": "Add Specimen Date Criteria",
-        "desc_specimen": "Filter Specimen by Date."
+        "title_death": "Death Date 기준 추가",
+        "desc_death": "해당 날짜에 따라 사망을 필터링합니다.",
+        "title_measurement": "Measurement Date 조건 추가",
+        "desc_measurement": "측정일에 따라 Measurement를 필터링합니다.",
+        "title_observation": "Observation Date 조건 추가",
+        "desc_observation": "발생일에 따라 Observation을 필터링합니다.",
+        "title_procedureoccurrence": "Start Date 기준 추가",
+        "desc_procedureoccurrence": "Procedure 시작일에 따라 Procedure Occurrence을 필터링합니다",
+        "title_specimen": "Specimen Date 조건 추가",
+        "desc_specimen": "검체 채취일에 따라 Specimen을 필터링합니다."
       },
       "addUniqueId": {
-        "title_deviceexposure": "Add Unique Id Criteria",
-        "desc_deviceexposure": "Filter Device Exposures by Device Unique Id."
+        "title_deviceexposure": "Unique Id 기준 추가",
+        "desc_deviceexposure": "의료기기의 고유 ID에 따라 Device Exposure을 필터링합니다."
       },
       "addQuantity": {
-        "title_deviceexposure": "Add Quantity Criteria",
-        "desc_deviceexposure": "Filter Device Exposures by Quantity.",
-        "title_drugexposure": "Add Quantity Criteria",
-        "desc_drugexposure": "Filter Drug Exposures by Quantity.",
-        "title_procedureoccurrence": "Add Quantity Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences  by Quantity.",
-        "title_specimen": "Add Quantity Criteria",
-        "desc_specimen": "Filter Observations  by the Quantity."
+        "title_deviceexposure": "Quantity 기준 추가",
+        "desc_deviceexposure": "노출량에 따라 Device Exposure을 필터링합니다.",
+        "title_drugexposure": "Quantity 조건 추가",
+        "desc_drugexposure": "약물 처방 개수에 따라 Drug Exposure를 필터링합니다.",
+        "title_procedureoccurrence": "Quantity 조건 추가",
+        "desc_procedureoccurrence": "Procedure 수행된 양에 따라 Procedure Occurrence를 필터링합니다.",
+        "title_specimen": "Quantity 조건 추가",
+        "desc_specimen": "검체량에 따라 Specimen을 필터링합니다."
       },
       "addUnit": {
-        "title_dose": "Add Dose Unit Criteria",
-        "desc_dose": "Filter Dose Eras by the Unit.",
-        "title_drugexposure": "Add Dose Unit Criteria",
-        "desc_drugexposure": "Filter Drug Exposures by Dose Unit.",
-        "title_measurement": "Add Unit Criteria",
-        "desc_measurement": "Filter Measurements by the Unit.",
-        "title_observation": "Add Unit Criteria",
-        "desc_observation": "Filter Observations by Unit.",
-        "title_specimen": "Add Unit Criteria",
-        "desc_specimen": "Filter Specimens by Unit."
+        "title_dose": "Dose Unit 조건 추가",
+        "desc_dose": "약물 용량 단위에 따라 Dose Era를 필터링합니다.",
+        "title_drugexposure": "Dose Unit 조건 추가",
+        "desc_drugexposure": "약물 단위에 따라 Drug Exposure를 필터링합니다.",
+        "title_measurement": "Unit 조건 추가",
+        "desc_measurement": "Unit에 따라 Measurement를 필터링합니다.",
+        "title_observation": "Unit 조건 추가",
+        "desc_observation": "단위에 따라 Observation을 필터링합니다.",
+        "title_specimen": "Unit 조건 추가",
+        "desc_specimen": "검체 단위에 따라 Specimen을 필터링합니다."
       },
       "addValue": {
-        "title_dose": "Add Dose Value Criteria",
-        "desc_dose": "Filter Dose Eras by the dose value.",
-        "title_measurement": "Add Value as Number Criteria",
-        "desc_measurement": "Filter Measurements by Value as Number.",
-        "title_observation": "Add Value As Number Criteria",
-        "desc_observation": "Filter Observations  by the Value As Number."
+        "title_dose": "Dose Value 조건 추가",
+        "desc_dose": "복용량에 대한 수치값에 따라 Dose Era를 필터링합니다.",
+        "title_measurement": "Value as Number 조건 추가",
+        "desc_measurement": "Value as Number에 따라 Measurement를 필터링합니다.",
+        "title_observation": "Value As Number 조건 추가",
+        "desc_observation": "숫자로 저장된 관찰의 결과값에 따라 Observation을 필터링합니다."
       },
       "addRefills": {
-        "title_drugexposure": "Add Refills Criteria",
-        "desc_drugexposure": "Filter Drug Exposures by Refills."
+        "title_drugexposure": "Refill 조건 추가",
+        "desc_drugexposure": "Refills에 따라 Drug Exposure를 필터링합니다."
       },
       "addDaysSupply": {
-        "title_drugexposure": "Add Days Supply Criteria",
-        "desc_drugexposure": "Filter Drug Exposures by Days Supply."
+        "title_drugexposure": "Days Supply 조건 추가",
+        "desc_drugexposure": "약물 처방일수에 따라 Drug Exposure를 필터링합니다."
       },
       "addRoute": {
-        "title_drugexposure": "Add Route Criteria",
-        "desc_drugexposure": "Filter Drug Exposures by Route."
+        "title_drugexposure": "Route 조건 추가",
+        "desc_drugexposure": "약물 투여 경로에 따라 Drug Exposure를 필터링합니다."
       },
       "addEffective": {
-        "title_drugexposure": "Add Effective Dose Criteria",
-        "desc_drugexposure": "Filter Drug Exposures by Effective Dose."
+        "title_drugexposure": "Effective Dose 조건 추가",
+        "desc_drugexposure": "유효량에 따라 Drug Exposure를 필터링합니다."
       },
       "addLotNumber": {
-        "title_drugexposure": "Add Lot Number Criteria",
-        "desc_drugexposure": "Filter Drug Exposures by Lot Number."
+        "title_drugexposure": "Lot Number 조건 추가",
+        "desc_drugexposure": "약물 제품 번호에 따라 Drug Exposure를 필터링합니다."
       },
       "addSource": {
-        "title_drugexposure": "Add Drug Source Concept Criteria",
-        "desc_drugexposure": "Filter Drug Exposures by the Drug Source Concept."
+        "title_drugexposure": "Drug Source Concept 조건 추가",
+        "desc_drugexposure": "Drug Source Concept 에 따라 Drug Exposure를 필터링합니다."
       },
       "addOperator": {
-        "title_measurement": "Add Operator Criteria",
-        "desc_measurement": "Filter Measurements by Operator."
+        "title_measurement": "Operator 조건 추가",
+        "desc_measurement": "(검사 결과에 따른) 연산자에 따라 Measurement를 필터링합니다."
       },
       "addValueAsString": {
-        "title_observation": "Add Value As String Criteria",
-        "desc_observation": "Filter Observations by the Value As String."
+        "title_observation": "Value As String 조건 추가",
+        "desc_observation": "문자로 저장된 관찰의 결과값에 따라 Observation을 필터링합니다."
       },
       "addValueAsConcept": {
-        "title_measurement": "Add Value as Concept Criteria",
-        "desc_measurement": "Filter Measurements by Value as Concept.",
-        "title_observation": "Add Value as Concept Criteria",
-        "desc_observation": "Filter Observations by the Value As Concept."
+        "title_measurement": "Value as Concept 조건 추가",
+        "desc_measurement": "Value as Concept에 따라 Measurement를 필터링합니다.",
+        "title_observation": "Value as Concept 조건 추가",
+        "desc_observation": "Concept ID로 저장된 관찰의 결과값에 따라 Observation을 필터링합니다."
       },
       "addAbnormal": {
-        "title_measurement": "Add Abnormal Result Criteria",
-        "desc_measurement": "Filter Measurements to include those which fall outside of normal range."
+        "title_measurement": "Abnormal Result 조건 추가",
+        "desc_measurement": "정상범위에서 벗어난 측정값들을 포함하는 Measurement를 필터링합니다."
       },
       "addRangeLow": {
-        "title_measurement": "Add Low Range Criteria",
-        "desc_measurement": "Filter Measurements Low Range."
+        "title_measurement": "Low Range 조건 추가",
+        "desc_measurement": "측정값의 하한 범위에 따라 Measurement를 필터링합니다."
       },
       "addRangeHigh": {
-        "title_measurement": "Add High Range Criteria",
-        "desc_measurement": "Filter Measurements by the Measurement Type."
+        "title_measurement": "High Range 조건 추가",
+        "desc_measurement": "측정값의 상한 범위에 따라 Measurement를 필터링합니다."
       },
       "addRangeLowRatio": {
-        "title_measurement": "Add Low Range Ratio Criteria",
-        "desc_measurement": "Filter Measurements by the Ratio of Value as Number to Range Low."
+        "title_measurement": "Low Range Ratio 조건 추가",
+        "desc_measurement": "하한 범위에 대한 Ratio of Value as Number에 따라 Measurement를 필터링합니다."
       },
       "addRangeHighRatio": {
-        "title_measurement": "Add High Range Ratio Criteria",
-        "desc_measurement": "Filter Measurements by the Ratio of Value as Number to Range High."
+        "title_measurement": "High Range Ratio 조건 추가",
+        "desc_measurement": "상한 범위에 대한 Ratio of Value as Number에 따라 Measurement를 필터링합니다."
       },
       "addQualifier": {
-        "title_observation": "Add Qualifier Criteria",
-        "desc_observation": "Filter Observations by Qualifier."
+        "title_observation": "Qualifier 조건 추가",
+        "desc_observation": "구분자에 따라 Observation을 필터링합니다."
       },
       "addUserDefined": {
-        "title_observationperiod": "Specify Start and End Dates",
-        "desc_observationperiod": "Specify start and end date to use for the Observation Period.",
-        "title_payerplan": "Specify Start and End Dates",
-        "desc_payerplan": "Specify start and end dates to use for Payer Plan Period."
+        "title_observationperiod": "Start and End Dates 정의",
+        "desc_observationperiod": "Observation Period에서 사용할 수 있는 시작일과 종료일에 대해 정의합니다.",
+        "title_payerplan": "Start and End Dates 정의",
+        "desc_payerplan": "Payer Plan Period에서 사용할 수 있는 시작일과 종료일에 대해 정의합니다."
       },
       "addModifier": {
-        "title_procedureoccurrence": "Add Modifier Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences  by the Modifier."
+        "title_procedureoccurrence": "Modifier 조건 추가",
+        "desc_procedureoccurrence": "Procedure 절차 변경에 따라 Procedure Occurrence를 필터링합니다."
       },
       "addAnatomicSite": {
-        "title_specimen": "Add Anatomic Site Criteria",
-        "desc_specimen": "Filter Specimens by the Anatomic Site."
+        "title_specimen": "Anatomic Site 조건 추가",
+        "desc_specimen": "해부학적 위치에 따라 Specimen을 필터링합니다."
       },
       "addDiseaseStatus": {
-        "title_specimen": "Add Disease Status Criteria",
-        "desc_specimen": "Filter Specimens by the Disease Status."
+        "title_specimen": "Disease Status 조건 추가",
+        "desc_specimen": "질병 상태에 따라 Specimen을 필터링합니다."
       },
       "addSourceId": {
-        "title_specimen": "Add Source ID Criteria",
-        "desc_specimen": "Filter Specimens by the Source ID."
+        "title_specimen": "Source ID 조건 추가",
+        "desc_specimen": "검체 식별자에 따라 Specimen을 필터링합니다."
       },
       "addPlaceService": {
-        "title_visit": "Add Place of Service Criteria",
-        "desc_visit": "Filter Visit Occurrences based on Place of Service."
+        "title_visit": "Place of Service 조건 추가",
+        "desc_visit": "의료서비스가 진행된 장소를 기반으로 Visit occurrence를 필터링합니다."
       },
       "addPlaceServiceLocation": {
-        "title_visit": "Add Place of Service Location Criteria",
-        "desc_visit": "Add Place of Service Distance Criteria"
+        "title_visit": "Place of Service Location 조건 추가",
+        "desc_visit": "의료서비스가 위치한 장소를 기반으로 Visit occurrence를 필터링합니다"
       },
       "addPlaceServiceDistance": {
-        "title_visit": "Add Place of Service Location Criteria",
+        "title_visit": "Add Place of Service Distance Criteria",
         "desc_visit": "Filter Visit Occurrences based on distance from Place of Service to Patient."
       }
     },
     "newEntityNames": {
       "characterization": "New Characterization",
       "cohortDefinition": "New Cohort Definition",
-      "conceptSet": "새로운 컨셉 세트",
+      "conceptSet": "새로운 컨셉 모음",
       "featureAnalysis": "New Feature Analysis",
       "incidenceRate": "New Incidence Rate Analysis",
       "pathway": "New Cohort Pathway",
-      "ple": "New Population Level Estimation Analysis",
+      "ple": "새로운 인구수준 효과 추정",
       "plp": "New Patient Level Prediction Analysis",
       "role": "New Role",
       "source": "New Source"
@@ -3251,8 +3253,8 @@
       "executionEditorText_3": "Minimum covariate occurrence: If a covariate occurs in a fraction of the target population less than this value",
       "executionEditorText_4": "Normalize covariates:",
       "populationEditorText_1": "Define the time-at-risk window start",
-      "populationEditorText_2": "Should descendant concepts be added to the list of included concepts?",
-      "populationEditorText_3": "What concepts do you want to exclude in baseline covariates in the propensity score model? (Leave blank if you want to include everything)",
+      "populationEditorText_2": "포함한 컨셉 목록에  하위 컨셉을 추가합니까?",
+      "populationEditorText_3": "성향 점수 모델의 기준 공변량에 어떤 컨셉을 제외하시겠습니까? (모든 것을 포함하려면 비워 둡니다)",
       "populationEditorText_4": "Should subjects without time at risk be removed?",
       "populationEditorText_5": "Minimum time at risk:",
       "populationEditorText_6": "Include people with outcomes who are not observed for the whole at risk period?",
@@ -3260,18 +3262,18 @@
       "populationEditorText_8": "Remove patients who have observed the outcome prior to cohort entry?",
       "populationEditorText_9": "How many days to look back from cohort entry for the outcome?",
       "predictionCovariatePlaceholder": "Covariate IDs",
-      "predictionEditorText_1": "What concepts do you want to include in baseline covariates in the propensity score model? (Leave blank if you want to include everything)",
-      "predictionEditorText_2": "Should descendant concepts be added to the list of included concepts?",
-      "predictionEditorText_3": "What concepts do you want to exclude in baseline covariates in the propensity score model? (Leave blank if you want to include everything)",
-      "predictionEditorText_4": "Should descendant concepts be added to the list of included concepts?",
-      "predictionEditorText_5": "A comma delimited list of covariate IDs that should be restricted to:",
-      "predictionSelectConceptSet": "Select Concept Set...",
+      "predictionEditorText_1": "성향 점수 모델의 기준 공변량에 어떤 컨셉을 포함하시겠습니까?\n(모든 것을 포함하려면 비워 두십시오)",
+      "predictionEditorText_2": "포함한 컨셉 목록에  하위 컨셉을 추가합니까?",
+      "predictionEditorText_3": "성향 점수 모델의 기준 공변량에 어떤 컨셉을 제외하시겠습니까? (모든 것을 포함하려면 비워 둡니다)",
+      "predictionEditorText_4": "제외된 컨셉 목록에 하위 컨셉을 추가합니까?",
+      "predictionEditorText_5": "쉼표로 구분되는 공변량 ID의 리스트의 범위 설정:",
+      "predictionSelectConceptSet": "컨셉 세트 선택하기",
       "predictionSelectCovariates": "Select Covariates"
     },
     "emptyMessageTitle": "Patient Level Prediction name is empty.",
     "export": "내보내기",
     "fullAnalysisList": "Full Analysis List",
-    "generate": "Generate",
+    "generate": "생성",
     "generating": "Generating...",
     "generations": "생성",
     "import": "불러오기",
@@ -3344,18 +3346,18 @@
     "item": {
       "addCovariateSettings": "공변량 설정 추가",
       "addModelSettings": "모델 설정 추가",
-      "addOutcomeCohort": "Add Outcome Cohort",
+      "addOutcomeCohort": "결과 코호트 추가",
       "addPopulationSettings": "모집단 설정 추가",
-      "addTargetCohort": "Add Target Cohort",
+      "addTargetCohort": "표적 코호트 추가",
       "all": "모두",
       "analysisSettings": "분석 설정",
       "covariateSettings": "공변량 설정",
       "executionSettings": "실행 설정",
       "modelSettings": "Model Settings",
-      "outcomeCohort": "Outcome Cohorts",
+      "outcomeCohort": "결과 코호트",
       "populationSettings": "모집단 설정",
       "predictionProblemSettings": "예측 문제 설정",
-      "targetCohort": "Target Cohorts",
+      "targetCohort": "표적 코호트",
       "trainingSettings": "트레이닝 설정",
       "view": "View:"
     },

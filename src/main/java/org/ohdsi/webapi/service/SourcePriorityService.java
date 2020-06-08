@@ -17,6 +17,10 @@ import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+/**
+ * This code was extracted from the master branch to fix https://github.com/OHDSI/Atlas/issues/2223 issue.
+ * There is no need to merge it into the master as the same functionality implemented there in another place.
+ */
 @Service
 public class SourcePriorityService extends AbstractDaoService {
 
@@ -47,6 +51,7 @@ public class SourcePriorityService extends AbstractDaoService {
             private Map<Integer, Boolean> checkedSources = new HashMap<>();
 
             private boolean isSourceAvaialble(Source source) {
+
                 return checkedSources.computeIfAbsent(source.getSourceId(),
                         v -> sourceAccessor.hasAccess(source) && connectionAvailability.computeIfAbsent(source, SourcePriorityService.this::checkConnectionSafe));
             }

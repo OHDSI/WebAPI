@@ -196,6 +196,9 @@
       "enterCohortPlaceholder": "Enter a cohort definition description here",
       "importConceptSet": "Import Concept Set From Repository..."
     },
+    "cohortDefinitionBrowser": {
+      "confirmMessage": "Concept set changes are not saved. Would you like to continue?"
+    },
     "cohortExpressionEditor": {
       "addCensoringEvent": "Add Censoring Event...",
       "addInitialEvent": "Add Initial Event...",
@@ -733,6 +736,12 @@
       "evidencePairViewerText_4": "Click here for more information about this evidence list",
       "evidencePairViewerText_5": "Hide details",
       "evidencePairViewerText_6": "The concept set is not marked as valid to generate results. Please make sure this concept set contains only CONDITIONS or DRUGS."
+    },
+    "exploreCohort": {
+      "fetchingFirst": "Fetching first",
+      "members": "members",
+      "exploreCohortText_1": "This cohort has no members available to view. Please check the generation status in the Cohort Definition section of Atlas.",
+      "exploreCohortText_2": "This cohort has no members available to view for the selected data source. Please ensure that you have generated the cohort using the Generation tab."
     },
     "export": {
       "button": "Export",

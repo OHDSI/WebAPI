@@ -47,6 +47,7 @@ public class GenerationCacheHelper {
         log.info("Computes cache if absent for type = {}, design = {}, source id = {}", type, designHash.toString(), source.getSourceId());
 
         synchronized (monitors.computeIfAbsent(new CacheableResource(type, designHash, source.getSourceId()), cr -> new Object())) {
+            // we execute the synchronized block in a separate transaction to make the cache changes visible immediately to all other threads
             return transactionTemplateRequiresNew.execute(s -> {
                 log.info("Retrieves or invalidates cache for cohort id = {}", cohortDefinition.getId());
                 GenerationCache cache = generationCacheService.getCacheOrEraseInvalid(type, designHash, source.getSourceId());

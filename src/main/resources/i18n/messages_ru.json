@@ -679,7 +679,8 @@
       "between": "Между",
       "notBetween": "Не между",
       "and": "и",
-      "firstPlaceholder": "ГГГГ-ММ-ДД"
+      "firstPlaceholder": "ГГГГ-ММ-ДД",
+      "inclusive": "включительно"
     },
     "numericRange": {
       "lessThan": "Меньше, чем",

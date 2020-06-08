@@ -11,7 +11,6 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.jasypt.properties.PropertyValueEncryptionUtils;
-import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
@@ -56,12 +55,15 @@ public class SourceService extends AbstractDaoService {
   private ApplicationEventPublisher publisher;
   @Autowired
   private VocabularyService vocabularyService;
+  @Autowired
+  private SourcePriorityService sourcePriorityService;
 
   @Autowired
   private SourceAccessor sourceAccessor;
 
   @Value("${datasource.ohdsi.schema}")
   private String schema;
+
 
   private boolean encryptorPasswordSet = false;
 
@@ -171,22 +173,7 @@ public class SourceService extends AbstractDaoService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public SourceInfo getPriorityVocabularySourceInfo() {
-    int priority = 0;
-    SourceInfo priorityVocabularySourceInfo = null;
-
-    for (Source source : sourceRepository.findAll()) {
-      for (SourceDaimon daimon : source.getDaimons()) {
-        if (daimon.getDaimonType() == SourceDaimon.DaimonType.Vocabulary && sourceAccessor.hasAccess(source)) {
-          int daimonPriority = daimon.getPriority();
-          if (daimonPriority >= priority) {
-            priority = daimonPriority;
-            priorityVocabularySourceInfo = new SourceInfo(source);
-          }
-        }
-      }
-    }
-
-    return priorityVocabularySourceInfo;
+    return new SourceInfo(sourcePriorityService.getPrioritySourceForDaimon(SourceDaimon.DaimonType.Vocabulary));
   }
 
   @Path("{key}")
@@ -341,11 +328,23 @@ public class SourceService extends AbstractDaoService {
   public SourceInfo checkConnection(@PathParam("key") final String sourceKey) {
 
     final Source source = sourceRepository.findBySourceKey(sourceKey);
-    final JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
-    jdbcTemplate.execute(SqlTranslate.translateSql("select 1;", source.getSourceDialect()).replaceAll(";$", ""));
+    sourcePriorityService.checkConnection(source);
     return source.getSourceInfo();
   }
 
+
+  @Path("daimon/priority")
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  public Map<SourceDaimon.DaimonType, SourceInfo> getPriorityDaimons() {
+
+    return sourcePriorityService.getPriorityDaimons()
+            .entrySet().stream()
+            .collect(Collectors.toMap(
+                    Map.Entry::getKey,
+                    e -> new SourceInfo(e.getValue())
+            ));
+  }
 
   @Path("{sourceKey}/daimons/{daimonType}/set-priority")
   @POST

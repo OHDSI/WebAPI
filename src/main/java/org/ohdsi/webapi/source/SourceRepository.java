@@ -15,6 +15,8 @@
  */
 package org.ohdsi.webapi.source;
 
+import java.util.List;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 /**
@@ -24,4 +26,7 @@ import org.springframework.data.repository.CrudRepository;
 public interface SourceRepository extends CrudRepository<Source, Integer> {
   Source findBySourceKey(String sourceKey);
   Source findBySourceId(int sourceId);
+  @Query("SELECT s FROM Source s JOIN s.daimons sd WHERE sd.daimonType = ?1 ORDER BY sd.priority DESC")
+  List<Source> findAllSortedByDiamonPrioirty(SourceDaimon.DaimonType daimonType);
+
 }

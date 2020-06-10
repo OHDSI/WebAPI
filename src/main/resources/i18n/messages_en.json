@@ -723,7 +723,7 @@
     },
     "endStrategyViewer": {
       "endDateStrategy": "End Date Strategy",
-      "endStrategyViewerText_1": "No end date strategy selected. By default"
+      "endStrategyViewerText_1": "No end date strategy selected. By default, the cohort end date will be the end of the observation period that contains the index event."
     },
     "evidencePairViewer": {
       "evidencePairViewerText_1": "loading evidence pairs",
@@ -1935,7 +1935,7 @@
         "removePeopleWithPrior": "Remove people with prior outcomes?",
         "typeOfOccurence": "The type of occurrence of the event when selecting from the domain.",
         "whatDomains": "What domains should be considered to detect negative control outcomes? (Hold control to select multiple domains)",
-        "whenTrueDescendantConcepts": "When true"
+        "whenTrueDescendantConcepts": "When true, descendant concepts for the negative control outcome concept IDs will be used to detect the outcome and roll up the occurrence to the concept ID:"
       },
       "from": "from",
       "negativeControlConceptSet": "Negative control concept set:",

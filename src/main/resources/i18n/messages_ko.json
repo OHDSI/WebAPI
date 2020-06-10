@@ -73,7 +73,7 @@
     "daysAbbr": "d",
     "delete": "Delete",
     "deselectAll": "Deselect All",
-    "download": "Download",
+    "download": "다운로드",
     "export": "내보내기",
     "import": "불러오기",
     "loading": "Loading",
@@ -723,7 +723,7 @@
     },
     "endStrategyViewer": {
       "endDateStrategy": "End Date Strategy",
-      "endStrategyViewerText_1": "No end date strategy selected. By default"
+      "endStrategyViewerText_1": "No end date strategy selected. By default, the cohort end date will be the end of the observation period that contains the index event."
     },
     "evidencePairViewer": {
       "evidencePairViewerText_1": "loading evidence pairs",
@@ -811,7 +811,7 @@
         "apply": "Apply",
         "clear": "Clear"
       },
-      "title": "Filter panel"
+      "title": "패널 필터링"
     },
     "generateComponent": {
       "generate": "생성",
@@ -1771,27 +1771,27 @@
       "design": {
         "analysisSettings": {
           "combinationWindow": {
-            "description": "Window of time when two event cohorts need to overlap to be considered a combination.",
-            "title": "Combination Window:"
+            "description": "통합으로 간주되기 위해 두 개의 이벤트 코호트가 겹쳐야 하는 시간 범위.",
+            "title": "통합 범위:"
           },
-          "description": "The following set of parameters will be used when performing the pathway analysis.",
+          "description": "Pathway 분석을 수행할 때 다음의 파라미터 집합이 사용됩니다.",
           "maximumPathLength": {
-            "description": "Maximum number of steps in a given pathway to be included in the sunburst plot.",
-            "title": "Maximum path length:"
+            "description": "Sunburst plot에 포함될 지정된 pathway의 최대 단계 수.",
+            "title": "최대 경로 길이:"
           },
           "minimumCellCount": {
-            "description": "Minimum number of subjects in the target cohort for a given event in order to be counted in the pathway.",
-            "title": "Minimum cell count:"
+            "description": "Pathway에서 수 집계를 위해 주어진 이벤트에 대한 표적 코호트의 최소 대상자 수.",
+            "title": "분석 최소 단위 수:"
           },
           "title": "분석 설정"
         },
-        "description": "<b>Cohort Pathway</b> is defined as the process of generating an aggregated sequence of transitions between the Event Cohorts among those people in the Target Cohorts.",
+        "description": "Cohort pathway는 표적 코호트에 속한 사람들의 이벤트 코호트 간 통합된 일련의 전이를 생성하는 과정으로 정의됩니다.",
         "eventCohorts": {
-          "description": "Each Event Cohort defines the step in a pathway that may occur for a person in the Target Cohort.",
+          "description": "각 이벤트 코호트는 대상 코호트에 속한 사람들에게 발생할 수 있는 pathway의 단계를 정의합니다.",
           "title": "Event Cohorts"
         },
         "targetCohorts": {
-          "description": "Each of the Target Cohorts will be analyized for the pathways through the event cohorts.",
+          "description": "각각의 표적코호트는 이벤트 코호트를 통한 pathways에 대해 분석됩니다. ",
           "title": "표적 코호트"
         }
       },
@@ -1815,25 +1815,25 @@
           "date": "Date:",
           "design": "설계:",
           "details": {
-            "noPath": "No path selected: click path to see details.",
-            "title": "Path details"
+            "noPath": "Path가 선택되지 않음 : 상세정보를 위해 path를 클릭하세요",
+            "title": "Path 상세정보"
           },
           "diagram": {
             "title": "Sunburst plot"
           },
           "filters": {
-            "cohorts": "Cohorts"
+            "cohorts": "코호트"
           },
           "legend": {
             "eventCohort": "Event Cohorts",
-            "personsCount": "Persons with pathways count:",
-            "personsPortion": "Persons with pathways portion:",
-            "targetCohort": "Target Cohort",
-            "targetCohortCount": "Target cohort count:",
-            "title": "Legend"
+            "personsCount": "Pathway 내 해당 환자 수:",
+            "personsPortion": "전체 대상 코호트 환자 수 대비 pathway 내 환자 수 비율:",
+            "targetCohort": "표적 코호트",
+            "targetCohortCount": "표적 코호트 수:",
+            "title": "범례"
           },
           "noPathways": "No pathways were found",
-          "title": "Pathways Analysis for"
+          "title": "Pathway 리포트"
         },
         "stopGenerationConfirmation": "Do you want to stop generation?",
         "table": {
@@ -1914,35 +1914,35 @@
       "evaluationSettingsPanel": {
         "additionalSettings": "Additional Settings",
         "advancedSettingsStartsHere": "Advanced Settings start here",
-        "allowedRatio": "The allowed ratio between target and injected signal size:",
+        "allowedRatio": "표적 신호 크기와 주입된 신호 크기 사이의 허용된 비율:",
         "daysFrom": "일 수",
         "daysFromCohortStartDate": "일 수 코호트 시작 일로부터",
         "defineTimeAtRiskWindowEnd": "위험 노출 기간의 종료일을 정의하십시오.",
         "defineTimeAtRiskWindowStart": "위험 노출 기간의 시작일을 표적/대조 코호트의 코호트 시작 날짜와 관련해 정의하십시오",
-        "effectSizes": "What effect sizes should be inserted:",
-        "firstOutcomeToBeCreated": "What should be the first new outcome ID that is to be created?",
-        "maxNumberOfPeopleToFit": "Maximum number of people used to fit an outcome model:",
-        "minNumberOfOutcomeEventsToBuildAModel": "Minimum number of outcome events required to build a model:",
-        "minNumberofOutcomeEventsToInjectASignal": "Minimum number of outcome events required to inject a signal.",
+        "effectSizes": "적용시킬 effect sizes를 입력하세요:",
+        "firstOutcomeToBeCreated": "처음으로 생성되는 새로운 결과 ID는 무엇인가요?",
+        "maxNumberOfPeopleToFit": "결과 모형을 적합시키는데 사용되는 최대 인원 수:",
+        "minNumberOfOutcomeEventsToBuildAModel": "모델을 구축하는데 요구되는 최소 결과 이벤트 수:",
+        "minNumberofOutcomeEventsToInjectASignal": "신호를 주입하는데 요구되는 최소 결과 이벤트 수:",
         "minimumRequiredTime": "The minimum required continuous observation time (in days) prior to exposure:",
-        "modelType": "Model Type:",
+        "modelType": "모델 유형:",
         "negativeControl": "음성 대조군 결과 코호트 정의",
-        "negativeControlDesc": "This expression will define the criteria for inclusion and duration of time for cohorts intended for use as negative control outcomes.",
+        "negativeControlDesc": "이 표현은 음성 대조군 결과로 사용하기 위한 코호트의 포함 조건과 지속 시간의 기준을 정의할 것입니다.",
         "onlyFirstExposure": "Should only the first exposure per subject be included?",
-        "onlyFirstOutcome": "Should only the first outcome per person be considered when modeling the outcome?",
+        "onlyFirstOutcome": "결과를 모델링 할때 환자마다 발생한 첫 번째 결과(outcome)만을 고려하겠습니까?",
         "positiveControl": "양성 대조군 합성",
-        "positiveControlPerform": "Should we perform positive control synthesis? (to calibrate confidence intervals)",
-        "removePeopleWithPrior": "Remove people with prior outcomes?",
-        "typeOfOccurence": "The type of occurrence of the event when selecting from the domain.",
-        "whatDomains": "What domains should be considered to detect negative control outcomes? (Hold control to select multiple domains)",
-        "whenTrueDescendantConcepts": "When true"
+        "positiveControlPerform": "신뢰 구간을 보정하기 위해 양성 대조군 합성을 수행해야 합니까?",
+        "removePeopleWithPrior": "이전에 결과(outcome)이 발생한 사람들을 제거하시겠습니까?",
+        "typeOfOccurence": "도메인에서 선택할 때 이벤트의 발생 유형.",
+        "whatDomains": "음성 대조군 결과를 탐지하기 위해 고려되어야 하는 도메인은? (여러 도메인을 선택하기 위해 control 키를 누르시오)",
+        "whenTrueDescendantConcepts": "참일 경우, 음성 대조군 결과의 concept ID의 하위 concept들 사용하여 결과를 찾고, occurrence를 concept id로 롤업(roll up)합니다:"
       },
       "from": "from",
       "negativeControlConceptSet": "사용할 음성대조군 결과를 선택하기:",
       "newAnalysis": "New analysis",
       "options": {
         "all": "전체",
-        "allOccurrences": "All occurrences",
+        "allOccurrences": "모든 발생",
         "byPercent": "Percent에 따라",
         "cohortEndDate": "코호트 종료 일로부터",
         "cohortStartDate": "코호트 시작 일로부터",
@@ -1951,7 +1951,7 @@
         "coxProportionalHazards": "콕스 비례 위험 모형",
         "device": "Device",
         "drug": "Drug",
-        "firstOccurrence": "First occurrence",
+        "firstOccurrence": "첫번째 발생",
         "keepAll": "전체 유지",
         "keepFirst": "첫번째 해당만 유지",
         "logisticRegression": "로지스틱 회귀 분석",
@@ -1960,7 +1960,7 @@
         "measurement": "Measurement",
         "none": "안함",
         "observation": "Observation",
-        "poisson": "Poisson",
+        "poisson": "포아송",
         "poissonRegression": "포아송 회귀 분석",
         "procedure": "Procedure",
         "propensityScore": "Propensity score",
@@ -1969,7 +1969,7 @@
         "standardizedLogit": "Standardized Logit",
         "stratification": "Stratification (stratum: <%=stratum%>)",
         "stratifyOnPropensityScore": "성향 점수로 계층화",
-        "survival": "Survival",
+        "survival": "서바이벌",
         "target": "표적 코호트",
         "toEquipoise": "Equipoise에 따라",
         "visit": "Visit"
@@ -2043,12 +2043,12 @@
       "downloadNameNote": "<b>Please Note:</b> The package name should consist of alphanumeric characters only. No spaces or special characters are permitted.",
       "downloadNote": "Please provide a name for the study package and click download to obtain the study package in ZIP format.",
       "downloadPackage": "Download Study Package",
-      "downloadProblemsNote": "Please see the downloads area to review problems with your analysis specification. These must be corrected before you can export your definition.",
+      "downloadProblemsNote": "당신의 분석 사양의 문제를 검토하려면 다운로드 영역을 확인하십시오. Definition을 내보내기 전에 수정해야합니다.",
       "issueComparison": "You must specify at least 1 target",
-      "issueComparisonAndAnalysis": "You must specify at least 1 valid comparison and analysis setting.",
+      "issueComparisonAndAnalysis": "반드시 유효한 비교 및 분석 설정을 1개 이상 지정해야 합니다.",
       "issueDuplicate": "Your study contains duplicate values in one of the following areas: Comparisons or Analysis Settings.",
-      "issueNotSaved": "You must save your analysis before you can review & download.",
-      "issues": "Your study has the following issues that prevent you from reviewing the full specification details and downloading the study package:",
+      "issueNotSaved": "검토 및 다운로드 하기 전에 반드시 분석 설정을 저장하십시오.",
+      "issues": "당신의 연구는 다음과 같은 문제로 인해 전체 사양 세부 정보를 검토할 수 없고, 연구 패키지를 다운로드 할 수 없습니다:",
       "packageNamePlaceholder": "Package name...",
       "reviewDownload": "Review & Download",
       "reviewFullSpec": "Review Full Study Specification"
@@ -3125,7 +3125,7 @@
       "incidenceRate": "New Incidence Rate Analysis",
       "pathway": "New Cohort Pathway",
       "ple": "새로운 인구수준 효과 추정",
-      "plp": "New Patient Level Prediction Analysis",
+      "plp": "새로운 환자 수준 예측 (Patient Level Prediction)",
       "role": "New Role",
       "source": "New Source"
     },
@@ -3306,7 +3306,7 @@
     "modelSettingsTitle": "Model settings",
     "naiveMessage": "There are no settings to edit for Naive Bayes",
     "newItem": "New Patient Level Prediction",
-    "newItemPlaceholder": "New Patient Level Prediction Analysis",
+    "newItemPlaceholder": "새로운 환자 수준 예측 (Patient Level Prediction)",
     "notEnoughPermissions": "Not enough permissions to view results",
     "notEnoughPermissionsToGenerate": "Not enough permissions to generate or changes were not saved or Execution Engine is not available",
     "pleaseNote": "Please Note:",
@@ -3327,7 +3327,7 @@
     "utilitiesText_1": "Your study has the following issues that prevent you from reviewing the full specification details and downloading the study package:",
     "utilitiesText_2": "You must specify at least 1 of each: Target Cohort",
     "utilitiesText_3": "Your study contains duplicate values in one of the following areas: Model Settings",
-    "utilitiesText_4": "You must save your analysis before you can review & download.",
+    "utilitiesText_4": "검토 및 다운로드 하기 전에 반드시 분석 설정을 저장하십시오.",
     "utilitiesText_5": "Please review the full study specification below and scroll down the page to download the study package.",
     "utilitiesText_6": "Please provide a name for the study package and click &quot;download&quot; to obtain the study package in ZIP format.",
     "utilitiesText_7": "The package name should consist of alphanumeric characters only. No spaces or special characters are permitted.",

@@ -758,7 +758,7 @@
       "notBetween": "not between",
       "on": "on",
       "onOrAfter": "on or after",
-      "onOrBefore": "on or Before",
+      "onOrBefore": "on or before",
       "inclusive": "inclusive"
     },
     "demographicCriteria": {

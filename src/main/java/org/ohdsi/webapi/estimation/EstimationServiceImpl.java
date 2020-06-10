@@ -41,8 +41,8 @@ import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.EntityUtils;
+import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -59,7 +59,13 @@ import javax.ws.rs.InternalServerErrorException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.GENERATE_ESTIMATION_ANALYSIS;
@@ -160,6 +166,9 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
 
         est.setCreatedBy(getCurrentUser());
         est.setCreatedDate(currentTime);
+        // Fields with information about modifications have to be reseted
+        est.setModifiedBy(null);
+        est.setModifiedDate(null);
 
         return save(est);
     }

@@ -3,9 +3,6 @@ package org.ohdsi.webapi.pathway;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.Pagination;
-import org.ohdsi.webapi.check.CheckResult;
-import org.ohdsi.webapi.check.Checker;
-import org.ohdsi.webapi.check.checker.pathway.PathwayChecker;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
@@ -20,8 +17,8 @@ import org.ohdsi.webapi.pathway.dto.PathwayPopulationEventDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayPopulationResultsDTO;
 import org.ohdsi.webapi.pathway.dto.TargetCohortPathwaysDTO;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
-import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
+import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
@@ -75,7 +72,7 @@ public class PathwayController {
 
         PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
         PathwayAnalysisEntity saved = pathwayService.create(pathwayAnalysis);
-        return conversionService.convert(saved, PathwayAnalysisDTO.class);
+        return reloadAndConvert(saved.getId());
     }
 
     @POST
@@ -97,7 +94,7 @@ public class PathwayController {
         dto.setName(pathwayService.getNameWithSuffix(dto.getName()));
         PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
         PathwayAnalysisEntity imported = pathwayService.importAnalysis(pathwayAnalysis);
-        return conversionService.convert(imported, PathwayAnalysisDTO.class);
+        return reloadAndConvert(imported.getId());
     }
 
     @GET
@@ -126,8 +123,8 @@ public class PathwayController {
 
         PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
         pathwayAnalysis.setId(id);
-        PathwayAnalysisEntity saved = pathwayService.update(pathwayAnalysis);
-        return conversionService.convert(saved, PathwayAnalysisDTO.class);
+        pathwayService.update(pathwayAnalysis);
+        return reloadAndConvert(id);
     }
 
     @GET
@@ -276,6 +273,12 @@ public class PathwayController {
                 .collect(Collectors.toList());
 
         return new PathwayPopulationResultsDTO(eventCodeDtos, pathwayDtos);
+    }
+
+    private PathwayAnalysisDTO reloadAndConvert(Integer id) {
+        // Before conversion entity must be refreshed to apply entity graphs
+        PathwayAnalysisEntity analysis = pathwayService.getById(id);
+        return conversionService.convert(analysis, PathwayAnalysisDTO.class);
     }
 
     @POST

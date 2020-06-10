@@ -240,6 +240,8 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
     @Value("${security.cas.casticket}")
     private String casticket;
+    
+    private boolean samlEnabled = false;
 
     public AtlasRegularSecurity(EntityPermissionSchemaResolver permissionSchemaResolver) {
 
@@ -309,7 +311,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
         this.setUpCAS(filters);
         this.setUpSaml(filters);
-
+        
         return filters;
     }
 
@@ -336,12 +338,16 @@ public class AtlasRegularSecurity extends AtlasSecurity {
                 .addOAuthPath("/user/oauth/google", GOOGLE_AUTHC)
                 .addOAuthPath("/user/oauth/facebook", FACEBOOK_AUTHC)
                 .addOAuthPath("/user/oauth/github", GITHUB_AUTHC)
-                .addPath("/user/login/saml", SSL, CORS, FORCE_SESSION_CREATION, SAML_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_URL)
                 .addPath("/user/login/cas", SSL, CORS, FORCE_SESSION_CREATION, CAS_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_URL)
                 .addPath("/user/oauth/callback", SSL, HANDLE_UNSUCCESSFUL_OAUTH, OAUTH_CALLBACK)
-                .addPath("/user/cas/callback", SSL, HANDLE_CAS, UPDATE_TOKEN, SEND_TOKEN_IN_URL)
-                .addPath("/user/saml/callback", SSL, HANDLE_SAML, UPDATE_TOKEN, SEND_TOKEN_IN_URL);
+                .addPath("/user/cas/callback", SSL, HANDLE_CAS, UPDATE_TOKEN, SEND_TOKEN_IN_URL);
 
+        if (this.samlEnabled) {
+            filterChainBuilder
+                .addPath("/user/login/saml", SSL, CORS, FORCE_SESSION_CREATION, SAML_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_URL)
+                .addPath("/user/saml/callback", SSL, HANDLE_SAML, UPDATE_TOKEN, SEND_TOKEN_IN_URL);
+        }
+        
         setupProtectedPaths(filterChainBuilder);
 
         return filterChainBuilder.addRestPath("/**");
@@ -386,6 +392,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     }
 
     private void setUpSaml(Map<FilterTemplates, Filter> filters) {
+      try {
         Resource keystorePath = CommonHelper.getResource(keyStoreFile);
         Resource metadataLocationPath = CommonHelper.getResource(metadataLocation);
         final SAML2ClientConfiguration cfg = new SAML2ClientConfiguration(
@@ -410,7 +417,13 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         filters.put(SAML_AUTHC, samlAuthFilter);
 
         SamlHandleFilter samlHandleFilter = new SamlHandleFilter(saml2Client);
-        filters.put(HANDLE_SAML, samlHandleFilter);
+        filters.put(HANDLE_SAML, samlHandleFilter);   
+        samlEnabled = true;
+      } catch (Exception e) {
+        filters.remove(SAML_AUTHC);
+        filters.remove(HANDLE_SAML);
+        logger.error("Failed to initlize SAML filters: " + e.getMessage());     
+      }
     }
 
     private Google2Client getGoogle2Client() {

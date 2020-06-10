@@ -4,9 +4,6 @@ import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import com.qmino.miredot.annotations.MireDotIgnore;
 import com.qmino.miredot.annotations.ReturnType;
 import org.ohdsi.webapi.Constants;
-import org.ohdsi.webapi.check.CheckResult;
-import org.ohdsi.webapi.check.Checker;
-import org.ohdsi.webapi.check.checker.estimation.EstimationChecker;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
@@ -109,7 +106,7 @@ public class EstimationController {
   public EstimationDTO createEstimation(Estimation est) throws Exception {
 
     Estimation estWithId = service.createEstimation(est);
-    return conversionService.convert(estWithId, EstimationDTO.class);
+    return reloadAndConvert(estWithId.getId());
   }
 
   @PUT
@@ -118,8 +115,8 @@ public class EstimationController {
   @Consumes(MediaType.APPLICATION_JSON)
   public EstimationDTO updateEstimation(@PathParam("id") final int id, Estimation est) throws Exception {
 
-    Estimation updatedEst = service.updateEstimation(id, est);
-    return conversionService.convert(updatedEst, EstimationDTO.class);
+    service.updateEstimation(id, est);
+    return reloadAndConvert(id);
   }
 
   @GET
@@ -129,7 +126,7 @@ public class EstimationController {
   public EstimationDTO copy(@PathParam("id") final int id) throws Exception {
 
     Estimation est = service.copy(id);
-    return conversionService.convert(est, EstimationDTO.class);
+    return reloadAndConvert(est.getId());
   }
 
   @GET
@@ -169,7 +166,7 @@ public class EstimationController {
           throw new InternalServerErrorException();
       }
       Estimation importedEstimation = service.importAnalysis(analysis);
-      return conversionService.convert(importedEstimation, EstimationDTO.class);
+      return reloadAndConvert(importedEstimation.getId());
   }
 
   /**
@@ -244,6 +241,12 @@ public class EstimationController {
             .header("Content-Disposition", "attachment; filename=\"" + archive.getName() + "\"")
             .build();
   }
+
+    private EstimationDTO reloadAndConvert(Integer id) {
+        // Before conversion entity must be refreshed to apply entity graphs
+        Estimation estimation = service.getById(id);
+        return conversionService.convert(estimation, EstimationDTO.class);
+    }
 
     @POST
     @Path("/check")

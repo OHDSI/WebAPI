@@ -94,7 +94,9 @@
       "rolesWithWriteAccess": "Роли с разрешением на запись:",
       "revoke": "Отозвать"
     },
-    "unspecified": "НЕОПРЕДЕЛЕННЫЕ!"
+    "unspecified": "НЕОПРЕДЕЛЕННЫЕ!",
+    "menu": "Меню",
+    "noData": "Нет данных"
   },
   "commonErrors": {
     "browserWarning": "Пожалуйста, обратите внимание, что официально поддерживается только браузер Chrome версии не ниже v.63",
@@ -326,6 +328,9 @@
     "atlasCohortEditor": {
       "enterCohortPlaceholder": "Введите описание определения когорты здесь",
       "importConceptSet": "Импортировать набор концепций из репозитория ..."
+    },
+    "cohortDefinitionBrowser": {
+      "confirmMessage": "Изменения набора концептов не сохраняются. Желаете ли вы продолжить?"
     },
     "cohortExpressionEditor": {
       "cohortEntryEvents": "События входа",
@@ -679,7 +684,8 @@
       "between": "Между",
       "notBetween": "Не между",
       "and": "и",
-      "firstPlaceholder": "ГГГГ-ММ-ДД"
+      "firstPlaceholder": "ГГГГ-ММ-ДД",
+      "inclusive": "включительно"
     },
     "numericRange": {
       "lessThan": "Меньше, чем",
@@ -771,6 +777,55 @@
       "demographicCriteriaText_1": "пол любой из:",
       "demographicCriteriaText_2": "Раса это любой из:",
       "demographicCriteriaText_3": "Этнос любой из:"
+    },
+    "expressionCartoonBindings": {
+      "primaryCriteria": "Основные критерии",
+      "any": "Любые",
+      "one": "один",
+      "s": "",
+      "those": "те",
+      "the": "",
+      "paramOf": "<%=param%>",
+      "atParamOf": "В <%=param%>",
+      "or": "или",
+      "and": "и",
+      "anyParam": "любой <%=param%>",
+      "domain": "домен",
+      "all": "все",
+      "distinct": "отчетливый",
+      "before": "до",
+      "after": "после",
+      "noCriteriaGroup": "Нет критериев группы",
+      "additionalCriteria": "Дополнительные критерии",
+      "noAdditionalCriteria": "Никаких дополнительных критериев",
+      "inclusionRules": "Правила включения",
+      "noInclusionRules": "Нет правил включения",
+      "condition": "условие",
+      "drug": "лекарство",
+      "drugEra": "эра наркотиков",
+      "conditionEra": "состояние эпохи",
+      "doseEra": "эра дозы",
+      "procedure": "процедура",
+      "observation": "наблюдение",
+      "device": "устройство",
+      "measurement": "измерение",
+      "specimen": "образец",
+      "death": "смерть",
+      "observationPeriod": "период наблюдения",
+      "visit": "посещение",
+      "era": "эпоха",
+      "daysSupply": "Дни питания",
+      "visitCapital": "Посещение",
+      "expressionCartoonBindingsText_1": "следующий основной критерий",
+      "expressionCartoonBindingsText_2": "<%=oneOrAny%> из следующих <%=pcListLength%> основных критериев",
+      "expressionCartoonBindingsText_3": "Результаты будут генерироваться для каждого события, соответствующего человеку <%=pcCritMatch%>. Окончательные результаты будут ограничены событиями <%=theseOrthe%>, соответствующими любым дополнительным критериям и правилам включения.",
+      "expressionCartoonBindingsText_4": "Результаты будут сгенерированы для совпадения одного события <%=pLimitTypeToLowerCase%> <%=pcCritMatch%>.",
+      "expressionCartoonBindingsText_5": "Дата индекса результата <%=pcPlural%> будет датой начала <%=pcPlural%> соответствующего события первичного критерия <%=pcPlural%>.",
+      "expressionCartoonBindingsText_6": "Ограничить людей, имеющих события, соответствующие <%=critgroupTypeToLowerCase%> из следующих критериев.",
+      "expressionCartoonBindingsText_7": "События должны начинаться в скобках",
+      "expressionCartoonBindingsText_8": "относительно даты индекса Линии и стрелки представляют требуемую продолжительность этих событий.",
+      "expressionCartoonBindingsText_9": "с <%=type%> <%=count%> с использованием <%=distinctOrAll%> вхождений",
+      "expressionCartoonBindingsText_10": "происходит между индексами <%=startDays%> days <%=beforeArAfterStart%> и <%=endDays%> days <%=beforeArAfterEnd%>"
     },
     "conceptSetSelector": {
       "importConcept": "Импортировать концепцию",
@@ -912,6 +967,12 @@
       "cohortExpressionViewerText_13": "Стратегия разрушения когорты:",
       "cohortExpressionViewerText_14": "Свернуть когорту по эпохе с размером разрыва",
       "cohortExpressionViewerText_15": "Критерии включения #(<%=index%>): <%=name%>"
+    },
+    "exploreCohort": {
+      "fetchingFirst": "Выборка первая",
+      "members": "члены",
+      "exploreCohortText_1": "Эта группа не имеет участников, доступных для просмотра. Пожалуйста, проверьте статус генерации в разделе «Определение когорты» Atlas.",
+      "exploreCohortText_2": "В этой группе нет доступных членов для просмотра для выбранного источника данных. Пожалуйста, убедитесь, что вы сгенерировали когорту на вкладке Генерация."
     },
     "locationRegion": {
       "anyLocationRegion": "Любой регион",

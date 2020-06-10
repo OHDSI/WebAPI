@@ -217,7 +217,8 @@
       "rectSummary": "<%=size%> люди (<%=percentage%>%), <%=passCount%> критерии пройдены, <%=failCount%> критерии не пройдены."
     },
     "endStrategyEditor": {
-      "eventWillPersistUntil": "Событие будет продолжаться до:"
+      "eventWillPersistUntil": "Событие будет продолжаться до:",
+      "eventWillPersistUntil2": " "
     },
     "endStrategyViewer": {
       "endDateStrategy": "Конечная дата стратегии",
@@ -252,8 +253,8 @@
       "ruleDescriptionPlaceholder": "введите описание правила"
     },
     "feasibilityReportViewer": {
-      "feasibilityReportViewerText_1": "Скорость матча",
-      "feasibilityReportViewerText_2": "Матчи",
+      "feasibilityReportViewerText_1": "Степень совпадения",
+      "feasibilityReportViewerText_2": "Совпадений",
       "feasibilityReportViewerText_3": "Утерян от цензуры",
       "feasibilityReportViewerText_4": "Всего событий",
       "feasibilityReportViewerText_5": "Сводные статистические данные:",
@@ -366,7 +367,9 @@
       "cohortErasTitle": "Когорт Эра",
       "cohortErasText_1": "Укажите размер разрыва коллапса эпохи:",
       "cohortErasText_2": "Даты начала когорты левого цензора в",
+      "cohortErasText_2_1": " ",
       "cohortErasText_3": "Дата окончания когорты правого цензора",
+      "cohortErasText_3_1": " ",
       "addTrimmingOptions": "добавить параметры обрезки ...",
       "unnamedCriteria": "Безымянный критерий",
       "copyOf": "Копия:",
@@ -755,6 +758,7 @@
       "dateOffsetStrategyText_1": "Постоянная длительность:",
       "dateOffsetStrategyText_2": "Дата окончания события определяется путем добавления количества дней к дате начала или окончания события. Если к дате начала события добавляется смещение, все эпизоды когорты будут иметь одинаковую фиксированную продолжительность (при условии дальнейшей цензуры). Если к дате окончания события добавляется смещение, люди в когорте могут иметь различное время продолжительности когорты из-за различной продолжительности события (например, периоды постоянного воздействия наркотиков или длительность пребывания в больнице). Постоянство этого события гарантирует, что дата окончания когорты будет не больше выбранной даты события индекса плюс смещение дней.",
       "dateOffsetStrategyText_3": "Дата события для смещения от:",
+      "dateOffsetStrategyText_3_1": " ",
       "dateOffsetStrategyText_4": "Смещение количества дней:",
       "dateOffsetStrategyText_5": "дней",
       "dateOffsetStrategyText_6": "Критерии выхода из даты смещения",
@@ -2506,6 +2510,7 @@
     "cohortreports": {
         "inclusionReport": "Отчет о включении",
         "inclusionReportFor": "Отчет о включении для",
+        "inclusionReportFor1": " ",
         "tabs": {
             "byEvents": "По событиям",
             "byPerson": "По человеку"

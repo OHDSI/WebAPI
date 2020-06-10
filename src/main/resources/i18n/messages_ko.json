@@ -207,7 +207,7 @@
       "addTrimmingOptions": "add trimming options...",
       "censoringEvents": "Censoring Events:",
       "cohortEntryEvents": "코호트 진입 이벤트",
-      "cohortEntryEventsText_1": "Events are recorded time-stamped observations for the persons",
+      "cohortEntryEventsText_1": "Events are recorded time-stamped observations for the persons, such as drug exposures, conditions, procedures, measurements and visits. All events have a start date and end date, though some events may have a start date and end date with the same value (such as procedures or measurements).",
       "cohortEntryEventsText_2": "다음 기준 중 어떠한 하나의 기준을 만족하는 이벤트 :",
       "cohortEntryEventsText_3": "이벤트 기준 시점로부터 최소",
       "cohortEntryEventsText_4": "일 이전과",
@@ -219,9 +219,9 @@
       "cohortErasText_3": "Right censor cohort end dates to",
       "cohortErasTitle": "코호트 에라 기준",
       "cohortExit": "코호트 종료 기준",
-      "cohortExitText_1": "For all qualifying events",
-      "cohortExitText_2": "The qualifying initial event can be set to end after a fixed time period relative to the event start or end date",
-      "cohortExitText_3": "Criteria can be used to signal the end of an event. If a censoring event is identified between a qualifying event's start and end date",
+      "cohortExitText_1": "For all qualifying events, there must be a specification of when each event ends presence in the cohort. By default, an event ends at the end of the observation period containing the qualifying initial event, but event end dates may be also be specified:",
+      "cohortExitText_2": "The qualifying initial event can be set to end after a fixed time period relative to the event start or end date, or the end date can be based on the end of a continuous exposure to a set of drugs identified by a concept set.",
+      "cohortExitText_3": "Criteria can be used to signal the end of an event.  If a censoring event is identified between a qualifying event\\'s start and end date, the date of the censoring event will be used as the exit date.",
       "cohortExitText_4": "Exit Cohort based on the following criteria:",
       "cohortExitText_5": "No censoring events selected.",
       "cohortExitTitle": "코호트 종료 기준",
@@ -232,7 +232,7 @@
       "deleteCriteria": "Delete Criteria",
       "eventPersistence": "Event Persistence:",
       "inclusionCriteria": "포함 기준",
-      "inclusionCriteriaText": "The qualifying cohort will be defined as all persons who have an initial event",
+      "inclusionCriteriaText": "The qualifying cohort will be defined as all persons who have an initial event, satisfy the initial event inclusion criteria, and fulfill all additional qualifying inclusion criteria. Each qualifying inclusion criteria will be evaluated to determine the impact of the criteria on the attrition of persons from the initial cohort.",
       "inclusionCriteriaText_1": "Limit qualifying events to:",
       "inclusionCriteriaTitle": "포함 기준",
       "indexMessage": "The index date refers to the event from the Cohort Entry criteria.",
@@ -253,10 +253,10 @@
       "cohortExpressionViewerText_15": "포함 기준 #(<%=index%>): <%=name%>",
       "cohortExpressionViewerText_2": "with continuous observation of at least",
       "cohortExpressionViewerText_3": "days prior and ",
-      "cohortExpressionViewerText_4": "days after event index date",
+      "cohortExpressionViewerText_4": "days after event index date,",
       "cohortExpressionViewerText_5": "and limit initial events to: ",
       "cohortExpressionViewerText_6": "per person.",
-      "cohortExpressionViewerText_7": "For people matching the Primary Events",
+      "cohortExpressionViewerText_7": "For people matching the Primary Events, include:",
       "cohortExpressionViewerText_8": "Limit cohort of initial events to:",
       "cohortExpressionViewerText_9": "Inclusion Rules",
       "initialEventCohort": "Initial Event Cohort"
@@ -627,7 +627,7 @@
       "customEraStrategyText_1": "Continuous Exposure Persistence:",
       "customEraStrategyText_10": "Force drug exposure days suply to:",
       "customEraStrategyText_11": "days.",
-      "customEraStrategyText_12": "This strategy creates a drug era from the codes found in the specified concept set. If the index event is found within an era",
+      "customEraStrategyText_12": "This strategy creates a drug era from the codes found in the specified concept set. If the index event is found within an era, the cohort end date will use the era\\'s end date. Otherwise, it will use the observation period end date that contains the index event.",
       "customEraStrategyText_13": "Use the era end date of",
       "customEraStrategyText_14": "allowing",
       "customEraStrategyText_15": "days between exposures",
@@ -635,7 +635,7 @@
       "customEraStrategyText_17": "days after exposure end",
       "customEraStrategyText_18": "using days supply and exposure end date for exposure duration.",
       "customEraStrategyText_19": "forcing drug exposure days suply to:",
-      "customEraStrategyText_2": "Specify a concept set that contains one or more drugs. A drug era will be derived from all drug exposure events for any of the drugs within the concept set",
+      "customEraStrategyText_2": "Specify a concept set that contains one or more drugs.  A drug era will be derived from all drug exposure events for any of the drugs within the concept set, using the specified persistence window as a maximum allowable gap in days between successive exposure events and adding a specified surveillance window to the final exposure event.  If no exposure event end date is provided, then an exposure event end date is inferred to be event start date + days supply in cases when days supply is available or event start date + 1 day otherwise. This event persistence assures that the cohort end date will be no greater than the drug era end date.",
       "customEraStrategyText_3": "Concept set containing the drug(s) of interest:",
       "customEraStrategyText_4": "Persistence window: allow for a maximum of ",
       "customEraStrategyText_5": "days between exposure records when inferring the era of persistence exposure",
@@ -695,7 +695,7 @@
       "dateOffsetStrategyText_7": "This cohort defintion end date will be the index event's",
       "dateOffsetStrategyText_8": "plus",
       "dateOffsetStrategyText_1": "Fixed Duration Persistence:",
-      "dateOffsetStrategyText_2": "The event end date is derived from adding a number of days to the event's start or end date. If an offset is added to the event's start date",
+      "dateOffsetStrategyText_2": "The event end date is derived from adding a number of days to the event's start or end date. If an offset is added to the event\\'s start date, all cohort episodes will have the same fixed duration (subject to further censoring).  If an offset is added to the event's end date, persons in the cohort may have varying cohort duration times due to the varying event durations (such as eras of persistent drug exposure or visit length of stay).  This event persistence assures that the cohort end date will be no greater than the selected index event date, plus the days offset.",
       "dateOffsetStrategyText_3": "Event date to offset from:",
       "dateOffsetStrategyText_4": "Number of days offset:",
       "dateOffsetStrategyText_5": "days"
@@ -733,8 +733,8 @@
     },
     "evidencePairViewer": {
       "evidencePairViewerText_1": "loading evidence pairs",
-      "evidencePairViewerText_2": "If CommonEvidenceModel has indicated there is product label information for the selected drug-condition pair (1 = true",
-      "evidencePairViewerText_3": "If the CommonEvidenceModel has listed a number of publications",
+      "evidencePairViewerText_2": "If CommonEvidenceModel has indicated there is product label information for the selected drug-condition pair (1 = true, 0 = false) you may see many product labels below. The count of labels is non-informative since an adverse event on one label is supposed to be on all product labels. So, this page will show all product labels for the selected drug-condition pair.",
+      "evidencePairViewerText_3": "If the CommonEvidenceModel has listed a number of publications, on the “Viewing Evidence” pop-up, one publication may occur multiple times in the results below.  This is because for every drug-condition pair a publication matches, the publication will show up in “View Evidence” list.",
       "evidencePairViewerText_4": "Click here for more information about this evidence list",
       "evidencePairViewerText_5": "Hide details",
       "evidencePairViewerText_6": "The concept set is not marked as valid to generate results. Please make sure this concept set contains only CONDITIONS or DRUGS."
@@ -809,7 +809,7 @@
       "percentSatisfied": "% Satisfied",
       "percentToGain": "% To-Gain",
       "populationVisualization": "Population Visualization",
-      "rectSummary": "<%=size%> people (<%=percentage%>%)"
+      "rectSummary": "<%=size%> people (<%=percentage%>%), <%=passCount%> criteria passed, <%=failCount%> criteria failed."
     },
     "feasibilityReportViewer": {
       "feasibilityReportViewerText_1": "Match Rate",
@@ -1307,7 +1307,7 @@
       "ageDecile": "Age Decile",
       "date": "Date",
       "deathByType": "유형별 사망",
-      "deathPrevalenceByAgeGenderYear": "Death Prevalence by Age",
+      "deathPrevalenceByAgeGenderYear": "Death Prevalence by Age, Gender, Year",
       "deathPrevalenceByMonth": "월별 사망률",
       "gender": "Gender",
       "prevalencePer1000People": "Prevalence Per 1000 People",
@@ -1499,7 +1499,7 @@
         "invalidCsWarning": "Your saved concepts come from multiple domains or from a domain outside of conditions or drugs. The concept set must contain ONLY conditions OR drugs in order to explore evidence.",
         "loadingEvidence": "loading evidence",
         "message1": "Evidence comes from the",
-        "message2": "The evidence base is comprised of evidence found in published literature",
+        "message2": "The evidence base is comprised of evidence found in published literature, product labels and spontaneous reports. Use the evidence sources below to find out what evidence has been associated to the concepts included in this concept set.",
         "noCsWarning": "You must define a concept set with drugs found in the RxNorm vocabulary at the Ingredient class level OR Conditions from SNOMED. The concept set must contain ONLY conditions OR drugs in order to explore evidence.",
         "noEvidenceFoundFor": "No evidence found for",
         "saveNewButton": "Save New Concept Set From Selection Below",
@@ -1575,7 +1575,7 @@
     "viewEdit": {
       "caption": "Characterization #",
       "design": {
-        "description": "<b>Cohort characterization</b> is defined as the process of generating cohort level descriptive summary statistics from person level covariate data. Summary statistics of these person level covariates may be count",
+        "description": "코호트 특성 분석은 사용자 레벨 공변량 데이터로부터 호코트 레벨의 설명된 요약 통계를 생성하는 절차로 정의됩니다. 개인 수준 공변량의 요약 통계는 수, 평균, 표준편차, 분산, 최소값, 최대값, 중앙값, 범위 및 사분위수일 수 있습니다. 또한 Period에 대한 공변량은 cohort_start_date(예: 7일마다, 30일마다 등)와 절대적인 시간 간격(예: 달력에서의 주, 월, 분기, 연도)과 같이 시계열 분석의 일시적인 시간 단위로 계층화 될 수 있다.",
         "fa": {
           "actions": {
             "remove": "Remove"
@@ -1621,7 +1621,7 @@
         },
         "loading": "Loading executions...",
         "messages": {
-          "permissions": "Not enough permissions to generate"
+          "permissions": "Not enough permissions to generate, changes not saved or no cohorts found"
         },
         "table": {
           "viewReports": "View reports",
@@ -1759,7 +1759,7 @@
       "timeAtRiskPlus": "에",
       "timeAtRiskStartDate": "시작일",
       "timeAtRiskStartsWith": "위험 노출 기간은",
-      "timeAtRiskWarningMessage": "Error: Time at risk starts on or after time at risk end"
+      "timeAtRiskWarningMessage": "Error: Time at risk starts on or after time at risk end, resulting in zero time at risk.  Please ensure the start offset is greater than the end offset."
     },
     "nameConflict": "An incidence rate with this name already exists. Please choose a different name.",
     "nameIsEmpty": "Incidence Rate Analysis name is empty.",
@@ -2040,7 +2040,7 @@
         "covariates": "Should the covariates also be included in the outcome model?",
         "regression": "회귀분석은 모집단 대상자에서 정의된 계층에 따라 조절되어야 합니까? (예: 성향 점수로 매칭 또는 계층화 함으로써)",
         "regularization": "Use regularization when fitting the outcome model? *",
-        "regularizationNote": "* Regularization will not be applied to the exposure of interest",
+        "regularizationNote": "* Regularization will not be applied to the exposure of interest, just to the covariates.",
         "statisticalModel": "표적 코호트와 대조 코호트 간의 결과 위험도 평가에 사용될 통계 모델을 정의하십시오:",
         "weighting": "처리 가중치의 역확률(IPTW, inverse probability of treatment weighting)을 사용합니까?"
       },
@@ -2055,7 +2055,7 @@
         "covariateIdsStratify": "One or more covariate IDs in the cohortMethodData object on which subjects should be also stratified.",
         "howManyStrata": "성향 점수는 몇 개의 계층으로 나누겠습니까? 계층의 경계는 동일한 수의 표적 인원을 포함하도록 자동으로 정의됩니다.",
         "howToTrim": "성향 점수 분포를 기반으로 코호트를 어떻게 잘라(trim)내시겠습니까?",
-        "lowerAndUpperBound": "Specify the lower and upper bound on the preference score for keeping persons (specify as: min %",
+        "lowerAndUpperBound": "Specify the lower and upper bound on the preference score for keeping persons (specify as: min %, max %, eg: 25,75):",
         "matchingOrStratification": "매칭 또는 계층화(stratification)를 수행하시겠습니까?",
         "maxNumberOfPeople": "적절한 성향 점수 모델에 포함할 최대 환자수는 몇 명입니까? 이 숫자를 0으로 설정하면 down-sampling이 적용되지 않습니다.",
         "maximumNumberOfPersons": "What is the maximum number of persons in the comparator arm to be matched to each person in the target arm within the defined caliper? (0 = means no maximum - all comparators will be assigned to a target person):",
@@ -2105,7 +2105,7 @@
       "downloadNote": "Please provide a name for the study package and click download to obtain the study package in ZIP format.",
       "downloadPackage": "Download Study Package",
       "downloadProblemsNote": "당신의 분석 사양의 문제를 검토하려면 다운로드 영역을 확인하십시오. Definition을 내보내기 전에 수정해야합니다.",
-      "issueComparison": "You must specify at least 1 target",
+      "issueComparison": "You must specify at least 1 target, comparator and outcome in your comparison settings.",
       "issueComparisonAndAnalysis": "반드시 유효한 비교 및 분석 설정을 1개 이상 지정해야 합니다.",
       "issueDuplicate": "Your study contains duplicate values in one of the following areas: Comparisons or Analysis Settings.",
       "issueNotSaved": "검토 및 다운로드 하기 전에 반드시 분석 설정을 저장하십시오.",
@@ -2215,17 +2215,17 @@
             "checkAll": "Check all",
             "uncheckAll": "Uncheck all"
           },
-          "header": "Please"
+          "header": "Please, check users to be imported"
         },
         "roleMapping": {
-          "header": "Please"
+          "header": "Please, provide LDAP/Active Directory groups mapping to Atlas roles if required."
         },
         "selectSource": {
           "buttons": {
             "details": "Details",
             "testConnection": "Test connection"
           },
-          "header": "Please",
+          "header": "Please, select a provider to import users from.",
           "source": {
             "activeDirectory": "Active Directory",
             "ldap": "LDAP server"
@@ -2352,7 +2352,7 @@
   },
   "licenseAgreement": {
     "accept": "Accept",
-    "description": "In order to use the SNOMED International SNOMED CT Browser and HemOnc",
+    "description": "In order to use the SNOMED International SNOMED CT Browser and HemOnc, please accept the following license agreement:",
     "reject": "Reject",
     "rejectWarning": "Without accepting this terms & conditions you can't use Atlas",
     "title": "License Agreement"
@@ -2365,13 +2365,13 @@
           "bold_1": "Quick Analysis",
           "bold_2": "Healthcare Utilization",
           "bold_3": "Full Analysis",
-          "text_1": "Runs minimal analysis to provide a quick overview of this cohort's year of birth",
-          "text_2": "Runs analyses to provide Exposure",
+          "text_1": "Runs minimal analysis to provide a quick overview of this cohort's year of birth, demographics, drug eras and condition eras. (estimated: 10 minutes)",
+          "text_2": "Runs analyses to provide Exposure, Visit and Drug Utilization reports. (estimated: 10 - 40 minutes)",
           "text_3": "Runs a complete set of characterization reports. (estimated: 60 minutes)",
           "title": "Analysis Types"
         },
         "cohortDefinition": {
-          "text_1": "A cohort is defined as the set of persons satisfying one or more inclusion criteria for a duration of time. One person may qualify for one cohort multiple times during non-overlapping time intervals. Cohorts are constructed in ATLAS by specifying cohort entry criteria and cohort exit criteria. Cohort entry criteria involve selecting one or more initial events",
+          "text_1": "A cohort is defined as the set of persons satisfying one or more inclusion criteria for a duration of time. One person may qualify for one cohort multiple times during non-overlapping time intervals. Cohorts are constructed in ATLAS by specifying cohort entry criteria and cohort exit criteria. Cohort entry criteria involve selecting one or more initial events, which determine the start date for cohort entry, and optionally specifying additional inclusion criteria which filter to the qualifying events. Cohort exit criteria are applied to each cohort entry record to determine the end date when the person’s episode no longer qualifies for the cohort.",
           "title": "Cohort Definition"
         },
         "importConceptSet": {
@@ -2536,9 +2536,9 @@
       "personExposureText_4": "Detailed statistics are not available",
       "personPercent": "Person Percent",
       "persons": "Persons",
-      "recordsPer1000": "Records per 1",
-      "recordsPer1000PerYear": "Records per 1",
-      "recordsPer1000WithRecord": "Records per 1",
+      "recordsPer1000": "Records per 1,000",
+      "recordsPer1000PerYear": "Records per 1,000 Per Year",
+      "recordsPer1000WithRecord": "Records per 1,000 with record",
       "reportManager": {
         "reportManagerText_1": "Cohort Reporting",
         "reportManagerText_10": "Race",
@@ -2560,7 +2560,7 @@
         "reportManagerText_25": "Condition Prevalence",
         "reportManagerText_26": "Table",
         "reportManagerText_27": "Treemap",
-        "reportManagerText_28": "Box Size: Prevalence",
+        "reportManagerText_28": "Box Size: Prevalence, Color: Log of Relative Risk (Red to Green = Negative to Positive), Use Ctrl-Click to Zoom, Alt-Click to Reset Zoom",
         "reportManagerText_29": "Drilldown Report",
         "reportManagerText_3": "Data Completeness",
         "reportManagerText_30": "Drugs by Index Date ",
@@ -2602,7 +2602,7 @@
         "reportManagerText_63": "Procedure Prevalence by Month",
         "reportManagerText_64": "Procedures by Type",
         "reportManagerText_65": "Age at First Occurrence",
-        "reportManagerText_66": "Death Prevalence by Age",
+        "reportManagerText_66": "Death Prevalence by Age, Gender, Year",
         "reportManagerText_67": "Death Prevalence by Month",
         "reportManagerText_68": "Death Details",
         "reportManagerText_69": "Age at Death",
@@ -3224,7 +3224,7 @@
   "notifications": {
     "duration": "Duration",
     "endTime": "End time",
-    "explanation": "Notifications for jobs will be displayed here. A job could include cohort generation",
+    "explanation": "Notifications for jobs will be displayed here. A job could include cohort generation, cohort reporting, or other tasks that can take a long time to complete. This top right notification icon will highlight <i class='fa fa-bell pending'></i> if you have new notifications available.",
     "hideCompletedJobsButton": "Hide completed jobs",
     "jobName": "Job Name",
     "showCompletedJobsButton": "Show completed jobs",
@@ -3251,9 +3251,9 @@
       "evaluationEditorText_5": "The seed used to split the test/train set when using a person type testSplit (optional):",
       "executionEditorText_1": "Perform sampling:",
       "executionEditorText_2": "How many patients to use for a subset?",
-      "executionEditorText_3": "Minimum covariate occurrence: If a covariate occurs in a fraction of the target population less than this value",
+      "executionEditorText_3": "Minimum covariate occurrence: If a covariate occurs in a fraction of the target population less than this value, it will be removed:",
       "executionEditorText_4": "Normalize covariates:",
-      "populationEditorText_1": "Define the time-at-risk window start",
+      "populationEditorText_1": "Define the time-at-risk window start, relative to target cohort entry:",
       "populationEditorText_2": "포함한 컨셉 목록에  하위 컨셉을 추가합니까?",
       "populationEditorText_3": "성향 점수 모델의 기준 공변량에 어떤 컨셉을 제외하시겠습니까? (모든 것을 포함하려면 비워 둡니다)",
       "populationEditorText_4": "Should subjects without time at risk be removed?",
@@ -3290,7 +3290,7 @@
       "decisionTreeSettings": {
         "desc_classWeight": "Class weight",
         "desc_maxDepth": "Maximum number of interactions - a large value will lead to slow model training",
-        "desc_minImpurityDecrease": "Threshold for early stopping in tree growth. A node will split if its impurity is above the threshold",
+        "desc_minImpurityDecrease": "Threshold for early stopping in tree growth. A node will split if its impurity is above the threshold, otherwise it is a leaf.",
         "desc_minSamplesLeaf": "The minimum number of samples per leaf",
         "desc_minSamplesSplit": "The minimum samples per split",
         "desc_plot": "The minimum samples per split",
@@ -3386,8 +3386,8 @@
     "title": "Patient Level Prediction",
     "usingDefault": "Using default",
     "utilitiesText_1": "Your study has the following issues that prevent you from reviewing the full specification details and downloading the study package:",
-    "utilitiesText_2": "You must specify at least 1 of each: Target Cohort",
-    "utilitiesText_3": "Your study contains duplicate values in one of the following areas: Model Settings",
+    "utilitiesText_2": "You must specify at least 1 of each: Target Cohort, Outcome Cohort, Model Settings, Covariate Settings and Population Settings.",
+    "utilitiesText_3": "Your study contains duplicate values in one of the following areas: Model Settings, Covariate Settings and Population Settings. Please review and fix these errors in order to proceed.",
     "utilitiesText_4": "검토 및 다운로드 하기 전에 반드시 분석 설정을 저장하십시오.",
     "utilitiesText_5": "Please review the full study specification below and scroll down the page to download the study package.",
     "utilitiesText_6": "Please provide a name for the study package and click &quot;download&quot; to obtain the study package in ZIP format.",

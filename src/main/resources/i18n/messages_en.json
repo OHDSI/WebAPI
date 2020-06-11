@@ -3248,6 +3248,7 @@
     "descriptionPlaceholder": "enter a description here (1000 characters max)",
     "downloadLatestResult": "Download latest result",
     "downloadStudyPackage": "Download Study Package",
+    "defaultValue": "(default = <%=defaultValue%>):",
     "editors": {
         "evaluationEditorText_1": "Specify how to split the test/train set:",
         "evaluationEditorText_2": "Percentage of the data to be used as the test set (0-100%):",

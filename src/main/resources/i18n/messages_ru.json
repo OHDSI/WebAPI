@@ -2645,6 +2645,7 @@
     "descriptionPlaceholder": "введите описание здесь (не более 1000 символов)",
     "downloadLatestResult": "Скачать последний результат",
     "downloadStudyPackage": "Скачать учебный пакет",
+    "defaultValue": "(по умолчанию = <%=defaultValue%>):",
     "editors": {
         "evaluationEditorText_1": "Укажите, как разбить набор тестов / поездов:",
         "evaluationEditorText_2": "Процент данных, которые будут использоваться в качестве тестового набора (0-100%):",

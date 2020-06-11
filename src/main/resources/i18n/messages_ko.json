@@ -67,7 +67,7 @@
     },
     "copiedToClipboard": "Copied To Clipboard!",
     "copy": "복사하기",
-    "copyToClipboard": "Copy to clipboard",
+    "copyToClipboard": "클립 보드에 복사",
     "createACopy": "Create a copy",
     "days": "days.",
     "daysAbbr": "d",
@@ -78,10 +78,7 @@
     "import": "불러오기",
     "loading": "Loading",
     "loadingWithDots": "Loading...",
-    "max": "Max",
-    "median": "Median",
     "min": "min",
-    "no": "아니오",
     "noChangesToPersist": "No changes to persist",
     "notEnoughPermissions": "Not enough permissions",
     "or": "or",
@@ -94,7 +91,6 @@
     "set": "Set",
     "unsaved": "(unsaved)",
     "unspecified": "UNSPECIFIED!",
-    "yes": "예",
     "menu": "Menu",
     "noData": "No data"
   },
@@ -260,11 +256,11 @@
       "unnamedCriteria": "명명되지 않은 기준"
     },
     "cohortExpressionViewer": {
-      "cohortExpressionViewerText_1": "People having any of the following:",
+      "cohortExpressionViewerText_1": "다음 중 하나를 만족하는 사람들:",
       "cohortExpressionViewerText_10": "Limit qualifying cohort to:",
       "cohortExpressionViewerText_11": "Censoring Events:",
       "cohortExpressionViewerText_12": "Exit Cohort based on the following:",
-      "cohortExpressionViewerText_13": "Cohort Collapse Strategy:",
+      "cohortExpressionViewerText_13": "코호트 Collapse 전략:",
       "cohortExpressionViewerText_14": "Collapse cohort by era with a gap size of ",
       "cohortExpressionViewerText_15": "포함 기준 #(<%=index%>): <%=name%>",
       "cohortExpressionViewerText_2": "with continuous observation of at least",
@@ -275,7 +271,7 @@
       "cohortExpressionViewerText_7": "For people matching the Primary Events, include:",
       "cohortExpressionViewerText_8": "Limit cohort of initial events to:",
       "cohortExpressionViewerText_9": "Inclusion Rules",
-      "initialEventCohort": "Initial Event Cohort"
+      "initialEventCohort": "초기 이벤트 코호트"
     },
     "conceptPicker": {
       "addAndClose": "Add And Close",
@@ -746,8 +742,8 @@
       "eventWillPersistUntil2": "이벤트는 계속됩니다."
     },
     "endStrategyViewer": {
-      "endDateStrategy": "End Date Strategy",
-      "endStrategyViewerText_1": "No end date strategy selected. By default, the cohort end date will be the end of the observation period that contains the index event."
+      "endDateStrategy": "종료일 전략",
+      "endStrategyViewerText_1": "종료일 전략을 선택하지 않았습니다. 기본값으로 코호트 종료 날짜는 기준 이벤트가 포함되어 있는 observation period의 종료일이 될 것입니다."
     },
     "evidencePairViewer": {
       "evidencePairViewerText_1": "loading evidence pairs",
@@ -758,7 +754,7 @@
       "evidencePairViewerText_6": "The concept set is not marked as valid to generate results. Please make sure this concept set contains only CONDITIONS or DRUGS."
     },
     "expressionCartoonBindings": {
-      "primaryCriteria": "Primary Criteria",
+      "primaryCriteria": "주요 기준",
       "any": "any",
       "one": "one",
       "s": "s",
@@ -1149,7 +1145,7 @@
     "evidenceSource": "Evidence Source",
     "exclCovariates": "Excl Covariates",
     "exclude": "제외 컨셉",
-    "excluded": "Excluded",
+    "excluded": "제외",
     "execute": "Execute",
     "executionId": "Execution Id",
     "explore": "관계 탐색",
@@ -1280,7 +1276,7 @@
     "visitsPer1000": "Records/1K",
     "visitsPer1000PerYear": "Records/1K/Year",
     "visitsPer1000WithVisits": "Records/1K +record",
-    "vocabulary": "Vocabulary",
+    "vocabulary": "용어",
     "vocabularyVersion": "용어 버전",
     "washoutPeriod": "Washout Period"
   },
@@ -1454,7 +1450,7 @@
         "conceptSet1": "Concept Set 1:",
         "conceptSet2": "Concept Set 2:",
         "heading": "Concept Set Comparison",
-        "headingMessage": "이 유틸리티를 사용하여 두 콘셉트 세트 가 공유하고 있는 콘셉트를 확인하세요.",
+        "headingMessage": "이 유틸리티를 사용하여 두 콘셉트 세트 가 공유하고 있는 콘셉트를 확인하세요",
         "modalTitle": "Choose a concept set",
         "sameWarning": "You cannot compare the same concept sets.",
         "saveFromComparisonNameTail": " - From Comparison",
@@ -2442,7 +2438,7 @@
       "getLinkCohortTitle": "Get a link to this cohort definition",
       "heraclesHeel": "Heracles Heel",
       "panels": {
-        "appendix_1": "Appendix 1: Concept Set Definitions",
+        "appendix_1": "부록 1 : 컨셉 세트 정의",
         "availableCDMSources": "사용 가능한 CDM 소스",
         "cancel": "Cancel",
         "clickToClear": "클릭 시 초기화",

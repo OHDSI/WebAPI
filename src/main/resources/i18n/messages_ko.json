@@ -148,24 +148,24 @@
     "isAnyOf": "is any of",
     "isNotAnyOf": "is not any of",
     "latestEvents": "마지막 이벤트",
-    "mm": "Monthly",
+    "mm": "월간",
     "no": "아니오",
     "notBetween": "not between",
     "notContains": "not containing",
     "notEndsWith": "not ending with",
     "notStartsWith": "not starting with",
     "periodType": "Period type",
-    "periods": "Periods",
-    "qq": "Quarterly",
-    "reports": "Reports",
-    "rollupUtilizationDrug": "Drugs",
-    "rollupUtilizationVisit": "Visits",
+    "periods": "기간",
+    "qq": "분기별",
+    "reports": "레포트",
+    "rollupUtilizationDrug": "약물",
+    "rollupUtilizationVisit": "방문",
     "rollups": "Rollups",
     "startDate": "시작일",
     "startsWith": "starting with",
-    "ww": "Weekly",
+    "ww": "주간",
     "yes": "예",
-    "yy": "Yearly",
+    "yy": "년별",
     "yesDescendant": "Yes (Descendant)",
     "yesExact": "Yes (Exact)",
     "yesParent": "Yes (Parent)",
@@ -174,7 +174,21 @@
     "none": "None",
     "true": "true",
     "false": "false",
-    "balanced": "Balanced"
+    "balanced": "Balanced",
+    "time": "Time",
+    "person": "Person",
+    "reporting": {
+      "personsAndExposureDuringBaselinePeriod": "기준일 기간 동안의 사람 수와 노출건 수",
+      "personsAndExposureDuringCohortPeriod": "코호트 기간 동안의 사람 수와 노출건 수",
+      "visitsDuringBaselinePeriod": "기준일 기간 동안 방문 수",
+      "visitDatesDuringBaselinePeriod": "기준일 기간 동안 방문일자",
+      "careSiteVisitDatesDuringBaselinePeriod": "기준일 기간 동안 의료기관 방문일자",
+      "visitsDuringCohortPeriod": "코호트 기간 동안 방문 수",
+      "visitDatesDuringCohortPeriod": "코호트 기간 동안 방문일자",
+      "careSiteVisitDatesDuringCohortPeriod": "코호트 기간 동안 의료기관 방문일자",
+      "drugUtilizationDuringBaselinePeriod": "기준일 기간 동안 약물 사용",
+      "drugUtilizationDuringCohortPeriod": "코호트 기간 동안 약물 사용"
+    }
   },
   "components": {
     "authorship": {
@@ -1177,7 +1191,6 @@
     "name": "이름",
     "ncOutcomes": "음성 대조군 결과",
     "nextExecution": "Next execution",
-    "no": "아니오",
     "notPrevalent": "Not Prevalent",
     "optimizedOut": "Optimized Out",
     "options": "Options",
@@ -1200,7 +1213,6 @@
     "periodEnd": "Period end",
     "periodStart": "Period start",
     "permission": "Permissions",
-    "person": "Person",
     "personsCount": "환자수",
     "personCount": "환자수",
     "personsPct": "Persons %",
@@ -1252,7 +1264,6 @@
     "targetId": "Target Id",
     "targetName": "Target Cohort Name",
     "temporal": "Temporal",
-    "time": "Time",
     "timeAtRisk": "위험 노출 기간",
     "timeAtRiskEnd": "위험 노출 기간 종료일",
     "timeAtRiskStart": "위험 노출 기간 시작일",
@@ -1271,8 +1282,7 @@
     "visitsPer1000WithVisits": "Records/1K +record",
     "vocabulary": "Vocabulary",
     "vocabularyVersion": "용어 버전",
-    "washoutPeriod": "Washout Period",
-    "yes": "예"
+    "washoutPeriod": "Washout Period"
   },
   "dataSources": {
     "achillesHeelReport": {
@@ -2366,9 +2376,9 @@
     "cohort": {
       "modals": {
         "analysisTypes": {
-          "bold_1": "Quick Analysis",
+          "bold_1": "빠른 분석",
           "bold_2": "Healthcare Utilization",
-          "bold_3": "Full Analysis",
+          "bold_3": "전체 분석",
           "text_1": "Runs minimal analysis to provide a quick overview of this cohort's year of birth, demographics, drug eras and condition eras. (estimated: 10 minutes)",
           "text_2": "Runs analyses to provide Exposure, Visit and Drug Utilization reports. (estimated: 10 - 40 minutes)",
           "text_3": "Runs a complete set of characterization reports. (estimated: 60 minutes)",
@@ -2384,25 +2394,29 @@
         "linkToCohortDefinition": {
           "text_1": "This link can be used to access this cohort definition directly from the WebAPI from other tools like R as well as for importing across ATLAS instances.",
           "title": "Link to Cohort Definition"
+        },
+        "configureReportsToRun": {
+          "title": "실행할 레포트에 대한 환경 설정",
+          "run": "Run"
         }
       }
     },
     "cohortDefinitionManager": {
       "closeCohortTitle": "Close cohort definition",
-      "cohortDefinitionManagerText_1": "Cohort Not Generated",
+      "cohortDefinitionManagerText_1": "코호트 생성되지 않음",
       "cohortDefinitionManagerText_10": "Whoops",
       "cohortDefinitionManagerText_11": "The reporting system has encountered an error. Please provide the following details to your ATLAS administration team or submit an issue on ",
       "cohortDefinitionManagerText_12": "Create Reporting Job Failed",
       "cohortDefinitionManagerText_13": "Please Wait",
       "cohortDefinitionManagerText_14": "Please wait while for the report status to be loaded.",
-      "cohortDefinitionManagerText_2": "This cohort has not been generated in the data source you selected. Please return to the generation tab to generate the cohort before accessing reporting.",
+      "cohortDefinitionManagerText_2": "사용자가 선택한 데이터 소스에 이 코호트가 생성되지 않았습니다. 레포트에 액세스하기 전에 생성 탭으로 돌아가 코호트를 생성하시기 바랍니다.",
       "cohortDefinitionManagerText_3": "Reports Not Generated",
       "cohortDefinitionManagerText_4": "Reports have not yet been generated for this cohort. Please click the generate button below to generate the reports.",
-      "cohortDefinitionManagerText_5": "Make a Selection",
-      "cohortDefinitionManagerText_6": "Please make a selection in the Report Selections panel.",
+      "cohortDefinitionManagerText_5": "선택",
+      "cohortDefinitionManagerText_6": "레포트 조건 선택 패널에서 레포트 선택 사항을 확인하시기 바랍니다.",
       "cohortDefinitionManagerText_7": "Generating Reports",
-      "cohortDefinitionManagerText_8": "Report Unavailable",
-      "cohortDefinitionManagerText_9": "The report you requested is not available. Please click the generate button to generate cohort reports for this data source.",
+      "cohortDefinitionManagerText_8": "사용할 수 없는 레포트",
+      "cohortDefinitionManagerText_9": "요청하신 레포트를 사용할 수 없습니다. 생성 버튼을 클릭하여 데이터 소소에 대한 코호트 레포트를 생성하십시오.",
       "confirms": {
         "close": "Your cohort changes are not saved. Would you like to continue?",
         "delete": "Delete cohort definition? Warning: deletion can not be undone!",
@@ -2444,7 +2458,7 @@
         "enterSourceCodes": "소스 코드를 입력합니다",
         "export": "내보내기",
         "exportAllToCSV": "Export All Concept Sets To CSV",
-        "fullAnalysis": "Full Analysis",
+        "fullAnalysis": "전체 분석",
         "generate": "생성",
         "generated": "생성 시작 시간",
         "generationDuration": "생성 작업 시간",
@@ -2462,7 +2476,7 @@
         "name": "컨셉 세트 이름:",
         "newConceptSet": "새로운 컨셉 모음",
         "people": "환자 수",
-        "quickAnalysis": "Quick Analysis",
+        "quickAnalysis": "빠른 분석",
         "records": "기록 수",
         "reload": "Reload",
         "reportSelections": "레포트 조건 선택",
@@ -2475,7 +2489,7 @@
         "viewReports": "레포트 보기"
       },
       "saveCohortTitle": "Save cohort definition",
-      "selectReport": "Select a Report",
+      "selectReport": "레포트 선택",
       "tabs": {
         "conceptSets": "컨셉 세트",
         "definition": "정의",

@@ -1,12 +1,13 @@
 package org.ohdsi.webapi.pathway.dto;
 
 import org.ohdsi.analysis.CohortMetadata;
+import org.ohdsi.webapi.CommonDTO;
 import org.ohdsi.webapi.user.dto.UserDTO;
 
 import java.util.Date;
 import java.util.List;
 
-public abstract class BasePathwayAnalysisDTO<T extends CohortMetadata> {
+public abstract class BasePathwayAnalysisDTO<T extends CohortMetadata> implements CommonDTO {
 
     private Integer id;
     private String name;

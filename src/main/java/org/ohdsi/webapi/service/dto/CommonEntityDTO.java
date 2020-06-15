@@ -1,8 +1,9 @@
 package org.ohdsi.webapi.service.dto;
 
 import java.util.Date;
+import org.ohdsi.webapi.CommonDTO;
 
-public abstract class CommonEntityDTO {
+public abstract class CommonEntityDTO implements CommonDTO {
 
   private String createdBy;
   private String modifiedBy;

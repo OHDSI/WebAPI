@@ -69,7 +69,7 @@
     "copy": "Copy",
     "copyToClipboard": "Copy to clipboard",
     "createACopy": "Create a copy",
-    "days": "days.",
+    "days": "days",
     "daysAbbr": "d",
     "delete": "Delete",
     "deselectAll": "Deselect All",
@@ -1523,7 +1523,7 @@
         "conceptSetExpressionJSON": "Concept Set Expression JSON",
         "exportToCSV": "Export To CSV",
         "exportingCsv": "Exporting CSV...",
-        "includedConceptIdentiferList": "Included Concept Identifer List",
+        "includedConceptIdentifierList": "Included Concept Identifier List",
         "loadingForExport": "Loading for export..."
       },
       "expression": {
@@ -2465,7 +2465,7 @@
         "importConceptIdentifiers": "Import Concept Identifiers",
         "importConceptSetExpression": "Import Concept Set Expression",
         "importSourceCodes": "Import Source Codes",
-        "includedConceptIdentiferList": "Included Concept Identifer List",
+        "includedConceptIdentifierList": "Included Concept Identifer List",
         "includedConcepts": "Included Concepts",
         "includedSourceCodes": "Included Source Codes",
         "json": "JSON",

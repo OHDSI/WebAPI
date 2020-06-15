@@ -90,7 +90,7 @@
       "rolesWithWriteAccess": "Роли с разрешением на запись:",
       "revoke": "Отозвать"
     },
-    "unspecified": "НЕОПРЕДЕЛЕННЫЕ!",
+    "unspecified": "НЕ ОПРЕДЕЛЕНО!",
     "menu": "Меню",
     "noData": "Нет данных"
   },
@@ -1490,7 +1490,7 @@
       "export": {
         "conceptSetExpressionJSON": "JSON набора концепций",
         "conceptIdentiferList": "Список идентификаторов концепций",
-        "includedConceptIdentiferList": "Список идентификаторов включенных концепций",
+        "includedConceptIdentifierList": "Список идентификаторов включенных концепций",
         "exportToCSV": "Экспортировать в CSV",
         "exportingCsv": "Экспорт в CSV...",
         "loadingForExport": "Загрузка для экспорта..."
@@ -2465,7 +2465,7 @@
         "importConceptIdentifiers": "Идентификаторы концепций импорта",
         "importConceptSetExpression": "Импортировать выражение набора выражений",
         "importSourceCodes": "Импортировать исходные коды",
-        "includedConceptIdentiferList": "Включенный список идентификаторов концепций",
+        "includedConceptIdentifierList": "Cписок идентификаторов включенных концепций",
         "includedConcepts": "Включенные понятия",
         "includedSourceCodes": "Включенные исходные коды",
         "json": "JSON",

@@ -1523,7 +1523,7 @@
         "conceptSetExpressionJSON": "JSON으로 표현된 컨셉 세트",
         "exportToCSV": "Export To CSV",
         "exportingCsv": "Exporting CSV...",
-        "includedConceptIdentiferList": "포함된 컨셉 식별자 목록",
+        "includedConceptIdentifierList": "포함된 컨셉 식별자 목록",
         "loadingForExport": "Loading for export..."
       },
       "expression": {
@@ -2465,7 +2465,7 @@
         "importConceptIdentifiers": "Import Concept Identifiers",
         "importConceptSetExpression": "Concept Set Expression 불러오기",
         "importSourceCodes": "Import Source Codes",
-        "includedConceptIdentiferList": "포함된 컨셉 식별자 목록",
+        "includedConceptIdentifierList": "포함된 컨셉 식별자 목록",
         "includedConcepts": "포함된 컨셉들:",
         "includedSourceCodes": "포함된 소스 코드",
         "json": "JSON",

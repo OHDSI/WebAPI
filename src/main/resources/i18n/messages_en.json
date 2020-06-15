@@ -1519,7 +1519,7 @@
         "viewingEvidence": "Viewing Evidence"
       },
       "export": {
-        "conceptIdentiferList": "Concept Identifer List",
+        "conceptIdentifierList": "Concept Identifier List",
         "conceptSetExpressionJSON": "Concept Set Expression JSON",
         "exportToCSV": "Export To CSV",
         "exportingCsv": "Exporting CSV...",
@@ -2443,7 +2443,7 @@
         "cancel": "Cancel",
         "clickToClear": "click to clear",
         "closeConceptSet": "Close Concept Set",
-        "conceptIdentiferList": "Concept Identifer List",
+        "conceptIdentifierList": "Concept Identifier List",
         "conceptIdentifiers": "Concept Identifiers",
         "conceptSet": "Concept Set",
         "conceptSetExpression": "Concept Set Expression",
@@ -2465,7 +2465,7 @@
         "importConceptIdentifiers": "Import Concept Identifiers",
         "importConceptSetExpression": "Import Concept Set Expression",
         "importSourceCodes": "Import Source Codes",
-        "includedConceptIdentifierList": "Included Concept Identifer List",
+        "includedConceptIdentifierList": "Included Concept Identifier List",
         "includedConcepts": "Included Concepts",
         "includedSourceCodes": "Included Source Codes",
         "json": "JSON",

@@ -1519,7 +1519,7 @@
         "viewingEvidence": "Viewing Evidence"
       },
       "export": {
-        "conceptIdentiferList": "컨셉 식별자 목록",
+        "conceptIdentifierList": "컨셉 식별자 목록",
         "conceptSetExpressionJSON": "JSON으로 표현된 컨셉 세트",
         "exportToCSV": "Export To CSV",
         "exportingCsv": "Exporting CSV...",
@@ -2443,7 +2443,7 @@
         "cancel": "Cancel",
         "clickToClear": "클릭 시 초기화",
         "closeConceptSet": "컨셉 세트 닫기",
-        "conceptIdentiferList": "컨셉 식별자 목록",
+        "conceptIdentifierList": "컨셉 식별자 목록",
         "conceptIdentifiers": "컨셉 식별자",
         "conceptSet": "컨셉 세트",
         "conceptSetExpression": "컨셉 세트 표현",

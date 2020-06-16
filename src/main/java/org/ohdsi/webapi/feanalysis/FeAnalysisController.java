@@ -3,19 +3,25 @@ package org.ohdsi.webapi.feanalysis;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.ohdsi.webapi.Pagination;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.common.OptionDTO;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
+import org.ohdsi.webapi.prediction.PredictionAnalysis;
+import org.ohdsi.webapi.util.NameUtils;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 
+import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Path("/feature-analysis")
 @Controller
@@ -103,4 +109,23 @@ public class FeAnalysisController {
         return conversionService.convert(entity, FeAnalysisDTO.class);
     }
 
+
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/copy")
+    @Transactional
+    public FeAnalysisDTO copy(@PathParam("id") final Integer feAnalysisId) {
+        FeAnalysisDTO feAnalysisDTO = getFeAnalysis(feAnalysisId);
+        feAnalysisDTO.setId(null); // clear the ID
+        feAnalysisDTO.setName(NameUtils.getNameForCopy(feAnalysisDTO.getName(), this::getNamesLike,
+                service.findByName(feAnalysisDTO.getName())));
+        FeAnalysisDTO copyDef = createAnalysis(feAnalysisDTO);
+
+        return copyDef;
+    }
+
+    private List<String> getNamesLike(String copyName) {
+        return service.getNamesLike(copyName);
+    }
 }

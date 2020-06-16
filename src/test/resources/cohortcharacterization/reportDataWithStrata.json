@@ -2,7 +2,7 @@
   "Params": [
     {
       "analysisIds": [
-        105
+        106
       ],
       "domainIds": [
         "DEMOGRAPHICS"
@@ -16,7 +16,7 @@
     },
     {
       "analysisIds": [
-        105
+        106
       ],
       "domainIds": [
         "DEMOGRAPHICS"
@@ -30,7 +30,7 @@
     },
     {
       "analysisIds": [
-        105
+        106
       ],
       "domainIds": [
         "DEMOGRAPHICS"
@@ -39,26 +39,26 @@
         2
       ],
       "isSummary": false,
-      "isComparative": true,
-      "fileDatas": []
-    },
-    {
-      "analysisIds": [
-        105
-      ],
-      "domainIds": [
-        "DEMOGRAPHICS"
-      ],
-      "cohortIds": [
-        2
-      ],
-      "isSummary": true,
       "isComparative": true,
       "fileDatas": []
     },
     {
       "analysisIds": [
         106
+      ],
+      "domainIds": [
+        "DEMOGRAPHICS"
+      ],
+      "cohortIds": [
+        2
+      ],
+      "isSummary": true,
+      "isComparative": true,
+      "fileDatas": []
+    },
+    {
+      "analysisIds": [
+        107
       ],
       "domainIds": [
         "DEMOGRAPHICS"
@@ -77,7 +77,7 @@
     },
     {
       "analysisIds": [
-        106
+        107
       ],
       "domainIds": [
         "DEMOGRAPHICS"
@@ -91,7 +91,7 @@
     },
     {
       "analysisIds": [
-        106
+        107
       ],
       "domainIds": [
         "DEMOGRAPHICS"
@@ -105,7 +105,7 @@
     },
     {
       "analysisIds": [
-        106
+        107
       ],
       "domainIds": [
         "DEMOGRAPHICS"
@@ -119,7 +119,7 @@
     },
     {
       "analysisIds": [
-        107
+        108
       ],
       "domainIds": [
         "DRUG"
@@ -133,7 +133,7 @@
     },
     {
       "analysisIds": [
-        107
+        108
       ],
       "domainIds": [
         "DRUG"
@@ -147,7 +147,7 @@
     },
     {
       "analysisIds": [
-        107
+        108
       ],
       "domainIds": [
         "DRUG"
@@ -161,7 +161,7 @@
     },
     {
       "analysisIds": [
-        107
+        108
       ],
       "domainIds": [
         "DRUG"
@@ -175,7 +175,7 @@
     },
     {
       "analysisIds": [
-        105
+        106
       ],
       "domainIds": [
         "DEMOGRAPHICS"
@@ -194,67 +194,6 @@
     },
     {
       "analysisIds": [
-        105
-      ],
-      "domainIds": [
-        "DEMOGRAPHICS"
-      ],
-      "cohortIds": [
-        3
-      ],
-      "isSummary": true,
-      "isComparative": false,
-      "fileDatas": []
-    },
-    {
-      "analysisIds": [
-        105
-      ],
-      "domainIds": [
-        "DEMOGRAPHICS"
-      ],
-      "cohortIds": [
-        3
-      ],
-      "isSummary": false,
-      "isComparative": true,
-      "fileDatas": []
-    },
-    {
-      "analysisIds": [
-        105
-      ],
-      "domainIds": [
-        "DEMOGRAPHICS"
-      ],
-      "cohortIds": [
-        3
-      ],
-      "isSummary": true,
-      "isComparative": true,
-      "fileDatas": []
-    },
-    {
-      "analysisIds": [
-        106
-      ],
-      "domainIds": [
-        "DEMOGRAPHICS"
-      ],
-      "cohortIds": [
-        3
-      ],
-      "isSummary": false,
-      "isComparative": false,
-      "fileDatas": [
-        {
-          "fileName": "Export (age).csv",
-          "lineCount": 2
-        }
-      ]
-    },
-    {
-      "analysisIds": [
         106
       ],
       "domainIds": [
@@ -298,6 +237,67 @@
     {
       "analysisIds": [
         107
+      ],
+      "domainIds": [
+        "DEMOGRAPHICS"
+      ],
+      "cohortIds": [
+        3
+      ],
+      "isSummary": false,
+      "isComparative": false,
+      "fileDatas": [
+        {
+          "fileName": "Export (age).csv",
+          "lineCount": 2
+        }
+      ]
+    },
+    {
+      "analysisIds": [
+        107
+      ],
+      "domainIds": [
+        "DEMOGRAPHICS"
+      ],
+      "cohortIds": [
+        3
+      ],
+      "isSummary": true,
+      "isComparative": false,
+      "fileDatas": []
+    },
+    {
+      "analysisIds": [
+        107
+      ],
+      "domainIds": [
+        "DEMOGRAPHICS"
+      ],
+      "cohortIds": [
+        3
+      ],
+      "isSummary": false,
+      "isComparative": true,
+      "fileDatas": []
+    },
+    {
+      "analysisIds": [
+        107
+      ],
+      "domainIds": [
+        "DEMOGRAPHICS"
+      ],
+      "cohortIds": [
+        3
+      ],
+      "isSummary": true,
+      "isComparative": true,
+      "fileDatas": []
+    },
+    {
+      "analysisIds": [
+        108
       ],
       "domainIds": [
         "DRUG"
@@ -310,13 +310,13 @@
       "fileDatas": [
         {
           "fileName": "Export (Custom analysis producing same results as Feature Extra.csv",
-          "lineCount": 79
+          "lineCount": 157
         }
       ]
     },
     {
       "analysisIds": [
-        107
+        108
       ],
       "domainIds": [
         "DRUG"
@@ -330,7 +330,7 @@
     },
     {
       "analysisIds": [
-        107
+        108
       ],
       "domainIds": [
         "DRUG"
@@ -344,142 +344,13 @@
     },
     {
       "analysisIds": [
-        107
+        108
       ],
       "domainIds": [
         "DRUG"
       ],
       "cohortIds": [
         3
-      ],
-      "isSummary": true,
-      "isComparative": true,
-      "fileDatas": []
-    },
-    {
-      "analysisIds": [
-        105,
-        106
-      ],
-      "domainIds": [
-        "DEMOGRAPHICS"
-      ],
-      "cohortIds": [
-        2
-      ],
-      "isSummary": false,
-      "isComparative": false,
-      "fileDatas": [
-        {
-          "fileName": "Export (age).csv",
-          "lineCount": 2
-        }
-      ]
-    },
-    {
-      "analysisIds": [
-        105,
-        106
-      ],
-      "domainIds": [
-        "DEMOGRAPHICS"
-      ],
-      "cohortIds": [
-        2
-      ],
-      "isSummary": true,
-      "isComparative": false,
-      "fileDatas": []
-    },
-    {
-      "analysisIds": [
-        105,
-        106
-      ],
-      "domainIds": [
-        "DEMOGRAPHICS"
-      ],
-      "cohortIds": [
-        2
-      ],
-      "isSummary": false,
-      "isComparative": true,
-      "fileDatas": []
-    },
-    {
-      "analysisIds": [
-        105,
-        106
-      ],
-      "domainIds": [
-        "DEMOGRAPHICS"
-      ],
-      "cohortIds": [
-        2
-      ],
-      "isSummary": true,
-      "isComparative": true,
-      "fileDatas": []
-    },
-    {
-      "analysisIds": [
-        105,
-        107
-      ],
-      "domainIds": [
-        "DEMOGRAPHICS",
-        "DRUG"
-      ],
-      "cohortIds": [
-        2
-      ],
-      "isSummary": false,
-      "isComparative": false,
-      "fileDatas": []
-    },
-    {
-      "analysisIds": [
-        105,
-        107
-      ],
-      "domainIds": [
-        "DEMOGRAPHICS",
-        "DRUG"
-      ],
-      "cohortIds": [
-        2
-      ],
-      "isSummary": true,
-      "isComparative": false,
-      "fileDatas": []
-    },
-    {
-      "analysisIds": [
-        105,
-        107
-      ],
-      "domainIds": [
-        "DEMOGRAPHICS",
-        "DRUG"
-      ],
-      "cohortIds": [
-        2
-      ],
-      "isSummary": false,
-      "isComparative": true,
-      "fileDatas": []
-    },
-    {
-      "analysisIds": [
-        105,
-        107
-      ],
-      "domainIds": [
-        "DEMOGRAPHICS",
-        "DRUG"
-      ],
-      "cohortIds": [
-        2
       ],
       "isSummary": true,
       "isComparative": true,
@@ -491,8 +362,7 @@
         107
       ],
       "domainIds": [
-        "DEMOGRAPHICS",
-        "DRUG"
+        "DEMOGRAPHICS"
       ],
       "cohortIds": [
         2
@@ -512,6 +382,67 @@
         107
       ],
       "domainIds": [
+        "DEMOGRAPHICS"
+      ],
+      "cohortIds": [
+        2
+      ],
+      "isSummary": true,
+      "isComparative": false,
+      "fileDatas": []
+    },
+    {
+      "analysisIds": [
+        106,
+        107
+      ],
+      "domainIds": [
+        "DEMOGRAPHICS"
+      ],
+      "cohortIds": [
+        2
+      ],
+      "isSummary": false,
+      "isComparative": true,
+      "fileDatas": []
+    },
+    {
+      "analysisIds": [
+        106,
+        107
+      ],
+      "domainIds": [
+        "DEMOGRAPHICS"
+      ],
+      "cohortIds": [
+        2
+      ],
+      "isSummary": true,
+      "isComparative": true,
+      "fileDatas": []
+    },
+    {
+      "analysisIds": [
+        106,
+        108
+      ],
+      "domainIds": [
+        "DEMOGRAPHICS",
+        "DRUG"
+      ],
+      "cohortIds": [
+        2
+      ],
+      "isSummary": false,
+      "isComparative": false,
+      "fileDatas": []
+    },
+    {
+      "analysisIds": [
+        106,
+        108
+      ],
+      "domainIds": [
         "DEMOGRAPHICS",
         "DRUG"
       ],
@@ -525,7 +456,7 @@
     {
       "analysisIds": [
         106,
-        107
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -541,7 +472,7 @@
     {
       "analysisIds": [
         106,
-        107
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -556,8 +487,77 @@
     },
     {
       "analysisIds": [
-        105,
-        106
+        107,
+        108
+      ],
+      "domainIds": [
+        "DEMOGRAPHICS",
+        "DRUG"
+      ],
+      "cohortIds": [
+        2
+      ],
+      "isSummary": false,
+      "isComparative": false,
+      "fileDatas": [
+        {
+          "fileName": "Export (age).csv",
+          "lineCount": 2
+        }
+      ]
+    },
+    {
+      "analysisIds": [
+        107,
+        108
+      ],
+      "domainIds": [
+        "DEMOGRAPHICS",
+        "DRUG"
+      ],
+      "cohortIds": [
+        2
+      ],
+      "isSummary": true,
+      "isComparative": false,
+      "fileDatas": []
+    },
+    {
+      "analysisIds": [
+        107,
+        108
+      ],
+      "domainIds": [
+        "DEMOGRAPHICS",
+        "DRUG"
+      ],
+      "cohortIds": [
+        2
+      ],
+      "isSummary": false,
+      "isComparative": true,
+      "fileDatas": []
+    },
+    {
+      "analysisIds": [
+        107,
+        108
+      ],
+      "domainIds": [
+        "DEMOGRAPHICS",
+        "DRUG"
+      ],
+      "cohortIds": [
+        2
+      ],
+      "isSummary": true,
+      "isComparative": true,
+      "fileDatas": []
+    },
+    {
+      "analysisIds": [
+        106,
+        107
       ],
       "domainIds": [
         "DEMOGRAPHICS"
@@ -580,8 +580,8 @@
     },
     {
       "analysisIds": [
-        105,
-        106
+        106,
+        107
       ],
       "domainIds": [
         "DEMOGRAPHICS"
@@ -600,8 +600,8 @@
     },
     {
       "analysisIds": [
-        105,
-        106
+        106,
+        107
       ],
       "domainIds": [
         "DEMOGRAPHICS"
@@ -615,8 +615,8 @@
     },
     {
       "analysisIds": [
-        105,
-        106
+        106,
+        107
       ],
       "domainIds": [
         "DEMOGRAPHICS"
@@ -630,8 +630,8 @@
     },
     {
       "analysisIds": [
-        105,
-        107
+        106,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -645,7 +645,7 @@
       "fileDatas": [
         {
           "fileName": "Export (Custom analysis producing same results as Feature Extra.csv",
-          "lineCount": 79
+          "lineCount": 157
         },
         {
           "fileName": "Export (demo_distribution).csv",
@@ -655,8 +655,8 @@
     },
     {
       "analysisIds": [
-        105,
-        107
+        106,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -670,14 +670,14 @@
       "fileDatas": [
         {
           "fileName": "Export (All prevalence covariates).csv",
-          "lineCount": 79
+          "lineCount": 157
         }
       ]
     },
     {
       "analysisIds": [
-        105,
-        107
+        106,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -692,8 +692,8 @@
     },
     {
       "analysisIds": [
-        105,
-        107
+        106,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -708,8 +708,8 @@
     },
     {
       "analysisIds": [
-        106,
-        107
+        107,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -727,14 +727,14 @@
         },
         {
           "fileName": "Export (Custom analysis producing same results as Feature Extra.csv",
-          "lineCount": 79
+          "lineCount": 157
         }
       ]
     },
     {
       "analysisIds": [
-        106,
-        107
+        107,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -748,14 +748,14 @@
       "fileDatas": [
         {
           "fileName": "Export (All prevalence covariates).csv",
-          "lineCount": 81
+          "lineCount": 159
         }
       ]
     },
     {
       "analysisIds": [
-        106,
-        107
+        107,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -770,8 +770,8 @@
     },
     {
       "analysisIds": [
-        106,
-        107
+        107,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -786,9 +786,9 @@
     },
     {
       "analysisIds": [
-        105,
         106,
-        107
+        107,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -808,9 +808,9 @@
     },
     {
       "analysisIds": [
-        105,
         106,
-        107
+        107,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -825,9 +825,9 @@
     },
     {
       "analysisIds": [
-        105,
         106,
-        107
+        107,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -842,9 +842,9 @@
     },
     {
       "analysisIds": [
-        105,
         106,
-        107
+        107,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -859,9 +859,9 @@
     },
     {
       "analysisIds": [
-        105,
         106,
-        107
+        107,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -879,7 +879,7 @@
         },
         {
           "fileName": "Export (Custom analysis producing same results as Feature Extra.csv",
-          "lineCount": 79
+          "lineCount": 157
         },
         {
           "fileName": "Export (demo_distribution).csv",
@@ -889,9 +889,9 @@
     },
     {
       "analysisIds": [
-        105,
         106,
-        107
+        107,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -905,15 +905,15 @@
       "fileDatas": [
         {
           "fileName": "Export (All prevalence covariates).csv",
-          "lineCount": 81
+          "lineCount": 159
         }
       ]
     },
     {
       "analysisIds": [
-        105,
         106,
-        107
+        107,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -928,9 +928,9 @@
     },
     {
       "analysisIds": [
-        105,
         106,
-        107
+        107,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -945,7 +945,7 @@
     },
     {
       "analysisIds": [
-        105
+        106
       ],
       "domainIds": [
         "DEMOGRAPHICS"
@@ -965,7 +965,7 @@
     },
     {
       "analysisIds": [
-        105
+        106
       ],
       "domainIds": [
         "DEMOGRAPHICS"
@@ -980,7 +980,7 @@
     },
     {
       "analysisIds": [
-        105
+        106
       ],
       "domainIds": [
         "DEMOGRAPHICS"
@@ -1000,7 +1000,7 @@
     },
     {
       "analysisIds": [
-        105
+        106
       ],
       "domainIds": [
         "DEMOGRAPHICS"
@@ -1015,7 +1015,7 @@
     },
     {
       "analysisIds": [
-        106
+        107
       ],
       "domainIds": [
         "DEMOGRAPHICS"
@@ -1035,7 +1035,7 @@
     },
     {
       "analysisIds": [
-        106
+        107
       ],
       "domainIds": [
         "DEMOGRAPHICS"
@@ -1050,7 +1050,7 @@
     },
     {
       "analysisIds": [
-        106
+        107
       ],
       "domainIds": [
         "DEMOGRAPHICS"
@@ -1070,7 +1070,7 @@
     },
     {
       "analysisIds": [
-        106
+        107
       ],
       "domainIds": [
         "DEMOGRAPHICS"
@@ -1085,7 +1085,7 @@
     },
     {
       "analysisIds": [
-        107
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -1100,13 +1100,13 @@
       "fileDatas": [
         {
           "fileName": "Export (Custom analysis producing same results as Feature Extra.csv",
-          "lineCount": 79
+          "lineCount": 157
         }
       ]
     },
     {
       "analysisIds": [
-        107
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -1122,7 +1122,7 @@
     },
     {
       "analysisIds": [
-        107
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -1137,13 +1137,13 @@
       "fileDatas": [
         {
           "fileName": "Export comparison (Custom analysis producing same results as Fe.csv",
-          "lineCount": 79
+          "lineCount": 157
         }
       ]
     },
     {
       "analysisIds": [
-        107
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -1159,8 +1159,8 @@
     },
     {
       "analysisIds": [
-        105,
-        106
+        106,
+        107
       ],
       "domainIds": [
         "DEMOGRAPHICS"
@@ -1184,8 +1184,8 @@
     },
     {
       "analysisIds": [
-        105,
-        106
+        106,
+        107
       ],
       "domainIds": [
         "DEMOGRAPHICS"
@@ -1205,8 +1205,8 @@
     },
     {
       "analysisIds": [
-        105,
-        106
+        106,
+        107
       ],
       "domainIds": [
         "DEMOGRAPHICS"
@@ -1230,8 +1230,8 @@
     },
     {
       "analysisIds": [
-        105,
-        106
+        106,
+        107
       ],
       "domainIds": [
         "DEMOGRAPHICS"
@@ -1251,8 +1251,8 @@
     },
     {
       "analysisIds": [
-        105,
-        107
+        106,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -1267,7 +1267,7 @@
       "fileDatas": [
         {
           "fileName": "Export (Custom analysis producing same results as Feature Extra.csv",
-          "lineCount": 79
+          "lineCount": 157
         },
         {
           "fileName": "Export (demo_distribution).csv",
@@ -1277,8 +1277,8 @@
     },
     {
       "analysisIds": [
-        105,
-        107
+        106,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -1293,14 +1293,14 @@
       "fileDatas": [
         {
           "fileName": "Export (All prevalence covariates).csv",
-          "lineCount": 79
+          "lineCount": 157
         }
       ]
     },
     {
       "analysisIds": [
-        105,
-        107
+        106,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -1315,7 +1315,7 @@
       "fileDatas": [
         {
           "fileName": "Export comparison (Custom analysis producing same results as Fe.csv",
-          "lineCount": 79
+          "lineCount": 157
         },
         {
           "fileName": "Export comparison (demo_distribution).csv",
@@ -1325,8 +1325,8 @@
     },
     {
       "analysisIds": [
-        105,
-        107
+        106,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -1341,14 +1341,14 @@
       "fileDatas": [
         {
           "fileName": "Export comparison (All prevalence covariates).csv",
-          "lineCount": 79
+          "lineCount": 157
         }
       ]
     },
     {
       "analysisIds": [
-        106,
-        107
+        107,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -1367,14 +1367,14 @@
         },
         {
           "fileName": "Export (Custom analysis producing same results as Feature Extra.csv",
-          "lineCount": 79
+          "lineCount": 157
         }
       ]
     },
     {
       "analysisIds": [
-        106,
-        107
+        107,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -1389,14 +1389,14 @@
       "fileDatas": [
         {
           "fileName": "Export (All prevalence covariates).csv",
-          "lineCount": 83
+          "lineCount": 161
         }
       ]
     },
     {
       "analysisIds": [
-        106,
-        107
+        107,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -1415,14 +1415,14 @@
         },
         {
           "fileName": "Export comparison (Custom analysis producing same results as Fe.csv",
-          "lineCount": 79
+          "lineCount": 157
         }
       ]
     },
     {
       "analysisIds": [
-        106,
-        107
+        107,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -1437,15 +1437,15 @@
       "fileDatas": [
         {
           "fileName": "Export comparison (All prevalence covariates).csv",
-          "lineCount": 81
+          "lineCount": 159
         }
       ]
     },
     {
       "analysisIds": [
-        105,
         106,
-        107
+        107,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -1464,7 +1464,7 @@
         },
         {
           "fileName": "Export (Custom analysis producing same results as Feature Extra.csv",
-          "lineCount": 79
+          "lineCount": 157
         },
         {
           "fileName": "Export (demo_distribution).csv",
@@ -1474,9 +1474,9 @@
     },
     {
       "analysisIds": [
-        105,
         106,
-        107
+        107,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -1491,15 +1491,15 @@
       "fileDatas": [
         {
           "fileName": "Export (All prevalence covariates).csv",
-          "lineCount": 83
+          "lineCount": 161
         }
       ]
     },
     {
       "analysisIds": [
-        105,
         106,
-        107
+        107,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -1518,7 +1518,7 @@
         },
         {
           "fileName": "Export comparison (Custom analysis producing same results as Fe.csv",
-          "lineCount": 79
+          "lineCount": 157
         },
         {
           "fileName": "Export comparison (demo_distribution).csv",
@@ -1528,9 +1528,9 @@
     },
     {
       "analysisIds": [
-        105,
         106,
-        107
+        107,
+        108
       ],
       "domainIds": [
         "DEMOGRAPHICS",
@@ -1545,7 +1545,7 @@
       "fileDatas": [
         {
           "fileName": "Export comparison (All prevalence covariates).csv",
-          "lineCount": 81
+          "lineCount": 159
         }
       ]
     },
@@ -1560,11 +1560,19 @@
         },
         {
           "fileName": "Export (All prevalence covariates).csv",
-          "lineCount": 83
+          "lineCount": 259
+        },
+        {
+          "fileName": "Export (ConditionEraLongTerm).csv",
+          "lineCount": 54
+        },
+        {
+          "fileName": "Export (ConditionEraShortTerm).csv",
+          "lineCount": 44
         },
         {
           "fileName": "Export (Custom analysis producing same results as Feature Extra.csv",
-          "lineCount": 79
+          "lineCount": 157
         },
         {
           "fileName": "Export (demo_distribution).csv",
@@ -1576,11 +1584,19 @@
         },
         {
           "fileName": "Export comparison (All prevalence covariates).csv",
-          "lineCount": 81
+          "lineCount": 257
+        },
+        {
+          "fileName": "Export comparison (ConditionEraLongTerm).csv",
+          "lineCount": 54
+        },
+        {
+          "fileName": "Export comparison (ConditionEraShortTerm).csv",
+          "lineCount": 44
         },
         {
           "fileName": "Export comparison (Custom analysis producing same results as Fe.csv",
-          "lineCount": 79
+          "lineCount": 157
         },
         {
           "fileName": "Export comparison (demo_distribution).csv",

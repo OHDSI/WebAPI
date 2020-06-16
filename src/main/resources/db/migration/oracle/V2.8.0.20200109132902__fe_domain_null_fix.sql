@@ -1,7 +1,7 @@
 UPDATE ${ohdsiSchema}.fe_analysis
 SET domain = 'MEASUREMENT'
 WHERE type = 'PRESET' 
-AND design IN (
+AND to_char(design) IN (
     'MeasurementRangeGroupShortTerm',
     'MeasurementRangeGroupLongTerm',
     'MeasurementRangeGroupMediumTerm',

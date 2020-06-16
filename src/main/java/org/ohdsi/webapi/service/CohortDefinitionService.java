@@ -17,9 +17,16 @@ import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.webapi.Constants;
-import org.ohdsi.webapi.cohortdefinition.*;
+import org.ohdsi.webapi.cohortdefinition.CleanupCohortTasklet;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
+import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
+import org.ohdsi.webapi.cohortdefinition.InclusionRuleReport;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
+import org.ohdsi.webapi.cohortdefinition.event.CohortDefinitionChangedEvent;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.common.sensitiveinfo.CohortGenerationSensitiveInfoService;
@@ -33,11 +40,11 @@ import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.shiro.management.datasource.SourceIdAccessor;
 import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
-import org.ohdsi.webapi.util.NameUtils;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.ExceptionUtils;
+import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.Job;
@@ -50,6 +57,7 @@ import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -60,7 +68,18 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.ServletContext;
 import javax.transaction.Transactional;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -70,12 +89,22 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.ohdsi.webapi.Constants.Params.*;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
+import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
+import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
+import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
@@ -135,6 +164,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 
   @Autowired
   private ObjectMapper objectMapper;
+
+  @Autowired
+  private ApplicationEventPublisher eventPublisher;
 
   @PersistenceContext
   protected EntityManager entityManager;
@@ -435,7 +467,8 @@ public class CohortDefinitionService extends AbstractDaoService {
     currentDefinition.setModifiedBy(modifier);
     currentDefinition.setModifiedDate(currentTime);
 
-    this.cohortDefinitionRepository.save(currentDefinition);
+    currentDefinition = this.cohortDefinitionRepository.save(currentDefinition);
+    eventPublisher.publishEvent(new CohortDefinitionChangedEvent(currentDefinition));
     return getCohortDefinition(id);
   }
 
@@ -476,10 +509,12 @@ public class CohortDefinitionService extends AbstractDaoService {
       return null;
     });
 
-    jobService.cancelJobExecution(Constants.GENERATE_COHORT, e -> {
-        JobParameters parameters = e.getJobParameters();
-        return Objects.equals(parameters.getString(COHORT_DEFINITION_ID), Integer.toString(id))
-              && Objects.equals(parameters.getString(SOURCE_ID), Integer.toString(source.getSourceId()));
+      jobService.cancelJobExecution(e -> {
+          JobParameters parameters = e.getJobParameters();
+          String jobName = e.getJobInstance().getJobName();
+          return Objects.equals(parameters.getString(COHORT_DEFINITION_ID), Integer.toString(id))
+                  && Objects.equals(parameters.getString(SOURCE_ID), Integer.toString(source.getSourceId()))
+                  && Objects.equals(Constants.GENERATE_COHORT, jobName);
       });
     return Response.status(Response.Status.OK).build();
   }
@@ -550,10 +585,12 @@ public class CohortDefinitionService extends AbstractDaoService {
                 def.getGenerationInfoList().forEach(cohortGenerationInfo -> {
                     Integer sourceId = cohortGenerationInfo.getId().getSourceId();
 
-                    jobService.cancelJobExecution(Constants.GENERATE_COHORT, e -> {
+                    jobService.cancelJobExecution(e -> {
                         JobParameters parameters = e.getJobParameters();
+                        String jobName = e.getJobInstance().getJobName();
                         return Objects.equals(parameters.getString(COHORT_DEFINITION_ID), Integer.toString(id))
-                                && Objects.equals(parameters.getString(SOURCE_ID), Integer.toString(sourceId));
+                                && Objects.equals(parameters.getString(SOURCE_ID), Integer.toString(sourceId))
+                                && Objects.equals(Constants.GENERATE_COHORT, jobName);
                     });
                 });
                 cohortDefinitionRepository.delete(def);

@@ -16,7 +16,7 @@
  * Authors: Pavel Grafkin
  *
  */
-package org.ohdsi.webapi.shiro.filters;
+package org.ohdsi.webapi.shiro.filters.auth;
 
 import com.sun.org.apache.xml.internal.security.utils.Base64;
 import javax.servlet.ServletRequest;

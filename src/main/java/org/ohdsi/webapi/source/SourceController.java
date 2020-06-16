@@ -245,14 +245,12 @@ public class SourceController extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public Map<SourceDaimon.DaimonType, SourceInfo> getPriorityDaimons() {
 
-    Map<SourceDaimon.DaimonType, SourceInfo> priorityDaimons = new HashMap<>();
-    Arrays.asList(SourceDaimon.DaimonType.values()).forEach(d -> {
-      Source source = sourceService.getPrioritySourceForDaimon(d);
-      if (source != null) {
-        priorityDaimons.put(d, new SourceInfo(source));
-      }
-    });
-    return priorityDaimons;
+    return sourceService.getPriorityDaimons()
+            .entrySet().stream()
+            .collect(Collectors.toMap(
+                    Map.Entry::getKey,
+                    e -> new SourceInfo(e.getValue())
+            ));
   }
 
   @Path("{sourceKey}/daimons/{daimonType}/set-priority")

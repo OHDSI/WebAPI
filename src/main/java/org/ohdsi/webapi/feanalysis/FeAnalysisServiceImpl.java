@@ -4,11 +4,9 @@ import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
-import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysisWithCriteria;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.feanalysis.domain.*;
-import org.ohdsi.webapi.feanalysis.repository.FeAnalysisAggregateRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisCriteriaRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisEntityRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisWithStringEntityRepository;
@@ -31,6 +29,7 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     private FeAnalysisEntityRepository analysisRepository;
     private FeAnalysisCriteriaRepository criteriaRepository;
     private FeAnalysisWithStringEntityRepository stringAnalysisRepository;
+    private final ApplicationEventPublisher eventPublisher;
     private FeAnalysisAggregateRepository aggregateRepository;
 
     private final EntityGraph defaultEntityGraph = EntityUtils.fromAttributePaths(
@@ -40,13 +39,15 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
 
     public FeAnalysisServiceImpl(
             final FeAnalysisEntityRepository analysisRepository,
-            final FeAnalysisCriteriaRepository criteriaRepository,
+            final FeAnalysisCriteriaRepository criteriaRepository, 
             final FeAnalysisWithStringEntityRepository stringAnalysisRepository,
-            FeAnalysisAggregateRepository aggregateRepository) {
+            final FeAnalysisAggregateRepository aggregateRepository,
+            final ApplicationEventPublisher eventPublisher) {
         this.analysisRepository = analysisRepository;
         this.criteriaRepository = criteriaRepository;
         this.stringAnalysisRepository = stringAnalysisRepository;
         this.aggregateRepository = aggregateRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -169,7 +170,9 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
         }
         savedEntity.setModifiedBy(getCurrentUser());
         savedEntity.setModifiedDate(new Date());
-        return analysisRepository.save(savedEntity);
+        savedEntity = analysisRepository.save(savedEntity);
+        eventPublisher.publishEvent(new FeAnalysisChangedEvent(savedEntity));
+        return savedEntity;
     }
 
     private void removeFeAnalysisCriteriaEntities(FeAnalysisWithCriteriaEntity<?> original, FeAnalysisWithCriteriaEntity<?> updated) {

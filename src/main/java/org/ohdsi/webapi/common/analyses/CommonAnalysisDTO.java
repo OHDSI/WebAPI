@@ -1,10 +1,11 @@
 package org.ohdsi.webapi.common.analyses;
 
+import org.ohdsi.webapi.CommonDTO;
 import org.ohdsi.webapi.user.dto.UserDTO;
 
 import java.util.Date;
 
-public class CommonAnalysisDTO {
+public class CommonAnalysisDTO  implements CommonDTO {
 
     private Integer id;
     private String name;

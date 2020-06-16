@@ -49,7 +49,7 @@
       "CANCELED": "ОТМЕНЕН",
       "PENDING": "В ОЧЕРЕДИ",
       "RUNNING": "ВЫПОЛНЯЕТСЯ",
-      "STARTED": "ЗАПУЩЕН"
+      "STARTED": "ЗАПУСКАЕТСЯ"
     }
   },
   "common": {
@@ -852,10 +852,6 @@
       "conceptSetNameLabel": "Имя набора концепций:",
       "conceptSetNamePlaceholder": "Имя набора концепций"
     },
-    "selectSourcesBtn": {
-      "generate": "Генерировать",
-      "pickAtLeastOneSourceAlert": "Пожалкйста, выберите хотя бы один источник"
-    },
     "conceptSetBuilder": {
       "unnamedConceptSet": "Безымянный набор концепций",
       "pleaseSelectCodesetToModify": "Выберите, пожалуйста, набор для модификации...",
@@ -1023,6 +1019,11 @@
     "multiSelect": {
       "noneSelectedText": "Ничего не выбрано",
       "noneResultsText": "Не найдено совпадений для {0}"
+    },
+    "generation": {
+      "selectSources": "Выберите источник",
+      "generate": "Генерировать",
+      "pickAtLeastOneSourceAlert": "Пожалуйста, выберите хотя бы один источник"
     }
   },
   "facets": {

@@ -970,10 +970,6 @@
       "periodText_1": "Note: only observation periods that encompass the start and end dates will be used.",
       "starting": "starting"
     },
-    "selectSourcesBtn": {
-      "generate": "Generate",
-      "pickAtLeastOneSourceAlert": "Pick at least one source to generate"
-    },
     "textFilter": {
       "contains": "Containing",
       "endsWith": "Ending With",
@@ -1023,6 +1019,11 @@
     "multiSelect": {
       "noneSelectedText": "Nothing selected",
       "noneResultsText": "No matches found for {0}"
+    },
+    "generation": {
+      "selectSources": "Select sources",
+      "generate": "Generate",
+      "pickAtLeastOneSourceAlert": "Pick at least one source to generate"
     }
   },
   "facets": {

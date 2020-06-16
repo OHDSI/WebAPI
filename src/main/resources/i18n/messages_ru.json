@@ -1018,7 +1018,8 @@
     },
     "multiSelect": {
       "noneSelectedText": "Ничего не выбрано",
-      "noneResultsText": "Не найдено совпадений для {0}"
+      "noneResultsText": "Не найдено совпадений для {0}",
+      "countSelectedText": "Выбрано {0} из {1}"
     },
     "generation": {
       "selectSources": "Выберите источник",
@@ -1257,9 +1258,9 @@
     "avg": "Среднее",
     "stddev": "Std Dev",
     "median": "Медиана",
-    "pct": "Pct",
+    "pct": "Процент",
     "covariate": "Ковариат",
-    "explore": "Исследовать",
+    "explore": "Исследование",
     "min": "Минимум",
     "p10": "p10",
     "p25": "p25",
@@ -1647,6 +1648,16 @@
         },
         "messages": {
           "permissions": "Не достаточно прав для выполнения, изменения не сохранены или когорты не определены в анализе"
+        },
+        "prevalenceStatConverter": {
+          "allStratas": "Все срезы",
+          "explore": "Исследовать",
+          "loadingPrevalenceStats": "Загрузка статистики распространенности...",
+          "cohort": "Когорта:",
+          "exploringConceptHierarchyFor": "Исследование иерархии концепций для:",
+          "ancestor": "Предок",
+          "descendant": "Потомок",
+          "selected": "Выбрано"
         }
       },
       "utilities": {
@@ -1657,6 +1668,7 @@
         "title": "Отчеты для <%= sourceName %>",
         "showAllResults": "Показать все результаты",
         "hideEmptyResults": "Скрыть пустые результаты",
+        "exploring": "Исследование",
         "detail": {
           "date": "Дата:",
           "design": "Дизайн:",
@@ -1681,7 +1693,9 @@
           "buttons": {
             "exportComparison": "Экспорт сравнения"
           }
-        }
+        },
+        "series": "Серии",
+        "covariate": "Ковариат"
       }
     },
     "fa": {
@@ -2136,6 +2150,7 @@
     "executionEngine": "Движок генерации",
     "buttons": {
       "check": "Проверка",
+      "refresh": "Обновить",
       "clearConfigurationCache": "Очистить кэш конфигурации",
       "managePermissions": "Управление разрешениями",
       "importUsers": "Импорт пользователей из LDAP/AD",

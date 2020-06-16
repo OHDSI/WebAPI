@@ -1018,7 +1018,8 @@
     },
     "multiSelect": {
       "noneSelectedText": "Nothing selected",
-      "noneResultsText": "No matches found for {0}"
+      "noneResultsText": "No matches found for {0}",
+      "countSelectedText": "{0} items selected"
     },
     "generation": {
       "selectSources": "Select sources",
@@ -1653,6 +1654,7 @@
             "text": "<%= reports %> reports"
           }
         },
+        "exploring": "Exploring",
         "exportAll": "Export all",
         "filters": {
           "analyses": "Analyses",
@@ -1673,7 +1675,9 @@
           "placeholder": "Threshold value",
           "text": "Viewing most prevalent <%=resultsCountFiltered%> of total <%=totalResultsCount%> records"
         },
-        "title": "Reports for <%= sourceName %>"
+        "title": "Reports for <%= sourceName %>",
+        "series": "Series",
+        "covariate": "Covariate"
       },
       "tabs": {
         "design": "Design",
@@ -1682,6 +1686,16 @@
       },
       "utilities": {
         "title": "Utilities"
+      },
+      "prevalenceStatConverter": {
+        "allStratas": "All stratas",
+        "explore": "Explore",
+        "loadingPrevalenceStats": "Loading prevalence stats...",
+        "cohort": "Cohort:",
+        "exploringConceptHierarchyFor": "Exploring concept hierarchy for:",
+        "ancestor": "Ancestor",
+        "descendant": "Descendant",
+        "selected": "Selected"
       }
     },
     "fa": {
@@ -2137,6 +2151,7 @@
     },
     "buttons": {
       "check": "check",
+      "refresh": "refresh",
       "clearConfigurationCache": "Clear Configuration Cache",
       "clearServerCache": "Clear Server Cache",
       "importUsers": "Import Users from LDAP/AD",

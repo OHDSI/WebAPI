@@ -100,6 +100,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
     if (!created.isEmpty()) {
       existMapping.addAll(roleGroupRepository.save(created));
     }
+    exists.setPreserveRoles(updated.getPreserveRoles());
   }
 
   @Override

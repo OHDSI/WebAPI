@@ -7,11 +7,11 @@ import org.ohdsi.analysis.estimation.design.NegativeControlOutcomeCohortExpressi
 import org.ohdsi.analysis.estimation.design.PositiveControlSynthesisArgs;
 import org.ohdsi.webapi.check.validator.Rule;
 import org.ohdsi.webapi.check.validator.RuleValidator;
-import org.ohdsi.webapi.check.validator.ValueGetter;
 import org.ohdsi.webapi.check.validator.common.NotNullNotEmptyValidator;
 import org.ohdsi.webapi.check.validator.common.PredicateValidator;
 
 import java.util.Collection;
+import java.util.function.Function;
 
 import static org.ohdsi.webapi.estimation.EstimationServiceImpl.CONCEPT_SET_XREF_KEY_NEGATIVE_CONTROL_OUTCOMES;
 
@@ -58,7 +58,7 @@ public class EstimationSpecificationValidator<T extends EstimationAnalysis> exte
     }
 
     private void preparePositiveSynthesisRule() {
-        ValueGetter<T, PositiveControlSynthesisArgs> positiveControlValueGetter =
+        Function<T, PositiveControlSynthesisArgs> positiveControlValueGetter =
                 value -> Boolean.TRUE.equals(value.getDoPositiveControlSynthesis()) ?
                         value.getPositiveControlSynthesisArgs() :
                         null;

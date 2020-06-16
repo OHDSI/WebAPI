@@ -1,0 +1,742 @@
+{
+  "id": 2,
+  "name": "Levetriacetam vs phenytoin in angioedema (test 2.7.7) final",
+  "description": null,
+  "version": "v2.7.0",
+  "organizationName": "OHDSI",
+  "packageName": null,
+  "skeletonType": "ComparativeEffectStudy",
+  "skeletonVersion": "v0.0.1",
+  "createdBy": null,
+  "createdDate": null,
+  "modifiedBy": null,
+  "modifiedDate": null,
+  "cohortDefinitions": [
+    {
+      "id": 11,
+      "name": "New users of levetiracetam (target cohort)1",
+      "description": null,
+      "expression": {
+        "cdmVersionRange": ">=5.0.0",
+        "Title": null,
+        "PrimaryCriteria": {
+          "CriteriaList": [],
+          "ObservationWindow": {
+            "PriorDays": 0,
+            "PostDays": 0
+          },
+          "PrimaryCriteriaLimit": {
+            "Type": "First"
+          }
+        },
+        "AdditionalCriteria": null,
+        "ConceptSets": [],
+        "QualifiedLimit": {
+          "Type": "First"
+        },
+        "ExpressionLimit": {
+          "Type": "First"
+        },
+        "InclusionRules": [],
+        "EndStrategy": null,
+        "CensoringCriteria": [],
+        "CollapseSettings": {
+          "CollapseType": "ERA",
+          "EraPad": 0
+        },
+        "CensorWindow": {
+          "StartDate": null,
+          "EndDate": null
+        }
+      },
+      "expressionType": "SIMPLE_EXPRESSION",
+      "createdBy": "admin@odysseusinc.com",
+      "createdDate": "2020-05-20T13:42:58.372+0000",
+      "modifiedBy": "sergey-tn81@yandex.ru",
+      "modifiedDate": "2020-06-01T12:18:01.842+0000"
+    },
+    {
+      "id": 12,
+      "name": "New users of phenytoin  (comparator cohort)",
+      "description": null,
+      "expression": {
+        "cdmVersionRange": ">=5.0.0",
+        "Title": null,
+        "PrimaryCriteria": {
+          "CriteriaList": [
+            {
+              "DrugExposure": {
+                "CorrelatedCriteria": null,
+                "CodesetId": 0,
+                "First": null,
+                "OccurrenceStartDate": null,
+                "OccurrenceEndDate": null,
+                "DrugType": null,
+                "DrugTypeExclude": false,
+                "StopReason": null,
+                "Refills": null,
+                "Quantity": null,
+                "DaysSupply": null,
+                "RouteConcept": null,
+                "EffectiveDrugDose": null,
+                "DoseUnit": null,
+                "LotNumber": null,
+                "DrugSourceConcept": null,
+                "Age": null,
+                "Gender": null,
+                "ProviderSpecialty": null,
+                "VisitType": null
+              }
+            }
+          ],
+          "ObservationWindow": {
+            "PriorDays": 60,
+            "PostDays": 0
+          },
+          "PrimaryCriteriaLimit": {
+            "Type": "First"
+          }
+        },
+        "AdditionalCriteria": {
+          "Type": "ALL",
+          "Count": null,
+          "CriteriaList": [
+            {
+              "Criteria": {
+                "ConditionOccurrence": {
+                  "CorrelatedCriteria": null,
+                  "CodesetId": 1,
+                  "First": null,
+                  "OccurrenceStartDate": null,
+                  "OccurrenceEndDate": null,
+                  "ConditionType": null,
+                  "ConditionTypeExclude": false,
+                  "StopReason": null,
+                  "ConditionSourceConcept": null,
+                  "Age": null,
+                  "Gender": null,
+                  "ProviderSpecialty": null,
+                  "VisitType": null
+                }
+              },
+              "StartWindow": {
+                "Start": {
+                  "Days": null,
+                  "Coeff": -1
+                },
+                "End": {
+                  "Days": 0,
+                  "Coeff": -1
+                },
+                "UseIndexEnd": false,
+                "UseEventEnd": false
+              },
+              "EndWindow": null,
+              "RestrictVisit": false,
+              "IgnoreObservationPeriod": false,
+              "Occurrence": {
+                "Type": 2,
+                "Count": 1,
+                "IsDistinct": false
+              }
+            },
+            {
+              "Criteria": {
+                "ConditionOccurrence": {
+                  "CorrelatedCriteria": null,
+                  "CodesetId": 2,
+                  "First": null,
+                  "OccurrenceStartDate": null,
+                  "OccurrenceEndDate": null,
+                  "ConditionType": null,
+                  "ConditionTypeExclude": false,
+                  "StopReason": null,
+                  "ConditionSourceConcept": null,
+                  "Age": null,
+                  "Gender": null,
+                  "ProviderSpecialty": null,
+                  "VisitType": null
+                }
+              },
+              "StartWindow": {
+                "Start": {
+                  "Days": null,
+                  "Coeff": -1
+                },
+                "End": {
+                  "Days": 1,
+                  "Coeff": -1
+                },
+                "UseIndexEnd": false,
+                "UseEventEnd": false
+              },
+              "EndWindow": null,
+              "RestrictVisit": false,
+              "IgnoreObservationPeriod": false,
+              "Occurrence": {
+                "Type": 0,
+                "Count": 0,
+                "IsDistinct": false
+              }
+            },
+            {
+              "Criteria": {
+                "DrugExposure": {
+                  "CorrelatedCriteria": null,
+                  "CodesetId": 3,
+                  "First": null,
+                  "OccurrenceStartDate": null,
+                  "OccurrenceEndDate": null,
+                  "DrugType": null,
+                  "DrugTypeExclude": false,
+                  "StopReason": null,
+                  "Refills": null,
+                  "Quantity": null,
+                  "DaysSupply": null,
+                  "RouteConcept": null,
+                  "EffectiveDrugDose": null,
+                  "DoseUnit": null,
+                  "LotNumber": null,
+                  "DrugSourceConcept": null,
+                  "Age": null,
+                  "Gender": null,
+                  "ProviderSpecialty": null,
+                  "VisitType": null
+                }
+              },
+              "StartWindow": {
+                "Start": {
+                  "Days": null,
+                  "Coeff": -1
+                },
+                "End": {
+                  "Days": null,
+                  "Coeff": 1
+                },
+                "UseIndexEnd": false,
+                "UseEventEnd": false
+              },
+              "EndWindow": null,
+              "RestrictVisit": false,
+              "IgnoreObservationPeriod": false,
+              "Occurrence": {
+                "Type": 0,
+                "Count": 0,
+                "IsDistinct": false
+              }
+            }
+          ],
+          "DemographicCriteriaList": [],
+          "Groups": []
+        },
+        "ConceptSets": [
+          {
+            "id": 0,
+            "name": "phenytoin sodium",
+            "expression": {
+              "items": [
+                {
+                  "concept": {
+                    "CONCEPT_ID": 740910,
+                    "CONCEPT_NAME": "Phenytoin",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "8183",
+                    "DOMAIN_ID": "Drug",
+                    "VOCABULARY_ID": "RxNorm",
+                    "CONCEPT_CLASS_ID": "Ingredient"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                }
+              ]
+            }
+          },
+          {
+            "id": 1,
+            "name": "Seizure Disorder",
+            "expression": {
+              "items": [
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4029498,
+                    "CONCEPT_NAME": "Seizure disorder",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "128613002",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": true
+                }
+              ]
+            }
+          },
+          {
+            "id": 2,
+            "name": "Angioedema",
+            "expression": {
+              "items": [
+                {
+                  "concept": {
+                    "CONCEPT_ID": 432791,
+                    "CONCEPT_NAME": "Angioedema",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "41291007",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": true
+                }
+              ]
+            }
+          },
+          {
+            "id": 3,
+            "name": "Leveiracetam",
+            "expression": {
+              "items": [
+                {
+                  "concept": {
+                    "CONCEPT_ID": 711584,
+                    "CONCEPT_NAME": "Levetiracetam",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "114477",
+                    "DOMAIN_ID": "Drug",
+                    "VOCABULARY_ID": "RxNorm",
+                    "CONCEPT_CLASS_ID": "Ingredient"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                }
+              ]
+            }
+          }
+        ],
+        "QualifiedLimit": {
+          "Type": "First"
+        },
+        "ExpressionLimit": {
+          "Type": "First"
+        },
+        "InclusionRules": [],
+        "EndStrategy": null,
+        "CensoringCriteria": [],
+        "CollapseSettings": {
+          "CollapseType": "ERA",
+          "EraPad": 0
+        },
+        "CensorWindow": {
+          "StartDate": null,
+          "EndDate": null
+        }
+      },
+      "expressionType": null,
+      "createdBy": "admin@odysseusinc.com",
+      "createdDate": "2020-05-20T13:42:58.845+0000",
+      "modifiedBy": null,
+      "modifiedDate": null
+    },
+    {
+      "id": 13,
+      "name": "Levetriacetam vs phenytoin outcome cohort",
+      "description": null,
+      "expression": {
+        "cdmVersionRange": ">=5.0.0",
+        "Title": null,
+        "PrimaryCriteria": {
+          "CriteriaList": [
+            {
+              "ConditionOccurrence": {
+                "CorrelatedCriteria": null,
+                "CodesetId": 0,
+                "First": null,
+                "OccurrenceStartDate": null,
+                "OccurrenceEndDate": null,
+                "ConditionType": null,
+                "ConditionTypeExclude": false,
+                "StopReason": null,
+                "ConditionSourceConcept": null,
+                "Age": null,
+                "Gender": null,
+                "ProviderSpecialty": null,
+                "VisitType": null
+              }
+            }
+          ],
+          "ObservationWindow": {
+            "PriorDays": 0,
+            "PostDays": 0
+          },
+          "PrimaryCriteriaLimit": {
+            "Type": "All"
+          }
+        },
+        "AdditionalCriteria": null,
+        "ConceptSets": [
+          {
+            "id": 0,
+            "name": "Angioedema or Depression",
+            "expression": {
+              "items": [
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4270863,
+                    "CONCEPT_NAME": "Allergic urticaria and/or angioedema",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "402392000",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": true
+                }
+              ]
+            }
+          }
+        ],
+        "QualifiedLimit": {
+          "Type": "First"
+        },
+        "ExpressionLimit": {
+          "Type": "First"
+        },
+        "InclusionRules": [
+          {
+            "name": "test",
+            "description": null,
+            "expression": {
+              "Type": "ALL",
+              "Count": null,
+              "CriteriaList": [
+                {
+                  "Criteria": {
+                    "Specimen": {
+                      "CorrelatedCriteria": null,
+                      "CodesetId": null,
+                      "First": true,
+                      "OccurrenceStartDate": null,
+                      "SpecimenType": [],
+                      "SpecimenTypeExclude": false,
+                      "Quantity": null,
+                      "Unit": null,
+                      "AnatomicSite": null,
+                      "DiseaseStatus": null,
+                      "SourceId": null,
+                      "SpecimenSourceConcept": null,
+                      "Age": null,
+                      "Gender": null
+                    }
+                  },
+                  "StartWindow": {
+                    "Start": {
+                      "Days": null,
+                      "Coeff": -1
+                    },
+                    "End": {
+                      "Days": null,
+                      "Coeff": 1
+                    },
+                    "UseIndexEnd": false,
+                    "UseEventEnd": false
+                  },
+                  "EndWindow": null,
+                  "RestrictVisit": false,
+                  "IgnoreObservationPeriod": false,
+                  "Occurrence": {
+                    "Type": 2,
+                    "Count": 1,
+                    "IsDistinct": false
+                  }
+                }
+              ],
+              "DemographicCriteriaList": [],
+              "Groups": []
+            }
+          }
+        ],
+        "EndStrategy": {
+          "CustomEra": {
+            "DrugCodesetId": 0,
+            "GapDays": 0,
+            "Offset": 0,
+            "DaysSupplyOverride": null
+          }
+        },
+        "CensoringCriteria": [],
+        "CollapseSettings": {
+          "CollapseType": "ERA",
+          "EraPad": 0
+        },
+        "CensorWindow": {
+          "StartDate": null,
+          "EndDate": null
+        }
+      },
+      "expressionType": null,
+      "createdBy": "admin@odysseusinc.com",
+      "createdDate": "2020-05-20T13:42:59.254+0000",
+      "modifiedBy": null,
+      "modifiedDate": null
+    }
+  ],
+  "conceptSets": [
+    {
+      "id": 4,
+      "name": "[PG] NC (3) (1) (1)",
+      "expression": {
+        "items": [
+          {
+            "concept": {
+              "CONCEPT_ID": 4209423,
+              "CONCEPT_NAME": "Nicotine dependence",
+              "STANDARD_CONCEPT": "S",
+              "STANDARD_CONCEPT_CAPTION": "Standard",
+              "INVALID_REASON": "V",
+              "INVALID_REASON_CAPTION": "Valid",
+              "CONCEPT_CODE": "56294008",
+              "DOMAIN_ID": "Condition",
+              "VOCABULARY_ID": "SNOMED",
+              "CONCEPT_CLASS_ID": "Clinical Finding"
+            },
+            "isExcluded": false,
+            "includeDescendants": true,
+            "includeMapped": false
+          }
+        ]
+      }
+    }
+  ],
+  "conceptSetCrossReference": [
+    {
+      "conceptSetId": 4,
+      "targetName": "negativeControlOutcomes",
+      "targetIndex": 0,
+      "propertyName": "outcomeId"
+    }
+  ],
+  "negativeControls": [
+    {
+      "targetId": 11,
+      "comparatorId": 12,
+      "outcomeId": 4209423,
+      "outcomeName": "Nicotine dependence",
+      "type": "outcome"
+    }
+  ],
+  "doPositiveControlSynthesis": false,
+  "positiveControlSynthesisArgs": {
+    "modelType": "survival",
+    "minOutcomeCountForModel": 50,
+    "minOutcomeCountForInjection": 25,
+    "covariateSettings": {
+      "attr_class": "covariateSettings",
+      "temporal": false,
+      "DemographicsGender": true,
+      "DemographicsAge": false,
+      "DemographicsAgeGroup": true,
+      "DemographicsRace": true,
+      "DemographicsEthnicity": true,
+      "DemographicsIndexYear": true,
+      "DemographicsIndexMonth": true,
+      "DemographicsPriorObservationTime": false,
+      "DemographicsPostObservationTime": false,
+      "DemographicsTimeInCohort": false,
+      "DemographicsIndexYearMonth": false,
+      "ConditionOccurrenceAnyTimePrior": false,
+      "ConditionOccurrenceLongTerm": false,
+      "ConditionOccurrenceMediumTerm": false,
+      "ConditionOccurrenceShortTerm": false,
+      "ConditionOccurrencePrimaryInpatientAnyTimePrior": false,
+      "ConditionOccurrencePrimaryInpatientLongTerm": false,
+      "ConditionOccurrencePrimaryInpatientMediumTerm": false,
+      "ConditionOccurrencePrimaryInpatientShortTerm": false,
+      "ConditionEraAnyTimePrior": false,
+      "ConditionEraLongTerm": false,
+      "ConditionEraMediumTerm": false,
+      "ConditionEraShortTerm": false,
+      "ConditionEraOverlapping": false,
+      "ConditionEraStartLongTerm": false,
+      "ConditionEraStartMediumTerm": false,
+      "ConditionEraStartShortTerm": false,
+      "ConditionGroupEraAnyTimePrior": false,
+      "ConditionGroupEraLongTerm": true,
+      "ConditionGroupEraMediumTerm": false,
+      "ConditionGroupEraShortTerm": true,
+      "ConditionGroupEraOverlapping": false,
+      "ConditionGroupEraStartLongTerm": false,
+      "ConditionGroupEraStartMediumTerm": false,
+      "ConditionGroupEraStartShortTerm": false,
+      "DrugExposureAnyTimePrior": false,
+      "DrugExposureLongTerm": false,
+      "DrugExposureMediumTerm": false,
+      "DrugExposureShortTerm": false,
+      "DrugEraAnyTimePrior": false,
+      "DrugEraLongTerm": false,
+      "DrugEraMediumTerm": false,
+      "DrugEraShortTerm": false,
+      "DrugEraOverlapping": false,
+      "DrugEraStartLongTerm": false,
+      "DrugEraStartMediumTerm": false,
+      "DrugEraStartShortTerm": false,
+      "DrugGroupEraAnyTimePrior": false,
+      "DrugGroupEraLongTerm": true,
+      "DrugGroupEraMediumTerm": false,
+      "DrugGroupEraShortTerm": true,
+      "DrugGroupEraOverlapping": true,
+      "DrugGroupEraStartLongTerm": false,
+      "DrugGroupEraStartMediumTerm": false,
+      "DrugGroupEraStartShortTerm": false,
+      "ProcedureOccurrenceAnyTimePrior": false,
+      "ProcedureOccurrenceLongTerm": true,
+      "ProcedureOccurrenceMediumTerm": false,
+      "ProcedureOccurrenceShortTerm": true,
+      "DeviceExposureAnyTimePrior": false,
+      "DeviceExposureLongTerm": true,
+      "DeviceExposureMediumTerm": false,
+      "DeviceExposureShortTerm": true,
+      "MeasurementAnyTimePrior": false,
+      "MeasurementLongTerm": true,
+      "MeasurementMediumTerm": false,
+      "MeasurementShortTerm": true,
+      "MeasurementValueAnyTimePrior": false,
+      "MeasurementValueLongTerm": false,
+      "MeasurementValueMediumTerm": false,
+      "MeasurementValueShortTerm": false,
+      "MeasurementRangeGroupAnyTimePrior": false,
+      "MeasurementRangeGroupLongTerm": true,
+      "MeasurementRangeGroupMediumTerm": false,
+      "MeasurementRangeGroupShortTerm": false,
+      "ObservationAnyTimePrior": false,
+      "ObservationLongTerm": true,
+      "ObservationMediumTerm": false,
+      "ObservationShortTerm": true,
+      "CharlsonIndex": true,
+      "Dcsi": true,
+      "Chads2": true,
+      "Chads2Vasc": true,
+      "DistinctConditionCountLongTerm": false,
+      "DistinctConditionCountMediumTerm": false,
+      "DistinctConditionCountShortTerm": false,
+      "DistinctIngredientCountLongTerm": false,
+      "DistinctIngredientCountMediumTerm": false,
+      "DistinctIngredientCountShortTerm": false,
+      "DistinctProcedureCountLongTerm": false,
+      "DistinctProcedureCountMediumTerm": false,
+      "DistinctProcedureCountShortTerm": false,
+      "DistinctMeasurementCountLongTerm": false,
+      "DistinctMeasurementCountMediumTerm": false,
+      "DistinctMeasurementCountShortTerm": false,
+      "DistinctObservationCountLongTerm": false,
+      "DistinctObservationCountMediumTerm": false,
+      "DistinctObservationCountShortTerm": false,
+      "VisitCountLongTerm": false,
+      "VisitCountMediumTerm": false,
+      "VisitCountShortTerm": false,
+      "VisitConceptCountLongTerm": false,
+      "VisitConceptCountMediumTerm": false,
+      "VisitConceptCountShortTerm": false,
+      "longTermStartDays": -365,
+      "mediumTermStartDays": -180,
+      "shortTermStartDays": -30,
+      "endDays": 0,
+      "includedCovariateConceptIds": [],
+      "addDescendantsToInclude": false,
+      "excludedCovariateConceptIds": [],
+      "addDescendantsToExclude": false,
+      "includedCovariateIds": [],
+      "attr_fun": "getDbDefaultCovariateData"
+    },
+    "prior": {
+      "attr_class": "cyclopsPrior",
+      "priorType": "laplace",
+      "variance": [
+        1
+      ],
+      "exclude": [
+        0
+      ],
+      "graph": null,
+      "neighborhood": null,
+      "useCrossValidation": true,
+      "forceIntercept": false
+    },
+    "control": {
+      "attr_class": "cyclopsControl",
+      "maxIterations": 1000,
+      "tolerance": 0.000001,
+      "convergenceType": "gradient",
+      "cvType": "auto",
+      "fold": 10,
+      "lowerLimit": 0.01,
+      "upperLimit": 20,
+      "gridSteps": 10,
+      "cvRepetitions": 1,
+      "minCVData": 100,
+      "noiseLevel": "quiet",
+      "threads": 1,
+      "seed": null,
+      "resetCoefficients": false,
+      "startingVariance": 0.01,
+      "useKKTSwindle": false,
+      "tuneSwindle": 10,
+      "selectorType": "auto",
+      "initialBound": 2,
+      "maxBoundCount": 5,
+      "autoSearch": true,
+      "algorithm": "ccd"
+    },
+    "firstExposureOnly": true,
+    "washoutPeriod": 183,
+    "riskWindowStart": 0,
+    "riskWindowEnd": 30,
+    "addExposureDaysToEnd": true,
+    "firstOutcomeOnly": true,
+    "removePeopleWithPriorOutcomes": true,
+    "maxSubjectsForModel": 250000,
+    "effectSizes": [
+      1.5,
+      2,
+      4
+    ],
+    "precision": 0.01,
+    "outputIdOffset": 10000
+  },
+  "negativeControlOutcomeCohortDefinition": {
+    "occurrenceType": "first",
+    "detectOnDescendants": true,
+    "domains": [
+      "condition",
+      "procedure"
+    ]
+  },
+  "negativeControlExposureCohortDefinition": {},
+  "estimationAnalysisSettings": {
+    "estimationType": "ComparativeCohortAnalysis",
+    "analysisSpecification": {
+    }
+  }
+}

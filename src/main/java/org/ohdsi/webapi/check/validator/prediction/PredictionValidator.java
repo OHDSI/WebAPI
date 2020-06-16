@@ -4,10 +4,11 @@ import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.prediction.design.PatientLevelPredictionAnalysis;
 import org.ohdsi.webapi.check.validator.Rule;
 import org.ohdsi.webapi.check.validator.RuleValidator;
-import org.ohdsi.webapi.check.validator.ValueGetter;
 import org.ohdsi.webapi.check.validator.common.NotNullNotEmptyValidator;
 import org.ohdsi.webapi.prediction.dto.PredictionAnalysisDTO;
 import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl;
+
+import java.util.function.Function;
 
 public class PredictionValidator<T extends PredictionAnalysisDTO> extends RuleValidator<T> {
     @Override
@@ -17,7 +18,7 @@ public class PredictionValidator<T extends PredictionAnalysisDTO> extends RuleVa
     }
 
     private void prepareAnalysisExpressionRule() {
-        ValueGetter<T, PatientLevelPredictionAnalysis> valueGetter = t -> {
+        Function<T, PatientLevelPredictionAnalysis> valueGetter = t -> {
             try {
                 return Utils.deserialize(t.getSpecification(), PatientLevelPredictionAnalysisImpl.class);
             } catch (Exception e) {
@@ -29,7 +30,7 @@ public class PredictionValidator<T extends PredictionAnalysisDTO> extends RuleVa
                 .setPath(createPath("specification"))
                 .setReporter(reporter)
                 .setValueGetter(valueGetter)
-                .addValidator(new NotNullNotEmptyValidator<>())
+                .addValidator(new NotNullNotEmptyValidator<PatientLevelPredictionAnalysis>())
                 .addValidator(new PredictionSpecificationValidator<>());
         rules.add(rule);
     }

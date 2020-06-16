@@ -10,7 +10,7 @@ public abstract class BaseWarning implements Warning {
         this.severity = severity;
     }
 
-    @JsonProperty("severity")
+    @Override
     public WarningSeverity getSeverity() {
         return severity;
     }

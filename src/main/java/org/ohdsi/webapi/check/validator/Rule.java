@@ -6,39 +6,14 @@ import org.ohdsi.webapi.check.warning.WarningReporter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
 public class Rule<T, V> {
     private final List<Validator<V>> validators = new ArrayList<>();
-    private ValueGetter<T, V> valueGetter;
+    private Function<T, V> valueGetter;
     private String errorMessage;
     private Path path;
     private WarningReporter reporter;
-
-    public Rule<T, V> setPath(Path path) {
-        this.path = path;
-        return this;
-    }
-
-    public Rule<T, V> setReporter(WarningReporter reporter) {
-        this.reporter = reporter;
-        return this;
-    }
-
-    public Rule<T, V> setValueGetter(ValueGetter<T, V> valueGetter) {
-        this.valueGetter = valueGetter;
-        return this;
-    }
-
-    public Rule<T, V> setErrorMessage(String errorMessage) {
-        this.validators.forEach(v -> {
-            // Do not change the error message of the validator if it is already changed
-            if (v.isErrorMessageInitial()) {
-                v.setErrorMessage(errorMessage);
-            }
-        });
-        this.errorMessage = errorMessage;
-        return this;
-    }
 
     public Rule<T, V> addValidator(Validator<V> validator) {
         // if validator error message is not changed and rule message is set
@@ -60,8 +35,9 @@ public class Rule<T, V> {
     public boolean validate(T value) {
         return this.validators.stream()
                 .map(v -> {
-                    V valueToValidate = valueGetter.get(value);
+                    V valueToValidate = valueGetter.apply(value);
                     boolean isValid = true;
+                    // Null values should not be validated except in the special validator for null or empty values
                     if (valueToValidate != null ||
                             v instanceof NotNullNotEmptyValidator) {
                         isValid = v.validate(valueToValidate);
@@ -73,6 +49,38 @@ public class Rule<T, V> {
 
     public Rule<T, V> build() {
         this.validators.forEach(Validator::build);
+        return this;
+    }
+
+    public Rule<T, V> setPath(Path path) {
+        this.validators.forEach(v -> {
+            v.setPath(path);
+        });
+        this.path = path;
+        return this;
+    }
+
+    public Rule<T, V> setReporter(WarningReporter reporter) {
+        this.validators.forEach(v -> {
+            v.setReporter(reporter);
+        });
+        this.reporter = reporter;
+        return this;
+    }
+
+    public Rule<T, V> setValueGetter(Function<T, V> valueGetter) {
+        this.valueGetter = valueGetter;
+        return this;
+    }
+
+    public Rule<T, V> setDefaultErrorMessage(String errorMessage) {
+        this.validators.forEach(v -> {
+            // Do not change the error message of the validator if it is already changed
+            if (v.isErrorMessageInitial()) {
+                v.setErrorMessage(errorMessage);
+            }
+        });
+        this.errorMessage = errorMessage;
         return this;
     }
 }

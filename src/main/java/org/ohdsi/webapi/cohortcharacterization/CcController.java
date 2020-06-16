@@ -59,6 +59,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -213,6 +214,12 @@ public class CcController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public JobExecutionResource generate(@PathParam("id") final Long id, @PathParam("sourceKey") final String sourceKey) {
+        CohortCharacterizationEntity cc = service.findByIdWithLinkedEntities(id);
+        ExceptionUtils.throwNotFoundExceptionIfNull(cc, String.format("There is no cohort characterization with id = %d.", id));
+        CheckResult checkResult = runDiagnostics(convertCcToDto(cc));
+        if (checkResult.hasCriticalErrors()) {
+            throw new RuntimeException("Cannot be generated due to critical errors in design. Call 'check' service for further details");
+        }
         return service.generateCc(id, sourceKey);
     }
 

@@ -3,6 +3,9 @@ package org.ohdsi.webapi.pathway;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.Pagination;
+import org.ohdsi.webapi.check.CheckResult;
+import org.ohdsi.webapi.check.Checker;
+import org.ohdsi.webapi.check.checker.pathway.PathwayChecker;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
@@ -181,6 +184,13 @@ public class PathwayController {
             @PathParam("sourceKey") final String sourceKey
     ) {
 
+        PathwayAnalysisEntity pathwayAnalysis = pathwayService.getById(pathwayAnalysisId);
+        ExceptionUtils.throwNotFoundExceptionIfNull(pathwayAnalysis, String.format("There is no pathway analysis with id = %d.", pathwayAnalysisId));
+        PathwayAnalysisDTO pathwayAnalysisDTO = conversionService.convert(pathwayAnalysis, PathwayAnalysisDTO.class);
+        CheckResult checkResult = runDiagnostics(pathwayAnalysisDTO);
+        if (checkResult.hasCriticalErrors()) {
+            throw new RuntimeException("Cannot be generated due to critical errors in design. Call 'check' service for further details");
+        }
         Source source = sourceService.findBySourceKey(sourceKey);
         return pathwayService.generatePathways(pathwayAnalysisId, source.getSourceId());
     }

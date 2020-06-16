@@ -4,6 +4,7 @@ import org.ohdsi.webapi.check.validator.Validator;
 
 import java.lang.reflect.Array;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
 
 public class NotNullNotEmptyValidator<T> extends Validator<T> {
@@ -21,6 +22,8 @@ public class NotNullNotEmptyValidator<T> extends Validator<T> {
                 isValid = !((String) value).isEmpty();
             } else if (value.getClass().isArray()) {
                 isValid = Array.getLength(value) > 0;
+            } else if (value instanceof Map) {
+                isValid = ((Map) value).size() > 0;
             }
         }
         if (!isValid) {

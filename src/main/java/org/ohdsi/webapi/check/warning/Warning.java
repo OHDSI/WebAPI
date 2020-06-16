@@ -12,4 +12,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public interface Warning {
     @JsonProperty("message")
     String toMessage();
+
+    @JsonProperty("severity")
+    WarningSeverity getSeverity();
 }

@@ -52,6 +52,8 @@ import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisExpression;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.prediction.PredictionAnalysis;
+import org.ohdsi.webapi.prediction.dto.PredictionAnalysisDTO;
 import org.ohdsi.webapi.service.dto.AnalysisInfoDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisShortDTO;
@@ -450,6 +452,12 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   @Override
   @DataSourceAccess
   public JobExecutionResource performAnalysis(final int analysisId, final @SourceKey String sourceKey) {
+    IRAnalysisDTO irAnalysisDTO = getAnalysis(analysisId);
+    CheckResult checkResult = runDiagnostics(irAnalysisDTO);
+    if (checkResult.hasCriticalErrors()) {
+      throw new RuntimeException("Cannot be generated due to critical errors in design. Call 'check' service for further details");
+    }
+
     Date startTime = Calendar.getInstance().getTime();
 
     Source source = this.getSourceRepository().findBySourceKey(sourceKey);

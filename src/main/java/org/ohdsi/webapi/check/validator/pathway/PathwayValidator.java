@@ -34,7 +34,7 @@ public class PathwayValidator<T extends PathwayAnalysisDTO> extends RuleValidato
                 .setPath(createPath("maximum path length"))
                 .setReporter(reporter)
                 .setValueGetter(BasePathwayAnalysisDTO::getMaxDepth)
-                .setErrorMessage("must be between 1 and 10")
+                .setDefaultErrorMessage("must be between 1 and 10")
                 .addValidator(new NotNullNotEmptyValidator<>())
                 .addValidator(new PredicateValidator<Integer>()
                         .setPredicate(v -> v >= 1 && v <= 10));
@@ -46,7 +46,7 @@ public class PathwayValidator<T extends PathwayAnalysisDTO> extends RuleValidato
                 .setPath(createPath("minimum cell count"))
                 .setReporter(reporter)
                 .setValueGetter(BasePathwayAnalysisDTO::getMinCellCount)
-                .setErrorMessage("must be greater or equal to 0")
+                .setDefaultErrorMessage("must be greater or equal to 0")
                 .addValidator(new NotNullNotEmptyValidator<>())
                 .addValidator(new PredicateValidator<Integer>()
                         .setPredicate(v -> v >= 0));
@@ -58,7 +58,7 @@ public class PathwayValidator<T extends PathwayAnalysisDTO> extends RuleValidato
                 .setPath(createPath("combination window"))
                 .setReporter(reporter)
                 .setValueGetter(BasePathwayAnalysisDTO::getCombinationWindow)
-                .setErrorMessage("must be greater or equal to 0")
+                .setDefaultErrorMessage("must be greater or equal to 0")
                 .addValidator(new NotNullNotEmptyValidator<>())
                 .addValidator(new PredicateValidator<Integer>()
                         .setPredicate(v -> v >= 0));

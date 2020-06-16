@@ -21,7 +21,7 @@ public class RunPlpArgsValidator<T extends RunPlpArgs> extends RuleValidator<T> 
                 .setPath(createPath("test fraction"))
                 .setReporter(reporter)
                 .setValueGetter(RunPlpArgs::getTestFraction)
-                .setErrorMessage("must be between 0 and 100")
+                .setDefaultErrorMessage("must be between 0 and 100")
                 .addValidator(new NotNullNotEmptyValidator<>())
                 .addValidator(new PredicateValidator<Float>()
                         .setPredicate(v -> v >= 0.0 && v <= 1.0));
@@ -33,7 +33,7 @@ public class RunPlpArgsValidator<T extends RunPlpArgs> extends RuleValidator<T> 
                 .setPath(createPath("minimum covariate fraction"))
                 .setReporter(reporter)
                 .setValueGetter(RunPlpArgs::getMinCovariateFraction)
-                .setErrorMessage("must be greater or equal to 0")
+                .setDefaultErrorMessage("must be greater or equal to 0")
                 .addValidator(new NotNullNotEmptyValidator<>())
                 .addValidator(new PredicateValidator<Float>()
                         .setPredicate(v -> v >= 0.0));

@@ -6,7 +6,6 @@ import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.Comparativ
 import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.TargetComparatorOutcomes;
 import org.ohdsi.webapi.check.validator.Rule;
 import org.ohdsi.webapi.check.validator.RuleValidator;
-import org.ohdsi.webapi.check.validator.ValueGetter;
 import org.ohdsi.webapi.check.validator.common.DuplicateValidator;
 import org.ohdsi.webapi.check.validator.common.IterableForEachValidator;
 import org.ohdsi.webapi.check.validator.common.NotNullNotEmptyValidator;
@@ -14,6 +13,7 @@ import org.ohdsi.webapi.check.validator.common.PredicateValidator;
 import org.ohdsi.webapi.estimation.comparativecohortanalysis.specification.CohortMethodAnalysisImpl;
 
 import java.util.Collection;
+import java.util.function.Function;
 
 public class EstimationAnalysisSpecificationValidator<T extends ComparativeCohortAnalysis> extends RuleValidator<T> {
     @Override
@@ -50,7 +50,7 @@ public class EstimationAnalysisSpecificationValidator<T extends ComparativeCohor
     }
 
     private void prepareAnalysisSettingsRule() {
-        ValueGetter<CohortMethodAnalysis, String> elementGetter = value -> {
+        Function<CohortMethodAnalysis, String> elementGetter = value -> {
             CohortMethodAnalysisImpl analysis = ((CohortMethodAnalysisImpl) value);
             Integer analysisId = analysis.getAnalysisId();
             String description = analysis.getDescription();

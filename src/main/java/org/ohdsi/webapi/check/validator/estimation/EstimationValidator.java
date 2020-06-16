@@ -4,10 +4,11 @@ import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.estimation.design.EstimationAnalysis;
 import org.ohdsi.webapi.check.validator.Rule;
 import org.ohdsi.webapi.check.validator.RuleValidator;
-import org.ohdsi.webapi.check.validator.ValueGetter;
 import org.ohdsi.webapi.check.validator.common.NotNullNotEmptyValidator;
 import org.ohdsi.webapi.estimation.dto.EstimationDTO;
 import org.ohdsi.webapi.estimation.specification.EstimationAnalysisImpl;
+
+import java.util.function.Function;
 
 public class EstimationValidator<T extends EstimationDTO> extends RuleValidator<T> {
     @Override
@@ -17,7 +18,7 @@ public class EstimationValidator<T extends EstimationDTO> extends RuleValidator<
     }
 
     private void prepareAnalysisExpressionRule() {
-        ValueGetter<T, EstimationAnalysis> valueGetter = t -> {
+        Function<T, EstimationAnalysis> valueGetter = t -> {
             try {
                 return Utils.deserialize(t.getSpecification(), EstimationAnalysisImpl.class);
             } catch (Exception e) {
@@ -26,7 +27,7 @@ public class EstimationValidator<T extends EstimationDTO> extends RuleValidator<
         };
 
         Rule<T, EstimationAnalysis> rule = new Rule<T, EstimationAnalysis>()
-                .setPath(createPath())
+                .setPath(createPath("specification"))
                 .setReporter(reporter)
                 .setValueGetter(valueGetter)
                 .addValidator(new NotNullNotEmptyValidator<>())

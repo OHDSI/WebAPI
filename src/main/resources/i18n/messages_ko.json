@@ -1057,7 +1057,13 @@
       "type": "Type",
       "updated": "Updated",
       "userSpecified": "User Specified",
-      "vocabulary": "용어"
+      "vocabulary": "용어",
+      "severity": "Severity"
+    },
+    "values": {
+      "warning": "Warning",
+      "critical":"Critical",
+      "info":"Info"
     },
     "date": {
       "justNow": "Just Now",
@@ -2400,6 +2406,7 @@
     },
     "cohortDefinitionManager": {
       "closeCohortTitle": "Close cohort definition",
+      "generationExitMessage": "Generation Exit Message",
       "cohortDefinitionManagerText_1": "코호트 생성되지 않음",
       "cohortDefinitionManagerText_10": "Whoops",
       "cohortDefinitionManagerText_11": "The reporting system has encountered an error. Please provide the following details to your ATLAS administration team or submit an issue on ",
@@ -2528,6 +2535,8 @@
       }
     },
     "costUtilization": {
+      "visualization": "Visualization",
+      "rawData": "Raw data",
       "allowedCharged": "Allowed/Charged",
       "allowedCost": "Allowed cost",
       "allowedCostPmpm": "Allowed cost pmpm",

@@ -753,6 +753,9 @@
       "evidencePairViewerText_5": "Hide details",
       "evidencePairViewerText_6": "The concept set is not marked as valid to generate results. Please make sure this concept set contains only CONDITIONS or DRUGS."
     },
+    "executionUtils": {
+      "startNewExecutionInParallelConfirmation": "A generation for the source has already been started. Are you sure you want to start a new one in parallel?"
+    },
     "expressionCartoonBindings": {
       "primaryCriteria": "주요 기준",
       "any": "any",
@@ -1018,7 +1021,8 @@
     },
     "multiSelect": {
       "noneSelectedText": "Nothing selected",
-      "noneResultsText": "No matches found for {0}"
+      "noneResultsText": "No matches found for {0}",
+      "countSelectedText": "{0} items selected"
     },
     "generation": {
       "selectSources": "Select sources",
@@ -1058,6 +1062,8 @@
       "updated": "Updated",
       "userSpecified": "User Specified",
       "vocabulary": "용어",
+      "relationship": "Relationship",
+      "distance": "Distance",
       "severity": "Severity"
     },
     "values": {
@@ -1250,7 +1256,8 @@
     "selected": "Selected",
     "severity": "Severity",
     "sortOrder": "Sort Order",
-    "sourceName": "소스 이름 [소스 키]",
+    "sourceNameSourceKey": "소스 이름 [소스 키]",
+    "sourceName": "소스 이름",
     "standardConceptCaption": "표준 컨셉",
     "standardConceptCode": "Standard Concept Code",
     "standardType": "Standard Type",
@@ -1488,7 +1495,6 @@
       "csNotSavedConfirmMessage": "Your concept set changes are not saved. Would you like to continue?",
       "csSaveErrorMessage": "An error occurred while attempting to save a concept set.",
       "csUnableToSaveMessage": "Unable to save concept set",
-      "details": "Details",
       "exploreEvidence": {
         "additionalInformation": "Additional Information:",
         "anchor1": "Obtaining Negative Controls from ATLAS",
@@ -1542,17 +1548,12 @@
         "standard": "표준"
       },
       "fullyOptimizedMessage": "The current concept set definition is fully optimized.",
-      "hierarchy": "Hierarchy",
       "nameEmptyWarning": "Concept Set name is empty.",
-      "noHierarchyFoundMessage": "No hierarchy found for non-standard concepts.",
       "optimize": "Optimize",
       "optimizedConceptSetHeading": "Optimized Concept Set",
       "overwriteOption": "Overwrite Current Concept Set",
       "pleaseProvideNameMessage": "Please provide a name for your new concept set:",
       "pleaseReviewMessage": "Please review the optimized definition and options for saving.",
-      "recordCounts": "Record Counts",
-      "recordCountsAcrossSources": "Record Counts across Sources",
-      "relatedConcepts": "Related Concepts",
       "resetColumnsButton": "Reset Columns",
       "saveButton": "Save",
       "saveOptions": "Save Options",
@@ -1564,6 +1565,45 @@
         "export": "내보내기",
         "includedConcepts": "포함된 컨셉",
         "includedSourceCodes": "포함된 소스 코드"
+      },
+      "concept": {
+        "title": "Vocabulary > Concept",
+        "standard": "Standard",
+        "nonStandard": "Non-Standard",
+        "classification": "Classification",
+        "tabs": {
+          "details": {
+            "caption": "Details",
+            "property": "Property",
+            "value": "Value",
+            "conceptName": "Concept Name",
+            "domainId": "Domain Id",
+            "conceptClassId": "Concept Class Id",
+            "vocabularyId": "Vocabulary Id",
+            "conceptId": "Concept Id",
+            "conceptCode": "Concept Code",
+            "invalidReason": "Invalid Reason",
+            "standardConcept": "Standard Concept"
+          },
+          "relatedConcepts": {
+            "caption": "Related Concepts"
+          },
+          "hierarchy": {
+            "caption": "Hierarchy",
+            "noHierarchyFoundMessage": "No hierarchy found for non-standard concepts.",
+            "view": "View:",
+            "fullHierarchy": "Full Hierarchy",
+            "parents": "Parents",
+            "currentConcept": "Current Concept",
+            "children": "Children",
+            "noParentConceptsFound": "No parent concepts found",
+            "noChildConceptsFound": "No child concepts found"
+          },
+          "recordCounts": {
+            "caption": "Record Counts",
+            "recordCountsAcrossSources": "Record Counts across Sources"
+          }
+        }
       }
     },
     "modal": {
@@ -1659,6 +1699,7 @@
             "text": "<%= reports %> reports"
           }
         },
+        "exploring": "Exploring",
         "exportAll": "Export all",
         "filters": {
           "analyses": "Analyses",
@@ -1679,7 +1720,9 @@
           "placeholder": "Threshold value",
           "text": "Viewing most prevalent <%=resultsCountFiltered%> of total <%=totalResultsCount%> records"
         },
-        "title": "Reports for <%= sourceName %>"
+        "title": "Reports for <%= sourceName %>",
+        "series": "Series",
+        "covariate": "Covariate"
       },
       "tabs": {
         "design": "설계",
@@ -1688,6 +1731,16 @@
       },
       "utilities": {
         "title": "유틸리티"
+      },
+      "prevalenceStatConverter": {
+        "allStratas": "All stratas",
+        "explore": "Explore",
+        "loadingPrevalenceStats": "Loading prevalence stats...",
+        "cohort": "Cohort:",
+        "exploringConceptHierarchyFor": "Exploring concept hierarchy for:",
+        "ancestor": "Ancestor",
+        "descendant": "Descendant",
+        "selected": "Selected"
       }
     },
     "fa": {
@@ -2142,7 +2195,8 @@
       "failUpdatePrioritySourceDaimon": "Failed to update priority source daimon"
     },
     "buttons": {
-      "check": "refresh",
+      "check": "check",
+      "refresh": "refresh",
       "clearConfigurationCache": "구성 캐시 지우기",
       "clearServerCache": "Clear Server Cache",
       "importUsers": "Import Users from LDAP/AD",
@@ -3391,6 +3445,7 @@
     "itemId": "Patient Level Prediction #",
     "modelSettingsDesc": "아래 옵션을 사용하여 모델 설정을 편집하십시오.",
     "modelSettingsTitle": "Model settings",
+    "loadingGenerations": "Loading generations...",
     "naiveMessage": "Naive Bayes에 대한 설정 조건은 없습니다.",
     "newItem": "새로운 환자 수준 예측 (Patient Level Prediction)",
     "newItemPlaceholder": "새로운 환자 수준 예측 (Patient Level Prediction)",

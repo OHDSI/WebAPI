@@ -3431,6 +3431,7 @@
       "view": "View:"
     },
     "itemId": "Patient Level Prediction #",
+    "loadingGenerations": "Loading generations...",
     "modelSettingsDesc": "Use the options below to edit the model settings",
     "modelSettingsTitle": "Model settings",
     "naiveMessage": "There are no settings to edit for Naive Bayes",

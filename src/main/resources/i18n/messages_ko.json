@@ -3433,6 +3433,7 @@
     "itemId": "Patient Level Prediction #",
     "modelSettingsDesc": "아래 옵션을 사용하여 모델 설정을 편집하십시오.",
     "modelSettingsTitle": "Model settings",
+    "loadingGenerations": "Loading generations...",
     "naiveMessage": "Naive Bayes에 대한 설정 조건은 없습니다.",
     "newItem": "새로운 환자 수준 예측 (Patient Level Prediction)",
     "newItemPlaceholder": "새로운 환자 수준 예측 (Patient Level Prediction)",

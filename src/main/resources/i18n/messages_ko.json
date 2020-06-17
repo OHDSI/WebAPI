@@ -3478,6 +3478,7 @@
     "utilitiesText_5": "Please review the full study specification below and scroll down the page to download the study package.",
     "utilitiesText_6": "Please provide a name for the study package and click &quot;download&quot; to obtain the study package in ZIP format.",
     "utilitiesText_7": "The package name should consist of alphanumeric characters only. No spaces or special characters are permitted.",
-    "utilitiesText_8": "당신의 분석 사양의 문제를 검토하려면 다운로드 영역을 확인하십시오. Definition을 내보내기 전에 수정해야합니다.."
+    "utilitiesText_8": "당신의 분석 사양의 문제를 검토하려면 다운로드 영역을 확인하십시오. Definition을 내보내기 전에 수정해야합니다..",
+    "packageName": "Package name..."
   }
 }

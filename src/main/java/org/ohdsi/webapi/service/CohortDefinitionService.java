@@ -487,8 +487,8 @@ public class CohortDefinitionService extends AbstractDaoService {
 
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOne(id);
-
-    return cohortGenerationService.generateCohortViaJob(security.getSubject(), currentDefinition, source, Objects.nonNull(includeFeatures));
+    UserEntity user = userRepository.findByLogin(security.getSubject());
+    return cohortGenerationService.generateCohortViaJob(user, currentDefinition, source, Objects.nonNull(includeFeatures));
   }
 
   @GET

@@ -54,7 +54,6 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
   private final JobService jobService;
   private final SourceService sourceService;
   private final GenerationCacheHelper generationCacheHelper;
-  private final UserRepository userRepository;
 
   @Autowired
   public CohortGenerationService(CohortDefinitionRepository cohortDefinitionRepository,
@@ -63,8 +62,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
                                  StepBuilderFactory stepBuilders,
                                  JobService jobService,
                                  SourceService sourceService,
-                                 GenerationCacheHelper generationCacheHelper,
-                                 UserRepository userRepository) {
+                                 GenerationCacheHelper generationCacheHelper) {
     this.cohortDefinitionRepository = cohortDefinitionRepository;
     this.cohortGenerationInfoRepository = cohortGenerationInfoRepository;
     this.jobBuilders = jobBuilders;
@@ -72,16 +70,14 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     this.jobService = jobService;
     this.sourceService = sourceService;
     this.generationCacheHelper = generationCacheHelper;
-    this.userRepository = userRepository;
   }
 
-  public JobExecutionResource generateCohortViaJob(String subject, CohortDefinition cohortDefinition, Source source, boolean includeFeatures) {
+  public JobExecutionResource generateCohortViaJob(UserEntity userEntity, CohortDefinition cohortDefinition, Source source, boolean includeFeatures) {
 
     CohortGenerationInfo info = cohortDefinition.getGenerationInfoList().stream()
             .filter(val -> Objects.equals(val.getId().getSourceId(), source.getSourceId())).findFirst()
             .orElse(new CohortGenerationInfo(cohortDefinition, source.getSourceId()));
 
-    UserEntity userEntity = userRepository.findByLogin(subject);
     info.setCreatedBy(userEntity);
 
     cohortDefinition.getGenerationInfoList().add(info);

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import static org.ohdsi.webapi.Constants.Params.RESULTS_DATABASE_SCHEMA;
 
@@ -25,12 +26,14 @@ public class GenerationCacheHelper {
     private static final Logger log = LoggerFactory.getLogger(GenerationCacheHelper.class);
     private static final String CACHE_USED = "Using cached generation results for %s with id=%s and source=%s";
     private static final ConcurrentHashMap<CacheableResource, Object> monitors = new ConcurrentHashMap<>();
+    private final TransactionTemplate transactionTemplateRequiresNew;
 
     private final GenerationCacheService generationCacheService;
 
-    public GenerationCacheHelper(GenerationCacheService generationCacheService) {
+    public GenerationCacheHelper(GenerationCacheService generationCacheService, TransactionTemplate transactionTemplateRequiresNew) {
 
         this.generationCacheService = generationCacheService;
+        this.transactionTemplateRequiresNew = transactionTemplateRequiresNew;
     }
 
     public Integer computeHash(String expression) {
@@ -44,30 +47,33 @@ public class GenerationCacheHelper {
         log.info("Computes cache if absent for type = {}, design = {}, source id = {}", type, designHash.toString(), source.getSourceId());
 
         synchronized (monitors.computeIfAbsent(new CacheableResource(type, designHash, source.getSourceId()), cr -> new Object())) {
-            log.info("Retrieves or invalidates cache for cohort id = {}", cohortDefinition.getId());
-            GenerationCache cache = generationCacheService.getCacheOrEraseInvalid(type, designHash, source.getSourceId());
-            if (cache == null) {
-                log.info("Cache is absent for cohort id = {}. Calculating with design hash = {}", cohortDefinition.getId(), designHash);
-                // Ensure that there are no records in results schema with which we could mess up
-                generationCacheService.removeCache(type, source, designHash);
-                CohortGenerationRequest cohortGenerationRequest = requestBuilder
-                    .withExpression(cohortDefinition.getDetails().getExpressionObject())
-                    .withSource(source)
-                    .withTargetId(designHash)
-                    .build();
-                String[] sqls = CohortGenerationUtils.buildGenerationSql(cohortGenerationRequest);
-                sqlExecutor.accept(designHash, sqls);
-                cache = generationCacheService.cacheResults(CacheableGenerationType.COHORT, designHash, source.getSourceId());
-            } else {
-                log.info(String.format(CACHE_USED, type, cohortDefinition.getId(), source.getSourceKey()));
-            }
-            String sql = SqlRender.renderSql(
-                    generationCacheService.getResultsSql(cache),
-                    new String[]{RESULTS_DATABASE_SCHEMA},
-                    new String[]{SourceUtils.getResultsQualifier(source)}
-            );
-            log.info("Finished computation cache if absent for cohort id = {}", cohortDefinition.getId());
-            return new CacheResult(cache.getDesignHash(), sql);
+            // we execute the synchronized block in a separate transaction to make the cache changes visible immediately to all other threads
+            return transactionTemplateRequiresNew.execute(s -> {
+                log.info("Retrieves or invalidates cache for cohort id = {}", cohortDefinition.getId());
+                GenerationCache cache = generationCacheService.getCacheOrEraseInvalid(type, designHash, source.getSourceId());
+                if (cache == null) {
+                    log.info("Cache is absent for cohort id = {}. Calculating with design hash = {}", cohortDefinition.getId(), designHash);
+                    // Ensure that there are no records in results schema with which we could mess up
+                    generationCacheService.removeCache(type, source, designHash);
+                    CohortGenerationRequest cohortGenerationRequest = requestBuilder
+                            .withExpression(cohortDefinition.getDetails().getExpressionObject())
+                            .withSource(source)
+                            .withTargetId(designHash)
+                            .build();
+                    String[] sqls = CohortGenerationUtils.buildGenerationSql(cohortGenerationRequest);
+                    sqlExecutor.accept(designHash, sqls);
+                    cache = generationCacheService.cacheResults(CacheableGenerationType.COHORT, designHash, source.getSourceId());
+                } else {
+                    log.info(String.format(CACHE_USED, type, cohortDefinition.getId(), source.getSourceKey()));
+                }
+                String sql = SqlRender.renderSql(
+                        generationCacheService.getResultsSql(cache),
+                        new String[]{RESULTS_DATABASE_SCHEMA},
+                        new String[]{SourceUtils.getResultsQualifier(source)}
+                );
+                log.info("Finished computation cache if absent for cohort id = {}", cohortDefinition.getId());
+                return new CacheResult(cache.getDesignHash(), sql);
+            });                    
         }
     }
 

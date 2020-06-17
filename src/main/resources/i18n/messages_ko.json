@@ -1862,6 +1862,8 @@
       "showingTargetCohort": "표적 코호트 표시:",
       "sourceName": "사용된 데이터베이스 소스 이름",
       "started": "생성 시작 시간",
+      "stratifyRule": "계층화 규칙",
+      "summaryStatistics": "통계 요약:",
       "timeAtRisk": "위험 노출 기간",
       "timeAtRiskYears": "(년수)"
     },
@@ -2018,7 +2020,7 @@
       "generations": "생성",
       "loadingGenerations": "Loading generations...",
       "notPermitted": "Not enough permissions to generate or changes were not saved or Execution Engine is not available",
-      "notPermittedToVieweResults": "Not enough permissions to view results"
+      "notPermittedToViewResults": "Not enough permissions to view results"
     },
     "nameIsEmptyWarning": "Population Level Effect Estimation name is empty.",
     "spec": {
@@ -3311,7 +3313,7 @@
     "jobName": "Job Name",
     "showCompletedJobsButton": "Show completed jobs",
     "status": "Status",
-    "title": "Notifications (last <%=length%>>)"
+    "title": "Notifications (last <%=length%>)"
   },
   "predictions": {
     "allExecutions": "All executions (<%=length%>)",

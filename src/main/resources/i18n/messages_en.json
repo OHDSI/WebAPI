@@ -1862,6 +1862,8 @@
       "showingTargetCohort": "Showing target cohort:",
       "sourceName": "Source Name",
       "started": "Started",
+      "stratifyRule": "Stratify Rule",
+      "summaryStatistics": "Summary Statistics:",
       "timeAtRisk": "Time At Risk",
       "timeAtRiskYears": "(years)"
     },
@@ -2018,7 +2020,7 @@
       "generations": "Generations",
       "loadingGenerations": "Loading generations...",
       "notPermitted": "Not enough permissions to generate or changes were not saved or Execution Engine is not available",
-      "notPermittedToVieweResults": "Not enough permissions to view results"
+      "notPermittedToViewResults": "Not enough permissions to view results"
     },
     "nameIsEmptyWarning": "Population Level Effect Estimation name is empty.",
     "spec": {
@@ -3311,7 +3313,7 @@
     "jobName": "Job Name",
     "showCompletedJobsButton": "Show completed jobs",
     "status": "Status",
-    "title": "Notifications (last <%=length%>>)"
+    "title": "Notifications (last <%=length%>)"
   },
   "predictions": {
     "allExecutions": "All executions (<%=length%>)",

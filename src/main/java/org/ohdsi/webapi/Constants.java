@@ -19,6 +19,7 @@ public interface Constants {
   String CANCELED = "CANCELED";
 
   String TEMP_COHORT_TABLE_PREFIX = "temp_cohort_";
+  Float DEFAULT_THRESHOLD = 0.01f;
 
   interface SqlSchemaPlaceholders {
     String CDM_DATABASE_SCHEMA_PLACEHOLDER = "@cdm_database_schema";

@@ -4,8 +4,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import org.ohdsi.analysis.CohortMetadata;
 
 import java.util.Date;
+import org.ohdsi.webapi.CommonDTO;
 
-public class CohortMetadataDTO implements CohortMetadata {
+public class CohortMetadataDTO implements CohortMetadata, CommonDTO {
 
     private Integer id;
     private String name;

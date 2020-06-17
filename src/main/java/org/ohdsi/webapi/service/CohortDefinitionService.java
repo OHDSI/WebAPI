@@ -27,6 +27,7 @@ import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortGenerationInfoDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
+import org.ohdsi.webapi.cohortdefinition.event.CohortDefinitionChangedEvent;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.common.sensitiveinfo.CohortGenerationSensitiveInfoService;
@@ -57,6 +58,7 @@ import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -163,6 +165,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 
   @Autowired
   private ObjectMapper objectMapper;
+
+  @Autowired
+  private ApplicationEventPublisher eventPublisher;
 
   @PersistenceContext
   protected EntityManager entityManager;
@@ -463,7 +468,8 @@ public class CohortDefinitionService extends AbstractDaoService {
     currentDefinition.setModifiedBy(modifier);
     currentDefinition.setModifiedDate(currentTime);
 
-    this.cohortDefinitionRepository.save(currentDefinition);
+    currentDefinition = this.cohortDefinitionRepository.save(currentDefinition);
+    eventPublisher.publishEvent(new CohortDefinitionChangedEvent(currentDefinition));
     return getCohortDefinition(id);
   }
 

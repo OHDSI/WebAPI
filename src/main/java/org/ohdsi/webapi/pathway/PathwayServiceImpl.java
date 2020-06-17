@@ -3,11 +3,11 @@ package org.ohdsi.webapi.pathway;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.google.common.base.MoreObjects;
 import com.odysseusinc.arachne.commons.types.DBMSType;
-import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Hibernate;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.sql.StringUtils;
 import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.common.DesignImportService;
@@ -29,6 +29,7 @@ import org.ohdsi.webapi.pathway.dto.internal.PathwayCode;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisEntityRepository;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisGenerationRepository;
 import org.ohdsi.webapi.service.AbstractDaoService;
+import org.ohdsi.webapi.service.CohortDefinitionService;
 import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
@@ -98,6 +99,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     private final JobService jobService;
     private final GenericConversionService genericConversionService;
     private final StepBuilderFactory stepBuilderFactory;
+    private final CohortDefinitionService cohortDefinitionService;
 		
 		private final List<String> STEP_COLUMNS = Arrays.asList(new String[]{"step_1", "step_2", "step_3", "step_4", "step_5", "step_6", "step_7", "step_8", "step_9", "step_10"});
 
@@ -123,7 +125,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
             GenerationUtils generationUtils,
             JobService jobService,
             @Qualifier("conversionService") GenericConversionService genericConversionService,
-            StepBuilderFactory stepBuilderFactory) {
+            StepBuilderFactory stepBuilderFactory,
+            CohortDefinitionService cohortDefinitionService) {
 
         this.pathwayAnalysisRepository = pathwayAnalysisRepository;
         this.pathwayAnalysisGenerationRepository = pathwayAnalysisGenerationRepository;
@@ -138,6 +141,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         this.userRepository = userRepository;
         this.generationUtils = generationUtils;
         this.stepBuilderFactory = stepBuilderFactory;
+        this.cohortDefinitionService = cohortDefinitionService;
 
         SerializedPathwayAnalysisToPathwayAnalysisConverter.setConversionService(conversionService);
     }
@@ -163,6 +167,9 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         newAnalysis.setCreatedBy(getCurrentUser());
         newAnalysis.setCreatedDate(new Date());
+        // Fields with information about modifications have to be reseted
+        newAnalysis.setModifiedBy(null);
+        newAnalysis.setModifiedDate(null);
         return save(newAnalysis);
     }
 
@@ -411,6 +418,11 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     @Override
     @DataSourceAccess
     public void cancelGeneration(Integer pathwayAnalysisId, @SourceId Integer sourceId) {
+
+        PathwayAnalysisEntity entity = pathwayAnalysisRepository.findOne(pathwayAnalysisId, defaultEntityGraph);
+        String sourceKey = getSourceRepository().findBySourceId(sourceId).getSourceKey();
+        entity.getTargetCohorts().forEach(tc -> cohortDefinitionService.cancelGenerateCohort(tc.getId(), sourceKey));
+        entity.getEventCohorts().forEach(ec -> cohortDefinitionService.cancelGenerateCohort(ec.getId(), sourceKey));
         jobService.cancelJobExecution(j -> {
             JobParameters jobParameters = j.getJobParameters();
             String jobName = j.getJobInstance().getJobName();

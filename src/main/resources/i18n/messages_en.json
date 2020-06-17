@@ -1625,6 +1625,7 @@
     },
     "viewEdit": {
       "caption": "Characterization #",
+      "loadingCohortCharacterization": "Loading Cohort Characterization...",
       "design": {
         "description": "<b>Cohort characterization</b> is defined as the process of generating cohort level descriptive summary statistics from person level covariate data. Summary statistics of these person level covariates may be count, mean, sd, var, min, max, median, range, and quantiles. In addition, covariates during a period may be stratified into temporal units of time for time-series analysis such as fixed intervals of time relative to cohort_start_date (e.g. every 7 days, every 30 days etc.), or in absolute calendar intervals such as calendar-week, calendar-month, calendar-quarter, calendar-year.",
         "fa": {
@@ -1679,7 +1680,9 @@
           "sameAsNow": "(same as now)",
           "empty": "-"
         },
-        "title": "Executions"
+        "title": "Executions",
+        "runNewGenerationConfirmation": "No changes have been made since last execution. Do you still want to run new one?",
+        "stopGenerationConfirmation": "Do you want to stop generation?"
       },
       "messages": {
         "nameIsEmpty": "Characterization name is empty."

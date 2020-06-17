@@ -1625,6 +1625,7 @@
     },
     "viewEdit": {
       "caption": "Характеризация №",
+      "loadingCohortCharacterization": "Загрузка характеризации когорты...",
       "messages": {
         "nameIsEmpty": "Наименование характеризации не заполнено."
       },
@@ -1697,7 +1698,9 @@
           "ancestor": "Предок",
           "descendant": "Потомок",
           "selected": "Выбрано"
-        }
+        },
+        "runNewGenerationConfirmation": "С последнего запуска исследований изменений не было. Вы действительно хотите запустить исследрвание еще раз?",
+        "stopGenerationConfirmation": "Действиетльно остановить исследование?"
       },
       "utilities": {
         "title": "Дополнительно"

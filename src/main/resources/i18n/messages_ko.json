@@ -1625,6 +1625,7 @@
     },
     "viewEdit": {
       "caption": "Characterization #",
+      "loadingCohortCharacterization": "Loading Cohort Characterization...",
       "design": {
         "description": "코호트 특성 분석은 사용자 레벨 공변량 데이터로부터 호코트 레벨의 설명된 요약 통계를 생성하는 절차로 정의됩니다. 개인 수준 공변량의 요약 통계는 수, 평균, 표준편차, 분산, 최소값, 최대값, 중앙값, 범위 및 사분위수일 수 있습니다. 또한 Period에 대한 공변량은 cohort_start_date(예: 7일마다, 30일마다 등)와 절대적인 시간 간격(예: 달력에서의 주, 월, 분기, 연도)과 같이 시계열 분석의 일시적인 시간 단위로 계층화 될 수 있다.",
         "fa": {
@@ -1679,7 +1680,9 @@
           "sameAsNow": "(same as now)",
           "empty": "-"
         },
-        "title": "실행"
+        "title": "실행",
+        "runNewGenerationConfirmation": "No changes have been made since last execution. Do you still want to run new one?",
+        "stopGenerationConfirmation": "Do you want to stop generation?"
       },
       "messages": {
         "nameIsEmpty": "Characterization name is empty."

@@ -241,7 +241,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     @Value("${security.cas.casticket}")
     private String casticket;
 
-    @Value("${security.saml.emabled:false}")
+    @Value("${security.saml.enabled:false}")
     private boolean samlEnabled;
 
     public AtlasRegularSecurity(EntityPermissionSchemaResolver permissionSchemaResolver) {

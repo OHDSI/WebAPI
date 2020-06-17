@@ -70,11 +70,11 @@ public class CDMResultsCacheTasklet implements Tasklet {
         }
     }
 
-    private void warmCdmCache(CDMResultsCache cdmResultsCache, String sql) {
+    private void warmCdmCache(CDMResultsCache cdmResultsCache, String sqlPath) {
         String resultTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
         String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
 
-        String sql_statement = ResourceHelper.GetResourceAsString(sql);
+        String sql_statement = ResourceHelper.GetResourceAsString(sqlPath);
         String[] tables = {"resultTableQualifier", "vocabularyTableQualifier"};
         String[] tableValues = {resultTableQualifier, vocabularyTableQualifier};
         PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql_statement, tables, tableValues, SessionUtils.sessionId());

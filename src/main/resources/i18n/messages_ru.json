@@ -1058,7 +1058,9 @@
       "signalInFaers": "Сигнал в FAERS",
       "userSpecified": "Пользователь указан",
       "type": "Тип",
-      "drugLabelExists": "Предлагаемый отрицательный контроль"
+      "drugLabelExists": "Предлагаемый отрицательный контроль",
+      "relationship": "Отношения",
+      "distance": "Дистанция"
     },
     "date": {
       "justNow": "Только что",
@@ -1269,7 +1271,8 @@
     "max": "Максимум",
     "percentRemain": "% остатка",
     "percentDiff": "% разницы",
-    "sourceName": "Имя источника [Ключ источника]",
+    "sourceNameSourceKey": "Имя источника [Ключ источника]",
+    "sourceName": "Имя источника",
     "tableQualifiers": "Квалификаторы таблиц",
     "dialect": "Диалект",
     "vocabularyVersion": "Версия словаря",
@@ -1505,13 +1508,7 @@
         "showAllColumns": "Показать все колонки",
         "resetColumns": "Сбросить колонки"
       },
-      "recordCounts": "Количество записей",
-      "recordCountsAcrossSources": "Количество записей из разных источников",
-      "hierarchy": "Иерархия",
       "caption": "Набор концепций №<%=id%>",
-      "noHierarchyFoundMessage": "Для нестандартных концепция иерархий не найдено",
-      "details": "Детали",
-      "relatedConcepts": "Связанные концепции",
       "nameEmptyWarning": "Имя набора не может быть пустым.",
       "csAlreadyExistsMessage": "Набор концепций с таким именем уже существует. Пожалуйста, выберите другое имя.",
       "csDeleteConfirmMessage": "Удалить набор концепций? Предупреждение: это действие необратимо.",
@@ -1533,7 +1530,46 @@
       "fullyOptimizedMessage": "Текущее определение набора концепций полностью оптимизировано.",
       "createOption": "Создать новый набор концепций",
       "changeColumnsButton": "Изменить колонки",
-      "attemptingToFindMessage": "Попытка найти оптимальное определение для текущего набора концепций..."
+      "attemptingToFindMessage": "Попытка найти оптимальное определение для текущего набора концепций...",
+      "concept": {
+        "title": "Словарь > Концепция",
+        "standard": "Стандартная",
+        "nonStandard": "Нестандартная",
+        "classification": "Классификация",
+        "tabs": {
+          "details": {
+            "caption": "Детали",
+            "property": "Свойство",
+            "value": "Значение",
+            "conceptName": "Имя кнонцепции",
+            "domainId": "Id домена",
+            "conceptClassId": "Id класса концепции",
+            "vocabularyId": "Id словаря",
+            "conceptId": "Id концепции",
+            "conceptCode": "Код концепции",
+            "invalidReason": "Причина невалидности",
+            "standardConcept": "Стандартная концепция"
+          },
+          "relatedConcepts": {
+            "caption": "Связанные концепции"
+          },
+          "hierarchy": {
+            "caption": "Иерархия",
+            "noHierarchyFoundMessage": "Не найдена иерархия для нестандартных концепций.",
+            "view": "Отображать:",
+            "fullHierarchy": "Полная иерархия",
+            "parents": "Предки",
+            "currentConcept": "Текущая концепция",
+            "children": "Потомки",
+            "noParentConceptsFound": "Концепции-предки не найдены",
+            "noChildConceptsFound": "Концепции-потомки не найдены"
+          },
+          "recordCounts": {
+            "caption": "Количество записей",
+            "recordCountsAcrossSources": "Количество записей из разных источников"
+          }
+        }
+      }
     },
     "browser": {
       "exportConceptSetsButton": "Экспорт наборов концепций",
@@ -2789,7 +2825,7 @@
       "predictionProblemSettings": "Настройки задачи прогноза",
       "targetCohort": "Целевые когорты",
       "trainingSettings": "Настройки обучения",
-      "view": "Вид:"
+      "view": "Отображать:"
     },
     "itemId": "Прогнозирование уровня пациента",
     "modelSettingsDesc": "Используйте параметры ниже для редактирования настроек модели",

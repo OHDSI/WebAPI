@@ -1058,7 +1058,9 @@
       "type": "Type",
       "updated": "Updated",
       "userSpecified": "User Specified",
-      "vocabulary": "Vocabulary"
+      "vocabulary": "Vocabulary",
+      "relationship": "Relationship",
+      "distance": "Distance"
     },
     "date": {
       "justNow": "Just Now",
@@ -1245,7 +1247,8 @@
     "selected": "Selected",
     "severity": "Severity",
     "sortOrder": "Sort Order",
-    "sourceName": "Source Name [Source Key]",
+    "sourceNameSourceKey": "Source Name [Source Key]",
+    "sourceName": "Source Name",
     "standardConceptCaption": "Standard Concept Caption",
     "standardConceptCode": "Standard Concept Code",
     "standardType": "Standard Type",
@@ -1483,7 +1486,6 @@
       "csNotSavedConfirmMessage": "Your concept set changes are not saved. Would you like to continue?",
       "csSaveErrorMessage": "An error occurred while attempting to save a concept set.",
       "csUnableToSaveMessage": "Unable to save concept set",
-      "details": "Details",
       "exploreEvidence": {
         "additionalInformation": "Additional Information:",
         "anchor1": "Obtaining Negative Controls from ATLAS",
@@ -1537,17 +1539,12 @@
         "standard": "Standard"
       },
       "fullyOptimizedMessage": "The current concept set definition is fully optimized.",
-      "hierarchy": "Hierarchy",
       "nameEmptyWarning": "Concept Set name is empty.",
-      "noHierarchyFoundMessage": "No hierarchy found for non-standard concepts.",
       "optimize": "Optimize",
       "optimizedConceptSetHeading": "Optimized Concept Set",
       "overwriteOption": "Overwrite Current Concept Set",
       "pleaseProvideNameMessage": "Please provide a name for your new concept set:",
       "pleaseReviewMessage": "Please review the optimized definition and options for saving.",
-      "recordCounts": "Record Counts",
-      "recordCountsAcrossSources": "Record Counts across Sources",
-      "relatedConcepts": "Related Concepts",
       "resetColumnsButton": "Reset Columns",
       "saveButton": "Save",
       "saveOptions": "Save Options",
@@ -1559,6 +1556,45 @@
         "export": "Export",
         "includedConcepts": "Included Concepts",
         "includedSourceCodes": "Included Source Codes"
+      },
+      "concept": {
+        "title": "Vocabulary > Concept",
+        "standard": "Standard",
+        "nonStandard": "Non-Standard",
+        "classification": "Classification",
+        "tabs": {
+          "details": {
+            "caption": "Details",
+            "property": "Property",
+            "value": "Value",
+            "conceptName": "Concept Name",
+            "domainId": "Domain Id",
+            "conceptClassId": "Concept Class Id",
+            "vocabularyId": "Vocabulary Id",
+            "conceptId": "Concept Id",
+            "conceptCode": "Concept Code",
+            "invalidReason": "Invalid Reason",
+            "standardConcept": "Standard Concept"
+          },
+          "relatedConcepts": {
+            "caption": "Related Concepts"
+          },
+          "hierarchy": {
+            "caption": "Hierarchy",
+            "noHierarchyFoundMessage": "No hierarchy found for non-standard concepts.",
+            "view": "View:",
+            "fullHierarchy": "Full Hierarchy",
+            "parents": "Parents",
+            "currentConcept": "Current Concept",
+            "children": "Children",
+            "noParentConceptsFound": "No parent concepts found",
+            "noChildConceptsFound": "No child concepts found"
+          },
+          "recordCounts": {
+            "caption": "Record Counts",
+            "recordCountsAcrossSources": "Record Counts across Sources"
+          }
+        }
       }
     },
     "modal": {

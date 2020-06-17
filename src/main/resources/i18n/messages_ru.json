@@ -1063,7 +1063,13 @@
       "type": "Тип",
       "drugLabelExists": "Предлагаемый отрицательный контроль",
       "relationship": "Отношения",
-      "distance": "Дистанция"
+      "distance": "Дистанция",
+      "severity": "Строгость"
+    },
+    "values": {
+      "warning": "Предупреждение",
+      "critical":"Критический",
+      "info":"Информация"
     },
     "date": {
       "justNow": "Только что",
@@ -2457,6 +2463,7 @@
     },
     "cohortDefinitionManager": {
       "closeCohortTitle": "Закрыть определение когорты",
+      "generationExitMessage": "Сообщение о выходе из поколения",
       "cohortDefinitionManagerText_1": "Когорта не генерируется",
       "cohortDefinitionManagerText_10": "Возгласы",
       "cohortDefinitionManagerText_11": "Система отчетов обнаружила ошибку. Пожалуйста, предоставьте следующую информацию вашей администрации ATLAS или отправьте вопрос на",
@@ -2585,6 +2592,8 @@
       }
     },
     "costUtilization": {
+      "visualization": "Визуализация",
+      "rawData": "Необработанные данные",
       "allowedCharged": "Разрешено / Заряженные",
       "allowedCost": "Допустимая стоимость",
       "allowedCostPmpm": "Разрешенная стоимость",

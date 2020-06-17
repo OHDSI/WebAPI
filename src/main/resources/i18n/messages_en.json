@@ -802,6 +802,9 @@
       "evidencePairViewerText_5": "Hide details",
       "evidencePairViewerText_6": "The concept set is not marked as valid to generate results. Please make sure this concept set contains only CONDITIONS or DRUGS."
     },
+    "executionUtils": {
+      "startNewExecutionInParallelConfirmation": "A generation for the source has already been started. Are you sure you want to start a new one in parallel?"
+    },
     "exploreCohort": {
       "fetchingFirst": "Fetching first",
       "members": "members",

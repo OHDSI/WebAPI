@@ -1025,6 +1025,9 @@
       "selectSources": "Выберите источник",
       "generate": "Генерировать",
       "pickAtLeastOneSourceAlert": "Пожалуйста, выберите хотя бы один источник"
+    },
+    "executionUtils": {
+      "startNewExecutionInParallelConfirmation": "Исследование на данном источнике уже запущено. Вы уверены, что хотите запустить параллельно еще одно?"
     }
   },
   "facets": {

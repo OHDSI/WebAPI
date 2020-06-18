@@ -234,7 +234,7 @@ public abstract class AtlasSecurity extends Security {
 
             // incidence rates
             .addProtectedRestPath("/ir", CREATE_IR)
-            .addProtectedRestPath("/ir/design", CREATE_IR)
+            .addProtectedRestPath("/ir/design", CREATE_IR, CREATE_COHORT_DEFINITION)
             .addProtectedRestPath("/ir/*/copy", CREATE_COPY_IR)
 
             // comparative cohort analysis (estimation)
@@ -248,13 +248,13 @@ public abstract class AtlasSecurity extends Security {
             
             // new estimation
             .addProtectedRestPath("/estimation", CREATE_ESTIMATION)
-            .addProtectedRestPath("/estimation/import", CREATE_ESTIMATION)
+            .addProtectedRestPath("/estimation/import", CREATE_ESTIMATION, CREATE_CONCEPT_SET, CREATE_COHORT_DEFINITION)
             .addProtectedRestPath("/estimation/*/copy", COPY_ESTIMATION)
             .addProtectedRestPath("/estimation/*", DELETE_ESTIMATION)
 
             // new prediction
             .addProtectedRestPath("/prediction", CREATE_PREDICTION)
-            .addProtectedRestPath("/prediction/import", CREATE_PREDICTION)
+            .addProtectedRestPath("/prediction/import", CREATE_PREDICTION, CREATE_CONCEPT_SET, CREATE_COHORT_DEFINITION)
             .addProtectedRestPath("/prediction/*/copy", COPY_PREDICTION)
             .addProtectedRestPath("/prediction/*", DELETE_PREDICTION)
 
@@ -269,12 +269,12 @@ public abstract class AtlasSecurity extends Security {
 
             // cohort characterization
             .addProtectedRestPath("/cohort-characterization", CREATE_COHORT_CHARACTERIZATION)
-            .addProtectedRestPath("/cohort-characterization/import", CREATE_COHORT_CHARACTERIZATION)
+            .addProtectedRestPath("/cohort-characterization/import", CREATE_COHORT_CHARACTERIZATION, CREATE_COHORT_DEFINITION)
             .addProtectedRestPath("/cohort-characterization/*", CREATE_COHORT_CHARACTERIZATION, DELETE_COHORT_CHARACTERIZATION)
 
             // Pathways Analyses
             .addProtectedRestPath("/pathway-analysis", CREATE_PATHWAY_ANALYSIS)
-            .addProtectedRestPath("/pathway-analysis/import", CREATE_PATHWAY_ANALYSIS)
+            .addProtectedRestPath("/pathway-analysis/import", CREATE_PATHWAY_ANALYSIS, CREATE_COHORT_DEFINITION)
             .addProtectedRestPath("/pathway-analysis/*", CREATE_PATHWAY_ANALYSIS, DELETE_PATHWAY_ANALYSIS)
 
             // feature analyses

@@ -12,6 +12,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -86,6 +88,13 @@ public abstract class ProcessResponseContentFilter implements Filter {
   
   public abstract void doProcessResponseContent(String content) throws Exception;
 
+  protected boolean hasJsonField(String json, String field) throws IOException {
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode rootNode = mapper.readValue(json, JsonNode.class);
+    JsonNode fieldNode = rootNode.get(field);
+    return !Objects.isNull(fieldNode);
+  }
+
   protected String parseJsonField(String json, String field) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
     JsonNode rootNode = mapper.readValue(json, JsonNode.class);
@@ -95,6 +104,24 @@ public abstract class ProcessResponseContentFilter implements Filter {
     }
     String fieldValue = fieldNode.asText();
     return fieldValue;
+  }
+  
+  protected List<String> parseNestedJsonField(String parentJson, String childArrayName, String childField) throws IOException {
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode parentNode = mapper.readValue(parentJson, JsonNode.class);
+    List<String> results = new ArrayList<>();
+    JsonNode childNode = parentNode.withArray(childArrayName);
+    if (Objects.isNull(childNode)) {
+      throw new NullJsonNodeException(format("Json node '%s' is null", childArrayName));
+    }
+    for (JsonNode child : childNode) {
+      if (childField != null) {
+        results.add(child.get(childField).asText());
+      } else {
+        results.add(child.asText());
+      }      
+    }    
+    return results;
   }
 
   @Override

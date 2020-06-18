@@ -1725,7 +1725,8 @@
         },
         "title": "Reports for <%= sourceName %>",
         "series": "Series",
-        "covariate": "Covariate"
+        "covariate": "Covariate",
+        "allPrevalenceCovariates": "All prevalence covariates"
       },
       "tabs": {
         "design": "Design",

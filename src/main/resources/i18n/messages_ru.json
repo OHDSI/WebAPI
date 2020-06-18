@@ -1743,7 +1743,8 @@
           }
         },
         "series": "Серии",
-        "covariate": "Ковариат"
+        "covariate": "Ковариат",
+        "allPrevalenceCovariates": "Все ковариаты распространенности"
       }
     },
     "fa": {

@@ -50,7 +50,7 @@ public class PathwayController {
         this.pathwayService = pathwayService;
         this.sourceService = sourceService;
         this.sensitiveInfoService = sensitiveInfoService;
-      this.i18nService = i18nService;
+        this.i18nService = i18nService;
     }
 
     @POST

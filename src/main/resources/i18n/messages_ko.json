@@ -1292,7 +1292,12 @@
     "visitsPer1000WithVisits": "Records/1K +record",
     "vocabulary": "용어",
     "vocabularyVersion": "용어 버전",
-    "washoutPeriod": "Washout Period"
+    "washoutPeriod": "Washout Period",
+    "pctWithPathway": "% with Pathway",
+    "pctOfCohort": "% of Cohort",
+    "eventCohort": "Event Cohort",
+    "rank": "Rank",
+    "distinctEventCohorts": "Distinct Event Cohorts"
   },
   "dataSources": {
     "achillesHeelReport": {
@@ -1962,7 +1967,7 @@
             "cohorts": "코호트"
           },
           "legend": {
-            "eventCohort": "Event Cohorts",
+            "eventCohorts": "Event Cohorts",
             "personsCount": "Pathway 내 해당 환자 수:",
             "personsPortion": "전체 대상 코호트 환자 수 대비 pathway 내 환자 수 비율:",
             "targetCohort": "표적 코호트",
@@ -1970,7 +1975,19 @@
             "title": "범례"
           },
           "noPathways": "No pathways were found",
-          "title": "Pathway 리포트"
+          "title": "Pathway 리포트",
+          "visualization": "Visualization",
+          "tabular": "Tabular",
+          "tableview": {
+            "cohortName": "Cohort <%=name%>",
+            "maximumPathLength": "Maximum Path Length:",
+            "allPathwaysTitle": "Table <%=index%>a: All Pathways",
+            "eventCohortCountsByRank": "Table <%=index%>b: Event Cohort Counts by Rank",
+            "eventCohortCounts": "Table <%=index%>c: Event Cohort Counts",
+            "distinctEventCohorts": "Table <%=index%>d: Distinct Event Cohorts",
+            "stepN": "Step <%=i%>",
+            "exactly": "Exactly <%=v%>"
+          }
         },
         "stopGenerationConfirmation": "Do you want to stop generation?",
         "table": {

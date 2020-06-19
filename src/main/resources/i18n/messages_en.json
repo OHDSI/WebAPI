@@ -1292,7 +1292,12 @@
     "visitsPer1000WithVisits": "Records/1K +record",
     "vocabulary": "Vocabulary",
     "vocabularyVersion": "Vocabulary Version",
-    "washoutPeriod": "Washout Period"
+    "washoutPeriod": "Washout Period",
+    "pctWithPathway": "% with Pathway",
+    "pctOfCohort": "% of Cohort",
+    "eventCohort": "Event Cohort",
+    "rank": "Rank",
+    "distinctEventCohorts": "Distinct Event Cohorts"
   },
   "dataSources": {
     "achillesHeelReport": {
@@ -1962,7 +1967,7 @@
             "cohorts": "Cohorts"
           },
           "legend": {
-            "eventCohort": "Event Cohorts",
+            "eventCohorts": "Event Cohorts",
             "personsCount": "Persons with pathways count:",
             "personsPortion": "Persons with pathways portion:",
             "targetCohort": "Target Cohort",
@@ -1970,7 +1975,19 @@
             "title": "Legend"
           },
           "noPathways": "No pathways were found",
-          "title": "Pathways Analysis for"
+          "title": "Pathways Analysis for",
+          "visualization": "Visualization",
+          "tabular": "Tabular",
+          "tableview": {
+            "cohortName": "Cohort <%=name%>",
+            "maximumPathLength": "Maximum Path Length:",
+            "allPathwaysTitle": "Table <%=index%>a: All Pathways",
+            "eventCohortCountsByRank": "Table <%=index%>b: Event Cohort Counts by Rank",
+            "eventCohortCounts": "Table <%=index%>c: Event Cohort Counts",
+            "distinctEventCohorts": "Table <%=index%>d: Distinct Event Cohorts",
+            "stepN": "Step <%=i%>",
+            "exactly": "Exactly <%=v%>"
+          }
         },
         "stopGenerationConfirmation": "Do you want to stop generation?",
         "table": {

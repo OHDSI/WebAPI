@@ -1292,7 +1292,12 @@
     "refreshCache": "Обновить кэш",
     "strata": "Срез",
     "prevalence": "Распространенность",
-    "personCount": "Количество человек"
+    "personCount": "Количество человек",
+    "pctWithPathway": "% с исходом",
+    "pctOfCohort": "% от когорты",
+    "eventCohort": "Когорта событий",
+    "rank": "Ранг",
+    "distinctEventCohorts": "Отдельные когорты событий"
   },
   "dataSources": {
     "headingTitle": "Источники данных",
@@ -1994,9 +1999,21 @@
             "targetCohortCount": "Записей в целевой когорте:",
             "personsCount": "К-во персон с исходами:",
             "personsPortion": "Доля персон с исходами:",
-            "eventCohort": "Когорта Событий"
+            "eventCohorts": "Когорты Событий"
           },
-          "noPathways": "Исходы в результате исследования не были найдены"
+          "noPathways": "Исходы в результате исследования не были найдены",
+          "visualization": "Визуализация",
+          "tabular": "Таблица",
+          "tableview": {
+            "cohortName": "Когорта <%=name%>",
+            "maximumPathLength": "Максимальная длина пути:",
+            "allPathwaysTitle": "Таблица <%=index%>a: Все исходы",
+            "eventCohortCountsByRank": "Таблица <%=index%>b: Количество когорт событий по рангу",
+            "eventCohortCounts": "Таблица <%=index%>c: Количество когорт событий",
+            "distinctEventCohorts": "Таблица <%=index%>d: Когорты событий",
+            "stepN": "Шаг <%=i%>",
+            "exactly": "Точно <%=v%>"
+          }
         },
         "noCompletedExecutionsWarning": "Для источника данных еще нет завершенных исследований.",
         "stopGenerationConfirmation": "Действительно остановить генерацию?"

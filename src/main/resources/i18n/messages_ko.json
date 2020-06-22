@@ -1292,7 +1292,12 @@
     "visitsPer1000WithVisits": "Records/1K +record",
     "vocabulary": "용어",
     "vocabularyVersion": "용어 버전",
-    "washoutPeriod": "Washout Period"
+    "washoutPeriod": "Washout Period",
+    "pctWithPathway": "% with Pathway",
+    "pctOfCohort": "% of Cohort",
+    "eventCohort": "Event Cohort",
+    "rank": "Rank",
+    "distinctEventCohorts": "Distinct Event Cohorts"
   },
   "dataSources": {
     "achillesHeelReport": {
@@ -1631,6 +1636,7 @@
     },
     "viewEdit": {
       "caption": "Characterization #",
+      "loadingCohortCharacterization": "Loading Cohort Characterization...",
       "design": {
         "description": "코호트 특성 분석은 사용자 레벨 공변량 데이터로부터 호코트 레벨의 설명된 요약 통계를 생성하는 절차로 정의됩니다. 개인 수준 공변량의 요약 통계는 수, 평균, 표준편차, 분산, 최소값, 최대값, 중앙값, 범위 및 사분위수일 수 있습니다. 또한 Period에 대한 공변량은 cohort_start_date(예: 7일마다, 30일마다 등)와 절대적인 시간 간격(예: 달력에서의 주, 월, 분기, 연도)과 같이 시계열 분석의 일시적인 시간 단위로 계층화 될 수 있다.",
         "fa": {
@@ -1685,7 +1691,9 @@
           "sameAsNow": "(same as now)",
           "empty": "-"
         },
-        "title": "실행"
+        "title": "실행",
+        "runNewGenerationConfirmation": "No changes have been made since last execution. Do you still want to run new one?",
+        "stopGenerationConfirmation": "Do you want to stop generation?"
       },
       "messages": {
         "nameIsEmpty": "Characterization name is empty."
@@ -1722,7 +1730,8 @@
         },
         "title": "Reports for <%= sourceName %>",
         "series": "Series",
-        "covariate": "Covariate"
+        "covariate": "Covariate",
+        "allPrevalenceCovariates": "All prevalence covariates"
       },
       "tabs": {
         "design": "설계",
@@ -1859,6 +1868,8 @@
       "showingTargetCohort": "표적 코호트 표시:",
       "sourceName": "사용된 데이터베이스 소스 이름",
       "started": "생성 시작 시간",
+      "stratifyRule": "계층화 규칙",
+      "summaryStatistics": "통계 요약:",
       "timeAtRisk": "위험 노출 기간",
       "timeAtRiskYears": "(년수)"
     },
@@ -1956,7 +1967,7 @@
             "cohorts": "코호트"
           },
           "legend": {
-            "eventCohort": "Event Cohorts",
+            "eventCohorts": "Event Cohorts",
             "personsCount": "Pathway 내 해당 환자 수:",
             "personsPortion": "전체 대상 코호트 환자 수 대비 pathway 내 환자 수 비율:",
             "targetCohort": "표적 코호트",
@@ -1964,7 +1975,19 @@
             "title": "범례"
           },
           "noPathways": "No pathways were found",
-          "title": "Pathway 리포트"
+          "title": "Pathway 리포트",
+          "visualization": "Visualization",
+          "tabular": "Tabular",
+          "tableview": {
+            "cohortName": "Cohort <%=name%>",
+            "maximumPathLength": "Maximum Path Length:",
+            "allPathwaysTitle": "Table <%=index%>a: All Pathways",
+            "eventCohortCountsByRank": "Table <%=index%>b: Event Cohort Counts by Rank",
+            "eventCohortCounts": "Table <%=index%>c: Event Cohort Counts",
+            "distinctEventCohorts": "Table <%=index%>d: Distinct Event Cohorts",
+            "stepN": "Step <%=i%>",
+            "exactly": "Exactly <%=v%>"
+          }
         },
         "stopGenerationConfirmation": "Do you want to stop generation?",
         "table": {
@@ -2016,7 +2039,7 @@
       "generations": "생성",
       "loadingGenerations": "Loading generations...",
       "notPermitted": "Not enough permissions to generate or changes were not saved or Execution Engine is not available",
-      "notPermittedToVieweResults": "Not enough permissions to view results"
+      "notPermittedToViewResults": "Not enough permissions to view results"
     },
     "nameIsEmptyWarning": "Population Level Effect Estimation name is empty.",
     "spec": {
@@ -3311,7 +3334,7 @@
     "jobName": "Job Name",
     "showCompletedJobsButton": "Show completed jobs",
     "status": "Status",
-    "title": "Notifications (last <%=length%>>)"
+    "title": "Notifications (last <%=length%>)"
   },
   "predictions": {
     "allExecutions": "All executions (<%=length%>)",
@@ -3477,6 +3500,7 @@
     "utilitiesText_5": "Please review the full study specification below and scroll down the page to download the study package.",
     "utilitiesText_6": "Please provide a name for the study package and click &quot;download&quot; to obtain the study package in ZIP format.",
     "utilitiesText_7": "The package name should consist of alphanumeric characters only. No spaces or special characters are permitted.",
-    "utilitiesText_8": "당신의 분석 사양의 문제를 검토하려면 다운로드 영역을 확인하십시오. Definition을 내보내기 전에 수정해야합니다.."
+    "utilitiesText_8": "당신의 분석 사양의 문제를 검토하려면 다운로드 영역을 확인하십시오. Definition을 내보내기 전에 수정해야합니다..",
+    "packageName": "Package name..."
   }
 }

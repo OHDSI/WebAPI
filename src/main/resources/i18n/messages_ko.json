@@ -2007,6 +2007,7 @@
     "captionNumber": "코호트 비교 분석 #",
     "changesNotSavedConfirmation": "Estimation Analysis changes are not saved. Would you like to continue?",
     "deleteConfirmation": "Delete estimation specification? Warning: deletion can not be undone!",
+    "retrievingEstimations": "retrieving estimations",
     "exec": {
       "allExec": "All executions (<%=len%>)",
       "downloadLatestResult": "Download latest result",
@@ -2461,6 +2462,8 @@
     "cohortDefinitionManager": {
       "closeCohortTitle": "Close cohort definition",
       "generationExitMessage": "Generation Exit Message",
+      "retrievingCohortDefinitions": "retrieving cohort definitions",
+      "retrievingConcepts": "retrieving concepts",
       "cohortDefinitionManagerText_1": "코호트 생성되지 않음",
       "cohortDefinitionManagerText_10": "Whoops",
       "cohortDefinitionManagerText_11": "The reporting system has encountered an error. Please provide the following details to your ATLAS administration team or submit an issue on ",
@@ -3322,6 +3325,7 @@
     "descriptionPlaceholder": "enter a description here (1000 characters max)",
     "downloadLatestResult": "Download latest result",
     "downloadStudyPackage": "Download Study Package",
+    "retrievingPredictions": "retrieving predictions",
     "editors": {
       "evaluationEditorText_1": "훈련/시험 세트 (training/test set)를 분할하는 방법을 지정하세요.",
       "evaluationEditorText_2": "시험 세트(test set)로 사용될 데이터의 백분율 (0-100 %):",

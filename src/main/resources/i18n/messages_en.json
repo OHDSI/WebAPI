@@ -2007,6 +2007,7 @@
     "captionNumber": "Comparative Cohort Analysis #",
     "changesNotSavedConfirmation": "Estimation Analysis changes are not saved. Would you like to continue?",
     "deleteConfirmation": "Delete estimation specification? Warning: deletion can not be undone!",
+    "retrievingEstimations": "retrieving estimations",
     "exec": {
       "allExec": "All executions (<%=len%>)",
       "downloadLatestResult": "Download latest result",
@@ -2461,6 +2462,8 @@
     "cohortDefinitionManager": {
       "closeCohortTitle": "Close cohort definition",
       "generationExitMessage": "Generation Exit Message",
+      "retrievingCohortDefinitions": "retrieving cohort definitions",
+      "retrievingConcepts": "retrieving concepts",
       "cohortDefinitionManagerText_1": "Cohort Not Generated",
       "cohortDefinitionManagerText_10": "Whoops",
       "cohortDefinitionManagerText_11": "The reporting system has encountered an error. Please provide the following details to your ATLAS administration team or submit an issue on ",
@@ -3323,6 +3326,7 @@
     "downloadLatestResult": "Download latest result",
     "downloadStudyPackage": "Download Study Package",
     "defaultValue": "(default = <%=defaultValue%>):",
+    "retrievingPredictions": "retrieving predictions",
     "editors": {
       "evaluationEditorText_1": "Specify how to split the test/train set:",
       "evaluationEditorText_2": "Percentage of the data to be used as the test set (0-100%):",

@@ -3369,7 +3369,7 @@
       "populationEditorText_8": "코호트 진입 전 결과를 경험한 환자를 제거하시겠습니까?",
       "populationEditorText_9": "[예] 코호트 진입으로부터 몇일 전까지의 결과(outcome) 발생을 볼 것인지?",
       "predictionCovariatePlaceholder": "공변량 ID",
-      "predictionEditorText_1": "성향 점수 모델의 기준 공변량에 어떤 컨셉을 포함하시겠습니까?\n(모든 것을 포함하려면 비워 두십시오)",
+      "predictionEditorText_1": "성향 점수 모델의 기준 공변량에 어떤 컨셉을 포함하시겠습니까? (모든 것을 포함하려면 비워 두십시오)",
       "predictionEditorText_2": "포함한 컨셉 목록에  하위 컨셉을 추가합니까?",
       "predictionEditorText_3": "성향 점수 모델의 기준 공변량에 어떤 컨셉을 제외하시겠습니까? (모든 것을 포함하려면 비워 둡니다)",
       "predictionEditorText_4": "제외된 컨셉 목록에 하위 컨셉을 추가합니까?",

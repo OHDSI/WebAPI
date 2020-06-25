@@ -43,7 +43,7 @@ public class NotificationServiceImpl implements NotificationService {
             FOLDING_KEYS.add(g.getExecutionFoldingKey());
         });
 
-        // Custom job not assosiated with entity
+        // Custom job is not associated with the entity
         WHITE_LIST.add(WARM_CACHE_BY_USER);
     }
 
@@ -97,7 +97,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     private static String getFoldingKey(JobExecution entity) {
         final Optional<String> key = entity.getJobParameters().getParameters().keySet().stream().filter(FOLDING_KEYS::contains).findAny();
-        return key.map(s -> entity.getJobParameters().getString(s) + "_" + entity.getJobParameters().getString("source_id"))
+        return key.map(s -> s + "_" + entity.getJobParameters().getString(s) + "_" + entity.getJobParameters().getString("source_id"))
                 .orElseGet(() -> String.valueOf(entity.getId()));
     }
 

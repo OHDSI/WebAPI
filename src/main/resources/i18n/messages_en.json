@@ -3437,7 +3437,7 @@
         "name_size": "Number of hidden nodes"
       },
       "multilayerPerceptionModel": "Multilayer Perception Model",
-      "naiveBayes": "Naive Bayes",
+      "naiveBayes": "Naïve Bayes",
       "nearestNeighbors": "Nearest Neighbors",
       "randomForest": "Random Forest",
       "randomForestSettings": {
@@ -3473,7 +3473,7 @@
     "loadingGenerations": "Loading generations...",
     "modelSettingsDesc": "Use the options below to edit the model settings",
     "modelSettingsTitle": "Model settings",
-    "naiveMessage": "There are no settings to edit for Naive Bayes",
+    "naiveMessage": "There are no settings to edit for Naïve Bayes",
     "newItem": "New Patient Level Prediction",
     "newItemPlaceholder": "New Patient Level Prediction Analysis",
     "notEnoughPermissions": "Not enough permissions to view results",

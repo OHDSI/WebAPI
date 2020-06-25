@@ -74,8 +74,8 @@
     "delete": "Delete",
     "deselectAll": "Deselect All",
     "download": "Download",
-    "export": "Export",
-    "import": "Import",
+    "export": "导出",
+    "import": "导入",
     "loading": "Loading",
     "loadingWithDots": "Loading...",
     "min": "min",
@@ -86,7 +86,7 @@
     "progress": "Progress",
     "refresh": "Refresh",
     "save": "Save",
-    "search": "Search",
+    "search": "搜索",
     "selectAll": "Select All",
     "set": "Set",
     "unsaved": "(unsaved)",
@@ -118,19 +118,19 @@
   },
   "options": {
     "after": "After",
-    "all": "all",
+    "all": "所有",
     "allDrugSources": "All drug sources",
-    "allEvents": "all events",
+    "allEvents": "所有事件",
     "allVisitTypes": "All visit types",
     "allVisits": "All visits",
-    "any": "any",
-    "atLeast": "at least",
-    "atMost": "at most",
+    "any": "任意一个",
+    "atLeast": "至少",
+    "atMost": "最多",
     "before": "Before",
     "between": "between",
     "contains": "containing",
     "drugSource": "Drug Source",
-    "earliestEvents": "earliest event",
+    "earliestEvents": "第一个事件",
     "endDate": "end date",
     "endOfContinuousDrugExposure": "end of a continuous drug exposure",
     "endOfContinuousObservation": "end of continuous observation",
@@ -143,9 +143,9 @@
     "indexStartDate": "index start date",
     "isAnyOf": "is any of",
     "isNotAnyOf": "is not any of",
-    "latestEvents": "latest event",
+    "latestEvents": "最后一个事件",
     "mm": "Monthly",
-    "no": "No",
+    "no": "否",
     "notBetween": "not between",
     "notContains": "not containing",
     "notEndsWith": "not ending with",
@@ -160,7 +160,7 @@
     "startDate": "start date",
     "startsWith": "starting with",
     "ww": "Weekly",
-    "yes": "Yes",
+    "yes": "是",
     "yy": "Yearly",
     "yesDescendant": "Yes (Descendant)",
     "yesExact": "Yes (Exact)",
@@ -224,7 +224,7 @@
       "and": "and",
       "anyParam": "any <%=param%>",
       "domain": "domain",
-      "all": "all",
+      "all": "所有",
       "distinct": "distinct",
       "before": "before",
       "after": "after",
@@ -262,46 +262,46 @@
     },
     "cohortExpressionEditor": {
       "addCensoringEvent": "Add Censoring Event...",
-      "addInitialEvent": "Add Initial Event...",
+      "addInitialEvent": "添加初始事件",
       "addTrimmingOptions": "add trimming options...",
       "censoringEvents": "Censoring Events:",
-      "cohortEntryEvents": "Cohort Entry Events",
+      "cohortEntryEvents": "队列入组事件",
       "cohortEntryEventsText_1": "Events are recorded time-stamped observations for the persons, such as drug exposures, conditions, procedures, measurements and visits. All events have a start date and end date, though some events may have a start date and end date with the same value (such as procedures or measurements).",
-      "cohortEntryEventsText_2": "Events having any of the following criteria:",
-      "cohortEntryEventsText_3": "with continuous observation of at least",
-      "cohortEntryEventsText_4": "days before and",
-      "cohortEntryEventsText_5": "days after event index date",
-      "cohortEntryEventsText_6": "Limit initial events to:",
-      "cohortEntryEventsText_7": "per person.",
+      "cohortEntryEventsText_2": "符合以下任何条件的事件",
+      "cohortEntryEventsText_3": "在事件索引日期之前至少连续观察",
+      "cohortEntryEventsText_4": "天，之后至少连续观察",
+      "cohortEntryEventsText_5": "天",
+      "cohortEntryEventsText_6": "将每人的初始事件限制为：",
+      "cohortEntryEventsText_7": " ",
       "cohortErasText_1": "Specify era collapse gap size:",
       "cohortErasText_2": "Left censor cohort start dates to",
       "cohortErasText_2_1": " ",
       "cohortErasText_3": "Right censor cohort end dates to",
       "cohortErasText_3_1": " ",
-      "cohortErasTitle": "Cohort Eras",
-      "cohortExit": "Cohort Exit",
+      "cohortErasTitle": "队列周期",
+      "cohortExit": "队列退出",
       "cohortExitText_1": "For all qualifying events, there must be a specification of when each event ends presence in the cohort. By default, an event ends at the end of the observation period containing the qualifying initial event, but event end dates may be also be specified:",
       "cohortExitText_2": "The qualifying initial event can be set to end after a fixed time period relative to the event start or end date, or the end date can be based on the end of a continuous exposure to a set of drugs identified by a concept set.",
       "cohortExitText_3": "Criteria can be used to signal the end of an event. If a censoring event is identified between a qualifying event's start and end date, the date of the censoring event will be used as the exit date.",
       "cohortExitText_4": "Exit Cohort based on the following criteria:",
       "cohortExitText_5": "No censoring events selected.",
-      "cohortExitTitle": "Cohort Exit",
+      "cohortExitTitle": "队列退出",
       "cohortExitTitle_1": "Event End Dates",
       "cohortExitTitle_2": "Censoring Events",
       "copyOf": "Copy of: ",
       "days": "days",
       "deleteCriteria": "Delete Criteria",
       "eventPersistence": "Event Persistence:",
-      "inclusionCriteria": "Inclusion Criteria",
+      "inclusionCriteria": "纳入标准",
       "inclusionCriteriaText": "The qualifying cohort will be defined as all persons who have an initial event, satisfy the initial event inclusion criteria, and fulfill all additional qualifying inclusion criteria. Each qualifying inclusion criteria will be evaluated to determine the impact of the criteria on the attrition of persons from the initial cohort.",
       "inclusionCriteriaText_1": "Limit qualifying events to:",
-      "inclusionCriteriaTitle": "Inclusion Criteria",
+      "inclusionCriteriaTitle": "纳入标准",
       "indexMessage": "The index date refers to the event from the Cohort Entry criteria.",
       "newInclusionCriteria": "New inclusion criteria",
       "noCensoring": "No Censoring",
-      "removeRestriction": "Remove initial event restriction",
+      "removeRestriction": "删除初始事件限制",
       "restrictInitialEventsButton": "Restrict initial events",
-      "restrictInitialEventsTitle": "Restrict intial events to:",
+      "restrictInitialEventsTitle": "限定初始事件为",
       "unnamedCriteria": "Unnamed Criteria"
     },
     "cohortExpressionViewer": {
@@ -311,7 +311,7 @@
       "cohortExpressionViewerText_12": "Exit Cohort based on the following:",
       "cohortExpressionViewerText_13": "Cohort Collapse Strategy:",
       "cohortExpressionViewerText_14": "Collapse cohort by era with a gap size of ",
-      "cohortExpressionViewerText_15": "Inclusion Criteria #(<%=index%>): <%=name%>",
+      "cohortExpressionViewerText_15": "纳入标准 #(<%=index%>): <%=name%>",
       "cohortExpressionViewerText_2": "with continuous observation of at least",
       "cohortExpressionViewerText_3": "days prior and ",
       "cohortExpressionViewerText_4": "days after event index date,",
@@ -328,24 +328,24 @@
       "addSelected": "Add Selected",
       "close": "Close",
       "done": "Done",
-      "importButton": "Import",
+      "importButton": "导入",
       "importConcepts": "Import Concepts",
-      "search": "Search",
+      "search": "搜索",
       "selectConcept": "Select Concept",
       "waitMessage": "Please wait while the Vocabulary Provider initalizes..."
     },
     "conceptSetBuilder": {
-      "conceptSet": "Concept Set",
+      "conceptSet": "概念集",
       "delete": "Delete",
-      "export": "Export",
+      "export": "导出",
       "exportConceptSetTitle": "Export Concept Set...",
-      "import": "Import",
+      "import": "导入",
       "importConceptSetPlaceholder": "Import Concept Set",
       "importConceptSetTitle": "Import Concept Set...",
-      "includedConcepts": "Included Concepts",
+      "includedConcepts": "包含的概念",
       "load": "Load",
       "mappedConcepts": "Mapped Concepts",
-      "newConceptSet": "New Concept Set",
+      "newConceptSet": "新建概念集",
       "pleaseSelectCodesetToModify": "Please select codeset to modify...",
       "removeSelected": "Remove Selected",
       "selectConceptSet": "Select Concept Set...",
@@ -363,7 +363,7 @@
       "searchWithTripleDots": "Search..."
     },
     "conditionDeath": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "添加属性",
       "anyDeath": "Any Death",
       "conditionDeathText_1": "a death occurrence from",
       "conditionDeathText_2": "occurrence start is:",
@@ -375,7 +375,7 @@
       "indexDataText": "The index date refers to the death event of <%= conceptSetName %>."
     },
     "conditionDevice": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "添加属性",
       "anyDevice": "Any Device",
       "conditionDeviceText_1": "a device exposure of",
       "conditionDeviceText_10": "with a Provider Specialty of:",
@@ -395,7 +395,7 @@
       "indexDataText": "The index date refers to the device exposure of <%= conceptSetName %>."
     },
     "conditionDose": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "添加属性",
       "anyDoseEra": "Any Dose Era",
       "anyDrug": "Any Drug",
       "conditionDoseText_1": "a dose era of",
@@ -413,7 +413,7 @@
       "indexDataText": "The index date refers to the dose era of <%= conceptSetName %>."
     },
     "conditionDrug": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "添加属性",
       "anyDrug": "Any Drug",
       "conditionDrugText_1": "a drug era of",
       "conditionDrugText_10": "with age in years at era end",
@@ -430,7 +430,7 @@
       "indexDataText": "The index date refers to the drug era of <%= conceptSetName %>."
     },
     "conditionDrugExposure": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "添加属性",
       "anyDrug": "Any Drug",
       "conditionDrugExposureText_1": "a drug exposure of",
       "conditionDrugExposureText_10": "with Effective Drug Dose",
@@ -458,7 +458,7 @@
       "indexDataText": "The index date refers to the drug exposure of <%= conceptSetName %>."
     },
     "conditionEra": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "添加属性",
       "anyConditionButton": "Any Condition",
       "attributeText_1": "for the first time in the person's history",
       "attributeText_2": "era start is:",
@@ -473,7 +473,7 @@
       "returnText_1": "The index date refers to the condition era of"
     },
     "conditionMeasurement": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "添加属性",
       "anyMeasurement": "Any Measurement",
       "conditionMeasurementText_1": "a measurement of",
       "conditionMeasurementText_10": "with Range Low Ratio",
@@ -506,7 +506,7 @@
       "indexDataText": "The index date refers to the measurement of <%= conceptSetName %>."
     },
     "conditionObservation": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "添加属性",
       "anyObservation": "Any Observation",
       "conditionObservationText_1": "an observation of",
       "conditionObservationText_10": "with age",
@@ -531,7 +531,7 @@
       "indexDataText": "The index date refers to the observation of <%= conceptSetName %>."
     },
     "conditionObservationPeriod": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "添加属性",
       "conditionObservationText_1": "observation periods with the following criteria:",
       "conditionObservationText_10": "days.",
       "conditionObservationText_11": "an observation period",
@@ -546,7 +546,7 @@
       "conditionObservationText_9": "with period duration"
     },
     "conditionOccurrence": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "添加属性",
       "anyCondition": "Any Condition",
       "conditionOccurrenceText_1": "a condition occurrence of",
       "conditionOccurrenceText_10": "with a Visit occurrence of:",
@@ -565,7 +565,7 @@
       "indexDataText": "The index date refers to the condition occurrence of <%= conceptSetName %>."
     },
     "conditionPayerPlanPeriod": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "添加属性",
       "anyPayer": "Any Payer",
       "anyPayerSource": "Any Payer Source",
       "anyPlan": "Any Plan",
@@ -602,7 +602,7 @@
       "indexDataText": "The index date refers to the payer plan period."
     },
     "conditionProcedureOccurrence": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "添加属性",
       "anyProcedure": "Any Procedure",
       "conditionProcedureOccurrenceText_1": "a procedure occurrence of",
       "conditionProcedureOccurrenceText_10": "with a Visit occurrence of:",
@@ -622,7 +622,7 @@
       "indexDataText": "The index date refers to the procedure of <%= conceptSetName %>."
     },
     "conditionSpecimen": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "添加属性",
       "anySpecimen": "Any Specimen",
       "conditionSpecimeText_1": "a specimen of",
       "conditionSpecimeText_10": "with a gender of:",
@@ -642,7 +642,7 @@
       "indexDataText": "The index date refers to the specimen of <%= conceptSetName %>."
     },
     "conditionVisit": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "添加属性",
       "anyLocation": "Any Location",
       "anyVisit": "Any Visit",
       "conditionSpecimeText_1": "a visit occurrence of",
@@ -665,16 +665,16 @@
     },
     "criteriaGroup": {
       "addAdditionalConstraint": "add additional constraint",
-      "addCriteria": "Add criteria to group...",
+      "addCriteria": "添加条件到组",
       "and": "and",
       "between": "between",
       "criteriaGroupText_1": "restrict to the same visit occurrence",
       "criteriaGroupText_2": "allow events from outside observation period",
       "deleteCriteria": "Delete Criteria",
       "deleteGroup": "Delete Group",
-      "followingCriteria": "of the following criteria:",
-      "having": "having",
-      "havingCapital": "Having",
+      "followingCriteria": "个条件",
+      "having": "必须满足以下",
+      "havingCapital": "必须满足以下",
       "occurrencesOf": "occurrences of:",
       "occurrenceOf": "occurrence of:",
       "usingAll": "using all",
@@ -775,7 +775,7 @@
       "inclusive": "inclusive"
     },
     "demographicCriteria": {
-      "addAttribute": "Add attribute...",
+      "addAttribute": "添加属性",
       "demographicCriteriaText_1": "gender is any of:",
       "demographicCriteriaText_2": "race is any of:",
       "demographicCriteriaText_3": "ethnicity is any of:",
@@ -812,7 +812,7 @@
       "exploreCohortText_2": "This cohort has no members available to view for the selected data source. Please ensure that you have generated the cohort using the Generation tab."
     },
     "export": {
-      "button": "Export",
+      "button": "导出",
       "progress": "export in progress"
     },
     "feasibilityAttritionReport": {
@@ -850,13 +850,13 @@
         "demographics": "Demographics",
         "device": "Device",
         "distinctCount": "Distinct Count",
-        "domain": "Domain",
+        "domain": "域/领域",
         "drug": "Drug",
         "drugGroup": "Drug Group",
         "endDays": "End Days",
         "eraStart": "Era Start",
-        "ethnicity": "Ethnicity",
-        "gender": "Gender",
+        "ethnicity": "民族",
+        "gender": "性别",
         "indexMonth": "Index Month",
         "indexScoreType": "Index Score Type",
         "indexYear": "Index Year",
@@ -871,7 +871,7 @@
         "postObservationTime": "Post<br/>Observation Time",
         "priorObservationTime": "Prior<br/>Observation Time",
         "procedure": "Procedure",
-        "race": "Race",
+        "race": "种族",
         "setTheIndexScoreCovariates": "Set the index score covariates",
         "setTheTimeBoundCovariates": "Set the time bound covariates",
         "setTheTimeBoundEraCovariates": "Set the time bound era covariates",
@@ -896,7 +896,7 @@
       "generating": "Generating..."
     },
     "import": {
-      "button": "Import",
+      "button": "导入",
       "denied": "Import is not permitted",
       "progress": "import in progress"
     },
@@ -907,8 +907,8 @@
       "unnamedCriteria": "Unnamed Criteria"
     },
     "linkedCohortList": {
-      "defaultNewItemLabel": "Import",
-      "defaultTitle": "Cohort definition",
+      "defaultNewItemLabel": "导入",
+      "defaultTitle": "队列定义",
       "dialog": {
         "title": "Choose a Cohort definition"
       },
@@ -920,7 +920,7 @@
       }
     },
     "linkedEntityList": {
-      "defaultNewItemLabel": "Import"
+      "defaultNewItemLabel": "导入"
     },
     "locationRegion": {
       "anyLocationRegion": "Any Location region",
@@ -929,20 +929,20 @@
         "correlatedCriteria": {
           "option": {
             "description": "Apply criteria using the location region as the index event",
-            "text": "Add Nested Criteria..."
+            "text": "添加嵌套条件"
           }
         },
         "startDate": {
           "option": {
-            "description": "Filter Locations by date when Person started living there",
-            "text": "Add Start Date Criteria..."
+            "description": "按照此人开始居住的日期筛选位置",
+            "text": "添加开始日期条件"
           },
           "text": "start is:"
         },
         "endDate": {
           "option": {
-            "description": "Filter Locations by date when Person finished living there",
-            "text": "Add End Date Criteria..."
+            "description": "按照此人结束居住的日期筛选位置",
+            "text": "添加结束日期条件"
           },
           "text": "end is:"
         },
@@ -1017,7 +1017,7 @@
       "windowedCriteriaText_6": "ignore observation period"
     },
     "common": {
-      "addAttribute": "Add Attribute..."
+      "addAttribute": "添加属性"
     },
     "multiSelect": {
       "noneSelectedText": "Nothing selected",
@@ -1033,19 +1033,19 @@
   "facets": {
     "caption": {
       "analysisName": "Analysis Name",
-      "author": "Author",
-      "class": "Class",
+      "author": "作者",
+      "class": "类别",
       "comparatorCohorts": "Comparator Cohorts",
-      "created": "Created",
-      "domain": "Domain",
+      "created": "建立",
+      "domain": "域/领域",
       "drugLabelExists": "Suggested Negative Control",
       "errorMsg": "Error Msg",
       "foundInProductLabelOrPublications": "Found in Product Label Or Publications",
       "foundInPublications": "Found in Publications",
       "foundProductLabel": "Found on Product Label",
-      "hasDescendantRecords": "Has Descendant Records",
-      "hasRecords": "Has Records",
-      "invalidReason": "Invalid Reason",
+      "hasDescendantRecords": "有子集数据",
+      "hasRecords": "有数据",
+      "invalidReason": "失效原因",
       "lastModified": "Last Modified",
       "mappingType": "Mapping Type",
       "match": "Match",
@@ -1055,13 +1055,13 @@
       "riskWindow": "Risk Window",
       "signalInFaers": "Signal in FAERS",
       "source": "Source",
-      "standardConcept": "Standard Concept",
+      "standardConcept": "标准概念",
       "startDate": "Start date",
       "targetCohorts": "Target Cohorts",
       "type": "Type",
       "updated": "Updated",
       "userSpecified": "User Specified",
-      "vocabulary": "Vocabulary",
+      "vocabulary": "术语集",
       "relationship": "Relationship",
       "distance": "Distance",
       "severity": "Severity"
@@ -1104,7 +1104,7 @@
     "atlasLogin": "Atlas Login",
     "atlasRole": "Atlas role",
     "atlasRoles": "Atlas roles",
-    "author": "Author",
+    "author": "作者",
     "avg": "Avg",
     "avgValue": "Avg",
     "binary": "Binary",
@@ -1112,7 +1112,7 @@
     "charged": "Charged cost",
     "chargedPmPm": "Charged cost PMPM",
     "checkConnection": "Check connection",
-    "class": "Class",
+    "class": "类别",
     "code": "Code",
     "comparator": "Comparator",
     "comparatorCohortName": "Comparator Cohort Name",
@@ -1128,18 +1128,18 @@
     "covariate": "Covariate",
     "covariateId": "Covariate Id",
     "covariateName": "Covariate Name",
-    "covariateSettings": "Covariate Settings",
-    "created": "Created",
+    "covariateSettings": "协变量设置",
+    "created": "建立",
     "date": "Date",
     "daysSupplyAvg": "Avg. Days of Supply",
     "daysSupplyPer1000PerYear": "Days of Supply /1K /Year",
     "daysSupplyTotal": "Days of Supply",
     "descendants": "Descendants",
-    "description": "Description",
-    "design": "Design",
+    "description": "描述",
+    "design": "设计",
     "dialect": "Dialect",
     "distance": "Distance",
-    "domain": "Domain",
+    "domain": "域/领域",
     "drc": "DRC",
     "drugClass": "Concept class",
     "drugConceptId": "Drug Concept Id",
@@ -1172,7 +1172,7 @@
     "finished": "Finished",
     "firstExposureOnly": "First Exposure Only",
     "groupName": "Group name",
-    "id": "Id",
+    "id": "编号",
     "incidence": "Incidence",
     "inclCovariates": "Incl Covariates",
     "includeAllOutcomes": "Include All Outcomes",
@@ -1196,8 +1196,8 @@
     "model": "Model",
     "modelName": "Model Name",
     "modelSettings": "Model Settings",
-    "modified": "Modified",
-    "name": "Name",
+    "modified": "修改",
+    "name": "名称",
     "ncOutcomes": "NC Outcomes",
     "nextExecution": "Next execution",
     "notPrevalent": "Not Prevalent",
@@ -1226,7 +1226,7 @@
     "personCount": "Person Count",
     "personsPct": "Persons %",
     "pregnancyConcept": "Pregnancy Concept",
-    "prevalence": "Prevalence",
+    "prevalence": "患病率",
     "priorOutcomeLookback": "Prior Outcome Lookback",
     "productLabelAncestor": "Product Label (Ancestor Concept Match)",
     "productLabelCountDescendant": "Product Label Count (Descendant Concept Match)",
@@ -1257,7 +1257,7 @@
     "severity": "Severity",
     "sortOrder": "Sort Order",
     "sourceNameSourceKey": "Source Name [Source Key]",
-    "sourceName": "Source Name",
+    "sourceName": "来源名称",
     "standardConceptCaption": "Standard Concept Caption",
     "standardConceptCode": "Standard Concept Code",
     "standardType": "Standard Type",
@@ -1274,11 +1274,11 @@
     "targetId": "Target Id",
     "targetName": "Target Cohort Name",
     "temporal": "Temporal",
-    "timeAtRisk": "Time At Risk",
+    "timeAtRisk": "风险暴露期",
     "timeAtRiskEnd": "Time At Risk End",
     "timeAtRiskStart": "Time At Risk Start",
     "timeWindow": "Time Window",
-    "title": "Title",
+    "title": "头衔",
     "totalRecords": "Total Records",
     "type": "Type",
     "uniqueIdentifier": "Unique Identifier",
@@ -1290,7 +1290,7 @@
     "visitsPer1000": "Records/1K",
     "visitsPer1000PerYear": "Records/1K/Year",
     "visitsPer1000WithVisits": "Records/1K +record",
-    "vocabulary": "Vocabulary",
+    "vocabulary": "术语集",
     "vocabularyVersion": "Vocabulary Version",
     "washoutPeriod": "Washout Period",
     "pctWithPathway": "% with Pathway",
@@ -1301,44 +1301,44 @@
   },
   "dataSources": {
     "achillesHeelReport": {
-      "achillesHeelResults": "Achilles Heel Results",
+      "achillesHeelResults": "Achilles Heel 结果",
       "message": "Message",
       "messageType": "Message Type"
     },
     "const": {
       "lengthOfEra": "Length of era",
-      "recordsPerPerson": "Records per person"
+      "recordsPerPerson": "每人记录"
     },
     "dashboardReport": {
       "age": "Age",
-      "ageAtFirstObservation": "Age at First Observation",
-      "cdmSummary": "CDM Summary",
-      "cumulativeObservation": "Cumulative Observation",
+      "ageAtFirstObservation": "开始观察的年龄",
+      "cdmSummary": "通用数据模型(CDM)摘要",
+      "cumulativeObservation": "累计观察期",
       "date": "Date",
       "days": "Days",
       "people": "People",
       "percentOfPopulation": "Percent of Population",
-      "personsWithContinuousObservationByMonth": "Persons With Continuous Observation By Month",
-      "populationByGender": "Population by Gender",
+      "personsWithContinuousObservationByMonth": "每月连续观察对象",
+      "populationByGender": "人口(按性别)",
       "years": "Years"
     },
     "datadensityReport": {
       "conceptType": "Concept Type",
-      "conceptsPerPerson": "Concepts per Person",
+      "conceptsPerPerson": "每人的概念",
       "numberOfRecords": "# of Records",
-      "recordsPerPerson": "Records Per Person",
-      "totalRows": "Total Rows",
+      "recordsPerPerson": "每人记录",
+      "totalRows": "总记录（行）",
       "year": "Year"
     },
     "deathReport": {
-      "ageAtDeath": "Age at Death",
+      "ageAtDeath": "死亡年龄",
       "ageAtFirstOccurence": "Age at first occurence",
       "ageDecile": "Age Decile",
       "date": "Date",
-      "deathByType": "Death by Type",
-      "deathPrevalenceByAgeGenderYear": "Death Prevalence by Age, Gender, Year",
-      "deathPrevalenceByMonth": "Death Prevalence by Month",
-      "gender": "Gender",
+      "deathByType": "按类型死亡",
+      "deathPrevalenceByAgeGenderYear": "按年龄，性别和年分的死亡率",
+      "deathPrevalenceByMonth": "每月死亡率",
+      "gender": "性别",
       "prevalencePer1000People": "Prevalence Per 1000 People",
       "yearOfObservation": "Year of Observation"
     },
@@ -1352,7 +1352,7 @@
           "xLabel1": "Count (\"x\" or more ",
           "xLabel2": "s)"
         },
-        "gender": "Gender",
+        "gender": "性别",
         "percentOfTotalNumberOfPersons": "% of total number of persons",
         "prevalencePer1000People": "Prevalence per 1000 People",
         "yearOfObservation": "Year of Observation"
@@ -1364,7 +1364,7 @@
       "measurementValueDistribution": "Measurement Value Distribution",
       "noData": "No data",
       "operatorConcept": "Operator Concept",
-      "prevalence": "Prevalence",
+      "prevalence": "患病率",
       "prevalenceByMonth": "Prevalence by Month",
       "qualifierConcept": "Qualifier Concept",
       "type": "Type",
@@ -1377,69 +1377,69 @@
     "loadingDrilldownReport": "Loading Drilldown Report",
     "loadingReport": "Loading report",
     "noPermission": "You have no permissions to see this report",
-    "numberOfPeople": "Number of People",
+    "numberOfPeople": "人数",
     "personReport": {
-      "ethnicity": "Ethnicity",
-      "ethnicityFooter": "The number of people in this cohort stratified by ethnicity.",
-      "gender": "Gender",
-      "genderFooter": "The number of people in this cohort stratified by gender.",
-      "numberOfPersons": "# of Persons",
-      "race": "Race",
-      "raceFooter": "The number of people in this cohort stratified by race.",
+      "ethnicity": "民族",
+      "ethnicityFooter": "队列中按民族划分的人数",
+      "gender": "性别",
+      "genderFooter": "队列中按性别划分的人数",
+      "numberOfPersons": "人数",
+      "race": "种族",
+      "raceFooter": "队列中按种族划分的人数",
       "year": "Year",
-      "yearOfBirth": "Year of Birth",
-      "yearOfBirthFooter": "The number of people in this cohort shown with respect to their year of birth."
+      "yearOfBirth": "出生年份",
+      "yearOfBirthFooter": "队列中按出生年份可视化的人数"
     },
-    "prevalence": "Prevalence",
+    "prevalence": "患病率",
     "reports": {
       "achillesHeel": "Achilles Heel",
-      "conditionEra": "Condition Era",
-      "conditionOccurrence": "Condition Occurrence",
-      "dashboard": "Dashboard",
-      "dataDensity": "Data Density",
-      "death": "Death",
-      "drugEra": "Drug Era",
-      "drugExposure": "Drug Exposure",
-      "measurement": "Measurement",
-      "observation": "Observation",
-      "person": "Person",
-      "procedure": "Procedure",
+      "conditionEra": "疾病/症状持续时间",
+      "conditionOccurrence": "疾病/症状",
+      "dashboard": "仪表板",
+      "dataDensity": "数据密度",
+      "death": "死亡",
+      "drugEra": "用药持续时间",
+      "drugExposure": "药物使用",
+      "measurement": "化验/检测指标",
+      "observation": "观测",
+      "person": "病人",
+      "procedure": "手术",
       "titleTail": " Report",
-      "visit": "Visit"
+      "visit": "就诊"
     },
-    "selectAReport": "Select a Report",
-    "selectASource": "Select a Source",
+    "selectAReport": "请选择一个报告",
+    "selectASource": "请选择一个来源",
     "table": {
       "tableTab": "Table"
     },
     "treemap": {
       "legend": {
-        "boxSize": "Box Size:",
-        "color": "Color:",
-        "colorExplanation": "(Light to Dark = Low to High), Use Ctrl-Click to Zoom, Alt-Click to Reset Zoom"
+        "boxSize": "框大小:",
+        "color": "颜色:",
+        "colorExplanation": "(较深的颜色表示较高的记录数),Ctrl +单击:放大,Alt +单击:返回原始大小"
       },
       "treemapTab": "Treemap"
     }
   },
   "search": {
     "advancedOptions": "Advanced Options",
-    "buttonTitle": "Search",
+    "buttonTitle": "搜索",
     "classification": "Classification",
     "clearAllSelections": "Clear All Selections",
     "domains": "Domains",
-    "headingTitle": "Search",
+    "headingTitle": "搜索",
     "import": {
-      "clickToClear": "click to clear",
-      "conceptIdentifiers": "Concept Identifiers",
-      "conceptSet": "Concept Set",
-      "conceptSetExpressionJSON": "Concept Set Expression JSON",
-      "enterConceptIdentifiers": "Enter Concept Identifiers",
+      "clickToClear": "单击以删除",
+      "conceptIdentifiers": "概念标识符",
+      "conceptSet": "概念集",
+      "conceptSetExpressionJSON": "以JSON表示的概念集",
+      "enterConceptIdentifiers": "输入概念标识符",
       "enterSourceCodes": "Enter Source Codes",
-      "importConceptIdentifiers": "Import Concept Identifiers",
+      "importConceptIdentifiers": "导入概念标识符",
       "importConceptSetExpression": "Import Concept Set Expression",
       "importSourceCodes": "Import Source Codes",
       "importedConceptSetExpression": "Imported Concept Set Expression",
-      "sourceCodes": "Source Codes",
+      "sourceCodes": "源编码",
       "unableToParseConceptIdentifiers": "Unable to parse Concept Identifiers"
     },
     "loadingMessage": {
@@ -1455,21 +1455,21 @@
     "placeholder": "Type your search here",
     "standard": "Standard",
     "tabs": {
-      "import": "Import",
-      "search": "Search"
+      "import": "导入",
+      "search": "搜索"
     },
     "vocabularies": "Vocabularies"
   },
   "cs": {
     "browser": {
-      "caption": "Concept Sets",
+      "caption": "概念集",
       "compare": {
         "compareConceptSets": "Compare Concept Sets",
         "comparisonResults": "Comparison Results",
         "conceptSet1": "Concept Set 1:",
         "conceptSet2": "Concept Set 2:",
-        "heading": "Concept Set Comparison",
-        "headingMessage": "Use this utility to compare the contents of two concept sets to see which concepts they may share",
+        "heading": "概念集比较",
+        "headingMessage": "使用此实用程序可以比较两个概念集的内容，以查看它们可以共享哪些概念。",
         "modalTitle": "Choose a concept set",
         "sameWarning": "You cannot compare the same concept sets.",
         "saveFromComparisonNameTail": " - From Comparison",
@@ -1477,14 +1477,14 @@
         "saveWarning": "You must save the current concept set before you can perform this comparison.",
         "viewCountMessage": "View database record counts (RC) and descendant record counts (DRC) for:"
       },
-      "exportConceptSetsButton": "Export Concept Sets",
+      "exportConceptSetsButton": "导出概念集",
       "exportConceptSetsNumber": "concept sets selected for export.",
-      "exportInstructions": "Instructions:",
-      "exportInstructionsText": "Select the concept sets for export by selecting each row in the grid. When done, use the 'Export Concept Sets' button which will start the download in a new window.",
+      "exportInstructions": "说明:",
+      "exportInstructionsText": "通过选择网格中的每一行，选择一组要导出的概念。 完成后，使用“导出概念集”按钮开始在新窗口中下载。",
       "saveWarning": "Cohort changes are not saved. Would you like to continue?",
       "tabs": {
-        "export": "Export",
-        "list": "List"
+        "export": "导出",
+        "list": "列表"
       }
     },
     "manager": {
@@ -1531,17 +1531,17 @@
         "noCsWarning": "You must define a concept set with drugs found in the RxNorm vocabulary at the Ingredient class level OR Conditions from SNOMED. The concept set must contain ONLY conditions OR drugs in order to explore evidence.",
         "noEvidenceFoundFor": "No evidence found for",
         "saveNewButton": "Save New Concept Set From Selection Below",
-        "title": "Explore Evidence:",
+        "title": "探索证据:",
         "viewDatabaseRecordCounts": "View database record counts (RC) and descendant record counts (DRC) for:",
         "viewEvidence": "View Evidence",
         "viewingEvidence": "Viewing Evidence"
       },
       "export": {
-        "conceptIdentifierList": "Concept Identifier List",
-        "conceptSetExpressionJSON": "Concept Set Expression JSON",
+        "conceptIdentifierList": "概念标识符列表",
+        "conceptSetExpressionJSON": "以JSON表示的概念集",
         "exportToCSV": "Export To CSV",
         "exportingCsv": "Exporting CSV...",
-        "includedConceptIdentifierList": "Included Concept Identifier List",
+        "includedConceptIdentifierList": "包含的概念标识符列表",
         "loadingForExport": "Loading for export..."
       },
       "expression": {
@@ -1564,12 +1564,12 @@
       "saveOptions": "Save Options",
       "showAllColumnsButton": "Show All Columns",
       "tabs": {
-        "compare": "Compare",
-        "conceptSetExpression": "Concept Set Expression",
-        "exploreEvidence": "Explore Evidence",
-        "export": "Export",
-        "includedConcepts": "Included Concepts",
-        "includedSourceCodes": "Included Source Codes"
+        "compare": "比较",
+        "conceptSetExpression": "概念集表达",
+        "exploreEvidence": "探索证据",
+        "export": "导出",
+        "includedConcepts": "包含的概念",
+        "includedSourceCodes": "包含的源代码"
       },
       "concept": {
         "title": "Vocabulary > Concept",
@@ -1587,8 +1587,8 @@
             "vocabularyId": "Vocabulary Id",
             "conceptId": "Concept Id",
             "conceptCode": "Concept Code",
-            "invalidReason": "Invalid Reason",
-            "standardConcept": "Standard Concept"
+            "invalidReason": "失效原因",
+            "standardConcept": "标准概念"
           },
           "relatedConcepts": {
             "caption": "Related Concepts"
@@ -1616,7 +1616,7 @@
     }
   },
   "cc": {
-    "title": "Cohort Characterizations",
+    "title": "队列特征",
     "new": "New",
     "loading": "Loading Cohort Characterization list...",
     "modals": {
@@ -1631,7 +1631,7 @@
       },
       "featureAnalyses": {
         "newLabel": "Feature analysis",
-        "title": "Feature analyses"
+        "title": "特征分析"
       }
     },
     "viewEdit": {
@@ -1643,7 +1643,7 @@
           "actions": {
             "remove": "Remove"
           },
-          "title": "Feature analyses"
+          "title": "特征分析"
         },
         "faParams": {
           "modal": {
@@ -1652,8 +1652,8 @@
             "title": "Create new parameter",
             "valuePlaceholder": "Value"
           },
-          "newLabel": "New parameter",
-          "title": "Feature analyses parameters"
+          "newLabel": "新参数",
+          "title": "特征分析参数"
         },
         "loading": "Loading Cohort Characterization design...",
         "subgroups": {
@@ -1662,11 +1662,11 @@
             "nameIsNotUnique": "Subgroup name is duplicated."
           },
           "namePlaceholder": "Strata name",
-          "newSubgroup": "New subgroup",
+          "newSubgroup": "新的亚组",
           "noSubgroups": "No subgroups defined",
           "stratifiedByPlaceholder": "Stratified by",
           "subgroupOnly": "Calculate subgroup analyses only",
-          "title": "Subgroup analyses"
+          "title": "亚组分析"
         }
       },
       "executions": {
@@ -1674,10 +1674,10 @@
           "allExecutions": "All executions (<%=submissions%>)",
           "cancel": "Cancel",
           "generate": "Generate",
-          "latestResult": "View latest result"
+          "latestResult": "查看最后结果"
         },
         "designModal": {
-          "title": "Design"
+          "title": "设计"
         },
         "exitModal": {
           "title": "Execution Exit Message"
@@ -1691,7 +1691,7 @@
           "sameAsNow": "(same as now)",
           "empty": "-"
         },
-        "title": "Executions",
+        "title": "执行",
         "runNewGenerationConfirmation": "No changes have been made since last execution. Do you still want to run new one?",
         "stopGenerationConfirmation": "Do you want to stop generation?"
       },
@@ -1701,7 +1701,7 @@
       "results": {
         "detail": {
           "date": "Date:",
-          "design": "Design:",
+          "design": "设计:",
           "results": {
             "label": "Results:",
             "text": "<%= reports %> reports"
@@ -1734,12 +1734,12 @@
         "allPrevalenceCovariates": "All prevalence covariates"
       },
       "tabs": {
-        "design": "Design",
-        "executions": "Executions",
-        "utilities": "Utilities"
+        "design": "设计",
+        "executions": "执行",
+        "utilities": "程序"
       },
       "utilities": {
-        "title": "Utilities"
+        "title": "程序"
       },
       "prevalenceStatConverter": {
         "allStratas": "All stratas",
@@ -1766,9 +1766,9 @@
       "criteriaName": "Criteria name",
       "custom": "Custom",
       "description": "Description",
-      "design": "Design",
+      "design": "设计",
       "designOrNameAreEmpty": "Design or Name are empty",
-      "domain": "Domain:",
+      "domain": "域/领域:",
       "featureExtractionPresetName": "FeatureExtraction preset name:",
       "loadingList": "Loading Feature Analysis list...",
       "nameExistsAlert": "A feature analysis with this name already exists. Please choose a different name.",
@@ -1781,29 +1781,29 @@
     }
   },
   "home": {
-    "description": "ATLAS is an open source application developed as a part of <a href='http://www.ohdsi.org' target='_new'>OHDSI</a> intended to provide a unified interface to patient level data and analytics.",
+    "description": "ATLAS作为<a href='http://www.ohdsi.org' target='_new'>OHDSI</a>的开发的开源应用程序，旨在为患者水平的数据和分析提供集成界面。",
     "documentation": {
-      "text": "The ATLAS user guide can be found <a target='_new' href='http://www.ohdsi.org/web/wiki/doku.php?id=documentation:software:atlas'>here</a>.",
-      "title": "Documentation"
+      "text": "可在此处找到<a target='_new' href='http://www.ohdsi.org/web/wiki/doku.php?id=documentation:software:atlas'>《ATLAS用户指南》</a>。",
+      "title": "参考文档"
     },
     "gettingStarted": {
       "newCohort": {
-        "button": "Define a New Cohort",
-        "description": "Begin performing research by defining the group of people you intend to study"
+        "button": "定义新队列",
+        "description": "通过定义要研究的人群来开始研究"
       },
-      "title": "Getting Started",
+      "title": "由此开始",
       "vocabulary": {
-        "button": "Search the Vocabulary",
-        "description": "Search the different ontologies used to describe patient level data around the world"
+        "button": "词汇检索",
+        "description": "搜索世界各地用于描述患者水平数据的各种本体"
       }
     },
     "releaseNotes": {
-      "issues": "This latest release contains <b><%=issues%></b> feature enhancements and issue resolutions:",
+      "issues": "最新版本包括<b><%=issues%></b>项增强功能和故障排除:",
       "loadingReleaseInfo": "Loading release info",
-      "title": "Release Notes"
+      "title": "部署说明"
     },
     "title": "Home",
-    "welcome": "Welcome to ATLAS."
+    "welcome": "欢迎使用ATLAS。"
   },
   "ir": {
     "caption": "Incidence Rate Analysis #",
@@ -1829,7 +1829,7 @@
       "studyWindowText2": "and ends on",
       "studyWindowText3": ".",
       "targetCohorts": "Target Cohorts",
-      "timeAtRisk": "Time At Risk",
+      "timeAtRisk": "风险暴露期",
       "timeAtRiskStartsWithDays": "days.",
       "timeAtRiskEndsWithDays": "days.",
       "timeAtRiskEndDate": "end date",
@@ -1866,19 +1866,19 @@
       "running": "Running",
       "selectTargetAndOutcomeAlert": "You should select at least one target and outcome cohort to generate",
       "showingTargetCohort": "Showing target cohort:",
-      "sourceName": "Source Name",
+      "sourceName": "来源名称",
       "started": "Started",
       "stratifyRule": "Stratify Rule",
       "summaryStatistics": "Summary Statistics:",
-      "timeAtRisk": "Time At Risk",
+      "timeAtRisk": "风险暴露期",
       "timeAtRiskYears": "(years)"
     },
     "savingError": "An error occurred while attempting to save an incidence rate.",
     "tabs": {
-      "conceptSets": "Concept Sets",
-      "definition": "Definition",
-      "generation": "Generation",
-      "utilities": "Utilities"
+      "conceptSets": "概念集",
+      "definition": "定义",
+      "generation": "生成",
+      "utilities": "程序"
     },
     "title": "Incidence Rate Analysis"
   },
@@ -1925,7 +1925,7 @@
             "description": "Minimum number of subjects in the target cohort for a given event in order to be counted in the pathway.",
             "title": "Minimum cell count:"
           },
-          "title": "Analysis Settings"
+          "title": "分析设置"
         },
         "description": "<b>Cohort Pathway</b> is defined as the process of generating an aggregated sequence of transitions between the Event Cohorts among those people in the Target Cohorts.",
         "eventCohorts": {
@@ -1941,12 +1941,12 @@
         "buttons": {
           "allExecutions": "All executions",
           "generate": "Generate",
-          "viewLatestResult": "View latest result"
+          "viewLatestResult": "查看最后结果"
         },
         "dialogs": {
           "design": {
             "loadError": "Unable to load design",
-            "title": "Design"
+            "title": "设计"
           },
           "exitMessage": {
             "title": "Execution Exit Message"
@@ -1955,7 +1955,7 @@
         "noCompletedExecutionsWarning": "There is no completed executions for the data source yet",
         "results": {
           "date": "Date:",
-          "design": "Design:",
+          "design": "设计:",
           "details": {
             "noPath": "No path selected: click path to see details.",
             "title": "Path details"
@@ -1997,7 +1997,7 @@
             "text": "View reports"
           }
         },
-        "title": "Executions",
+        "title": "执行",
         "tooltips": {
           "generatePermissions": "Not enough permissions to generate",
           "viewPermissions": "Not enough permissions to view results"
@@ -2013,12 +2013,12 @@
         "notfound": "There is no pathway analysis with id = %d."
       },
       "tabs": {
-        "design": "Design",
-        "executions": "Executions",
-        "utilities": "Utilities"
+        "design": "设计",
+        "executions": "执行",
+        "utilities": "程序"
       },
       "utilities": {
-        "title": "Utilities"
+        "title": "程序"
       }
     },
     "title": "Cohort Pathways"
@@ -2043,17 +2043,17 @@
     },
     "nameIsEmptyWarning": "Population Level Effect Estimation name is empty.",
     "spec": {
-      "addAnalysisSettings": "Add Analysis Settings",
-      "addComparisons": "Add Comparisons",
+      "addAnalysisSettings": "添加分析设置",
+      "addComparisons": "添加比较队列",
       "addOutcome": "Add Outcome",
       "analysisName": "Analysis name:",
-      "analysisSettings": "Analysis Settings",
+      "analysisSettings": "分析设置",
       "analysisSettingsDescription": "Add or update the analysis settings",
       "chooseYourComparatorCohort": "Choose your comparator cohort:",
       "chooseYourOutcomeCohorts:": "Choose your outcome cohorts:",
       "chooseYourTargetCohort": "Choose your target cohort:",
       "clickToViewDetails": "Click to view details",
-      "comparison": "Comparison",
+      "comparison": "比较队列",
       "comparisonDescription": "Add or update the target, comparator, outcome(s) cohorts and negative control outcomes",
       "conceptsToExcludeLabel": "Concepts to <b>exclude</b> when constructing the covariates to be used in this study.*",
       "conceptsToExcludeNoteAnalysis": "* Concepts defined here are combined with those defined in the Comparisons section.",
@@ -2061,11 +2061,11 @@
       "conceptsToIncludeLabel": "Concepts to <b>include</b> when constructing the covariates to be used in this study. (Leave blank if you want to include every concept).*",
       "conceptsToIncludeNoteAnalysis": "* Concepts defined here are combined with those defined in the Comparisons section.",
       "conceptsToIncludeNoteComparisons": "* Concepts defined here are combined with those defined in the Analysis settings section.",
-      "controlSettings": "Control Settings",
+      "controlSettings": "对照设置",
       "covariateSelection": "Covariate selection",
-      "covariateSettings": "Covariate Settings",
+      "covariateSettings": "协变量设置",
       "descriptionPlaceholder": "enter a description here (1000 characters max)",
-      "evaluationSettings": "Evaluation Settings",
+      "evaluationSettings": "评估设置",
       "evaluationSettingsPanel": {
         "additionalSettings": "Additional Settings",
         "advancedSettingsStartsHere": "Advanced Settings start here",
@@ -2081,11 +2081,11 @@
         "minNumberofOutcomeEventsToInjectASignal": "Minimum number of outcome events required to inject a signal.",
         "minimumRequiredTime": "The minimum required continuous observation time (in days) prior to exposure:",
         "modelType": "Model Type:",
-        "negativeControl": "Negative Control Outcome Cohort Definition",
+        "negativeControl": "阴性对照结果队列定义",
         "negativeControlDesc": "This expression will define the criteria for inclusion and duration of time for cohorts intended for use as negative control outcomes.",
         "onlyFirstExposure": "Should only the first exposure per subject be included?",
         "onlyFirstOutcome": "Should only the first outcome per person be considered when modeling the outcome?",
-        "positiveControl": "Positive Control Synthesis",
+        "positiveControl": "阳性对照合成",
         "positiveControlPerform": "Should we perform positive control synthesis? (to calibrate confidence intervals)",
         "removePeopleWithPrior": "Remove people with prior outcomes?",
         "typeOfOccurence": "The type of occurrence of the event when selecting from the domain.",
@@ -2096,7 +2096,7 @@
       "negativeControlConceptSet": "Negative control concept set:",
       "newAnalysis": "New analysis",
       "options": {
-        "all": "All",
+        "all": "所有",
         "allOccurrences": "All occurrences",
         "byPercent": "By Percent",
         "cohortEndDate": "cohort end date",
@@ -2138,8 +2138,8 @@
         "statisticalModel": "Specify the statistical model used to estimate the risk of outcome between target and comparator cohorts:",
         "weighting": "Use inverse probability of treatment weighting?"
       },
-      "prior": "Prior",
-      "propensityScoreAdjustment": "Propensity Score Adjustment",
+      "prior": "先验变量",
+      "propensityScoreAdjustment": "倾向得分矫正",
       "propensityScoreAdjustmentPanel": {
         "baseSelection": "What is the base selection of subjects where the strata bounds are to be determined? Strata are defined as equally-sized strata inside this selection.",
         "caliperForMatching": "What is the caliper for matching:",
@@ -2160,7 +2160,7 @@
       "selectCohort": "Select Cohort...",
       "selectConceptSet": "Select Concept Set...",
       "selectCovariates": "Select Covariates...",
-      "studyPopulation": "Study Population",
+      "studyPopulation": "研究人群",
       "studyPopulationPanel": {
         "cohortCap": "If either the target or the comparator cohort is larger than this number it will be sampled to this size. (0 for this value indicates no maximum size)",
         "daysPriorOutcomes": "How many days should we look back when identifying prior outcomes?",
@@ -2173,7 +2173,7 @@
         "startDate": "Study start date - a calendar date specifying the minimum date that a cohort index can appear (leave blank to use all time):",
         "subjectInMultipleCohorts": "If a subject is in multiple cohorts, should time-at-risk be censored when the new time-at-risk start to prevent overlap?"
       },
-      "timeAtRisk": "Time At Risk",
+      "timeAtRisk": "风险暴露期",
       "timeAtRiskPanel": {
         "daysFrom": "days from",
         "defineTheTimeAtRiskWindowEnd": "Define the time-at-risk window end:",
@@ -2182,16 +2182,16 @@
       },
       "usingCovariates": "Using OHDSI covariates for propensity score model.",
       "view": "View:",
-      "viewAnalysisSettings": "Analysis Settings",
-      "viewComparisons": "Comparisons",
-      "viewEvaluationSettings": "Evaluation Settings",
+      "viewAnalysisSettings": "分析设置",
+      "viewComparisons": "比较队列",
+      "viewEvaluationSettings": "评估设置",
       "viewFull": "All",
       "viewFullSpecification": "Full Specification"
     },
     "tabs": {
-      "executions": "Executions",
-      "specification": "Specification",
-      "utilities": "Utilities"
+      "executions": "执行",
+      "specification": "说明",
+      "utilities": "程序"
     },
     "title": "Population Level Effect Estimation",
     "util": {
@@ -2205,7 +2205,7 @@
       "issueNotSaved": "You must save your analysis before you can review & download.",
       "issues": "Your study has the following issues that prevent you from reviewing the full specification details and downloading the study package:",
       "packageNamePlaceholder": "Package name...",
-      "reviewDownload": "Review & Download",
+      "reviewDownload": "审查 & 下载",
       "reviewFullSpec": "Review Full Study Specification"
     }
   },
@@ -2244,7 +2244,7 @@
       "tabs": {
         "permissions": "Permissions",
         "users": "Users",
-        "utilities": "Utilities"
+        "utilities": "程序"
       },
       "title": "Roles"
     },
@@ -2270,7 +2270,7 @@
         "enabled": "Enabled",
         "ends": "Ends",
         "execute": "Execute:",
-        "executions": "executions",
+        "executions": "执行",
         "never": "Never",
         "on": "On",
         "preserveAssignedRoles": "Preserve assigned roles",
@@ -2467,7 +2467,7 @@
         },
         "cohortDefinition": {
           "text_1": "A cohort is defined as the set of persons satisfying one or more inclusion criteria for a duration of time. One person may qualify for one cohort multiple times during non-overlapping time intervals. Cohorts are constructed in ATLAS by specifying cohort entry criteria and cohort exit criteria. Cohort entry criteria involve selecting one or more initial events, which determine the start date for cohort entry, and optionally specifying additional inclusion criteria which filter to the qualifying events. Cohort exit criteria are applied to each cohort entry record to determine the end date when the person’s episode no longer qualifies for the cohort.",
-          "title": "Cohort Definition"
+          "title": "队列定义"
         },
         "importConceptSet": {
           "title": "Import Concept Set From Repository..."
@@ -2529,59 +2529,59 @@
         "appendix_1": "Appendix 1: Concept Set Definitions",
         "availableCDMSources": "Available CDM Sources",
         "cancel": "Cancel",
-        "clickToClear": "click to clear",
+        "clickToClear": "单击以删除",
         "closeConceptSet": "Close Concept Set",
-        "conceptIdentifierList": "Concept Identifier List",
-        "conceptIdentifiers": "Concept Identifiers",
-        "conceptSet": "Concept Set",
-        "conceptSetExpression": "Concept Set Expression",
-        "conceptSetExpressionJSON": "Concept Set Expression JSON",
+        "conceptIdentifierList": "概念标识符列表",
+        "conceptIdentifiers": "概念标识符",
+        "conceptSet": "概念集",
+        "conceptSetExpression": "概念集表达",
+        "conceptSetExpressionJSON": "以JSON表示的概念集",
         "copyToConceptSetRepository": "Copy To Concept Set Repository",
         "deleteConceptSet": "Delete Concept Set",
-        "enterConceptIdentifiers": "Enter Concept Identifiers",
+        "enterConceptIdentifiers": "输入概念标识符",
         "enterSourceCodes": "Enter Source Codes",
-        "export": "Export",
+        "export": "导出",
         "exportAllToCSV": "Export All Concept Sets To CSV",
         "fullAnalysis": "Full Analysis",
         "generate": "Generate",
         "generated": "Generated",
         "generationDuration": "Generation Duration",
         "generationStatus": "Generation Status",
-        "graphicalView": "Graphical View",
+        "graphicalView": "图片展示",
         "hideReports": "Hide Reports",
-        "import": "Import",
-        "importConceptIdentifiers": "Import Concept Identifiers",
+        "import": "导入",
+        "importConceptIdentifiers": "导入概念标识符",
         "importConceptSetExpression": "Import Concept Set Expression",
         "importSourceCodes": "Import Source Codes",
-        "includedConceptIdentifierList": "Included Concept Identifier List",
-        "includedConcepts": "Included Concepts",
-        "includedSourceCodes": "Included Source Codes",
+        "includedConceptIdentifierList": "包含的概念标识符列表",
+        "includedConcepts": "包含的概念",
+        "includedSourceCodes": "包含的源代码",
         "json": "JSON",
         "name": "Name:",
-        "newConceptSet": "New Concept Set",
+        "newConceptSet": "新建概念集",
         "people": "People",
         "quickAnalysis": "Quick Analysis",
         "records": "Records",
         "reload": "Reload",
         "reportSelections": "Report Selections",
         "repository": "Repository",
-        "sourceCodes": "Source Codes",
-        "sourceName": "Source Name",
+        "sourceCodes": "源编码",
+        "sourceName": "来源名称",
         "sql": "SQL",
-        "textView": "Text View",
-        "utilization": "Utilization",
+        "textView": "文字展示",
+        "utilization": "使用",
         "viewReports": "View Reports"
       },
       "saveCohortTitle": "Save cohort definition",
-      "selectReport": "Select a Report",
+      "selectReport": "请选择一个报告",
       "tabs": {
-        "conceptSets": "Concept Sets",
-        "definition": "Definition",
+        "conceptSets": "概念集",
+        "definition": "定义",
         "explore": "Explore",
-        "export": "Export",
-        "generation": "Generation",
+        "export": "导出",
+        "generation": "生成",
         "messages": "Messages",
-        "reporting": "Reporting"
+        "reporting": "报告"
       }
     },
     "cohortFeatureBrowser": {
@@ -2646,8 +2646,8 @@
       "recordsPer1000WithRecord": "Records per 1,000 with record",
       "reportManager": {
         "reportManagerText_1": "Cohort Reporting",
-        "reportManagerText_10": "Race",
-        "reportManagerText_11": "Ethnicity",
+        "reportManagerText_10": "种族",
+        "reportManagerText_11": "民族",
         "reportManagerText_12": "Report Not implemented",
         "reportManagerText_13": "This report has not been implemented.",
         "reportManagerText_14": "Prevalence by Month",
@@ -2669,7 +2669,7 @@
         "reportManagerText_29": "Drilldown Report",
         "reportManagerText_3": "Data Completeness",
         "reportManagerText_30": "Drugs by Index Date ",
-        "reportManagerText_31": "Age at First Observation",
+        "reportManagerText_31": "开始观察的年龄",
         "reportManagerText_32": "The distribution of age at first observation in the cohort.",
         "reportManagerText_33": "Age by Gender",
         "reportManagerText_34": "The distribution of age at first observation in the cohort stratified by gender.",
@@ -2680,7 +2680,7 @@
         "reportManagerText_39": "Observation Length by Age Decile",
         "reportManagerText_4": "Care Site",
         "reportManagerText_40": "Observation Periods per Person",
-        "reportManagerText_41": "Persons With Continuous Observation By Month",
+        "reportManagerText_41": "每月连续观察对象",
         "reportManagerText_42": "Condition Era Prevalence",
         "reportManagerText_43": "Condition Era Prevalence by Month",
         "reportManagerText_44": "Age at First Diagnosis",
@@ -2700,22 +2700,22 @@
         "reportManagerText_57": "Age at First Exposure",
         "reportManagerText_58": "Days Supply Distribution",
         "reportManagerText_59": "Quantity Distribution",
-        "reportManagerText_6": "Year of Birth",
+        "reportManagerText_6": "出生年份",
         "reportManagerText_60": "Refills Distribution",
         "reportManagerText_61": "Drugs by Type",
         "reportManagerText_62": "Procedure Prevalence",
         "reportManagerText_63": "Procedure Prevalence by Month",
         "reportManagerText_64": "Procedures by Type",
         "reportManagerText_65": "Age at First Occurrence",
-        "reportManagerText_66": "Death Prevalence by Age, Gender, Year",
-        "reportManagerText_67": "Death Prevalence by Month",
+        "reportManagerText_66": "按年龄，性别和年分的死亡率",
+        "reportManagerText_67": "每月死亡率",
         "reportManagerText_68": "Death Details",
-        "reportManagerText_69": "Age at Death",
-        "reportManagerText_7": "The number of people in this cohort shown with respect to their year of birth.",
-        "reportManagerText_70": "Death by Type",
+        "reportManagerText_69": "死亡年龄",
+        "reportManagerText_7": "队列中按出生年份可视化的人数",
+        "reportManagerText_70": "按类型死亡",
         "reportManagerText_71": "Click Here to Choose a Cohort",
         "reportManagerText_8": "Demographics",
-        "reportManagerText_9": "Gender"
+        "reportManagerText_9": "性别"
       },
       "saveAsCSV": "Save as CSV",
       "totalExposure": "Total Exposure in years",
@@ -2731,552 +2731,552 @@
     "noConceptSets": "No concept sets to export",
     "runDiagnostics": "Run diagnostics",
     "saveDefinitionBefore": "You must save the definition before you can export",
-    "title": "Cohort Definitions"
+    "title": "队列定义"
   },
   "const": {
     "eventsList": {
       "addConditionEra": {
-        "title": "Add Condition Era",
-        "desc_initial": "Find patients with specific diagosis era.",
+        "title": "添加诊断周期",
+        "desc_initial": "查找具有特定诊断期的患者",
         "desc_censoring": "Exit cohort based on diagnosis era.",
-        "desc_group": "Find patients with specific condition era."
+        "desc_group": "查找具有特定诊断期的患者"
       },
       "addDemographic": {
-        "title": "Add Demographic",
-        "desc_group": "Filter events based on demographic criteria."
+        "title": "添加人口学信息",
+        "desc_group": "按照人口学条筛选事件"
       },
       "addConditionOccurrence": {
-        "title": "Add Condition Occurrence",
-        "desc_initial": "Find patients with specific diagnoses.",
+        "title": "添加诊断",
+        "desc_initial": "查找具有特定诊断的患者",
         "desc_censoring": "Exit cohort based on diagnoses.",
-        "desc_group": "Find patients with specific conditions."
+        "desc_group": "查找具有特定诊断的患者"
       },
       "addDeath": {
-        "title": "Add Death",
-        "desc_initial": "Find patients based on death.",
+        "title": "添加医疗设备使用",
+        "desc_initial": "按照死亡查找患者",
         "desc_censoring": "Exit cohort based on death.",
-        "desc_group": "Find patients based on death."
+        "desc_group": "按照死亡查找患者"
       },
       "addDeviceExposure": {
-        "title": "Add Device Exposure",
-        "desc_initial": "Find patients based on device exposure.",
+        "title": "添加医疗设备使用",
+        "desc_initial": "按照医疗设备使用查找患者",
         "desc_censoring": "Exit cohort based on device exposure.",
-        "desc_group": "Find patients based on device exposure."
+        "desc_group": "按照医疗设备使用查找患者"
       },
       "addDoseEra": {
-        "title": "Add Dose Era",
-        "desc_initial": "Find patients with dose eras.",
+        "title": "添加剂量周期",
+        "desc_initial": "按照剂量周期查找患者",
         "desc_censoring": "Exit cohort based on dose eras.",
-        "desc_group": "Find patients with dose eras."
+        "desc_group": "按照剂量周期查找患者"
       },
       "addDrugEra": {
-        "title": "Add Drug Era",
-        "desc_initial": "Find patients with with exposure to drugs over time.",
+        "title": "添加用药周期",
+        "desc_initial": "查找随事件推移接触该药物的患者",
         "desc_censoring": "Exit cohort based on drugs over time.",
-        "desc_group": "Find patients with drug eras."
+        "desc_group": "根据药物周期查找患者"
       },
       "addDrugExposure": {
         "title": "Add Drug Exposure",
-        "desc_initial": "Find patients with exposure to specific drugs or drug classes.",
+        "desc_initial": "查找接触过特定药物或者药物类型的患者",
         "desc_censoring": "Exit cohort based on exposure to specific drugs or drug classes.",
-        "desc_group": "Find patients with exposure to specific drugs or drug classes."
+        "desc_group": "查找接触过特定药物或者药物类型的患者"
       },
       "addMeasurement": {
-        "title": "Add Measurement",
-        "desc_initial": "Find patients based on Measurement.",
+        "title": "添加测量",
+        "desc_initial": "按照测量结果查找患者",
         "desc_censoring": "Exit cohort based on Measurement.",
-        "desc_group": "Find patients based on measurements."
+        "desc_group": "按照测量结果查找患者"
       },
       "addObservation": {
-        "title": "Add Observation",
-        "desc_initial": "Find patients based on observations.",
+        "title": "添加观察",
+        "desc_initial": "按照实验室测试或者其他观察结果查找患者",
         "desc_censoring": "Exit cohort based on lab tests or other observations.",
-        "desc_group": "Find patients based on observations."
+        "desc_group": "按照实验室测试或者其他观察结果查找患者"
       },
       "addObservationPeriod": {
-        "title": "Add Observation Period",
-        "desc_initial": "Find patients based on Observation Period.",
-        "desc_group": "Find patients based on observation periods."
+        "title": "添加观察周期",
+        "desc_initial": "根据观察期查找患者",
+        "desc_group": "根据观察周期查找患者"
       },
       "addPayerPlanPeriod": {
-        "title": "Add Payer Plan Period",
-        "desc_initial": "Find patients based on Payer Plan Period.",
-        "desc_censoring": "Find patients based on Payer Plan Period.",
-        "desc_group": "Find patients based on Payer Plan Period."
+        "title": "添加付费方计划周期",
+        "desc_initial": "根据付费方计划周期查找患者",
+        "desc_censoring": "根据付费方计划周期查找患者",
+        "desc_group": "根据付费方计划周期查找患者"
       },
       "addProcedureOccurrence": {
-        "title": "Add Procedure Occurrence",
-        "desc_initial": "Find patients that experienced a specific procedure.",
+        "title": "添加操作",
+        "desc_initial": "查找经历过特定操作的患者",
         "desc_censoring": "Exit cohort based on procedures.",
-        "desc_group": "Find patients that experienced a specific procedure."
+        "desc_group": "查找经历过特定操作的患者"
       },
       "addSpecimen": {
-        "title": "Add Specimen",
-        "desc_initial": "Find patients based on Specimen.",
-        "desc_censoring": "Find patients based on Specimen.",
-        "desc_group": "Find patients based on specimen."
+        "title": "添加标本信息",
+        "desc_initial": "按照标本查找患者",
+        "desc_censoring": "按照标本查找患者",
+        "desc_group": "按照标本查找患者"
       },
       "addLocationRegion": {
         "title": "Add Location Region",
         "desc_group": "Find patients within geographical area."
       },
       "addGroup": {
-        "title": "Add Group",
-        "desc_group": "Add a group to combine criteria using and/or relationships."
+        "title": "新增群组",
+        "desc_group": "使用“和/或者”关系添加群组并合并条件"
       },
       "addVisit": {
-        "title": "Add Visit",
-        "desc_initial": "Find patients based on visit information.",
+        "title": "添加就诊信息",
+        "desc_initial": "按照就诊信息查找患者",
         "desc_censoring": "Exit cohort based on visit information.",
-        "desc_group": "Find patients based on visit information.",
-        "title_occurrence": "Add Visit",
-        "desc_occurrence": "Filter Condition Occurrences based on visit occurrence of diagnosis.",
-        "title_deviceexposure": "Add Visit Criteria",
-        "desc_deviceexposure": "Filter Device Exposures based on visit occurrence of exposure.",
-        "title_drugexposure": "Add Visit Criteria",
-        "desc_drugexposure": "Filter Drug Exposures based on visit occurrence of drug exposure.",
-        "title_measurement": "Add Visit Criteria",
-        "desc_measurement": "Filter Measurements based on visit occurrence of measurement.",
-        "title_observation": "Add Visit Criteria",
-        "desc_observation": "Filter Observations based on visit occurrence of observation.",
-        "title_procedureoccurrence": "Add Visit Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences based on visit occurrence of procedure."
+        "desc_group": "按照就诊信息查找患者",
+        "title_occurrence": "添加就诊条件",
+        "desc_occurrence": "按照诊断发生时的就诊筛选诊断",
+        "title_deviceexposure": "添加就诊条件",
+        "desc_deviceexposure": "按照设备使用时的就诊筛选",
+        "title_drugexposure": "添加就诊",
+        "desc_drugexposure": "按照药物使用时的就诊筛选药物使用",
+        "title_measurement": "添加就诊条件",
+        "desc_measurement": "按照测量时的就诊筛选测量",
+        "title_observation": "添加就诊条件",
+        "desc_observation": "按照观察时的就诊筛选观察",
+        "title_procedureoccurrence": "添加就诊",
+        "desc_procedureoccurrence": "按照操作时的就诊筛选操作"
       },
       "addFirstDiagnosis": {
-        "title_era": "Add First Diagnosis Criteria",
-        "desc_era": "Limit Condition Eras to first diagnosis era in history.",
-        "title_occurrence": "Add First Diagnosis",
-        "desc_occurrence": "Limit Condition Occurrences to new diagnosis.",
-        "title_deviceexposure": "Add First Exposure Criteria",
-        "desc_deviceexposure": "Limit Device Exposures to first exposure in history.",
-        "title_dose": "Add First Exposure Criteria",
-        "desc_dose": "Limit Dose Era to new exposure.",
-        "title_drug": "Add First Exposure Criteria",
-        "desc_drug": "Limit Drug Eras to first exposure in history.",
-        "title_drugexposure": "Add First Exposure Criteria",
-        "desc_drugexposure": "Limit Drug Exposures to the first exposure in history.",
-        "title_measurement": "Add First Measure Criteria",
-        "desc_measurement": "Limit Measures to first occurrence in history.",
-        "title_observation": "Add First Observation Criteria",
-        "desc_observation": "Limit Observations to the first occurrence.",
-        "title_observationperiod": "First Observation Period Criteria",
-        "desc_observationperiod": "Limit Observation Period to first period in history.",
-        "title_payerplan": "First Payer Plan Period Criteria",
-        "desc_payerplan": "Limit Payer Plan Period to first period in history.",
-        "title_procedureoccurrence": "Add First Procedure Criteria",
-        "desc_procedureoccurrence": "Limit Procedure Occurrences to first procedure in history.",
-        "title_specimen": "Add First Occurrence Criteria",
-        "desc_specimen": "Limit Specimen to the first occurrence in history.",
-        "title_visit": "Add First Visit Criteria",
-        "desc_visit": "Limit Visit Occurrences to the first visit."
+        "title_era": "添加初始诊断",
+        "desc_era": "将诊断周期限制在患者整个记录的最早诊断",
+        "title_occurrence": "添加首次诊断条件",
+        "desc_occurrence": "诊断仅限于新诊断",
+        "title_deviceexposure": "添加首次医疗设备使用标准条件",
+        "desc_deviceexposure": "将设备使用限定于记录中的第一次使用",
+        "title_dose": "添加初始暴露条件",
+        "desc_dose": "将剂量周期限制在整个记录的初始暴露",
+        "title_drug": "添加初始暴露条件",
+        "desc_drug": "将用药周期限制在整个记录的初始暴露",
+        "title_drugexposure": "添加初始使用条件",
+        "desc_drugexposure": "将药物使用限制在整个记录的初始使用",
+        "title_measurement": "添加初始测量条件",
+        "desc_measurement": "将测量限制在整个记录的初始测量",
+        "title_observation": "添加初始观察条件",
+        "desc_observation": "将测量限制在整个记录的初始观察",
+        "title_observationperiod": "添加初始观察期条件",
+        "desc_observationperiod": "将观察期限制在整个记录的第一个周期",
+        "title_payerplan": "添加初始付费方计划周期条件",
+        "desc_payerplan": "将付费方计划周期限制为整个记录的初始周期",
+        "title_procedureoccurrence": "添加首次操作条件",
+        "desc_procedureoccurrence": "将操作限制在整个记录的初始操作",
+        "title_specimen": "添加首次出现条件",
+        "desc_specimen": "将标本限制于记录中第一次出现",
+        "title_visit": "添加首次就诊条件",
+        "desc_visit": "将就诊限制于第一次就诊"
       },
       "addAgeAtStart": {
-        "title_era": "Add Age at Era Start Criteria",
-        "desc_era": "Filter Condition Eras by age at era start.",
-        "title_dose": "Add Age at Era Start Criteria",
-        "desc_dose": "Filter Drug Eras by age at era start.",
-        "title_drug": "Add Age at Era Start Criteria",
-        "desc_drug": "Filter Drug Eras by age at era start.",
-        "title_observationperiod": "Add Age at Start Criteria",
-        "desc_observationperiod": "Filter Periods by Age at Start.",
-        "title_payerplan": "Add Age at Start Criteria",
-        "desc_payerplan": "Filter Periods by Age at Start."
+        "title_era": "按照周期开始标准添加年龄",
+        "desc_era": "按照诊断开始时的年龄筛选诊断周期",
+        "title_dose": "按照周期开始标准添加年龄条件",
+        "desc_dose": "按照剂量周期开始时的年龄筛选剂量周期",
+        "title_drug": "按照周期开始标准添加年龄",
+        "desc_drug": "按照用药周期开始时的年龄筛选用药周期",
+        "title_observationperiod": "添加年龄开始条件",
+        "desc_observationperiod": "按照观察期开始的年龄筛选观察期",
+        "title_payerplan": "按照开始条件添加年龄",
+        "desc_payerplan": "按照付费方计划周期开始的年龄筛选付费方计划周期"
       },
       "addAgeAtEnd": {
-        "title_era": "Add Age at Era End Criteria",
-        "desc_era": "Filter Condition Eras by age at era end.",
-        "title_dose": "Add Age at Era End Criteria",
-        "desc_dose": "Filter Drug Eras by age at era end.",
-        "title_drug": "Add Age at Era End Criteria",
-        "desc_drug": "Filter Drug Eras by age at era end.",
-        "title_observationperiod": "Add Age at End Criteria",
-        "desc_observationperiod": "Filter Periods by age at End.",
-        "title_payerplan": "Add Age at End Criteria",
-        "desc_payerplan": "Filter Periods by Age at End."
+        "title_era": "按照周期结束标准添加年龄",
+        "desc_era": "按照诊断结束时的年龄筛选诊断周期",
+        "title_dose": "按照周期结束标准添加年龄条件",
+        "desc_dose": "按照剂量周期结束时的年龄筛选诊断周期",
+        "title_drug": "按照周期结束标准添加年龄",
+        "desc_drug": "按照用药周期结束时的年龄筛选用药周期",
+        "title_observationperiod": "添加年龄结束条件",
+        "desc_observationperiod": "按照观察期结束的年龄筛选观察期",
+        "title_payerplan": "按照结束条件添加年龄",
+        "desc_payerplan": "按照付费方计划周期结束的年龄筛选付费方计划周期"
       },
       "addGender": {
-        "title_era": "Add Gender Criteria",
-        "desc_era": "Filter Condition Eras based on Gender.",
-        "title_occurrence": "Add Gender",
-        "desc_occurrence": "Filter Condition Occurrences based on Gender.",
-        "title_death": "Add Gender Criteria",
-        "desc_death": "Filter Deaths based on Gender.",
-        "title_deviceexposure": "Add Gender Criteria",
-        "desc_deviceexposure": "Filter Device Exposures based on Gender.",
-        "title_dose": "Add Gender Criteria",
-        "desc_dose": "Filter Drug Eras based on Gender.",
-        "title_drug": "Add Gender Criteria",
-        "desc_drug": "Filter Drug Eras based on Gender.",
-        "title_drugexposure": "Add Gender Criteria",
-        "desc_drugexposure": "Filter Drug Exposures based on Gender.",
-        "title_measurement": "Add Gender Criteria",
-        "desc_measurement": "Filter Measurements based on Gender.",
-        "title_observation": "Add Gender Criteria",
-        "desc_observation": "Filter Observations based on Gender.",
-        "title_payerplan": "Add Gender Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods based on Gender.",
-        "title_procedureoccurrence": "Add Gender Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences based on Gender.",
-        "title_specimen": "Add Gender Criteria",
-        "desc_specimen": "Filter specimens based on Gender.",
-        "title_visit": "Add Gender Criteria",
-        "desc_visit": "Filter Visit Occurrences based on Gender.",
-        "title_demographic": "Add Gender Criteria",
-        "desc_demographic": "Filter events based on Gender."
+        "title_era": "添加性别条件",
+        "desc_era": "按照性别筛选诊断周期",
+        "title_occurrence": "添加性别条件",
+        "desc_occurrence": "按照性别筛选诊断",
+        "title_death": "添加性别条件",
+        "desc_death": "按照性别筛选死亡",
+        "title_deviceexposure": "添加性别条件",
+        "desc_deviceexposure": "按照性别筛选设备使用",
+        "title_dose": "添加性别条件",
+        "desc_dose": "按照性别筛选剂量周期",
+        "title_drug": "添加性别条件",
+        "desc_drug": "按照性别筛选用药周期",
+        "title_drugexposure": "添加性别",
+        "desc_drugexposure": "按照性别筛选药物使用",
+        "title_measurement": "添加性别",
+        "desc_measurement": "按照性别筛选测量",
+        "title_observation": "添加性别",
+        "desc_observation": "按照性别筛选观察",
+        "title_payerplan": "添加性别",
+        "desc_payerplan": "按照性别筛选付费方计划周期",
+        "title_procedureoccurrence": "添加性别",
+        "desc_procedureoccurrence": "按照性别筛选操作",
+        "title_specimen": "添加性别条件",
+        "desc_specimen": "按照性别筛选标本",
+        "title_visit": "添加性别条件",
+        "desc_visit": "按照性别筛选就诊",
+        "title_demographic": "添加性别条件",
+        "desc_demographic": "按照性别筛选事件"
       },
       "addStartDate": {
-        "title_era": "Add Start Date Criteria",
-        "desc_era": "Filter Condition Eras by the Era Start Date.",
-        "title_occurrence": "Add Condition Start Date",
-        "desc_occurrence": "Filter Condition Occurrences by the Condition Start Date.",
-        "title_deviceexposure": "Add Start Date Criteria",
-        "desc_deviceexposure": "Filter Device Exposures by the Exposure Start Date.",
-        "title_dose": "Add Era Start Date Criteria",
-        "desc_dose": "Filter Dose Eras by the Era Start Date.",
-        "title_drug": "Add Era Start Date Criteria",
-        "desc_drug": "Filter Drug Eras by the Era Start Date.",
-        "title_drugexposure": "Add Start Date Criteria",
-        "desc_drugexposure": "Filter Drug Exposures by the Drug Exposure Start Date.",
-        "title_observationperiod": "Add Period Start Date Criteria",
-        "desc_observationperiod": "Filter Observation Periods by Start Date.",
-        "title_payerplan": "Add Period Start Date Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by Start Date.",
-        "title_visit": "Add Start Date Criteria",
-        "desc_visit": "Filter Visit Occurrences by the Condition Start Date.",
-        "title_demographic": "Add Start Date Criteria",
-        "desc_demographic": "Filter events based by Start Date."
+        "title_era": "添加开始日期条件",
+        "desc_era": "按照周期开始日期筛选诊断周期",
+        "title_occurrence": "添加诊断开始日期条件",
+        "desc_occurrence": "按照诊断开始日期筛选诊断",
+        "title_deviceexposure": "添加开始日期条件",
+        "desc_deviceexposure": "按照操作开始日期筛选设备使用",
+        "title_dose": "添加开始日期条件",
+        "desc_dose": "按照周期开始日期筛选剂量周期",
+        "title_drug": "添加开始日期条件",
+        "desc_drug": "按照周期开始日期筛选用药周期",
+        "title_drugexposure": "添加开始日期条件",
+        "desc_drugexposure": "按照药物使用开始日期筛选药物使用",
+        "title_observationperiod": "添加周期开始日期",
+        "desc_observationperiod": "按照观察期周期开始日期筛选观察期",
+        "title_payerplan": "添加开始日期条件",
+        "desc_payerplan": "按照开始日期筛选付费方计划周期",
+        "title_visit": "添加开始日期条件",
+        "desc_visit": "按照诊断开始日期筛选就诊",
+        "title_demographic": "添加事件开始日期条件",
+        "desc_demographic": "按照开始日期筛选事件"
       },
       "addEndDate": {
-        "title_era": "Add End Date Criteria",
-        "desc_era": "Filter Condition Eras by the Era End Date",
-        "title_occurrence": "Add Condition End Date",
-        "desc_occurrence": "Filter Condition Occurrences by the Condition End Date.",
-        "title_deviceexposure": "Add End Date Criteria",
-        "desc_deviceexposure": "Filter Device Exposures by the Exposure End Date.",
-        "title_dose": "Add Era End Date Criteria",
-        "desc_dose": "Filter Dose Eras by the Era End Date",
-        "title_drug": "Add Era End Date Criteria",
-        "desc_drug": "Filter Drug Eras by the Era End Date.",
-        "title_drugexposure": "Add End Date Criteria",
-        "desc_drugexposure": "Filter Drug Exposures by the Drug Exposure End Date.",
-        "title_observationperiod": "Add Period End Date Criteria",
-        "desc_observationperiod": "Filter Observation Periods by End Date.",
-        "title_payerplan": "Add Period End Date Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by End Date.",
-        "title_visit": "Add End Date Criteria",
-        "desc_visit": "Filter Visit Occurrences by the Condition End Date.",
-        "title_demographic": "Add Event End Date Criteria",
-        "desc_demographic": "Filter events based by End Date."
+        "title_era": "添加结束日期条件",
+        "desc_era": "按照周期结束日期筛选诊断周期",
+        "title_occurrence": "添加诊断结束日期条件",
+        "desc_occurrence": "按照诊断结束日期筛选诊断",
+        "title_deviceexposure": "添加结束日期条件",
+        "desc_deviceexposure": "按照操作结束日期筛选设备使用",
+        "title_dose": "添加结束日期条件",
+        "desc_dose": "按照周期结束日期筛选剂量周期",
+        "title_drug": "添加结束日期条件",
+        "desc_drug": "按照周期结束日期筛选用药周期",
+        "title_drugexposure": "添加结束日期条件",
+        "desc_drugexposure": "按照药物使用结束日期筛选药物使用",
+        "title_observationperiod": "添加周期结束日期",
+        "desc_observationperiod": "按照观察期周期结束日期筛选观察期",
+        "title_payerplan": "添加结束日期条件",
+        "desc_payerplan": "按照结束日期筛选付费方计划周期",
+        "title_visit": "添加结束日期条件",
+        "desc_visit": "按照诊断结束日期筛选就诊",
+        "title_demographic": "添加事件结束日期条件",
+        "desc_demographic": "按照结束日期筛选事件"
       },
       "addConditonCount": {
-        "title_era": "Add Era Conditon Count Criteria",
-        "desc_era": "Filter Condition Eras by the Condition Count.",
-        "title_drug": "Add Era Exposure Count Criteria",
-        "desc_drug": "Filter Drug Eras by the Exposure Count."
+        "title_era": "添加诊断周期计数条件",
+        "desc_era": "按照条件计数筛选诊断周期",
+        "title_drug": "添加用药周期药物使用量条件",
+        "desc_drug": "按照药物使用数量筛选用药周期"
       },
       "addRace": {
-        "title_demographic": "Add Race Criteria",
-        "desc_demographic": "Filter events based on Race."
+        "title_demographic": "添加人种条件",
+        "desc_demographic": "按照人种筛选事件"
       },
       "addEthnicity": {
-        "title_demographic": "Add Ethnicity Criteria",
-        "desc_demographic": "Filter events based on Ethnicity."
+        "title_demographic": "添加种族条件",
+        "desc_demographic": "按照种族筛选事件"
       },
       "addLength": {
-        "title_era": "Add Era Length Criteria",
-        "desc_era": "Filter Condition Eras by the Era duration.",
-        "title_dose": "Add Era Length Criteria",
-        "desc_dose": "Filter Drug Eras by the Era duration.",
-        "title_drug": "Add Era Length Criteria",
-        "desc_drug": "Filter Drug Eras by the Era duration.",
-        "title_observationperiod": "Add Period Length Criteria",
-        "desc_observationperiod": "Filter Observation Periods by duration.",
-        "title_payerplan": "Add Period Length Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by duration.",
-        "title_visit": "Add Visit Length Criteria",
-        "desc_visit": "Filter Visit Occurrences by duration."
+        "title_era": "添加周期长度条件",
+        "desc_era": "按照时代持续时间筛选诊断周期",
+        "title_dose": "添加周期长度条件",
+        "desc_dose": "按照时代持续时间筛选剂量周期",
+        "title_drug": "添加周期长度条件",
+        "desc_drug": "按照时代持续时间筛选用药周期",
+        "title_observationperiod": "添加观察期长度条件",
+        "desc_observationperiod": "按照持续时间筛选观察期",
+        "title_payerplan": "添加周期长度条件",
+        "desc_payerplan": "按照周期时长筛选付费方计划周期",
+        "title_visit": "添加就诊时长条件",
+        "desc_visit": "按照就诊时长筛选就诊"
       },
       "addNested": {
-        "title_era": "Add Nested Criteria...",
-        "desc_era": "Apply criteria using the condition era as the index event",
-        "title_occurrence": "Add Nested Criteria...",
-        "desc_occurrence": "Apply criteria using the condition occurrence as the index event.",
-        "title_death": "Add Nested Criteria...",
-        "desc_death": "Apply criteria using the death occurrence as the index event.",
-        "title_deviceexposure": "Add Nested Criteria...",
-        "desc_deviceexposure": "Apply criteria using the device exposure as the index event.",
-        "title_dose": "Add Nested Criteria...",
-        "desc_dose": "Apply criteria using the dose era as the index event.",
-        "title_drug": "Add Nested Criteria...",
-        "desc_drug": "Apply criteria using the drug era as the index event.",
-        "title_drugexposure": "Add Nested Criteria...",
-        "desc_drugexposure": "Apply criteria using the drug exposure as the index event.",
-        "title_measurement": "Add Nested Criteria...",
-        "desc_measurement": "Apply criteria using the measurement as the index event.",
-        "title_observation": "Add Nested Criteria...",
-        "desc_observation": "Apply criteria using the observation as the index event",
-        "title_observationperiod": "Add Nested Criteria...",
-        "desc_observationperiod": "Apply criteria using the observation period as the index event.",
-        "title_payerplan": "Add Nested Criteria...",
-        "desc_payerplan": "Apply criteria using the payer plan period as the index event.",
-        "title_procedureoccurrence": "Add Nested Criteria...",
-        "desc_procedureoccurrence": "Apply criteria using the procedure occurrence as the index event.",
-        "title_specimen": "Add Nested Criteria...",
-        "desc_specimen": "Apply criteria using the specimen as the index event.",
-        "title_visit": "Add Nested Criteria...",
-        "desc_visit": "Apply criteria using the visit occurrence as the index event."
+        "title_era": "添加嵌套条件",
+        "desc_era": "应用诊断日期作为索引日期的条件",
+        "title_occurrence": "添加嵌套条件",
+        "desc_occurrence": "应用诊断日期作为索引日期的条件",
+        "title_death": "添加嵌套条件",
+        "desc_death": "应用诊断日期作为索引日期的条件",
+        "title_deviceexposure": "添加嵌套条件",
+        "desc_deviceexposure": "应用设备使用日期作为索引日期",
+        "title_dose": "添加嵌套条件",
+        "desc_dose": "应用诊断日期作为索引日期的条件",
+        "title_drug": "添加嵌套条件",
+        "desc_drug": "应用诊断日期作为索引日期的条件",
+        "title_drugexposure": "添加嵌套条件",
+        "desc_drugexposure": "应用诊断日期作为索引日期的条件",
+        "title_measurement": "添加嵌套条件",
+        "desc_measurement": "应用诊断日期作为索引日期的条件",
+        "title_observation": "添加嵌套条件",
+        "desc_observation": "应用观察日期作为索引日期",
+        "title_observationperiod": "添加嵌套条件",
+        "desc_observationperiod": "应用诊断日期作为索引日期的条件",
+        "title_payerplan": "添加嵌套条件",
+        "desc_payerplan": "应用诊断日期作为索引日期的条件",
+        "title_procedureoccurrence": "添加嵌套条件",
+        "desc_procedureoccurrence": "应用操作日期作为索引日期",
+        "title_specimen": "添加嵌套条件",
+        "desc_specimen": "应用诊断日期作为索引日期的条件",
+        "title_visit": "添加嵌套条件",
+        "desc_visit": "应用诊断日期作为索引日期的条件"
       },
       "addAge": {
-        "title_occurrence": "Add Age at Occurrence",
-        "desc_occurrence": "Filter Condition Occurrences by age at occurrence.",
-        "title_death": "Add Age at Occurrence Criteria",
-        "desc_death": "Filter by age at death.",
-        "title_deviceexposure": "Add Age at Occurrence Criteria",
-        "desc_deviceexposure": "Filter Device Exposures by age at occurrence.",
-        "title_drugexposure": "Add Age at Occurrence Criteria",
-        "desc_drugexposure": "Filter Drug Exposures by age at occurrence.",
-        "title_measurement": "Add Age at Occurrence Criteria",
-        "desc_measurement": "Filter Measurements by age at occurrence.",
-        "title_observation": "Add Age at Occurrence Criteria",
-        "desc_observation": "Filter Condition Occurrences by age at occurrence.",
-        "title_procedureoccurrence": "Add Age at Occurrence Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences by age at occurrence.",
-        "title_specimen": "Add Age at Occurrence Criteria",
-        "desc_specimen": "Filter specimens by age at occurrence.",
-        "title_visit": "Add Age at Occurrence Criteria",
-        "desc_visit": "Filter Visit Occurrences by age at occurrence.",
-        "title_demographic": "Add Age Criteria",
-        "desc_demographic": "Filter events based on age."
+        "title_occurrence": "添加诊断时的年龄条件",
+        "desc_occurrence": "按照诊断发生时的年龄筛选诊断",
+        "title_death": "添加发生时的年龄标准条件",
+        "desc_death": "按照死亡年龄筛选",
+        "title_deviceexposure": "按照医疗设备使用标准添加年龄",
+        "desc_deviceexposure": "按照设备使用时的年龄筛选",
+        "title_drugexposure": "按照药物使用添加年龄",
+        "desc_drugexposure": "按照药物使用时的年龄筛选药物使用",
+        "title_measurement": "按照测量添加年龄",
+        "desc_measurement": "按照测量时的年龄筛选测量",
+        "title_observation": "按照观察添加年龄",
+        "desc_observation": "按照观察时的年龄筛选观察",
+        "title_procedureoccurrence": "按照操作发生添加年龄",
+        "desc_procedureoccurrence": "按照操作发生时的年龄筛选操作",
+        "title_specimen": "添加出现时年龄条件",
+        "desc_specimen": "按照标本出现时的年龄筛选标本",
+        "title_visit": "添加就诊时年龄条件",
+        "desc_visit": "按照就诊时的年龄筛选就诊",
+        "title_demographic": "添加年龄条件",
+        "desc_demographic": "按照年龄筛选事件"
       },
       "addType": {
-        "title_occurrence": "Add Condition Type",
-        "desc_occurrence": "Filter Condition Occurrences by the Condition Type.",
-        "title_death": "Add Death Type Criteria",
-        "desc_death": "Filter by Death Type.",
-        "title_deviceexposure": "Add Device Type Criteria",
-        "desc_deviceexposure": "Filter Device Exposures by the Exposure Type.",
-        "title_drugexposure": "Add Drug Type Criteria",
-        "desc_drugexposure": "Filter Drug Exposures by the Drug Type.",
-        "title_measurement": "Add Measurement Type Criteria",
-        "desc_measurement": "Filter Measurements by the Measurement Type.",
-        "title_observation": "Add Observation Type Criteria",
-        "desc_observation": "Filter Observations by the Type.",
-        "title_observationperiod": "Add Period Type Criteria",
-        "desc_observationperiod": "Filter Observation Periods by Type.",
-        "title_procedureoccurrence": "Add Procedure Type Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences by the Procedure Type.",
-        "title_specimen": "Add Specimen Type Criteria",
-        "desc_specimen": "Filter Specimen by the Type.",
-        "title_visit": "Add Visit Type Criteria",
-        "desc_visit": "Filter Condition Occurrences by the Condition Type."
+        "title_occurrence": "添加诊断类型条件",
+        "desc_occurrence": "按照诊断类型筛选诊断",
+        "title_death": "添加死亡类型条件",
+        "desc_death": "按照死亡类型筛选",
+        "title_deviceexposure": "添加设备类型条件",
+        "desc_deviceexposure": "按照设备类型筛选",
+        "title_drugexposure": "添加药物类型条件",
+        "desc_drugexposure": "按照药物类型标准筛选药物使用",
+        "title_measurement": "添加测量类型条件",
+        "desc_measurement": "按照测量类型标准筛选测量",
+        "title_observation": "添加观察类型条件",
+        "desc_observation": "按照观察类型标准筛选观察",
+        "title_observationperiod": "添加观察期类型条件",
+        "desc_observationperiod": "按照观察期类型筛选观察期",
+        "title_procedureoccurrence": "添加操作类型条件",
+        "desc_procedureoccurrence": "按照操作类型标准筛选操作.",
+        "title_specimen": "添加标本条件",
+        "desc_specimen": "按照标本类型筛选标本",
+        "title_visit": "添加就诊类型条件",
+        "desc_visit": "按照诊断类型筛选就诊"
       },
       "addStopReason": {
-        "title_occurrence": "Add Stop Reason",
-        "desc_occurrence": "Filter Condition Occurrences by the Stop Reason.",
-        "title_drugexposure": "Add Stop Reason Criteria",
-        "desc_drugexposure": "Filter Drug Exposures by the Stop Reason."
+        "title_occurrence": "添加停止原因条件",
+        "desc_occurrence": "按照停止原因筛选诊断",
+        "title_drugexposure": "添加停止原因条件",
+        "desc_drugexposure": "按照停止原因筛选药物使用"
       },
       "addPayerConcept": {
-        "title_payerplan": "Add Payer Concept Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by Payer Concept."
+        "title_payerplan": "添加付费方概念条件",
+        "desc_payerplan": "按照付费方概念筛选付费方计划周期"
       },
       "addPlanConcept": {
-        "title_payerplan": "Add Plan Concept Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by Plan Concept."
+        "title_payerplan": "添加计划概念条件",
+        "desc_payerplan": "按照计划概念筛选付费方计划周期"
       },
       "addSponsorConcept": {
-        "title_payerplan": "Add Sponsor Concept Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by Sponsor Concept."
+        "title_payerplan": "添加赞助商概念条件",
+        "desc_payerplan": "按照赞助商概念筛选付费方计划周期"
       },
       "addStopReasonConcept": {
-        "title_payerplan": "Add Stop Reason Concept Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by Stop Reason Concept."
+        "title_payerplan": "添加停止原因条件",
+        "desc_payerplan": "按照停止原因筛选付费方计划周期"
       },
       "addPayerSourceConcept": {
-        "title_payerplan": "Add Payer Source Concept Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by Payer Source Concept."
+        "title_payerplan": "添加付费方源概念条件",
+        "desc_payerplan": "按照付费方源概念筛选付费方计划周期"
       },
       "addPlanSourceConcept": {
-        "title_payerplan": "Add Plan Source Concept Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by Plan Source Concept."
+        "title_payerplan": "添加计划源概念条件",
+        "desc_payerplan": "按照计划源概念筛选付费方计划周期"
       },
       "addSponsorSourceConcept": {
-        "title_payerplan": "Add Sponsor Source Concept Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by Sponsor Source Concept."
+        "title_payerplan": "添加赞助方源概念条件",
+        "desc_payerplan": "按照赞助方源概念条件筛选付费方计划周期"
       },
       "addStopReasonSourceConcept": {
-        "title_payerplan": "Add Stop Reason Source Concept Criteria",
-        "desc_payerplan": "Filter Payer Plan Periods by Stop Reason Source Concept."
+        "title_payerplan": "添加停止原因条件",
+        "desc_payerplan": "按照停止原因筛选付费方计划周期"
       },
       "addSourceConcept": {
-        "title_occurrence": "Add Condition Source Concept",
-        "desc_occurrence": "Filter Condition Occurrences by the Condition Source Concept.",
-        "title_death": "Add Cause of Death Source Concept Criteria",
-        "desc_death": "Filter Death by the Death Source Concept.",
-        "title_deviceexposure": "Add Device Source Concept Criteria",
-        "desc_deviceexposure": "Filter Device Exposures by the Device Source Concept.",
-        "title_measurement": "Add Measurement Source Concept Criteria",
-        "desc_measurement": "Filter Measurements by the Measurement Source Concept.",
-        "title_observation": "Add Observation Source Concept Criteria",
-        "desc_observation": "Filter Observations by the Source Concept.",
-        "title_procedureoccurrence": "Add Procedure Source Concept Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences by the Procedure Source Concept.",
-        "title_visit": "Add Visit Source Concept Criteria",
-        "desc_visit": "Filter Visit Occurrences by the Visit Source Concept."
+        "title_occurrence": "添加诊断源概念条件",
+        "desc_occurrence": "按照诊断源概念筛选诊断",
+        "title_death": "添加死亡源概念的原因条件",
+        "desc_death": "按照死亡源概念筛选",
+        "title_deviceexposure": "添加设备源概念标准条件",
+        "desc_deviceexposure": "按照设备源概念筛选",
+        "title_measurement": "添加测量源概念条件",
+        "desc_measurement": "按照测量源概念筛选测量",
+        "title_observation": "添加观察源概念条件",
+        "desc_observation": "按照观察源概念筛选观察",
+        "title_procedureoccurrence": "添加操作源概念条件",
+        "desc_procedureoccurrence": "按照操作源概念筛选药物暴露",
+        "title_visit": "添加就诊源概念条件",
+        "desc_visit": "按照就诊源概念筛选就诊"
       },
       "addProviderSpecialty": {
-        "title_occurrence": "Add Provider Specialty",
-        "desc_occurrence": "Filter Condition Occurrences based on provider specialty.",
-        "title_deviceexposure": "Add Provider Specialty Criteria",
-        "desc_deviceexposure": "Filter Device Exposures based on provider specialty.",
-        "title_drugexposure": "Add Provider Specialty Criteria",
-        "desc_drugexposure": "Filter Drug Exposures based on provider specialty.",
-        "title_measurement": "Add Provider Specialty Criteria",
-        "desc_measurement": "Filter Measurements based on provider specialty.",
-        "title_observation": "Add Provider Specialty Criteria",
-        "desc_observation": "Filter Observations based on provider specialty.",
-        "title_procedureoccurrence": "Add Provider Specialty Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences based on provider specialty.",
-        "title_visit": "Add Provider Specialty Criteria",
-        "desc_visit": "Filter Visit Occurrences based on provider specialty."
+        "title_occurrence": "添加提供者领域条件",
+        "desc_occurrence": "按照医疗保健提供者领域筛选诊断",
+        "title_deviceexposure": "添加提供者领域条件",
+        "desc_deviceexposure": "按照医疗保健提供者领域筛选",
+        "title_drugexposure": "添加提供者领域条件",
+        "desc_drugexposure": "按照医疗保健提供者领域筛选药物使用",
+        "title_measurement": "添加提供者领域条件",
+        "desc_measurement": "按照医疗保健提供者领域筛选测量",
+        "title_observation": "添加提供者领域条件",
+        "desc_observation": "按照医疗保健提供者领域筛选观察",
+        "title_procedureoccurrence": "添加提供者领域条件",
+        "desc_procedureoccurrence": "按照医疗保健提供者领域筛选操作",
+        "title_visit": "添加提供者领域条件",
+        "desc_visit": "按照医疗保健提供者领域筛选就诊"
       },
       "addDate": {
-        "title_death": "Add Death Date Criteria",
-        "desc_death": "Filter Death by Date.",
-        "title_measurement": "Add Measurement Date Criteria",
-        "desc_measurement": "Filter Measurements by Date.",
-        "title_observation": "Add Observation Date Criteria",
-        "desc_observation": "Filter Observations by Date.",
-        "title_procedureoccurrence": "Add Start Date Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences by the Procedure Start Date.",
-        "title_specimen": "Add Specimen Date Criteria",
-        "desc_specimen": "Filter Specimen by Date."
+        "title_death": "添加死亡日期条件",
+        "desc_death": "按照死亡日期筛选",
+        "title_measurement": "添加测量日期条件",
+        "desc_measurement": "按照测量日期筛选测量",
+        "title_observation": "添加观察日期条件",
+        "desc_observation": "按照测量日期筛选观察",
+        "title_procedureoccurrence": "添加开始日期条件",
+        "desc_procedureoccurrence": "按照操作开始日期筛选设备使用",
+        "title_specimen": "添加标本日期条件",
+        "desc_specimen": "按照标本日期筛选标本"
       },
       "addUniqueId": {
-        "title_deviceexposure": "Add Unique Id Criteria",
-        "desc_deviceexposure": "Filter Device Exposures by Device Unique Id."
+        "title_deviceexposure": "添加唯一ID标准条件",
+        "desc_deviceexposure": "按照设备使用是的唯一ID筛选"
       },
       "addQuantity": {
-        "title_deviceexposure": "Add Quantity Criteria",
-        "desc_deviceexposure": "Filter Device Exposures by Quantity.",
-        "title_drugexposure": "Add Quantity Criteria",
-        "desc_drugexposure": "Filter Drug Exposures by Quantity.",
-        "title_procedureoccurrence": "Add Quantity Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences by Quantity.",
-        "title_specimen": "Add Quantity Criteria",
-        "desc_specimen": "Filter Observations by the Quantity."
+        "title_deviceexposure": "添加数量标准条件",
+        "desc_deviceexposure": "按照设备使用次数筛选",
+        "title_drugexposure": "添加数量条件",
+        "desc_drugexposure": "按照数量筛选药物使用",
+        "title_procedureoccurrence": "添加数量条件",
+        "desc_procedureoccurrence": "按照数量筛选操作",
+        "title_specimen": "添加数量条件",
+        "desc_specimen": "按照标本数量筛选标本"
       },
       "addUnit": {
-        "title_dose": "Add Dose Unit Criteria",
-        "desc_dose": "Filter Dose Eras by the Unit.",
-        "title_drugexposure": "Add Dose Unit Criteria",
-        "desc_drugexposure": "Filter Drug Exposures by Dose Unit.",
-        "title_measurement": "Add Unit Criteria",
-        "desc_measurement": "Filter Measurements by the Unit.",
-        "title_observation": "Add Unit Criteria",
-        "desc_observation": "Filter Observations by Unit.",
-        "title_specimen": "Add Unit Criteria",
-        "desc_specimen": "Filter Specimens by Unit."
+        "title_dose": "添加剂量单位条件",
+        "desc_dose": "按照药物剂量单位筛选剂量周期",
+        "title_drugexposure": "添加剂量单位条件",
+        "desc_drugexposure": "按照剂量单位筛选药物使用",
+        "title_measurement": "添加单位条件",
+        "desc_measurement": "按照单位筛选测量",
+        "title_observation": "添加单位条件",
+        "desc_observation": "按照单位筛选观察",
+        "title_specimen": "添加单位条件",
+        "desc_specimen": "按照标本单位筛选标本"
       },
       "addValue": {
-        "title_dose": "Add Dose Value Criteria",
-        "desc_dose": "Filter Dose Eras by the dose value.",
-        "title_measurement": "Add Value as Number Criteria",
-        "desc_measurement": "Filter Measurements by Value as Number.",
-        "title_observation": "Add Value As Number Criteria",
-        "desc_observation": "Filter Observations by the Value As Number."
+        "title_dose": "添加剂量值条件",
+        "desc_dose": "按照剂量数值筛选剂量周期",
+        "title_measurement": "添加测量值条件",
+        "desc_measurement": "按照测量值筛选测量",
+        "title_observation": "添加数字值条件",
+        "desc_observation": "按照存储为数字的观察结果筛选观察"
       },
       "addRefills": {
-        "title_drugexposure": "Add Refills Criteria",
-        "desc_drugexposure": "Filter Drug Exposures by Refills."
+        "title_drugexposure": "添加药物补充条件",
+        "desc_drugexposure": "按照补充条件筛选药物使用"
       },
       "addDaysSupply": {
-        "title_drugexposure": "Add Days Supply Criteria",
-        "desc_drugexposure": "Filter Drug Exposures by Days Supply."
+        "title_drugexposure": "添加供应天数条件",
+        "desc_drugexposure": "按照供应天数筛选药物使用"
       },
       "addRoute": {
-        "title_drugexposure": "Add Route Criteria",
-        "desc_drugexposure": "Filter Drug Exposures by Route."
+        "title_drugexposure": "添加用药途径条件",
+        "desc_drugexposure": "按照用药途径筛选药物使用"
       },
       "addEffective": {
-        "title_drugexposure": "Add Effective Dose Criteria",
-        "desc_drugexposure": "Filter Drug Exposures by Effective Dose."
+        "title_drugexposure": "添加有效剂量条件",
+        "desc_drugexposure": "按照有效剂量筛选药物使用"
       },
       "addLotNumber": {
-        "title_drugexposure": "Add Lot Number Criteria",
-        "desc_drugexposure": "Filter Drug Exposures by Lot Number."
+        "title_drugexposure": "添加批号条件",
+        "desc_drugexposure": "按照药品编号筛选药物使用"
       },
       "addSource": {
-        "title_drugexposure": "Add Drug Source Concept Criteria",
-        "desc_drugexposure": "Filter Drug Exposures by the Drug Source Concept."
+        "title_drugexposure": "添加药物源概念条件",
+        "desc_drugexposure": "按照药物源概念筛选药物使用"
       },
       "addOperator": {
-        "title_measurement": "Add Operator Criteria",
-        "desc_measurement": "Filter Measurements by Operator."
+        "title_measurement": "添加操作员条件",
+        "desc_measurement": "按照操作员筛选测量"
       },
       "addValueAsString": {
-        "title_observation": "Add Value As String Criteria",
-        "desc_observation": "Filter Observations by the Value As String."
+        "title_observation": "添加字符值条件",
+        "desc_observation": "按照存储为字符的观察结果筛选观察"
       },
       "addValueAsConcept": {
-        "title_measurement": "Add Value as Concept Criteria",
-        "desc_measurement": "Filter Measurements by Value as Concept.",
-        "title_observation": "Add Value as Concept Criteria",
-        "desc_observation": "Filter Observations by the Value As Concept."
+        "title_measurement": "添加测量概念条件",
+        "desc_measurement": "按照测量概念值筛选测量",
+        "title_observation": "添加概念值条件",
+        "desc_observation": "按照存储为概念ID的结果筛选观察"
       },
       "addAbnormal": {
-        "title_measurement": "Add Abnormal Result Criteria",
-        "desc_measurement": "Filter Measurements to include those which fall outside of normal range."
+        "title_measurement": "添加异常结果条件",
+        "desc_measurement": "筛选超出正常范围值的测量"
       },
       "addRangeLow": {
-        "title_measurement": "Add Low Range Criteria",
-        "desc_measurement": "Filter Measurements Low Range."
+        "title_measurement": "添加下限范围条件",
+        "desc_measurement": "按照测量值下限范围筛选测量"
       },
       "addRangeHigh": {
-        "title_measurement": "Add High Range Criteria",
-        "desc_measurement": "Filter Measurements by the Measurement Type."
+        "title_measurement": "添加上限范围条件",
+        "desc_measurement": "按照测量值上限范围筛选测量"
       },
       "addRangeLowRatio": {
-        "title_measurement": "Add Low Range Ratio Criteria",
-        "desc_measurement": "Filter Measurements by the Ratio of Value as Number to Range Low."
+        "title_measurement": "添加下限范围比率条件",
+        "desc_measurement": "按照测量值除以下线范围值筛选测量"
       },
       "addRangeHighRatio": {
-        "title_measurement": "Add High Range Ratio Criteria",
-        "desc_measurement": "Filter Measurements by the Ratio of Value as Number to Range High."
+        "title_measurement": "添加上限范围比率条件",
+        "desc_measurement": "按照测量值除以上限范围值筛选测量"
       },
       "addQualifier": {
-        "title_observation": "Add Qualifier Criteria",
-        "desc_observation": "Filter Observations by Qualifier."
+        "title_observation": "添加限定符条件",
+        "desc_observation": "按照限定符条件筛选观察"
       },
       "addUserDefined": {
-        "title_observationperiod": "Specify Start and End Dates",
-        "desc_observationperiod": "Specify start and end date to use for the Observation Period.",
-        "title_payerplan": "Specify Start and End Dates",
-        "desc_payerplan": "Specify start and end dates to use for Payer Plan Period."
+        "title_observationperiod": "开始日期和结束日期定义",
+        "desc_observationperiod": "定义观察期的开始日期和结束日期",
+        "title_payerplan": "开始日期和结束日期定义",
+        "desc_payerplan": "定义付费方计划周期的开始日期和结束日期"
       },
       "addModifier": {
-        "title_procedureoccurrence": "Add Modifier Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences by the Modifier."
+        "title_procedureoccurrence": "添加修饰符条件",
+        "desc_procedureoccurrence": "按照修饰符筛选操作"
       },
       "addAnatomicSite": {
-        "title_specimen": "Add Anatomic Site Criteria",
-        "desc_specimen": "Filter Specimens by the Anatomic Site."
+        "title_specimen": "添加解剖部位条件",
+        "desc_specimen": "按照解剖部位筛选标本"
       },
       "addDiseaseStatus": {
-        "title_specimen": "Add Disease Status Criteria",
-        "desc_specimen": "Filter Specimens by the Disease Status."
+        "title_specimen": "添加疾病状态条件",
+        "desc_specimen": "按照疾病状态筛选标本"
       },
       "addSourceId": {
-        "title_specimen": "Add Source ID Criteria",
-        "desc_specimen": "Filter Specimens by the Source ID."
+        "title_specimen": "添加源编号条件",
+        "desc_specimen": "按照源编号筛选标本"
       },
       "addPlaceService": {
-        "title_visit": "Add Place of Service Criteria",
-        "desc_visit": "Filter Visit Occurrences based on Place of Service."
+        "title_visit": "添加服务地点条件",
+        "desc_visit": "按照医疗保健服务地点筛选就诊"
       },
       "addPlaceServiceLocation": {
-        "title_visit": "Add Place of Service Location Criteria",
-        "desc_visit": "Filter Visit Occurrences based on where Place of Service is located."
+        "title_visit": "添加服务位置条件",
+        "desc_visit": "按照医疗保健服务位置筛选就诊"
       },
       "addPlaceServiceDistance": {
         "title_visit": "Add Place of Service Distance Criteria",
@@ -3286,7 +3286,7 @@
     "newEntityNames": {
       "characterization": "New Characterization",
       "cohortDefinition": "New Cohort Definition",
-      "conceptSet": "New Concept Set",
+      "conceptSet": "新概念集",
       "featureAnalysis": "New Feature Analysis",
       "incidenceRate": "New Incidence Rate Analysis",
       "pathway": "New Cohort Pathway",
@@ -3338,13 +3338,13 @@
   },
   "predictions": {
     "allExecutions": "All executions (<%=length%>)",
-    "analysisSettings": "Analysis Settings",
+    "analysisSettings": "分析设置",
     "confirmCatchSave": "An error occurred while attempting to save a prediction analysis.",
     "confirmChanges": "Patient level prediction changes are not saved. Would you like to continue?",
     "confirmDelete": "Delete patient level prediction specification? Warning: deletion can not be undone!",
     "confirmSave": "A prediction analysis with this name already exists. Please choose a different name.",
     "covariateSettingsDesc": "Add or update the covariate settings",
-    "covariateSettingsTitle": "Covariate Settings",
+    "covariateSettingsTitle": "协变量设置",
     "descriptionPlaceholder": "enter a description here (1000 characters max)",
     "downloadLatestResult": "Download latest result",
     "downloadStudyPackage": "Download Study Package",
@@ -3379,21 +3379,21 @@
       "predictionSelectCovariates": "Select Covariates"
     },
     "emptyMessageTitle": "Patient Level Prediction name is empty.",
-    "export": "Export",
+    "export": "导出",
     "fullAnalysisList": "Full Analysis List",
     "generate": "Generate",
     "generating": "Generating...",
     "generations": "Generations",
-    "import": "Import",
+    "import": "导入",
     "inputTypes": {
-      "adaBoost": "Ada Boost",
+      "adaBoost": "自适应增强",
       "adaBoostSettings": {
         "desc_learningRate": "Learning rate shrinks the contribution of each classifier. There is a trade-off between learning rate and nEstimators.",
         "desc_nEstimators": "The maximum number of estimators at which boosting is terminated",
         "name_learningRate": "Learning rate",
         "name_nEstimators": "Maximum number of estimators"
       },
-      "decisionTree": "Decision Tree",
+      "decisionTree": "决策树",
       "decisionTreeSettings": {
         "desc_classWeight": "Class weight",
         "desc_maxDepth": "Maximum number of interactions - a large value will lead to slow model training",
@@ -3408,7 +3408,7 @@
         "name_minSamplesSplit": "Minimum samples per split",
         "name_plot": "Minimum samples per split"
       },
-      "gradientBoostingMachine": "Gradient Boosting Machine",
+      "gradientBoostingMachine": "梯度提升机器",
       "gradientBoostingMachineSettings": {
         "desc_learnRate": "The boosting learn rate",
         "desc_maxDepth": "Maximum number of interactions - a large value will lead to slow model training",
@@ -3425,7 +3425,7 @@
         "desc_k": "The number of neighbors to consider",
         "name_k": "Number of neighbors"
       },
-      "lassoLogisticRegression": "Lasso Logistic Regression",
+      "lassoLogisticRegression": "Lasso 逻辑回归",
       "lassoLogisticRegressionSettings": {
         "desc": "A single value used as the starting value for the automatic lambda search",
         "name": "Starting value for the automatic lambda search"
@@ -3436,10 +3436,10 @@
         "name_alpha": "Alpha",
         "name_size": "Number of hidden nodes"
       },
-      "multilayerPerceptionModel": "Multilayer Perception Model",
-      "naiveBayes": "Naive Bayes",
-      "nearestNeighbors": "Nearest Neighbors",
-      "randomForest": "Random Forest",
+      "multilayerPerceptionModel": "多层感知器模型",
+      "naiveBayes": "朴素贝叶斯",
+      "nearestNeighbors": "近邻算法",
+      "randomForest": "随机森林",
       "randomForestSettings": {
         "desc_maxDepth": "Maximum number of interactions - a large value will lead to slow model training",
         "desc_mtries": "The number of features to include in each tree (-1 defaults to square root of total features)",
@@ -3452,21 +3452,21 @@
       }
     },
     "item": {
-      "addCovariateSettings": "Add Covariate Settings",
-      "addModelSettings": "Add Model Settings",
+      "addCovariateSettings": "添加协变量设置",
+      "addModelSettings": "添加模型设置",
       "addOutcomeCohort": "Add Outcome Cohort",
-      "addPopulationSettings": "Add Population Settings",
+      "addPopulationSettings": "添加人群设置",
       "addTargetCohort": "Add Target Cohort",
       "all": "All",
-      "analysisSettings": "Analysis Settings",
-      "covariateSettings": "Covariate Settings",
-      "executionSettings": "Execution Settings",
+      "analysisSettings": "分析设置",
+      "covariateSettings": "协变量设置",
+      "executionSettings": "执行设置",
       "modelSettings": "Model Settings",
       "outcomeCohort": "Outcome Cohorts",
-      "populationSettings": "Population Settings",
-      "predictionProblemSettings": "Prediction Problem Settings",
+      "populationSettings": "人群设置",
+      "predictionProblemSettings": "预测问题设置",
       "targetCohort": "Target Cohorts",
-      "trainingSettings": "Training Settings",
+      "trainingSettings": "训练设置",
       "view": "View:"
     },
     "itemId": "Patient Level Prediction #",
@@ -3480,16 +3480,16 @@
     "notEnoughPermissionsToGenerate": "Not enough permissions to generate or changes were not saved or Execution Engine is not available",
     "pleaseNote": "Please Note:",
     "populationSettingsDesc": "Add or update the population settings",
-    "populationSettingsTitle": "Population Settings",
-    "predictionProblemSettings": "Prediction Problem Settings",
+    "populationSettingsTitle": "人群设置",
+    "predictionProblemSettings": "预测问题设置",
     "resetToDefault": "Reset to default",
-    "reviewAndDownload": "Review & Download",
+    "reviewAndDownload": "审查 & 下载",
     "reviewFullStudy": "Review Full Study Specification",
     "selectCohort": "Select Cohort...",
     "tabs": {
-      "executions": "Executions",
-      "specification": "Specification",
-      "utilities": "Utilities"
+      "executions": "执行",
+      "specification": "说明",
+      "utilities": "程序"
     },
     "title": "Patient Level Prediction",
     "usingDefault": "Using default",

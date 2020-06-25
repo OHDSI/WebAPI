@@ -35,6 +35,7 @@ import org.pac4j.core.client.Client;
 import org.pac4j.core.client.Clients;
 import org.pac4j.core.config.Config;
 import org.pac4j.core.http.callback.CallbackUrlResolver;
+import org.pac4j.core.http.callback.PathParameterCallbackUrlResolver;
 import org.pac4j.core.http.callback.QueryParameterCallbackUrlResolver;
 import org.pac4j.oauth.client.FacebookClient;
 import org.pac4j.oauth.client.GitHubClient;
@@ -83,6 +84,9 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
     @Value("${security.oauth.callback.api}")
     private String oauthApiCallback;
+
+    @Value("${security.oauth.callback.urlResolver}")
+    private String oauthCallbackUrlResolver;
 
     @Value("${security.oauth.google.apiKey}")
     private String googleApiKey;
@@ -249,7 +253,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
         // OAuth
         //
-        CallbackUrlResolver urlResolver = new QueryParameterCallbackUrlResolver();
+        CallbackUrlResolver urlResolver = getCallbackUrlResolver();
         Google2Client googleClient = new Google2Client(this.googleApiKey, this.googleApiSecret);
         googleClient.setCallbackUrl(oauthApiCallback);
         googleClient.setCallbackUrlResolver(urlResolver);
@@ -342,7 +346,8 @@ public class AtlasRegularSecurity extends AtlasSecurity {
                 .addOAuthPath("/user/oauth/facebook", FACEBOOK_AUTHC)
                 .addOAuthPath("/user/oauth/github", GITHUB_AUTHC)
                 .addPath("/user/login/cas", SSL, CORS, FORCE_SESSION_CREATION, CAS_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_URL)
-                .addPath("/user/oauth/callback", SSL, HANDLE_UNSUCCESSFUL_OAUTH, OAUTH_CALLBACK)
+                .addPath("/user/oauth/callback", OAUTH_CALLBACK_FILTERS)
+                .addPath("/user/oauth/callback/*", OAUTH_CALLBACK_FILTERS)
                 .addPath("/user/cas/callback", SSL, HANDLE_CAS, UPDATE_TOKEN, SEND_TOKEN_IN_URL);
 
         if (this.samlEnabled) {
@@ -501,5 +506,16 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         } catch (UnsupportedEncodingException e) {
             this.logger.error("Atlas security filter errors: {}", e);
         }
+    }
+
+    private CallbackUrlResolver getCallbackUrlResolver() {
+
+        CallbackUrlResolver resolver = new QueryParameterCallbackUrlResolver();
+        if (Constants.CallbackUrlResolvers.PATH.equals(oauthCallbackUrlResolver)) {
+            resolver = new PathParameterCallbackUrlResolver();
+        } else if (!Constants.CallbackUrlResolvers.QUERY.equals(oauthCallbackUrlResolver)) {
+            this.logger.warn("OAuth Callback Url Resolver {} not supported, ignored and used default QueryParameterUrlResolver", oauthCallbackUrlResolver);
+        }
+        return resolver;
     }
 }

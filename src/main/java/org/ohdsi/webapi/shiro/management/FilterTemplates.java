@@ -45,4 +45,6 @@ public enum FilterTemplates {
     public String getTemplateName() {
         return templateName;
     }
+
+    public static final FilterTemplates[] OAUTH_CALLBACK_FILTERS = new FilterTemplates[]{ SSL, FORCE_SESSION_CREATION, HANDLE_UNSUCCESSFUL_OAUTH, OAUTH_CALLBACK };
 }

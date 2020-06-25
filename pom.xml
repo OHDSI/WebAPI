@@ -71,6 +71,8 @@
     <security.ssl.enabled>false</security.ssl.enabled>
     <security.oauth.callback.ui>http://localhost/Atlas/#/welcome</security.oauth.callback.ui>
     <security.oauth.callback.api>http://localhost:8080/WebAPI/user/oauth/callback</security.oauth.callback.api>
+    <!-- Available options for callback urlResolver are: query and path -->
+    <security.oauth.callback.urlResolver>query</security.oauth.callback.urlResolver>
     <security.oauth.google.apiKey></security.oauth.google.apiKey>
     <security.oauth.google.apiSecret></security.oauth.google.apiSecret>
     <security.oauth.facebook.apiKey></security.oauth.facebook.apiKey>

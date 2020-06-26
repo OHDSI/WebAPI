@@ -15,6 +15,7 @@
       "search": "Фильтр:",
       "searchPlaceholder": "Поиск...",
       "zeroRecords": "Подходящие записи не найдены",
+      "all": "Все",
       "paginate": {
         "first": "Первая",
         "last": "Последняя",

@@ -9,6 +9,7 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.subject.Subject;
 import org.ohdsi.webapi.helper.Guard;
 import org.ohdsi.webapi.shiro.Entities.*;
+import org.ohdsi.webapi.user.importer.repository.RoleGroupRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
@@ -33,7 +34,10 @@ public class PermissionManager {
   private UserRepository userRepository;  
   
   @Autowired
-  private RoleRepository roleRepository;  
+  private RoleRepository roleRepository;
+
+  @Autowired
+  private RoleGroupRepository roleGroupRepository;
   
   @Autowired
   private PermissionRepository permissionRepository;
@@ -292,6 +296,7 @@ public class PermissionManager {
   }
 
   public void removeRole(Long roleId) {
+    this.roleGroupRepository.deleteByRoleId(roleId);
     this.roleRepository.delete(roleId);
   }
 

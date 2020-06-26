@@ -20,7 +20,6 @@ import org.ohdsi.webapi.shiro.filters.SkipFurtherFilteringFilter;
 import org.ohdsi.webapi.shiro.filters.UrlBasedAuthorizingFilter;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
-import org.ohdsi.webapi.user.importer.repository.RoleGroupRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,9 +92,6 @@ public abstract class AtlasSecurity extends Security {
 
   @Autowired
   SourceRepository sourceRepository;
-
-  @Autowired
-  RoleGroupRepository roleGroupRepository;
 
   @Autowired
   private ApplicationEventPublisher eventPublisher;
@@ -388,7 +384,6 @@ public abstract class AtlasSecurity extends Security {
       RoleEntity role = this.authorizer.getRoleByName(roleName);
       this.authorizer.removePermissionsFromTemplate(this.sourcePermissionTemplates, sourceKey);
       this.authorizer.removePermissionsFromTemplate(this.dataSourcePermissionTemplates, sourceKey);
-      this.roleGroupRepository.deleteByRole(role);
       this.authorizer.removeRole(role.getId());
     }
   }

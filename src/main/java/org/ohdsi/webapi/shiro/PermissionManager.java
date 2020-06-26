@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.shiro;
 
 import com.odysseusinc.logging.event.AddUserEvent;
+import com.odysseusinc.logging.event.DeleteRoleEvent;
 import com.odysseusinc.logging.event.DeleteUserEvent;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UnknownAccountException;
@@ -9,7 +10,6 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.subject.Subject;
 import org.ohdsi.webapi.helper.Guard;
 import org.ohdsi.webapi.shiro.Entities.*;
-import org.ohdsi.webapi.user.importer.repository.RoleGroupRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
@@ -35,9 +35,6 @@ public class PermissionManager {
   
   @Autowired
   private RoleRepository roleRepository;
-
-  @Autowired
-  private RoleGroupRepository roleGroupRepository;
   
   @Autowired
   private PermissionRepository permissionRepository;
@@ -296,7 +293,7 @@ public class PermissionManager {
   }
 
   public void removeRole(Long roleId) {
-    this.roleGroupRepository.deleteByRoleId(roleId);
+    eventPublisher.publishEvent(new DeleteRoleEvent(this, roleId));
     this.roleRepository.delete(roleId);
   }
 

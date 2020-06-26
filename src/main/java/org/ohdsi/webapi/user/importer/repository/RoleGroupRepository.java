@@ -10,5 +10,6 @@ import java.util.List;
 public interface RoleGroupRepository extends JpaRepository<RoleGroupEntity, Integer> {
 
   List<RoleGroupEntity> findByProviderAndUserImportJobNull(LdapProviderType provider);
+
   void deleteByRoleId(Long roleId);
 }

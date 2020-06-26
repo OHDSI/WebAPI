@@ -168,7 +168,7 @@
     "yesParent": "Yes (Parent)",
     "included": "Included",
     "excluded": "排除概念",
-    "none": "None",
+    "none": "无",
     "true": "true",
     "false": "false",
     "balanced": "Balanced",
@@ -344,12 +344,12 @@
       "importConceptSetPlaceholder": "Import Concept Set",
       "importConceptSetTitle": "Import Concept Set...",
       "includedConcepts": "包含的概念",
-      "load": "Load",
+      "load": "加载",
       "mappedConcepts": "Mapped Concepts",
       "newConceptSet": "新建概念集",
-      "pleaseSelectCodesetToModify": "Please select codeset to modify...",
+      "pleaseSelectCodesetToModify": "请选择要编辑的代码集",
       "removeSelected": "Remove Selected",
-      "selectConceptSet": "Select Concept Set...",
+      "selectConceptSet": "选择概念集...",
       "unnamedConceptSet": "设置概念集名称"
     },
     "conceptSetSaveModal": {
@@ -709,24 +709,24 @@
     },
     "cyclops": {
       "controlEditor": {
-        "convergenceType": "Select the convergence type:",
-        "crossValidationSearchType": "Select the cross validation search type:",
-        "initialBound": "Initial bound:",
+        "convergenceType": "选择收敛类型：",
+        "crossValidationSearchType": "选择交叉验证搜索类型：",
+        "initialBound": "初始bound：",
         "lowerPrior": "Lower prior variance limit:",
-        "maxBoundCount": "Max bound count:",
-        "maxIterations": "Maximum iterations of Cyclops to attempt before returning a failed-to-converge error.",
-        "maxRelativeChange": "Maximum relative change in convergence criterion from successive iterations to achieve convergence.",
-        "nameOfExchangeableSamplingUnit": "Name of exchangeable sampling unit. Option <i>byPid</i> selects entire strata. Option <i>byRow</i> selects single rows. If set to <i>auto</i>, <i>byRow</i> will be used for all models except conditional models where the average number of rows per stratum is smaller than the number of strata:",
-        "noiseLevel": "Noise level for Cyclops screen output:",
-        "numberOfRandomFolds": "Number of random folds to employ in cross validation:",
-        "numberOfRepetitions": "Number of repetitions of <%=num%>-fold cross validation:",
+        "maxBoundCount": "最大bound数：",
+        "maxIterations": "在返回无法收敛的错误之前，尝试执行最大的Cyclops迭代。",
+        "maxRelativeChange": "收敛准则从连续迭代到实现收敛的最大相对变化。",
+        "nameOfExchangeableSamplingUnit": "可互换的采样单位名称。“byPid”选项选择整个图层。“byRow”选项选择一行。如果设置为“auto”，则“byRow”用于除条件模型以外的所有模型，在条件模型(conditional models)中，每层的平均行数少于层数。",
+        "noiseLevel": "Cyclops 的屏幕输出的噪音水平：",
+        "numberOfRandomFolds": "用于交叉验证的随机折叠数：",
+        "numberOfRepetitions": "<%=num%>-fold 交叉验证的重复次数：",
         "numberOfSteps": "Number of steps:",
         "resetAllCoefficients": "Reset all coefficients to 0 between model fits under cross-validation:",
         "sizeMultiplier": "Size multiplier for active set:",
-        "startingVariance": "Starting variance for auto-search cross-validation; -1 = use estimate based on data:",
-        "umberOfRepetitionsOfData": "Number of repetitions of data for cross validation:",
+        "startingVariance": "自动搜索交叉验证的起始差异； -1 =使用基于数据的估算值：",
+        "umberOfRepetitionsOfData": "交叉验证的数据重复次数：",
         "upperPrior": "Upper prior variance limit:",
-        "useTheKarush": "Use the Karush-Kuhn-Tucker conditions to limit search:"
+        "useTheKarush": "使用Karush-Kuhn-Tucker条件限制搜索范围："
       },
       "options": {
         "auto": "Auto",
@@ -737,19 +737,19 @@
         "laplace": "Laplace",
         "mittal": "Mittal",
         "noisy": "Noisy",
-        "none": "None",
+        "none": "无",
         "normal": "Normal",
         "quiet": "Quiet",
         "silent": "Silent"
       },
       "prior": {
-        "crossValidation": "Perform cross-validation to determine prior-variance:",
-        "distribution": "Specify the prior distribution:",
-        "distributionVariance": "Specify the prior distribution variance:",
-        "interceptCoefficient": "Force intercept coefficient into prior:",
+        "crossValidation": "执行交叉验证以确定先验差异：",
+        "distribution": "指定先前的分配：",
+        "distributionVariance": "指定先验分布方差：",
+        "interceptCoefficient": "强制intercept coefficient 成先验：",
         "mapping": "Child-to-parent mapping for a hierarchical prior:",
-        "neighborhoods": "A list of first-order neighborhoods for a partially fused prior:",
-        "vector": "Specify a vector of numbers or covariate Ids to exclude from prior:"
+        "neighborhoods": "部分融合的先验的一阶邻域列表：",
+        "vector": "定义一个数字向量或协变量ID，以排除在先验之外："
       }
     },
     "dateOffsetStrategy": {
@@ -890,10 +890,10 @@
         "apply": "Apply",
         "clear": "Clear"
       },
-      "title": "Filter panel"
+      "title": "筛选面板"
     },
     "generateComponent": {
-      "generate": "Generate",
+      "generate": "生成",
       "generating": "Generating..."
     },
     "import": {
@@ -911,12 +911,12 @@
       "defaultNewItemLabel": "导入",
       "defaultTitle": "队列定义",
       "dialog": {
-        "title": "Choose a Cohort definition"
+        "title": "选择队列定义"
       },
       "table": {
         "actions": {
           "edit": "Edit cohort",
-          "remove": "Remove"
+          "remove": "删除"
         }
       }
     },
@@ -955,7 +955,7 @@
     "multiInput": {
       "action": "Action",
       "add": "Add",
-      "remove": "Remove"
+      "remove": "删除"
     },
     "navigateControls": {
       "navigateControlsText_1": "Common Evidence Model"
@@ -1027,7 +1027,7 @@
     },
     "generation": {
       "selectSources": "Select sources",
-      "generate": "Generate",
+      "generate": "生成",
       "pickAtLeastOneSourceAlert": "Pick at least one source to generate"
     }
   },
@@ -1051,14 +1051,14 @@
       "mappingType": "Mapping Type",
       "match": "Match",
       "modelName": "Model Name",
-      "outcomeCohorts": "Outcome Cohorts",
+      "outcomeCohorts": "结果队列",
       "provider": "Provider",
       "riskWindow": "Risk Window",
       "signalInFaers": "Signal in FAERS",
       "source": "Source",
       "standardConcept": "标准概念",
       "startDate": "Start date",
-      "targetCohorts": "Target Cohorts",
+      "targetCohorts": "目标队列",
       "type": "Type",
       "updated": "Updated",
       "userSpecified": "User Specified",
@@ -1094,7 +1094,7 @@
     "action": "Action",
     "actions": "Actions",
     "adLdapUsername": "AD/LDAP username",
-    "adjustmentStrategy": "Adjustment Strategy",
+    "adjustmentStrategy": "调整策略",
     "allowed": "Allowed cost",
     "allowedChargedRatio": "Allowed /Charged",
     "allowedPmPm": "Allowed cost PMPM",
@@ -1115,7 +1115,7 @@
     "checkConnection": "Check connection",
     "class": "类别",
     "code": "Code",
-    "comparator": "Comparator",
+    "comparator": "对照队列",
     "comparatorCohortName": "Comparator Cohort Name",
     "comparatorId": "Comparator Id",
     "conceptCode": "概念集代码",
@@ -1193,22 +1193,22 @@
     "median": "中位数",
     "message": "Message",
     "min": "最小值",
-    "minimumTimeAtRisk": "Minimum Time At Risk",
+    "minimumTimeAtRisk": "最小风险暴露期",
     "model": "Model",
     "modelName": "Model Name",
     "modelSettings": "Model Settings",
     "modified": "修改",
     "name": "名称",
-    "ncOutcomes": "NC Outcomes",
+    "ncOutcomes": "负控制结果",
     "nextExecution": "Next execution",
     "notPrevalent": "Not Prevalent",
     "optimizedOut": "Optimized Out",
     "options": "Options",
     "outcomeCohortName": "Outcome Cohort Name",
     "outcomeId": "Outcome Id",
-    "outcomeModel": "Outcome Model",
+    "outcomeModel": "结果模型",
     "outcomeName": "Outcome Cohort Name",
-    "outcomes": "Outcomes",
+    "outcomes": "结果队列",
     "p10": "十分位数10％",
     "p25": "四分位数25％",
     "p75": "四分位数75％",
@@ -1223,7 +1223,7 @@
     "periodEnd": "Period end",
     "periodStart": "Period start",
     "permission": "Permissions",
-    "personsCount": "Persons",
+    "personsCount": "患者人数",
     "personCount": "Person Count",
     "personsPct": "Persons %",
     "pregnancyConcept": "Pregnancy Concept",
@@ -1246,7 +1246,7 @@
     "recordCounts": "Record Counts (RC / DRC)",
     "refreshCache": "Refresh cache",
     "relationshipType": "Relationship Type",
-    "remove": "Remove",
+    "remove": "删除",
     "removeSubjectsWithPriorOutcome": "Remove Subjects With Prior Outcome",
     "requireTimeAtRisk": "Require Time At Risk",
     "results": "Results",
@@ -1270,14 +1270,14 @@
     "strata": "分层的",
     "suggestedNegativeControl": "Suggested Negative Control",
     "tableQualifiers": "Table Qualifiers",
-    "target": "Target",
+    "target": "目标队列",
     "targetCohortName": "Target Cohort Name",
     "targetId": "Target Id",
     "targetName": "Target Cohort Name",
     "temporal": "Temporal",
     "timeAtRisk": "风险暴露期",
-    "timeAtRiskEnd": "Time At Risk End",
-    "timeAtRiskStart": "Time At Risk Start",
+    "timeAtRiskEnd": "风险暴露期结束日期",
+    "timeAtRiskStart": "风险暴露期开始日期",
     "timeWindow": "Time Window",
     "title": "标题",
     "totalRecords": "Total Records",
@@ -1519,7 +1519,7 @@
         "evidenceForAllFor": "for",
         "evidenceSources": "Evidence Sources",
         "excludeLabel": "What concepts do you want to exclude as known positive controls? (Optional)",
-        "generate": "Generate",
+        "generate": "生成",
         "generated": "创建开始时间",
         "generationDuration": "创建用时",
         "generationSettings": "Generation Settings",
@@ -1622,7 +1622,7 @@
     "loading": "Loading Cohort Characterization list...",
     "modals": {
       "confirmChanges": "Your changes are not saved. Would you like to continue?",
-      "selectConceptSet": "Select Concept Set...",
+      "selectConceptSet": "选择概念集...",
       "chooseAFeatureAnalyses": "Choose a Feature Analyses..."
     },
     "tabs": {
@@ -1642,7 +1642,7 @@
         "description": "队列表征被定义为一种从病人级别的协变量数据生成队列级别描述性摘要统计信息的过程。各个级别协变量的摘要统计信息可以是数字，均值，标准差，方差，最小值，最大值，中位数，范围和四分位数。 此外，可以将一段时间内的协变量分层为时间序列分析的时间单位，例如相对于cohort_start_date的固定时间间隔（例如，每7天，每30天等），或以绝对时间间隔（例如，日历中的周，月，季度，年）。",
         "fa": {
           "actions": {
-            "remove": "Remove"
+            "remove": "删除"
           },
           "title": "特征分析"
         },
@@ -1674,7 +1674,7 @@
         "buttons": {
           "allExecutions": "All executions (<%=submissions%>)",
           "cancel": "Cancel",
-          "generate": "Generate",
+          "generate": "生成",
           "latestResult": "查看最后结果"
         },
         "designModal": {
@@ -1712,7 +1712,7 @@
         "exportAll": "Export all",
         "filters": {
           "analyses": "Analyses",
-          "cohorts": "Cohorts",
+          "cohorts": "队列",
           "domains": "Domains"
         },
         "hideEmptyResults": "Hide Empty Results",
@@ -1777,7 +1777,7 @@
       "preset": "Preset",
       "retrievingList": "Retrieving feature analyses list...",
       "saveError": "An error occurred while attempting to save a feature analysis.",
-      "selectConceptSet": "Select Concept Set...",
+      "selectConceptSet": "选择概念集...",
       "unsavedConfirmation": "Your changes are not saved. Would you like to continue?"
     }
   },
@@ -1809,36 +1809,36 @@
   "ir": {
     "caption": "Incidence Rate Analysis #",
     "cs": {
-      "modalTitle": "Select Concept Set..."
+      "modalTitle": "选择概念集..."
     },
     "deleteConfirmation": "Delete incidence rate analysis? Warning: deletion can not be undone!",
     "deleteResultConfirmation": "Do you really want to remove result of <%=name%>?",
     "editor": {
-      "addOutcomeCohort": "Add Outcome Cohort",
-      "addStudyWindow": "Add Study Window",
-      "addTargetCohort": "Add Target Cohort",
+      "addOutcomeCohort": "添加结果队列",
+      "addStudyWindow": "添加研究期",
+      "addTargetCohort": " 添加目标队列",
       "chooseACohort": "Choose a Cohort",
-      "newStratifyCriteria": "New stratify criteria",
-      "noStudyWindowDefined": "No study window defined.",
-      "outcomeCohorts": "Outcome Cohorts",
+      "newStratifyCriteria": "新的分层标准",
+      "noStudyWindowDefined": "未定义研究期。",
+      "outcomeCohorts": "结果队列",
       "removeStudyWindow": "Remove Study Window",
-      "selectInclusionCriteriaMessage": "Please select a qualifying inclusion criteria to edit.",
+      "selectInclusionCriteriaMessage": "请选择一个合格的纳排条件进行编辑。",
       "stratifyCriteria": "Stratify Criteria:",
-      "stratifyCriteriaMessage": "You can provide optional stratification criteria to the analysis that will divide the population into unique groups based on their satisified criteria.",
+      "stratifyCriteriaMessage": "您可以提供一个可选的分层条件，以根据满足您的条件的标准将总体分为唯一的组。",
       "studyCohorts": "Study Cohorts",
       "studyWindowText1": "Study window begins on",
       "studyWindowText2": "and ends on",
       "studyWindowText3": ".",
-      "targetCohorts": "Target Cohorts",
+      "targetCohorts": "目标队列",
       "timeAtRisk": "风险暴露期",
-      "timeAtRiskStartsWithDays": "days.",
-      "timeAtRiskEndsWithDays": "days.",
-      "timeAtRiskEndDate": "end date",
-      "timeAtRiskEndsWith": "Time at risk ends with",
-      "timeAtRiskMessage": "Time at risk defines the time window relative to the cohort start or end date with an offset to consider the person 'at risk' of the outcome.",
-      "timeAtRiskPlus": "plus",
-      "timeAtRiskStartDate": "start date",
-      "timeAtRiskStartsWith": "Time at risk starts with",
+      "timeAtRiskStartsWithDays": "天开始",
+      "timeAtRiskEndsWithDays": "天结束",
+      "timeAtRiskEndDate": "结束日期",
+      "timeAtRiskEndsWith": "风险时间窗从",
+      "timeAtRiskMessage": "风险时间窗定义了相对于队列开始日期或者结束日期的时间窗口，并且考虑到患者患有结果变量风险的偏移量。",
+      "timeAtRiskPlus": "添加",
+      "timeAtRiskStartDate": "风险时间窗从",
+      "timeAtRiskStartsWith": "风险时间窗从",
       "timeAtRiskWarningMessage": "Error: Time at risk starts on or after time at risk end, resulting in zero time at risk.  Please ensure the start offset is greater than the end offset."
     },
     "nameConflict": "An incidence rate with this name already exists. Please choose a different name.",
@@ -1847,32 +1847,32 @@
     "notSavedMessage": "Incidence Rate Analysis changes are not saved. Would you like to continue?",
     "results": {
       "accessDenied": "Access denied",
-      "andOutcomeCohort": "and outcome cohort:",
+      "andOutcomeCohort": "和结果队列：",
       "canceled": "CANCELED",
-      "cases": "Cases",
+      "cases": "患者事件数",
       "close": "Close",
-      "duration": "Duration",
-      "exportToCsvButton": "Export Analysis to CSV",
+      "duration": "用时",
+      "exportToCsvButton": "将分析结果导出到CSV文档",
       "failed": "FAILED",
       "generationInProgress": "Generation is in progress",
       "loadingGenerationResultErrorMessage": "There was an error while loading generation result reports",
       "loadingSummary": "Loading summary...",
-      "perPersons": "per <%=multiplier%> persons",
-      "perYears": "per <%=multiplier%> years",
-      "persons": "Persons",
-      "proportion": "Proportion",
-      "rate": "Rate",
+      "perPersons": "每<%=multiplier%>患者",
+      "perYears": "每<%=multiplier%>年",
+      "persons": "患者人数",
+      "proportion": "发病比",
+      "rate": "发生率",
       "reports": "Reports",
-      "rerun": "Rerun",
+      "rerun": "重新运行",
       "running": "Running",
       "selectTargetAndOutcomeAlert": "You should select at least one target and outcome cohort to generate",
-      "showingTargetCohort": "Showing target cohort:",
+      "showingTargetCohort": "显示目标队列：",
       "sourceName": "来源名称",
-      "started": "Started",
-      "stratifyRule": "Stratify Rule",
+      "started": "创建开始时间",
+      "stratifyRule": "分层条件",
       "summaryStatistics": "统计摘要",
-      "timeAtRisk": "风险暴露期",
-      "timeAtRiskYears": "(years)"
+      "timeAtRisk": "时间风险窗",
+      "timeAtRiskYears": "（年）"
     },
     "savingError": "An error occurred while attempting to save an incidence rate.",
     "tabs": {
@@ -1900,7 +1900,7 @@
     "personId": "Person Id",
     "processingProfile": "processing profile data",
     "recordCounts": "<%=count%> events",
-    "selectADataSource": "Select a Data Source",
+    "selectADataSource": "选择数据源",
     "setSelectedEventsColor": "set selected events color",
     "title": "Profiles",
     "toggleChartTooltip": "toggle chart display",
@@ -1914,34 +1914,34 @@
       "design": {
         "analysisSettings": {
           "combinationWindow": {
-            "description": "Window of time when two event cohorts need to overlap to be considered a combination.",
-            "title": "Combination Window:"
+            "description": "两个事件队列必须联合使用才能被视为组合的时间窗。",
+            "title": "联合治疗的时间窗："
           },
-          "description": "The following set of parameters will be used when performing the pathway analysis.",
+          "description": "执行路径分析时，使用以下参数集",
           "maximumPathLength": {
-            "description": "Maximum number of steps in a given pathway to be included in the sunburst plot.",
-            "title": "Maximum path length:"
+            "description": "在sunburst图中保罗的指定路径的最大步骤数。",
+            "title": "最大路径长度："
           },
           "minimumCellCount": {
-            "description": "Minimum number of subjects in the target cohort for a given event in order to be counted in the pathway.",
-            "title": "Minimum cell count:"
+            "description": "目标队列中有定义的事件队列的最小受试者数，以便于在途径中进行计数。",
+            "title": "最少分析的单位数："
           },
           "title": "分析设置"
         },
-        "description": "<b>Cohort Pathway</b> is defined as the process of generating an aggregated sequence of transitions between the Event Cohorts among those people in the Target Cohorts.",
+        "description": "队列路径定义是在目标队列人群中生成事件队列序列的过程。",
         "eventCohorts": {
           "description": "Each Event Cohort defines the step in a pathway that may occur for a person in the Target Cohort.",
           "title": "Event Cohorts"
         },
         "targetCohorts": {
-          "description": "Each of the Target Cohorts will be analyized for the pathways through the event cohorts.",
-          "title": "Target Cohorts"
+          "description": "对于每个目标队列分析事件队列的途径",
+          "title": "目标队列"
         }
       },
       "executions": {
         "buttons": {
           "allExecutions": "All executions",
-          "generate": "Generate",
+          "generate": "生成",
           "viewLatestResult": "查看最后结果"
         },
         "dialogs": {
@@ -1958,22 +1958,22 @@
           "date": "Date:",
           "design": "设计:",
           "details": {
-            "noPath": "No path selected: click path to see details.",
-            "title": "Path details"
+            "noPath": "未选择路径：单击路径以获取详细信息",
+            "title": "路径细节"
           },
           "diagram": {
-            "title": "Sunburst plot"
+            "title": "Sunburst 图"
           },
           "filters": {
-            "cohorts": "Cohorts"
+            "cohorts": "队列"
           },
           "legend": {
             "eventCohorts": "Event Cohorts",
-            "personsCount": "Persons with pathways count:",
-            "personsPortion": "Persons with pathways portion:",
-            "targetCohort": "Target Cohort",
-            "targetCohortCount": "Target cohort count:",
-            "title": "Legend"
+            "personsCount": "接受治疗的患者人数：",
+            "personsPortion": "接受治疗的患者占目标人群总数的比例：",
+            "targetCohort": "目标队列",
+            "targetCohortCount": "目标队列人数：",
+            "title": "图例"
           },
           "noPathways": "No pathways were found",
           "title": "Pathways Analysis for",
@@ -1981,7 +1981,7 @@
           "tabular": "Tabular",
           "tableview": {
             "cohortName": "Cohort <%=name%>",
-            "maximumPathLength": "Maximum Path Length:",
+            "maximumPathLength": "最大路径长度：",
             "allPathwaysTitle": "Table <%=index%>a: All Pathways",
             "eventCohortCountsByRank": "Table <%=index%>b: Event Cohort Counts by Rank",
             "eventCohortCounts": "Table <%=index%>c: Event Cohort Counts",
@@ -2027,15 +2027,15 @@
   "ple": {
     "analysisExistsAlert": "An estimation analysis with this name already exists. Please choose a different name.",
     "analysisSaveErrorAlert": "An error occurred while attempting to save an estimation analysis.",
-    "caption": "Comparative Cohort Analysis",
-    "captionNumber": "Comparative Cohort Analysis #",
+    "caption": "比较队列分析",
+    "captionNumber": "比较队列分析 #",
     "changesNotSavedConfirmation": "Estimation Analysis changes are not saved. Would you like to continue?",
     "deleteConfirmation": "Delete estimation specification? Warning: deletion can not be undone!",
     "retrievingEstimations": "retrieving estimations",
     "exec": {
       "allExec": "All executions (<%=len%>)",
       "downloadLatestResult": "Download latest result",
-      "generate": "Generate",
+      "generate": "生成",
       "generating": "Generating...",
       "generations": "Generations",
       "loadingGenerations": "Loading generations...",
@@ -2046,16 +2046,16 @@
     "spec": {
       "addAnalysisSettings": "添加分析设置",
       "addComparisons": "添加比较队列",
-      "addOutcome": "Add Outcome",
+      "addOutcome": "添加结果",
       "analysisName": "Analysis name:",
       "analysisSettings": "分析设置",
       "analysisSettingsDescription": "Add or update the analysis settings",
-      "chooseYourComparatorCohort": "Choose your comparator cohort:",
-      "chooseYourOutcomeCohorts:": "Choose your outcome cohorts:",
-      "chooseYourTargetCohort": "Choose your target cohort:",
-      "clickToViewDetails": "Click to view details",
+      "chooseYourComparatorCohort": "选择对照队列：",
+      "chooseYourOutcomeCohorts:": "选择结果队列：",
+      "chooseYourTargetCohort": "选择目标队列：",
+      "clickToViewDetails": "点击查看详细信息",
       "comparison": "比较队列",
-      "comparisonDescription": "Add or update the target, comparator, outcome(s) cohorts and negative control outcomes",
+      "comparisonDescription": "添加或更新目标，对照，结果队列和阴性对照结果。",
       "conceptsToExcludeLabel": "Concepts to <b>exclude</b> when constructing the covariates to be used in this study.*",
       "conceptsToExcludeNoteAnalysis": "* Concepts defined here are combined with those defined in the Comparisons section.",
       "conceptsToExcludeNoteComparisons": "* Concepts defined here are combined with those defined in the Analysis settings section.",
@@ -2063,7 +2063,7 @@
       "conceptsToIncludeNoteAnalysis": "* Concepts defined here are combined with those defined in the Comparisons section.",
       "conceptsToIncludeNoteComparisons": "* Concepts defined here are combined with those defined in the Analysis settings section.",
       "controlSettings": "对照设置",
-      "covariateSelection": "Covariate selection",
+      "covariateSelection": "协变量选择",
       "covariateSettings": "协变量设置",
       "descriptionPlaceholder": "enter a description here (1000 characters max)",
       "evaluationSettings": "评估设置",
@@ -2073,121 +2073,121 @@
         "allowedRatio": "The allowed ratio between target and injected signal size:",
         "daysFrom": "days from",
         "daysFromCohortStartDate": "days from cohort start date",
-        "defineTimeAtRiskWindowEnd": "Define the time-at-risk window end:",
-        "defineTimeAtRiskWindowStart": "Define the time-at-risk window start, relative to target/comparator cohort entry:",
+        "defineTimeAtRiskWindowEnd": "定义风险暴露期的结束日期",
+        "defineTimeAtRiskWindowStart": "定义相对于目标/对照队列的开始日期的风险暴露期的开始日期",
         "effectSizes": "What effect sizes should be inserted:",
         "firstOutcomeToBeCreated": "What should be the first new outcome ID that is to be created?",
         "maxNumberOfPeopleToFit": "Maximum number of people used to fit an outcome model:",
         "minNumberOfOutcomeEventsToBuildAModel": "Minimum number of outcome events required to build a model:",
         "minNumberofOutcomeEventsToInjectASignal": "Minimum number of outcome events required to inject a signal.",
         "minimumRequiredTime": "The minimum required continuous observation time (in days) prior to exposure:",
-        "modelType": "Model Type:",
+        "modelType": "模型类型：",
         "negativeControl": "阴性对照结果队列定义",
-        "negativeControlDesc": "This expression will define the criteria for inclusion and duration of time for cohorts intended for use as negative control outcomes.",
+        "negativeControlDesc": "此表达式将定义纳入标准和队列的持续时间，以用作阴性对照结果。",
         "onlyFirstExposure": "Should only the first exposure per subject be included?",
         "onlyFirstOutcome": "Should only the first outcome per person be considered when modeling the outcome?",
         "positiveControl": "阳性对照合成",
-        "positiveControlPerform": "Should we perform positive control synthesis? (to calibrate confidence intervals)",
+        "positiveControlPerform": "我们是否应该进行阳性对照综合以纠正置信区间？",
         "removePeopleWithPrior": "Remove people with prior outcomes?",
-        "typeOfOccurence": "The type of occurrence of the event when selecting from the domain.",
-        "whatDomains": "What domains should be considered to detect negative control outcomes? (Hold control to select multiple domains)",
-        "whenTrueDescendantConcepts": "When true, descendant concepts for the negative control outcome concept IDs will be used to detect the outcome and roll up the occurrence to the concept ID:"
+        "typeOfOccurence": "从域中选择时事件发生的类型",
+        "whatDomains": "应该考虑哪些域来检测阴性对照结果？ （按控制键选择多个域）",
+        "whenTrueDescendantConcepts": "如果为真，则使用阴性对照结果的Concept ID的子概念找到结果，并将结果汇总为Concept ID。"
       },
       "from": "from",
-      "negativeControlConceptSet": "Negative control concept set:",
+      "negativeControlConceptSet": "选择阴性对照结果：",
       "newAnalysis": "New analysis",
       "options": {
         "all": "所有",
-        "allOccurrences": "All occurrences",
-        "byPercent": "By Percent",
+        "allOccurrences": "所有出现",
+        "byPercent": "根据百分比",
         "cohortEndDate": "cohort end date",
         "cohortStartDate": "cohort start date",
-        "comparator": "Comparator",
+        "comparator": "对照队列",
         "condition": "Condition",
-        "coxProportionalHazards": "Cox proportional hazards",
+        "coxProportionalHazards": "考克斯比例风险模型",
         "device": "Device",
         "drug": "Drug",
-        "firstOccurrence": "First occurrence",
-        "keepAll": "Keep All",
-        "keepFirst": "Keep First",
-        "logisticRegression": "Logistic regression",
-        "matchOnPropensityScore": "Match on propensity score",
+        "firstOccurrence": "第一次出现",
+        "keepAll": "保留所有",
+        "keepFirst": "仅保留第一项",
+        "logisticRegression": "逻辑回归",
+        "matchOnPropensityScore": "按倾向得分匹配",
         "matching": "<%=ratio%>:1 matching",
         "measurement": "Measurement",
-        "none": "None",
+        "none": "无",
         "observation": "Observation",
         "poisson": "Poisson",
-        "poissonRegression": "Poisson regression",
+        "poissonRegression": "泊松回归",
         "procedure": "Procedure",
         "propensityScore": "Propensity score",
-        "removeAll": "Remove All",
+        "removeAll": "全部删除",
         "standardized": "Standardized",
         "standardizedLogit": "Standardized Logit",
         "stratification": "Stratification (stratum: <%=stratum%>)",
-        "stratifyOnPropensityScore": "Stratify on propensity score",
+        "stratifyOnPropensityScore": "按倾向得分分层",
         "survival": "Survival",
-        "target": "Target",
-        "toEquipoise": "To Equipoise",
+        "target": "目标队列",
+        "toEquipoise": "根据平衡",
         "visit": "Visit"
       },
-      "outcomeModel": "Outcome Model",
+      "outcomeModel": "结果模型设置",
       "outcomeModelPanel": {
         "covariates": "Should the covariates also be included in the outcome model?",
-        "regression": "Should the regression be conditioned on the strata defined in the population object (e.g. by matching or stratifying on propensity scores)?",
+        "regression": "回归分析是否需要根据人口目标中定义的层次结构进行调整（例如，通过倾向得分进行匹配或分层）？",
         "regularization": "Use regularization when fitting the outcome model? *",
         "regularizationNote": "* Regularization will not be applied to the exposure of interest, just to the covariates.",
-        "statisticalModel": "Specify the statistical model used to estimate the risk of outcome between target and comparator cohorts:",
-        "weighting": "Use inverse probability of treatment weighting?"
+        "statisticalModel": "定义一个统计模型，该模型将用于评估目标人群和对照人群之间的风险。",
+        "weighting": "使用治疗加权的逆概率？"
       },
       "prior": "先验变量",
-      "propensityScoreAdjustment": "倾向得分矫正",
+      "propensityScoreAdjustment": "倾向得分调整",
       "propensityScoreAdjustmentPanel": {
-        "baseSelection": "What is the base selection of subjects where the strata bounds are to be determined? Strata are defined as equally-sized strata inside this selection.",
+        "baseSelection": "您将使用哪个受众群体来确定您的等级？ 图层以相同的大小定义。",
         "caliperForMatching": "What is the caliper for matching:",
         "caliperScale": "What is the caliper scale:",
         "covariateIdsMatch": "One or more covariate IDs in the cohortMethodData object on which subjects should be also matched.",
         "covariateIdsPlaceholder": "One or more covariate IDs",
         "covariateIdsStratify": "One or more covariate IDs in the cohortMethodData object on which subjects should be also stratified.",
-        "howManyStrata": "Into how many strata should the propensity score be divided? The boundaries of the strata are automatically defined to contain equal numbers of target persons:",
-        "howToTrim": "How do you want to trim your cohorts based on the propensity score distribution?",
+        "howManyStrata": "您要划分倾向得分多少层？这些层的边界会自动定义为包含相同数量的目标。",
+        "howToTrim": "您如何根据倾向得分分布来调整队列？",
         "lowerAndUpperBound": "Specify the lower and upper bound on the preference score for keeping persons (specify as: min %, max %, eg: 25,75):",
-        "matchingOrStratification": "Do you want to perform matching or stratification?",
-        "maxNumberOfPeople": "What is the maximum number of people to include in the propensity score model when fitting? Setting this number to 0 means no down-sampling will be applied:",
+        "matchingOrStratification": "您要执行匹配还是分层？",
+        "maxNumberOfPeople": "适当的倾向评分模型中要包括的最大患者人数是多少？将此数字设置为0不会应用下采样。",
         "maximumNumberOfPersons": "What is the maximum number of persons in the comparator arm to be matched to each person in the target arm within the defined caliper? (0 = means no maximum - all comparators will be assigned to a target person):",
-        "testEachCovariate": "Test each covariate for correlation with the target assignment? If any covariate has an unusually high correlation (either positive or negative), this will throw an error.",
+        "testEachCovariate": "您是否要检查分配的目标（目标）与每个协变量的相关性？如果协变量具有异常高的相关值（正值或负值），则会引发错误。",
         "trimFraction": "Trim Fraction (1-100%):",
         "useRegularization": "Use regularization when fitting the propensity model?"
       },
-      "selectCohort": "Select Cohort...",
-      "selectConceptSet": "Select Concept Set...",
+      "selectCohort": "选择队列...",
+      "selectConceptSet": "选择概念集...",
       "selectCovariates": "Select Covariates...",
       "studyPopulation": "研究人群",
       "studyPopulationPanel": {
-        "cohortCap": "If either the target or the comparator cohort is larger than this number it will be sampled to this size. (0 for this value indicates no maximum size)",
+        "cohortCap": "如果目标或比较者队列大于此数目，则将采样到此大小。（如果该值为0，则表示没有最大大小。）",
         "daysPriorOutcomes": "How many days should we look back when identifying prior outcomes?",
-        "endDate": "Study end date - a calendar date specifying the maximum date that a cohort index can appear (leave blank to use all time). <b>Important</b>: the study end date is also used to truncate risk windows, meaning no outcomes beyond the study end date will be considered.",
-        "minimumObservations": "The minimum required continuous observation time (in days) prior to index date for a person to be included in the cohort.",
-        "onlyFirst": "Should only the first exposure per subject be included?",
-        "removeDuplicates": "Remove subjects that are in both the target and comparator cohort?",
-        "removeSubjectsPriorRiskWindow": "Remove subjects that have the outcome prior to the risk window start?",
+        "endDate": "研究结束日期-一个日历日期，指定了可以显示队列索引的最大日期（留空以供所有时间使用。）重要提示：研究结束日期还用于截断风险窗口，这意味着研究结束日期之后不会有任何结果被考虑。",
+        "minimumObservations": "要在索引日期之前将一个人纳入队列的最短连续观察时间。",
+        "onlyFirst": "仅包括受试者的第一暴露？",
+        "removeDuplicates": "删除目标队列和比较队列中的受试者？",
+        "removeSubjectsPriorRiskWindow": "删除在风险窗口开始之前有结果的受试者？",
         "restrictToPeriod": "Restrict the study to the period when both exposures are present in the data? (E.g. when both drugs are on the market)",
-        "startDate": "Study start date - a calendar date specifying the minimum date that a cohort index can appear (leave blank to use all time):",
-        "subjectInMultipleCohorts": "If a subject is in multiple cohorts, should time-at-risk be censored when the new time-at-risk start to prevent overlap?"
+        "startDate": "研究开始日期-指定队列索引可以显示的最短日期（留空以始终使用）：",
+        "subjectInMultipleCohorts": "如果一个受试者属于多个队列，那么在新的风险时间开始以防止重叠时，应该对风险时间进行审查吗？"
       },
       "timeAtRisk": "风险暴露期",
       "timeAtRiskPanel": {
         "daysFrom": "days from",
-        "defineTheTimeAtRiskWindowEnd": "Define the time-at-risk window end:",
-        "defineTheTimeAtRiskWindowStart": "Define the time-at-risk window start, relative to target/comparator cohort entry:",
-        "minimumNumberOfDaysAtRisk": "The minimum number of days at risk?"
+        "defineTheTimeAtRiskWindowEnd": "定义风险暴露期的结束日期。",
+        "defineTheTimeAtRiskWindowStart": "定义相对于目标/对照队列的开始日期的风险暴露期的开始日期",
+        "minimumNumberOfDaysAtRisk": "您想设置多少天的最小风险暴露期？"
       },
-      "usingCovariates": "Using OHDSI covariates for propensity score model.",
+      "usingCovariates": "使用OHDSI协变量进行倾向评分模型。",
       "view": "View:",
       "viewAnalysisSettings": "分析设置",
       "viewComparisons": "比较队列",
       "viewEvaluationSettings": "评估设置",
       "viewFull": "All",
-      "viewFullSpecification": "Full Specification"
+      "viewFullSpecification": "查看全部"
     },
     "tabs": {
       "executions": "执行",
@@ -2334,7 +2334,7 @@
       "bigQuery": {
         "button": {
           "remove": {
-            "label": "Remove"
+            "label": "删除"
           }
         },
         "password": {
@@ -2544,7 +2544,7 @@
         "export": "导出",
         "exportAllToCSV": "Export All Concept Sets To CSV",
         "fullAnalysis": "全面分析",
-        "generate": "Generate",
+        "generate": "生成",
         "generated": "创建开始时间",
         "generationDuration": "创建用时",
         "generationStatus": "生成状态",
@@ -2641,7 +2641,7 @@
       "personExposureText_3": "Average Exposure Years per 1",
       "personExposureText_4": "Detailed statistics are not available",
       "personPercent": "Person Percent",
-      "persons": "Persons",
+      "persons": "患者人数",
       "recordsPer1000": "Records per 1,000",
       "recordsPer1000PerYear": "Records per 1,000 Per Year",
       "recordsPer1000WithRecord": "Records per 1,000 with record",
@@ -3291,7 +3291,7 @@
       "featureAnalysis": "New Feature Analysis",
       "incidenceRate": "New Incidence Rate Analysis",
       "pathway": "New Cohort Pathway",
-      "ple": "New Population Level Estimation Analysis",
+      "ple": "新建人口水平效应估计",
       "plp": "New Patient Level Prediction Analysis",
       "role": "New Role",
       "source": "New Source"
@@ -3362,27 +3362,27 @@
       "executionEditorText_3": "Minimum covariate occurrence: If a covariate occurs in a fraction of the target population less than this value, it will be removed:",
       "executionEditorText_4": "Normalize covariates:",
       "populationEditorText_1": "Define the time-at-risk window start, relative to target cohort entry:",
-      "populationEditorText_2": "Should descendant concepts be added to the list of included concepts?",
-      "populationEditorText_3": "What concepts do you want to exclude in baseline covariates in the propensity score model? (Leave blank if you want to include everything)",
+      "populationEditorText_2": "应将后代概念添加到所包含概念的列表中吗？",
+      "populationEditorText_3": "您想在倾向得分模型的基线协变量中排除哪些概念？ （如果要包括所有内容，请保留空白）",
       "populationEditorText_4": "Should subjects without time at risk be removed?",
-      "populationEditorText_5": "Minimum time at risk:",
+      "populationEditorText_5": "最小风险暴露期",
       "populationEditorText_6": "Include people with outcomes who are not observed for the whole at risk period?",
       "populationEditorText_7": "Should only the first exposure per subject be included?",
       "populationEditorText_8": "Remove patients who have observed the outcome prior to cohort entry?",
       "populationEditorText_9": "How many days to look back from cohort entry for the outcome?",
       "predictionCovariatePlaceholder": "Covariate IDs",
-      "predictionEditorText_1": "What concepts do you want to include in baseline covariates in the propensity score model? (Leave blank if you want to include everything)",
-      "predictionEditorText_2": "Should descendant concepts be added to the list of included concepts?",
-      "predictionEditorText_3": "What concepts do you want to exclude in baseline covariates in the propensity score model? (Leave blank if you want to include everything)",
-      "predictionEditorText_4": "Should descendant concepts be added to the list of excluded concepts?",
-      "predictionEditorText_5": "A comma delimited list of covariate IDs that should be restricted to:",
-      "predictionSelectConceptSet": "Select Concept Set...",
+      "predictionEditorText_1": "您想在倾向得分模型的基线协变量中包括哪些概念？ （如果要包括所有内容，请保留空白）",
+      "predictionEditorText_2": "应将后代概念添加到所包含概念的列表中吗？",
+      "predictionEditorText_3": "您想在倾向得分模型的基线协变量中排除哪些概念？ （如果要包括所有内容，请保留空白）",
+      "predictionEditorText_4": "应将后代概念添加到排除的概念列表中吗？",
+      "predictionEditorText_5": "以逗号分隔的协变量ID列表，应限于：",
+      "predictionSelectConceptSet": "选择概念集...",
       "predictionSelectCovariates": "Select Covariates"
     },
     "emptyMessageTitle": "Patient Level Prediction name is empty.",
     "export": "导出",
     "fullAnalysisList": "Full Analysis List",
-    "generate": "Generate",
+    "generate": "生成",
     "generating": "Generating...",
     "generations": "Generations",
     "import": "导入",
@@ -3455,18 +3455,18 @@
     "item": {
       "addCovariateSettings": "添加协变量设置",
       "addModelSettings": "添加模型设置",
-      "addOutcomeCohort": "Add Outcome Cohort",
+      "addOutcomeCohort": "添加结果队列",
       "addPopulationSettings": "添加人群设置",
-      "addTargetCohort": "Add Target Cohort",
-      "all": "All",
+      "addTargetCohort": " 添加目标队列",
+      "all": "全部",
       "analysisSettings": "分析设置",
       "covariateSettings": "协变量设置",
       "executionSettings": "执行设置",
       "modelSettings": "Model Settings",
-      "outcomeCohort": "Outcome Cohorts",
+      "outcomeCohort": "结果队列",
       "populationSettings": "人群设置",
       "predictionProblemSettings": "预测问题设置",
-      "targetCohort": "Target Cohorts",
+      "targetCohort": "目标队列",
       "trainingSettings": "训练设置",
       "view": "View:"
     },
@@ -3486,7 +3486,7 @@
     "resetToDefault": "Reset to default",
     "reviewAndDownload": "审查 & 下载",
     "reviewFullStudy": "Review Full Study Specification",
-    "selectCohort": "Select Cohort...",
+    "selectCohort": "选择队列...",
     "tabs": {
       "executions": "执行",
       "specification": "说明",

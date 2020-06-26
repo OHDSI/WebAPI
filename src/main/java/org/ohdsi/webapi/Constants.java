@@ -18,6 +18,8 @@ public interface Constants {
   String FAILED = ExitStatus.FAILED.getExitCode();
   String CANCELED = "CANCELED";
 
+  String SYSTEM_USER = "system";
+
   String TEMP_COHORT_TABLE_PREFIX = "temp_cohort_";
   Float DEFAULT_THRESHOLD = 0.01f;
 

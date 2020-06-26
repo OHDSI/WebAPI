@@ -1,5 +1,7 @@
 package org.ohdsi.webapi.job;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
@@ -17,7 +19,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
+import static org.ohdsi.webapi.Constants.SYSTEM_USER;
 import static org.ohdsi.webapi.Constants.WARM_CACHE_BY_USER;
 
 @Service
@@ -48,9 +55,20 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public List<JobExecution> findLast10(List<BatchStatus> hideStatuses) {
-        final Map<String, JobExecution> result = new HashMap<>();
-        for (int start = 0; result.size() < MAX_SIZE; start += PAGE_SIZE) {
+    public List<JobExecutionInfo> findLastJobs(List<BatchStatus> hideStatuses) {
+        BiFunction<JobExecutionInfo, JobExecutionInfo, JobExecutionInfo> mergeFunction = (x, y) -> {
+            final Date xStartTime = x != null ? x.getJobExecution().getStartTime() : null;
+            final Date yStartTime = y != null ? y.getJobExecution().getStartTime() : null;
+            return xStartTime != null ?
+                    yStartTime != null ?
+                            xStartTime.after(yStartTime) ? x
+                                    : y
+                            : x
+                    : y;
+        };
+        final Map<String, JobExecutionInfo> systemJobMap = new HashMap<>();
+        final Map<String, JobExecutionInfo> userJobMap = new HashMap<>();
+        for (int start = 0; userJobMap.size() < MAX_SIZE || systemJobMap.size() < MAX_SIZE; start += PAGE_SIZE) {
             final List<JobExecution> page = jobExecutionDao.getJobExecutions(start, PAGE_SIZE);
             if(page.size() == 0) {
                 break;
@@ -60,24 +78,25 @@ public class NotificationServiceImpl implements NotificationService {
                 if (hideStatuses.contains(jobExec.getStatus())) {
                     continue;
                 }
-                if (isInWhiteList(jobExec) && isMine(jobExec)) {
-                    result.merge(getFoldingKey(jobExec), jobExec, (x, y) -> {
-                        final Date xStartTime = x.getStartTime();
-                        final Date yStartTime = y.getStartTime();
-                        return xStartTime != null ? 
-                                    yStartTime != null ? 
-                                        xStartTime.after(yStartTime) ? x 
-                                        : y
-                                    : x
-                               : y;
-                    });
-                }
-                if (result.size() >= MAX_SIZE) {
-                    break;
+                if (isInWhiteList(jobExec)) {
+                    if (userJobMap.size() < MAX_SIZE && isMine(jobExec)) {
+                        JobExecutionInfo executionInfo = new JobExecutionInfo(jobExec, JobOwnerType.USER_JOB);
+                        userJobMap.merge(getFoldingKey(jobExec), executionInfo, mergeFunction);
+                    } else if (systemJobMap.size() < MAX_SIZE) {
+                        JobExecutionInfo executionInfo = new JobExecutionInfo(jobExec, JobOwnerType.SYSTEM_JOB);
+                        systemJobMap.merge(getFoldingKey(jobExec), executionInfo, mergeFunction);
+                    }
+
+                    if (userJobMap.size() >= MAX_SIZE && systemJobMap.size() >= MAX_SIZE) {
+                        break;
+                    }
                 }
             }
         }
-        return new ArrayList<>(result.values());
+
+        final List<JobExecutionInfo> jobs = new ArrayList<>(systemJobMap.values());
+        jobs.addAll(userJobMap.values());
+        return jobs;
     }
 
     @Override
@@ -108,6 +127,6 @@ public class NotificationServiceImpl implements NotificationService {
     private boolean isMine(JobExecution jobExec) {
         final String login = securityEnabled ? permissionManager.getSubjectName() : null;
         final String jobAuthor = jobExec.getJobParameters().getString(Constants.Params.JOB_AUTHOR);
-        return !securityEnabled || jobAuthor == null || Objects.equals(login, jobAuthor);
+        return Objects.equals(login, jobAuthor);
     }
 }

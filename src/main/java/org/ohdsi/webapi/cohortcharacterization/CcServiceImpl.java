@@ -261,6 +261,10 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             updated.setCohortCharacterization(foundEntity);
             if (Objects.nonNull(updated.getId())) {
                 CcStrataEntity strata = strataEntityMap.get(updated.getId());
+                // strata will be null in case of importing new characterization
+                if (strata == null) {
+                    return updated;
+                }
                 if (StringUtils.isNotBlank(updated.getName())) {
                     strata.setName(updated.getName());
                 }
@@ -347,7 +351,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     public String getNameForCopy(String dtoName) {
         return NameUtils.getNameForCopy(dtoName, this::getNamesLike, repository.findByName(dtoName));
     }
-    
+
     @Override
     public String getNameWithSuffix(String dtoName) {
         return NameUtils.getNameWithSuffix(dtoName, this::getNamesLike);
@@ -490,7 +494,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         final CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
                 .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
         final Source source = generationEntity.getSource();
-        String generationResults = sourceAwareSqlRender.renderSql(source.getSourceId(), QUERY_RESULTS, PARAMETERS_RESULTS, 
+        String generationResults = sourceAwareSqlRender.renderSql(source.getSourceId(), QUERY_RESULTS, PARAMETERS_RESULTS,
                 new String[]{String.valueOf(generationId), String.valueOf(thresholdLevel), SourceUtils.getVocabularyQualifier(source)});
         final String tempSchema = SourceUtils.getTempQualifier(source);
         String translatedSql = SqlTranslate.translateSql(generationResults, source.getSourceDialect(), SessionUtils.sessionId(), tempSchema);
@@ -722,7 +726,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             return null;
         });
     }
-    
+
     private List<String> getFeNamesLike(String name) {
         return analysisService.getNamesLike(name);
     }

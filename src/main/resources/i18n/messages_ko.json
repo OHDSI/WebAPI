@@ -3386,14 +3386,14 @@
     "generations": "생성",
     "import": "불러오기",
     "inputTypes": {
-      "adaBoost": "Ada Boost 모델 설정  (+ 모델 설정 추가)",
+      "adaBoost": "Ada Boost 모델 설정",
       "adaBoostSettings": {
         "desc_learningRate": "학습률(Learning rate)은 각 분류자의 기여도를 감소시킵니다. 학습률(Learning rate)과 estimator 수(nEstimator) 사이에는 상충 관계가 있습니다.",
         "desc_nEstimators": "부스팅이 종료되는 최대 estimator 수",
         "name_learningRate": "학습률(learning rate)",
         "name_nEstimators": "최대 estimator 수"
       },
-      "decisionTree": "의사결정나무 모델 설정  (+ 모델 설정 추가)",
+      "decisionTree": "의사결정나무 모델 설정",
       "decisionTreeSettings": {
         "desc_classWeight": "클래스 가중치",
         "desc_maxDepth": "최대 상호 작용 개수 - 해당값이 크면 모델 학습이 느려집니다",
@@ -3408,7 +3408,7 @@
         "name_minSamplesSplit": "분할 시 최소 샘플 수",
         "name_plot": "분할 시 최소 샘플 수"
       },
-      "gradientBoostingMachine": "Gradient Boosting Machine 모델 설정  (+ 모델 설정 추가)",
+      "gradientBoostingMachine": "Gradient Boosting Machine 모델 설정",
       "gradientBoostingMachineSettings": {
         "desc_learnRate": "학습률(boosting learning rate)",
         "desc_maxDepth": "최대 상호 작용 개수 - 해당값이 크면 모델 학습이 느려집니다",
@@ -3423,9 +3423,9 @@
       },
       "knnSettings": {
         "desc_k": "고려할 이웃의 수(K)",
-        "name_k": "K Nearest Neighbors 모델 설정  (+ 모델 설정 추가)"
+        "name_k": "K Nearest Neighbors 모델 설정"
       },
-      "lassoLogisticRegression": "Lasso 로지스틱 회귀 모델 설정  (+ 모델 설정 추가)",
+      "lassoLogisticRegression": "Lasso 로지스틱 회귀 모델 설정",
       "lassoLogisticRegressionSettings": {
         "desc": "자동 람다 검색의 시작값으로 사용되는 단일 값",
         "name": "Starting value for the automatic lambda search"
@@ -3436,10 +3436,10 @@
         "name_alpha": "알파",
         "name_size": "히든 노드 수"
       },
-      "multilayerPerceptionModel": "Multilayer Perception 모델 설정  (+ 모델 설정 추가)",
-      "naiveBayes": "Naive Bayes 모델 설정  (+ 모델 설정 추가)",
-      "nearestNeighbors": "K Nearest Neighbors 모델 설정  (+ 모델 설정 추가)",
-      "randomForest": "Random Forest 모델 설정  (+ 모델 설정 추가)",
+      "multilayerPerceptionModel": "Multilayer Perception 모델 설정",
+      "naiveBayes": "Naive Bayes 모델 설정",
+      "nearestNeighbors": "K Nearest Neighbors 모델 설정",
+      "randomForest": "Random Forest 모델 설정",
       "randomForestSettings": {
         "desc_maxDepth": "최대 상호 작용 개수 - 해당값이 클수록 모델 학습이 느려집니다 (기본값 = 4,6,17)",
         "desc_mtries": "각 트리에 포함할 feature의 수 (-1은 기본값으로서, 전체 수의 제곱근입니다)",

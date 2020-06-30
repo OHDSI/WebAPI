@@ -37,7 +37,7 @@
                 <security.oauth.callback.ui>${ATLAS_WELCOME_URL}</security.oauth.callback.ui>
                 <security.oauth.callback.api>${ATLAS_WEBAPI_CALLBACK_URL}</security.oauth.callback.api>
                 <security.provider>AtlasCustomSecurity</security.provider>
-                <security.cas.serverUrl>${CAS_SERVER_BASE_URL}</security.cas.serverUrl>
+                <security.cas.serverUrl>${CAS_SERVICE_URL}</security.cas.serverUrl>
                 <security.cas.casticket>ticket</security.cas.casticket>
                 <security.cas.cassvcs></security.cas.cassvcs>
                 <!--<security.cas>true</security.cas>-->

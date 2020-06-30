@@ -2,6 +2,7 @@ package org.ohdsi.webapi;
 
 import org.apache.catalina.webresources.TomcatURLStreamHandlerFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jms.activemq.ActiveMQAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
@@ -17,7 +18,7 @@ import java.util.TimeZone;
  * will source this file).
  */
 @EnableScheduling
-@SpringBootApplication(exclude={HibernateJpaAutoConfiguration.class})
+@SpringBootApplication(exclude={HibernateJpaAutoConfiguration.class, ActiveMQAutoConfiguration.class})
 @ComponentScan(basePackages = {"org.ohdsi.webapi", "com.jnj.honeur.webapi"})
 public class WebApi extends SpringBootServletInitializer {
 

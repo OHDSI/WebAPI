@@ -193,7 +193,6 @@ public class UserService {
   public void removeRole(@PathParam("roleId") Long roleId) {
     this.authorizer.removeRole(roleId);
     this.authorizer.removePermissionsFromTemplate(this.roleCreatorPermissionsTemplate, String.valueOf(roleId));
-    eventPublisher.publishEvent(new DeleteRoleEvent(this, roleId));
   }
 
   @GET

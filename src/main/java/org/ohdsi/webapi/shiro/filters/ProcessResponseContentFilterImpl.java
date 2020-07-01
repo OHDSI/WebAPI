@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.shiro.filters;
 
 import static org.ohdsi.webapi.events.EntityName.*;
+import static org.ohdsi.webapi.util.ParserUtils.parseJsonField;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,8 +9,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import org.apache.shiro.web.util.WebUtils;
+import org.ohdsi.webapi.cohortcharacterization.CcService;
+import org.ohdsi.webapi.estimation.EstimationService;
 import org.ohdsi.webapi.events.DeleteEntityEvent;
 import org.ohdsi.webapi.events.EntityName;
+import org.ohdsi.webapi.pathway.PathwayService;
+import org.ohdsi.webapi.service.IRAnalysisService;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,23 +33,36 @@ public class ProcessResponseContentFilterImpl extends ProcessResponseContentFilt
     private Map<String, String> template;
     private EntityName entityName;
     private String httpMethod;
+    private IRAnalysisService irAnalysisService;
+    private PathwayService pathwayService;
+    private CcService ccService;
+    private EstimationService estimationService;
     private final Logger log = LoggerFactory.getLogger(getClass());
     private String identityField;
     private final List<EntityName> nestedEntities = Arrays.asList(CONCEPT_SET, COHORT);
     private final List<EntityName> parentEntities = Arrays.asList(COHORT_CHARACTERIZATION, PATHWAY_ANALYSIS, INCIDENCE_RATE, COMPARATIVE_COHORT_ANALYSIS, PATIENT_LEVEL_PREDICTION);
     public ProcessResponseContentFilterImpl(Map<String, String> template, EntityName entityName, PermissionManager authorizer,
-                                            ApplicationEventPublisher eventPublisher, String httpMethod) {
-        this(template, entityName, authorizer, eventPublisher, httpMethod, "id");
+                                            ApplicationEventPublisher eventPublisher, String httpMethod,
+                                            IRAnalysisService irAnalysisService, PathwayService pathwayService, CcService ccService,
+                                            EstimationService estimationService) {
+        this(template, entityName, authorizer, eventPublisher, httpMethod, "id", irAnalysisService, pathwayService, ccService,
+                estimationService);
     }
 
     public ProcessResponseContentFilterImpl(Map<String, String> template, EntityName entityName, PermissionManager authorizer, 
-                                            ApplicationEventPublisher eventPublisher, String httpMethod, String identityField) {
+                                            ApplicationEventPublisher eventPublisher, String httpMethod, String identityField,
+                                            IRAnalysisService irAnalysisService, PathwayService pathwayService, CcService ccService,
+                                            EstimationService estimationService) {
         this.template = new HashMap<>(template);
         this.entityName = entityName;
         this.authorizer = authorizer;
         this.eventPublisher = eventPublisher;
         this.httpMethod = httpMethod;
         this.identityField = identityField;
+        this.irAnalysisService = irAnalysisService;
+        this.pathwayService = pathwayService;
+        this.ccService = ccService;
+        this.estimationService = estimationService;
     }
 
     @Override
@@ -71,55 +89,13 @@ public class ProcessResponseContentFilterImpl extends ProcessResponseContentFilt
         
         List<String> ids = new ArrayList<>();
         switch (parentEntityName) {
-            case COHORT_CHARACTERIZATION: ids = getNestedIdsFromCC(content); break;
-            case PATHWAY_ANALYSIS: ids = getNestedIdsFromPathway(content); break;
-            case INCIDENCE_RATE: ids = getNestedIdsFromIr(content); break;
+            case COHORT_CHARACTERIZATION: ids = ccService.getNestedEntitiesIds(content, entityName); break;
+            case PATHWAY_ANALYSIS: ids = pathwayService.getNestedEntitiesIds(content, entityName); break;
+            case INCIDENCE_RATE: ids = irAnalysisService.getNestedEntitiesIds(content, entityName); break;
             case PATIENT_LEVEL_PREDICTION:
-            case COMPARATIVE_COHORT_ANALYSIS: ids = getNestedIdsFromPlpPle(content); break;
+            case COMPARATIVE_COHORT_ANALYSIS: ids = estimationService.getNestedEntitiesIds(content, entityName); break;
         }        
         ids.forEach(this::addPermissions);
-    }
-
-    private List<String> getNestedIdsFromIr(String content) throws IOException {
-
-        List<String> ids = new ArrayList<>();
-        String expression = parseJsonField(content, "expression");
-        if (hasJsonField(expression, "targetIds") && hasJsonField(expression, "outcomeIds") && entityName.equals(COHORT)) {
-            ids.addAll(parseNestedJsonField(expression, "targetIds", null));
-            ids.addAll(parseNestedJsonField(expression, "outcomeIds", null));
-        }
-        return ids;        
-    }
-    
-    private List<String> getNestedIdsFromPathway(String content) throws IOException {
-
-        List<String> ids = new ArrayList<>();
-        if (hasJsonField(content, "targetCohorts") && hasJsonField(content, "eventCohorts") && entityName.equals(COHORT)) {
-            ids.addAll(parseNestedJsonField(content, "targetCohorts", identityField));
-            ids.addAll(parseNestedJsonField(content, "eventCohorts", identityField));
-        }
-        return ids;
-    }
-    
-    private List<String> getNestedIdsFromCC(String content) throws IOException {
-
-        List<String> ids = new ArrayList<>();
-        if (hasJsonField(content, "cohorts") && entityName.equals(COHORT)) {
-            ids = parseNestedJsonField(content, "cohorts", identityField);
-        }
-        return ids;
-    }
-    
-    private List<String> getNestedIdsFromPlpPle(String content) throws IOException {
-
-        List<String> ids = new ArrayList<>();
-        String specification = parseJsonField(content, "specification");
-        if (hasJsonField(specification, "conceptSets") && entityName.equals(CONCEPT_SET))  {
-            ids = parseNestedJsonField(specification, "conceptSets", identityField);
-        } else if (hasJsonField(specification, "cohortDefinitions") && entityName.equals(COHORT)) {
-            ids = parseNestedJsonField(specification, "cohortDefinitions", identityField);
-        }
-        return ids;
     }
 
     private void addPermissions(String id) {

@@ -10,6 +10,10 @@ import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.OidcConfCreator;
 import org.ohdsi.webapi.cohortcharacterization.CcImportEvent;
+import org.ohdsi.webapi.cohortcharacterization.CcService;
+import org.ohdsi.webapi.estimation.EstimationService;
+import org.ohdsi.webapi.pathway.PathwayService;
+import org.ohdsi.webapi.service.IRAnalysisService;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.filters.CorsFilter;
@@ -98,6 +102,14 @@ public abstract class AtlasSecurity extends Security {
   
   @Autowired
   OidcConfCreator oidcConfCreator;
+    @Autowired
+    private IRAnalysisService irAnalysisService;
+    @Autowired
+    private PathwayService pathwayService;
+    @Autowired
+    private CcService ccService;
+    @Autowired
+    private EstimationService estimationService;
 
   @Value("${server.port}")
   private int sslPort;
@@ -342,10 +354,12 @@ public abstract class AtlasSecurity extends Security {
   }
 
   private void addProcessEntityFilter(FilterTemplates template, Map<String, String> permissionTemplates){
-    filters.put(template, new ProcessResponseContentFilterImpl(permissionTemplates, template.getEntityName(), authorizer, eventPublisher, template.getHttpMethod()));
+    filters.put(template, new ProcessResponseContentFilterImpl(permissionTemplates, template.getEntityName(), authorizer, eventPublisher, template.getHttpMethod(), irAnalysisService,
+            pathwayService, ccService, estimationService));
   }
   private void addProcessEntityFilter(FilterTemplates template, Map<String, String> permissionTemplates, String identityField){
-    filters.put(template, new ProcessResponseContentFilterImpl(permissionTemplates, template.getEntityName(), authorizer, eventPublisher, template.getHttpMethod(), identityField));
+    filters.put(template, new ProcessResponseContentFilterImpl(permissionTemplates, template.getEntityName(), authorizer, eventPublisher, template.getHttpMethod(), identityField, irAnalysisService,
+            pathwayService, ccService, estimationService));
   }
 
   @Override

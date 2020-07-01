@@ -18,9 +18,11 @@ package org.ohdsi.webapi.service;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.opencsv.CSVWriter;
+import java.io.IOException;
 import javax.ws.rs.core.HttpHeaders;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IterableUtils;
@@ -37,6 +39,7 @@ import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
+import org.ohdsi.webapi.events.EntityName;
 import org.ohdsi.webapi.ircalc.*;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
@@ -87,6 +90,9 @@ import java.util.zip.ZipOutputStream;
 
 import static org.ohdsi.webapi.Constants.GENERATE_IR_ANALYSIS;
 import static org.ohdsi.webapi.Constants.Params.*;
+import static org.ohdsi.webapi.events.EntityName.COHORT;
+import static org.ohdsi.webapi.util.ParserUtils.parseJsonField;
+import static org.ohdsi.webapi.util.ParserUtils.parseNestedJsonField;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
@@ -94,7 +100,7 @@ import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
  * @author Chris Knoll <cknoll@ohdsi.org>
  */
 @Component
-public class IRAnalysisService extends AbstractDaoService implements GeneratesNotification, IRAnalysisResource {
+public class IRAnalysisService extends AbstractDaoService implements GeneratesNotification, IRAnalysisResource, EntitiesContainer {
 
   private static final Logger log = LoggerFactory.getLogger(IRAnalysisService.class);
   private final static String STRATA_STATS_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/incidencerate/sql/strata_stats.sql");
@@ -157,8 +163,22 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     }
     return null;
   }
-  
-  public static class StratifyReportItem {
+
+    @Override
+    public List<String> getNestedEntitiesIds(String content, EntityName entityName) throws IOException {
+
+        List<String> ids = new ArrayList<>();
+        String expression = parseJsonField(content, "expression");
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode rootNode = mapper.readValue(expression, JsonNode.class);
+        if (rootNode.has("targetIds") && rootNode.has("outcomeIds") && entityName.equals(COHORT)) {
+            ids.addAll(parseNestedJsonField(expression, "targetIds", null));
+            ids.addAll(parseNestedJsonField(expression, "outcomeIds", null));
+        }
+        return ids;
+    }
+
+    public static class StratifyReportItem {
     public long bits;
     public long totalPersons;
     public long timeAtRisk;

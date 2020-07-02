@@ -17,14 +17,24 @@ package org.ohdsi.webapi.cache;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.StreamSupport;
 import javax.cache.Cache;
 import javax.cache.CacheManager;
+import javax.cache.configuration.Configuration;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+
+import org.ehcache.config.CacheConfiguration;
+import org.ehcache.config.EvictionAdvisor;
+import org.ehcache.jsr107.Eh107Configuration;
+import org.ohdsi.webapi.cdmresults.eviction.CDMEvictionAdvisor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
@@ -42,6 +52,8 @@ public class CacheService {
 			this.clearedCaches = new ArrayList<>();
 		}
 	}
+
+	private static final Logger logger = LoggerFactory.getLogger(CacheService.class);
 	
 	private CacheManager cacheManager;
 	
@@ -67,5 +79,36 @@ public class CacheService {
 		}
 		return result;	
 	}
-	
+
+	/**
+	 * Check whether cache data is actual
+	 */
+	@Scheduled(fixedDelayString = "${cache.invalidation.period}")
+	public void inspectCaches() {
+
+		logger.info("Starting cache invalidation");
+		cacheManager.getCacheNames().forEach(name -> {
+
+			Cache<Object, Object> cache = cacheManager.getCache(name);
+			Configuration cfg = cache.getConfiguration(Eh107Configuration.class);
+			if (cfg instanceof Eh107Configuration) {
+				CacheConfiguration cacheCfg = (CacheConfiguration) ((Eh107Configuration)cfg).unwrap(CacheConfiguration.class);
+				EvictionAdvisor advisor = cacheCfg.getEvictionAdvisor();
+				if (advisor instanceof CDMEvictionAdvisor) {
+					CDMEvictionAdvisor cdmEvictionAdvisor = (CDMEvictionAdvisor) advisor;
+					for(Cache.Entry<?, ?> entry : cache) {
+						Object key = entry.getKey();
+						Object current = entry.getValue();
+						logger.debug("Running eviction adviser: {} with key: {}", cdmEvictionAdvisor.getClass(), key);
+						Object actual = cdmEvictionAdvisor.getActualValue(key, current);
+						if (!Objects.equals(entry.getValue(), actual)) {
+							logger.debug("Replacing value of the key: {}", key);
+							cache.replace(key, actual);
+						}
+					}
+				}
+			}
+		});
+	}
+
 }

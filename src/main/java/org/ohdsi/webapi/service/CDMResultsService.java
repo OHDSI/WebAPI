@@ -167,6 +167,11 @@ public class CDMResultsService extends AbstractDaoService {
     public CDMDashboard getDashboard(@PathParam("sourceKey")
             final String sourceKey) {
 
+        return getRawDashboard(sourceKey);
+    }
+
+    public CDMDashboard getRawDashboard(final String sourceKey) {
+
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         CDMDashboard dashboard = queryRunner.getDashboard(getSourceJdbcTemplate(source), source);
         return dashboard;

@@ -19,6 +19,7 @@ import org.ohdsi.webapi.conceptset.ConceptSetCrossReferenceImpl;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
 import org.ohdsi.webapi.job.GeneratesNotification;
+import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.prediction.domain.PredictionGenerationEntity;
 import org.ohdsi.webapi.prediction.repository.PredictionAnalysisGenerationRepository;
 import org.ohdsi.webapi.prediction.repository.PredictionAnalysisRepository;
@@ -333,8 +334,8 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     
     @Override
     @DataSourceAccess
-    public void runGeneration(final PredictionAnalysis predictionAnalysis,
-                              @SourceKey final String sourceKey) throws IOException {
+    public JobExecutionResource runGeneration(final PredictionAnalysis predictionAnalysis,
+                                              @SourceKey final String sourceKey) throws IOException {
 
         final Source source = sourceService.findBySourceKey(sourceKey);
         final Integer predictionAnalysisId = predictionAnalysis.getId();
@@ -364,7 +365,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
                 analysisFiles
         ).build();
 
-        jobService.runJob(generateAnalysisJob, builder.toJobParameters());
+        return jobService.runJob(generateAnalysisJob, builder.toJobParameters());
     }
 
     @Override

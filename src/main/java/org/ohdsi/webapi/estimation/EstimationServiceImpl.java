@@ -31,6 +31,7 @@ import org.ohdsi.webapi.estimation.specification.NegativeControlImpl;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
 import org.ohdsi.webapi.job.GeneratesNotification;
+import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.service.ConceptSetService;
 import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.service.SourceService;
@@ -413,7 +414,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
 
     @Override
     @DataSourceAccess
-    public void runGeneration(Estimation estimation, @SourceKey String sourceKey) throws IOException {
+    public JobExecutionResource runGeneration(Estimation estimation, @SourceKey String sourceKey) throws IOException {
 
         final Source source = sourceService.findBySourceKey(sourceKey);
         final Integer analysisId = estimation.getId();
@@ -442,7 +443,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
                 analysisFiles
         ).build();
 
-        jobService.runJob(generateAnalysisJob, builder.toJobParameters());
+        return jobService.runJob(generateAnalysisJob, builder.toJobParameters());
     }
 
     @Override

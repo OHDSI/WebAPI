@@ -7,8 +7,9 @@ import org.ohdsi.webapi.estimation.specification.EstimationAnalysisImpl;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import org.ohdsi.webapi.service.EntitiesContainer;
 
-public interface EstimationService {
+public interface EstimationService extends EntitiesContainer {
 
   Iterable<Estimation> getAnalysisList();
   void delete(final int id);

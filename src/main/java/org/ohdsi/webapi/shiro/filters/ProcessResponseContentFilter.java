@@ -1,9 +1,5 @@
 package org.ohdsi.webapi.shiro.filters;
 
-import static java.lang.String.format;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -12,7 +8,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
@@ -85,17 +80,6 @@ public abstract class ProcessResponseContentFilter implements Filter {
   protected abstract boolean shouldProcess(ServletRequest request, ServletResponse response);
   
   public abstract void doProcessResponseContent(String content) throws Exception;
-
-  protected String parseJsonField(String json, String field) throws IOException {
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode rootNode = mapper.readValue(json, JsonNode.class);
-    JsonNode fieldNode = rootNode.get(field);
-    if (Objects.isNull(fieldNode)) {
-        throw new NullJsonNodeException(format("Json node '%s' is null", field));
-    }
-    String fieldValue = fieldNode.asText();
-    return fieldValue;
-  }
 
   @Override
   public void destroy() {

@@ -3,6 +3,7 @@ package org.ohdsi.webapi.cohortcharacterization.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.util.Date;
 import org.ohdsi.webapi.cohortcharacterization.CcConst;
+import org.ohdsi.webapi.events.EntityName;
 import org.ohdsi.webapi.user.dto.UserDTO;
 
 public class CcShortDTO {
@@ -16,6 +17,7 @@ public class CcShortDTO {
     private Date updatedAt;
     private Integer hashCode;
     private String name;
+    private final EntityName entityName = EntityName.COHORT_CHARACTERIZATION;
 
     public Long getId() {
         return id;
@@ -71,5 +73,10 @@ public class CcShortDTO {
 
     public void setName(final String name) {
         this.name = name;
+    }
+
+    public EntityName getEntityName() {
+
+        return this.entityName;
     }
 }

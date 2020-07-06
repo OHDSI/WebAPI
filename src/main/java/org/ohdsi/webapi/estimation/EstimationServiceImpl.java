@@ -3,6 +3,8 @@ package org.ohdsi.webapi.estimation;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.estimation.design.EstimationTypeEnum;
@@ -28,6 +30,7 @@ import org.ohdsi.webapi.estimation.repository.EstimationAnalysisGenerationReposi
 import org.ohdsi.webapi.estimation.repository.EstimationRepository;
 import org.ohdsi.webapi.estimation.specification.EstimationAnalysisImpl;
 import org.ohdsi.webapi.estimation.specification.NegativeControlImpl;
+import org.ohdsi.webapi.events.EntityName;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
 import org.ohdsi.webapi.job.GeneratesNotification;
@@ -71,6 +74,10 @@ import java.util.stream.Collectors;
 import static org.ohdsi.webapi.Constants.GENERATE_ESTIMATION_ANALYSIS;
 import static org.ohdsi.webapi.Constants.Params.ESTIMATION_ANALYSIS_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
+import static org.ohdsi.webapi.events.EntityName.COHORT;
+import static org.ohdsi.webapi.events.EntityName.CONCEPT_SET;
+import static org.ohdsi.webapi.util.ParserUtils.parseJsonField;
+import static org.ohdsi.webapi.util.ParserUtils.parseNestedJsonField;
 
 @Service
 @Transactional
@@ -483,5 +490,20 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     @Override
     public String getExecutionFoldingKey() {
         return ESTIMATION_ANALYSIS_ID;
+    }
+
+    @Override
+    public List<String> getNestedEntitiesIds(String content, EntityName entityName) throws IOException {
+
+        List<String> ids = new ArrayList<>();
+        String specification = parseJsonField(content, "specification");
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode rootNode = mapper.readValue(specification, JsonNode.class);
+        if (rootNode.has("conceptSets") && entityName.equals(CONCEPT_SET))  {
+            ids = parseNestedJsonField(specification, "conceptSets", "id");
+        } else if (rootNode.has("cohortDefinitions") && entityName.equals(COHORT)) {
+            ids = parseNestedJsonField(specification, "cohortDefinitions", "id");
+        }
+        return ids;
     }
 }

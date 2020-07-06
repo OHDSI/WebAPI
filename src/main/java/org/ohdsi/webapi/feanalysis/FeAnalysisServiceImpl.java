@@ -199,12 +199,17 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     }
 
     @Override
-    public Optional<FeAnalysisEntity> findByCriteriaList(List<? extends FeAnalysisCriteriaEntity> newCriteriaList) {
+    public Optional<FeAnalysisEntity> findByCriteriaListAndCsAndDomainAndStat(List<? extends FeAnalysisCriteriaEntity> newCriteriaList, FeAnalysisWithCriteriaEntity<? extends FeAnalysisCriteriaEntity> newFeAnalysis) {
         Map<FeAnalysisWithCriteriaEntity, List<FeAnalysisCriteriaEntity>> feAnalysisEntityListMap = newCriteriaList.stream()
                 .map(c -> criteriaRepository.findAllByExpressionString(c.getExpressionString()))
                 .flatMap(List::stream).collect(Collectors.groupingBy(FeAnalysisCriteriaEntity::getFeatureAnalysis));
-        return feAnalysisEntityListMap.entrySet().stream().filter(e -> checkCriteriaList(e.getValue(), newCriteriaList))
-                .findAny().map(Map.Entry::getKey);
+        return feAnalysisEntityListMap.entrySet().stream().filter(e -> {
+            FeAnalysisWithCriteriaEntity feAnalysis = e.getKey();
+            return checkCriteriaList(e.getValue(), newCriteriaList) &&
+                    CollectionUtils.isEqualCollection(feAnalysis.getConceptSets(), newFeAnalysis.getConceptSets()) &&
+                    feAnalysis.getDomain().equals(newFeAnalysis.getDomain()) &&
+                    feAnalysis.getStatType().equals(newFeAnalysis.getStatType());
+            }).findAny().map(Map.Entry::getKey);
     }
 
     private boolean checkCriteriaList(List<FeAnalysisCriteriaEntity> curCriteriaList, List<? extends FeAnalysisCriteriaEntity> newCriteriaList) {

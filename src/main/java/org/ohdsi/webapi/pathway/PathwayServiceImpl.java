@@ -1,7 +1,10 @@
 package org.ohdsi.webapi.pathway;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.MoreObjects;
+import java.io.IOException;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Hibernate;
 import org.ohdsi.circe.helper.ResourceHelper;
@@ -13,6 +16,7 @@ import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.AnalysisGenerationInfoEntity;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.common.generation.TransactionalTasklet;
+import org.ohdsi.webapi.events.EntityName;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
@@ -80,6 +84,8 @@ import static org.ohdsi.webapi.Constants.Params.JOB_AUTHOR;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Params.PATHWAY_ANALYSIS_ID;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
+import static org.ohdsi.webapi.events.EntityName.COHORT;
+import static org.ohdsi.webapi.util.ParserUtils.parseNestedJsonField;
 
 @Service
 @Transactional
@@ -555,5 +561,18 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     @Override
     public String getExecutionFoldingKey() {
         return PATHWAY_ANALYSIS_ID;
+    }
+
+    @Override
+    public List<String> getNestedEntitiesIds(String content, EntityName entityName) throws IOException {
+
+        List<String> ids = new ArrayList<>();
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode rootNode = mapper.readValue(content, JsonNode.class);        
+        if (rootNode.has("targetCohorts") && rootNode.has("eventCohorts") && entityName.equals(COHORT)) {
+            ids.addAll(parseNestedJsonField(content, "targetCohorts", "id"));
+            ids.addAll(parseNestedJsonField(content, "eventCohorts", "id"));
+        }
+        return ids;
     }
 }

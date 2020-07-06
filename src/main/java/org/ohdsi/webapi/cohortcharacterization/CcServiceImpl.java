@@ -2,6 +2,8 @@ package org.ohdsi.webapi.cohortcharacterization;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -26,6 +28,7 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.AnalysisGenerationInfoEntity;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
+import org.ohdsi.webapi.events.EntityName;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
@@ -72,6 +75,9 @@ import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.GENERATE_COHORT_CHARACTERIZATION;
 import static org.ohdsi.webapi.Constants.Params.*;
+import static org.ohdsi.webapi.events.EntityName.COHORT;
+import static org.ohdsi.webapi.util.ParserUtils.parseNestedJsonField;
+
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
 
 @Service
@@ -642,7 +648,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                 case CRITERIA_SET:
                     FeAnalysisWithCriteriaEntity<? extends FeAnalysisCriteriaEntity> criteriaAnalysis = (FeAnalysisWithCriteriaEntity) newAnalysis;
                     List<? extends FeAnalysisCriteriaEntity> design = criteriaAnalysis.getDesign();
-                    Optional<FeAnalysisEntity> entityCriteriaSet = analysisService.findByCriteriaList(design);
+                    Optional<FeAnalysisEntity> entityCriteriaSet = analysisService.findByCriteriaListAndCsAndDomainAndStat(design, criteriaAnalysis);
                     this.<FeAnalysisWithCriteriaEntity<?>>addAnalysis(savedAnalysesIds, analysesSet, criteriaAnalysis, entityCriteriaSet, a -> analysisService.createCriteriaAnalysis(a));
                     break;
                 case PRESET:
@@ -731,4 +737,15 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         return analysisService.getNamesLike(name);
     }
 
+    @Override
+    public List<String> getNestedEntitiesIds(String content, EntityName entityName) throws IOException {
+
+        List<String> ids = new ArrayList<>();
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode rootNode = mapper.readValue(content, JsonNode.class);        
+        if (rootNode.has("cohorts") && entityName.equals(COHORT)) {
+            ids = parseNestedJsonField(content, "cohorts", "id");
+        }
+        return ids;
+    }
 }

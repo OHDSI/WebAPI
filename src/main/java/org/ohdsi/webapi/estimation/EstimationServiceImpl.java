@@ -33,6 +33,8 @@ import org.ohdsi.webapi.estimation.specification.NegativeControlImpl;
 import org.ohdsi.webapi.events.EntityName;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
+import org.ohdsi.webapi.job.GeneratesNotification;
+import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.service.ConceptSetService;
 import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.service.SourceService;
@@ -79,7 +81,7 @@ import static org.ohdsi.webapi.util.ParserUtils.parseNestedJsonField;
 
 @Service
 @Transactional
-public class EstimationServiceImpl extends AnalysisExecutionSupport implements EstimationService {
+public class EstimationServiceImpl extends AnalysisExecutionSupport implements EstimationService, GeneratesNotification {
     
     private static final String CONCEPT_SET_XREF_KEY_TARGET_COMPARATOR_OUTCOME = "estimationAnalysisSettings.analysisSpecification.targetComparatorOutcomes";
     private static final String CONCEPT_SET_XREF_KEY_NEGATIVE_CONTROL_OUTCOMES = "negativeControlOutcomes";
@@ -419,7 +421,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
 
     @Override
     @DataSourceAccess
-    public void runGeneration(Estimation estimation, @SourceKey String sourceKey) throws IOException {
+    public JobExecutionResource runGeneration(Estimation estimation, @SourceKey String sourceKey) throws IOException {
 
         final Source source = sourceService.findBySourceKey(sourceKey);
         final Integer analysisId = estimation.getId();
@@ -448,7 +450,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
                 analysisFiles
         ).build();
 
-        jobService.runJob(generateAnalysisJob, builder.toJobParameters());
+        return jobService.runJob(generateAnalysisJob, builder.toJobParameters());
     }
 
     @Override
@@ -481,12 +483,22 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     }
 
     @Override
+    public String getJobName() {
+        return GENERATE_ESTIMATION_ANALYSIS;
+    }
+
+    @Override
+    public String getExecutionFoldingKey() {
+        return ESTIMATION_ANALYSIS_ID;
+    }
+
+    @Override
     public List<String> getNestedEntitiesIds(String content, EntityName entityName) throws IOException {
 
         List<String> ids = new ArrayList<>();
         String specification = parseJsonField(content, "specification");
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode rootNode = mapper.readValue(specification, JsonNode.class);        
+        JsonNode rootNode = mapper.readValue(specification, JsonNode.class);
         if (rootNode.has("conceptSets") && entityName.equals(CONCEPT_SET))  {
             ids = parseNestedJsonField(specification, "conceptSets", "id");
         } else if (rootNode.has("cohortDefinitions") && entityName.equals(COHORT)) {

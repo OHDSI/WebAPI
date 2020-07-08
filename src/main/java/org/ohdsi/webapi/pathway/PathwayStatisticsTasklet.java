@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import org.ohdsi.webapi.common.generation.CancelableTasklet;
 import org.ohdsi.webapi.util.PreparedStatementRendererCreator;
 import org.springframework.jdbc.core.PreparedStatementCreator;
@@ -103,20 +105,38 @@ public class PathwayStatisticsTasklet extends CancelableTasklet {
 							new Object[] { generationId }
 			);
 
-			return jdbcTemplate.query(pathwayStatsPsr.getSql(), pathwayStatsPsr.getSetter(), (rs, rowNum) -> {
+      Map<Integer, Integer> eventCodes = pathwayService.getEventCohortCodes(design);
+       
+			List<PathwayCode> codesFromDb = jdbcTemplate.query(pathwayStatsPsr.getSql(), pathwayStatsPsr.getSetter(), (rs, rowNum) -> {
 				int code = rs.getInt("combo_id");
-				List<PathwayEventCohort> eventCohorts = getEventCohortsByComboCode(design, code);
+				List<PathwayEventCohort> eventCohorts = getEventCohortsByComboCode(design, eventCodes, code);
 				String names = eventCohorts.stream()
 								.map(PathwayEventCohort::getName)
 								.collect(Collectors.joining(","));
 				 return new PathwayCode(code, names, eventCohorts.size() > 1);
 			});
+      
+      // need to add any event cohort code that wasn't found in the codes from DB
+      // so that, in the case that only a combo was identified in the pathway analysis,
+      // the event cohorts from the combo are included in the result.
+      List<PathwayCode> codesFromDesign = IntStream.range(0, design.getEventCohorts().size())
+              .map(idx -> ((int) Math.pow(2, Double.valueOf(idx))))
+              .filter(code -> codesFromDb.stream().noneMatch(pc -> pc.getCode() == code))
+              .mapToObj(code -> {
+                List<PathwayEventCohort> eventCohorts = getEventCohortsByComboCode(design, eventCodes, code);
+                    String names = eventCohorts.stream()
+                            .map(PathwayEventCohort::getName)
+                            .collect(Collectors.joining(","));
+                     return new PathwayCode(code, names, eventCohorts.size() > 1);                     
+              }).collect(Collectors.toList());
+      
+      return Stream.concat(codesFromDb.stream(), codesFromDesign.stream()).collect(Collectors.toList());
+      
     }
 		
-    private List<PathwayEventCohort> getEventCohortsByComboCode(PathwayAnalysisEntity pathwayAnalysis, int comboCode) {
+    private List<PathwayEventCohort> getEventCohortsByComboCode(PathwayAnalysisEntity pathwayAnalysis, Map<Integer, Integer> eventCodes, int comboCode) {
 
-        Map<Integer, Integer> eventCodes = pathwayService.getEventCohortCodes(pathwayAnalysis);
-        return pathwayAnalysis.getEventCohorts()
+      return pathwayAnalysis.getEventCohorts()
                 .stream()
                 .filter(ec -> ((long) Math.pow(2, Double.valueOf(eventCodes.get(ec.getCohortDefinition().getId()))) & comboCode) > 0)
                 .collect(Collectors.toList());

@@ -203,7 +203,7 @@ FROM (
       THEN 1
       ELSE 0
     END repetitive_event, 
-		case when ROW_NUMBER() OVER (PARTITION BY subject_id, CAST(combo_id AS INT) ORDER BY cohort_start_date) > 1 then 1 else 0 end is_repeat
+		case when ROW_NUMBER() OVER (PARTITION BY subject_id, CAST(combo_id AS BIGINT) ORDER BY cohort_start_date) > 1 then 1 else 0 end is_repeat
   FROM #combo_events
 ) AS marked_repetitive_events
 WHERE repetitive_event = 0 {@allow_repeats == 'false'}?{ AND is_repeat = 0 };

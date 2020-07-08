@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.pathway.dto;
 
 import org.ohdsi.analysis.CohortMetadata;
+import org.ohdsi.webapi.events.EntityName;
 import org.ohdsi.webapi.user.dto.UserDTO;
 
 import java.util.Date;
@@ -13,7 +14,7 @@ public abstract class BasePathwayAnalysisDTO<T extends CohortMetadata> {
     private List<T> targetCohorts;
     private List<T> eventCohorts;
     private Integer combinationWindow;
-		private Integer minSegmentLength;
+    private Integer minSegmentLength;
     private Integer minCellCount;
     private Integer maxDepth;
     private boolean allowRepeats;
@@ -22,6 +23,7 @@ public abstract class BasePathwayAnalysisDTO<T extends CohortMetadata> {
     private UserDTO modifiedBy;
     private Date modifiedDate;
     private Integer hashCode;
+    private final EntityName entityName = EntityName.PATHWAY_ANALYSIS;
 
     public Integer getId() {
 
@@ -73,11 +75,11 @@ public abstract class BasePathwayAnalysisDTO<T extends CohortMetadata> {
         this.combinationWindow = combinationWindow;
     }
 
-		public Integer getMinSegmentLength() {
+    public Integer getMinSegmentLength() {
 			return minSegmentLength;
 		}
 
-		public void setMinSegmentLength(Integer minSegmentLength) {
+    public void setMinSegmentLength(Integer minSegmentLength) {
 			this.minSegmentLength = minSegmentLength;
 		}
 
@@ -159,5 +161,10 @@ public abstract class BasePathwayAnalysisDTO<T extends CohortMetadata> {
     public void setHashCode(Integer hashCode) {
 
         this.hashCode = hashCode;
+    }
+
+    public EntityName getEntityName() {
+
+        return this.entityName;
     }
 }

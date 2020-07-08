@@ -1,10 +1,13 @@
 package org.ohdsi.webapi.service.dto;
 
+import org.ohdsi.webapi.events.EntityName;
+
 public class IRAnalysisShortDTO extends CommonEntityDTO {
 
     private Integer id;
     private String name;
     private String description;
+    private final EntityName entityName = EntityName.INCIDENCE_RATE;
 
     public Integer getId() {
         return id;
@@ -28,5 +31,10 @@ public class IRAnalysisShortDTO extends CommonEntityDTO {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public EntityName getEntityName() {
+
+        return this.entityName;
     }
 }

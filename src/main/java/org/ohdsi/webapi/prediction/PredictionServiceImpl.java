@@ -18,6 +18,8 @@ import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.conceptset.ConceptSetCrossReferenceImpl;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
+import org.ohdsi.webapi.job.GeneratesNotification;
+import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.prediction.domain.PredictionGenerationEntity;
 import org.ohdsi.webapi.prediction.repository.PredictionAnalysisGenerationRepository;
 import org.ohdsi.webapi.prediction.repository.PredictionAnalysisRepository;
@@ -58,7 +60,7 @@ import static org.ohdsi.webapi.Constants.Params.PREDICTION_ANALYSIS_ID;
 
 @Service
 @Transactional
-public class PredictionServiceImpl extends AnalysisExecutionSupport implements PredictionService {
+public class PredictionServiceImpl extends AnalysisExecutionSupport implements PredictionService, GeneratesNotification {
 
     private static final EntityGraph DEFAULT_ENTITY_GRAPH = EntityGraphUtils.fromAttributePaths("source", "analysisExecution.resultFiles");
 
@@ -332,8 +334,8 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     
     @Override
     @DataSourceAccess
-    public void runGeneration(final PredictionAnalysis predictionAnalysis,
-                              @SourceKey final String sourceKey) throws IOException {
+    public JobExecutionResource runGeneration(final PredictionAnalysis predictionAnalysis,
+                                              @SourceKey final String sourceKey) throws IOException {
 
         final Source source = sourceService.findBySourceKey(sourceKey);
         final Integer predictionAnalysisId = predictionAnalysis.getId();
@@ -363,7 +365,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
                 analysisFiles
         ).build();
 
-        jobService.runJob(generateAnalysisJob, builder.toJobParameters());
+        return jobService.runJob(generateAnalysisJob, builder.toJobParameters());
     }
 
     @Override
@@ -393,5 +395,15 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         entityManager.refresh(analysis);
         analysis = getById(analysis.getId());
         return analysis;
+    }
+
+    @Override
+    public String getJobName() {
+        return GENERATE_PREDICTION_ANALYSIS;
+    }
+
+    @Override
+    public String getExecutionFoldingKey() {
+        return PREDICTION_ANALYSIS_ID;
     }
 }

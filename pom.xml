@@ -190,7 +190,6 @@
     <!-- Cache Config -->
     <!-- Period in milliseconds between running checks to detect freshness of cached data -->
     <cache.invalidation.period>3600000</cache.invalidation.period>
-<!--    <spring.cache.jcache.config>classpath:config/ehcache.xml</spring.cache.jcache.config>-->
   </properties>
   <build>
     <finalName>WebAPI</finalName>

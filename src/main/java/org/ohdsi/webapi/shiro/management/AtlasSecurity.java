@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.shiro.management;
 
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.realm.Realm;
@@ -458,10 +459,14 @@ public abstract class AtlasSecurity extends Security {
 
   @Override
   public String getSubject() {
-    if (SecurityUtils.getSubject().isAuthenticated())
-      return authorizer.getSubjectName();
-    else
-      return "anonymous";
+    try {
+      if (SecurityUtils.getSubject().isAuthenticated()) {
+        return authorizer.getSubjectName();
+      }
+    } catch (UnavailableSecurityManagerException e) {
+      log.warn("No security manager is available, authenticated as anonymous");
+    }
+    return "anonymous";
   }
 
   // Since we need to create permissions only for certain analyses, we cannot go with `addProcessEntityFilter`

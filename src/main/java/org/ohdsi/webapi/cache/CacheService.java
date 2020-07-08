@@ -83,7 +83,7 @@ public class CacheService {
 	/**
 	 * Check whether cache data is actual
 	 */
-	@Scheduled(fixedDelayString = "${cache.invalidation.period}")
+	@Scheduled(fixedDelayString = "${cache.invalidation.period}", initialDelayString = "${cache.invalidation.period}")
 	public void inspectCaches() {
 
 		logger.info("Starting cache invalidation");

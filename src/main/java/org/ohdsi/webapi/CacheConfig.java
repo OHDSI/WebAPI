@@ -21,8 +21,7 @@ import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.ehcache.expiry.ExpiryPolicy;
 import org.ehcache.jsr107.Eh107Configuration;
-import org.ohdsi.webapi.cdmresults.eviction.DashboardEvictionAdvisor;
-import org.ohdsi.webapi.cdmresults.eviction.PersonEvictionAdvisor;
+import org.ohdsi.webapi.cdmresults.eviction.*;
 import org.ohdsi.webapi.cdmresults.keys.RefreshableSourceKey;
 import org.ohdsi.webapi.cdmresults.keys.DrilldownKey;
 import org.ohdsi.webapi.cdmresults.keys.TreemapKey;
@@ -46,11 +45,20 @@ public class CacheConfig implements JCacheManagerCustomizer {
     public static final int HEAP_SIZE = 100;
     private final DashboardEvictionAdvisor dashboardEvictionAdvisor;
     private final PersonEvictionAdvisor personEvictionAdvisor;
+    private final DrilldownEvictionAdvisor drilldownEvictionAdvisor;
+    private final TreemapEvictionAdvisor treemapEvictionAdvisor;
+    private final DataDensityEvictionAdivisor dataDensityEvictionAdivisor;
 
     public CacheConfig(DashboardEvictionAdvisor dashboardEvictionAdvisor,
-                       PersonEvictionAdvisor personEvictionAdvisor) {
+                       PersonEvictionAdvisor personEvictionAdvisor,
+                       DrilldownEvictionAdvisor drilldownEvictionAdvisor,
+                       TreemapEvictionAdvisor treemapEvictionAdvisor,
+                       DataDensityEvictionAdivisor dataDensityEvictionAdivisor) {
         this.dashboardEvictionAdvisor = dashboardEvictionAdvisor;
         this.personEvictionAdvisor = personEvictionAdvisor;
+        this.drilldownEvictionAdvisor = drilldownEvictionAdvisor;
+        this.treemapEvictionAdvisor = treemapEvictionAdvisor;
+        this.dataDensityEvictionAdivisor = dataDensityEvictionAdivisor;
     }
 
     @Override
@@ -68,14 +76,17 @@ public class CacheConfig implements JCacheManagerCustomizer {
         cacheManager.createCache(Constants.Caches.Datasources.PERSON, Eh107Configuration.fromEhcacheCacheConfiguration(personCacheConfig));
 
         CacheConfigurationBuilder<TreemapKey, ArrayNode> domainCacheConfig = CacheConfigurationBuilder.newCacheConfigurationBuilder(TreemapKey.class, ArrayNode.class, resourcePool)
+                .withEvictionAdvisor(treemapEvictionAdvisor)
                 .withExpiry(ExpiryPolicy.NO_EXPIRY);
         cacheManager.createCache(Constants.Caches.Datasources.DOMAIN, Eh107Configuration.fromEhcacheCacheConfiguration(domainCacheConfig));
 
         CacheConfigurationBuilder<DrilldownKey, JsonNode> drilldownCacheConfig = CacheConfigurationBuilder.newCacheConfigurationBuilder(DrilldownKey.class, JsonNode.class, resourcePool)
+                .withEvictionAdvisor(drilldownEvictionAdvisor)
                 .withExpiry(ExpiryPolicy.NO_EXPIRY);
         cacheManager.createCache(Constants.Caches.Datasources.DRILLDOWN, Eh107Configuration.fromEhcacheCacheConfiguration(drilldownCacheConfig));
 
         CacheConfigurationBuilder<RefreshableSourceKey, CDMDataDensity> dataDensityCacheConfig = CacheConfigurationBuilder.newCacheConfigurationBuilder(RefreshableSourceKey.class, CDMDataDensity.class, resourcePool)
+                .withEvictionAdvisor(dataDensityEvictionAdivisor)
                 .withExpiry(ExpiryPolicy.NO_EXPIRY);
         cacheManager.createCache(Constants.Caches.Datasources.DATADENSITY, Eh107Configuration.fromEhcacheCacheConfiguration(dataDensityCacheConfig));
     }

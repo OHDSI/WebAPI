@@ -185,7 +185,7 @@ public class PatientLevelPredictionAnalysisDTO extends CommonEntityDTO {
 
   private int delCovariatesSmallCount;
 
-  public Integer getAnalysisId() {
+  public Integer getId() {
     return analysisId;
   }
 

@@ -15,14 +15,15 @@
     <spring.boot.version>1.5.20.RELEASE</spring.boot.version>
     <flyway.version>4.2.0</flyway.version>
     <waffle.version>1.7.3</waffle.version>
+
     <circe.version>1.9.0-SNAPSHOT</circe.version>
     <jersey.version>2.14</jersey.version>
     <SqlRender.version>1.6.3-SNAPSHOT</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
-    <pac4j.version>1.9.2</pac4j.version>
-
+    <pac4j.version>4.0.0</pac4j.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
-    <skipTests>true</skipTests>
+    <skipUnitTests>true</skipUnitTests>
+    <skipITtests>true</skipITtests>
 
     <!-- Primary DataSource -->
     <!-- default sql server - TODO How about making postgres the default (e.g. in line with open source tech)? -alexfranken -->
@@ -71,6 +72,8 @@
     <security.ssl.enabled>false</security.ssl.enabled>
     <security.oauth.callback.ui>http://localhost/Atlas/#/welcome</security.oauth.callback.ui>
     <security.oauth.callback.api>http://localhost:8080/WebAPI/user/oauth/callback</security.oauth.callback.api>
+    <!-- Available options for callback urlResolver are: query and path -->
+    <security.oauth.callback.urlResolver>query</security.oauth.callback.urlResolver>
     <security.oauth.google.apiKey></security.oauth.google.apiKey>
     <security.oauth.google.apiSecret></security.oauth.google.apiSecret>
     <security.oauth.facebook.apiKey></security.oauth.facebook.apiKey>
@@ -80,6 +83,7 @@
     <security.oid.clientId></security.oid.clientId>
     <security.oid.apiSecret></security.oid.apiSecret>
     <security.oid.url></security.oid.url>
+    <security.oid.logoutUrl></security.oid.logoutUrl>
     <security.oid.redirectUrl>http://localhost/index.html#/welcome/</security.oid.redirectUrl>
     <security.kerberos.spn></security.kerberos.spn>
     <security.kerberos.keytabPath></security.kerberos.keytabPath>
@@ -128,6 +132,7 @@
 
     <security.googleIap.cloudProjectId></security.googleIap.cloudProjectId>
     <security.googleIap.backendServiceId></security.googleIap.backendServiceId>
+    <security.google.accessToken.enabled>false</security.google.accessToken.enabled>
 
     <security.cors.enabled>true</security.cors.enabled>
     <security.maxLoginAttempts>3</security.maxLoginAttempts>
@@ -309,7 +314,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.18.1</version>
         <configuration>
-          <skipTests>${skipTests}</skipTests>
+          <skipTests>${skipUnitTests}</skipTests>
         </configuration>
       </plugin>
       <plugin>
@@ -339,22 +344,10 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>2.18.1</version>
+        <configuration>
+          <skipITs>${skipITtests}</skipITs>
+        </configuration>
         <executions>
-          <execution>
-            <id>failsafe-integration-tests</id>
-            <phase>integration-test</phase>
-            <goals>
-              <goal>integration-test</goal>
-            </goals>
-            <configuration>
-              <includes>
-                <include>**/*IT.java</include>
-              </includes>
-              <excludes>
-                <exclude>**/SecurityIT.java</exclude>
-              </excludes>
-            </configuration>
-          </execution>
           <execution>
             <phase>test</phase>
             <goals>
@@ -362,7 +355,7 @@
             </goals>
             <configuration>
               <includes>
-                <include>**/SecurityIT.java</include>
+                <include>**/IT*.java</include>
               </includes>
             </configuration>
           </execution>
@@ -684,7 +677,7 @@
     <dependency>
       <groupId>io.buji</groupId>
       <artifactId>buji-pac4j</artifactId>
-      <version>2.0.2</version>
+      <version>5.0.0</version>
     </dependency>
     <dependency>
       <groupId>org.pac4j</groupId>
@@ -698,7 +691,7 @@
     </dependency>
     <dependency>
       <groupId>org.pac4j</groupId>
-      <artifactId>pac4j-saml</artifactId>
+      <artifactId>pac4j-saml-opensamlv3</artifactId>
       <version>${pac4j.version}</version>
     </dependency>
     <dependency>
@@ -755,6 +748,24 @@
       <groupId>org.jasypt</groupId>
       <artifactId>jasypt-hibernate4</artifactId>
       <version>1.9.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dbunit</groupId>
+      <artifactId>dbunit</artifactId>
+      <version>2.7.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.springtestdbunit</groupId>
+      <artifactId>spring-test-dbunit</artifactId>
+      <version>1.3.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>pl.pragmatists</groupId>
+      <artifactId>JUnitParams</artifactId>
+      <version>1.1.0</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
@@ -872,12 +883,6 @@
       <version>0.13.1</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.dbunit</groupId>
-      <artifactId>dbunit</artifactId>
-      <version>2.6.0</version>
-      <scope>test</scope>
-    </dependency>    
     <dependency>
         <groupId>com.github.mjeanroy</groupId>
         <artifactId>dbunit-plus</artifactId>

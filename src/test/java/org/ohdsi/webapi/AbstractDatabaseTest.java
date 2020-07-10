@@ -18,8 +18,7 @@ import java.sql.SQLException;
 
 @SpringBootTest
 @RunWith(SpringRunner.class)
-@TestPropertySource(locations = "/in-memory-webapi.properties")
-@Ignore//do not run this test
+@TestPropertySource(locations = "/application-test.properties")
 public abstract class AbstractDatabaseTest {
     static class JdbcTemplateTestWrapper extends ExternalResource {
         @Override

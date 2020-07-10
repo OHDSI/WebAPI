@@ -79,7 +79,7 @@ public interface Constants {
 
   interface Templates {
 
-    String ENTITY_COPY_PREFIX = "COPY OF: %s";
+    String ENTITY_COPY_PREFIX = "COPY OF %s";
   }
 
   interface Tables {

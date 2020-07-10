@@ -1034,7 +1034,7 @@
   "facets": {
     "caption": {
       "analysisName": "Analysis Name",
-      "author": "저자",
+      "author": "만든 이",
       "class": "클래스",
       "comparatorCohorts": "Comparator Cohorts",
       "created": "생성",
@@ -1105,7 +1105,7 @@
     "atlasLogin": "Atlas Login",
     "atlasRole": "Atlas role",
     "atlasRoles": "Atlas roles",
-    "author": "저자",
+    "author": "만든 이",
     "avg": "평균",
     "avgValue": "Avg",
     "binary": "Binary",
@@ -1130,7 +1130,7 @@
     "covariateId": "Covariate Id",
     "covariateName": "Covariate Name",
     "covariateSettings": "공변량 설정",
-    "created": "생성",
+    "created": "만든 날짜",
     "date": "Date",
     "daysSupplyAvg": "Avg. Days of Supply",
     "daysSupplyPer1000PerYear": "Days of Supply /1K /Year",
@@ -1197,7 +1197,7 @@
     "model": "Model",
     "modelName": "Model Name",
     "modelSettings": "Model Settings",
-    "modified": "수정",
+    "modified": "수정한 날짜",
     "name": "이름",
     "ncOutcomes": "음성 대조군 결과",
     "nextExecution": "Next execution",
@@ -1279,7 +1279,7 @@
     "timeAtRiskEnd": "위험 노출 기간 종료일",
     "timeAtRiskStart": "위험 노출 기간 시작일",
     "timeWindow": "Time Window",
-    "title": "표제",
+    "title": "제목",
     "totalRecords": "Total Records",
     "type": "Type",
     "uniqueIdentifier": "Unique Identifier",
@@ -1485,7 +1485,7 @@
       "saveWarning": "Cohort changes are not saved. Would you like to continue?",
       "tabs": {
         "export": "내보내기",
-        "list": "List"
+        "list": "리스트"
       }
     },
     "manager": {
@@ -1801,7 +1801,7 @@
     "releaseNotes": {
       "issues": "이 최신 릴리스에는 <b><%=issues%></b> 가지 기능 향상 및 문제 해결이 포함되어 있습니다.",
       "loadingReleaseInfo": "Loading release info",
-      "title": "배포 노트s"
+      "title": "배포 노트"
     },
     "title": "홈",
     "welcome": "ATLAS에 오신 것을 환영합니다."

@@ -1029,6 +1029,12 @@
       "selectSources": "Select sources",
       "generate": "생성",
       "pickAtLeastOneSourceAlert": "Pick at least one source to generate"
+    },
+    "nameValidation": {
+      "empty": "The name is empty.",
+      "invalidCharacters": "The name cannot contain any of the following characters: \\/:*?\"<>|  Please choose a different name.",
+      "length": "The name length exceeds <%=length%> symbols. Please choose a different name.",
+      "defaultName": "The name of the analysis should differ from the default one."
     }
   },
   "facets": {
@@ -1554,7 +1560,6 @@
         "standard": "표준"
       },
       "fullyOptimizedMessage": "The current concept set definition is fully optimized.",
-      "nameEmptyWarning": "Concept Set name is empty.",
       "optimize": "Optimize",
       "optimizedConceptSetHeading": "Optimized Concept Set",
       "overwriteOption": "Overwrite Current Concept Set",
@@ -1696,9 +1701,6 @@
         "runNewGenerationConfirmation": "No changes have been made since last execution. Do you still want to run new one?",
         "stopGenerationConfirmation": "Do you want to stop generation?"
       },
-      "messages": {
-        "nameIsEmpty": "Characterization name is empty."
-      },
       "results": {
         "detail": {
           "date": "Date:",
@@ -1773,7 +1775,6 @@
       "featureExtractionPresetName": "FeatureExtraction preset name:",
       "loadingList": "Loading Feature Analysis list...",
       "nameExistsAlert": "A feature analysis with this name already exists. Please choose a different name.",
-      "nameIsEmpty": "Feature Analysis name is empty.",
       "preset": "Preset",
       "retrievingList": "Retrieving feature analyses list...",
       "saveError": "An error occurred while attempting to save a feature analysis.",
@@ -1842,7 +1843,6 @@
       "timeAtRiskWarningMessage": "Error: Time at risk starts on or after time at risk end, resulting in zero time at risk.  Please ensure the start offset is greater than the end offset."
     },
     "nameConflict": "An incidence rate with this name already exists. Please choose a different name.",
-    "nameIsEmpty": "Incidence Rate Analysis name is empty.",
     "newanalysis": "New Analysis",
     "notSavedMessage": "Incidence Rate Analysis changes are not saved. Would you like to continue?",
     "results": {
@@ -2009,7 +2009,6 @@
         "alreadyExists": "A cohort pathway with this name already exists. Please choose a different name.",
         "beforeClose": "Your changes are not saved. Would you like to continue?",
         "deleteConfirmation": "Are you sure?",
-        "nameIsEmpty": "Cohort Pathway name is empty.",
         "saveFailed": "An error occurred while attempting to save a cohort pathway.",
         "notfound": "There is no pathway analysis with id = %d."
       },
@@ -2042,7 +2041,6 @@
       "notPermitted": "Not enough permissions to generate or changes were not saved or Execution Engine is not available",
       "notPermittedToViewResults": "Not enough permissions to view results"
     },
-    "nameIsEmptyWarning": "Population Level Effect Estimation name is empty.",
     "spec": {
       "addAnalysisSettings": "분석 설정 추가",
       "addComparisons": "비교군 추가",
@@ -2510,7 +2508,6 @@
         "saveAlert": "A cohort definition with this name already exists. Please choose a different name."
       },
       "createCopyCohortTitle": "Create a copy of this cohort definition",
-      "emptyName": "Cohort Definition name is empty",
       "failedWithoutAnyMessage": "Failed without any message",
       "generateAllAnalyses": {
         "descr": "all analyses",
@@ -3378,7 +3375,6 @@
       "predictionSelectConceptSet": "컨셉 세트 선택하기",
       "predictionSelectCovariates": "공변량 선택"
     },
-    "emptyMessageTitle": "Patient Level Prediction name is empty.",
     "export": "내보내기",
     "fullAnalysisList": "Full Analysis List",
     "generate": "생성",

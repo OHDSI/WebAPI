@@ -81,9 +81,15 @@ public class CacheService {
 	}
 
 	/**
-	 * Check whether cache data is actual
+	 * Checks whether cache data is actual.
+	 * During specified amount of period it runs cache inspections.
+	 * The goal of inspection is to ensure value stored in the cache is still actual
+	 * and wasn't changed by some external process.
+	 * Cache should be configured with EvictionAdvisor that implements CDMEvictionAdvisor interface
+	 * to provide current actual value required by the inspection.
+	 * @see CDMEvictionAdvisor
 	 */
-	@Scheduled(fixedDelayString = "${cache.invalidation.period}", initialDelayString = "${cache.invalidation.period}")
+	@Scheduled(fixedDelayString = "${cache.inspection.period}", initialDelayString = "${cache.inspection.period}")
 	public void inspectCaches() {
 
 		logger.info("Starting cache invalidation");

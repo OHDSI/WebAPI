@@ -189,7 +189,7 @@
 
     <!-- Cache Config -->
     <!-- Period in milliseconds between running checks to detect freshness of cached data -->
-    <cache.invalidation.period>3600000</cache.invalidation.period>
+    <cache.inspection.period>3600000</cache.inspection.period>
   </properties>
   <build>
     <finalName>WebAPI</finalName>

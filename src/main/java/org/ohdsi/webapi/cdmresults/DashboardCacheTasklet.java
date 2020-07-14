@@ -15,7 +15,7 @@ public class DashboardCacheTasklet extends BaseCDMResultsCacheTasklet {
     @Override
     public RepeatStatus execute(StepContribution stepContribution, ChunkContext chunkContext) throws Exception {
 
-        this.service.getDashboard(source.getSourceKey());
+        service.getDashboard(source.getSourceKey());
         return RepeatStatus.FINISHED;
     }
 }

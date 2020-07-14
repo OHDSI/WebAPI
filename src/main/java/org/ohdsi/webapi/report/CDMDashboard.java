@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.report;
 
 import java.util.List;
+import java.util.Objects;
 
 public class CDMDashboard {
 
@@ -76,5 +77,20 @@ public class CDMDashboard {
         this.observedByMonth = observedByMonth;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CDMDashboard that = (CDMDashboard) o;
+        return Objects.equals(summary, that.summary) &&
+                Objects.equals(gender, that.gender) &&
+                Objects.equals(ageAtFirstObservation, that.ageAtFirstObservation) &&
+                Objects.equals(cumulativeObservation, that.cumulativeObservation) &&
+                Objects.equals(observedByMonth, that.observedByMonth);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(summary, gender, ageAtFirstObservation, cumulativeObservation, observedByMonth);
+    }
 }

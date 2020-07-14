@@ -93,4 +93,14 @@ public interface Constants {
     String QUERY = "query";
     String PATH = "path";
   }
+
+  interface Caches {
+    interface Datasources {
+      String DASHBOARD = "datasources.dashboard";
+      String PERSON = "datasources.person";
+      String DOMAIN = "datasources.domain";
+      String DRILLDOWN = "datasources.drilldown";
+      String DATADENSITY = "datasources.dataDensity";
+    }
+  }
 }

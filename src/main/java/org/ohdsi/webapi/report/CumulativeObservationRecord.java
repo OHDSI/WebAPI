@@ -1,5 +1,7 @@
 package org.ohdsi.webapi.report;
 
+import java.util.Objects;
+
 public class CumulativeObservationRecord {
 
 	private String seriesName;
@@ -41,5 +43,20 @@ public class CumulativeObservationRecord {
 	 */
 	public void setyPercentPersons(double yPercentPersons) {
 		this.yPercentPersons = yPercentPersons;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		CumulativeObservationRecord that = (CumulativeObservationRecord) o;
+		return xLengthOfObservation == that.xLengthOfObservation &&
+				Double.compare(that.yPercentPersons, yPercentPersons) == 0 &&
+				Objects.equals(seriesName, that.seriesName);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(seriesName, xLengthOfObservation, yPercentPersons);
 	}
 }

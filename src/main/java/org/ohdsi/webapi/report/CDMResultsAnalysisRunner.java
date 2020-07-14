@@ -16,7 +16,9 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
+import org.springframework.stereotype.Component;
 
+@Component
 public class CDMResultsAnalysisRunner {
 
     private static final String BASE_SQL_PATH = "/resources/cdmresults/sql";
@@ -31,7 +33,8 @@ public class CDMResultsAnalysisRunner {
     private String sourceDialect;
     private ObjectMapper objectMapper;
 
-    public CDMResultsAnalysisRunner(String sourceDialect, ObjectMapper objectMapper) {
+
+    public void init(String sourceDialect, ObjectMapper objectMapper) {
 
         this.sourceDialect = sourceDialect;
         this.objectMapper = objectMapper;

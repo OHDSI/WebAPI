@@ -62,7 +62,8 @@ import java.util.stream.Collectors;
 public class CDMResultsService extends AbstractDaoService implements InitializingBean {
     private final Logger logger = LoggerFactory.getLogger(CDMResultsService.class);
 
-    private CDMResultsAnalysisRunner queryRunner = null;
+    @Autowired
+    private CDMResultsAnalysisRunner queryRunner;
 
     @Autowired
     private JobService jobService;
@@ -90,7 +91,7 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     @Override
     public void afterPropertiesSet() throws Exception {
 
-        queryRunner = new CDMResultsAnalysisRunner(this.getSourceDialect(), objectMapper);
+        queryRunner.init(this.getSourceDialect(), objectMapper);
         warmCaches();
     }
 
@@ -362,7 +363,7 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         return "warming " + sourceKey + " cache";
     }
 
-    private JobExecutionResource warmCaches(Source source, CDMResultsService instance) {
+    public JobExecutionResource warmCaches(Source source, CDMResultsService instance) {
 
         String jobName = getWarmCacheJobName(source.getSourceKey());
         DashboardCacheTasklet dashboardTasklet = new DashboardCacheTasklet(source, instance);

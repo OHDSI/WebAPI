@@ -29,6 +29,7 @@ import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.ResultSet;
 import java.util.AbstractMap;
@@ -40,12 +41,14 @@ import java.util.HashMap;
 public class CDMResultsCacheTasklet implements Tasklet {
 
     private final JdbcTemplate jdbcTemplate;
+    private final TransactionTemplate transactionTemplate;
     private final Source source;
     private final CDMResultsCache cdmResultsCache;
 	  private static final Logger log = LoggerFactory.getLogger(CDMResultsCacheTasklet.class);
 
-    public CDMResultsCacheTasklet(final JdbcTemplate t, final Source s) {
+    public CDMResultsCacheTasklet(final JdbcTemplate t, final TransactionTemplate transactionTemplate, final Source s) {
         jdbcTemplate = t;
+        this.transactionTemplate = transactionTemplate;
         source = s;
         cdmResultsCache = new CDMResultsCache();
     }
@@ -61,16 +64,18 @@ public class CDMResultsCacheTasklet implements Tasklet {
         PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql_statement, tables, tableValues,
           SessionUtils.sessionId());
 
-				HashMap<Integer, Long[]> newCache = new HashMap<>();
-				try {
-					jdbcTemplate.query(psr.getSql(), psr.getSetter(), getMapper(newCache));
-                    return newCache;
-				} catch (Exception e) {
-					log.error("Failed to warm cache for {}. Exception: {}", source.getSourceKey(), e.getLocalizedMessage());
-					throw e;
-				} finally {
-					return newCache;
-				}
+        HashMap<Integer, Long[]> newCache = new HashMap<>();
+        try {
+            transactionTemplate.execute(s -> {
+                jdbcTemplate.query(psr.getSql(), psr.getSetter(), getMapper(newCache));
+                return null;
+            });
+        } catch (Exception e) {
+            log.error("Failed to warm cache for {}. Exception: {}", source.getSourceKey(), e.getLocalizedMessage());
+            throw e;
+        }
+        return newCache;
+
     }
 
     @Override

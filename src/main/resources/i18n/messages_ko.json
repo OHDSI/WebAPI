@@ -23,7 +23,7 @@
         "previous": "이전"
       },
       "buttons": {
-        "colvis": "Show columns",
+        "colvis": "컬럼 보기",
         "copy": "복사하기"
       },
       "aria": {
@@ -1065,7 +1065,7 @@
       "standardConcept": "표준 컨셉",
       "startDate": "Start date",
       "targetCohorts": "표적 코호트",
-      "type": "Type",
+      "type": "유형",
       "updated": "Updated",
       "userSpecified": "User Specified",
       "vocabulary": "용어",
@@ -1119,8 +1119,8 @@
     "charged": "Charged cost",
     "chargedPmPm": "Charged cost PMPM",
     "checkConnection": "Check connection",
-    "class": "Class",
-    "code": "Code",
+    "class": "클래스",
+    "code": "코드",
     "comparator": "비교군",
     "comparatorCohortName": "Comparator Cohort Name",
     "comparatorId": "Comparator Id",
@@ -1147,7 +1147,7 @@
     "dialect": "Dialect",
     "distance": "Distance",
     "domain": "도메인",
-    "drc": "DRC",
+    "drc": "하위 기록 개수",
     "drugClass": "Concept class",
     "drugConceptId": "Drug Concept Id",
     "drugConceptName": "Drug Concept Name",
@@ -1186,6 +1186,7 @@
     "included": "Included",
     "includedUsers": "Included users",
     "indicatedContraindicated": "Indicated / Contraindicated",
+    "ingredient": "재료",
     "jobName": "Job Name",
     "lastExecuted": "Last executed",
     "lengthOfStayAvg": "Avg. Days of Stay",
@@ -1233,7 +1234,7 @@
     "personCount": "환자수",
     "personsPct": "Persons %",
     "pregnancyConcept": "Pregnancy Concept",
-    "prevalence": "Prevalence",
+    "prevalence": "유병율",
     "priorOutcomeLookback": "Prior Outcome Lookback",
     "productLabelAncestor": "Product Label (Ancestor Concept Match)",
     "productLabelCountDescendant": "Product Label Count (Descendant Concept Match)",
@@ -1248,7 +1249,7 @@
     "quantityAvg": "Avg. Quantity",
     "quantityPer1000PerYear": "Quantity /1K /Year",
     "quantityTotal": "Total Quantity",
-    "rc": "RC",
+    "rc": "기록 개수",
     "recordCounts": "기록 수 (RC / DRC)",
     "refreshCache": "캐시 새로 고침",
     "relationshipType": "Relationship Type",
@@ -1287,7 +1288,7 @@
     "timeWindow": "Time Window",
     "title": "제목",
     "totalRecords": "Total Records",
-    "type": "Type",
+    "type": "유형",
     "uniqueIdentifier": "Unique Identifier",
     "updated": "Updated",
     "userExcluded": "User Excluded",
@@ -1309,12 +1310,12 @@
   "dataSources": {
     "achillesHeelReport": {
       "achillesHeelResults": "Achilles Heel 결과",
-      "message": "Message",
-      "messageType": "Message Type"
+      "message": "메시지",
+      "messageType": "메시지 유형"
     },
     "const": {
-      "lengthOfEra": "Length of era",
-      "recordsPerPerson": "Records per person"
+      "lengthOfEra": "기간의 길이",
+      "recordsPerPerson": "사람 당 기록수"
     },
     "dashboardReport": {
       "age": "Age",
@@ -1326,7 +1327,7 @@
       "people": "환자 수",
       "percentOfPopulation": "Percent of Population",
       "personsWithContinuousObservationByMonth": "월별 연속 관찰 대상자",
-      "populationByGender": "성별 별 인구",
+      "populationByGender": "성비",
       "years": "Years"
     },
     "datadensityReport": {
@@ -1340,20 +1341,20 @@
     "deathReport": {
       "ageAtDeath": "사망시 나이",
       "ageAtFirstOccurence": "Age at first occurence",
-      "ageDecile": "Age Decile",
+      "ageDecile": "연령 십분위",
       "date": "Date",
       "deathByType": "유형별 사망",
-      "deathPrevalenceByAgeGenderYear": "Death Prevalence by Age, Gender, Year",
+      "deathPrevalenceByAgeGenderYear": "연령, 성별, 년도별 사망률",
       "deathPrevalenceByMonth": "월별 사망률",
       "gender": "Gender",
-      "prevalencePer1000People": "Prevalence Per 1000 People",
-      "yearOfObservation": "Year of Observation"
+      "prevalencePer1000People": "1000명당 유병율",
+      "yearOfObservation": "관찰 년도"
     },
     "drilldown": {
-      "ageAtFirstOccurrence": "Age at First Occurrence",
+      "ageAtFirstOccurrence": "첫 발생시 연령",
       "chartFormat": {
-        "ageAtFirstOccurrence": "Age at First Occurrence",
-        "ageDecile": "Age Decile",
+        "ageAtFirstOccurrence": "첫 발생시 연령",
+        "ageDecile": "연령 십분위",
         "date": "Date",
         "frequencyDistribution": {
           "xLabel1": "Count (\"x\" or more ",
@@ -1361,27 +1362,27 @@
         },
         "gender": "Gender",
         "percentOfTotalNumberOfPersons": "% of total number of persons",
-        "prevalencePer1000People": "Prevalence per 1000 People",
-        "yearOfObservation": "Year of Observation"
+        "prevalencePer1000People": "1000명당 유병율",
+        "yearOfObservation": "관찰 년도"
       },
-      "drilldownReport": "Drilldown Report",
-      "frequencyDistribution": "Frequency Distribution",
-      "lowerLimitDistribution": "Lower limit Distribution",
-      "measurementRecordsByUnit": "Measurement Records by Unit",
-      "measurementValueDistribution": "Measurement Value Distribution",
+      "drilldownReport": "상세 보고서",
+      "frequencyDistribution": "빈도 분포",
+      "lowerLimitDistribution": "하한 분포",
+      "measurementRecordsByUnit": "단위",
+      "measurementValueDistribution": "측정 값 분포",
       "noData": "No data",
-      "operatorConcept": "Operator Concept",
-      "prevalence": "Prevalence",
-      "prevalenceByMonth": "Prevalence by Month",
-      "qualifierConcept": "Qualifier Concept",
-      "type": "Type",
-      "upperLimitDistribution": "Upper Limit Distribution",
-      "valueAsConcept": "Value As Concept",
-      "valuesRelativeToNormalRange": "Values Relative to Normal Range"
+      "operatorConcept": "연산자 컨셉",
+      "prevalence": "유병율",
+      "prevalenceByMonth": "월별 유병율",
+      "qualifierConcept": "한정자 컨셉",
+      "type": "유형",
+      "upperLimitDistribution": "상한 분포",
+      "valueAsConcept": "값 (컨셉아이디)",
+      "valuesRelativeToNormalRange": "이상값 여부"
     },
     "errorLoadingReport": "Error loading report",
     "headingTitle": "데이터 소스",
-    "loadingDrilldownReport": "Loading Drilldown Report",
+    "loadingDrilldownReport": "상세페이지 로딩 중",
     "loadingReport": "Loading report",
     "noPermission": "You have no permissions to see this report",
     "numberOfPeople": "사람 수",
@@ -1397,7 +1398,7 @@
       "yearOfBirth": "출생년도",
       "yearOfBirthFooter": "해당 코호트에서 출생년도에 따라 시각화된 사람 수"
     },
-    "prevalence": "Prevalence",
+    "prevalence": "유병율",
     "reports": {
       "achillesHeel": "Achilles Heel",
       "conditionEra": "Condition Era",
@@ -1414,7 +1415,7 @@
       "titleTail": " Report",
       "visit": "Visit"
     },
-    "selectAReport": "레포트를 선택하십시오",
+    "selectAReport": "보고서를 선택하십시오",
     "selectASource": "소스를 선택하십시오",
     "table": {
       "tableTab": "Table"
@@ -1785,8 +1786,8 @@
   "home": {
     "description": "ATLAS는 환자 수준의 데이터 및 분석에 통합된 인터페이스를 제공하기 위해 <a href='http://www.ohdsi.org' target='_new'>OHDSI</a>의 일부로 개발된 오픈 소스 응용 프로그램입니다.",
     "documentation": {
-      "text": "<a target='_new' href='http://www.ohdsi.org/web/wiki/doku.php?id=documentation:software:atlas'>ATLAS 사용 설명서는 여기에서 찾을 수 있습니다.</a>.",
-      "title": "다큐멘테이션"
+      "text": "<a target='_new' href='http://www.ohdsi.org/web/wiki/doku.php?id=documentation:software:atlas'>ATLAS 사용 설명서는 여기에서 찾을 수 있습니다.</a>",
+      "title": "문서"
     },
     "gettingStarted": {
       "newCohort": {
@@ -2648,7 +2649,7 @@
         "reportManagerText_11": "Ethnicity",
         "reportManagerText_12": "Report Not implemented",
         "reportManagerText_13": "This report has not been implemented.",
-        "reportManagerText_14": "Prevalence by Month",
+        "reportManagerText_14": "월별 유병율",
         "reportManagerText_15": "Cohort Start",
         "reportManagerText_16": "Persons in Cohort from Start to End",
         "reportManagerText_17": "Number of Persons by Duration from Cohort Start to Cohort End",
@@ -2664,7 +2665,7 @@
         "reportManagerText_26": "Table",
         "reportManagerText_27": "Treemap",
         "reportManagerText_28": "Box Size: Prevalence, Color: Log of Relative Risk (Red to Green = Negative to Positive), Use Ctrl-Click to Zoom, Alt-Click to Reset Zoom",
-        "reportManagerText_29": "Drilldown Report",
+        "reportManagerText_29": "상세 보고서",
         "reportManagerText_3": "Data Completeness",
         "reportManagerText_30": "Drugs by Index Date ",
         "reportManagerText_31": "Age at First Observation",
@@ -2704,8 +2705,8 @@
         "reportManagerText_62": "Procedure Prevalence",
         "reportManagerText_63": "Procedure Prevalence by Month",
         "reportManagerText_64": "Procedures by Type",
-        "reportManagerText_65": "Age at First Occurrence",
-        "reportManagerText_66": "Death Prevalence by Age, Gender, Year",
+        "reportManagerText_65": "첫 발생시 연령",
+        "reportManagerText_66": "연령, 성별, 년도별 사망률",
         "reportManagerText_67": "Death Prevalence by Month",
         "reportManagerText_68": "Death Details",
         "reportManagerText_69": "Age at Death",

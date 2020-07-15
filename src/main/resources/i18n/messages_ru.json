@@ -1304,7 +1304,8 @@
     "pctOfCohort": "% от когорты",
     "eventCohort": "Когорта событий",
     "rank": "Ранг",
-    "distinctEventCohorts": "Отдельные когорты событий"
+    "distinctEventCohorts": "Отдельные когорты событий",
+    "ingredient": "Ингредиент"
   },
   "dataSources": {
     "headingTitle": "Источники данных",

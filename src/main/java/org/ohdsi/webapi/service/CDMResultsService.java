@@ -89,9 +89,6 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Value("${jasypt.encryptor.enabled}")
-    private boolean encryptorEnabled;
-
     @Value("${cdm.result.cache.warming.enable}")
     private boolean cdmResultCacheWarmingEnable;
 

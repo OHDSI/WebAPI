@@ -1,5 +1,7 @@
 package org.ohdsi.webapi.report;
 
+import java.util.Objects;
+
 public class MonthObservationRecord {
 
 	private int monthYear;
@@ -41,5 +43,20 @@ public class MonthObservationRecord {
 	 */
 	public void setCountValue(long countValue) {
 		this.countValue = countValue;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		MonthObservationRecord that = (MonthObservationRecord) o;
+		return monthYear == that.monthYear &&
+				Double.compare(that.percentValue, percentValue) == 0 &&
+				countValue == that.countValue;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(monthYear, percentValue, countValue);
 	}
 }

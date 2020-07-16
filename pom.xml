@@ -188,7 +188,8 @@
     <hydra.externalPackage.estimation></hydra.externalPackage.estimation>
 
     <!-- Cache Config -->
-    <spring.cache.jcache.config>classpath:config/ehcache.xml</spring.cache.jcache.config>
+    <!-- Period in milliseconds between running checks to detect freshness of cached data -->
+    <cache.inspection.period>3600000</cache.inspection.period>
   </properties>
   <build>
     <finalName>WebAPI</finalName>
@@ -479,6 +480,7 @@
 		<dependency>
 			<groupId>org.ehcache</groupId>
 			<artifactId>ehcache</artifactId>
+            <version>3.8.1</version>
 		</dependency>
     <dependency>
       <groupId>org.hibernate</groupId>

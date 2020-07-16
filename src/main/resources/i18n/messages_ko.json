@@ -9,7 +9,7 @@
       "infoFiltered": "(filtered from _MAX_ total entries)",
       "infoPostFix": "",
       "thousands": ",",
-      "lengthMenu": "_MENU_ 가지 항목 표시",
+      "lengthMenu": "_MENU_ 항목 표시",
       "loadingRecords": "Loading...",
       "processing": "Processing...",
       "search": "검색:",
@@ -157,7 +157,7 @@
     "reports": "레포트",
     "rollupUtilizationDrug": "약물",
     "rollupUtilizationVisit": "방문",
-    "rollups": "Rollups",
+    "rollups": "롤업",
     "startDate": "시작일",
     "startsWith": "starting with",
     "ww": "주간",
@@ -230,7 +230,7 @@
       "cohortErasText_2_1": "까지 Left censor",
       "cohortErasText_3": " ",
       "cohortErasText_3_1": "까지 Right censor",
-      "cohortErasTitle": "코호트 에라 기준",
+      "cohortErasTitle": "코호트 기간 기준",
       "cohortExit": "코호트 종료 기준",
       "cohortExitText_1": "For all qualifying events, there must be a specification of when each event ends presence in the cohort. By default, an event ends at the end of the observation period containing the qualifying initial event, but event end dates may be also be specified:",
       "cohortExitText_2": "The qualifying initial event can be set to end after a fixed time period relative to the event start or end date, or the end date can be based on the end of a continuous exposure to a set of drugs identified by a concept set.",
@@ -297,7 +297,7 @@
       "includedConcepts": "포함된 컨셉들",
       "load": "불러오기",
       "mappedConcepts": "Mapped Concepts",
-      "newConceptSet": "새로운 컨셉 모음",
+      "newConceptSet": "새 컨셉 세트",
       "pleaseSelectCodesetToModify": "수정할 코드셋을 선택해 주세요.",
       "removeSelected": "Remove Selected",
       "selectConceptSet": "컨셉 세트 선택하기",
@@ -744,7 +744,7 @@
     },
     "endStrategyViewer": {
       "endDateStrategy": "종료일 전략",
-      "endStrategyViewerText_1": "종료일 전략을 선택하지 않았습니다. 기본값으로 코호트 종료 날짜는 기준 이벤트가 포함되어 있는 observation period의 종료일이 될 것입니다."
+      "endStrategyViewerText_1": "종료일을 설정하지 않았습니다. 기본값으로 코호트 종료 날짜는 기준 이벤트가 들어있는 관찰 기간의 종료일이 될 것입니다."
     },
     "evidencePairViewer": {
       "evidencePairViewerText_1": "loading evidence pairs",
@@ -817,7 +817,7 @@
       "progress": "export in progress"
     },
     "feasibilityAttritionReport": {
-      "attritionVisualization": "Attrition 시각화",
+      "attritionVisualization": "축소 시각화",
       "inclusionRule": "포함 규칙",
       "percentRemain": "% Remain",
       "precentDiff": "% Diff"
@@ -826,7 +826,7 @@
       "inclusionRule": "포함 규칙",
       "percentSatisfied": "% Satisfied",
       "percentToGain": "% To-Gain",
-      "populationVisualization": "Population 시각화",
+      "populationVisualization": "인구 시각화",
       "rectSummary": "<%=size%> people (<%=percentage%>%), <%=passCount%> criteria passed, <%=failCount%> criteria failed."
     },
     "feasibilityReportViewer": {
@@ -835,8 +835,8 @@
       "feasibilityReportViewerText_3": "Lost from censoring",
       "feasibilityReportViewerText_4": "총 이벤트",
       "feasibilityReportViewerText_5": "통계 요약:",
-      "feasibilityReportViewerText_6": "Attrition view로 전환",
-      "feasibilityReportViewerText_7": "Intersect view로 전환",
+      "feasibilityReportViewerText_6": "축소 시각화 화면으로 전환",
+      "feasibilityReportViewerText_7": "교차 보기로 전환",
       "feasibilityReportViewerText_8": "No inclusion rules specified for this cohort definition."
     },
     "featureextraction": {
@@ -909,7 +909,7 @@
     },
     "linkedCohortList": {
       "defaultNewItemLabel": "불러오기",
-      "defaultTitle": "Cohort definition",
+      "defaultTitle": "코호트 정의",
       "dialog": {
         "title": "코호트 정의 선택하기"
       },
@@ -1040,10 +1040,10 @@
   "facets": {
     "caption": {
       "analysisName": "Analysis Name",
-      "author": "만든 이",
+      "author": "등록자",
       "class": "클래스",
       "comparatorCohorts": "Comparator Cohorts",
-      "created": "생성",
+      "created": "등록일",
       "domain": "도메인",
       "drugLabelExists": "Suggested Negative Control",
       "errorMsg": "Error Msg",
@@ -1053,7 +1053,7 @@
       "hasDescendantRecords": "하위 콘셉트 기록 유무",
       "hasRecords": "기록 유무",
       "invalidReason": "유효성",
-      "lastModified": "Last Modified",
+      "lastModified": "최신 수정",
       "mappingType": "Mapping Type",
       "match": "Match",
       "modelName": "Model Name",
@@ -1066,12 +1066,12 @@
       "startDate": "Start date",
       "targetCohorts": "표적 코호트",
       "type": "유형",
-      "updated": "Updated",
+      "updated": "수정일",
       "userSpecified": "User Specified",
       "vocabulary": "용어",
       "relationship": "Relationship",
       "distance": "Distance",
-      "severity": "Severity"
+      "severity": "중증도"
     },
     "values": {
       "warning": "Warning",
@@ -1198,7 +1198,7 @@
     "match": "Match",
     "max": "최대값",
     "median": "중앙값",
-    "message": "Message",
+    "message": "메시지",
     "min": "최소값",
     "minimumTimeAtRisk": "최소 위험 노출 기간",
     "model": "Model",
@@ -1262,10 +1262,10 @@
     "role": "Role",
     "roleName": "Role name",
     "selected": "Selected",
-    "severity": "Severity",
+    "severity": "중증도",
     "sortOrder": "Sort Order",
-    "sourceNameSourceKey": "소스 이름 [소스 키]",
-    "sourceName": "소스 이름",
+    "sourceNameSourceKey": "데이터 소스 이름 [소스 키]",
+    "sourceName": "데이터 소스 이름",
     "standardConceptCaption": "표준 컨셉",
     "standardConceptCode": "Standard Concept Code",
     "standardType": "Standard Type",
@@ -1290,7 +1290,7 @@
     "totalRecords": "Total Records",
     "type": "유형",
     "uniqueIdentifier": "Unique Identifier",
-    "updated": "Updated",
+    "updated": "업데이트",
     "userExcluded": "User Excluded",
     "userIncluded": "User Included",
     "value": "Value",
@@ -1440,7 +1440,7 @@
       "clickToClear": "삭제하려면 클릭",
       "conceptIdentifiers": "컨셉 식별자",
       "conceptSet": "컨셉 세트",
-      "conceptSetExpressionJSON": "JSON으로 표현된 컨셉 세트",
+      "conceptSetExpressionJSON": "JSON 형식으로 표현",
       "enterConceptIdentifiers": "컨셉 식별자를 입력하세요",
       "enterSourceCodes": "소스 코드를 입력합니다",
       "importConceptIdentifiers": "컨셉 식별자 불러오기",
@@ -1474,10 +1474,10 @@
       "compare": {
         "compareConceptSets": "Compare Concept Sets",
         "comparisonResults": "Comparison Results",
-        "conceptSet1": "Concept Set 1:",
-        "conceptSet2": "Concept Set 2:",
-        "heading": "Concept Set Comparison",
-        "headingMessage": "이 유틸리티를 사용하여 두 콘셉트 세트 가 공유하고 있는 콘셉트를 확인하세요",
+        "conceptSet1": "컨셉 세트 1:",
+        "conceptSet2": "컨셉 세트 2:",
+        "heading": "컨셉 세트 비교",
+        "headingMessage": "이 유틸리티를 사용하여 두 컨셉 세트가 공유하고 있는 컨셉을 확인하세요",
         "modalTitle": "Choose a concept set",
         "sameWarning": "You cannot compare the same concept sets.",
         "saveFromComparisonNameTail": " - From Comparison",
@@ -1487,8 +1487,8 @@
       },
       "exportConceptSetsButton": "컨셉 세트 내보내기",
       "exportConceptSetsNumber": "concept sets selected for export.",
-      "exportInstructions": "지침 : ",
-      "exportInstructionsText": "그리드에서 각 행을 선택하여 내보낼 컨셉 세트를 선택하십시오. 완료되면 '컨셉 세트 내보내기'버튼을 사용하여 새 창에서 다운로드를 시작하십시오.",
+      "exportInstructions": " ",
+      "exportInstructionsText": "하단의 표에서 내보낼 컨셉 세트를 선택하시고, '컨셉 세트 내보내기'를 클릭하시어 컨셉 세트를 다운하십시오.",
       "saveWarning": "Cohort changes are not saved. Would you like to continue?",
       "tabs": {
         "export": "내보내기",
@@ -1546,7 +1546,7 @@
       },
       "export": {
         "conceptIdentifierList": "컨셉 식별자 목록",
-        "conceptSetExpressionJSON": "JSON으로 표현된 컨셉 세트",
+        "conceptSetExpressionJSON": "JSON 형식으로 표현",
         "exportToCSV": "Export To CSV",
         "exportingCsv": "Exporting CSV...",
         "includedConceptIdentifierList": "포함된 컨셉 식별자 목록",
@@ -1624,7 +1624,7 @@
   },
   "cc": {
     "title": "코호트 특성",
-    "new": "New",
+    "new": "새",
     "loading": "Loading Cohort Characterization list...",
     "modals": {
       "confirmChanges": "Your changes are not saved. Would you like to continue?",
@@ -1633,11 +1633,11 @@
     },
     "tabs": {
       "characterizations": {
-        "newLabel": "Characterization",
+        "newLabel": "특성",
         "title": "특성"
       },
       "featureAnalyses": {
-        "newLabel": "Feature analysis",
+        "newLabel": "특성 분석",
         "title": "특성 분석"
       }
     },
@@ -1645,22 +1645,22 @@
       "caption": "Characterization #",
       "loadingCohortCharacterization": "Loading Cohort Characterization...",
       "design": {
-        "description": "코호트 특성 분석은 사용자 레벨 공변량 데이터로부터 호코트 레벨의 설명된 요약 통계를 생성하는 절차로 정의됩니다. 개인 수준 공변량의 요약 통계는 수, 평균, 표준편차, 분산, 최소값, 최대값, 중앙값, 범위 및 사분위수일 수 있습니다. 또한 Period에 대한 공변량은 cohort_start_date(예: 7일마다, 30일마다 등)와 절대적인 시간 간격(예: 달력에서의 주, 월, 분기, 연도)과 같이 시계열 분석의 일시적인 시간 단위로 계층화 될 수 있다.",
+        "description": "코호트 특성 분석은 개별 환자 수준의 공변량 데이터로부터 코호트 단위의 요약 통계 생성해 줍니다. 환자 수준의 공변량에 대한 요약 통계는 수, 평균, 표준편차, 분산, 최소값, 최대값, 중앙값, 범위 및 사분위수가 포함됩니다. 또한 시간과 관련된 공변량은 코호트 시작일이나 시간 간격(예: 주, 월, 분기, 연도) 등을 이용하여 층화할 수 있습니다.",
         "fa": {
           "actions": {
             "remove": "Remove"
           },
-          "title": "특성 분석"
+          "title": "특성(feature) 분석"
         },
         "faParams": {
           "modal": {
             "namePlaceholder": "이름",
             "submit": "Submit",
-            "title": "Create new parameter",
+            "title": "새 파라미터 생성",
             "valuePlaceholder": "Value"
           },
           "newLabel": "새 파라미터",
-          "title": "특성 분석 파라미터"
+          "title": "특성(feature) 분석 파라미터"
         },
         "loading": "Loading Cohort Characterization design...",
         "subgroups": {
@@ -1669,16 +1669,16 @@
             "nameIsNotUnique": "Subgroup name is duplicated."
           },
           "namePlaceholder": "Strata name",
-          "newSubgroup": "새 하위집단",
+          "newSubgroup": "새 서브 그룹 분석",
           "noSubgroups": "No subgroups defined",
           "stratifiedByPlaceholder": "Stratified by",
-          "subgroupOnly": "하위 그룹 분석만 계산합니다.",
-          "title": "하위 집단 분석"
+          "subgroupOnly": "서브 그룹 분석만 계산합니다.",
+          "title": "서브 그룹 분석"
         }
       },
       "executions": {
         "buttons": {
-          "allExecutions": "All executions (<%=submissions%>)",
+          "allExecutions": "모두 실행 (<%=submissions%>)",
           "cancel": "Cancel",
           "generate": "생성",
           "latestResult": "마지막 결과보기"
@@ -1739,7 +1739,7 @@
       },
       "tabs": {
         "design": "설계",
-        "executions": "Executions",
+        "executions": "실행",
         "utilities": "유틸리티"
       },
       "utilities": {
@@ -1809,7 +1809,7 @@
     "welcome": "ATLAS에 오신 것을 환영합니다."
   },
   "ir": {
-    "caption": "Incidence Rate Analysis #",
+    "caption": "발생률 분석 #",
     "cs": {
       "modalTitle": "컨셉 세트 선택하기"
     },
@@ -1824,9 +1824,9 @@
       "noStudyWindowDefined": "연구 기간 범위를 정의하지 않습니다.",
       "outcomeCohorts": "결과 코호트",
       "removeStudyWindow": "연구 기간 범위 삭제",
-      "selectInclusionCriteriaMessage": "편집할 적격  포함 기준을 선택하십시오.",
-      "stratifyCriteria": "Stratify Criteria:",
-      "stratifyCriteriaMessage": "계층화 기준 : 충족 기준을 기반으로 모집단을 고유 그룹으로 나누는 분석에 선택적 계층화 기준을 제공할 수 있습니다.",
+      "selectInclusionCriteriaMessage": "설정에 사용될 포함 기준을 선택하십시오.",
+      "stratifyCriteria": "계층화 기준 :",
+      "stratifyCriteriaMessage": "계층화 기준 : 계층화 기준에 기반한 고유 그룹으로 모집단을 분리하여 분석할 수 있는 계층화 기준에 의한 분석 기능을 선택적으로 수행할 수 있습니다.",
       "studyCohorts": "Study Cohorts",
       "studyWindowText1": "연구 기간 범위는",
       "studyWindowText2": "에서 시작하여",
@@ -1837,14 +1837,14 @@
       "timeAtRiskEndsWithDays": "일을 더해서 종료됩니다.",
       "timeAtRiskEndDate": "종료일",
       "timeAtRiskEndsWith": "위험 노출 기간은",
-      "timeAtRiskMessage": "위험 노출 기간(Time at risk)은 결과 변수 \"위험에 노출된\" 환자를 고려하는 상쇄로, 코호트 시작일 또는 종료일에 대한 시간 범위로 정의합니다.",
+      "timeAtRiskMessage": "위험 노출 기간(Time at risk)은 코호트 시작일 또는 종료일을 기준으로 더하는 날짜를 설정하여 정의하고, 그 기간 동안에 결과의 \"위험에 노출된\" 환자를 고려합니다.",
       "timeAtRiskPlus": "에",
       "timeAtRiskStartDate": "시작일",
       "timeAtRiskStartsWith": "위험 노출 기간은",
       "timeAtRiskWarningMessage": "Error: Time at risk starts on or after time at risk end, resulting in zero time at risk.  Please ensure the start offset is greater than the end offset."
     },
     "nameConflict": "An incidence rate with this name already exists. Please choose a different name.",
-    "newanalysis": "New Analysis",
+    "newanalysis": "새 분석",
     "notSavedMessage": "Incidence Rate Analysis changes are not saved. Would you like to continue?",
     "results": {
       "accessDenied": "Access denied",
@@ -1882,7 +1882,7 @@
       "generation": "생성",
       "utilities": "유틸리티"
     },
-    "title": "Incidence Rate Analysis"
+    "title": "발생률 분석"
   },
   "profiles": {
     "ageAt": "Age <%=age%>",
@@ -2467,7 +2467,7 @@
         },
         "cohortDefinition": {
           "text_1": "A cohort is defined as the set of persons satisfying one or more inclusion criteria for a duration of time. One person may qualify for one cohort multiple times during non-overlapping time intervals. Cohorts are constructed in ATLAS by specifying cohort entry criteria and cohort exit criteria. Cohort entry criteria involve selecting one or more initial events, which determine the start date for cohort entry, and optionally specifying additional inclusion criteria which filter to the qualifying events. Cohort exit criteria are applied to each cohort entry record to determine the end date when the person’s episode no longer qualifies for the cohort.",
-          "title": "Cohort Definition"
+          "title": "코호트 정의"
         },
         "importConceptSet": {
           "title": "저장소에서 컨셉 세트  불러오기"
@@ -2526,15 +2526,15 @@
       "heraclesHeel": "Heracles Heel",
       "panels": {
         "appendix_1": "부록 1 : 컨셉 세트 정의",
-        "availableCDMSources": "사용 가능한 CDM 소스",
+        "availableCDMSources": "사용 가능한 데이터 소스",
         "cancel": "Cancel",
-        "clickToClear": "클릭 시 초기화",
+        "clickToClear": "취소합니다",
         "closeConceptSet": "컨셉 세트 닫기",
         "conceptIdentifierList": "컨셉 식별자 목록",
         "conceptIdentifiers": "컨셉 식별자",
         "conceptSet": "컨셉 세트",
         "conceptSetExpression": "컨셉 세트 표현",
-        "conceptSetExpressionJSON": "JSON으로 표현된 컨셉 세트",
+        "conceptSetExpressionJSON": "JSON 형식으로 표현",
         "copyToConceptSetRepository": "컨셉 세트 저장소로 복사",
         "deleteConceptSet": "컨셉 세트 삭제",
         "enterConceptIdentifiers": "컨셉 식별자를 입력합니다",
@@ -2550,22 +2550,22 @@
         "hideReports": "Hide Reports",
         "import": "불러오기",
         "importConceptIdentifiers": "Import Concept Identifiers",
-        "importConceptSetExpression": "Concept Set Expression 불러오기",
+        "importConceptSetExpression": "컨셉 세트 불러오기",
         "importSourceCodes": "Import Source Codes",
         "includedConceptIdentifierList": "포함된 컨셉 식별자 목록",
         "includedConcepts": "포함된 컨셉들:",
         "includedSourceCodes": "포함된 소스 코드",
         "json": "JSON",
         "name": "컨셉 세트 이름:",
-        "newConceptSet": "새로운 컨셉 모음",
+        "newConceptSet": "새 컨셉 세트",
         "people": "환자 수",
         "quickAnalysis": "빠른 분석",
         "records": "기록 수",
-        "reload": "Reload",
+        "reload": "새로 고침",
         "reportSelections": "레포트 조건 선택",
         "repository": "저장소",
         "sourceCodes": "소스 코드",
-        "sourceName": "소스 이름",
+        "sourceName": "데이터 소스 이름",
         "sql": "SQL",
         "textView": "텍스트 보기",
         "utilization": "이용",
@@ -2579,7 +2579,7 @@
         "explore": "Explore",
         "export": "내보내기",
         "generation": "생성",
-        "messages": "Messages",
+        "messages": "메시지",
         "reporting": "레포팅"
       }
     },
@@ -2725,11 +2725,11 @@
       "visit": "Visit",
       "visitType": "Visit type"
     },
-    "newDefinition": "New Cohort",
+    "newDefinition": "새로운 코호트",
     "newDefinitionTitle": "Create a new cohort definition",
     "noConceptSets": "No concept sets to export",
     "runDiagnostics": "Run diagnostics",
-    "saveDefinitionBefore": "내보내기 하기 전에 Cohort definition을 저장해야 합니다",
+    "saveDefinitionBefore": "내보내기 전에 저장해야 합니다",
     "title": "코호트 정의"
   },
   "const": {
@@ -3283,11 +3283,11 @@
       }
     },
     "newEntityNames": {
-      "characterization": "New Characterization",
+      "characterization": "새 특성",
       "cohortDefinition": "New Cohort Definition",
-      "conceptSet": "새로운 컨셉 모음",
-      "featureAnalysis": "New Feature Analysis",
-      "incidenceRate": "New Incidence Rate Analysis",
+      "conceptSet": "새 컨셉 세트",
+      "featureAnalysis": "새 특성 분석",
+      "incidenceRate": "새 발생률 분석",
       "pathway": "New Cohort Pathway",
       "ple": "새로운 인구수준 효과 추정",
       "plp": "새로운 환자 수준 예측 (Patient Level Prediction)",

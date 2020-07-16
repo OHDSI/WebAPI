@@ -112,8 +112,8 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
             CDMResultsService instance = applicationContext.getBean(CDMResultsService.class);
 			sourceService.getSources()
 				.stream()
-				.filter(s -> s.daimons.stream().anyMatch(sd -> Objects.equals(sd.getDaimonType(), SourceDaimon.DaimonType.Results)) && s.daimons.stream().anyMatch(sd -> sd.getPriority() > 0))
-				.forEach(s -> warmCache(s.sourceKey, instance));
+				.filter(s -> s.getDaimons().stream().anyMatch(sd -> Objects.equals(sd.getDaimonType(), SourceDaimon.DaimonType.Results)) && s.getDaimons().stream().anyMatch(sd -> sd.getPriority() > 0))
+				.forEach(s -> warmCache(s.getSourceKey(), instance));
     }
 
     @Path("{sourceKey}/conceptRecordCount")
@@ -360,20 +360,11 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         return queryRunner.getDrilldown(jdbcTemplate, domain, conceptId, source);
     }
 
-    private void warmCaches(){
-        sourceService.getSources()
-                .stream()
-                .filter(s ->
-                        s.getDaimons().stream().anyMatch(sd -> Objects.equals(sd.getDaimonType(), SourceDaimon.DaimonType.Results)) &&
-                                s.getDaimons().stream().anyMatch(sd -> sd.getPriority() > 0))
-                .forEach(s -> warmCacheByKey(s.getSourceKey()));
-    }
-
     private JobExecutionResource warmCacheByKey(String sourceKey, CDMResultsService instance) {
         CDMResultsCache cache = ResultsCache.get(sourceKey);
         if (cache.notWarm() && jobService.findJobByName(Constants.WARM_CACHE, getWarmCacheJobName(sourceKey)) == null) {
             Source source = getSourceRepository().findBySourceKey(sourceKey);
-            return warmCache(source, instance);
+            return warmCaches(source, instance);
         } else {
             return new JobExecutionResource();
         }

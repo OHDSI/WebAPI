@@ -14,6 +14,7 @@ import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.hydra.Hydra;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.JobInvalidator;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
@@ -39,6 +40,7 @@ import org.ohdsi.webapi.cohortcharacterization.repository.CcRepository;
 import org.ohdsi.webapi.cohortcharacterization.repository.CcStrataRepository;
 import org.ohdsi.webapi.cohortcharacterization.specification.CohortCharacterizationImpl;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.event.CohortDefinitionChangedEvent;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.AnalysisGenerationInfoEntity;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
@@ -47,6 +49,7 @@ import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
+import org.ohdsi.webapi.feanalysis.event.FeAnalysisChangedEvent;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.service.AbstractDaoService;
@@ -73,6 +76,7 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.env.Environment;
@@ -262,6 +266,23 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         savedEntity.setModifiedDate(modifiedDate);
 
         return repository.save(savedEntity);
+    }
+
+    @EventListener
+    @Transactional
+    @Override
+    public void onCohortDefinitionChanged(CohortDefinitionChangedEvent event) {
+
+        List<CohortCharacterizationEntity> ccList = repository.findByCohortDefinition(event.getCohortDefinition());
+        ccList.forEach(this::saveCc);
+    }
+
+    @EventListener
+    @Transactional
+    public void onFeAnalysisChanged(FeAnalysisChangedEvent event) {
+
+        List<CohortCharacterizationEntity> ccList = repository.findByFeatureAnalysis(event.getFeAnalysis());
+        ccList.forEach(this::saveCc);
     }
 
     @Override
@@ -597,6 +618,9 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     @Override
     @DataSourceAccess
     public GenerationResults findData(@CcGenerationId final Long generationId, ExecutionResultRequest params) {
+        if (params.getShowEmptyResults()) {
+          params.setThresholdValuePct(Constants.DEFAULT_THRESHOLD); //Don't cut threshold results when all results requested
+        }
         GenerationResults res = findResult(generationId, params);
         boolean hasComparativeReports = res.getReports().stream()
                 .anyMatch(report -> report.isComparative);
@@ -630,16 +654,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     @Override
     @DataSourceAccess
     public GenerationResults findResult(@CcGenerationId final Long generationId, ExecutionResultRequest params) {
-        if (params.isFilterUsed()) {
-            // in case of filtering and nothing was selected in any list
-            if (params.getAnalysisIds().isEmpty()
-                    || params.getCohortIds().isEmpty()
-                    || params.getDomainIds().isEmpty()) {
-                GenerationResults res = new GenerationResults();
-                res.setReports(Collections.emptyList());
-                return res;
-            }
-        }
         CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
                 .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
 
@@ -962,7 +976,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                 case CRITERIA_SET:
                     FeAnalysisWithCriteriaEntity<? extends FeAnalysisCriteriaEntity> criteriaAnalysis = (FeAnalysisWithCriteriaEntity) newAnalysis;
                     List<? extends FeAnalysisCriteriaEntity> design = criteriaAnalysis.getDesign();
-                    Optional<FeAnalysisEntity> entityCriteriaSet = analysisService.findByCriteriaList(design);
+                    Optional<FeAnalysisEntity> entityCriteriaSet = analysisService.findByCriteriaListAndCsAndDomainAndStat(design, criteriaAnalysis);
                     this.<FeAnalysisWithCriteriaEntity<?>>addAnalysis(savedAnalysesIds, analysesSet, criteriaAnalysis, entityCriteriaSet, a -> analysisService.createCriteriaAnalysis(a));
                     break;
                 case PRESET:

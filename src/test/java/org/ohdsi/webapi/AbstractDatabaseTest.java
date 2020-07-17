@@ -1,7 +1,5 @@
 package org.ohdsi.webapi;
 
-import com.opentable.db.postgres.junit.EmbeddedPostgresRules;
-import com.opentable.db.postgres.junit.SingleInstancePostgresRule;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.rules.ExternalResource;
@@ -20,27 +18,15 @@ import java.sql.SQLException;
 
 @SpringBootTest
 @RunWith(SpringRunner.class)
-@TestPropertySource(locations = "/in-memory-webapi.properties")
-@Ignore//do not run this test
-public abstract class AbstractInMemoryTest {
-    @ClassRule
-    public static TestRule chain = RuleChain.outerRule(new DriverExcludeTestWrapper())
-            .around(pg = EmbeddedPostgresRules.singleInstance())
-            .around(new JdbcTemplateTestWrapper());
-
-    protected static SingleInstancePostgresRule pg;
-
-    protected static JdbcTemplate jdbcTemplate;
-
-    protected static DataSource getDataSource() {
-        return pg.getEmbeddedPostgres().getPostgresDatabase();
-    }
-
+@TestPropertySource(locations = "/application-test.properties")
+public abstract class AbstractDatabaseTest {
     static class JdbcTemplateTestWrapper extends ExternalResource {
         @Override
         protected void before() throws Throwable {
             jdbcTemplate = new JdbcTemplate(getDataSource());
             try {
+                // note for future reference: should probably either define a TestContext DataSource with these params
+                // or make it so this proparty is only set once (during database initialization) since the below will run for each test class (but only be effective once)
                 System.setProperty("datasource.url", getDataSource().getConnection().getMetaData().getURL());
                 System.setProperty("flyway.datasource.url", System.getProperty("datasource.url"));
             } catch (Exception ex) {
@@ -67,5 +53,25 @@ public abstract class AbstractInMemoryTest {
                 }
             }
         }
+    }
+
+    @ClassRule
+    public static TestRule chain = RuleChain.outerRule(new DriverExcludeTestWrapper())
+            .around(pg = new PostgresSingletonRule())
+            .around(new JdbcTemplateTestWrapper());
+
+    protected static PostgresSingletonRule pg;
+
+    protected static JdbcTemplate jdbcTemplate;
+
+    protected static DataSource getDataSource() {
+        return pg.getEmbeddedPostgres().getPostgresDatabase();
+    }
+   
+    protected void truncateTable (String tableName) {
+      jdbcTemplate.execute(String.format("TRUNCATE %s CASCADE",tableName));
+    }
+    protected void resetSequence(String sequenceName) {
+      jdbcTemplate.execute(String.format("ALTER SEQUENCE %s RESTART WITH 1", sequenceName));
     }
 }

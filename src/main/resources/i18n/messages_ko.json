@@ -3,7 +3,7 @@
   "datatable": {
     "language": {
       "decimal": "",
-      "emptyTable": "테이블에 데이터 없음",
+      "emptyTable": "데이터 없음",
       "info": "_TOTAL_ 가지 항목 중 _START_~_END_개 표시",
       "infoEmpty": "0가지 항목  중 0~0개 표시",
       "infoFiltered": "(filtered from _MAX_ total entries)",
@@ -1063,7 +1063,7 @@
       "signalInFaers": "Signal in FAERS",
       "source": "Source",
       "standardConcept": "표준 컨셉",
-      "startDate": "Start date",
+      "startDate": "시작일",
       "targetCohorts": "표적 코호트",
       "type": "유형",
       "updated": "수정일",
@@ -1111,7 +1111,7 @@
     "atlasLogin": "Atlas Login",
     "atlasRole": "Atlas role",
     "atlasRoles": "Atlas roles",
-    "author": "만든 이",
+    "author": "등록자",
     "avg": "평균",
     "avgValue": "Avg",
     "binary": "Binary",
@@ -1136,7 +1136,7 @@
     "covariateId": "Covariate Id",
     "covariateName": "Covariate Name",
     "covariateSettings": "공변량 설정",
-    "created": "만든 날짜",
+    "created": "등록일",
     "date": "Date",
     "daysSupplyAvg": "Avg. Days of Supply",
     "daysSupplyPer1000PerYear": "Days of Supply /1K /Year",
@@ -1158,7 +1158,7 @@
     "drugVocabularyId": "Concept vocabulary",
     "duration": "Duration",
     "enabled": "Enabled",
-    "endDate": "End Date",
+    "endDate": "종료일",
     "endDay": "End Day",
     "ends": "Ends",
     "evidence": "Evidence",
@@ -1167,7 +1167,7 @@
     "exclude": "제외 컨셉",
     "excluded": "제외",
     "execute": "Execute",
-    "executionId": "Execution Id",
+    "executionId": "실행 아이디",
     "explore": "관계 탐색",
     "exposurePct": "Percent Exposed",
     "exposureAvg": "Average Exposure Years per 1,000 persons",
@@ -1187,7 +1187,7 @@
     "includedUsers": "Included users",
     "indicatedContraindicated": "Indicated / Contraindicated",
     "ingredient": "재료",
-    "jobName": "Job Name",
+    "jobName": "작업 이름",
     "lastExecuted": "Last executed",
     "lengthOfStayAvg": "Avg. Days of Stay",
     "lengthOfStayTotal": "Days of Stay",
@@ -1203,8 +1203,8 @@
     "minimumTimeAtRisk": "최소 위험 노출 기간",
     "model": "Model",
     "modelName": "Model Name",
-    "modelSettings": "Model Settings",
-    "modified": "수정한 날짜",
+    "modelSettings": "모형 설정",
+    "modified": "수정일",
     "name": "이름",
     "ncOutcomes": "음성 대조군 결과",
     "nextExecution": "Next execution",
@@ -1269,10 +1269,10 @@
     "standardConceptCaption": "표준 컨셉",
     "standardConceptCode": "Standard Concept Code",
     "standardType": "Standard Type",
-    "startDate": "Start date",
+    "startDate": "시작일",
     "startDay": "Start Day",
     "started": "Started",
-    "status": "Status",
+    "status": "상태",
     "stddev": "표준 편차",
     "strata": "계층화",
     "suggestedNegativeControl": "Suggested Negative Control",
@@ -1916,32 +1916,32 @@
         "analysisSettings": {
           "combinationWindow": {
             "description": "통합으로 간주되기 위해 두 개의 이벤트 코호트가 겹쳐야 하는 시간 범위.",
-            "title": "통합 범위:"
+            "title": "통합 기간 범위:"
           },
-          "description": "Pathway 분석을 수행할 때 다음의 파라미터 집합이 사용됩니다.",
+          "description": "경로 분석을 수행할 때 다음의 설정이 사용됩니다.",
           "maximumPathLength": {
-            "description": "Sunburst plot에 포함될 지정된 pathway의 최대 단계 수.",
+            "description": "Sunburst plot에 포함될 경로 단계의 최대수.",
             "title": "최대 경로 길이:"
           },
           "minimumCellCount": {
-            "description": "Pathway에서 수 집계를 위해 주어진 이벤트에 대한 표적 코호트의 최소 대상자 수.",
-            "title": "분석 최소 단위 수:"
+            "description": "경로에서 수 집계를 위해 주어진 이벤트에 대한 표적 코호트의 최소 대상자 수.",
+            "title": "최소 분석 단위 수:"
           },
           "title": "분석 설정"
         },
-        "description": "Cohort pathway는 표적 코호트에 속한 사람들의 이벤트 코호트 간 통합된 일련의 전이를 생성하는 과정으로 정의됩니다.",
+        "description": "코호트 경로(Cohort pathway)의 분석은 표적 코호트에 속한 사람들 중에서 이벤트 코호트로 정의된 여러 이벤트들이 발생한 전이 과정을 생성하는 프로세스로 정의됩니다.",
         "eventCohorts": {
-          "description": "각 이벤트 코호트는 대상 코호트에 속한 사람들에게 발생할 수 있는 pathway의 단계를 정의합니다.",
-          "title": "Event Cohorts"
+          "description": "각 이벤트 코호트는 대상 코호트에 속한 사람들에게 발생할 수 있는 경로의 단계를 정의합니다.",
+          "title": "이벤트 코호트"
         },
         "targetCohorts": {
-          "description": "각각의 표적코호트는 이벤트 코호트를 통한 pathways에 대해 분석됩니다. ",
+          "description": "각각의 표적코호트는 이벤트 코호트를 통한 경로들로 분석됩니다.",
           "title": "표적 코호트"
         }
       },
       "executions": {
         "buttons": {
-          "allExecutions": "All executions",
+          "allExecutions": "모든 실행 항목",
           "generate": "생성",
           "viewLatestResult": "마지막 결과보기"
         },
@@ -1959,8 +1959,8 @@
           "date": "Date:",
           "design": "설계:",
           "details": {
-            "noPath": "Path가 선택되지 않음 : 상세정보를 위해 path를 클릭하세요",
-            "title": "Path 상세정보"
+            "noPath": "경로가 선택되지 않음 : 상세정보를 위해 경로를 클릭하세요",
+            "title": "경로 상세정보"
           },
           "diagram": {
             "title": "Sunburst plot"
@@ -1969,8 +1969,8 @@
             "cohorts": "코호트"
           },
           "legend": {
-            "eventCohorts": "Event Cohorts",
-            "personsCount": "Pathway 내 해당 환자 수:",
+            "eventCohorts": "이벤트 코호트",
+            "personsCount": "경로별 환자 수:",
             "personsPortion": "전체 대상 코호트 환자 수 대비 pathway 내 환자 수 비율:",
             "targetCohort": "표적 코호트",
             "targetCohortCount": "표적 코호트 수:",
@@ -2033,11 +2033,11 @@
     "deleteConfirmation": "Delete estimation specification? Warning: deletion can not be undone!",
     "retrievingEstimations": "retrieving estimations",
     "exec": {
-      "allExec": "All executions (<%=len%>)",
-      "downloadLatestResult": "Download latest result",
-      "generate": "생성",
+      "allExec": "모든 실행 항목 (<%=len%>)",
+      "downloadLatestResult": "마지막 결과 보기",
+      "generate": "실행",
       "generating": "Generating...",
-      "generations": "생성",
+      "generations": "실행",
       "loadingGenerations": "Loading generations...",
       "notPermitted": "Not enough permissions to generate or changes were not saved or Execution Engine is not available",
       "notPermittedToViewResults": "Not enough permissions to view results"
@@ -2053,14 +2053,14 @@
       "chooseYourOutcomeCohorts:": "결과 코호트 선택하기:",
       "chooseYourTargetCohort": "표적 코호트 선택 하기:",
       "clickToViewDetails": "자세한 내용을 보려면 클릭하십시오.",
-      "comparison": "비교",
+      "comparison": "비교군 설정",
       "comparisonDescription": "표적, 대조, 결과(들) 코호트과  음성 대조군 결과를 추가 또는 갱신합니다.",
-      "conceptsToExcludeLabel": "Concepts to <b>exclude</b> when constructing the covariates to be used in this study.*",
-      "conceptsToExcludeNoteAnalysis": "* Concepts defined here are combined with those defined in the Comparisons section.",
-      "conceptsToExcludeNoteComparisons": "* Concepts defined here are combined with those defined in the Analysis settings section.",
-      "conceptsToIncludeLabel": "Concepts to <b>include</b> when constructing the covariates to be used in this study. (Leave blank if you want to include every concept).*",
-      "conceptsToIncludeNoteAnalysis": "* Concepts defined here are combined with those defined in the Comparisons section.",
-      "conceptsToIncludeNoteComparisons": "* Concepts defined here are combined with those defined in the Analysis settings section.",
+      "conceptsToExcludeLabel": "이 연구에 사용될 공변량을 구성 할 때 제외할 컨셉들을 선택하세요.*",
+      "conceptsToExcludeNoteAnalysis": "* 정의된 컨셉은 비교군 설정에서 정의한 컨셉과 결합됩니다.",
+      "conceptsToExcludeNoteComparisons": "* 정의된 컨셉은 분석 설정에서 정의한 컨셉과 결합됩니다.",
+      "conceptsToIncludeLabel": "이 연구에 사용될 공변량을 구성 할 때 포함할 컨셉들을 선택하세요. (비워두면 모든 컨셉이 사용됩니다.)*",
+      "conceptsToIncludeNoteAnalysis": "* 정의된 컨셉은 비교군 설정에서 정의한 컨셉과 결합됩니다.",
+      "conceptsToIncludeNoteComparisons": "* 정의된 컨셉은 분석 설정에서 정의한 컨셉과 결합됩니다.",
       "controlSettings": "제어 설정",
       "covariateSelection": "공변량 선택",
       "covariateSettings": "공변량 설정",
@@ -2099,8 +2099,8 @@
         "all": "전체",
         "allOccurrences": "모든 발생",
         "byPercent": "Percent에 따라",
-        "cohortEndDate": "코호트 종료 일로부터",
-        "cohortStartDate": "코호트 시작 일로부터",
+        "cohortEndDate": "코호트 종료일",
+        "cohortStartDate": "코호트 시작일",
         "comparator": "대조 코호트",
         "condition": "Condition",
         "coxProportionalHazards": "콕스 비례 위험 모형",
@@ -2131,10 +2131,10 @@
       },
       "outcomeModel": "결과 모델 설정",
       "outcomeModelPanel": {
-        "covariates": "Should the covariates also be included in the outcome model?",
+        "covariates": "공변량도 결과 모델에 포함시켜야합니까?",
         "regression": "회귀분석은 모집단 대상자에서 정의된 계층에 따라 조절되어야 합니까? (예: 성향 점수로 매칭 또는 계층화 함으로써)",
-        "regularization": "Use regularization when fitting the outcome model? *",
-        "regularizationNote": "* Regularization will not be applied to the exposure of interest, just to the covariates.",
+        "regularization": "결과 모델을 적합할때, 정규화 기능을 사용하겠습니까? *",
+        "regularizationNote": "* 정규화는 관심 대상에는 적용되지 않을것입니다.",
         "statisticalModel": "표적 코호트와 대조 코호트 간의 결과 위험도 평가에 사용될 통계 모델을 정의하십시오:",
         "weighting": "처리 가중치의 역확률(IPTW, inverse probability of treatment weighting)을 사용합니까?"
       },
@@ -2142,8 +2142,8 @@
       "propensityScoreAdjustment": "성향 점수 보정",
       "propensityScoreAdjustmentPanel": {
         "baseSelection": "어떤 대상을 기준으로 계층을 결정할 것입니까? 계층은 동일한 크기로 정의됩니다.",
-        "caliperForMatching": "What is the caliper for matching:",
-        "caliperScale": "What is the caliper scale:",
+        "caliperForMatching": "매칭시의 caliper값을 설정하세요:",
+        "caliperScale": "Caliper scale을 설정하세요:",
         "covariateIdsMatch": "One or more covariate IDs in the cohortMethodData object on which subjects should be also matched.",
         "covariateIdsPlaceholder": "One or more covariate IDs",
         "covariateIdsStratify": "One or more covariate IDs in the cohortMethodData object on which subjects should be also stratified.",
@@ -2152,10 +2152,10 @@
         "lowerAndUpperBound": "Specify the lower and upper bound on the preference score for keeping persons (specify as: min %, max %, eg: 25,75):",
         "matchingOrStratification": "매칭 또는 계층화(stratification)를 수행하시겠습니까?",
         "maxNumberOfPeople": "적절한 성향 점수 모델에 포함할 최대 환자수는 몇 명입니까? 이 숫자를 0으로 설정하면 down-sampling이 적용되지 않습니다.",
-        "maximumNumberOfPersons": "What is the maximum number of persons in the comparator arm to be matched to each person in the target arm within the defined caliper? (0 = means no maximum - all comparators will be assigned to a target person):",
+        "maximumNumberOfPersons": "정의된 caliper 내에서 표적 코호트의 한사람에 최대 몇 명의 대조 코호트내 사람들을 매칭시키겠습니까? (0= 최대값이 없음을 의미 - 모든 대조 코호트의 사람들이 표적 코호트에 매칭됨):",
         "testEachCovariate": "할당된 타겟(표적)과 각 공변량들의 상관관계를 검사하겠습니까? 공변량이 비정상적으로 높은 상관 관계 값(양수 또는 음수)를 갖는다면 오류를 발생시킬 것입니다.",
         "trimFraction": "Trim Fraction (1-100%):",
-        "useRegularization": "Use regularization when fitting the propensity model?"
+        "useRegularization": "성향 점수 모형을 적합할때, 정규화 기능을 사용하겠습니까?"
       },
       "selectCohort": "코호트 선택하기",
       "selectConceptSet": "컨셉 세트 선택하기",
@@ -2183,17 +2183,17 @@
       "usingCovariates": "성향 점수 모델에 OHDSI 공변량을 사용합니다.",
       "view": "View:",
       "viewAnalysisSettings": "분석 설정",
-      "viewComparisons": "비교",
+      "viewComparisons": "비교군 설정",
       "viewEvaluationSettings": "평가 설정",
       "viewFull": "모두",
       "viewFullSpecification": "전체 보기"
     },
     "tabs": {
       "executions": "실행",
-      "specification": "사양",
+      "specification": "설계",
       "utilities": "유틸리티"
     },
-    "title": "Population Level Effect Estimation",
+    "title": "인구 수준 효과 추정",
     "util": {
       "downloadNameNote": "<b>Please Note:</b> The package name should consist of alphanumeric characters only. No spaces or special characters are permitted.",
       "downloadNote": "Please provide a name for the study package and click download to obtain the study package in ZIP format.",
@@ -3288,9 +3288,9 @@
       "conceptSet": "새 컨셉 세트",
       "featureAnalysis": "새 특성 분석",
       "incidenceRate": "새 발생률 분석",
-      "pathway": "New Cohort Pathway",
-      "ple": "새로운 인구수준 효과 추정",
-      "plp": "새로운 환자 수준 예측 (Patient Level Prediction)",
+      "pathway": "새 코호트 경로",
+      "ple": "새 인구 수준 효과 추정",
+      "plp": "새 환자 수준 예측",
       "role": "New Role",
       "source": "New Source"
     },
@@ -3330,13 +3330,13 @@
     "endTime": "End time",
     "explanation": "Notifications for jobs will be displayed here. A job could include cohort generation, cohort reporting, or other tasks that can take a long time to complete. This top right notification icon will highlight <i class='fa fa-bell pending'></i> if you have new notifications available.",
     "hideCompletedJobsButton": "Hide completed jobs",
-    "jobName": "Job Name",
+    "jobName": "작업 이름",
     "showCompletedJobsButton": "Show completed jobs",
-    "status": "Status",
+    "status": "상태",
     "title": "Notifications (last <%=length%>)"
   },
   "predictions": {
-    "allExecutions": "All executions (<%=length%>)",
+    "allExecutions": "모든 실행 항목 (<%=length%>)",
     "analysisSettings": "분석 설정",
     "confirmCatchSave": "An error occurred while attempting to save a prediction analysis.",
     "confirmChanges": "Patient level prediction changes are not saved. Would you like to continue?",
@@ -3345,7 +3345,7 @@
     "covariateSettingsDesc": "공변량 설정 추가 또는 업데이트",
     "covariateSettingsTitle": "공변량 설정",
     "descriptionPlaceholder": "enter a description here (1000 characters max)",
-    "downloadLatestResult": "Download latest result",
+    "downloadLatestResult": "마지막 결과 보기",
     "downloadStudyPackage": "Download Study Package",
     "retrievingPredictions": "retrieving predictions",
     "editors": {
@@ -3364,7 +3364,7 @@
       "populationEditorText_4": "위험 노출 기간이 없는 대상자를 제거해야 합니까?",
       "populationEditorText_5": "[예] 최소 위험노출 기간",
       "populationEditorText_6": "최소 위험 노출 기간을 만족하지 못하더라도 결과가 나타난 사람을 포함하겠습니까?",
-      "populationEditorText_7": "Should only the first exposure per subject be included?",
+      "populationEditorText_7": "각 대상자의 처음 노출 기록만 포함하겠습니까?",
       "populationEditorText_8": "코호트 진입 전 결과를 경험한 환자를 제거하시겠습니까?",
       "populationEditorText_9": "[예] 코호트 진입으로부터 몇일 전까지의 결과(outcome) 발생을 볼 것인지?",
       "predictionCovariatePlaceholder": "공변량 ID",
@@ -3378,9 +3378,9 @@
     },
     "export": "내보내기",
     "fullAnalysisList": "Full Analysis List",
-    "generate": "생성",
+    "generate": "실행",
     "generating": "Generating...",
-    "generations": "생성",
+    "generations": "실행",
     "import": "불러오기",
     "inputTypes": {
       "adaBoost": "Ada Boost 모델 설정",
@@ -3459,7 +3459,7 @@
       "analysisSettings": "분석 설정",
       "covariateSettings": "공변량 설정",
       "executionSettings": "실행 설정",
-      "modelSettings": "Model Settings",
+      "modelSettings": "모형 설정",
       "outcomeCohort": "결과 코호트",
       "populationSettings": "모집단 설정",
       "predictionProblemSettings": "예측 문제 설정",
@@ -3467,13 +3467,13 @@
       "trainingSettings": "트레이닝 설정",
       "view": "View:"
     },
-    "itemId": "Patient Level Prediction #",
+    "itemId": "환자 수준 예측 #",
     "modelSettingsDesc": "아래 옵션을 사용하여 모델 설정을 편집하십시오.",
-    "modelSettingsTitle": "Model settings",
+    "modelSettingsTitle": "모형 설정",
     "loadingGenerations": "Loading generations...",
     "naiveMessage": "Naive Bayes에 대한 설정 조건은 없습니다.",
-    "newItem": "새로운 환자 수준 예측 (Patient Level Prediction)",
-    "newItemPlaceholder": "새로운 환자 수준 예측 (Patient Level Prediction)",
+    "newItem": "새 환자 수준 예측",
+    "newItemPlaceholder": "새 환자 수준 예측",
     "notEnoughPermissions": "Not enough permissions to view results",
     "notEnoughPermissionsToGenerate": "Not enough permissions to generate or changes were not saved or Execution Engine is not available",
     "pleaseNote": "참고:",
@@ -3486,10 +3486,10 @@
     "selectCohort": "코호트 선택하기",
     "tabs": {
       "executions": "실행",
-      "specification": "사양",
+      "specification": "설계",
       "utilities": "유틸리티"
     },
-    "title": "Patient Level Prediction",
+    "title": "환자 수준 예측",
     "usingDefault": "Using default",
     "utilitiesText_1": "당신의 연구는 다음과 같은 문제로 인해 전체 사양 세부 정보를 검토할 수 없고, 연구 패키지를 다운로드 할 수 없습니다.:",
     "utilitiesText_2": "다음 항목은 적어도 하나씩 지정해야 합니다: 표적 코호트, 결과 코호트, 모델 설정, 공변량 설정 및 모집단 설정.",

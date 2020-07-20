@@ -978,7 +978,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                 case CRITERIA_SET:
                     FeAnalysisWithCriteriaEntity<? extends FeAnalysisCriteriaEntity> criteriaAnalysis = (FeAnalysisWithCriteriaEntity) newAnalysis;
                     List<? extends FeAnalysisCriteriaEntity> design = criteriaAnalysis.getDesign();
-                    Optional<FeAnalysisEntity> entityCriteriaSet = analysisService.findByCriteriaList(design);
+                    Optional<FeAnalysisEntity> entityCriteriaSet = analysisService.findByCriteriaListAndCsAndDomainAndStat(design, criteriaAnalysis);
                     this.<FeAnalysisWithCriteriaEntity<?>>addAnalysis(savedAnalysesIds, analysesSet, criteriaAnalysis, entityCriteriaSet, a -> analysisService.createCriteriaAnalysis(a));
                     break;
                 case PRESET:

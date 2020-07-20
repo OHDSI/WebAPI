@@ -57,25 +57,33 @@ public class CDMResultsCacheTasklet implements Tasklet {
     }
     
     private void warm(CDMResultsCache cdmResultsCache) {
+        try {
+            warmCdmCache(cdmResultsCache, "/resources/cdmresults/sql/loadConceptRecordCountCache.sql");
+        } catch (Exception e) {
+            log.warn("Failed to warm cache for {}. Trying to execute caching from scratch. Exception: {}",
+                    source.getSourceKey(), e.getLocalizedMessage());
+            try {
+                warmCdmCache(cdmResultsCache, "/resources/cdmresults/sql/loadConceptRecordCountCacheFull.sql");
+            } catch (Exception ex) {
+                log.error("Failed to warm cache from scratch for {}. Exception: {}", source.getSourceKey(), ex.getLocalizedMessage());
+            }
+        }
+    }
 
+    private void warmCdmCache(CDMResultsCache cdmResultsCache, String sqlScriptPath) {
         String resultTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
         String vocabularyTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
 
-        String sql_statement = ResourceHelper.GetResourceAsString("/resources/cdmresults/sql/loadConceptRecordCountCache.sql");
+        String sql_statement = ResourceHelper.GetResourceAsString(sqlScriptPath);
         String[] tables = {"resultTableQualifier", "vocabularyTableQualifier"};
         String[] tableValues = {resultTableQualifier, vocabularyTableQualifier};
-
         PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql_statement, tables, tableValues, SessionUtils.sessionId());
 
-        try {
-            jdbcTemplate.query(psr.getSql(), psr.getSetter(), resultSet -> {
-                DescendantRecordCount descendantRecordCount = descendantRecordCountMapper.mapRow(resultSet);
-                cdmResultsCache.cacheValue(descendantRecordCount);
-            });
-            cdmResultsCache.warm();
-        } catch (Exception e) {
-            log.error("Failed to warm cache for {}. Exception: {}", source.getSourceKey(), e.getLocalizedMessage());
-        }
+        jdbcTemplate.query(psr.getSql(), psr.getSetter(), resultSet -> {
+            DescendantRecordCount descendantRecordCount = descendantRecordCountMapper.mapRow(resultSet);
+            cdmResultsCache.cacheValue(descendantRecordCount);
+        });
+        cdmResultsCache.warm();
     }
 
 }

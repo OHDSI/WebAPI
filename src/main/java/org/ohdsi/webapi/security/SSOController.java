@@ -68,7 +68,7 @@ public class SSOController {
     @GET
     @Path("/slo")
     public Response logout() throws URISyntaxException {
-        return Response.status(HttpConstants.TEMP_REDIRECT)
+        return Response.status(HttpConstants.TEMPORARY_REDIRECT)
                 .header(HttpConstants.ACCESS_CONTROL_ALLOW_ORIGIN_HEADER, this.origin)
                 .location(new URI(sloUri))
                 .build();

@@ -40,5 +40,9 @@ public interface FeAnalysisService {
 
     Optional<FeAnalysisEntity> findByCriteriaList(List<? extends FeAnalysisCriteriaEntity> newCriteriaList);
 
+    Optional<FeAnalysisEntity> findByCriteriaListAndCsAndDomainAndStat(List<? extends FeAnalysisCriteriaEntity> newCriteriaList, FeAnalysisWithCriteriaEntity<? extends FeAnalysisCriteriaEntity> feAnalysis);
+
+    Optional<FeAnalysisEntity> findByCriteriaList(List<? extends FeAnalysisCriteriaEntity> newCriteriaList);
+
     List<FeAnalysisAggregateEntity> findAggregates();
 }

@@ -22,8 +22,8 @@ public class IterableForEachValidator<T> extends Validator<Collection<? extends 
     }
 
     @Override
-    public void build() {
-        this.validator.build();
+    public void configure() {
+        this.validator.configure();
     }
 
     @Override

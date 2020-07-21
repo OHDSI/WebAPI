@@ -2,8 +2,8 @@
   "name": "pathway",
   "targetCohorts": [],
   "eventCohorts": [],
-  "combinationWindow": 0,
-  "minCellCount": 0,
-  "maxDepth": 5,
+  "combinationWindow": -1,
+  "minCellCount": -1,
+  "maxDepth": 0,
   "allowRepeats": false
 }

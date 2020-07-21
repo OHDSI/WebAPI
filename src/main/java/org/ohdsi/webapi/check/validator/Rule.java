@@ -10,24 +10,14 @@ import java.util.function.Function;
 
 public class Rule<T, V> {
     private final List<Validator<V>> validators = new ArrayList<>();
+    // Function for getting value for validate
     private Function<T, V> valueGetter;
     private String errorMessage;
     private Path path;
+    // Function for creating warning message based on preset parameters
     private WarningReporter reporter;
 
     public Rule<T, V> addValidator(Validator<V> validator) {
-        // if validator error message is not changed and rule message is set
-        // change validator message to rule message
-        if (!validator.isErrorMessageInitial() && Objects.nonNull(this.errorMessage)) {
-            validator.setErrorMessage(this.errorMessage);
-        }
-        if (Objects.isNull(validator.getPath())) {
-            validator.setPath(path);
-        }
-        if (Objects.isNull(validator.getReporter())) {
-            validator.setReporter(reporter);
-        }
-
         this.validators.add(validator);
         return this;
     }
@@ -47,23 +37,31 @@ public class Rule<T, V> {
                 .reduce(true, (left, right) -> left && right);
     }
 
-    public Rule<T, V> build() {
-        this.validators.forEach(Validator::build);
+    public Rule<T, V> configure() {
+        this.validators.forEach(v -> {
+            // if validator error message is not changed and rule message is set
+            // change validator message to rule message
+            if (!v.isErrorMessageInitial() && Objects.nonNull(this.errorMessage)) {
+                v.setErrorMessage(this.errorMessage);
+            }
+            if (Objects.isNull(v.getPath())) {
+                v.setPath(path);
+            }
+            if (Objects.isNull(v.getReporter())) {
+                v.setReporter(reporter);
+            }
+
+            v.configure();
+        });
         return this;
     }
 
     public Rule<T, V> setPath(Path path) {
-        this.validators.forEach(v -> {
-            v.setPath(path);
-        });
         this.path = path;
         return this;
     }
 
     public Rule<T, V> setReporter(WarningReporter reporter) {
-        this.validators.forEach(v -> {
-            v.setReporter(reporter);
-        });
         this.reporter = reporter;
         return this;
     }
@@ -74,12 +72,6 @@ public class Rule<T, V> {
     }
 
     public Rule<T, V> setDefaultErrorMessage(String errorMessage) {
-        this.validators.forEach(v -> {
-            // Do not change the error message of the validator if it is already changed
-            if (v.isErrorMessageInitial()) {
-                v.setErrorMessage(errorMessage);
-            }
-        });
         this.errorMessage = errorMessage;
         return this;
     }

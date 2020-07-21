@@ -5,18 +5,17 @@ import org.junit.Test;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.check.CheckResult;
 import org.ohdsi.webapi.check.Checker;
-import org.ohdsi.webapi.check.checker.characterization.CharacterizationChecker;
 import org.ohdsi.webapi.check.checker.ir.IRChecker;
-import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
+import org.ohdsi.webapi.check.warning.Warning;
 import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
 
 import java.io.IOException;
-
-import static org.junit.Assert.*;
+import java.util.Optional;
 
 public class IRCheckerTest extends BaseCheckerTest {
     private static final String JSON_VALID = "/check/checker/ir-valid.json";
-    private static final String JSON_INVALID = "/check/checker/ir-invalid.json";
+    private static final String JSON_NO_EXPRESSION = "/check/checker/ir-no-expression.json";
+    private static final String JSON_NO_COHORTS = "/check/checker/ir-no-cohorts.json";
 
     @Test
     public void checkValid() throws IOException {
@@ -29,12 +28,32 @@ public class IRCheckerTest extends BaseCheckerTest {
     }
 
     @Test
-    public void checkInvalid() throws IOException {
-        String json = getJsonFromFile(JSON_INVALID);
+    public void checkEmptyExpression() throws IOException {
+        String json = getJsonFromFile(JSON_NO_EXPRESSION);
         IRAnalysisDTO dto = Utils.deserialize(json, IRAnalysisDTO.class);
 
         Checker<IRAnalysisDTO> checker = new IRChecker();
         CheckResult result = new CheckResult(checker.check(dto));
-        Assert.assertNotEquals(0, result.getWarnings().size());
+        checkWarning(result, "expression - null or empty");
+    }
+
+    @Test
+    public void checkNoOutcomeCohorts() throws IOException {
+        String json = getJsonFromFile(JSON_NO_COHORTS);
+        IRAnalysisDTO dto = Utils.deserialize(json, IRAnalysisDTO.class);
+
+        Checker<IRAnalysisDTO> checker = new IRChecker();
+        CheckResult result = new CheckResult(checker.check(dto));
+        checkWarning(result, "outcome cohorts - null or empty");
+    }
+
+    @Test
+    public void checkNoTargetCohorts() throws IOException {
+        String json = getJsonFromFile(JSON_NO_COHORTS);
+        IRAnalysisDTO dto = Utils.deserialize(json, IRAnalysisDTO.class);
+
+        Checker<IRAnalysisDTO> checker = new IRChecker();
+        CheckResult result = new CheckResult(checker.check(dto));
+        checkWarning(result, "target cohorts - null or empty");
     }
 }

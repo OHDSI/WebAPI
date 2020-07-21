@@ -20,7 +20,7 @@ public abstract class BaseChecker<T> implements Checker<T> {
                 .setReporter(getReporter(warnings))
                 .setValueGetter(t -> t)
                 .addValidator(getValidator())
-                .build();
+                .configure();
         rule.validate(value);
 
         return warnings;

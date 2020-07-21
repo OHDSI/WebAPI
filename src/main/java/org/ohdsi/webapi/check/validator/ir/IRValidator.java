@@ -25,11 +25,14 @@ public class IRValidator<T extends IRAnalysisDTO> extends RuleValidator<T> {
             }
         };
 
+        NotNullNotEmptyValidator notNullNotEmptyValidator = new NotNullNotEmptyValidator();
+        notNullNotEmptyValidator.setPath(createPath("expression"));
+
         Rule<T, IncidenceRateAnalysisExpression> rule = new Rule<T, IncidenceRateAnalysisExpression>()
                 .setPath(createPath())
                 .setReporter(reporter)
                 .setValueGetter(valueGetter)
-                .addValidator(new NotNullNotEmptyValidator<>())
+                .addValidator(notNullNotEmptyValidator)
                 .addValidator(new IRAnalysisExpressionValidator<>());
         rules.add(rule);
     }

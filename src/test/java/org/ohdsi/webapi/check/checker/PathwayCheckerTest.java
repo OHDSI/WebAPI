@@ -5,14 +5,13 @@ import org.junit.Test;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.check.CheckResult;
 import org.ohdsi.webapi.check.Checker;
-import org.ohdsi.webapi.check.checker.characterization.CharacterizationChecker;
 import org.ohdsi.webapi.check.checker.pathway.PathwayChecker;
-import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
+import org.ohdsi.webapi.check.warning.Warning;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
 
 import java.io.IOException;
+import java.util.Optional;
 
-import static org.junit.Assert.*;
 
 public class PathwayCheckerTest extends BaseCheckerTest {
     private static final String JSON_VALID = "/check/checker/pathway-valid.json";
@@ -29,12 +28,52 @@ public class PathwayCheckerTest extends BaseCheckerTest {
     }
 
     @Test
-    public void checkInvalid() throws IOException {
+    public void checkNoTargetCohorts() throws IOException {
         String json = getJsonFromFile(JSON_INVALID);
         PathwayAnalysisDTO dto = Utils.deserialize(json, PathwayAnalysisDTO.class);
 
         Checker<PathwayAnalysisDTO> checker = new PathwayChecker();
         CheckResult result = new CheckResult(checker.check(dto));
-        Assert.assertNotEquals(0, result.getWarnings().size());
+        checkWarning(result, "target cohorts - null or empty");
+    }
+
+    @Test
+    public void checkNoEventCohorts() throws IOException {
+        String json = getJsonFromFile(JSON_INVALID);
+        PathwayAnalysisDTO dto = Utils.deserialize(json, PathwayAnalysisDTO.class);
+
+        Checker<PathwayAnalysisDTO> checker = new PathwayChecker();
+        CheckResult result = new CheckResult(checker.check(dto));
+        checkWarning(result, "event cohorts - null or empty");
+    }
+
+    @Test
+    public void checkInvalidMaxPathLength() throws IOException {
+        String json = getJsonFromFile(JSON_INVALID);
+        PathwayAnalysisDTO dto = Utils.deserialize(json, PathwayAnalysisDTO.class);
+
+        Checker<PathwayAnalysisDTO> checker = new PathwayChecker();
+        CheckResult result = new CheckResult(checker.check(dto));
+        checkWarning(result, "maximum path length - must be between 1 and 10");
+    }
+
+    @Test
+    public void checkInvalidMinCellCount() throws IOException {
+        String json = getJsonFromFile(JSON_INVALID);
+        PathwayAnalysisDTO dto = Utils.deserialize(json, PathwayAnalysisDTO.class);
+
+        Checker<PathwayAnalysisDTO> checker = new PathwayChecker();
+        CheckResult result = new CheckResult(checker.check(dto));
+        checkWarning(result, "minimum cell count - must be greater or equal to 0");
+    }
+
+    @Test
+    public void checkInvalidCombinationWindow() throws IOException {
+        String json = getJsonFromFile(JSON_INVALID);
+        PathwayAnalysisDTO dto = Utils.deserialize(json, PathwayAnalysisDTO.class);
+
+        Checker<PathwayAnalysisDTO> checker = new PathwayChecker();
+        CheckResult result = new CheckResult(checker.check(dto));
+        checkWarning(result, "combination window - must be greater or equal to 0");
     }
 }

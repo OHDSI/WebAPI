@@ -14,9 +14,9 @@ public abstract class RuleValidator<T> extends Validator<T> {
     }
 
     @Override
-    public void build() {
+    public void configure() {
         buildInternal();
-        rules.forEach(Rule::build);
+        rules.forEach(Rule::configure);
     }
 
     protected abstract void buildInternal();

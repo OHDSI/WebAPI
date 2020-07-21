@@ -16,9 +16,6 @@ public class NegativeControlOutcomeCohortExpressionValidator<T extends NegativeC
         // Detect on descendants
         prepareDetectOnDescendantsRule();
 
-        // Minimum required continuous observation time
-        prepareDomainsRule();
-
         // Domains to detect negative control outcomes
         prepareDomainsRule();
     }

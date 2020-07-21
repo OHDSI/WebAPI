@@ -10,6 +10,14 @@ public abstract class Validator<T> {
     protected WarningSeverity severity = WarningSeverity.CRITICAL;
     private String errorMessage;
 
+    protected void fillErrorReport() {
+        reporter.add(this.severity, getErrorMessage(), path.getPath());
+    }
+
+    public void configure() {
+        // do nothing
+    }
+
     public void setSeverity(WarningSeverity severity) {
         this.severity = severity;
     }
@@ -53,15 +61,7 @@ public abstract class Validator<T> {
         this.reporter = reporter;
     }
 
-    protected void fillErrorReport() {
-        reporter.add(this.severity, getErrorMessage(), path.getPath());
-    }
-
     public boolean isErrorMessageInitial() {
-        return getDefaultErrorMessage().equals(getErrorMessage());
-    }
-
-    public void build() {
-        // do nothing
+        return getDefaultErrorMessage().equals(this.errorMessage);
     }
 }

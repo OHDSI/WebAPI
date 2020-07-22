@@ -16,6 +16,10 @@ public class PredicateValidator<T> extends Validator<T> {
 
     @Override
     public boolean validate(T value) {
+        if (value == null) {
+            return true;
+        }
+
         boolean isValid = predicate.test(value);
         if (!isValid) {
             fillErrorReport();

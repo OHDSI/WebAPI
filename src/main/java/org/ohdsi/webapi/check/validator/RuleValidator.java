@@ -8,6 +8,9 @@ public abstract class RuleValidator<T> extends Validator<T> {
 
     @Override
     public boolean validate(T value) {
+        if (value == null) {
+            return true;
+        }
         return rules.stream()
                 .map(r -> r.validate(value))
                 .reduce(true, (left, right) -> left && right);

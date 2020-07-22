@@ -16,8 +16,10 @@ import java.util.function.Function;
 import static org.ohdsi.webapi.estimation.EstimationServiceImpl.CONCEPT_SET_XREF_KEY_NEGATIVE_CONTROL_OUTCOMES;
 
 public class EstimationSpecificationValidator<T extends EstimationAnalysis> extends RuleValidator<T> {
+
     @Override
     protected void buildInternal() {
+
         // Analysis settings
         prepareAnalysisSettingsRule();
 

@@ -11,21 +11,32 @@ public class DuplicateValidator<T, V> extends PredicateValidator<Collection<? ex
     private Function<T, V> elementGetter;
 
     public DuplicateValidator() {
-        setPredicate(t -> {
-            Set<V> set = new HashSet<V>();
-            for (T value : t) {
-                set.add(elementGetter.apply(value));
-            }
-            return set.size() == t.size();
-        });
+
+        setPredicate(this::areAllUniqueValues);
     }
 
+
     public DuplicateValidator<T, V> setElementGetter(Function<T, V> elementGetter) {
+
         this.elementGetter = elementGetter;
         return this;
     }
 
     protected String getDefaultErrorMessage() {
+
         return DUPLICATE;
     }
+
+    private boolean areAllUniqueValues(Collection<? extends T> t) {
+
+        Set<V> set = new HashSet<>();
+        for (T value : t) {
+            V apply = elementGetter.apply(value);
+            if (!set.add(apply)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 }

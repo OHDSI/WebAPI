@@ -24,16 +24,7 @@ public class Rule<T, V> {
 
     public boolean validate(T value) {
         return this.validators.stream()
-                .map(v -> {
-                    V valueToValidate = valueGetter.apply(value);
-                    boolean isValid = true;
-                    // Null values should not be validated except in the special validator for null or empty values
-                    if (valueToValidate != null ||
-                            v instanceof NotNullNotEmptyValidator) {
-                        isValid = v.validate(valueToValidate);
-                    }
-                    return isValid;
-                })
+                .map(v -> v.validate(valueGetter.apply(value)))
                 .reduce(true, (left, right) -> left && right);
     }
 

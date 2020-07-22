@@ -17,6 +17,10 @@ public class NumericRangeValidator<T extends NumericRange> extends Validator<Num
 
     @Override
     public boolean validate(NumericRange range) {
+        if (range == null) {
+            return true;
+        }
+
         Function<String, Boolean> warning = (t) -> {
             reporter.add(this.severity, t, this.path.getPath());
             return false;

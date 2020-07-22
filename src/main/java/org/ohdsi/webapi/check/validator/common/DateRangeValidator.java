@@ -18,6 +18,10 @@ public class DateRangeValidator<T extends DateRange> extends Validator<DateRange
 
     @Override
     public boolean validate(DateRange range) {
+        if (range == null) {
+            return true;
+        }
+
         Function<String, Boolean> warning = (t) -> {
             reporter.add(this.severity, t, this.path.getPath());
             return false;

@@ -17,6 +17,9 @@ public class IterableForEachValidator<T> extends Validator<Collection<? extends 
 
     @Override
     public boolean validate(Collection<? extends T> value) {
+        if (value == null) {
+            return true;
+        }
         return Lists.newArrayList(value).stream()
                 .allMatch(validator::validate);
     }

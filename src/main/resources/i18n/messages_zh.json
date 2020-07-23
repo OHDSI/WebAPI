@@ -206,7 +206,7 @@
       }
     },
     "atlasCohortEditor": {
-      "enterCohortPlaceholder": "Enter a cohort definition description here",
+      "enterCohortPlaceholder": "在此输入队列定义描述",
       "importConceptSet": "从存储库中加载概念集"
     },
     "cohortDefinitionBrowser": {
@@ -301,7 +301,7 @@
       "newInclusionCriteria": "新建纳入标准",
       "noCensoring": "No Censoring",
       "removeRestriction": "删除初始事件限制",
-      "restrictInitialEventsButton": "Restrict initial events",
+      "restrictInitialEventsButton": "限定初始事件",
       "restrictInitialEventsTitle": "限定初始事件为",
       "unnamedCriteria": "为纳入标准设置一个名称"
     },
@@ -1071,7 +1071,7 @@
       "vocabulary": "术语集",
       "relationship": "Relationship",
       "distance": "Distance",
-      "severity": "Severity"
+      "severity": "严重程度"
     },
     "values": {
       "warning": "Warning",
@@ -1136,8 +1136,8 @@
     "covariateId": "Covariate Id",
     "covariateName": "Covariate Name",
     "covariateSettings": "协变量设置",
-    "created": "建立",
-    "date": "Date",
+    "created": "建立时间",
+    "date": "时间",
     "daysSupplyAvg": "Avg. Days of Supply",
     "daysSupplyPer1000PerYear": "Days of Supply /1K /Year",
     "daysSupplyTotal": "Days of Supply",
@@ -1156,7 +1156,7 @@
     "drugLabelExists": "Drug Label Exists",
     "drugName": "Drug",
     "drugVocabularyId": "Concept vocabulary",
-    "duration": "Duration",
+    "duration": "持续时间",
     "enabled": "Enabled",
     "endDate": "End Date",
     "endDay": "End Day",
@@ -1256,7 +1256,7 @@
     "remove": "删除",
     "removeSubjectsWithPriorOutcome": "Remove Subjects With Prior Outcome",
     "requireTimeAtRisk": "Require Time At Risk",
-    "results": "Results",
+    "results": "结果",
     "riskWindowEnd": "Risk Window End",
     "riskWindowStart": "Risk Window Start",
     "role": "Role",
@@ -1272,7 +1272,7 @@
     "startDate": "Start date",
     "startDay": "Start Day",
     "started": "Started",
-    "status": "Status",
+    "status": "状态",
     "stddev": "标准差",
     "strata": "分层的",
     "suggestedNegativeControl": "Suggested Negative Control",
@@ -1290,7 +1290,7 @@
     "totalRecords": "Total Records",
     "type": "Type",
     "uniqueIdentifier": "Unique Identifier",
-    "updated": "Updated",
+    "updated": "更新时间",
     "userExcluded": "User Excluded",
     "userIncluded": "User Included",
     "value": "Value",
@@ -1410,8 +1410,8 @@
       "drugExposure": "药物使用",
       "measurement": "化验/检测指标",
       "observation": "观测",
-      "person": "病人",
-      "procedure": "手术",
+      "person": "患者信息",
+      "procedure": "操作信息",
       "titleTail": " Report",
       "visit": "就诊"
     },
@@ -1486,7 +1486,7 @@
         "viewCountMessage": "View database record counts (RC) and descendant record counts (DRC) for:"
       },
       "exportConceptSetsButton": "导出概念集",
-      "exportConceptSetsNumber": "concept sets selected for export.",
+      "exportConceptSetsNumber": "选择<b><%=num%></b>个概念集导出",
       "exportInstructions": "说明:",
       "exportInstructionsText": "通过选择网格中的每一行，选择一组要导出的概念。 完成后，使用“导出概念集”按钮开始在新窗口中下载。",
       "saveWarning": "Cohort changes are not saved. Would you like to continue?",
@@ -1633,8 +1633,8 @@
     },
     "tabs": {
       "characterizations": {
-        "newLabel": "Characterization",
-        "title": "Characterizations"
+        "newLabel": "队列特征",
+        "title": "队列特征"
       },
       "featureAnalyses": {
         "newLabel": "特征分析",
@@ -1678,7 +1678,7 @@
       },
       "executions": {
         "buttons": {
-          "allExecutions": "All executions (<%=submissions%>)",
+          "allExecutions": "所有的执行结果 (<%=submissions%>)",
           "cancel": "Cancel",
           "generate": "生成",
           "latestResult": "查看最后结果"
@@ -1823,13 +1823,13 @@
       "newStratifyCriteria": "新的分层标准",
       "noStudyWindowDefined": "未定义研究期。",
       "outcomeCohorts": "结果队列",
-      "removeStudyWindow": "Remove Study Window",
+      "removeStudyWindow": "删除研究期",
       "selectInclusionCriteriaMessage": "请选择一个合格的纳排条件进行编辑。",
       "stratifyCriteria": "Stratify Criteria:",
       "stratifyCriteriaMessage": "您可以提供一个可选的分层条件，以根据满足您的条件的标准将总体分为唯一的组。",
       "studyCohorts": "Study Cohorts",
-      "studyWindowText1": "Study window begins on",
-      "studyWindowText2": "and ends on",
+      "studyWindowText1": "研究期开始于",
+      "studyWindowText2": "研究期结束于",
       "studyWindowText3": ".",
       "targetCohorts": "目标队列",
       "timeAtRisk": "风险暴露期",
@@ -1839,7 +1839,7 @@
       "timeAtRiskEndsWith": "风险时间窗从",
       "timeAtRiskMessage": "风险时间窗定义了相对于队列开始日期或者结束日期的时间窗口，并且考虑到患者患有结果变量风险的偏移量。",
       "timeAtRiskPlus": "添加",
-      "timeAtRiskStartDate": "风险时间窗从",
+      "timeAtRiskStartDate": "开始日期",
       "timeAtRiskStartsWith": "风险时间窗从",
       "timeAtRiskWarningMessage": "Error: Time at risk starts on or after time at risk end, resulting in zero time at risk.  Please ensure the start offset is greater than the end offset."
     },
@@ -1932,7 +1932,7 @@
         "description": "队列路径定义是在目标队列人群中生成事件队列序列的过程。",
         "eventCohorts": {
           "description": "Each Event Cohort defines the step in a pathway that may occur for a person in the Target Cohort.",
-          "title": "Event Cohorts"
+          "title": "事件队列"
         },
         "targetCohorts": {
           "description": "对于每个目标队列分析事件队列的途径",
@@ -1941,7 +1941,7 @@
       },
       "executions": {
         "buttons": {
-          "allExecutions": "All executions",
+          "allExecutions": "所有的执行结果",
           "generate": "生成",
           "viewLatestResult": "查看最后结果"
         },
@@ -2033,8 +2033,8 @@
     "deleteConfirmation": "Delete estimation specification? Warning: deletion can not be undone!",
     "retrievingEstimations": "retrieving estimations",
     "exec": {
-      "allExec": "All executions (<%=len%>)",
-      "downloadLatestResult": "Download latest result",
+      "allExec": "所有的执行结果 (<%=len%>)",
+      "downloadLatestResult": "下载最新结果",
       "generate": "生成",
       "generating": "Generating...",
       "generations": "Generations",
@@ -2579,7 +2579,7 @@
         "explore": "关系探索",
         "export": "导出",
         "generation": "生成",
-        "messages": "Messages",
+        "messages": "提示信息",
         "reporting": "报告"
       }
     },
@@ -2728,7 +2728,7 @@
     "newDefinition": "New Cohort",
     "newDefinitionTitle": "Create a new cohort definition",
     "noConceptSets": "No concept sets to export",
-    "runDiagnostics": "Run diagnostics",
+    "runDiagnostics": "运行诊断",
     "saveDefinitionBefore": "队列定义必须在导出之前保存",
     "title": "队列定义"
   },
@@ -2751,7 +2751,7 @@
         "desc_group": "查找具有特定诊断的患者"
       },
       "addDeath": {
-        "title": "添加医疗设备使用",
+        "title": "添加死亡信息",
         "desc_initial": "按照死亡查找患者",
         "desc_censoring": "队列根据死亡退出",
         "desc_group": "按照死亡查找患者"
@@ -2775,22 +2775,22 @@
         "desc_group": "根据药物周期查找患者"
       },
       "addDrugExposure": {
-        "title": "Add Drug Exposure",
+        "title": "添加药物暴露信息",
         "desc_initial": "查找接触过特定药物或者药物类型的患者",
         "desc_censoring": "Exit cohort based on exposure to specific drugs or drug classes.",
         "desc_group": "查找接触过特定药物或者药物类型的患者"
       },
       "addMeasurement": {
-        "title": "添加测量",
+        "title": "添加检查检验信息",
         "desc_initial": "按照测量结果查找患者",
         "desc_censoring": "Exit cohort based on Measurement.",
         "desc_group": "按照测量结果查找患者"
       },
       "addObservation": {
         "title": "添加观察",
-        "desc_initial": "按照实验室测试或者其他观察结果查找患者",
+        "desc_initial": "按照观察结果查找患者",
         "desc_censoring": "Exit cohort based on lab tests or other observations.",
-        "desc_group": "按照实验室测试或者其他观察结果查找患者"
+        "desc_group": "按照观察结果查找患者"
       },
       "addObservationPeriod": {
         "title": "添加观察周期",
@@ -2816,8 +2816,8 @@
         "desc_group": "按照标本查找患者"
       },
       "addLocationRegion": {
-        "title": "Add Location Region",
-        "desc_group": "Find patients within geographical area."
+        "title": "添加位置信息",
+        "desc_group": "根据地理区域查找患者"
       },
       "addGroup": {
         "title": "新增群组",
@@ -3284,7 +3284,7 @@
     },
     "newEntityNames": {
       "characterization": "New Characterization",
-      "cohortDefinition": "New Cohort Definition",
+      "cohortDefinition": "新队列定义",
       "conceptSet": "新概念集",
       "featureAnalysis": "New Feature Analysis",
       "incidenceRate": "New Incidence Rate Analysis",
@@ -3326,7 +3326,7 @@
     }
   },
   "notifications": {
-    "duration": "Duration",
+    "duration": "持续时间",
     "endTime": "End time",
     "explanation": "Notifications for jobs will be displayed here. A job could include cohort generation, cohort reporting, or other tasks that can take a long time to complete. This top right notification icon will highlight <i class='fa fa-bell pending'></i> if you have new notifications available.",
     "hideCompletedJobsButton": "Hide completed jobs",
@@ -3336,7 +3336,7 @@
     "title": "Notifications (last <%=length%>)"
   },
   "predictions": {
-    "allExecutions": "All executions (<%=length%>)",
+    "allExecutions": "所有的执行结果 (<%=length%>)",
     "analysisSettings": "分析设置",
     "confirmCatchSave": "An error occurred while attempting to save a prediction analysis.",
     "confirmChanges": "Patient level prediction changes are not saved. Would you like to continue?",
@@ -3345,7 +3345,7 @@
     "covariateSettingsDesc": "添加或更新协变量设置",
     "covariateSettingsTitle": "协变量设置",
     "descriptionPlaceholder": "enter a description here (1000 characters max)",
-    "downloadLatestResult": "Download latest result",
+    "downloadLatestResult": "下载最新结果",
     "downloadStudyPackage": "Download Study Package",
     "defaultValue": "(默认值 = <%=defaultValue%>):",
     "retrievingPredictions": "retrieving predictions",

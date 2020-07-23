@@ -1486,7 +1486,7 @@
         "viewCountMessage": "View database record counts (RC) and descendant record counts (DRC) for:"
       },
       "exportConceptSetsButton": "컨셉 세트 내보내기",
-      "exportConceptSetsNumber": "concept sets selected for export.",
+      "exportConceptSetsNumber": "<b><%=num%></b> concept sets selected for export.",
       "exportInstructions": " ",
       "exportInstructionsText": "하단의 표에서 내보낼 컨셉 세트를 선택하시고, '컨셉 세트 내보내기'를 클릭하시어 컨셉 세트를 다운하십시오.",
       "saveWarning": "Cohort changes are not saved. Would you like to continue?",

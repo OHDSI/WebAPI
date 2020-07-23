@@ -1486,7 +1486,7 @@
         "viewCountMessage": "View database record counts (RC) and descendant record counts (DRC) for:"
       },
       "exportConceptSetsButton": "Export Concept Sets",
-      "exportConceptSetsNumber": "concept sets selected for export.",
+      "exportConceptSetsNumber": "<b><%=num%></b> concept sets selected for export.",
       "exportInstructions": "Instructions:",
       "exportInstructionsText": "Select the concept sets for export by selecting each row in the grid. When done, use the 'Export Concept Sets' button which will start the download in a new window.",
       "saveWarning": "Cohort changes are not saved. Would you like to continue?",

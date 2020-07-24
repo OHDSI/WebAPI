@@ -1,6 +1,9 @@
 package org.ohdsi.webapi.check.checker;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.ohdsi.analysis.Utils;
@@ -23,9 +26,9 @@ public abstract class BaseCheckerTest {
     }
 
     protected void checkWarning(CheckResult result, String message) {
-        Optional<Warning> warning = result.getWarnings().stream()
-                .filter(p -> p.toMessage().equals(message))
-                .findFirst();
-        Assert.assertTrue(warning.isPresent());
+
+        List<String> warningMessages = result.getWarnings().stream().map(Warning::toMessage).collect(Collectors.toList());
+
+        Assert.assertThat(warningMessages, Matchers.hasItem(message));
     }
 }

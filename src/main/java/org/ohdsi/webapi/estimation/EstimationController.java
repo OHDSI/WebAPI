@@ -5,7 +5,6 @@ import com.qmino.miredot.annotations.MireDotIgnore;
 import com.qmino.miredot.annotations.ReturnType;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.check.CheckResult;
-import org.ohdsi.webapi.check.Checker;
 import org.ohdsi.webapi.check.checker.estimation.EstimationChecker;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
@@ -61,19 +60,21 @@ public class EstimationController {
   private final SourceService sourceService;
   private final ConverterUtils converterUtils;
   private final ScriptExecutionService executionService;
+  private EstimationChecker checker;
 
   public EstimationController(EstimationService service,
                               GenericConversionService conversionService,
                               CommonGenerationSensitiveInfoService sensitiveInfoService,
                               SourceService sourceService,
                               ConverterUtils converterUtils,
-                              ScriptExecutionService executionService) {
+                              ScriptExecutionService executionService, EstimationChecker checker) {
     this.service = service;
     this.conversionService = conversionService;
     this.sensitiveInfoService = sensitiveInfoService;
     this.sourceService = sourceService;
     this.converterUtils = converterUtils;
     this.executionService = executionService;
+    this.checker = checker;
   }
 
   @GET
@@ -261,7 +262,7 @@ public class EstimationController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public CheckResult runDiagnostics(EstimationDTO estimationDTO){
-        Checker<EstimationDTO> checker = new EstimationChecker();
-        return new CheckResult(checker.check(estimationDTO));
+
+        return new CheckResult(this.checker.check(estimationDTO));
     }
 }

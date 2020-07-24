@@ -4,7 +4,6 @@ import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.check.CheckResult;
-import org.ohdsi.webapi.check.Checker;
 import org.ohdsi.webapi.check.checker.pathway.PathwayChecker;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
@@ -56,15 +55,17 @@ public class PathwayController {
     private PathwayService pathwayService;
     private final SourceService sourceService;
     private final CommonGenerationSensitiveInfoService<CommonGenerationDTO> sensitiveInfoService;
+    private PathwayChecker checker;
 
     @Autowired
-    public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService) {
+    public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService, PathwayChecker checker) {
 
         this.conversionService = conversionService;
         this.converterUtils = converterUtils;
         this.pathwayService = pathwayService;
         this.sourceService = sourceService;
         this.sensitiveInfoService = sensitiveInfoService;
+        this.checker = checker;
     }
 
     @POST
@@ -296,7 +297,7 @@ public class PathwayController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public CheckResult runDiagnostics(PathwayAnalysisDTO pathwayAnalysisDTO){
-        Checker<PathwayAnalysisDTO> checker = new PathwayChecker();
+
         return new CheckResult(checker.check(pathwayAnalysisDTO));
     }
 }

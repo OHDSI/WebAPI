@@ -1,17 +1,25 @@
 package org.ohdsi.webapi.check.validator.common;
 
-import org.ohdsi.webapi.check.validator.Validator;
-
 import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
+import org.ohdsi.webapi.check.validator.Context;
+import org.ohdsi.webapi.check.validator.Path;
+import org.ohdsi.webapi.check.validator.Validator;
+import org.ohdsi.webapi.check.warning.WarningSeverity;
 
 public class NotNullNotEmptyValidator<T> extends Validator<T> {
-    private static final String NULL_OR_EMPTY = "%s - null or empty";
+    private static final String NULL_OR_EMPTY = "null or empty";
+
+    public NotNullNotEmptyValidator(Path path,  WarningSeverity severity, String errorMessage) {
+
+        super(path, severity, errorMessage);
+    }
 
     @Override
-    public boolean validate(T value) {
+    public boolean validate(T value, Context context) {
+
         boolean isValid = true;
         if (Objects.isNull(value)) {
             isValid = false;
@@ -27,12 +35,13 @@ public class NotNullNotEmptyValidator<T> extends Validator<T> {
             }
         }
         if (!isValid) {
-            fillErrorReport();
+            context.addWarning(getSeverity(), getErrorMessage(), path);
         }
         return isValid;
     }
 
     protected String getDefaultErrorMessage() {
+
         return NULL_OR_EMPTY;
     }
 }

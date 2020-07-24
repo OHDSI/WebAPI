@@ -1,33 +1,39 @@
 package org.ohdsi.webapi.check.validator.common;
 
-import org.ohdsi.webapi.check.validator.Validator;
-
 import java.util.function.Predicate;
+import org.ohdsi.webapi.check.validator.Context;
+import org.ohdsi.webapi.check.validator.Path;
+import org.ohdsi.webapi.check.validator.Validator;
+import org.ohdsi.webapi.check.warning.WarningSeverity;
 
 public class PredicateValidator<T> extends Validator<T> {
-    private static final String INVALID = "%s - invalid";
+    private static final String INVALID = "invalid";
 
-    private Predicate<T> predicate;
+    protected Predicate<T> predicate;
 
-    public PredicateValidator<T> setPredicate(Predicate<T> predicate) {
+    public PredicateValidator(Path path, WarningSeverity severity, String errorMessage, Predicate<T> predicate) {
+
+        super(path, severity, errorMessage);
         this.predicate = predicate;
-        return this;
     }
 
+
     @Override
-    public boolean validate(T value) {
+    public boolean validate(T value, Context context) {
+
         if (value == null) {
             return true;
         }
 
         boolean isValid = predicate.test(value);
         if (!isValid) {
-            fillErrorReport();
+            context.addWarning(getSeverity(), getErrorMessage(), path);
         }
         return isValid;
     }
 
     protected String getDefaultErrorMessage() {
+
         return INVALID;
     }
 }

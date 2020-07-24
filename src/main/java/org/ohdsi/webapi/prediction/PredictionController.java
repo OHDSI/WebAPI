@@ -4,13 +4,11 @@ import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.check.CheckResult;
-import org.ohdsi.webapi.check.Checker;
 import org.ohdsi.webapi.check.checker.prediction.PredictionChecker;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.analyses.CommonAnalysisDTO;
 import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
-import org.ohdsi.webapi.estimation.dto.EstimationDTO;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.prediction.domain.PredictionGenerationEntity;
@@ -58,6 +56,7 @@ public class PredictionController {
   private final SourceService sourceService;
 
   private final ScriptExecutionService executionService;
+  private final PredictionChecker checker;
 
   @Autowired
   public PredictionController(PredictionService service,
@@ -65,13 +64,14 @@ public class PredictionController {
                               ConverterUtils converterUtils,
                               CommonGenerationSensitiveInfoService sensitiveInfoService,
                               SourceService sourceService,
-                              ScriptExecutionService executionService) {
+                              ScriptExecutionService executionService, PredictionChecker checker) {
     this.service = service;
     this.conversionService = conversionService;
     this.converterUtils = converterUtils;
     this.sensitiveInfoService = sensitiveInfoService;
     this.sourceService = sourceService;
     this.executionService = executionService;
+    this.checker = checker;
   }
 
   @GET
@@ -246,7 +246,7 @@ public class PredictionController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public CheckResult runDiagnostics(PredictionAnalysisDTO predictionAnalysisDTO){
-        Checker<PredictionAnalysisDTO> checker = new PredictionChecker();
+
         return new CheckResult(checker.check(predictionAnalysisDTO));
     }
 }

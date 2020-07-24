@@ -169,7 +169,10 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   private DesignImportService designImportService;
 
   @Context
-  ServletContext context;
+  private ServletContext context;
+
+  @Autowired
+  private IRChecker checker;
 
   public IRAnalysisService(final ObjectMapper objectMapper) {
 
@@ -604,7 +607,8 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
     @Override
     public CheckResult runDiagnostics(IRAnalysisDTO irAnalysisDTO){
-        Checker<IRAnalysisDTO> checker = new IRChecker();
+
+      this.checker = new IRChecker();
         return new CheckResult(checker.check(irAnalysisDTO));
     }
 

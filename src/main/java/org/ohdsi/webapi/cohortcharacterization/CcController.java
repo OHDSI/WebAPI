@@ -10,7 +10,6 @@ import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisT
 import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.Pagination;
-import org.ohdsi.webapi.check.Checker;
 import org.ohdsi.webapi.check.CheckResult;
 import org.ohdsi.webapi.check.checker.characterization.CharacterizationChecker;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
@@ -59,7 +58,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -75,6 +73,7 @@ public class CcController {
     private ConverterUtils converterUtils;
     private final CommonGenerationSensitiveInfoService<CommonGenerationDTO> sensitiveInfoService;
     private final SourceService sourceService;
+    private CharacterizationChecker checker;
 
     public CcController(
             final CcService service,
@@ -82,13 +81,14 @@ public class CcController {
             final ConversionService conversionService,
             final ConverterUtils converterUtils,
             CommonGenerationSensitiveInfoService sensitiveInfoService,
-            SourceService sourceService) {
+            SourceService sourceService, CharacterizationChecker checker) {
         this.service = service;
         this.feAnalysisService = feAnalysisService;
         this.conversionService = conversionService;
         this.converterUtils = converterUtils;
         this.sensitiveInfoService = sensitiveInfoService;
         this.sourceService = sourceService;
+        this.checker = checker;
         FeatureExtraction.init(null);
     }
 
@@ -205,7 +205,7 @@ public class CcController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public CheckResult runDiagnostics(CohortCharacterizationDTO characterizationDTO){
-        Checker<CohortCharacterizationDTO> checker = new CharacterizationChecker();
+
         return new CheckResult(checker.check(characterizationDTO));
     }
 

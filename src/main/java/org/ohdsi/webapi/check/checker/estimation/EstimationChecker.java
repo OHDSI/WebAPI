@@ -1,13 +1,28 @@
 package org.ohdsi.webapi.check.checker.estimation;
 
-import org.ohdsi.webapi.check.checker.BaseChecker;
-import org.ohdsi.webapi.check.validator.Validator;
-import org.ohdsi.webapi.check.validator.estimation.EstimationValidator;
-import org.ohdsi.webapi.estimation.dto.EstimationDTO;
+import static org.ohdsi.webapi.check.checker.estimation.helper.EstimationHelper.*;
 
+import java.util.Arrays;
+import java.util.List;
+import javax.annotation.PostConstruct;
+import org.ohdsi.webapi.check.builder.ValidatorGroupBuilder;
+import org.ohdsi.webapi.check.checker.BaseChecker;
+import org.ohdsi.webapi.estimation.dto.EstimationDTO;
+import org.springframework.stereotype.Component;
+
+@Component
 public class EstimationChecker extends BaseChecker<EstimationDTO> {
+
+    @PostConstruct
+    public void init() {
+        createValidator();
+    }
+
     @Override
-    protected Validator<EstimationDTO> getValidator() {
-        return new EstimationValidator<>();
+    protected List<ValidatorGroupBuilder<EstimationDTO, ?>> getGroupBuilder() {
+
+        return Arrays.asList(
+                prepareAnalysisExpressionBuilder()
+        );
     }
 }

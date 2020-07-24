@@ -1,67 +1,46 @@
 package org.ohdsi.webapi.check.validator;
 
-import org.ohdsi.webapi.check.warning.WarningReporter;
 import org.ohdsi.webapi.check.warning.WarningSeverity;
 
 public abstract class Validator<T> {
-    private final static String DEFAULT_ERROR_MESSAGE = "%s - error";
+    private final static String DEFAULT_ERROR_MESSAGE = "error";
+    private final static WarningSeverity DEFAULT_SEVERITY = WarningSeverity.CRITICAL;
+
     protected Path path;
-    protected WarningReporter reporter;
-    protected WarningSeverity severity = WarningSeverity.CRITICAL;
-    private String errorMessage;
+    protected WarningSeverity severity;
+    protected String errorMessage;
 
-    protected void fillErrorReport() {
-        reporter.add(this.severity, getErrorMessage(), path.getPath());
-    }
+    public Validator(Path path, WarningSeverity severity, String errorMessage) {
 
-    public void configure() {
-        // do nothing
-    }
-
-    public void setSeverity(WarningSeverity severity) {
+        this.path = path;
         this.severity = severity;
+        this.errorMessage = errorMessage;
     }
 
-    public Validator<T> setErrorMessage(String errorMessage) {
-        this.errorMessage = "%s - " + errorMessage;
-        return this;
+    public abstract boolean validate(T value, Context context);
+
+    protected String getErrorMessage() {
+
+        return this.errorMessage != null ?
+                this.errorMessage :
+                getDefaultErrorMessage();
+    }
+
+    protected WarningSeverity getSeverity() {
+
+        return this.severity != null ?
+                this.severity :
+                getDefaultSeverity();
     }
 
     protected String getDefaultErrorMessage() {
+
         return DEFAULT_ERROR_MESSAGE;
     }
 
-    protected String getErrorMessage() {
-        return this.errorMessage != null ? this.errorMessage : getDefaultErrorMessage();
+    protected WarningSeverity getDefaultSeverity() {
+        return DEFAULT_SEVERITY;
     }
 
-    public abstract boolean validate(T value);
 
-    protected Path createPath(String attrName) {
-        return Path.createPath(this.path, attrName);
-    }
-
-    protected Path createPath() {
-        return Path.createPath(this.path, null);
-    }
-
-    public Path getPath() {
-        return path;
-    }
-
-    public void setPath(Path path) {
-        this.path = path;
-    }
-
-    public WarningReporter getReporter() {
-        return reporter;
-    }
-
-    public void setReporter(WarningReporter reporter) {
-        this.reporter = reporter;
-    }
-
-    public boolean isErrorMessageInitial() {
-        return getDefaultErrorMessage().equals(this.errorMessage);
-    }
 }

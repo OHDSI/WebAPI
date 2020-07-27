@@ -93,7 +93,8 @@
     "unsaved": "(unsaved)",
     "unspecified": "UNSPECIFIED!",
     "menu": "Menu",
-    "noData": "No data"
+    "noData": "No data",
+    "readOnly": "(Read only)"
   },
   "commonErrors": {
     "noSources": "The current WebAPI has no sources defined.<br/>Please add one or more on <a href=\"#/configure\">configuration</a> page.",
@@ -1642,7 +1643,7 @@
       }
     },
     "viewEdit": {
-      "caption": "Characterization #",
+      "caption": "Characterization #<%=id%>",
       "loadingCohortCharacterization": "Loading Cohort Characterization...",
       "design": {
         "description": "队列表征被定义为一种从病人级别的协变量数据生成队列级别描述性摘要统计信息的过程。各个级别协变量的摘要统计信息可以是数字，均值，标准差，方差，最小值，最大值，中位数，范围和四分位数。 此外，可以将一段时间内的协变量分层为时间序列分析的时间单位，例如相对于cohort_start_date的固定时间间隔（例如，每7天，每30天等），或以绝对时间间隔（例如，日历中的周，月，季度，年）。",
@@ -1809,7 +1810,7 @@
     "welcome": "欢迎使用ATLAS。"
   },
   "ir": {
-    "caption": "Incidence Rate Analysis #",
+    "caption": "Incidence Rate Analysis #<%=id%>",
     "cs": {
       "modalTitle": "选择概念集..."
     },
@@ -1911,7 +1912,7 @@
   "pathways": {
     "loading": "Loading Pathway Analysis list...",
     "manager": {
-      "caption": "Cohort Pathway #",
+      "caption": "Cohort Pathway #<%=id%>",
       "design": {
         "analysisSettings": {
           "combinationWindow": {
@@ -2028,7 +2029,7 @@
     "analysisExistsAlert": "An estimation analysis with this name already exists. Please choose a different name.",
     "analysisSaveErrorAlert": "An error occurred while attempting to save an estimation analysis.",
     "caption": "比较队列分析",
-    "captionNumber": "比较队列分析 #",
+    "captionNumber": "比较队列分析 #<%=id%>",
     "changesNotSavedConfirmation": "Estimation Analysis changes are not saved. Would you like to continue?",
     "deleteConfirmation": "Delete estimation specification? Warning: deletion can not be undone!",
     "retrievingEstimations": "retrieving estimations",
@@ -3467,7 +3468,7 @@
       "trainingSettings": "训练设置",
       "view": "View:"
     },
-    "itemId": "Patient Level Prediction #",
+    "itemId": "Patient Level Prediction #<%=id%>",
     "loadingGenerations": "Loading generations...",
     "modelSettingsDesc": "使用以下选项编辑模型设置",
     "modelSettingsTitle": "模型设置",

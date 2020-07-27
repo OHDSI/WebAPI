@@ -93,7 +93,8 @@
     "unsaved": "(unsaved)",
     "unspecified": "UNSPECIFIED!",
     "menu": "Menu",
-    "noData": "No data"
+    "noData": "No data",
+    "readOnly": "(Read only)"
   },
   "commonErrors": {
     "noSources": "The current WebAPI has no sources defined.<br/>Please add one or more on <a href=\"#/configure\">configuration</a> page.",
@@ -1642,7 +1643,7 @@
       }
     },
     "viewEdit": {
-      "caption": "Characterization #",
+      "caption": "Characterization #<%=id%>",
       "loadingCohortCharacterization": "Loading Cohort Characterization...",
       "design": {
         "description": "코호트 특성 분석은 개별 환자 수준의 공변량 데이터로부터 코호트 단위의 요약 통계 생성해 줍니다. 환자 수준의 공변량에 대한 요약 통계는 수, 평균, 표준편차, 분산, 최소값, 최대값, 중앙값, 범위 및 사분위수가 포함됩니다. 또한 시간과 관련된 공변량은 코호트 시작일이나 시간 간격(예: 주, 월, 분기, 연도) 등을 이용하여 층화할 수 있습니다.",
@@ -1809,7 +1810,7 @@
     "welcome": "ATLAS에 오신 것을 환영합니다."
   },
   "ir": {
-    "caption": "발생률 분석 #",
+    "caption": "발생률 분석 #<%=id%>",
     "cs": {
       "modalTitle": "컨셉 세트 선택하기"
     },
@@ -1911,7 +1912,7 @@
   "pathways": {
     "loading": "Loading Pathway Analysis list...",
     "manager": {
-      "caption": "Cohort Pathway #",
+      "caption": "Cohort Pathway #<%=id%>",
       "design": {
         "analysisSettings": {
           "combinationWindow": {
@@ -2028,7 +2029,7 @@
     "analysisExistsAlert": "An estimation analysis with this name already exists. Please choose a different name.",
     "analysisSaveErrorAlert": "An error occurred while attempting to save an estimation analysis.",
     "caption": "코호트 비교 분석",
-    "captionNumber": "코호트 비교 분석 #",
+    "captionNumber": "코호트 비교 분석 #<%=id%>",
     "changesNotSavedConfirmation": "Estimation Analysis changes are not saved. Would you like to continue?",
     "deleteConfirmation": "Delete estimation specification? Warning: deletion can not be undone!",
     "retrievingEstimations": "retrieving estimations",
@@ -3467,7 +3468,7 @@
       "trainingSettings": "트레이닝 설정",
       "view": "View:"
     },
-    "itemId": "환자 수준 예측 #",
+    "itemId": "환자 수준 예측 #<%=id%>",
     "modelSettingsDesc": "아래 옵션을 사용하여 모델 설정을 편집하십시오.",
     "modelSettingsTitle": "모형 설정",
     "loadingGenerations": "Loading generations...",

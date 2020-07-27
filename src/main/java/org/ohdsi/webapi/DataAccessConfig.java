@@ -26,6 +26,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Properties;
 
 /**
@@ -55,6 +58,7 @@ public class DataAccessConfig {
 		@DependsOn("defaultStringEncryptor")
     @Primary    
     public DataSource primaryDataSource() {
+        logger.info("datasource.url is: " + this.env.getRequiredProperty("datasource.url"));
         String driver = this.env.getRequiredProperty("datasource.driverClassName");
         String url = this.env.getRequiredProperty("datasource.url");
         String user = this.env.getRequiredProperty("datasource.username");
@@ -75,7 +79,7 @@ public class DataAccessConfig {
         //note autocommit defaults vary across vendors. use provided @Autowired TransactionTemplate
 
         String[] supportedDrivers;
-        supportedDrivers = new String[]{"org.postgresql.Driver", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "oracle.jdbc.driver.OracleDriver", "com.amazon.redshift.jdbc.Driver", "com.cloudera.impala.jdbc.Driver", "net.starschema.clouddb.jdbc.BQDriver", "org.netezza.Driver", "com.simba.googlebigquery.jdbc42.Driver"};
+        supportedDrivers = new String[]{"org.postgresql.Driver", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "oracle.jdbc.driver.OracleDriver", "com.amazon.redshift.jdbc.Driver", "com.cloudera.impala.jdbc.Driver", "net.starschema.clouddb.jdbc.BQDriver", "org.netezza.Driver", "com.simba.googlebigquery.jdbc42.Driver", "org.apache.hive.jdbc.HiveDriver"};
         for (String driverName : supportedDrivers) {
             try {
                 Class.forName(driverName);
@@ -84,6 +88,23 @@ public class DataAccessConfig {
                 logger.info("error loading {} driver. {}", driverName, ex.getMessage());
             }
         }
+
+        // Redshift driver can be loaded first because it is mentioned in manifest file -
+        // put the redshift driver at the end so that it doesn't
+        // conflict with postgres queries
+        java.util.Enumeration<Driver> drivers =  DriverManager.getDrivers();
+        while (drivers.hasMoreElements()) {
+            Driver d = drivers.nextElement();
+            if (d.getClass().getName().contains("com.amazon.redshift.jdbc")) {
+                try {
+                    DriverManager.deregisterDriver(d);
+                    DriverManager.registerDriver(d);
+                } catch (SQLException e) {
+                    throw new RuntimeException("Could not deregister redshift driver", e);
+                }
+            }
+        }
+
         return ds;
         //return new org.apache.tomcat.jdbc.pool.DataSource(pc);
     }

@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 import javax.annotation.PostConstruct;
 import java.util.TimeZone;
+import org.springframework.boot.autoconfigure.solr.SolrAutoConfiguration;
 
 
 /**
@@ -19,7 +20,7 @@ import java.util.TimeZone;
  * will source this file).
  */
 @EnableScheduling
-@SpringBootApplication(exclude={HibernateJpaAutoConfiguration.class, ErrorMvcAutoConfiguration.class})
+@SpringBootApplication(exclude={HibernateJpaAutoConfiguration.class, ErrorMvcAutoConfiguration.class, SolrAutoConfiguration.class})
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 public class WebApi extends SpringBootServletInitializer {
 

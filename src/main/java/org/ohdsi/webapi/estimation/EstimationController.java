@@ -1,6 +1,8 @@
 package org.ohdsi.webapi.estimation;
 
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
+import com.qmino.miredot.annotations.MireDotIgnore;
+import com.qmino.miredot.annotations.ReturnType;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
@@ -102,8 +104,9 @@ public class EstimationController {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public EstimationDTO createEstimation(Estimation est) throws Exception {
-    Estimation estimation = service.createEstimation(est);
-    return reloadAndConvert(estimation.getId());
+
+    Estimation estWithId = service.createEstimation(est);
+    return reloadAndConvert(estWithId.getId());
   }
 
   @PUT
@@ -122,8 +125,8 @@ public class EstimationController {
   @Transactional
   public EstimationDTO copy(@PathParam("id") final int id) throws Exception {
 
-    Estimation estimation = service.copy(id);
-    return reloadAndConvert(estimation.getId());
+    Estimation est = service.copy(id);
+    return reloadAndConvert(est.getId());
   }
 
   @GET
@@ -139,6 +142,7 @@ public class EstimationController {
   @GET
   @Path("{id}/export")
   @Produces(MediaType.APPLICATION_JSON)
+  @ReturnType("java.lang.Object")
   public EstimationAnalysisImpl exportAnalysis(@PathParam("id") int id) {
 
     Estimation estimation = service.getAnalysis(id);
@@ -154,15 +158,16 @@ public class EstimationController {
   @Path("import")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
+  @MireDotIgnore // @BodyType("java.lang.Object") doesn't fix the issue
   public EstimationDTO importAnalysis(EstimationAnalysisImpl analysis) throws Exception {
 
       if (Objects.isNull(analysis)) {
           LOGGER.error("Failed to import Estimation, empty or not valid source JSON");
           throw new InternalServerErrorException();
       }
-      Estimation estimation = service.importAnalysis(analysis);
-      return reloadAndConvert(estimation.getId());
-  }  
+      Estimation importedEstimation = service.importAnalysis(analysis);
+      return reloadAndConvert(importedEstimation.getId());
+  }
 
   /**
    * Download an R package to execute the estimation study

@@ -7,11 +7,13 @@ public enum FilterTemplates {
     SEND_TOKEN_IN_REDIRECT("sendTokenInRedirect"),
 
     JWT_AUTHC("jwtAuthc"),
+    ACCESS_AUTHC("accessAuthc"),
     NEGOTIATE_AUTHC("negotiateAuthc"),
     GOOGLE_AUTHC("googleAuthc"),
     FACEBOOK_AUTHC("facebookAuthc"),
     GITHUB_AUTHC("githubAuthc"),
     CAS_AUTHC("casAuthc"),
+    SAML_AUTHC("samlAuthc"),
     
 
     NO_SESSION_CREATION("noSessionCreation"),
@@ -31,6 +33,7 @@ public enum FilterTemplates {
     OAUTH_CALLBACK("oauthCallback"),
     HANDLE_UNSUCCESSFUL_OAUTH("handleUnsuccessfullOAuth"),
     HANDLE_CAS("handleCas"),
+    HANDLE_SAML("handleSaml"),
     RUN_AS("runAs");
     
     private String templateName;
@@ -42,4 +45,6 @@ public enum FilterTemplates {
     public String getTemplateName() {
         return templateName;
     }
+
+    public static final FilterTemplates[] OAUTH_CALLBACK_FILTERS = new FilterTemplates[]{ SSL, FORCE_SESSION_CREATION, HANDLE_UNSUCCESSFUL_OAUTH, OAUTH_CALLBACK };
 }

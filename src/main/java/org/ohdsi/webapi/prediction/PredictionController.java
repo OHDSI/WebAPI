@@ -161,9 +161,7 @@ public class PredictionController {
       throw new InternalServerErrorException();
     }
     PredictionAnalysis importedAnalysis = service.importAnalysis(analysis);
-    // Before conversion entity must be refreshed to apply entity graphs
-    importedAnalysis = service.getById(importedAnalysis.getId());
-    return conversionService.convert(importedAnalysis, PredictionAnalysisDTO.class);
+    return reloadAndConvert(importedAnalysis.getId());
   }  
 
   @GET

@@ -79,10 +79,12 @@ public class NotificationServiceImpl implements NotificationService {
                     continue;
                 }
                 if (isInWhiteList(jobExec)) {
-                    if (userJobMap.size() < MAX_SIZE && isMine(jobExec)) {
+                    boolean isMine = isMine(jobExec);
+                    if (userJobMap.size() < MAX_SIZE && isMine) {
                         JobExecutionInfo executionInfo = new JobExecutionInfo(jobExec, JobOwnerType.USER_JOB);
                         userJobMap.merge(getFoldingKey(jobExec), executionInfo, mergeFunction);
-                    } else if (systemJobMap.size() < MAX_SIZE) {
+                    }
+                    if (systemJobMap.size() < MAX_SIZE && !isMine) {
                         JobExecutionInfo executionInfo = new JobExecutionInfo(jobExec, JobOwnerType.SYSTEM_JOB);
                         systemJobMap.merge(getFoldingKey(jobExec), executionInfo, mergeFunction);
                     }

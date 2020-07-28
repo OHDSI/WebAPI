@@ -101,6 +101,14 @@ public class ConceptSetService extends AbstractDaoService {
     @Path("{id}/expression")
     @Produces(MediaType.APPLICATION_JSON)
     public ConceptSetExpression getConceptSetExpression(@PathParam("id") final int id) {
+        
+        return getConceptSetExpression(id, null);
+    }
+    
+    @GET
+    @Path("{id}/expression/{sourceKey}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ConceptSetExpression getConceptSetExpression(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
         HashMap<Long, ConceptSetItem> map = new HashMap<>();
 
         // collect the concept set items so we can lookup their properties later
@@ -122,7 +130,7 @@ public class ConceptSetService extends AbstractDaoService {
         }
 
         // assume we want to resolve using the priority vocabulary provider
-        SourceInfo vocabSourceInfo = sourceService.getPriorityVocabularySourceInfo();
+        SourceInfo vocabSourceInfo = sourceKey == null ? sourceService.getPriorityVocabularySourceInfo() : sourceService.getSource(sourceKey);
         Collection<Concept> concepts = vocabService.executeIdentifierLookup(vocabSourceInfo.sourceKey, identifiers);
 
         // put the concept information into the expression along with the concept set item information 

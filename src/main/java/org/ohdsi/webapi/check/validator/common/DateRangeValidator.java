@@ -12,7 +12,7 @@ import org.ohdsi.webapi.check.validator.Path;
 import org.ohdsi.webapi.check.validator.Validator;
 import org.ohdsi.webapi.check.warning.WarningSeverity;
 
-public class DateRangeValidator<T extends DateRange> extends Validator<DateRange> {
+public class DateRangeValidator<T extends DateRange> extends Validator<T> {
     private static final String EMPTY_START_VALUE = "empty start value";
     private static final String EMPTY_END_VALUE = "empty end value";
     private static final String START_GREATER_THAN_END = "start value greater than end";

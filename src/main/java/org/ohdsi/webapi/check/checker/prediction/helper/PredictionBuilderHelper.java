@@ -7,7 +7,7 @@ import org.ohdsi.webapi.check.builder.ValidatorGroupBuilder;
 import org.ohdsi.webapi.prediction.dto.PredictionAnalysisDTO;
 import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl;
 
-public class PredictionBuilderUtils {
+public class PredictionBuilderHelper {
 
     public static ValidatorGroupBuilder<PredictionAnalysisDTO, PatientLevelPredictionAnalysis> prepareAnalysisExpressionBuilder() {
 
@@ -19,12 +19,12 @@ public class PredictionBuilderUtils {
                 .validators(
                         new NotNullNotEmptyValidatorBuilder<>()
                 )
-                .groups(PredictionSpecificationBuilderUtils.prepareOutcomeCohortsBuilder(),
-                        PredictionSpecificationBuilderUtils.prepareModelSettingsBuilder(),
-                        PredictionSpecificationBuilderUtils.prepareTargetCohortsBuilder(),
-                        PredictionSpecificationBuilderUtils.prepareCovariateSettingsBuilder(),
-                        PredictionSpecificationBuilderUtils.preparePopulationSettingsBuilder(),
-                        PredictionSpecificationBuilderUtils.prepareRunPlpArgsBuilder()
+                .groups(PredictionSpecificationBuilderHelper.prepareOutcomeCohortsBuilder(),
+                        PredictionSpecificationBuilderHelper.prepareModelSettingsBuilder(),
+                        PredictionSpecificationBuilderHelper.prepareTargetCohortsBuilder(),
+                        PredictionSpecificationBuilderHelper.prepareCovariateSettingsBuilder(),
+                        PredictionSpecificationBuilderHelper.preparePopulationSettingsBuilder(),
+                        PredictionSpecificationBuilderHelper.prepareRunPlpArgsBuilder()
                 );
         return builder;
     }

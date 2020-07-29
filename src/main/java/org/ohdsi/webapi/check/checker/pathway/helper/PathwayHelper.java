@@ -10,7 +10,6 @@ import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
 
 public class PathwayHelper {
 
-
     public static ValidatorGroupBuilder<PathwayAnalysisDTO, Integer> prepareMaxPathLengthBuilder() {
 
         ValidatorGroupBuilder<PathwayAnalysisDTO, Integer> builder = new ValidatorGroupBuilder<PathwayAnalysisDTO, Integer>()

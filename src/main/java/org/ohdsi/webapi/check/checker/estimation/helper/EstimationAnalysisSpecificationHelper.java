@@ -10,6 +10,7 @@ import org.ohdsi.webapi.check.builder.DuplicateValidatorBuilder;
 import org.ohdsi.webapi.check.builder.IterableForEachValidatorBuilder;
 import org.ohdsi.webapi.check.builder.NotNullNotEmptyValidatorBuilder;
 import org.ohdsi.webapi.check.builder.PredicateValidatorBuilder;
+import org.ohdsi.webapi.check.builder.ValidatorBuilder;
 import org.ohdsi.webapi.check.builder.ValidatorGroupBuilder;
 import org.ohdsi.webapi.estimation.comparativecohortanalysis.specification.CohortMethodAnalysisImpl;
 
@@ -17,25 +18,26 @@ public class EstimationAnalysisSpecificationHelper {
 
     public static ValidatorGroupBuilder<ComparativeCohortAnalysis, Collection<? extends TargetComparatorOutcomes>> prepareTargetComparatorBuilder() {
 
+        ValidatorBuilder<TargetComparatorOutcomes> predicateValidatorBuilder = new PredicateValidatorBuilder<TargetComparatorOutcomes>()
+                .predicate(t -> {
+                    if (t != null) {
+                        return t.getComparatorId() != null
+                                && t.getTargetId() != null
+                                && t.getOutcomeIds().size() > 0;
+                    }
+                    return false;
+                })
+                .errorMessage("no target, comparator or outcome");
+
         ValidatorGroupBuilder<ComparativeCohortAnalysis, Collection<? extends TargetComparatorOutcomes>> builder = new ValidatorGroupBuilder<ComparativeCohortAnalysis, Collection<? extends TargetComparatorOutcomes>>()
                 .attrName("target comparator outcome")
                 .valueGetter(ComparativeCohortAnalysis::getTargetComparatorOutcomes)
                 .validators(
                         new NotNullNotEmptyValidatorBuilder<>(),
                         new DuplicateValidatorBuilder<TargetComparatorOutcomes, String>()
-                                .elementGetter(t -> String.format("%s,%s", t.getTargetId(), t.getComparatorId()))
-                ).validators(
+                                .elementGetter(t -> String.format("%s,%s", t.getTargetId(), t.getComparatorId())),
                         new IterableForEachValidatorBuilder<TargetComparatorOutcomes>()
-                                .validator(new PredicateValidatorBuilder<TargetComparatorOutcomes>()
-                                        .predicate(t -> {
-                                            if (t != null) {
-                                                return t.getComparatorId() != null
-                                                        && t.getTargetId() != null
-                                                        && t.getOutcomeIds().size() > 0;
-                                            }
-                                            return false;
-                                        })
-                                        .errorMessage("no target, comparator or outcome"))
+                                .validator(predicateValidatorBuilder)
                 );
         return builder;
     }

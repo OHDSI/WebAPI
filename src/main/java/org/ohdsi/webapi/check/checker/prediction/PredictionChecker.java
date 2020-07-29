@@ -5,7 +5,7 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 import org.ohdsi.webapi.check.builder.ValidatorGroupBuilder;
 import org.ohdsi.webapi.check.checker.BaseChecker;
-import org.ohdsi.webapi.check.checker.prediction.helper.PredictionBuilderUtils;
+import org.ohdsi.webapi.check.checker.prediction.helper.PredictionBuilderHelper;
 import org.ohdsi.webapi.prediction.dto.PredictionAnalysisDTO;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +21,7 @@ public class PredictionChecker extends BaseChecker<PredictionAnalysisDTO> {
     protected List<ValidatorGroupBuilder<PredictionAnalysisDTO, ?>> getGroupBuilder() {
 
         return Arrays.asList(
-                PredictionBuilderUtils.prepareAnalysisExpressionBuilder()
+                PredictionBuilderHelper.prepareAnalysisExpressionBuilder()
         );
     }
 }

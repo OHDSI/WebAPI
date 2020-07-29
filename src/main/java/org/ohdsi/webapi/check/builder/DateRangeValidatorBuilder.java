@@ -4,10 +4,10 @@ import org.ohdsi.circe.cohortdefinition.DateRange;
 import org.ohdsi.webapi.check.validator.Validator;
 import org.ohdsi.webapi.check.validator.common.DateRangeValidator;
 
-public class DateRangeValidatorBuilder<T extends DateRange> extends ValidatorBuilder<DateRange> {
+public class DateRangeValidatorBuilder<T extends DateRange> extends ValidatorBuilder<T> {
 
     @Override
-    public Validator<DateRange> build() {
+    public Validator<T> build() {
         return new DateRangeValidator<>(createChildPath(),  severity, errorMessage);
     }
 }

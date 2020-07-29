@@ -5,7 +5,7 @@ import org.ohdsi.webapi.check.builder.NotNullNotEmptyValidatorBuilder;
 import org.ohdsi.webapi.check.builder.PredicateValidatorBuilder;
 import org.ohdsi.webapi.check.builder.ValidatorGroupBuilder;
 
-public class RunPlpArgsBuilderUtils {
+public class RunPlpArgsBuilderHelper {
 
     public static ValidatorGroupBuilder<RunPlpArgs, Float> prepareTestFractionBuilder() {
 

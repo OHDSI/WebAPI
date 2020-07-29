@@ -4,10 +4,10 @@ import org.ohdsi.circe.cohortdefinition.NumericRange;
 import org.ohdsi.webapi.check.validator.Validator;
 import org.ohdsi.webapi.check.validator.common.NumericRangeValidator;
 
-public class NumericRangeValidatorBuilder<T extends NumericRange> extends ValidatorBuilder<NumericRange> {
+public class NumericRangeValidatorBuilder<T extends NumericRange> extends ValidatorBuilder<T> {
 
     @Override
-    public Validator<NumericRange> build() {
+    public Validator<T> build() {
 
         return new NumericRangeValidator<>(createChildPath(),  severity, errorMessage);
     }

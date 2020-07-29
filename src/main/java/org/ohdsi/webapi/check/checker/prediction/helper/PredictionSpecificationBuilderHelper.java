@@ -12,7 +12,7 @@ import org.ohdsi.webapi.check.builder.DuplicateValidatorBuilder;
 import org.ohdsi.webapi.check.builder.NotNullNotEmptyValidatorBuilder;
 import org.ohdsi.webapi.check.builder.ValidatorGroupBuilder;
 
-public class PredictionSpecificationBuilderUtils {
+public class PredictionSpecificationBuilderHelper {
 
     public static ValidatorGroupBuilder<PatientLevelPredictionAnalysis, RunPlpArgs> prepareRunPlpArgsBuilder() {
 
@@ -23,8 +23,8 @@ public class PredictionSpecificationBuilderUtils {
                         new NotNullNotEmptyValidatorBuilder<>()
                 )
                 .groups(
-                        RunPlpArgsBuilderUtils.prepareMinCovariateFractionBuilder(),
-                        RunPlpArgsBuilderUtils.prepareTestFractionBuilder()
+                        RunPlpArgsBuilderHelper.prepareMinCovariateFractionBuilder(),
+                        RunPlpArgsBuilderHelper.prepareTestFractionBuilder()
                 );
         return builder;
     }

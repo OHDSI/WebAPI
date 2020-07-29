@@ -2948,13 +2948,13 @@
       },
       "addEndDate": {
         "title_era": "Add End Date Criteria",
-        "desc_era": "Filter Condition Eras by the Era End Date",
+        "desc_era": "Filter Condition Eras by the Era End Date.",
         "title_occurrence": "Add Condition End Date",
         "desc_occurrence": "Filter Condition Occurrences by the Condition End Date.",
         "title_deviceexposure": "Add End Date Criteria",
         "desc_deviceexposure": "Filter Device Exposures by the Exposure End Date.",
         "title_dose": "Add Era End Date Criteria",
-        "desc_dose": "Filter Dose Eras by the Era End Date",
+        "desc_dose": "Filter Dose Eras by the Era End Date.",
         "title_drug": "Add Era End Date Criteria",
         "desc_drug": "Filter Drug Eras by the Era End Date.",
         "title_drugexposure": "Add End Date Criteria",
@@ -2998,7 +2998,7 @@
       },
       "addNested": {
         "title_era": "Add Nested Criteria...",
-        "desc_era": "Apply criteria using the condition era as the index event",
+        "desc_era": "Apply criteria using the condition era as the index event.",
         "title_occurrence": "Add Nested Criteria...",
         "desc_occurrence": "Apply criteria using the condition occurrence as the index event.",
         "title_death": "Add Nested Criteria...",
@@ -3014,7 +3014,7 @@
         "title_measurement": "Add Nested Criteria...",
         "desc_measurement": "Apply criteria using the measurement as the index event.",
         "title_observation": "Add Nested Criteria...",
-        "desc_observation": "Apply criteria using the observation as the index event",
+        "desc_observation": "Apply criteria using the observation as the index event.",
         "title_observationperiod": "Add Nested Criteria...",
         "desc_observationperiod": "Apply criteria using the observation period as the index event.",
         "title_payerplan": "Add Nested Criteria...",
@@ -3068,7 +3068,7 @@
         "title_specimen": "Add Specimen Type Criteria",
         "desc_specimen": "Filter Specimen by the Type.",
         "title_visit": "Add Visit Type Criteria",
-        "desc_visit": "Filter Condition Occurrences by the Condition Type."
+        "desc_visit": "Filter Visit Occurrences by the Condition Type."
       },
       "addStopReason": {
         "title_occurrence": "Add Stop Reason",

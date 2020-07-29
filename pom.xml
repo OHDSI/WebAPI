@@ -285,6 +285,12 @@
         </executions>
         <configuration>
           <generateGitPropertiesFile>false</generateGitPropertiesFile>
+          <!-- only include properties to speed up plugin -->
+          <!-- ref: https://github.com/git-commit-id/git-commit-id-maven-plugin/issues/462 -->
+          <includeOnlyProperties>    
+              <includeOnlyProperty>git.branch</includeOnlyProperty>
+              <includeOnlyProperty>git.commit.id.abbrev</includeOnlyProperty>
+          </includeOnlyProperties>          
         </configuration>
       </plugin>
       <plugin>

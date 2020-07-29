@@ -1,0 +1,54 @@
+{
+  "name": "Characterizing patients with COVID test and test-positive",
+  "cohorts": [],
+  "featureAnalyses": [
+    {
+      "id": 161,
+      "type": "CRITERIA_SET",
+      "name": "[Jenna] Age > 35",
+      "domain": "CONDITION",
+      "statType": "PREVALENCE",
+      "descr": "",
+      "design": [
+        {
+          "criteriaType": "CriteriaGroup",
+          "id": 45,
+          "name": "Age > 35",
+          "expression": {
+            "Type": "ALL",
+            "Count": null,
+            "CriteriaList": [],
+            "DemographicCriteriaList": [
+              {
+                "Age": {
+                  "Value": 35,
+                  "Op": "gt",
+                  "Extent": null
+                },
+                "Gender": null,
+                "Race": null,
+                "Ethnicity": null,
+                "OccurrenceStartDate": null,
+                "OccurrenceEndDate": null
+              }
+            ],
+            "Groups": []
+          }
+        }
+      ],
+      "description": "",
+      "conceptSets": []
+    }
+  ],
+  "parameters": [],
+  "stratas": [],
+  "strataOnly": false,
+  "strataConceptSets": [],
+  "createdAt": "2020-06-15 06:58:30",
+  "updatedAt": "2020-06-15 06:58:55",
+  "skeletonType": "CohortCharacterizationStudy",
+  "skeletonVersion": "v0.0.1",
+  "packageName": null,
+  "organizationName": "OHDSI",
+  "stratifiedBy": null
+}

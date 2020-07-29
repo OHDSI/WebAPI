@@ -3,6 +3,8 @@ package org.ohdsi.webapi.prediction;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.Constants;
+import org.ohdsi.webapi.check.CheckResult;
+import org.ohdsi.webapi.check.checker.prediction.PredictionChecker;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.analyses.CommonAnalysisDTO;
 import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
@@ -21,17 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
@@ -64,6 +56,7 @@ public class PredictionController {
   private final SourceService sourceService;
 
   private final ScriptExecutionService executionService;
+  private final PredictionChecker checker;
 
   @Autowired
   public PredictionController(PredictionService service,
@@ -71,13 +64,14 @@ public class PredictionController {
                               ConverterUtils converterUtils,
                               CommonGenerationSensitiveInfoService sensitiveInfoService,
                               SourceService sourceService,
-                              ScriptExecutionService executionService) {
+                              ScriptExecutionService executionService, PredictionChecker checker) {
     this.service = service;
     this.conversionService = conversionService;
     this.converterUtils = converterUtils;
     this.sensitiveInfoService = sensitiveInfoService;
     this.sourceService = sourceService;
     this.executionService = executionService;
+    this.checker = checker;
   }
 
   @GET
@@ -199,6 +193,11 @@ public class PredictionController {
 
     PredictionAnalysis predictionAnalysis = service.getAnalysis(predictionAnalysisId);
     ExceptionUtils.throwNotFoundExceptionIfNull(predictionAnalysis, String.format(NO_PREDICTION_ANALYSIS_MESSAGE, predictionAnalysisId));
+    PredictionAnalysisDTO predictionAnalysisDTO = conversionService.convert(predictionAnalysis, PredictionAnalysisDTO.class);
+    CheckResult checkResult = runDiagnostics(predictionAnalysisDTO);
+    if (checkResult.hasCriticalErrors()) {
+      throw new RuntimeException("Cannot be generated due to critical errors in design. Call 'check' service for further details");
+    }
     return service.runGeneration(predictionAnalysis, sourceKey);
   }
 
@@ -242,4 +241,12 @@ public class PredictionController {
         return conversionService.convert(analysis, PredictionAnalysisDTO.class);
     }
 
+    @POST
+    @Path("/check")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public CheckResult runDiagnostics(PredictionAnalysisDTO predictionAnalysisDTO){
+
+        return new CheckResult(checker.check(predictionAnalysisDTO));
+    }
 }

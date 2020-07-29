@@ -10,8 +10,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.check.Checker;
-import org.ohdsi.circe.check.WarningSeverity;
-import org.ohdsi.circe.check.warnings.DefaultWarning;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
@@ -84,7 +82,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.ResultSet;
@@ -100,7 +97,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
@@ -701,40 +697,13 @@ public class CohortDefinitionService extends AbstractDaoService {
     return report;
   }
 
-  private CheckResultDTO runChecks(int id, final String expression) {
-      CheckResultDTO result;
-      try {
-          CohortExpression cohortExpression = objectMapper.readValue(expression, CohortExpression.class);
-          result = runChecks(id, cohortExpression);
-      } catch (IOException e) {
-          log.error("Failed to parse cohort:{} expression", id, e);
-          result = new CheckResultDTO(id, Stream.of(new DefaultWarning(WarningSeverity.INFO,"Failed to check expression"))
-                  .collect(Collectors.toList()));
-      }
-      return result;
-  }
-
-  private CheckResultDTO runChecks(int id, CohortExpression expression) {
-      Checker checker = new Checker();
-      return new CheckResultDTO(id, checker.check(expression));
-  }
-
-  @GET
-  @Path("/{id}/check")
-  @Produces(MediaType.APPLICATION_JSON)
-  @Transactional
-  public CheckResultDTO getCheckResults(@PathParam("id") int id) {
-    CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(id);
-    String expression = cohortDefinition.getDetails().getExpression();
-    return runChecks(id, expression);
-  }
-
   @POST
-  @Path("/{id}/check")
+  @Path("/check")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   @Transactional
-  public CheckResultDTO runDiagnostics(@PathParam("id") int id, CohortExpression expression){
-      return runChecks(id, expression);
+  public CheckResultDTO runDiagnostics(CohortExpression expression){
+      Checker checker = new Checker();
+      return new CheckResultDTO(checker.check(expression));
   }
 }

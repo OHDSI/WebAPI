@@ -22,7 +22,8 @@ public class IRHelper {
                 )
                 .groups(
                         IRAnalysisExpressionHelper.prepareTargetCohortsBuilder(),
-                        IRAnalysisExpressionHelper.prepareOutcomeCohortsBuilder()
+                        IRAnalysisExpressionHelper.prepareOutcomeCohortsBuilder(),
+                        IRAnalysisExpressionHelper.prepareStudyWindowBuilder()
                 );
         return builder;
     }

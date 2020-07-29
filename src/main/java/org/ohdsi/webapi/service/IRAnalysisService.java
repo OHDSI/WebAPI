@@ -608,7 +608,6 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     @Override
     public CheckResult runDiagnostics(IRAnalysisDTO irAnalysisDTO){
 
-      this.checker = new IRChecker();
         return new CheckResult(checker.check(irAnalysisDTO));
     }
 

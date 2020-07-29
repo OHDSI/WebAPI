@@ -35,6 +35,8 @@ import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
+import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
@@ -60,6 +62,9 @@ public class ConceptSetService extends AbstractDaoService {
 
     @Autowired
     private SourceService sourceService;
+
+    @Autowired
+    private SourceAccessor sourceAccessor;
 
     @Autowired
     private UserRepository userRepository;
@@ -101,6 +106,21 @@ public class ConceptSetService extends AbstractDaoService {
     @Path("{id}/expression")
     @Produces(MediaType.APPLICATION_JSON)
     public ConceptSetExpression getConceptSetExpression(@PathParam("id") final int id) {
+        
+        return getConceptSetExpression(id, sourceService.getPriorityVocabularySourceInfo());
+    }
+    
+    @GET
+    @Path("{id}/expression/{sourceKey}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ConceptSetExpression getConceptSetExpression(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
+
+        Source source = sourceService.findBySourceKey(sourceKey);
+        sourceAccessor.checkAccess(source);
+        return getConceptSetExpression(id, source.getSourceInfo());
+    }
+
+    private ConceptSetExpression getConceptSetExpression(int id, SourceInfo sourceInfo) {
         HashMap<Long, ConceptSetItem> map = new HashMap<>();
 
         // collect the concept set items so we can lookup their properties later
@@ -121,9 +141,7 @@ public class ConceptSetService extends AbstractDaoService {
             identifierIndex++;
         }
 
-        // assume we want to resolve using the priority vocabulary provider
-        SourceInfo vocabSourceInfo = sourceService.getPriorityVocabularySourceInfo();
-        Collection<Concept> concepts = vocabService.executeIdentifierLookup(vocabSourceInfo.sourceKey, identifiers);
+        Collection<Concept> concepts = vocabService.executeIdentifierLookup(sourceInfo.sourceKey, identifiers);
 
         // put the concept information into the expression along with the concept set item information 
         for (Concept concept : concepts) {

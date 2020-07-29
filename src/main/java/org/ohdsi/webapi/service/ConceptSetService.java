@@ -117,7 +117,7 @@ public class ConceptSetService extends AbstractDaoService {
 
         Source source = sourceService.findBySourceKey(sourceKey);
         sourceAccessor.checkAccess(source);
-        return getConceptSetExpression(id, sourceService.getSource(sourceKey));
+        return getConceptSetExpression(id, source.getSourceInfo());
     }
 
     private ConceptSetExpression getConceptSetExpression(int id, SourceInfo sourceInfo) {

@@ -101,6 +101,11 @@ public class SourceService extends AbstractDaoService {
 
     return sourceRepository.findBySourceId(sourceId);
   }
+  
+  public Source getPriorityVocabularySource() {
+      
+      return sourcePriorityService.getPrioritySourceForDaimon(SourceDaimon.DaimonType.Vocabulary);
+  }
 
   public class SortByKey implements Comparator<SourceInfo>
   {

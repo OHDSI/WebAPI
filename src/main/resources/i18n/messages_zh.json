@@ -1741,7 +1741,8 @@
       "tabs": {
         "design": "设计",
         "executions": "执行",
-        "utilities": "程序"
+        "utilities": "程序",
+        "messages": "提示信息"
       },
       "utilities": {
         "title": "程序"
@@ -1881,7 +1882,8 @@
       "conceptSets": "概念集",
       "definition": "定义",
       "generation": "生成",
-      "utilities": "程序"
+      "utilities": "程序",
+      "messages": "提示信息"
     },
     "title": "Incidence Rate Analysis"
   },
@@ -2017,7 +2019,8 @@
       "tabs": {
         "design": "设计",
         "executions": "执行",
-        "utilities": "程序"
+        "utilities": "程序",
+        "messages": "提示信息"
       },
       "utilities": {
         "title": "程序"
@@ -2192,7 +2195,8 @@
     "tabs": {
       "executions": "执行",
       "specification": "说明",
-      "utilities": "程序"
+      "utilities": "程序",
+      "messages": "提示信息"
     },
     "title": "Population Level Effect Estimation",
     "util": {
@@ -3488,7 +3492,8 @@
     "tabs": {
       "executions": "执行",
       "specification": "说明",
-      "utilities": "程序"
+      "utilities": "程序",
+      "messages": "提示信息"
     },
     "title": "Patient Level Prediction",
     "usingDefault": "Using default",

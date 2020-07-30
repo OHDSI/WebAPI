@@ -1741,7 +1741,8 @@
       "tabs": {
         "design": "설계",
         "executions": "실행",
-        "utilities": "유틸리티"
+        "utilities": "유틸리티",
+        "messages": "메시지"
       },
       "utilities": {
         "title": "유틸리티"
@@ -1881,7 +1882,8 @@
       "conceptSets": "컨셉 세트",
       "definition": "정의",
       "generation": "생성",
-      "utilities": "유틸리티"
+      "utilities": "유틸리티",
+      "messages": "메시지"
     },
     "title": "발생률 분석"
   },
@@ -2017,7 +2019,8 @@
       "tabs": {
         "design": "설계",
         "executions": "실행",
-        "utilities": "유틸리티"
+        "utilities": "유틸리티",
+        "messages": "메시지"
       },
       "utilities": {
         "title": "유틸리티"
@@ -2192,7 +2195,8 @@
     "tabs": {
       "executions": "실행",
       "specification": "설계",
-      "utilities": "유틸리티"
+      "utilities": "유틸리티",
+      "messages": "메시지"
     },
     "title": "인구 수준 효과 추정",
     "util": {
@@ -3488,7 +3492,8 @@
     "tabs": {
       "executions": "실행",
       "specification": "설계",
-      "utilities": "유틸리티"
+      "utilities": "유틸리티",
+      "messages": "메시지"
     },
     "title": "환자 수준 예측",
     "usingDefault": "Using default",

@@ -1741,7 +1741,8 @@
       "tabs": {
         "design": "Design",
         "executions": "Executions",
-        "utilities": "Utilities"
+        "utilities": "Utilities",
+        "messages": "Messages"
       },
       "utilities": {
         "title": "Utilities"
@@ -1881,7 +1882,8 @@
       "conceptSets": "Concept Sets",
       "definition": "Definition",
       "generation": "Generation",
-      "utilities": "Utilities"
+      "utilities": "Utilities",
+      "messages": "Messages"
     },
     "title": "Incidence Rate Analysis"
   },
@@ -2017,7 +2019,8 @@
       "tabs": {
         "design": "Design",
         "executions": "Executions",
-        "utilities": "Utilities"
+        "utilities": "Utilities",
+        "messages": "Messages"
       },
       "utilities": {
         "title": "Utilities"
@@ -2192,7 +2195,8 @@
     "tabs": {
       "executions": "Executions",
       "specification": "Specification",
-      "utilities": "Utilities"
+      "utilities": "Utilities",
+      "messages": "Messages"
     },
     "title": "Population Level Effect Estimation",
     "util": {
@@ -3488,7 +3492,8 @@
     "tabs": {
       "executions": "Executions",
       "specification": "Specification",
-      "utilities": "Utilities"
+      "utilities": "Utilities",
+      "messages": "Messages"
     },
     "title": "Patient Level Prediction",
     "usingDefault": "Using default",

@@ -10,6 +10,7 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.subject.Subject;
 import org.ohdsi.webapi.helper.Guard;
 import org.ohdsi.webapi.shiro.Entities.*;
+import org.ohdsi.webapi.shiro.exception.PermissionAlreadyExistsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
@@ -265,12 +266,14 @@ public class PermissionManager {
     Guard.checkNotEmpty(permissionName);
 
     PermissionEntity permission = this.permissionRepository.findByValueIgnoreCase(permissionName);
-    if (permission == null) {
-      permission = new PermissionEntity();
-      permission.setValue(permissionName);
-      permission.setDescription(permissionDescription);
-      permission = this.permissionRepository.save(permission);
+    if (permission != null) {
+      throw new PermissionAlreadyExistsException("Can't create permission - it already exists");
     }
+
+    permission = new PermissionEntity();
+    permission.setValue(permissionName);
+    permission.setDescription(permissionDescription);
+    permission = this.permissionRepository.save(permission);
     return permission;
   }
 

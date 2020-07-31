@@ -265,14 +265,12 @@ public class PermissionManager {
     Guard.checkNotEmpty(permissionName);
 
     PermissionEntity permission = this.permissionRepository.findByValueIgnoreCase(permissionName);
-    if (permission != null) {
-      throw new Exception("Can't create permission - it already exists");
+    if (permission == null) {
+      permission = new PermissionEntity();
+      permission.setValue(permissionName);
+      permission.setDescription(permissionDescription);
+      permission = this.permissionRepository.save(permission);
     }
-
-    permission = new PermissionEntity();
-    permission.setValue(permissionName);
-    permission.setDescription(permissionDescription);
-    permission = this.permissionRepository.save(permission);
     return permission;
   }
 

@@ -16,6 +16,7 @@ import org.ohdsi.webapi.events.EntityName;
 import org.ohdsi.webapi.pathway.PathwayService;
 import org.ohdsi.webapi.service.IRAnalysisService;
 import org.ohdsi.webapi.shiro.PermissionManager;
+import org.ohdsi.webapi.shiro.exception.PermissionAlreadyExistsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -27,6 +28,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ProcessResponseContentFilterImpl extends ProcessResponseContentFilter {
+    private static final boolean RAISE_ERROR_IF_PERMISSION_EXISTS = true;
+    private static final boolean IGNORE_ERROR_IF_PERMISSION_EXISTS = false;
     
     private PermissionManager authorizer;
     private ApplicationEventPublisher eventPublisher;
@@ -73,7 +76,7 @@ public class ProcessResponseContentFilterImpl extends ProcessResponseContentFilt
             addPermissionsToNestedEntities(content, parentEntityName.get());
         } else {
             String id = parseJsonField(content, identityField);
-            addPermissions(id);
+            addPermissions(id, RAISE_ERROR_IF_PERMISSION_EXISTS);
         }        
     }
     
@@ -95,18 +98,26 @@ public class ProcessResponseContentFilterImpl extends ProcessResponseContentFilt
             case PATIENT_LEVEL_PREDICTION:
             case COMPARATIVE_COHORT_ANALYSIS: ids = estimationService.getNestedEntitiesIds(content, entityName); break;
         }        
-        ids.forEach(this::addPermissions);
+        ids.forEach(id -> addPermissions(id, IGNORE_ERROR_IF_PERMISSION_EXISTS));
     }
 
-    private void addPermissions(String id) {
+    private void addPermissions(String id, boolean raiseErrorIfExists) {
 
         try {
             authorizer.addPermissionsFromTemplate(template, id);
+        } catch (PermissionAlreadyExistsException ex) {
+            if (raiseErrorIfExists) {
+                processAddPermissionError(id, ex);
+            }
         } catch (Exception ex) {
-            eventPublisher.publishEvent(new DeleteEntityEvent(this, Integer.parseInt(id), entityName));
-            log.error("Failed to add permissions to " + entityName.getName() + " with id = " + id, ex);
-            throw new InternalServerErrorException();
+            processAddPermissionError(id, ex);
         }
+    }
+
+    private void processAddPermissionError(String id, Exception ex) {
+        eventPublisher.publishEvent(new DeleteEntityEvent(this, Integer.parseInt(id), entityName));
+        log.error("Failed to add permissions to " + entityName.getName() + " with id = " + id, ex);
+        throw new InternalServerErrorException();
     }
 
     @Override

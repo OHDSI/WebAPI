@@ -1,7 +1,5 @@
 package org.ohdsi.webapi.job;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
@@ -19,12 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
-import static org.ohdsi.webapi.Constants.SYSTEM_USER;
 import static org.ohdsi.webapi.Constants.WARM_CACHE_BY_USER;
 
 @Service
@@ -66,9 +60,9 @@ public class NotificationServiceImpl implements NotificationService {
                             : x
                     : y;
         };
-        final Map<String, JobExecutionInfo> systemJobMap = new HashMap<>();
+        final Map<String, JobExecutionInfo> allJobMap = new HashMap<>();
         final Map<String, JobExecutionInfo> userJobMap = new HashMap<>();
-        for (int start = 0; userJobMap.size() < MAX_SIZE || systemJobMap.size() < MAX_SIZE; start += PAGE_SIZE) {
+        for (int start = 0; userJobMap.size() < MAX_SIZE || allJobMap.size() < MAX_SIZE; start += PAGE_SIZE) {
             final List<JobExecution> page = jobExecutionDao.getJobExecutions(start, PAGE_SIZE);
             if(page.size() == 0) {
                 break;
@@ -84,19 +78,19 @@ public class NotificationServiceImpl implements NotificationService {
                         JobExecutionInfo executionInfo = new JobExecutionInfo(jobExec, JobOwnerType.USER_JOB);
                         userJobMap.merge(getFoldingKey(jobExec), executionInfo, mergeFunction);
                     }
-                    if (systemJobMap.size() < MAX_SIZE && !isMine) {
-                        JobExecutionInfo executionInfo = new JobExecutionInfo(jobExec, JobOwnerType.SYSTEM_JOB);
-                        systemJobMap.merge(getFoldingKey(jobExec), executionInfo, mergeFunction);
+                    if (allJobMap.size() < MAX_SIZE) {
+                        JobExecutionInfo executionInfo = new JobExecutionInfo(jobExec, JobOwnerType.ALL_JOB);
+                        allJobMap.merge(getFoldingKey(jobExec), executionInfo, mergeFunction);
                     }
 
-                    if (userJobMap.size() >= MAX_SIZE && systemJobMap.size() >= MAX_SIZE) {
+                    if (userJobMap.size() >= MAX_SIZE && allJobMap.size() >= MAX_SIZE) {
                         break;
                     }
                 }
             }
         }
 
-        final List<JobExecutionInfo> jobs = new ArrayList<>(systemJobMap.values());
+        final List<JobExecutionInfo> jobs = new ArrayList<>(allJobMap.values());
         jobs.addAll(userJobMap.values());
         return jobs;
     }

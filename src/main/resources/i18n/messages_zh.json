@@ -1382,7 +1382,7 @@
       "valuesRelativeToNormalRange": "Values Relative to Normal Range"
     },
     "errorLoadingReport": "Error loading report",
-    "headingTitle": "Data Sources",
+    "headingTitle": "数据来源",
     "loadingDrilldownReport": "Loading Drilldown Report",
     "loadingReport": "Loading report",
     "noPermission": "You have no permissions to see this report",
@@ -1807,11 +1807,11 @@
       "loadingReleaseInfo": "Loading release info",
       "title": "部署说明"
     },
-    "title": "Home",
+    "title": "首页",
     "welcome": "欢迎使用ATLAS。"
   },
   "ir": {
-    "caption": "Incidence Rate Analysis #<%=id%>",
+    "caption": "发病率分析 #<%=id%>",
     "cs": {
       "modalTitle": "选择概念集..."
     },
@@ -1885,7 +1885,7 @@
       "utilities": "程序",
       "messages": "提示信息"
     },
-    "title": "Incidence Rate Analysis"
+    "title": "发病率分析"
   },
   "profiles": {
     "ageAt": "Age <%=age%>",
@@ -1906,7 +1906,7 @@
     "recordCounts": "<%=count%> events",
     "selectADataSource": "选择数据源",
     "setSelectedEventsColor": "set selected events color",
-    "title": "Profiles",
+    "title": "数据概要",
     "toggleChartTooltip": "toggle chart display",
     "toggleTableTooltip": "toggle table display",
     "сantFind": "Can't find"
@@ -2026,7 +2026,7 @@
         "title": "程序"
       }
     },
-    "title": "Cohort Pathways"
+    "title": "队列路径"
   },
   "ple": {
     "analysisExistsAlert": "An estimation analysis with this name already exists. Please choose a different name.",
@@ -2198,7 +2198,7 @@
       "utilities": "程序",
       "messages": "提示信息"
     },
-    "title": "Population Level Effect Estimation",
+    "title": "人口水平效应估计",
     "util": {
       "downloadNameNote": "<b>Please Note:</b> The package name should consist of alphanumeric characters only. No spaces or special characters are permitted.",
       "downloadNote": "Please provide a name for the study package and click download to obtain the study package in ZIP format.",
@@ -2263,7 +2263,7 @@
       "rolesDefinitionJson": "Roles definition JSON",
       "title": "Import roles"
     },
-    "title": "Configuration",
+    "title": "环境设定",
     "userImport": {
       "findGroup": "Find Group",
       "importNow": "Import Now",
@@ -2448,7 +2448,7 @@
   },
   "feedback": {
     "pleaseContact": "For access or questions concerning the Atlas application please contact:",
-    "title": "Feedback"
+    "title": "意见反馈"
   },
   "licenseAgreement": {
     "accept": "Accept",
@@ -3472,7 +3472,7 @@
       "trainingSettings": "训练设置",
       "view": "View:"
     },
-    "itemId": "Patient Level Prediction #<%=id%>",
+    "itemId": "患者水平预测 #<%=id%>",
     "loadingGenerations": "Loading generations...",
     "modelSettingsDesc": "使用以下选项编辑模型设置",
     "modelSettingsTitle": "模型设置",
@@ -3495,7 +3495,7 @@
       "utilities": "程序",
       "messages": "提示信息"
     },
-    "title": "Patient Level Prediction",
+    "title": "患者水平预测",
     "usingDefault": "Using default",
     "utilitiesText_1": "您的研究存在以下问题，这些问题使您无法查看完整的规范详细信息，并无法下载研究包：",
     "utilitiesText_2": "您必须至少指定一个：目标队列，结果队列，模型设置，协变量设置和总体设置。",

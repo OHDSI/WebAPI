@@ -16,6 +16,7 @@ import org.ohdsi.webapi.events.EntityName;
 import org.ohdsi.webapi.pathway.PathwayService;
 import org.ohdsi.webapi.service.IRAnalysisService;
 import org.ohdsi.webapi.shiro.PermissionManager;
+import org.ohdsi.webapi.shiro.exception.NullJsonNodeException;
 import org.ohdsi.webapi.shiro.exception.PermissionAlreadyExistsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,10 +83,14 @@ public class ProcessResponseContentFilterImpl extends ProcessResponseContentFilt
     
     private Optional<EntityName> getParentEntity(String content) throws IOException {
 
-        String entityType = parseJsonField(content, "entityName");
-        return parentEntities.stream()
-                .filter(e -> e.toString().equalsIgnoreCase(entityType))
-                .findFirst();
+        try {
+            String entityType = parseJsonField(content, "entityName");
+            return parentEntities.stream()
+                    .filter(e -> e.toString().equalsIgnoreCase(entityType))
+                    .findFirst();
+        } catch(NullJsonNodeException e){
+            return Optional.empty();
+        }
     }
 
     private void addPermissionsToNestedEntities(String content, EntityName parentEntityName) throws IOException {

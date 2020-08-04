@@ -3338,7 +3338,11 @@
     "jobName": "작업 이름",
     "showCompletedJobsButton": "Show completed jobs",
     "status": "상태",
-    "title": "Notifications (last <%=length%>)"
+    "title": "Notifications (last <%=length%>)",
+    "tabs": {
+      "myJobs": "My jobs",
+      "allJobs": "All jobs"
+    }
   },
   "predictions": {
     "allExecutions": "모든 실행 항목 (<%=length%>)",

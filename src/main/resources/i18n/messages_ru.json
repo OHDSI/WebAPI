@@ -3505,6 +3505,10 @@
     "endTime": "Время окончания",
     "status": "Состояние",
     "showCompletedJobsButton": "Показать завершенные задачи",
-    "hideCompletedJobsButton": "Скрыть завершенные задачи"
+    "hideCompletedJobsButton": "Скрыть завершенные задачи",
+    "tabs": {
+      "myJobs": "Мои задачи",
+      "allJobs": "Все задачи"
+    }
   }
 }

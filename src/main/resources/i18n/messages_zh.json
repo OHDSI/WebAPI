@@ -3338,7 +3338,11 @@
     "jobName": "Job Name",
     "showCompletedJobsButton": "Show completed jobs",
     "status": "Status",
-    "title": "Notifications (last <%=length%>)"
+    "title": "Notifications (last <%=length%>)",
+    "tabs": {
+      "myJobs": "My jobs",
+      "allJobs": "All jobs"
+    }
   },
   "predictions": {
     "allExecutions": "所有的执行结果 (<%=length%>)",

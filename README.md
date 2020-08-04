@@ -30,16 +30,16 @@ security.saml.keyManager.defaultKey=apollo - keystore alias
 security.saml.sloUrl=https://localhost:8443/cas/logout - identity provider logout URL
 security.saml.callbackUrl=http://localhost:8080/WebAPI/user/saml/callback - URL called from identity provider after login
 
-## Geospacial support
+## Geospatial support
 
-Geospacial is an optional component that provides to build analyses utilizing locations and areas.
-To build WebAPI with geospacial include the following profile `webapi-gis`.
+Geospatial is an optional component that provides to build analyses utilizing locations and areas.
+To build WebAPI with geospatial include the following profile `webapi-gis`.
 For example in the following way:
 
 ```
 mvn -Pwebapi-postgresql,webapi-gis clean package
 ```
-**Note:** follow the instructions in the [Atlas project](https://github.com/OHDSI/Atlas) to include Geospacial UI part.
+**Note:** follow the instructions in the [Atlas project](https://github.com/OHDSI/Atlas) to include Geospatial UI part.
 
 ## Testing
 

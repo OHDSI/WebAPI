@@ -79,6 +79,11 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     }
 
     @Override
+    public Optional<FeAnalysisEntity> findByName(String name) {
+        return analysisRepository.findByName(name);
+    }
+
+    @Override
     @Transactional
     public FeAnalysisWithCriteriaEntity createCriteriaAnalysis(final FeAnalysisWithCriteriaEntity analysis) {
         FeAnalysisWithCriteriaEntity newAnalysis = newAnalysis(analysis);

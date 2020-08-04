@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiFunction;
 
 import static org.ohdsi.webapi.Constants.WARM_CACHE_BY_USER;
 
@@ -48,9 +49,20 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public List<JobExecution> findLast10(List<BatchStatus> hideStatuses) {
-        final Map<String, JobExecution> result = new HashMap<>();
-        for (int start = 0; result.size() < MAX_SIZE; start += PAGE_SIZE) {
+    public List<JobExecutionInfo> findLastJobs(List<BatchStatus> hideStatuses) {
+        BiFunction<JobExecutionInfo, JobExecutionInfo, JobExecutionInfo> mergeFunction = (x, y) -> {
+            final Date xStartTime = x != null ? x.getJobExecution().getStartTime() : null;
+            final Date yStartTime = y != null ? y.getJobExecution().getStartTime() : null;
+            return xStartTime != null ?
+                    yStartTime != null ?
+                            xStartTime.after(yStartTime) ? x
+                                    : y
+                            : x
+                    : y;
+        };
+        final Map<String, JobExecutionInfo> allJobMap = new HashMap<>();
+        final Map<String, JobExecutionInfo> userJobMap = new HashMap<>();
+        for (int start = 0; userJobMap.size() < MAX_SIZE || allJobMap.size() < MAX_SIZE; start += PAGE_SIZE) {
             final List<JobExecution> page = jobExecutionDao.getJobExecutions(start, PAGE_SIZE);
             if(page.size() == 0) {
                 break;
@@ -60,24 +72,27 @@ public class NotificationServiceImpl implements NotificationService {
                 if (hideStatuses.contains(jobExec.getStatus())) {
                     continue;
                 }
-                if (isInWhiteList(jobExec) && isMine(jobExec)) {
-                    result.merge(getFoldingKey(jobExec), jobExec, (x, y) -> {
-                        final Date xStartTime = x.getStartTime();
-                        final Date yStartTime = y.getStartTime();
-                        return xStartTime != null ? 
-                                    yStartTime != null ? 
-                                        xStartTime.after(yStartTime) ? x 
-                                        : y
-                                    : x
-                               : y;
-                    });
-                }
-                if (result.size() >= MAX_SIZE) {
-                    break;
+                if (isInWhiteList(jobExec)) {
+                    boolean isMine = isMine(jobExec);
+                    if (userJobMap.size() < MAX_SIZE && isMine) {
+                        JobExecutionInfo executionInfo = new JobExecutionInfo(jobExec, JobOwnerType.USER_JOB);
+                        userJobMap.merge(getFoldingKey(jobExec), executionInfo, mergeFunction);
+                    }
+                    if (allJobMap.size() < MAX_SIZE) {
+                        JobExecutionInfo executionInfo = new JobExecutionInfo(jobExec, JobOwnerType.ALL_JOB);
+                        allJobMap.merge(getFoldingKey(jobExec), executionInfo, mergeFunction);
+                    }
+
+                    if (userJobMap.size() >= MAX_SIZE && allJobMap.size() >= MAX_SIZE) {
+                        break;
+                    }
                 }
             }
         }
-        return new ArrayList<>(result.values());
+
+        final List<JobExecutionInfo> jobs = new ArrayList<>(allJobMap.values());
+        jobs.addAll(userJobMap.values());
+        return jobs;
     }
 
     @Override
@@ -108,6 +123,6 @@ public class NotificationServiceImpl implements NotificationService {
     private boolean isMine(JobExecution jobExec) {
         final String login = securityEnabled ? permissionManager.getSubjectName() : null;
         final String jobAuthor = jobExec.getJobParameters().getString(Constants.Params.JOB_AUTHOR);
-        return !securityEnabled || jobAuthor == null || Objects.equals(login, jobAuthor);
+        return Objects.equals(login, jobAuthor);
     }
 }

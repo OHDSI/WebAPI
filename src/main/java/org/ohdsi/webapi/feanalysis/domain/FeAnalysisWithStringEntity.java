@@ -9,6 +9,13 @@ import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
 @Entity
 @DiscriminatorValue("not null")
 public class FeAnalysisWithStringEntity extends FeAnalysisEntity<String> {
+    public FeAnalysisWithStringEntity() {
+        super();
+    }
+
+    public FeAnalysisWithStringEntity(final FeAnalysisWithStringEntity analysis) {
+        super(analysis);
+    }
     
     @Lob
     @Type(type = "org.hibernate.type.TextType")

@@ -4,6 +4,8 @@ import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.common.OptionDTO;
+import org.ohdsi.webapi.conceptset.ConceptSetExport;
+import org.ohdsi.webapi.conceptset.ExportUtil;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithDistributionCriteriaEntity;
@@ -11,6 +13,7 @@ import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithPrevalenceCriteriaEntity
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
+import org.ohdsi.webapi.util.HttpUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
@@ -30,6 +33,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -109,6 +114,21 @@ public class FeAnalysisController {
         final FeAnalysisEntity feAnalysis = service.findById(feAnalysisId)
                 .orElseThrow(NotFoundException::new);
         return convertFeAnalysisToDto(feAnalysis);
+    }
+
+    @GET
+    @Path("/{id}/export/conceptset")
+    public Response exportConceptSets(@PathParam("id") final Integer feAnalysisId) {
+
+      final FeAnalysisEntity feAnalysis = service.findById(feAnalysisId).orElseThrow(NotFoundException::new);
+      if (feAnalysis instanceof FeAnalysisWithCriteriaEntity) {
+        List<ConceptSetExport> exportList = service.exportConceptSets((FeAnalysisWithCriteriaEntity<?>) feAnalysis);
+
+        ByteArrayOutputStream stream = ExportUtil.writeConceptSetExportToCSVAndZip(exportList);
+        return HttpUtils.respondBinary(stream, String.format("featureAnalysis_%d_export.zip", feAnalysisId));
+      } else {
+        throw new BadRequestException();
+      }
     }
 
     @GET

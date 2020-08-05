@@ -12,7 +12,6 @@ import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.check.Checker;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
-import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortdefinition.CleanupCohortTasklet;
@@ -40,7 +39,7 @@ import org.ohdsi.webapi.shiro.management.datasource.SourceIdAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
-import org.ohdsi.webapi.source.SourceService;
+import org.ohdsi.webapi.util.*;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
@@ -87,6 +86,7 @@ import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -101,6 +101,7 @@ import java.util.stream.Collectors;
 import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
+import org.ohdsi.webapi.source.SourceService;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
@@ -114,9 +115,6 @@ public class CohortDefinitionService extends AbstractDaoService {
   private static final CohortExpressionQueryBuilder queryBuilder = new CohortExpressionQueryBuilder();
 
   @Autowired
-  private Security security;
-
-  @Autowired
   private CohortDefinitionRepository cohortDefinitionRepository;
 
   @Autowired
@@ -125,12 +123,6 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Autowired
   private StepBuilderFactory stepBuilders;
 
-  @Autowired
-  private VocabularyService vocabService;
-  
-  @Autowired
-  private SourceService sourceService;
-    
   @Autowired
   private JobTemplate jobTemplate;
 
@@ -163,6 +155,12 @@ public class CohortDefinitionService extends AbstractDaoService {
 
   @Autowired
   private ApplicationEventPublisher eventPublisher;
+  
+  @Autowired 
+  private SourceService sourceService;
+
+  @Autowired 
+  private VocabularyService vocabularyService;
 
   @PersistenceContext
   protected EntityManager entityManager;
@@ -618,31 +616,18 @@ public class CohortDefinitionService extends AbstractDaoService {
 		this.jobTemplate.launch(cleanupCohortJob, jobParameters);
 	}
 	
-  private ArrayList<ConceptSetExport> getConceptSetExports(CohortDefinition def, SourceInfo vocabSource) throws RuntimeException {
-    ArrayList<ConceptSetExport> exports = new ArrayList<>();
+  private List<ConceptSetExport> getConceptSetExports(CohortDefinition def, SourceInfo vocabSource) throws RuntimeException {
+
     CohortExpression expression;
     try {
       expression = objectMapper.readValue(def.getDetails().getExpression(), CohortExpression.class);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    
-    for (ConceptSet cs : expression.conceptSets) {
-      ConceptSetExport export = new ConceptSetExport();
 
-      // Copy the concept set fields
-      export.ConceptSetId = cs.id;
-      export.ConceptSetName = cs.name;
-      export.csExpression = cs.expression;
-
-      // Lookup the identifiers
-      export.identifierConcepts = vocabService.executeIncludedConceptLookup(vocabSource.sourceKey, cs.expression);
-      // Lookup the mapped items
-      export.mappedConcepts = vocabService.executeMappedLookup(vocabSource.sourceKey, cs.expression);
-
-      exports.add(export);
-    }
-    return exports;
+    return Arrays.stream(expression.conceptSets)
+            .map(cs -> vocabularyService.exportConceptSet(cs, vocabSource))
+            .collect(Collectors.toList());
   }
 
   @GET
@@ -661,17 +646,10 @@ public class CohortDefinitionService extends AbstractDaoService {
         throw new NotFoundException();
     }
     
-    ArrayList<ConceptSetExport> exports = getConceptSetExports(def, new SourceInfo(source));
+    List<ConceptSetExport> exports = getConceptSetExports(def, new SourceInfo(source));
     ByteArrayOutputStream exportStream = ExportUtil.writeConceptSetExportToCSVAndZip(exports);
 
-    Response response = Response
-            .ok(exportStream)
-            .type(MediaType.APPLICATION_OCTET_STREAM)
-            .header("Content-Disposition", String.format("attachment; filename=\"cohortdefinition_%d_export.zip\"", def.getId()))
-            .build();
-
-    return response;
-    
+    return HttpUtils.respondBinary(exportStream, String.format("cohortdefinition_%d_export.zip", def.getId()));
   }    
 
   @GET

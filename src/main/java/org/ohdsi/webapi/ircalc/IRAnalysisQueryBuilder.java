@@ -25,6 +25,7 @@ import org.ohdsi.circe.vocabulary.ConceptSetExpressionQueryBuilder;
 
 import java.util.ArrayList;
 import org.ohdsi.webapi.Constants;
+import org.ohdsi.webapi.util.SqlUtils;
 
 /**
  *
@@ -105,9 +106,9 @@ public class IRAnalysisQueryBuilder {
     if (analysisExpression.studyWindow != null)
     {
       if (analysisExpression.studyWindow.startDate != null && analysisExpression.studyWindow.startDate.length() > 0)
-        studyWindowClauses.add(String.format("t.cohort_start_date >= '%s'", analysisExpression.studyWindow.startDate));
+        studyWindowClauses.add(String.format("t.cohort_start_date >= %s", SqlUtils.dateStringToSql(analysisExpression.studyWindow.startDate)));
       if (analysisExpression.studyWindow.endDate != null && analysisExpression.studyWindow.endDate.length() > 0)
-        studyWindowClauses.add(String.format("t.cohort_start_date <= '%s'", analysisExpression.studyWindow.endDate));
+        studyWindowClauses.add(String.format("t.cohort_start_date <= %s", SqlUtils.dateStringToSql(analysisExpression.studyWindow.endDate)));
     }
     if (studyWindowClauses.size() > 0)
       resultSql = StringUtils.replace(resultSql, "@cohortDataFilter", "AND " + StringUtils.join(studyWindowClauses," AND "));
@@ -117,7 +118,10 @@ public class IRAnalysisQueryBuilder {
     // add end dates if study window end is defined
     if (analysisExpression.studyWindow != null && analysisExpression.studyWindow.endDate != null && analysisExpression.studyWindow.endDate.length() > 0)
     {
-      StringBuilder endDatesQuery = new StringBuilder(String.format("UNION\nselect combos.target_id, combos.outcome_id, t.subject_id, t.cohort_start_date, '%s' as followup_end, 0 as is_case", analysisExpression.studyWindow.endDate));
+      StringBuilder endDatesQuery = new StringBuilder(
+              String.format("UNION\nselect combos.target_id, combos.outcome_id, t.subject_id, t.cohort_start_date, %s as followup_end, 0 as is_case",
+              SqlUtils.dateStringToSql(analysisExpression.studyWindow.endDate))
+      );
       endDatesQuery.append("\nFROM cteCohortCombos combos");
       endDatesQuery.append("\nJOIN  cteCohortData t on combos.target_id = t.target_id and combos.outcome_id = t.outcome_id");
 

@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.ohdsi.analysis.hydra.design.SkeletonTypeEnum;
 import org.ohdsi.analysis.estimation.design.EstimationAnalysis;
+import org.ohdsi.webapi.CommonDTO;
 import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
 import org.ohdsi.webapi.analysis.AnalysisConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetCrossReferenceImpl;
@@ -13,7 +14,7 @@ import org.ohdsi.webapi.conceptset.ConceptSetCrossReferenceImpl;
  *
  * @author asena5
  */
-public class EstimationAnalysisImpl implements EstimationAnalysis {
+public class EstimationAnalysisImpl implements EstimationAnalysis, CommonDTO {
   private Integer id = null;
   private String name = null;
   private String description = null;

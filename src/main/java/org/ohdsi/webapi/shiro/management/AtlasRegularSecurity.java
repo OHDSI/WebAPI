@@ -12,14 +12,8 @@ import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.security.model.EntityPermissionSchemaResolver;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
-import org.ohdsi.webapi.shiro.filters.CasHandleFilter;
-import org.ohdsi.webapi.shiro.filters.LogoutFilter;
-import org.ohdsi.webapi.shiro.filters.RedirectOnFailedOAuthFilter;
-import org.ohdsi.webapi.shiro.filters.RunAsFilter;
-import org.ohdsi.webapi.shiro.filters.SendTokenInHeaderFilter;
-import org.ohdsi.webapi.shiro.filters.SendTokenInRedirectFilter;
-import org.ohdsi.webapi.shiro.filters.SendTokenInUrlFilter;
-import org.ohdsi.webapi.shiro.filters.UpdateAccessTokenFilter;
+import org.ohdsi.webapi.shiro.PermissionManager;
+import org.ohdsi.webapi.shiro.filters.*;
 import org.ohdsi.webapi.shiro.filters.auth.ActiveDirectoryAuthFilter;
 import org.ohdsi.webapi.shiro.filters.auth.AtlasJwtAuthFilter;
 import org.ohdsi.webapi.shiro.filters.auth.JdbcAuthFilter;
@@ -37,17 +31,19 @@ import org.ohdsi.webapi.user.importer.providers.LdapProvider;
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.pac4j.cas.client.CasClient;
 import org.pac4j.cas.config.CasConfiguration;
+import org.pac4j.core.client.Client;
 import org.pac4j.core.client.Clients;
 import org.pac4j.core.config.Config;
-import org.pac4j.core.io.Resource;
-import org.pac4j.core.util.CommonHelper;
+import org.pac4j.core.http.callback.CallbackUrlResolver;
+import org.pac4j.core.http.callback.PathParameterCallbackUrlResolver;
+import org.pac4j.core.http.callback.QueryParameterCallbackUrlResolver;
 import org.pac4j.oauth.client.FacebookClient;
 import org.pac4j.oauth.client.GitHubClient;
 import org.pac4j.oauth.client.Google2Client;
 import org.pac4j.oidc.client.OidcClient;
 import org.pac4j.oidc.config.OidcConfiguration;
 import org.pac4j.saml.client.SAML2Client;
-import org.pac4j.saml.client.SAML2ClientConfiguration;
+import org.pac4j.saml.config.SAML2Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +54,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 import waffle.shiro.negotiate.NegotiateAuthenticationFilter;
 import waffle.shiro.negotiate.NegotiateAuthenticationRealm;
 
@@ -67,38 +64,10 @@ import javax.sql.DataSource;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static com.odysseusinc.arachne.commons.utils.QuoteUtils.dequote;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.AD_FILTER;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.AUTHZ;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CAS_AUTHC;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CORS;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.FACEBOOK_AUTHC;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.FORCE_SESSION_CREATION;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.GITHUB_AUTHC;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.GOOGLE_AUTHC;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.HANDLE_CAS;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.HANDLE_SAML;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.HANDLE_UNSUCCESSFUL_OAUTH;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.JDBC_FILTER;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.JWT_AUTHC;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.KERBEROS_FILTER;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.LDAP_FILTER;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.LOGOUT;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.NEGOTIATE_AUTHC;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_CACHE;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_SESSION_CREATION;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.OAUTH_CALLBACK;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.OIDC_AUTH;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.RUN_AS;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.SAML_AUTHC;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.SEND_TOKEN_IN_HEADER;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.SEND_TOKEN_IN_REDIRECT;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.SEND_TOKEN_IN_URL;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.SSL;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.UPDATE_TOKEN;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.*;
 
 @Component
 @ConditionalOnProperty(name = "security.provider", havingValue = Constants.SecurityProviders.REGULAR)
@@ -115,6 +84,9 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
     @Value("${security.oauth.callback.api}")
     private String oauthApiCallback;
+
+    @Value("${security.oauth.callback.urlResolver}")
+    private String oauthCallbackUrlResolver;
 
     @Value("${security.oauth.google.apiKey}")
     private String googleApiKey;
@@ -178,6 +150,9 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
     @Value("${security.ad.ignore.partial.result.exception}")
     private Boolean adIgnorePartialResultException;
+
+    @Value("${security.google.accessToken.enabled}")
+    private Boolean googleAccessTokenEnabled;
 
     @Value("${security.saml.keyManager.storePassword}")
     private String keyStorePassword;
@@ -244,6 +219,11 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     @Value("${security.saml.emabled:false}")
     private boolean samlEnabled;
 
+    private RestTemplate restTemplate = new RestTemplate();
+
+    @Autowired
+    private PermissionManager permissionManager;
+
     public AtlasRegularSecurity(EntityPermissionSchemaResolver permissionSchemaResolver) {
 
         super(permissionSchemaResolver);
@@ -258,6 +238,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         filters.put(UPDATE_TOKEN, new UpdateAccessTokenFilter(this.authorizer, this.defaultRoles, this.tokenExpirationIntervalInSeconds,
                 this.redirectUrl));
 
+        filters.put(ACCESS_AUTHC, new GoogleAccessTokenFilter(restTemplate, permissionManager, Collections.emptySet()));
         filters.put(JWT_AUTHC, new AtlasJwtAuthFilter());
         filters.put(JDBC_FILTER, new JdbcAuthFilter(eventPublisher));
         filters.put(KERBEROS_FILTER, new KerberosAuthFilter());
@@ -272,15 +253,39 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         filters.put(RUN_AS, new RunAsFilter(userRepository));
 
         // OAuth
+        //
+        CallbackUrlResolver urlResolver = getCallbackUrlResolver();
+        Google2Client googleClient = new Google2Client(this.googleApiKey, this.googleApiSecret);
+        googleClient.setCallbackUrl(oauthApiCallback);
+        googleClient.setCallbackUrlResolver(urlResolver);
+        googleClient.setScope(Google2Client.Google2Scope.EMAIL_AND_PROFILE);
+
+        FacebookClient facebookClient = new FacebookClient(this.facebookApiKey, this.facebookApiSecret);
+        facebookClient.setScope("email");
+        facebookClient.setFields("email");
+
+        GitHubClient githubClient = new GitHubClient(this.githubApiKey, this.githubApiSecret);
+        githubClient.setScope("user:email");
+
+        OidcConfiguration configuration = oidcConfCreator.build();
+        OidcClient oidcClient = new OidcClient(configuration);
+        oidcClient.setCallbackUrl(oauthApiCallback);
+        oidcClient.setCallbackUrlResolver(urlResolver);
+        List<Client> clients = new ArrayList<>(Arrays.asList(
+                googleClient,
+                facebookClient,
+                githubClient
+                // ... put new clients here and then assign them to filters ...
+        ));
+        if (StringUtils.isNotBlank(configuration.getClientId())) {
+            clients.add(oidcClient);
+        }
+
         Config cfg =
                 new Config(
                         new Clients(
-                                this.oauthApiCallback
-                                , getGoogle2Client()
-                                , getFacebookClient()
-                                , getGitHubClient()
-                                , getOidcClient()
-                                // ... put new clients here and then assign them to filters ...
+                                this.oauthApiCallback,
+                                clients
                         )
                 );
 
@@ -321,12 +326,14 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     @Override
     protected FilterChainBuilder getFilterChainBuilder() {
 
+        List<FilterTemplates> authcFilters = googleAccessTokenEnabled ? Arrays.asList(ACCESS_AUTHC, JWT_AUTHC) :
+                Collections.singletonList(JWT_AUTHC);
         // the order does matter - first match wins
         FilterChainBuilder filterChainBuilder = new FilterChainBuilder()
                 .setBeforeOAuthFilters(SSL, CORS, FORCE_SESSION_CREATION)
                 .setAfterOAuthFilters(UPDATE_TOKEN, SEND_TOKEN_IN_URL)
                 .setRestFilters(SSL, NO_SESSION_CREATION, CORS, NO_CACHE)
-                .setAuthcFilter(JWT_AUTHC)
+                .setAuthcFilter(authcFilters.toArray(new FilterTemplates[0]))
                 .setAuthzFilter(AUTHZ)
                 // login/logout
                 .addRestPath("/user/login/openid", FORCE_SESSION_CREATION, OIDC_AUTH, UPDATE_TOKEN, SEND_TOKEN_IN_REDIRECT)
@@ -342,15 +349,16 @@ public class AtlasRegularSecurity extends AtlasSecurity {
                 .addOAuthPath("/user/oauth/facebook", FACEBOOK_AUTHC)
                 .addOAuthPath("/user/oauth/github", GITHUB_AUTHC)
                 .addPath("/user/login/cas", SSL, CORS, FORCE_SESSION_CREATION, CAS_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_URL)
-                .addPath("/user/oauth/callback", SSL, HANDLE_UNSUCCESSFUL_OAUTH, OAUTH_CALLBACK)
+                .addPath("/user/oauth/callback", OAUTH_CALLBACK_FILTERS)
+                .addPath("/user/oauth/callback/*", OAUTH_CALLBACK_FILTERS)
                 .addPath("/user/cas/callback", SSL, HANDLE_CAS, UPDATE_TOKEN, SEND_TOKEN_IN_URL);
 
         if (this.samlEnabled) {
             filterChainBuilder
-                    .addPath("/user/login/saml", SSL, CORS, FORCE_SESSION_CREATION, SAML_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_URL)
-                    .addPath("/user/saml/callback", SSL, HANDLE_SAML, UPDATE_TOKEN, SEND_TOKEN_IN_URL);
+                .addPath("/user/login/saml", SSL, CORS, FORCE_SESSION_CREATION, SAML_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_URL)
+                .addPath("/user/saml/callback", SSL, HANDLE_SAML, UPDATE_TOKEN, SEND_TOKEN_IN_URL);
         }
-
+        
         setupProtectedPaths(filterChainBuilder);
 
         return filterChainBuilder.addRestPath("/**");
@@ -395,20 +403,17 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     }
 
     private void setUpSaml(Map<FilterTemplates, Filter> filters) {
-        Resource keystorePath = CommonHelper.getResource(keyStoreFile);
-        Resource metadataLocationPath = CommonHelper.getResource(metadataLocation);
-        final SAML2ClientConfiguration cfg = new SAML2ClientConfiguration(
-                keystorePath,
-                alias,
-                null,
+      try {
+        final SAML2Configuration cfg = new SAML2Configuration(
+                keyStoreFile,
                 keyStorePassword,
                 privateKeyPassword,
-                metadataLocationPath);
+                metadataLocation);
         cfg.setMaximumAuthenticationLifetime(3600);
         cfg.setServiceProviderEntityId(identityProviderEntityId);
 
         cfg.setServiceProviderMetadataPath(spMetadataLocation);
-        cfg.setDestinationBindingType(SAMLConstants.SAML2_REDIRECT_BINDING_URI);
+        cfg.setAuthnRequestBindingType(SAMLConstants.SAML2_REDIRECT_BINDING_URI);
 
         final SAML2Client saml2Client = new SAML2Client(cfg);
         Config samlCfg = new Config(new Clients(samlCallbackUrl, saml2Client));
@@ -420,6 +425,12 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
         SamlHandleFilter samlHandleFilter = new SamlHandleFilter(saml2Client);
         filters.put(HANDLE_SAML, samlHandleFilter);
+        samlEnabled = true;
+      } catch (Exception e) {
+        filters.remove(SAML_AUTHC);
+        filters.remove(HANDLE_SAML);
+        logger.error("Failed to initlize SAML filters: " + e.getMessage());
+      }
     }
 
     private Google2Client getGoogle2Client() {
@@ -476,7 +487,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
             casConf.setLoginUrl(casLoginUrlString);
 
             Cas20ServiceTicketValidator cas20Validator = new Cas20ServiceTicketValidator(casServerUrl);
-            casConf.setTicketValidator(cas20Validator);
+            casConf.setDefaultTicketValidator(cas20Validator);
 
             CasClient casClient = new CasClient(casConf);
             Config casCfg = new Config(new Clients(casCallbackUrl, casClient));
@@ -498,5 +509,16 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         } catch (UnsupportedEncodingException e) {
             this.logger.error("Atlas security filter errors: {}", e);
         }
+    }
+
+    private CallbackUrlResolver getCallbackUrlResolver() {
+
+        CallbackUrlResolver resolver = new QueryParameterCallbackUrlResolver();
+        if (Constants.CallbackUrlResolvers.PATH.equals(oauthCallbackUrlResolver)) {
+            resolver = new PathParameterCallbackUrlResolver();
+        } else if (!Constants.CallbackUrlResolvers.QUERY.equals(oauthCallbackUrlResolver)) {
+            this.logger.warn("OAuth Callback Url Resolver {} not supported, ignored and used default QueryParameterUrlResolver", oauthCallbackUrlResolver);
+        }
+        return resolver;
     }
 }

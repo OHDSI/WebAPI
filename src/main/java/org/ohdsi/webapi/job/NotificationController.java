@@ -50,7 +50,7 @@ public class NotificationController {
                 }
             }
         }
-        return service.findLast10(statuses).stream().map(this::toDTO).collect(Collectors.toList());
+        return service.findLastJobs(statuses).stream().map(this::toDTO).collect(Collectors.toList());
     }
 
     @GET
@@ -76,7 +76,7 @@ public class NotificationController {
         }
     }
 
-    private JobExecutionResource toDTO(JobExecution entity) {
+    private JobExecutionResource toDTO(JobExecutionInfo entity) {
         return conversionService.convert(entity, JobExecutionResource.class);
     }
 }

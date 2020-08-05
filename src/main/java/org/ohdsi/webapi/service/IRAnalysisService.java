@@ -29,6 +29,9 @@ import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.GenerationStatus;
+import org.ohdsi.webapi.check.CheckResult;
+import org.ohdsi.webapi.check.Checker;
+import org.ohdsi.webapi.check.checker.ir.IRChecker;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
@@ -49,6 +52,8 @@ import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisExpression;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.prediction.PredictionAnalysis;
+import org.ohdsi.webapi.prediction.dto.PredictionAnalysisDTO;
 import org.ohdsi.webapi.service.dto.AnalysisInfoDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisShortDTO;
@@ -164,7 +169,10 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   private DesignImportService designImportService;
 
   @Context
-  ServletContext context;
+  private ServletContext context;
+
+  @Autowired
+  private IRChecker checker;
 
   public IRAnalysisService(final ObjectMapper objectMapper) {
 
@@ -447,6 +455,12 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   @Override
   @DataSourceAccess
   public JobExecutionResource performAnalysis(final int analysisId, final @SourceKey String sourceKey) {
+    IRAnalysisDTO irAnalysisDTO = getAnalysis(analysisId);
+    CheckResult checkResult = runDiagnostics(irAnalysisDTO);
+    if (checkResult.hasCriticalErrors()) {
+      throw new RuntimeException("Cannot be generated due to critical errors in design. Call 'check' service for further details");
+    }
+
     Date startTime = Calendar.getInstance().getTime();
 
     Source source = this.getSourceRepository().findBySourceKey(sourceKey);
@@ -590,6 +604,12 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
     return result;
   }
+
+    @Override
+    public CheckResult runDiagnostics(IRAnalysisDTO irAnalysisDTO){
+
+        return new CheckResult(checker.check(irAnalysisDTO));
+    }
 
   @Override
   @Transactional

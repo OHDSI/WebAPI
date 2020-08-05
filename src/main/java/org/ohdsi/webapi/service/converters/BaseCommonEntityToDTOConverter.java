@@ -42,7 +42,7 @@ public abstract class BaseCommonEntityToDTOConverter<S extends CommonEntity, T e
 
     @Override
     public T convert(S s) {
-        T target = createResultObject();
+        T target = createResultObject(s);
         convertMetadata(conversionService, s, target);
         fillWriteAccess(s, target);
         doConvert(s, target);

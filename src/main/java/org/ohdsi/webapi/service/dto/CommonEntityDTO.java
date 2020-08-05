@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.service.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.ohdsi.webapi.user.dto.UserDTO;
 
 import java.util.Date;
@@ -9,7 +10,9 @@ public abstract class CommonEntityDTO implements CommonDTO {
 
   private UserDTO createdBy;
   private UserDTO modifiedBy;
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
   private Date createdDate;
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
   private Date modifiedDate;
   private boolean hasWriteAccess;
 

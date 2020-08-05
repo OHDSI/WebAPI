@@ -427,6 +427,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         filters.put(HANDLE_SAML, samlHandleFilter);
         samlEnabled = true;
       } catch (Exception e) {
+        samlEnabled = false;
         filters.remove(SAML_AUTHC);
         filters.remove(HANDLE_SAML);
         logger.error("Failed to initlize SAML filters: " + e.getMessage());
@@ -520,5 +521,9 @@ public class AtlasRegularSecurity extends AtlasSecurity {
             this.logger.warn("OAuth Callback Url Resolver {} not supported, ignored and used default QueryParameterUrlResolver", oauthCallbackUrlResolver);
         }
         return resolver;
+    }
+
+    public boolean isSamlEnabled() {
+        return samlEnabled;
     }
 }

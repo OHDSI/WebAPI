@@ -206,6 +206,34 @@
         "message": "This feature is protected. Please"
       }
     },
+    "analysisExecution": {
+      "title": "执行",
+      "buttons": {
+        "allExecutions": "所有的执行结果 (<%=submissions%>)",
+        "generate": "生成",
+        "generating": "生成",
+        "pending": "Pending",
+        "latestResult": "查看最后结果",
+        "downloadLatestResult": "下载最新结果"
+      },
+      "designModal": {
+        "title": "设计"
+      },
+      "exitModal": {
+        "title": "Execution Exit Message"
+      },
+      "messages": {
+        "permissions": "Not enough permissions to view results"
+      },
+      "datatable": {
+        "viewReports": "查看报告",
+        "sameAsNow": "(same as now)",
+        "download": "Download <%=num%> files",
+        "downloading": "Downloading <%=num%> files..."
+      },
+      "noCompletedExecutionsForDataSource": "There is no completed executions for the data source yet.",
+      "stopGenerationConfirmation": "Do you want to stop generation?"
+    },
     "atlasCohortEditor": {
       "enterCohortPlaceholder": "在此输入队列定义描述",
       "importConceptSet": "从存储库中加载概念集"
@@ -1678,30 +1706,17 @@
         }
       },
       "executions": {
-        "buttons": {
-          "allExecutions": "所有的执行结果 (<%=submissions%>)",
-          "cancel": "Cancel",
-          "generate": "生成",
-          "latestResult": "查看最后结果"
-        },
-        "designModal": {
-          "title": "设计"
-        },
-        "exitModal": {
-          "title": "Execution Exit Message"
-        },
-        "loading": "Loading executions...",
-        "messages": {
-          "permissions": "Not enough permissions to generate, changes not saved or no cohorts found"
-        },
-        "table": {
-          "viewReports": "查看报告",
-          "sameAsNow": "(same as now)",
-          "empty": "-"
-        },
         "title": "执行",
-        "runNewGenerationConfirmation": "No changes have been made since last execution. Do you still want to run new one?",
-        "stopGenerationConfirmation": "Do you want to stop generation?"
+        "prevalenceStatConverter": {
+          "allStratas": "All stratas",
+          "explore": "关系探索",
+          "loadingPrevalenceStats": "Loading prevalence stats...",
+          "cohort": "Cohort:",
+          "exploringConceptHierarchyFor": "Exploring concept hierarchy for:",
+          "ancestor": "Ancestor",
+          "descendant": "Descendant",
+          "selected": "Selected"
+        }
       },
       "results": {
         "detail": {
@@ -1746,16 +1761,6 @@
       },
       "utilities": {
         "title": "程序"
-      },
-      "prevalenceStatConverter": {
-        "allStratas": "All stratas",
-        "explore": "关系探索",
-        "loadingPrevalenceStats": "Loading prevalence stats...",
-        "cohort": "Cohort:",
-        "exploringConceptHierarchyFor": "Exploring concept hierarchy for:",
-        "ancestor": "Ancestor",
-        "descendant": "Descendant",
-        "selected": "Selected"
       }
     },
     "fa": {
@@ -1943,21 +1948,13 @@
         }
       },
       "executions": {
-        "buttons": {
-          "allExecutions": "所有的执行结果",
-          "generate": "生成",
-          "viewLatestResult": "查看最后结果"
-        },
+        "title": "执行",
         "dialogs": {
           "design": {
             "loadError": "Unable to load design",
             "title": "设计"
-          },
-          "exitMessage": {
-            "title": "Execution Exit Message"
           }
         },
-        "noCompletedExecutionsWarning": "There is no completed executions for the data source yet",
         "results": {
           "date": "Date:",
           "design": "设计:",
@@ -1993,19 +1990,6 @@
             "stepN": "Step <%=i%>",
             "exactly": "Exactly <%=v%>"
           }
-        },
-        "stopGenerationConfirmation": "Do you want to stop generation?",
-        "table": {
-          "designValue": "(same as now)",
-          "resultValues": {
-            "empty": "-",
-            "text": "查看报告"
-          }
-        },
-        "title": "执行",
-        "tooltips": {
-          "generatePermissions": "Not enough permissions to generate",
-          "viewPermissions": "Not enough permissions to view results"
         }
       },
       "loading": "Loading Cohort Pathway Analysis...",
@@ -2036,16 +2020,6 @@
     "changesNotSavedConfirmation": "Estimation Analysis changes are not saved. Would you like to continue?",
     "deleteConfirmation": "Delete estimation specification? Warning: deletion can not be undone!",
     "retrievingEstimations": "retrieving estimations",
-    "exec": {
-      "allExec": "所有的执行结果 (<%=len%>)",
-      "downloadLatestResult": "下载最新结果",
-      "generate": "生成",
-      "generating": "Generating...",
-      "generations": "Generations",
-      "loadingGenerations": "Loading generations...",
-      "notPermitted": "Not enough permissions to generate or changes were not saved or Execution Engine is not available",
-      "notPermittedToViewResults": "Not enough permissions to view results"
-    },
     "spec": {
       "addAnalysisSettings": "添加分析设置",
       "addComparisons": "添加比较队列",
@@ -2738,6 +2712,15 @@
     "title": "队列定义"
   },
   "const": {
+    "disabledReason": {
+      "dirty": "Save changes before generate",
+      "accessDenied": "Access denied",
+      "invalidTar": "Invalid TAR",
+      "invalidDesign": "Design is not valid",
+      "engineNotAvalable": "Execution engine is not available",
+      "emptyCohorts": "No cohorts found",
+      "emptyInitionEvent": "Initial event is not set"
+    },
     "eventsList": {
       "addConditionEra": {
         "title": "添加诊断周期",
@@ -3345,7 +3328,6 @@
     }
   },
   "predictions": {
-    "allExecutions": "所有的执行结果 (<%=length%>)",
     "analysisSettings": "分析设置",
     "confirmCatchSave": "An error occurred while attempting to save a prediction analysis.",
     "confirmChanges": "Patient level prediction changes are not saved. Would you like to continue?",
@@ -3354,7 +3336,6 @@
     "covariateSettingsDesc": "添加或更新协变量设置",
     "covariateSettingsTitle": "协变量设置",
     "descriptionPlaceholder": "enter a description here (1000 characters max)",
-    "downloadLatestResult": "下载最新结果",
     "downloadStudyPackage": "Download Study Package",
     "defaultValue": "(默认值 = <%=defaultValue%>):",
     "retrievingPredictions": "retrieving predictions",
@@ -3388,9 +3369,6 @@
     },
     "export": "导出",
     "fullAnalysisList": "Full Analysis List",
-    "generate": "生成",
-    "generating": "Generating...",
-    "generations": "Generations",
     "import": "导入",
     "inputTypes": {
       "adaBoost": "自适应增强",
@@ -3477,14 +3455,11 @@
       "view": "View:"
     },
     "itemId": "患者水平预测 #<%=id%>",
-    "loadingGenerations": "Loading generations...",
     "modelSettingsDesc": "使用以下选项编辑模型设置",
     "modelSettingsTitle": "模型设置",
     "naiveMessage": "没有要编辑的朴素贝叶斯设置",
     "newItem": "新患者水平预测",
     "newItemPlaceholder": "新患者水平预测",
-    "notEnoughPermissions": "Not enough permissions to view results",
-    "notEnoughPermissionsToGenerate": "Not enough permissions to generate or changes were not saved or Execution Engine is not available",
     "pleaseNote": "Please Note:",
     "populationSettingsDesc": "添加或更新人口设置",
     "populationSettingsTitle": "人群设置",

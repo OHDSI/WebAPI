@@ -206,6 +206,34 @@
         "message": "This feature is protected. Please"
       }
     },
+    "analysisExecution": {
+      "title": "Executions",
+      "buttons": {
+        "allExecutions": "All executions (<%=submissions%>)",
+        "generate": "Generate",
+        "generating": "Generating",
+        "pending": "Pending",
+        "latestResult": "View latest result",
+        "downloadLatestResult": "Download latest result"
+      },
+      "designModal": {
+        "title": "Design"
+      },
+      "exitModal": {
+        "title": "Execution Exit Message"
+      },
+      "messages": {
+        "permissions": "Not enough permissions to view results"
+      },
+      "datatable": {
+        "viewReports": "View reports",
+        "sameAsNow": "(same as now)",
+        "download": "Download <%=num%> files",
+        "downloading": "Downloading <%=num%> files..."
+      },
+      "noCompletedExecutionsForDataSource": "There is no completed executions for the data source yet.",
+      "stopGenerationConfirmation": "Do you want to stop generation?"
+    },
     "atlasCohortEditor": {
       "enterCohortPlaceholder": "Enter a cohort definition description here",
       "importConceptSet": "Import Concept Set From Repository..."
@@ -1678,30 +1706,17 @@
         }
       },
       "executions": {
-        "buttons": {
-          "allExecutions": "All executions (<%=submissions%>)",
-          "cancel": "Cancel",
-          "generate": "Generate",
-          "latestResult": "View latest result"
-        },
-        "designModal": {
-          "title": "Design"
-        },
-        "exitModal": {
-          "title": "Execution Exit Message"
-        },
-        "loading": "Loading executions...",
-        "messages": {
-          "permissions": "Not enough permissions to generate, changes not saved or no cohorts found"
-        },
-        "table": {
-          "viewReports": "View reports",
-          "sameAsNow": "(same as now)",
-          "empty": "-"
-        },
         "title": "Executions",
-        "runNewGenerationConfirmation": "No changes have been made since last execution. Do you still want to run new one?",
-        "stopGenerationConfirmation": "Do you want to stop generation?"
+        "prevalenceStatConverter": {
+          "allStratas": "All stratas",
+          "explore": "Explore",
+          "loadingPrevalenceStats": "Loading prevalence stats...",
+          "cohort": "Cohort:",
+          "exploringConceptHierarchyFor": "Exploring concept hierarchy for:",
+          "ancestor": "Ancestor",
+          "descendant": "Descendant",
+          "selected": "Selected"
+        }
       },
       "results": {
         "detail": {
@@ -1746,16 +1761,6 @@
       },
       "utilities": {
         "title": "Utilities"
-      },
-      "prevalenceStatConverter": {
-        "allStratas": "All stratas",
-        "explore": "Explore",
-        "loadingPrevalenceStats": "Loading prevalence stats...",
-        "cohort": "Cohort:",
-        "exploringConceptHierarchyFor": "Exploring concept hierarchy for:",
-        "ancestor": "Ancestor",
-        "descendant": "Descendant",
-        "selected": "Selected"
       }
     },
     "fa": {
@@ -1943,21 +1948,13 @@
         }
       },
       "executions": {
-        "buttons": {
-          "allExecutions": "All executions",
-          "generate": "Generate",
-          "viewLatestResult": "View latest result"
-        },
+        "title": "Executions",
         "dialogs": {
           "design": {
             "loadError": "Unable to load design",
             "title": "Design"
-          },
-          "exitMessage": {
-            "title": "Execution Exit Message"
           }
         },
-        "noCompletedExecutionsWarning": "There is no completed executions for the data source yet",
         "results": {
           "date": "Date:",
           "design": "Design:",
@@ -1993,19 +1990,6 @@
             "stepN": "Step <%=i%>",
             "exactly": "Exactly <%=v%>"
           }
-        },
-        "stopGenerationConfirmation": "Do you want to stop generation?",
-        "table": {
-          "designValue": "(same as now)",
-          "resultValues": {
-            "empty": "-",
-            "text": "View reports"
-          }
-        },
-        "title": "Executions",
-        "tooltips": {
-          "generatePermissions": "Not enough permissions to generate",
-          "viewPermissions": "Not enough permissions to view results"
         }
       },
       "loading": "Loading Cohort Pathway Analysis...",
@@ -2036,16 +2020,6 @@
     "changesNotSavedConfirmation": "Estimation Analysis changes are not saved. Would you like to continue?",
     "deleteConfirmation": "Delete estimation specification? Warning: deletion can not be undone!",
     "retrievingEstimations": "retrieving estimations",
-    "exec": {
-      "allExec": "All executions (<%=len%>)",
-      "downloadLatestResult": "Download latest result",
-      "generate": "Generate",
-      "generating": "Generating...",
-      "generations": "Generations",
-      "loadingGenerations": "Loading generations...",
-      "notPermitted": "Not enough permissions to generate or changes were not saved or Execution Engine is not available",
-      "notPermittedToViewResults": "Not enough permissions to view results"
-    },
     "spec": {
       "addAnalysisSettings": "Add Analysis Settings",
       "addComparisons": "Add Comparisons",
@@ -2738,6 +2712,15 @@
     "title": "Cohort Definitions"
   },
   "const": {
+    "disabledReason": {
+      "dirty": "Save changes before generate",
+      "accessDenied": "Access denied",
+      "invalidTar": "Invalid TAR",
+      "invalidDesign": "Design is not valid",
+      "engineNotAvalable": "Execution engine is not available",
+      "emptyCohorts": "No cohorts found",
+      "emptyInitionEvent": "Initial event is not set"
+    },
     "eventsList": {
       "addConditionEra": {
         "title": "Add Condition Era",
@@ -3345,7 +3328,6 @@
     }
   },
   "predictions": {
-    "allExecutions": "All executions (<%=length%>)",
     "analysisSettings": "Analysis Settings",
     "confirmCatchSave": "An error occurred while attempting to save a prediction analysis.",
     "confirmChanges": "Patient level prediction changes are not saved. Would you like to continue?",
@@ -3354,7 +3336,6 @@
     "covariateSettingsDesc": "Add or update the covariate settings",
     "covariateSettingsTitle": "Covariate Settings",
     "descriptionPlaceholder": "enter a description here (1000 characters max)",
-    "downloadLatestResult": "Download latest result",
     "downloadStudyPackage": "Download Study Package",
     "defaultValue": "(default = <%=defaultValue%>):",
     "retrievingPredictions": "retrieving predictions",
@@ -3388,9 +3369,6 @@
     },
     "export": "Export",
     "fullAnalysisList": "Full Analysis List",
-    "generate": "Generate",
-    "generating": "Generating...",
-    "generations": "Generations",
     "import": "Import",
     "inputTypes": {
       "adaBoost": "Ada Boost",
@@ -3477,14 +3455,11 @@
       "view": "View:"
     },
     "itemId": "Patient Level Prediction #<%=id%>",
-    "loadingGenerations": "Loading generations...",
     "modelSettingsDesc": "Use the options below to edit the model settings",
     "modelSettingsTitle": "Model settings",
     "naiveMessage": "There are no settings to edit for Naïve Bayes",
     "newItem": "New Patient Level Prediction",
     "newItemPlaceholder": "New Patient Level Prediction Analysis",
-    "notEnoughPermissions": "Not enough permissions to view results",
-    "notEnoughPermissionsToGenerate": "Not enough permissions to generate or changes were not saved or Execution Engine is not available",
     "pleaseNote": "Please Note:",
     "populationSettingsDesc": "Add or update the population settings",
     "populationSettingsTitle": "Population Settings",

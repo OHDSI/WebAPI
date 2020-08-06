@@ -189,6 +189,34 @@
     }
   },
   "components": {
+    "analysisExecution": {
+      "title": "Исследования",
+      "buttons": {
+        "allExecutions": "Все исследования (<%=submissions%>)",
+        "generate": "Выполнить",
+        "generating": "Выполнение",
+        "pending": "Ожидание",
+        "latestResult": "Просмотр последнего результата",
+        "downloadLatestResult": "Скачать последний результат"
+      },
+      "designModal": {
+        "title": "Дизайн"
+      },
+      "exitModal": {
+        "title": "Сообщение Исследования"
+      },
+      "messages": {
+        "permissions": "Надостаточно прав для просмотра результата"
+      },
+      "datatable": {
+        "viewReports": "Просмотр отчетов",
+        "sameAsNow": "(текущий)",
+        "download": "Скачать <%=num%> файлов",
+        "downloading": "Скачивание <%=num%> файлов..."
+      },
+      "noCompletedExecutionsForDataSource": "Для данного источника еще нет завершенных исследований.",
+      "stopGenerationConfirmation": "Действительно остановить исследование?"
+    },
     "authorship": {
       "created": "создано:",
       "modified": "изменено:",
@@ -1685,27 +1713,6 @@
       },
       "executions": {
         "title": "Исследования",
-        "loading": "Идёт загрузка исследований...",
-        "designModal": {
-          "title": "Дизайн"
-        },
-        "exitModal": {
-          "title": "Сообщение Исследования"
-        },
-        "buttons": {
-          "generate": "Выполнить",
-          "cancel": "Отменить",
-          "latestResult": "Последний результат",
-          "allExecutions": "Все исследования (<%= submissions %>)"
-        },
-        "table": {
-          "viewReports": "Показать отчеты",
-          "sameAsNow": "(текущий)",
-          "empty": "-"
-        },
-        "messages": {
-          "permissions": "Не достаточно прав для выполнения, изменения не сохранены или когорты не определены в анализе"
-        },
         "prevalenceStatConverter": {
           "allStratas": "Все срезы",
           "explore": "Исследовать",
@@ -1715,9 +1722,7 @@
           "ancestor": "Предок",
           "descendant": "Потомок",
           "selected": "Выбрано"
-        },
-        "runNewGenerationConfirmation": "С последнего запуска исследований изменений не было. Вы действительно хотите запустить исследрвание еще раз?",
-        "stopGenerationConfirmation": "Действиетльно остановить исследование?"
+        }
       },
       "utilities": {
         "title": "Дополнительно"
@@ -1959,30 +1964,11 @@
       },
       "executions": {
         "title": "Исследования",
-        "buttons": {
-          "generate": "Исследовать",
-          "viewLatestResult": "Показать последний результат",
-          "allExecutions": "Все исследования"
-        },
         "dialogs": {
           "design": {
             "title": "Дизайн",
             "loadError": "Не удалось загрузить дизайн"
-          },
-          "exitMessage": {
-            "title": "Сообщение об ошибке"
           }
-        },
-        "table": {
-          "designValue": "(текущий)",
-          "resultValues": {
-            "text": "Показать отчеты",
-            "empty": "-"
-          }
-        },
-        "tooltips": {
-          "generatePermissions": "Недостаточно прав для запуска исследования",
-          "viewPermissions": "Недостаточно прав для просмотра результатов"
         },
         "results": {
           "title": "Отчет по Исследованию для",
@@ -2019,9 +2005,7 @@
             "stepN": "Шаг <%=i%>",
             "exactly": "Точно <%=v%>"
           }
-        },
-        "noCompletedExecutionsWarning": "Для источника данных еще нет завершенных исследований.",
-        "stopGenerationConfirmation": "Действительно остановить генерацию?"
+        }
       },
       "utilities": {
         "title": "Дополнительно"
@@ -2188,16 +2172,6 @@
         "matching": "Сопоставление 1:<%=ratio%>",
         "stratification": "Стратификация (<%=stratum%> страт)"
       }
-    },
-    "exec": {
-      "generations": "Исследования",
-      "loadingGenerations": "Загрузка исследований",
-      "notPermitted": "Недостаточно прав или изменения не сохранены или недоступен Execution Engine",
-      "generating": "Исследование...",
-      "generate": "Сгенерировать",
-      "notPermittedToViewResults": "Недостаточно прав на просмотр результатов",
-      "downloadLatestResult": "Скачать последние результаты",
-      "allExec": "Все исследования (<%=len%>"
     },
     "util": {
       "issues": "Ваше исследование имеет следующие проблемы, которые мешают вам просмотреть полную информацию о спецификации и загрузить файл исследования:",
@@ -2738,7 +2712,6 @@
     "title": "Определения когорт"
   },
   "predictions": {
-    "allExecutions": "Все выполнения (<%=length%>)",
     "analysisSettings": "Настройки анализа",
     "confirmCatchSave": "Произошла ошибка при попытке сохранить прогнозный анализ.",
     "confirmChanges": "Изменения прогноза уровня пациента не сохраняются. Желаете ли вы продолжить?",
@@ -2747,7 +2720,6 @@
     "covariateSettingsDesc": "Добавить или обновить параметры ковариации",
     "covariateSettingsTitle": "Ковариат Настройки",
     "descriptionPlaceholder": "введите описание здесь (не более 1000 символов)",
-    "downloadLatestResult": "Скачать последний результат",
     "downloadStudyPackage": "Скачать учебный пакет",
     "defaultValue": "(по умолчанию = <%=defaultValue%>):",
     "retrievingPredictions": "получение прогнозов",
@@ -2781,9 +2753,6 @@
     },
     "export": "Экспорт",
     "fullAnalysisList": "Полный список анализа",
-    "generate": "Генерировать",
-    "generating": "Генерирование...",
-    "generations": "Генерации",
     "import": "Импорт",
     "inputTypes": {
       "adaBoost": "Ада Буст",
@@ -2870,14 +2839,11 @@
       "view": "Отображать:"
     },
     "itemId": "Прогнозирование уровня пациента #<%=id%>",
-    "loadingGenerations": "Загрузка исследований...",
     "modelSettingsDesc": "Используйте параметры ниже для редактирования настроек модели",
     "modelSettingsTitle": "Настройки модели",
     "naiveMessage": "Там нет настроек для редактирования наивный байесовский",
     "newItem": "Новое прогнозирование уровня пациента",
     "newItemPlaceholder": "Новое прогнозирование уровня пациента",
-    "notEnoughPermissions": "Недостаточно прав для просмотра результатов",
-    "notEnoughPermissionsToGenerate": "Недостаточно разрешений для генерации или изменения не были сохранены или Механизм выполнения недоступен",
     "pleaseNote": "Пожалуйста, обратите внимание:",
     "populationSettingsDesc": "Добавить или обновить настройки населения",
     "populationSettingsTitle": "Настройки населения",
@@ -2905,6 +2871,15 @@
     "packageName": "Имя файла..."
   },
   "const": {
+    "disabledReason": {
+      "dirty": "Сохраните изменения перед выполнением исследования",
+      "accessDenied": "Доступ запрещен",
+      "invalidTar": "Неправильное окно риска",
+      "invalidDesign": "Неправильный дизайн",
+      "engineNotAvalable": "Недоступен движок генерации исследований",
+      "emptyCohorts": "Не найдены когорты",
+      "emptyInitionEvent": "Не установлено начальное событие"
+    },
     "eventsList": {
       "addConditionEra": {
         "title": "Добавить условие Эра",

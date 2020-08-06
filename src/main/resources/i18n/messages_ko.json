@@ -206,6 +206,34 @@
         "message": "This feature is protected. Please"
       }
     },
+    "analysisExecution": {
+      "title": "실행",
+      "buttons": {
+        "allExecutions": "모든 실행 항목 (<%=submissions%>)",
+        "generate": "실행",
+        "generating": "실행",
+        "pending": "Pending",
+        "latestResult": "마지막 결과보기",
+        "downloadLatestResult": "마지막 결과 보기"
+      },
+      "designModal": {
+        "title": "설계"
+      },
+      "exitModal": {
+        "title": "Execution Exit Message"
+      },
+      "messages": {
+        "permissions": "Not enough permissions to view results"
+      },
+      "datatable": {
+        "viewReports": "레포트 보기",
+        "sameAsNow": "(same as now)",
+        "download": "Download <%=num%> files",
+        "downloading": "Downloading <%=num%> files..."
+      },
+      "noCompletedExecutionsForDataSource": "There is no completed executions for the data source yet.",
+      "stopGenerationConfirmation": "Do you want to stop generation?"
+    },
     "atlasCohortEditor": {
       "enterCohortPlaceholder": "Enter a cohort definition description here",
       "importConceptSet": "저장소에서 컨셉 세트  불러오기"
@@ -1678,30 +1706,17 @@
         }
       },
       "executions": {
-        "buttons": {
-          "allExecutions": "모두 실행 (<%=submissions%>)",
-          "cancel": "Cancel",
-          "generate": "생성",
-          "latestResult": "마지막 결과보기"
-        },
-        "designModal": {
-          "title": "설계"
-        },
-        "exitModal": {
-          "title": "Execution Exit Message"
-        },
-        "loading": "Loading executions...",
-        "messages": {
-          "permissions": "Not enough permissions to generate, changes not saved or no cohorts found"
-        },
-        "table": {
-          "viewReports": "레포트 보기",
-          "sameAsNow": "(same as now)",
-          "empty": "-"
-        },
         "title": "실행",
-        "runNewGenerationConfirmation": "No changes have been made since last execution. Do you still want to run new one?",
-        "stopGenerationConfirmation": "Do you want to stop generation?"
+        "prevalenceStatConverter": {
+          "allStratas": "All stratas",
+          "explore": "Explore",
+          "loadingPrevalenceStats": "Loading prevalence stats...",
+          "cohort": "Cohort:",
+          "exploringConceptHierarchyFor": "Exploring concept hierarchy for:",
+          "ancestor": "Ancestor",
+          "descendant": "Descendant",
+          "selected": "Selected"
+        }
       },
       "results": {
         "detail": {
@@ -1746,16 +1761,6 @@
       },
       "utilities": {
         "title": "유틸리티"
-      },
-      "prevalenceStatConverter": {
-        "allStratas": "All stratas",
-        "explore": "Explore",
-        "loadingPrevalenceStats": "Loading prevalence stats...",
-        "cohort": "Cohort:",
-        "exploringConceptHierarchyFor": "Exploring concept hierarchy for:",
-        "ancestor": "Ancestor",
-        "descendant": "Descendant",
-        "selected": "Selected"
       }
     },
     "fa": {
@@ -1943,21 +1948,13 @@
         }
       },
       "executions": {
-        "buttons": {
-          "allExecutions": "모든 실행 항목",
-          "generate": "생성",
-          "viewLatestResult": "마지막 결과보기"
-        },
+        "title": "실행",
         "dialogs": {
           "design": {
             "loadError": "Unable to load design",
             "title": "설계"
-          },
-          "exitMessage": {
-            "title": "Execution Exit Message"
           }
         },
-        "noCompletedExecutionsWarning": "There is no completed executions for the data source yet",
         "results": {
           "date": "Date:",
           "design": "설계:",
@@ -1993,19 +1990,6 @@
             "stepN": "Step <%=i%>",
             "exactly": "Exactly <%=v%>"
           }
-        },
-        "stopGenerationConfirmation": "Do you want to stop generation?",
-        "table": {
-          "designValue": "(same as now)",
-          "resultValues": {
-            "empty": "-",
-            "text": "레포트 보기"
-          }
-        },
-        "title": "실행",
-        "tooltips": {
-          "generatePermissions": "Not enough permissions to generate",
-          "viewPermissions": "Not enough permissions to view results"
         }
       },
       "loading": "Loading Cohort Pathway Analysis...",
@@ -2036,16 +2020,6 @@
     "changesNotSavedConfirmation": "Estimation Analysis changes are not saved. Would you like to continue?",
     "deleteConfirmation": "Delete estimation specification? Warning: deletion can not be undone!",
     "retrievingEstimations": "retrieving estimations",
-    "exec": {
-      "allExec": "모든 실행 항목 (<%=len%>)",
-      "downloadLatestResult": "마지막 결과 보기",
-      "generate": "실행",
-      "generating": "Generating...",
-      "generations": "실행",
-      "loadingGenerations": "Loading generations...",
-      "notPermitted": "Not enough permissions to generate or changes were not saved or Execution Engine is not available",
-      "notPermittedToViewResults": "Not enough permissions to view results"
-    },
     "spec": {
       "addAnalysisSettings": "분석 설정 추가",
       "addComparisons": "비교군 추가",
@@ -2738,6 +2712,15 @@
     "title": "코호트 정의"
   },
   "const": {
+    "disabledReason": {
+      "dirty": "Save changes before generate",
+      "accessDenied": "Access denied",
+      "invalidTar": "Invalid TAR",
+      "invalidDesign": "Design is not valid",
+      "engineNotAvalable": "Execution engine is not available",
+      "emptyCohorts": "No cohorts found",
+      "emptyInitionEvent": "Initial event is not set"
+    },
     "eventsList": {
       "addConditionEra": {
         "title": "Condition Era 추가 ",
@@ -3345,7 +3328,6 @@
     }
   },
   "predictions": {
-    "allExecutions": "모든 실행 항목 (<%=length%>)",
     "analysisSettings": "분석 설정",
     "confirmCatchSave": "An error occurred while attempting to save a prediction analysis.",
     "confirmChanges": "Patient level prediction changes are not saved. Would you like to continue?",
@@ -3354,7 +3336,6 @@
     "covariateSettingsDesc": "공변량 설정 추가 또는 업데이트",
     "covariateSettingsTitle": "공변량 설정",
     "descriptionPlaceholder": "enter a description here (1000 characters max)",
-    "downloadLatestResult": "마지막 결과 보기",
     "downloadStudyPackage": "Download Study Package",
     "retrievingPredictions": "retrieving predictions",
     "editors": {
@@ -3387,9 +3368,6 @@
     },
     "export": "내보내기",
     "fullAnalysisList": "Full Analysis List",
-    "generate": "실행",
-    "generating": "Generating...",
-    "generations": "실행",
     "import": "불러오기",
     "inputTypes": {
       "adaBoost": "Ada Boost 모델 설정",
@@ -3479,12 +3457,9 @@
     "itemId": "환자 수준 예측 #<%=id%>",
     "modelSettingsDesc": "아래 옵션을 사용하여 모델 설정을 편집하십시오.",
     "modelSettingsTitle": "모형 설정",
-    "loadingGenerations": "Loading generations...",
     "naiveMessage": "Naive Bayes에 대한 설정 조건은 없습니다.",
     "newItem": "새 환자 수준 예측",
     "newItemPlaceholder": "새 환자 수준 예측",
-    "notEnoughPermissions": "Not enough permissions to view results",
-    "notEnoughPermissionsToGenerate": "Not enough permissions to generate or changes were not saved or Execution Engine is not available",
     "pleaseNote": "참고:",
     "populationSettingsDesc": "모집단 설정 추가 또는 업데이트  (+ 모집단 설정 추가)",
     "populationSettingsTitle": "모집단 설정",

@@ -3,7 +3,7 @@ package org.ohdsi.webapi.security;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.info.ConfigurationInfo;
 import org.ohdsi.webapi.shiro.management.AtlasRegularSecurity;
-import org.ohdsi.webapi.shiro.management.AtlasSecurity;
+import org.ohdsi.webapi.shiro.management.Security;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +16,7 @@ public class SecurityConfigurationInfo extends ConfigurationInfo {
 
     public SecurityConfigurationInfo(@Value("${security.provider}") String securityProvider,
                                      @Value("${security.saml.enabled}") Boolean samlEnabled,
-                                     AtlasSecurity atlasSecurity) {
+                                     Security atlasSecurity) {
 
         boolean enabled = !Objects.equals(securityProvider, Constants.SecurityProviders.DISABLED);
 

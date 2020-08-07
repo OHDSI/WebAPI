@@ -1,5 +1,7 @@
 package org.ohdsi.webapi.report;
 
+import java.util.Objects;
+
 /**
  * 
  * i.e. donut
@@ -101,5 +103,24 @@ public class ConceptCountRecord {
 	 */
 	public void setCountValue(long countValue) {
 		this.countValue = countValue;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		ConceptCountRecord that = (ConceptCountRecord) o;
+		return conditionConceptId == that.conditionConceptId &&
+				observationConceptId == that.observationConceptId &&
+				conceptId == that.conceptId &&
+				countValue == that.countValue &&
+				Objects.equals(conditionConceptName, that.conditionConceptName) &&
+				Objects.equals(observationConceptName, that.observationConceptName) &&
+				Objects.equals(conceptName, that.conceptName);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(conditionConceptName, conditionConceptId, observationConceptName, observationConceptId, conceptName, conceptId, countValue);
 	}
 }

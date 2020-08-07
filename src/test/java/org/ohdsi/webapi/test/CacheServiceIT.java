@@ -20,7 +20,7 @@ import org.ohdsi.webapi.report.CDMAttribute;
 import org.ohdsi.webapi.report.CDMDashboard;
 import org.ohdsi.webapi.report.CDMResultsAnalysisRunner;
 import org.ohdsi.webapi.service.CDMResultsService;
-import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;

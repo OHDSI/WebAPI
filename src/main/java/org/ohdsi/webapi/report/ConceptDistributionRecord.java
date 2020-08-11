@@ -1,5 +1,7 @@
 package org.ohdsi.webapi.report;
 
+import java.util.Objects;
+
 /**
  * 
  * i.e. histogram record
@@ -45,6 +47,19 @@ public class ConceptDistributionRecord {
 	public void setCountValue(long countValue) {
 		this.countValue = countValue;
 	}
-	
-	
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		ConceptDistributionRecord that = (ConceptDistributionRecord) o;
+		return intervalIndex == that.intervalIndex &&
+				Double.compare(that.percentValue, percentValue) == 0 &&
+				countValue == that.countValue;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(intervalIndex, percentValue, countValue);
+	}
 }

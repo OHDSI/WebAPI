@@ -30,6 +30,12 @@ import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.transaction.support.TransactionTemplate;
+
+import java.sql.ResultSet;
+import java.util.AbstractMap;
+import java.util.HashMap;
 
 /**
  * @author fdefalco
@@ -38,11 +44,13 @@ public class CDMResultsCacheTasklet implements Tasklet {
     private static final Logger log = LoggerFactory.getLogger(CDMResultsCacheTasklet.class);
 
     private final JdbcTemplate jdbcTemplate;
+    private final TransactionTemplate transactionTemplate;
     private final Source source;
     private final DescendantRecordCountMapper descendantRecordCountMapper;
 
-    public CDMResultsCacheTasklet(final JdbcTemplate t, final Source s) {
+    public CDMResultsCacheTasklet(final JdbcTemplate t, final TransactionTemplate transactionTemplate, final Source s) {
         jdbcTemplate = t;
+        this.transactionTemplate = transactionTemplate;
         source = s;
         descendantRecordCountMapper = new DescendantRecordCountMapper();
     }
@@ -77,13 +85,23 @@ public class CDMResultsCacheTasklet implements Tasklet {
         String sql_statement = ResourceHelper.GetResourceAsString(sqlScriptPath);
         String[] tables = {"resultTableQualifier", "vocabularyTableQualifier"};
         String[] tableValues = {resultTableQualifier, vocabularyTableQualifier};
-        PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql_statement, tables, tableValues, SessionUtils.sessionId());
 
-        jdbcTemplate.query(psr.getSql(), psr.getSetter(), resultSet -> {
-            DescendantRecordCount descendantRecordCount = descendantRecordCountMapper.mapRow(resultSet);
-            cdmResultsCache.cacheValue(descendantRecordCount);
-        });
-        cdmResultsCache.warm();
+        PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql_statement, tables, tableValues,
+          SessionUtils.sessionId());
+
+        try {
+            transactionTemplate.execute(s -> {
+                jdbcTemplate.query(psr.getSql(), psr.getSetter(), resultSet -> {
+                    DescendantRecordCount descendantRecordCount = descendantRecordCountMapper.mapRow(resultSet);
+                    cdmResultsCache.cacheValue(descendantRecordCount);
+                });
+                return null;
+            });
+            cdmResultsCache.warm();
+        } catch (Exception e) {
+            log.error("Failed to warm cache for {}. Exception: {}", source.getSourceKey(), e.getLocalizedMessage());
+            throw e;
+        }
     }
 
 }

@@ -4,7 +4,7 @@ DROP VIEW ${ohdsiSchema}.pathway_analysis_generation;
 DROP VIEW ${ohdsiSchema}.prediction_analysis_generation;
 DROP VIEW ${ohdsiSchema}.user_import_job_history;
 
-ALTER TABLE ${ohdsiSchema}.user_import_job ADD (user_roles VARCHAR);
+ALTER TABLE ${ohdsiSchema}.user_import_job ADD (user_roles CLOB);
 
 CREATE OR REPLACE VIEW ${ohdsiSchema}.cc_generation as
   SELECT job.job_execution_id                                               id,

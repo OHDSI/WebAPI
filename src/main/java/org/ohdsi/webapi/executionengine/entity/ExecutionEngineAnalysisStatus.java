@@ -31,6 +31,9 @@ public class ExecutionEngineAnalysisStatus {
     @Enumerated(EnumType.STRING)
     private Status executionStatus;
 
+    @Column(name = "amount_files_in_analysis")
+    private Integer amountFilesInAnalysis;
+
     @ManyToOne(targetEntity = ExecutionEngineGenerationEntity.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "job_execution_id")
     private ExecutionEngineGenerationEntity executionEngineGeneration;
@@ -74,5 +77,16 @@ public class ExecutionEngineAnalysisStatus {
 
     public void setResultFiles(List<AnalysisResultFile> resultFiles) {
       this.resultFiles = resultFiles;
+    }
+
+
+    public Integer getAmountFilesInAnalysis() {
+
+        return amountFilesInAnalysis;
+    }
+
+    public void setAmountFilesInAnalysis(Integer amountFilesInAnalysis) {
+
+        this.amountFilesInAnalysis = amountFilesInAnalysis;
     }
 }

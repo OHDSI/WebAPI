@@ -185,9 +185,15 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
 
         return this.predictionAnalysisRepository.findOne(id, COMMONS_ENTITY_GRAPH);
     }
-    
+
     @Override
     public PatientLevelPredictionAnalysisImpl exportAnalysis(int id) {
+        
+        return exportAnalysis(id, sourceService.getPriorityVocabularySource().getSourceKey());
+    }
+    
+    @Override
+    public PatientLevelPredictionAnalysisImpl exportAnalysis(int id, String sourceKey) {
         PredictionAnalysis pred = predictionAnalysisRepository.findOne(id);
         PatientLevelPredictionAnalysisImpl expression;
         try {
@@ -214,7 +220,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         ArrayList<AnalysisConceptSet> pcsList = new ArrayList<>();
         HashMap<Integer, ArrayList<Long>> conceptIdentifiers = new HashMap<>();
         for (AnalysisConceptSet pcs : expression.getConceptSets()) {
-            pcs.expression = conceptSetService.getConceptSetExpression(pcs.id);
+            pcs.expression = conceptSetService.getConceptSetExpression(pcs.id, sourceKey);
             pcsList.add(pcs);
             conceptIdentifiers.put(pcs.id, new ArrayList<>(vocabularyService.resolveConceptSetExpression(pcs.expression)));
         }
@@ -336,7 +342,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         AnalysisFile analysisFile = new AnalysisFile();
         analysisFile.setFileName(packageFilename);
         try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-          PatientLevelPredictionAnalysisImpl analysis = exportAnalysis(predictionAnalysisId);
+          PatientLevelPredictionAnalysisImpl analysis = exportAnalysis(predictionAnalysisId, sourceKey);
           hydrateAnalysis(analysis, packageName, out);
           analysisFile.setContents(out.toByteArray());
         }

@@ -16,10 +16,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.convert.support.GenericConversionService;
+import org.springframework.core.env.Environment;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
+import javax.annotation.PostConstruct;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -76,14 +81,14 @@ public class SourceController extends AbstractDaoService {
     sourceService.ensureSourceEncrypted();
     return getSources();
   }
-  
-  @Path("priorityVocabulary")	
-  @GET	
-  @Produces(MediaType.APPLICATION_JSON)	
-  public SourceInfo getPriorityVocabularySourceInfo() {	
-    return new SourceInfo(sourceService.getPrioritySourceForDaimon(SourceDaimon.DaimonType.Vocabulary));
+
+  @Path("priorityVocabulary")
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  public SourceInfo getPriorityVocabularySourceInfo() {
+    return sourceService.getPriorityVocabularySourceInfo();
   }
-  
+
   @Path("{key}")
   @GET
   @Produces(MediaType.APPLICATION_JSON)

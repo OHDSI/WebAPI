@@ -30,6 +30,10 @@ security.saml.keyManager.defaultKey=apollo - keystore alias
 security.saml.sloUrl=https://localhost:8443/cas/logout - identity provider logout URL
 security.saml.callbackUrl=http://localhost:8080/WebAPI/user/saml/callback - URL called from identity provider after login
 
+## Geospatial support
+
+Instructions can be found at [webapi-component-geospatial](https://github.com/OHDSI/webapi-component-geospatia)
+
 ## Testing
 
 It was chosen to use embedded PG instead of H2 for unit tests since H2 doesn't support window functions, `md5` function, HEX to BIT conversion, `setval`, `set datestyle`, CTAS + CTE.

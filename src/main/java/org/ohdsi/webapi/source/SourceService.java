@@ -150,6 +150,10 @@ public class SourceService extends AbstractDaoService {
         return getPrioritySourceForDaimon(SourceDaimon.DaimonType.Vocabulary);
     }
 
+    public SourceInfo getPriorityVocabularySourceInfo() {
+        return new SourceInfo(getPrioritySourceForDaimon(SourceDaimon.DaimonType.Vocabulary));
+    }
+
     public void invalidateCache() {
 
         this.cachedSources = null;

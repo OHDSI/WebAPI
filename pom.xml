@@ -18,7 +18,7 @@
 
     <circe.version>1.9.0-SNAPSHOT</circe.version>
     <jersey.version>2.14</jersey.version>
-    <SqlRender.version>1.6.3-SNAPSHOT</SqlRender.version>
+    <SqlRender.version>1.6.4-SNAPSHOT</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
     <pac4j.version>4.0.0</pac4j.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
@@ -839,7 +839,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>SkeletonCohortCharacterization</artifactId>
-      <version>1.1.0-SNAPSHOT</version>
+      <version>1.1.0</version>
       <exclusions>
         <exclusion>
           <groupId>org.ohdsi</groupId>

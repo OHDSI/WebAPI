@@ -65,6 +65,7 @@
     "accessDenied": "Доступ запрещен",
     "delete": "Удалить",
     "download": "Скачать",
+    "downloading": "Скачивание...",
     "import": "Импорт",
     "export": "Экспорт",
     "daysAbbr": "д",

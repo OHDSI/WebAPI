@@ -75,6 +75,7 @@
     "delete": "Delete",
     "deselectAll": "Deselect All",
     "download": "다운로드",
+    "downloading": "다운로드...",
     "export": "내보내기",
     "import": "불러오기",
     "loading": "Loading",

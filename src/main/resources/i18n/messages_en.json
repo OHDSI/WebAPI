@@ -75,6 +75,7 @@
     "delete": "Delete",
     "deselectAll": "Deselect All",
     "download": "Download",
+    "downloading": "Downloading...",
     "export": "Export",
     "import": "Import",
     "loading": "Loading",

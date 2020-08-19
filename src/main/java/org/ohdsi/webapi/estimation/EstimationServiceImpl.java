@@ -77,7 +77,7 @@ import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 public class EstimationServiceImpl extends AnalysisExecutionSupport implements EstimationService, GeneratesNotification {
     
     private static final String CONCEPT_SET_XREF_KEY_TARGET_COMPARATOR_OUTCOME = "estimationAnalysisSettings.analysisSpecification.targetComparatorOutcomes";
-    private static final String CONCEPT_SET_XREF_KEY_NEGATIVE_CONTROL_OUTCOMES = "negativeControlOutcomes";
+    public static final String CONCEPT_SET_XREF_KEY_NEGATIVE_CONTROL_OUTCOMES = "negativeControlOutcomes";
     private static final String CONCEPT_SET_XREF_KEY_COHORT_METHOD_COVAR = "estimationAnalysisSettings.analysisSpecification.cohortMethodAnalysisList.getDbCohortMethodDataArgs.covariateSettings";
     private static final String CONCEPT_SET_XREF_KEY_POS_CONTROL_COVAR = "positiveControlSynthesisArgs.covariateSettings";
     private static final String CONCEPT_SET_XREF_KEY_INCLUDED_COVARIATE_CONCEPT_IDS = "includedCovariateConceptIds";
@@ -215,6 +215,12 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
 
     @Override
     public EstimationAnalysisImpl exportAnalysis(Estimation est) {
+        
+        return exportAnalysis(est, sourceService.getPriorityVocabularySource().getSourceKey());
+    }
+
+    @Override
+    public EstimationAnalysisImpl exportAnalysis(Estimation est, String sourceKey) {
 
         EstimationAnalysisImpl expression;
         try {
@@ -242,7 +248,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         Map<Integer, List<Long>> conceptIdentifiers = new HashMap<>();
         Map<Integer, ConceptSetExpression> csExpressionList = new HashMap<>();
         for (AnalysisConceptSet pcs : expression.getConceptSets()) {
-            pcs.expression = conceptSetService.getConceptSetExpression(pcs.id);
+            pcs.expression = conceptSetService.getConceptSetExpression(pcs.id, sourceKey);
             csExpressionList.put(pcs.id, pcs.expression);
             ecsList.add(pcs);
             conceptIdentifiers.put(pcs.id, new ArrayList<>(vocabularyService.resolveConceptSetExpression(pcs.expression)));
@@ -430,7 +436,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         AnalysisFile analysisFile = new AnalysisFile();
         analysisFile.setFileName(packageFilename);
         try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            EstimationAnalysisImpl analysis = exportAnalysis(estimation);
+            EstimationAnalysisImpl analysis = exportAnalysis(estimation, sourceKey);
             hydrateAnalysis(analysis, packageName, out);
             analysisFile.setContents(out.toByteArray());
         }

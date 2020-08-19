@@ -18,6 +18,8 @@ public interface Constants {
   String FAILED = ExitStatus.FAILED.getExitCode();
   String CANCELED = "CANCELED";
 
+  String SYSTEM_USER = "system";
+
   String TEMP_COHORT_TABLE_PREFIX = "temp_cohort_";
   Float DEFAULT_THRESHOLD = 0.01f;
 
@@ -92,5 +94,15 @@ public interface Constants {
   interface CallbackUrlResolvers {
     String QUERY = "query";
     String PATH = "path";
+  }
+
+  interface Caches {
+    interface Datasources {
+      String DASHBOARD = "datasources.dashboard";
+      String PERSON = "datasources.person";
+      String DOMAIN = "datasources.domain";
+      String DRILLDOWN = "datasources.drilldown";
+      String DATADENSITY = "datasources.dataDensity";
+    }
   }
 }

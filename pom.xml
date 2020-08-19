@@ -18,7 +18,7 @@
 
     <circe.version>1.9.0-SNAPSHOT</circe.version>
     <jersey.version>2.14</jersey.version>
-    <SqlRender.version>1.6.3-SNAPSHOT</SqlRender.version>
+    <SqlRender.version>1.6.4-SNAPSHOT</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
     <pac4j.version>4.0.0</pac4j.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
@@ -139,6 +139,7 @@
     <security.duration.initial>10</security.duration.initial>
     <security.duration.increment>10</security.duration.increment>
 
+    <security.saml.enabled>false</security.saml.enabled>
     <security.saml.entityId>com:odysseusinc:atlas:sp</security.saml.entityId>
     <security.saml.idpMetadataLocation></security.saml.idpMetadataLocation>
     <security.saml.keyManager.keyStoreFile></security.saml.keyManager.keyStoreFile>
@@ -214,6 +215,8 @@
     <cache.generation.invalidAfterDays>7</cache.generation.invalidAfterDays>
     <cache.generation.cleanupInterval>60000</cache.generation.cleanupInterval>
     <cache.generation.useAsync>false</cache.generation.useAsync>
+    <!-- Period in milliseconds between running checks to detect freshness of cached data -->
+    <cache.inspection.period>3600000</cache.inspection.period>
 
     <!-- Build info -->
     <buildinfo.atlas.milestone.id>22</buildinfo.atlas.milestone.id>
@@ -284,6 +287,12 @@
         </executions>
         <configuration>
           <generateGitPropertiesFile>false</generateGitPropertiesFile>
+          <!-- only include properties to speed up plugin -->
+          <!-- ref: https://github.com/git-commit-id/git-commit-id-maven-plugin/issues/462 -->
+          <includeOnlyProperties>    
+              <includeOnlyProperty>git.branch</includeOnlyProperty>
+              <includeOnlyProperty>git.commit.id.abbrev</includeOnlyProperty>
+          </includeOnlyProperties>          
         </configuration>
       </plugin>
       <plugin>
@@ -529,6 +538,7 @@
 		<dependency>
 			<groupId>org.ehcache</groupId>
 			<artifactId>ehcache</artifactId>
+            <version>3.8.1</version>
 		</dependency>
     <dependency>
       <groupId>org.hibernate</groupId>
@@ -828,7 +838,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>SkeletonCohortCharacterization</artifactId>
-      <version>1.1.0-SNAPSHOT</version>
+      <version>1.1.0</version>
       <exclusions>
         <exclusion>
           <groupId>org.ohdsi</groupId>
@@ -890,7 +900,7 @@
         <artifactId>dbunit-plus</artifactId>
         <version>2.0.1</version>
         <scope>test</scope>
-    </dependency>     
+    </dependency>
   </dependencies>
   <profiles>
     <profile>

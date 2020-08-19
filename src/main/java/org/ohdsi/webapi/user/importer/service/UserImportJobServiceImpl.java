@@ -33,6 +33,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.ohdsi.webapi.Constants.SYSTEM_USER;
+
 @Service
 @Transactional
 public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> implements UserImportJobService {
@@ -171,7 +173,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
     public void run() {
       JobParameters jobParameters = new JobParametersBuilder()
               .addString(Constants.Params.JOB_NAME, String.format("Users import for %s", getProviderName(job.getProviderType())))
-              .addString(Constants.Params.JOB_AUTHOR, "system")
+              .addString(Constants.Params.JOB_AUTHOR, SYSTEM_USER)
               .addString(Constants.Params.USER_IMPORT_ID, String.valueOf(job.getId()))
               .toJobParameters();
 

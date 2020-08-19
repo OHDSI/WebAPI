@@ -1,4 +1,4 @@
-package org.ohdsi.webapi;
+package org.ohdsi.webapi.plugins;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.ComponentScan;

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -18,8 +19,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
-
-import static org.ohdsi.webapi.Constants.WARM_CACHE_BY_USER;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
@@ -43,13 +42,19 @@ public class NotificationServiceImpl implements NotificationService {
             WHITE_LIST.add(g.getJobName());
             FOLDING_KEYS.add(g.getExecutionFoldingKey());
         });
-
-        // Custom job is not associated with the entity
-        WHITE_LIST.add(WARM_CACHE_BY_USER);
     }
 
     @Override
     public List<JobExecutionInfo> findLastJobs(List<BatchStatus> hideStatuses) {
+        return findJobs(hideStatuses, MAX_SIZE, false);
+    }
+
+    @Override
+    public List<JobExecutionInfo> findAllLastJobs() {
+        return findJobs(Collections.emptyList(), Integer.MAX_VALUE, true);
+    }
+
+    public List<JobExecutionInfo> findJobs(List<BatchStatus> hideStatuses, int maxSize, boolean includeAll) {
         BiFunction<JobExecutionInfo, JobExecutionInfo, JobExecutionInfo> mergeFunction = (x, y) -> {
             final Date xStartTime = x != null ? x.getJobExecution().getStartTime() : null;
             final Date yStartTime = y != null ? y.getJobExecution().getStartTime() : null;
@@ -62,7 +67,7 @@ public class NotificationServiceImpl implements NotificationService {
         };
         final Map<String, JobExecutionInfo> allJobMap = new HashMap<>();
         final Map<String, JobExecutionInfo> userJobMap = new HashMap<>();
-        for (int start = 0; userJobMap.size() < MAX_SIZE || allJobMap.size() < MAX_SIZE; start += PAGE_SIZE) {
+        for (int start = 0; userJobMap.size() < maxSize || allJobMap.size() < maxSize; start += PAGE_SIZE) {
             final List<JobExecution> page = jobExecutionDao.getJobExecutions(start, PAGE_SIZE);
             if(page.size() == 0) {
                 break;
@@ -72,8 +77,8 @@ public class NotificationServiceImpl implements NotificationService {
                 if (hideStatuses.contains(jobExec.getStatus())) {
                     continue;
                 }
-                if (isInWhiteList(jobExec)) {
-                    boolean isMine = isMine(jobExec);
+                if (includeAll || isInWhiteList(jobExec)) {
+                    boolean isMine = !includeAll && isMine(jobExec);
                     if (userJobMap.size() < MAX_SIZE && isMine) {
                         JobExecutionInfo executionInfo = new JobExecutionInfo(jobExec, JobOwnerType.USER_JOB);
                         userJobMap.merge(getFoldingKey(jobExec), executionInfo, mergeFunction);

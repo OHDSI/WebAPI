@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.shiro;
 
 import com.odysseusinc.logging.event.AddUserEvent;
+import com.odysseusinc.logging.event.DeleteRoleEvent;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authz.AuthorizationInfo;
@@ -214,6 +215,7 @@ public class PermissionManager {
   }
 
   public void removeRole(Long roleId) {
+    eventPublisher.publishEvent(new DeleteRoleEvent(this, roleId));
     this.roleRepository.delete(roleId);
   }
 

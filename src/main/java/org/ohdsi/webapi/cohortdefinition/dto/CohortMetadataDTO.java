@@ -11,10 +11,6 @@ public class CohortMetadataDTO extends CommonEntityDTO implements CohortMetadata
     private Integer id;
     private String name;
     private String description;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
-    private Date createdDate;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
-    private Date modifiedDate;
 
     public Integer getId() {
 
@@ -46,21 +42,5 @@ public class CohortMetadataDTO extends CommonEntityDTO implements CohortMetadata
     public void setDescription(String description) {
 
         this.description = description;
-    }
-
-    public Date getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
-    }
-
-    public Date getModifiedDate() {
-        return modifiedDate;
-    }
-
-    public void setModifiedDate(Date modifiedDate) {
-        this.modifiedDate = modifiedDate;
     }
 }

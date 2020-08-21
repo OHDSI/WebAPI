@@ -1,53 +1,49 @@
 package org.ohdsi.webapi.test;
 
+import com.github.springtestdbunit.annotation.DatabaseSetup;
 import org.junit.Test;
-import org.ohdsi.webapi.vocabulary.Domain;
-import org.ohdsi.webapi.vocabulary.Vocabulary;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 
-/**
- *
- */
+@DatabaseSetup("/database/source.xml")
 public class VocabularyServiceIT extends WebApiIT {
-    
+
     @Value("${vocabularyservice.endpoint.vocabularies}")
     private String endpointVocabularies;
-    
+
     @Value("${vocabularyservice.endpoint.concept}")
     private String endpointConcept;
-    
+
     @Value("${vocabularyservice.endpoint.domains}")
     private String endpointDomains;
-    
+
     @Test
-    public void concept() {
-        log.info("Testing concept endpoint");
+    public void canGetConcept() {
+
+        //Action
         final ResponseEntity<String> entity = getRestTemplate().getForEntity(this.endpointConcept, String.class);
+        
+        //Assertion
         assertOK(entity);
     }
-    
+
     @Test
-    public void vocabularies() {
-        log.info("Testing vocabulary endpoint");
+    public void canGetVocabularies() {
+
+        //Action
         final ResponseEntity<String> entity = getRestTemplate().getForEntity(this.endpointVocabularies, String.class);
+        
+        //Assertion
         assertOK(entity);
-        //or
-        Vocabulary[] vocabularies = getRestTemplate().getForObject(this.endpointVocabularies, Vocabulary[].class);
-        for (Vocabulary v : vocabularies) {
-            log.debug("Vocab: " + v.vocabularyName);
-        }
     }
-    
+
     @Test
-    public void domains() {
-        log.info("Testing domain endpoint");
+    public void canGetDomains() {
+
+        //Action
         final ResponseEntity<String> entity = getRestTemplate().getForEntity(this.endpointDomains, String.class);
+
+        //Assertion
         assertOK(entity);
-        //or
-        Domain[] domains = getRestTemplate().getForObject(this.endpointDomains, Domain[].class);
-        for (Domain d : domains) {
-            log.debug("Domain:" + d.domainName);
-        }
     }
 }

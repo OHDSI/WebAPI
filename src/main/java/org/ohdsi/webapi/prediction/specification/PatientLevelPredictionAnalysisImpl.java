@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.ohdsi.analysis.prediction.design.PatientLevelPredictionAnalysis;
 import org.ohdsi.analysis.hydra.design.SkeletonTypeEnum;
+import org.ohdsi.webapi.CommonDTO;
 import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
 import org.ohdsi.webapi.analysis.AnalysisConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetCrossReferenceImpl;
@@ -16,7 +17,7 @@ import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
  * @author asena5
  */
 @JsonIgnoreProperties(ignoreUnknown=true)
-public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictionAnalysis {
+public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictionAnalysis, CommonDTO {
   private Integer id = null;
   private String name = null;
   private String description = null;

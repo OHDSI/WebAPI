@@ -56,7 +56,8 @@ public class PermissionService {
 
     private Repositories repositories;
 
-    private ThreadLocal<ConcurrentHashMap<String, Set<RoleDTO>>> permissionCache = ThreadLocal.withInitial(ConcurrentHashMap::new);
+    private ThreadLocal<ConcurrentHashMap<EntityType, ConcurrentHashMap<String, Set<RoleDTO>>>> permissionCache =
+            ThreadLocal.withInitial(ConcurrentHashMap::new);
 
     private final EntityGraph PERMISSION_ENTITY_GRAPH = EntityGraphUtils.fromAttributePaths("rolePermissions", "rolePermissions.role");
 
@@ -166,44 +167,47 @@ public class PermissionService {
     }
 
 
-    public void preparePermissionCache(Set<String> permissionTemplates) {
-        List<String> permissionsSQLTemplates = permissionTemplates.stream()
-                .map(pt -> getPermissionSqlTemplate(pt))
-                .collect(Collectors.toList());
+    public void preparePermissionCache(EntityType entityType, Set<String> permissionTemplates) {
+        if (permissionCache.get().get(entityType) == null) {
+            final ConcurrentHashMap<String, Set<RoleDTO>> rolesForEntity = new ConcurrentHashMap<>();
+            permissionCache.get().put(entityType, rolesForEntity);
 
-        Map<Long, RoleDTO> roleDTOMap = new HashMap<>();
-        permissionsSQLTemplates.forEach(p -> {
-            Iterable<PermissionEntity> permissionEntities = permissionRepository.findByValueLike(p, PERMISSION_ENTITY_GRAPH);
-            for (PermissionEntity permissionEntity : permissionEntities) {
-                Set<RoleDTO> roles = permissionCache.get().get(permissionEntity.getValue());
-                if (roles == null) {
-                    permissionCache.get().put(permissionEntity.getValue(), new HashSet<>());
-                }
-                Set<RoleDTO> cachedRoles = permissionCache.get().get(permissionEntity.getValue());
-                permissionEntity.getRolePermissions().forEach(rp -> {
-                    RoleDTO roleDTO = roleDTOMap.get(rp.getRole().getId());
-                    if (roleDTO == null) {
-                        roleDTO = conversionService.convert(rp.getRole(), RoleDTO.class);
-                        roleDTOMap.put(roleDTO.getId(), roleDTO);
+            List<String> permissionsSQLTemplates = permissionTemplates.stream()
+                    .map(pt -> getPermissionSqlTemplate(pt))
+                    .collect(Collectors.toList());
+
+            Map<Long, RoleDTO> roleDTOMap = new HashMap<>();
+            permissionsSQLTemplates.forEach(p -> {
+                Iterable<PermissionEntity> permissionEntities = permissionRepository.findByValueLike(p, PERMISSION_ENTITY_GRAPH);
+                for (PermissionEntity permissionEntity : permissionEntities) {
+                    Set<RoleDTO> roles = rolesForEntity.get(permissionEntity.getValue());
+                    if (roles == null) {
+                        rolesForEntity.put(permissionEntity.getValue(), new HashSet<>());
                     }
-                    cachedRoles.add(roleDTO);
-                });
-            }
-        });
+                    Set<RoleDTO> cachedRoles = rolesForEntity.get(permissionEntity.getValue());
+                    permissionEntity.getRolePermissions().forEach(rp -> {
+                        RoleDTO roleDTO = roleDTOMap.get(rp.getRole().getId());
+                        if (roleDTO == null) {
+                            roleDTO = conversionService.convert(rp.getRole(), RoleDTO.class);
+                            roleDTOMap.put(roleDTO.getId(), roleDTO);
+                        }
+                        cachedRoles.add(roleDTO);
+                    });
+                }
+            });
+        }
     }
 
     public List<RoleDTO> getRolesHavingPermissions(EntityType entityType, Number id) {
         Set<String> permissionTemplates = getTemplatesForType(entityType, AccessType.WRITE).keySet();
-        if (permissionCache.get().isEmpty()) {
-            preparePermissionCache(permissionTemplates);
-        }
+        preparePermissionCache(entityType, permissionTemplates);
 
         List<String> permissions = permissionTemplates.stream()
                 .map(pt -> getPermission(pt, id))
                 .collect(Collectors.toList());
         int fitCount = permissions.size();
         Map<RoleDTO, Long> roleMap = permissions.stream()
-                .flatMap(p -> permissionCache.get().get(p).stream())
+                .flatMap(p -> permissionCache.get().get(entityType).get(p).stream())
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
         List<RoleDTO> roles = roleMap.entrySet().stream()
                 .filter(es -> es.getValue() == fitCount)

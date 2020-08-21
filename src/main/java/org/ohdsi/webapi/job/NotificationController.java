@@ -40,7 +40,7 @@ public class NotificationController {
     @Transactional(readOnly = true)
     public List<JobExecutionResource> list(
             @QueryParam("hide_statuses") String hideStatuses,
-            @DefaultValue("FALSE") @QueryParam("includeAll") Boolean includeAll) {
+            @DefaultValue("FALSE") @QueryParam("refreshJobs") Boolean refreshJobs) {
         List<BatchStatus> statuses = new ArrayList<>();
         if (StringUtils.isNotEmpty(hideStatuses)) {
             for (String status : hideStatuses.split(",")) {
@@ -52,8 +52,8 @@ public class NotificationController {
             }
         }
         List<JobExecutionInfo> executionInfos;
-        if (includeAll) {
-            executionInfos = service.findAllLastJobs();
+        if (refreshJobs) {
+            executionInfos = service.findRefreshCacheLastJobs();
         } else {
             executionInfos = service.findLastJobs(statuses);
         }

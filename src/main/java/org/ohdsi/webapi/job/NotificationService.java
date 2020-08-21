@@ -8,7 +8,7 @@ import java.util.List;
 public interface NotificationService {
     List<JobExecutionInfo> findLastJobs(List<BatchStatus> hideStatuses);
 
-    List<JobExecutionInfo> findAllLastJobs();
+    List<JobExecutionInfo> findRefreshCacheLastJobs();
 
     Date getLastViewedTime() throws Exception;
 

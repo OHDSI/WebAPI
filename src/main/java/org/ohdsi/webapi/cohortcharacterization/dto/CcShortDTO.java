@@ -2,19 +2,13 @@ package org.ohdsi.webapi.cohortcharacterization.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.util.Date;
-import org.ohdsi.webapi.CommonDTO;
 import org.ohdsi.webapi.cohortcharacterization.CcConst;
+import org.ohdsi.webapi.service.dto.CommonEntityDTO;
 import org.ohdsi.webapi.user.dto.UserDTO;
 
-public class CcShortDTO implements CommonDTO {
+public class CcShortDTO extends CommonEntityDTO {
     
     private Long id;
-    private UserDTO createdBy;
-    @JsonFormat(pattern = CcConst.dateFormat)
-    private Date createdAt;
-    private UserDTO updatedBy;
-    @JsonFormat(pattern = CcConst.dateFormat)
-    private Date updatedAt;
     private Integer hashCode;
     private String name;
 
@@ -26,36 +20,16 @@ public class CcShortDTO implements CommonDTO {
         this.id = id;
     }
 
-    public UserDTO getCreatedBy() {
-        return createdBy;
+    @JsonFormat(pattern = CcConst.dateFormat)
+    @Override
+    public Date getCreatedDate() {
+        return super.getCreatedDate();
     }
 
-    public void setCreatedBy(final UserDTO createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(final Date createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public UserDTO getUpdatedBy() {
-        return updatedBy;
-    }
-
-    public void setUpdatedBy(final UserDTO updatedBy) {
-        this.updatedBy = updatedBy;
-    }
-
-    public Date getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(final Date updatedAt) {
-        this.updatedAt = updatedAt;
+    @JsonFormat(pattern = CcConst.dateFormat)
+    @Override
+    public Date getModifiedDate() {
+        return super.getModifiedDate();
     }
 
     public Integer getHashCode() {

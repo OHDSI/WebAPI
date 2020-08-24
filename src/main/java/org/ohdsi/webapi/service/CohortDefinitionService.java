@@ -8,6 +8,8 @@ package org.ohdsi.webapi.service;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.check.Checker;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
@@ -96,6 +98,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
@@ -354,9 +357,11 @@ public class CohortDefinitionService extends AbstractDaoService {
   @GET
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
+  @Transactional
   public List<CohortMetadataDTO> getCohortDefinitionList() {
 
     List<CohortDefinition> definitions = cohortDefinitionRepository.list();
+
     return definitions.stream()
             .map(def -> conversionService.convert(def, CohortMetadataDTO.class))
             .collect(Collectors.toList());

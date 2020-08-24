@@ -24,8 +24,6 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.annotation.PostConstruct;
@@ -207,6 +205,7 @@ public class PermissionService {
                 .collect(Collectors.toList());
         int fitCount = permissions.size();
         Map<RoleDTO, Long> roleMap = permissions.stream()
+                .filter(p -> permissionCache.get().get(entityType).get(p) != null)
                 .flatMap(p -> permissionCache.get().get(entityType).get(p).stream())
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
         List<RoleDTO> roles = roleMap.entrySet().stream()

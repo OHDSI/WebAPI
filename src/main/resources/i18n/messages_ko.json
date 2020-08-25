@@ -1101,7 +1101,8 @@
       "vocabulary": "용어",
       "relationship": "Relationship",
       "distance": "Distance",
-      "severity": "중증도"
+      "severity": "중증도",
+      "designs": "Designs"
     },
     "values": {
       "warning": "Warning",
@@ -1124,6 +1125,10 @@
       "preset": "Preset",
       "criteriaSet": "Criteria set",
       "custom": "custom"
+    },
+    "designs": {
+      "myDesigns": "My designs",
+      "otherDesigns": "Other designs"
     }
   },
   "columns": {

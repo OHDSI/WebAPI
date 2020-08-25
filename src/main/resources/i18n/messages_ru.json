@@ -1101,7 +1101,8 @@
       "drugLabelExists": "Предлагаемый отрицательный контроль",
       "relationship": "Отношения",
       "distance": "Дистанция",
-      "severity": "Строгость"
+      "severity": "Строгость",
+      "designs": "Дизайны"
     },
     "values": {
       "warning": "Предупреждение",
@@ -1124,6 +1125,10 @@
       "preset": "Пресет",
       "criteriaSet": "Набор критериев",
       "custom": "Пользовательский"
+    },
+    "designs": {
+      "myDesigns": "Мои дизайны",
+      "otherDesigns": "Прочие дизайны"
     }
   },
   "columns": {

@@ -16,18 +16,14 @@ public class PathwayAnalysisToPathwayAnalysisExportDTOConverter extends BasePath
     private ConverterUtils converterUtils;
 
     @Override
-    public PathwayAnalysisExportDTO convert(PathwayAnalysisEntity pathwayAnalysis) {
-
-        PathwayAnalysisExportDTO dto = super.convert(pathwayAnalysis);
-
-        dto.setEventCohorts(converterUtils.convertList(new ArrayList<>(pathwayAnalysis.getEventCohorts()), PathwayCohortExportDTO.class));
-        dto.setTargetCohorts(converterUtils.convertList(new ArrayList<>(pathwayAnalysis.getTargetCohorts()), PathwayCohortExportDTO.class));
-
-        return dto;
+    public void doConvert(PathwayAnalysisEntity pathwayAnalysis, PathwayAnalysisExportDTO target) {
+        super.doConvert(pathwayAnalysis, target);
+        target.setEventCohorts(converterUtils.convertList(new ArrayList<>(pathwayAnalysis.getEventCohorts()), PathwayCohortExportDTO.class));
+        target.setTargetCohorts(converterUtils.convertList(new ArrayList<>(pathwayAnalysis.getTargetCohorts()), PathwayCohortExportDTO.class));
     }
 
     @Override
-    protected PathwayAnalysisExportDTO getTargetObject() {
+    protected PathwayAnalysisExportDTO createResultObject() {
 
         return new PathwayAnalysisExportDTO();
     }

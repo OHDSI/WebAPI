@@ -22,11 +22,7 @@ public class ExecutionEngineGenerationEntityToDtoConverter<T extends ExecutionEn
       dto.setStatus(source.getAnalysisExecution().getExecutionStatus().name());
     }
     if (nonNull(source.getAnalysisExecution()) && nonNull(source.getAnalysisExecution().getResultFiles())) {
-      Integer amountFiles = source.getAnalysisExecution().getAmountFilesInAnalysis();
-      if (isNull(amountFiles)) {
-        amountFiles = source.getAnalysisExecution().getResultFiles().size();
-      }
-      dto.setNumResultFiles(amountFiles);
+      dto.setNumResultFiles(source.getAnalysisExecution().getResultFiles().size());
     } else {
       dto.setNumResultFiles(0);
     }

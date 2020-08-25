@@ -39,27 +39,25 @@ public class AnalysisZipRepackServiceTest {
     @Test
     public void processArchivesIsBigEnoughToSplitIntoMultiplyVolumes() {
 
-        AnalysisZipRepackService.AnalysisRepackResult analysisRepackResult = analysisZipRepackService.process(this.resultFileContents, 1);
-        List<String> fileNamesAfterRepack = analysisRepackResult.getResultFileContents().stream().map(f -> f.getAnalysisResultFile().getFileName()).collect(Collectors.toList());
+        List<AnalysisResultFileContent> analysisRepackResult = analysisZipRepackService.process(this.resultFileContents, 1);
+        List<String> fileNamesAfterRepack = analysisRepackResult.stream().map(f -> f.getAnalysisResultFile().getFileName()).collect(Collectors.toList());
         assertThat(
                 fileNamesAfterRepack,
                 Matchers.containsInAnyOrder("analysis_result.zip", "analysis_result.z01", "analysis_result.z02", "analysis_result.z03", "analysis_result.z04", "stdout.txt")
         );
-        assertThat(analysisRepackResult.getAmountFilesInAnalysis(), is(4));
     }
 
 
     @Test
     public void processArchivesIsNotBigEnoughToSplitIntoMultiplyVolumes() {
 
-        AnalysisZipRepackService.AnalysisRepackResult analysisRepackResult = analysisZipRepackService.process(this.resultFileContents, 5);
+        List<AnalysisResultFileContent> analysisRepackResult = analysisZipRepackService.process(this.resultFileContents, 5);
 
-        List<String> fileNamesAfterRepack = analysisRepackResult.getResultFileContents().stream().map(f -> f.getAnalysisResultFile().getFileName()).collect(Collectors.toList());
+        List<String> fileNamesAfterRepack = analysisRepackResult.stream().map(f -> f.getAnalysisResultFile().getFileName()).collect(Collectors.toList());
         assertThat(
                 fileNamesAfterRepack,
                 Matchers.containsInAnyOrder("analysis_result.zip", "stdout.txt")
         );
-        assertThat(analysisRepackResult.getAmountFilesInAnalysis(), is(4));
     }
 
     @Test
@@ -71,14 +69,13 @@ public class AnalysisZipRepackServiceTest {
                 new AnalysisResultFileContent(execution, "file2.txt", "text/plain", getTestArchive("/analysisresult/stdout.txt"))
         );
 
-        AnalysisZipRepackService.AnalysisRepackResult analysisRepackResult = analysisZipRepackService.process(this.resultFileContents, 5);
+        List<AnalysisResultFileContent> analysisRepackResult = analysisZipRepackService.process(this.resultFileContents, 5);
 
-        List<String> fileNamesAfterRepack = analysisRepackResult.getResultFileContents().stream().map(f -> f.getAnalysisResultFile().getFileName()).collect(Collectors.toList());
+        List<String> fileNamesAfterRepack = analysisRepackResult.stream().map(f -> f.getAnalysisResultFile().getFileName()).collect(Collectors.toList());
         assertThat(
                 fileNamesAfterRepack,
                 Matchers.containsInAnyOrder("file1.txt", "file2.txt", "stdout.txt")
         );
-        assertThat(analysisRepackResult.getAmountFilesInAnalysis(), is(3));
     }
 
 

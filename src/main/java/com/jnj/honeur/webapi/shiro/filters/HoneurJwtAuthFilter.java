@@ -26,8 +26,11 @@ public final class HoneurJwtAuthFilter extends AtlasAuthFilter {
         String subject;
 
         HttpServletRequest httpServletRequest = WebUtils.toHttp(request);
+        String serverName = httpServletRequest.getServerName();
         Optional<Cookie> fingerprintCookie = Arrays.stream(httpServletRequest.getCookies())
-                .filter(cookie -> cookie.getName().equals("userFingerprint")).findFirst();
+                .filter(cookie -> cookie.getName().equals("userFingerprint"))
+                .filter(cookie -> cookie.getDomain().contains(serverName))
+                .findFirst();
 
         try {
             if(fingerprintCookie.isPresent()) {

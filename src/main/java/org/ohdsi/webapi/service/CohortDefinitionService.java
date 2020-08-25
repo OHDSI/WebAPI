@@ -24,6 +24,7 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
 import org.ohdsi.webapi.cohortdefinition.InclusionRuleReport;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortGenerationInfoDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
 import org.ohdsi.webapi.cohortdefinition.event.CohortDefinitionChangedEvent;
@@ -487,8 +488,8 @@ public class CohortDefinitionService extends AbstractDaoService {
 
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOne(id);
-
-    return cohortGenerationService.generateCohortViaJob(currentDefinition, source, Objects.nonNull(includeFeatures));
+    UserEntity user = userRepository.findByLogin(security.getSubject());
+    return cohortGenerationService.generateCohortViaJob(user, currentDefinition, source, Objects.nonNull(includeFeatures));
   }
 
   @GET
@@ -531,7 +532,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}/info")
   @Transactional
-  public List<CohortGenerationInfo> getInfo(@PathParam("id") final int id) {
+  public List<CohortGenerationInfoDTO> getInfo(@PathParam("id") final int id) {
     CohortDefinition def = this.cohortDefinitionRepository.findOne(id);
     if (Objects.isNull(def)) {
       throw new IllegalArgumentException(String.format("There is no cohort definition with id = %d.", id));
@@ -541,7 +542,11 @@ public class CohortDefinitionService extends AbstractDaoService {
     List<CohortGenerationInfo> result = infoList.stream().filter(genInfo -> sourceIdAccessor.hasAccess(genInfo.getId().getSourceId())).collect(Collectors.toList());
 
     Map<Integer, Source> sourceMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_ID);
-    return sensitiveInfoService.filterSensitiveInfo(result, gi -> Collections.singletonMap(Constants.Variables.SOURCE, sourceMap.get(gi.getId().getSourceId())));
+    List<CohortGenerationInfo> filteredResult = sensitiveInfoService.filterSensitiveInfo(result,
+            gi -> Collections.singletonMap(Constants.Variables.SOURCE, sourceMap.get(gi.getId().getSourceId())));
+    return filteredResult.stream()
+            .map(t -> conversionService.convert(t, CohortGenerationInfoDTO.class))
+            .collect(Collectors.toList());
   }
 
   /**

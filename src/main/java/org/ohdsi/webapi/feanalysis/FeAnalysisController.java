@@ -4,9 +4,7 @@ import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.common.OptionDTO;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisAggregateEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
-import org.ohdsi.webapi.feanalysis.dto.FeAnalysisAggregateDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
 import org.springframework.core.convert.ConversionService;
@@ -18,7 +16,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Path("/feature-analysis")
 @Controller
@@ -99,6 +96,62 @@ public class FeAnalysisController {
     }
 
     @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/copy")
+    @Transactional
+    public FeAnalysisDTO copy(@PathParam("id") final Integer feAnalysisId) {
+        final FeAnalysisEntity feAnalysis = service.findById(feAnalysisId)
+                .orElseThrow(NotFoundException::new);
+        final FeAnalysisEntity feAnalysisForCopy = getNewEntityForCopy(feAnalysis);
+
+        FeAnalysisEntity saved;
+        switch (feAnalysis.getType()) {
+            case CRITERIA_SET:
+                saved = service.createCriteriaAnalysis((FeAnalysisWithCriteriaEntity) feAnalysisForCopy);
+                break;
+            case PRESET:
+            case CUSTOM_FE:
+                saved = service.createAnalysis(feAnalysisForCopy);
+                break;
+            default:
+                throw new IllegalArgumentException("Analysis with type: " + feAnalysis.getType() + " cannot be copied");
+        }
+
+        return convertFeAnalysisToDto(saved);
+    }
+
+    private FeAnalysisEntity getNewEntityForCopy(FeAnalysisEntity entity) {
+        FeAnalysisEntity entityForCopy;
+        switch (entity.getType()) {
+            case CRITERIA_SET:
+                switch (entity.getStatType()) {
+                    case PREVALENCE:
+                        entityForCopy = new FeAnalysisWithPrevalenceCriteriaEntity((FeAnalysisWithCriteriaEntity) entity);
+                        break;
+                    case DISTRIBUTION:
+                        entityForCopy = new FeAnalysisWithDistributionCriteriaEntity((FeAnalysisWithCriteriaEntity) entity);
+                        break;
+                    default:
+                        throw new IllegalArgumentException();
+                }
+                break;
+            case PRESET:
+            case CUSTOM_FE:
+                entityForCopy = new FeAnalysisWithStringEntity((FeAnalysisWithStringEntity) entity);
+                break;
+            default:
+                throw new IllegalArgumentException("Analysis with type: " + entity.getType() + " cannot be copied");
+        }
+        entityForCopy.setId(null);
+        entityForCopy.setName(
+                NameUtils.getNameForCopy(entityForCopy.getName(), this::getNamesLike, service.findByName(entityForCopy.getName())));
+        entityForCopy.setModifiedBy(null);
+        entityForCopy.setModifiedDate(null);
+
+        return entityForCopy;
+    }
+
+    @GET
     @Path("/aggregates")
     public List<FeAnalysisAggregateDTO> listAggregates() {
         return service.findAggregates().stream()
@@ -114,6 +167,9 @@ public class FeAnalysisController {
         return conversionService.convert(entity, FeAnalysisDTO.class);
     }
 
+    private List<String> getNamesLike(String copyName) {
+        return service.getNamesLike(copyName);
+    }
     private FeAnalysisAggregateDTO convertFeAnalysisAggregateToDto(final FeAnalysisAggregateEntity entity) {
         return conversionService.convert(entity, FeAnalysisAggregateDTO.class);
     }

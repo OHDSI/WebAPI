@@ -6,6 +6,14 @@ public class UserDTO {
     private String name;
     private String login;
 
+    public UserDTO() {
+    }
+
+    // For deserialization of old expressions
+    public UserDTO(String login) {
+        this.login = login;
+    }
+
     public String getName() {
 
         return name;

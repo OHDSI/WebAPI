@@ -1,17 +1,27 @@
 package org.ohdsi.webapi.service;
 
 import org.ohdsi.webapi.GenerationStatus;
-import org.ohdsi.webapi.cohortdefinition.*;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
+import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
+import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfoRepository;
+import org.ohdsi.webapi.cohortdefinition.GenerateCohortTasklet;
+import org.ohdsi.webapi.cohortdefinition.GenerationJobExecutionListener;
 import org.ohdsi.webapi.cohortfeatures.GenerateCohortFeaturesTasklet;
 import org.ohdsi.webapi.generationcache.GenerationCacheHelper;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.SourceUtils;
 import org.ohdsi.webapi.util.TempTableCleanupManager;
-import org.springframework.batch.core.*;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
@@ -26,7 +36,12 @@ import java.util.List;
 import java.util.Objects;
 
 import static org.ohdsi.webapi.Constants.GENERATE_COHORT;
-import static org.ohdsi.webapi.Constants.Params.*;
+import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
+import static org.ohdsi.webapi.Constants.Params.GENERATE_STATS;
+import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
+import static org.ohdsi.webapi.Constants.Params.SESSION_ID;
+import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
+import static org.ohdsi.webapi.Constants.Params.TARGET_DATABASE_SCHEMA;
 
 @Component
 @DependsOn("flyway")
@@ -57,11 +72,14 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     this.generationCacheHelper = generationCacheHelper;
   }
 
-  public JobExecutionResource generateCohortViaJob(CohortDefinition cohortDefinition, Source source, boolean includeFeatures) {
+  public JobExecutionResource generateCohortViaJob(UserEntity userEntity, CohortDefinition cohortDefinition, Source source, boolean includeFeatures) {
 
     CohortGenerationInfo info = cohortDefinition.getGenerationInfoList().stream()
             .filter(val -> Objects.equals(val.getId().getSourceId(), source.getSourceId())).findFirst()
             .orElse(new CohortGenerationInfo(cohortDefinition, source.getSourceId()));
+
+    info.setCreatedBy(userEntity);
+
     cohortDefinition.getGenerationInfoList().add(info);
 
     info.setStatus(GenerationStatus.PENDING)

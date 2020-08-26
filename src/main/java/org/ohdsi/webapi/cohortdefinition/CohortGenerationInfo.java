@@ -17,16 +17,18 @@ package org.ohdsi.webapi.cohortdefinition;
 
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.IExecutionInfo;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
 
-import java.io.Serializable;
-import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.MapsId;
 import javax.persistence.Table;
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  *
@@ -81,6 +83,10 @@ public class CohortGenerationInfo implements Serializable, IExecutionInfo {
 	
   @Column(name="record_count")
   private Long recordCount;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "created_by_id")
+  private UserEntity createdBy;
 
   public CohortGenerationInfoId getId() {
     return id;
@@ -186,4 +192,11 @@ public class CohortGenerationInfo implements Serializable, IExecutionInfo {
       return this;
   }
 
+  public void setCreatedBy(UserEntity createdBy) {
+    this.createdBy = createdBy;
+  }
+
+  public UserEntity getCreatedBy() {
+    return createdBy;
+  }
 }

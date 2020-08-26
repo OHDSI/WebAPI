@@ -11,7 +11,6 @@ public interface Constants {
   String GENERATE_PREDICTION_ANALYSIS = "generatePredictionAnalysis";
   String GENERATE_ESTIMATION_ANALYSIS = "generateEstimationAnalysis";
   String WARM_CACHE = "warmCache";
-  String WARM_CACHE_BY_USER = "warmCacheByUser";
   String USERS_IMPORT = "usersImport";
   String JOB_IS_ALREADY_SCHEDULED = "Job for provider %s is already scheduled";
 
@@ -94,5 +93,15 @@ public interface Constants {
   interface CallbackUrlResolvers {
     String QUERY = "query";
     String PATH = "path";
+  }
+
+  interface Caches {
+    interface Datasources {
+      String DASHBOARD = "datasources.dashboard";
+      String PERSON = "datasources.person";
+      String DOMAIN = "datasources.domain";
+      String DRILLDOWN = "datasources.drilldown";
+      String DATADENSITY = "datasources.dataDensity";
+    }
   }
 }

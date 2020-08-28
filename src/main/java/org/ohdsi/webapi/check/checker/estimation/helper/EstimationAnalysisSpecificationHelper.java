@@ -1,7 +1,5 @@
 package org.ohdsi.webapi.check.checker.estimation.helper;
 
-import java.util.Collection;
-import java.util.function.Function;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.CohortMethodAnalysis;
 import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.ComparativeCohortAnalysis;
@@ -13,6 +11,9 @@ import org.ohdsi.webapi.check.builder.PredicateValidatorBuilder;
 import org.ohdsi.webapi.check.builder.ValidatorBuilder;
 import org.ohdsi.webapi.check.builder.ValidatorGroupBuilder;
 import org.ohdsi.webapi.estimation.comparativecohortanalysis.specification.CohortMethodAnalysisImpl;
+
+import java.util.Collection;
+import java.util.function.Function;
 
 public class EstimationAnalysisSpecificationHelper {
 
@@ -62,13 +63,27 @@ public class EstimationAnalysisSpecificationHelper {
             return json;
         };
 
-        ValidatorGroupBuilder<ComparativeCohortAnalysis, Collection<? extends CohortMethodAnalysis>> builder = new ValidatorGroupBuilder<ComparativeCohortAnalysis, Collection<? extends CohortMethodAnalysis>>()
+        ValidatorBuilder<CohortMethodAnalysis> iptwValidatorBuilder = new PredicateValidatorBuilder<CohortMethodAnalysis>()
+                .predicate(t -> {
+                    if (t != null
+                            && t.getFitOutcomeModelArgs() != null
+                            && Boolean.TRUE.equals(t.getFitOutcomeModelArgs().getInversePtWeighting())) {
+                        return Boolean.TRUE.equals(t.getCreatePs());
+                    }
+                    return false;
+                })
+                .errorMessage("createPs should be set to true when inverse probability of treatment weighting (IPTW) for the outcome model is specified ");
+
+        ValidatorGroupBuilder<ComparativeCohortAnalysis, Collection<? extends CohortMethodAnalysis>> builder =
+                new ValidatorGroupBuilder<ComparativeCohortAnalysis, Collection<? extends CohortMethodAnalysis>>()
                 .attrName("analysis settings")
                 .valueGetter(ComparativeCohortAnalysis::getCohortMethodAnalysisList)
                 .validators(
                         new NotNullNotEmptyValidatorBuilder<>(),
                         new DuplicateValidatorBuilder<CohortMethodAnalysis, String>()
-                                .elementGetter(elementGetter)
+                                .elementGetter(elementGetter),
+                        new IterableForEachValidatorBuilder<CohortMethodAnalysis>()
+                                .validator(iptwValidatorBuilder)
                 );
         return builder;
     }

@@ -211,9 +211,7 @@
       },
       "datatable": {
         "viewReports": "Просмотр отчетов",
-        "sameAsNow": "(текущий)",
-        "download": "Скачать <%=num%> файлов",
-        "downloading": "Скачивание <%=num%> файлов..."
+        "sameAsNow": "(текущий)"
       },
       "noCompletedExecutionsForDataSource": "Для данного источника еще нет завершенных исследований.",
       "stopGenerationConfirmation": "Действительно остановить исследование?"

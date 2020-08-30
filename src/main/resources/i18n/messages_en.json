@@ -228,9 +228,7 @@
       },
       "datatable": {
         "viewReports": "View reports",
-        "sameAsNow": "(same as now)",
-        "download": "Download <%=num%> files",
-        "downloading": "Downloading <%=num%> files..."
+        "sameAsNow": "(same as now)"
       },
       "noCompletedExecutionsForDataSource": "There is no completed executions for the data source yet.",
       "stopGenerationConfirmation": "Do you want to stop generation?"

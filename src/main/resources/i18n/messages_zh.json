@@ -1996,7 +1996,7 @@
           }
         }
       },
-      "loading": "Loading Cohort Pathway Analysis...",
+      "loading": "正在载入队列路径...",
       "messages": {
         "alreadyExists": "具有该名称的队列路径已经存在。 请选择其他名称。",
         "beforeClose": "您的更改未保存。 您想继续吗？",

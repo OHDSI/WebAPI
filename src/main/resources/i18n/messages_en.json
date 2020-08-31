@@ -1404,7 +1404,8 @@
       "type": "Type",
       "upperLimitDistribution": "Upper Limit Distribution",
       "valueAsConcept": "Value As Concept",
-      "valuesRelativeToNormalRange": "Values Relative to Normal Range"
+      "valuesRelativeToNormalRange": "Values Relative to Normal Range",
+      "lengthOfEraDistribution": "Length of Era Distribution"
     },
     "errorLoadingReport": "Error loading report",
     "headingTitle": "Data Sources",

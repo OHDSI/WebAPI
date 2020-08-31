@@ -1440,6 +1440,7 @@
       "qualifierConcept": "Спецификатор концепции",
       "frequencyDistribution": "Распределение по частоте",
       "ageAtFirstOccurrence": "Возраст при первом вхождении",
+      "lengthOfEraDistribution": "Распределение длительности эры",
       "chartFormat": {
         "percentOfTotalNumberOfPersons": "% от общего количества человек",
         "date": "Дата",

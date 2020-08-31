@@ -1404,7 +1404,8 @@
       "type": "유형",
       "upperLimitDistribution": "상한 분포",
       "valueAsConcept": "값 (컨셉아이디)",
-      "valuesRelativeToNormalRange": "이상값 여부"
+      "valuesRelativeToNormalRange": "이상값 여부",
+      "lengthOfEraDistribution": "Length of Era Distribution"
     },
     "errorLoadingReport": "Error loading report",
     "headingTitle": "데이터 소스",

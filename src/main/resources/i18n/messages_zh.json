@@ -1404,7 +1404,8 @@
       "type": "类型",
       "upperLimitDistribution": "上限分布",
       "valueAsConcept": "值作为概念",
-      "valuesRelativeToNormalRange": "相对于正常范围的值"
+      "valuesRelativeToNormalRange": "相对于正常范围的值",
+      "lengthOfEraDistribution": "周期分布的长度"
     },
     "errorLoadingReport": "加载报告时出错",
     "headingTitle": "数据来源",

@@ -1228,13 +1228,6 @@
     "started": "Запущено",
     "finished": "Завершено",
     "message": "Сообщение",
-    "covariateId": "Идентификатор ковариаты",
-    "covariateName": "Ковариат Название",
-    "analysisId": "Идентификатор анализа",
-    "timeWindow": "Окно времени",
-    "countValue": "Значение счета",
-    "perOfCohort": "% от когорты",
-    "avgValue": "в среднем",
     "relationshipType": "Тип отношений",
     "distance": "Расстояние",
     "analysis": "Анализ",
@@ -2564,26 +2557,6 @@
         "generation": "Генерация",
         "messages": "Сообщения",
         "reporting": "Составление отчетов"
-      }
-    },
-    "cohortFeatureBrowser": {
-      "cohortFeatureBrowserText_1": "Долгосрочный:",
-      "cohortFeatureBrowserText_2": "365 дневный просмотр.",
-      "cohortFeatureBrowserText_3": "Средняя степень:",
-      "cohortFeatureBrowserText_4": "180d назад",
-      "cohortFeatureBrowserText_5": "Временный:",
-      "cohortFeatureBrowserText_6": "30-е годы назад.",
-      "cohortFeatureBrowserText_7": "Перекрытие:",
-      "cohortFeatureBrowserText_8": "Событие охватывает дату начала когорты.",
-      "cohortFeatureBrowserText_9": "Изучение иерархии понятий для:",
-      "tabs": {
-        "conditions": "условия",
-        "demographics": "Демография",
-        "distributions": "Распределения",
-        "drugs": "наркотики",
-        "measurements": "измерения",
-        "observations": "наблюдения",
-        "procedures": "процедуры"
       }
     },
     "cohortId": "Когорта #<%=id%>",

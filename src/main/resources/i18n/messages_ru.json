@@ -1354,7 +1354,8 @@
       "measurement": "Измерения",
       "observation": "Наблюдения",
       "death": "Смерти",
-      "achillesHeel": "Ахиллесова пята"
+      "achillesHeel": "Ахиллесова пята",
+      "observationPeriod": "Период наблюдений"
     },
     "const": {
       "recordsPerPerson": "Записей на человека",
@@ -1454,6 +1455,25 @@
           "xLabel2": ")"
         }
       }
+    },
+    "observationPeriodReport" : {
+      "ageAtFirstObservation": "Возраст при первом наблюдении",
+      "ageByGender": "Возраст по полу",
+      "observationLength": "Длительность наблюдения",
+      "durationByGender": "Длительность по полу",
+      "cumulativeObservation": "Кумулятивное наблюдение",
+      "durationByAgeDecile": "Децильная длительность по возрасту",
+      "personsWithContinuousObservationByYear": "Пациенты с продолжительным наблюдением по годам",
+      "observationPeriodsPerPerson": "Периоды наблюдений на человека",
+      "personsWithContinuousObservationByMonth": "Пациенты с продолжительным наблюдением по месяцам",
+      "age": "Возраст",
+      "people": "Пациенты",
+      "gender": "Пол",
+      "days": "Дни",
+      "ageDecile": "Децильный возраст",
+      "percentOfPopulation": "Процент населения",
+      "years": "Годы",
+      "date": "Дата"
     }
   },
   "search": {

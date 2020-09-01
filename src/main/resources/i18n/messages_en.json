@@ -1413,6 +1413,25 @@
     "loadingReport": "Loading report",
     "noPermission": "You have no permissions to see this report",
     "numberOfPeople": "Number of People",
+    "observationPeriodReport" : {
+      "ageAtFirstObservation": "Age at First Observation",
+      "ageByGender": "Age by Gender",
+      "observationLength": "Observation Length",
+      "durationByGender": "Duration By Gender",
+      "cumulativeObservation": "Cumulative Observation",
+      "durationByAgeDecile": "Duration By Age Decile",
+      "personsWithContinuousObservationByYear": "Persons With Continuous Observation By Year",
+      "observationPeriodsPerPerson": "Observation Periods per Person",
+      "personsWithContinuousObservationByMonth": "Persons With Continuous Observation By Month",
+      "age": "Age",
+      "people": "People",
+      "gender": "Gender",
+      "days": "Days",
+      "ageDecile": "Age Decile",
+      "percentOfPopulation": "Percent of Population",
+      "years": "Years",
+      "date": "Date"
+    },
     "personReport": {
       "ethnicity": "Ethnicity",
       "ethnicityFooter": "The number of people in this cohort stratified by ethnicity.",
@@ -1440,7 +1459,8 @@
       "person": "Person",
       "procedure": "Procedure",
       "titleTail": " Report",
-      "visit": "Visit"
+      "visit": "Visit",
+      "observationPeriod": "Observation Period"
     },
     "selectAReport": "Select a Report",
     "selectASource": "Select a Source",

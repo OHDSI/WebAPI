@@ -3328,7 +3328,7 @@
       "executionEditorText_4": "공변량 정규화:",
       "populationEditorText_1": "표적 코호트 진입을 기준으로 위험 노출 구간(time-at-risk)의 시작일을 설정합니다:",
       "populationEditorText_2": "포함한 컨셉 목록에  하위 컨셉을 추가합니까?",
-      "populationEditorText_3": "성향 점수 모델의 기준 공변량에 어떤 컨셉을 제외하시겠습니까? (모든 것을 포함하려면 비워 둡니다)",
+      "populationEditorText_3": "표적 코호트에 적용되는 최소 선행 관찰 기간",
       "populationEditorText_4": "위험 노출 기간이 없는 대상자를 제거해야 합니까?",
       "populationEditorText_5": "[예] 최소 위험노출 기간",
       "populationEditorText_6": "최소 위험 노출 기간을 만족하지 못하더라도 결과가 나타난 사람을 포함하겠습니까?",

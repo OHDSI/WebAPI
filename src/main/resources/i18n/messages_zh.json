@@ -3329,7 +3329,7 @@
       "executionEditorText_4": "标准化协变量：",
       "populationEditorText_1": "根据目标队列设置 time-at-risk窗口的开始",
       "populationEditorText_2": "应将后代概念添加到所包含概念的列表中吗？",
-      "populationEditorText_3": "您想在倾向得分模型的基线协变量中排除哪些概念？ （如果要包括所有内容，请保留空白）",
+      "populationEditorText_3": "对目标队列应用的最短回溯期：",
       "populationEditorText_4": "是否应该删除没有 time at risk 的对象？",
       "populationEditorText_5": "最小风险暴露期",
       "populationEditorText_6": "包括那些在整个风险时期内未观察到结果的人吗？",

@@ -3329,7 +3329,7 @@
       "executionEditorText_4": "Normalize covariates:",
       "populationEditorText_1": "Define the time-at-risk window start, relative to target cohort entry:",
       "populationEditorText_2": "Should descendant concepts be added to the list of included concepts?",
-      "populationEditorText_3": "What concepts do you want to exclude in baseline covariates in the propensity score model? (Leave blank if you want to include everything)",
+      "populationEditorText_3": "Minimum lookback period applied to target cohort:",
       "populationEditorText_4": "Should subjects without time at risk be removed?",
       "populationEditorText_5": "Minimum time at risk:",
       "populationEditorText_6": "Include people with outcomes who are not observed for the whole at risk period?",

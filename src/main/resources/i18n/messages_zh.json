@@ -95,7 +95,7 @@
     "unspecified": "未完成！",
     "menu": "菜单",
     "noData": "没有数据",
-    "readOnly": "(Read only)"
+    "readOnly": "（只读）"
   },
   "commonErrors": {
     "noSources": "当前的WebAPI尚未定义源。<br/>请在<a href=\"#/configure\">配置</a>页上添加一个或多个。",
@@ -213,7 +213,7 @@
         "allExecutions": "所有的执行结果 (<%=submissions%>)",
         "generate": "生成",
         "generating": "生成",
-        "pending": "Pending",
+        "pending": "等待中",
         "latestResult": "查看最后结果",
         "downloadLatestResult": "下载最新结果"
       },
@@ -230,7 +230,7 @@
         "viewReports": "查看报告",
         "sameAsNow": "(和现在一样)"
       },
-      "noCompletedExecutionsForDataSource": "There is no completed executions for the data source yet.",
+      "noCompletedExecutionsForDataSource": "数据源尚未完成执行。",
       "stopGenerationConfirmation": "您要停止生成吗？"
     },
     "atlasCohortEditor": {
@@ -855,7 +855,7 @@
       "percentSatisfied": "满足纳入规则的百分比（%）",
       "percentToGain": "不满足纳入规则的百分比（%）",
       "populationVisualization": "人群可视化",
-      "rectSummary": "<%=size%> people (<%=percentage%>%), <%=passCount%> criteria passed, <%=failCount%> criteria failed."
+      "rectSummary": "<%=size%>的病人（<%=percentage%>％），<%=passCount%>个条件通过，<%=failCount%>个条件失败。"
     },
     "feasibilityReportViewer": {
       "feasibilityReportViewerText_1": "匹配率",
@@ -1067,7 +1067,7 @@
   },
   "facets": {
     "caption": {
-      "analysisName": "Analysis Name",
+      "analysisName": "分析名称",
       "author": "作者",
       "class": "类别",
       "comparatorCohorts": "比较队列名字",
@@ -1100,7 +1100,7 @@
       "relationship": "关系",
       "distance": "距离",
       "severity": "严重程度",
-      "designs": "Designs"
+      "designs": "设计"
     },
     "values": {
       "warning": "警告",
@@ -1117,7 +1117,7 @@
     "match": {
       "both": "都",
       "only1": "只有唯一的",
-      "only2": "2 Only"
+      "only2": "仅有2"
     },
     "type": {
       "preset": "预设值",
@@ -1125,8 +1125,8 @@
       "custom": "自定义"
     },
     "designs": {
-      "myDesigns": "My designs",
-      "otherDesigns": "Other designs"
+      "myDesigns": "我的设计",
+      "otherDesigns": "其他设计"
     }
   },
   "columns": {
@@ -2372,7 +2372,7 @@
         "hostFqdn": {
           "label": "KrbHostFQDN:",
           "placeholder": "KrbHostFQDN",
-          "title": "KrbHostFQDN was parsed from jdbc link"
+          "title": "KrbHostFQDN是从jdbc链接解析的"
         },
         "keytab": {
           "label": "键表"
@@ -2385,7 +2385,7 @@
         "realm": {
           "label": "KrbRealm:",
           "placeholder": "KrbAdminServer",
-          "title": "KrbRealm was parsed from jdbc link"
+          "title": "KrbRealm是从jdbc链接解析的"
         },
         "sourceDaimons": {
           "label": "源daimons"
@@ -2711,13 +2711,13 @@
   },
   "const": {
     "disabledReason": {
-      "dirty": "Save changes before generate",
-      "accessDenied": "Access denied",
-      "invalidTar": "Invalid TAR",
-      "invalidDesign": "Design is not valid",
-      "engineNotAvalable": "Execution engine is not available",
-      "emptyCohorts": "No cohorts found",
-      "emptyInitionEvent": "Initial event is not set"
+      "dirty": "先保存更改再进行生成",
+      "accessDenied": "访问被拒绝",
+      "invalidTar": "无效的风险暴露期",
+      "invalidDesign": "设计是无效的",
+      "engineNotAvalable": "执行引擎不可用",
+      "emptyCohorts": "找不到队列",
+      "emptyInitionEvent": "未设置初始事件"
     },
     "eventsList": {
       "addConditionEra": {
@@ -3321,8 +3321,8 @@
     "status": "状态",
     "title": "通知（最后<%=length%>）",
     "tabs": {
-      "myJobs": "My jobs",
-      "allJobs": "All jobs"
+      "myJobs": "我的任务",
+      "allJobs": "所有任务"
     }
   },
   "predictions": {

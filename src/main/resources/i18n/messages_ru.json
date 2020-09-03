@@ -60,6 +60,7 @@
     "save": "Сохранить",
     "close": "Закрыть",
     "copy": "Копировать",
+    "copyOf": "Копия <%=name%>",
     "createACopy": "Создать копию",
     "configureAccess": "Настроить доступ",
     "accessDenied": "Доступ запрещен",

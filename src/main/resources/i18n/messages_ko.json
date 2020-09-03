@@ -68,6 +68,7 @@
     },
     "copiedToClipboard": "Copied To Clipboard!",
     "copy": "복사하기",
+    "copyOf": "Copy of <%=name%>",
     "copyToClipboard": "클립 보드에 복사",
     "createACopy": "Create a copy",
     "days": "days.",

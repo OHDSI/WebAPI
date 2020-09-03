@@ -68,6 +68,7 @@
     },
     "copiedToClipboard": "Copied To Clipboard!",
     "copy": "Copy",
+    "copyOf": "Copy of <%=name%>",
     "copyToClipboard": "Copy to clipboard",
     "createACopy": "Create a copy",
     "days": "days",

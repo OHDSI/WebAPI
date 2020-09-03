@@ -68,6 +68,7 @@
     },
     "copiedToClipboard": "已复制到剪贴板！",
     "copy": "复制",
+    "copyOf": "Copy of <%=name%>",
     "copyToClipboard": "复制到剪贴版",
     "createACopy": "建立副本",
     "days": "天",

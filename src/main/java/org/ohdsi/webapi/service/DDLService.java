@@ -62,11 +62,6 @@ public class DDLService {
 		"/ddl/results/cohort_inclusion_result_cache.sql",
 		"/ddl/results/cohort_inclusion_stats_cache.sql",
 		"/ddl/results/cohort_summary_stats_cache.sql",
-		// cohort features
-		"/ddl/results/cohort_features.sql",
-		"/ddl/results/cohort_features_analysis_ref.sql",
-		"/ddl/results/cohort_features_dist.sql",
-		"/ddl/results/cohort_features_ref.sql",
 		// cohort feasibility analysis
 		"/ddl/results/feas_study_inclusion_stats.sql",
 		"/ddl/results/feas_study_index_stats.sql",

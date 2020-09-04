@@ -1064,6 +1064,10 @@
       "invalidCharacters": "The name cannot contain any of the following characters: \\/:*?\"<>|  Please choose a different name.",
       "length": "The name length exceeds <%=length%> symbols. Please choose a different name.",
       "defaultName": "The name of the analysis should differ from the default one."
+    },
+    "checks": {
+      "runningDiagnostics": "Running Diagnostics",
+      "fixIt": "Fix It"
     }
   },
   "facets": {

@@ -1064,6 +1064,10 @@
       "invalidCharacters": "该名称不能包含以下任何字符：\\/:*?\"<>|  请选择其他名称。",
       "length": "名称长度超过<%=length%>个符号。请选择其他名称。",
       "defaultName": "分析的名称应与默认名称不同。"
+    },
+    "checks": {
+      "runningDiagnostics": "Running Diagnostics",
+      "fixIt": "Fix It"
     }
   },
   "facets": {

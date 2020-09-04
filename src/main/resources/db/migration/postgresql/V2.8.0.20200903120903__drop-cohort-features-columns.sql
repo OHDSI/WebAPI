@@ -27,3 +27,11 @@ where
   or sp.value like 'featureextraction:explore:prevalence:*:%:*:get'
   or sp.value like 'featureextraction:generatesql:%:*:get'
 	or sp.value like 'featureextraction:generate:%:*:get';
+
+drop table ${ohdsiSchema}.cohort_features_dist;
+
+drop table ${ohdsiSchema}.cohort_features;
+
+drop table ${ohdsiSchema}.cohort_features_ref;
+
+drop table ${ohdsiSchema}.cohort_features_analysis_ref;

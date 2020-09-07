@@ -7,7 +7,6 @@ import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfoRepository;
 import org.ohdsi.webapi.cohortdefinition.GenerateCohortTasklet;
 import org.ohdsi.webapi.cohortdefinition.GenerationJobExecutionListener;
-import org.ohdsi.webapi.cohortfeatures.GenerateCohortFeaturesTasklet;
 import org.ohdsi.webapi.generationcache.GenerationCacheHelper;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
@@ -72,7 +71,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     this.generationCacheHelper = generationCacheHelper;
   }
 
-  public JobExecutionResource generateCohortViaJob(UserEntity userEntity, CohortDefinition cohortDefinition, Source source, boolean includeFeatures) {
+  public JobExecutionResource generateCohortViaJob(UserEntity userEntity, CohortDefinition cohortDefinition, Source source) {
 
     CohortGenerationInfo info = cohortDefinition.getGenerationInfoList().stream()
             .filter(val -> Objects.equals(val.getId().getSourceId(), source.getSourceId())).findFirst()
@@ -85,14 +84,12 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     info.setStatus(GenerationStatus.PENDING)
             .setStartTime(Calendar.getInstance().getTime());
 
-    info.setIncludeFeatures(includeFeatures);
-
     cohortDefinitionRepository.save(cohortDefinition);
 
-    return runGenerateCohortJob(cohortDefinition, source, includeFeatures);
+    return runGenerateCohortJob(cohortDefinition, source);
   }
 
-  private Job buildGenerateCohortJob(CohortDefinition cohortDefinition, Source source, boolean includeFeatures, JobParameters jobParameters) {
+  private Job buildGenerateCohortJob(CohortDefinition cohortDefinition, Source source, JobParameters jobParameters) {
 
     log.info("Beginning generate cohort for cohort definition id: {}", cohortDefinition.getId());
 
@@ -121,24 +118,12 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     generateJobBuilder.listener(new GenerationJobExecutionListener(sourceService, cohortDefinitionRepository, this.getTransactionTemplateRequiresNew(),
             this.getSourceJdbcTemplate(source)));
 
-    if (includeFeatures) {
-      GenerateCohortFeaturesTasklet generateCohortFeaturesTasklet =
-              new GenerateCohortFeaturesTasklet(getSourceJdbcTemplate(source), getTransactionTemplate());
-
-      Step generateCohortFeaturesStep = stepBuilders.get("cohortFeatures.generateFeatures")
-              .tasklet(generateCohortFeaturesTasklet)
-              .exceptionHandler(exceptionHandler)
-              .build();
-
-      generateJobBuilder.next(generateCohortFeaturesStep);
-    }
-
     return generateJobBuilder.build();
   }
 
-  private JobExecutionResource runGenerateCohortJob(CohortDefinition cohortDefinition, Source source, boolean includeFeatures) {
+  private JobExecutionResource runGenerateCohortJob(CohortDefinition cohortDefinition, Source source) {
     final JobParametersBuilder jobParametersBuilder = getJobParametersBuilder(source, cohortDefinition);
-    Job job = buildGenerateCohortJob(cohortDefinition, source, includeFeatures, jobParametersBuilder.toJobParameters());
+    Job job = buildGenerateCohortJob(cohortDefinition, source, jobParametersBuilder.toJobParameters());
     return jobService.runJob(job, jobParametersBuilder.toJobParameters());
   }
 

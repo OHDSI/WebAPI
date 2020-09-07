@@ -72,9 +72,6 @@ public class CohortGenerationInfo implements Serializable, IExecutionInfo {
   @Column(name = "is_canceled")
   private boolean isCanceled;
 	
-  @Column(name="include_features", nullable = true)
-  private boolean includeFeatures = false;
-	
   @Column(name="fail_message")
   private String failMessage;
 	
@@ -154,15 +151,6 @@ public class CohortGenerationInfo implements Serializable, IExecutionInfo {
   @Override
   public IExecutionInfo setMessage(String message) {
     return setFailMessage(message);
-  }
-
-  public boolean isIncludeFeatures() {
-      return includeFeatures;
-  }
-
-  public CohortGenerationInfo setIncludeFeatures(boolean includeFeatures) {
-      this.includeFeatures = includeFeatures;
-      return this;
   }
 
   public String getFailMessage() {

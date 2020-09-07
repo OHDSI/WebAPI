@@ -17,7 +17,6 @@ public class CohortGenerationInfoToCohortGenerationInfoDTOConverter extends Base
         dto.setExecutionDuration(info.getExecutionDuration());
         dto.setFailMessage(info.getFailMessage());
         dto.setId(info.getId());
-        dto.setIncludeFeatures(info.isIncludeFeatures());
         dto.setPersonCount(info.getPersonCount());
         dto.setRecordCount(info.getRecordCount());
         dto.setStartTime(info.getStartTime());

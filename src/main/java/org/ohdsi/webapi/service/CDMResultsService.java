@@ -18,6 +18,7 @@ import org.ohdsi.webapi.report.CDMAchillesHeel;
 import org.ohdsi.webapi.report.CDMDashboard;
 import org.ohdsi.webapi.report.CDMDataDensity;
 import org.ohdsi.webapi.report.CDMDeath;
+import org.ohdsi.webapi.report.CDMObservationPeriod;
 import org.ohdsi.webapi.report.CDMPersonSummary;
 import org.ohdsi.webapi.report.CDMResultsAnalysisRunner;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
@@ -305,6 +306,21 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         cdmDeath = this.queryRunner.getDeathResults(this.getSourceJdbcTemplate(source), source);
         return cdmDeath;
+    }
+
+    /**
+     * Queries for observation period report for the given sourceKey
+     *
+     * @return CDMDataDensity
+     */
+    @GET
+    @Path("{sourceKey}/observationPeriod")
+    @Produces(MediaType.APPLICATION_JSON)
+
+    public CDMObservationPeriod getObservationPeriod(@PathParam("sourceKey")
+                             final String sourceKey) {
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        return this.queryRunner.getObservationPeriodResults(this.getSourceJdbcTemplate(source), source);
     }
 
     /**

@@ -8,18 +8,26 @@ package org.ohdsi.webapi.service;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.check.Checker;
-import org.ohdsi.circe.check.WarningSeverity;
-import org.ohdsi.circe.check.warnings.DefaultWarning;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.webapi.Constants;
-import org.ohdsi.webapi.cohortdefinition.*;
+import org.ohdsi.webapi.cohortdefinition.CleanupCohortTasklet;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
+import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
+import org.ohdsi.webapi.cohortdefinition.InclusionRuleReport;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortGenerationInfoDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
+import org.ohdsi.webapi.cohortdefinition.event.CohortDefinitionChangedEvent;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.common.sensitiveinfo.CohortGenerationSensitiveInfoService;
@@ -33,11 +41,11 @@ import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.shiro.management.datasource.SourceIdAccessor;
 import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
-import org.ohdsi.webapi.util.NameUtils;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.ExceptionUtils;
+import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.batch.core.Job;
@@ -50,6 +58,7 @@ import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -60,22 +69,42 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.ServletContext;
 import javax.transaction.Transactional;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static org.ohdsi.webapi.Constants.Params.*;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
+import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
+import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
+import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
@@ -135,6 +164,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 
   @Autowired
   private ObjectMapper objectMapper;
+
+  @Autowired
+  private ApplicationEventPublisher eventPublisher;
 
   @PersistenceContext
   protected EntityManager entityManager;
@@ -326,9 +358,11 @@ public class CohortDefinitionService extends AbstractDaoService {
   @GET
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
+  @Transactional
   public List<CohortMetadataDTO> getCohortDefinitionList() {
 
     List<CohortDefinition> definitions = cohortDefinitionRepository.list();
+
     return definitions.stream()
             .map(def -> conversionService.convert(def, CohortMetadataDTO.class))
             .collect(Collectors.toList());
@@ -435,7 +469,8 @@ public class CohortDefinitionService extends AbstractDaoService {
     currentDefinition.setModifiedBy(modifier);
     currentDefinition.setModifiedDate(currentTime);
 
-    this.cohortDefinitionRepository.save(currentDefinition);
+    currentDefinition = this.cohortDefinitionRepository.save(currentDefinition);
+    eventPublisher.publishEvent(new CohortDefinitionChangedEvent(currentDefinition));
     return getCohortDefinition(id);
   }
 
@@ -449,12 +484,12 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}/generate/{sourceKey}")
   @Transactional
-  public JobExecutionResource generateCohort(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, @QueryParam("includeFeatures") final String includeFeatures) {
+  public JobExecutionResource generateCohort(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
 
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOne(id);
-
-    return cohortGenerationService.generateCohortViaJob(currentDefinition, source, Objects.nonNull(includeFeatures));
+    UserEntity user = userRepository.findByLogin(security.getSubject());
+    return cohortGenerationService.generateCohortViaJob(user, currentDefinition, source);
   }
 
   @GET
@@ -476,10 +511,12 @@ public class CohortDefinitionService extends AbstractDaoService {
       return null;
     });
 
-    jobService.cancelJobExecution(Constants.GENERATE_COHORT, e -> {
-        JobParameters parameters = e.getJobParameters();
-        return Objects.equals(parameters.getString(COHORT_DEFINITION_ID), Integer.toString(id))
-              && Objects.equals(parameters.getString(SOURCE_ID), Integer.toString(source.getSourceId()));
+      jobService.cancelJobExecution(e -> {
+          JobParameters parameters = e.getJobParameters();
+          String jobName = e.getJobInstance().getJobName();
+          return Objects.equals(parameters.getString(COHORT_DEFINITION_ID), Integer.toString(id))
+                  && Objects.equals(parameters.getString(SOURCE_ID), Integer.toString(source.getSourceId()))
+                  && Objects.equals(Constants.GENERATE_COHORT, jobName);
       });
     return Response.status(Response.Status.OK).build();
   }
@@ -495,7 +532,7 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}/info")
   @Transactional
-  public List<CohortGenerationInfo> getInfo(@PathParam("id") final int id) {
+  public List<CohortGenerationInfoDTO> getInfo(@PathParam("id") final int id) {
     CohortDefinition def = this.cohortDefinitionRepository.findOne(id);
     if (Objects.isNull(def)) {
       throw new IllegalArgumentException(String.format("There is no cohort definition with id = %d.", id));
@@ -505,7 +542,11 @@ public class CohortDefinitionService extends AbstractDaoService {
     List<CohortGenerationInfo> result = infoList.stream().filter(genInfo -> sourceIdAccessor.hasAccess(genInfo.getId().getSourceId())).collect(Collectors.toList());
 
     Map<Integer, Source> sourceMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_ID);
-    return sensitiveInfoService.filterSensitiveInfo(result, gi -> Collections.singletonMap(Constants.Variables.SOURCE, sourceMap.get(gi.getId().getSourceId())));
+    List<CohortGenerationInfo> filteredResult = sensitiveInfoService.filterSensitiveInfo(result,
+            gi -> Collections.singletonMap(Constants.Variables.SOURCE, sourceMap.get(gi.getId().getSourceId())));
+    return filteredResult.stream()
+            .map(t -> conversionService.convert(t, CohortGenerationInfoDTO.class))
+            .collect(Collectors.toList());
   }
 
   /**
@@ -550,10 +591,12 @@ public class CohortDefinitionService extends AbstractDaoService {
                 def.getGenerationInfoList().forEach(cohortGenerationInfo -> {
                     Integer sourceId = cohortGenerationInfo.getId().getSourceId();
 
-                    jobService.cancelJobExecution(Constants.GENERATE_COHORT, e -> {
+                    jobService.cancelJobExecution(e -> {
                         JobParameters parameters = e.getJobParameters();
+                        String jobName = e.getJobInstance().getJobName();
                         return Objects.equals(parameters.getString(COHORT_DEFINITION_ID), Integer.toString(id))
-                                && Objects.equals(parameters.getString(SOURCE_ID), Integer.toString(sourceId));
+                                && Objects.equals(parameters.getString(SOURCE_ID), Integer.toString(sourceId))
+                                && Objects.equals(Constants.GENERATE_COHORT, jobName);
                     });
                 });
                 cohortDefinitionRepository.delete(def);
@@ -664,40 +707,13 @@ public class CohortDefinitionService extends AbstractDaoService {
     return report;
   }
 
-  private CheckResultDTO runChecks(int id, final String expression) {
-      CheckResultDTO result;
-      try {
-          CohortExpression cohortExpression = objectMapper.readValue(expression, CohortExpression.class);
-          result = runChecks(id, cohortExpression);
-      } catch (IOException e) {
-          log.error("Failed to parse cohort:{} expression", id, e);
-          result = new CheckResultDTO(id, Stream.of(new DefaultWarning(WarningSeverity.INFO,"Failed to check expression"))
-                  .collect(Collectors.toList()));
-      }
-      return result;
-  }
-
-  private CheckResultDTO runChecks(int id, CohortExpression expression) {
-      Checker checker = new Checker();
-      return new CheckResultDTO(id, checker.check(expression));
-  }
-
-  @GET
-  @Path("/{id}/check")
-  @Produces(MediaType.APPLICATION_JSON)
-  @Transactional
-  public CheckResultDTO getCheckResults(@PathParam("id") int id) {
-    CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(id);
-    String expression = cohortDefinition.getDetails().getExpression();
-    return runChecks(id, expression);
-  }
-
   @POST
-  @Path("/{id}/check")
+  @Path("/check")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   @Transactional
-  public CheckResultDTO runDiagnostics(@PathParam("id") int id, CohortExpression expression){
-      return runChecks(id, expression);
+  public CheckResultDTO runDiagnostics(CohortExpression expression){
+      Checker checker = new Checker();
+      return new CheckResultDTO(checker.check(expression));
   }
 }

@@ -63,12 +63,7 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
     final PrincipalCollection principals = SecurityUtils.getSubject().getPrincipals();
     Object principal = principals.getPrimaryPrincipal();
     
-    if (principal instanceof Principal) {
-      login = ((Principal) principal).getName();
-    } else if (principal instanceof UserPrincipal){
-      login = ((UserPrincipal) principal).getUsername();
-      name = ((UserPrincipal) principal).getName();
-    } else if (principal instanceof Pac4jPrincipal) {
+    if (principal instanceof Pac4jPrincipal) {
       login = ((Pac4jPrincipal)principal).getProfile().getEmail();
       name = ((Pac4jPrincipal)principal).getProfile().getDisplayName();
       
@@ -97,6 +92,11 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
         httpResponse.sendRedirect(oauthFailURI.toString());
         return false;
       }
+    } else     if (principal instanceof Principal) {
+      login = ((Principal) principal).getName();
+    } else if (principal instanceof UserPrincipal){
+      login = ((UserPrincipal) principal).getUsername();
+      name = ((UserPrincipal) principal).getName();
     } else if (principal instanceof String) {
       login = (String)principal;
     } else {

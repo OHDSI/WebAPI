@@ -4,11 +4,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.BatchStatus;
-import org.springframework.batch.core.JobExecution;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -39,7 +39,8 @@ public class NotificationController {
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional(readOnly = true)
     public List<JobExecutionResource> list(
-            @QueryParam("hide_statuses") String hideStatuses) {
+            @QueryParam("hide_statuses") String hideStatuses,
+            @DefaultValue("FALSE") @QueryParam("refreshJobs") Boolean refreshJobs) {
         List<BatchStatus> statuses = new ArrayList<>();
         if (StringUtils.isNotEmpty(hideStatuses)) {
             for (String status : hideStatuses.split(",")) {
@@ -50,7 +51,13 @@ public class NotificationController {
                 }
             }
         }
-        return service.findLast10(statuses).stream().map(this::toDTO).collect(Collectors.toList());
+        List<JobExecutionInfo> executionInfos;
+        if (refreshJobs) {
+            executionInfos = service.findRefreshCacheLastJobs();
+        } else {
+            executionInfos = service.findLastJobs(statuses);
+        }
+        return executionInfos.stream().map(this::toDTO).collect(Collectors.toList());
     }
 
     @GET
@@ -76,7 +83,7 @@ public class NotificationController {
         }
     }
 
-    private JobExecutionResource toDTO(JobExecution entity) {
+    private JobExecutionResource toDTO(JobExecutionInfo entity) {
         return conversionService.convert(entity, JobExecutionResource.class);
     }
 }

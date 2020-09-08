@@ -2,20 +2,15 @@ package org.ohdsi.webapi.cohortdefinition.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.ohdsi.analysis.CohortMetadata;
+import org.ohdsi.webapi.service.dto.CommonEntityDTO;
 
 import java.util.Date;
 
-public class CohortMetadataDTO implements CohortMetadata {
+public class CohortMetadataDTO extends CommonEntityDTO implements CohortMetadata {
 
     private Integer id;
     private String name;
     private String description;
-    private String createdBy;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
-    private Date createdDate;
-    private String modifiedBy;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
-    private Date modifiedDate;
 
     public Integer getId() {
 
@@ -47,37 +42,5 @@ public class CohortMetadataDTO implements CohortMetadata {
     public void setDescription(String description) {
 
         this.description = description;
-    }
-
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Date getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
-    }
-
-    public String getModifiedBy() {
-        return modifiedBy;
-    }
-
-    public void setModifiedBy(String modifiedBy) {
-        this.modifiedBy = modifiedBy;
-    }
-
-    public Date getModifiedDate() {
-        return modifiedDate;
-    }
-
-    public void setModifiedDate(Date modifiedDate) {
-        this.modifiedDate = modifiedDate;
     }
 }

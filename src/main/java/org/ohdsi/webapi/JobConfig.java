@@ -3,11 +3,13 @@ package org.ohdsi.webapi;
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.common.generation.AutoremoveJobListener;
 import org.ohdsi.webapi.common.generation.CancelJobListener;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.util.ManagedThreadPoolTaskExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.admin.service.*;
@@ -59,6 +61,15 @@ public class JobConfig {
 
     @Value("${spring.batch.taskExecutor.maxPoolSize}")
     private Integer maxPoolSize;
+
+    @Value("${spring.batch.taskExecutor.queueCapacity}")
+    private Integer queueCapacity;
+
+    @Value("${spring.batch.taskExecutor.threadGroupName}")
+    private String threadGroupName;
+
+    @Value("${spring.batch.taskExecutor.threadNamePrefix}")
+    private String threadNamePrefix;
     
     @Autowired
     private DataSource dataSource;
@@ -70,9 +81,16 @@ public class JobConfig {
     
     @Bean
     public TaskExecutor taskExecutor() {
-        final ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+        final ThreadPoolTaskExecutor taskExecutor = new ManagedThreadPoolTaskExecutor();
         taskExecutor.setCorePoolSize(corePoolSize);
         taskExecutor.setMaxPoolSize(maxPoolSize);
+        taskExecutor.setQueueCapacity(queueCapacity);
+        if (StringUtils.isNotBlank(threadGroupName)) {
+            taskExecutor.setThreadGroupName(threadGroupName);
+        }
+        if (StringUtils.isNotBlank(threadNamePrefix)) {
+            taskExecutor.setThreadNamePrefix(threadNamePrefix);
+        }
         taskExecutor.afterPropertiesSet();
         return taskExecutor;
     }

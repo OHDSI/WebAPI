@@ -10,6 +10,8 @@ import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisT
 import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.Pagination;
+import org.ohdsi.webapi.check.CheckResult;
+import org.ohdsi.webapi.check.checker.characterization.CharacterizationChecker;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
@@ -71,6 +73,7 @@ public class CcController {
     private ConverterUtils converterUtils;
     private final CommonGenerationSensitiveInfoService<CommonGenerationDTO> sensitiveInfoService;
     private final SourceService sourceService;
+    private CharacterizationChecker checker;
 
     public CcController(
             final CcService service,
@@ -78,13 +81,14 @@ public class CcController {
             final ConversionService conversionService,
             final ConverterUtils converterUtils,
             CommonGenerationSensitiveInfoService sensitiveInfoService,
-            SourceService sourceService) {
+            SourceService sourceService, CharacterizationChecker checker) {
         this.service = service;
         this.feAnalysisService = feAnalysisService;
         this.conversionService = conversionService;
         this.converterUtils = converterUtils;
         this.sensitiveInfoService = sensitiveInfoService;
         this.sourceService = sourceService;
+        this.checker = checker;
         FeatureExtraction.init(null);
     }
 
@@ -195,12 +199,27 @@ public class CcController {
     public String export(@PathParam("id") final Long id) {
         return service.serializeCc(id);
     }
-    
+
+    @POST
+    @Path("/check")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public CheckResult runDiagnostics(CohortCharacterizationDTO characterizationDTO){
+
+        return new CheckResult(checker.check(characterizationDTO));
+    }
+
     @POST
     @Path("/{id}/generation/{sourceKey}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public JobExecutionResource generate(@PathParam("id") final Long id, @PathParam("sourceKey") final String sourceKey) {
+        CohortCharacterizationEntity cc = service.findByIdWithLinkedEntities(id);
+        ExceptionUtils.throwNotFoundExceptionIfNull(cc, String.format("There is no cohort characterization with id = %d.", id));
+        CheckResult checkResult = runDiagnostics(convertCcToDto(cc));
+        if (checkResult.hasCriticalErrors()) {
+            throw new RuntimeException("Cannot be generated due to critical errors in design. Call 'check' service for further details");
+        }
         return service.generateCc(id, sourceKey);
     }
 

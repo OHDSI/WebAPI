@@ -1,20 +1,14 @@
 package org.ohdsi.webapi.shiro.management;
 
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.AUTHZ;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CORS;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.FORCE_SESSION_CREATION;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.JWT_AUTHC;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_CACHE;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_SESSION_CREATION;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.SSL;
-
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.servlet.Filter;
+
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.web.filter.authz.SslFilter;
@@ -36,14 +30,27 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import waffle.shiro.negotiate.NegotiateAuthenticationStrategy;
 
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.AUTHZ;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CORS;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.FORCE_SESSION_CREATION;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.JWT_AUTHC;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_CACHE;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_SESSION_CREATION;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.SSL;
+
 /**
  *
  * @author gennadiy.anisimov
  */
 public abstract class AtlasSecurity extends Security {
   public static final String TOKEN_ATTRIBUTE = "TOKEN";
+  public static final String AUTH_CLIENT_ATTRIBUTE = "AUTH_CLIENT";
   public static final String AUTH_FILTER_ATTRIBUTE = "AuthenticatingFilter";
   public static final String PERMISSIONS_ATTRIBUTE = "PERMISSIONS";
+
+  public static final String AUTH_CLIENT_SAML = "AUTH_CLIENT_SAML";
+  public static final String AUTH_CLIENT_ALL = "*";
+
   private final Logger log = LoggerFactory.getLogger(getClass());
 
   @Autowired
@@ -96,6 +103,9 @@ public abstract class AtlasSecurity extends Security {
             .addRestPath("/ddl/results")
             .addRestPath("/ddl/cemresults")
 
+            .addRestPath("/saml/saml-metadata")
+            .addRestPath("/saml/slo")
+
             //executionservice callbacks
             .addRestPath("/executionservice/callbacks/**")
 
@@ -146,10 +156,14 @@ public abstract class AtlasSecurity extends Security {
 
   @Override
   public String getSubject() {
-    if (SecurityUtils.getSubject().isAuthenticated())
-      return authorizer.getSubjectName();
-    else
-      return "anonymous";
+    try {
+      if (SecurityUtils.getSubject().isAuthenticated()) {
+        return authorizer.getSubjectName();
+      }
+    } catch (UnavailableSecurityManagerException e) {
+      log.warn("No security manager is available, authenticated as anonymous");
+    }
+    return "anonymous";
   }
 
   // Since we need to create permissions only for certain analyses, we cannot go with `addProcessEntityFilter`

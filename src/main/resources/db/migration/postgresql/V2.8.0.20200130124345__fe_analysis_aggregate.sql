@@ -11,7 +11,7 @@ CREATE TABLE ${ohdsiSchema}.fe_analysis_aggregate(
   CONSTRAINT pk_fe_aggregate PRIMARY KEY(id)
 );
 
--- ALTER TABLE ${ohdsiSchema}.fe_analysis_criteria ADD fe_aggregate_id INTEGER;
+ALTER TABLE ${ohdsiSchema}.fe_analysis_criteria ADD fe_aggregate_id INTEGER;
 
 INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(name, domain, agg_function, expression, agg_query, is_default) VALUES
   ('Events count', null, 'COUNT', '*', null, TRUE),
@@ -81,25 +81,25 @@ INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(name, domain, agg_function, exp
   ('Quantity (min)', 'PROCEDURE', 'MIN', 'p.quantity', 'join procedure_occurrence  p on p.person_id = v.person_id and p.procedure_date between E.start_date and E.end_date', FALSE),
   ('Quantity (average)', 'PROCEDURE', 'AVG', 'p.quantity', 'join procedure_occurrence  p on p.person_id = v.person_id and p.procedure_date between E.start_date and E.end_date', FALSE);
 
--- UPDATE
---   ${ohdsiSchema}.fe_analysis_criteria
--- SET
---   fe_aggregate_id = ag.id
--- FROM
---   ${ohdsiSchema}.fe_analysis_criteria feac JOIN
---   ${ohdsiSchema}.fe_analysis fea ON fea.id = feac.fe_analysis_id,
---   ${ohdsiSchema}.fe_analysis_aggregate ag
--- WHERE
---   ag.name = 'Events count'
---   AND fea.type = 'CRITERIA_SET'
---   AND fea.stat_type = 'DISTRIBUTION';
---
--- INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
---     SELECT nextval('${ohdsiSchema}.sec_permission_id_seq'), 'feature-analysis:aggregates:get', 'List available aggregates for Feature Analyses';
---
--- INSERT INTO ${ohdsiSchema}.sec_role_permission(id, role_id, permission_id)
---   SELECT nextval('${ohdsiSchema}.sec_role_permission_sequence'), sr.id, sp.id
---   FROM ${ohdsiSchema}.sec_permission SP, ${ohdsiSchema}.sec_role sr
---   WHERE sp.value IN (
---     'feature-analysis:aggregates:get'
---   ) AND sr.name IN ('Atlas users');
+UPDATE
+  ${ohdsiSchema}.fe_analysis_criteria
+SET
+  fe_aggregate_id = ag.id
+FROM
+  ${ohdsiSchema}.fe_analysis_criteria feac JOIN
+  ${ohdsiSchema}.fe_analysis fea ON fea.id = feac.fe_analysis_id,
+  ${ohdsiSchema}.fe_analysis_aggregate ag
+WHERE
+  ag.name = 'Events count'
+  AND fea.type = 'CRITERIA_SET'
+  AND fea.stat_type = 'DISTRIBUTION';
+
+INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
+    SELECT nextval('${ohdsiSchema}.sec_permission_id_seq'), 'feature-analysis:aggregates:get', 'List available aggregates for Feature Analyses';
+
+INSERT INTO ${ohdsiSchema}.sec_role_permission(id, role_id, permission_id)
+  SELECT nextval('${ohdsiSchema}.sec_role_permission_sequence'), sr.id, sp.id
+  FROM ${ohdsiSchema}.sec_permission SP, ${ohdsiSchema}.sec_role sr
+  WHERE sp.value IN (
+    'feature-analysis:aggregates:get'
+  ) AND sr.name IN ('Atlas users');

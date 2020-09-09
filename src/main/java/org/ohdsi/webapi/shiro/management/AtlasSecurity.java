@@ -8,7 +8,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.Filter;
 
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.Authenticator;
+import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.web.filter.authz.SslFilter;

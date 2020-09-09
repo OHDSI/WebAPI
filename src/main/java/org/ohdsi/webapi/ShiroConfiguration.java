@@ -61,13 +61,13 @@ public class ShiroConfiguration {
     @Bean
     public DefaultWebSecurityManager securityManager(Security security, LockoutPolicy lockoutPolicy) {
 
-        Set<Realm> realmsForAuthontication = security.getRealms();
+        Set<Realm> realmsForAuthentication = security.getRealms();
         Collection<Realm> realmsForAuthorization = getJwtAuthRealmForAuthorization(security);
 
         final DefaultWebSecurityManager securityManager = new AtlasWebSecurityManager(
                 lockoutPolicy,
                 security.getAuthenticator(),
-                realmsForAuthontication,
+                realmsForAuthentication,
                 realmsForAuthorization
         );
 

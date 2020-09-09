@@ -20,7 +20,10 @@ public class AtlasWebSecurityManager extends LockoutWebSecurityManager {
         super(lockoutPolicy);
 
         ModularRealmAuthorizer authorizer = new ModularRealmAuthorizer();
-        this.setRealms(CollectionUtils.union(authenticationRealms, authorizationRealms));
+        Collection realms = CollectionUtils.union(authenticationRealms, authorizationRealms);
+        if (realms != null && !realms.isEmpty()) {
+            this.setRealms(realms);
+        }
 
         authenticator.setRealms(authenticationRealms);
         authorizer.setRealms(authorizationRealms);

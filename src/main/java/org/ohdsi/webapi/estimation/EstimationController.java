@@ -4,6 +4,8 @@ import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import com.qmino.miredot.annotations.MireDotIgnore;
 import com.qmino.miredot.annotations.ReturnType;
 import org.ohdsi.webapi.Constants;
+import org.ohdsi.webapi.check.CheckResult;
+import org.ohdsi.webapi.check.checker.estimation.EstimationChecker;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
@@ -58,19 +60,21 @@ public class EstimationController {
   private final SourceService sourceService;
   private final ConverterUtils converterUtils;
   private final ScriptExecutionService executionService;
+  private EstimationChecker checker;
 
   public EstimationController(EstimationService service,
                               GenericConversionService conversionService,
                               CommonGenerationSensitiveInfoService sensitiveInfoService,
                               SourceService sourceService,
                               ConverterUtils converterUtils,
-                              ScriptExecutionService executionService) {
+                              ScriptExecutionService executionService, EstimationChecker checker) {
     this.service = service;
     this.conversionService = conversionService;
     this.sensitiveInfoService = sensitiveInfoService;
     this.sourceService = sourceService;
     this.converterUtils = converterUtils;
     this.executionService = executionService;
+    this.checker = checker;
   }
 
   @GET
@@ -206,6 +210,11 @@ public class EstimationController {
 
     Estimation analysis = service.getAnalysis(analysisId);
     ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format(NO_ESTIMATION_MESSAGE, analysisId));
+    EstimationDTO estimationDTO = conversionService.convert(analysis, EstimationDTO.class);
+    CheckResult checkResult = runDiagnostics(estimationDTO);
+    if (checkResult.hasCriticalErrors()) {
+      throw new RuntimeException("Cannot be generated due to critical errors in design. Call 'check' service for further details");
+    }
     return service.runGeneration(analysis, sourceKey);
   }
 
@@ -246,5 +255,14 @@ public class EstimationController {
         // Before conversion entity must be refreshed to apply entity graphs
         Estimation estimation = service.getById(id);
         return conversionService.convert(estimation, EstimationDTO.class);
+    }
+
+    @POST
+    @Path("/check")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public CheckResult runDiagnostics(EstimationDTO estimationDTO){
+
+        return new CheckResult(this.checker.check(estimationDTO));
     }
 }

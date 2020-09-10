@@ -35,9 +35,10 @@ import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +65,9 @@ public class ConceptSetService extends AbstractDaoService {
     private SourceService sourceService;
 
     @Autowired
+    private SourceAccessor sourceAccessor;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -71,7 +75,7 @@ public class ConceptSetService extends AbstractDaoService {
 
     @Autowired
     private Security security;
-    
+
     public static final String COPY_NAME = "copyName";
 
     @Path("{id}")
@@ -105,6 +109,21 @@ public class ConceptSetService extends AbstractDaoService {
     @Path("{id}/expression")
     @Produces(MediaType.APPLICATION_JSON)
     public ConceptSetExpression getConceptSetExpression(@PathParam("id") final int id) {
+
+        return getConceptSetExpression(id, sourceService.getPriorityVocabularySourceInfo());
+    }
+
+    @GET
+    @Path("{id}/expression/{sourceKey}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ConceptSetExpression getConceptSetExpression(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
+
+        Source source = sourceService.findBySourceKey(sourceKey);
+        sourceAccessor.checkAccess(source);
+        return getConceptSetExpression(id, source.getSourceInfo());
+    }
+
+    private ConceptSetExpression getConceptSetExpression(int id, SourceInfo sourceInfo) {
         HashMap<Long, ConceptSetItem> map = new HashMap<>();
 
         // collect the concept set items so we can lookup their properties later

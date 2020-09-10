@@ -8,18 +8,16 @@ import org.springframework.stereotype.Component;
 public class CohortDefinitionToCohortRawDTOConverter extends BaseCohortDefinitionToCohortMetadataDTOConverter<CohortRawDTO> {
 
 	@Override
-	public CohortRawDTO convert(final CohortDefinition source) {
-
-		final CohortRawDTO dto = super.convert(source);
-		dto.setExpressionType(source.getExpressionType());
+	public void doConvert(CohortDefinition source, CohortRawDTO target) {
+		super.doConvert(source, target);
+		target.setExpressionType(source.getExpressionType());
 		if (source.getDetails() != null) {
-			dto.setExpression(source.getDetails().getExpression());
+			target.setExpression(source.getDetails().getExpression());
 		}
-		return dto;
 	}
 
 	@Override
-	protected CohortRawDTO getResultObject() {
+	protected CohortRawDTO createResultObject() {
 		return new CohortRawDTO();
 	}
 }

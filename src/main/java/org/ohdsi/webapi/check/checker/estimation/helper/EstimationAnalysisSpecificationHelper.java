@@ -65,13 +65,16 @@ public class EstimationAnalysisSpecificationHelper {
 
         ValidatorBuilder<CohortMethodAnalysis> iptwValidatorBuilder = new PredicateValidatorBuilder<CohortMethodAnalysis>()
                 .predicate(t -> {
-                    if (t != null
-                            && t.getFitOutcomeModelArgs() != null
-                            && Boolean.TRUE.equals(t.getFitOutcomeModelArgs().getInversePtWeighting())) {
-                        return Boolean.TRUE.equals(t.getCreatePs());
+                    if (t != null && t.getFitOutcomeModelArgs() != null) {
+                        if (Boolean.TRUE.equals(t.getFitOutcomeModelArgs().getInversePtWeighting())) {
+                            return Boolean.TRUE.equals(t.getCreatePs());
+                        } else {
+                            return true;
+                        }
                     }
                     return false;
                 })
+                .attrNameValueGetter(t -> t.getDescription())
                 .errorMessage("createPs should be set to true when inverse probability of treatment weighting (IPTW) for the outcome model is specified ");
 
         ValidatorGroupBuilder<ComparativeCohortAnalysis, Collection<? extends CohortMethodAnalysis>> builder =

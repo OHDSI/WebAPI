@@ -2,6 +2,8 @@ package org.ohdsi.webapi.check.validator;
 
 import org.ohdsi.webapi.check.warning.WarningSeverity;
 
+import java.util.function.Function;
+
 public abstract class Validator<T> {
     private final static String DEFAULT_ERROR_MESSAGE = "error";
     private final static WarningSeverity DEFAULT_SEVERITY = WarningSeverity.CRITICAL;
@@ -9,6 +11,7 @@ public abstract class Validator<T> {
     protected Path path;
     protected WarningSeverity severity;
     protected String errorMessage;
+    protected Function<T, String> attrNameValueGetter;
 
     public Validator(Path path, WarningSeverity severity, String errorMessage) {
 
@@ -17,13 +20,23 @@ public abstract class Validator<T> {
         this.errorMessage = errorMessage;
     }
 
+    public Validator(Path path, WarningSeverity severity, String errorMessage, Function<T, String> attrNameValueGetter) {
+        this(path, severity, errorMessage);
+        this.attrNameValueGetter = attrNameValueGetter;
+    }
+
+
     public abstract boolean validate(T value, Context context);
 
-    protected String getErrorMessage() {
-
-        return this.errorMessage != null ?
-                this.errorMessage :
-                getDefaultErrorMessage();
+    protected String getErrorMessage(T value) {
+        StringBuilder sb = new StringBuilder();
+        if (this.attrNameValueGetter != null) {
+            sb.append("(")
+                    .append(this.attrNameValueGetter.apply(value))
+                    .append(") - ");
+        }
+        sb.append(this.errorMessage != null ? this.errorMessage : getDefaultErrorMessage());
+        return sb.toString();
     }
 
     protected WarningSeverity getSeverity() {
@@ -41,6 +54,4 @@ public abstract class Validator<T> {
     protected WarningSeverity getDefaultSeverity() {
         return DEFAULT_SEVERITY;
     }
-
-
 }

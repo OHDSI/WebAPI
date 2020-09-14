@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.check.builder;
 
+import java.util.function.Function;
 import java.util.function.Predicate;
 import org.ohdsi.webapi.check.validator.Validator;
 import org.ohdsi.webapi.check.validator.common.PredicateValidator;
@@ -17,7 +18,7 @@ public class PredicateValidatorBuilder<T> extends ValidatorBuilder<T> {
     @Override
     public Validator<T> build() {
 
-        return new PredicateValidator<>(createChildPath(), severity, errorMessage, predicate);
+        return new PredicateValidator<>(createChildPath(), severity, errorMessage, predicate, attrNameValueGetter);
     }
 
 }

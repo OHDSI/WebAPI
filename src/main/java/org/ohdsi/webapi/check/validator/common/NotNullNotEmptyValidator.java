@@ -35,7 +35,7 @@ public class NotNullNotEmptyValidator<T> extends Validator<T> {
             }
         }
         if (!isValid) {
-            context.addWarning(getSeverity(), getErrorMessage(), path);
+            context.addWarning(getSeverity(), getErrorMessage(value), path);
         }
         return isValid;
     }

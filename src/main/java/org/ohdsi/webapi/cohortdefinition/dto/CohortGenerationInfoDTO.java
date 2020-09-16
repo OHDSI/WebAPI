@@ -37,8 +37,6 @@ public class CohortGenerationInfoDTO {
 
     private boolean isCanceled;
 
-    private boolean includeFeatures = false;
-
     private String failMessage;
 
     private Long personCount;
@@ -93,14 +91,6 @@ public class CohortGenerationInfoDTO {
 
     public void setIsCanceled(boolean isCanceled) {
         this.isCanceled = isCanceled;
-    }
-
-    public boolean isIncludeFeatures() {
-        return includeFeatures;
-    }
-
-    public void setIncludeFeatures(boolean includeFeatures) {
-        this.includeFeatures = includeFeatures;
     }
 
     public String getFailMessage() {

@@ -963,7 +963,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         stat.setCovariateId(rs.getLong("covariate_id"));
         stat.setCovariateName(rs.getString("covariate_name"));
         stat.setConceptName(rs.getString("concept_name"));
-        stat.setTimeWindow(featureExtractionService.getTimeWindow(rs.getString("analysis_name")));
+        stat.setTimeWindow(getTimeWindow(rs.getString("analysis_name")));
         stat.setConceptId(rs.getLong("concept_id"));
         stat.setAvg(rs.getDouble("avg_value"));
         stat.setCount(rs.getLong("count_value"));
@@ -982,6 +982,16 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         stat.setP75(rs.getDouble("p75_value"));
         stat.setP90(rs.getDouble("p90_value"));
         stat.setMax(rs.getDouble("max_value"));
+    }
+
+    public String getTimeWindow(String analysisName) {
+        if (analysisName.endsWith("LongTerm")) return "Long Term";
+        if (analysisName.endsWith("MediumTerm")) return "Medium Term";
+        if (analysisName.endsWith("ShortTerm")) return "Short Term";
+        if (analysisName.endsWith("AnyTimePrior")) return "Any Time Prior";
+        if (analysisName.endsWith("Overlapping")) return "Overlapping";
+
+        return "None";
     }
 
     private List<Integer> importAnalyses(final CohortCharacterizationEntity entity, final CohortCharacterizationEntity persistedEntity) {

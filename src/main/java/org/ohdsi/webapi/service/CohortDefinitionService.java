@@ -482,12 +482,12 @@ public class CohortDefinitionService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}/generate/{sourceKey}")
   @Transactional
-  public JobExecutionResource generateCohort(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, @QueryParam("includeFeatures") final String includeFeatures) {
+  public JobExecutionResource generateCohort(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
 
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOne(id);
     UserEntity user = userRepository.findByLogin(security.getSubject());
-    return cohortGenerationService.generateCohortViaJob(user, currentDefinition, source, Objects.nonNull(includeFeatures));
+    return cohortGenerationService.generateCohortViaJob(user, currentDefinition, source);
   }
 
   @GET

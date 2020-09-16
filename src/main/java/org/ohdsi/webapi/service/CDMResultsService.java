@@ -27,6 +27,7 @@ import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.PreparedSqlRender;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.ohdsi.webapi.util.SourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -108,10 +109,25 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     public void warmCaches(){
 
             CDMResultsService instance = applicationContext.getBean(CDMResultsService.class);
-			sourceService.getSources()
-				.stream()
-				.filter(s -> s.getDaimons().stream().anyMatch(sd -> Objects.equals(sd.getDaimonType(), SourceDaimon.DaimonType.Results)) && s.getDaimons().stream().anyMatch(sd -> sd.getPriority() > 0))
-				.forEach(s -> warmCache(s.getSourceKey(), instance));
+            Collection<Source> sources =  sourceService.getSources();
+            sources
+                .stream()
+                .filter(s -> SourceUtils.hasSourceDaimon(s, SourceDaimon.DaimonType.Results)
+                        && SourceUtils.hasSourceDaimon(s, SourceDaimon.DaimonType.Vocabulary)
+                        && s.getDaimons().stream().anyMatch(sd -> sd.getPriority() > 0))
+                .forEach(s -> warmCache(s.getSourceKey(), instance));
+            if (logger.isInfoEnabled()) {
+                List<String> sourceNames = sources
+                        .stream()
+                        .filter(s -> !SourceUtils.hasSourceDaimon(s, SourceDaimon.DaimonType.Vocabulary)
+                                || !SourceUtils.hasSourceDaimon(s, SourceDaimon.DaimonType.Results))
+                        .map(Source::getSourceName)
+                        .collect(Collectors.toList());
+                if (!sourceNames.isEmpty()) {
+                    logger.info("Following sources hasn't Vocabulary or Result schema and wouldn't be cached: {}",
+                            sourceNames.stream().collect(Collectors.joining(", ")));
+                }
+            }
     }
 
     @Path("{sourceKey}/conceptRecordCount")
@@ -387,6 +403,10 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
 
         if (!cdmResultCacheWarmingEnable) {
             logger.info("Cache warming is disabled for CDM results");
+            return new JobExecutionResource();
+        }
+        if (!SourceUtils.hasSourceDaimon(source, SourceDaimon.DaimonType.Vocabulary) || !SourceUtils.hasSourceDaimon(source, SourceDaimon.DaimonType.Results)) {
+            logger.info("Cache wouldn't be applied to sources without Vocabulary and Result schemas, source [{}] was omitted", source.getSourceName());
             return new JobExecutionResource();
         }
         String jobName = getWarmCacheJobName(source.getSourceKey());

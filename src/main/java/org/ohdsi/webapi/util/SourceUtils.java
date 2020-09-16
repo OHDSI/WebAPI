@@ -42,4 +42,9 @@ public class SourceUtils {
         return source.getTableQualifierOrNull(Vocabulary);
     }
 
+    public static boolean hasSourceDaimon(Source source, SourceDaimon.DaimonType daimonType) {
+
+        return source.getDaimons().stream().anyMatch(d -> daimonType.equals(d.getDaimonType()));
+    }
+
 }

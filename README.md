@@ -30,6 +30,20 @@ security.saml.keyManager.defaultKey=apollo - keystore alias
 security.saml.sloUrl=https://localhost:8443/cas/logout - identity provider logout URL
 security.saml.callbackUrl=http://localhost:8080/WebAPI/user/saml/callback - URL called from identity provider after login
 
+## Managing auth providers
+The following parameters are used to enable/disable certain provider:
+security.auth.windows.enabled
+security.auth.kerberos.enabled
+security.auth.openid.enabled
+security.auth.facebook.enabled
+security.auth.github.enabled
+security.auth.google.enabled
+security.auth.jdbc.enabled
+security.auth.ldap.enabled
+security.auth.ad.enabled
+security.auth.cas.enabled
+Acceptable values are "true" and "false"
+
 ## Geospatial support
 
 Instructions can be found at [webapi-component-geospatial](https://github.com/OHDSI/webapi-component-geospatia)

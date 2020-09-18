@@ -150,6 +150,17 @@
     <security.saml.callbackUrl></security.saml.callbackUrl>
     <security.saml.sloUrl></security.saml.sloUrl>
 
+    <security.auth.windows.enabled>true</security.auth.windows.enabled>
+    <security.auth.kerberos.enabled>true</security.auth.kerberos.enabled>
+    <security.auth.openid.enabled>true</security.auth.openid.enabled>
+    <security.auth.facebook.enabled>true</security.auth.facebook.enabled>
+    <security.auth.github.enabled>true</security.auth.github.enabled>
+    <security.auth.google.enabled>true</security.auth.google.enabled>
+    <security.auth.jdbc.enabled>true</security.auth.jdbc.enabled>
+    <security.auth.ldap.enabled>true</security.auth.ldap.enabled>
+    <security.auth.ad.enabled>true</security.auth.ad.enabled>
+    <security.auth.cas.enabled>true</security.auth.cas.enabled>
+
     <spring.datasource.hikari.connection-test-query>SELECT 1</spring.datasource.hikari.connection-test-query>
     <spring.datasource.hikari.connection-test-query-timeout>2000</spring.datasource.hikari.connection-test-query-timeout>
     <spring.datasource.hikari.maximum-pool-size>5</spring.datasource.hikari.maximum-pool-size>
@@ -718,7 +729,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>hydra</artifactId>
-      <version>0.0.7</version>
+      <version>0.0.11</version>
       <exclusions>
         <exclusion>
           <groupId>org.ohdsi</groupId>

@@ -35,6 +35,7 @@ tryCatch({
         outputFolder <- file.path(getwd(), 'results')
         dir.create(outputFolder)
 
+        PatientLevelPrediction::setPythonEnvironment(envname = 'PLP', envtype = 'conda')
         execute(connectionDetails = connectionDetails,
                 cdmDatabaseSchema = cdmDatabaseSchema,
                 cohortDatabaseSchema = cohortsDatabaseSchema,

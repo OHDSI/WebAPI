@@ -161,7 +161,6 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
 
     @Override
     public Estimation createEstimation(Estimation est) throws Exception {
-
         Date currentTime = Calendar.getInstance().getTime();
 
         est.setCreatedBy(getCurrentUser());
@@ -170,12 +169,13 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         est.setModifiedBy(null);
         est.setModifiedDate(null);
 
+        est.setName(est.getName().trim());
+
         return save(est);
     }
 
     @Override
     public Estimation updateEstimation(final int id, Estimation est) throws Exception {
-
         Estimation estFromDB = getById(id);
         Date currentTime = Calendar.getInstance().getTime();
 
@@ -184,6 +184,8 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         // Prevent any updates to protected fields like created/createdBy
         est.setCreatedDate(estFromDB.getCreatedDate());
         est.setCreatedBy(estFromDB.getCreatedBy());
+
+        est.setName(est.getName().trim());
 
         return save(est);
     }
@@ -231,7 +233,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         
         // Set the root properties
         expression.setId(est.getId());
-        expression.setName(est.getName());
+        expression.setName(est.getName().trim());
         expression.setDescription(est.getDescription());
         expression.setOrganizationName(this.organizationName);
         

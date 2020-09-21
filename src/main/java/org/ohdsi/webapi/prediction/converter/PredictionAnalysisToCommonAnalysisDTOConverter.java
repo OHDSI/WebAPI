@@ -18,7 +18,7 @@ public class PredictionAnalysisToCommonAnalysisDTOConverter <T extends CommonAna
     @Override
     public void doConvert(PredictionAnalysis source, T target) {
         target.setId(source.getId());
-        target.setName(source.getName());
+        target.setName(source.getName().trim());
         target.setDescription(source.getDescription());
     }
 }

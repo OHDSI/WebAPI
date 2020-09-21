@@ -15,7 +15,7 @@ public abstract class BasePathwayAnalysisToPathwayAnalysisDTOConverter<T extends
     @Override
     public void doConvert(PathwayAnalysisEntity source, T target) {
         target.setId(source.getId());
-        target.setName(source.getName());
+        target.setName(source.getName().trim());
         target.setCombinationWindow(source.getCombinationWindow());
         target.setMinSegmentLength(source.getMinSegmentLength());
         target.setMinCellCount(source.getMinCellCount());

@@ -12,7 +12,7 @@ public abstract class BasePathwayAnalysisDTOToPathwayAnalysisConverter<T extends
         PathwayAnalysisEntity pathwayAnalysis = new PathwayAnalysisEntity();
 
         pathwayAnalysis.setId(source.getId());
-        pathwayAnalysis.setName(source.getName());
+        pathwayAnalysis.setName(source.getName().trim());
         pathwayAnalysis.setCombinationWindow(source.getCombinationWindow());
 				pathwayAnalysis.setMinSegmentLength(source.getMinSegmentLength());
         pathwayAnalysis.setMinCellCount(source.getMinCellCount());

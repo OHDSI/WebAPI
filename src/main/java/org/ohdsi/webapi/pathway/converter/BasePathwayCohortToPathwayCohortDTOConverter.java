@@ -11,7 +11,7 @@ public abstract class BasePathwayCohortToPathwayCohortDTOConverter<T extends Pat
 
         T result = getResultObject();
         result.setId(source.getCohortDefinition().getId());
-        result.setName(source.getName());
+        result.setName(source.getName().trim());
         result.setDescription(source.getCohortDefinition().getDescription());
         result.setPathwayCohortId(source.getId());
         return result;

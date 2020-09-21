@@ -146,6 +146,8 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         pred.setModifiedBy(null);
         pred.setModifiedDate(null);
 
+        pred.setName(pred.getName().trim());
+
         return save(pred);
     }
 
@@ -159,6 +161,8 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         // Prevent any updates to protected fields like created/createdBy
         pred.setCreatedDate(predFromDB.getCreatedDate());
         pred.setCreatedBy(predFromDB.getCreatedBy());
+
+        pred.setName(pred.getName().trim());
 
         return save(pred);
     }
@@ -200,7 +204,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         
         // Set the root properties
         expression.setId(pred.getId());
-        expression.setName(pred.getName());
+        expression.setName(pred.getName().trim());
         expression.setDescription(pred.getDescription());
         expression.setOrganizationName(env.getRequiredProperty("organization.name"));
         

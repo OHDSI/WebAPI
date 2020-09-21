@@ -17,7 +17,7 @@ public class EstimationToEstimationShortDTOConverter <T extends EstimationShortD
     @Override
     public void doConvert(Estimation source, T target) {
         target.setId(source.getId());
-        target.setName(source.getName());
+        target.setName(source.getName().trim());
         target.setDescription(source.getDescription());
         target.setType(source.getType());
     }

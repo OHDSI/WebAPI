@@ -32,7 +32,7 @@ public abstract class BaseCcDTOToCcEntityConverter<T extends BaseCcDTO<? extends
 
     final CohortCharacterizationEntity cohortCharacterization = new CohortCharacterizationEntity();
 
-    cohortCharacterization.setName(source.getName());
+    cohortCharacterization.setName(source.getName().trim());
     cohortCharacterization.setStratifiedBy(source.getStratifiedBy());
     cohortCharacterization.setStrataOnly(source.getStrataOnly());
 

@@ -12,7 +12,7 @@ public class BaseCohortDTOToCohortDefinitionConverter<T extends CohortMetadata> 
         CohortDefinition cohortDefinition = new CohortDefinition();
 
         cohortDefinition.setId(source.getId());
-        cohortDefinition.setName(source.getName());
+        cohortDefinition.setName(source.getName().trim());
         cohortDefinition.setDescription(source.getDescription());
 
         return cohortDefinition;

@@ -16,7 +16,7 @@ public class IncidenceRateAnalysisToIRAnalysisShortDTOConverter <T extends IRAna
     @Override
     protected void doConvert(IncidenceRateAnalysis source, T target) {
         target.setId(source.getId());
-        target.setName(source.getName());
+        target.setName(source.getName().trim());
         target.setDescription(source.getDescription());
     }
 }

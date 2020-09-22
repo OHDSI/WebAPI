@@ -146,7 +146,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         pred.setModifiedBy(null);
         pred.setModifiedDate(null);
 
-        pred.setName(pred.getName().trim());
+        pred.setName(StringUtils.trim(pred.getName()));
 
         return save(pred);
     }
@@ -162,7 +162,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         pred.setCreatedDate(predFromDB.getCreatedDate());
         pred.setCreatedBy(predFromDB.getCreatedBy());
 
-        pred.setName(pred.getName().trim());
+        pred.setName(StringUtils.trim(pred.getName()));
 
         return save(pred);
     }

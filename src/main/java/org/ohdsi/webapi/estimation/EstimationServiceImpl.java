@@ -169,7 +169,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         est.setModifiedBy(null);
         est.setModifiedDate(null);
 
-        est.setName(est.getName().trim());
+        est.setName(StringUtils.trim(est.getName()));
 
         return save(est);
     }
@@ -185,7 +185,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         est.setCreatedDate(estFromDB.getCreatedDate());
         est.setCreatedBy(estFromDB.getCreatedBy());
 
-        est.setName(est.getName().trim());
+        est.setName(StringUtils.trim(est.getName()));
 
         return save(est);
     }

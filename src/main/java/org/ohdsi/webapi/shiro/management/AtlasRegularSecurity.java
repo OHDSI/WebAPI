@@ -219,6 +219,36 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     @Value("${security.saml.enabled:false}")
     private boolean samlEnabled;
 
+    @Value("${security.auth.windows.enabled}")
+    private boolean windowsAuthEnabled;
+
+    @Value("${security.auth.kerberos.enabled}")
+    private boolean kerberosAuthEnabled;
+
+    @Value("${security.auth.jdbc.enabled}")
+    private boolean jdbcAuthEnabled;
+
+    @Value("${security.auth.ldap.enabled}")
+    private boolean ldapAuthEnabled;
+
+    @Value("${security.auth.ad.enabled}")
+    private boolean adAuthEnabled;
+
+    @Value("${security.auth.cas.enabled}")
+    private boolean casAuthEnabled;
+
+    @Value("${security.auth.openid.enabled}")
+    private boolean openidAuthEnabled;
+
+    @Value("${security.auth.facebook.enabled}")
+    private boolean facebookAuthEnabled;
+
+    @Value("${security.auth.github.enabled}")
+    private boolean githubAuthEnabled;
+
+    @Value("${security.auth.google.enabled}")
+    private boolean googleAuthEnabled;
+
     private RestTemplate restTemplate = new RestTemplate();
 
     @Autowired
@@ -240,11 +270,21 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
         filters.put(ACCESS_AUTHC, new GoogleAccessTokenFilter(restTemplate, permissionManager, Collections.emptySet()));
         filters.put(JWT_AUTHC, new AtlasJwtAuthFilter());
-        filters.put(JDBC_FILTER, new JdbcAuthFilter(eventPublisher));
-        filters.put(KERBEROS_FILTER, new KerberosAuthFilter());
-        filters.put(LDAP_FILTER, new LdapAuthFilter(eventPublisher));
-        filters.put(AD_FILTER, new ActiveDirectoryAuthFilter(eventPublisher));
-        filters.put(NEGOTIATE_AUTHC, new NegotiateAuthenticationFilter());
+        if (this.jdbcAuthEnabled) {
+            filters.put(JDBC_FILTER, new JdbcAuthFilter(eventPublisher));
+        }
+        if (this.kerberosAuthEnabled) {
+            filters.put(KERBEROS_FILTER, new KerberosAuthFilter());
+        }
+        if (this.ldapAuthEnabled) {
+            filters.put(LDAP_FILTER, new LdapAuthFilter(eventPublisher));
+        }
+        if (this.adAuthEnabled) {
+            filters.put(AD_FILTER, new ActiveDirectoryAuthFilter(eventPublisher));
+        }
+        if (this.windowsAuthEnabled) {
+            filters.put(NEGOTIATE_AUTHC, new NegotiateAuthenticationFilter());
+        }
 
         filters.put(SEND_TOKEN_IN_URL, new SendTokenInUrlFilter(this.oauthUiCallback));
         filters.put(SEND_TOKEN_IN_HEADER, new SendTokenInHeaderFilter());
@@ -255,67 +295,85 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         // OAuth
         //
         CallbackUrlResolver urlResolver = getCallbackUrlResolver();
-        Google2Client googleClient = new Google2Client(this.googleApiKey, this.googleApiSecret);
-        googleClient.setCallbackUrl(oauthApiCallback);
-        googleClient.setCallbackUrlResolver(urlResolver);
-        googleClient.setScope(Google2Client.Google2Scope.EMAIL_AND_PROFILE);
-
-        FacebookClient facebookClient = new FacebookClient(this.facebookApiKey, this.facebookApiSecret);
-        facebookClient.setScope("email");
-        facebookClient.setFields("email");
-
-        GitHubClient githubClient = new GitHubClient(this.githubApiKey, this.githubApiSecret);
-        githubClient.setScope("user:email");
-
-        OidcConfiguration configuration = oidcConfCreator.build();
-        OidcClient oidcClient = new OidcClient(configuration);
-        oidcClient.setCallbackUrl(oauthApiCallback);
-        oidcClient.setCallbackUrlResolver(urlResolver);
-        List<Client> clients = new ArrayList<>(Arrays.asList(
-                googleClient,
-                facebookClient,
-                githubClient
-                // ... put new clients here and then assign them to filters ...
-        ));
-        if (StringUtils.isNotBlank(configuration.getClientId())) {
-            clients.add(oidcClient);
+        List<Client> clients = new ArrayList<>();
+        if (this.googleAuthEnabled) {
+            Google2Client googleClient = new Google2Client(this.googleApiKey, this.googleApiSecret);
+            googleClient.setCallbackUrl(oauthApiCallback);
+            googleClient.setCallbackUrlResolver(urlResolver);
+            googleClient.setScope(Google2Client.Google2Scope.EMAIL_AND_PROFILE);
+            clients.add(googleClient);
         }
 
-        Config cfg =
-                new Config(
-                        new Clients(
-                                this.oauthApiCallback,
-                                clients
-                        )
-                );
+        if (this.facebookAuthEnabled) {
+            FacebookClient facebookClient = new FacebookClient(this.facebookApiKey, this.facebookApiSecret);
+            facebookClient.setScope("email");
+            facebookClient.setFields("email");
+            clients.add(facebookClient);
+        }
 
-        // assign clients to filters
-        SecurityFilter googleOauthFilter = new SecurityFilter();
-        googleOauthFilter.setConfig(cfg);
-        googleOauthFilter.setClients("Google2Client");
-        filters.put(GOOGLE_AUTHC, googleOauthFilter);
+        if (this.githubAuthEnabled) {
+            GitHubClient githubClient = new GitHubClient(this.githubApiKey, this.githubApiSecret);
+            githubClient.setScope("user:email");
+            clients.add(githubClient);
+        }
 
-        SecurityFilter facebookOauthFilter = new SecurityFilter();
-        facebookOauthFilter.setConfig(cfg);
-        facebookOauthFilter.setClients("FacebookClient");
-        filters.put(FACEBOOK_AUTHC, facebookOauthFilter);
+        if (this.openidAuthEnabled) {
+            OidcConfiguration configuration = oidcConfCreator.build();
+            OidcClient oidcClient = new OidcClient(configuration);
+            oidcClient.setCallbackUrl(oauthApiCallback);
+            oidcClient.setCallbackUrlResolver(urlResolver);
+            if (StringUtils.isNotBlank(configuration.getClientId())) {
+                clients.add(oidcClient);
+            }
+        }
 
-        SecurityFilter githubOauthFilter = new SecurityFilter();
-        githubOauthFilter.setConfig(cfg);
-        githubOauthFilter.setClients("GitHubClient");
-        filters.put(GITHUB_AUTHC, githubOauthFilter);
+        if (clients.size() > 0) {
+            Config cfg =
+                    new Config(
+                            new Clients(
+                                    this.oauthApiCallback,
+                                    clients
+                            )
+                    );
 
-        SecurityFilter oidcFilter = new SecurityFilter();
-        oidcFilter.setConfig(cfg);
-        oidcFilter.setClients("OidcClient");
-        filters.put(OIDC_AUTH, oidcFilter);
+            // assign clients to filters
+            if (this.googleAuthEnabled) {
+                SecurityFilter googleOauthFilter = new SecurityFilter();
+                googleOauthFilter.setConfig(cfg);
+                googleOauthFilter.setClients("Google2Client");
+                filters.put(GOOGLE_AUTHC, googleOauthFilter);
+            }
 
-        CallbackFilter callbackFilter = new CallbackFilter();
-        callbackFilter.setConfig(cfg);
-        filters.put(OAUTH_CALLBACK, callbackFilter);
-        filters.put(HANDLE_UNSUCCESSFUL_OAUTH, new RedirectOnFailedOAuthFilter(this.oauthUiCallback));
+            if (this.facebookAuthEnabled) {
+                SecurityFilter facebookOauthFilter = new SecurityFilter();
+                facebookOauthFilter.setConfig(cfg);
+                facebookOauthFilter.setClients("FacebookClient");
+                filters.put(FACEBOOK_AUTHC, facebookOauthFilter);
+            }
 
-        this.setUpCAS(filters);
+            if (this.githubAuthEnabled) {
+                SecurityFilter githubOauthFilter = new SecurityFilter();
+                githubOauthFilter.setConfig(cfg);
+                githubOauthFilter.setClients("GitHubClient");
+                filters.put(GITHUB_AUTHC, githubOauthFilter);
+            }
+
+            if (this.openidAuthEnabled) {
+                SecurityFilter oidcFilter = new SecurityFilter();
+                oidcFilter.setConfig(cfg);
+                oidcFilter.setClients("OidcClient");
+                filters.put(OIDC_AUTH, oidcFilter);
+            }
+
+            CallbackFilter callbackFilter = new CallbackFilter();
+            callbackFilter.setConfig(cfg);
+            filters.put(OAUTH_CALLBACK, callbackFilter);
+            filters.put(HANDLE_UNSUCCESSFUL_OAUTH, new RedirectOnFailedOAuthFilter(this.oauthUiCallback));
+        }
+
+        if (this.casAuthEnabled) {
+            this.setUpCAS(filters);
+        }
         if (this.samlEnabled) {
             this.setUpSaml(filters);
         }
@@ -330,28 +388,65 @@ public class AtlasRegularSecurity extends AtlasSecurity {
                 Collections.singletonList(JWT_AUTHC);
         // the order does matter - first match wins
         FilterChainBuilder filterChainBuilder = new FilterChainBuilder()
-                .setBeforeOAuthFilters(SSL, CORS, FORCE_SESSION_CREATION)
-                .setAfterOAuthFilters(UPDATE_TOKEN, SEND_TOKEN_IN_URL)
                 .setRestFilters(SSL, NO_SESSION_CREATION, CORS, NO_CACHE)
                 .setAuthcFilter(authcFilters.toArray(new FilterTemplates[0]))
                 .setAuthzFilter(AUTHZ)
                 // login/logout
-                .addRestPath("/user/login/openid", FORCE_SESSION_CREATION, OIDC_AUTH, UPDATE_TOKEN, SEND_TOKEN_IN_REDIRECT)
-                .addRestPath("/user/login/windows", NEGOTIATE_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
-                .addRestPath("/user/login/kerberos", KERBEROS_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
-                .addRestPath("/user/login/db", JDBC_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
-                .addRestPath("/user/login/ldap", LDAP_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
-                .addRestPath("/user/login/ad", AD_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
                 .addRestPath("/user/refresh", JWT_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
                 .addProtectedRestPath("/user/runas", RUN_AS, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
-                .addRestPath("/user/logout", LOGOUT)
-                .addOAuthPath("/user/oauth/google", GOOGLE_AUTHC)
-                .addOAuthPath("/user/oauth/facebook", FACEBOOK_AUTHC)
-                .addOAuthPath("/user/oauth/github", GITHUB_AUTHC)
-                .addPath("/user/login/cas", SSL, CORS, FORCE_SESSION_CREATION, CAS_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_URL)
-                .addPath("/user/oauth/callback", OAUTH_CALLBACK_FILTERS)
-                .addPath("/user/oauth/callback/*", OAUTH_CALLBACK_FILTERS)
-                .addPath("/user/cas/callback", SSL, HANDLE_CAS, UPDATE_TOKEN, SEND_TOKEN_IN_URL);
+                .addRestPath("/user/logout", LOGOUT);
+
+        // MUST be called before adding OAuth filters
+        if (this.openidAuthEnabled || this.googleAuthEnabled || this.facebookAuthEnabled || this.githubAuthEnabled) {
+            filterChainBuilder
+                    .setBeforeOAuthFilters(SSL, CORS, FORCE_SESSION_CREATION)
+                    .setAfterOAuthFilters(UPDATE_TOKEN, SEND_TOKEN_IN_URL)
+                    .addPath("/user/oauth/callback", OAUTH_CALLBACK_FILTERS)
+                    .addPath("/user/oauth/callback/*", OAUTH_CALLBACK_FILTERS);
+        }
+
+        if (this.openidAuthEnabled) {
+            filterChainBuilder.addRestPath("/user/login/openid", FORCE_SESSION_CREATION, OIDC_AUTH, UPDATE_TOKEN, SEND_TOKEN_IN_REDIRECT);
+        }
+
+        if (this.googleAuthEnabled) {
+            filterChainBuilder.addOAuthPath("/user/oauth/google", GOOGLE_AUTHC);
+        }
+
+        if (this.facebookAuthEnabled) {
+            filterChainBuilder.addOAuthPath("/user/oauth/facebook", FACEBOOK_AUTHC);
+        }
+
+        if (this.githubAuthEnabled) {
+            filterChainBuilder.addOAuthPath("/user/oauth/github", GITHUB_AUTHC);
+        }
+
+        if (this.kerberosAuthEnabled) {
+            filterChainBuilder.addRestPath("/user/login/kerberos", KERBEROS_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER);
+        }
+
+        if (this.windowsAuthEnabled) {
+            filterChainBuilder.addRestPath("/user/login/windows", NEGOTIATE_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER);
+        }
+
+        if (this.jdbcAuthEnabled) {
+            filterChainBuilder.addRestPath("/user/login/db", JDBC_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER);
+        }
+
+        if (this.ldapAuthEnabled) {
+            filterChainBuilder.addRestPath("/user/login/ldap", LDAP_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER);
+        }
+
+        if (this.adAuthEnabled) {
+            filterChainBuilder.addRestPath("/user/login/ad", AD_FILTER, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER);
+        }
+
+        if (this.casAuthEnabled) {
+            filterChainBuilder
+                    .addPath("/user/login/cas", SSL, CORS, FORCE_SESSION_CREATION, CAS_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_URL)
+                    .addPath("/user/cas/callback", SSL, HANDLE_CAS, UPDATE_TOKEN, SEND_TOKEN_IN_URL);
+        }
+
 
         if (this.samlEnabled) {
             filterChainBuilder
@@ -369,14 +464,22 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         Set<Realm> realms = super.getRealms();
 
         realms.add(new JwtAuthRealm(this.authorizer));
-        realms.add(new NegotiateAuthenticationRealm());
+        if (this.windowsAuthEnabled) {
+            realms.add(new NegotiateAuthenticationRealm());
+        }
         realms.add(new Pac4jRealm());
-        if (jdbcDataSource != null) {
+        if (jdbcAuthEnabled && jdbcDataSource != null) {
             realms.add(new JdbcAuthRealm(jdbcDataSource, jdbcAuthenticationQuery));
         }
-        realms.add(new KerberosAuthRealm(kerberosSpn, kerberosKeytabPath));
-        realms.add(ldapRealm());
-        realms.add(activeDirectoryRealm());
+        if (this.kerberosAuthEnabled) {
+            realms.add(new KerberosAuthRealm(kerberosSpn, kerberosKeytabPath));
+        }
+        if (this.ldapAuthEnabled) {
+            realms.add(ldapRealm());
+        }
+        if (this.adAuthEnabled) {
+            realms.add(activeDirectoryRealm());
+        }
 
         return realms;
     }

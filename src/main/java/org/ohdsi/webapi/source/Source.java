@@ -124,6 +124,13 @@ public class Source extends CommonEntity<Integer> implements Serializable {
           return sourceDaimon.getTableQualifier();
         }
       }
+      if (DaimonType.Vocabulary.equals(daimonType)) {
+        return getDaimons().stream()
+                .filter(d -> DaimonType.CDM.equals(d.getDaimonType()))
+                .map(SourceDaimon::getTableQualifier)
+                .findFirst()
+                .orElse(null);
+      }
     }
     return null;
   }

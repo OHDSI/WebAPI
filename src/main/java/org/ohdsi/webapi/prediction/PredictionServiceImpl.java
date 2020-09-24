@@ -204,7 +204,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         
         // Set the root properties
         expression.setId(pred.getId());
-        expression.setName(pred.getName().trim());
+        expression.setName(StringUtils.trim(pred.getName()));
         expression.setDescription(pred.getDescription());
         expression.setOrganizationName(env.getRequiredProperty("organization.name"));
         

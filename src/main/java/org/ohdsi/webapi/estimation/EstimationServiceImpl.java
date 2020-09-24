@@ -233,7 +233,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         
         // Set the root properties
         expression.setId(est.getId());
-        expression.setName(est.getName().trim());
+        expression.setName(StringUtils.trim(est.getName()));
         expression.setDescription(est.getDescription());
         expression.setOrganizationName(this.organizationName);
         

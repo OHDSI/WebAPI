@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.service.converters;
 
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
 import org.ohdsi.webapi.service.dto.IRAnalysisShortDTO;
 import org.ohdsi.webapi.util.UserUtils;
@@ -16,7 +17,7 @@ public class IncidenceRateAnalysisToIRAnalysisShortDTOConverter <T extends IRAna
     @Override
     protected void doConvert(IncidenceRateAnalysis source, T target) {
         target.setId(source.getId());
-        target.setName(source.getName());
+        target.setName(StringUtils.trim(source.getName()));
         target.setDescription(source.getDescription());
     }
 }

@@ -24,7 +24,10 @@
       },
       "buttons": {
         "colvis": "Отображать колонки",
-        "copy": "Копировать"
+        "copy": "Копировать",
+        "changeColumns": "Изменить колонки",
+        "showAllColumns": "Показать все колонки",
+        "resetColumns": "Сбросить колонки"
       },
       "aria": {
         "sortAscending": ": нажмите для сортировки по возрастанию",
@@ -369,9 +372,6 @@
     "atlasCohortEditor": {
       "enterCohortPlaceholder": "Введите описание определения когорты здесь",
       "importConceptSet": "Импортировать набор концепций из репозитория ..."
-    },
-    "cohortDefinitionBrowser": {
-      "confirmMessage": "Изменения набора концептов не сохраняются. Желаете ли вы продолжить?"
     },
     "cohortExpressionEditor": {
       "cohortEntryEvents": "События входа",
@@ -870,6 +870,56 @@
       "expressionCartoonBindingsText_8": "относительно даты индекса Линии и стрелки представляют требуемую продолжительность этих событий.",
       "expressionCartoonBindingsText_9": "с <%=type%> <%=count%> с использованием <%=distinctOrAll%> вхождений",
       "expressionCartoonBindingsText_10": "происходит между индексами <%=startDays%> days <%=beforeArAfterStart%> и <%=endDays%> days <%=beforeArAfterEnd%>"
+    },
+    "conceptSet": {
+      "exportAllToCSV": "Экспортировать все наборы концепций в CSV",
+      "exportingToCsv": "Экспортирование всех наборов концепций в CSV",
+      "importingConceptSet": "Импортирование набора концепций",
+      "conceptSetExpression": "Определение набора концепций",
+      "includedConcepts": "Включенные концепции",
+      "includedSourceCodes": "Включенные исходные коды",
+      "deleteConfirm": "Вы действительно хотите удалить <%=name%>?",
+      "conceptSetExpressionJSON": "JSON-определение набора концепций",
+      "clickToClear": "нажмите, чтобы очистить",
+      "closeConceptSet": "Закрыть набор концепций",
+      "conceptIdentifiers": "Идентификаторы концепций",
+      "conceptIdentifierList": "Список идентификаторов концепций",
+      "includedConceptIdentifierList": "Список идентификаторов включенных концепций",
+      "loadingForExport": "Загрузка для экспорта...",
+      "exportToCsv": "Экспорт в CSV",
+      "sourceCodes": "Исходные коды",
+      "repository": "Репозиторий",
+      "conceptSet": "Набор концепций",
+      "appendConceptSetExpression": "Добавить определение набора концепций",
+      "overwriteConceptSetExpression": "Перезаписать определение набора концепций",
+      "enterConceptIdentifiers": "Введите идентификаторы концепций",
+      "enterSourceCodes": "Введите исходные коды",
+      "name": "Имя:",
+      "addConcepts": "Добавить концепции",
+      "removeSelected": "Удалить выбранные",
+      "deleteConceptSet": "Удалить набор концепций",
+      "copyToConceptSetRepository": "Копировать в репозиторий наборов концепций",
+      "notEnoughPermissions": "Недостаточно прав для <%=action%> набора концепций",
+      "actionEdit": "редактирования",
+      "actionCreate": "создания",
+      "overwriteConfirm": "Вы действительно хотите перезаписать текущее выражение набора концепций?",
+      "loadingIncludedConcepts": "Загрузка включенных концепций",
+      "commonAncestors": "Общие предки",
+      "loadingIncludedSourcecodes": "Загрузка включенных исходных кодов"
+    },
+    "conceptLegend": {
+      "standard": "Стандартный",
+      "nonStandard": "Нестандартный",
+      "classification": "Классификация"
+    },
+    "conceptAddBox": {
+      "addToConceptSet": "Добавить в набор концепций",
+      "addToNewConceptSet": "Добавить в новый набор концепций",
+      "selectConceptSet": "Выбрать набор концепций",
+      "exclude": "Исключенные",
+      "descendants": "Потомки",
+      "mapped": "Сопоставленные",
+      "addedToConceptSet": "Добавлено в набор концепций!"
     },
     "conceptSetSelector": {
       "importConcept": "Импортировать концепцию",
@@ -1504,21 +1554,7 @@
     "classification": "Классификация",
     "noVocabulariesAvailable": "Нет доступных словарей",
     "noDomainsAvailable": "Нет доступных доменов",
-    "noResultsFoundFor": "Ничего не найдено для",
-    "import": {
-      "clickToClear": "очистить",
-      "conceptIdentifiers": "Идентификаторы концепций",
-      "enterSourceCodes": "Введите исходный код",
-      "importConceptSetExpression": "Импорт определения набора концепций",
-      "importConceptIdentifiers": "Импорт идентификаторов концепций",
-      "conceptSetExpressionJSON": "JSON-определение набора концепций",
-      "conceptSet": "Набор концепций",
-      "sourceCodes": "Исходный код",
-      "importedConceptSetExpression": "Импортированное определение набора концепций",
-      "enterConceptIdentifiers": "Введите идентификаторы концепций",
-      "importSourceCodes": "Импорт исходного кода",
-      "unableToParseConceptIdentifiers": "Невозможно распарсить идентификаторы концепций"
-    }
+    "noResultsFoundFor": "Ничего не найдено для"
   },
   "cs": {
     "manager": {
@@ -1566,22 +1602,6 @@
         "message1": "Свидетельство происходит из",
         "message2": "Основа Свидетельства состоит из Свидетельства, найденного в опубликованнай литературе."
       },
-      "export": {
-        "conceptSetExpressionJSON": "JSON-определение набора концепций",
-        "conceptIdentifierList": "Список идентификаторов концепций",
-        "includedConceptIdentifierList": "Список идентификаторов включенных концепций",
-        "exportToCSV": "Экспорт в CSV",
-        "exportingCsv": "Экспорт в CSV...",
-        "loadingForExport": "Загрузка для экспорта..."
-      },
-      "expression": {
-        "standard": "Стандартный",
-        "nonStandard": "Нестандартный",
-        "classification": "Классификация",
-        "changeColumns": "Изменить колонки",
-        "showAllColumns": "Показать все колонки",
-        "resetColumns": "Сбросить колонки"
-      },
       "caption": "Набор концепций №<%=id%>",
       "csAlreadyExistsMessage": "Набор концепций с таким именем уже существует. Пожалуйста, выберите другое имя.",
       "csDeleteConfirmMessage": "Удалить набор концепций? Предупреждение: это действие необратимо.",
@@ -1598,7 +1618,6 @@
       "pleaseProvideNameMessage": "Пожалуйста, назовите ваш новый набор концепций:",
       "resetColumnsButton": "Сброс",
       "showAllColumnsButton": "Показать все",
-      "csUnableToSaveMessage": "Невозможно сохранить набор концепций",
       "overwriteOption": "Перезаписать текущий набор концепций",
       "fullyOptimizedMessage": "Текущее определение набора концепций полностью оптимизировано.",
       "createOption": "Создать новый набор концепций",
@@ -1642,7 +1661,8 @@
             "recordCountsAcrossSources": "Количество записей из разных источников"
           }
         }
-      }
+      },
+      "conceptSetOptimization": "Concept Set Optimization"
     },
     "browser": {
       "exportConceptSetsButton": "Экспорт наборов концепций",
@@ -1650,7 +1670,6 @@
       "exportInstructionsText": "Выберите наборы концепций в таблице. Затем нажмите кнопку «Экспорт наборов концепций», которая запустит скачивание в новом окне.",
       "caption": "Наборы концепций",
       "exportConceptSetsNumber": "Выбрано наборов концепций для экспорта: <b><%=num%></b>.",
-      "saveWarning": "Изменения когорты не сохранятся. Хотите продолжить?",
       "tabs": {
         "list": "Список",
         "export": "Экспорт"
@@ -1669,9 +1688,6 @@
         "saveWarning": "Сохраните, пожалуйста, текущий набор концепций перед сравнением.",
         "saveFromComparisonNameTail": " - из сравнения"
       }
-    },
-    "modal": {
-      "title": "Список концепций"
     }
   },
   "cc": {
@@ -1787,6 +1803,10 @@
       }
     },
     "fa": {
+      "tabs": {
+        "design": "Дизайн",
+        "conceptSets": "Наборы концепций"
+      },
       "loadingList": "Загрузка списка функциональных анализов...",
       "retrievingList": "Получение списка функциональных анализов...",
       "caption": "Функциональный анализ №<%=id%>",
@@ -2471,9 +2491,6 @@
           "text_1": "Когорта определяется как набор лиц, удовлетворяющих одному или нескольким критериям включения в течение определенного периода времени. Один человек может претендовать на одну группу несколько раз в течение непересекающихся интервалов времени. Когорты строятся в ATLAS путем указания критериев входа в когорту и критериев выхода из когорты. Критерии входа в когорту включают в себя выбор одного или нескольких начальных событий, которые определяют дату начала для записи в когорте, и, при необходимости, указание дополнительных критериев включения, которые отфильтровывают для соответствующих событий. Критерии выхода из группы применяются к каждой записи в группе, чтобы определить дату окончания, когда эпизод этого человека больше не подходит для этой группы.",
           "title": "Определение когорты"
         },
-        "importConceptSet": {
-          "title": "Импортировать набор концепций из репозитория ..."
-        },
         "linkToCohortDefinition": {
           "text_1": "Эта ссылка может использоваться для доступа к этому определению когорты непосредственно из Web API из других инструментов, таких как R, а также для импорта через экземпляры ATLAS.",
           "title": "Ссылка на определение когорты"
@@ -2488,7 +2505,6 @@
       "closeCohortTitle": "Закрыть определение когорты",
       "generationExitMessage": "Сообщение о выходе из генерации",
       "retrievingCohortDefinitions": "получение когортных определений",
-      "retrievingConcepts": "извлечение концепций",
       "cohortDefinitionManagerText_1": "Когорта не генерируется",
       "cohortDefinitionManagerText_10": "Возгласы",
       "cohortDefinitionManagerText_11": "Система отчетов обнаружила ошибку. Пожалуйста, предоставьте следующую информацию вашей администрации ATLAS или отправьте вопрос на",
@@ -2529,20 +2545,6 @@
       "panels": {
         "appendix_1": "Приложение 1: Определения концептуального набора",
         "availableCDMSources": "Доступные источники CDM",
-        "cancel": "Отмена",
-        "clickToClear": "нажмите, чтобы очистить",
-        "closeConceptSet": "Закрыть концепцию",
-        "conceptIdentifierList": "Список идентификаторов концепций",
-        "conceptIdentifiers": "Идентификаторы концепции",
-        "conceptSet": "Набор концепций",
-        "conceptSetExpression": "Понятие набора выражений",
-        "conceptSetExpressionJSON": "JSON-определение набора концепций",
-        "copyToConceptSetRepository": "Копировать в репозиторий наборов концепций",
-        "deleteConceptSet": "Удалить набор концепций",
-        "enterConceptIdentifiers": "Введите идентификаторы концепции",
-        "enterSourceCodes": "Введите исходные коды",
-        "export": "Экспорт",
-        "exportAllToCSV": "Экспортировать все наборы концепций в CSV",
         "fullAnalysis": "Полный анализ",
         "generate": "генерировать",
         "generated": "Сформирован",
@@ -2550,23 +2552,15 @@
         "generationStatus": "Статус генерации",
         "graphicalView": "Графический вид",
         "hideReports": "Скрыть отчеты",
-        "import": "Импорт",
         "importConceptIdentifiers": "Импорт идентификаторов концепций",
         "importConceptSetExpression": "Импорт определения набора концепций",
         "importSourceCodes": "Импорт исходных кодов",
-        "includedConceptIdentifierList": "Список идентификаторов включенных концепций",
-        "includedConcepts": "Включенные концепции",
-        "includedSourceCodes": "Включенные исходные коды",
         "json": "JSON",
-        "name": "Имя:",
-        "newConceptSet": "Новый набор концепций",
         "people": "Количество пациентов",
         "quickAnalysis": "Быстрый анализ",
         "records": "Записей",
         "reload": "Перезагрузить",
         "reportSelections": "Выбор отчетов",
-        "repository": "Репозиторий",
-        "sourceCodes": "Исходные коды",
         "sourceName": "Имя источника",
         "sql": "SQL",
         "textView": "Текстовый вид",

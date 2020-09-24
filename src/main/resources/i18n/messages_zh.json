@@ -24,7 +24,10 @@
       },
       "buttons": {
         "colvis": "显示各列",
-        "copy": "复制"
+        "copy": "复制",
+        "changeColumns": "修改列",
+        "resetColumns": "重置列",
+        "showAllColumns": "显示所有列"
       },
       "aria": {
         "sortAscending": ": 激活以对列进行升序排序",
@@ -238,9 +241,6 @@
       "enterCohortPlaceholder": "在此输入队列定义描述",
       "importConceptSet": "从存储库中加载概念集"
     },
-    "cohortDefinitionBrowser": {
-      "confirmMessage": "概念集更改不会保存。 你想继续吗？"
-    },
     "expressionCartoonBindings": {
       "primaryCriteria": "主要标准",
       "any": "任意",
@@ -363,6 +363,56 @@
       "search": "搜索",
       "selectConcept": "选择概念",
       "waitMessage": "术语集提供程序启动时，请稍候..."
+    },
+    "conceptSet": {
+      "exportAllToCSV": "将所有概念集导出到CSV",
+      "exportingToCsv": "将所有概念集导出到CSV",
+      "importingConceptSet": "Importing Concept Set",
+      "conceptSetExpression": "概念集表达",
+      "includedConcepts": "包含的概念",
+      "includedSourceCodes": "包含的源代码",
+      "deleteConfirm": "Do you want to delete <%=name%>?",
+      "conceptSetExpressionJSON": "以JSON表示的概念集",
+      "clickToClear": "单击以删除",
+      "closeConceptSet": "关闭概念集",
+      "conceptIdentifiers": "概念标识符",
+      "conceptIdentifierList": "概念标识符列表",
+      "includedConceptIdentifierList": "包含的概念标识符列表",
+      "loadingForExport": "Loading for export...",
+      "exportToCsv": "导出到CSV",
+      "conceptSet": "概念集",
+      "sourceCodes": "源代码",
+      "repository": "存储库",
+      "appendConceptSetExpression": "Append Concept Set Expression",
+      "overwriteConceptSetExpression": "Overwrite Concept Set Expression",
+      "enterConceptIdentifiers": "输入概念标识符",
+      "enterSourceCodes": "输入源代码",
+      "name": "概念集名称",
+      "addConcepts": "Add Concepts",
+      "removeSelected": "删除选定的",
+      "deleteConceptSet": "删除概念集",
+      "copyToConceptSetRepository": "复制到概念集存储库",
+      "notEnoughPermissions": "Not enough permissions to <%=action%> Concept Set",
+      "actionEdit": "edit",
+      "actionCreate": "create",
+      "overwriteConfirm": "Are you sure you want to overwrite current Concept Set Expression?",
+      "loadingIncludedConcepts": "Loading Included Concepts",
+      "commonAncestors": "Common Ancestors",
+      "loadingIncludedSourcecodes": "Loading Included Sourcecodes"
+    },
+    "conceptLegend": {
+      "standard": "标准",
+      "nonStandard": "非标准",
+      "classification": "分类"
+    },
+    "conceptAddBox": {
+      "addToConceptSet": "Add To Concept Set",
+      "addToNewConceptSet": "Add To New Concept Set",
+      "selectConceptSet": "Select Concept Set",
+      "exclude": "Exclude",
+      "descendants": "Descendants",
+      "mapped": "Mapped",
+      "addedToConceptSet": "Added To Concept Set!"
     },
     "conceptSetBuilder": {
       "conceptSet": "概念集",
@@ -1488,20 +1538,6 @@
     "clearAllSelections": "清除所有选择",
     "domains": "域",
     "headingTitle": "搜索",
-    "import": {
-      "clickToClear": "单击以删除",
-      "conceptIdentifiers": "概念标识符",
-      "conceptSet": "概念集",
-      "conceptSetExpressionJSON": "以JSON表示的概念集",
-      "enterConceptIdentifiers": "输入概念标识符",
-      "enterSourceCodes": "输入源代码",
-      "importConceptIdentifiers": "导入概念标识符",
-      "importConceptSetExpression": "导入概念集表达式",
-      "importSourceCodes": "导入源代码",
-      "importedConceptSetExpression": "概念集表达已导入",
-      "sourceCodes": "源代码",
-      "unableToParseConceptIdentifiers": "无法解析概念标识符"
-    },
     "loadingMessage": {
       "domains": "域",
       "loading": "载入中",
@@ -1541,7 +1577,6 @@
       "exportConceptSetsNumber": "选择<b><%=num%></b>个概念集导出",
       "exportInstructions": "说明:",
       "exportInstructionsText": "通过选择网格中的每一行，选择一组要导出的概念。 完成后，使用“导出概念集”按钮开始在新窗口中下载。",
-      "saveWarning": "队列更改不会保存。 你想继续吗？",
       "tabs": {
         "export": "导出",
         "list": "列表"
@@ -1559,7 +1594,6 @@
       "csDeleteConfirmMessage": "删除概念集？警告：删除无法撤销！",
       "csNotSavedConfirmMessage": "您的概念集更改未保存。  您想继续吗？",
       "csSaveErrorMessage": "尝试保存概念集时发生错误。",
-      "csUnableToSaveMessage": "无法保存概念集",
       "exploreEvidence": {
         "additionalInformation": "附加信息：",
         "anchor1": "从ATLAS获得阴性对照",
@@ -1595,22 +1629,6 @@
         "viewDatabaseRecordCounts": "查看以下数据库的数据库记录计数（RC）和后代记录计数（DRC）：",
         "viewEvidence": "查看证据",
         "viewingEvidence": "查看证据"
-      },
-      "export": {
-        "conceptIdentifierList": "概念标识符列表",
-        "conceptSetExpressionJSON": "以JSON表示的概念集",
-        "exportToCSV": "导出到CSV",
-        "exportingCsv": "正在导出CSV",
-        "includedConceptIdentifierList": "包含的概念标识符列表",
-        "loadingForExport": "正在加载以供导出..."
-      },
-      "expression": {
-        "changeColumns": "修改列",
-        "classification": "分类",
-        "nonStandard": "非标准",
-        "resetColumns": "重置列",
-        "showAllColumns": "显示所有列",
-        "standard": "标准"
       },
       "fullyOptimizedMessage": "当前的概念集定义已完全优化。",
       "optimize": "优化",
@@ -1668,10 +1686,8 @@
             "recordCountsAcrossSources": "从来源中得到的记录数"
           }
         }
-      }
-    },
-    "modal": {
-      "title": "概念列表"
+      },
+      "conceptSetOptimization": "Concept Set Optimization"
     }
   },
   "cc": {
@@ -1787,6 +1803,10 @@
       }
     },
     "fa": {
+      "tabs": {
+        "design": "设计",
+        "conceptSets": "概念集"
+      },
       "addCriteriaFeature": "添加条件功能",
       "addNewCriteria": "添加新条件...",
       "analysisSql": "分析SQL:",
@@ -2471,9 +2491,6 @@
           "text_1": "队列定义为在一段时间内满足一个或多个入选标准的一组人。 在不重叠的时间间隔内，一个人可以多次获得一个队列的资格。 通过指定队列进入标准和队列退出标准在ATLAS中构建队列。 进入队列的标准涉及选择一个或多个初始事件，这些事件确定了进入队列的开始日期，并可以选择指定其他包含条件以筛选符合条件的事件。 队列退出标准被应用于每个队列进入记录，以确定该病人的经历不再符合该队列资格的结束日期。",
           "title": "队列定义"
         },
-        "importConceptSet": {
-          "title": "从存储库中加载概念集"
-        },
         "linkToCohortDefinition": {
           "text_1": "该链接可用于直接从Web工具（例如R）从WebAPI访问此队列定义，以及用于跨ATLAS实例导入。",
           "title": "链接到队列定义"
@@ -2488,7 +2505,6 @@
       "closeCohortTitle": "关闭队列定义",
       "generationExitMessage": "生成退出消息",
       "retrievingCohortDefinitions": "检索队列定义",
-      "retrievingConcepts": "检索概念",
       "cohortDefinitionManagerText_1": "未生成队列",
       "cohortDefinitionManagerText_10": "哎呀",
       "cohortDefinitionManagerText_11": "报告系统遇到错误。请向您的ATLAS管理团队提供以下详细信息，或在以下日期提交问题",
@@ -2529,20 +2545,6 @@
       "panels": {
         "appendix_1": "附录1：概念集定义",
         "availableCDMSources": "可用的CDM数据源",
-        "cancel": "取消",
-        "clickToClear": "单击以删除",
-        "closeConceptSet": "关闭概念集",
-        "conceptIdentifierList": "概念标识符列表",
-        "conceptIdentifiers": "概念标识符",
-        "conceptSet": "概念集",
-        "conceptSetExpression": "概念集表达",
-        "conceptSetExpressionJSON": "以JSON表示的概念集",
-        "copyToConceptSetRepository": "复制到概念集存储库",
-        "deleteConceptSet": "删除概念集",
-        "enterConceptIdentifiers": "输入概念标识符",
-        "enterSourceCodes": "输入源代码",
-        "export": "导出",
-        "exportAllToCSV": "将所有概念集导出到CSV",
         "fullAnalysis": "全面分析",
         "generate": "生成",
         "generated": "创建开始时间",
@@ -2550,23 +2552,15 @@
         "generationStatus": "生成状态",
         "graphicalView": "图片展示",
         "hideReports": "隐藏报告",
-        "import": "导入",
         "importConceptIdentifiers": "导入概念标识符",
         "importConceptSetExpression": "导入概念集表达式",
         "importSourceCodes": "导入源代码",
-        "includedConceptIdentifierList": "包含的概念标识符列表",
-        "includedConcepts": "包含的概念",
-        "includedSourceCodes": "包含的源代码",
         "json": "JSON格式",
-        "name": "概念集名称",
-        "newConceptSet": "新建概念集",
         "people": "人数",
         "quickAnalysis": "快速分析",
         "records": "记录数",
         "reload": "重新载入",
         "reportSelections": "选择报告条件",
-        "repository": "存储库",
-        "sourceCodes": "源代码",
         "sourceName": "来源名称",
         "sql": "SQL",
         "textView": "文字展示",

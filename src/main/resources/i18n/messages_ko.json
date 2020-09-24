@@ -24,7 +24,10 @@
       },
       "buttons": {
         "colvis": "컬럼 보기",
-        "copy": "복사하기"
+        "copy": "복사하기",
+        "changeColumns": "Change Columns",
+        "resetColumns": "Reset Columns",
+        "showAllColumns": "Show All Columns"
       },
       "aria": {
         "sortAscending": ": activate to sort column ascending",
@@ -238,9 +241,6 @@
       "enterCohortPlaceholder": "Enter a cohort definition description here",
       "importConceptSet": "저장소에서 컨셉 세트  불러오기"
     },
-    "cohortDefinitionBrowser": {
-      "confirmMessage": "Concept set changes are not saved. Would you like to continue?"
-    },
     "cohortExpressionEditor": {
       "addCensoringEvent": "Censoring 이벤트 추가",
       "addInitialEvent": "초기 이벤트 추가...",
@@ -314,6 +314,56 @@
       "search": "검색",
       "selectConcept": "Select Concept",
       "waitMessage": "Please wait while the Vocabulary Provider initalizes..."
+    },
+    "conceptSet": {
+      "exportAllToCSV": "Export All Concept Sets To CSV",
+      "exportingToCsv": "Exporting All Concept Sets To CSV",
+      "importingConceptSet": "Importing Concept Set",
+      "conceptSetExpression": "컨셉 세트 표현",
+      "includedConcepts": "포함된 컨셉들:",
+      "includedSourceCodes": "포함된 소스 코드",
+      "deleteConfirm": "Do you want to delete <%=name%>?",
+      "conceptSetExpressionJSON": "JSON 형식으로 표현",
+      "clickToClear": "취소합니다",
+      "closeConceptSet": "컨셉 세트 닫기",
+      "conceptIdentifiers": "컨셉 식별자",
+      "conceptIdentifierList": "컨셉 식별자 목록",
+      "includedConceptIdentifierList": "포함된 컨셉 식별자 목록",
+      "loadingForExport": "Loading for export...",
+      "exportToCsv": "Export To CSV",
+      "sourceCodes": "소스 코드",
+      "conceptSet": "컨셉 세트",
+      "repository": "저장소",
+      "appendConceptSetExpression": "Append Concept Set Expression",
+      "overwriteConceptSetExpression": "Overwrite Concept Set Expression",
+      "enterConceptIdentifiers": "컨셉 식별자를 입력합니다",
+      "enterSourceCodes": "소스 코드를 입력합니다",
+      "name": "컨셉 세트 이름:",
+      "addConcepts": "Add Concepts",
+      "removeSelected": "Remove Selected",
+      "deleteConceptSet": "컨셉 세트 삭제",
+      "copyToConceptSetRepository": "컨셉 세트 저장소로 복사",
+      "notEnoughPermissions": "Not enough permissions to <%=action%> Concept Set",
+      "actionEdit": "edit",
+      "actionCreate": "create",
+      "overwriteConfirm": "Are you sure you want to overwrite current Concept Set Expression?",
+      "loadingIncludedConcepts": "Loading Included Concepts",
+      "commonAncestors": "Common Ancestors",
+      "loadingIncludedSourcecodes": "Loading Included Sourcecodes"
+    },
+    "conceptLegend": {
+      "standard": "표준",
+      "nonStandard": "비표준",
+      "classification": "분류"
+    },
+    "conceptAddBox": {
+      "addToConceptSet": "Add To Concept Set",
+      "addToNewConceptSet": "Add To New Concept Set",
+      "selectConceptSet": "Select Concept Set",
+      "exclude": "Exclude",
+      "descendants": "Descendants",
+      "mapped": "Mapped",
+      "addedToConceptSet": "Added To Concept Set!"
     },
     "conceptSetBuilder": {
       "conceptSet": "Concept Set",
@@ -1488,20 +1538,6 @@
     "clearAllSelections": "Clear All Selections",
     "domains": "Domains",
     "headingTitle": "검색",
-    "import": {
-      "clickToClear": "삭제하려면 클릭",
-      "conceptIdentifiers": "컨셉 식별자",
-      "conceptSet": "컨셉 세트",
-      "conceptSetExpressionJSON": "JSON 형식으로 표현",
-      "enterConceptIdentifiers": "컨셉 식별자를 입력하세요",
-      "enterSourceCodes": "소스 코드를 입력합니다",
-      "importConceptIdentifiers": "컨셉 식별자 불러오기",
-      "importConceptSetExpression": "Concept Set Expression 불러오기",
-      "importSourceCodes": "Import Source Codes",
-      "importedConceptSetExpression": "Imported Concept Set Expression",
-      "sourceCodes": "소스 코드",
-      "unableToParseConceptIdentifiers": "Unable to parse Concept Identifiers"
-    },
     "loadingMessage": {
       "domains": "domains",
       "loading": "Loading",
@@ -1541,7 +1577,6 @@
       "exportConceptSetsNumber": "<b><%=num%></b> concept sets selected for export.",
       "exportInstructions": " ",
       "exportInstructionsText": "하단의 표에서 내보낼 컨셉 세트를 선택하시고, '컨셉 세트 내보내기'를 클릭하시어 컨셉 세트를 다운하십시오.",
-      "saveWarning": "Cohort changes are not saved. Would you like to continue?",
       "tabs": {
         "export": "내보내기",
         "list": "리스트"
@@ -1559,7 +1594,6 @@
       "csDeleteConfirmMessage": "Delete concept set? Warning: deletion can not be undone!",
       "csNotSavedConfirmMessage": "Your concept set changes are not saved. Would you like to continue?",
       "csSaveErrorMessage": "An error occurred while attempting to save a concept set.",
-      "csUnableToSaveMessage": "Unable to save concept set",
       "exploreEvidence": {
         "additionalInformation": "Additional Information:",
         "anchor1": "Obtaining Negative Controls from ATLAS",
@@ -1595,22 +1629,6 @@
         "viewDatabaseRecordCounts": "View database record counts (RC) and descendant record counts (DRC) for:",
         "viewEvidence": "View Evidence",
         "viewingEvidence": "Viewing Evidence"
-      },
-      "export": {
-        "conceptIdentifierList": "컨셉 식별자 목록",
-        "conceptSetExpressionJSON": "JSON 형식으로 표현",
-        "exportToCSV": "Export To CSV",
-        "exportingCsv": "Exporting CSV...",
-        "includedConceptIdentifierList": "포함된 컨셉 식별자 목록",
-        "loadingForExport": "Loading for export..."
-      },
-      "expression": {
-        "changeColumns": "Change Columns",
-        "classification": "분류",
-        "nonStandard": "비표준",
-        "resetColumns": "Reset Columns",
-        "showAllColumns": "Show All Columns",
-        "standard": "표준"
       },
       "fullyOptimizedMessage": "The current concept set definition is fully optimized.",
       "optimize": "Optimize",
@@ -1668,10 +1686,8 @@
             "recordCountsAcrossSources": "Record Counts across Sources"
           }
         }
-      }
-    },
-    "modal": {
-      "title": "Concept List"
+      },
+      "conceptSetOptimization": "Concept Set Optimization"
     }
   },
   "cc": {
@@ -1787,6 +1803,10 @@
       }
     },
     "fa": {
+      "tabs": {
+        "design": "설계",
+        "conceptSets": "컨셉 세트"
+      },
       "addCriteriaFeature": "Add Criteria feature",
       "addNewCriteria": "Add New Criteria...",
       "analysisSql": "Analysis SQL:",
@@ -2471,9 +2491,6 @@
           "text_1": "A cohort is defined as the set of persons satisfying one or more inclusion criteria for a duration of time. One person may qualify for one cohort multiple times during non-overlapping time intervals. Cohorts are constructed in ATLAS by specifying cohort entry criteria and cohort exit criteria. Cohort entry criteria involve selecting one or more initial events, which determine the start date for cohort entry, and optionally specifying additional inclusion criteria which filter to the qualifying events. Cohort exit criteria are applied to each cohort entry record to determine the end date when the person’s episode no longer qualifies for the cohort.",
           "title": "코호트 정의"
         },
-        "importConceptSet": {
-          "title": "저장소에서 컨셉 세트  불러오기"
-        },
         "linkToCohortDefinition": {
           "text_1": "This link can be used to access this cohort definition directly from the WebAPI from other tools like R as well as for importing across ATLAS instances.",
           "title": "Link to Cohort Definition"
@@ -2488,7 +2505,6 @@
       "closeCohortTitle": "Close cohort definition",
       "generationExitMessage": "Generation Exit Message",
       "retrievingCohortDefinitions": "retrieving cohort definitions",
-      "retrievingConcepts": "retrieving concepts",
       "cohortDefinitionManagerText_1": "코호트 생성되지 않음",
       "cohortDefinitionManagerText_10": "Whoops",
       "cohortDefinitionManagerText_11": "The reporting system has encountered an error. Please provide the following details to your ATLAS administration team or submit an issue on ",
@@ -2529,20 +2545,6 @@
       "panels": {
         "appendix_1": "부록 1 : 컨셉 세트 정의",
         "availableCDMSources": "사용 가능한 데이터 소스",
-        "cancel": "Cancel",
-        "clickToClear": "취소합니다",
-        "closeConceptSet": "컨셉 세트 닫기",
-        "conceptIdentifierList": "컨셉 식별자 목록",
-        "conceptIdentifiers": "컨셉 식별자",
-        "conceptSet": "컨셉 세트",
-        "conceptSetExpression": "컨셉 세트 표현",
-        "conceptSetExpressionJSON": "JSON 형식으로 표현",
-        "copyToConceptSetRepository": "컨셉 세트 저장소로 복사",
-        "deleteConceptSet": "컨셉 세트 삭제",
-        "enterConceptIdentifiers": "컨셉 식별자를 입력합니다",
-        "enterSourceCodes": "소스 코드를 입력합니다",
-        "export": "내보내기",
-        "exportAllToCSV": "Export All Concept Sets To CSV",
         "fullAnalysis": "전체 분석",
         "generate": "생성",
         "generated": "생성 시작 시간",
@@ -2550,23 +2552,15 @@
         "generationStatus": "생성 상태",
         "graphicalView": "그래픽 보기",
         "hideReports": "Hide Reports",
-        "import": "불러오기",
         "importConceptIdentifiers": "Import Concept Identifiers",
         "importConceptSetExpression": "컨셉 세트 불러오기",
         "importSourceCodes": "Import Source Codes",
-        "includedConceptIdentifierList": "포함된 컨셉 식별자 목록",
-        "includedConcepts": "포함된 컨셉들:",
-        "includedSourceCodes": "포함된 소스 코드",
         "json": "JSON",
-        "name": "컨셉 세트 이름:",
-        "newConceptSet": "새 컨셉 세트",
         "people": "환자 수",
         "quickAnalysis": "빠른 분석",
         "records": "기록 수",
         "reload": "새로 고침",
         "reportSelections": "레포트 조건 선택",
-        "repository": "저장소",
-        "sourceCodes": "소스 코드",
         "sourceName": "데이터 소스 이름",
         "sql": "SQL",
         "textView": "텍스트 보기",

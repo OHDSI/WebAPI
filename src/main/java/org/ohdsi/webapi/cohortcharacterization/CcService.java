@@ -8,6 +8,7 @@ import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
 import org.ohdsi.webapi.cohortcharacterization.dto.ExecutionResultRequest;
 import org.ohdsi.webapi.cohortcharacterization.dto.ExportExecutionResultRequest;
 import org.ohdsi.webapi.cohortcharacterization.dto.GenerationResults;
+import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.cohortdefinition.event.CohortDefinitionChangedEvent;
 import org.ohdsi.webapi.feanalysis.event.FeAnalysisChangedEvent;
 import org.ohdsi.webapi.job.JobExecutionResource;
@@ -69,6 +70,8 @@ public interface CcService {
     void cancelGeneration(Long id, String sourceKey);
 
     Long getCCResultsTotalCount(Long id);
+
+    List<ConceptSetExport> exportConceptSets(CohortCharacterization cohortCharacterization);
 
     GenerationResults exportExecutionResult(Long generationId, ExportExecutionResultRequest params);
 

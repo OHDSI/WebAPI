@@ -44,6 +44,7 @@ import org.ohdsi.webapi.cohortdefinition.event.CohortDefinitionChangedEvent;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.AnalysisGenerationInfoEntity;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
+import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
@@ -53,13 +54,13 @@ import org.ohdsi.webapi.feanalysis.event.FeAnalysisChangedEvent;
 import org.ohdsi.webapi.i18n.I18nService;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
-import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.FeatureExtractionService;
 import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.shiro.annotations.CcGenerationId;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
@@ -96,7 +97,6 @@ import java.io.OutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -117,6 +117,8 @@ import static org.ohdsi.webapi.Constants.Params.COHORT_CHARACTERIZATION_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_AUTHOR;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
+import org.ohdsi.webapi.service.AbstractDaoService;
+import org.ohdsi.webapi.service.VocabularyService;
 
 @Service
 @Transactional
@@ -170,19 +172,19 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                 "Comparator count", "Comparator percent", "Std. Diff Of Mean"});
     }};
 
-    private CcRepository repository;
-    private CcParamRepository paramRepository;
-    private CcStrataRepository strataRepository;
-    private CcConceptSetRepository conceptSetRepository;
-    private FeAnalysisService analysisService;
-    private CcGenerationEntityRepository ccGenerationRepository;
-    private FeatureExtractionService featureExtractionService;
-    private DesignImportService designImportService;
-    private AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository;
-    private SourceService sourceService;
-    private GenerationUtils generationUtils;
-    private EntityManager entityManager;
-    private ApplicationEventPublisher eventPublisher;
+    private final CcRepository repository;
+    private final CcParamRepository paramRepository;
+    private final CcStrataRepository strataRepository;
+    private final CcConceptSetRepository conceptSetRepository;
+    private final FeAnalysisService analysisService;
+    private final CcGenerationEntityRepository ccGenerationRepository;
+    private final FeatureExtractionService featureExtractionService;
+    private final DesignImportService designImportService;
+    private final AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository;
+    private final SourceService sourceService;
+    private final GenerationUtils generationUtils;
+    private final EntityManager entityManager;
+    private final ApplicationEventPublisher eventPublisher;
 
     private final I18nService i18nService;
     private final JobRepository jobRepository;
@@ -190,6 +192,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     private final JobService jobService;
     private final JobInvalidator jobInvalidator;
     private final GenericConversionService genericConversionService;
+    private final VocabularyService vocabularyService;
 
     private final Environment env;
 
@@ -213,6 +216,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             final JobService jobService,
             final ApplicationEventPublisher eventPublisher,
             final JobInvalidator jobInvalidator,
+            final VocabularyService vocabularyService,
             @Qualifier("conversionService") final GenericConversionService genericConversionService,
             Environment env) {
         this.repository = ccRepository;
@@ -233,6 +237,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         this.jobService = jobService;
         this.eventPublisher = eventPublisher;
         this.jobInvalidator = jobInvalidator;
+        this.vocabularyService = vocabularyService;
         this.genericConversionService = genericConversionService;
         this.env = env;
         SerializedCcToCcConverter.setConversionService(conversionService);
@@ -332,8 +337,12 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
       if (Objects.nonNull(foundEntity.getConceptSetEntity()) && Objects.nonNull(entity.getConceptSetEntity())) {
         foundEntity.getConceptSetEntity().setRawExpression(entity.getConceptSetEntity().getRawExpression());
       } else if (Objects.nonNull(entity.getConceptSetEntity())) {
-        CcStrataConceptSetEntity savedEntity = conceptSetRepository.save(entity.getConceptSetEntity());
-        foundEntity.setConceptSetEntity(savedEntity);
+        CcStrataConceptSetEntity cse = new CcStrataConceptSetEntity();
+        cse.setCohortCharacterization(foundEntity);
+        cse.setRawExpression(entity.getConceptSetEntity().getRawExpression());
+        foundEntity.setConceptSetEntity(cse);
+      } else {
+        foundEntity.setConceptSetEntity(null);
       }
   }
 
@@ -425,7 +434,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
         updateParams(entity, persistedCohortCharacterization);
         updateStratas(entity, persistedCohortCharacterization);
-
+        updateConceptSet(entity, persistedCohortCharacterization);
+        
         importCohorts(entity, persistedCohortCharacterization);
         List<Integer> savedAnalysesIds = importAnalyses(entity, persistedCohortCharacterization);
 
@@ -919,7 +929,16 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         return COHORT_CHARACTERIZATION_ID;
     }
 
-    private List<CcResult> getGenerationResults(final Source source, final String translatedSql) {
+    @Override
+    public List<ConceptSetExport> exportConceptSets(CohortCharacterization cohortCharacterization) {
+
+        SourceInfo prioritySource = new SourceInfo(vocabularyService.getPriorityVocabularySource());
+        return cohortCharacterization.getStrataConceptSets().stream()
+                .map(cs -> vocabularyService.exportConceptSet(cs, prioritySource))
+                .collect(Collectors.toList());
+    }
+
+  private List<CcResult> getGenerationResults(final Source source, final String translatedSql) {
         return this.getSourceJdbcTemplate(source).query(translatedSql, (rs, rowNum) -> {
             final String type = rs.getString("type");
             if (StringUtils.equals(type, DISTRIBUTION.toString())) {

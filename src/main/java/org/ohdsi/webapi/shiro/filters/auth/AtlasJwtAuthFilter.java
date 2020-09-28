@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.shiro.filters.auth;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -15,14 +16,12 @@ public final class AtlasJwtAuthFilter extends AtlasAuthFilter {
   @Override
   protected JwtAuthToken createToken(ServletRequest request, ServletResponse response) throws Exception {
     String jwt = TokenManager.extractToken(request);
-    String subject;
     try {
-      subject = TokenManager.getSubject(jwt);
+      String subject = TokenManager.getSubject(jwt);
+      return new JwtAuthToken(subject);
     } catch (JwtException e) {
       throw new AuthenticationException(e);
     }
-
-    return new JwtAuthToken(subject);
   }
 
   @Override

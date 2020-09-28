@@ -24,7 +24,8 @@ public class JwtAuthRealm extends AuthorizingRealm {
 
   @Override
   public boolean supports(AuthenticationToken token) {
-    return token != null &&  token.getClass() == JwtAuthToken.class;
+
+    return token != null && token.getClass() == JwtAuthToken.class;
   }
 
   @Override

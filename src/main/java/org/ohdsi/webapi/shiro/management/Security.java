@@ -2,10 +2,9 @@ package org.ohdsi.webapi.shiro.management;
 
 import java.util.Map;
 import java.util.Set;
-import org.apache.shiro.authc.Authenticator;
-import org.apache.shiro.realm.Realm;
-
 import javax.servlet.Filter;
+import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
+import org.apache.shiro.realm.Realm;
 
 /**
  *
@@ -24,5 +23,5 @@ public abstract class Security {
   
   public abstract Map<String, String> getFilterChain();
   
-  public abstract Authenticator getAuthenticator();
+  public abstract ModularRealmAuthenticator getAuthenticator();
 }

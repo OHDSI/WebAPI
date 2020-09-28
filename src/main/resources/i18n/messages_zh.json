@@ -71,7 +71,7 @@
     },
     "copiedToClipboard": "已复制到剪贴板！",
     "copy": "复制",
-    "copyOf": "Copy of <%=name%>",
+    "copyOf": "<%=name%>的副本",
     "copyToClipboard": "复制到剪贴版",
     "createACopy": "建立副本",
     "days": "天",
@@ -367,38 +367,38 @@
     "conceptSet": {
       "exportAllToCSV": "将所有概念集导出到CSV",
       "exportingToCsv": "将所有概念集导出到CSV",
-      "importingConceptSet": "Importing Concept Set",
+      "importingConceptSet": "正在导入概念集",
       "conceptSetExpression": "概念集表达",
       "includedConcepts": "包含的概念",
       "includedSourceCodes": "包含的源代码",
-      "deleteConfirm": "Do you want to delete <%=name%>?",
+      "deleteConfirm": "是否要删除<%=name%>？",
       "conceptSetExpressionJSON": "以JSON表示的概念集",
       "clickToClear": "单击以删除",
       "closeConceptSet": "关闭概念集",
       "conceptIdentifiers": "概念标识符",
       "conceptIdentifierList": "概念标识符列表",
       "includedConceptIdentifierList": "包含的概念标识符列表",
-      "loadingForExport": "Loading for export...",
+      "loadingForExport": "正在加载以供导出...",
       "exportToCsv": "导出到CSV",
       "conceptSet": "概念集",
       "sourceCodes": "源代码",
       "repository": "存储库",
-      "appendConceptSetExpression": "Append Concept Set Expression",
-      "overwriteConceptSetExpression": "Overwrite Concept Set Expression",
+      "appendConceptSetExpression": "追加概念集表达式",
+      "overwriteConceptSetExpression": "覆盖概念集表达式",
       "enterConceptIdentifiers": "输入概念标识符",
       "enterSourceCodes": "输入源代码",
       "name": "概念集名称",
-      "addConcepts": "Add Concepts",
+      "addConcepts": "添加概念",
       "removeSelected": "删除选定的",
       "deleteConceptSet": "删除概念集",
       "copyToConceptSetRepository": "复制到概念集存储库",
-      "notEnoughPermissions": "Not enough permissions to <%=action%> Concept Set",
-      "actionEdit": "edit",
-      "actionCreate": "create",
-      "overwriteConfirm": "Are you sure you want to overwrite current Concept Set Expression?",
-      "loadingIncludedConcepts": "Loading Included Concepts",
-      "commonAncestors": "Common Ancestors",
-      "loadingIncludedSourcecodes": "Loading Included Sourcecodes"
+      "notEnoughPermissions": "没有足够的权限来访问<%=action%>概念集",
+      "actionEdit": "编辑",
+      "actionCreate": "创建",
+      "overwriteConfirm": "您确定要覆盖当前的概念集表达式吗？",
+      "loadingIncludedConcepts": "加载包含的概念",
+      "commonAncestors": "共同祖先",
+      "loadingIncludedSourcecodes": "加载包含的源代码"
     },
     "conceptLegend": {
       "standard": "标准",
@@ -406,13 +406,13 @@
       "classification": "分类"
     },
     "conceptAddBox": {
-      "addToConceptSet": "Add To Concept Set",
-      "addToNewConceptSet": "Add To New Concept Set",
-      "selectConceptSet": "Select Concept Set",
-      "exclude": "Exclude",
-      "descendants": "Descendants",
-      "mapped": "Mapped",
-      "addedToConceptSet": "Added To Concept Set!"
+      "addToConceptSet": "添加到概念集",
+      "addToNewConceptSet": "添加到新概念集",
+      "selectConceptSet": "选择概念集",
+      "exclude": "排除",
+      "descendants": "后代",
+      "mapped": "映射的",
+      "addedToConceptSet": "已添加到概念集！"
     },
     "conceptSetBuilder": {
       "conceptSet": "概念集",
@@ -1116,8 +1116,8 @@
       "defaultName": "分析的名称应与默认名称不同。"
     },
     "checks": {
-      "runningDiagnostics": "Running Diagnostics",
-      "fixIt": "Fix It"
+      "runningDiagnostics": "正在运行诊断",
+      "fixIt": "修复它"
     }
   },
   "facets": {
@@ -1470,13 +1470,13 @@
     "numberOfPeople": "人数",
     "observationPeriodReport" : {
       "ageAtFirstObservation": "开始观察的年龄",
-      "ageByGender": "Age by Gender",
-      "observationLength": "Observation Length",
-      "durationByGender": "Duration By Gender",
+      "ageByGender": "年龄（按性别）",
+      "observationLength": "观测长度",
+      "durationByGender": "持续时间（按性别）",
       "cumulativeObservation": "累计观察期",
-      "durationByAgeDecile": "Duration By Age Decile",
-      "personsWithContinuousObservationByYear": "Persons With Continuous Observation By Year",
-      "observationPeriodsPerPerson": "Observation Periods per Person",
+      "durationByAgeDecile": "持续时间（按年龄十分位数）",
+      "personsWithContinuousObservationByYear": "逐年连续观察的人",
+      "observationPeriodsPerPerson": "每人的观察期",
       "personsWithContinuousObservationByMonth": "每月连续观察对象",
       "age": "年龄",
       "people": "人数",
@@ -1687,7 +1687,7 @@
           }
         }
       },
-      "conceptSetOptimization": "Concept Set Optimization"
+      "conceptSetOptimization": "概念集优化"
     }
   },
   "cc": {
@@ -3356,9 +3356,9 @@
       "populationEditorText_8": "您确定要删除参加该队列研究的患者吗？",
       "populationEditorText_9": "您将在队列进入前几天看到结果？",
       "predictionCovariatePlaceholder": "协变量ID",
-      "predictionEditorText_1": "What concepts do you want to include in baseline covariates in the patient-level prediction model? (Leave blank if you want to include everything)",
+      "predictionEditorText_1": "您想在患者水平预测模型的基线协变量中包括哪些概念？ （如果要包含所有内容，请保留空白）",
       "predictionEditorText_2": "应将后代概念添加到所包含概念的列表中吗？",
-      "predictionEditorText_3": "What concepts do you want to exclude in baseline covariates in the patient-level prediction model? (Leave blank if you want to include everything)",
+      "predictionEditorText_3": "您想在患者水平预测模型的基线协变量中排除哪些概念？ （如果要包含所有内容，请保留空白）",
       "predictionEditorText_4": "应将后代概念添加到排除的概念列表中吗？",
       "predictionEditorText_5": "以逗号分隔的协变量ID列表，应限于：",
       "predictionSelectConceptSet": "选择概念集...",

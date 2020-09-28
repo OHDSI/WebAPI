@@ -99,7 +99,7 @@
     "unspecified": "미지정!",
     "menu": "메뉴",
     "noData": "데이터 없음",
-    "readOnly": "(Read only)"
+    "readOnly": "(읽기 전용)"
   },
   "commonErrors": {
     "noSources": "현재 WebAPI에 정의된 소스가 없습니다. <br/> 해당 페이지에서 하나 이상을 추가하십시오 <a href=\"#/configure\">configuration</a> page.",
@@ -318,38 +318,38 @@
     "conceptSet": {
       "exportAllToCSV": "모든 컨셉 세트를 CSV로 내보내기",
       "exportingToCsv": "모든 컨셉 세트를 CSV로 내보내기",
-      "importingConceptSet": "Importing Concept Set",
+      "importingConceptSet": "컨셉 세트 가져오기 중",
       "conceptSetExpression": "컨셉 세트 표현",
       "includedConcepts": "포함된 컨셉들:",
       "includedSourceCodes": "포함된 소스 코드",
-      "deleteConfirm": "Do you want to delete <%=name%>?",
+      "deleteConfirm": "<%=name%>을 삭제하시겠습니까?",
       "conceptSetExpressionJSON": "JSON 형식으로 표현",
       "clickToClear": "취소합니다",
       "closeConceptSet": "컨셉 세트 닫기",
       "conceptIdentifiers": "컨셉 식별자",
       "conceptIdentifierList": "컨셉 식별자 목록",
       "includedConceptIdentifierList": "포함된 컨셉 식별자 목록",
-      "loadingForExport": "Loading for export...",
+      "loadingForExport": "내보내기를 위해 로딩 중…",
       "exportToCsv": "CSV 내보내기",
       "sourceCodes": "소스 코드",
       "conceptSet": "컨셉 세트",
       "repository": "저장소",
-      "appendConceptSetExpression": "Append Concept Set Expression",
-      "overwriteConceptSetExpression": "Overwrite Concept Set Expression",
+      "appendConceptSetExpression": "컨셉 세트 표현 추가",
+      "overwriteConceptSetExpression": "컨셉 세트 표현 덮어쓰기",
       "enterConceptIdentifiers": "컨셉 식별자를 입력합니다",
       "enterSourceCodes": "소스 코드를 입력합니다",
       "name": "컨셉 세트 이름:",
-      "addConcepts": "Add Concepts",
+      "addConcepts": "컨셉 추가",
       "removeSelected": "선택 항목 삭제",
       "deleteConceptSet": "컨셉 세트 삭제",
       "copyToConceptSetRepository": "컨셉 세트 저장소로 복사",
-      "notEnoughPermissions": "Not enough permissions to <%=action%> Concept Set",
-      "actionEdit": "edit",
-      "actionCreate": "create",
-      "overwriteConfirm": "Are you sure you want to overwrite current Concept Set Expression?",
-      "loadingIncludedConcepts": "Loading Included Concepts",
-      "commonAncestors": "Common Ancestors",
-      "loadingIncludedSourcecodes": "Loading Included Sourcecodes"
+      "notEnoughPermissions": "컨셉 세트 <%=action%>을 위한 권한이 충분하지 않습니다.",
+      "actionEdit": "수정",
+      "actionCreate": "생성",
+      "overwriteConfirm": "현재의 컨셉 세트 표현을 정말 덮어씌우시겠습니까?",
+      "loadingIncludedConcepts": "포함된 컨셉 로딩 중",
+      "commonAncestors": "공통 상위 컨셉",
+      "loadingIncludedSourcecodes": "포함된 소스 코드 로딩 중"
     },
     "conceptLegend": {
       "standard": "표준",
@@ -357,13 +357,13 @@
       "classification": "분류"
     },
     "conceptAddBox": {
-      "addToConceptSet": "Add To Concept Set",
-      "addToNewConceptSet": "Add To New Concept Set",
+      "addToConceptSet": "컨셉 세트에 추가",
+      "addToNewConceptSet": "새 컨셉 세트에 추가",
       "selectConceptSet": "컨셉 세트 선택하기",
       "exclude": "제외 컨셉",
       "descendants": "하위 컨셉",
       "mapped": "매핑된 컨셉",
-      "addedToConceptSet": "Added To Concept Set!"
+      "addedToConceptSet": "컨셉 세트에 추가되었습니다!"
     },
     "conceptSetBuilder": {
       "conceptSet": "컨셉 세트",
@@ -828,7 +828,7 @@
     "evidencePairViewer": {
       "evidencePairViewerText_1": "증거 페어(evidence pairs) 로딩",
       "evidencePairViewerText_2": "만약 CommonEvidenceModel이 선택된 약물(drug)-진단(condition) 페어(pair)에 대한 제품 라벨(product label) 정보가 있다고 표시한 경우에 (1 = true, 0 = false) 아래에 많은 제품 라벨을 볼 수 있습니다. 하나의 라벨에 대한 부작용 이벤트가 모든 제품 라벨에 있어야 하기 때문에 라벨의 카운트는 유용한 정보는 아닙니다. 따라서, 이 페이지에는 선택된 약물(drug)-진단(condition) 페어(pair)에 대한 모든 제품 라벨이 표시됩니다.",
-      "evidencePairViewerText_3": "If the CommonEvidenceModel has listed a number of publications, on the “Viewing Evidence” pop-up, one publication may occur multiple times in the results below.  This is because for every drug-condition pair a publication matches, the publication will show up in “View Evidence” list.",
+      "evidencePairViewerText_3": "CommonEvidenceModel이 여러 출판물을 나열한 경우 \"증거(Evidence) 보기\"팝업에서 하나의 출판물이 아래 결과에서 여러 번 발생할 수 있습니다. 이는 출판물이 일치하는 모든 약물-진단 쌍에 대해 출판물이 \"증거(Evidence) 보기\"목록에 표시되기 때문입니다.",
       "evidencePairViewerText_4": "이 증거(evidence) 목록에 대한 자세한 정보를 보려면 여기를 클릭하십시오.",
       "evidencePairViewerText_5": "세부 정보 숨기기",
       "evidencePairViewerText_6": "컨셉 세트가 결과를 생성하는 데 유효하지 않습니다. 이 컨셉 세트에 진단(CONDITIONS) 또는 약물(DRUGS)만 포함되어 있는지 확인하십시오."
@@ -1116,8 +1116,8 @@
       "defaultName": "분석 이름은 기본값(default)과 달라야합니다."
     },
     "checks": {
-      "runningDiagnostics": "Running Diagnostics",
-      "fixIt": "Fix It"
+      "runningDiagnostics": "진단 실행 중",
+      "fixIt": "수정"
     }
   },
   "facets": {
@@ -1460,7 +1460,7 @@
       "upperLimitDistribution": "상한 분포",
       "valueAsConcept": "값 (컨셉아이디)",
       "valuesRelativeToNormalRange": "이상값 여부",
-      "lengthOfEraDistribution": "Length of Era Distribution"
+      "lengthOfEraDistribution": "기간 분포의 길이"
     },
     "errorLoadingReport": "보고서 로드 오류",
     "headingTitle": "데이터 소스",
@@ -1469,23 +1469,23 @@
     "noPermission": "이 보고서를 볼 수 있는 권한이 없습니다.",
     "numberOfPeople": "사람 수",
     "observationPeriodReport" : {
-      "ageAtFirstObservation": "Age at First Observation",
-      "ageByGender": "Age by Gender",
-      "observationLength": "Observation Length",
-      "durationByGender": "Duration By Gender",
-      "cumulativeObservation": "Cumulative Observation",
-      "durationByAgeDecile": "Duration By Age Decile",
-      "personsWithContinuousObservationByYear": "Persons With Continuous Observation By Year",
-      "observationPeriodsPerPerson": "Observation Periods per Person",
-      "personsWithContinuousObservationByMonth": "Persons With Continuous Observation By Month",
-      "age": "Age",
-      "people": "People",
-      "gender": "Gender",
-      "days": "Days",
-      "ageDecile": "Age Decile",
-      "percentOfPopulation": "Percent of Population",
-      "years": "Years",
-      "date": "Date"
+      "ageAtFirstObservation": "관찰 시작 연령",
+      "ageByGender": "성별별 연령",
+      "observationLength": "관찰기록 길이",
+      "durationByGender": "성별별 지속일",
+      "cumulativeObservation": "누적 관찰기간",
+      "durationByAgeDecile": "연령 십분위별 지속일",
+      "personsWithContinuousObservationByYear": "연도별 연속 관찰 환자 수",
+      "observationPeriodsPerPerson": "환자당 관찰기간",
+      "personsWithContinuousObservationByMonth": "월별 연속 관찰 환자 수",
+      "age": "연령",
+      "people": "환자 수",
+      "gender": "성별",
+      "days": "일 수",
+      "ageDecile": "연령 십분위",
+      "percentOfPopulation": "인구 비율",
+      "years": "년",
+      "date": "일"
     },
     "personReport": {
       "ethnicity": "민족",
@@ -1515,7 +1515,7 @@
       "procedure": "수술 및 처치(Procedure)",
       "titleTail": "보고서",
       "visit": "방문",
-      "observationPeriod": "Observation Period"
+      "observationPeriod": "관찰기간"
     },
     "selectAReport": "보고서를 선택하십시오",
     "selectASource": "소스를 선택하십시오",
@@ -1687,7 +1687,7 @@
           }
         }
       },
-      "conceptSetOptimization": "Concept Set Optimization"
+      "conceptSetOptimization": "컨셉 세트 최적화"
     }
   },
   "cc": {
@@ -3318,7 +3318,7 @@
     "jobName": "작업 이름",
     "showCompletedJobsButton": "완료된 작업 표시",
     "status": "상태",
-    "title": "Notifications (last <%=length%>)",
+    "title": "알림 (last <%=length%>)",
     "tabs": {
       "myJobs": "나의 실행내역",
       "allJobs": "모든 실행내역"
@@ -3355,9 +3355,9 @@
       "populationEditorText_8": "코호트 진입 전 결과를 경험한 환자를 제거하시겠습니까?",
       "populationEditorText_9": "[예] 코호트 진입으로부터 몇일 전까지의 결과(outcome) 발생을 볼 것인지?",
       "predictionCovariatePlaceholder": "공변량 ID",
-      "predictionEditorText_1": "What concepts do you want to include in baseline covariates in the patient-level prediction model? (Leave blank if you want to include everything)",
+      "predictionEditorText_1": "환자 수준 예측 모델의 기준 공변량에 어떤 컨셉을 포함하시겠습니까? (모든 것을 포함하려면 비워 둡니다)",
       "predictionEditorText_2": "포함한 컨셉 목록에  하위 컨셉을 추가합니까?",
-      "predictionEditorText_3": "What concepts do you want to exclude in baseline covariates in the patient-level prediction model? (Leave blank if you want to include everything)",
+      "predictionEditorText_3": "환자 수준 예측 모델의 기준 공변량에 어떤 컨셉을 제외하시겠습니까? (모든 것을 포함하려면 비워 둡니다)",
       "predictionEditorText_4": "제외된 컨셉 목록에 하위 컨셉을 추가합니까?",
       "predictionEditorText_5": "쉼표로 구분되는 공변량 ID의 리스트의 범위 설정:",
       "predictionSelectConceptSet": "컨셉 세트 선택하기",

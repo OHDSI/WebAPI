@@ -14,7 +14,7 @@ WITH concepts AS (
 SELECT stratum_1 concept_id, MAX (count_value) agg_count_value
 FROM @resultTableQualifier.achilles_results
 WHERE analysis_id IN (2, 4, 5, 201, 225, 301, 325, 401, 425, 501, 505, 525, 601, 625, 701, 725, 801, 825, 
-826, 827, 901, 1001, 1201, 1425, 1801, 1825, 1826, 1827, 2101, 2125, 2301)
+826, 827, 901, 1001, 1201, 1203, 1425, 1801, 1825, 1826, 1827, 2101, 2125, 2301)
 		/* analyses:
  			 Number of persons by gender
 			 Number of persons by race
@@ -39,6 +39,7 @@ WHERE analysis_id IN (2, 4, 5, 201, 225, 301, 325, 401, 425, 501, 505, 525, 601,
 			 Number of drug era records, by drug_concept_id
 			 Number of condition era records, by condition_concept_id
 			 Number of visits by place of service
+			 Number of visit_occurrence records, by discharge_to_concept_id
 			 Number of payer_plan_period records, by payer_source_concept_id
 			 Number of measurement occurrence records, by observation_concept_id
 			 Number of measurement records, by measurement_source_concept_id

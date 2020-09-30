@@ -26,17 +26,20 @@ import static org.ohdsi.webapi.Constants.Tables.COHORT_SUMMARY_STATS_CACHE;
 
 public class CohortGenerationUtils {
 
-  public static void insertInclusionRules(int cohortId, CohortExpression expression, int designHash, String targetSchema, JdbcTemplate jdbcTemplate) {
-
-    String deleteSql = String.format("DELETE FROM %s.cohort_inclusion WHERE cohort_definition_id = %d", targetSchema, cohortId);
-    jdbcTemplate.update(deleteSql);
+  public static void insertInclusionRules(CohortDefinition cohortDef, Source source, int designHash,
+                                          String targetSchema, String sessionId, JdbcTemplate jdbcTemplate) {
+    final String oracleTempSchema = SourceUtils.getTempQualifier(source);
+    String deleteSql = String.format("DELETE FROM %s.cohort_inclusion WHERE cohort_definition_id = %d;", targetSchema, cohortDef.getId());
+    String translatedDeleteSql = SqlTranslate.translateSql(deleteSql, source.getSourceDialect(), sessionId, oracleTempSchema);
+    jdbcTemplate.update(translatedDeleteSql);
 
     String insertSql = StringUtils.replace("INSERT INTO @target_schema.cohort_inclusion (cohort_definition_id, design_hash, rule_sequence, name, description) VALUES (?,?,?,?,?)", "@target_schema", targetSchema);
-    List<InclusionRule> inclusionRules = expression.inclusionRules;
+    String translatedInsertSql = SqlTranslate.translateSql(insertSql, source.getSourceDialect(), sessionId, oracleTempSchema);
+    List<InclusionRule> inclusionRules = cohortDef.getExpression().inclusionRules;
     for (int i = 0; i< inclusionRules.size(); i++)
     {
       InclusionRule r = inclusionRules.get(i);
-      jdbcTemplate.update(insertSql, new Object[] { cohortId, designHash, i, r.name, r.description});
+      jdbcTemplate.update(translatedInsertSql, new Object[] { cohortDef.getId(), designHash, i, r.name, r.description});
     }
   }
   

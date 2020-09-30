@@ -12,6 +12,7 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.SourceUtils;
+import org.ohdsi.webapi.util.StatementCancel;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -87,6 +88,9 @@ public class CohortGenerationCacheProvider extends AbstractDaoService implements
                 new String[]{SourceUtils.getResultsQualifier(source), designHash.toString()}
         );
         sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
-        getSourceJdbcTemplate(source).batchUpdate(SqlSplit.splitSql(sql));
+        // StatementCancel parameter is need for calling batchUpdate of CancelableJdbcTemplate class
+        // Without StatementCancel parameter JdbcTemplate.batchUpdate will be used.
+        // JdbcTemplate incorrectly determines the support of batch update for impala datasource
+        getSourceJdbcTemplate(source).batchUpdate(new StatementCancel(), SqlSplit.splitSql(sql));
     }
 }

@@ -88,7 +88,7 @@ public class CohortGenerationCacheProvider extends AbstractDaoService implements
                 new String[]{SourceUtils.getResultsQualifier(source), designHash.toString()}
         );
         sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
-        // StatementCancel parameter is need for calling batchUpdate of CancelableJdbcTemplate class
+        // StatementCancel parameter is needed for calling batchUpdate of CancelableJdbcTemplate class
         // Without StatementCancel parameter JdbcTemplate.batchUpdate will be used.
         // JdbcTemplate incorrectly determines the support of batch update for impala datasource
         getSourceJdbcTemplate(source).batchUpdate(new StatementCancel(), SqlSplit.splitSql(sql));

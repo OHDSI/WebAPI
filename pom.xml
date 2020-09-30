@@ -14,7 +14,8 @@
     <!-- Spring Boot manages spring.version as well -->
     <spring.boot.version>1.5.20.RELEASE</spring.boot.version>
     <flyway.version>4.2.0</flyway.version>
-    <waffle.version>1.7.3</waffle.version>
+    <waffle.version>2.2.1</waffle.version>
+    <jna.version>5.5.0</jna.version>
 
     <circe.version>1.9.0-SNAPSHOT</circe.version>
     <jersey.version>2.14</jersey.version>
@@ -288,6 +289,11 @@
       </testResource>
     </testResources>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.0.1</version>
+      </plugin>
       <plugin>
         <groupId>pl.project13.maven</groupId>
         <artifactId>git-commit-id-plugin</artifactId>
@@ -693,9 +699,29 @@
     </dependency>
 
     <dependency>
-      <groupId>com.github.dblock.waffle</groupId>
+      <groupId>com.github.waffle</groupId>
       <artifactId>waffle-jna</artifactId>
       <version>${waffle.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>net.java.dev.jna</groupId>
+          <artifactId>jna</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>net.java.dev.jna</groupId>
+          <artifactId>jna-platform</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>net.java.dev.jna</groupId>
+      <artifactId>jna</artifactId>
+      <version>${jna.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>net.java.dev.jna</groupId>
+      <artifactId>jna-platform</artifactId>
+      <version>${jna.version}</version>
     </dependency>
     <dependency>
       <groupId>io.jsonwebtoken</groupId>

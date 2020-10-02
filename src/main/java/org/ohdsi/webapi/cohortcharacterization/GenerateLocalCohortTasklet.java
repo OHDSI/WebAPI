@@ -115,7 +115,7 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
         );
 
         int designHash = this.generationCacheHelper.computeHash(cd.getDetails().getExpression());
-        CohortGenerationUtils.insertInclusionRules(cd.getId(), cd.getExpression(), designHash, resultSchema, cancelableJdbcTemplate);
+        CohortGenerationUtils.insertInclusionRules(cd, source, designHash, resultSchema, sessionId, cancelableJdbcTemplate);
 
         try {
             StatementCancel stmtCancel = new StatementCancel();

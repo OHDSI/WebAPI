@@ -3,6 +3,7 @@ package org.ohdsi.webapi.estimation;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.estimation.design.EstimationTypeEnum;
@@ -44,6 +45,7 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.TempFileUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +59,7 @@ import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import javax.ws.rs.InternalServerErrorException;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -82,6 +85,8 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     private static final String CONCEPT_SET_XREF_KEY_POS_CONTROL_COVAR = "positiveControlSynthesisArgs.covariateSettings";
     private static final String CONCEPT_SET_XREF_KEY_INCLUDED_COVARIATE_CONCEPT_IDS = "includedCovariateConceptIds";
     private static final String CONCEPT_SET_XREF_KEY_EXCLUDED_COVARIATE_CONCEPT_IDS = "excludedCovariateConceptIds";
+
+    private static final String ESTIMATION_SKELETON = "/resources/estimation/skeleton/ComparativeEffectStudy_v0.0.1.zip";
 
     private final String EXEC_SCRIPT = ResourceHelper.GetResourceAsString("/resources/estimation/r/runAnalysis.R");
 
@@ -417,8 +422,23 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         if (packageName == null || !Utils.isAlphaNumeric(packageName)) {
             throw new IllegalArgumentException("The package name must be alphanumeric only.");
         }
-        analysis.setPackageName(packageName);
-        super.hydrateAnalysis(analysis,  externalPackagePath, out);
+        File externalFile = null;
+        try {
+            analysis.setPackageName(packageName);
+            try {
+                externalFile = TempFileUtils.copyResourceToTempFile(ESTIMATION_SKELETON, "ple", ".zip");
+            } catch (IOException e) {
+                log.warn("Failed to load skeleton from resource, {}. Ignored and used default", e.getMessage());
+            }
+            if (StringUtils.isNotEmpty(externalPackagePath)) {
+                super.hydrateAnalysis(analysis, externalPackagePath, out);
+            } else if (Objects.nonNull(externalFile)) {
+                super.hydrateAnalysis(analysis, externalFile.getAbsolutePath(), out);
+            }
+        } finally {
+            FileUtils.deleteQuietly(externalFile);
+        }
+
     }
 
     @Override

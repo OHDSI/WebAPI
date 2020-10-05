@@ -93,7 +93,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     );
 
     @Value("${hydra.externalPackage.estimation}")
-    private String extenalPackagePath;
+    private String externalPackagePath;
 
     @PersistenceContext
     protected EntityManager entityManager;
@@ -413,16 +413,12 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
 
     @Override
     public void hydrateAnalysis(EstimationAnalysisImpl analysis, String packageName, OutputStream out) throws JsonProcessingException {
+
         if (packageName == null || !Utils.isAlphaNumeric(packageName)) {
             throw new IllegalArgumentException("The package name must be alphanumeric only.");
         }
         analysis.setPackageName(packageName);
-        String studySpecs = Utils.serialize(analysis, true);
-        Hydra h = new Hydra(studySpecs);
-        if (StringUtils.isNotEmpty(extenalPackagePath)) {
-            h.setExternalSkeletonFileName(extenalPackagePath);
-        }
-        h.hydrate(out);
+        super.hydrateAnalysis(analysis,  externalPackagePath, out);
     }
 
     @Override

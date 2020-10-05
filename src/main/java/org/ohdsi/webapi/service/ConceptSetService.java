@@ -128,7 +128,6 @@ public class ConceptSetService extends AbstractDaoService {
 
         // create our expression to return
         ConceptSetExpression expression = new ConceptSetExpression();
-        // expression.items = new ConceptSetExpression.ConceptSetItem[map.size()];
         ArrayList<ConceptSetExpression.ConceptSetItem> expressionItems = new ArrayList<>();
 
         List<ConceptSetItem> repositoryItems = new ArrayList<>();
@@ -163,7 +162,7 @@ public class ConceptSetService extends AbstractDaoService {
           currentItem.isExcluded = (repositoryItem.getIsExcluded() == 1);
           expressionItems.add(currentItem); 
         }
-        expression.items = expressionItems.toArray(new ConceptSetExpression.ConceptSetItem[0]);
+        expression.items = expressionItems.toArray(new ConceptSetExpression.ConceptSetItem[0]); // this will return a new array
         
         return expression;
     }

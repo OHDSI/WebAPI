@@ -6,10 +6,9 @@ ARG MAVEN_PROFILE=webapi-postgresql
 
 # Download dependencies
 COPY pom.xml /code/
-RUN mvn package -P${MAVEN_PROFILE} -DskipTests
-
-# Compile code and repackage it
+COPY .git /code/.git
 COPY src /code/src
+# Compile code and repackage it
 RUN mvn package -P${MAVEN_PROFILE} -DskipTests \
     && mkdir war \
     && mv target/WebAPI.war war \
@@ -18,7 +17,7 @@ RUN mvn package -P${MAVEN_PROFILE} -DskipTests \
     && rm WebAPI.war
 
 # OHDSI WebAPI and ATLAS web application running as a Spring Boot application with Java 11
-FROM openjdk:11
+FROM openjdk:11-jre-slim
 
 MAINTAINER Lee Evans - www.ltscomputingllc.com
 
@@ -44,6 +43,8 @@ COPY --from=builder /code/war/WEB-INF/classes WEB-INF/classes
 COPY --from=builder /code/war/META-INF META-INF
 
 EXPOSE 8080
+
+USER 101
 
 # Directly run the code as a WAR.
 CMD exec java ${DEFAULT_JAVA_OPTS} ${JAVA_OPTS} \

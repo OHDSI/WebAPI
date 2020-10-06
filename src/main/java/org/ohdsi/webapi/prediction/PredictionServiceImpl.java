@@ -64,6 +64,8 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
 
     private static final EntityGraph DEFAULT_ENTITY_GRAPH = EntityGraphUtils.fromAttributePaths("source", "analysisExecution.resultFiles");
 
+    private static final String PREDICTION_SKELETON = "/resources/prediction/skeleton/SkeletonPredictionStudy_0.0.1.zip";
+
     private final EntityGraph COMMONS_ENTITY_GRAPH = EntityUtils.fromAttributePaths(
             "createdBy",
             "modifiedBy"
@@ -318,9 +320,23 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         if (packageName == null || !Utils.isAlphaNumeric(packageName)) {
             throw new IllegalArgumentException("The package name must be alphanumeric only.");
         }
-        analysis.setPackageName(packageName);
-        super.hydrateAnalysis(analysis,  externalPackagePath, out);
-}
+        File externalFile = null;
+        try {
+            analysis.setPackageName(packageName);
+            try {
+                externalFile = TempFileUtils.copyResourceToTempFile(PREDICTION_SKELETON, "plp", ".zip");
+            } catch (IOException e) {
+                log.warn("Failed to load skeleton from resource, {}. Ignored and used default", e.getMessage());
+            }
+            if (StringUtils.isNotEmpty(externalPackagePath)) {
+                super.hydrateAnalysis(analysis, externalPackagePath, out);
+            } else if (Objects.nonNull(externalFile)) {
+                super.hydrateAnalysis(analysis, externalFile.getAbsolutePath(), out);
+            }
+        } finally {
+            FileUtils.deleteQuietly(externalFile);
+        }
+    }
 
 
     

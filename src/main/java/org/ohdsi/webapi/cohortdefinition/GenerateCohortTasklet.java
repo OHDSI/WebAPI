@@ -77,7 +77,7 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
     );
 
     int designHash = this.generationCacheHelper.computeHash(cohortDefinition.getDetails().getExpression());
-    CohortGenerationUtils.insertInclusionRules(cohortDefinitionId, cohortDefinition.getExpression(), designHash, targetSchema, jdbcTemplate);
+    CohortGenerationUtils.insertInclusionRules(cohortDefinition, source, designHash, targetSchema, sessionId, jdbcTemplate);
     
     GenerationCacheHelper.CacheResult res = generationCacheHelper.computeCacheIfAbsent(
         cohortDefinition,

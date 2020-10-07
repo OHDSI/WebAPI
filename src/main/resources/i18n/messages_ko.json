@@ -1831,7 +1831,9 @@
       "retrievingList": "기능(Feature) 분석 목록 검색중...",
       "saveError": "기능(Feature 분석을 저장하는 중에 오류가 발생했습니다.",
       "selectConceptSet": "컨셉 세트 선택하기",
-      "unsavedConfirmation": "변경 사항은 저장되지 않습니다. 계속 하시겠습니까?"
+      "unsavedConfirmation": "변경 사항은 저장되지 않습니다. 계속 하시겠습니까?",
+      "warning": "Warning:",
+      "warningText": "You wouldn't be able to change the type of analysis after save."
     }
   },
   "home": {

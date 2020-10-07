@@ -1831,7 +1831,9 @@
       "copiedToClipboard": "Скопировано!",
       "availableVariables": "Доступные переменные",
       "availableVariablesNote": "переменные, определенные в параметрах Характеризации",
-      "selectConceptSet": "Выберите набор концепций..."
+      "selectConceptSet": "Выберите набор концепций...",
+      "warning": "Внимание:",
+      "warningText": "После сохранения вы не сможете изменить тип анализа."
     }
   },
   "home": {

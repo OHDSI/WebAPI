@@ -1831,7 +1831,9 @@
       "retrievingList": "检索特征分析列表...",
       "saveError": "尝试保存特征分析时发生错误。",
       "selectConceptSet": "选择概念集...",
-      "unsavedConfirmation": "您的更改未保存。 您想继续吗？"
+      "unsavedConfirmation": "您的更改未保存。 您想继续吗？",
+      "warning": "Warning:",
+      "warningText": "You wouldn't be able to change the type of analysis after save."
     }
   },
   "home": {

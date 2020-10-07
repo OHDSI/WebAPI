@@ -1831,7 +1831,9 @@
       "retrievingList": "Retrieving feature analyses list...",
       "saveError": "An error occurred while attempting to save a feature analysis.",
       "selectConceptSet": "Select Concept Set...",
-      "unsavedConfirmation": "Your changes are not saved. Would you like to continue?"
+      "unsavedConfirmation": "Your changes are not saved. Would you like to continue?",
+      "warning": "Warning:",
+      "warningText": "You wouldn't be able to change the type of analysis after save."
     }
   },
   "home": {

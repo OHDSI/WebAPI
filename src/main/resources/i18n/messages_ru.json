@@ -1658,7 +1658,8 @@
           },
           "recordCounts": {
             "caption": "Количество записей",
-            "recordCountsAcrossSources": "Количество записей из разных источников"
+            "recordCountsAcrossSources": "Количество записей из разных источников",
+            "failedToLoadData": "Ошибка загрузки данных"
           }
         }
       },

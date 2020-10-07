@@ -1683,7 +1683,8 @@
           },
           "recordCounts": {
             "caption": "记录计数",
-            "recordCountsAcrossSources": "从来源中得到的记录数"
+            "recordCountsAcrossSources": "从来源中得到的记录数",
+            "failedToLoadData": "Failed to load data"
           }
         }
       },

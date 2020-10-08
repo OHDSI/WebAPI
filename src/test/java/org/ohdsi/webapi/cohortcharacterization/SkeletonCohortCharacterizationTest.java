@@ -32,7 +32,7 @@ public class SkeletonCohortCharacterizationTest {
         final String cohortTable = "cohort";
         final String sessionId = "session";
         final String tempSchema = "tempSchema";
-        CCQueryBuilder ccQueryBuilder = new CCQueryBuilder("", cohortTable, sessionId, null, null, null, tempSchema, 0);    
+        CCQueryBuilder ccQueryBuilder = new CCQueryBuilder("{}", cohortTable, sessionId, null, null, null, tempSchema, 0);    
         assertThat(ccQueryBuilder, notNullValue());
   }
 }

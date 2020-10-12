@@ -385,7 +385,7 @@ public class CohortDefinitionService extends AbstractDaoService {
       //create definition in 2 saves, first to get the generated ID for the new dto
       // then to associate the details with the definition
       CohortDefinition newDef = new CohortDefinition();
-      newDef.setName(dto.getName())
+      newDef.setName(StringUtils.trim(dto.getName()))
               .setDescription(dto.getDescription())
               .setExpressionType(dto.getExpressionType());
       newDef.setCreatedBy(user);

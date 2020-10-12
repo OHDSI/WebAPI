@@ -63,7 +63,8 @@ public class KerberosAuthRealm extends AuthenticatingRealm {
 
     @Override
     public boolean supports(AuthenticationToken token) {
-        return token != null &&  token.getClass() == SpnegoToken.class;
+
+        return token != null && token.getClass() == SpnegoToken.class;
     }
 
     @Override

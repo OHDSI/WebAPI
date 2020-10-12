@@ -3,6 +3,7 @@ package org.ohdsi.webapi.estimation;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.estimation.design.EstimationTypeEnum;
@@ -44,6 +45,7 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.TempFileUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +59,7 @@ import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import javax.ws.rs.InternalServerErrorException;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -83,6 +86,8 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     private static final String CONCEPT_SET_XREF_KEY_INCLUDED_COVARIATE_CONCEPT_IDS = "includedCovariateConceptIds";
     private static final String CONCEPT_SET_XREF_KEY_EXCLUDED_COVARIATE_CONCEPT_IDS = "excludedCovariateConceptIds";
 
+    private static final String ESTIMATION_SKELETON = "/resources/estimation/skeleton/ComparativeEffectStudy_v0.0.1.zip";
+
     private final String EXEC_SCRIPT = ResourceHelper.GetResourceAsString("/resources/estimation/r/runAnalysis.R");
 
     private final EntityGraph DEFAULT_ENTITY_GRAPH = EntityGraphUtils.fromAttributePaths("source", "analysisExecution.resultFiles");
@@ -93,7 +98,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     );
 
     @Value("${hydra.externalPackage.estimation}")
-    private String extenalPackagePath;
+    private String externalPackagePath;
 
     @PersistenceContext
     protected EntityManager entityManager;
@@ -161,7 +166,6 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
 
     @Override
     public Estimation createEstimation(Estimation est) throws Exception {
-
         Date currentTime = Calendar.getInstance().getTime();
 
         est.setCreatedBy(getCurrentUser());
@@ -170,12 +174,13 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         est.setModifiedBy(null);
         est.setModifiedDate(null);
 
+        est.setName(StringUtils.trim(est.getName()));
+
         return save(est);
     }
 
     @Override
     public Estimation updateEstimation(final int id, Estimation est) throws Exception {
-
         Estimation estFromDB = getById(id);
         Date currentTime = Calendar.getInstance().getTime();
 
@@ -184,6 +189,8 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         // Prevent any updates to protected fields like created/createdBy
         est.setCreatedDate(estFromDB.getCreatedDate());
         est.setCreatedBy(estFromDB.getCreatedBy());
+
+        est.setName(StringUtils.trim(est.getName()));
 
         return save(est);
     }
@@ -231,7 +238,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         
         // Set the root properties
         expression.setId(est.getId());
-        expression.setName(est.getName());
+        expression.setName(StringUtils.trim(est.getName()));
         expression.setDescription(est.getDescription());
         expression.setOrganizationName(this.organizationName);
         
@@ -411,16 +418,27 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
 
     @Override
     public void hydrateAnalysis(EstimationAnalysisImpl analysis, String packageName, OutputStream out) throws JsonProcessingException {
+
         if (packageName == null || !Utils.isAlphaNumeric(packageName)) {
             throw new IllegalArgumentException("The package name must be alphanumeric only.");
         }
-        analysis.setPackageName(packageName);
-        String studySpecs = Utils.serialize(analysis, true);
-        Hydra h = new Hydra(studySpecs);
-        if (StringUtils.isNotEmpty(extenalPackagePath)) {
-            h.setExternalSkeletonFileName(extenalPackagePath);
+        File externalFile = null;
+        try {
+            analysis.setPackageName(packageName);
+            try {
+                externalFile = TempFileUtils.copyResourceToTempFile(ESTIMATION_SKELETON, "ple", ".zip");
+            } catch (IOException e) {
+                log.warn("Failed to load skeleton from resource, {}. Ignored and used default", e.getMessage());
+            }
+            if (StringUtils.isNotEmpty(externalPackagePath)) {
+                super.hydrateAnalysis(analysis, externalPackagePath, out);
+            } else if (Objects.nonNull(externalFile)) {
+                super.hydrateAnalysis(analysis, externalFile.getAbsolutePath(), out);
+            }
+        } finally {
+            FileUtils.deleteQuietly(externalFile);
         }
-        h.hydrate(out);
+
     }
 
     @Override

@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.cohortcharacterization.converter;
 
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.CohortMetadata;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
@@ -32,7 +33,7 @@ public abstract class BaseCcDTOToCcEntityConverter<T extends BaseCcDTO<? extends
 
     final CohortCharacterizationEntity cohortCharacterization = new CohortCharacterizationEntity();
 
-    cohortCharacterization.setName(source.getName());
+    cohortCharacterization.setName(StringUtils.trim(source.getName()));
     cohortCharacterization.setStratifiedBy(source.getStratifiedBy());
     cohortCharacterization.setStrataOnly(source.getStrataOnly());
 

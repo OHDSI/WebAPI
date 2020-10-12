@@ -351,7 +351,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     // If there's a way to get the Entity into the persistence manager so findOne() returns this newly created entity
     // then we could create the entity here (without persist) and then call saveAnalysis within the same Tx.
     IncidenceRateAnalysis newAnalysis = new IncidenceRateAnalysis();
-    newAnalysis.setName(analysis.getName())
+    newAnalysis.setName(StringUtils.trim(analysis.getName()))
             .setDescription(analysis.getDescription());
     newAnalysis.setCreatedBy(user);
     newAnalysis.setCreatedDate(currentTime);
@@ -431,7 +431,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
     UserEntity user = userRepository.findByLogin(security.getSubject());
     IncidenceRateAnalysis updatedAnalysis = this.irAnalysisRepository.findOne(id);
-    updatedAnalysis.setName(analysis.getName())
+    updatedAnalysis.setName(StringUtils.trim(analysis.getName()))
             .setDescription(analysis.getDescription());
     updatedAnalysis.setModifiedBy(user);
     updatedAnalysis.setModifiedDate(currentTime);

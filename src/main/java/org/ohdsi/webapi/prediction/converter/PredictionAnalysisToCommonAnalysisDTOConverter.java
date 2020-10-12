@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.prediction.converter;
 
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.common.analyses.CommonAnalysisDTO;
 import org.ohdsi.webapi.prediction.PredictionAnalysis;
 import org.ohdsi.webapi.service.converters.BaseCommonEntityToDTOConverter;
@@ -18,7 +19,7 @@ public class PredictionAnalysisToCommonAnalysisDTOConverter <T extends CommonAna
     @Override
     public void doConvert(PredictionAnalysis source, T target) {
         target.setId(source.getId());
-        target.setName(source.getName());
+        target.setName(StringUtils.trim(source.getName()));
         target.setDescription(source.getDescription());
     }
 }

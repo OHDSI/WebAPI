@@ -49,7 +49,7 @@ public class ADRealm extends ActiveDirectoryRealm {
 
     @Override
     public boolean supports(AuthenticationToken token) {
-        return token != null &&  token.getClass() == ActiveDirectoryUsernamePasswordToken.class;
+        return token != null && token.getClass() == ActiveDirectoryUsernamePasswordToken.class;
     }
 
     public void setSearchFilter(String searchFilter) {

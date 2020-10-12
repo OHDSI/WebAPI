@@ -6,8 +6,8 @@ import io.buji.pac4j.realm.Pac4jRealm;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.activedirectory.ActiveDirectoryRealm;
+import org.apache.shiro.realm.ldap.DefaultLdapRealm;
 import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
-import org.apache.shiro.realm.ldap.JndiLdapRealm;
 import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.security.model.EntityPermissionSchemaResolver;
@@ -544,14 +544,18 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         return googleClient;
     }
 
-    private JndiLdapRealm ldapRealm() {
-        JndiLdapRealm realm = new LdapRealm(ldapSearchString, ldapSearchBase, ldapUserMapper);
-        realm.setUserDnTemplate(dequote(userDnTemplate));
+    private DefaultLdapRealm ldapRealm() {
+        DefaultLdapRealm realm = new LdapRealm(ldapSearchString, ldapSearchBase, ldapUserMapper);
+
         JndiLdapContextFactory contextFactory = new JndiLdapContextFactory();
         contextFactory.setUrl(dequote(ldapUrl));
         contextFactory.setPoolingEnabled(false);
         contextFactory.getEnvironment().put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+
         realm.setContextFactory(contextFactory);
+        if (StringUtils.isNotEmpty(userDnTemplate)) {
+            realm.setUserDnTemplate(dequote(userDnTemplate));
+        }
         return realm;
     }
 

@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.pathway.converter;
 
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.dto.BasePathwayAnalysisDTO;
 import org.ohdsi.webapi.service.converters.BaseCommonEntityToDTOConverter;
@@ -15,7 +16,7 @@ public abstract class BasePathwayAnalysisToPathwayAnalysisDTOConverter<T extends
     @Override
     public void doConvert(PathwayAnalysisEntity source, T target) {
         target.setId(source.getId());
-        target.setName(source.getName());
+        target.setName(StringUtils.trim(source.getName()));
         target.setCombinationWindow(source.getCombinationWindow());
         target.setMinSegmentLength(source.getMinSegmentLength());
         target.setMinCellCount(source.getMinCellCount());

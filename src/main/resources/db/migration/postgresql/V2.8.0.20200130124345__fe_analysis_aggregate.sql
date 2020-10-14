@@ -15,11 +15,11 @@ ALTER TABLE ${ohdsiSchema}.fe_analysis_criteria ADD fe_aggregate_id INTEGER;
 
 INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(name, domain, agg_function, expression, agg_query, is_default) VALUES
   ('Events count', null, 'COUNT', '*', null, TRUE),
-  ('Distinct start dates', null, 'COUNT', 'DISTINCT op.observation_period_start_date', 'join observation_period op on op.person_id = v.person_id and op.observation_period_start_date >= E.start_date and op.observation_period_end_date <= E.end_date', FALSE),
-  ('Duration', null, null, 'CASE WHEN op.observation_period_start_date = op.observation_period_end_date THEN 1 ELSE DATEDIFF(day, op.observation_period_start_date, op.observation_period_end_date) END', 'join observation_period op on op.person_id = v.person_id and op.observation_period_start_date >= E.start_date and op.observation_period_end_date <= E.end_date', FALSE),
-  ('Duration (max)', null, 'MAX', 'CASE WHEN op.observation_period_start_date = op.observation_period_end_date THEN 1 ELSE DATEDIFF(day, op.observation_period_start_date, op.observation_period_end_date) END', 'join observation_period op on op.person_id = v.person_id and op.observation_period_start_date >= E.start_date and op.observation_period_end_date <= E.end_date', FALSE),
-  ('Duration (min)', null, 'MIN', 'CASE WHEN op.observation_period_start_date = op.observation_period_end_date THEN 1 ELSE DATEDIFF(day, op.observation_period_start_date, op.observation_period_end_date) END', 'join observation_period op on op.person_id = v.person_id and op.observation_period_start_date >= E.start_date and op.observation_period_end_date <= E.end_date', FALSE),
-  ('Duration (average)', null, 'AVG', 'CASE WHEN op.observation_period_start_date = op.observation_period_end_date THEN 1 ELSE DATEDIFF(day, op.observation_period_start_date, op.observation_period_end_date) END', 'join observation_period op on op.person_id = v.person_id and op.observation_period_start_date >= E.start_date and op.observation_period_end_date <= E.end_date', FALSE),
+  ('Distinct start dates', null, 'COUNT', 'DISTINCT v.start_date', null, FALSE),
+  ('Duration', null, null, 'datediff(day, v.start_date, v.end_date)', null, FALSE),
+  ('Duration (max)', null, 'MAX', 'datediff(day, v.start_date, v.end_date)', null, FALSE),
+  ('Duration (min)', null, 'MIN', 'datediff(day, v.start_date, v.end_date)', null, FALSE),
+  ('Duration (average)', null, 'AVG', 'datediff(day, v.start_date, v.end_date)', null, FALSE),
   ('Value as number', 'MEASUREMENT', null, 'm.value_as_number', 'join measurement m on m.person_id = v.person_id and m.measurement_date between E.start_date and E.end_date', FALSE),
   ('Value as number (max)', 'MEASUREMENT', 'MAX', 'm.value_as_number', 'join measurement m on m.person_id = v.person_id and m.measurement_date between E.start_date and E.end_date', FALSE),
   ('Value as number (min)', 'MEASUREMENT', 'MIN', 'm.value_as_number', 'join measurement m on m.person_id = v.person_id and m.measurement_date between E.start_date and E.end_date', FALSE),

@@ -696,20 +696,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response cohortPrintFriendly(CohortExpression expression, @DefaultValue("html") @QueryParam("format") String format) {
 		String markdown = markdownPF.renderCohort(expression);
-		ResponseBuilder res;
-		if ("html".equalsIgnoreCase(format)) {
-			Parser parser = Parser.builder().extensions(extensions).build();
-			Node document = parser.parse(markdown);
-			HtmlRenderer renderer = HtmlRenderer.builder().extensions(extensions).build();
-			String html = renderer.render(document);
-			res = Response.ok(html, MediaType.TEXT_HTML);
-			
-		} else if ("markdown".equals(format)) {
-			res = Response.ok(markdown, MediaType.TEXT_PLAIN);
-		} else {
-			res = Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE);
-		}
-		return res.build();
+		return printFrindly(markdown, format);
 	}
 
 	@POST
@@ -717,6 +704,11 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response conceptSetListPrintFriendly(List<ConceptSet> conceptSetList, @DefaultValue("html") @QueryParam("format") String format) {
 		String markdown = markdownPF.renderConceptSetList(conceptSetList.toArray(new ConceptSet[0]));
+		return printFrindly(markdown, format);
+	}
+
+	private Response printFrindly(String markdown, String format) {
+
 		ResponseBuilder res;
 		if ("html".equalsIgnoreCase(format)) {
 			Parser parser = Parser.builder().extensions(extensions).build();
@@ -724,7 +716,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 			HtmlRenderer renderer = HtmlRenderer.builder().extensions(extensions).build();
 			String html = renderer.render(document);
 			res = Response.ok(html, MediaType.TEXT_HTML);
-			
+
 		} else if ("markdown".equals(format)) {
 			res = Response.ok(markdown, MediaType.TEXT_PLAIN);
 		} else {

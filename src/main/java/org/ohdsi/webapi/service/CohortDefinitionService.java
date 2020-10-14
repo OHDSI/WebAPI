@@ -151,8 +151,8 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Autowired
 	private ObjectMapper objectMapper;
   
-  @Autowired
-  private CohortSamplingService samplingService;
+	@Autowired
+	private CohortSamplingService samplingService;
 
 	@Autowired
 	private ApplicationEventPublisher eventPublisher;
@@ -600,7 +600,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 						});
 					});
 					cohortDefinitionRepository.delete(def);
-          samplingService.launchDeleteSamplesTasklet(id);
+					samplingService.launchDeleteSamplesTasklet(id);
 				} else {
 					log.warn("Failed to delete Cohort Definition with ID = {}", id);
 				}
@@ -621,13 +621,15 @@ public class CohortDefinitionService extends AbstractDaoService {
 						.tasklet(cleanupTasklet)
 						.build();
 
-    CleanupCohortSamplesTasklet cleanupSamplesTasklet = samplingService.createDeleteSamplesTasklet();
-    Step cleanupSamplesStep = stepBuilders.get("cohortDefinition.cleanupSamples")
-            .tasklet(cleanupSamplesTasklet)
-            .build();
+		CleanupCohortSamplesTasklet cleanupSamplesTasklet = samplingService.createDeleteSamplesTasklet();
+
+		Step cleanupSamplesStep = stepBuilders.get("cohortDefinition.cleanupSamples")
+						.tasklet(cleanupSamplesTasklet)
+						.build();
 
 		SimpleJobBuilder cleanupJobBuilder = jobBuilders.get("cleanupCohort")
-						.start(cleanupStep);
+						.start(cleanupStep)
+						.next(cleanupSamplesStep);
 
 		Job cleanupCohortJob = cleanupJobBuilder.build();
 

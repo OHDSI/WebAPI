@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpSession;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 
 /**
@@ -80,9 +81,7 @@ public class CasHandleFilter extends AtlasAuthFilter {
                         casProfile.addAttributes(principal.getAttributes());
                         
                         Subject currentUser = SecurityUtils.getSubject();
-                        LinkedHashMap<String, CommonProfile> pMap = new LinkedHashMap<String, CommonProfile>();
-                        pMap.put(principal.getName(), casProfile);
-                        ct = new Pac4jToken(pMap, currentUser.isRemembered());
+                        ct = new Pac4jToken(Collections.singletonList(casProfile), currentUser.isRemembered());
                         /*
                          * let AuthenticatingFilter.executeLogin login user
                          */

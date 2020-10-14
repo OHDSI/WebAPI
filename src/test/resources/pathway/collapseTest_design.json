@@ -1,0 +1,191 @@
+{
+  "name": "[TxP] Pathway Test",
+  "targetCohorts": [
+    {
+      "id": 444,
+      "name": "[TxP] Target Cohort",
+      "expression": {
+        "cdmVersionRange": ">=5.0.0",
+        "PrimaryCriteria": {
+          "CriteriaList": [
+            {
+              "ObservationPeriod": {}
+            }
+          ],
+          "ObservationWindow": {
+            "PriorDays": 0,
+            "PostDays": 0
+          },
+          "PrimaryCriteriaLimit": {
+            "Type": "First"
+          }
+        },
+        "ConceptSets": [],
+        "QualifiedLimit": {
+          "Type": "First"
+        },
+        "ExpressionLimit": {
+          "Type": "First"
+        },
+        "InclusionRules": [],
+        "EndStrategy": {
+          "DateOffset": {
+            "DateField": "EndDate",
+            "Offset": 0
+          }
+        },
+        "CensoringCriteria": [],
+        "CollapseSettings": {
+          "CollapseType": "ERA",
+          "EraPad": 0
+        },
+        "CensorWindow": {}
+      }
+    }
+  ],
+  "eventCohorts": [
+    {
+      "id": 445,
+      "name": "[TxP] Cohort 1",
+      "expression": {
+        "cdmVersionRange": ">=5.0.0",
+        "PrimaryCriteria": {
+          "CriteriaList": [
+            {
+              "DrugEra": {
+                "CodesetId": 0
+              }
+            }
+          ],
+          "ObservationWindow": {
+            "PriorDays": 0,
+            "PostDays": 0
+          },
+          "PrimaryCriteriaLimit": {
+            "Type": "All"
+          }
+        },
+        "ConceptSets": [
+          {
+            "id": 0,
+            "name": "Concept 1",
+            "expression": {
+              "items": [
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2,
+                    "CONCEPT_NAME": "Child 1 [Parent: 1]",
+                    "STANDARD_CONCEPT": "Y",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "C1P1",
+                    "DOMAIN_ID": "CONDITION",
+                    "VOCABULARY_ID": "TestVocab",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": false,
+                  "includeMapped": false
+                }
+              ]
+            }
+          }
+        ],
+        "QualifiedLimit": {
+          "Type": "First"
+        },
+        "ExpressionLimit": {
+          "Type": "First"
+        },
+        "InclusionRules": [],
+        "EndStrategy": {
+          "DateOffset": {
+            "DateField": "EndDate",
+            "Offset": 0
+          }
+        },
+        "CensoringCriteria": [],
+        "CollapseSettings": {
+          "CollapseType": "ERA",
+          "EraPad": 0
+        },
+        "CensorWindow": {}
+      }
+    },
+    {
+      "id": 446,
+      "name": "[TxP] Cohort 2",
+      "expression": {
+        "cdmVersionRange": ">=5.0.0",
+        "PrimaryCriteria": {
+          "CriteriaList": [
+            {
+              "DrugEra": {
+                "CodesetId": 0
+              }
+            }
+          ],
+          "ObservationWindow": {
+            "PriorDays": 0,
+            "PostDays": 0
+          },
+          "PrimaryCriteriaLimit": {
+            "Type": "All"
+          }
+        },
+        "ConceptSets": [
+          {
+            "id": 0,
+            "name": "Concept 2",
+            "expression": {
+              "items": [
+                {
+                  "concept": {
+                    "CONCEPT_ID": 3,
+                    "CONCEPT_NAME": "Child 2 [Parent: 1]",
+                    "STANDARD_CONCEPT": "Y",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "C1P1",
+                    "DOMAIN_ID": "CONDITION",
+                    "VOCABULARY_ID": "TestVocab",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": false,
+                  "includeMapped": false
+                }
+              ]
+            }
+          }
+        ],
+        "QualifiedLimit": {
+          "Type": "First"
+        },
+        "ExpressionLimit": {
+          "Type": "First"
+        },
+        "InclusionRules": [],
+        "EndStrategy": {
+          "DateOffset": {
+            "DateField": "EndDate",
+            "Offset": 0
+          }
+        },
+        "CensoringCriteria": [],
+        "CollapseSettings": {
+          "CollapseType": "ERA",
+          "EraPad": 0
+        },
+        "CensorWindow": {}
+      }
+    }
+  ],
+  "combinationWindow": 15,
+  "minCellCount": 0,
+  "maxDepth": 5,
+  "allowRepeats": false
+}
+

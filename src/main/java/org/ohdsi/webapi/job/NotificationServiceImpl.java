@@ -5,19 +5,20 @@ import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.springframework.batch.admin.service.SearchableJobExecutionDao;
+import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-
-import static org.ohdsi.webapi.Constants.WARM_CACHE_BY_USER;
+import java.util.function.BiFunction;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
@@ -41,38 +42,67 @@ public class NotificationServiceImpl implements NotificationService {
             WHITE_LIST.add(g.getJobName());
             FOLDING_KEYS.add(g.getExecutionFoldingKey());
         });
-
-        // Custom job not assosiated with entity
-        WHITE_LIST.add(WARM_CACHE_BY_USER);
     }
 
     @Override
-    public List<JobExecution> findLast10() {
-        final Map<String, JobExecution> result = new HashMap<>();
-        for (int start = 0; result.size() < MAX_SIZE; start += PAGE_SIZE) {
+    public List<JobExecutionInfo> findLastJobs(List<BatchStatus> hideStatuses) {
+        return findJobs(hideStatuses, MAX_SIZE, false);
+    }
+
+    @Override
+    public List<JobExecutionInfo> findRefreshCacheLastJobs() {
+        return findJobs(Collections.emptyList(), MAX_SIZE, true);
+    }
+
+    public List<JobExecutionInfo> findJobs(List<BatchStatus> hideStatuses, int maxSize, boolean refreshJobsOnly) {
+        BiFunction<JobExecutionInfo, JobExecutionInfo, JobExecutionInfo> mergeFunction = (x, y) -> {
+            final Date xStartTime = x != null ? x.getJobExecution().getStartTime() : null;
+            final Date yStartTime = y != null ? y.getJobExecution().getStartTime() : null;
+            return xStartTime != null ?
+                    yStartTime != null ?
+                            xStartTime.after(yStartTime) ? x
+                                    : y
+                            : x
+                    : y;
+        };
+        final Map<String, JobExecutionInfo> allJobMap = new HashMap<>();
+        final Map<String, JobExecutionInfo> userJobMap = new HashMap<>();
+        for (int start = 0; (!refreshJobsOnly && userJobMap.size() < MAX_SIZE) || allJobMap.size() < MAX_SIZE; start += PAGE_SIZE) {
             final List<JobExecution> page = jobExecutionDao.getJobExecutions(start, PAGE_SIZE);
             if(page.size() == 0) {
                 break;
             }
             for (JobExecution jobExec: page) {
-                if (isInWhiteList(jobExec) && isMine(jobExec)) {
-                    result.merge(getFoldingKey(jobExec), jobExec, (x, y) -> {
-                        final Date xStartTime = x.getStartTime();
-                        final Date yStartTime = y.getStartTime();
-                        return xStartTime != null ? 
-                                    yStartTime != null ? 
-                                        xStartTime.after(yStartTime) ? x 
-                                        : y
-                                    : x
-                               : y;
-                    });
+                // ignore completed jobs when user does not want to see them
+                if (hideStatuses.contains(jobExec.getStatus())) {
+                    continue;
                 }
-                if (result.size() >= MAX_SIZE) {
+                if (!refreshJobsOnly && isInWhiteList(jobExec)) {
+                    boolean isMine = isMine(jobExec);
+                    if (userJobMap.size() < MAX_SIZE && isMine) {
+                        JobExecutionInfo executionInfo = new JobExecutionInfo(jobExec, JobOwnerType.USER_JOB);
+                        userJobMap.merge(getFoldingKey(jobExec), executionInfo, mergeFunction);
+                    }
+                    if (allJobMap.size() < MAX_SIZE) {
+                        JobExecutionInfo executionInfo = new JobExecutionInfo(jobExec, JobOwnerType.ALL_JOB);
+                        allJobMap.merge(getFoldingKey(jobExec), executionInfo, mergeFunction);
+                    }
+                } else if (refreshJobsOnly) {
+                    if (allJobMap.size() < MAX_SIZE && jobExec.getJobInstance().getJobName().startsWith("warming ")) {
+                        JobExecutionInfo executionInfo = new JobExecutionInfo(jobExec, JobOwnerType.ALL_JOB);
+                        allJobMap.merge(getFoldingKey(jobExec), executionInfo, mergeFunction);
+                    }
+                }
+
+                if ((refreshJobsOnly || userJobMap.size() >= maxSize) && allJobMap.size() >= maxSize) {
                     break;
                 }
             }
         }
-        return new ArrayList<>(result.values());
+
+        final List<JobExecutionInfo> jobs = new ArrayList<>(allJobMap.values());
+        jobs.addAll(userJobMap.values());
+        return jobs;
     }
 
     @Override
@@ -92,7 +122,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     private static String getFoldingKey(JobExecution entity) {
         final Optional<String> key = entity.getJobParameters().getParameters().keySet().stream().filter(FOLDING_KEYS::contains).findAny();
-        return key.map(s -> entity.getJobParameters().getString(s) + "_" + entity.getJobParameters().getString("source_id"))
+        return key.map(s -> s + "_" + entity.getJobParameters().getString(s) + "_" + entity.getJobParameters().getString("source_id"))
                 .orElseGet(() -> String.valueOf(entity.getId()));
     }
 
@@ -103,6 +133,6 @@ public class NotificationServiceImpl implements NotificationService {
     private boolean isMine(JobExecution jobExec) {
         final String login = securityEnabled ? permissionManager.getSubjectName() : null;
         final String jobAuthor = jobExec.getJobParameters().getString(Constants.Params.JOB_AUTHOR);
-        return !securityEnabled || jobAuthor == null || Objects.equals(login, jobAuthor);
+        return Objects.equals(login, jobAuthor);
     }
 }

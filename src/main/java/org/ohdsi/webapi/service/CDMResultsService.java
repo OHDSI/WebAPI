@@ -1,18 +1,48 @@
 package org.ohdsi.webapi.service;
 
-import static org.ohdsi.webapi.Constants.WARM_CACHE_BY_USER;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
+import org.ohdsi.webapi.Constants;
+import org.ohdsi.webapi.cache.ResultsCache;
+import org.ohdsi.webapi.cdmresults.*;
+import org.ohdsi.webapi.cdmresults.keys.RefreshableSourceKeyGenerator;
+import org.ohdsi.webapi.cdmresults.keys.DrilldownKeyGenerator;
+import org.ohdsi.webapi.cdmresults.keys.TreemapKeyGenerator;
+import org.ohdsi.webapi.cdmresults.CDMResultsCacheTasklet;
+import org.ohdsi.webapi.cdmresults.DescendantRecordCount;
+import org.ohdsi.webapi.cdmresults.cache.CDMResultsCache;
+import org.ohdsi.webapi.cdmresults.mapper.DescendantRecordCountMapper;
+import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.report.CDMAchillesHeel;
+import org.ohdsi.webapi.report.CDMDashboard;
+import org.ohdsi.webapi.report.CDMDataDensity;
+import org.ohdsi.webapi.report.CDMDeath;
+import org.ohdsi.webapi.report.CDMObservationPeriod;
+import org.ohdsi.webapi.report.CDMPersonSummary;
+import org.ohdsi.webapi.report.CDMResultsAnalysisRunner;
+import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.source.SourceService;
+import org.ohdsi.webapi.util.PreparedSqlRender;
+import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.ohdsi.webapi.util.SourceUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.job.builder.SimpleJobBuilder;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
+
 import javax.cache.annotation.CacheResult;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -23,49 +53,34 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import org.ohdsi.webapi.Constants;
-import org.ohdsi.webapi.cache.ResultsCache;
-import org.ohdsi.webapi.cdmresults.cache.CDMResultsCache;
-import org.ohdsi.webapi.cdmresults.CDMResultsCacheTasklet;
-import org.ohdsi.webapi.cdmresults.DescendantRecordCount;
-import org.ohdsi.webapi.cdmresults.mapper.DescendantRecordCountMapper;
-import org.ohdsi.webapi.job.JobExecutionResource;
-import org.ohdsi.webapi.job.JobTemplate;
-import org.ohdsi.webapi.report.CDMAchillesHeel;
-import org.ohdsi.webapi.report.CDMDashboard;
-import org.ohdsi.webapi.report.CDMDataDensity;
-import org.ohdsi.webapi.report.CDMDeath;
-import org.ohdsi.webapi.report.CDMPersonSummary;
-import org.ohdsi.webapi.report.CDMResultsAnalysisRunner;
-import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
-import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.source.SourceService;
-import org.ohdsi.webapi.source.SourceDaimon;
-import org.ohdsi.webapi.util.PreparedSqlRender;
-import org.ohdsi.webapi.util.PreparedStatementRenderer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.batch.core.JobParametersBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author fdefalco
  */
 @Path("/cdmresults")
 @Component
-public class CDMResultsService extends AbstractDaoService {
+@DependsOn({"jobInvalidator", "flyway"})
+public class CDMResultsService extends AbstractDaoService implements InitializingBean {
     private final Logger logger = LoggerFactory.getLogger(CDMResultsService.class);
 
-    private CDMResultsAnalysisRunner queryRunner = null;
-
     @Autowired
-    private JobTemplate jobTemplate;
+    private CDMResultsAnalysisRunner queryRunner;
 
     @Autowired
     private JobService jobService;
+
+    @Autowired
+    private JobBuilderFactory jobBuilders;
+
+    @Autowired
+    private StepBuilderFactory stepBuilderFactory;
 
     @Autowired
     private SourceService sourceService;
@@ -76,21 +91,44 @@ public class CDMResultsService extends AbstractDaoService {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Value("${jasypt.encryptor.enabled}")
-    private boolean encryptorEnabled;
-
     @Value("${cdm.result.cache.warming.enable}")
     private boolean cdmResultCacheWarmingEnable;
 
     private DescendantRecordCountMapper descendantRecordCountMapper = new DescendantRecordCountMapper();
 
-    @PostConstruct
-    public void init() {
-        queryRunner = new CDMResultsAnalysisRunner(this.getSourceDialect(), objectMapper);
+    @Autowired
+    private ApplicationContext applicationContext;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+
+        queryRunner.init(this.getSourceDialect(), objectMapper);
         warmCaches();
     }
 
+    public void warmCaches(){
 
+            CDMResultsService instance = applicationContext.getBean(CDMResultsService.class);
+            Collection<Source> sources =  sourceService.getSources();
+            sources
+                .stream()
+                .filter(s -> SourceUtils.hasSourceDaimon(s, SourceDaimon.DaimonType.Results)
+                        && SourceUtils.hasSourceDaimon(s, SourceDaimon.DaimonType.Vocabulary)
+                        && s.getDaimons().stream().anyMatch(sd -> sd.getPriority() > 0))
+                .forEach(s -> warmCache(s.getSourceKey(), instance));
+            if (logger.isInfoEnabled()) {
+                List<String> sourceNames = sources
+                        .stream()
+                        .filter(s -> !SourceUtils.hasSourceDaimon(s, SourceDaimon.DaimonType.Vocabulary)
+                                || !SourceUtils.hasSourceDaimon(s, SourceDaimon.DaimonType.Results))
+                        .map(Source::getSourceName)
+                        .collect(Collectors.toList());
+                if (!sourceNames.isEmpty()) {
+                    logger.info("Following sources hasn't Vocabulary or Result schema and wouldn't be cached: {}",
+                            sourceNames.stream().collect(Collectors.joining(", ")));
+                }
+            }
+    }
 
     @Path("{sourceKey}/conceptRecordCount")
     @POST
@@ -163,9 +201,14 @@ public class CDMResultsService extends AbstractDaoService {
     @GET
     @Path("{sourceKey}/dashboard")
     @Produces(MediaType.APPLICATION_JSON)
-		@CacheResult(cacheName="datasources.dashboard")
+    @CacheResult(cacheName=Constants.Caches.Datasources.DASHBOARD)
     public CDMDashboard getDashboard(@PathParam("sourceKey")
             final String sourceKey) {
+
+        return getRawDashboard(sourceKey);
+    }
+
+    public CDMDashboard getRawDashboard(final String sourceKey) {
 
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         CDMDashboard dashboard = queryRunner.getDashboard(getSourceJdbcTemplate(source), source);
@@ -180,33 +223,40 @@ public class CDMResultsService extends AbstractDaoService {
     @GET
     @Path("{sourceKey}/person")
     @Produces(MediaType.APPLICATION_JSON)
-		@CacheResult(cacheName="datasources.person")
+    @CacheResult(cacheName=Constants.Caches.Datasources.PERSON, cacheKeyGenerator = RefreshableSourceKeyGenerator.class)
     public CDMPersonSummary getPerson(@PathParam("sourceKey")
             final String sourceKey, @DefaultValue("false")
             @QueryParam("refresh") boolean refresh) {
-        Source source = getSourceRepository().findBySourceKey(sourceKey);
-        CDMPersonSummary person = this.queryRunner.getPersonResults(this.getSourceJdbcTemplate(source), source);
+        CDMPersonSummary person = getRawPerson(sourceKey, refresh);
         return person;
+    }
+
+    public CDMPersonSummary getRawPerson(String sourceKey, boolean refresh) {
+
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        return this.queryRunner.getPersonResults(this.getSourceJdbcTemplate(source), source);
     }
 
     @GET
     @Path("{sourceKey}/warmCache")
     @Produces(MediaType.APPLICATION_JSON)
-    public JobExecutionResource warmCache(@PathParam("sourceKey") final String sourceKey) {
-        return this.warmCacheByKey(sourceKey);
+    public JobExecutionResource warmCache(@PathParam("sourceKey") final String sourceKey, CDMResultsService instance) {
+        return this.warmCacheByKey(sourceKey, instance);
     }
 
     @GET
     @Path("{sourceKey}/refreshCache")
     @Produces(MediaType.APPLICATION_JSON)
     public JobExecutionResource refreshCache(@PathParam("sourceKey") final String sourceKey) {
+
+        CDMResultsService instance = applicationContext.getBean(CDMResultsService.class);
         if(isSecured() && isAdmin()) {
             Source source = getSourceRepository().findBySourceKey(sourceKey);
             if (sourceAccessor.hasAccess(source)) {
                 JobExecutionResource jobExecutionResource = jobService.findJobByName(Constants.WARM_CACHE, getWarmCacheJobName(sourceKey));
                 if (jobExecutionResource == null) {
                     if (source.getDaimons().stream().anyMatch(sd -> Objects.equals(sd.getDaimonType(), SourceDaimon.DaimonType.Results))) {
-                        return warmCache(source, WARM_CACHE_BY_USER);
+                        return warmCaches(source, instance);
                     }
                 } else {
                     return jobExecutionResource;
@@ -240,10 +290,16 @@ public class CDMResultsService extends AbstractDaoService {
     @GET
     @Path("{sourceKey}/datadensity")
     @Produces(MediaType.APPLICATION_JSON)
-        @CacheResult(cacheName="datasources.dataDensity")
+    @CacheResult(cacheName=Constants.Caches.Datasources.DATADENSITY, cacheKeyGenerator = RefreshableSourceKeyGenerator.class)
     public CDMDataDensity getDataDensity(@PathParam("sourceKey")
             final String sourceKey, @DefaultValue("false")
             @QueryParam("refresh") boolean refresh) {
+
+        return getRawDataDesity(sourceKey, refresh);
+    }
+
+    public CDMDataDensity getRawDataDesity(String sourceKey, Boolean refresh) {
+
         CDMDataDensity cdmDataDensity;
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         cdmDataDensity = this.queryRunner.getDataDensityResults(this.getSourceJdbcTemplate(source), source);
@@ -269,6 +325,21 @@ public class CDMResultsService extends AbstractDaoService {
     }
 
     /**
+     * Queries for observation period report for the given sourceKey
+     *
+     * @return CDMDataDensity
+     */
+    @GET
+    @Path("{sourceKey}/observationPeriod")
+    @Produces(MediaType.APPLICATION_JSON)
+
+    public CDMObservationPeriod getObservationPeriod(@PathParam("sourceKey")
+                             final String sourceKey) {
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        return this.queryRunner.getObservationPeriodResults(this.getSourceJdbcTemplate(source), source);
+    }
+
+    /**
      * Queries for domain treemap results
      *
      * @return List<ArrayNode>
@@ -276,12 +347,18 @@ public class CDMResultsService extends AbstractDaoService {
     @GET
     @Path("{sourceKey}/{domain}/")
     @Produces(MediaType.APPLICATION_JSON)
-		@CacheResult(cacheName="datasources.domain")				
+    @CacheResult(cacheName=Constants.Caches.Datasources.DOMAIN, cacheKeyGenerator = TreemapKeyGenerator.class)
     public ArrayNode getTreemap(
             @PathParam("domain")
             final String domain,
             @PathParam("sourceKey")
             final String sourceKey) {
+
+        return getRawTreeMap(domain, sourceKey);
+    }
+
+    public ArrayNode getRawTreeMap(String domain, String sourceKey) {
+
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         return queryRunner.getTreemap(this.getSourceJdbcTemplate(source), domain, source);
     }
@@ -294,48 +371,73 @@ public class CDMResultsService extends AbstractDaoService {
     @GET
     @Path("{sourceKey}/{domain}/{conceptId}")
     @Produces(MediaType.APPLICATION_JSON)
-		@CacheResult(cacheName="datasources.drilldown")		
+    @CacheResult(cacheName=Constants.Caches.Datasources.DRILLDOWN, cacheKeyGenerator = DrilldownKeyGenerator.class)
     public JsonNode getDrilldown(@PathParam("domain")
             final String domain,
             @PathParam("conceptId")
             final int conceptId,
             @PathParam("sourceKey")
             final String sourceKey) {
+
+        return getRawDrilldown(domain, conceptId, sourceKey);
+    }
+
+    public JsonNode getRawDrilldown(String domain, int conceptId, String sourceKey) {
+
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         JdbcTemplate jdbcTemplate = this.getSourceJdbcTemplate(source);
         return queryRunner.getDrilldown(jdbcTemplate, domain, conceptId, source);
     }
 
-    private void warmCaches(){
-        sourceService.getSources()
-                .stream()
-                .filter(s ->
-                        s.getDaimons().stream().anyMatch(sd -> Objects.equals(sd.getDaimonType(), SourceDaimon.DaimonType.Results)) &&
-                                s.getDaimons().stream().anyMatch(sd -> sd.getPriority() > 0))
-                .forEach(s -> warmCacheByKey(s.getSourceKey()));
-    }
-
-    private JobExecutionResource warmCacheByKey(String sourceKey) {
+    private JobExecutionResource warmCacheByKey(String sourceKey, CDMResultsService instance) {
         CDMResultsCache cache = ResultsCache.get(sourceKey);
         if (cache.notWarm() && jobService.findJobByName(Constants.WARM_CACHE, getWarmCacheJobName(sourceKey)) == null) {
             Source source = getSourceRepository().findBySourceKey(sourceKey);
-            return warmCache(source, Constants.WARM_CACHE);
+            return warmCaches(source, instance);
         } else {
             return new JobExecutionResource();
         }
     }
 
-    private JobExecutionResource warmCache(final Source source, final String jobName) {
+    public JobExecutionResource warmCaches(Source source, CDMResultsService instance) {
 
         if (!cdmResultCacheWarmingEnable) {
             logger.info("Cache warming is disabled for CDM results");
             return new JobExecutionResource();
         }
+        if (!SourceUtils.hasSourceDaimon(source, SourceDaimon.DaimonType.Vocabulary) || !SourceUtils.hasSourceDaimon(source, SourceDaimon.DaimonType.Results)) {
+            logger.info("Cache wouldn't be applied to sources without Vocabulary and Result schemas, source [{}] was omitted", source.getSourceName());
+            return new JobExecutionResource();
+        }
+        String jobName = getWarmCacheJobName(source.getSourceKey());
+        DashboardCacheTasklet dashboardTasklet = new DashboardCacheTasklet(source, instance);
+        Step dashboardStep = stepBuilderFactory.get(jobName + " dashboard")
+                .tasklet(dashboardTasklet)
+                .build();
 
-        CDMResultsCacheTasklet tasklet = new CDMResultsCacheTasklet(this.getSourceJdbcTemplate(source), source);
-        JobParametersBuilder builder = new JobParametersBuilder();
-        builder.addString(Constants.Params.JOB_NAME, getWarmCacheJobName(source.getSourceKey()));
-        return this.jobTemplate.launchTasklet(jobName, "warmCacheStep", tasklet, builder.toJobParameters());
+        PersonCacheTasklet personTasklet = new PersonCacheTasklet(source, instance);
+        Step personStep = stepBuilderFactory.get(jobName + " person")
+                .tasklet(personTasklet)
+                .build();
+
+        DataDensityCacheTasklet dataDensityTasklet = new DataDensityCacheTasklet(source, instance);
+        Step dataDensityStep = stepBuilderFactory.get(jobName + " data density")
+                .tasklet(dataDensityTasklet)
+                .build();
+
+        CDMResultsCacheTasklet resultsTasklet = new CDMResultsCacheTasklet(this.getSourceJdbcTemplate(source), getTransactionTemplateRequiresNew(), source);
+        Step resultsStep = stepBuilderFactory.get(jobName + " results")
+                .tasklet(resultsTasklet)
+                .build();
+
+        SimpleJobBuilder builder = jobBuilders.get(jobName)
+                .start(dashboardStep)
+                .next(personStep)
+                .next(dataDensityStep)
+                .next(resultsStep);
+        return jobService.runJob(builder.build(), new JobParametersBuilder()
+                .addString(Constants.Params.JOB_NAME, jobName)
+                .toJobParameters());
     }
 
     private String getWarmCacheJobName(String sourceKey) {

@@ -12,6 +12,7 @@ import org.apache.shiro.realm.ldap.LdapUtils;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.ohdsi.webapi.shiro.Entities.UserPrincipal;
 import org.ohdsi.webapi.shiro.mapper.UserMapper;
+import org.ohdsi.webapi.shiro.tokens.ActiveDirectoryUsernamePasswordToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ldap.core.AttributesMapper;
@@ -32,7 +33,7 @@ public class ADRealm extends ActiveDirectoryRealm {
 
     private LdapTemplate ldapTemplate;
 
-    private AttributesMapper<String> dnAttributesMapper = (AttributesMapper<String>) attrs -> (String) attrs.get("distinguishedName").get();
+    private AttributesMapper<String> dnAttributesMapper = attrs -> (String) attrs.get("distinguishedName").get();
 
     private UserMapper userMapper;
 
@@ -44,6 +45,11 @@ public class ADRealm extends ActiveDirectoryRealm {
         this.searchFilter = searchFilter;
         this.searchString = searchString;
         this.userMapper = userMapper;
+    }
+
+    @Override
+    public boolean supports(AuthenticationToken token) {
+        return token != null && token.getClass() == ActiveDirectoryUsernamePasswordToken.class;
     }
 
     public void setSearchFilter(String searchFilter) {

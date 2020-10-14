@@ -11,6 +11,7 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import io.buji.pac4j.subject.Pac4jPrincipal;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.subject.PrincipalCollection;
@@ -18,6 +19,7 @@ import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.tokens.JwtAuthToken;
+import org.pac4j.core.profile.CommonProfile;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -28,10 +30,7 @@ import java.security.interfaces.ECPublicKey;
 import java.text.ParseException;
 import java.time.Clock;
 import java.time.Instant;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class GoogleIapJwtAuthFilter extends AtlasAuthFilter {
 
@@ -84,10 +83,19 @@ public class GoogleIapJwtAuthFilter extends AtlasAuthFilter {
         boolean loggedIn = executeLogin(request, response);
 
         if (loggedIn) {
+            String name, login;
             final PrincipalCollection principals = SecurityUtils.getSubject().getPrincipals();
-            String name = (String) principals.getPrimaryPrincipal();
+            final Pac4jPrincipal pac4jPrincipal = principals.oneByType(Pac4jPrincipal.class);
+            if (Objects.nonNull(pac4jPrincipal)) {
+                CommonProfile profile = pac4jPrincipal.getProfile();
+                login = profile.getEmail();
+                name = Optional.ofNullable(profile.getDisplayName()).orElse(login);
+            } else {
+                name = (String) principals.getPrimaryPrincipal();
+                login = name;
+            }
             // For now we supposed name to be equal to login for google iap
-            this.authorizer.registerUser(name, name, defaultRoles);
+            this.authorizer.registerUser(login, name, defaultRoles);
         } else {
             httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }

@@ -17,11 +17,6 @@ public class SourcePermissionSchema extends EntityPermissionSchema {
         put("cohortdefinition:*:report:%s:get", "Get Inclusion Rule Report for Source with SourceKey = %s");
         put("cohortdefinition:*:generate:%s:get", "Generate Cohort on Source with SourceKey = %s");
         put("cohortdefinition:*:cancel:%s:get", "Cancel Cohort Generation on Source with SourceKey = %s");
-        put("featureextraction:query:prevalence:*:%s:get", "Get Cohort Prevalence on Source with SourceKey = %s");
-        put("featureextraction:query:distributions:*:%s:get", "Get Cohort Distributions on Source with SourceKey = %s");
-        put("featureextraction:explore:prevalence:*:%s:*:get", "Explore Prevalence hierarchy on Source with SourceKey = %s");
-        put("featureextraction:generate:%s:*:get", "Generate Feature on Source with SourceKey = %s");
-        put("featureextraction:generatesql:%s:*:get", "Generate Feature SQL on Source with SourceKey = %s");
         put("vocabulary:%s:*:get", "Get vocabulary info on Source with SourceKey = %s");
         put("vocabulary:%s:included-concepts:count:post", "Get vocab concept counts on Source with SourceKey = %s");
         put("vocabulary:%s:resolveConceptSetExpression:post", "Resolve concept set expression on Source with SourceKey = %s");

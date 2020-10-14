@@ -14,10 +14,8 @@ public class PredictionAnalysisToPredictionAnalysisDTOConverter extends Predicti
     }
 
     @Override
-    public PredictionAnalysisDTO convert(PredictionAnalysis source) {
-
-        PredictionAnalysisDTO result = super.convert(source);
-        result.setSpecification(source.getSpecification());
-        return result;
+    public void doConvert(PredictionAnalysis source, PredictionAnalysisDTO target) {
+        super.doConvert(source, target);
+        target.setSpecification(source.getSpecification());
     }
 }

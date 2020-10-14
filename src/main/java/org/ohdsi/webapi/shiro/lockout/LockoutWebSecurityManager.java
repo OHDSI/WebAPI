@@ -57,7 +57,7 @@ public class LockoutWebSecurityManager extends DefaultWebSecurityManager {
                 AuthenticationException ae = new LockedAccountException("Maximum login attempts is reached. Please, try again in " + tryInSeconds + " seconds.");
                 try {
                     onFailedLogin(token, ae, subject);
-                }catch (Exception e){
+                } catch (Exception e) {
                     log.info("onFailure method threw an exception.", e);
                 }
                 throw ae;

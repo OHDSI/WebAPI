@@ -1,12 +1,13 @@
 package org.ohdsi.webapi.pathway.dto;
 
 import org.ohdsi.analysis.CohortMetadata;
+import org.ohdsi.webapi.service.dto.CommonEntityDTO;
 import org.ohdsi.webapi.user.dto.UserDTO;
 
 import java.util.Date;
 import java.util.List;
 
-public abstract class BasePathwayAnalysisDTO<T extends CohortMetadata> {
+public abstract class BasePathwayAnalysisDTO<T extends CohortMetadata> extends CommonEntityDTO {
 
     private Integer id;
     private String name;
@@ -17,10 +18,6 @@ public abstract class BasePathwayAnalysisDTO<T extends CohortMetadata> {
     private Integer minCellCount;
     private Integer maxDepth;
     private boolean allowRepeats;
-    private UserDTO createdBy;
-    private Date createdDate;
-    private UserDTO modifiedBy;
-    private Date modifiedDate;
     private Integer hashCode;
 
     public Integer getId() {
@@ -109,46 +106,6 @@ public abstract class BasePathwayAnalysisDTO<T extends CohortMetadata> {
     public void setAllowRepeats(boolean allowRepeats) {
 
         this.allowRepeats = allowRepeats;
-    }
-
-    public UserDTO getCreatedBy() {
-
-        return createdBy;
-    }
-
-    public void setCreatedBy(UserDTO createdBy) {
-
-        this.createdBy = createdBy;
-    }
-
-    public Date getCreatedDate() {
-
-        return createdDate;
-    }
-
-    public void setCreatedDate(Date createdDate) {
-
-        this.createdDate = createdDate;
-    }
-
-    public UserDTO getModifiedBy() {
-
-        return modifiedBy;
-    }
-
-    public void setModifiedBy(UserDTO modifiedBy) {
-
-        this.modifiedBy = modifiedBy;
-    }
-
-    public Date getModifiedDate() {
-
-        return modifiedDate;
-    }
-
-    public void setModifiedDate(Date modifiedDate) {
-
-        this.modifiedDate = modifiedDate;
     }
 
     public Integer getHashCode() {

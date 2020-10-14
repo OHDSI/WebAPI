@@ -1,29 +1,25 @@
 package org.ohdsi.webapi.estimation.converter;
 
-import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
+import org.apache.commons.lang.StringUtils;
 import org.ohdsi.webapi.estimation.Estimation;
 import org.ohdsi.webapi.estimation.dto.EstimationShortDTO;
-import org.ohdsi.webapi.util.ConversionUtils;
+import org.ohdsi.webapi.service.converters.BaseCommonEntityToDTOConverter;
 import org.springframework.stereotype.Component;
 
 @Component
-public class EstimationToEstimationShortDTOConverter <T extends EstimationShortDTO> extends BaseConversionServiceAwareConverter<Estimation, T> {
+public class EstimationToEstimationShortDTOConverter <T extends EstimationShortDTO>
+        extends BaseCommonEntityToDTOConverter<Estimation, T> {
 
     @Override
     protected T createResultObject() {
-
         return (T) new EstimationShortDTO();
     }
     
     @Override
-    public T convert(Estimation source) {
-
-        T result = createResultObject(source);
-        ConversionUtils.convertMetadata(conversionService, source, result);
-        result.setId(source.getId());
-        result.setName(source.getName());
-        result.setDescription(source.getDescription());
-        result.setType(source.getType());
-        return result;
+    public void doConvert(Estimation source, T target) {
+        target.setId(source.getId());
+        target.setName(StringUtils.trim(source.getName()));
+        target.setDescription(source.getDescription());
+        target.setType(source.getType());
     }
 }

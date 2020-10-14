@@ -3,6 +3,8 @@ package org.ohdsi.webapi.prediction;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.Constants;
+import org.ohdsi.webapi.check.CheckResult;
+import org.ohdsi.webapi.check.checker.prediction.PredictionChecker;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.analyses.CommonAnalysisDTO;
 import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
@@ -54,6 +56,7 @@ public class PredictionController {
   private final SourceService sourceService;
 
   private final ScriptExecutionService executionService;
+  private final PredictionChecker checker;
 
   @Autowired
   public PredictionController(PredictionService service,
@@ -61,13 +64,14 @@ public class PredictionController {
                               ConverterUtils converterUtils,
                               CommonGenerationSensitiveInfoService sensitiveInfoService,
                               SourceService sourceService,
-                              ScriptExecutionService executionService) {
+                              ScriptExecutionService executionService, PredictionChecker checker) {
     this.service = service;
     this.conversionService = conversionService;
     this.converterUtils = converterUtils;
     this.sensitiveInfoService = sensitiveInfoService;
     this.sourceService = sourceService;
     this.executionService = executionService;
+    this.checker = checker;
   }
 
   @GET
@@ -101,8 +105,8 @@ public class PredictionController {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public PredictionAnalysisDTO createAnalysis(PredictionAnalysis pred) {
-
-    return conversionService.convert(service.createAnalysis(pred), PredictionAnalysisDTO.class);
+    PredictionAnalysis analysis = service.createAnalysis(pred);
+    return reloadAndConvert(analysis.getId());
   }
 
   @PUT
@@ -110,16 +114,16 @@ public class PredictionController {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public PredictionAnalysisDTO updateAnalysis(@PathParam("id") int id, PredictionAnalysis pred) {
-
-    return conversionService.convert(service.updateAnalysis(id, pred), PredictionAnalysisDTO.class);
+    service.updateAnalysis(id, pred);
+    return reloadAndConvert(id);
   }
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}/copy")
   public PredictionAnalysisDTO copy(@PathParam("id") int id) {
-
-    return conversionService.convert(service.copy(id), PredictionAnalysisDTO.class);
+    PredictionAnalysis analysis = service.copy(id);
+    return reloadAndConvert(analysis.getId());
   }
 
   @GET
@@ -151,7 +155,7 @@ public class PredictionController {
       throw new InternalServerErrorException();
     }
     PredictionAnalysis importedAnalysis = service.importAnalysis(analysis);
-    return conversionService.convert(importedAnalysis, PredictionAnalysisDTO.class);
+    return reloadAndConvert(importedAnalysis.getId());
   }  
 
   @GET
@@ -189,6 +193,11 @@ public class PredictionController {
 
     PredictionAnalysis predictionAnalysis = service.getAnalysis(predictionAnalysisId);
     ExceptionUtils.throwNotFoundExceptionIfNull(predictionAnalysis, String.format(NO_PREDICTION_ANALYSIS_MESSAGE, predictionAnalysisId));
+    PredictionAnalysisDTO predictionAnalysisDTO = conversionService.convert(predictionAnalysis, PredictionAnalysisDTO.class);
+    CheckResult checkResult = runDiagnostics(predictionAnalysisDTO);
+    if (checkResult.hasCriticalErrors()) {
+      throw new RuntimeException("Cannot be generated due to critical errors in design. Call 'check' service for further details");
+    }
     return service.runGeneration(predictionAnalysis, sourceKey);
   }
 
@@ -226,4 +235,18 @@ public class PredictionController {
             .build();
   }
 
+    private PredictionAnalysisDTO reloadAndConvert(Integer id) {
+        // Before conversion entity must be refreshed to apply entity graphs
+        PredictionAnalysis analysis = service.getById(id);
+        return conversionService.convert(analysis, PredictionAnalysisDTO.class);
+    }
+
+    @POST
+    @Path("/check")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public CheckResult runDiagnostics(PredictionAnalysisDTO predictionAnalysisDTO){
+
+        return new CheckResult(checker.check(predictionAnalysisDTO));
+    }
 }

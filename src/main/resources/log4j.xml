@@ -20,6 +20,9 @@
 	<logger name="org.apache.shiro">
 		<level value="${logging.level.org.apache.shiro}" />
 	</logger>
+	<logger name="org.pac4j">
+		<level value="${logging.level.org.pac4j:INFO}" />
+	</logger>
 	<root>
 		<level value="${logging.level.root}" />
 		<appender-ref ref="stdout" />

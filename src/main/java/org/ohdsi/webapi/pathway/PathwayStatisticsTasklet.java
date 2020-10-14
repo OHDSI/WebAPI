@@ -25,127 +25,149 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import org.ohdsi.webapi.common.generation.CancelableTasklet;
 import org.ohdsi.webapi.util.PreparedStatementRendererCreator;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 
 import static org.ohdsi.webapi.Constants.Params.GENERATION_ID;
 
-
 public class PathwayStatisticsTasklet extends CancelableTasklet {
-    
-    private final CancelableJdbcTemplate jdbcTemplate;
-    private final Source source;
-    private Long generationId;
-    private final PathwayService pathwayService;
-    private final GenericConversionService genericConversionService;
-    
-    public PathwayStatisticsTasklet(CancelableJdbcTemplate jdbcTemplate, TransactionTemplate transactionTemplate, Source source,
-						PathwayService pathwayService, GenericConversionService genericConversionService) {
-			super(LoggerFactory.getLogger(PathwayStatisticsTasklet.class), jdbcTemplate, transactionTemplate);
-			this.jdbcTemplate = jdbcTemplate;
-			this.source = source;
-			this.pathwayService = pathwayService;
-			this.genericConversionService = genericConversionService;
-    }
-		
-		private List<Integer> intArrayToList(int[] intArray) {
-			return Arrays.stream(intArray).boxed().collect(Collectors.toList());
+
+	private final CancelableJdbcTemplate jdbcTemplate;
+	private final Source source;
+	private Long generationId;
+	private final PathwayService pathwayService;
+	private final GenericConversionService genericConversionService;
+
+	public PathwayStatisticsTasklet(CancelableJdbcTemplate jdbcTemplate, TransactionTemplate transactionTemplate, Source source,
+					PathwayService pathwayService, GenericConversionService genericConversionService) {
+		super(LoggerFactory.getLogger(PathwayStatisticsTasklet.class), jdbcTemplate, transactionTemplate);
+		this.jdbcTemplate = jdbcTemplate;
+		this.source = source;
+		this.pathwayService = pathwayService;
+		this.genericConversionService = genericConversionService;
+	}
+
+	private List<Integer> intArrayToList(int[] intArray) {
+		return Arrays.stream(intArray).boxed().collect(Collectors.toList());
+	}
+
+	@Override
+	protected void doBefore(ChunkContext chunkContext) {
+		initTx();
+		generationId = chunkContext.getStepContext().getStepExecution().getJobExecution().getId();
+	}
+
+	private void initTx() {
+		DefaultTransactionDefinition txDefinition = new DefaultTransactionDefinition();
+		txDefinition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+		TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(txDefinition);
+		this.transactionTemplate.getTransactionManager().commit(initStatus);
+	}
+
+	@Override
+	protected int[] doTask(ChunkContext chunkContext) {
+		Callable<int[]> execution;
+		List<Integer> rowsUpdated = new ArrayList<>(); // stores the rows updated from each batch.
+
+		// roll up patient-level events into pathway counts and save to DB.
+		execution = () -> savePaths(source, generationId);
+		FutureTask<int[]> savePathsTask = new FutureTask<>(execution);
+		taskExecutor.execute(savePathsTask);
+		rowsUpdated.addAll(intArrayToList(waitForFuture(savePathsTask)));
+
+		if (isStopped()) {
+			return null;
 		}
 
-    @Override
-    protected void doBefore(ChunkContext chunkContext) {
-        initTx();
-        generationId = chunkContext.getStepContext().getStepExecution().getJobExecution().getId();
-    }
+		// build comboId -> combo name map
+		final PathwayAnalysisEntity design = genericConversionService
+						.convert(Utils.deserialize(pathwayService.findDesignByGenerationId(generationId),
+										new TypeReference<PathwayAnalysisExportDTO>() {
+						}), PathwayAnalysisEntity.class);
 
-    private void initTx() {
-        DefaultTransactionDefinition txDefinition = new DefaultTransactionDefinition();
-        txDefinition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-        TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(txDefinition);
-        this.transactionTemplate.getTransactionManager().commit(initStatus);
-    }
+		List<PathwayCode> pathwayCodes = buildPathwayCodes(design, source);
 
-    @Override
-    protected int[] doTask(ChunkContext chunkContext) {
-			Callable<int[]> execution;
-			List<Integer> rowsUpdated = new ArrayList<>(); // stores the rows updated from each batch.
-			
-			// roll up patient-level events into pathway counts and save to DB.
-			execution = () -> savePaths(source, generationId);
-			FutureTask<int[]> savePathsTask = new FutureTask<>(execution);
-			taskExecutor.execute(savePathsTask);
-			rowsUpdated.addAll(intArrayToList(waitForFuture(savePathsTask)));
-			
-			if (isStopped()) return null;
-			
-			// build comboId -> combo name map
-			final PathwayAnalysisEntity design = genericConversionService
-							.convert(Utils.deserialize(pathwayService.findDesignByGenerationId(generationId),
-											new TypeReference<PathwayAnalysisExportDTO>() {}), PathwayAnalysisEntity.class);
-			
-			List<PathwayCode> pathwayCodes = buildPathwayCodes(design, source);
+		// save combo lookup to DB
+		execution = () -> savePathwayCodes(pathwayCodes);
+		FutureTask<int[]> saveCodesTask = new FutureTask<>(execution);
+		taskExecutor.execute(saveCodesTask);
+		rowsUpdated.addAll(intArrayToList(waitForFuture(saveCodesTask)));
 
-			// save combo lookup to DB
-			execution = () -> savePathwayCodes(pathwayCodes);
-			FutureTask<int[]> saveCodesTask = new FutureTask<>(execution);
-			taskExecutor.execute(saveCodesTask);			
-			rowsUpdated.addAll(intArrayToList(waitForFuture(saveCodesTask)));
+		return rowsUpdated.stream().mapToInt(Integer::intValue).toArray();
+	}
 
-			return rowsUpdated.stream().mapToInt(Integer::intValue).toArray();
-    }
+	private List<PathwayCode> buildPathwayCodes(PathwayAnalysisEntity design, Source source) {
+		PreparedStatementRenderer pathwayStatsPsr = new PreparedStatementRenderer(
+						source, "/resources/pathway/getDistinctCodes.sql", "target_database_schema",
+						source.getTableQualifier(SourceDaimon.DaimonType.Results),
+						new String[]{GENERATION_ID},
+						new Object[]{generationId}
+		);
 
-    private List<PathwayCode> buildPathwayCodes(PathwayAnalysisEntity design, Source source) {
-			PreparedStatementRenderer pathwayStatsPsr = new PreparedStatementRenderer(
-							source, "/resources/pathway/getDistinctCodes.sql", "target_database_schema", 
-							source.getTableQualifier(SourceDaimon.DaimonType.Results),
-							new String[] { GENERATION_ID },
-							new Object[] { generationId }
-			);
+		Map<Integer, Integer> eventCodes = pathwayService.getEventCohortCodes(design);
 
-			return jdbcTemplate.query(pathwayStatsPsr.getSql(), pathwayStatsPsr.getSetter(), (rs, rowNum) -> {
-				int code = rs.getInt("combo_id");
-				List<PathwayEventCohort> eventCohorts = getEventCohortsByComboCode(design, code);
-				String names = eventCohorts.stream()
-								.map(PathwayEventCohort::getName)
-								.collect(Collectors.joining(","));
-				 return new PathwayCode(code, names, eventCohorts.size() > 1);
-			});
-    }
-		
-    private List<PathwayEventCohort> getEventCohortsByComboCode(PathwayAnalysisEntity pathwayAnalysis, int comboCode) {
+		List<PathwayCode> codesFromDb = jdbcTemplate.query(pathwayStatsPsr.getSql(), pathwayStatsPsr.getSetter(), (rs, rowNum) -> {
+			int code = rs.getInt("combo_id");
+			List<PathwayEventCohort> eventCohorts = getEventCohortsByComboCode(design, eventCodes, code);
+			String names = eventCohorts.stream()
+							.map(PathwayEventCohort::getName)
+							.collect(Collectors.joining(","));
+			return new PathwayCode(code, names, eventCohorts.size() > 1);
+		});
 
-        Map<Integer, Integer> eventCodes = pathwayService.getEventCohortCodes(pathwayAnalysis);
-        return pathwayAnalysis.getEventCohorts()
-                .stream()
-                .filter(ec -> ((long) Math.pow(2, Double.valueOf(eventCodes.get(ec.getCohortDefinition().getId()))) & comboCode) > 0)
-                .collect(Collectors.toList());
-    }
-    
-    private int[] savePathwayCodes(List<PathwayCode> pathwayCodes) {
-        String[] codeNames = new String[]{GENERATION_ID, "code", "name", "is_combo"};
-				List<PreparedStatementCreator> creators = new ArrayList<>();
-        pathwayCodes.forEach(code -> {
-					Object[] values = new Object[]{generationId, code.getCode(), code.getName(), code.isCombo() ? 1 : 0};
-					PreparedStatementRenderer psr = new PreparedStatementRenderer(source, "/resources/pathway/saveCodes.sql",
-									"target_database_schema", source.getTableQualifier(SourceDaimon.DaimonType.Results), codeNames, values);
-					creators.add(new PreparedStatementRendererCreator(psr));
-        });
-				
-				return jdbcTemplate.batchUpdate(stmtCancel, creators);
-    }
+		// need to add any event cohort code that wasn't found in the codes from DB
+		// so that, in the case that only a combo was identified in the pathway analysis,
+		// the event cohorts from the combo are included in the result.
+		List<PathwayCode> codesFromDesign = IntStream.range(0, design.getEventCohorts().size())
+						.map(idx -> ((int) Math.pow(2, Double.valueOf(idx))))
+						.filter(code -> codesFromDb.stream().noneMatch(pc -> pc.getCode() == code))
+						.mapToObj(code -> {
+							List<PathwayEventCohort> eventCohorts = getEventCohortsByComboCode(design, eventCodes, code);
+							String names = eventCohorts.stream()
+											.map(PathwayEventCohort::getName)
+											.collect(Collectors.joining(","));
+							return new PathwayCode(code, names, eventCohorts.size() > 1);
+						}).collect(Collectors.toList());
 
-    private int[] savePaths(Source source, Long generationId) {
+		return Stream.concat(codesFromDb.stream(), codesFromDesign.stream()).collect(Collectors.toList());
 
-        PreparedStatementRenderer pathwayEventsPsr = new PreparedStatementRenderer(
-                source,
-                "/resources/pathway/savePaths.sql",
-                new String[]{"target_database_schema"},
-                new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results)},
-                new String[] { GENERATION_ID },
-                new Object[] { generationId}
-        );
+	}
 
-				return new int[] {jdbcTemplate.update(pathwayEventsPsr.getSql(), pathwayEventsPsr.getSetter())};
-    }
+	private List<PathwayEventCohort> getEventCohortsByComboCode(PathwayAnalysisEntity pathwayAnalysis, Map<Integer, Integer> eventCodes, int comboCode) {
+
+		return pathwayAnalysis.getEventCohorts()
+						.stream()
+						.filter(ec -> ((long) Math.pow(2, Double.valueOf(eventCodes.get(ec.getCohortDefinition().getId()))) & comboCode) > 0)
+						.collect(Collectors.toList());
+	}
+
+	private int[] savePathwayCodes(List<PathwayCode> pathwayCodes) {
+		String[] codeNames = new String[]{GENERATION_ID, "code", "name", "is_combo"};
+		List<PreparedStatementCreator> creators = new ArrayList<>();
+		pathwayCodes.forEach(code -> {
+			Object[] values = new Object[]{generationId, code.getCode(), code.getName(), code.isCombo() ? 1 : 0};
+			PreparedStatementRenderer psr = new PreparedStatementRenderer(source, "/resources/pathway/saveCodes.sql",
+							"target_database_schema", source.getTableQualifier(SourceDaimon.DaimonType.Results), codeNames, values);
+			creators.add(new PreparedStatementRendererCreator(psr));
+		});
+
+		return jdbcTemplate.batchUpdate(stmtCancel, creators);
+	}
+
+	private int[] savePaths(Source source, Long generationId) {
+
+		PreparedStatementRenderer pathwayEventsPsr = new PreparedStatementRenderer(
+						source,
+						"/resources/pathway/savePaths.sql",
+						new String[]{"target_database_schema"},
+						new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results)},
+						new String[]{GENERATION_ID},
+						new Object[]{generationId}
+		);
+
+		return new int[]{jdbcTemplate.update(pathwayEventsPsr.getSql(), pathwayEventsPsr.getSetter())};
+	}
 }

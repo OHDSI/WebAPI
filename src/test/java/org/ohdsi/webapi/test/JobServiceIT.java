@@ -1,8 +1,14 @@
 package org.ohdsi.webapi.test;
 
+import static org.junit.Assert.assertEquals;
+
+import com.github.springtestdbunit.annotation.DatabaseOperation;
+import com.github.springtestdbunit.annotation.DatabaseSetup;
+import com.github.springtestdbunit.annotation.DatabaseTearDown;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.ohdsi.webapi.exampleapplication.ExampleApplicationWithJobService;
 import org.ohdsi.webapi.job.JobExecutionResource;
@@ -14,11 +20,8 @@ import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.policy.TimeoutRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
-import org.springframework.util.Assert;
 
-/**
- *
- */
+@DatabaseTearDown(value = "/database/empty.xml", type = DatabaseOperation.DELETE_ALL)
 public class JobServiceIT extends WebApiIT {
     
     @Value("${exampleservice.endpoint}")
@@ -34,10 +37,11 @@ public class JobServiceIT extends WebApiIT {
     private String endpointJobExecutionAlternative;
     
     @Test
+    @DatabaseSetup("/database/source.xml")
     public void createAndFindJob() {
         //create/queue job
         final ResponseEntity<JobExecutionResource> postEntity = getRestTemplate().postForEntity(this.endpointExample, null,
-            JobExecutionResource.class);//TODO 409 or other errors prevent deserialization...
+            JobExecutionResource.class);
         assertOk(postEntity);
         final JobExecutionResource postExecution = postEntity.getBody();
         assertJobExecution(postExecution);
@@ -57,22 +61,17 @@ public class JobServiceIT extends WebApiIT {
         template.setRetryPolicy(policy);
         
         final ResponseEntity<JobExecutionResource> getEntityExecution = template
-                .execute(new RetryCallback<ResponseEntity<JobExecutionResource>, IllegalStateException>() {
-                    
-                    @Override
-                    public ResponseEntity<JobExecutionResource> doWithRetry(final RetryContext context) {
-                        // Do stuff that might fail, e.g. webservice operation
-                        final ResponseEntity<JobExecutionResource> getEntityExecution = getRestTemplate().getForEntity(
-                            JobServiceIT.this.endpointJobExecution, JobExecutionResource.class, params);
-                        final JobExecutionResource getExecution = getEntityExecution.getBody();
-                        assertJobExecution(getExecution);
-                        if (!"COMPLETED".equals(getExecution.getStatus())) {
-                            JobServiceIT.this.log.debug("Incomplete job, trying again...");
-                            throw new IllegalStateException("Incomplete job");
-                        }
-                        return getEntityExecution;
+                .execute((RetryCallback<ResponseEntity<JobExecutionResource>, IllegalStateException>) context -> {
+                    // Do stuff that might fail, e.g. webservice operation
+                    final ResponseEntity<JobExecutionResource> getEntityExecution1 = getRestTemplate().getForEntity(
+                        JobServiceIT.this.endpointJobExecution, JobExecutionResource.class, params);
+                    final JobExecutionResource getExecution = getEntityExecution1.getBody();
+                    assertJobExecution(getExecution);
+                    if (!"COMPLETED".equals(getExecution.getStatus())) {
+                        JobServiceIT.this.log.debug("Incomplete job, trying again...");
+                        throw new IllegalStateException("Incomplete job");
                     }
-                    
+                    return getEntityExecution1;
                 });
         //end retry
         
@@ -83,28 +82,29 @@ public class JobServiceIT extends WebApiIT {
             JobInstanceResource.class, params);
         assertOk(getEntityInstance);
         assertJobInstance(getEntityInstance.getBody());
-        
-        Assert.state(postExecution.getExecutionId().equals(getExecution.getExecutionId()));
+
+        assertEquals(postExecution.getExecutionId(), getExecution.getExecutionId());
         
         //Check alternate endpoint
         final ResponseEntity<JobExecutionResource> getEntityExecutionAlt = getRestTemplate().getForEntity(
             this.endpointJobExecutionAlternative, JobExecutionResource.class, params);
         final JobExecutionResource getExecutionAlt = getEntityExecutionAlt.getBody();
         assertJobExecution(getExecution);
-        Assert.state(postExecution.getExecutionId().equals(getExecutionAlt.getExecutionId()));
+        assertEquals(postExecution.getExecutionId(), getExecutionAlt.getExecutionId());
     }
     
     private void assertJobInstance(final JobInstanceResource instance) {
-        Assert.state(instance.getInstanceId() != null);
-        Assert.state(ExampleApplicationWithJobService.EXAMPLE_JOB_NAME.equals(instance.getName()));
+        Assert.assertNotNull(instance.getInstanceId());
+        assertEquals(ExampleApplicationWithJobService.EXAMPLE_JOB_NAME, instance.getName());
     }
     
     private void assertOk(final ResponseEntity<?> entity) {
-        Assert.state(entity.getStatusCode() == HttpStatus.OK);
+        assertEquals(entity.getStatusCode(), HttpStatus.OK);
     }
     
     private void assertJobExecution(final JobExecutionResource execution) {
-        Assert.state(execution != null && execution.getExecutionId() != null
-                && execution.getJobInstanceResource().getInstanceId() != null);
+        Assert.assertNotNull(execution);
+        Assert.assertNotNull(execution.getExecutionId());
+        Assert.assertNotNull(execution.getJobInstanceResource().getInstanceId());
     }
 }

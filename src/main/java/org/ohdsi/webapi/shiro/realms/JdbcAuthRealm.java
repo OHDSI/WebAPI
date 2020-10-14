@@ -26,6 +26,7 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.jdbc.JdbcRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.ohdsi.webapi.shiro.Entities.UserPrincipal;
+import org.ohdsi.webapi.shiro.tokens.ActiveDirectoryUsernamePasswordToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -43,10 +44,14 @@ public class JdbcAuthRealm extends JdbcRealm {
 
     public JdbcAuthRealm(DataSource dataSource, String authenticationQuery) {
 
-        setAuthenticationTokenClass(UsernamePasswordToken.class);
-
         this.setDataSource(dataSource);
         this.setAuthenticationQuery(authenticationQuery);
+    }
+
+    @Override
+    public boolean supports(AuthenticationToken token) {
+
+        return token != null && token.getClass() == UsernamePasswordToken.class;
     }
 
     @Override

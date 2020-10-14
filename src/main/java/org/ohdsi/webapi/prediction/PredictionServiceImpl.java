@@ -3,6 +3,7 @@ package org.ohdsi.webapi.prediction;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.helper.ResourceHelper;
@@ -32,9 +33,10 @@ import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
-import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.EntityUtils;
+import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.TempFileUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,9 +49,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import javax.ws.rs.InternalServerErrorException;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -64,13 +64,15 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
 
     private static final EntityGraph DEFAULT_ENTITY_GRAPH = EntityGraphUtils.fromAttributePaths("source", "analysisExecution.resultFiles");
 
+    private static final String PREDICTION_SKELETON = "/resources/prediction/skeleton/SkeletonPredictionStudy_0.0.1.zip";
+
     private final EntityGraph COMMONS_ENTITY_GRAPH = EntityUtils.fromAttributePaths(
             "createdBy",
             "modifiedBy"
     );
 
     @Value("${hydra.externalPackage.prediction}")
-    private String extenalPackagePath;
+    private String externalPackagePath;
 
     @Autowired
     private PredictionAnalysisRepository predictionAnalysisRepository;
@@ -80,7 +82,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
 
     @Autowired
     private ConceptSetService conceptSetService;
-    
+
     @Autowired
     private VocabularyService vocabularyService;
 
@@ -98,19 +100,19 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
 
     @Autowired
     private PredictionAnalysisGenerationRepository generationRepository;
-    
+
     @Autowired
     private Environment env;
 
     @Autowired
     private SourceAccessor sourceAccessor;
-    
+
     @Autowired
     private DesignImportService designImportService;
-    
+
     @Autowired
-    private ConversionService conversionService;    
-    
+    private ConversionService conversionService;
+
     private final String EXEC_SCRIPT = ResourceHelper.GetResourceAsString("/resources/prediction/r/runAnalysis.R");
 
     @Override
@@ -118,7 +120,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
 
         return predictionAnalysisRepository.findAll(COMMONS_ENTITY_GRAPH);
     }
-    
+
     @Override
     public int getCountPredictionWithSameName(Integer id, String name) {
 
@@ -129,18 +131,23 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     public PredictionAnalysis getById(Integer id) {
         return predictionAnalysisRepository.findOne(id, COMMONS_ENTITY_GRAPH);
     }
-    
+
     @Override
     public void delete(final int id) {
         this.predictionAnalysisRepository.delete(id);
     }
-    
+
     @Override
     public PredictionAnalysis createAnalysis(PredictionAnalysis pred) {
         Date currentTime = Calendar.getInstance().getTime();
         pred.setCreatedBy(getCurrentUser());
         pred.setCreatedDate(currentTime);
-    
+        // Fields with information about modifications have to be reseted
+        pred.setModifiedBy(null);
+        pred.setModifiedDate(null);
+
+        pred.setName(StringUtils.trim(pred.getName()));
+
         return save(pred);
     }
 
@@ -155,13 +162,15 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         pred.setCreatedDate(predFromDB.getCreatedDate());
         pred.setCreatedBy(predFromDB.getCreatedBy());
 
+        pred.setName(StringUtils.trim(pred.getName()));
+
         return save(pred);
     }
 
     private List<String> getNamesLike(String name) {
         return predictionAnalysisRepository.findAllByNameStartsWith(name).stream().map(PredictionAnalysis::getName).collect(Collectors.toList());
     }
-    
+
     @Override
     public PredictionAnalysis copy(final int id) {
         PredictionAnalysis analysis = this.predictionAnalysisRepository.findOne(id);
@@ -170,15 +179,21 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         analysis.setName(getNameForCopy(analysis.getName()));
         return this.createAnalysis(analysis);
     }
-    
+
     @Override
     public PredictionAnalysis getAnalysis(int id) {
 
         return this.predictionAnalysisRepository.findOne(id, COMMONS_ENTITY_GRAPH);
     }
-    
+
     @Override
     public PatientLevelPredictionAnalysisImpl exportAnalysis(int id) {
+
+        return exportAnalysis(id, sourceService.getPriorityVocabularySource().getSourceKey());
+    }
+
+    @Override
+    public PatientLevelPredictionAnalysisImpl exportAnalysis(int id, String sourceKey) {
         PredictionAnalysis pred = predictionAnalysisRepository.findOne(id);
         PatientLevelPredictionAnalysisImpl expression;
         try {
@@ -186,13 +201,13 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        
+
         // Set the root properties
         expression.setId(pred.getId());
-        expression.setName(pred.getName());
+        expression.setName(StringUtils.trim(pred.getName()));
         expression.setDescription(pred.getDescription());
         expression.setOrganizationName(env.getRequiredProperty("organization.name"));
-        
+
         // Retrieve the cohort definition details
         ArrayList<AnalysisCohortDefinition> detailedList = new ArrayList<>();
         for (AnalysisCohortDefinition c : expression.getCohortDefinitions()) {
@@ -200,17 +215,17 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
             detailedList.add(new AnalysisCohortDefinition(cd));
         }
         expression.setCohortDefinitions(detailedList);
-        
+
         // Retrieve the concept set expressions
         ArrayList<AnalysisConceptSet> pcsList = new ArrayList<>();
         HashMap<Integer, ArrayList<Long>> conceptIdentifiers = new HashMap<>();
         for (AnalysisConceptSet pcs : expression.getConceptSets()) {
-            pcs.expression = conceptSetService.getConceptSetExpression(pcs.id);
+            pcs.expression = conceptSetService.getConceptSetExpression(pcs.id, sourceKey);
             pcsList.add(pcs);
             conceptIdentifiers.put(pcs.id, new ArrayList<>(vocabularyService.resolveConceptSetExpression(pcs.expression)));
         }
         expression.setConceptSets(pcsList);
-        
+
         // Resolve all ConceptSetCrossReferences
         for (ConceptSetCrossReferenceImpl xref : expression.getConceptSetCrossReference()) {
             if (xref.getTargetName().equalsIgnoreCase("covariateSettings")) {
@@ -221,10 +236,10 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
                 }
             }
         }
-        
+
         return expression;
     }
-    
+
     @Override
     public PredictionAnalysis importAnalysis(PatientLevelPredictionAnalysisImpl analysis) throws Exception {
         try {
@@ -249,43 +264,43 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
                 analysisCohortDefinition.setId(cd.getId());
                 analysisCohortDefinition.setName(cd.getName());
             });
-            
+
             // Create all of the concept sets and map
             // the IDs from old -> new
             Map<Integer, Integer> conceptSetIdMap = new HashMap<>();
-            analysis.getConceptSets().forEach((pcs) -> { 
-               int oldId = pcs.id;
-               ConceptSetDTO cs = designImportService.persistConceptSet(pcs);
-               pcs.id = cs.getId();
-               pcs.name = cs.getName();
-               conceptSetIdMap.put(oldId, cs.getId());
+            analysis.getConceptSets().forEach((pcs) -> {
+                int oldId = pcs.id;
+                ConceptSetDTO cs = designImportService.persistConceptSet(pcs);
+                pcs.id = cs.getId();
+                pcs.name = cs.getName();
+                conceptSetIdMap.put(oldId, cs.getId());
             });
-            
+
             // Replace all of the cohort definitions
             analysis.setTargetIds(newTargetIds);
             analysis.setOutcomeIds(newOutcomeIds);
-            
+
             // Replace all of the concept sets
             analysis.getConceptSetCrossReference().forEach((ConceptSetCrossReferenceImpl xref) -> {
                 Integer newConceptSetId = conceptSetIdMap.get(xref.getConceptSetId());
                 xref.setConceptSetId(newConceptSetId);
             });
-            
+
             // Clear all of the concept IDs from the covariate settings
             analysis.getCovariateSettings().forEach((CovariateSettingsImpl cs) -> {
                 cs.setIncludedCovariateConceptIds(new ArrayList<>());
                 cs.setExcludedCovariateConceptIds(new ArrayList<>());
             });
-            
+
             // Remove the ID
             analysis.setId(null);
-            
+
             // Create the prediction analysis
             PredictionAnalysis pa = new PredictionAnalysis();
             pa.setDescription(analysis.getDescription());
             pa.setSpecification(Utils.serialize(analysis));
             pa.setName(NameUtils.getNameWithSuffix(analysis.getName(), this::getNamesLike));
-            
+
             PredictionAnalysis savedAnalysis = this.createAnalysis(pa);
             return predictionAnalysisRepository.findOne(savedAnalysis.getId(), COMMONS_ENTITY_GRAPH);
         } catch (Exception e) {
@@ -301,17 +316,29 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
 
     @Override
     public void hydrateAnalysis(PatientLevelPredictionAnalysisImpl analysis, String packageName, OutputStream out) throws JsonProcessingException {
+
         if (packageName == null || !Utils.isAlphaNumeric(packageName)) {
             throw new IllegalArgumentException("The package name must be alphanumeric only.");
         }
-        analysis.setPackageName(packageName);
-        String studySpecs = Utils.serialize(analysis, true);
-        Hydra h = new Hydra(studySpecs);
-        if (StringUtils.isNotEmpty(extenalPackagePath)) {
-            h.setExternalSkeletonFileName(extenalPackagePath);
+        File externalFile = null;
+        try {
+            analysis.setPackageName(packageName);
+            try {
+                externalFile = TempFileUtils.copyResourceToTempFile(PREDICTION_SKELETON, "plp", ".zip");
+            } catch (IOException e) {
+                log.warn("Failed to load skeleton from resource, {}. Ignored and used default", e.getMessage());
+            }
+            if (StringUtils.isNotEmpty(externalPackagePath)) {
+                super.hydrateAnalysis(analysis, externalPackagePath, out);
+            } else if (Objects.nonNull(externalFile)) {
+                super.hydrateAnalysis(analysis, externalFile.getAbsolutePath(), out);
+            }
+        } finally {
+            FileUtils.deleteQuietly(externalFile);
         }
-        h.hydrate(out);
     }
+
+
     
     @Override
     @DataSourceAccess
@@ -327,7 +354,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         AnalysisFile analysisFile = new AnalysisFile();
         analysisFile.setFileName(packageFilename);
         try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-          PatientLevelPredictionAnalysisImpl analysis = exportAnalysis(predictionAnalysisId);
+          PatientLevelPredictionAnalysisImpl analysis = exportAnalysis(predictionAnalysisId, sourceKey);
           hydrateAnalysis(analysis, packageName, out);
           analysisFile.setContents(out.toByteArray());
         }

@@ -5,6 +5,8 @@ import java.util.Optional;
 
 import com.cosium.spring.data.jpa.entity.graph.repository.EntityGraphJpaRepository;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -18,4 +20,10 @@ public interface CcRepository extends EntityGraphJpaRepository<CohortCharacteriz
     
     @Query("SELECT COUNT(cc) FROM CohortCharacterizationEntity cc WHERE cc.name = :ccName and cc.id <> :ccId")
     int getCountCcWithSameName(@Param("ccId") Long ccId, @Param("ccName") String ccName);
+
+    @Query("SELECT cc FROM CohortCharacterizationEntity cc JOIN cc.cohortDefinitions cd WHERE cd = ?1")
+    List<CohortCharacterizationEntity> findByCohortDefinition(CohortDefinition cd);
+
+    @Query("SELECT cc FROM CohortCharacterizationEntity cc JOIN cc.featureAnalyses fa WHERE fa = ?1")
+    List<CohortCharacterizationEntity> findByFeatureAnalysis(FeAnalysisEntity feAnalysis);
 }

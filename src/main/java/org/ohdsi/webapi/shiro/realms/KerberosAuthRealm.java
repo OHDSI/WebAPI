@@ -30,6 +30,7 @@ import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSManager;
 import org.ietf.jgss.GSSName;
 import org.ietf.jgss.Oid;
+import org.ohdsi.webapi.shiro.tokens.JwtAuthToken;
 import org.ohdsi.webapi.shiro.tokens.SpnegoToken;
 
 import javax.security.auth.Subject;
@@ -56,12 +57,14 @@ public class KerberosAuthRealm extends AuthenticatingRealm {
     private final Log logger = LogFactory.getLog(KerberosAuthRealm.class);
 
     public KerberosAuthRealm(String serviceProviderName, String keytabPath) {
-
-        // this makes the supports(...) method return true only if the token is an instanceof SpnegoToken:
-        setAuthenticationTokenClass(SpnegoToken.class);
-
         this.serviceProviderName = serviceProviderName;
         this.keytabPath = keytabPath;
+    }
+
+    @Override
+    public boolean supports(AuthenticationToken token) {
+
+        return token != null && token.getClass() == SpnegoToken.class;
     }
 
     @Override

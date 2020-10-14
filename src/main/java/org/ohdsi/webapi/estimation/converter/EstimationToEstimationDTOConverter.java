@@ -14,10 +14,8 @@ public class EstimationToEstimationDTOConverter extends EstimationToEstimationSh
     }
 
     @Override
-    public EstimationDTO convert(Estimation source) {
-
-        EstimationDTO result = super.convert(source);        
-        result.setSpecification(source.getSpecification());        
-        return result;
+    public void doConvert(Estimation source, EstimationDTO target) {
+        super.doConvert(source, target);
+        target.setSpecification(source.getSpecification());
     }
 }

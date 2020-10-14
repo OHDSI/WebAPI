@@ -4,16 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.odysseusinc.arachne.commons.types.DBMSType;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
-import com.opentable.db.postgres.junit.EmbeddedPostgresRules;
-import com.opentable.db.postgres.junit.SingleInstancePostgresRule;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
@@ -29,12 +24,7 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.sql.DataSource;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -45,20 +35,16 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import org.ohdsi.webapi.AbstractDatabaseTest;
+import org.springframework.beans.factory.annotation.Value;
 
-@SpringBootTest
-@RunWith(SpringRunner.class)
-@TestPropertySource(locations = "/in-memory-webapi.properties")
-public class CohortCharacterizationServiceTest {
+public class CohortCharacterizationServiceTest extends AbstractDatabaseTest {
     private static final String CDM_SQL = ResourceHelper.GetResourceAsString("/cdm-postgresql-ddl.sql");
     private static final String PARAM_JSON = ResourceHelper.GetResourceAsString("/cohortcharacterization/reportData.json");
     private static final String PARAM_JSON_WITH_STRATA = ResourceHelper.GetResourceAsString("/cohortcharacterization/reportDataWithStrata.json");
@@ -67,8 +53,8 @@ public class CohortCharacterizationServiceTest {
     private static final String RESULT_SCHEMA_NAME = "results";
     private static final String CDM_SCHEMA_NAME = "cdm";
     private static final String SOURCE_KEY = "Embedded_PG";
-    private static final Integer INITIAL_ENTITY_ID = 2;
     private static final String EUNOMIA_CSV_ZIP = "/eunomia.csv.zip";
+    private static boolean isCdmInitialized = false;
 
     @Autowired
     private CcService ccService;
@@ -78,11 +64,9 @@ public class CohortCharacterizationServiceTest {
 
     @Autowired
     private SourceRepository sourceRepository;
-
-    @ClassRule
-    public static SingleInstancePostgresRule pg = EmbeddedPostgresRules.singleInstance();
-
-    private static JdbcTemplate jdbcTemplate;
+    
+    @Value("${datasource.ohdsi.schema}")
+    private String ohdsiSchema;
 
     private static final Collection<String> COHORT_DDL_FILE_PATHS = Arrays.asList(
             "/ddl/results/cohort.sql",
@@ -99,26 +83,17 @@ public class CohortCharacterizationServiceTest {
             "/ddl/results/cohort_characterizations.sql"
     );
 
-    @BeforeClass
-    public static void beforeClass() {
-        jdbcTemplate = new JdbcTemplate(getDataSource());
-        try {
-            System.setProperty("datasource.url", getDataSource().getConnection().getMetaData().getURL());
-            System.setProperty("flyway.datasource.url", System.getProperty("datasource.url"));
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
     @Before
     public void setUp() throws Exception {
-        prepareResultSchema();
-
-        if (sourceRepository.findOne(INITIAL_ENTITY_ID) == null) {
+        if (!isCdmInitialized) {
+            // one-time setup of CDM and CDM source
+            truncateTable(String.format("%s.%s", ohdsiSchema, "source"));
+            resetSequence(String.format("%s.%s", ohdsiSchema,"source_sequence"));
             sourceRepository.saveAndFlush(getCdmSource());
+            prepareCdmSchema();
+            isCdmInitialized = true;
         }
-
-        prepareCdmSchema();
+        prepareResultSchema();
     }
 
     @Test
@@ -150,35 +125,44 @@ public class CohortCharacterizationServiceTest {
         Data data = Utils.deserialize(paramData, typeRef);
 
         for (ParamItem paramItem : data.paramItems) {
-            checkRequest(generationEntity.getId(), paramItem);
+            checkRequest(entity, generationEntity.getId(), paramItem);
         }
     }
 
-    private void checkRequest(Long id, ParamItem paramItem) throws IOException {
+    private void checkRequest(CohortCharacterizationEntity entity, Long generationId, ParamItem paramItem) throws IOException {
         String dataItemMessage = String.format("Checking dataitem %s", paramItem.toString());
-        ZipFile zipFile = getZipFile(id, paramItem);
-        if (paramItem.fileItems.isEmpty()) {
-            // File is empty
-            assertFalse(dataItemMessage, zipFile.isValidZipFile());
-        } else {
-            assertTrue(dataItemMessage, zipFile.isValidZipFile());
+        try {
+            ZipFile zipFile = getZipFile(generationId, paramItem);
+            if (paramItem.fileItems.isEmpty()) {
+                // File is empty
+                assertFalse(dataItemMessage, zipFile.isValidZipFile());
+            } else {
+                // File should not be empty
+                assertTrue(dataItemMessage, zipFile.isValidZipFile());
+                Path tempDir = Files.createTempDirectory(String.valueOf(System.currentTimeMillis()));
+                tempDir.toFile().deleteOnExit();
+                zipFile.extractAll(tempDir.toAbsolutePath().toString());
+                assertEquals(dataItemMessage, paramItem.fileItems.size(), tempDir.toFile().listFiles().length);
 
-            Path tempDir = Files.createTempDirectory(String.valueOf(System.currentTimeMillis()));
-            tempDir.toFile().deleteOnExit();
-            zipFile.extractAll(tempDir.toAbsolutePath().toString());
-            assertEquals(dataItemMessage, paramItem.fileItems.size(), tempDir.toFile().listFiles().length);
+                for (File file : tempDir.toFile().listFiles()) {
+                    String fileMessage = String.format("Checking filename %s for dataitem %s", file.getName(), paramItem.toString());
+                    Optional<FileItem> fileItem = paramItem.fileItems.stream()
+                            .filter(f -> f.fileName.equals(file.getName()))
+                            .findAny();
+                    assertTrue(fileMessage, fileItem.isPresent());
 
-            for (File file : tempDir.toFile().listFiles()) {
-                String fileMessage = String.format("Checking filename %s for dataitem %s", file.getName(), paramItem.toString());
-                Optional<FileItem> fileItem = paramItem.fileItems.stream()
-                        .filter(f -> f.fileName.equals(file.getName()))
-                        .findAny();
-                assertTrue(fileMessage, fileItem.isPresent());
-
-                long count = Files.lines(file.toPath()).count();
-                // include header line
-                assertEquals(fileMessage, fileItem.get().lineCount + 1, count);
+                    long count = Files.lines(file.toPath()).count();
+                    // include header line
+                    assertEquals(fileMessage, fileItem.get().lineCount + 1, count);
+                }
             }
+        } catch (IllegalArgumentException e) {
+            // Exception should be thrown when parameter of feature is invalid
+            int analysisId = paramItem.analysisIds.stream().filter(
+                aid -> entity.getFeatureAnalyses().stream().noneMatch(fa -> Objects.equals(fa.getId(), aid))
+            ).findFirst().get();
+            String expectedMessage = String.format("Feature with id=%s not found in analysis", analysisId);
+            assertEquals(dataItemMessage, e.getMessage(), expectedMessage);
         }
     }
 
@@ -202,20 +186,12 @@ public class CohortCharacterizationServiceTest {
         return new ZipFile(tempFile);
     }
 
-    private static DataSource getDataSource() {
-        return pg.getEmbeddedPostgres().getPostgresDatabase();
-    }
-
     private static void prepareResultSchema() {
-        DataSource dataSource = getDataSource();
         String resultSql = getResultTablesSql();
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         jdbcTemplate.batchUpdate(SqlSplit.splitSql(resultSql));
     }
 
     private static void prepareCdmSchema() throws Exception {
-        DataSource dataSource = getDataSource();
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         String cdmSql = getCdmSql();
         jdbcTemplate.batchUpdate(SqlSplit.splitSql(cdmSql));
     }

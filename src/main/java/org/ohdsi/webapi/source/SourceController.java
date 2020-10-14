@@ -16,10 +16,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.convert.support.GenericConversionService;
+import org.springframework.core.env.Environment;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
+import javax.annotation.PostConstruct;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -75,6 +80,13 @@ public class SourceController extends AbstractDaoService {
     vocabularyService.clearVocabularyInfoCache();
     sourceService.ensureSourceEncrypted();
     return getSources();
+  }
+
+  @Path("priorityVocabulary")
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  public SourceInfo getPriorityVocabularySourceInfo() {
+    return sourceService.getPriorityVocabularySourceInfo();
   }
 
   @Path("{key}")
@@ -238,14 +250,12 @@ public class SourceController extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public Map<SourceDaimon.DaimonType, SourceInfo> getPriorityDaimons() {
 
-    Map<SourceDaimon.DaimonType, SourceInfo> priorityDaimons = new HashMap<>();
-    Arrays.asList(SourceDaimon.DaimonType.values()).forEach(d -> {
-      Source source = sourceService.getPrioritySourceForDaimon(d);
-      if (source != null) {
-        priorityDaimons.put(d, new SourceInfo(source));
-      }
-    });
-    return priorityDaimons;
+    return sourceService.getPriorityDaimons()
+            .entrySet().stream()
+            .collect(Collectors.toMap(
+                    Map.Entry::getKey,
+                    e -> new SourceInfo(e.getValue())
+            ));
   }
 
   @Path("{sourceKey}/daimons/{daimonType}/set-priority")

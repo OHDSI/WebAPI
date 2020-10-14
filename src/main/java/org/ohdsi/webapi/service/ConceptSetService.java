@@ -35,9 +35,10 @@ import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +65,9 @@ public class ConceptSetService extends AbstractDaoService {
     private SourceService sourceService;
 
     @Autowired
+    private SourceAccessor sourceAccessor;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -71,6 +75,8 @@ public class ConceptSetService extends AbstractDaoService {
 
     @Autowired
     private Security security;
+
+    public static final String COPY_NAME = "copyName";
 
     @Path("{id}")
     @GET
@@ -103,18 +109,35 @@ public class ConceptSetService extends AbstractDaoService {
     @Path("{id}/expression")
     @Produces(MediaType.APPLICATION_JSON)
     public ConceptSetExpression getConceptSetExpression(@PathParam("id") final int id) {
-        HashMap<Long, ConceptSetItem> map = new HashMap<>();
 
-        // collect the concept set items so we can lookup their properties later
-        for (ConceptSetItem csi : getConceptSetItems(id)) {
-            map.put(csi.getConceptId(), csi);
-        }
+        return getConceptSetExpression(id, sourceService.getPriorityVocabularySourceInfo());
+    }
+
+    @GET
+    @Path("{id}/expression/{sourceKey}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ConceptSetExpression getConceptSetExpression(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
+
+        Source source = sourceService.findBySourceKey(sourceKey);
+        sourceAccessor.checkAccess(source);
+        return getConceptSetExpression(id, source.getSourceInfo());
+    }
+
+    private ConceptSetExpression getConceptSetExpression(int id, SourceInfo sourceInfo) {
+        HashMap<Long, Concept> map = new HashMap<>();
 
         // create our expression to return
         ConceptSetExpression expression = new ConceptSetExpression();
-//        expression.items = new ConceptSetExpression.ConceptSetItem[map.size()];
         ArrayList<ConceptSetExpression.ConceptSetItem> expressionItems = new ArrayList<>();
-        
+
+        List<ConceptSetItem> repositoryItems = new ArrayList<>();
+        getConceptSetItems(id).forEach(repositoryItems::add);
+
+        // collect the unique concept IDs so we can load the concept object later.
+        for (ConceptSetItem csi : repositoryItems) {
+            map.put(csi.getConceptId(), null);
+        }
+
         // lookup the concepts we need information for
         long[] identifiers = new long[map.size()];
         int identifierIndex = 0;
@@ -126,18 +149,20 @@ public class ConceptSetService extends AbstractDaoService {
         // assume we want to resolve using the priority vocabulary provider
         Source vocabSourceInfo = sourceService.getPriorityVocabularySource();
         Collection<Concept> concepts = vocabService.executeIdentifierLookup(vocabSourceInfo.getSourceKey(), identifiers);
+        for(Concept concept : concepts) {
+          map.put(concept.conceptId, concept); // associate the concept object to the conceptID in the map
+        }
 
         // put the concept information into the expression along with the concept set item information 
-        for (Concept concept : concepts) {
+        for (ConceptSetItem repositoryItem : repositoryItems) {
           ConceptSetExpression.ConceptSetItem currentItem  = new ConceptSetExpression.ConceptSetItem();
-          currentItem.concept = concept;
-          ConceptSetItem csi = map.get(concept.conceptId);
-          currentItem.includeDescendants = (csi.getIncludeDescendants() == 1);
-          currentItem.includeMapped = (csi.getIncludeMapped() == 1);
-          currentItem.isExcluded = (csi.getIsExcluded() == 1);
+          currentItem.concept = map.get(repositoryItem.getConceptId());
+          currentItem.includeDescendants = (repositoryItem.getIncludeDescendants() == 1);
+          currentItem.includeMapped = (repositoryItem.getIncludeMapped() == 1);
+          currentItem.isExcluded = (repositoryItem.getIsExcluded() == 1);
           expressionItems.add(currentItem); 
         }
-        expression.items = expressionItems.toArray(new ConceptSetExpression.ConceptSetItem[0]);
+        expression.items = expressionItems.toArray(new ConceptSetExpression.ConceptSetItem[0]); // this will return a new array
         
         return expression;
     }
@@ -246,7 +271,7 @@ public class ConceptSetService extends AbstractDaoService {
     public Map<String, String> getNameForCopy (@PathParam("id") final int id){
         ConceptSetDTO source = getConceptSet(id);
         String name = NameUtils.getNameForCopy(source.getName(), this::getNamesLike, getConceptSetRepository().findByName(source.getName()));
-        return Collections.singletonMap("copyName", name);
+        return Collections.singletonMap(COPY_NAME, name);
     }
 
     public List<String> getNamesLike(String copyName) {

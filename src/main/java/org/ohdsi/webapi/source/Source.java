@@ -118,12 +118,21 @@ public class Source extends CommonEntity<Integer> implements Serializable {
   }
 
   public String getTableQualifierOrNull(DaimonType daimonType) {
-    for (SourceDaimon sourceDaimon : this.getDaimons()) {
-      if (sourceDaimon.getDaimonType() == daimonType) {
-        return sourceDaimon.getTableQualifier();
+    if (this.getDaimons() != null){
+      for (SourceDaimon sourceDaimon : this.getDaimons()) {
+        if (sourceDaimon.getDaimonType() == daimonType) {
+          return sourceDaimon.getTableQualifier();
+        }
+      }
+      if (DaimonType.Vocabulary.equals(daimonType)) {
+        return getDaimons().stream()
+                .filter(d -> DaimonType.CDM.equals(d.getDaimonType()))
+                .map(SourceDaimon::getTableQualifier)
+                .findFirst()
+                .orElse(null);
       }
     }
-		return null;
+    return null;
   }
 
   public String getSourceKey() {

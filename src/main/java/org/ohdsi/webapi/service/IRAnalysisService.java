@@ -21,7 +21,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.opencsv.CSVWriter;
-import javax.ws.rs.core.HttpHeaders;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -30,6 +29,9 @@ import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.GenerationStatus;
+import org.ohdsi.webapi.check.CheckResult;
+import org.ohdsi.webapi.check.Checker;
+import org.ohdsi.webapi.check.checker.ir.IRChecker;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
@@ -37,9 +39,21 @@ import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
-import org.ohdsi.webapi.ircalc.*;
+import org.ohdsi.webapi.ircalc.AnalysisReport;
+import org.ohdsi.webapi.ircalc.ExecutionInfo;
+import org.ohdsi.webapi.ircalc.IRAnalysisInfoListener;
+import org.ohdsi.webapi.ircalc.IRAnalysisQueryBuilder;
+import org.ohdsi.webapi.ircalc.IRAnalysisTasklet;
+import org.ohdsi.webapi.ircalc.IRExecutionInfoRepository;
+import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
+import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisDetails;
+import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisExportExpression;
+import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisExpression;
+import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.prediction.PredictionAnalysis;
+import org.ohdsi.webapi.prediction.dto.PredictionAnalysisDTO;
 import org.ohdsi.webapi.service.dto.AnalysisInfoDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisShortDTO;
@@ -50,8 +64,8 @@ import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
@@ -75,11 +89,21 @@ import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -87,7 +111,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import static org.ohdsi.webapi.Constants.GENERATE_IR_ANALYSIS;
-import static org.ohdsi.webapi.Constants.Params.*;
+import static org.ohdsi.webapi.Constants.Params.ANALYSIS_ID;
+import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
+import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
@@ -143,7 +169,10 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   private DesignImportService designImportService;
 
   @Context
-  ServletContext context;
+  private ServletContext context;
+
+  @Autowired
+  private IRChecker checker;
 
   public IRAnalysisService(final ObjectMapper objectMapper) {
 
@@ -322,7 +351,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     // If there's a way to get the Entity into the persistence manager so findOne() returns this newly created entity
     // then we could create the entity here (without persist) and then call saveAnalysis within the same Tx.
     IncidenceRateAnalysis newAnalysis = new IncidenceRateAnalysis();
-    newAnalysis.setName(analysis.getName())
+    newAnalysis.setName(StringUtils.trim(analysis.getName()))
             .setDescription(analysis.getDescription());
     newAnalysis.setCreatedBy(user);
     newAnalysis.setCreatedDate(currentTime);
@@ -402,7 +431,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
     UserEntity user = userRepository.findByLogin(security.getSubject());
     IncidenceRateAnalysis updatedAnalysis = this.irAnalysisRepository.findOne(id);
-    updatedAnalysis.setName(analysis.getName())
+    updatedAnalysis.setName(StringUtils.trim(analysis.getName()))
             .setDescription(analysis.getDescription());
     updatedAnalysis.setModifiedBy(user);
     updatedAnalysis.setModifiedDate(currentTime);
@@ -426,6 +455,12 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   @Override
   @DataSourceAccess
   public JobExecutionResource performAnalysis(final int analysisId, final @SourceKey String sourceKey) {
+    IRAnalysisDTO irAnalysisDTO = getAnalysis(analysisId);
+    CheckResult checkResult = runDiagnostics(irAnalysisDTO);
+    if (checkResult.hasCriticalErrors()) {
+      throw new RuntimeException("Cannot be generated due to critical errors in design. Call 'check' service for further details");
+    }
+
     Date startTime = Calendar.getInstance().getTime();
 
     Source source = this.getSourceRepository().findBySourceKey(sourceKey);
@@ -492,11 +527,13 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   public void cancelAnalysis(int analysisId, String sourceKey) {
 
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-    jobService.cancelJobExecution(NAME, j -> {
-      JobParameters jobParameters = j.getJobParameters();
-      return Objects.equals(jobParameters.getString(ANALYSIS_ID), String.valueOf(analysisId))
-              && Objects.equals(jobParameters.getString(SOURCE_ID), String.valueOf(source.getSourceId()));
-    });
+      jobService.cancelJobExecution(j -> {
+          JobParameters jobParameters = j.getJobParameters();
+          String jobName = j.getJobInstance().getJobName();
+          return Objects.equals(jobParameters.getString(ANALYSIS_ID), String.valueOf(analysisId))
+                  && Objects.equals(jobParameters.getString(SOURCE_ID), String.valueOf(source.getSourceId()))
+                  && Objects.equals(NAME, jobName);
+      });
   }
 
   @Override
@@ -567,6 +604,12 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
     return result;
   }
+
+    @Override
+    public CheckResult runDiagnostics(IRAnalysisDTO irAnalysisDTO){
+
+        return new CheckResult(checker.check(irAnalysisDTO));
+    }
 
   @Override
   @Transactional

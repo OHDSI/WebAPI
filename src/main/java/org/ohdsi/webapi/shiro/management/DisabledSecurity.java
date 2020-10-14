@@ -49,7 +49,7 @@ public class DisabledSecurity extends Security {
   }
 
   @Override
-  public Authenticator getAuthenticator() {
+  public ModularRealmAuthenticator getAuthenticator() {
     return new ModularRealmAuthenticator();
   }
 

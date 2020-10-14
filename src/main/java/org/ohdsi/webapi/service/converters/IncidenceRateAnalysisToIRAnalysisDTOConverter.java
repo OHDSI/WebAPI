@@ -7,20 +7,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class IncidenceRateAnalysisToIRAnalysisDTOConverter extends IncidenceRateAnalysisToIRAnalysisShortDTOConverter<IRAnalysisDTO> {
-
-    public IncidenceRateAnalysisToIRAnalysisDTOConverter(GenericConversionService conversionService) {
-        super(conversionService);
-        conversionService.addConverter(this);
-    }
-
     @Override
-    protected IRAnalysisDTO newTarget() {
+    protected IRAnalysisDTO createResultObject() {
         return new IRAnalysisDTO();
     }
 
     @Override
-    protected void doConvert(IRAnalysisDTO target, IncidenceRateAnalysis source) {
-        super.doConvert(target, source);
+    protected void doConvert(IncidenceRateAnalysis source, IRAnalysisDTO target) {
+        super.doConvert(source, target);
         target.setExpression(source.getDetails() != null ? source.getDetails().getExpression() : null);
     }
 }

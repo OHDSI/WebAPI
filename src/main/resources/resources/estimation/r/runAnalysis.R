@@ -47,7 +47,6 @@ tryCatch({
                 databaseId = databaseId,
                 synthesizePositiveControls = TRUE,
                 runAnalyses = TRUE,
-                runDiagnostics = TRUE,
                 packageResults = TRUE,
                 maxCores = maxCores,
                 minCellCount = 5)

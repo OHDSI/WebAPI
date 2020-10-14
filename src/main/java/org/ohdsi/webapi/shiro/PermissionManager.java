@@ -1,12 +1,14 @@
 package org.ohdsi.webapi.shiro;
 
 import com.odysseusinc.logging.event.AddUserEvent;
+import com.odysseusinc.logging.event.DeleteRoleEvent;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.subject.Subject;
 import org.ohdsi.webapi.helper.Guard;
+import org.ohdsi.webapi.security.model.UserSimpleAuthorizationInfo;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.PermissionRepository;
 import org.ohdsi.webapi.shiro.Entities.RequestStatus;
@@ -56,7 +58,7 @@ public class PermissionManager {
   @Autowired
   private ApplicationEventPublisher eventPublisher;
 
-  private ThreadLocal<ConcurrentHashMap<String, AuthorizationInfo>> authorizationInfoCache = ThreadLocal.withInitial(ConcurrentHashMap::new);
+  private ThreadLocal<ConcurrentHashMap<String, UserSimpleAuthorizationInfo>> authorizationInfoCache = ThreadLocal.withInitial(ConcurrentHashMap::new);
 
   public RoleEntity addRole(String roleName, boolean isSystem) {
     Guard.checkNotEmpty(roleName);
@@ -105,16 +107,22 @@ public class PermissionManager {
     }
   }
 
-  public AuthorizationInfo getAuthorizationInfo(final String login) {
+  public UserSimpleAuthorizationInfo getAuthorizationInfo(final String login) {
 
     return authorizationInfoCache.get().computeIfAbsent(login, newLogin -> {
-      final SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
+      final UserSimpleAuthorizationInfo info = new UserSimpleAuthorizationInfo();
 
       final UserEntity userEntity = userRepository.findByLogin(newLogin);
       if(userEntity == null) {
         throw new UnknownAccountException("Account does not exist");
       }
 
+      info.setUserId(userEntity.getId());
+      info.setLogin(userEntity.getLogin());
+
+      for (UserRoleEntity userRole: userEntity.getUserRoles()) {
+        info.addRole(userRole.getRole().getName());
+      }
       final Set<String> permissionNames = new LinkedHashSet<>();
       final Set<PermissionEntity> permissions = this.getUserPermissions(userEntity);
 
@@ -207,6 +215,7 @@ public class PermissionManager {
   }
 
   public void removeRole(Long roleId) {
+    eventPublisher.publishEvent(new DeleteRoleEvent(this, roleId));
     this.roleRepository.delete(roleId);
   }
 

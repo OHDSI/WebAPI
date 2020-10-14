@@ -15,11 +15,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
 import javax.annotation.PostConstruct;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -126,9 +122,36 @@ public class SourceService extends AbstractDaoService {
         return null;
     }
 
+    public Map<SourceDaimon.DaimonType, Source> getPriorityDaimons() {
+
+        class SourceValidator {
+            private Map<Integer, Boolean> checkedSources = new HashMap<>();
+
+            private boolean isSourceAvaialble(Source source) {
+                return checkedSources.computeIfAbsent(source.getSourceId(),
+                        v -> sourceAccessor.hasAccess(source) && connectionAvailability.computeIfAbsent(source, SourceService.this::checkConnectionSafe));
+            }
+        }
+
+        SourceValidator sourceValidator = new SourceValidator();
+        Map<SourceDaimon.DaimonType, Source> priorityDaimons = new HashMap<>();
+        Arrays.asList(SourceDaimon.DaimonType.values()).forEach(d -> {
+
+            List<Source> sources = sourceRepository.findAllSortedByDiamonPrioirty(d);
+            Optional<Source> source = sources.stream().filter(sourceValidator::isSourceAvaialble)
+                    .findFirst();
+            source.ifPresent(s -> priorityDaimons.put(d, s));
+        });
+        return priorityDaimons;
+    }
+
     public Source getPriorityVocabularySource() {
 
         return getPrioritySourceForDaimon(SourceDaimon.DaimonType.Vocabulary);
+    }
+
+    public SourceInfo getPriorityVocabularySourceInfo() {
+        return new SourceInfo(getPrioritySourceForDaimon(SourceDaimon.DaimonType.Vocabulary));
     }
 
     public void invalidateCache() {

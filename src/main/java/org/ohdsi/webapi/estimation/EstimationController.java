@@ -1,7 +1,11 @@
 package org.ohdsi.webapi.estimation;
 
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
+import com.qmino.miredot.annotations.MireDotIgnore;
+import com.qmino.miredot.annotations.ReturnType;
 import org.ohdsi.webapi.Constants;
+import org.ohdsi.webapi.check.CheckResult;
+import org.ohdsi.webapi.check.checker.estimation.EstimationChecker;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
@@ -56,19 +60,21 @@ public class EstimationController {
   private final SourceService sourceService;
   private final ConverterUtils converterUtils;
   private final ScriptExecutionService executionService;
+  private EstimationChecker checker;
 
   public EstimationController(EstimationService service,
                               GenericConversionService conversionService,
                               CommonGenerationSensitiveInfoService sensitiveInfoService,
                               SourceService sourceService,
                               ConverterUtils converterUtils,
-                              ScriptExecutionService executionService) {
+                              ScriptExecutionService executionService, EstimationChecker checker) {
     this.service = service;
     this.conversionService = conversionService;
     this.sensitiveInfoService = sensitiveInfoService;
     this.sourceService = sourceService;
     this.converterUtils = converterUtils;
     this.executionService = executionService;
+    this.checker = checker;
   }
 
   @GET
@@ -104,7 +110,7 @@ public class EstimationController {
   public EstimationDTO createEstimation(Estimation est) throws Exception {
 
     Estimation estWithId = service.createEstimation(est);
-    return conversionService.convert(estWithId, EstimationDTO.class);
+    return reloadAndConvert(estWithId.getId());
   }
 
   @PUT
@@ -113,8 +119,8 @@ public class EstimationController {
   @Consumes(MediaType.APPLICATION_JSON)
   public EstimationDTO updateEstimation(@PathParam("id") final int id, Estimation est) throws Exception {
 
-    Estimation updatedEst = service.updateEstimation(id, est);
-    return conversionService.convert(updatedEst, EstimationDTO.class);
+    service.updateEstimation(id, est);
+    return reloadAndConvert(id);
   }
 
   @GET
@@ -124,7 +130,7 @@ public class EstimationController {
   public EstimationDTO copy(@PathParam("id") final int id) throws Exception {
 
     Estimation est = service.copy(id);
-    return conversionService.convert(est, EstimationDTO.class);
+    return reloadAndConvert(est.getId());
   }
 
   @GET
@@ -140,6 +146,7 @@ public class EstimationController {
   @GET
   @Path("{id}/export")
   @Produces(MediaType.APPLICATION_JSON)
+  @ReturnType("java.lang.Object")
   public EstimationAnalysisImpl exportAnalysis(@PathParam("id") int id) {
 
     Estimation estimation = service.getAnalysis(id);
@@ -155,6 +162,7 @@ public class EstimationController {
   @Path("import")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
+  @MireDotIgnore // @BodyType("java.lang.Object") doesn't fix the issue
   public EstimationDTO importAnalysis(EstimationAnalysisImpl analysis) throws Exception {
 
       if (Objects.isNull(analysis)) {
@@ -162,8 +170,8 @@ public class EstimationController {
           throw new InternalServerErrorException();
       }
       Estimation importedEstimation = service.importAnalysis(analysis);
-      return conversionService.convert(importedEstimation, EstimationDTO.class);
-  }  
+      return reloadAndConvert(importedEstimation.getId());
+  }
 
   /**
    * Download an R package to execute the estimation study
@@ -202,6 +210,11 @@ public class EstimationController {
 
     Estimation analysis = service.getAnalysis(analysisId);
     ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format(NO_ESTIMATION_MESSAGE, analysisId));
+    EstimationDTO estimationDTO = conversionService.convert(analysis, EstimationDTO.class);
+    CheckResult checkResult = runDiagnostics(estimationDTO);
+    if (checkResult.hasCriticalErrors()) {
+      throw new RuntimeException("Cannot be generated due to critical errors in design. Call 'check' service for further details");
+    }
     return service.runGeneration(analysis, sourceKey);
   }
 
@@ -237,4 +250,19 @@ public class EstimationController {
             .header("Content-Disposition", "attachment; filename=\"" + archive.getName() + "\"")
             .build();
   }
+
+    private EstimationDTO reloadAndConvert(Integer id) {
+        // Before conversion entity must be refreshed to apply entity graphs
+        Estimation estimation = service.getById(id);
+        return conversionService.convert(estimation, EstimationDTO.class);
+    }
+
+    @POST
+    @Path("/check")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public CheckResult runDiagnostics(EstimationDTO estimationDTO){
+
+        return new CheckResult(this.checker.check(estimationDTO));
+    }
 }

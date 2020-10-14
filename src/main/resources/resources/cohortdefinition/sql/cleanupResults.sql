@@ -1,8 +1,4 @@
 delete from @results_database_schema.cohort where cohort_definition_id = @cohort_definition_id;
-delete from @results_database_schema.cohort_features where cohort_definition_id = @cohort_definition_id;
-delete from @results_database_schema.cohort_features_analysis_ref where cohort_definition_id = @cohort_definition_id;
-delete from @results_database_schema.cohort_features_dist where cohort_definition_id = @cohort_definition_id;
-delete from @results_database_schema.cohort_features_ref where cohort_definition_id = @cohort_definition_id;
 delete from @results_database_schema.cohort_inclusion where cohort_definition_id = @cohort_definition_id;
 delete from @results_database_schema.cohort_inclusion_result where cohort_definition_id = @cohort_definition_id;
 delete from @results_database_schema.cohort_inclusion_stats where cohort_definition_id = @cohort_definition_id;

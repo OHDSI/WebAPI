@@ -16,7 +16,9 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
+import org.springframework.stereotype.Component;
 
+@Component
 public class CDMResultsAnalysisRunner {
 
     private static final String BASE_SQL_PATH = "/resources/cdmresults/sql";
@@ -31,7 +33,8 @@ public class CDMResultsAnalysisRunner {
     private String sourceDialect;
     private ObjectMapper objectMapper;
 
-    public CDMResultsAnalysisRunner(String sourceDialect, ObjectMapper objectMapper) {
+
+    public void init(String sourceDialect, ObjectMapper objectMapper) {
 
         this.sourceDialect = sourceDialect;
         this.objectMapper = objectMapper;
@@ -160,6 +163,88 @@ public class CDMResultsAnalysisRunner {
             cdmDeath.setAgeAtDeath(jdbcTemplate.query(ageAtDeathSql.getSql(), ageAtDeathSql.getSetter(), new ConceptQuartileMapper()));
         }
         return cdmDeath;
+    }
+
+    public CDMObservationPeriod getObservationPeriodResults(JdbcTemplate jdbcTemplate, Source source) {
+        CDMObservationPeriod obsPeriod = new CDMObservationPeriod();
+        PreparedStatementRenderer ageAtFirstSql = renderTranslateSql(
+                BASE_SQL_PATH + "/report/observationperiod/ageatfirst.sql", source);
+        if (ageAtFirstSql != null) {
+            obsPeriod.setAgeAtFirst(jdbcTemplate.query(ageAtFirstSql.getSql(), ageAtFirstSql.getSetter(),
+                    new ConceptDistributionMapper()));
+        }
+
+        PreparedStatementRenderer obsLengthSql = renderTranslateSql(
+                BASE_SQL_PATH + "/report/observationperiod/observationlength_data.sql", source);
+        if (obsLengthSql != null) {
+            obsPeriod.setObservationLength(jdbcTemplate.query(obsLengthSql.getSql(), obsLengthSql.getSetter(),
+                    new ConceptDistributionMapper()));
+        }
+
+        PreparedStatementRenderer obsLengthStatsSql = renderTranslateSql(
+                BASE_SQL_PATH + "/report/observationperiod/observationlength_stats.sql", source);
+        if (obsLengthStatsSql != null) {
+            obsPeriod.setObservationLengthStats(jdbcTemplate.query(obsLengthStatsSql.getSql(),
+                    obsLengthStatsSql.getSetter(), new CohortStatsMapper()));
+        }
+
+        PreparedStatementRenderer obsYearStatsSql = renderTranslateSql(
+                BASE_SQL_PATH + "/report/observationperiod/observedbyyear_stats.sql",
+                source);
+        if (obsYearStatsSql != null) {
+            obsPeriod.setPersonsWithContinuousObservationsByYearStats(jdbcTemplate.query(obsYearStatsSql.getSql(),
+                    obsYearStatsSql.getSetter(), new CohortStatsMapper()));
+        }
+
+        PreparedStatementRenderer personsWithContObsSql = renderTranslateSql(
+                BASE_SQL_PATH + "/report/observationperiod/observedbyyear_data.sql", source);
+        if (personsWithContObsSql != null) {
+            obsPeriod.setPersonsWithContinuousObservationsByYear(jdbcTemplate.query(personsWithContObsSql.getSql(),
+                    personsWithContObsSql.getSetter(), new ConceptDistributionMapper()));
+        }
+
+        PreparedStatementRenderer ageByGenderSql = renderTranslateSql(
+                BASE_SQL_PATH + "/report/observationperiod/agebygender.sql", source);
+        if (ageByGenderSql != null) {
+            obsPeriod.setAgeByGender(jdbcTemplate.query(ageByGenderSql.getSql(), ageByGenderSql.getSetter(),
+                    new ConceptQuartileMapper()));
+        }
+
+        PreparedStatementRenderer durationByGenderSql = renderTranslateSql(
+                BASE_SQL_PATH + "/report/observationperiod/observationlengthbygender.sql", source);
+        if (durationByGenderSql != null) {
+            obsPeriod.setDurationByGender(jdbcTemplate.query(durationByGenderSql.getSql(), durationByGenderSql.getSetter(),
+                    new ConceptQuartileMapper()));
+        }
+
+        PreparedStatementRenderer durationByAgeSql = renderTranslateSql(
+                BASE_SQL_PATH + "/report/observationperiod/observationlengthbyage.sql", source);
+        if (durationByAgeSql != null) {
+            obsPeriod.setDurationByAgeDecile(jdbcTemplate.query(durationByAgeSql.getSql(), durationByAgeSql.getSetter(),
+                    new ConceptQuartileMapper()));
+        }
+
+        PreparedStatementRenderer cumulObsSql = renderTranslateSql(
+                BASE_SQL_PATH + "/report/observationperiod/cumulativeduration.sql", source);
+        if (cumulObsSql != null) {
+            obsPeriod.setCumulativeObservation(jdbcTemplate.query(cumulObsSql.getSql(), cumulObsSql.getSetter(),
+                    new CumulativeObservationMapper()));
+        }
+
+        PreparedStatementRenderer obsByMonthSql = renderTranslateSql(
+                BASE_SQL_PATH + "/report/observationperiod/observedbymonth.sql", source);
+        if (obsByMonthSql != null) {
+            obsPeriod.setObservedByMonth(jdbcTemplate.query(obsByMonthSql.getSql(), obsByMonthSql.getSetter(),
+                    new MonthObservationMapper()));
+        }
+
+        PreparedStatementRenderer obsPeriodsPerPersonSql = renderTranslateSql(
+                BASE_SQL_PATH + "/report/observationperiod/periodsperperson.sql", source);
+        if (obsPeriodsPerPersonSql != null) {
+            obsPeriod.setObservationPeriodsPerPerson(jdbcTemplate.query(obsPeriodsPerPersonSql.getSql(),
+                    obsPeriodsPerPersonSql.getSetter(), new ConceptCountMapper()));
+        }
+        return obsPeriod;
     }
 
     private PreparedStatementRenderer renderTranslateSql(String sqlPath, Source source) {

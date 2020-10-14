@@ -1,6 +1,21 @@
 package org.ohdsi.webapi.shiro.filters;
 
+import static org.ohdsi.webapi.shiro.management.AtlasSecurity.PERMISSIONS_ATTRIBUTE;
+import static org.ohdsi.webapi.shiro.management.AtlasSecurity.TOKEN_ATTRIBUTE;
+
 import io.buji.pac4j.subject.Pac4jPrincipal;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.Principal;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Set;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.ws.rs.core.UriBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.session.Session;
@@ -12,22 +27,6 @@ import org.ohdsi.webapi.shiro.Entities.UserPrincipal;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.TokenManager;
 import org.ohdsi.webapi.util.UserUtils;
-
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.ws.rs.core.UriBuilder;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.Principal;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Set;
-
-import static org.ohdsi.webapi.shiro.management.AtlasSecurity.PERMISSIONS_ATTRIBUTE;
-import static org.ohdsi.webapi.shiro.management.AtlasSecurity.TOKEN_ATTRIBUTE;
 
 /**
  *
@@ -64,12 +63,7 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
     final PrincipalCollection principals = SecurityUtils.getSubject().getPrincipals();
     Object principal = principals.getPrimaryPrincipal();
     
-    if (principal instanceof Principal) {
-      login = ((Principal) principal).getName();
-    } else if (principal instanceof UserPrincipal){
-      login = ((UserPrincipal) principal).getUsername();
-      name = ((UserPrincipal) principal).getName();
-    } else if (principal instanceof Pac4jPrincipal) {
+    if (principal instanceof Pac4jPrincipal) {
       login = ((Pac4jPrincipal)principal).getProfile().getEmail();
       name = ((Pac4jPrincipal)principal).getProfile().getDisplayName();
       
@@ -98,6 +92,11 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
         httpResponse.sendRedirect(oauthFailURI.toString());
         return false;
       }
+    } else     if (principal instanceof Principal) {
+      login = ((Principal) principal).getName();
+    } else if (principal instanceof UserPrincipal){
+      login = ((UserPrincipal) principal).getUsername();
+      name = ((UserPrincipal) principal).getName();
     } else if (principal instanceof String) {
       login = (String)principal;
     } else {

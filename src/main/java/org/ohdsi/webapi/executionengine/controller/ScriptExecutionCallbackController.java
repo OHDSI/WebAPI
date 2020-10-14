@@ -18,9 +18,11 @@ import org.ohdsi.webapi.executionengine.repository.AnalysisExecutionRepository;
 import org.ohdsi.webapi.executionengine.repository.AnalysisResultFileContentRepository;
 import org.ohdsi.webapi.executionengine.repository.ExecutionEngineGenerationRepository;
 import org.ohdsi.webapi.executionengine.service.AnalysisResultFileContentSensitiveInfoService;
+import org.ohdsi.webapi.executionengine.service.AnalysisZipRepackService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,16 +53,23 @@ public class ScriptExecutionCallbackController {
 
     private final AnalysisResultFileContentSensitiveInfoService sensitiveInfoService;
 
+    private final AnalysisZipRepackService analysisZipRepackService;
+
+    @Value("${analysis.result.zipVolumeSizeMb}")
+    private int zipVolumeSizeMb;
+
     @Autowired
     public ScriptExecutionCallbackController(ExecutionEngineGenerationRepository executionEngineGenerationRepository,
                                              AnalysisExecutionRepository analysisExecutionRepository,
                                              AnalysisResultFileContentRepository analysisResultFileContentRepository,
-                                             AnalysisResultFileContentSensitiveInfoService sensitiveInfoService) {
+                                             AnalysisResultFileContentSensitiveInfoService sensitiveInfoService,
+                                             AnalysisZipRepackService analysisZipRepackService) {
 
         this.executionEngineGenerationRepository = executionEngineGenerationRepository;
         this.analysisExecutionRepository = analysisExecutionRepository;
         this.analysisResultFileContentRepository = analysisResultFileContentRepository;
         this.sensitiveInfoService = sensitiveInfoService;
+        this.analysisZipRepackService = analysisZipRepackService;
     }
 
     @Path(value = "submission/{id}/status/update/{password}")
@@ -114,7 +123,8 @@ public class ScriptExecutionCallbackController {
             analysisExecutionRepository.saveAndFlush(analysisExecution);
 
             try {
-                saveFiles(multiPart, analysisExecution, analysisResultDTO);
+                processAndSaveAnalysisResultFiles(multiPart, analysisExecution, analysisResultDTO);
+
             }catch (Exception e){
                 log.warn("Failed to save files for execution ID:{}", id, e);
             }
@@ -123,7 +133,7 @@ public class ScriptExecutionCallbackController {
         }
     }
 
-    private Iterable<AnalysisResultFileContent> saveFiles(
+    private void processAndSaveAnalysisResultFiles(
             FormDataMultiPart multiPart,
             ExecutionEngineAnalysisStatus analysisExecution,
             AnalysisResultDTO analysisResultDTO) {
@@ -163,7 +173,10 @@ public class ScriptExecutionCallbackController {
         // We have to filter all files for current execution because of possibility of archives split into volumes
         // Volumes will be removed during decompressing and compressing
         contentList = sensitiveInfoService.filterSensitiveInfo(contentList, variables);
-        return analysisResultFileContentRepository.save(contentList.getFiles());
+
+        List<AnalysisResultFileContent> analysisRepackResult = analysisZipRepackService.process(contentList.getFiles(), zipVolumeSizeMb);
+        analysisResultFileContentRepository.save(analysisRepackResult);
+
     }
 
 }

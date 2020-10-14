@@ -7,6 +7,7 @@ import java.util.List;
 public class GenerationResults {
     private List<Report> reports;
     private Float prevalenceThreshold;
+    private Boolean showEmptyResults;
     private int count;
 
     public List<Report> getReports() {
@@ -33,5 +34,13 @@ public class GenerationResults {
 
     public int getCount() {
         return count;
+    }
+
+    public Boolean getShowEmptyResults() {
+        return showEmptyResults;
+    }
+
+    public void setShowEmptyResults(Boolean showEmptyResults) {
+        this.showEmptyResults = showEmptyResults;
     }
 }

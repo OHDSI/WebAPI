@@ -1,18 +1,5 @@
 package org.ohdsi.webapi.service;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.function.Predicate;
-
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobInstanceResource;
@@ -20,7 +7,12 @@ import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.job.JobUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.batch.admin.service.SearchableJobExecutionDao;
-import org.springframework.batch.core.*;
+import org.springframework.batch.core.BatchStatus;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.JobInstance;
+import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.Step;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.NoSuchJobException;
 import org.springframework.batch.core.repository.JobRepository;
@@ -36,6 +28,23 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 /**
  *
@@ -194,7 +203,7 @@ public class JobService extends AbstractDaoService {
             }
           });
       }
-      if (jobExecution.isRunning()) {
+      if (jobExecution.getEndTime() == null) {
         jobExecution.setStatus(BatchStatus.STOPPING);
         jobRepository.update(jobExecution);
       }
@@ -223,8 +232,8 @@ public class JobService extends AbstractDaoService {
   }
 
   @Transactional
-  public void cancelJobExecution(String jobName, Predicate<? super JobExecution> filterPredicate) {
-    jobExplorer.findRunningJobExecutions(jobName).stream()
+  public void cancelJobExecution(Predicate<? super JobExecution> filterPredicate) {
+      jobExecutionDao.getRunningJobExecutions().stream()
             .filter(filterPredicate)
             .findFirst()
             .ifPresent(jobExecution -> {

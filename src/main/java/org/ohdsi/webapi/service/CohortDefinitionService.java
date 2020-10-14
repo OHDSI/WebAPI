@@ -101,6 +101,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.ws.rs.core.Response.ResponseBuilder;
 
 import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
@@ -692,27 +693,43 @@ public class CohortDefinitionService extends AbstractDaoService {
 
 	@POST
 	@Path("/printfriendly/cohort")
-	@Produces(MediaType.TEXT_HTML)
 	@Consumes(MediaType.APPLICATION_JSON)
-	public String cohortPrintFriendly(CohortExpression expression) {
+	public Response cohortPrintFriendly(CohortExpression expression, @DefaultValue("html") @QueryParam("format") String format) {
 		String markdown = markdownPF.renderCohort(expression);
-		Parser parser = Parser.builder().extensions(extensions).build();
-		Node document = parser.parse(markdown);
-		HtmlRenderer renderer = HtmlRenderer.builder().extensions(extensions).build();
-		String html = renderer.render(document);
-		return html;
+		ResponseBuilder res;
+		if ("html".equalsIgnoreCase(format)) {
+			Parser parser = Parser.builder().extensions(extensions).build();
+			Node document = parser.parse(markdown);
+			HtmlRenderer renderer = HtmlRenderer.builder().extensions(extensions).build();
+			String html = renderer.render(document);
+			res = Response.ok(html, MediaType.TEXT_HTML);
+			
+		} else if ("markdown".equals(format)) {
+			res = Response.ok(markdown, MediaType.TEXT_PLAIN);
+		} else {
+			res = Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE);
+		}
+		return res.build();
 	}
 
 	@POST
 	@Path("/printfriendly/conceptsets")
-	@Produces(MediaType.TEXT_HTML)
 	@Consumes(MediaType.APPLICATION_JSON)
-	public String conceptSetListPrintFriendly(List<ConceptSet> conceptSetList) {
+	public Response conceptSetListPrintFriendly(List<ConceptSet> conceptSetList, @DefaultValue("html") @QueryParam("format") String format) {
 		String markdown = markdownPF.renderConceptSetList(conceptSetList.toArray(new ConceptSet[0]));
-		Parser parser = Parser.builder().extensions(extensions).build();
-		Node document = parser.parse(markdown);
-		HtmlRenderer renderer = HtmlRenderer.builder().extensions(extensions).build();
-		String html = renderer.render(document);
-		return html;
+		ResponseBuilder res;
+		if ("html".equalsIgnoreCase(format)) {
+			Parser parser = Parser.builder().extensions(extensions).build();
+			Node document = parser.parse(markdown);
+			HtmlRenderer renderer = HtmlRenderer.builder().extensions(extensions).build();
+			String html = renderer.render(document);
+			res = Response.ok(html, MediaType.TEXT_HTML);
+			
+		} else if ("markdown".equals(format)) {
+			res = Response.ok(markdown, MediaType.TEXT_PLAIN);
+		} else {
+			res = Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE);
+		}
+		return res.build();
 	}
 }

@@ -689,7 +689,6 @@
       <artifactId>waffle-shiro</artifactId>
       <version>2.2.1</version>
     </dependency>
-
     <dependency>
       <groupId>com.github.waffle</groupId>
       <artifactId>waffle-jna</artifactId>
@@ -922,6 +921,21 @@
       <groupId>com.qmino</groupId>
       <artifactId>miredot-annotations</artifactId>
       <version>1.5.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.atlassian.commonmark</groupId>
+      <artifactId>commonmark</artifactId>
+      <version>0.15.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.freemarker</groupId>
+      <artifactId>freemarker</artifactId>
+      <version>2.3.30</version>
+    </dependency>
+    <dependency>
+      <groupId>com.atlassian.commonmark</groupId>
+      <artifactId>commonmark-ext-gfm-tables</artifactId>
+      <version>0.15.2</version>
     </dependency>
     <dependency>
       <groupId>com.opentable.components</groupId>

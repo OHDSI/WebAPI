@@ -12,6 +12,7 @@ import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.shiro.filters.CorsFilter;
 import org.ohdsi.webapi.shiro.filters.HideResourceFilter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +24,7 @@ import static org.ohdsi.webapi.shiro.management.FilterTemplates.*;
 @Component
 @Primary
 @ConditionalOnProperty(name = "security.provider", havingValue = Constants.SecurityProviders.DISABLED)
+@DependsOn("flyway")
 public class DisabledSecurity extends Security {
 
   @Override

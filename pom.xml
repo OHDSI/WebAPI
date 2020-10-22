@@ -225,8 +225,8 @@
     <!-- Cache Config -->
     <spring.cache.jcache.config>classpath:config/ehcache.xml</spring.cache.jcache.config>
     <cdm.result.cache.warming.enable>true</cdm.result.cache.warming.enable>
-    <cache.generation.invalidAfterDays>7</cache.generation.invalidAfterDays>
-    <cache.generation.cleanupInterval>60000</cache.generation.cleanupInterval>
+    <cache.generation.invalidAfterDays>30</cache.generation.invalidAfterDays>
+    <cache.generation.cleanupInterval>3600000</cache.generation.cleanupInterval>
     <cache.generation.useAsync>false</cache.generation.useAsync>
     <!-- Period in milliseconds between running checks to detect freshness of cached data -->
     <cache.inspection.period>3600000</cache.inspection.period>

@@ -620,6 +620,24 @@ public class VocabularyService extends AbstractDaoService {
 
     return concepts.values();
   }
+
+  @GET
+  @Path("{sourceKey}/concept/{id}/ancestorAndDescendant")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Collection<RelatedConcept> getConceptAncestorAndDescendant(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id) {
+    final Map<Long, RelatedConcept> concepts = new HashMap<>();
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String sqlPath = "/resources/vocabulary/sql/getConceptAncestorAndDescendant.sql";
+    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, "CDM_schema", tqValue, "id", whitelist(id));
+    getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), (RowMapper<Void>) (resultSet, arg1) -> {
+
+      addRelationships(concepts, resultSet);
+      return null;
+    });
+
+    return concepts.values();
+  }
   
   /**
    * Returns related concepts from the default vocabulary source.

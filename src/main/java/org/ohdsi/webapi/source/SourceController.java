@@ -180,11 +180,11 @@ public class SourceController extends AbstractDaoService {
       transformIfRequired(updated);
       List<SourceDaimon> removed = source.getDaimons().stream().filter(d -> !updated.getDaimons().contains(d))
               .collect(Collectors.toList());
-      sourceDaimonRepository.delete(removed);
       updated.setModifiedBy(getCurrentUser());
       updated.setModifiedDate(new Date());
+      sourceDaimonRepository.delete(removed);
       Source result = sourceRepository.save(updated);
-        publisher.publishEvent(new ChangeDataSourceEvent(this, updated.getSourceId(), updated.getSourceName()));
+      publisher.publishEvent(new ChangeDataSourceEvent(this, updated.getSourceId(), updated.getSourceName()));
       sourceService.invalidateCache();
       return new SourceInfo(result);
     } else {

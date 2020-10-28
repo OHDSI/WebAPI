@@ -259,7 +259,7 @@ public class CohortSamplingService extends AbstractDaoService {
 				.map(el -> {
 					SampleElementDTO elementDTO = new SampleElementDTO();
 					elementDTO.setRank(el.getRank());
-					elementDTO.setPersonId(el.getPersonId());
+					elementDTO.setPersonId(String.valueOf(el.getPersonId()));
 					elementDTO.setAge(el.getAge());
 					elementDTO.setGenderConceptId(el.getGenderConceptId());
 					elementDTO.setRecordCount(el.getRecordCount());

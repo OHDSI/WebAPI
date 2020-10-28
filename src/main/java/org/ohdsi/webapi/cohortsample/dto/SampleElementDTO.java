@@ -18,7 +18,7 @@ public class SampleElementDTO {
 	/**
 	 * Person ID of the element.
 	 */
-	private long personId;
+	private String personId;
 
 	/**
 	 * Gender ID of the person.
@@ -48,11 +48,11 @@ public class SampleElementDTO {
 		this.rank = rank;
 	}
 
-	public long getPersonId() {
+	public String getPersonId() {
 		return personId;
 	}
 
-	public void setPersonId(long personId) {
+	public void setPersonId(String personId) {
 		this.personId = personId;
 	}
 

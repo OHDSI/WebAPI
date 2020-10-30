@@ -464,7 +464,7 @@ public class CohortSamplingService extends AbstractDaoService {
 			SampleElement sample = new SampleElement();
 			sample.setRank(rs.getInt("rank"));
 			sample.setSampleId(rs.getInt("cohort_sample_id"));
-			sample.setPersonId(rs.getInt("person_id"));
+			sample.setPersonId(rs.getLong("person_id"));
 			sample.setGenderConceptId(rs.getInt("gender_concept_id"));
 			sample.setAge(rs.getInt("age"));
 			if (optionalFields.contains("record_count")) {

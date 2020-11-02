@@ -1,18 +1,20 @@
 package org.ohdsi.webapi.service.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.ohdsi.webapi.user.dto.UserDTO;
 
 import java.util.Date;
 import org.ohdsi.webapi.CommonDTO;
 
 public abstract class CommonEntityDTO implements CommonDTO {
-
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   private UserDTO createdBy;
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   private UserDTO modifiedBy;
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   private Date createdDate;
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   private Date modifiedDate;
   private boolean hasWriteAccess;
 

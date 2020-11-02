@@ -63,6 +63,7 @@ import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
+import org.ohdsi.webapi.util.ExportUtils;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -467,6 +468,9 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
       final CohortCharacterizationEntity cohortCharacterizationEntity = repository.findById(id)
               .orElseThrow(() -> new IllegalArgumentException("Cohort characterization cannot be found by id: " + id));
       CohortCharacterizationImpl cc = genericConversionService.convert(cohortCharacterizationEntity, CohortCharacterizationImpl.class);
+      ExportUtils.clearCreateAndUpdateInfo(cc);
+      cc.getFeatureAnalyses().forEach(ExportUtils::clearCreateAndUpdateInfo);
+      cc.getCohorts().forEach(ExportUtils::clearCreateAndUpdateInfo);
       cc.setOrganizationName(env.getRequiredProperty("organization.name"));
       return cc;
     }

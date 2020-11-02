@@ -20,18 +20,6 @@ public class CcShortDTO extends CommonEntityDTO {
         this.id = id;
     }
 
-    @JsonFormat(pattern = CcConst.dateFormat)
-    @Override
-    public Date getCreatedDate() {
-        return super.getCreatedDate();
-    }
-
-    @JsonFormat(pattern = CcConst.dateFormat)
-    @Override
-    public Date getModifiedDate() {
-        return super.getModifiedDate();
-    }
-
     public Integer getHashCode() {
         return hashCode;
     }

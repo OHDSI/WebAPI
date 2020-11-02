@@ -30,7 +30,6 @@ import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.check.CheckResult;
-import org.ohdsi.webapi.check.Checker;
 import org.ohdsi.webapi.check.checker.ir.IRChecker;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
@@ -52,8 +51,6 @@ import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisExpression;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
-import org.ohdsi.webapi.prediction.PredictionAnalysis;
-import org.ohdsi.webapi.prediction.dto.PredictionAnalysisDTO;
 import org.ohdsi.webapi.service.dto.AnalysisInfoDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisShortDTO;
@@ -66,6 +63,7 @@ import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceService;
+import org.ohdsi.webapi.util.ExportUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
@@ -414,6 +412,8 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
           // lists of their ids
           fillCohorts(expression.outcomeIds, expression.outcomeCohorts);
           fillCohorts(expression.targetIds, expression.targetCohorts);
+          expression.outcomeCohorts.forEach(ExportUtils::clearCreateAndUpdateInfo);
+          expression.targetCohorts.forEach(ExportUtils::clearCreateAndUpdateInfo);
 
           String strExpression = objectMapper.writeValueAsString(expression);
           analysis.getDetails().setExpression(strExpression);
@@ -421,7 +421,10 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
           log.error("Error converting expression to object", e);
           throw new InternalServerErrorException();
       }
-      return conversionService.convert(analysis, IRAnalysisDTO.class);
+      IRAnalysisDTO irAnalysisDTO = conversionService.convert(analysis, IRAnalysisDTO.class);
+      ExportUtils.clearCreateAndUpdateInfo(irAnalysisDTO);
+
+      return irAnalysisDTO;
     }
 
     @Override

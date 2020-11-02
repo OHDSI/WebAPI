@@ -14,20 +14,20 @@ FROM (
 		num.count_value AS num_count_value,
 		denom.count_value AS denom_count_value
 	FROM (
-		SELECT stratum_1. stratum_2, stratum_3, stratum_4, count_value
+		SELECT stratum_1, stratum_2, stratum_3, stratum_4, count_value
 		FROM @ohdsi_database_schema.heracles_results
 		WHERE analysis_id = 204
 			AND stratum_3 IN ('8507', '8532')
 			and cohort_definition_id = @cohortDefinitionId
-		GROUP BY stratum_1. stratum_2, stratum_3, stratum_4, count_value
+		GROUP BY stratum_1, stratum_2, stratum_3, stratum_4, count_value
 		) num
 	INNER JOIN (
-		SELECT stratum_1. stratum_2, stratum_3, count_value
+		SELECT stratum_1, stratum_2, stratum_3, count_value
 		FROM @ohdsi_database_schema.heracles_results
 		WHERE analysis_id = 116
 			AND stratum_2 IN ('8507', '8532')
 			and cohort_definition_id = @cohortDefinitionId
-		GROUP BY stratum_1. stratum_2, stratum_3, count_value
+		GROUP BY stratum_1, stratum_2, stratum_3, count_value
 		) denom ON num.stratum_2 = denom.stratum_1
 			AND num.stratum_3 = denom.stratum_2
 			AND num.stratum_4 = denom.stratum_3

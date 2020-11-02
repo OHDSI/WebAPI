@@ -20,13 +20,15 @@ public class FeatureAnalysisAggregateToDTOConverter extends BaseConvertionServic
   protected void convert(FeatureAnalysisAggregate source, FeAnalysisAggregateDTO dto) {
 
     if (source instanceof FeAnalysisAggregateEntity) {
-      dto.setId(((FeAnalysisAggregateEntity)source).getId());
+      dto.setId(source.getId());
     }
     dto.setDomain((StandardFeatureAnalysisDomain) source.getDomain());
     dto.setName(source.getName());
     dto.setExpression(source.getExpression());
     dto.setFunction(source.getFunction());
-    dto.setQuery(source.getQuery());
+    dto.setJoinTable(source.getJoinTable());
+    dto.setJoinType(source.getJoinType());
+    dto.setJoinCondition(source.getJoinCondition());
     if (source instanceof FeAnalysisAggregateEntity) {
       dto.setDefault(((FeAnalysisAggregateEntity) source).isDefault());
     }

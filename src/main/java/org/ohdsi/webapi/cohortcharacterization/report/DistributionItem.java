@@ -44,6 +44,7 @@ public class DistributionItem extends PrevalenceItem<DistributionItem> {
         values.add(String.valueOf(this.getCovariateId()));
         values.add(this.getCovariateName());
         values.add(this.getCovariateShortName());
+        values.add(this.aggregateName);
         values.add(String.valueOf(this.count));
         values.add(String.valueOf(this.avg));
         values.add(String.valueOf(this.stdDev));

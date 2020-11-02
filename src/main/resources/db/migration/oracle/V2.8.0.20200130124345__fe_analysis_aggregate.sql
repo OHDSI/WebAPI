@@ -1,168 +1,179 @@
-CREATE SEQUENCE ${ohdsiSchema}.fe_aggregate_sequence START WITH 1;
+CREATE SEQUENCE ${ohdsiSchema}.fe_aggregate_sequence;
 
 CREATE TABLE ${ohdsiSchema}.fe_analysis_aggregate(
-  id INTEGER NOT NULL,
-  name VARCHAR(255) NOT NULL,
-  domain VARCHAR(64),
-  agg_function VARCHAR(64),
+  id INTEGER,
+  name VARCHAR2(255) NOT NULL,
+  domain VARCHAR2(255),
+  agg_function VARCHAR2(255),
+  criteria_columns VARCHAR2(255),
   expression CLOB,
-  agg_query CLOB,
-  is_default NUMBER(1) DEFAULT 0,
+  join_table VARCHAR2(255),
+  join_type VARCHAR2(255),
+  join_condition CLOB,
+  is_default SMALLINT,
   CONSTRAINT pk_fe_aggregate PRIMARY KEY(id)
 );
 
 ALTER TABLE ${ohdsiSchema}.fe_analysis_criteria ADD fe_aggregate_id INTEGER;
 
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Events count', null, 'COUNT', '*', null, 1);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Distinct start dates', null, 'COUNT', 'DISTINCT op.observation_period_start_date', 'join observation_period op on op.person_id = v.person_id and op.observation_period_start_date >= E.start_date and op.observation_period_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Duration', null, null, 'CASE WHEN op.observation_period_start_date = op.observation_period_end_date THEN 1 ELSE DATEDIFF(day, op.observation_period_start_date, op.observation_period_end_date) END', 'join observation_period op on op.person_id = v.person_id and op.observation_period_start_date >= E.start_date and op.observation_period_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Duration (max)', null, 'MAX', 'CASE WHEN op.observation_period_start_date = op.observation_period_end_date THEN 1 ELSE DATEDIFF(day, op.observation_period_start_date, op.observation_period_end_date) END', 'join observation_period op on op.person_id = v.person_id and op.observation_period_start_date >= E.start_date and op.observation_period_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Duration (min)', null, 'MIN', 'CASE WHEN op.observation_period_start_date = op.observation_period_end_date THEN 1 ELSE DATEDIFF(day, op.observation_period_start_date, op.observation_period_end_date) END', 'join observation_period op on op.person_id = v.person_id and op.observation_period_start_date >= E.start_date and op.observation_period_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Duration (average)', null, 'AVG', 'CASE WHEN op.observation_period_start_date = op.observation_period_end_date THEN 1 ELSE DATEDIFF(day, op.observation_period_start_date, op.observation_period_end_date) END', 'join observation_period op on op.person_id = v.person_id and op.observation_period_start_date >= E.start_date and op.observation_period_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Value as number', 'MEASUREMENT', null, 'm.value_as_number', 'join measurement m on m.person_id = v.person_id and m.measurement_date between E.start_date and E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Value as number (max)', 'MEASUREMENT', 'MAX', 'm.value_as_number', 'join measurement m on m.person_id = v.person_id and m.measurement_date between E.start_date and E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Value as number (min)', 'MEASUREMENT', 'MIN', 'm.value_as_number', 'join measurement m on m.person_id = v.person_id and m.measurement_date between E.start_date and E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Value as number (average)', 'MEASUREMENT', 'AVG', 'm.value_as_number', 'join measurement m on m.person_id = v.person_id and m.measurement_date between E.start_date and E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Range high', 'MEASUREMENT', null, 'm.range_high', 'join measurement m on m.person_id = v.person_id and m.measurement_date between E.start_date and E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Range high (max)', 'MEASUREMENT', 'MAX', 'm.range_high', 'join measurement m on m.person_id = v.person_id and m.measurement_date between E.start_date and E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Range high (min)', 'MEASUREMENT', 'MIN', 'm.range_high', 'join measurement m on m.person_id = v.person_id and m.measurement_date between E.start_date and E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Range high (average)', 'MEASUREMENT', 'AVG', 'm.range_high', 'join measurement m on m.person_id = v.person_id and m.measurement_date between E.start_date and E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Range low', 'MEASUREMENT', null, 'm.range_low', 'join measurement m on m.person_id = v.person_id and m.measurement_date between E.start_date and E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Range low (max)', 'MEASUREMENT', 'MAX', 'm.range_low', 'join measurement m on m.person_id = v.person_id and m.measurement_date between E.start_date and E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Range low (min)', 'MEASUREMENT', 'MIN', 'm.range_low', 'join measurement m on m.person_id = v.person_id and m.measurement_date between E.start_date and E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Range low (average)', 'MEASUREMENT', 'AVG', 'm.range_low', 'join measurement m on m.person_id = v.person_id and m.measurement_date between E.start_date and E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Visit counts per person', 'VISIT', 'COUNT', '*', 'join visit_occurrence vo on vo.person_id = v.person_id and vo.visit_start_date >= E.start_date and vo.visit_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Visit duration per person (average)', 'VISIT', 'AVG', 'CASE WHEN vo.visit_start_date = vo.visit_end_date THEN 1 ELSE DATEDIFF(day, vo.visit_start_date, vo.visit_end_date) END', 'join visit_occurrence vo on vo.person_id = v.person_id and vo.visit_start_date >= E.start_date and vo.visit_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Visit duration per person (max)', 'VISIT', 'MAX', 'CASE WHEN vo.visit_start_date = vo.visit_end_date THEN 1 ELSE DATEDIFF(day, vo.visit_start_date, vo.visit_end_date) END', 'join visit_occurrence vo on vo.person_id = v.person_id and vo.visit_start_date >= E.start_date and vo.visit_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Visit duration per person (min)', 'VISIT', 'MIN', 'CASE WHEN vo.visit_start_date = vo.visit_end_date THEN 1 ELSE DATEDIFF(day, vo.visit_start_date, vo.visit_end_date) END', 'join visit_occurrence vo on vo.person_id = v.person_id and vo.visit_start_date >= E.start_date and vo.visit_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Visit duration per person', 'VISIT', null, 'CASE WHEN vo.visit_start_date = vo.visit_end_date THEN 1 ELSE DATEDIFF(day, vo.visit_start_date, vo.visit_end_date) END', 'join visit_occurrence vo on vo.person_id = v.person_id and vo.visit_start_date >= E.start_date and vo.visit_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Number of Outpatient visits per person', 'VISIT', 'COUNT', '*', 'join visit_occurrence vo on vo.person_id = v.person_id and vo.visit_start_date >= E.start_date and vo.visit_end_date <= E.end_date and vo.visit_concept_id = 9202', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Number of Inpatient visits per person', 'VISIT', 'COUNT', '*', 'join visit_occurrence vo on vo.person_id = v.person_id and vo.visit_start_date >= E.start_date and vo.visit_end_date <= E.end_date and vo.visit_concept_id = 9201', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Distinct drug concepts per person', 'DRUG', 'COUNT', 'DISTINCT drug_concept_id', 'join drug_exposure de on de.person_id = v.person_id and de.drug_exposure_start_date >= E.start_date and de.drug_exposure_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Refills', 'DRUG', null, 'de.refills', 'join drug_exposure de on de.person_id = v.person_id and de.drug_exposure_start_date >= E.start_date and de.drug_exposure_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Refills (max)', 'DRUG', 'MAX', 'de.refills', 'join drug_exposure de on de.person_id = v.person_id and de.drug_exposure_start_date >= E.start_date and de.drug_exposure_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Refills (min)', 'DRUG', 'MIN', 'de.refills', 'join drug_exposure de on de.person_id = v.person_id and de.drug_exposure_start_date >= E.start_date and de.drug_exposure_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Refills (average)', 'DRUG', 'AVG', 'de.refills', 'join drug_exposure de on de.person_id = v.person_id and de.drug_exposure_start_date >= E.start_date and de.drug_exposure_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Quantity', 'DRUG', null, 'de.quantity', 'join drug_exposure de on de.person_id = v.person_id and de.drug_exposure_start_date >= E.start_date and de.drug_exposure_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Quantity (max)', 'DRUG', 'MAX', 'de.quantity', 'join drug_exposure de on de.person_id = v.person_id and de.drug_exposure_start_date >= E.start_date and de.drug_exposure_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Quantity (min)', 'DRUG', 'MIN', 'de.quantity', 'join drug_exposure de on de.person_id = v.person_id and de.drug_exposure_start_date >= E.start_date and de.drug_exposure_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Quantity (average)', 'DRUG', 'AVG', 'de.quantity', 'join drug_exposure de on de.person_id = v.person_id and de.drug_exposure_start_date >= E.start_date and de.drug_exposure_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Days supply', 'DRUG', null, 'de.days_supply', 'join drug_exposure de on de.person_id = v.person_id and de.drug_exposure_start_date >= E.start_date and de.drug_exposure_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Days supply (max)', 'DRUG', 'MAX', 'de.days_supply', 'join drug_exposure de on de.person_id = v.person_id and de.drug_exposure_start_date >= E.start_date and de.drug_exposure_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Days supply (min)', 'DRUG', 'MIN', 'de.days_supply', 'join drug_exposure de on de.person_id = v.person_id and de.drug_exposure_start_date >= E.start_date and de.drug_exposure_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Days supply (average)', 'DRUG', 'AVG', 'de.days_supply', 'join drug_exposure de on de.person_id = v.person_id and de.drug_exposure_start_date >= E.start_date and de.drug_exposure_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Length of era', 'DRUG', null, 'CASE WHEN de.drug_era_start_date = de.drug_era_end_date THEN 1 ELSE DATEDIFF(day, de.drug_era_start_date, de.drug_era_end_date) END', 'join drug_era de on de.person_id = v.person_id and de.drug_era_start_date >= E.start_date and de.drug_era_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Length of era (max)', 'DRUG', 'MAX', 'CASE WHEN de.drug_era_start_date = de.drug_era_end_date THEN 1 ELSE DATEDIFF(day, de.drug_era_start_date, de.drug_era_end_date) END', 'join drug_era de on de.person_id = v.person_id and de.drug_era_start_date >= E.start_date and de.drug_era_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Length of era (min)', 'DRUG', 'MIN', 'CASE WHEN de.drug_era_start_date = de.drug_era_end_date THEN 1 ELSE DATEDIFF(day, de.drug_era_start_date, de.drug_era_end_date) END', 'join drug_era de on de.person_id = v.person_id and de.drug_era_start_date >= E.start_date and de.drug_era_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Length of era (average)', 'DRUG', 'AVG', 'CASE WHEN de.drug_era_start_date = de.drug_era_end_date THEN 1 ELSE DATEDIFF(day, de.drug_era_start_date, de.drug_era_end_date) END', 'join drug_era de on de.person_id = v.person_id and de.drug_era_start_date >= E.start_date and de.drug_era_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Drug exposure count', 'DRUG', null, 'de.drug_exposure_count', 'join drug_era de on de.person_id = v.person_id and de.drug_era_start_date >= E.start_date and de.drug_era_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Drug exposure count (max)', 'DRUG', 'MAX', 'de.drug_exposure_count', 'join drug_era de on de.person_id = v.person_id and de.drug_era_start_date >= E.start_date and de.drug_era_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Drug exposure count (min)', 'DRUG', 'MIN', 'de.drug_exposure_count', 'join drug_era de on de.person_id = v.person_id and de.drug_era_start_date >= E.start_date and de.drug_era_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Drug exposure count (average)', 'DRUG', 'AVG', 'de.drug_exposure_count', 'join drug_era de on de.person_id = v.person_id and de.drug_era_start_date >= E.start_date and de.drug_era_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Gap days', 'DRUG', null, 'de.gap_days', 'join drug_era de on de.person_id = v.person_id and de.drug_era_start_date >= E.start_date and de.drug_era_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Gap days (max)', 'DRUG', 'MAX', 'de.gap_days', 'join drug_era de on de.person_id = v.person_id and de.drug_era_start_date >= E.start_date and de.drug_era_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Gap days (min)', 'DRUG', 'MIN', 'de.gap_days', 'join drug_era de on de.person_id = v.person_id and de.drug_era_start_date >= E.start_date and de.drug_era_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Gap days (average)', 'DRUG', 'AVG', 'de.gap_days', 'join drug_era de on de.person_id = v.person_id and de.drug_era_start_date >= E.start_date and de.drug_era_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Length of era', 'CONDITION', null, 'CASE WHEN ce.condition_era_start_date = ce.condition_era_end_date THEN 1 ELSE DATEDIFF(day, ce.condition_era_start_date, ce.condition_era_end_date) END', 'join condition_era ce on ce.person_id = v.person_id and ce.condition_era_start_date >= E.start_date and ce.condition_era_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Length of era (max)', 'CONDITION', 'MAX', 'CASE WHEN ce.condition_era_start_date = ce.condition_era_end_date THEN 1 ELSE DATEDIFF(day, ce.condition_era_start_date, ce.condition_era_end_date) END', 'join condition_era ce on ce.person_id = v.person_id and ce.condition_era_start_date >= E.start_date and ce.condition_era_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Length of era (min)', 'CONDITION', 'MIN', 'CASE WHEN ce.condition_era_start_date = ce.condition_era_end_date THEN 1 ELSE DATEDIFF(day, ce.condition_era_start_date, ce.condition_era_end_date) END', 'join condition_era ce on ce.person_id = v.person_id and ce.condition_era_start_date >= E.start_date and ce.condition_era_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Length of era (average)', 'CONDITION', 'AVG', 'CASE WHEN ce.condition_era_start_date = ce.condition_era_end_date THEN 1 ELSE DATEDIFF(day, ce.condition_era_start_date, ce.condition_era_end_date) END', 'join condition_era ce on ce.person_id = v.person_id and ce.condition_era_start_date >= E.start_date and ce.condition_era_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Condition occurrence count', 'CONDITION', null, 'ce.condition_occurrence_count', 'join condition_era ce on ce.person_id = v.person_id and ce.condition_era_start_date >= E.start_date and ce.condition_era_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Condition occurrence count (max)', 'CONDITION', 'MAX', 'ce.condition_occurrence_count', 'join condition_era ce on ce.person_id = v.person_id and ce.condition_era_start_date >= E.start_date and ce.condition_era_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Condition occurrence count (min)', 'CONDITION', 'MIN', 'ce.condition_occurrence_count', 'join condition_era ce on ce.person_id = v.person_id and ce.condition_era_start_date >= E.start_date and ce.condition_era_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Condition occurrence count (average)', 'CONDITION', 'AVG', 'ce.condition_occurrence_count', 'join condition_era ce on ce.person_id = v.person_id and ce.condition_era_start_date >= E.start_date and ce.condition_era_end_date <= E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Value as number', 'OBSERVATION', null, 'o.value_as_number', 'join observation o on o.person_id = v.person_id and o.observation_date between E.start_date and E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Value as number (max)', 'OBSERVATION', 'MAX', 'o.value_as_number', 'join observation o on o.person_id = v.person_id and o.observation_date between E.start_date and E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Value as number (min)', 'OBSERVATION', 'MIN', 'o.value_as_number', 'join observation o on o.person_id = v.person_id and o.observation_date between E.start_date and E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Value as number (average)', 'OBSERVATION', 'AVG', 'o.value_as_number', 'join observation o on o.person_id = v.person_id and o.observation_date between E.start_date and E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Quantity', 'PROCEDURE', null, 'p.quantity', 'join procedure_occurrence  p on p.person_id = v.person_id and p.procedure_date between E.start_date and E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Quantity (max)', 'PROCEDURE', 'MAX', 'p.quantity', 'join procedure_occurrence  p on p.person_id = v.person_id and p.procedure_date between E.start_date and E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Quantity (min)', 'PROCEDURE', 'MIN', 'p.quantity', 'join procedure_occurrence  p on p.person_id = v.person_id and p.procedure_date between E.start_date and E.end_date', 0);
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, expression, agg_query, is_default)
-  VALUES(${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Quantity (average)', 'PROCEDURE', 'AVG', 'p.quantity', 'join procedure_occurrence  p on p.person_id = v.person_id and p.procedure_date between E.start_date and E.end_date', 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Events count', null, 'COUNT', null, '*', null, null, null, 1);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Distinct start dates', null, 'COUNT', 'START_DATE', 'DISTINCT v.start_date', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Duration', null, null, 'DURATION', 'duration', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Duration (max)', null, 'MAX', 'DURATION', 'duration', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Duration (min)', null, 'MIN', 'DURATION', 'duration', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Duration (average)', null, 'AVG', 'DURATION', 'duration', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Value as number', 'MEASUREMENT', null, 'VALUE_AS_NUMBER', 'value_as_number', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Value as number (max)', 'MEASUREMENT', 'MAX', 'VALUE_AS_NUMBER', 'value_as_number', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Value as number (min)', 'MEASUREMENT', 'MIN', 'VALUE_AS_NUMBER', 'value_as_number', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Value as number (average)', 'MEASUREMENT', 'AVG', 'VALUE_AS_NUMBER', 'value_as_number', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Range high', 'MEASUREMENT', null, 'RANGE_HIGH', 'range_high', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Range high (max)', 'MEASUREMENT', 'MAX', 'RANGE_HIGH', 'range_high', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Range high (min)', 'MEASUREMENT', 'MIN', 'RANGE_HIGH', 'range_high', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Range high (average)', 'MEASUREMENT', 'AVG', 'RANGE_HIGH', 'range_high', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Range low', 'MEASUREMENT', null, 'RANGE_LOW', 'range_low', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Range low (max)', 'MEASUREMENT', 'MAX', 'RANGE_LOW', 'range_low', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Range low (min)', 'MEASUREMENT', 'MIN', 'RANGE_LOW', 'range_low', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Range low (average)', 'MEASUREMENT', 'AVG', 'RANGE_LOW', 'range_low', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Visit counts per person', 'VISIT', 'COUNT', null, '*', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Visit duration per person (average)', 'VISIT', 'AVG', 'DURATION', 'duration', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Visit duration per person (max)', 'VISIT', 'MAX', 'DURATION', 'duration', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Visit duration per person (min)', 'VISIT', 'MIN', 'DURATION', 'duration', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Visit duration per person', 'VISIT', null, 'DURATION', 'duration', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Number of Outpatient visits per person', 'VISIT', 'COUNT', null, '*', 'visit_occurrence vo', 'INNER_JOIN', 'vo.visit_occurrence_id = v.event_id and vo.visit_concept_id = 9202', 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Number of Inpatient visits per person', 'VISIT', 'COUNT', null, '*', 'visit_occurrence vo', 'INNER_JOIN', 'vo.visit_occurrence_id = v.event_id and vo.visit_concept_id = 9201', 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Distinct drug concepts per person', 'DRUG', 'COUNT', 'DOMAIN_CONCEPT', 'DISTINCT domain_concept', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Refills', 'DRUG', null, 'REFILLS', 'refills', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Refills (max)', 'DRUG', 'MAX', 'REFILLS', 'refills', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Refills (min)', 'DRUG', 'MIN', 'REFILLS', 'refills', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Refills (average)', 'DRUG', 'AVG', 'REFILLS', 'refills', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Quantity', 'DRUG', null, 'QUANTITY', 'quantity', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Quantity (max)', 'DRUG', 'MAX', 'QUANTITY', 'quantity', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Quantity (min)', 'DRUG', 'MIN', 'QUANTITY', 'quantity', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Quantity (average)', 'DRUG', 'AVG', 'QUANTITY', 'quantity', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Days supply', 'DRUG', null, 'DAYS_SUPPLY', 'days_supply', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Days supply (max)', 'DRUG', 'MAX', 'DAYS_SUPPLY', 'days_supply', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Days supply (min)', 'DRUG', 'MIN', 'DAYS_SUPPLY', 'days_supply', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Days supply (average)', 'DRUG', 'AVG', 'DAYS_SUPPLY', 'days_supply', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Length of era', 'DRUG_ERA', null, 'DURATION', 'duration', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Length of era (max)', 'DRUG_ERA', 'MAX', 'DURATION', 'duration', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Length of era (min)', 'DRUG_ERA', 'MIN', 'DURATION', 'duration', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Length of era (average)', 'DRUG_ERA', 'AVG', 'DURATION', 'duration', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Drug exposure count', 'DRUG_ERA', null, 'ERA_OCCURRENCES', 'era_occurrences', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Drug exposure count (max)', 'DRUG_ERA', 'MAX', 'ERA_OCCURRENCES', 'era_occurrences', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Drug exposure count (min)', 'DRUG_ERA', 'MIN', 'ERA_OCCURRENCES', 'era_occurrences', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Drug exposure count (average)', 'DRUG_ERA', 'AVG', 'ERA_OCCURRENCES', 'era_occurrences', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Gap days', 'DRUG_ERA', null, 'GAP_DAYS', 'gap_days', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Gap days (max)', 'DRUG_ERA', 'MAX', 'GAP_DAYS', 'gap_days', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Gap days (min)', 'DRUG_ERA', 'MIN', 'GAP_DAYS', 'gap_days', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Gap days (average)', 'DRUG_ERA', 'AVG', 'GAP_DAYS', 'gap_days', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Length of era', 'CONDITION_ERA', null, 'DURATION', 'duration', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Length of era (max)', 'CONDITION_ERA', 'MAX', 'DURATION', 'duration', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Length of era (min)', 'CONDITION_ERA', 'MIN', 'DURATION', 'duration', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Length of era (average)', 'CONDITION_ERA', 'AVG', 'DURATION', 'duration', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Condition occurrence count', 'CONDITION_ERA', null, 'ERA_OCCURRENCES', 'era_occurrences', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Condition occurrence count (max)', 'CONDITION_ERA', 'MAX', 'ERA_OCCURRENCES', 'era_occurrences', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Condition occurrence count (min)', 'CONDITION_ERA', 'MIN', 'ERA_OCCURRENCES', 'era_occurrences', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Condition occurrence count (average)', 'CONDITION_ERA', 'AVG', 'ERA_OCCURRENCES', 'era_occurrences', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Value as number', 'OBSERVATION', null, 'VALUE_AS_NUMBER', 'value_as_number', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Value as number (max)', 'OBSERVATION', 'MAX', 'VALUE_AS_NUMBER', 'value_as_number', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Value as number (min)', 'OBSERVATION', 'MIN', 'VALUE_AS_NUMBER', 'value_as_number', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Value as number (average)', 'OBSERVATION', 'AVG', 'VALUE_AS_NUMBER', 'value_as_number', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Quantity', 'PROCEDURE', null, 'QUANTITY', 'quantity', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Quantity (max)', 'PROCEDURE', 'MAX', 'QUANTITY', 'quantity', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Quantity (min)', 'PROCEDURE', 'MIN', 'QUANTITY', 'quantity', null, null, null, 0);
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Quantity (average)', 'PROCEDURE', 'AVG', 'QUANTITY', 'quantity', null, null, null, 0);
 
-UPDATE (SELECT ag.id
-FROM
-  ${ohdsiSchema}.fe_analysis_criteria feac JOIN
-  ${ohdsiSchema}.fe_analysis fea ON fea.id = feac.fe_analysis_id,
-  ${ohdsiSchema}.fe_analysis_aggregate ag
-WHERE
-  ag.name = 'Events count'
-  AND fea.type = 'CRITERIA_SET'
-  AND fea.stat_type = 'DISTRIBUTION')
-SET feac.fe_analysis_criteria = ag.id;
+UPDATE
+  ${ohdsiSchema}.fe_analysis_criteria
+SET
+  fe_aggregate_id = (SELECT ag.id
+    FROM
+      ${ohdsiSchema}.fe_analysis_criteria feac JOIN
+      ${ohdsiSchema}.fe_analysis fea ON fea.id = feac.fe_analysis_id,
+      ${ohdsiSchema}.fe_analysis_aggregate ag
+    WHERE
+      ag.name = 'Events count'
+      AND fea.type = 'CRITERIA_SET'
+      AND fea.stat_type = 'DISTRIBUTION'
+    );
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
-    SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval, 'feature-analysis:aggregates:get', 'List available aggregates for Feature Analyses' FROM dual;
+    SELECT ${ohdsiSchema}.sec_permission_id_seq.nextval,
+           'feature-analysis:aggregates:get',
+           'List available aggregates for Feature Analyses' FROM DUAL;
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission(id, role_id, permission_id)
-  SELECT ${ohdsiSchema}.sec_role_permission_sequence.nextval, sr.id, sp.id
-  FROM ${ohdsiSchema}.sec_permission SP, ${ohdsiSchema}.sec_role sr
-  WHERE sp.value IN (
-    'feature-analysis:aggregates:get'
-  ) AND sr.name IN ('Atlas users');
+SELECT ${ohdsiSchema}.sec_role_permission_sequence.nextval, sr.id, sp.id
+FROM ${ohdsiSchema}.sec_permission SP, ${ohdsiSchema}.sec_role sr
+WHERE sp.value IN (
+'feature-analysis:aggregates:get'
+) AND sr.name IN ('Atlas users');
+
+ALTER TABLE ${ohdsiSchema}.fe_analysis_criteria ADD CONSTRAINT fk_criteria_aggregate
+    FOREIGN KEY (fe_aggregate_id) REFERENCES fe_analysis_aggregate(id);

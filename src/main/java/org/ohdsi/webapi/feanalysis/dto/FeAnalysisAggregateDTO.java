@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.feanalysis.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.ohdsi.analysis.TableJoin;
 import org.ohdsi.analysis.cohortcharacterization.design.AggregateFunction;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 
@@ -16,8 +17,12 @@ public class FeAnalysisAggregateDTO {
   private AggregateFunction function;
   @JsonProperty("expression")
   private String expression;
-  @JsonProperty("query")
-  private String query;
+  @JsonProperty("joinTable")
+  private String joinTable;
+  @JsonProperty("joinType")
+  private TableJoin joinType;
+  @JsonProperty("joinCondition")
+  private String joinCondition;
   @JsonProperty("isDefault")
   private boolean isDefault;
 
@@ -61,12 +66,12 @@ public class FeAnalysisAggregateDTO {
     this.expression = expression;
   }
 
-  public String getQuery() {
-    return query;
+  public String getJoinTable() {
+    return joinTable;
   }
 
-  public void setQuery(String query) {
-    this.query = query;
+  public void setJoinTable(String joinTable) {
+    this.joinTable = joinTable;
   }
 
   public boolean isDefault() {
@@ -75,5 +80,21 @@ public class FeAnalysisAggregateDTO {
 
   public void setDefault(boolean aDefault) {
     isDefault = aDefault;
+  }
+
+  public TableJoin getJoinType() {
+    return joinType;
+  }
+
+  public void setJoinType(TableJoin joinType) {
+    this.joinType = joinType;
+  }
+
+  public String getJoinCondition() {
+    return joinCondition;
+  }
+
+  public void setJoinCondition(String joinCondition) {
+    this.joinCondition = joinCondition;
   }
 }

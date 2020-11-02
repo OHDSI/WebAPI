@@ -3,15 +3,22 @@ package org.ohdsi.webapi.feanalysis.domain;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.ohdsi.analysis.TableJoin;
 import org.ohdsi.analysis.WithId;
 import org.ohdsi.analysis.cohortcharacterization.design.AggregateFunction;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysisAggregate;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
+import org.ohdsi.circe.cohortdefinition.builders.CriteriaColumn;
+import org.ohdsi.webapi.common.orm.EnumListType;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "fe_analysis_aggregate")
+@TypeDef(typeClass = EnumListType.class, name = "enum-list")
 public class FeAnalysisAggregateEntity implements FeatureAnalysisAggregate, WithId<Integer> {
 
   @Id
@@ -40,11 +47,24 @@ public class FeAnalysisAggregateEntity implements FeatureAnalysisAggregate, With
   @Column
   private String expression;
 
-  @Column(name = "agg_query")
-  private String query;
+  @Column(name = "join_table")
+  private String joinTable;
+
+  @Column(name = "join_type")
+  @Enumerated(EnumType.STRING)
+  private TableJoin joinType;
+
+  @Column(name = "join_condition")
+  private String joinCondition;
 
   @Column(name = "is_default")
   private boolean isDefault;
+
+  @Column(name = "criteria_columns")
+  @Type(type = "enum-list", parameters = {
+          @Parameter(name = "enumClass", value = "org.ohdsi.circe.cohortdefinition.builders.CriteriaColumn")
+  })
+  private List<CriteriaColumn> columns;
 
   @Override
   public Integer getId() {
@@ -82,6 +102,16 @@ public class FeAnalysisAggregateEntity implements FeatureAnalysisAggregate, With
     return function;
   }
 
+  @Override
+  public List<CriteriaColumn> getAdditionalColumns() {
+
+    return columns;
+  }
+
+  public void setCriteriaColumns(List<CriteriaColumn> columns) {
+    this.columns = columns;
+  }
+
   public void setFunction(AggregateFunction function) {
 
     this.function = function;
@@ -95,7 +125,7 @@ public class FeAnalysisAggregateEntity implements FeatureAnalysisAggregate, With
   @Override
   public boolean hasQuery() {
 
-    return StringUtils.isNotBlank(this.query);
+    return StringUtils.isNotBlank(this.joinTable);
   }
 
   public void setExpression(String expression) {
@@ -103,14 +133,28 @@ public class FeAnalysisAggregateEntity implements FeatureAnalysisAggregate, With
     this.expression = expression;
   }
 
-  public String getQuery() {
-
-    return query;
+  public String getJoinTable() {
+    return joinTable;
   }
 
-  public void setQuery(String query) {
+  public void setJoinTable(String joinTable) {
+    this.joinTable = joinTable;
+  }
 
-    this.query = query;
+  public TableJoin getJoinType() {
+    return joinType;
+  }
+
+  public void setJoinType(TableJoin joinType) {
+    this.joinType = joinType;
+  }
+
+  public String getJoinCondition() {
+    return joinCondition;
+  }
+
+  public void setJoinCondition(String joinCondition) {
+    this.joinCondition = joinCondition;
   }
 
   public boolean isDefault() {

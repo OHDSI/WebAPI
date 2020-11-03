@@ -41,7 +41,7 @@ import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.util.ExportUtils;
+import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -311,7 +311,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
             }
         }
 
-        ExportUtils.clearCreateAndUpdateInfo(expression);
+        ExportUtil.clearCreateAndUpdateInfo(expression);
         return expression;
     }
 

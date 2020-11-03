@@ -63,7 +63,7 @@ import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceService;
-import org.ohdsi.webapi.util.ExportUtils;
+import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
@@ -412,8 +412,8 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
           // lists of their ids
           fillCohorts(expression.outcomeIds, expression.outcomeCohorts);
           fillCohorts(expression.targetIds, expression.targetCohorts);
-          expression.outcomeCohorts.forEach(ExportUtils::clearCreateAndUpdateInfo);
-          expression.targetCohorts.forEach(ExportUtils::clearCreateAndUpdateInfo);
+          expression.outcomeCohorts.forEach(ExportUtil::clearCreateAndUpdateInfo);
+          expression.targetCohorts.forEach(ExportUtil::clearCreateAndUpdateInfo);
 
           String strExpression = objectMapper.writeValueAsString(expression);
           analysis.getDetails().setExpression(strExpression);
@@ -422,7 +422,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
           throw new InternalServerErrorException();
       }
       IRAnalysisDTO irAnalysisDTO = conversionService.convert(analysis, IRAnalysisDTO.class);
-      ExportUtils.clearCreateAndUpdateInfo(irAnalysisDTO);
+      ExportUtil.clearCreateAndUpdateInfo(irAnalysisDTO);
 
       return irAnalysisDTO;
     }

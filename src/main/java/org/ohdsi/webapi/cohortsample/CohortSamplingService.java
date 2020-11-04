@@ -462,7 +462,7 @@ public class CohortSamplingService extends AbstractDaoService {
 		@Override
 		public SampleElement mapRow(ResultSet rs, int rowNum) throws SQLException {
 			SampleElement sample = new SampleElement();
-			sample.setRank(rs.getInt("rank"));
+			sample.setRank(rs.getInt("rank_value"));
 			sample.setSampleId(rs.getInt("cohort_sample_id"));
 			sample.setPersonId(rs.getLong("person_id"));
 			sample.setGenderConceptId(rs.getInt("gender_concept_id"));

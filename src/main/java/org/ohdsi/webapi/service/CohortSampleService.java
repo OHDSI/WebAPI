@@ -77,7 +77,7 @@ public class CohortSampleService {
 	@GET
 	public CohortSampleDTO getCohortSample(
 			@PathParam("sampleId") Integer sampleId,
-			@DefaultValue("recordCount") @QueryParam("fields") String fields
+			@DefaultValue("") @QueryParam("fields") String fields
 	) {
 		List<String> returnFields = Arrays.asList(fields.split(","));
 		boolean withRecordCounts = returnFields.contains("recordCount");

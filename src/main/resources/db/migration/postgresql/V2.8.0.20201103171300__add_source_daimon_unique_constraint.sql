@@ -1,0 +1,1 @@
+ALTER TABLE ${ohdsiSchema}.source_daimon ADD CONSTRAINT un_source_daimon UNIQUE (source_id,daimon_type);

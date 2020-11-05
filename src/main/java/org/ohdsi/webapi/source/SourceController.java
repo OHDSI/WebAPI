@@ -31,6 +31,7 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Path("/source/")
@@ -178,10 +179,14 @@ public class SourceController extends AbstractDaoService {
       }
       setKeyfileData(updated, source, file);
       transformIfRequired(updated);
-      List<SourceDaimon> removed = source.getDaimons().stream().filter(d -> !updated.getDaimons().contains(d))
-              .collect(Collectors.toList());
       updated.setModifiedBy(getCurrentUser());
       updated.setModifiedDate(new Date());
+
+      reuseDeletedDaimons(updated, source);
+
+      List<SourceDaimon> removed = source.getDaimons().stream().filter(d -> !updated.getDaimons().contains(d))
+              .collect(Collectors.toList());
+      // Delete MUST be called after fetching user or source data to prevent autoflush (see DefaultPersistEventListener.onPersist)
       sourceDaimonRepository.delete(removed);
       Source result = sourceRepository.save(updated);
       publisher.publishEvent(new ChangeDataSourceEvent(this, updated.getSourceId(), updated.getSourceName()));
@@ -190,6 +195,30 @@ public class SourceController extends AbstractDaoService {
     } else {
       throw new NotFoundException();
     }
+  }
+
+  private void reuseDeletedDaimons(Source updated, Source source) {
+    List<SourceDaimon> daimons = updated.getDaimons().stream().filter(d -> source.getDaimons().contains(d))
+            .collect(Collectors.toList());
+    List<SourceDaimon> newDaimons = updated.getDaimons().stream().filter(d -> !source.getDaimons().contains(d))
+            .collect(Collectors.toList());
+
+    List<SourceDaimon> allDaimons = sourceDaimonRepository.findBySource(source);
+
+    for (SourceDaimon newSourceDaimon: newDaimons) {
+      Optional<SourceDaimon> reusedDaimonOpt = allDaimons.stream()
+              .filter(d -> d.equals(newSourceDaimon))
+              .findFirst();
+      if (reusedDaimonOpt.isPresent()) {
+        SourceDaimon reusedDaimon = reusedDaimonOpt.get();
+        reusedDaimon.setPriority(newSourceDaimon.getPriority());
+        reusedDaimon.setTableQualifier(newSourceDaimon.getTableQualifier());
+        daimons.add(reusedDaimon);
+      } else {
+        daimons.add(newSourceDaimon);
+      }
+    }
+    updated.setDaimons(daimons);
   }
 
   private void transformIfRequired(Source source) {

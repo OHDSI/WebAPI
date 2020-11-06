@@ -32,9 +32,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.ohdsi.sql.SqlTranslate;
 
 import static org.ohdsi.webapi.cohortsample.dto.SampleParametersDTO.GenderDTO.GENDER_FEMALE_CONCEPT_ID;
 import static org.ohdsi.webapi.cohortsample.dto.SampleParametersDTO.GenderDTO.GENDER_MALE_CONCEPT_ID;
+import org.ohdsi.webapi.util.SourceUtils;
 
 /**
  * Service to do manage samples of a cohort definition.
@@ -188,6 +190,39 @@ public class CohortSamplingService extends AbstractDaoService {
 		return sampleToSampleDTO(sample, elements, true);
 	}
 
+	/**
+	 * Create a new sample in given source and cohort definition, using sample parameters.
+	 * @param sampleId The sample to refresh
+	 */
+	public void refreshSample(Integer sampleId) {
+		
+				CohortSample sample = sampleRepository.findById(sampleId);
+		if (sample == null) {
+			throw new NotFoundException("Cohort sample with ID " + sampleId + " not found");
+		}
+		Source source = getSourceRepository().findBySourceId(sample.getSourceId());
+		
+		CohortSampleDTO sampleDto = sampleToSampleDTO(sample, null, true);
+		SampleParametersDTO sampleParamaters = new SampleParametersDTO();
+		sampleParamaters.setAge(sampleDto.getAge());
+		sampleParamaters.setGender(sampleDto.getGender());
+		sampleParamaters.setSize(sampleDto.getSize());
+		log.info("Sampling {} elements for cohort {}", sampleParamaters.getSize(), sample.getCohortDefinitionId());
+		JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
+		final List<SampleElement> elements = sampleElements(sampleParamaters, sample, jdbcTemplate, source);		
+		
+		getTransactionTemplate().execute((TransactionCallback<Void>) transactionStatus -> {
+			String deleteSql = String.format(
+							"DELETE FROM %s.cohort_sample_element WHERE cohort_sample_id = %d;",
+							source.getTableQualifier(SourceDaimon.DaimonType.Results),
+							sample.getId());
+			String translatedDeleteSql = SqlTranslate.translateSql(deleteSql, source.getSourceDialect(), null, null);
+			jdbcTemplate.update(translatedDeleteSql);
+			insertSampledElements(source, jdbcTemplate, sample.getId(), elements);
+			return null;
+		});
+	}
+	
 	/** Convert a given sample with given elements to a DTO. */
 	private CohortSampleDTO sampleToSampleDTO(CohortSample sample, List<SampleElement> elements, boolean includeIds) {
 		CohortSampleDTO sampleDTO = new CohortSampleDTO();

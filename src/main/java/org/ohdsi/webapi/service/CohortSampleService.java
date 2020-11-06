@@ -77,10 +77,14 @@ public class CohortSampleService {
 	@GET
 	public CohortSampleDTO getCohortSample(
 			@PathParam("sampleId") Integer sampleId,
-			@DefaultValue("") @QueryParam("fields") String fields
+			@DefaultValue("") @QueryParam("fields") String fields,
+			@QueryParam("refresh") boolean refresh
 	) {
 		List<String> returnFields = Arrays.asList(fields.split(","));
 		boolean withRecordCounts = returnFields.contains("recordCount");
+		if (refresh) {
+			this.samplingService.refreshSample(sampleId);
+		}
 		return this.samplingService.getSample(sampleId, withRecordCounts);
 	}
 

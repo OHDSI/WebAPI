@@ -11,22 +11,25 @@ import java.util.regex.Pattern;
 import static org.ohdsi.webapi.Constants.Templates.ENTITY_COPY_PREFIX;
 
 public final class NameUtils {
+    private static final String DEFAULT_DESIGN_NAME = "Design";
 
     private NameUtils(){}
 
     public static String getNameForCopy(String dtoName, Function<String, List<String>> getNamesLike, Optional<?> existingObject) {
-        String nameWithPrefix = String.format(ENTITY_COPY_PREFIX, dtoName);
-        return existingObject.map(o -> getNameWithSuffix(nameWithPrefix, getNamesLike)).orElse(dtoName);
+        String name = dtoName != null ? dtoName : DEFAULT_DESIGN_NAME;
+        String nameWithPrefix = String.format(ENTITY_COPY_PREFIX, name);
+        return existingObject.map(o -> getNameWithSuffix(nameWithPrefix, getNamesLike)).orElse(name);
     }
 
     public static String getNameWithSuffix(String dtoName, Function<String, List<String>> getNamesLike){
-        StringBuilder builder = new StringBuilder(dtoName);
+        String name = dtoName != null ? dtoName : DEFAULT_DESIGN_NAME;
+        StringBuilder builder = new StringBuilder(name);
 
-        List<String> nameList = getNamesLike.apply(formatNameForLikeSearch(dtoName) + "%");
-        Pattern p = Pattern.compile(Pattern.quote(dtoName) + " \\(([0-9]+)\\)");
+        List<String> nameList = getNamesLike.apply(formatNameForLikeSearch(name) + "%");
+        Pattern p = Pattern.compile(Pattern.quote(name) + " \\(([0-9]+)\\)");
         nameList.stream()
                 .map(n -> {
-                    if (n.equalsIgnoreCase(dtoName)) {
+                    if (n.equalsIgnoreCase(name)) {
                         return "0";
                     } else {
                         Matcher m = p.matcher(n);

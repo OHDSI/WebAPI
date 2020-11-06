@@ -36,7 +36,6 @@ import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.common.sensitiveinfo.CohortGenerationSensitiveInfoService;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
-import org.ohdsi.webapi.conceptset.ExportUtil;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.service.dto.CheckResultDTO;

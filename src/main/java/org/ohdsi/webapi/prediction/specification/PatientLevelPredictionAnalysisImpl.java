@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.ohdsi.analysis.prediction.design.PatientLevelPredictionAnalysis;
 import org.ohdsi.analysis.hydra.design.SkeletonTypeEnum;
 import org.ohdsi.webapi.CommonDTO;
@@ -17,6 +19,7 @@ import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
  * @author asena5
  */
 @JsonIgnoreProperties(ignoreUnknown=true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictionAnalysis, CommonDTO {
   private Integer id = null;
   private String name = null;

@@ -7,7 +7,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.hydra.Hydra;
 import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
 import org.ohdsi.webapi.analysis.AnalysisConceptSet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
@@ -34,6 +33,7 @@ import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.EntityUtils;
+import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.TempFileUtils;
@@ -237,6 +237,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
             }
         }
 
+        ExportUtil.clearCreateAndUpdateInfo(expression);
         return expression;
     }
 

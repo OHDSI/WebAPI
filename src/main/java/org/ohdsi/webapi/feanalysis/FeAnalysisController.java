@@ -5,7 +5,6 @@ import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisD
 import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.common.OptionDTO;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
-import org.ohdsi.webapi.conceptset.ExportUtil;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithDistributionCriteriaEntity;
@@ -13,6 +12,7 @@ import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithPrevalenceCriteriaEntity
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
+import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.HttpUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.springframework.core.convert.ConversionService;

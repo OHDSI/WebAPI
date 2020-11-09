@@ -225,8 +225,8 @@
     <!-- Cache Config -->
     <spring.cache.jcache.config>classpath:config/ehcache.xml</spring.cache.jcache.config>
     <cdm.result.cache.warming.enable>true</cdm.result.cache.warming.enable>
-    <cache.generation.invalidAfterDays>7</cache.generation.invalidAfterDays>
-    <cache.generation.cleanupInterval>60000</cache.generation.cleanupInterval>
+    <cache.generation.invalidAfterDays>30</cache.generation.invalidAfterDays>
+    <cache.generation.cleanupInterval>3600000</cache.generation.cleanupInterval>
     <cache.generation.useAsync>false</cache.generation.useAsync>
     <!-- Period in milliseconds between running checks to detect freshness of cached data -->
     <cache.inspection.period>3600000</cache.inspection.period>
@@ -689,7 +689,6 @@
       <artifactId>waffle-shiro</artifactId>
       <version>2.2.1</version>
     </dependency>
-
     <dependency>
       <groupId>com.github.waffle</groupId>
       <artifactId>waffle-jna</artifactId>
@@ -924,6 +923,21 @@
       <version>1.5.0</version>
     </dependency>
     <dependency>
+      <groupId>com.atlassian.commonmark</groupId>
+      <artifactId>commonmark</artifactId>
+      <version>0.15.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.freemarker</groupId>
+      <artifactId>freemarker</artifactId>
+      <version>2.3.30</version>
+    </dependency>
+    <dependency>
+      <groupId>com.atlassian.commonmark</groupId>
+      <artifactId>commonmark-ext-gfm-tables</artifactId>
+      <version>0.15.2</version>
+    </dependency>
+    <dependency>
       <groupId>com.opentable.components</groupId>
       <artifactId>otj-pg-embedded</artifactId>
       <version>0.13.1</version>
@@ -1123,7 +1137,7 @@
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-bigquery</artifactId>
-            <version>1.28.0</version>
+            <version>1.2.11</version>
         </dependency>
         <dependency>
           <groupId>com.google.http-client</groupId>
@@ -1139,6 +1153,11 @@
           <groupId>com.google.oauth-client</groupId>
           <artifactId>google-oauth-client</artifactId>
           <version>1.28.0</version>
+        </dependency>
+        <dependency>
+          <groupId>com.google.cloud</groupId>
+          <artifactId>google-cloud-bigquerystorage</artifactId>
+          <version>0.101.0-beta</version>
         </dependency>
       </dependencies>
       <build>
@@ -1185,7 +1204,7 @@
                 <configuration>
                   <groupId>com.google.cloud</groupId>
                   <artifactId>google-cloud-bigquery</artifactId>
-                  <version>1.28.0</version>
+                  <version>1.2.11</version>
                   <packaging>jar</packaging>
                   <file>${bigquery.classpath}/GoogleBigQueryJDBC42.jar</file>
                 </configuration>
@@ -1230,6 +1249,20 @@
                   <version>1.28.0</version>
                   <packaging>jar</packaging>
                   <file>${bigquery.classpath}/google-oauth-client-1.28.0.jar</file>
+                </configuration>
+              </execution>
+              <execution>
+                <id>google-cloud-bigquerystorage</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <groupId>com.google.cloud</groupId>
+                  <artifactId>google-cloud-bigquerystorage</artifactId>
+                  <version>0.101.0-beta</version>
+                  <packaging>jar</packaging>
+                  <file>${bigquery.classpath}/google-cloud-bigquerystorage-0.101.0-beta.jar</file>
                 </configuration>
               </execution>
             </executions>

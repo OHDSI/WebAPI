@@ -108,7 +108,7 @@ public class PermissionService {
 
         JpaRepository entityRepository = (JpaRepository) (((Advised) repositories.getRepositoryFor(entityType.getEntityClass())).getTargetSource().getTarget());
         Class idClazz = Arrays.stream(entityType.getEntityClass().getMethods())
-            .filter(m -> m.getName().equals("getId"))
+            .filter(m -> m.getName().equals("getId") && !m.isBridge())
             .findFirst()
             .orElseThrow(() -> new RuntimeException("Cannot retrieve common entity"))
             .getReturnType();

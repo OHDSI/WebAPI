@@ -57,6 +57,7 @@ public abstract class FeAnalysisCriteriaEntity implements WithId<Long> {
         this.name = name;
     }
 
+    @Override
     public Long getId() {
         return id;
     }

@@ -72,6 +72,8 @@ public class DDLService {
 		"/ddl/results/heracles_results.sql",
 		"/ddl/results/heracles_results_dist.sql",
 		"/ddl/results/heracles_periods.sql",
+		// cohort sampling
+		"/ddl/results/cohort_sample_element.sql",
 		// incidence rates
 		"/ddl/results/ir_analysis_dist.sql",
 		"/ddl/results/ir_analysis_result.sql",

@@ -9,6 +9,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.ohdsi.webapi.exception.SourceDuplicateKeyException;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.VocabularyService;
 import org.ohdsi.webapi.shiro.management.Security;
@@ -16,15 +17,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.convert.support.GenericConversionService;
-import org.springframework.core.env.Environment;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
-import javax.annotation.PostConstruct;
+import javax.persistence.PersistenceException;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -117,7 +114,7 @@ public class SourceController extends AbstractDaoService {
     }
     Source sourceByKey = sourceRepository.findBySourceKey(request.getKey());
     if (Objects.nonNull(sourceByKey)) {
-      throw new Exception("The source key has been already used.");
+      throw new SourceDuplicateKeyException("The source key has been already used.");
     }
     Source source = conversionService.convert(request, Source.class);
     if(source.getDaimons() != null) {
@@ -147,11 +144,15 @@ public class SourceController extends AbstractDaoService {
     setKeyfileData(source, original, file);
     source.setCreatedBy(getCurrentUser());
     source.setCreatedDate(new Date());
-    Source saved = sourceRepository.save(source);
-    sourceService.invalidateCache();
-    SourceInfo sourceInfo = new SourceInfo(saved);
-    publisher.publishEvent(new AddDataSourceEvent(this, source.getSourceId(), source.getSourceName()));
-    return sourceInfo;
+    try {
+      Source saved = sourceRepository.saveAndFlush(source);
+      sourceService.invalidateCache();
+      SourceInfo sourceInfo = new SourceInfo(saved);
+      publisher.publishEvent(new AddDataSourceEvent(this, source.getSourceId(), source.getSourceName()));
+      return sourceInfo;
+    } catch (PersistenceException ex) {
+      throw new SourceDuplicateKeyException("You cannot use this Source Key, please use different one");
+    }
   }
 
   @Path("{sourceId}")

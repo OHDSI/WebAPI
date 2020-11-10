@@ -15,6 +15,7 @@
  */
 package org.ohdsi.webapi.util;
 
+import org.ohdsi.webapi.exception.UserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.shiro.authz.UnauthorizedException;
@@ -55,10 +56,14 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
             responseStatus = Status.FORBIDDEN;
         } if (ex instanceof NotFoundException) {
             responseStatus = Status.NOT_FOUND;
+        } else if (ex instanceof UserException) {
+            responseStatus = Status.INTERNAL_SERVER_ERROR;
+            // Create new message to prevent sending error information to client
+            ex = new RuntimeException(ex.getMessage());
         } else {
             responseStatus = Status.INTERNAL_SERVER_ERROR;
             // Create new message to prevent sending error information to client
-            ex = new RuntimeException("An exception ocurred: " + ex.getClass().getName());
+            ex = new RuntimeException("An exception occurred: " + ex.getClass().getName());
         }
         // Clean stacktrace, but keep message
         ex.setStackTrace(new StackTraceElement[0]);

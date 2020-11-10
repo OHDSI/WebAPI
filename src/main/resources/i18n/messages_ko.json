@@ -1668,9 +1668,11 @@
             "standardConcept": "표준 컨셉"
           },
           "relatedConcepts": {
+            "loading": "Loading related concepts...",
             "caption": "관련 컨셉"
           },
           "hierarchy": {
+            "loading": "Loading hierarchy...",
             "caption": "계층 구조",
             "noHierarchyFoundMessage": "비표준 컨셉에 대한 계층 구조가 없습니다.",
             "view": "보기:",
@@ -1682,6 +1684,7 @@
             "noChildConceptsFound": "자식 컨셉이 없습니다."
           },
           "recordCounts": {
+            "loading": "Loading records count...",
             "caption": "레코드 카운트",
             "recordCountsAcrossSources": "소스의 레코드 카운트",
             "failedToLoadData": "Failed to load data"

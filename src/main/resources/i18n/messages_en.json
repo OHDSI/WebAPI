@@ -1668,9 +1668,11 @@
             "standardConcept": "Standard Concept"
           },
           "relatedConcepts": {
+            "loading": "Loading related concepts...",
             "caption": "Related Concepts"
           },
           "hierarchy": {
+            "loading": "Loading hierarchy...",
             "caption": "Hierarchy",
             "noHierarchyFoundMessage": "No hierarchy found for non-standard concepts.",
             "view": "View:",
@@ -1682,6 +1684,7 @@
             "noChildConceptsFound": "No child concepts found"
           },
           "recordCounts": {
+            "loading": "Loading records count...",
             "caption": "Record Counts",
             "recordCountsAcrossSources": "Record Counts across Sources",
             "failedToLoadData": "Failed to load data"

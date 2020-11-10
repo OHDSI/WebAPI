@@ -1643,9 +1643,11 @@
             "standardConcept": "Стандартная концепция"
           },
           "relatedConcepts": {
+            "loading": "Загрузка связанных концепций...",
             "caption": "Связанные концепции"
           },
           "hierarchy": {
+            "loading": "Загрузка иерархии...",
             "caption": "Иерархия",
             "noHierarchyFoundMessage": "Не найдена иерархия для нестандартных концепций.",
             "view": "Отображать:",
@@ -1657,6 +1659,7 @@
             "noChildConceptsFound": "Концепции-потомки не найдены"
           },
           "recordCounts": {
+            "loading": "Подсчет количества записей...",
             "caption": "Количество записей",
             "recordCountsAcrossSources": "Количество записей из разных источников",
             "failedToLoadData": "Ошибка загрузки данных"

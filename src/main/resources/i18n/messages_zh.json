@@ -1668,9 +1668,11 @@
             "standardConcept": "标准概念"
           },
           "relatedConcepts": {
+            "loading": "Loading related concepts...",
             "caption": "有关的概念"
           },
           "hierarchy": {
+            "loading": "Loading hierarchy...",
             "caption": "层级结构",
             "noHierarchyFoundMessage": "未找到非标准概念的层次结构。",
             "view": "视图/查看：",
@@ -1682,6 +1684,7 @@
             "noChildConceptsFound": "找不到子概念"
           },
           "recordCounts": {
+            "loading": "Loading records count...",
             "caption": "记录计数",
             "recordCountsAcrossSources": "从来源中得到的记录数",
             "failedToLoadData": "Failed to load data"

@@ -17,6 +17,7 @@ import org.ohdsi.webapi.pathway.dto.*;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
@@ -143,6 +144,7 @@ public class PathwayController {
     public String export(@PathParam("id") final Integer id) {
 
         PathwayAnalysisEntity pathwayAnalysis = pathwayService.getById(id);
+        ExportUtil.clearCreateAndUpdateInfo(pathwayAnalysis);
         return new SerializedPathwayAnalysisToPathwayAnalysisConverter().convertToDatabaseColumn(pathwayAnalysis);
     }
 

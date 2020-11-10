@@ -30,13 +30,14 @@ import org.ohdsi.webapi.cohortdefinition.InclusionRuleReport;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortGenerationInfoDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
+import org.ohdsi.webapi.cohortsample.CleanupCohortSamplesTasklet;
+import org.ohdsi.webapi.cohortsample.CohortSamplingService;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
 import org.ohdsi.webapi.cohortdefinition.event.CohortDefinitionChangedEvent;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.common.sensitiveinfo.CohortGenerationSensitiveInfoService;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
-import org.ohdsi.webapi.conceptset.ExportUtil;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.service.dto.CheckResultDTO;
@@ -148,6 +149,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 
 	@Autowired
 	private ObjectMapper objectMapper;
+  
+	@Autowired
+	private CohortSamplingService samplingService;
 
 	@Autowired
 	private ApplicationEventPublisher eventPublisher;
@@ -595,6 +599,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 						});
 					});
 					cohortDefinitionRepository.delete(def);
+					samplingService.launchDeleteSamplesTasklet(id);
 				} else {
 					log.warn("Failed to delete Cohort Definition with ID = {}", id);
 				}
@@ -615,8 +620,15 @@ public class CohortDefinitionService extends AbstractDaoService {
 						.tasklet(cleanupTasklet)
 						.build();
 
+		CleanupCohortSamplesTasklet cleanupSamplesTasklet = samplingService.createDeleteSamplesTasklet();
+
+		Step cleanupSamplesStep = stepBuilders.get("cohortDefinition.cleanupSamples")
+						.tasklet(cleanupSamplesTasklet)
+						.build();
+
 		SimpleJobBuilder cleanupJobBuilder = jobBuilders.get("cleanupCohort")
-						.start(cleanupStep);
+						.start(cleanupStep)
+						.next(cleanupSamplesStep);
 
 		Job cleanupCohortJob = cleanupJobBuilder.build();
 

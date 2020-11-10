@@ -293,18 +293,18 @@ public class PreparedStatementRenderer implements ParameterizedSqlProvider {
 
   private Object convertPrimitiveArraysToWrapperArrays(Object value) {
 
-    if (value == null) return value;
+    if (value == null) return null;
     if (!value.getClass().isArray()) return value;
 
 
     if (value instanceof boolean[]) return ArrayUtils.toObject((boolean[]) value);
     if (value instanceof byte[]) return ArrayUtils.toObject((byte[]) value);
     if (value instanceof char[]) return ArrayUtils.toObject((char[]) value);
-    if (value instanceof char[]) return ArrayUtils.toObject((double[]) value);
-    if (value instanceof char[]) return ArrayUtils.toObject((float[]) value);
-    if (value instanceof char[]) return ArrayUtils.toObject((int[]) value);
+    if (value instanceof double[]) return ArrayUtils.toObject((double[]) value);
+    if (value instanceof float[]) return ArrayUtils.toObject((float[]) value);
+    if (value instanceof int[]) return ArrayUtils.toObject((int[]) value);
     if (value instanceof long[]) return ArrayUtils.toObject((long[]) value);
-    if (value instanceof char[]) return ArrayUtils.toObject((short[]) value);
+    if (value instanceof short[]) return ArrayUtils.toObject((short[]) value);
     return value;
   }
 

@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.util;
 
-import org.ohdsi.webapi.common.analyses.CommonAnalysisDTO;
 import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.service.dto.CommonEntityDTO;
 import org.ohdsi.webapi.user.dto.UserDTO;

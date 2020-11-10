@@ -205,6 +205,8 @@
     <logging.level.org.ohdsi>info</logging.level.org.ohdsi>
     <logging.level.org.springframework.orm>info</logging.level.org.springframework.orm>
     <logging.level.org.springframework.jdbc>info</logging.level.org.springframework.jdbc>
+    <logging.level.org.springframework.web>info</logging.level.org.springframework.web>
+    <logging.level.org.hibernate>info</logging.level.org.hibernate>
     <logging.level.org.apache.shiro>warn</logging.level.org.apache.shiro>
 
     <spring.batch.taskExecutor.corePoolSize>10</spring.batch.taskExecutor.corePoolSize>
@@ -956,6 +958,11 @@
         <artifactId>dbunit-plus</artifactId>
         <version>2.0.1</version>
         <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>1.2.17</version>
     </dependency>
   </dependencies>
   <profiles>

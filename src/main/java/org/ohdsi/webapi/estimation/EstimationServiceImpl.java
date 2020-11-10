@@ -12,7 +12,6 @@ import org.ohdsi.analysis.estimation.design.Settings;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression.ConceptSetItem;
-import org.ohdsi.hydra.Hydra;
 import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
 import org.ohdsi.webapi.analysis.AnalysisConceptSet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
@@ -42,6 +41,7 @@ import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -310,7 +310,8 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
                 }
             }
         }
-        
+
+        ExportUtil.clearCreateAndUpdateInfo(expression);
         return expression;
     }
 

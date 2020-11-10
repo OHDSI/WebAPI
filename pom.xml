@@ -175,6 +175,7 @@
     <server.ssl.key-store></server.ssl.key-store>
     <server.ssl.key-store-password></server.ssl.key-store-password>
     <server.ssl.key-password></server.ssl.key-password>
+    <server.servlet.context-path>/WebAPI</server.servlet.context-path>
 
     <arachne.version>1.16.0-SNAPSHOT</arachne.version>
     <jersey-media-multipart.version>2.25.1</jersey-media-multipart.version>
@@ -318,6 +319,7 @@
         <configuration>
           <!-- Since we filter properties files via Maven, do not add resources. -->
           <addResources>false</addResources>
+          <mainClass>org.ohdsi.webapi.WebApi</mainClass>
           <additionalProperties>
             <git.branch>${git.branch}</git.branch>
             <git.commit.id>${git.commit.id.abbrev}</git.commit.id>
@@ -331,6 +333,7 @@
           <execution>
             <goals>
               <goal>build-info</goal>
+              <goal>repackage</goal>
             </goals>
           </execution>
         </executions>

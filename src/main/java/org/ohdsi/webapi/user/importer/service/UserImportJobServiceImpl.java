@@ -82,6 +82,14 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
   }
 
   @Override
+  protected void saveAdditionalFields(UserImportJob job) {
+    if (job.getRoleGroupMapping() != null && !job.getRoleGroupMapping().isEmpty()) {
+      job.getRoleGroupMapping().forEach(mapping -> mapping.setUserImportJob(job));
+      roleGroupRepository.save(job.getRoleGroupMapping());
+    }
+  }
+
+  @Override
   protected List<UserImportJob> getActiveJobs() {
 
     return jobRepository.findAllByEnabledTrueAndIsClosedFalse(jobWithMappingEntityGraph);

@@ -3,7 +3,6 @@ package org.ohdsi.webapi.user.importer;
 import com.odysseusinc.scheduler.exception.JobNotFoundException;
 import org.ohdsi.webapi.user.importer.dto.JobHistoryItemDTO;
 import org.ohdsi.webapi.user.importer.dto.UserImportJobDTO;
-import org.ohdsi.webapi.user.importer.dto.UserImportJobMappingDTO;
 import org.ohdsi.webapi.user.importer.exception.JobAlreadyExistException;
 import org.ohdsi.webapi.user.importer.model.UserImportJob;
 import org.ohdsi.webapi.user.importer.service.UserImportJobService;
@@ -60,13 +59,13 @@ public class UserImportJobController {
   @Path("/{id}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public UserImportJobMappingDTO updateJob(@PathParam("id") Long jobId, UserImportJobMappingDTO jobDTO) {
+  public UserImportJobDTO updateJob(@PathParam("id") Long jobId, UserImportJobDTO jobDTO) {
 
     UserImportJob job = conversionService.convert(jobDTO, UserImportJob.class);
     try {
       job.setId(jobId);
       UserImportJob updated = jobService.updateJob(job);
-      return conversionService.convert(updated, UserImportJobMappingDTO.class);
+      return conversionService.convert(updated, UserImportJobDTO.class);
     } catch (JobNotFoundException e) {
       throw new NotFoundException();
     }
@@ -88,9 +87,9 @@ public class UserImportJobController {
   @GET
   @Path("/{id}")
   @Produces(MediaType.APPLICATION_JSON)
-  public UserImportJobMappingDTO getJob(@PathParam("id") Long id) {
+  public UserImportJobDTO getJob(@PathParam("id") Long id) {
 
-    return jobService.getJob(id).map(job -> conversionService.convert(job, UserImportJobMappingDTO.class))
+    return jobService.getJob(id).map(job -> conversionService.convert(job, UserImportJobDTO.class))
             .orElseThrow(NotFoundException::new);
   }
 

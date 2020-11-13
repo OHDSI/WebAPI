@@ -1,4 +1,4 @@
-delete from	${ohdsiSchema}.source_daimon sd1
+delete sd1 from ${ohdsiSchema}.source_daimon sd1
 where sd1.priority = -1
   and sd1.source_daimon_id < (
     select max(source_daimon_id)

@@ -12,7 +12,9 @@ public abstract class BaseUserImportJobToUserImportJobDTOConverter<T extends Use
     target.setProviderType(source.getProviderType());
     target.setPreserveRoles(source.getPreserveRoles());
     target.setUserRoles(source.getUserRoles());
-    target.setRoleGroupMapping(RoleGroupMappingConverter.convertRoleGroupMapping(source.getProviderType().getValue(),
-            source.getRoleGroupMapping()));
+    if (source.getRoleGroupMapping() != null) {
+      target.setRoleGroupMapping(RoleGroupMappingConverter.convertRoleGroupMapping(source.getProviderType().getValue(),
+              source.getRoleGroupMapping()));
+    }
   }
 }

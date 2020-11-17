@@ -37,7 +37,7 @@ import org.ohdsi.webapi.model.CommonEntity;
           attributeNodes = @NamedAttributeNode("executionInfoList")
   )
 })
-public class IncidenceRateAnalysis extends CommonEntity implements Serializable {
+public class IncidenceRateAnalysis extends CommonEntity<Integer> implements Serializable {
   private static final long serialVersionUID = 1L;
   
   @Id
@@ -67,6 +67,7 @@ public class IncidenceRateAnalysis extends CommonEntity implements Serializable 
   @OneToMany(fetch= FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "analysis", orphanRemoval=true)
   private Set<ExecutionInfo> executionInfoList = new HashSet<>();
 
+  @Override
   public Integer getId() {
     return id;
   }

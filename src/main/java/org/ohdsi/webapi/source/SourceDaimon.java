@@ -40,7 +40,7 @@ import java.util.Objects;
 @Entity(name = "SourceDaimon")
 @Table(name="source_daimon")
 @SQLDelete(sql = "UPDATE {h-schema}source_daimon SET priority = -1 WHERE SOURCE_DAIMON_ID = ?")
-@Where(clause = "priority >= 0")
+//@Where(clause = "priority >= 0")
 public class SourceDaimon implements Serializable {
   public enum DaimonType { CDM, Vocabulary, Results, CEM, CEMResults, Temp };
   
@@ -67,7 +67,7 @@ public class SourceDaimon implements Serializable {
   
   @ManyToOne
   @JsonIgnore
-  @JoinColumn(name="SOURCE_ID", referencedColumnName="SOURCE_ID")  
+  @JoinColumn(name="SOURCE_ID", referencedColumnName="SOURCE_ID")
   private Source source;
 
   @Enumerated(EnumType.ORDINAL)  

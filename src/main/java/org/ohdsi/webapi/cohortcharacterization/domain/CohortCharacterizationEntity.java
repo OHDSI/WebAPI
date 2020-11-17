@@ -24,7 +24,7 @@ import org.ohdsi.webapi.model.CommonEntity;
 
 @Entity
 @Table(name = "cohort_characterization")
-public class CohortCharacterizationEntity extends CommonEntity implements CohortCharacterization {
+public class CohortCharacterizationEntity extends CommonEntity<Long> implements CohortCharacterization {
 
     @Id
     @GenericGenerator(
@@ -86,6 +86,7 @@ public class CohortCharacterizationEntity extends CommonEntity implements Cohort
         return parameters;
     }
 
+    @Override
     public Long getId() {
         return id;
     }

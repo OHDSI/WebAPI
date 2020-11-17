@@ -13,7 +13,7 @@ import org.hibernate.annotations.Parameter;
 import org.ohdsi.webapi.model.CommonEntity;
 
 @Entity(name = "pathway_analysis")
-public class PathwayAnalysisEntity extends CommonEntity {
+public class PathwayAnalysisEntity extends CommonEntity<Integer> {
 
     @Id
     @GenericGenerator(
@@ -54,6 +54,7 @@ public class PathwayAnalysisEntity extends CommonEntity {
     @Column(name = "hash_code")
     private Integer hashCode;
 
+    @Override
     public Integer getId() {
 
         return id;

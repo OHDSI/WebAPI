@@ -108,7 +108,9 @@ public class PermissionService {
 
         JpaRepository entityRepository = (JpaRepository) (((Advised) repositories.getRepositoryFor(entityType.getEntityClass())).getTargetSource().getTarget());
         Class idClazz = Arrays.stream(entityType.getEntityClass().getMethods())
-            .filter(m -> m.getName().equals("getId"))
+            // Overriden methods from parameterized interface are "bridges" and should be ignored.
+            // For more information see https://docs.oracle.com/javase/tutorial/java/generics/bridgeMethods.html
+            .filter(m -> m.getName().equals("getId") && !m.isBridge())
             .findFirst()
             .orElseThrow(() -> new RuntimeException("Cannot retrieve common entity"))
             .getReturnType();

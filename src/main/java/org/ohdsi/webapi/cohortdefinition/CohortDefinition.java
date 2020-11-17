@@ -59,7 +59,7 @@ import org.ohdsi.webapi.model.CommonEntity;
     attributeNodes = { @NamedAttributeNode(value = "details", subgraph = "detailsGraph") },
     subgraphs = {@NamedSubgraph(name = "detailsGraph", type = CohortDefinitionDetails.class, attributeNodes = { @NamedAttributeNode(value="expression")})}
 )
-public class CohortDefinition extends CommonEntity implements Serializable, Cohort{
+public class CohortDefinition extends CommonEntity<Integer> implements Serializable, Cohort{
 
   private static final long serialVersionUID = 1L;
     
@@ -100,6 +100,7 @@ public class CohortDefinition extends CommonEntity implements Serializable, Coho
           inverseJoinColumns = @JoinColumn(name = "cohort_characterization_id", referencedColumnName = "id"))
   private List<CohortCharacterizationEntity> cohortCharacterizations = new ArrayList<>();
 
+  @Override
   public Integer getId() {
     return id;
   }

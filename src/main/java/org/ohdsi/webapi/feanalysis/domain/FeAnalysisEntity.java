@@ -91,7 +91,8 @@ public abstract class FeAnalysisEntity<T> extends CommonEntity<Integer> implemen
     @Column(name = "stat_type")
     @Enumerated(value = EnumType.STRING)
     private CcResultType statType;
-    
+
+    @Override
     public Integer getId() {
         return id;
     }

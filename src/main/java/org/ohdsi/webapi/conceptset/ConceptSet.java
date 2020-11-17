@@ -31,7 +31,7 @@ import org.ohdsi.webapi.model.CommonEntity;
  */
 @Entity(name = "ConceptSet")
 @Table(name="concept_set")
-public class ConceptSet extends CommonEntity implements Serializable {
+public class ConceptSet extends CommonEntity<Integer> implements Serializable {
   
   @Id
   @GenericGenerator(
@@ -48,7 +48,8 @@ public class ConceptSet extends CommonEntity implements Serializable {
   
   @Column(name="concept_set_name")
   private String name;
-  
+
+  @Override
   public Integer getId() {
     return id;
   }

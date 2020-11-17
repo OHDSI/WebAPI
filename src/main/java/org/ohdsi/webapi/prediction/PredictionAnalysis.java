@@ -14,7 +14,7 @@ import org.ohdsi.webapi.model.CommonEntity;
 
 @Entity(name = "PredictionAnalysis")
 @Table(name = "prediction")
-public class PredictionAnalysis extends CommonEntity {
+public class PredictionAnalysis extends CommonEntity<Integer> {
     @Id
     @GenericGenerator(
         name = "pred_generator",
@@ -41,6 +41,7 @@ public class PredictionAnalysis extends CommonEntity {
     /**
      * @return the id
      */
+    @Override
     public Integer getId() {
         return id;
     }

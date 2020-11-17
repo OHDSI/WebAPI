@@ -17,7 +17,7 @@ CREATE TABLE ${ohdsiSchema}.fe_analysis_aggregate(
 
 ALTER TABLE ${ohdsiSchema}.fe_analysis_criteria ADD fe_aggregate_id INTEGER;
 
-INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default) VALUES
+INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default, missing_means_zero) VALUES
   ('Events count', null, 'COUNT', null, '*', null, null, null, TRUE, TRUE),
   ('Distinct start dates', null, 'COUNT', 'START_DATE', 'DISTINCT v.start_date', null, null, null, FALSE, TRUE),
   ('Duration', null, null, 'DURATION', 'duration', null, null, null, FALSE, FALSE),

@@ -60,7 +60,10 @@ public class FeAnalysisAggregateEntity implements FeatureAnalysisAggregate, With
   @Column(name = "is_default")
   private boolean isDefault;
 
-  @Column(name = "criteria_columns")
+  @Column(name = "missing_means_zero")
+  private boolean isMissingMeansZero;
+
+	@Column(name = "criteria_columns")
   @Type(type = "enum-list", parameters = {
           @Parameter(name = "enumClass", value = "org.ohdsi.circe.cohortdefinition.builders.CriteriaColumn")
   })
@@ -163,5 +166,13 @@ public class FeAnalysisAggregateEntity implements FeatureAnalysisAggregate, With
 
   public void setDefault(boolean aDefault) {
     isDefault = aDefault;
+  }
+
+  public boolean isMissingMeansZero() {
+    return isMissingMeansZero;
+  }
+
+  public void setMissingMeansZero(boolean aDefault) {
+    isMissingMeansZero = aDefault;
   }
 }

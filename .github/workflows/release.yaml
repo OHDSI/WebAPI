@@ -6,7 +6,7 @@ on:
     types: [published]
 
 env:
-  DOCKER_IMAGE: thehyve/ohdsi-atlas
+  DOCKER_IMAGE: ohdsi/webapi
 
 jobs:
   upload:
@@ -89,9 +89,9 @@ jobs:
           # Allow running the image on the architectures supported by nginx-unprivileged:alpine.
           platforms: linux/amd64,linux/arm/v7,linux/arm64
           push: true
-          build-args:
-            GIT_BRANCH: ${{ steps.docker_meta.outputs.version }}
-            GIT_COMMIT_ID_ABBREV: ${{ steps.build_params.outputs.sha8 }}
+          build-args: |
+            GIT_BRANCH=${{ steps.docker_meta.outputs.version }}
+            GIT_COMMIT_ID_ABBREV=${{ steps.build_params.outputs.sha8 }}
           tags: ${{ steps.docker_meta.outputs.tags }}
           # Use runtime labels from docker_meta as well as fixed labels
           labels: |
@@ -99,6 +99,7 @@ jobs:
             maintainer=Joris Borgdorff <joris@thehyve.nl>, Lee Evans - www.ltscomputingllc.com
             org.opencontainers.image.authors=Joris Borgdorff <joris@thehyve.nl>, Lee Evans - www.ltscomputingllc.com
             org.opencontainers.image.vendor=OHDSI
+            org.opencontainers.image.licenses=Apache-2.0
 
       - name: Inspect image
         run: |

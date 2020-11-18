@@ -108,9 +108,9 @@ jobs:
           platforms: ${{ steps.build_params.outputs.platforms }}
           push: ${{ steps.build_params.outputs.push }}
           load: ${{ steps.build_params.outputs.load }}
-          build-args:
-            GIT_BRANCH: ${{ steps.docker_meta.outputs.version }}
-            GIT_COMMIT_ID_ABBREV: ${{ steps.build_params.outputs.sha8 }}
+          build-args: |
+            GIT_BRANCH=${{ steps.docker_meta.outputs.version }}
+            GIT_COMMIT_ID_ABBREV=${{ steps.build_params.outputs.sha8 }}
           tags: ${{ steps.docker_meta.outputs.tags }}
           # Use runtime labels from docker_meta as well as fixed labels
           labels: |
@@ -118,6 +118,7 @@ jobs:
             maintainer=Joris Borgdorff <joris@thehyve.nl>, Lee Evans - www.ltscomputingllc.com
             org.opencontainers.image.authors=Joris Borgdorff <joris@thehyve.nl>, Lee Evans - www.ltscomputingllc.com
             org.opencontainers.image.vendor=OHDSI
+            org.opencontainers.image.licenses=Apache-2.0
 
       # If the image was pushed, we need to pull it again to inspect it
       - name: Pull image

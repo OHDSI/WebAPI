@@ -27,6 +27,7 @@ public class ComparativeDistributionItem extends ComparativeItem {
 
     private final Integer aggregateId;
     private final String aggregateName;
+    private final Boolean missingMeansZero;
 
     public ComparativeDistributionItem(DistributionItem firstItem, DistributionItem secondItem, CohortDefinition firstCohortDef,
                                        CohortDefinition secondCohortDef) {
@@ -35,6 +36,7 @@ public class ComparativeDistributionItem extends ComparativeItem {
         DistributionItem item = Objects.nonNull(firstItem) ? firstItem : secondItem;
         this.aggregateId = item.getAggregateId();
         this.aggregateName = item.getAggregateName();
+        this.missingMeansZero = item.isMissingMeansZero();
 
         this.targetStdDev = firstItem != null ? firstItem.getStdDev() : null;
         this.targetMin = firstItem != null ? firstItem.getMin() : null;
@@ -135,5 +137,9 @@ public class ComparativeDistributionItem extends ComparativeItem {
 
     public String getAggregateName() {
         return aggregateName;
+    }
+
+    public Boolean isMissingMeansZero() {
+        return missingMeansZero;
     }
 }

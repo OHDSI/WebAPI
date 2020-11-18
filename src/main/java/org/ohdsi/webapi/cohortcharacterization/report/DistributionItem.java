@@ -16,6 +16,7 @@ public class DistributionItem extends PrevalenceItem<DistributionItem> {
     private final Double max;
     private final Integer aggregateId;
     private final String aggregateName;
+    private final Boolean missingMeansZero;
 
     public DistributionItem(CcDistributionStat distributionStat, String cohortName) {
         super(distributionStat, cohortName);
@@ -29,6 +30,7 @@ public class DistributionItem extends PrevalenceItem<DistributionItem> {
         this.max = distributionStat.getMax();
         this.aggregateId = distributionStat.getAggregateId();
         this.aggregateName = distributionStat.getAggregateName();
+        this.missingMeansZero = distributionStat.isMissingMeansZero();
     }
 
     @Override
@@ -45,6 +47,7 @@ public class DistributionItem extends PrevalenceItem<DistributionItem> {
         values.add(this.getCovariateName());
         values.add(this.getCovariateShortName());
         values.add(this.aggregateName);
+        values.add(String.valueOf(this.missingMeansZero));
         values.add(String.valueOf(this.count));
         values.add(String.valueOf(this.avg));
         values.add(String.valueOf(this.stdDev));
@@ -109,5 +112,9 @@ public class DistributionItem extends PrevalenceItem<DistributionItem> {
 
     public String getAggregateName() {
         return aggregateName;
+    }
+
+    public Boolean isMissingMeansZero() {
+        return missingMeansZero;
     }
 }

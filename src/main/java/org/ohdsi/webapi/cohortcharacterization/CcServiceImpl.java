@@ -161,7 +161,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     private final List<String[]> executionDistributionHeaderLines = new ArrayList<String[]>() {{
         add(new String[]{"Analysis ID", "Analysis name", "Strata ID",
-                "Strata name", "Cohort ID", "Cohort name", "Covariate ID", "Covariate name", "Covariate short name", "Value field",
+                "Strata name", "Cohort ID", "Cohort name", "Covariate ID", "Covariate name", "Covariate short name", "Value field","Missing Means Zero",
                 "Count", "Avg", "StdDev", "Min", "P10", "P25", "Median", "P75", "P90", "Max"});
     }};
 

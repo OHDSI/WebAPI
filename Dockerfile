@@ -1,15 +1,24 @@
-FROM maven:3.6-adoptopenjdk-8 as builder
+FROM maven:3.6-jdk-11 as builder
 
 WORKDIR /code
 
-ARG MAVEN_PROFILE=webapi-postgresql
+ARG MAVEN_PROFILE=webapi-docker
 
 # Download dependencies
 COPY pom.xml /code/
-COPY .git /code/.git
-COPY src /code/src
+RUN mkdir .git \
+    && mvn package \
+     -P${MAVEN_PROFILE}
+
+ARG GIT_BRANCH=unknown
+ARG GIT_COMMIT_ID_ABBREV=unknown
+
 # Compile code and repackage it
-RUN mvn package -P${MAVEN_PROFILE} -DskipTests -Dmiredot.phase=none \
+COPY src /code/src
+RUN mvn package \
+    -Dgit.branch=${GIT_BRANCH} \
+    -Dgit.commit.id.abbrev=${GIT_COMMIT_ID_ABBREV} \
+    -P${MAVEN_PROFILE} \
     && mkdir war \
     && mv target/WebAPI.war war \
     && cd war \

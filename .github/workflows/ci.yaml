@@ -79,6 +79,7 @@ jobs:
       - name: Set build parameters
         id: build_params
         run: |
+          echo "::set-output name=sha8::${GITHUB_SHA::8}"
           if [ ${{ github.event_name == 'pull_request' }} ]; then
             echo "::set-output name=push::false"
             echo "::set-output name=load::true"
@@ -107,6 +108,9 @@ jobs:
           platforms: ${{ steps.build_params.outputs.platforms }}
           push: ${{ steps.build_params.outputs.push }}
           load: ${{ steps.build_params.outputs.load }}
+          build-args:
+            GIT_BRANCH: ${{ steps.docker_meta.outputs.version }}
+            GIT_COMMIT_ID_ABBREV: ${{ steps.build_params.outputs.sha8 }}
           tags: ${{ steps.docker_meta.outputs.tags }}
           # Use runtime labels from docker_meta as well as fixed labels
           labels: |

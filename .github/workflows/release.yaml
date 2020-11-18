@@ -35,7 +35,7 @@ jobs:
           restoreKey: ${{ runner.os }}-maven-
 
       - name: Build code
-        run: mvn -B -DskipTests -P${{ MAVEN_PROFILE }} package
+        run: mvn -B -DskipTests -P${{ env.MAVEN_PROFILE }} package
 
       # Upload it to GitHub
       - name: Upload to GitHub

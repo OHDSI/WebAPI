@@ -15,6 +15,7 @@ public class CcDistributionStat extends CcPrevalenceStat implements Distribution
     private Double max;
     private Integer aggregateId;
     private String aggregateName;
+    private Boolean missingMeansZero;
     
     @Override
     public Double getAvg() {
@@ -120,5 +121,14 @@ public class CcDistributionStat extends CcPrevalenceStat implements Distribution
 
     public void setAggregateName(String aggregateName) {
         this.aggregateName = aggregateName;
+    }
+
+    @Override
+    public Boolean isMissingMeansZero() {
+        return missingMeansZero;
+    }
+
+    public void setMissingMeansZero(Boolean missingMeansZero) {
+        this.missingMeansZero = missingMeansZero;
     }
 }

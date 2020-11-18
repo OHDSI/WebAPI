@@ -32,7 +32,8 @@ select
        r.strata_id,
        r.strata_name,
        r.aggregate_id,
-       r.aggregate_name
+       r.aggregate_name,
+       r.missing_means_zero
 from @results_database_schema.cc_results r
   JOIN threshold_passed_ids tpi ON tpi.covariate_id = r.covariate_id
   JOIN @vocabulary_schema.concept c on c.concept_id = r.concept_id

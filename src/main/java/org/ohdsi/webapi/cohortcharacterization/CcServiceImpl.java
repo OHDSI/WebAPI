@@ -988,6 +988,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         stat.setMax(rs.getDouble("max_value"));
         stat.setAggregateId(rs.getInt("aggregate_id"));
         stat.setAggregateName(rs.getString("aggregate_name"));
+        stat.setMissingMeansZero(rs.getInt("missing_means_zero")==1);
     }
 
     public String getTimeWindow(String analysisName) {

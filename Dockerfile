@@ -1,4 +1,4 @@
-FROM maven:3.6-jdk-8 as builder
+FROM maven:3.6-adoptopenjdk-8 as builder
 
 WORKDIR /code
 
@@ -9,11 +9,11 @@ COPY pom.xml /code/
 COPY .git /code/.git
 COPY src /code/src
 # Compile code and repackage it
-RUN mvn package -P${MAVEN_PROFILE} -DskipTests \
+RUN mvn package -P${MAVEN_PROFILE} -DskipTests -Dmiredot.phase=none \
     && mkdir war \
     && mv target/WebAPI.war war \
     && cd war \
-    && unzip WebAPI.war \
+    && jar -xf WebAPI.war \
     && rm WebAPI.war
 
 # OHDSI WebAPI and ATLAS web application running as a Spring Boot application with Java 11

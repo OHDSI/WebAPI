@@ -87,7 +87,7 @@ jobs:
           context: ./
           file: ./Dockerfile
           # Allow running the image on the architectures supported by nginx-unprivileged:alpine.
-          platforms: linux/amd64,linux/arm/v7,linux/arm64
+          platforms: linux/amd64,linux/arm64
           push: true
           build-args: |
             GIT_BRANCH=${{ steps.docker_meta.outputs.version }}

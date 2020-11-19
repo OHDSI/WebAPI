@@ -480,9 +480,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 			for (String stepCol : STEP_COLUMNS) {
 				String step = rs.getString(stepCol);
 
-				if (step == null) {
-					break; // cancel for-loop when we encounter a column with a null value
-				}
+				if (step == null) break; // cancel for-loop when we encounter a column with a null value
+
 				path.add(step);
 			}
 			pathList.put(StringUtils.join(path, "-"), rs.getInt("count_value")); // for a given cohort, a path must be unique, so no need to check
@@ -525,8 +524,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 						new String[]{GENERATION_ID},
 						new Object[]{generationId}
 		);
-		Map<Integer, Map<String, Integer>> pathwayResults
-						= getSourceJdbcTemplate(source).query(pathwayResultsPsr.getSql(), pathwayResultsPsr.getOrderedParams(), pathwayExtractor);
+		Map<Integer, Map<String, Integer>> pathwayResults = 
+						getSourceJdbcTemplate(source).query(pathwayResultsPsr.getSql(), pathwayResultsPsr.getOrderedParams(), pathwayExtractor);
 
 		cohortStats.stream().forEach((cp) -> {
 			cp.setPathwaysCounts(pathwayResults.get(cp.getCohortId()));

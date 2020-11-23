@@ -45,6 +45,10 @@ public abstract class FeAnalysisCriteriaEntity implements WithId<Long> {
     @Type(type = "org.hibernate.type.TextType")
     private String expressionString;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "fe_aggregate_id")
+    private FeAnalysisAggregateEntity aggregate;
+
     @ManyToOne(optional = false, targetEntity = FeAnalysisWithCriteriaEntity.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "fe_analysis_id")
     private FeAnalysisWithCriteriaEntity featureAnalysis;
@@ -80,5 +84,13 @@ public abstract class FeAnalysisCriteriaEntity implements WithId<Long> {
 
     public void setExpressionString(final String expressionString) {
         this.expressionString = expressionString;
+    }
+
+    public FeAnalysisAggregateEntity getAggregate() {
+        return aggregate;
+    }
+
+    public void setAggregate(FeAnalysisAggregateEntity aggregate) {
+        this.aggregate = aggregate;
     }
 }

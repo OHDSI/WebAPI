@@ -2,11 +2,11 @@ package org.ohdsi.webapi.feanalysis;
 
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisAggregateEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
-import org.ohdsi.webapi.prediction.PredictionAnalysis;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -48,4 +48,6 @@ public interface FeAnalysisService {
     Optional<? extends FeAnalysisEntity> findByDesignAndName(FeAnalysisWithStringEntity withStringEntity, final String name);
 
     Optional<FeAnalysisEntity> findByCriteriaListAndCsAndDomainAndStat(List<? extends FeAnalysisCriteriaEntity> newCriteriaList, FeAnalysisWithCriteriaEntity<? extends FeAnalysisCriteriaEntity> feAnalysis);
+
+    List<FeAnalysisAggregateEntity> findAggregates();
 }

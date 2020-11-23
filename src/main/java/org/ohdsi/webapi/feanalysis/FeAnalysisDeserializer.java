@@ -18,6 +18,7 @@ import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisD
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.webapi.feanalysis.dto.BaseFeAnalysisCriteriaDTO;
+import org.ohdsi.webapi.feanalysis.dto.FeAnalysisAggregateDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisWithConceptSetDTO;
 import org.springframework.beans.factory.annotation.Autowired;

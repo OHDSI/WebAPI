@@ -122,8 +122,8 @@ public class IRAnalysisQueryBuilder {
               String.format("UNION\nselect combos.target_id, combos.outcome_id, t.subject_id, t.cohort_start_date, %s as followup_end, 0 as is_case",
               SqlUtils.dateStringToSql(analysisExpression.studyWindow.endDate))
       );
-      endDatesQuery.append("\nFROM cteCohortCombos combos");
-      endDatesQuery.append("\nJOIN  cteCohortData t on combos.target_id = t.target_id and combos.outcome_id = t.outcome_id");
+      endDatesQuery.append("\nFROM #cteCohortCombos combos");
+      endDatesQuery.append("\nJOIN  #cteCohortData t on combos.target_id = t.target_id and combos.outcome_id = t.outcome_id");
 
       resultSql = StringUtils.replace(resultSql, "@EndDateUnions", endDatesQuery.toString());
     }

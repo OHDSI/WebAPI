@@ -10,6 +10,7 @@ import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEnti
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.feanalysis.domain.*;
 import org.ohdsi.webapi.feanalysis.event.FeAnalysisChangedEvent;
+import org.ohdsi.webapi.feanalysis.repository.FeAnalysisAggregateRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisCriteriaRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisEntityRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisWithStringEntityRepository;
@@ -38,6 +39,7 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     private final VocabularyService vocabularyService;
     
     private final ApplicationEventPublisher eventPublisher;
+    private FeAnalysisAggregateRepository aggregateRepository;
 
     private final EntityGraph defaultEntityGraph = EntityUtils.fromAttributePaths(
             "createdBy",
@@ -46,14 +48,16 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
 
     public FeAnalysisServiceImpl(
             final FeAnalysisEntityRepository analysisRepository,
-            final FeAnalysisCriteriaRepository criteriaRepository,
+            final FeAnalysisCriteriaRepository criteriaRepository, 
             final FeAnalysisWithStringEntityRepository stringAnalysisRepository,
             final VocabularyService vocabularyService,
-            ApplicationEventPublisher eventPublisher) {
+            final FeAnalysisAggregateRepository aggregateRepository,
+            final ApplicationEventPublisher eventPublisher) {
         this.analysisRepository = analysisRepository;
         this.criteriaRepository = criteriaRepository;
         this.stringAnalysisRepository = stringAnalysisRepository;
         this.vocabularyService = vocabularyService;
+        this.aggregateRepository = aggregateRepository;
         this.eventPublisher = eventPublisher;
     }
 
@@ -261,5 +265,11 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
         if (entity.getLocked() == Boolean.TRUE) {
             throw new IllegalArgumentException(String.format("Feature analysis %s is locked.", entity.getName()));
         }
+    }
+
+    @Override
+    public List<FeAnalysisAggregateEntity> findAggregates() {
+
+        return aggregateRepository.findAll();
     }
 }

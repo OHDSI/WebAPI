@@ -5,11 +5,13 @@ import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisD
 import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.common.OptionDTO;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisAggregateEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithDistributionCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithPrevalenceCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
+import org.ohdsi.webapi.feanalysis.dto.FeAnalysisAggregateDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
 import org.ohdsi.webapi.util.ExportUtil;
@@ -19,8 +21,8 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -38,6 +40,7 @@ import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Path("/feature-analysis")
 @Controller
@@ -188,6 +191,14 @@ public class FeAnalysisController {
         return entityForCopy;
     }
 
+    @GET
+    @Path("/aggregates")
+    public List<FeAnalysisAggregateDTO> listAggregates() {
+        return service.findAggregates().stream()
+                .map(this::convertFeAnalysisAggregateToDto)
+                .collect(Collectors.toList());
+    }
+
     private FeAnalysisShortDTO convertFeAnaysisToShortDto(final FeatureAnalysis entity) {
         return conversionService.convert(entity, FeAnalysisShortDTO.class);
     }
@@ -199,4 +210,8 @@ public class FeAnalysisController {
     private List<String> getNamesLike(String copyName) {
         return service.getNamesLike(copyName);
     }
+    private FeAnalysisAggregateDTO convertFeAnalysisAggregateToDto(final FeAnalysisAggregateEntity entity) {
+        return conversionService.convert(entity, FeAnalysisAggregateDTO.class);
+    }
+
 }

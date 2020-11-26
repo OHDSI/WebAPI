@@ -52,7 +52,7 @@ Acceptable values are `true` and `false`
 
 ## Geospatial support
 
-Instructions can be found at [webapi-component-geospatial](https://github.com/OHDSI/webapi-component-geospatia)
+Instructions can be found at [webapi-component-geospatial](https://github.com/OHDSI/webapi-component-geospatial)
 
 ## Testing
 

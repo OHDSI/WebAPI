@@ -16,6 +16,7 @@
     <flyway.version>4.2.0</flyway.version>
     <waffle.version>2.2.1</waffle.version>
     <jna.version>5.5.0</jna.version>
+    <shiro.version>1.6.0</shiro.version>
 
     <circe.version>1.9.0-SNAPSHOT</circe.version>
     <jersey.version>2.14</jersey.version>
@@ -681,17 +682,17 @@
     <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-core</artifactId>
-      <version>1.5.1</version>
+      <version>${shiro.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-web</artifactId>
-      <version>1.5.1</version>
+      <version>${shiro.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-spring</artifactId>
-      <version>1.5.1</version>
+      <version>${shiro.version}</version>
     </dependency>
     <dependency>
       <groupId>com.github.waffle</groupId>
@@ -731,7 +732,7 @@
     <dependency>
       <groupId>io.buji</groupId>
       <artifactId>buji-pac4j</artifactId>
-      <version>5.0.0</version>
+      <version>5.0.1</version>
     </dependency>
     <dependency>
       <groupId>org.pac4j</groupId>

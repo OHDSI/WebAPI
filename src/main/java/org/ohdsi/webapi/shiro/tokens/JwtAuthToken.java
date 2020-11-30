@@ -22,5 +22,5 @@ public class JwtAuthToken implements AuthenticationToken {
   @Override
   public Object getCredentials() {
     return "";
-  }  
+  }
 }

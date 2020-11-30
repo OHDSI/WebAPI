@@ -48,6 +48,7 @@ public class OidcConfCreator {
         conf.setSecret(apiSecret);
         conf.setDiscoveryURI(url);
         conf.setLogoutUrl(logoutUrl);
+        conf.setWithState(false);
         conf.setPreferredJwsAlgorithm(JWSAlgorithm.RS256);
         return conf;
     }

@@ -28,6 +28,7 @@ import org.ohdsi.webapi.shiro.realms.JwtAuthRealm;
 import org.ohdsi.webapi.shiro.realms.KerberosAuthRealm;
 import org.ohdsi.webapi.shiro.realms.LdapRealm;
 import org.ohdsi.webapi.user.importer.providers.LdapProvider;
+import org.ohdsi.webapi.util.ResourceUtils;
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.pac4j.cas.client.CasClient;
 import org.pac4j.cas.config.CasConfiguration;
@@ -37,6 +38,7 @@ import org.pac4j.core.config.Config;
 import org.pac4j.core.http.callback.CallbackUrlResolver;
 import org.pac4j.core.http.callback.PathParameterCallbackUrlResolver;
 import org.pac4j.core.http.callback.QueryParameterCallbackUrlResolver;
+import org.pac4j.core.util.CommonHelper;
 import org.pac4j.oauth.client.FacebookClient;
 import org.pac4j.oauth.client.GitHubClient;
 import org.pac4j.oauth.client.Google2Client;
@@ -52,6 +54,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.core.io.Resource;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -507,11 +510,14 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
     private void setUpSaml(Map<FilterTemplates, Filter> filters) {
       try {
-        final SAML2Configuration cfg = new SAML2Configuration(
-                keyStoreFile,
-                keyStorePassword,
-                privateKeyPassword,
-                metadataLocation);
+          final SAML2Configuration cfg = new SAML2Configuration(
+                  ResourceUtils.mapPathToResource(keyStoreFile),
+                  alias,
+                  null,
+                  keyStorePassword,
+                  privateKeyPassword,
+                  ResourceUtils.mapPathToResource(metadataLocation));
+
         cfg.setMaximumAuthenticationLifetime(3600);
         cfg.setServiceProviderEntityId(identityProviderEntityId);
 

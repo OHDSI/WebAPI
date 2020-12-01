@@ -9,6 +9,9 @@ import org.ohdsi.webapi.security.model.EntityPermissionSchema;
 import org.ohdsi.webapi.security.model.EntityPermissionSchemaResolver;
 import org.ohdsi.webapi.security.model.EntityType;
 import org.ohdsi.webapi.security.model.SourcePermissionSchema;
+import org.ohdsi.webapi.security.model.UserSimpleAuthorizationInfo;
+import org.ohdsi.webapi.service.converters.BaseCommonEntityToDTOConverter;
+import org.ohdsi.webapi.service.dto.CommonEntityDTO;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.PermissionRepository;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
@@ -19,16 +22,21 @@ import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.Advised;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.annotation.PostConstruct;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -41,6 +49,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class PermissionService {
+    private final Logger logger = LoggerFactory.getLogger(PermissionService.class);
 
     private final WebApplicationContext appContext;
     private final PermissionManager permissionManager;
@@ -53,6 +62,9 @@ public class PermissionService {
     private final ConversionService conversionService;
 
     private Repositories repositories;
+
+    @Value("#{!'${security.provider}'.equals('DisabledSecurity')}")
+    private boolean securityEnabled;
 
     private ThreadLocal<ConcurrentHashMap<EntityType, ConcurrentHashMap<String, Set<RoleDTO>>>> permissionCache =
             ThreadLocal.withInitial(ConcurrentHashMap::new);
@@ -219,5 +231,29 @@ public class PermissionService {
 
     public void clearPermissionCache() {
         this.permissionCache.set(new ConcurrentHashMap<>());
+    }
+
+    public void fillWriteAccess(CommonEntity entity, CommonEntityDTO entityDTO) {
+        if (securityEnabled && entity.getCreatedBy() != null) {
+            try {
+                String login = this.permissionManager.getSubjectName();
+                UserSimpleAuthorizationInfo authorizationInfo = this.permissionManager.getAuthorizationInfo(login);
+                if (!Objects.equals(authorizationInfo.getUserId(), entity.getCreatedBy().getId())) {
+                    EntityType entityType = entityPermissionSchemaResolver.getEntityType(entity.getClass());
+
+                    List<RoleDTO> roles = getRolesHavingPermissions(entityType, entity.getId());
+
+                    Collection<String> userRoles = authorizationInfo.getRoles();
+                    boolean hasRole = roles.stream()
+                            .anyMatch(r -> userRoles.stream()
+                                    .anyMatch(re -> re.equals(r.getName())));
+
+                    entityDTO.setHasWriteAccess(hasRole);
+                }
+            } catch (Exception e) {
+                logger.error("Error getting user roles and permissions", e);
+                throw new RuntimeException(e);
+            }
+        }
     }
 }

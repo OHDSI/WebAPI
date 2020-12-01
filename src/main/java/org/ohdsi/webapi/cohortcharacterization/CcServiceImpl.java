@@ -1016,7 +1016,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                     this.<FeAnalysisWithCriteriaEntity<?>>addAnalysis(savedAnalysesIds, analysesSet, criteriaAnalysis, entityCriteriaSet, a -> analysisService.createCriteriaAnalysis(a));
                     break;
                 case PRESET:
-                    analysesSet.add(presetAnalysesMap.get(newAnalysis.getDesign()));
+                    analysesSet.add(presetAnalysesMap.get(newAnalysis.getName()));
                     break;
                 case CUSTOM_FE:
                     FeAnalysisWithStringEntity withStringEntity = (FeAnalysisWithStringEntity) newAnalysis;
@@ -1048,7 +1048,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         return analysisService
                 .findPresetAnalysesBySystemNames(gatherPresetAnalyses(entity))
                 .stream()
-                .collect(Collectors.toMap(FeAnalysisEntity::getDesign, Function.identity()));
+                .collect(Collectors.toMap(FeAnalysisEntity::getName, Function.identity()));
     }
 
     private List<String> gatherPresetAnalyses(final CohortCharacterizationEntity entity) {

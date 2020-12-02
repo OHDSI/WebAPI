@@ -30,6 +30,7 @@ import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
+import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
@@ -76,6 +77,9 @@ public class ConceptSetService extends AbstractDaoService {
     @Autowired
     private Security security;
 
+    @Autowired
+    private PermissionService permissionService;
+
     public static final String COPY_NAME = "copyName";
 
     @Path("{id}")
@@ -93,7 +97,11 @@ public class ConceptSetService extends AbstractDaoService {
     public Collection<ConceptSetDTO> getConceptSets() {
         return getTransactionTemplate().execute(transactionStatus ->
                 StreamSupport.stream(getConceptSetRepository().findAll().spliterator(), false)
-                        .map(conceptSet -> conversionService.convert(conceptSet, ConceptSetDTO.class))
+                        .map(conceptSet -> {
+                            ConceptSetDTO dto = conversionService.convert(conceptSet, ConceptSetDTO.class);
+                            permissionService.fillWriteAccess(conceptSet, dto);
+                            return dto;
+                        })
                         .collect(Collectors.toList())
         );
     }

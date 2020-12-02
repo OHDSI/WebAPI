@@ -51,6 +51,7 @@ import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisExpression;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.dto.AnalysisInfoDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisShortDTO;
@@ -171,6 +172,9 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
   @Autowired
   private IRChecker checker;
+
+  @Autowired
+  private PermissionService permissionService;
 
   public IRAnalysisService(final ObjectMapper objectMapper) {
 
@@ -327,7 +331,11 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     return getTransactionTemplate().execute(transactionStatus -> {
       Iterable<IncidenceRateAnalysis> analysisList = this.irAnalysisRepository.findAll();
       return StreamSupport.stream(analysisList.spliterator(), false)
-              .map(analysis -> conversionService.convert(analysis, IRAnalysisShortDTO.class))
+              .map(analysis -> {
+                IRAnalysisShortDTO dto = conversionService.convert(analysis, IRAnalysisShortDTO.class);
+                permissionService.fillWriteAccess(analysis, dto);
+                return dto;
+              })
               .collect(Collectors.toList());
     });
   }

@@ -3,6 +3,7 @@ package org.ohdsi.webapi.feanalysis;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.ohdsi.webapi.Pagination;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcShortDTO;
 import org.ohdsi.webapi.common.OptionDTO;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisAggregateEntity;
@@ -14,9 +15,11 @@ import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisAggregateDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
+import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.HttpUtils;
 import org.ohdsi.webapi.util.NameUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -48,12 +51,15 @@ public class FeAnalysisController {
 
     private FeAnalysisService service;
     private ConversionService conversionService;
+    private PermissionService permissionService;
 
     FeAnalysisController(
             final FeAnalysisService service,
-            final ConversionService conversionService) {
+            final ConversionService conversionService,
+            PermissionService permissionService) {
         this.service = service;
         this.conversionService = conversionService;
+        this.permissionService = permissionService;
     }
 
     @GET
@@ -61,7 +67,11 @@ public class FeAnalysisController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Page<FeAnalysisShortDTO> list(@Pagination Pageable pageable) {
-        return service.getPage(pageable).map(this::convertFeAnaysisToShortDto);
+        return service.getPage(pageable).map(entity -> {
+            FeAnalysisShortDTO dto = convertFeAnaysisToShortDto(entity);
+            permissionService.fillWriteAccess(entity, dto);
+            return dto;
+        });
     }
 
     @GET

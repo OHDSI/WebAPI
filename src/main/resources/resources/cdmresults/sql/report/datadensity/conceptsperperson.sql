@@ -80,3 +80,16 @@ SELECT
 FROM @results_database_schema.achilles_results_dist ard1
 WHERE ard1.analysis_id = 1003
 
+UNION
+
+SELECT
+  'Measurement'  AS category,
+  ard1.min_Value    AS min_Value,
+  ard1.p10_Value    AS p10_Value,
+  ard1.p25_Value    AS p25_Value,
+  ard1.median_Value AS median_Value,
+  ard1.p75_Value    AS p75_Value,
+  ard1.p90_Value    AS p90_Value,
+  ard1.max_Value    AS max_Value
+FROM @results_database_schema.achilles_results_dist ard1
+WHERE ard1.analysis_id = 1803

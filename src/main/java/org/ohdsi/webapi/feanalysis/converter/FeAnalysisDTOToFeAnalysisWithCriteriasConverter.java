@@ -5,6 +5,7 @@ import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.webapi.feanalysis.domain.*;
 import org.ohdsi.webapi.feanalysis.dto.*;
+import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -50,14 +51,20 @@ public class FeAnalysisDTOToFeAnalysisWithCriteriasConverter extends BaseFeAnaly
 
     FeAnalysisBuilder getBuilder(CcResultType statType) {
         if (Objects.equals(CcResultType.PREVALENCE, statType)) {
-            return FeAnalysisPrevalenceCriteriaBuilder.INSTANCE;
+            return new FeAnalysisPrevalenceCriteriaBuilder(conversionService);
         } else if (Objects.equals(CcResultType.DISTRIBUTION, statType)) {
-            return FeAnalysisDistributionCriteriaBuilder.INSTANCE;
+            return new FeAnalysisDistributionCriteriaBuilder(conversionService);
         }
         throw new IllegalArgumentException(String.format(RESULT_TYPE_IS_NOT_SUPPORTED, statType));
     }
 
     static abstract class FeAnalysisBuilderSupport<T extends FeAnalysisCriteriaEntity>  implements FeAnalysisBuilder<T> {
+
+        private GenericConversionService conversionService;
+
+        public FeAnalysisBuilderSupport(GenericConversionService conversionService) {
+            this.conversionService = conversionService;
+        }
 
         public List<T> buildList(final Object design) {
             List<T> result = new ArrayList<>();
@@ -73,6 +80,7 @@ public class FeAnalysisDTOToFeAnalysisWithCriteriasConverter extends BaseFeAnaly
                         criteriaEntity.setExpressionString(Utils.serialize(getExpression(typifiedCriteria)));
                         criteriaEntity.setId(typifiedCriteria.getId());
                         criteriaEntity.setName(typifiedCriteria.getName());
+                        criteriaEntity.setAggregate(conversionService.convert(typifiedCriteria.getAggregate(), FeAnalysisAggregateEntity.class));
                         result.add(criteriaEntity);
                     }
                 }
@@ -87,7 +95,9 @@ public class FeAnalysisDTOToFeAnalysisWithCriteriasConverter extends BaseFeAnaly
 
     static class FeAnalysisPrevalenceCriteriaBuilder extends FeAnalysisBuilderSupport<FeAnalysisCriteriaGroupEntity>{
 
-        final static FeAnalysisPrevalenceCriteriaBuilder INSTANCE = new FeAnalysisPrevalenceCriteriaBuilder();
+        public FeAnalysisPrevalenceCriteriaBuilder(GenericConversionService conversionService) {
+            super(conversionService);
+        }
 
         @Override
         public FeAnalysisWithCriteriaEntity<FeAnalysisCriteriaGroupEntity> createFeAnalysisObject() {
@@ -110,7 +120,9 @@ public class FeAnalysisDTOToFeAnalysisWithCriteriasConverter extends BaseFeAnaly
 
     static class FeAnalysisDistributionCriteriaBuilder extends FeAnalysisBuilderSupport<FeAnalysisDistributionCriteriaEntity> {
 
-        final static FeAnalysisDistributionCriteriaBuilder INSTANCE = new FeAnalysisDistributionCriteriaBuilder();
+        public FeAnalysisDistributionCriteriaBuilder(GenericConversionService conversionService) {
+            super(conversionService);
+        }
 
         @Override
         public FeAnalysisWithCriteriaEntity<FeAnalysisDistributionCriteriaEntity> createFeAnalysisObject() {

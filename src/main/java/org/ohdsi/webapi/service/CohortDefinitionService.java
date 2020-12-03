@@ -40,6 +40,7 @@ import org.ohdsi.webapi.common.sensitiveinfo.CohortGenerationSensitiveInfoServic
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.dto.CheckResultDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.management.datasource.SourceIdAccessor;
@@ -161,6 +162,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 
 	@Autowired
 	private VocabularyService vocabularyService;
+
+	@Autowired
+	private PermissionService permissionService;
 
 	@PersistenceContext
 	protected EntityManager entityManager;
@@ -361,7 +365,11 @@ public class CohortDefinitionService extends AbstractDaoService {
 		List<CohortDefinition> definitions = cohortDefinitionRepository.list();
 
 		return definitions.stream()
-						.map(def -> conversionService.convert(def, CohortMetadataDTO.class))
+						.map(def -> {
+							CohortMetadataDTO dto = conversionService.convert(def, CohortMetadataDTO.class);
+							permissionService.fillWriteAccess(def, dto);
+							return dto;
+						})
 						.collect(Collectors.toList());
 	}
 

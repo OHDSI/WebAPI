@@ -15,6 +15,7 @@ import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisGenerationEntity;
 import org.ohdsi.webapi.pathway.dto.*;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
+import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.ExportUtil;
@@ -45,9 +46,10 @@ public class PathwayController {
     private final CommonGenerationSensitiveInfoService<CommonGenerationDTO> sensitiveInfoService;
     private final I18nService i18nService;
     private PathwayChecker checker;
+    private PermissionService permissionService;
 
     @Autowired
-    public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService, I18nService i18nService, PathwayChecker checker) {
+    public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService, PathwayChecker checker, PermissionService permissionService, I18nService i18nService) {
 
         this.conversionService = conversionService;
         this.converterUtils = converterUtils;
@@ -56,6 +58,7 @@ public class PathwayController {
         this.sensitiveInfoService = sensitiveInfoService;
         this.i18nService = i18nService;
         this.checker = checker;
+        this.permissionService = permissionService;
     }
 
     @POST
@@ -97,7 +100,11 @@ public class PathwayController {
     @Consumes(MediaType.APPLICATION_JSON)
     public Page<PathwayAnalysisDTO> list(@Pagination Pageable pageable) {
 
-        return pathwayService.getPage(pageable).map(pa -> conversionService.convert(pa, PathwayAnalysisDTO.class));
+        return pathwayService.getPage(pageable).map(pa -> {
+            PathwayAnalysisDTO dto = conversionService.convert(pa, PathwayAnalysisDTO.class);
+            permissionService.fillWriteAccess(pa, dto);
+            return dto;
+        });
     }
 
     @GET

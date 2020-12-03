@@ -162,7 +162,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     private final List<String[]> executionDistributionHeaderLines = new ArrayList<String[]>() {{
         add(new String[]{"Analysis ID", "Analysis name", "Strata ID",
-                "Strata name", "Cohort ID", "Cohort name", "Covariate ID", "Covariate name", "Covariate short name",
+                "Strata name", "Cohort ID", "Cohort name", "Covariate ID", "Covariate name", "Covariate short name", "Value field","Missing Means Zero",
                 "Count", "Avg", "StdDev", "Min", "P10", "P25", "Median", "P75", "P90", "Max"});
     }};
 
@@ -991,6 +991,9 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         stat.setP75(rs.getDouble("p75_value"));
         stat.setP90(rs.getDouble("p90_value"));
         stat.setMax(rs.getDouble("max_value"));
+        stat.setAggregateId(rs.getInt("aggregate_id"));
+        stat.setAggregateName(rs.getString("aggregate_name"));
+        stat.setMissingMeansZero(rs.getInt("missing_means_zero")==1);
     }
 
     public String getTimeWindow(String analysisName) {

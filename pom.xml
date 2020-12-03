@@ -448,6 +448,10 @@
 
   <repositories>
     <repository>
+      <id>central</id>
+      <url>https://repo.maven.apache.org/maven2</url>
+    </repository>
+    <repository>
       <id>ohdsi</id>
       <name>repo.ohdsi.org</name>
       <url>http://repo.ohdsi.org:8085/nexus/content/repositories/releases</url>
@@ -874,7 +878,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>standardized-analysis-specs</artifactId>
-      <version>1.2.0</version>
+      <version>1.2.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
@@ -884,7 +888,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>SkeletonCohortCharacterization</artifactId>
-      <version>1.1.0</version>
+      <version>1.2.0-SNAPSHOT</version>
       <exclusions>
         <exclusion>
           <groupId>org.ohdsi</groupId>

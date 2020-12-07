@@ -1386,12 +1386,19 @@
     "eventCohort": "Когорта событий",
     "rank": "Ранг",
     "distinctEventCohorts": "Отдельные когорты событий",
-    "ingredient": "Ингредиент"
+    "ingredient": "Ингредиент",
+    "sampleId": "ID образца",
+    "sampleName": "Имя образца",
+    "numberOfPatients": "Количество пациентов",
+    "selectionCriteria": "Критерий выбора",
+    "personId": "ID пациента",
+    "gender": "Пол",
+    "ageAtIndex": "Возраст по индексу"
   },
   "dataSources": {
     "headingTitle": "Источники данных",
-    "selectASource": "Выбрать источник данных",
-    "selectAReport": "Выбрать отчет",
+    "selectASource": "Выберите источник данных",
+    "selectAReport": "Выберите отчет",
     "loadingReport": "Загрузка отчета",
     "errorLoadingReport": "Ошибка загрузки отчета",
     "noPermission": "У вас недостаточно прав для просмотра этого отчета",
@@ -2573,6 +2580,17 @@
         "utilization": "Использование",
         "viewReports": "Просмотр отчетов"
       },
+      "samples": {
+        "sampleSelections": "Выбор образца",
+        "selectASource": "Выберите источник данных",
+        "addNewSample": "Добавить новый образец",
+        "cohortNotGeneratedNote": "Когорта не сгенерирована на этом источнике. Пожалуйста, перейдите на вкладку генерации и сгенерируйте когорту перед тем, как получить доступ к образцам.",
+        "cohortShouldBeGenerated":  "Перед созданием образцов необходимо сгенерировать когорту",
+        "errorFetchingList": "Ошибка получения списка образцов",
+        "errorDeleting": "Ошибка удаления образца",
+        "errorFetchingData": "Ошибка получения данных образца",
+        "errorRefreshing": "Ошибка обновления образца"
+      },
       "saveCohortTitle": "Сохранить определение когорты",
       "selectReport": "Выбор отчета",
       "tabs": {
@@ -2581,6 +2599,7 @@
         "explore": "Проводить исследования",
         "export": "Экспорт",
         "generation": "Генерация",
+        "samples": "Образцы",
         "messages": "Сообщения",
         "reporting": "Составление отчетов"
       }

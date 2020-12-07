@@ -1386,7 +1386,14 @@
     "pctOfCohort": "% 的队列",
     "eventCohort": "事件队列",
     "rank": "序列",
-    "distinctEventCohorts": "不同的事件队列"
+    "distinctEventCohorts": "不同的事件队列",
+    "sampleId": "Sample Id",
+    "sampleName": "Sample name",
+    "numberOfPatients": "Number of patients",
+    "selectionCriteria": "Selection criteria",
+    "personId": "Person ID",
+    "gender": "Gender",
+    "ageAtIndex": "Age at index"
   },
   "dataSources": {
     "achillesHeelReport": {
@@ -2573,6 +2580,17 @@
         "utilization": "使用",
         "viewReports": "查看报告"
       },
+      "samples": {
+        "sampleSelections": "Sample Selections",
+        "selectASource": "请选择一个来源",
+        "addNewSample": "Add new sample",
+        "cohortNotGeneratedNote": "This cohort has not been generated in the data source you selected. Please return to the generation tab to generate the cohort before accessing samples.",
+        "cohortShouldBeGenerated":  "Cohort should be generated before creating samples",
+        "errorFetchingList": "Error when fetching sample list, please try again later",
+        "errorDeleting": "Error when deleting sample, please try again later",
+        "errorFetchingData": "Error when fetching sample data, please try again later",
+        "errorRefreshing": "Error when refreshing sample, please try again later"
+      },
       "saveCohortTitle": "保存队列定义",
       "selectReport": "请选择一个报告",
       "tabs": {
@@ -2581,6 +2599,7 @@
         "explore": "关系探索",
         "export": "导出",
         "generation": "生成",
+        "samples": "Samples",
         "messages": "提示信息",
         "reporting": "报告"
       }

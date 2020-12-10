@@ -1,0 +1,13 @@
+pipeline {
+    agent any
+
+    stages {
+        stage("re-tag and upload image") {
+            steps {
+                dir('WebAPI') {
+                    sh './publish_production.sh'
+                }
+            }
+        }
+    }
+}

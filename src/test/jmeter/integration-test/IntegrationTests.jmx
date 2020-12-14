@@ -44,7 +44,7 @@
           </elementProp>
           <elementProp name="CasHost" elementType="Argument">
             <stringProp name="Argument.name">CasHost</stringProp>
-            <stringProp name="Argument.value">${__P(cas.url,https://cas-dev.honeur.org)}</stringProp>
+            <stringProp name="Argument.value">${__P(cas.url,https://cas-uat.honeur.org)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">The main URL of your CAS Instance</stringProp>
           </elementProp>
@@ -55,24 +55,24 @@
           </elementProp>
           <elementProp name="CasCentralCallback" elementType="Argument">
             <stringProp name="Argument.name">CasCentralCallback</stringProp>
-            <stringProp name="Argument.value">${__P(cas.central.callback.url,https://atlas-dev.honeur.org/webapi/user/oauth/cas)}</stringProp>
+            <stringProp name="Argument.value">${__P(cas.central.callback.url,https://atlas-uat.honeur.org/webapi/user/oauth/cas)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
             <stringProp name="Argument.desc">Service Provider url</stringProp>
           </elementProp>
           <elementProp name="CasLocalCallback" elementType="Argument">
             <stringProp name="Argument.name">CasLocalCallback</stringProp>
-            <stringProp name="Argument.value">${__P(cas.local.callback.url,http://52.215.165.36:8080/webapi/user/login/cas)}</stringProp>
+            <stringProp name="Argument.value">${__P(cas.local.callback.url,http://34.245.50.75/webapi/user/login/cas)}</stringProp>
             <stringProp name="Argument.desc">Service Provider url</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="WebAPICentralHost" elementType="Argument">
             <stringProp name="Argument.name">WebAPICentralHost</stringProp>
-            <stringProp name="Argument.value">${__P(webapi.central.url,https://atlas-dev.honeur.org/webapi)}</stringProp>
+            <stringProp name="Argument.value">${__P(webapi.central.url,https://atlas-uat.honeur.org/webapi)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="WebAPILocalHost" elementType="Argument">
             <stringProp name="Argument.name">WebAPILocalHost</stringProp>
-            <stringProp name="Argument.value">${__P(webapi.local.url,http://52.215.165.36:8080/webapi)}</stringProp>
+            <stringProp name="Argument.value">${__P(webapi.local.url,http://34.245.50.75/webapi)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="ExpressionFile" elementType="Argument">
@@ -83,6 +83,16 @@
           <elementProp name="sourceKey" elementType="Argument">
             <stringProp name="Argument.name">sourceKey</stringProp>
             <stringProp name="Argument.value">${__P(webapi.sourcekey,HONEUR_OMOP_CDM)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="UserCentral" elementType="Argument">
+            <stringProp name="Argument.name">UserCentral</stringProp>
+            <stringProp name="Argument.value">${__P(webapi.central.user,test-user-3@honeur-testing.org)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="PasswordCentral" elementType="Argument">
+            <stringProp name="Argument.name">PasswordCentral</stringProp>
+            <stringProp name="Argument.value">${__P(webapi.central.password,Testtest12345@)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
         </collectionProp>
@@ -113,18 +123,6 @@ expression = StringEscapeUtils.escapeJava(JsonOutput.toJson(data));
 vars.put(&quot;expression&quot;, expression);</stringProp>
         <stringProp name="scriptLanguage">groovy</stringProp>
       </JSR223PostProcessor>
-      <hashTree/>
-      <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Get Honeur Central Users/Passwords" enabled="true">
-        <stringProp name="filename">honeur-central-cas-users.csv</stringProp>
-        <stringProp name="fileEncoding"></stringProp>
-        <stringProp name="variableNames">UserCentral,PasswordCentral</stringProp>
-        <stringProp name="delimiter">,</stringProp>
-        <boolProp name="quotedData">false</boolProp>
-        <boolProp name="recycle">true</boolProp>
-        <boolProp name="stopThread">false</boolProp>
-        <stringProp name="shareMode">shareMode.all</stringProp>
-        <boolProp name="ignoreFirstLine">false</boolProp>
-      </CSVDataSet>
       <hashTree/>
       <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Get Honeur Local Users/Passwords" enabled="true">
         <stringProp name="filename">honeur-local-cas-users.csv</stringProp>
@@ -328,7 +326,7 @@ data = jsonSlurper.parseText(prev.getResponseDataAsString());
 success = false;
 
 for (d in data) {
- if(d.name == &quot;Site 1&quot;){
+ if(d.name == &quot;TestOrg1&quot;){
  	d.canRead = true;
  	success = true;
 	vars.put(&quot;organizationId&quot;, String.valueOf(d.organizationId));
@@ -1083,21 +1081,27 @@ AssertionResult.setFailure(running == &quot;COMPLETE&quot; &amp;&amp; inValid); 
               <message>true</message>
               <threadName>true</threadName>
               <dataType>true</dataType>
-              <encoding>false</encoding>
+              <encoding>true</encoding>
               <assertions>true</assertions>
               <subresults>true</subresults>
-              <responseData>false</responseData>
-              <samplerData>false</samplerData>
-              <xml>false</xml>
+              <responseData>true</responseData>
+              <samplerData>true</samplerData>
+              <xml>true</xml>
               <fieldNames>true</fieldNames>
-              <responseHeaders>false</responseHeaders>
-              <requestHeaders>false</requestHeaders>
+              <responseHeaders>true</responseHeaders>
+              <requestHeaders>true</requestHeaders>
               <responseDataOnError>false</responseDataOnError>
               <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
               <assertionsResultsToSave>0</assertionsResultsToSave>
               <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <fileName>true</fileName>
+              <hostname>true</hostname>
               <threadCounts>true</threadCounts>
+              <sampleCount>true</sampleCount>
               <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
             </value>
           </objProp>
           <stringProp name="filename"></stringProp>
@@ -1586,7 +1590,7 @@ data = jsonSlurper.parseText(prev.getResponseDataAsString());
 success = false;
 
 for (d in data) {
- if(d.name == &quot;Site 1&quot;){
+ if(d.name == &quot;TestOrg1&quot;){
  	d.canRead = true;
  	success = true;
 	vars.put(&quot;organizationId&quot;, String.valueOf(d.organizationId));
@@ -2100,7 +2104,7 @@ AssertionResult.setFailure(data.uuid != null || data.groupKey != null);
         </ResultCollector>
         <hashTree/>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Delete Definitions from HSS" enabled="false">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Delete Definitions from HSS" enabled="true">
         <stringProp name="ThreadGroup.on_sample_error">stopthread</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
           <boolProp name="LoopController.continue_forever">false</boolProp>
@@ -2188,7 +2192,7 @@ AssertionResult.setFailure(data.uuid != null || data.groupKey != null);
         <hashTree/>
       </hashTree>
       <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
-        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <boolProp name="ResultCollector.error_logging">true</boolProp>
         <objProp>
           <name>saveConfig</name>
           <value class="SampleSaveConfiguration">
@@ -2201,23 +2205,30 @@ AssertionResult.setFailure(data.uuid != null || data.groupKey != null);
             <message>true</message>
             <threadName>true</threadName>
             <dataType>true</dataType>
-            <encoding>false</encoding>
+            <encoding>true</encoding>
             <assertions>true</assertions>
             <subresults>true</subresults>
-            <responseData>false</responseData>
-            <samplerData>false</samplerData>
-            <xml>false</xml>
-            <fieldNames>false</fieldNames>
-            <responseHeaders>false</responseHeaders>
-            <requestHeaders>false</requestHeaders>
+            <responseData>true</responseData>
+            <samplerData>true</samplerData>
+            <xml>true</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>true</responseHeaders>
+            <requestHeaders>true</requestHeaders>
             <responseDataOnError>false</responseDataOnError>
-            <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
             <assertionsResultsToSave>0</assertionsResultsToSave>
             <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <fileName>true</fileName>
+            <hostname>true</hostname>
             <threadCounts>true</threadCounts>
+            <sampleCount>true</sampleCount>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
           </value>
         </objProp>
-        <stringProp name="filename"></stringProp>
+        <stringProp name="filename">errors-only.xml</stringProp>
       </ResultCollector>
       <hashTree/>
       <TestFragmentController guiclass="TestFragmentControllerGui" testclass="TestFragmentController" testname="GET - CAS Central Login Page" enabled="true"/>
@@ -2355,7 +2366,7 @@ AssertionResult.setFailure(data.uuid != null || data.groupKey != null);
           <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Extract Token Variable" enabled="true">
             <stringProp name="RegexExtractor.useHeaders">URL</stringProp>
             <stringProp name="RegexExtractor.refname">token</stringProp>
-            <stringProp name="RegexExtractor.regex">atlas/#/welcome/(.+)</stringProp>
+            <stringProp name="RegexExtractor.regex">/#/welcome/(.+)</stringProp>
             <stringProp name="RegexExtractor.template">$1$</stringProp>
             <stringProp name="RegexExtractor.default"></stringProp>
             <stringProp name="RegexExtractor.match_number">1</stringProp>
@@ -2522,7 +2533,7 @@ while(sampler.getCookieManager().getCookieCount() &gt; 0) {
           </JSONPostProcessor>
           <hashTree/>
         </hashTree>
-        <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="Delete from HSS loop" enabled="true">
+        <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="Delete from HSS loop" enabled="false">
           <stringProp name="WhileController.condition">${__groovy(${definitionToImport_matchNr} &gt; 0)}</stringProp>
         </WhileController>
         <hashTree>
@@ -2560,7 +2571,7 @@ while(sampler.getCookieManager().getCookieCount() &gt; 0) {
             <stringProp name="HTTPSampler.port"></stringProp>
             <stringProp name="HTTPSampler.protocol"></stringProp>
             <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-            <stringProp name="HTTPSampler.path">https://dev.honeur.org/storage/api/${uuid}</stringProp>
+            <stringProp name="HTTPSampler.path">https://storage-uat.honeur.org/api/${uuid}</stringProp>
             <stringProp name="HTTPSampler.method">DELETE</stringProp>
             <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
             <boolProp name="HTTPSampler.auto_redirects">false</boolProp>

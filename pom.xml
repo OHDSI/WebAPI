@@ -346,11 +346,13 @@
         </executions>
         <configuration>
           <propertiesUser>
-            <cas.url>https://cas-dev.honeur.org</cas.url>
-            <cas.central.callback.url>https://dev.honeur.org/webapi/user/login/cas</cas.central.callback.url>
-            <webapi.central.url>https://dev.honeur.org/webapi</webapi.central.url>
+            <cas.url>${CENTRAL_CAS_URL}</cas.url>
+            <cas.central.callback.url>${CENTRAL_WEBAPI_URL}/user/login/cas</cas.central.callback.url>
+            <webapi.central.url>${CENTRAL_WEBAPI_URL}</webapi.central.url>
             <cas.local.callback.url>${REMOTE_WEBAPI_URL}/user/login/cas</cas.local.callback.url>
             <webapi.local.url>${REMOTE_WEBAPI_URL}</webapi.local.url>
+            <webapi.central.user>${CENTRAL_WEBAPI_USERNAME}</webapi.central.user>
+            <webapi.central.password>${CENTRAL_WEBAPI_PASSWORD}</webapi.central.password>
           </propertiesUser>
         </configuration>
       </plugin>

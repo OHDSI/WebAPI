@@ -57,9 +57,9 @@
         <md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</md:NameIDFormat>
         <md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:X509SubjectName</md:NameIDFormat>
         <md:AssertionConsumerService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
-                                     Location="http://localhost:8080/WebAPI/user/saml/callback" index="0"
+                                     Location="http://127.0.0.1:8080/WebAPI/user/saml/callback" index="0"
                                      isDefault="true"/>
         <md:AssertionConsumerService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact"
-                                     Location="http://localhost:8080/WebAPI/user/saml/callback" index="1"/>
+                                     Location="http://127.0.0.1:8080/WebAPI/user/saml/callback" index="1"/>
     </md:SPSSODescriptor>
 </md:EntityDescriptor>

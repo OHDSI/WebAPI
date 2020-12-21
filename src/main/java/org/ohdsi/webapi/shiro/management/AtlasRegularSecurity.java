@@ -409,7 +409,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         }
 
         if (this.openidAuthEnabled) {
-            filterChainBuilder.addRestPath("/user/login/openid", FORCE_SESSION_CREATION, OIDC_AUTH, UPDATE_TOKEN, SEND_TOKEN_IN_REDIRECT);
+            filterChainBuilder.addRestPath("/user/login/openid", FORCE_SESSION_CREATION, OIDC_AUTH, UPDATE_TOKEN, SEND_TOKEN_IN_URL);
         }
 
         if (this.googleAuthEnabled) {

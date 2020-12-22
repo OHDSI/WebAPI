@@ -291,7 +291,6 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
         filters.put(SEND_TOKEN_IN_URL, new SendTokenInUrlFilter(this.oauthUiCallback));
         filters.put(SEND_TOKEN_IN_HEADER, new SendTokenInHeaderFilter());
-        filters.put(SEND_TOKEN_IN_REDIRECT, new SendTokenInRedirectFilter(redirectUrl));
 
         filters.put(RUN_AS, new RunAsFilter(userRepository));
 

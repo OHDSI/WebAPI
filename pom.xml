@@ -30,9 +30,9 @@
     <!-- Primary DataSource -->
     <!-- default sql server - TODO How about making postgres the default (e.g. in line with open source tech)? -alexfranken -->
     <datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
-    <datasource.url>jdbc:postgresql://localhost:5432/ohdsi_webapi_2.8</datasource.url>
-    <datasource.username>ohdsi</datasource.username>
-    <datasource.password>ohdsi</datasource.password>
+    <datasource.url>jdbc:sqlserver://serverName;databaseName=databaseName</datasource.url>
+    <datasource.username>user</datasource.username>
+    <datasource.password>password</datasource.password>
     <!--<datasource.validationQuery>SELECT 1</datasource.validationQuery>-->
     <datasource.dialect>sql server</datasource.dialect>
     <datasource.ohdsi.schema>dbo</datasource.ohdsi.schema>
@@ -68,12 +68,12 @@
     <spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
     <spring.profiles.active>default</spring.profiles.active>
 
-    <security.provider>AtlasRegularSecurity</security.provider>
+    <security.provider>DisabledSecurity</security.provider>
     <security.token.expiration>43200</security.token.expiration>
-    <security.origin>*</security.origin>
+    <security.origin>http://localhost</security.origin>
     <security.ssl.enabled>false</security.ssl.enabled>
-    <security.oauth.callback.ui>http://127.0.0.1:8080/index.html#/welcome/</security.oauth.callback.ui>
-    <security.oauth.callback.api>http://127.0.0.1:8080/WebAPI/user/oauth/callback</security.oauth.callback.api>
+    <security.oauth.callback.ui>http://localhost/Atlas/#/welcome</security.oauth.callback.ui>
+    <security.oauth.callback.api>http://localhost:8080/WebAPI/user/oauth/callback</security.oauth.callback.api>
     <!-- Available options for callback urlResolver are: query and path -->
     <security.oauth.callback.urlResolver>query</security.oauth.callback.urlResolver>
     <security.oauth.google.apiKey></security.oauth.google.apiKey>
@@ -82,9 +82,9 @@
     <security.oauth.facebook.apiSecret></security.oauth.facebook.apiSecret>
     <security.oauth.github.apiKey></security.oauth.github.apiKey>
     <security.oauth.github.apiSecret></security.oauth.github.apiSecret>
-    <security.oid.clientId>0oa1d0ijhb9wdpOab5d6</security.oid.clientId>
-    <security.oid.apiSecret>fvdCDbs0wvTzXXAxcPXI3QF7k3iZK4YmzKMcNowA</security.oid.apiSecret>
-    <security.oid.url>https://dev-2186671-admin.okta.com/.well-known/openid-configuration</security.oid.url>
+    <security.oid.clientId></security.oid.clientId>
+    <security.oid.apiSecret></security.oid.apiSecret>
+    <security.oid.url></security.oid.url>
     <security.oid.logoutUrl></security.oid.logoutUrl>
     <security.oid.redirectUrl>http://localhost/index.html#/welcome/</security.oid.redirectUrl>
     <security.kerberos.spn></security.kerberos.spn>
@@ -123,13 +123,13 @@
     <security.cas.cassvcs></security.cas.cassvcs>
     <security.cas.casticket>casticket</security.cas.casticket>
 
-    <security.db.datasource.schema>public</security.db.datasource.schema>
-    <security.db.datasource.url>jdbc:postgresql://localhost/arachne_portal</security.db.datasource.url>
+    <security.db.datasource.schema>${datasource.ohdsi.schema}</security.db.datasource.schema>
+    <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
     <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
-    <security.db.datasource.username>ohdsi</security.db.datasource.username>
-    <security.db.datasource.password>ohdsi</security.db.datasource.password>
+    <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
+    <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
 
-    <security.db.datasource.authenticationQuery>select u.password, u.firstname, u.middlename, u.lastname from ${security.db.datasource.schema}.users_data as u where lower(u.email) = lower( ? ) ORDER BY u.id DESC LIMIT 1</security.db.datasource.authenticationQuery>
+    <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users where lower(email) = lower(?)</security.db.datasource.authenticationQuery>
     <use.single.connect.datasource.for.testing>true</use.single.connect.datasource.for.testing>
 
     <security.googleIap.cloudProjectId></security.googleIap.cloudProjectId>
@@ -1004,25 +1004,26 @@
       <id>webapi-postgresql</id>
       <properties>
         <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
-        <datasource.url>jdbc:postgresql://localhost:5432/ohdsi_webapi_2.8</datasource.url>
-        <datasource.username>ohdsi</datasource.username>
-        <datasource.password>ohdsi</datasource.password>
+        <datasource.url>jdbc:postgresql://54.209.111.128:5432/vocabularyv5</datasource.url>
+        <datasource.username>USER</datasource.username>
+        <datasource.password>PASS</datasource.password>
         <datasource.dialect>postgresql</datasource.dialect>
         <datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
         <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
         <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
-        <flyway.datasource.username>ohdsi</flyway.datasource.username>
-        <flyway.datasource.password>ohdsi</flyway.datasource.password>
+        <flyway.datasource.username>userWithWritesToOhdsiSchema</flyway.datasource.username>
+        <flyway.datasource.password>PASS</flyway.datasource.password>
         <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
         <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
         <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
         <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
         <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
-        <security.db.datasource.url>jdbc:postgresql://localhost/arachne_portal</security.db.datasource.url>
+        <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
         <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
         <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
         <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
-        <security.db.datasource.authenticationQuery>select u.password, u.firstname, u.middlename, u.lastname from ${security.db.datasource.schema}.users_data as u where lower(u.email) = lower( ? ) ORDER BY u.id DESC LIMIT 1</security.db.datasource.authenticationQuery>
+        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users_data where \
+          lower(email) = lower(?)</security.db.datasource.authenticationQuery>
       </properties>
     </profile>
     <profile>

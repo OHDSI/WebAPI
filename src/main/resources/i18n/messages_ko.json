@@ -1991,6 +1991,10 @@
             "description": "경로에서 수 집계를 위해 주어진 이벤트에 대한 표적 코호트의 최소 대상자 수.",
             "title": "최소 분석 단위 수:"
           },
+          "allowRepeats": {
+            "description": "Allow cohort events/combos to appear multiple times in the same pathway.",
+            "title": "Allow repeats:"
+          },
           "title": "분석 설정"
         },
         "description": "코호트 경로(Cohort pathway)의 분석은 표적 코호트에 속한 사람들 중에서 이벤트 코호트로 정의된 여러 이벤트들이 발생한 전이 과정을 생성하는 프로세스로 정의됩니다.",

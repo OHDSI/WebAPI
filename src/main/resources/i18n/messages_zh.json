@@ -1991,6 +1991,10 @@
             "description": "目标队列中有定义的事件队列的最小受试者数，以便于在途径中进行计数。",
             "title": "最少分析的单位数："
           },
+          "allowRepeats": {
+            "description": "Allow cohort events/combos to appear multiple times in the same pathway.",
+            "title": "Allow repeats:"
+          },
           "title": "分析设置"
         },
         "description": "队列路径定义是在目标队列人群中生成事件队列序列的过程。",

@@ -1979,8 +1979,8 @@
       "design": {
         "analysisSettings": {
           "combinationWindow": {
-            "description": "Window of time when two event cohorts need to overlap to be considered a combination.",
-            "title": "Combination Window:"
+            "description": "Any dates found within the specified collapse days will be reassigned the earliest date.  Collapsing dates reduces pathway variation, leading to a reduction in 'noise' in the result.",
+            "title": "Collapse Days:"
           },
           "description": "The following set of parameters will be used when performing the pathway analysis.",
           "maximumPathLength": {
@@ -1990,6 +1990,10 @@
           "minimumCellCount": {
             "description": "Minimum number of subjects in the target cohort for a given event in order to be counted in the pathway.",
             "title": "Minimum cell count:"
+          },
+          "allowRepeats": {
+            "description": "Allow cohort events/combos to appear multiple times in the same pathway.",
+            "title": "Allow repeats:"
           },
           "title": "Analysis Settings"
         },

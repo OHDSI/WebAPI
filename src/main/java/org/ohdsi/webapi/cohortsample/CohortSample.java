@@ -51,7 +51,7 @@ public class CohortSample extends CommonEntity<Integer> {
 	@Column(name = "gender_concept_ids")
 	private String genderConceptIds;
 
-	@Column
+	@Column(name = "\"size\"")
 	private int size;
 
 	@Transient

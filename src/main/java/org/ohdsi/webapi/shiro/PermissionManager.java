@@ -135,8 +135,6 @@ public class PermissionManager {
     });
   }
 
-  // In case of unauthorized access there is no need to connect to database and create transaction
-  @Transactional(propagation = Propagation.NEVER)
   public void clearAuthorizationInfoCache() {
     this.authorizationInfoCache.set(new ConcurrentHashMap<>());
   }

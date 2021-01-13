@@ -17,6 +17,7 @@
     <waffle.version>2.2.1</waffle.version>
     <jna.version>5.5.0</jna.version>
     <postgresql.version>42.2.18</postgresql.version>
+    <bouncycastle.version>1.68</bouncycastle.version>
 
     <circe.version>1.9.0-SNAPSHOT</circe.version>
     <jersey.version>2.14</jersey.version>
@@ -785,7 +786,7 @@
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk15on</artifactId>
-      <version>1.59</version>
+      <version>${bouncycastle.version}</version>
     </dependency>
     <dependency>
       <groupId>com.odysseusinc.arachne</groupId>

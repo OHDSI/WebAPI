@@ -25,7 +25,7 @@ Documentation can be found a the [Web API Installation Guide](https://github.com
 The following parameters are used:
 
 - `security.saml.idpMetadataLocation=classpath:saml/dev/idp-metadata.xml` - path to metadata used by identity provider
-- `security.saml.metadataLocation=saml/dev/sp-metadata.xml` - service provider metedata path
+- `security.saml.metadataLocation=saml/dev/sp-metadata.xml` - service provider metadata path
 - `security.saml.keyManager.keyStoreFile=classpath:saml/samlKeystore.jks` - path to keystore
 - `security.saml.keyManager.storePassword=nalle123` - keystore password
 - `security.saml.keyManager.passwords.arachnenetwork=nalle123` - private key password

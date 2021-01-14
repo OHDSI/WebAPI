@@ -16,6 +16,7 @@
     <flyway.version>4.2.0</flyway.version>
     <waffle.version>2.2.1</waffle.version>
     <jna.version>5.5.0</jna.version>
+    <hibernate.version>5.4.24.Final</hibernate.version>
     <postgresql.version>42.2.18</postgresql.version>
     <bouncycastle.version>1.68</bouncycastle.version>
 
@@ -489,6 +490,12 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
+      <exclusions>
+        <exclusion>
+          <artifactId>org.hibernate</artifactId>
+          <groupId>hibernate-validator</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -506,6 +513,12 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-jersey</artifactId>
+      <exclusions>
+        <exclusion>
+          <artifactId>org.hibernate</artifactId>
+          <groupId>hibernate-validator</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -527,12 +540,17 @@
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-core</artifactId>
+      <version>${hibernate.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-validator</artifactId>
       <version>5.4.2.Final</version>
     </dependency>
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-entitymanager</artifactId>
-      <version>5.4.2.Final</version>
+      <version>${hibernate.version}</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
@@ -802,11 +820,23 @@
       <groupId>com.odysseusinc</groupId>
       <artifactId>logging</artifactId>
       <version>${arachne.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>org.hibernate</artifactId>
+          <groupId>hibernate-validator</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.odysseusinc.arachne</groupId>
       <artifactId>arachne-scheduler</artifactId>
       <version>${arachne.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>org.hibernate</artifactId>
+          <groupId>hibernate-validator</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.glassfish.jersey.media</groupId>

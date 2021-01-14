@@ -33,6 +33,10 @@ The following parameters are used:
 - `security.saml.sloUrl=https://localhost:8443/cas/logout` - identity provider logout URL
 - `security.saml.callbackUrl=http://localhost:8080/WebAPI/user/saml/callback` - URL called from identity provider after login
 
+Sample idp metadata and sp metadata config files for okta:
+- `saml/dev/idp-metadata-okta.xml`
+- `saml/dev/sp-metadata-okta.xml`
+
 ## Managing auth providers
 
 The following parameters are used to enable/disable certain provider:

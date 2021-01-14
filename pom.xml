@@ -19,6 +19,7 @@
     <hibernate.version>5.4.24.Final</hibernate.version>
     <postgresql.version>42.2.18</postgresql.version>
     <bouncycastle.version>1.68</bouncycastle.version>
+    <shiro.version>1.6.0</shiro.version>
 
     <circe.version>1.9.0</circe.version>
     <jersey.version>2.14</jersey.version>
@@ -708,17 +709,17 @@
     <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-core</artifactId>
-      <version>1.5.1</version>
+      <version>${shiro.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-web</artifactId>
-      <version>1.5.1</version>
+      <version>${shiro.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-spring</artifactId>
-      <version>1.5.1</version>
+      <version>${shiro.version}</version>
     </dependency>
     <dependency>
       <groupId>com.github.waffle</groupId>
@@ -764,7 +765,7 @@
     <dependency>
       <groupId>io.buji</groupId>
       <artifactId>buji-pac4j</artifactId>
-      <version>5.0.0</version>
+      <version>5.0.1</version>
     </dependency>
     <dependency>
       <groupId>org.pac4j</groupId>

@@ -48,7 +48,7 @@ public class SamlHandleFilter extends AtlasAuthFilter {
                 SAML2Credentials credentials = saml2Client.getCredentials(context).get();
                 SAML2Profile samlProfile = (SAML2Profile)saml2Client.getUserProfile(credentials, context).get();
 
-                token = new JwtAuthToken(samlProfile.getEmail());
+                token = new JwtAuthToken(samlProfile.getId());
             }
         }
         return token;

@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.shiro.filters;
 
+import static org.ohdsi.webapi.shiro.management.AtlasSecurity.AUTH_CLIENT_ATTRIBUTE;
 import static org.ohdsi.webapi.shiro.management.AtlasSecurity.PERMISSIONS_ATTRIBUTE;
 import static org.ohdsi.webapi.shiro.management.AtlasSecurity.TOKEN_ATTRIBUTE;
 
@@ -10,6 +11,7 @@ import java.security.Principal;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Set;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -27,6 +29,7 @@ import org.ohdsi.webapi.shiro.Entities.UserPrincipal;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.TokenManager;
 import org.ohdsi.webapi.util.UserUtils;
+import org.pac4j.core.profile.CommonProfile;
 
 /**
  *
@@ -91,6 +94,12 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
         URI oauthFailURI = getOAuthFailUri();
         httpResponse.sendRedirect(oauthFailURI.toString());
         return false;
+      }
+
+      CommonProfile profile = (((Pac4jPrincipal) principal).getProfile());
+      if (Objects.nonNull(profile)) {
+        String clientName = profile.getClientName();
+        request.setAttribute(AUTH_CLIENT_ATTRIBUTE, clientName);
       }
     } else     if (principal instanceof Principal) {
       login = ((Principal) principal).getName();

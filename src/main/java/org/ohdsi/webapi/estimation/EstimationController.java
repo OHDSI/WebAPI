@@ -15,11 +15,13 @@ import org.ohdsi.webapi.estimation.dto.EstimationShortDTO;
 import org.ohdsi.webapi.estimation.specification.EstimationAnalysisImpl;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
 
@@ -61,13 +63,15 @@ public class EstimationController {
   private final ConverterUtils converterUtils;
   private final ScriptExecutionService executionService;
   private EstimationChecker checker;
+  private PermissionService permissionService;
 
   public EstimationController(EstimationService service,
                               GenericConversionService conversionService,
                               CommonGenerationSensitiveInfoService sensitiveInfoService,
                               SourceService sourceService,
                               ConverterUtils converterUtils,
-                              ScriptExecutionService executionService, EstimationChecker checker) {
+                              ScriptExecutionService executionService, EstimationChecker checker,
+                              PermissionService permissionService) {
     this.service = service;
     this.conversionService = conversionService;
     this.sensitiveInfoService = sensitiveInfoService;
@@ -75,6 +79,7 @@ public class EstimationController {
     this.converterUtils = converterUtils;
     this.executionService = executionService;
     this.checker = checker;
+    this.permissionService = permissionService;
   }
 
   @GET
@@ -83,7 +88,11 @@ public class EstimationController {
   public List<EstimationShortDTO> getAnalysisList() {
 
     return StreamSupport.stream(service.getAnalysisList().spliterator(), false)
-            .map(analysis -> conversionService.convert(analysis, EstimationShortDTO.class))
+            .map(analysis -> {
+              EstimationShortDTO dto = conversionService.convert(analysis, EstimationShortDTO.class);
+              permissionService.fillWriteAccess(analysis, dto);
+              return dto;
+            })
             .collect(Collectors.toList());
   }
 

@@ -5,7 +5,7 @@ CREATE TABLE ${ohdsiSchema}.cohort_sample(
     name                 VARCHAR(255) NOT NULL,
     cohort_definition_id NUMBER(10) NOT NULL,
     source_id            NUMBER(10) NOT NULL,
-    size                 NUMBER(9) NOT NULL,
+    "size"                 NUMBER(9) NOT NULL,
     age_min              NUMBER(4),
     age_max              NUMBER(4),
     age_mode             VARCHAR(24),

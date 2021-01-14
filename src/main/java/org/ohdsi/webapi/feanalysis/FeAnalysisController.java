@@ -3,20 +3,18 @@ package org.ohdsi.webapi.feanalysis;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.ohdsi.webapi.Pagination;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcShortDTO;
 import org.ohdsi.webapi.common.OptionDTO;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisAggregateEntity;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithDistributionCriteriaEntity;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithPrevalenceCriteriaEntity;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
+import org.ohdsi.webapi.feanalysis.domain.*;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisAggregateDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
+import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.HttpUtils;
 import org.ohdsi.webapi.util.NameUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -48,12 +46,15 @@ public class FeAnalysisController {
 
     private FeAnalysisService service;
     private ConversionService conversionService;
+    private PermissionService permissionService;
 
     FeAnalysisController(
             final FeAnalysisService service,
-            final ConversionService conversionService) {
+            final ConversionService conversionService,
+            PermissionService permissionService) {
         this.service = service;
         this.conversionService = conversionService;
+        this.permissionService = permissionService;
     }
 
     @GET
@@ -61,7 +62,11 @@ public class FeAnalysisController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Page<FeAnalysisShortDTO> list(@Pagination Pageable pageable) {
-        return service.getPage(pageable).map(this::convertFeAnaysisToShortDto);
+        return service.getPage(pageable).map(entity -> {
+            FeAnalysisShortDTO dto = convertFeAnaysisToShortDto(entity);
+            permissionService.fillWriteAccess(entity, dto);
+            return dto;
+        });
     }
 
     @GET
@@ -149,7 +154,6 @@ public class FeAnalysisController {
             case CRITERIA_SET:
                 saved = service.createCriteriaAnalysis((FeAnalysisWithCriteriaEntity) feAnalysisForCopy);
                 break;
-            case PRESET:
             case CUSTOM_FE:
                 saved = service.createAnalysis(feAnalysisForCopy);
                 break;
@@ -174,8 +178,23 @@ public class FeAnalysisController {
                     default:
                         throw new IllegalArgumentException();
                 }
+
+                // deep copy of criteria list...
+                final List<FeAnalysisCriteriaEntity> criteriaList = new ArrayList<>();
+                ((FeAnalysisWithCriteriaEntity) entity).getDesign().forEach(c -> {
+                    final FeAnalysisCriteriaEntity criteria = createCriteriaEntity((FeAnalysisCriteriaEntity) c);
+                    criteria.setName(((FeAnalysisCriteriaEntity) c).getName());
+                    criteria.setExpressionString(((FeAnalysisCriteriaEntity) c).getExpressionString());
+                    criteria.setAggregate(((FeAnalysisCriteriaEntity) c).getAggregate());
+                    criteriaList.add(criteria);
+                });
+                entityForCopy.setDesign(criteriaList);
+
+                // ...and concept sets
+                final FeAnalysisConcepsetEntity concepsetEntity = new FeAnalysisConcepsetEntity();
+                concepsetEntity.setRawExpression(((FeAnalysisWithCriteriaEntity) entity).getConceptSetEntity().getRawExpression());
+                ((FeAnalysisWithCriteriaEntity) entityForCopy).setConceptSetEntity(concepsetEntity);
                 break;
-            case PRESET:
             case CUSTOM_FE:
                 entityForCopy = new FeAnalysisWithStringEntity((FeAnalysisWithStringEntity) entity);
                 break;
@@ -185,9 +204,10 @@ public class FeAnalysisController {
         entityForCopy.setId(null);
         entityForCopy.setName(
                 NameUtils.getNameForCopy(entityForCopy.getName(), this::getNamesLike, service.findByName(entityForCopy.getName())));
+        entityForCopy.setCreatedBy(null);
+        entityForCopy.setCreatedDate(null);
         entityForCopy.setModifiedBy(null);
         entityForCopy.setModifiedDate(null);
-
         return entityForCopy;
     }
 
@@ -210,8 +230,18 @@ public class FeAnalysisController {
     private List<String> getNamesLike(String copyName) {
         return service.getNamesLike(copyName);
     }
+
     private FeAnalysisAggregateDTO convertFeAnalysisAggregateToDto(final FeAnalysisAggregateEntity entity) {
         return conversionService.convert(entity, FeAnalysisAggregateDTO.class);
     }
 
+    private FeAnalysisCriteriaEntity createCriteriaEntity(FeAnalysisCriteriaEntity basis) {
+        if (basis instanceof FeAnalysisWindowedCriteriaEntity) {
+            return new FeAnalysisWindowedCriteriaEntity();
+        } else if (basis instanceof FeAnalysisDemographicCriteriaEntity) {
+            return new FeAnalysisDemographicCriteriaEntity();
+        } else {
+            return new FeAnalysisCriteriaGroupEntity();
+        }
+    }
 }

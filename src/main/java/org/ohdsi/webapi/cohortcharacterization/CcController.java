@@ -30,11 +30,13 @@ import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
 import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.HttpUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,13 +44,27 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -65,6 +81,7 @@ public class CcController {
     private final CommonGenerationSensitiveInfoService<CommonGenerationDTO> sensitiveInfoService;
     private final SourceService sourceService;
     private CharacterizationChecker checker;
+    private PermissionService permissionService;
 
     public CcController(
             final CcService service,
@@ -72,7 +89,8 @@ public class CcController {
             final ConversionService conversionService,
             final ConverterUtils converterUtils,
             CommonGenerationSensitiveInfoService sensitiveInfoService,
-            SourceService sourceService, CharacterizationChecker checker) {
+            SourceService sourceService, CharacterizationChecker checker,
+            PermissionService permissionService) {
         this.service = service;
         this.feAnalysisService = feAnalysisService;
         this.conversionService = conversionService;
@@ -80,6 +98,7 @@ public class CcController {
         this.sensitiveInfoService = sensitiveInfoService;
         this.sourceService = sourceService;
         this.checker = checker;
+        this.permissionService = permissionService;
         FeatureExtraction.init(null);
     }
 
@@ -109,7 +128,11 @@ public class CcController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Page<CcShortDTO> list(@Pagination Pageable pageable) {
-        return service.getPage(pageable).map(this::convertCcToShortDto);
+        return service.getPage(pageable).map(entity -> {
+            CcShortDTO dto = convertCcToShortDto(entity);
+            permissionService.fillWriteAccess(entity, dto);
+            return dto;
+        });
     }
 
     @GET

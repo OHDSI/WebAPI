@@ -14,6 +14,7 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.prediction.domain.PredictionGenerationEntity;
 import org.ohdsi.webapi.prediction.dto.PredictionAnalysisDTO;
 import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl;
+import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.ExceptionUtils;
@@ -58,13 +59,16 @@ public class PredictionController {
   private final ScriptExecutionService executionService;
   private final PredictionChecker checker;
 
+  private PermissionService permissionService;
+
   @Autowired
   public PredictionController(PredictionService service,
                               GenericConversionService conversionService,
                               ConverterUtils converterUtils,
                               CommonGenerationSensitiveInfoService sensitiveInfoService,
                               SourceService sourceService,
-                              ScriptExecutionService executionService, PredictionChecker checker) {
+                              ScriptExecutionService executionService, PredictionChecker checker,
+                              PermissionService permissionService) {
     this.service = service;
     this.conversionService = conversionService;
     this.converterUtils = converterUtils;
@@ -72,6 +76,7 @@ public class PredictionController {
     this.sourceService = sourceService;
     this.executionService = executionService;
     this.checker = checker;
+    this.permissionService = permissionService;
   }
 
   @GET
@@ -81,7 +86,11 @@ public class PredictionController {
 
     return StreamSupport
             .stream(service.getAnalysisList().spliterator(), false)
-            .map(analysis -> conversionService.convert(analysis, CommonAnalysisDTO.class))
+            .map(analysis -> {
+              CommonAnalysisDTO dto = conversionService.convert(analysis, CommonAnalysisDTO.class);
+              permissionService.fillWriteAccess(analysis, dto);
+              return dto;
+            })
             .collect(Collectors.toList());
   }
 

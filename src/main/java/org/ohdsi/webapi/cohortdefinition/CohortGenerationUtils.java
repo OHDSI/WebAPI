@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.cohortdefinition;
 
+import java.util.Arrays;
 import org.apache.commons.lang3.StringUtils;
 
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
@@ -31,7 +32,7 @@ public class CohortGenerationUtils {
     final String oracleTempSchema = SourceUtils.getTempQualifier(source);
     String deleteSql = String.format("DELETE FROM %s.cohort_inclusion WHERE cohort_definition_id = %d;", targetSchema, cohortDef.getId());
     String translatedDeleteSql = SqlTranslate.translateSql(deleteSql, source.getSourceDialect(), sessionId, oracleTempSchema);
-    jdbcTemplate.update(translatedDeleteSql);
+    Arrays.stream(SqlSplit.splitSql(translatedDeleteSql)).forEach(jdbcTemplate::execute);
 
     String insertSql = StringUtils.replace("INSERT INTO @target_schema.cohort_inclusion (cohort_definition_id, design_hash, rule_sequence, name, description) VALUES (?,?,?,?,?)", "@target_schema", targetSchema);
     String translatedInsertSql = SqlTranslate.translateSql(insertSql, source.getSourceDialect(), sessionId, oracleTempSchema);

@@ -812,7 +812,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>hydra</artifactId>
-      <version>0.0.11</version>
+      <version>0.1.1</version>
       <exclusions>
         <exclusion>
           <groupId>org.ohdsi</groupId>

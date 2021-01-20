@@ -26,8 +26,8 @@
     <SqlRender.version>1.6.8</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
     <pac4j.version>4.0.0</pac4j.version>
-    <jackson.version>2.9.10</jackson.version>
-    <jackson.databind.version>2.9.10.6</jackson.databind.version>
+    <jackson.version>2.10.5</jackson.version>
+    <jackson.databind.version>2.10.5.1</jackson.databind.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
     <skipUnitTests>true</skipUnitTests>
     <skipITtests>true</skipITtests>

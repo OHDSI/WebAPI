@@ -1,9 +1,7 @@
 package org.ohdsi.webapi.cohortdefinition;
 
-import java.util.Arrays;
 import org.apache.commons.lang3.StringUtils;
 
-import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.InclusionRule;
 import org.ohdsi.sql.SqlRender;
@@ -30,9 +28,9 @@ public class CohortGenerationUtils {
   public static void insertInclusionRules(CohortDefinition cohortDef, Source source, int designHash,
                                           String targetSchema, String sessionId, JdbcTemplate jdbcTemplate) {
     final String oracleTempSchema = SourceUtils.getTempQualifier(source);
-    String deleteSql = String.format("DELETE FROM %s.cohort_inclusion WHERE cohort_definition_id = %d;", targetSchema, cohortDef.getId());
+    String deleteSql = String.format("DELETE FROM %s.cohort_inclusion WHERE cohort_definition_id = %d", targetSchema, cohortDef.getId());
     String translatedDeleteSql = SqlTranslate.translateSql(deleteSql, source.getSourceDialect(), sessionId, oracleTempSchema);
-    Arrays.stream(SqlSplit.splitSql(translatedDeleteSql)).forEach(jdbcTemplate::execute);
+    jdbcTemplate.update(translatedDeleteSql);
 
     String insertSql = StringUtils.replace("INSERT INTO @target_schema.cohort_inclusion (cohort_definition_id, design_hash, rule_sequence, name, description) VALUES (?,?,?,?,?)", "@target_schema", targetSchema);
     String translatedInsertSql = SqlTranslate.translateSql(insertSql, source.getSourceDialect(), sessionId, oracleTempSchema);

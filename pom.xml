@@ -183,7 +183,7 @@
     <server.ssl.key-password></server.ssl.key-password>
     <server.servlet.context-path>/WebAPI</server.servlet.context-path>
 
-    <arachne.version>1.16.3</arachne.version>
+    <arachne.version>1.17.1-SNAPSHOT</arachne.version>
     <jersey-media-multipart.version>2.25.1</jersey-media-multipart.version>
     <execution.invalidation.period>600000</execution.invalidation.period>
     <execution.invalidation.maxage.hours>12</execution.invalidation.maxage.hours>

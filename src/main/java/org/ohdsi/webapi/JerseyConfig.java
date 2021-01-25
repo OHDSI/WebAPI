@@ -36,6 +36,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Singleton;
+import javax.ws.rs.ext.RuntimeDelegate;
 
 /**
  *
@@ -47,6 +48,7 @@ public class JerseyConfig extends ResourceConfig implements InitializingBean {
     private String rootPackage;
     
     public JerseyConfig() {
+       RuntimeDelegate.setInstance(new org.glassfish.jersey.internal.RuntimeDelegateImpl());
        EncodingFilter.enableFor(this, GZipEncoder.class);
     }
     

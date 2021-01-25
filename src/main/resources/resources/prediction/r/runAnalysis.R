@@ -39,6 +39,7 @@ tryCatch({
         execute(connectionDetails = connectionDetails,
                 cdmDatabaseSchema = cdmDatabaseSchema,
                 cohortDatabaseSchema = cohortsDatabaseSchema,
+		        resultsDatabaseSchema = resultsDatabaseSchema,
                 cohortTable = cohortTable,
                 outputFolder = outputFolder,
                 createCohorts = T,

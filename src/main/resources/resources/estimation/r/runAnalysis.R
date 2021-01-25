@@ -43,6 +43,7 @@ tryCatch({
                 cohortDatabaseSchema = cohortsDatabaseSchema,
                 cohortTable = cohortTable,
                 oracleTempSchema = resultsDatabaseSchema,
+		        resultsDatabaseSchema = resultsDatabaseSchema,
                 outputFolder = outputFolder,
                 databaseId = databaseId,
                 synthesizePositiveControls = TRUE,

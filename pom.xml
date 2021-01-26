@@ -303,6 +303,7 @@
         </executions>
         <configuration>
           <generateGitPropertiesFile>false</generateGitPropertiesFile>
+          <failOnNoGitDirectory>false</failOnNoGitDirectory>
           <!-- only include properties to speed up plugin -->
           <!-- ref: https://github.com/git-commit-id/git-commit-id-maven-plugin/issues/462 -->
           <includeOnlyProperties>
@@ -310,6 +311,26 @@
               <includeOnlyProperty>git.commit.id.abbrev</includeOnlyProperty>
           </includeOnlyProperties>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.gmaven</groupId>
+        <artifactId>gmaven-plugin</artifactId>
+        <version>1.5</version>
+        <executions>
+          <execution>
+            <id>add-git-branch-info</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>execute</goal>
+            </goals>
+            <configuration>
+              <source>
+                if (project.properties.getProperty("git.branch") == null) project.properties.setProperty("git.branch", "*");
+                if (project.properties.getProperty("git.commit.id.abbrev") == null) project.properties.setProperty("git.commit.id.abbrev", "*");
+              </source>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.springframework.boot</groupId>

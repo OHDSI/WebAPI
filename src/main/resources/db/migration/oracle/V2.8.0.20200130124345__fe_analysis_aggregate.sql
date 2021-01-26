@@ -94,7 +94,7 @@ INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function,
 INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default, missing_means_zero) VALUES
   (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Gap days (min)', 'DRUG_ERA', 'MIN', 'GAP_DAYS', 'gap_days', null, null, null, 0, 0);
 INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default, missing_means_zero) VALUES
-  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Gap days (average)', 'DRUG_ERA', 'AVG', 'GAP_DAYS', 'gap_days', null, null, null, 0, 0;
+  (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Gap days (average)', 'DRUG_ERA', 'AVG', 'GAP_DAYS', 'gap_days', null, null, null, 0, 0);
 INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default, missing_means_zero) VALUES
   (${ohdsiSchema}.fe_aggregate_sequence.nextval, 'Condition occurrence count', 'CONDITION_ERA', null, 'ERA_OCCURRENCES', 'era_occurrences', null, null, null, 0, 0);
 INSERT INTO ${ohdsiSchema}.fe_analysis_aggregate(id, name, domain, agg_function, criteria_columns, expression, join_table, join_type, join_condition, is_default, missing_means_zero) VALUES

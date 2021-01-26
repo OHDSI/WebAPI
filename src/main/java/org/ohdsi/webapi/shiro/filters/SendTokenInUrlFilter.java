@@ -30,7 +30,7 @@ public class SendTokenInUrlFilter extends AdviceFilter {
   protected boolean preHandle(ServletRequest request, ServletResponse response) throws Exception {
     String jwt = (String)request.getAttribute("TOKEN");
     String client = (String)request.getAttribute(AUTH_CLIENT_ATTRIBUTE);
-    String clientValue = StringUtils.isNotEmpty(client) ? AUTH_CLIENT_ALL : client;
+    String clientValue = StringUtils.isEmpty(client) ? AUTH_CLIENT_ALL : client;
     String urlValue = url.replaceAll("/+$", "");
     if (!Guard.isNullOrEmpty(jwt)) {
         urlValue = urlValue + "/" + clientValue + "/" + jwt;

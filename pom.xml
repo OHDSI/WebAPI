@@ -468,10 +468,6 @@
 
   <repositories>
     <repository>
-      <id>central</id>
-      <url>https://repo.maven.apache.org/maven2</url>
-    </repository>
-    <repository>
       <id>ohdsi</id>
       <name>repo.ohdsi.org</name>
       <url>http://repo.ohdsi.org:8085/nexus/content/groups/public</url>
@@ -1189,6 +1185,17 @@
         <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users_data where \
           lower(email) = lower(?)</security.db.datasource.authenticationQuery>
       </properties>
+      <repositories>
+        <repository>
+          <id>central</id>
+          <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+        <repository>
+          <id>ohdsi</id>
+          <name>repo.ohdsi.org</name>
+          <url>http://repo.ohdsi.org:8085/nexus/content/groups/public</url>
+        </repository>
+      </repositories>
     </profile>
     <profile>
       <id>webapi-mssql</id>

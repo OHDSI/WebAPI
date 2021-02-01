@@ -236,11 +236,12 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
+        <version>3.8.0</version>
         <inherited>true</inherited>
         <configuration>
           <source>1.8</source>
           <target>1.8</target>
+          <release>8</release>
         </configuration>
       </plugin>
       <plugin>
@@ -289,14 +290,6 @@
         <groupId>com.qmino</groupId>
         <artifactId>miredot-plugin</artifactId>
         <version>2.1.2</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>restdoc</goal>
-            </goals>
-          </execution>
-        </executions>
         <configuration>
           <licence>cHJvamVjdHxvcmcub2hkc2kuV2ViQVBJfDIwMjAtMDMtMzF8dHJ1ZXwtMSNNQzBDRkNNQ2R2ZEhjbDg0Z2tONVI3bHlmQ2Y4SnNkYUFoVUFoMkdtOUVFdy9RelpLVzM1V2p6a2FsdzJZV009</licence>
           <restModel>

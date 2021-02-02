@@ -31,6 +31,9 @@
     <start-class>org.ohdsi.webapi.WebApi</start-class>
     <skipUnitTests>true</skipUnitTests>
     <skipITtests>true</skipITtests>
+    <miredot.phase>package</miredot.phase>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
 
     <!-- Primary DataSource -->
     <!-- default sql server - TODO How about making postgres the default (e.g. in line with open source tech)? -alexfranken -->
@@ -379,8 +382,6 @@
         <version>3.1</version>
         <inherited>true</inherited>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
           <compilerArgs>
             <!-- Prevents recompilation due to missing package-info.class, see MCOMPILER-205 -->
             <arg>-Xpkginfo:always</arg>
@@ -390,7 +391,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
-        <version>2.6</version>
+        <version>3.3.1</version>
         <configuration>
           <failOnMissingWebXml>false</failOnMissingWebXml>
           <attachClasses>true</attachClasses>
@@ -423,7 +424,7 @@
         <version>2.2</version>
         <executions>
           <execution>
-            <phase>package</phase>
+            <phase>${miredot.phase}</phase>
             <goals>
               <goal>restdoc</goal>
             </goals>
@@ -474,6 +475,10 @@
   </repositories>
 
   <pluginRepositories>
+    <pluginRepository>
+      <id>central</id>
+      <url>https://repo.maven.apache.org/maven2</url>
+    </pluginRepository>
     <pluginRepository>
       <id>miredot</id>
       <name>MireDot Releases</name>
@@ -1147,6 +1152,50 @@
         <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users_data where \
           lower(email) = lower(?)</security.db.datasource.authenticationQuery>
       </properties>
+    </profile>
+    <profile>
+      <id>webapi-docker</id>
+      <properties>
+        <git.branch>unknown</git.branch>
+        <git.commit.id.abbrev>unknown</git.commit.id.abbrev>
+        <maven.gitcommitid.skip>true</maven.gitcommitid.skip>
+        <miredot.phase>none</miredot.phase>
+        <skipTests>true</skipTests>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
+        <datasource.url>jdbc:postgresql://54.209.111.128:5432/vocabularyv5</datasource.url>
+        <datasource.username>USER</datasource.username>
+        <datasource.password>PASS</datasource.password>
+        <datasource.dialect>postgresql</datasource.dialect>
+        <datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
+        <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
+        <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
+        <flyway.datasource.username>userWithWritesToOhdsiSchema</flyway.datasource.username>
+        <flyway.datasource.password>PASS</flyway.datasource.password>
+        <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
+        <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
+        <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
+        <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
+        <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
+        <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
+        <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
+        <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
+        <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
+        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users_data where \
+          lower(email) = lower(?)</security.db.datasource.authenticationQuery>
+      </properties>
+      <repositories>
+        <repository>
+          <id>central</id>
+          <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+        <repository>
+          <id>ohdsi</id>
+          <name>repo.ohdsi.org</name>
+          <url>http://repo.ohdsi.org:8085/nexus/content/groups/public</url>
+        </repository>
+      </repositories>
     </profile>
     <profile>
       <id>webapi-mssql</id>

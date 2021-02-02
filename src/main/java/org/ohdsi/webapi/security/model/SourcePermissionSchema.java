@@ -79,7 +79,7 @@ public class SourcePermissionSchema extends EntityPermissionSchema {
 
     public void addSourceUserRole(CommonEntity commonEntity) {
 
-       Source source = (Source) commonEntity;
+        Source source = (Source) commonEntity;
         final String roleName = getSourceRoleName(source.getSourceKey());
         final RoleEntity role;
         if (permissionManager.roleExists(roleName)) {

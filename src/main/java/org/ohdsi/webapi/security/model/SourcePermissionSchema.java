@@ -47,7 +47,7 @@ public class SourcePermissionSchema extends EntityPermissionSchema {
         put("cohort-characterization:*:generation:%s:delete", "Cancel Generation of Cohort Characterization on Source with SourceKey = %s");
         put("pathway-analysis:*:generation:%s:post", "Generate Pathway Analysis on Source with SourceKey = %s");
         put("pathway-analysis:*:generation:%s:delete", "Cancel Generation of Pathway Analysis on Source with SourceKey = %s");
-        put("vocabulary:%s:concept:*:ancestorAndDescendant:get", "Get ancestor and descendants with SourceKey = %s");
+        put("vocabulary:%s:concept:*:ancestorAndDescendant:get", "Get ancestor and descendants on Source with SourceKey = %s");
 
         put(SOURCE_ACCESS_PERMISSION, "Access to Source with SourceKey = %s");
     }};

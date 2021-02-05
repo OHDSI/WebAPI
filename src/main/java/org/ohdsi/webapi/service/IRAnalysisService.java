@@ -685,28 +685,27 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
         String distQuery = String.format("select '%s' as db_id, target_id, outcome_id, strata_sequence, dist_type, total, avg_value, std_dev, min_value, p10_value, p25_value, median_value, p75_value, p90_value, max_value from %s.ir_analysis_dist where analysis_id = %d", source.getSourceKey(), resultsTableQualifier, id);
         String translatedSql = SqlTranslate.translateSql(distQuery, source.getSourceDialect(), SessionUtils.sessionId(), resultsTableQualifier);
 
-        SqlRowSet rs = this.getSourceJdbcTemplate(source).queryForRowSet(translatedSql);
-
-        if (distLines.isEmpty())
-        {
-          distLines.add(rs.getMetaData().getColumnNames());
-        }
-        while (rs.next())
-        {
-          ArrayList<String> columns = new ArrayList<>();
-          for(int i = 1; i <= rs.getMetaData().getColumnNames().length; i++)
-          {
-            switch (rs.getMetaData().getColumnName(i)) {
-              case "dist_type": 
-                columns.add(distTypeLookup.get(rs.getInt(i)));
+        this.getSourceJdbcTemplate(source).query(translatedSql, resultSet -> {
+          if (distLines.isEmpty()) {
+            ArrayList<String> columnNames = new ArrayList<>();
+            for(int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
+              columnNames.add(resultSet.getMetaData().getColumnName(i));
+            }
+            distLines.add(columnNames.toArray(new String[0]));
+          }
+          ArrayList<String> columnValues = new ArrayList<>();
+          for(int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
+            switch (resultSet.getMetaData().getColumnName(i)) {
+              case "dist_type":
+                columnValues.add(distTypeLookup.get(resultSet.getInt(i)));
                 break;
               default:
-                columns.add(rs.getString(i));
+                columnValues.add(resultSet.getString(i));
                 break;
             }
-           }
-          distLines.add(columns.toArray(new String[0]));
-        }
+          }
+          distLines.add(columnValues.toArray(new String[0]));
+        });
       }
 
       // Write report lines to CSV

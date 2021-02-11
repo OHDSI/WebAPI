@@ -19,7 +19,7 @@
     <hibernate.version>5.4.2.Final</hibernate.version>
     <postgresql.version>42.2.18</postgresql.version>
     <bouncycastle.version>1.68</bouncycastle.version>
-    <shiro.version>1.6.0</shiro.version>
+    <shiro.version>1.7.1</shiro.version>
 
     <circe.version>1.9.2</circe.version>
     <jersey.version>2.14</jersey.version>

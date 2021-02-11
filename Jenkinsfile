@@ -5,10 +5,10 @@ pipeline {
         stage("scm") {
             steps {
                 dir('HONEUR-Security') {
-                    checkout([$class: 'GitSCM', branches: [[name: 'origin/tags/v1.6']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '6121a432-5731-44ea-8734-dcdb62d0f26d', name: 'ref', refspec: '+refs/tags/*:refs/remotes/origin/tags/*', url: 'https://github.com/solventrix/HONEUR-Security.git']]])
+                    checkout([$class: 'GitSCM', branches: [[name: '*/develop']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '6121a432-5731-44ea-8734-dcdb62d0f26d', url: 'https://github.com/solventrix/HONEUR-Security.git']]])
                 }
                 dir('HONEUR-Common') {
-                    checkout([$class: 'GitSCM', branches: [[name: 'origin/tags/v1.6']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '6121a432-5731-44ea-8734-dcdb62d0f26d', name: 'ref', refspec: '+refs/tags/*:refs/remotes/origin/tags/*', url: 'https://github.com/solventrix/HONEUR-Common.git']]])
+                    checkout([$class: 'GitSCM', branches: [[name: '*/develop']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '6121a432-5731-44ea-8734-dcdb62d0f26d', url: 'https://github.com/solventrix/HONEUR-Common.git']]])
                 }
             }
         }

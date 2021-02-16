@@ -16,7 +16,7 @@
     <flyway.version>4.2.0</flyway.version>
     <waffle.version>2.2.1</waffle.version>
     <jna.version>5.5.0</jna.version>
-    <hibernate.version>5.4.21.Final</hibernate.version>
+    <hibernate.version>5.4.2.Final</hibernate.version>
     <postgresql.version>42.2.18</postgresql.version>
     <bouncycastle.version>1.68</bouncycastle.version>
     <shiro.version>1.6.0</shiro.version>
@@ -1267,7 +1267,7 @@
         <impala.enabled>true</impala.enabled>
         <impala.driver.version>2.6.15</impala.driver.version>
         <!-- Impala JDBC driver path -->
-		<impala.classpath>...path/to/impala/jdbc/drivers...</impala.classpath>
+		<impala.classpath>C:\projects\OHDSI\drivers\impala</impala.classpath>
       </properties>
       <dependencies>
         <dependency>

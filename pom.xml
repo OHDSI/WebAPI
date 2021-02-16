@@ -1562,19 +1562,19 @@
         </dependency>
       </dependencies>
     </profile>
-      <profile>
-          <id>webapi-gis</id>
-          <properties>
-              <atlasgis.version>1.0.0</atlasgis.version>
-              <gis.enabled>true</gis.enabled>
-          </properties>
-          <dependencies>
-              <dependency>
-                  <groupId>org.ohdsi</groupId>
-                  <artifactId>atlasgis</artifactId>
-                  <version>${atlasgis.version}</version>
-              </dependency>
-          </dependencies>
-      </profile>
+    <profile>
+      <id>webapi-gis</id>
+      <properties>
+        <atlasgis.version>1.0.1-SNAPSHOT</atlasgis.version>
+        <gis.enabled>true</gis.enabled>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.ohdsi</groupId>
+          <artifactId>atlasgis</artifactId>
+          <version>${atlasgis.version}</version>
+        </dependency>
+      </dependencies>
+    </profile>
   </profiles>
 </project>

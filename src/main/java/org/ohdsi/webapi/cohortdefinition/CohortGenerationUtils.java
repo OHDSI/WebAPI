@@ -29,7 +29,7 @@ public class CohortGenerationUtils {
   public static void insertInclusionRules(CohortDefinition cohortDef, Source source, int designHash,
                                           String targetSchema, String sessionId, JdbcTemplate jdbcTemplate) {
     final String oracleTempSchema = SourceUtils.getTempQualifier(source);
-    String deleteSql = String.format("DELETE FROM %s.cohort_inclusion WHERE cohort_definition_id = %d;", targetSchema, cohortDef.getId());
+    String deleteSql = String.format("DELETE FROM %s.cohort_inclusion WHERE cohort_definition_id = %d", targetSchema, cohortDef.getId());
     String translatedDeleteSql = SqlTranslate.translateSql(deleteSql, source.getSourceDialect(), sessionId, oracleTempSchema);
     Arrays.stream(SqlSplit.splitSql(translatedDeleteSql)).forEach(jdbcTemplate::execute);
 

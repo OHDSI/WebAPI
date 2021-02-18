@@ -49,7 +49,7 @@ public class CorsFilter extends AdviceFilter{
     String requestMethod = httpRequest.getHeader("Access-Control-Request-Method");
     String method = httpRequest.getMethod();
     if (requestMethod != null && "OPTIONS".equalsIgnoreCase(method)) {
-      httpResponse.setHeader("Access-Control-Allow-Headers", "origin, content-type, accept, authorization, " + Constants.Headers.AUTH_PROVIDER);
+      httpResponse.setHeader("Access-Control-Allow-Headers", "origin, action-location, content-type, accept, authorization, " + Constants.Headers.AUTH_PROVIDER);
       httpResponse.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
       httpResponse.setHeader("Access-Control-Max-Age", "1209600");
       httpResponse.setStatus(HttpServletResponse.SC_OK);

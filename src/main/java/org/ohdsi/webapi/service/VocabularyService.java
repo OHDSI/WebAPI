@@ -81,21 +81,22 @@ public class VocabularyService extends AbstractDaoService {
   @Value("${datasource.driverClassName}")
   private String driver;
 
-  public final RowMapper<Concept> rowMapper = new RowMapper<Concept>() {
-    @Override
-    public Concept mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
-      final Concept concept = new Concept();
-      concept.conceptId = resultSet.getLong("CONCEPT_ID");
-      concept.conceptCode = resultSet.getString("CONCEPT_CODE");
-      concept.conceptName = resultSet.getString("CONCEPT_NAME");
-      concept.standardConcept = resultSet.getString("STANDARD_CONCEPT");
-      concept.invalidReason = resultSet.getString("INVALID_REASON");
-      concept.conceptClassId = resultSet.getString("CONCEPT_CLASS_ID");
-      concept.vocabularyId = resultSet.getString("VOCABULARY_ID");
-      concept.domainId = resultSet.getString("DOMAIN_ID");
-      return concept;
-    }
+  private final RowMapper<Concept> rowMapper = (resultSet, arg1) -> {
+    final Concept concept = new Concept();
+    concept.conceptId = resultSet.getLong("CONCEPT_ID");
+    concept.conceptCode = resultSet.getString("CONCEPT_CODE");
+    concept.conceptName = resultSet.getString("CONCEPT_NAME");
+    concept.standardConcept = resultSet.getString("STANDARD_CONCEPT");
+    concept.invalidReason = resultSet.getString("INVALID_REASON");
+    concept.conceptClassId = resultSet.getString("CONCEPT_CLASS_ID");
+    concept.vocabularyId = resultSet.getString("VOCABULARY_ID");
+    concept.domainId = resultSet.getString("DOMAIN_ID");
+    return concept;
   };
+
+  public RowMapper<Concept> getRowMapper() {
+    return this.rowMapper;
+  }
 
   private String getDefaultVocabularySourceKey() {
     Source vocabSource = sourceService.getPriorityVocabularySource();

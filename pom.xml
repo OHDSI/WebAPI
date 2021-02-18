@@ -250,6 +250,8 @@
     <buildinfo.webapi.release.tag>*</buildinfo.webapi.release.tag>
 
     <gis.enabled>false</gis.enabled>
+    <audit.trail.enabled>true</audit.trail.enabled>
+    <audit.trail.log.file>d:/work/atlas/audit/audit.log</audit.trail.log.file>
   </properties>
   <build>
     <finalName>WebAPI</finalName>

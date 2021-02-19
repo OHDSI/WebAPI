@@ -1,17 +1,11 @@
 package org.ohdsi.webapi.audittrail;
 
-import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
-import org.ohdsi.webapi.cohortsample.dto.CohortSampleDTO;
-import org.ohdsi.webapi.person.PersonProfile;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -47,7 +41,14 @@ public class AuditTrailAspect {
     public void irResource() {
     }
 
-    @Around("restGetPointcut() || restPostPointcut() || restPutPointcut() || restDeletePointcut() || irResource()")
+    @Pointcut("execution(public * org.ohdsi.webapi.job.NotificationController.*(..))")
+    public void notificationsPointcut() {
+    }
+
+    @Around("(restGetPointcut() || restPostPointcut() || restPutPointcut() || restDeletePointcut() || irResource())" +
+            " && " +
+            // exclude system calls
+            "!notificationsPointcut()")
     public Object auditLog(final ProceedingJoinPoint joinPoint) throws Throwable {
         final HttpServletRequest request = getHttpServletRequest();
 
@@ -58,6 +59,7 @@ public class AuditTrailAspect {
         final AuditTrailEntry entry = new AuditTrailEntry();
         entry.setCurrentUser(getCurrentUser());
         entry.setActionLocation(request.getHeader("Action-Location"));
+        entry.setRequestMethod(request.getMethod());
         entry.setRequestUri(request.getRequestURI());
 
         final Object returnedObject = joinPoint.proceed();

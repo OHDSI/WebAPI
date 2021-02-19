@@ -5,6 +5,7 @@ import org.ohdsi.webapi.shiro.Entities.UserEntity;
 public class AuditTrailEntry {
     private UserEntity currentUser;
     private String actionLocation;
+    private String requestMethod;
     private String requestUri;
     private Object returnedObject;
 
@@ -22,6 +23,14 @@ public class AuditTrailEntry {
 
     public void setActionLocation(String actionLocation) {
         this.actionLocation = actionLocation;
+    }
+
+    public String getRequestMethod() {
+        return requestMethod;
+    }
+
+    public void setRequestMethod(String requestMethod) {
+        this.requestMethod = requestMethod;
     }
 
     public String getRequestUri() {

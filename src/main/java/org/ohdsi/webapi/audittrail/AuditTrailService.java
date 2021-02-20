@@ -2,7 +2,6 @@ package org.ohdsi.webapi.audittrail;
 
 public interface AuditTrailService {
 
-
     void logSuccessfulLogin(String login);
     void logFailedLogin(String login);
 

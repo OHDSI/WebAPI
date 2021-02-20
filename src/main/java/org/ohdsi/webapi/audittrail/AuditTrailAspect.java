@@ -44,11 +44,15 @@ public class AuditTrailAspect {
     @Pointcut("execution(public * org.ohdsi.webapi.job.NotificationController.*(..))")
     public void notificationsPointcut() {
     }
+    @Pointcut("execution(public * org.ohdsi.webapi.executionengine.controller.ScriptExecutionController.*(..))")
+    public void executionenginePointcut() {
+    }
 
     @Around("(restGetPointcut() || restPostPointcut() || restPutPointcut() || restDeletePointcut() || irResource())" +
             " && " +
             // exclude system calls
-            "!notificationsPointcut()")
+            "!notificationsPointcut() && " +
+            "!executionenginePointcut()")
     public Object auditLog(final ProceedingJoinPoint joinPoint) throws Throwable {
         final HttpServletRequest request = getHttpServletRequest();
 
@@ -61,6 +65,7 @@ public class AuditTrailAspect {
         entry.setActionLocation(request.getHeader("Action-Location"));
         entry.setRequestMethod(request.getMethod());
         entry.setRequestUri(request.getRequestURI());
+        entry.setQueryString(request.getQueryString());
 
         final Object returnedObject = joinPoint.proceed();
         entry.setReturnedObject(returnedObject);

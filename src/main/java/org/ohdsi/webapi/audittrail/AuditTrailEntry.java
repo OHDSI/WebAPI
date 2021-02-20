@@ -7,6 +7,7 @@ public class AuditTrailEntry {
     private String actionLocation;
     private String requestMethod;
     private String requestUri;
+    private String queryString;
     private Object returnedObject;
 
     public UserEntity getCurrentUser() {
@@ -39,6 +40,14 @@ public class AuditTrailEntry {
 
     public void setRequestUri(String requestUri) {
         this.requestUri = requestUri;
+    }
+
+    public String getQueryString() {
+        return queryString;
+    }
+
+    public void setQueryString(String queryString) {
+        this.queryString = queryString;
     }
 
     public Object getReturnedObject() {

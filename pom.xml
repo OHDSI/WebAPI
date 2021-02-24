@@ -244,8 +244,8 @@
     <cache.inspection.period>3600000</cache.inspection.period>
 
     <!-- Build info -->
-    <buildinfo.atlas.milestone.id>22</buildinfo.atlas.milestone.id>
-    <buildinfo.webapi.milestone.id>25</buildinfo.webapi.milestone.id>
+    <buildinfo.atlas.milestone.id>34</buildinfo.atlas.milestone.id>
+    <buildinfo.webapi.milestone.id>36</buildinfo.webapi.milestone.id>
     <buildinfo.atlas.release.tag>*</buildinfo.atlas.release.tag>
     <buildinfo.webapi.release.tag>*</buildinfo.webapi.release.tag>
 

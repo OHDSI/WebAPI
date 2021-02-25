@@ -70,7 +70,7 @@ public class AuditTrailAspect {
         final Object returnedObject = joinPoint.proceed();
         entry.setReturnedObject(returnedObject);
 
-        auditTrailService.log(entry);
+        auditTrailService.logRestCall(entry);
 
         return returnedObject;
     }

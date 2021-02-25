@@ -1,5 +1,7 @@
 package org.ohdsi.webapi.audittrail;
 
+import org.springframework.batch.core.JobExecution;
+
 public interface AuditTrailService {
 
     void logSuccessfulLogin(String login);
@@ -8,5 +10,9 @@ public interface AuditTrailService {
     void logSuccessfulLogout(String login);
     void logFailedLogout(String login);
 
-    void log(AuditTrailEntry entry);
+    void logRestCall(AuditTrailEntry entry);
+
+    void logJobStart(JobExecution jobExecution);
+    void logJobCompleted(JobExecution jobExecution);
+    void logJobFailed(JobExecution jobExecution);
 }

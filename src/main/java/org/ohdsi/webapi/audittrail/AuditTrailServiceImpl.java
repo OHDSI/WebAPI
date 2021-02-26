@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.audittrail;
 
 import org.apache.commons.lang3.StringUtils;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortsample.dto.CohortSampleDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
@@ -180,12 +181,12 @@ class AuditTrailServiceImpl implements AuditTrailService {
 
     private void logJob(final JobExecution jobExecution, final String template) {
         final JobParameters jobParameters = jobExecution.getJobParameters();
-        final String author = jobParameters.getString("jobAuthor");
+        final String author = jobParameters.getString(Constants.Params.JOB_AUTHOR);
         if (author.equals("anonymous")) { // system jobs
             return;
         }
 
-        final String jobName = jobParameters.getString("jobName");
+        final String jobName = jobParameters.getString(Constants.Params.JOB_NAME);
         final Long userId = getUserIdByLogin(author);
         AUDIT_LOGGER.info(String.format(template, userId, jobExecution.getJobId(), jobName));
     }

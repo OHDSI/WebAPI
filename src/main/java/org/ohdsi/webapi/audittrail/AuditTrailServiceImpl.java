@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
+import java.util.Collection;
 import java.util.Iterator;
 
 @Component
@@ -23,9 +24,14 @@ class AuditTrailServiceImpl implements AuditTrailService {
     private static final String USER_LOGOUT_SUCCESS_TEMPLATE = "User successfully logged out: %s";
     private static final String USER_LOGOUT_FAILURE_TEMPLATE = "User logout failed: %s";
 
-    private static final String JOB_STARTED_TEMPLATE = "%s - Job execution started: %s";
-    private static final String JOB_COMPLETED_TEMPLATE = "%s - Job execution completed successfully: %s";
-    private static final String JOB_FAILED_TEMPLATE = "%s - Job execution failed: %s";
+    private static final String JOB_STARTED_TEMPLATE = "%s - Job %s execution started: %s";
+    private static final String JOB_COMPLETED_TEMPLATE = "%s - Job %s execution completed successfully: %s";
+    private static final String JOB_FAILED_TEMPLATE = "%s - Job %s execution failed: %s";
+
+    private static final String PATIENT_IDS_TEMPLATE = " Patient IDs (%s): ";
+    private static final String PATIENT_ID_TEMPLATE = " Patient ID: %s";
+
+    private static final String LIST_OF = "list of %s objects %s";
 
     private static final String FIELD_DIVIDER = " - ";
     private static final String ANONYMOUS = "anonymous";
@@ -74,17 +80,17 @@ class AuditTrailServiceImpl implements AuditTrailService {
 
     @Override
     public void logJobStart(final JobExecution jobExecution) {
-        logJob(jobExecution.getJobParameters(), JOB_STARTED_TEMPLATE);
+        logJob(jobExecution, JOB_STARTED_TEMPLATE);
     }
 
     @Override
     public void logJobCompleted(final JobExecution jobExecution) {
-        logJob(jobExecution.getJobParameters(), JOB_COMPLETED_TEMPLATE);
+        logJob(jobExecution, JOB_COMPLETED_TEMPLATE);
     }
 
     @Override
     public void logJobFailed(JobExecution jobExecution) {
-        logJob(jobExecution.getJobParameters(), JOB_FAILED_TEMPLATE);
+        logJob(jobExecution, JOB_FAILED_TEMPLATE);
     }
 
     private String getCurrentUserField(final AuditTrailEntry entry) {
@@ -116,10 +122,10 @@ class AuditTrailServiceImpl implements AuditTrailService {
 
         if (entry.getReturnedObject() instanceof CohortSampleDTO) {
             final CohortSampleDTO sampleDto = (CohortSampleDTO) entry.getReturnedObject();
-            additionalInfo.append("patients IDs: ");
             if (sampleDto.getElements().isEmpty()) {
-                additionalInfo.append("none");
+                additionalInfo.append(String.format(PATIENT_IDS_TEMPLATE, 0)).append("none");
             } else {
+                additionalInfo.append(String.format(PATIENT_IDS_TEMPLATE, sampleDto.getElements().size()));
                 sampleDto.getElements().forEach((e) -> {
                     additionalInfo.append(e.getPersonId()).append(" ");
                 });
@@ -129,11 +135,11 @@ class AuditTrailServiceImpl implements AuditTrailService {
     }
 
     private String getReturnedObjectFields(final Object returnedObject) {
-        if (returnedObject instanceof Iterable) {
-            final Iterator<?> i = ((Iterable<?>) returnedObject).iterator();
-            if (i.hasNext()) {
-                final String fields = collectClassFieldNames(i.next().getClass());
-                return fields != null ? "list of " + fields : null;
+        if (returnedObject instanceof Collection) {
+            final Collection<?> c = (Collection<?>) returnedObject;
+            if (!c.isEmpty()) {
+                final String fields = collectClassFieldNames(c.iterator().next().getClass());
+                return fields != null ? String.format(LIST_OF, c.size(), fields) : null;
             }
             return null;
         } else {
@@ -150,7 +156,7 @@ class AuditTrailServiceImpl implements AuditTrailService {
         final StringBuilder sb = new StringBuilder();
         sb.append("{");
         ReflectionUtils.doWithFields(klass, field -> {
-            sb.append(field.getName()).append(",");
+            sb.append(field.getName()).append("::").append(field.getType().getSimpleName()).append(",");
         });
         if (sb.length() > 1) {
             sb.deleteCharAt(sb.length() - 1);
@@ -172,18 +178,15 @@ class AuditTrailServiceImpl implements AuditTrailService {
         }
     }
 
-    private void logJob(final JobParameters jobParameters, final String template) {
-        try {
-            final String author = jobParameters.getString("jobAuthor");
-            if (author.equals("anonymous")) { // system jobs
-                return;
-            }
-
-            final String jobName = jobParameters.getString("jobName");
-            final Long userId = getUserIdByLogin(author);
-            AUDIT_LOGGER.info(String.format(template, userId, jobName));
-        } catch (final Exception e) {
-            e.printStackTrace();
+    private void logJob(final JobExecution jobExecution, final String template) {
+        final JobParameters jobParameters = jobExecution.getJobParameters();
+        final String author = jobParameters.getString("jobAuthor");
+        if (author.equals("anonymous")) { // system jobs
+            return;
         }
+
+        final String jobName = jobParameters.getString("jobName");
+        final Long userId = getUserIdByLogin(author);
+        AUDIT_LOGGER.info(String.format(template, userId, jobExecution.getJobId(), jobName));
     }
 }

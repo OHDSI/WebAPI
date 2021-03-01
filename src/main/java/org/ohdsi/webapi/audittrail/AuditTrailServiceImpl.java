@@ -16,6 +16,7 @@ import org.springframework.util.ReflectionUtils;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.util.Collection;
+import java.util.Map;
 
 @Component
 class AuditTrailServiceImpl implements AuditTrailService {
@@ -31,12 +32,16 @@ class AuditTrailServiceImpl implements AuditTrailService {
     private static final String JOB_FAILED_TEMPLATE = "%s - Job %s execution failed: %s";
 
     private static final String LIST_OF_TEMPLATE = "list of %s objects %s";
+    private static final String MAP_OF_TEMPLATE = "map (key: %s) of %s objects %s";
     private static final String FILE_TEMPLATE = "file %s (%s bytes)";
     private static final String PATIENT_IDS_TEMPLATE = " Patient IDs (%s): ";
 
     private static final String FIELD_DIVIDER = " - ";
     private static final String ANONYMOUS = "anonymous";
     private static final String NO_LOCATION = "NO_LOCATION";
+    private static final String EMPTY_LIST = "empty list";
+    private static final String EMPTY_MAP = "empty map";
+
 
     @Autowired
     private UserRepository userRepository;
@@ -158,7 +163,18 @@ class AuditTrailServiceImpl implements AuditTrailService {
                 final String fields = collectClassFieldNames(c.iterator().next().getClass());
                 return fields != null ? String.format(LIST_OF_TEMPLATE, c.size(), fields) : null;
             }
-            return null;
+            return EMPTY_LIST;
+        } if (returnedObject instanceof Map) {
+            final Map<?, ?> map = (Map<?, ?>) returnedObject;
+            if (!map.isEmpty()) {
+                final Map.Entry<?, ?> entry = map.entrySet().iterator().next();
+                final Class<?> keyClass = entry.getKey().getClass();
+                final Class<?> valueClass = entry.getValue().getClass();
+                final String valueFields = collectClassFieldNames(valueClass);
+                return valueFields != null ?
+                        String.format(MAP_OF_TEMPLATE, keyClass.getSimpleName(), map.size(), valueFields) : null;
+            }
+            return EMPTY_MAP;
         } else {
             return collectClassFieldNames(returnedObject.getClass());
         }
@@ -172,9 +188,8 @@ class AuditTrailServiceImpl implements AuditTrailService {
         // collect only first level field names
         final StringBuilder sb = new StringBuilder();
         sb.append("{");
-        ReflectionUtils.doWithFields(klass, field -> {
-            sb.append(field.getName()).append("::").append(field.getType().getSimpleName()).append(",");
-        });
+        ReflectionUtils.doWithFields(klass,
+                field -> sb.append(field.getName()).append("::").append(field.getType().getSimpleName()).append(","));
         if (sb.length() > 1) {
             sb.deleteCharAt(sb.length() - 1);
         }

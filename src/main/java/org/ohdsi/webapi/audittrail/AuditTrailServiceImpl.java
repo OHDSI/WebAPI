@@ -13,8 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
+import javax.ws.rs.core.Response;
+import java.io.File;
 import java.util.Collection;
-import java.util.Iterator;
 
 @Component
 class AuditTrailServiceImpl implements AuditTrailService {
@@ -29,10 +30,9 @@ class AuditTrailServiceImpl implements AuditTrailService {
     private static final String JOB_COMPLETED_TEMPLATE = "%s - Job %s execution completed successfully: %s";
     private static final String JOB_FAILED_TEMPLATE = "%s - Job %s execution failed: %s";
 
+    private static final String LIST_OF_TEMPLATE = "list of %s objects %s";
+    private static final String FILE_TEMPLATE = "file %s (%s bytes)";
     private static final String PATIENT_IDS_TEMPLATE = " Patient IDs (%s): ";
-    private static final String PATIENT_ID_TEMPLATE = " Patient ID: %s";
-
-    private static final String LIST_OF = "list of %s objects %s";
 
     private static final String FIELD_DIVIDER = " - ";
     private static final String ANONYMOUS = "anonymous";
@@ -121,6 +121,21 @@ class AuditTrailServiceImpl implements AuditTrailService {
             additionalInfo.append(returnedObjectFields);
         }
 
+        // File entry log
+        if (entry.getReturnedObject() instanceof Response) {
+            try {
+                final Object entity = ((Response) entry.getReturnedObject()).getEntity();
+                if (entity instanceof File) {
+                    final File file = (File) entity;
+                    return String.format(FILE_TEMPLATE, file.getName(), file.length());
+                }
+                return null;
+            } catch (final Exception e) {
+                return null;
+            }
+        }
+
+        // Patient IDs log
         if (entry.getReturnedObject() instanceof CohortSampleDTO) {
             final CohortSampleDTO sampleDto = (CohortSampleDTO) entry.getReturnedObject();
             if (sampleDto.getElements().isEmpty()) {
@@ -132,6 +147,7 @@ class AuditTrailServiceImpl implements AuditTrailService {
                 });
             }
         }
+
         return additionalInfo.toString();
     }
 
@@ -140,7 +156,7 @@ class AuditTrailServiceImpl implements AuditTrailService {
             final Collection<?> c = (Collection<?>) returnedObject;
             if (!c.isEmpty()) {
                 final String fields = collectClassFieldNames(c.iterator().next().getClass());
-                return fields != null ? String.format(LIST_OF, c.size(), fields) : null;
+                return fields != null ? String.format(LIST_OF_TEMPLATE, c.size(), fields) : null;
             }
             return null;
         } else {

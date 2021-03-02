@@ -34,7 +34,9 @@ public class NavigationService extends AbstractDaoService {
         if (sampleName.indexOf("_") != -1) {
           sampleName = sampleName.replaceAll("_", " ");
         }
-        List<Object[]> sample = cohortSampleRepository.getNavSample(sampleName);
+//        List<Object[]> sample = cohortSampleRepository.getNavSample(sampleName);
+//        TODO impmlement above funtion
+        List<Object[]> sample = new ArrayList<Object[]>();
         int annCount = 0;
         boolean foundNext = false;
         for(int i = 0; i < sample.size(); i++) {

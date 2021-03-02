@@ -14,7 +14,7 @@ import org.ohdsi.webapi.annotation.set.QuestionSetRepository;
 // import org.aspectj.weaver.patterns.TypePatternQuestions.Question;
 import org.ohdsi.webapi.annotation.annotation.Annotation;
 import org.ohdsi.webapi.cohortsample.CohortSampleRepository;
-import org.ohdsi.webapi.cohortsample.Sample;
+import org.ohdsi.webapi.cohortsample.CohortSample;
 
 
 @Service
@@ -54,13 +54,15 @@ public class AnnotationService {
   }
 
   public Annotation addAnnotation(Annotation annotation, String name) {
-    cohortSampleRepository.annotated(name, annotation.getSubjectId(), annotation.getCohortId());
+//    cohortSampleRepository.annotated(name, annotation.getSubjectId(), annotation.getCohortId());
+//    TODO implement above function and getSampleMembership
     return annotationRepository.save(annotation);
   }
 
   public List<Object[]> getAnnotationCSVData(Long cohortID, String source, String sampleName) {
       List<Object[]> results = new ArrayList<Object[]>();
-      List<Long> samples = cohortSampleRepository.getSampleMembership(sampleName, cohortID);
+//      List<Long> samples = cohortSampleRepository.getSampleMembership(sampleName, cohortID);
+      List<Long> samples = new ArrayList<Long>();
       Set<QuestionSet> questionSet = questionSetRepository.findByCohortId(cohortID.intValue());
       List<QuestionSet> qs = new ArrayList<QuestionSet>(questionSet);
       List<Long> qIDs = new ArrayList<Long>();

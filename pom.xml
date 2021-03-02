@@ -1348,6 +1348,16 @@
           <artifactId>google-cloud-bigquerystorage</artifactId>
           <version>0.101.0-beta</version>
         </dependency>
+        <dependency>
+          <groupId>com.google.auth</groupId>
+          <artifactId>google-auth-library-oauth2-http</artifactId>
+          <version>0.16.2</version>
+        </dependency>
+        <dependency>
+          <groupId>com.google.auth</groupId>
+          <artifactId>google-auth-library-credentials</artifactId>
+          <version>0.16.2</version>
+        </dependency>
       </dependencies>
       <build>
         <plugins>

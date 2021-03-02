@@ -38,6 +38,7 @@ CREATE TABLE ${ohdsiSchema}.pathway_event_cohort
   name                 VARCHAR(255) NOT NULL,
   cohort_definition_id INTEGER NOT NULL,
   pathway_analysis_id  INTEGER NOT NULL,
+  is_deleted           INTEGER DEFAULT 0,
 	CONSTRAINT [PK_pathway_event_cohort] PRIMARY KEY (id),
 	CONSTRAINT FK_pec_cd_id
 		FOREIGN KEY (cohort_definition_id)

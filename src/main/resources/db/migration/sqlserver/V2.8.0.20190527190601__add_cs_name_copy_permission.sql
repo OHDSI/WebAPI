@@ -1,6 +1,6 @@
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
 VALUES
-  (NEXT VALUE FOR ${ohdsiSchema}.sec_role_permission_sequence, 'conceptset:*:copy-name:get', 'Get name for copying concept set');
+  (NEXT VALUE FOR ${ohdsiSchema}.sec_permission_id_seq, 'conceptset:*:copy-name:get', 'Get name for copying concept set');
 
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission(id, role_id, permission_id)

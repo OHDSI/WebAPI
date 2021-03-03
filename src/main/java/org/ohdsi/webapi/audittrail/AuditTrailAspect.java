@@ -66,6 +66,7 @@ public class AuditTrailAspect {
 
         final AuditTrailEntry entry = new AuditTrailEntry();
         entry.setCurrentUser(getCurrentUser());
+        entry.setRemoteHost(request.getRemoteHost());
         entry.setActionLocation(request.getHeader("Action-Location"));
         entry.setRequestMethod(request.getMethod());
         entry.setRequestUri(request.getRequestURI());

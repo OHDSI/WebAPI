@@ -1,12 +1,17 @@
 package org.ohdsi.webapi.audittrail;
 
+import com.cloudbees.syslog.Facility;
+import com.cloudbees.syslog.Severity;
+import com.cloudbees.syslog.SyslogMessage;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortsample.dto.CohortSampleDTO;
+import org.ohdsi.webapi.shiro.PermissionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
@@ -21,7 +26,7 @@ class AuditTrailServiceImpl implements AuditTrailService {
     private final Logger AUDIT_LOGGER = LoggerFactory.getLogger("audit");
     private final Logger AUDIT_EXTRA_LOGGER = LoggerFactory.getLogger("audit-extra");
 
-    private static final int MAX_ENTRY_LENGTH = 2048 - 32; // 32 is length of timestamp prefix + divider
+    private static final int MAX_ENTRY_LENGTH = 2048;
     private static final String EXTRA_LOG_REFERENCE_MESSAGE =
             "... Log entry exceeds 2048 chars length. Please see the whole message in extra log file, entry id = %s";
 
@@ -40,32 +45,36 @@ class AuditTrailServiceImpl implements AuditTrailService {
     private static final String PATIENT_IDS_TEMPLATE = " Patient IDs (%s): ";
 
     private static final String FIELD_DIVIDER = " - ";
+    private static final String SPACE = " ";
     private static final String FAILURE = "FAILURE (see application log for details)";
     private static final String ANONYMOUS = "anonymous";
     private static final String NO_LOCATION = "NO_LOCATION";
     private static final String EMPTY_LIST = "empty list";
     private static final String EMPTY_MAP = "empty map";
 
+    @Autowired
+    private PermissionManager permissionManager;
+
     private final AtomicInteger extraLogIdSuffix = new AtomicInteger();
 
     @Override
     public void logSuccessfulLogin(final String login) {
-        AUDIT_LOGGER.info(String.format(USER_LOGIN_SUCCESS_TEMPLATE, login));
+        log(String.format(USER_LOGIN_SUCCESS_TEMPLATE, login));
     }
 
     @Override
     public void logFailedLogin(final String login) {
-        AUDIT_LOGGER.info(String.format(USER_LOGIN_FAILURE_TEMPLATE, login));
+        log(String.format(USER_LOGIN_FAILURE_TEMPLATE, login));
     }
 
     @Override
     public void logSuccessfulLogout(final String login) {
-        AUDIT_LOGGER.info(String.format(USER_LOGOUT_SUCCESS_TEMPLATE, login));
+        log(String.format(USER_LOGOUT_SUCCESS_TEMPLATE, login));
     }
 
     @Override
     public void logFailedLogout(final String login) {
-        AUDIT_LOGGER.info(String.format(USER_LOGOUT_FAILURE_TEMPLATE, login));
+        log(String.format(USER_LOGOUT_FAILURE_TEMPLATE, login));
     }
 
     @Override
@@ -73,6 +82,7 @@ class AuditTrailServiceImpl implements AuditTrailService {
         final StringBuilder logEntry = new StringBuilder();
 
         logEntry.append(getCurrentUserField(entry))
+                .append(SPACE).append(entry.getRemoteHost())
                 .append(FIELD_DIVIDER)
                 .append(getActionLocationField(entry))
                 .append(FIELD_DIVIDER)
@@ -87,23 +97,7 @@ class AuditTrailServiceImpl implements AuditTrailService {
             logEntry.append(FIELD_DIVIDER).append(FAILURE);
         }
 
-        if (logEntry.length() > MAX_ENTRY_LENGTH) {
-            final String currentExtraSuffix = String.format("%02d", this.extraLogIdSuffix.getAndIncrement());
-            final String entryId = System.currentTimeMillis() + "_" + currentExtraSuffix;
-            AUDIT_EXTRA_LOGGER.info(entryId + FIELD_DIVIDER + logEntry.toString());
-
-            final String extraLogReferenceMessage = String.format(EXTRA_LOG_REFERENCE_MESSAGE, entryId);
-            logEntry.setLength(MAX_ENTRY_LENGTH - extraLogReferenceMessage.length());
-            logEntry.append(extraLogReferenceMessage);
-            AUDIT_LOGGER.info(logEntry.toString());
-
-            if (this.extraLogIdSuffix.get() > 99) {
-                this.extraLogIdSuffix.set(0);
-            }
-
-        } else {
-            AUDIT_LOGGER.info(logEntry.toString());
-        }
+        log(logEntry.toString());
     }
 
     @Override
@@ -119,6 +113,33 @@ class AuditTrailServiceImpl implements AuditTrailService {
     @Override
     public void logJobFailed(JobExecution jobExecution) {
         logJob(jobExecution, JOB_FAILED_TEMPLATE);
+    }
+
+    private void log(final String message) {
+        final SyslogMessage syslogMessage = new SyslogMessage()
+                .withFacility(Facility.AUDIT)
+                .withSeverity(Severity.INFORMATIONAL)
+                .withAppName("Atlas")
+                .withMsg(message);
+        final StringBuilder logEntry = new StringBuilder(syslogMessage.toRfc5424SyslogMessage());
+
+        if (logEntry.length() >= MAX_ENTRY_LENGTH) {
+            final String currentExtraSuffix = String.format("%02d", this.extraLogIdSuffix.getAndIncrement());
+            final String entryId = System.currentTimeMillis() + "_" + currentExtraSuffix;
+            AUDIT_EXTRA_LOGGER.info(entryId + FIELD_DIVIDER + message);
+
+            final String extraLogReferenceMessage = String.format(EXTRA_LOG_REFERENCE_MESSAGE, entryId);
+            logEntry.setLength(MAX_ENTRY_LENGTH - extraLogReferenceMessage.length());
+            logEntry.append(extraLogReferenceMessage);
+            AUDIT_LOGGER.info(logEntry.toString());
+
+            if (this.extraLogIdSuffix.get() > 99) {
+                this.extraLogIdSuffix.set(0);
+            }
+
+        } else {
+            AUDIT_LOGGER.info(logEntry.toString());
+        }
     }
 
     private String getCurrentUserField(final AuditTrailEntry entry) {
@@ -179,6 +200,10 @@ class AuditTrailServiceImpl implements AuditTrailService {
     }
 
     private String getReturnedObjectFields(final Object returnedObject) {
+        if (returnedObject == null) {
+            return null;
+        }
+
         if (returnedObject instanceof Collection) {
             final Collection<?> c = (Collection<?>) returnedObject;
             if (!c.isEmpty()) {
@@ -227,6 +252,6 @@ class AuditTrailServiceImpl implements AuditTrailService {
         }
 
         final String jobName = jobParameters.getString(Constants.Params.JOB_NAME);
-        AUDIT_LOGGER.info(String.format(template, author, jobExecution.getJobId(), jobName));
+        log(String.format(template, author, jobExecution.getJobId(), jobName));
     }
 }

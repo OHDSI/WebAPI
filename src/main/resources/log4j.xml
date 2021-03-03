@@ -4,7 +4,7 @@
 	<appender name="audit" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="${audit.trail.log.file}" />
 		<layout class="org.apache.log4j.PatternLayout">
-			<param value="%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} - %m%n" name="ConversionPattern" />
+			<param value="%m%n" name="ConversionPattern" />
 		</layout>
 	</appender>
 	<appender name="audit-extra" class="org.apache.log4j.DailyRollingFileAppender">

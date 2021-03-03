@@ -4,6 +4,7 @@ import org.ohdsi.webapi.shiro.Entities.UserEntity;
 
 public class AuditTrailEntry {
     private UserEntity currentUser;
+    private String remoteHost;
     private String actionLocation;
     private String requestMethod;
     private String requestUri;
@@ -56,5 +57,13 @@ public class AuditTrailEntry {
 
     public void setReturnedObject(Object returnedObject) {
         this.returnedObject = returnedObject;
+    }
+
+    public String getRemoteHost() {
+        return remoteHost;
+    }
+
+    public void setRemoteHost(String remoteHost) {
+        this.remoteHost = remoteHost;
     }
 }

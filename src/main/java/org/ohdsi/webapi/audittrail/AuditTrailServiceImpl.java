@@ -14,10 +14,16 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 class AuditTrailServiceImpl implements AuditTrailService {
     private final Logger AUDIT_LOGGER = LoggerFactory.getLogger("audit");
+    private final Logger AUDIT_EXTRA_LOGGER = LoggerFactory.getLogger("audit-extra");
+
+    private static final int MAX_ENTRY_LENGTH = 2048 - 32; // 32 is length of timestamp prefix + divider
+    private static final String EXTRA_LOG_REFERENCE_MESSAGE =
+            "... Log entry exceeds 2048 chars length. Please see the whole message in extra log file, entry id = %s";
 
     private static final String USER_LOGIN_SUCCESS_TEMPLATE = "User successfully logged in: %s";
     private static final String USER_LOGIN_FAILURE_TEMPLATE = "User login failed: %s";
@@ -39,6 +45,8 @@ class AuditTrailServiceImpl implements AuditTrailService {
     private static final String NO_LOCATION = "NO_LOCATION";
     private static final String EMPTY_LIST = "empty list";
     private static final String EMPTY_MAP = "empty map";
+
+    private final AtomicInteger extraLogIdSuffix = new AtomicInteger();
 
     @Override
     public void logSuccessfulLogin(final String login) {
@@ -79,7 +87,23 @@ class AuditTrailServiceImpl implements AuditTrailService {
             logEntry.append(FIELD_DIVIDER).append(FAILURE);
         }
 
-        AUDIT_LOGGER.info(logEntry.toString());
+        if (logEntry.length() > MAX_ENTRY_LENGTH) {
+            final String currentExtraSuffix = String.format("%02d", this.extraLogIdSuffix.getAndIncrement());
+            final String entryId = System.currentTimeMillis() + "_" + currentExtraSuffix;
+            AUDIT_EXTRA_LOGGER.info(entryId + FIELD_DIVIDER + logEntry.toString());
+
+            final String extraLogReferenceMessage = String.format(EXTRA_LOG_REFERENCE_MESSAGE, entryId);
+            logEntry.setLength(MAX_ENTRY_LENGTH - extraLogReferenceMessage.length());
+            logEntry.append(extraLogReferenceMessage);
+            AUDIT_LOGGER.info(logEntry.toString());
+
+            if (this.extraLogIdSuffix.get() > 99) {
+                this.extraLogIdSuffix.set(0);
+            }
+
+        } else {
+            AUDIT_LOGGER.info(logEntry.toString());
+        }
     }
 
     @Override

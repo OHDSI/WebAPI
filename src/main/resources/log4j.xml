@@ -7,6 +7,12 @@
 			<param value="%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} - %m%n" name="ConversionPattern" />
 		</layout>
 	</appender>
+	<appender name="audit-extra" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="${audit.trail.log.extraFile}" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param value="%m%n" name="ConversionPattern" />
+		</layout>
+	</appender>
 
 	<appender name="async" class="org.apache.log4j.AsyncAppender" />
 	
@@ -19,6 +25,10 @@
 
 	<logger name="audit">
 		<appender-ref ref="audit"/>
+		<appender-ref ref="async"/>
+	</logger>
+	<logger name="audit-extra">
+		<appender-ref ref="audit-extra"/>
 		<appender-ref ref="async"/>
 	</logger>
 	<logger name="org.ohdsi">

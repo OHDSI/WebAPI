@@ -253,6 +253,7 @@
 
     <audit.trail.enabled>true</audit.trail.enabled>
     <audit.trail.log.file>/tmp/atlas/audit/audit.log</audit.trail.log.file>
+    <audit.trail.log.extraFile>/tmp/atlas/audit/audit-extra.log</audit.trail.log.extraFile>
   </properties>
   <build>
     <finalName>WebAPI</finalName>

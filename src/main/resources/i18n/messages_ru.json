@@ -1764,7 +1764,7 @@
       "executions": {
         "title": "Исследования",
         "prevalenceStatConverter": {
-          "allStratas": "Все срезы",
+          "allStrata": "Все срезы",
           "explore": "Исследовать",
           "loadingPrevalenceStats": "Загрузка статистики распространенности...",
           "cohort": "Когорта:",

@@ -1758,7 +1758,7 @@
       "executions": {
         "title": "실행",
         "prevalenceStatConverter": {
-          "allStratas": "모든 층화(Strata)",
+          "allStrata": "모든 층화(Strata)",
           "explore": "탐색",
           "loadingPrevalenceStats": "출현율(Prevalence) 통계로드 중 ...",
           "cohort": "코호트:",

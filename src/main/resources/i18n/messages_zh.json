@@ -1758,7 +1758,7 @@
       "executions": {
         "title": "执行",
         "prevalenceStatConverter": {
-          "allStratas": "所有阶层",
+          "allStrata": "所有阶层",
           "explore": "关系探索",
           "loadingPrevalenceStats": "正在加载流行率统计信息...",
           "cohort": "队列:",

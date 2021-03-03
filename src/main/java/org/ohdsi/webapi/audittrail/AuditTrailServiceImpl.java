@@ -3,13 +3,10 @@ package org.ohdsi.webapi.audittrail;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortsample.dto.CohortSampleDTO;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
-import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
@@ -37,37 +34,34 @@ class AuditTrailServiceImpl implements AuditTrailService {
     private static final String PATIENT_IDS_TEMPLATE = " Patient IDs (%s): ";
 
     private static final String FIELD_DIVIDER = " - ";
+    private static final String FAILURE = "FAILURE (see application log for details)";
     private static final String ANONYMOUS = "anonymous";
     private static final String NO_LOCATION = "NO_LOCATION";
     private static final String EMPTY_LIST = "empty list";
     private static final String EMPTY_MAP = "empty map";
 
-
-    @Autowired
-    private UserRepository userRepository;
-
     @Override
     public void logSuccessfulLogin(final String login) {
-        AUDIT_LOGGER.info(String.format(USER_LOGIN_SUCCESS_TEMPLATE, getUserIdByLogin(login)));
+        AUDIT_LOGGER.info(String.format(USER_LOGIN_SUCCESS_TEMPLATE, login));
     }
 
     @Override
     public void logFailedLogin(final String login) {
-        AUDIT_LOGGER.info(String.format(USER_LOGIN_FAILURE_TEMPLATE, getUserIdByLogin(login)));
+        AUDIT_LOGGER.info(String.format(USER_LOGIN_FAILURE_TEMPLATE, login));
     }
 
     @Override
     public void logSuccessfulLogout(final String login) {
-        AUDIT_LOGGER.info(String.format(USER_LOGOUT_SUCCESS_TEMPLATE, getUserIdByLogin(login)));
+        AUDIT_LOGGER.info(String.format(USER_LOGOUT_SUCCESS_TEMPLATE, login));
     }
 
     @Override
     public void logFailedLogout(final String login) {
-        AUDIT_LOGGER.info(String.format(USER_LOGOUT_FAILURE_TEMPLATE, getUserIdByLogin(login)));
+        AUDIT_LOGGER.info(String.format(USER_LOGOUT_FAILURE_TEMPLATE, login));
     }
 
     @Override
-    public void logRestCall(final AuditTrailEntry entry) {
+    public void logRestCall(final AuditTrailEntry entry, final boolean success) {
         final StringBuilder logEntry = new StringBuilder();
 
         logEntry.append(getCurrentUserField(entry))
@@ -76,9 +70,13 @@ class AuditTrailServiceImpl implements AuditTrailService {
                 .append(FIELD_DIVIDER)
                 .append(getRestCallField(entry));
 
-        final String additionalInfo = getAdditionalInfo(entry);
-        if (!StringUtils.isBlank(additionalInfo)) {
-            logEntry.append(FIELD_DIVIDER).append(additionalInfo);
+        if (success) {
+            final String additionalInfo = getAdditionalInfo(entry);
+            if (!StringUtils.isBlank(additionalInfo)) {
+                logEntry.append(FIELD_DIVIDER).append(additionalInfo);
+            }
+        } else {
+            logEntry.append(FIELD_DIVIDER).append(FAILURE);
         }
 
         AUDIT_LOGGER.info(logEntry.toString());
@@ -100,7 +98,7 @@ class AuditTrailServiceImpl implements AuditTrailService {
     }
 
     private String getCurrentUserField(final AuditTrailEntry entry) {
-        return (entry.getCurrentUser() != null ? String.valueOf(entry.getCurrentUser().getId()) : ANONYMOUS);
+        return (entry.getCurrentUser() != null ? String.valueOf(entry.getCurrentUser().getLogin()) : ANONYMOUS);
     }
 
     private String getActionLocationField(final AuditTrailEntry entry) {
@@ -197,19 +195,6 @@ class AuditTrailServiceImpl implements AuditTrailService {
         return sb.toString();
     }
 
-    private Long getUserIdByLogin(final String login) {
-        try {
-            final UserEntity user = userRepository.findByLogin(login);
-            if (user != null) {
-                return user.getId();
-            } else {
-                return null;
-            }
-        } catch(final Exception e) {
-            return null;
-        }
-    }
-
     private void logJob(final JobExecution jobExecution, final String template) {
         final JobParameters jobParameters = jobExecution.getJobParameters();
         final String author = jobParameters.getString(Constants.Params.JOB_AUTHOR);
@@ -218,7 +203,6 @@ class AuditTrailServiceImpl implements AuditTrailService {
         }
 
         final String jobName = jobParameters.getString(Constants.Params.JOB_NAME);
-        final Long userId = getUserIdByLogin(author);
-        AUDIT_LOGGER.info(String.format(template, userId, jobExecution.getJobId(), jobName));
+        AUDIT_LOGGER.info(String.format(template, author, jobExecution.getJobId(), jobName));
     }
 }

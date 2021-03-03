@@ -71,12 +71,18 @@ public class AuditTrailAspect {
         entry.setRequestUri(request.getRequestURI());
         entry.setQueryString(request.getQueryString());
 
-        final Object returnedObject = joinPoint.proceed();
-        entry.setReturnedObject(returnedObject);
+        try {
+            final Object returnedObject = joinPoint.proceed();
+            entry.setReturnedObject(returnedObject);
 
-        auditTrailService.logRestCall(entry);
+            auditTrailService.logRestCall(entry, true);
 
-        return returnedObject;
+            return returnedObject;
+        } catch (final Throwable t) {
+            auditTrailService.logRestCall(entry, false);
+            throw t;
+        }
+
     }
 
     private HttpServletRequest getHttpServletRequest() {

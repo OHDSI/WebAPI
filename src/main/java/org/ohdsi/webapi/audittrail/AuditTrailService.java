@@ -10,7 +10,7 @@ public interface AuditTrailService {
     void logSuccessfulLogout(String login);
     void logFailedLogout(String login);
 
-    void logRestCall(AuditTrailEntry entry);
+    void logRestCall(AuditTrailEntry entry, boolean success);
 
     void logJobStart(JobExecution jobExecution);
     void logJobCompleted(JobExecution jobExecution);

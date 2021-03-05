@@ -13,6 +13,7 @@ import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
 import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.Constants;
+import org.ohdsi.webapi.audittrail.events.AuditTrailLoginFailedEvent;
 import org.ohdsi.webapi.audittrail.events.AuditTrailSessionCreatedEvent;
 import org.ohdsi.webapi.shiro.management.AtlasSecurity;
 import org.springframework.context.ApplicationEventPublisher;
@@ -53,6 +54,7 @@ public abstract class AuthenticatingPropagationFilter extends AuthenticatingFilt
         String username = ((UsernamePasswordToken) token).getUsername();
         boolean result = super.onLoginFailure(token, e, request, response);
         eventPublisher.publishEvent(new FailedLoginEvent(this, username));
+        eventPublisher.publishEvent(new AuditTrailLoginFailedEvent(this, username, request.getRemoteHost()));
         return result;
     }
 }

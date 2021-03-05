@@ -28,8 +28,8 @@ class AuditTrailServiceImpl implements AuditTrailService {
     private static final String EXTRA_LOG_REFERENCE_MESSAGE =
             "... Log entry exceeds 2048 chars length. Please see the whole message in extra log file, entry id = %s";
 
-    private static final String USER_LOGIN_SUCCESS_TEMPLATE = "User successfully logged in: %s, sessionId = %s";
-    private static final String USER_LOGIN_FAILURE_TEMPLATE = "User login failed: %s";
+    private static final String USER_LOGIN_SUCCESS_TEMPLATE = "User successfully logged in: %s, sessionId = %s, remote-host = %s";
+    private static final String USER_LOGIN_FAILURE_TEMPLATE = "User login failed: %s, remote-host = %s";
     private static final String USER_LOGOUT_SUCCESS_TEMPLATE = "User successfully logged out: %s";
     private static final String USER_LOGOUT_FAILURE_TEMPLATE = "User logout failed: %s";
 
@@ -54,13 +54,13 @@ class AuditTrailServiceImpl implements AuditTrailService {
     private final AtomicInteger extraLogIdSuffix = new AtomicInteger();
 
     @Override
-    public void logSuccessfulLogin(final String login, final String sessionId) {
-        log(String.format(USER_LOGIN_SUCCESS_TEMPLATE, login, sessionId));
+    public void logSuccessfulLogin(final String login, final String sessionId, final String remoteHost) {
+        log(String.format(USER_LOGIN_SUCCESS_TEMPLATE, login, sessionId, remoteHost));
     }
 
     @Override
-    public void logFailedLogin(final String login) {
-        log(String.format(USER_LOGIN_FAILURE_TEMPLATE, login));
+    public void logFailedLogin(final String login, final String remoteHost) {
+        log(String.format(USER_LOGIN_FAILURE_TEMPLATE, login, remoteHost));
     }
 
     @Override

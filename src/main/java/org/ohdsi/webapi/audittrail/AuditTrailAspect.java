@@ -7,6 +7,7 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
+import org.ohdsi.webapi.shiro.TokenManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -68,7 +69,13 @@ public class AuditTrailAspect {
         final AuditTrailEntry entry = new AuditTrailEntry();
         entry.setCurrentUser(getCurrentUser());
         entry.setRemoteHost(request.getRemoteHost());
-        entry.setSessionId(request.getHeader(Constants.Headers.AUDIT_TRAIL_SESSION));
+
+        final String token = TokenManager.extractToken(request);
+        if (token != null) {
+            final String sessionId = (String) TokenManager.getBody(token).get(Constants.SESSION_ID);
+            entry.setSessionId(sessionId);
+        }
+
         entry.setActionLocation(request.getHeader(Constants.Headers.ACTION_LOCATION));
         entry.setRequestMethod(request.getMethod());
         entry.setRequestUri(request.getRequestURI());

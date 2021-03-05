@@ -22,6 +22,8 @@ public interface Constants {
   String TEMP_COHORT_TABLE_PREFIX = "temp_cohort_";
   Float DEFAULT_THRESHOLD = 0.01f;
 
+  String SESSION_ID = "Session-ID";
+
   interface SqlSchemaPlaceholders {
     String CDM_DATABASE_SCHEMA_PLACEHOLDER = "@cdm_database_schema";
     String RESULTS_DATABASE_SCHEMA_PLACEHOLDER = "@results_database_schema";
@@ -70,7 +72,6 @@ public interface Constants {
   interface Headers {
     String AUTH_PROVIDER = "x-auth-provider";
     String ACTION_LOCATION = "Action-Location";
-    String AUDIT_TRAIL_SESSION = "Audit-Trail-Session";
   }
 
   interface SecurityProviders {

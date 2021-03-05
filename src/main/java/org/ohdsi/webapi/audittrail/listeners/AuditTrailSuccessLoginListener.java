@@ -14,6 +14,6 @@ public class AuditTrailSuccessLoginListener implements ApplicationListener<Audit
 
     @Override
     public void onApplicationEvent(final AuditTrailSessionCreatedEvent event) {
-        auditTrailService.logSuccessfulLogin(event.getLogin(), event.getSessionId());
+        auditTrailService.logSuccessfulLogin(event.getLogin(), event.getSessionId(), event.getRemoteHost());
     }
 }

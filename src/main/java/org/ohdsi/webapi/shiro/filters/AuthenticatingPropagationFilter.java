@@ -35,9 +35,9 @@ public abstract class AuthenticatingPropagationFilter extends AuthenticatingFilt
         String username = ((UsernamePasswordToken) token).getUsername();
         eventPublisher.publishEvent(new SuccessLoginEvent(this, username));
 
-        final String auditTrailSessionId = UUID.randomUUID().toString();
-        ((HttpServletResponse) response).setHeader(Constants.Headers.AUDIT_TRAIL_SESSION, auditTrailSessionId);
-        eventPublisher.publishEvent(new AuditTrailSessionCreatedEvent(this, username, auditTrailSessionId));
+        final String sessionId = UUID.randomUUID().toString();
+        request.setAttribute(Constants.SESSION_ID, sessionId);
+        eventPublisher.publishEvent(new AuditTrailSessionCreatedEvent(this, username, sessionId, request.getRemoteHost()));
 
         return true;
     }

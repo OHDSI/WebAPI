@@ -51,8 +51,7 @@ public class CorsFilter extends AdviceFilter{
     if (requestMethod != null && "OPTIONS".equalsIgnoreCase(method)) {
       httpResponse.setHeader("Access-Control-Allow-Headers", "origin, content-type, accept, authorization, " +
               Constants.Headers.AUTH_PROVIDER + "," +
-              Constants.Headers.ACTION_LOCATION + "," +
-              Constants.Headers.AUDIT_TRAIL_SESSION
+              Constants.Headers.ACTION_LOCATION
       );
       httpResponse.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
       httpResponse.setHeader("Access-Control-Max-Age", "1209600");
@@ -63,9 +62,7 @@ public class CorsFilter extends AdviceFilter{
 
     // continue processing request
     //
-    httpResponse.setHeader("Access-Control-Expose-Headers", "Bearer,x-auth-error," +
-            Constants.Headers.AUTH_PROVIDER + "," +
-            Constants.Headers.AUDIT_TRAIL_SESSION);
+    httpResponse.setHeader("Access-Control-Expose-Headers", "Bearer,x-auth-error," + Constants.Headers.AUTH_PROVIDER);
     return true;
   }
 }

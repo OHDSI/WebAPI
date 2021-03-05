@@ -6,12 +6,10 @@ import com.cloudbees.syslog.SyslogMessage;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.cohortsample.dto.CohortSampleDTO;
-import org.ohdsi.webapi.shiro.PermissionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
@@ -30,7 +28,7 @@ class AuditTrailServiceImpl implements AuditTrailService {
     private static final String EXTRA_LOG_REFERENCE_MESSAGE =
             "... Log entry exceeds 2048 chars length. Please see the whole message in extra log file, entry id = %s";
 
-    private static final String USER_LOGIN_SUCCESS_TEMPLATE = "User successfully logged in: %s";
+    private static final String USER_LOGIN_SUCCESS_TEMPLATE = "User successfully logged in: %s, sessionId = %s";
     private static final String USER_LOGIN_FAILURE_TEMPLATE = "User login failed: %s";
     private static final String USER_LOGOUT_SUCCESS_TEMPLATE = "User successfully logged out: %s";
     private static final String USER_LOGOUT_FAILURE_TEMPLATE = "User logout failed: %s";
@@ -48,18 +46,16 @@ class AuditTrailServiceImpl implements AuditTrailService {
     private static final String SPACE = " ";
     private static final String FAILURE = "FAILURE (see application log for details)";
     private static final String ANONYMOUS = "anonymous";
+    private static final String NO_SESSION = "NO_SESSION";
     private static final String NO_LOCATION = "NO_LOCATION";
     private static final String EMPTY_LIST = "empty list";
     private static final String EMPTY_MAP = "empty map";
 
-    @Autowired
-    private PermissionManager permissionManager;
-
     private final AtomicInteger extraLogIdSuffix = new AtomicInteger();
 
     @Override
-    public void logSuccessfulLogin(final String login) {
-        log(String.format(USER_LOGIN_SUCCESS_TEMPLATE, login));
+    public void logSuccessfulLogin(final String login, final String sessionId) {
+        log(String.format(USER_LOGIN_SUCCESS_TEMPLATE, login, sessionId));
     }
 
     @Override
@@ -81,8 +77,11 @@ class AuditTrailServiceImpl implements AuditTrailService {
     public void logRestCall(final AuditTrailEntry entry, final boolean success) {
         final StringBuilder logEntry = new StringBuilder();
 
-        logEntry.append(getCurrentUserField(entry))
-                .append(SPACE).append(entry.getRemoteHost())
+        final String currentUserField = getCurrentUserField(entry);
+
+        logEntry.append(currentUserField).append(SPACE)
+                .append(entry.getRemoteHost()).append(SPACE)
+                .append(getSessionIdField(entry))
                 .append(FIELD_DIVIDER)
                 .append(getActionLocationField(entry))
                 .append(FIELD_DIVIDER)
@@ -140,6 +139,10 @@ class AuditTrailServiceImpl implements AuditTrailService {
         } else {
             AUDIT_LOGGER.info(logEntry.toString());
         }
+    }
+
+    private String getSessionIdField(final AuditTrailEntry entry) {
+        return entry.getSessionId() != null ? entry.getSessionId() : NO_SESSION;
     }
 
     private String getCurrentUserField(final AuditTrailEntry entry) {

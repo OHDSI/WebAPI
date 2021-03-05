@@ -4,7 +4,7 @@ import org.springframework.batch.core.JobExecution;
 
 public interface AuditTrailService {
 
-    void logSuccessfulLogin(String login);
+    void logSuccessfulLogin(String login, String sessionId);
     void logFailedLogin(String login);
 
     void logSuccessfulLogout(String login);

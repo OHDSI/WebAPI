@@ -4,6 +4,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,7 +68,8 @@ public class AuditTrailAspect {
         final AuditTrailEntry entry = new AuditTrailEntry();
         entry.setCurrentUser(getCurrentUser());
         entry.setRemoteHost(request.getRemoteHost());
-        entry.setActionLocation(request.getHeader("Action-Location"));
+        entry.setSessionId(request.getHeader(Constants.Headers.AUDIT_TRAIL_SESSION));
+        entry.setActionLocation(request.getHeader(Constants.Headers.ACTION_LOCATION));
         entry.setRequestMethod(request.getMethod());
         entry.setRequestUri(request.getRequestURI());
         entry.setQueryString(request.getQueryString());

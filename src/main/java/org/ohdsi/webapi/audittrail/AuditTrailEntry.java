@@ -6,6 +6,7 @@ public class AuditTrailEntry {
     private UserEntity currentUser;
     private String remoteHost;
     private String actionLocation;
+    private String sessionId;
     private String requestMethod;
     private String requestUri;
     private String queryString;
@@ -25,6 +26,14 @@ public class AuditTrailEntry {
 
     public void setActionLocation(String actionLocation) {
         this.actionLocation = actionLocation;
+    }
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
     }
 
     public String getRequestMethod() {

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PrevalenceItem<T extends PrevalenceItem> extends ExportItem<T> {
+    protected final double MAX_DIFF = 1000.0d; // we need to ensure a JSON-parsable value
     protected final Integer cohortId;
     protected final String cohortName;
     protected final Long count;
@@ -38,23 +39,31 @@ public class PrevalenceItem<T extends PrevalenceItem> extends ExportItem<T> {
         return values;
     }
 
+    
+    /**
+     * Calculate Standardized Mean Difference of dichotomous (binary) variable 
+     * From https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3472075/pdf/sim0028-3083.pdf
+     *
+    **/
     @Override
     protected double calcDiff(PrevalenceItem another) {
-        if (count == null || another.count == null || avg == null || another.avg == null) {
-            return 0d;
+      double pTreatment = avg == null ? 0 : avg;
+      double pCompare = another.avg == null ? 0 : another.avg;
+
+      double pooledPrevalence = (pTreatment * (1.0 - pTreatment)) + (pCompare * (1.0 - pCompare));
+      if (pooledPrevalence == 0) { 
+        // undefined case where denom = 0
+        if (pTreatment != pCompare) {
+          // return +/- INF based on if T is bigger.
+          return pTreatment > pCompare ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+        } else {
+          // pTreatment and pCompare are same, so return 0
+          return 0.0d;
         }
-        double n1 = count / avg;
-        double n2 = another.count / another.avg;
-
-        double mean1 = count / n1;
-        double mean2 = another.count / n2;
-
-        double sd1 = Math.sqrt((n1 * count + count) / (n1 * n1));
-        double sd2 = Math.sqrt((n2 * another.count + another.count) / (n2 * n2));
-
-        double sd = Math.sqrt(sd1 * sd1 + sd2 * sd2);
-
-        return (mean2 - mean1) / sd;
+      } else {
+        // calculate the standard mean differnce
+        return (pTreatment - pCompare) / Math.sqrt((pooledPrevalence / 2));
+      }
     }
 
     @Override

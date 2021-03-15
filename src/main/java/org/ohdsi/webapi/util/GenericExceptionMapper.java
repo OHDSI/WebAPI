@@ -54,7 +54,7 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
             ex = new RuntimeException(cause);
         } else if (ex instanceof UnauthorizedException) {
             responseStatus = Status.FORBIDDEN;
-        } if (ex instanceof NotFoundException) {
+        } else if (ex instanceof NotFoundException) {
             responseStatus = Status.NOT_FOUND;
         } else if (ex instanceof UserException) {
             responseStatus = Status.INTERNAL_SERVER_ERROR;

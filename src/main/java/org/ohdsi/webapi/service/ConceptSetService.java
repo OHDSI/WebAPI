@@ -23,6 +23,8 @@ import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.webapi.conceptset.ConceptSet;
@@ -119,7 +121,7 @@ public class ConceptSetService extends AbstractDaoService {
     public ConceptSetExpression getConceptSetExpression(@PathParam("id") final int id) {
         SourceInfo sourceInfo = sourceService.getPriorityVocabularySourceInfo();
         if (sourceInfo == null) {
-            throw new ForbiddenException();
+            throw new UnauthorizedException();
         }
         return getConceptSetExpression(id, sourceInfo);
     }

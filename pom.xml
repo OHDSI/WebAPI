@@ -1174,8 +1174,6 @@
         <maven.gitcommitid.skip>true</maven.gitcommitid.skip>
         <miredot.phase>none</miredot.phase>
         <skipTests>true</skipTests>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
         <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
         <datasource.url>jdbc:postgresql://54.209.111.128:5432/vocabularyv5</datasource.url>
         <datasource.username>USER</datasource.username>

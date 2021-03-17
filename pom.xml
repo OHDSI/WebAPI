@@ -1509,6 +1509,10 @@
               <groupId>log4j</groupId>
             </exclusion>
             <exclusion>
+              <groupId>org.apache.logging.log4j</groupId>
+              <artifactId>*</artifactId>
+            </exclusion>
+            <exclusion>
               <artifactId>servlet-api</artifactId>
               <groupId>javax.servlet</groupId>
             </exclusion>

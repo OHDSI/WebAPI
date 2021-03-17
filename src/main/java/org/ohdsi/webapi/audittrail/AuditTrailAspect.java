@@ -5,8 +5,6 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.ohdsi.webapi.Constants;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
-import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.TokenManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -23,9 +21,6 @@ public class AuditTrailAspect {
 
     @Autowired
     private AuditTrailService auditTrailService;
-
-    @Autowired
-    private PermissionManager permissionManager;
 
     @Pointcut("@annotation(javax.ws.rs.GET)")
     public void restGetPointcut() {
@@ -67,12 +62,14 @@ public class AuditTrailAspect {
         }
 
         final AuditTrailEntry entry = new AuditTrailEntry();
-        entry.setCurrentUser(getCurrentUser());
         entry.setRemoteHost(request.getRemoteHost());
 
         final String token = TokenManager.extractToken(request);
         if (token != null) {
+            final String user = TokenManager.getSubject(token);
             final String sessionId = (String) TokenManager.getBody(token).get(Constants.SESSION_ID);
+
+            entry.setCurrentUser(user);
             entry.setSessionId(sessionId);
         }
 
@@ -98,14 +95,6 @@ public class AuditTrailAspect {
     private HttpServletRequest getHttpServletRequest() {
         try {
             return ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-        } catch (final Exception e) {
-            return null;
-        }
-    }
-
-    private UserEntity getCurrentUser() {
-        try {
-            return permissionManager.getCurrentUser();
         } catch (final Exception e) {
             return null;
         }

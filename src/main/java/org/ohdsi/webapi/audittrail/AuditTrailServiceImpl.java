@@ -128,7 +128,7 @@ class AuditTrailServiceImpl implements AuditTrailService {
             AUDIT_EXTRA_LOGGER.info(entryId + FIELD_DIVIDER + message);
 
             final String extraLogReferenceMessage = String.format(EXTRA_LOG_REFERENCE_MESSAGE, entryId);
-            logEntry.setLength(MAX_ENTRY_LENGTH - extraLogReferenceMessage.length());
+            logEntry.setLength(MAX_ENTRY_LENGTH - extraLogReferenceMessage.length() - 1);
             logEntry.append(extraLogReferenceMessage);
             AUDIT_LOGGER.info(logEntry.toString());
 
@@ -146,7 +146,7 @@ class AuditTrailServiceImpl implements AuditTrailService {
     }
 
     private String getCurrentUserField(final AuditTrailEntry entry) {
-        return (entry.getCurrentUser() != null ? String.valueOf(entry.getCurrentUser().getLogin()) : ANONYMOUS);
+        return (entry.getCurrentUser() != null ? String.valueOf(entry.getCurrentUser()) : ANONYMOUS);
     }
 
     private String getActionLocationField(final AuditTrailEntry entry) {

@@ -71,7 +71,7 @@ public interface Constants {
 
   interface Headers {
     String AUTH_PROVIDER = "x-auth-provider";
-    String ACTION_LOCATION = "Action-Location";
+    String ACTION_LOCATION = "action-location";
   }
 
   interface SecurityProviders {

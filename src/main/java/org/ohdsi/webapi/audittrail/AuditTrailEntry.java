@@ -3,7 +3,7 @@ package org.ohdsi.webapi.audittrail;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 
 public class AuditTrailEntry {
-    private UserEntity currentUser;
+    private String currentUser;
     private String remoteHost;
     private String actionLocation;
     private String sessionId;
@@ -12,11 +12,11 @@ public class AuditTrailEntry {
     private String queryString;
     private Object returnedObject;
 
-    public UserEntity getCurrentUser() {
+    public String getCurrentUser() {
         return currentUser;
     }
 
-    public void setCurrentUser(UserEntity currentUser) {
+    public void setCurrentUser(String currentUser) {
         this.currentUser = currentUser;
     }
 

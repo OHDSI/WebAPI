@@ -1,12 +1,15 @@
 package org.ohdsi.webapi.check.checker.characterization.helper;
 
-import java.util.Collection;
+import org.ohdsi.webapi.check.builder.IterableForEachValidatorBuilder;
 import org.ohdsi.webapi.check.builder.NotNullNotEmptyValidatorBuilder;
 import org.ohdsi.webapi.check.builder.ValidatorGroupBuilder;
 import org.ohdsi.webapi.cohortcharacterization.dto.BaseCcDTO;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcStrataDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
+
+import java.util.Collection;
 
 public class CharacterizationHelper {
 
@@ -26,5 +29,15 @@ public class CharacterizationHelper {
                 .valueGetter(BaseCcDTO::getCohorts)
                 .validators(new NotNullNotEmptyValidatorBuilder<>());
         return builder;
+    }
+
+    public static ValidatorGroupBuilder<CohortCharacterizationDTO, Collection<? extends CcStrataDTO>> prepareStratifyRuleBuilder() {
+
+        return new ValidatorGroupBuilder<CohortCharacterizationDTO, Collection<? extends CcStrataDTO>>()
+                .valueGetter(t -> t.getStratas())
+                .validators(
+                        new IterableForEachValidatorBuilder<CcStrataDTO>()
+                                .groups(CharacterizationStrataHelper.prepareStrataBuilder())
+                );
     }
 }

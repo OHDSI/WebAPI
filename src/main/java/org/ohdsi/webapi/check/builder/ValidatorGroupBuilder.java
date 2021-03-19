@@ -1,16 +1,15 @@
 package org.ohdsi.webapi.check.builder;
 
-import com.google.common.reflect.TypeToken;
-import java.lang.reflect.ParameterizedType;
+import org.ohdsi.webapi.check.validator.Path;
+import org.ohdsi.webapi.check.validator.Validator;
+import org.ohdsi.webapi.check.validator.ValidatorGroup;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.ohdsi.webapi.check.validator.Path;
-import org.ohdsi.webapi.check.validator.Validator;
-import org.ohdsi.webapi.check.validator.ValidatorGroup;
 
 public class ValidatorGroupBuilder<T, V> extends ValidatorBaseBuilder<T, ValidatorGroup<T, V>, ValidatorGroupBuilder<T, V>> {
 
@@ -72,6 +71,9 @@ public class ValidatorGroupBuilder<T, V> extends ValidatorBaseBuilder<T, Validat
             }
             if (Objects.isNull(builder.getBasePath())) {
                 builder.basePath(createChildPath());
+            }
+            if (Objects.isNull(builder.severity)) {
+                builder.severity(this.severity);
             }
         });
         return builders.stream()

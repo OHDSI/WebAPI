@@ -16,6 +16,7 @@ public class ValidatorGroupBuilder<T, V> extends ValidatorBaseBuilder<T, Validat
     protected List<ValidatorBuilder<V>> validatorBuilders = new ArrayList<>();
     protected List<ValidatorGroupBuilder<V, ?>> validatorGroupBuilders = new ArrayList<>();
     protected Function<T, V> valueGetter;
+    protected Function<T, Boolean> conditionGetter = t -> true;
 
     public ValidatorGroupBuilder<T, V> valueGetter(Function<T, V> valueGetter) {
 
@@ -23,6 +24,11 @@ public class ValidatorGroupBuilder<T, V> extends ValidatorBaseBuilder<T, Validat
         return this;
     }
 
+    public ValidatorGroupBuilder<T, V> conditionGetter(Function<T, Boolean> conditionGetter) {
+
+        this.conditionGetter = conditionGetter;
+        return this;
+    }
 
     public ValidatorGroupBuilder<T, V> validators(List<ValidatorBuilder<V>> validators) {
 
@@ -60,7 +66,7 @@ public class ValidatorGroupBuilder<T, V> extends ValidatorBaseBuilder<T, Validat
         List<ValidatorGroup<V, ?>> groups = initAndBuildList(this.validatorGroupBuilders);
         List<Validator<V>> validators = initAndBuildList(this.validatorBuilders);
 
-        return new ValidatorGroup<>(validators, groups, valueGetter);
+        return new ValidatorGroup<>(validators, groups, valueGetter, conditionGetter);
     }
 
     private <U> List<U> initAndBuildList(List<? extends ValidatorBaseBuilder<V, U, ?>> builders) {

@@ -6,7 +6,7 @@
   <groupId>org.ohdsi</groupId>
   <artifactId>WebAPI</artifactId>
   <packaging>war</packaging>
-  <version>1.8-SNAPSHOT</version>
+  <version>1.8</version>
   <name>WebAPI</name>
   <properties>
     <webapi.version>2.7.1</webapi.version>

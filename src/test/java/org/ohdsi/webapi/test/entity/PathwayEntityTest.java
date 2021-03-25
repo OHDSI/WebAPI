@@ -8,7 +8,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.ohdsi.webapi.WebApi;
 import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.pathway.PathwayController;
 import org.ohdsi.webapi.pathway.PathwayService;
@@ -23,7 +22,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.convert.ConversionService;
 
 @RunWith(JUnitParamsRunner.class)
-@SpringBootTest(classes = WebApi.class)
+@SpringBootTest
 public class PathwayEntityTest extends ITStarter implements TestCreate, TestCopy<PathwayAnalysisDTO>, TestImport<PathwayAnalysisDTO, PathwayAnalysisExportDTO> {
     @Autowired
     protected ConversionService conversionService;

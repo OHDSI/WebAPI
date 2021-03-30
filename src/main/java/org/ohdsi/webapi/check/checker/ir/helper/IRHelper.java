@@ -23,6 +23,7 @@ public class IRHelper {
                 .groups(
                         IRAnalysisExpressionHelper.prepareTargetCohortsBuilder(),
                         IRAnalysisExpressionHelper.prepareOutcomeCohortsBuilder(),
+                        IRAnalysisExpressionHelper.prepareStratifyRuleBuilder(),
                         IRAnalysisExpressionHelper.prepareStudyWindowBuilder()
                 );
         return builder;

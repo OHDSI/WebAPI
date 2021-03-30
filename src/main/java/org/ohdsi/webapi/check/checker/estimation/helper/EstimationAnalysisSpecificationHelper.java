@@ -38,7 +38,7 @@ public class EstimationAnalysisSpecificationHelper {
                         new DuplicateValidatorBuilder<TargetComparatorOutcomes, String>()
                                 .elementGetter(t -> String.format("%s,%s", t.getTargetId(), t.getComparatorId())),
                         new IterableForEachValidatorBuilder<TargetComparatorOutcomes>()
-                                .validator(predicateValidatorBuilder)
+                                .validators(predicateValidatorBuilder)
                 );
         return builder;
     }
@@ -86,7 +86,7 @@ public class EstimationAnalysisSpecificationHelper {
                         new DuplicateValidatorBuilder<CohortMethodAnalysis, String>()
                                 .elementGetter(elementGetter),
                         new IterableForEachValidatorBuilder<CohortMethodAnalysis>()
-                                .validator(iptwValidatorBuilder)
+                                .validators(iptwValidatorBuilder)
                 );
         return builder;
     }

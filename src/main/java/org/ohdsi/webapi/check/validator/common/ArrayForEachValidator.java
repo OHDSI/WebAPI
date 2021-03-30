@@ -6,18 +6,19 @@ import org.ohdsi.webapi.check.validator.Validator;
 import org.ohdsi.webapi.check.validator.ValidatorGroup;
 import org.ohdsi.webapi.check.warning.WarningSeverity;
 
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
-public class IterableForEachValidator<T> extends Validator<Collection<? extends T>> {
+public class ArrayForEachValidator<T> extends Validator<T[]> {
     private final List<Validator<T>> validators;
     private final List<ValidatorGroup<T, ?>> validatorGroups;
 
-    public IterableForEachValidator(Path path,
-                                    WarningSeverity severity,
-                                    String errorMessage,
-                                    List<Validator<T>> validators,
-                                    List<ValidatorGroup<T, ?>> validatorGroups) {
+    public ArrayForEachValidator(Path path,
+                                 WarningSeverity severity,
+                                 String errorMessage,
+                                 List<Validator<T>> validators,
+                                 List<ValidatorGroup<T, ?>> validatorGroups) {
 
         super(path, severity, errorMessage);
         this.validators = validators;
@@ -25,13 +26,15 @@ public class IterableForEachValidator<T> extends Validator<Collection<? extends 
     }
 
     @Override
-    public boolean validate(Collection<? extends T> value, Context context) {
+    public boolean validate(T[] value, Context context) {
 
         if (value == null) {
             return true;
         }
 
-        return value.stream()
+        Stream<T> valueStream = Arrays.stream(value);
+
+        return valueStream
                 .map(item -> {
                     Boolean validatorsResult = this.validators.stream()
                             .map(v -> v.validate(item, context))

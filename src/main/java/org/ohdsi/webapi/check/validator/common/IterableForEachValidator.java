@@ -10,8 +10,8 @@ import java.util.Collection;
 import java.util.List;
 
 public class IterableForEachValidator<T> extends Validator<Collection<? extends T>> {
-    final private List<Validator<T>> validators;
-    private List<ValidatorGroup<T, ?>> validatorGroups;
+    private final List<Validator<T>> validators;
+    private final List<ValidatorGroup<T, ?>> validatorGroups;
 
     public IterableForEachValidator(Path path,
                                     WarningSeverity severity,

@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class ArrayForEachValidator<T> extends Validator<T[]> {
-    final private List<Validator<T>> validators;
-    private List<ValidatorGroup<T, ?>> validatorGroups;
+    private final List<Validator<T>> validators;
+    private final List<ValidatorGroup<T, ?>> validatorGroups;
 
     public ArrayForEachValidator(Path path,
                                  WarningSeverity severity,

@@ -8,7 +8,7 @@ public class ValidatorGroup<T, V> {
     private List<Validator<V>> validators;
     private List<ValidatorGroup<V, ?>> validatorGroups;
     private Function<T, V> valueForValidationGetter;
-    private Function<T, Boolean> conditionGetter = t -> true;
+    private Function<T, Boolean> conditionGetter;
 
     public ValidatorGroup(List<Validator<V>> validators,
                           List<ValidatorGroup<V, ?>> validatorGroups,

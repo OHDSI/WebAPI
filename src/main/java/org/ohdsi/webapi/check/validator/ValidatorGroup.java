@@ -5,10 +5,10 @@ import java.util.Objects;
 import java.util.function.Function;
 
 public class ValidatorGroup<T, V> {
-    private List<Validator<V>> validators;
-    private List<ValidatorGroup<V, ?>> validatorGroups;
-    private Function<T, V> valueForValidationGetter;
-    private Function<T, Boolean> conditionGetter;
+    private final List<Validator<V>> validators;
+    private final List<ValidatorGroup<V, ?>> validatorGroups;
+    private final Function<T, V> valueForValidationGetter;
+    private final Function<T, Boolean> conditionGetter;
 
     public ValidatorGroup(List<Validator<V>> validators,
                           List<ValidatorGroup<V, ?>> validatorGroups,

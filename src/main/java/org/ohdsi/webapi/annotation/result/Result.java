@@ -25,15 +25,16 @@ public class Result {
   @JoinColumn(name = "annotation_id")
   private Annotation annotation;
 
-  @JsonIgnore
-  @Column(name = "set_id")
-  private Long setId;
-
   @Column(name = "question_id")
   private Long questionId;
 
   @Column(name = "answer_id")
   private Long answerId;
+
+//need charity's help here! these can all be retrieved from the annotation_id
+  @JsonIgnore
+  @Column(name = "set_id")
+  private Long setId;
 
   @Column(name = "sample_name")
   private String sampleName;

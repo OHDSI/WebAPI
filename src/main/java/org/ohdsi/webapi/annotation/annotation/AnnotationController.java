@@ -55,7 +55,7 @@ public class AnnotationController {
     Annotation annotation = new Annotation();
     annotation.setId(annotationDto.getId());
     annotation.setSubjectId(annotationDto.getSubjectId());
-    annotation.setCohortId(annotationDto.getCohortId());
+    annotation.setCohortSampleId(annotationDto.getCohortSampleId());
     QuestionSet set = questionSetRepository.findById(annotationDto.getSetId());
     annotation.setSet(set);
 
@@ -75,10 +75,10 @@ public class AnnotationController {
   }
 
   @Path("/csvData")
-  @GET 
+  @GET
   @Produces(MediaType.APPLICATION_JSON)
   public List<Object[]> getAnnotationCSV(
-      @QueryParam("cohortID") Long cohortID, 
+      @QueryParam("cohortID") Long cohortID,
       @QueryParam("sourceKey") String sourceKey,
       @QueryParam("sampleName") String sampleName
       ) {
@@ -90,7 +90,7 @@ public class AnnotationController {
       if (cohortID == null || sourceKey == null || sampleName == null) {
         return null;
       }
-      
+
       return annotationService.getAnnotationCSVData(cohortID, sourceKey, sampleName);
 
   }

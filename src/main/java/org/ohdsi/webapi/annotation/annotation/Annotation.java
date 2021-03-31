@@ -30,8 +30,8 @@ public class Annotation {
   @Column(name = "subject_id")
   private Long subjectId;
 
-  @Column(name = "cohort_id")
-  private Long cohortId;
+  @Column(name = "cohort_sample_id")
+  private Long cohortSampleId;
 
   // @Column(name = "sample_name")
   // private String sampleName;
@@ -82,15 +82,15 @@ public class Annotation {
   /**
    * @return the cohortId
    */
-  public Long getCohortId() {
-    return cohortId;
+  public Long getCohortSampleId() {
+    return cohortSampleId;
   }
 
   /**
    * @param cohortId the cohortId to set
    */
-  public void setCohortId(Long cohortId) {
-    this.cohortId = cohortId;
+  public void setCohortSampleId(Long cohortSampleId) {
+    this.cohortSampleId = cohortSampleId;
   }
 
   /**

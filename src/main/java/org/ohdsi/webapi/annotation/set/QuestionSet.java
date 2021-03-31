@@ -21,13 +21,7 @@ public class QuestionSet {
   @Column(name = "set_id")
   private Long id;
 
-  @Column(name = "cohort_name")
-  private String cohortName;
-
-  @Column(name = "cohort_source")
-  private String cohortSource;
-
-  @Column(name = "cohort_id")
+  @Column(name = "cohort_definition_id")
   private int cohortId;
 
   private String name;
@@ -54,34 +48,6 @@ public class QuestionSet {
 	 */
   public void setId(Long id) {
     this.id = id;
-  }
-
-  /**
-   * @return the cohortName
-   */
-  public String getCohortName() {
-    return cohortName;
-  }
-
-  /**
-   * @param cohortName the cohortName to set
-   */
-  public void setCohortName(String cohortName) {
-    this.cohortName = cohortName;
-  }
-
-  /**
-   * @return the cohortSource
-   */
-  public String getCohortSource() {
-    return cohortSource;
-  }
-
-  /**
-   * @param cohortSource the cohortSource to set
-   */
-  public void setCohortSource(String cohortSource) {
-    this.cohortSource = cohortSource;
   }
 
   /**

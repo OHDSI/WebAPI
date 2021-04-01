@@ -33,14 +33,14 @@ public class AnnotationController {
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
   public List<Annotation> getAnnotations(
-    @QueryParam("cohortId") final Long cohortId,
+    @QueryParam("cohortSampleId") final Long cohortSampleId,
     @QueryParam("subjectId") final Long subjectId,
     @QueryParam("setId") final Long setId
   ) {
 
 
-    if (cohortId != null && subjectId != null && setId != null) {
-        return annotationService.getAnnotationByCohortIdAndBySubjectIdAndBySetId(cohortId, subjectId, setId);
+    if (cohortSampleId != null && subjectId != null && setId != null) {
+        return annotationService.getAnnotationByCohortSampleIdAndBySubjectIdAndBySetId(cohortSampleId, subjectId, setId);
     }
 
     return annotationService.getAnnotations();
@@ -74,6 +74,7 @@ public class AnnotationController {
     annotationService.addAnnotation(annotation, annotationDto.getSampleName());
   }
 
+//just for testing
   @Path("/csvData")
   @GET
   @Produces(MediaType.APPLICATION_JSON)

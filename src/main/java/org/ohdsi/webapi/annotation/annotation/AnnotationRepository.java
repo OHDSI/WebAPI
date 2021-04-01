@@ -7,7 +7,7 @@ import org.ohdsi.webapi.annotation.annotation.Annotation;
 
 public interface AnnotationRepository extends JpaRepository<Annotation, Long> {
 
-  public Set<Annotation> findOneByCohortIdAndSubjectIdAndSetId(Long cohortId, Long subjectId, Long setId);
-  public List<Annotation> findByCohortIdAndSetId(Long cohortId, Long setId);
-  
+  public Set<Annotation> findOneByCohortSampleIdAndSubjectIdAndSetId(Long cohortSampleId, Long subjectId, Long setId);
+  public List<Annotation> findByCohortSampleIdAndSetId(Long cohortSampleId, Long setId);
+
 }

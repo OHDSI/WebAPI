@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.1.1 r1855137">
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.4.1">
   <hashTree>
     <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="WebAPI Custom Endpoints Integration Tests" enabled="true">
       <stringProp name="TestPlan.comments"></stringProp>
@@ -61,7 +61,7 @@
           </elementProp>
           <elementProp name="CasLocalCallback" elementType="Argument">
             <stringProp name="Argument.name">CasLocalCallback</stringProp>
-            <stringProp name="Argument.value">${__P(cas.local.callback.url,http://34.245.50.75/webapi/user/login/cas)}</stringProp>
+            <stringProp name="Argument.value">${__P(cas.local.callback.url,http://34.242.30.71/webapi/user/login/cas)}</stringProp>
             <stringProp name="Argument.desc">Service Provider url</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
@@ -72,7 +72,7 @@
           </elementProp>
           <elementProp name="WebAPILocalHost" elementType="Argument">
             <stringProp name="Argument.name">WebAPILocalHost</stringProp>
-            <stringProp name="Argument.value">${__P(webapi.local.url,http://34.245.50.75/webapi)}</stringProp>
+            <stringProp name="Argument.value">${__P(webapi.local.url,http://34.242.30.71/webapi)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="ExpressionFile" elementType="Argument">
@@ -92,7 +92,12 @@
           </elementProp>
           <elementProp name="PasswordCentral" elementType="Argument">
             <stringProp name="Argument.name">PasswordCentral</stringProp>
-            <stringProp name="Argument.value">${__P(webapi.central.password,Testtest12345@)}</stringProp>
+            <stringProp name="Argument.value">${__P(webapi.central.password,Testtest1234@)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="StorageCentralUrl" elementType="Argument">
+            <stringProp name="Argument.name">StorageCentralUrl</stringProp>
+            <stringProp name="Argument.value">${__P(storage.central.url,https://storage-uat.honeur.org)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
         </collectionProp>
@@ -139,6 +144,7 @@ vars.put(&quot;expression&quot;, expression);</stringProp>
       <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="HTTP Cookie Manager" enabled="true">
         <collectionProp name="CookieManager.cookies"/>
         <boolProp name="CookieManager.clearEachIteration">true</boolProp>
+        <boolProp name="CookieManager.controlledByThreadGroup">false</boolProp>
       </CookieManager>
       <hashTree/>
       <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP Request Defaults" enabled="true">
@@ -213,6 +219,7 @@ vars.put(&quot;expression&quot;, expression);</stringProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration">${Duration}</stringProp>
         <stringProp name="ThreadGroup.delay">${StartupDelay}</stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
       </ThreadGroup>
       <hashTree>
         <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="HONEUR Central Login" enabled="true"/>
@@ -275,7 +282,7 @@ vars.put(&quot;expression&quot;, expression);</stringProp>
               <stringProp name="filename"></stringProp>
               <stringProp name="cacheKey">true</stringProp>
               <stringProp name="script">import groovy.json.JsonSlurper;
-import groovy.json.internal.LazyMap;
+import org.apache.groovy.json.internal.LazyMap;
 
 def jsonSlurper = new JsonSlurper();
 
@@ -293,7 +300,7 @@ AssertionResult.setFailure(data.size() &lt;= 0);
               <stringProp name="filename"></stringProp>
               <stringProp name="cacheKey">true</stringProp>
               <stringProp name="script">import groovy.json.JsonSlurper;
-import groovy.json.internal.LazyMap;
+import org.apache.groovy.json.internal.LazyMap;
 
 def jsonSlurper = new JsonSlurper();
 
@@ -318,7 +325,7 @@ AssertionResult.setFailure(checked);  </stringProp>
               <stringProp name="cacheKey">true</stringProp>
               <stringProp name="script">import groovy.json.JsonSlurper;
 import groovy.json.JsonOutput;
-import groovy.json.internal.LazyMap;
+import org.apache.groovy.json.internal.LazyMap;
 
 def jsonSlurper = new JsonSlurper();
 
@@ -326,7 +333,7 @@ data = jsonSlurper.parseText(prev.getResponseDataAsString());
 success = false;
 
 for (d in data) {
- if(d.name == &quot;TestOrg1&quot;){
+ if(d.name == &quot;TestOrg3&quot;){
  	d.canRead = true;
  	success = true;
 	vars.put(&quot;organizationId&quot;, String.valueOf(d.organizationId));
@@ -437,7 +444,7 @@ vars.put(&quot;organizations&quot;, JsonOutput.toJson(data));</stringProp>
               <stringProp name="filename"></stringProp>
               <stringProp name="cacheKey">true</stringProp>
               <stringProp name="script">import groovy.json.JsonSlurper;
-import groovy.json.internal.LazyMap;
+import org.apache.groovy.json.internal.LazyMap;
 
 def jsonSlurper = new JsonSlurper();
 
@@ -455,7 +462,7 @@ AssertionResult.setFailure(data.size() &lt;= 0);
               <stringProp name="filename"></stringProp>
               <stringProp name="cacheKey">true</stringProp>
               <stringProp name="script">import groovy.json.JsonSlurper;
-import groovy.json.internal.LazyMap;
+import org.apache.groovy.json.internal.LazyMap;
 
 def jsonSlurper = new JsonSlurper();
 
@@ -574,7 +581,7 @@ AssertionResult.setFailure(!correctChecked);  </stringProp>
                 <stringProp name="filename"></stringProp>
                 <stringProp name="cacheKey">true</stringProp>
                 <stringProp name="script">import groovy.json.JsonSlurper;
-import groovy.json.internal.LazyMap;
+import org.apache.groovy.json.internal.LazyMap;
 
 def jsonSlurper = new JsonSlurper();
 
@@ -592,7 +599,7 @@ AssertionResult.setFailure(data.size() &lt;= 0);
                 <stringProp name="cacheKey">true</stringProp>
                 <stringProp name="script">import groovy.json.JsonSlurper;
 import groovy.json.JsonOutput;
-import groovy.json.internal.LazyMap;
+import org.apache.groovy.json.internal.LazyMap;
 
 def jsonSlurper = new JsonSlurper();
 
@@ -780,7 +787,7 @@ vars.put(&quot;valid&quot;, response.cohortGenerationInfo.valid.toString())</str
                   <stringProp name="filename"></stringProp>
                   <stringProp name="parameters"></stringProp>
                   <stringProp name="script">import groovy.json.JsonSlurper;
-import groovy.json.internal.LazyMap;
+import org.apache.groovy.json.internal.LazyMap;
 
 def jsonSlurper = new JsonSlurper();
 
@@ -884,7 +891,7 @@ AssertionResult.setFailure(inValid);
           <hashTree>
             <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Definition Results To Import" enabled="true">
               <stringProp name="JSONPostProcessor.referenceNames">definitionResultsToImport</stringProp>
-              <stringProp name="JSONPostProcessor.jsonPathExprs">$.[?(@.originalFilename =~ /HONEUR_OMOP_CDM-[0-9]+\.results/)]</stringProp>
+              <stringProp name="JSONPostProcessor.jsonPathExprs">$.[?(@.originalFilename =~ /${sourceKey}-[0-9]+\.results/)]</stringProp>
               <stringProp name="JSONPostProcessor.match_numbers">-1</stringProp>
             </JSONPostProcessor>
             <hashTree/>
@@ -894,7 +901,7 @@ AssertionResult.setFailure(inValid);
               <stringProp name="filename"></stringProp>
               <stringProp name="cacheKey">true</stringProp>
               <stringProp name="script">import groovy.json.JsonSlurper;
-import groovy.json.internal.LazyMap;
+import org.apache.groovy.json.internal.LazyMap;
 
 def jsonSlurper = new JsonSlurper();
 
@@ -1121,6 +1128,7 @@ AssertionResult.setFailure(running == &quot;COMPLETE&quot; &amp;&amp; inValid); 
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration">${Duration}</stringProp>
         <stringProp name="ThreadGroup.delay">${StartupDelay}</stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
       </ThreadGroup>
       <hashTree>
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET Health Status" enabled="true">
@@ -1261,6 +1269,7 @@ AssertionResult.setFailure(running == &quot;COMPLETE&quot; &amp;&amp; inValid); 
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration">${Duration}</stringProp>
         <stringProp name="ThreadGroup.delay">${StartupDelay}</stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
       </ThreadGroup>
       <hashTree>
         <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="HONEUR Central Login" enabled="true"/>
@@ -1324,7 +1333,7 @@ AssertionResult.setFailure(running == &quot;COMPLETE&quot; &amp;&amp; inValid); 
               <stringProp name="cacheKey">true</stringProp>
               <stringProp name="script">import groovy.json.JsonSlurper;
 import groovy.json.JsonOutput;
-import groovy.json.internal.LazyMap;
+import org.apache.groovy.json.internal.LazyMap;
 
 def jsonSlurper = new JsonSlurper();
 
@@ -1366,7 +1375,7 @@ vars.put(&quot;definitionIds&quot;, JsonOutput.toJson(ids));</stringProp>
               <stringProp name="cacheKey">true</stringProp>
               <stringProp name="script">import groovy.json.JsonSlurper;
 import groovy.json.JsonOutput;
-import groovy.json.internal.LazyMap;
+import org.apache.groovy.json.internal.LazyMap;
 
 def jsonSlurper = new JsonSlurper();
 
@@ -1392,7 +1401,7 @@ vars.put(&quot;permissionIds&quot;, JsonOutput.toJson(ids.sort()));</stringProp>
               <stringProp name="script">import groovy.json.JsonSlurper;
 
 import groovy.json.JsonOutput;
-import groovy.json.internal.LazyMap;
+import org.apache.groovy.json.internal.LazyMap;
 
 def jsonSlurper = new JsonSlurper();
 
@@ -1403,8 +1412,8 @@ def commons = definitionIds.intersect(permissionsIds)
 def difference = definitionIds.plus(permissionsIds)
 difference.removeAll(commons)
 
-AssertionResult.setFailureMessage(&quot;The list of definitions shows a definition to which the user has no access ${difference}.&quot;);
-AssertionResult.setFailure(!permissionsIds.containsAll(definitionIds));
+//AssertionResult.setFailureMessage(&quot;The list of definitions shows a definition to which the user has no access ${difference}.&quot;);
+//AssertionResult.setFailure(!permissionsIds.containsAll(definitionIds));
 
 </stringProp>
             </JSR223Assertion>
@@ -1477,6 +1486,7 @@ AssertionResult.setFailure(!permissionsIds.containsAll(definitionIds));
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration">${Duration}</stringProp>
         <stringProp name="ThreadGroup.delay">${StartupDelay}</stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
       </ThreadGroup>
       <hashTree>
         <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="HONEUR Central Login" enabled="true"/>
@@ -1539,7 +1549,7 @@ AssertionResult.setFailure(!permissionsIds.containsAll(definitionIds));
               <stringProp name="filename"></stringProp>
               <stringProp name="cacheKey">true</stringProp>
               <stringProp name="script">import groovy.json.JsonSlurper;
-import groovy.json.internal.LazyMap;
+import org.apache.groovy.json.internal.LazyMap;
 
 def jsonSlurper = new JsonSlurper();
 
@@ -1557,7 +1567,7 @@ AssertionResult.setFailure(data.size() &lt;= 0);
               <stringProp name="filename"></stringProp>
               <stringProp name="cacheKey">true</stringProp>
               <stringProp name="script">import groovy.json.JsonSlurper;
-import groovy.json.internal.LazyMap;
+import org.apache.groovy.json.internal.LazyMap;
 
 def jsonSlurper = new JsonSlurper();
 
@@ -1582,7 +1592,7 @@ AssertionResult.setFailure(checked);  </stringProp>
               <stringProp name="cacheKey">true</stringProp>
               <stringProp name="script">import groovy.json.JsonSlurper;
 import groovy.json.JsonOutput;
-import groovy.json.internal.LazyMap;
+import org.apache.groovy.json.internal.LazyMap;
 
 def jsonSlurper = new JsonSlurper();
 
@@ -1590,7 +1600,7 @@ data = jsonSlurper.parseText(prev.getResponseDataAsString());
 success = false;
 
 for (d in data) {
- if(d.name == &quot;TestOrg1&quot;){
+ if(d.name == &quot;TestOrg3&quot;){
  	d.canRead = true;
  	success = true;
 	vars.put(&quot;organizationId&quot;, String.valueOf(d.organizationId));
@@ -1701,7 +1711,7 @@ vars.put(&quot;organizations&quot;, JsonOutput.toJson(data));</stringProp>
               <stringProp name="filename"></stringProp>
               <stringProp name="cacheKey">true</stringProp>
               <stringProp name="script">import groovy.json.JsonSlurper;
-import groovy.json.internal.LazyMap;
+import org.apache.groovy.json.internal.LazyMap;
 
 def jsonSlurper = new JsonSlurper();
 
@@ -1719,7 +1729,7 @@ AssertionResult.setFailure(data.size() &lt;= 0);
               <stringProp name="filename"></stringProp>
               <stringProp name="cacheKey">true</stringProp>
               <stringProp name="script">import groovy.json.JsonSlurper;
-import groovy.json.internal.LazyMap;
+import org.apache.groovy.json.internal.LazyMap;
 
 def jsonSlurper = new JsonSlurper();
 
@@ -1842,7 +1852,7 @@ AssertionResult.setFailure(!correctChecked);  </stringProp>
                 <stringProp name="filename"></stringProp>
                 <stringProp name="cacheKey">true</stringProp>
                 <stringProp name="script">import groovy.json.JsonSlurper;
-import groovy.json.internal.LazyMap;
+import org.apache.groovy.json.internal.LazyMap;
 
 def jsonSlurper = new JsonSlurper();
 
@@ -1860,7 +1870,7 @@ AssertionResult.setFailure(data.size() &lt;= 0);
                 <stringProp name="cacheKey">true</stringProp>
                 <stringProp name="script">import groovy.json.JsonSlurper;
 import groovy.json.JsonOutput;
-import groovy.json.internal.LazyMap;
+import org.apache.groovy.json.internal.LazyMap;
 
 def jsonSlurper = new JsonSlurper();
 
@@ -1956,7 +1966,7 @@ AssertionResult.setFailure(!success);
                 <stringProp name="script">import groovy.json.JsonSlurper;
 
 import groovy.json.JsonOutput;
-import groovy.json.internal.LazyMap;
+import org.apache.groovy.json.internal.LazyMap;
 
 def jsonSlurper = new JsonSlurper();
 
@@ -2003,7 +2013,7 @@ AssertionResult.setFailure(data.uuid == null &amp;&amp; data.groupKey == null);
                 <stringProp name="script">import groovy.json.JsonSlurper;
 
 import groovy.json.JsonOutput;
-import groovy.json.internal.LazyMap;
+import org.apache.groovy.json.internal.LazyMap;
 
 def jsonSlurper = new JsonSlurper();
 
@@ -2043,7 +2053,7 @@ AssertionResult.setFailure(data.uuid != null || data.groupKey != null);
                 <stringProp name="script">import groovy.json.JsonSlurper;
 
 import groovy.json.JsonOutput;
-import groovy.json.internal.LazyMap;
+import org.apache.groovy.json.internal.LazyMap;
 
 def jsonSlurper = new JsonSlurper();
 
@@ -2115,6 +2125,7 @@ AssertionResult.setFailure(data.uuid != null || data.groupKey != null);
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration"></stringProp>
         <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
       </ThreadGroup>
       <hashTree>
         <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="HONEUR Central Login" enabled="true"/>
@@ -2571,7 +2582,7 @@ while(sampler.getCookieManager().getCookieCount() &gt; 0) {
             <stringProp name="HTTPSampler.port"></stringProp>
             <stringProp name="HTTPSampler.protocol"></stringProp>
             <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-            <stringProp name="HTTPSampler.path">https://storage-uat.honeur.org/api/${uuid}</stringProp>
+            <stringProp name="HTTPSampler.path">${StorageCentralUrl}/api/${uuid}</stringProp>
             <stringProp name="HTTPSampler.method">DELETE</stringProp>
             <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
             <boolProp name="HTTPSampler.auto_redirects">false</boolProp>

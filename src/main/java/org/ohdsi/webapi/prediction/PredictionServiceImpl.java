@@ -64,7 +64,9 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
 
     private static final EntityGraph DEFAULT_ENTITY_GRAPH = EntityGraphUtils.fromAttributePaths("source", "analysisExecution.resultFiles");
 
-    private static final String PREDICTION_SKELETON = "/resources/prediction/skeleton/SkeletonPredictionStudy_0.0.1.zip";
+    // This path can used when skeleton is packed inside WebAPI.war
+    // For example PREDICTION_SKELETON = "/resources/prediction/skeleton/SkeletonPredictionStudy_0.0.1.zip";
+    private static final String PREDICTION_SKELETON = "";
 
     private final EntityGraph COMMONS_ENTITY_GRAPH = EntityUtils.fromAttributePaths(
             "createdBy",
@@ -326,13 +328,13 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
             analysis.setPackageName(packageName);
             try {
                 externalFile = TempFileUtils.copyResourceToTempFile(PREDICTION_SKELETON, "plp", ".zip");
-            } catch (IOException e) {
+            } catch (Exception e) {
                 log.warn("Failed to load skeleton from resource, {}. Ignored and used default", e.getMessage());
             }
-            if (StringUtils.isNotEmpty(externalPackagePath)) {
-                super.hydrateAnalysis(analysis, externalPackagePath, out);
-            } else if (Objects.nonNull(externalFile)) {
+            if (Objects.nonNull(externalFile)) {
                 super.hydrateAnalysis(analysis, externalFile.getAbsolutePath(), out);
+            } else {
+                super.hydrateAnalysis(analysis, externalPackagePath, out);
             }
         } finally {
             FileUtils.deleteQuietly(externalFile);

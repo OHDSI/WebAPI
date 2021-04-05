@@ -79,20 +79,9 @@ public class UserImportController {
   public Response testConnection(@PathParam("type") String type) {
     LdapProviderType provider = LdapProviderType.fromValue(type);
     ConnectionInfo result = new ConnectionInfo();
-    try {
-      userImportService.testConnection(provider);
-      result.setState(ConnectionInfo.ConnectionState.SUCCESS);
-      result.setMessage("Connection success");
-    } catch(Exception e) {
-      logger.error("LDAP connection failed", e);
-      result.setMessage("Connection failed. " + e.getMessage());
-      StringWriter out = new StringWriter();
-      try(PrintWriter writer = new PrintWriter(out)) {
-        e.printStackTrace(writer);
-        result.setDetails(out.toString());
-      }
-      result.setState(ConnectionInfo.ConnectionState.FAILED);
-    }
+    userImportService.testConnection(provider);
+    result.setState(ConnectionInfo.ConnectionState.SUCCESS);
+    result.setMessage("Connection success");
     return Response.ok().entity(result).build();
   }
 

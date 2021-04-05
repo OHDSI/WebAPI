@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.job;
 
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
 import org.ohdsi.webapi.executionengine.controller.ScriptExecutionController;
 import org.ohdsi.webapi.executionengine.job.RunExecutionEngineTasklet;
@@ -46,9 +47,9 @@ public class JobExecutionToDTOConverter extends BaseConversionServiceAwareConver
         result.setStartDate(execution.getStartTime());
         result.setEndDate(execution.getEndTime());
         result.setJobParametersResource(
-                execution.getJobParameters().getParameters().entrySet()
-                .stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getValue() != null ? e.getValue().getValue() : "null")));
+                execution.getJobParameters().getParameters().entrySet().stream()
+                        .filter(p -> Constants.ALLOWED_JOB_EXECUTION_PARAMETERS.contains(p.getKey()))
+                        .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getValue() != null ? e.getValue().getValue() : "null")));
         result.setOwnerType(entity.getOwnerType());
         return result;
     }

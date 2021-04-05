@@ -13,7 +13,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ohdsi.analysis.Utils;
-import org.ohdsi.webapi.WebApi;
 import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetailsRepository;
 import org.ohdsi.webapi.estimation.Estimation;
@@ -33,7 +32,7 @@ import static org.ohdsi.analysis.estimation.design.EstimationTypeEnum.COMPARATIV
 import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
 
 @RunWith(JUnitParamsRunner.class)
-@SpringBootTest(classes = WebApi.class)
+@SpringBootTest
 public class EstimationEntityTest extends ITStarter implements TestCreate, TestCopy<EstimationDTO>, TestImport<EstimationDTO,EstimationAnalysisImpl> {
     @Autowired
     protected ConversionService conversionService;

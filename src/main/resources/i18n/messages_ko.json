@@ -1,0 +1,3550 @@
+{
+  "locale": "ko",
+  "datatable": {
+    "language": {
+      "decimal": "",
+      "emptyTable": "데이터 없음",
+      "info": "_TOTAL_ 가지 항목 중 _START_~_END_개 표시",
+      "infoEmpty": "0가지 항목  중 0~0개 표시",
+      "infoFiltered": "(총 _MAX_ 개 항목에서 필터링 됨)",
+      "infoPostFix": "",
+      "thousands": ",",
+      "lengthMenu": "_MENU_ 항목 표시",
+      "loadingRecords": "로드중...",
+      "processing": "처리중...",
+      "search": "검색:",
+      "searchPlaceholder": "검색...",
+      "zeroRecords": "일치하는 기록이 없습니다",
+      "all": "모두",
+      "paginate": {
+        "first": "첫번째",
+        "last": "마지막",
+        "next": "다음",
+        "previous": "이전"
+      },
+      "buttons": {
+        "colvis": "컬럼 보기",
+        "copy": "복사하기",
+        "changeColumns": "열(Columns) 변경",
+        "resetColumns": "열 재설정",
+        "showAllColumns": "모든 열 표시"
+      },
+      "aria": {
+        "sortAscending": ": 열을 오름차순으로 정렬하려면 활성화",
+        "sortDescending": ": 열을 내림차순으로 정렬하려면 활성화"
+      }
+    }
+  },
+  "format": {
+    "number": "# ###.##",
+    "date": {
+      "shortdate": "MM/dd",
+      "mediumdate": "MM/dd/YYYY",
+      "datetime": "MM/DD/YYYY h:mm A",
+      "minutes": "분",
+      "seconds": "초"
+    }
+  },
+  "executionStatus": {
+    "values": {
+      "FAILED": "실패함",
+      "COMPLETED": "완료",
+      "STOPPED": "중지됨",
+      "CANCELED": "취소됨",
+      "PENDING": "보류중",
+      "RUNNING": "실행중",
+      "STARTED": "시작"
+    }
+  },
+  "common": {
+    "accessDenied": "접근 불가",
+    "add": "더하기",
+    "and": "그리고",
+    "cancel": "취소",
+    "close": "닫기",
+    "configureAccess": "액세스 구성",
+    "configureAccessModal": {
+      "addWriteAccessToRole": "역할에 쓰기 권한 추가 :",
+      "loadingAccessList": "액세스 목록 로드중 ...",
+      "revoke": "취소",
+      "rolesWithWriteAccess": "쓰기 액세스 권한이 있는 역할 :"
+    },
+    "copy": "복사하기",
+    "copyOf": "복사본: <%=name%>",
+    "copyToClipboard": "클립 보드에 복사",
+    "copiedToClipboard": "클립 보드에 복사되었습니다!",
+    "createACopy": "사본 만들기",
+    "days": "일",
+    "daysAbbr": "일",
+    "delete": "삭제",
+    "deselectAll": "모두 선택 취소",
+    "download": "다운로드",
+    "downloading": "다운로드...",
+    "export": "내보내기",
+    "import": "불러오기",
+    "loading": "로드중",
+    "loadingWithDots": "로드중 ...",
+    "min": "분",
+    "noChangesToPersist": "지속될 변경사항 없음",
+    "notEnoughPermissions": "권한이 충분하지 않음",
+    "or": "또는",
+    "preview": "미리보기",
+    "progress": "진행하다",
+    "refresh": "새로고침",
+    "save": "저장",
+    "search": "검색",
+    "selectAll": "모두 선택",
+    "set": "세트",
+    "unsaved": "(저장되지 않음)",
+    "unspecified": "미지정!",
+    "menu": "메뉴",
+    "noData": "데이터 없음",
+    "readOnly": "(읽기 전용)"
+  },
+  "commonErrors": {
+    "noSources": "현재 WebAPI에 정의된 소스가 없습니다. <br/> 해당 페이지에서 하나 이상을 추가하십시오 <a href=\"#/configure\">configuration</a> page.",
+    "webapiConnectError": "WebAPI 인스턴스에 연결할 수 없습니다. <br/>이 문제를 해결하려면 관리자에게 문의하십시오.",
+    "browserWarning": "v.63보다 새로운 Chrome 브라우저만 공식적으로 지원됩니다.",
+    "initFailed": "애플리케이션 초기화에 실패했습니다."
+  },
+  "navigation": {
+    "characterizations": "특성",
+    "cohortdefinitions": "코호트 정의",
+    "conceptsets": "컨셉 세트",
+    "configuration": "환경설정",
+    "datasources": "데이터 소스",
+    "estimation": "추정",
+    "feedback": "피드백",
+    "home": "홈",
+    "incidencerate": "발생률",
+    "jobs": "실행내역",
+    "pathways": "코호트 경로",
+    "prediction": "예측",
+    "profiles": "프로필",
+    "search": "검색"
+  },
+  "options": {
+    "after": "다음",
+    "all": "모두",
+    "allDrugSources": "모든 약물 소스",
+    "allEvents": "모든 이벤트",
+    "allVisitTypes": "모든 방문 타입",
+    "allVisits": "모든 방문",
+    "any": "어느 하나",
+    "atLeast": "최소",
+    "atMost": "최대",
+    "before": "전에",
+    "between": "사이에",
+    "contains": "포함된",
+    "drugSource": "약물 소스",
+    "earliestEvents": "최초 이벤트",
+    "endDate": "종료일",
+    "endOfContinuousDrugExposure": "지속적인 약물 노출 종료때까지",
+    "endOfContinuousObservation": "지속적인 관찰기간이 종료될 때까지",
+    "endsWith": "종료되는",
+    "eventEnds": "이벤트 종료",
+    "eventStarts": "이벤트 시작",
+    "exactly": "정확히",
+    "fixedDurationRelativeToInitialEvent": "이니셜 이벤트와 관련된 고정 기간까지",
+    "indexEndDate": "인덱스(index) 종료일",
+    "indexStartDate": "인덱스(index) 시작일",
+    "isAnyOf": "다음 중 하나",
+    "isNotAnyOf": "다음 중 하나가 아닌",
+    "latestEvents": "마지막 이벤트",
+    "mm": "월간",
+    "no": "아니오",
+    "notBetween": "사이에 없는",
+    "notContains": "포함하지 않는",
+    "notEndsWith": "끝나지 않는",
+    "notStartsWith": "시작하지 않음",
+    "periodType": "기간(Period) 타입",
+    "periods": "기간",
+    "qq": "분기별",
+    "reports": "레포트",
+    "rollupUtilizationDrug": "약물",
+    "rollupUtilizationVisit": "방문",
+    "rollups": "롤업",
+    "startDate": "시작일",
+    "startsWith": "로 시작",
+    "ww": "주간",
+    "yes": "예",
+    "yy": "년별",
+    "yesDescendant": "예 (하위)",
+    "yesExact": "예 (정확한)",
+    "yesParent": "예 (부모)",
+    "included": "포함됨",
+    "excluded": "제외됨",
+    "none": "없음",
+    "true": "참",
+    "false": "거짓",
+    "balanced": "균형 잡힌",
+    "time": "시간",
+    "person": "사람",
+    "reporting": {
+      "personsAndExposureDuringBaselinePeriod": "기준일 기간 동안의 사람 수와 노출건 수",
+      "personsAndExposureDuringCohortPeriod": "코호트 기간 동안의 사람 수와 노출건 수",
+      "visitsDuringBaselinePeriod": "기준일 기간 동안 방문 수",
+      "visitDatesDuringBaselinePeriod": "기준일 기간 동안 방문일자",
+      "careSiteVisitDatesDuringBaselinePeriod": "기준일 기간 동안 의료기관 방문일자",
+      "visitsDuringCohortPeriod": "코호트 기간 동안 방문 수",
+      "visitDatesDuringCohortPeriod": "코호트 기간 동안 방문일자",
+      "careSiteVisitDatesDuringCohortPeriod": "코호트 기간 동안 의료기관 방문일자",
+      "drugUtilizationDuringBaselinePeriod": "기준일 기간 동안 약물 사용",
+      "drugUtilizationDuringCohortPeriod": "코호트 기간 동안 약물 사용"
+    }
+  },
+  "components": {
+    "authorship": {
+      "created": "만들어진",
+      "modified": "수정된",
+      "on": "~에",
+      "byCreated": "by <%=createdBy%>",
+      "byModified": "by <%=modifiedBy%>"
+    },
+    "accessDenied": {
+      "forbidden": {
+        "message1": "이 기능에 대한 액세스 권한이 없습니다.",
+        "message2": "액세스 방법에 대한 자세한 내용은 시스템 관리자에게 문의하십시오."
+      },
+      "unauthenticated": {
+        "login": "로그인",
+        "message": "이 기능은 보호됩니다."
+      }
+    },
+    "analysisExecution": {
+      "title": "실행",
+      "buttons": {
+        "allExecutions": "모든 실행 항목 (<%=submissions%>)",
+        "generate": "실행",
+        "generating": "실행",
+        "pending": "보류중",
+        "latestResult": "마지막 결과보기",
+        "downloadLatestResult": "마지막 결과 보기"
+      },
+      "designModal": {
+        "title": "설계"
+      },
+      "exitModal": {
+        "title": "실행 종료 메시지"
+      },
+      "messages": {
+        "permissions": "결과를 볼 수 있는 권한이 충분하지 않습니다."
+      },
+      "datatable": {
+        "viewReports": "레포트 보기",
+        "sameAsNow": "(현재와 동일)"
+      },
+      "noCompletedExecutionsForDataSource": "아직 데이터 소스에 대해 완료된 실행이 없습니다.",
+      "stopGenerationConfirmation": "실행을 중지 하시겠습니까?"
+    },
+    "atlasCohortEditor": {
+      "enterCohortPlaceholder": "여기에 코호트 정의에 대한 설명을 입력하세요.",
+      "importConceptSet": "저장소에서 컨셉 세트  불러오기"
+    },
+    "cohortExpressionEditor": {
+      "addCensoringEvent": "Censoring 이벤트 추가",
+      "addInitialEvent": "초기 이벤트 추가...",
+      "addTrimmingOptions": "트리밍 옵션 추가",
+      "censoringEvents": "Censoring 이벤트:",
+      "cohortEntryEvents": "코호트 진입 이벤트",
+      "cohortEntryEventsText_1": "이벤트는 사람이 약물 노출, 진단, 수술 및 처치, 검사 그리고 방문 기록 등을 어떻게 받았는지 시간상의 관찰 기록입니다. 모든 이벤트에는 시작 날짜와 종료 날짜가 있지만 일부 이벤트에는 동일한 값 (예: 수술 및 처치 또는 검사)의 시작 날짜와 종료 날짜가 있을 수 있습니다.",
+      "cohortEntryEventsText_2": "다음 기준 중 어떠한 하나의 기준을 만족하는 이벤트 :",
+      "cohortEntryEventsText_3": "이벤트 기준 시점로부터 최소",
+      "cohortEntryEventsText_4": "일 이전과",
+      "cohortEntryEventsText_5": "일 이후의 연속적인 관찰기간을 가짐.",
+      "cohortEntryEventsText_6": "사람마다 이니셜 이벤트를 다음으로 제한함:",
+      "cohortEntryEventsText_7": ".",
+      "cohortErasText_1": "Era collapse gap 기간을 설정합니다:",
+      "cohortErasText_2": " ",
+      "cohortErasText_2_1": "까지 Left censor",
+      "cohortErasText_3": " ",
+      "cohortErasText_3_1": "까지 Right censor",
+      "cohortErasTitle": "코호트 기간 기준",
+      "cohortExit": "코호트 종료 기준",
+      "cohortExitText_1": "모든 적격(qualifying) 이벤트들에 대해서 코호트내에서 이벤트 종료에 대한 설정이 있어야 합니다. 기본사양으로 이벤트는 초기 이벤트(initial event)를 포함하는 관찰 기간(observation period)이 끝날 때 종료되지만 이벤트 종료 날짜를 다음과 같이 지정할 수 있습니다.",
+      "cohortExitText_2": "적격 초기 이벤트(qualifying initial event)는 이벤트 시작일 또는 종료일을 기준으로 고정된 기간 후에 종료되도록 설정되거나, 또는 컨셉 세트로 정의되는 약물들에 대한 연속전인 노출의 종료일을 기준으로 이벤트 종료일을 설정할 수 있습니다.",
+      "cohortExitText_3": "기준을 사용하여 이벤트를 종료시킬 수 있습니다. 센서링 이벤트(censoring event)가 적격 이벤트(qualifying event)의 시작 날짜와 종료 날짜 사이에 발생되면 센서링 이벤트의 날짜가 종료일로 사용됩니다.",
+      "cohortExitText_4": "다음 기준에 따라 코호트를 종료합니다:",
+      "cohortExitText_5": "Censoring 이벤트를 선택하지 않습니다.",
+      "cohortExitTitle": "코호트 종료 기준",
+      "cohortExitTitle_1": "이벤트 종료 날짜",
+      "cohortExitTitle_2": "Censoring 이벤트",
+      "copyOf": "복사본:",
+      "days": "일",
+      "deleteCriteria": "기준 삭제",
+      "eventPersistence": "이벤트 지속성:",
+      "inclusionCriteria": "포함 기준",
+      "inclusionCriteriaText": "적격 코호트(qualifying cohort)는 초기 이벤트(initial event)를 가지고 있고, 초기 이벤트의 포함 기준(initial event inclusion criteria)을 충족하며, 모든 추가적인 적격 포함 기준을 충족하는 모든 사람으로 정의됩니다. 각 적격 포함 기준을 평가하여 초기 코호트로부터 각 기준들에 의하여 사람수가 얼마나 감소하는지에 대한 영향력을 결정합니다.",
+      "inclusionCriteriaText_1": "사람마다 이니셜 이벤트를  다음으로 제한합니다:",
+      "inclusionCriteriaTitle": "포함 기준",
+      "indexMessage": "인덱스 날짜(Index date)는 코호트 진입 기준으로부터의 이벤트를 참조합니다.",
+      "newInclusionCriteria": "새로운 포함 기준",
+      "noCensoring": "센서링(Censoring) 없음",
+      "removeRestriction": "이니셜 이벤트 의 제한 조건 제거",
+      "restrictInitialEventsButton": "초기 이벤트의 제한",
+      "restrictInitialEventsTitle": "이니셜 이벤트 의 제한 조건",
+      "unnamedCriteria": "명명되지 않은 기준"
+    },
+    "cohortExpressionViewer": {
+      "cohortExpressionViewerText_1": "다음 중 하나를 만족하는 사람들:",
+      "cohortExpressionViewerText_10": "적격한 코호트를 다음과 같이 제한 :",
+      "cohortExpressionViewerText_11": "센서링(Censoring) 이벤트 :",
+      "cohortExpressionViewerText_12": "다음에 따라 코호트에서 나감(Exit) :",
+      "cohortExpressionViewerText_13": "코호트 Collapse 전략:",
+      "cohortExpressionViewerText_14": "코호트 기간사이의 간격이 다음과 같을 경우 코호트 기간들을 Collapse 시킴",
+      "cohortExpressionViewerText_15": "포함 기준 #(<%=index%>): <%=name%>",
+      "cohortExpressionViewerText_2": "최소한의 연속적인 관찰과",
+      "cohortExpressionViewerText_3": "일 전 그리고",
+      "cohortExpressionViewerText_4": "이벤트 인덱스 날짜(Index date) 이후의 날짜",
+      "cohortExpressionViewerText_5": "초기 이벤트(initial event)를 다음으로 제한:",
+      "cohortExpressionViewerText_6": "사람마다.",
+      "cohortExpressionViewerText_7": "프라이머리 이벤트(Primary Events)와 매칭되는 사람의 경우, 다음을 포함함:",
+      "cohortExpressionViewerText_8": "코호트의 초기 이벤트(initial event)를 다음으로 제한 :",
+      "cohortExpressionViewerText_9": "포함 규칙(rules)",
+      "initialEventCohort": "초기 이벤트 코호트"
+    },
+    "conceptPicker": {
+      "addAndClose": "추가 및 닫기",
+      "addButton": "추가",
+      "addSelected": "선택 항목 추가",
+      "close": "닫기",
+      "done": "완료",
+      "importButton": "불러오기",
+      "importConcepts": "컨셉 가져 오기",
+      "search": "검색",
+      "selectConcept": "컨셉 선택",
+      "waitMessage": "어휘 제공자가 초기화하는 동안 잠시 기다려주십시오..."
+    },
+    "conceptSet": {
+      "exportAllToCSV": "모든 컨셉 세트를 CSV로 내보내기",
+      "exportingToCsv": "모든 컨셉 세트를 CSV로 내보내기",
+      "importingConceptSet": "컨셉 세트 가져오기 중",
+      "conceptSetExpression": "컨셉 세트 표현",
+      "includedConcepts": "포함된 컨셉들:",
+      "includedSourceCodes": "포함된 소스 코드",
+      "deleteConfirm": "<%=name%>을 삭제하시겠습니까?",
+      "conceptSetExpressionJSON": "JSON 형식으로 표현",
+      "clickToClear": "취소합니다",
+      "closeConceptSet": "컨셉 세트 닫기",
+      "conceptIdentifiers": "컨셉 식별자",
+      "conceptIdentifierList": "컨셉 식별자 목록",
+      "includedConceptIdentifierList": "포함된 컨셉 식별자 목록",
+      "loadingForExport": "내보내기를 위해 로딩 중…",
+      "exportToCsv": "CSV 내보내기",
+      "sourceCodes": "소스 코드",
+      "conceptSet": "컨셉 세트",
+      "repository": "저장소",
+      "appendConceptSetExpression": "컨셉 세트 표현 추가",
+      "overwriteConceptSetExpression": "컨셉 세트 표현 덮어쓰기",
+      "enterConceptIdentifiers": "컨셉 식별자를 입력합니다",
+      "enterSourceCodes": "소스 코드를 입력합니다",
+      "name": "컨셉 세트 이름:",
+      "addConcepts": "컨셉 추가",
+      "removeSelected": "선택 항목 삭제",
+      "deleteConceptSet": "컨셉 세트 삭제",
+      "copyToConceptSetRepository": "컨셉 세트 저장소로 복사",
+      "notEnoughPermissions": "컨셉 세트 <%=action%>을 위한 권한이 충분하지 않습니다.",
+      "actionEdit": "수정",
+      "actionCreate": "생성",
+      "overwriteConfirm": "현재의 컨셉 세트 표현을 정말 덮어씌우시겠습니까?",
+      "loadingIncludedConcepts": "포함된 컨셉 로딩 중",
+      "commonAncestors": "공통 상위 컨셉",
+      "loadingIncludedSourcecodes": "포함된 소스 코드 로딩 중"
+    },
+    "conceptLegend": {
+      "standard": "표준",
+      "nonStandard": "비표준",
+      "classification": "분류"
+    },
+    "conceptAddBox": {
+      "addToConceptSet": "컨셉 세트에 추가",
+      "addToNewConceptSet": "새 컨셉 세트에 추가",
+      "selectConceptSet": "컨셉 세트 선택하기",
+      "exclude": "제외 컨셉",
+      "descendants": "하위 컨셉",
+      "mapped": "매핑된 컨셉",
+      "addedToConceptSet": "컨셉 세트에 추가되었습니다!"
+    },
+    "conceptSetBuilder": {
+      "conceptSet": "컨셉 세트",
+      "delete": "삭제",
+      "export": "내보내기",
+      "exportConceptSetTitle": "컨셉 세트 내보내기...",
+      "import": "불러오기",
+      "importConceptSetPlaceholder": "컨셉 세트 가져 오기",
+      "importConceptSetTitle": "컨셉 세트 가져 오기...",
+      "includedConcepts": "포함된 컨셉들",
+      "load": "불러오기",
+      "mappedConcepts": "매핑된 컨셉",
+      "newConceptSet": "새 컨셉 세트",
+      "pleaseSelectCodesetToModify": "수정할 코드셋을 선택해 주세요.",
+      "removeSelected": "선택 항목 삭제",
+      "selectConceptSet": "컨셉 세트 선택하기",
+      "unnamedConceptSet": "컨셉 세트 이름 설정"
+    },
+    "conceptSetSaveModal": {
+      "conceptSetAlreadyExists": "컨셉 세트가 이미 존재함",
+      "conceptSetNameLabel": "컨셉 세트 이름 :",
+      "conceptSetNamePlaceholder": "컨셉 세트 이름",
+      "saveNewConceptSet": "새로운 컨셉 세트 저장"
+    },
+    "conceptSetSelector": {
+      "clearConceptSet": "컨셉 세트 지우기",
+      "importConcept": "컨셉 세트 가져 오기",
+      "searchWithTripleDots": "검색..."
+    },
+    "conditionDeath": {
+      "addAttribute": "속성 추가",
+      "anyDeath": "모든 유형의 사망",
+      "conditionDeathText_1": "사망 발생",
+      "conditionDeathText_2": "발생 시작 :",
+      "conditionDeathText_3": "사망기록의 소스(Source) 컨셉은",
+      "conditionDeathText_4": "나이",
+      "conditionDeathText_5": "성별 :",
+      "conditionDeathText_6": "성별은 다음 중 하나입니다. :",
+      "deathType": "사망 타입",
+      "indexDataText": "인덱스 날짜(Index date)는 <%=conceptSetName%>의 사망 이벤트일을 나타냅니다."
+    },
+    "conditionDevice": {
+      "addAttribute": "속성 추가",
+      "anyDevice": "모든 유형의 디바이스 (Device)",
+      "conditionDeviceText_1": "디바이스 노출 (Device exposure)",
+      "conditionDeviceText_10": "제공자 전문 분야 :",
+      "conditionDeviceText_11": "방문 발생 (Visit occurrence) :",
+      "conditionDeviceText_12": "성별은 다음 중 하나입니다. :",
+      "conditionDeviceText_13": "제공자 전문 분야는 다음 중 하나입니다. :",
+      "conditionDeviceText_14": "방문 발생(Visit occurrence)은 다음 중 하나입니다. :",
+      "conditionDeviceText_2": "환자의 병원 기록상 가장 처음으로",
+      "conditionDeviceText_3": "발생 시작 :",
+      "conditionDeviceText_4": "발생 종료 :",
+      "conditionDeviceText_5": "고유한 디바이스(Device) ID",
+      "conditionDeviceText_6": "수량 (Quantity)",
+      "conditionDeviceText_7": "디바이스 소스 컨셉(Device sourve concept)은",
+      "conditionDeviceText_8": "나이",
+      "conditionDeviceText_9": "성별 :",
+      "deviceType": "디바이스(Device) 타입",
+      "indexDataText": "인덱스 날짜(Index date)는 <%=conceptSetName%>의 디바이스 노출(Device exposure)일을 나타냅니다."
+    },
+    "conditionDose": {
+      "addAttribute": "속성 추가",
+      "anyDoseEra": "모든 유형의 도즈 기간 (Dose Era)",
+      "anyDrug": "모든 유형의 약물",
+      "conditionDoseText_1": "도즈 기간 (Dose Era)",
+      "conditionDoseText_10": "성별 :",
+      "conditionDoseText_11": "단위는 다음 중 하나입니다. :",
+      "conditionDoseText_12": "성별은 다음 중 하나입니다. :",
+      "conditionDoseText_2": "환자의 병원 기록상 가장 처음으로",
+      "conditionDoseText_3": "기간 시작 :",
+      "conditionDoseText_4": "기간 종료 :",
+      "conditionDoseText_5": "단위 :",
+      "conditionDoseText_6": "복용량(dose) 값",
+      "conditionDoseText_7": "기간(era length)",
+      "conditionDoseText_8": "기간(era)의 시작시 나이",
+      "conditionDoseText_9": "기간(era)이 종료시 나이",
+      "indexDataText": "인덱스 날짜(Index date)는 <%=conceptSetName%>의 도즈 기간 (Dose Era)일을 나타냅니다."
+    },
+    "conditionDrug": {
+      "addAttribute": "속성 추가",
+      "anyDrug": "모든 유형의 약물",
+      "conditionDrugText_1": "약물 기간 (Drug Era)",
+      "conditionDrugText_10": "기간(era)이 종료시 나이",
+      "conditionDrugText_11": "성별 :",
+      "conditionDrugText_12": "성별은 다음 중 하나입니다. :",
+      "conditionDrugText_2": "환자의 병원 기록상 가장 처음으로",
+      "conditionDrugText_3": "기간 시작 :",
+      "conditionDrugText_4": "기간 종료 :",
+      "conditionDrugText_5": "노출(exposure) 횟수",
+      "conditionDrugText_6": "간격 날짜 (gap days)",
+      "conditionDrugText_7": "일",
+      "conditionDrugText_8": "기간(era length)",
+      "conditionDrugText_9": "기간(era)의 시작시 나이",
+      "indexDataText": "인덱스 날짜(Index date)는 <%=conceptSetName%>의 약물 기간 (Drug Era)일을 나타냅니다."
+    },
+    "conditionDrugExposure": {
+      "addAttribute": "속성 추가",
+      "anyDrug": "모든 유형의 약물",
+      "conditionDrugExposureText_1": "약물 노출 (Drug exposure)",
+      "conditionDrugExposureText_10": "실질적인(effective) 약물 복용량 (Dose)",
+      "conditionDrugExposureText_11": "복용량 (Dose) 단위 :",
+      "conditionDrugExposureText_12": "로트(Lot) 번호",
+      "conditionDrugExposureText_13": "약물 소스 컨셉(Drug sourve concept)은",
+      "conditionDrugExposureText_14": "나이",
+      "conditionDrugExposureText_15": "성별 :",
+      "conditionDrugExposureText_16": "제공자 전문 분야 :",
+      "conditionDrugExposureText_17": "방문 발생 (Visit occurrence) :",
+      "conditionDrugExposureText_18": "루트(route) 컨셉은 다음 중 하나입니다.",
+      "conditionDrugExposureText_19": "복용량(dose) 단위는 다음 중 하나입니다. :",
+      "conditionDrugExposureText_2": "환자의 병원 기록상 가장 처음으로",
+      "conditionDrugExposureText_20": "성별은 다음 중 하나입니다. :",
+      "conditionDrugExposureText_21": "제공자 전문 분야는 다음 중 하나입니다. :",
+      "conditionDrugExposureText_22": "방문 발생 (Visit occurrence) 은 다음 중 하나입니다. :",
+      "conditionDrugExposureText_3": "발생 시작 :",
+      "conditionDrugExposureText_4": "발생 종료 :",
+      "conditionDrugExposureText_5": "중지 사유",
+      "conditionDrugExposureText_6": "리필(Refills)",
+      "conditionDrugExposureText_7": "수량(Quantity)",
+      "conditionDrugExposureText_8": "투약 일수",
+      "conditionDrugExposureText_9": "루트(route) 컨셉 :",
+      "drugType": "약물 타입",
+      "indexDataText": "인덱스 날짜(Index date)는 <%=conceptSetName%>의 약물 노출 (drug exposure)일을 나타냅니다."
+    },
+    "conditionEra": {
+      "addAttribute": "속성 추가",
+      "anyConditionButton": "모든 유형의 진단(Condition)",
+      "attributeText_1": "환자의 병원 기록상 가장 처음으로",
+      "attributeText_2": "기간 시작 :",
+      "attributeText_3": "기간 종료 :",
+      "attributeText_4": "발생(occurrence) 횟수",
+      "attributeText_5": "기간(era length)",
+      "attributeText_6": "기간(era)의 시작시 나이",
+      "attributeText_7": "기간(era)이 종료시 나이",
+      "attributeText_8": "성별 :",
+      "attributeText_9": "일",
+      "criteriaText_1": "진단 기간 (condition era)",
+      "returnText_1": "인덱스 날짜(Index date)는 진단 기간 (condition era)일을 나타냅니다."
+    },
+    "conditionMeasurement": {
+      "addAttribute": "속성 추가",
+      "anyMeasurement": "모든 유형의 검사(Measurement)",
+      "conditionMeasurementText_1": "검사(Measurement)",
+      "conditionMeasurementText_10": "하한치(Range Low) 비율 (ratio)",
+      "conditionMeasurementText_11": "상한치(Range High)",
+      "conditionMeasurementText_12": "상한치(Range High) 비율 (ratio)",
+      "conditionMeasurementText_13": "비정상 결과",
+      "conditionMeasurementText_14": "검사 소스 컨셉(Measurement Source Concept)은",
+      "conditionMeasurementText_15": "나이",
+      "conditionMeasurementText_16": "성별 :",
+      "conditionMeasurementText_17": "제공자 전문 분야 :",
+      "conditionMeasurementText_18": "방문 :",
+      "conditionMeasurementText_19": "검사 값의 연산자(operator)는 다음 중 하나입니다. :",
+      "conditionMeasurementText_2": "환자의 병원 기록상 가장 처음으로",
+      "conditionMeasurementText_20": "컨셉으로의 값(value as concept) 다음 중 하나입니다.",
+      "conditionMeasurementText_21": "단위는 다음 중 하나입니다. :",
+      "conditionMeasurementText_22": "낮은 범위(lower range)",
+      "conditionMeasurementText_23": "낮은 범위(lower range)의 비율(ratio)",
+      "conditionMeasurementText_24": "높은 범위(high range)",
+      "conditionMeasurementText_25": "높은 범위(high range)의 비율(ratio)",
+      "conditionMeasurementText_26": "성별은 다음 중 하나입니다. :",
+      "conditionMeasurementText_27": "제공자 전문 분야는 다음 중 하나입니다. :",
+      "conditionMeasurementText_28": "방문 발생(visit occurrence)은 다음 중 하나입니다. :",
+      "conditionMeasurementText_3": "발생 시작 :",
+      "conditionMeasurementText_5": "검사 값의 연산자(operator) :",
+      "conditionMeasurementText_6": "수치로의 값(value as number)",
+      "conditionMeasurementText_7": "컨셉으로의 값(value as concept) :",
+      "conditionMeasurementText_8": "단위 :",
+      "conditionMeasurementText_9": "하한치(Range Low)",
+      "measurementType": "검사(measurement) 타입",
+      "indexDataText": "인덱스 날짜(Index date)는 <% = conceptSetName %>의 검사(measurement)일을 나타냅니다."
+    },
+    "conditionObservation": {
+      "addAttribute": "속성 추가",
+      "anyObservation": "모든 유형의 관찰기록(Observation)",
+      "conditionObservationText_1": "관찰기록(Observation)",
+      "conditionObservationText_10": "나이",
+      "conditionObservationText_11": "성별 :",
+      "conditionObservationText_12": "제공자 전문 분야 :",
+      "conditionObservationText_13": "방문 발생(visit occurrence):",
+      "conditionObservationText_14": "컨셉으로의 값(value as concept) 다음 중 하나입니다.:",
+      "conditionObservationText_15": "한정자(qualifier)는 다음 중 하나입니다.:",
+      "conditionObservationText_16": "단위는 다음 중 하나입니다. :",
+      "conditionObservationText_17": "성별은 다음 중 하나입니다. :",
+      "conditionObservationText_18": "제공자 전문 분야는 다음 중 하나입니다. :",
+      "conditionObservationText_19": "방문 발생(visit occurrence)은 다음 중 하나입니다.:",
+      "conditionObservationText_2": "환자의 병원 기록상 가장 처음으로",
+      "conditionObservationText_3": "발생 시작 :",
+      "conditionObservationText_4": "수치로의 값(value as number)",
+      "conditionObservationText_5": "문자로의 값(value as String)",
+      "conditionObservationText_6": "컨셉으로의 값(value as concept)과",
+      "conditionObservationText_7": "한정자(qualifier) 포함:",
+      "conditionObservationText_8": "단위 :",
+      "conditionObservationText_9": "관찰기록 소스 컨셉(Observation Source Concept):",
+      "observationType": "관찰기록(observation) 타입",
+      "indexDataText": "인덱스 날짜(Index date)는 <%=conceptSetName%>의 관찰기록(observation)일을 나타냅니다."
+    },
+    "conditionObservationPeriod": {
+      "addAttribute": "속성 추가",
+      "conditionObservationText_1": "다음 기준을 만족하는 관찰기록 기간:",
+      "conditionObservationText_10": "일.",
+      "conditionObservationText_11": "관찰기록 기간",
+      "conditionObservationText_12": "기간 타입은 다음 중 하나입니다. :",
+      "conditionObservationText_2": "환자의 최초 관찰기록 기간으로 제한",
+      "conditionObservationText_3": "명시된 기간 사용 :",
+      "conditionObservationText_4": "관찰기록 기간 시작 :",
+      "conditionObservationText_5": "관찰기록 기간 종료 :",
+      "conditionObservationText_6": "기간 타입 :",
+      "conditionObservationText_7": "기간(period)이 시작시 나이",
+      "conditionObservationText_8": "기간(period)이 종료시 나이",
+      "conditionObservationText_9": "기간의 지속일"
+    },
+    "conditionOccurrence": {
+      "addAttribute": "속성 추가",
+      "anyCondition": "모든 유형의 진단(Condition)",
+      "conditionOccurrenceText_1": "진단 발생(Condition occurrence)",
+      "conditionOccurrenceText_10": "방문 발생(visit occurrence) :",
+      "conditionOccurrenceText_11": "성별은 다음 중 하나입니다. :",
+      "conditionOccurrenceText_12": "제공자 전문 분야는 다음 중 하나입니다. :",
+      "conditionOccurrenceText_13": "방문 발생(visit occurrence)은 다음 중 하나입니다.:",
+      "conditionOccurrenceText_2": "환자의 병원 기록상 가장 처음으로",
+      "conditionOccurrenceText_3": "발생 시작 :",
+      "conditionOccurrenceText_4": "발생 종료 :",
+      "conditionOccurrenceText_5": "중지 이유",
+      "conditionOccurrenceText_6": "진단 소스 컨셉(Condition source concept)은",
+      "conditionOccurrenceText_7": "나이",
+      "conditionOccurrenceText_8": "성별 :",
+      "conditionOccurrenceText_9": "제공자 전문 분야 :",
+      "conditionType": "진단 타입",
+      "indexDataText": "인덱스 날짜(Index date)는 <%=conceptSetName%>의 진단 발생(Condition occurrence)일을 나타냅니다."
+    },
+    "conditionPayerPlanPeriod": {
+      "addAttribute": "속성 추가",
+      "anyPayer": "모든 유형의 페이어(Payer)",
+      "anyPayerSource": "모든 유형의 페이어 소스(Payer Source)",
+      "anyPlan": "모든 유형의 플랜(Plan)",
+      "anyPlanSource": "모든 유형의 플랜 소스(Plan Source)",
+      "anySponsor": "모든 유형의 스폰서(Sponsor)",
+      "anySponsorSource": "모든 유형의 스폰서 소스(Sponsor Source)",
+      "anyStopReason": "모든 유형의 중지 이유",
+      "anyStopReasonSource": "모든 유형의 중지 이유 소스(Source)",
+      "conditionPayerPlanText_1": "다음 기준을 만족하는 페이어 플랜 기간(payer plan period):",
+      "conditionPayerPlanText_10": "페이어(Payer) 컨셉",
+      "conditionPayerPlanText_11": "플랜(Plan) 컨셉",
+      "conditionPayerPlanText_12": "스폰서(Sponsor) 컨셉",
+      "conditionPayerPlanText_13": "중지 이유 컨셉",
+      "conditionPayerPlanText_14": "페이어 소스(Payer Source) 컨셉",
+      "conditionPayerPlanText_15": "플랜 소스(Plan Source) 컨셉",
+      "conditionPayerPlanText_16": "스폰서 소스(Sponsor Source) 컨셉",
+      "conditionPayerPlanText_17": "중지 이유 소스(Source) 컨셉",
+      "conditionPayerPlanText_18": "참고 : 페이어 플랜 기간(Payer Plan Period) 기준은 CDM v5.3 이상의 버전에서만 사용할 수 있습니다.",
+      "conditionPayerPlanText_19": "페이어 플랜 기간(Payer Plan Period)",
+      "conditionPayerPlanText_2": "환자의 최초 페이어 플랜 기간(payer plan period)으로 제한",
+      "conditionPayerPlanText_20": "명시된 기간 사용 :",
+      "conditionPayerPlanText_21": "기간 시작",
+      "conditionPayerPlanText_22": "기간 종료",
+      "conditionPayerPlanText_23": "시작시 나이",
+      "conditionPayerPlanText_24": "종료시 나이",
+      "conditionPayerPlanText_25": "성별은 다음 중 하나입니다. :",
+      "conditionPayerPlanText_3": "기간(period)이 시작시 나이",
+      "conditionPayerPlanText_4": "기간(period)이 종료시 나이",
+      "conditionPayerPlanText_5": "기간의 지속일",
+      "conditionPayerPlanText_6": "성별 :",
+      "conditionPayerPlanText_7": "명시된 기간 사용 :",
+      "conditionPayerPlanText_8": "페이어 플랜 기간(payer plan period) 시작 :",
+      "conditionPayerPlanText_9": "페이어 플랜 기간(payer plan period) 종료 :",
+      "indexDataText": "인덱스 날짜(Index date)는 페이어 플랜 기간(payer plan period)일을 나타냅니다."
+    },
+    "conditionProcedureOccurrence": {
+      "addAttribute": "속성 추가",
+      "anyProcedure": "모든 유형의 수술 및 처치(Procedure)",
+      "conditionProcedureOccurrenceText_1": "수술 및 처치 발생(procedure occurrence)",
+      "conditionProcedureOccurrenceText_10": "방문 발생 (Visit occurrence) :",
+      "conditionProcedureOccurrenceText_11": "수정자(modifier)는 다음 중 하나입니다.",
+      "conditionProcedureOccurrenceText_12": "성별은 다음 중 하나입니다. :",
+      "conditionProcedureOccurrenceText_13": "제공자 전문 분야는 다음 중 하나입니다. :",
+      "conditionProcedureOccurrenceText_14": "방문 발생(visit occurrence)은 다음 중 하나입니다.:",
+      "conditionProcedureOccurrenceText_2": "환자의 병원 기록상 가장 처음으로",
+      "conditionProcedureOccurrenceText_3": "발생 시작 :",
+      "conditionProcedureOccurrenceText_4": "수정자(modifier):",
+      "conditionProcedureOccurrenceText_5": "수량(quantity)",
+      "conditionProcedureOccurrenceText_6": "수술 및 처치 소스(Procedure Source) 컨셉:",
+      "conditionProcedureOccurrenceText_7": "나이:",
+      "conditionProcedureOccurrenceText_8": "성별 :",
+      "conditionProcedureOccurrenceText_9": "제공자 전문 분야 :",
+      "procedureType": "수술 및 처치(Procedure) 타입",
+      "indexDataText": "인덱스 날짜(Index date)는 <%=conceptSetName%>의 수술 및 처치(procedure)일을 나타냅니다."
+    },
+    "conditionSpecimen": {
+      "addAttribute": "속성 추가",
+      "anySpecimen": "모든 유형의 검체(Specimen)",
+      "conditionSpecimeText_1": "검체(Specimen)",
+      "conditionSpecimeText_10": "성별 :",
+      "conditionSpecimeText_11": "단위는 다음 중 하나입니다. :",
+      "conditionSpecimeText_12": "해부학적 위치(site)는 다음 중 하나입니다.:",
+      "conditionSpecimeText_13": "질병 상태(status)는 다음 중 하나입니다.:",
+      "conditionSpecimeText_14": "성별은 다음 중 하나입니다. :",
+      "conditionSpecimeText_2": "환자의 병원 기록상 가장 처음으로",
+      "conditionSpecimeText_3": "발생 시작 :",
+      "conditionSpecimeText_4": "수량(quantity)",
+      "conditionSpecimeText_5": "단위 :",
+      "conditionSpecimeText_6": "해부학적 위치(site) :",
+      "conditionSpecimeText_7": "질병 상태(status) :",
+      "conditionSpecimeText_8": "소스(Source) ID",
+      "conditionSpecimeText_9": "나이",
+      "specimenType": "검체(Specimen) 타입",
+      "indexDataText": "인덱스 날짜(Index date)는 <%=conceptSetName%>의 검체(specimen)일을 나타냅니다."
+    },
+    "conditionVisit": {
+      "addAttribute": "속성 추가",
+      "anyLocation": "모든 유형의 위치",
+      "anyVisit": "모든 유형의 방문",
+      "conditionSpecimeText_1": "방문 발생 (Visit occurrence)",
+      "conditionSpecimeText_10": "서비스 장소:",
+      "conditionSpecimeText_11": "서비스 장소가 다음 위치에 있습니다.",
+      "conditionSpecimeText_12": "서비스 장소에서 환자까지의 거리",
+      "conditionSpecimeText_13": "방문 기간 일수",
+      "conditionSpecimeText_14": "성별은 다음 중 하나입니다. :",
+      "conditionSpecimeText_15": "제공자 전문 분야는 다음 중 하나입니다. :",
+      "conditionSpecimeText_2": "환자의 병원 기록상 가장 처음으로",
+      "conditionSpecimeText_3": "발생 시작 :",
+      "conditionSpecimeText_4": "발생 종료 :",
+      "conditionSpecimeText_5": "방문 소스(Source) 컨셉",
+      "conditionSpecimeText_6": "방문 기간",
+      "conditionSpecimeText_7": "나이",
+      "conditionSpecimeText_8": "성별 :",
+      "conditionSpecimeText_9": "제공자 전문 분야 :",
+      "visitType": "방문 타입",
+      "indexDataText": "인덱스 날짜(Index date)는 <%=conceptSetName%>의 방문일을 나타냅니다."
+    },
+    "criteriaGroup": {
+      "addAdditionalConstraint": "추가적인 제약 추가",
+      "addCriteria": "그룹에 기준 추가...",
+      "and": "그리고",
+      "between": "사이에",
+      "criteriaGroupText_1": "동일한 방문 발생 (Visit occurrence)으로 제한",
+      "criteriaGroupText_2": "관찰기록 기간을 벗어나는 이벤트도 허용함",
+      "deleteCriteria": "기준 삭제",
+      "deleteGroup": "그룹 삭제",
+      "followingCriteria": "를 만족해야 합니다:",
+      "having": "다음 조건 중",
+      "havingCapital": "다음 조건 중",
+      "occurrencesOf": "발생 :",
+      "occurrenceOf": "발생 :",
+      "usingAll": "모두 사용",
+      "usingDistinct": "고유(distinct) 사용",
+      "where": "어디",
+      "with": "와 함께",
+      "withFollowingCriteria": "다음과 같은 이벤트 기준 :",
+      "occurringWithinTheSameVisit": "동일한 방문 내에서 발생"
+    },
+    "customEraStrategy": {
+      "customEraStrategyText_1": "연속 노출 지속성:",
+      "customEraStrategyText_10": "약물 투약 일수 (drug exposure days supply) 기입:",
+      "customEraStrategyText_11": "일.",
+      "customEraStrategyText_12": "이 전략은 지정된 컨셉 세트의 코드에서 약물 기간(drug era)을 만듭니다. 만약 인덱스 이벤트가 기간(era) 내에서 발견되면 코호트 종료 날짜로 기간(era)의 종료 날짜를 사용합니다. 그렇지 않다면 인덱스 이벤트가 포함된 관찰 기간(observation period)의 종료 날짜를 사용합니다.",
+      "customEraStrategyText_13": "기간 종료일(era end date) 사용",
+      "customEraStrategyText_14": "허용",
+      "customEraStrategyText_15": "노출간의 간격 일수",
+      "customEraStrategyText_16": "추가",
+      "customEraStrategyText_17": "노출 종료 이후 일수",
+      "customEraStrategyText_18": "노출 기간은 투약 일수와 약물 노출 종료 날짜를 사용합니다.",
+      "customEraStrategyText_19": "약물 투약 일수 (drug exposure days supply) 기입:",
+      "customEraStrategyText_2": "하나 또는 그 이상의 약물을 포함하는 컨셉 세트을 설정합니다. Drug Era는 컨셉 세트 내 약물에 대한 모든 약물 노출 이벤트에서 파생됩니다. 연속적인 약물 노출 이벤트와  특정 감시 범위에 최종 약물 노출된 이벤트를 추가한 이벤트 사이의 일 수내  지정된 노출 범위를 최대 허용 간격으로 사용합니다. 약물 노출 이벤트 종료일이 제공되지 않을 경우, 약물 노출 이벤트 종료일은 공급일이 있다면 이벤트 시작일에 (+공급일)을 더해주고,  그렇지 않으면(공급일이 없다면), 이벤트 시작일에 +1일을 더하는 것으로 간주합니다. 이러한 이벤트 지속성은 코호트 종료일이 Drug Era의 종료일보다 크지 않도록 합니다.",
+      "customEraStrategyText_3": "관심있는 약물 컨셉 세트:",
+      "customEraStrategyText_4": "지속성 범위 : 지속성 노출에 대한 Era을 추론할 때, 노출 기록 사이에  최대 ",
+      "customEraStrategyText_5": "일 허용",
+      "customEraStrategyText_6": "감시 범위 : 코호트가 종료되기 전 추가적인 감시 기간에 대해. 지속성이 노출되는 Era 종료일에 ",
+      "customEraStrategyText_7": "일 추가",
+      "customEraStrategyText_8": "노출 기간은 투약 일수와 약물 노출 종료 날짜를 사용합니다.",
+      "customEraStrategyText_9": "변화",
+      "selectDrugConceptSet": "Drug Concept Set을 선택합니다"
+    },
+    "cyclops": {
+      "controlEditor": {
+        "convergenceType": "수렴(convergence) 유형을 선택합니다.",
+        "crossValidationSearchType": "교차 검증 검색 유형을 선택합니다:",
+        "initialBound": "이니셜 bound:",
+        "lowerPrior": "이전 분산 하한치(Lower prior variance limit) :",
+        "maxBoundCount": "최대 bound 수:",
+        "maxIterations": "수렴에 실패했다는 오류를 반환하기 전 Cyclops를 최대 몇 번 까지 반복하시겠습니까?",
+        "maxRelativeChange": "연속적인 반복으로 수렴(convergence)을 얻고자 할 때, 수렴의 기준을 만족하기 위해 상대적인 변화를 최대 얼마나 허용하시겠습니까?",
+        "nameOfExchangeableSamplingUnit": "교환 가능한 샘플링 유닛 이름. \"byPid\" 옵션은 전체 계층을 선택합니다. \"byRow\" 옵션은 단일 행을 선택합니다. \"auto\"으로 설정된 경우, 계층당 평균 행 수가 계층 수보다 작은 조건부 모델(conditional models)을 제외한 모든 모델에 \"byRow\"가 사용됩니다.",
+        "noiseLevel": "Cyclops 화면 출력에 대한 노이즈 수준:",
+        "numberOfRandomFolds": "교차 검증에 사용할 랜덤 폴드의 수:",
+        "numberOfRepetitions": "<%=num%>-fold 교차 유효성 검사의 반복 횟수:",
+        "numberOfSteps": "단계(step) 수 :",
+        "resetAllCoefficients": "교차 검증 시 모델 적합 간에 모든 계수를 0으로 재설정합니다.",
+        "sizeMultiplier": "엑티브 세트(active set)의 사이즈 배율(Size multiplier) :",
+        "startingVariance": "자동 검색 교차 검증을 위한 시작 분산; -1 = 데이터 기반의 추정치를 사용합니다:",
+        "umberOfRepetitionsOfData": "교차 검증을 위한 데이터의 반복 횟수:",
+        "upperPrior": "이전 분산 상한치(Upper prior variance limit) :",
+        "useTheKarush": "Karush-Kuhn-Tucker conditions 을 사용하여 검색을 제한합니다:"
+      },
+      "options": {
+        "auto": "자동(Auto)",
+        "gradient": "그래디언트(Gradient)",
+        "grid": "그리드(Frid)",
+        "hierarchical": "하이어라키컬(Hierarchical)",
+        "lange": "랑에(Lange)",
+        "laplace": "라플라스(Laplace)",
+        "mittal": "미탈(Mittal)",
+        "noisy": "노이지(Noisy)",
+        "none": "없음",
+        "normal": "보통(Normal)",
+        "quiet": "조용한",
+        "silent": "조용한"
+      },
+      "prior": {
+        "crossValidation": "사전 분산을 확인하기 위해 교차 검증을 수행합니다:",
+        "distribution": "사전 분포를 정의합니다:",
+        "distributionVariance": "사전 분포의 분산을 정의합니다:",
+        "interceptCoefficient": "Prior로 절편 계수(intercept coefficient)를 강제함:",
+        "mapping": "계층구조(hierarchical)에 대한 자식-부모 매핑 :",
+        "neighborhoods": "부분적으로 융합된 Prior의 1차 이웃 관계 리스트:",
+        "vector": "사전에 제외할 숫자 또는 공변량 ID의 벡터를 정의합니다:"
+      }
+    },
+    "dateOffsetStrategy": {
+      "dateOffsetStrategyText_6": "종료 기준의 날짜 오프셋(Date Offset)",
+      "dateOffsetStrategyText_7": "이 코호트 정의의 종료 날짜는 인덱스 이벤트의",
+      "dateOffsetStrategyText_8": "더하여",
+      "dateOffsetStrategyText_1": "고정된 기간의 지속성:",
+      "dateOffsetStrategyText_2": "이벤트 종료일은 이벤트의 시작 또는 종료일에 며칠을 추가해서 생성됩니다. 이벤트 시작일에 오프셋이 추가된 경우, 모든 코호트 에피소드는 동일한 고정 기간을 가지게 됩니다(추가 제외에 따름). 이벤트 종료일에 오프셋이 추가된 경우, 코호트에 있는 사람들은 지속적인 약물 노출 또는 방문 기간과 같은 다양한 이벤트 기간으로 인해 코호트 지속 시간에 변화가 있을 수 있습니다. 이벤트 지속성은 코호트 종료일이 선택된 기준 이벤트 날짜와 오프셋 날짜를 더한 것보다 크지 않도록 해줍니다.",
+      "dateOffsetStrategyText_3": " ",
+      "dateOffsetStrategyText_3_1": "로부터 오프셋되는 이벤트 데이트",
+      "dateOffsetStrategyText_4": "오프셋 일 수:",
+      "dateOffsetStrategyText_5": "일"
+    },
+    "dateRange": {
+      "after": "다음",
+      "and": "그리고",
+      "before": "전에",
+      "between": "사이에",
+      "firstPlaceholder": "YYYY-MM-DD",
+      "notBetween": "사이에 없는",
+      "on": "~에",
+      "onOrAfter": "이후",
+      "onOrBefore": "이전에",
+      "inclusive": "포함"
+    },
+    "demographicCriteria": {
+      "addAttribute": "속성 추가",
+      "demographicCriteriaText_1": "성별은 다음 중 하나입니다. :",
+      "demographicCriteriaText_2": "인종(race)은 다음 중 하나입니다.",
+      "demographicCriteriaText_3": "민족(ethnicity)은 다음 중 하나입니다.",
+      "occurrenceEnd": "발생 종료 :",
+      "occurrenceStart": "발생 시작 :",
+      "withAge": "나이",
+      "withEthnicity": "민족(ethnicity):",
+      "withGenderOf": "성별 :",
+      "withRaceOf": "인종(race) :"
+    },
+    "endStrategyEditor": {
+      "eventWillPersistUntil": " ",
+      "eventWillPersistUntil2": "이벤트는 계속됩니다."
+    },
+    "endStrategyViewer": {
+      "endDateStrategy": "종료일 전략",
+      "endStrategyViewerText_1": "종료일을 설정하지 않았습니다. 기본값으로 코호트 종료 날짜는 기준 이벤트가 들어있는 관찰 기간의 종료일이 될 것입니다."
+    },
+    "evidencePairViewer": {
+      "evidencePairViewerText_1": "증거 페어(evidence pairs) 로딩",
+      "evidencePairViewerText_2": "만약 CommonEvidenceModel이 선택된 약물(drug)-진단(condition) 페어(pair)에 대한 제품 라벨(product label) 정보가 있다고 표시한 경우에 (1 = true, 0 = false) 아래에 많은 제품 라벨을 볼 수 있습니다. 하나의 라벨에 대한 부작용 이벤트가 모든 제품 라벨에 있어야 하기 때문에 라벨의 카운트는 유용한 정보는 아닙니다. 따라서, 이 페이지에는 선택된 약물(drug)-진단(condition) 페어(pair)에 대한 모든 제품 라벨이 표시됩니다.",
+      "evidencePairViewerText_3": "CommonEvidenceModel이 여러 출판물을 나열한 경우 \"증거(Evidence) 보기\"팝업에서 하나의 출판물이 아래 결과에서 여러 번 발생할 수 있습니다. 이는 출판물이 일치하는 모든 약물-진단 쌍에 대해 출판물이 \"증거(Evidence) 보기\"목록에 표시되기 때문입니다.",
+      "evidencePairViewerText_4": "이 증거(evidence) 목록에 대한 자세한 정보를 보려면 여기를 클릭하십시오.",
+      "evidencePairViewerText_5": "세부 정보 숨기기",
+      "evidencePairViewerText_6": "컨셉 세트가 결과를 생성하는 데 유효하지 않습니다. 이 컨셉 세트에 진단(CONDITIONS) 또는 약물(DRUGS)만 포함되어 있는지 확인하십시오."
+    },
+    "executionUtils": {
+      "startNewExecutionInParallelConfirmation": "소스 실행이 이미 시작되었습니다. 새 항목을 병렬로 시작하시겠습니까?"
+    },
+    "expressionCartoonBindings": {
+      "primaryCriteria": "주요 기준",
+      "any": "어떤",
+      "one": "하나",
+      "s": " ",
+      "those": "그것들",
+      "the": "그",
+      "paramOf": "<%=param%> 의",
+      "atParamOf": "<%=param%> 의",
+      "or": "또는",
+      "and": "그리고",
+      "anyParam": "어떤 <%=param%>",
+      "domain": "도메인",
+      "all": "모두",
+      "distinct": "고유(distinct)",
+      "before": "전에",
+      "after": "다음",
+      "noCriteriaGroup": "기준 그룹이 없음",
+      "additionalCriteria": "추가 기준",
+      "noAdditionalCriteria": "추가 기준이 없습니다",
+      "inclusionRules": "포함 규칙(rules)",
+      "noInclusionRules": "포함 규칙이 없습니다",
+      "condition": "진단(condition)",
+      "drug": "약물",
+      "drugEra": "약물 기간 (Drug Era)",
+      "conditionEra": "진단 기간(condition era)",
+      "doseEra": "도즈 기간 (Dose Era)",
+      "procedure": "수술 및 처치(Procedure)",
+      "observation": "관찰기록(Observation)",
+      "device": "디바이스 (Device)",
+      "measurement": "검사(Measurement)",
+      "specimen": "검체(Specimen)",
+      "death": "사망",
+      "observationPeriod": "관찰기록 기간",
+      "visit": "방문",
+      "era": "기간 (Era)",
+      "daysSupply": "투약 일수",
+      "visitCapital": "방문",
+      "expressionCartoonBindingsText_1": "다음의 1차 기준",
+      "expressionCartoonBindingsText_2": "다음 <%=pcListLength%> 1차 기준 중 <%=oneOrAny%>",
+      "expressionCartoonBindingsText_3": "<%=pcCritMatch%>와 매칭하는 모든 사람의 이벤트에 대한 결과가 생성됩니다. 최종 결과는 추가 기준(additional criteria) 및 포함 규칙(inclusion rules)과 매칭되는 <%=thoseOrthe%> 이벤트로 제한됩니다.",
+      "expressionCartoonBindingsText_4": "<%=pcCritMatch%>와 매칭되는 <%=pLimitTypeToLowerCase%> 의 단일 이벤트에 대한 결과가 생성됩니다.",
+      "expressionCartoonBindingsText_5": "결과 인덱스 날짜<%=pcPlural%>는 매칭되는 1차 기준 이벤트 <%=pcPlural%>의 시작 날짜<%=pcPlural%>가 됩니다.",
+      "expressionCartoonBindingsText_6": "다음 기준의 <%=critgroupTypeToLowerCase%>와 매칭하는 이벤트가 있는 사람으로 제한합니다.",
+      "expressionCartoonBindingsText_7": "이벤트는 인덱스 날짜와 상대적으로 괄호로 묶인 기간 내에 시작해야합니다.",
+      "expressionCartoonBindingsText_8": "선과 화살표는 이러한 이벤트에 필요한 기간을 나타냅니다.",
+      "expressionCartoonBindingsText_9": "<%=type%> <%=count%>에서 <%=distinctOrAll%> 발생 사용",
+      "expressionCartoonBindingsText_10": "다음 기간의 사이에 발생 <%=startDays%> 일 <%=beforeArAfterStart%> 및 <%=endDays%> 일 <%=beforeArAfterEnd%> 인덱스"
+    },
+    "exploreCohort": {
+      "fetchingFirst": "먼저 불러오기",
+      "members": "구성원",
+      "exploreCohortText_1": "이 코호트는 확인할 수 있는 구성원이 없습니다. Atlas의 코호트 정의 섹션에서 실행 상태를 확인하십시오.",
+      "exploreCohortText_2": "이 코호트는 선택한 데이터 소스에서 확인할 수 있는 구성원이 없습니다. 생성(generation) 탭을 사용하여 코호트가 생성됐는지 확인하십시오."
+    },
+    "export": {
+      "button": "내보내기",
+      "progress": "추출(export) 진행중"
+    },
+    "feasibilityAttritionReport": {
+      "attritionVisualization": "축소 시각화",
+      "inclusionRule": "포함 규칙",
+      "percentRemain": "% 잔류",
+      "precentDiff": "% 차이"
+    },
+    "feasibilityIntersectReport": {
+      "inclusionRule": "포함 규칙",
+      "percentSatisfied": "% 만족",
+      "percentToGain": "% 증가 (To-Gain)",
+      "populationVisualization": "인구 시각화",
+      "rectSummary": "<%=size%> 명 (<%=percentage%>%), <%=passCount%> 기준 통과, <%=failCount%> 기준 미달."
+    },
+    "feasibilityReportViewer": {
+      "feasibilityReportViewerText_1": "일치 비율",
+      "feasibilityReportViewerText_2": "일치된 건 수",
+      "feasibilityReportViewerText_3": "센서링(censoring)으로부터 잃어버림(lost)",
+      "feasibilityReportViewerText_4": "총 이벤트",
+      "feasibilityReportViewerText_5": "통계 요약:",
+      "feasibilityReportViewerText_6": "축소 시각화 화면으로 전환",
+      "feasibilityReportViewerText_7": "교차 보기로 전환",
+      "feasibilityReportViewerText_8": "이 코호트 정의에는 지정된 포함 규칙(rules)이 없습니다."
+    },
+    "featureextraction": {
+      "covariateSettingsEditor": {
+        "age": "나이",
+        "ageGroups": "나이 그룹",
+        "allTime": "모든 기간",
+        "anyTimePrior": "이전에 언제든지",
+        "condition": "진단(Condition)",
+        "conditionGroup": "진단 그룹(Condition Group)",
+        "conditionPrimaryInpatient": "진단(Condition) - 주진단 입원환자",
+        "demographics": "인구 통계 (Demographics)",
+        "device": "디바이스 (Device)",
+        "distinctCount": "고유(Distinct) 카운트",
+        "domain": "도메인",
+        "drug": "약물",
+        "drugGroup": "약물 그룹",
+        "endDays": "종료일",
+        "eraStart": "기간 시작",
+        "ethnicity": "민족(Ethnicity)",
+        "gender": "성별",
+        "indexMonth": "인덱스 월(Month)",
+        "indexScoreType": "인덱스 점수 타입",
+        "indexYear": "인덱스 연도(Year)",
+        "indexYearMonth": "인덱스<br/>연도 및 월",
+        "longTerm": "장기",
+        "measurement": "검사(Measurement)",
+        "measurementRangeGroup": "검사(Measurement) - 범위 그룹(Range Group)",
+        "measurementValue": "검사(Measurement) - 값(Value)",
+        "mediumTerm": "중기",
+        "observation": "관찰기록(Observation)",
+        "overlapping": "겹침(Overlapping)",
+        "postObservationTime": "이후<br/> 관찰 기간",
+        "priorObservationTime": "이전 <br/> 관찰 기간",
+        "procedure": "수술 및 처치(Procedure)",
+        "race": "인종",
+        "setTheIndexScoreCovariates": "위험도 지수(index score) 공변량 설정",
+        "setTheTimeBoundCovariates": "기간 공변량 설정",
+        "setTheTimeBoundEraCovariates": "기간 Era 공변량 설정",
+        "setTheTimeWindows": "기간 공변량 설정을 위해 코호트 기준일로부터의 일 간격을 설정합니다.",
+        "shortTerm": "단기",
+        "timeBoundCovariates": "기간 공변량",
+        "timeInCohort": "코호트에서 <br/> 기간",
+        "timeWindows": "기간 윈도우",
+        "visitConceptCount": "방문 - 컨셉 카운트",
+        "visitCount": "방문 - 카운트"
+      }
+    },
+    "filterPanel": {
+      "buttons": {
+        "apply": "적용",
+        "clear": "지우기"
+      },
+      "title": "패널 필터링"
+    },
+    "generateComponent": {
+      "generate": "생성",
+      "generating": "생성중..."
+    },
+    "import": {
+      "button": "불러오기",
+      "denied": "가져 오기가 허용되지 않습니다",
+      "progress": "가져 오기 진행 중"
+    },
+    "inclusionRuleEditor": {
+      "copy": "복사",
+      "delete": "삭제",
+      "ruleDescriptionPlaceholder": "포함 규칙에 대한 설명을 입력합니다",
+      "unnamedCriteria": "기준에 대한 이름을 설정하세요"
+    },
+    "linkedCohortList": {
+      "defaultNewItemLabel": "불러오기",
+      "defaultTitle": "코호트 정의",
+      "dialog": {
+        "title": "코호트 정의 선택하기"
+      },
+      "table": {
+        "actions": {
+          "edit": "코호트 수정",
+          "remove": "삭제"
+        }
+      }
+    },
+    "linkedEntityList": {
+      "defaultNewItemLabel": "불러오기"
+    },
+    "locationRegion": {
+      "anyLocationRegion": "모든 유형의 지역 위치(location region)",
+      "criteria": {
+        "of": "지역 위치(location region)",
+        "correlatedCriteria": {
+          "option": {
+            "description": "지역 위치(location region)을 인덱스 이벤트로 사용하여 기준 적용",
+            "text": "Nested 기준 추가..."
+          }
+        },
+        "startDate": {
+          "option": {
+            "description": "사람이 그곳에 거주를 시작한 날짜에 따라 위치 필터링",
+            "text": "Start Date 기준 추가..."
+          },
+          "text": "시작 :"
+        },
+        "endDate": {
+          "option": {
+            "description": "사람이 그곳에 거주를 종료한 날짜에 따라 위치 필터링",
+            "text": "End Date 기준 추가..."
+          },
+          "text": "end is:"
+        },
+        "indexData": {
+          "text": "인덱스 날짜(Index date)는 <%=conceptSetName%>의 지역 위치(location region)기록의 날짜를 나타냅니다."
+        }
+      }
+    },
+    "multiInput": {
+      "action": "조치",
+      "add": "추가",
+      "remove": "삭제"
+    },
+    "navigateControls": {
+      "navigateControlsText_1": "공통 증거 모델(Common Evidence Model)"
+    },
+    "numericRange": {
+      "between": "사이에",
+      "equalTo": "같음",
+      "greaterOrEqualTo": "크거나 같음",
+      "greaterThan": "더 큰",
+      "lessOrEqualTo": "작거나 같음",
+      "lessThan": "더 작은",
+      "notBetween": "사이에 없는"
+    },
+    "period": {
+      "andEnding": "그리고 종료",
+      "periodText_1": "노트(Note) : 시작 및 종료 날짜를 포함하는 관찰기록 기간만 사용됩니다.",
+      "starting": "시작"
+    },
+    "textFilter": {
+      "contains": "포함",
+      "endsWith": "종료",
+      "notContains": "포함하지 않음",
+      "notEndsWith": "종료되지 않은",
+      "notStartsWith": "시작하지 않은",
+      "startsWith": "시작"
+    },
+    "userBar": {
+      "signin": "로그인",
+      "signout": "로그아웃"
+    },
+    "welcome": {
+      "close": "닫기",
+      "loggedIn": "<%=login%>'으로 로그인 했습니다.",
+      "loggedInExp": "<%=login%>'(exp : <%=expiration%>)으로 로그인 했습니다.",
+      "messages": {
+        "badCredentials": "잘못된 자격",
+        "expired": "기간이 만료되었습니다. 다시 로그인하십시오.",
+        "loginFailed": "로그인 실패",
+        "refresh": "기간이 만료되었습니다. 계속하려면 페이지를 새로 고침하세요."
+      },
+      "password": "패스워드",
+      "runas": "다음으로 실행",
+      "signinWith": "로그인:",
+      "signout": "로그 아웃",
+      "submit": "제출",
+      "username": "사용자 이름",
+      "wait": "잠시만 기다려주세요..."
+    },
+    "windowInput": {
+      "windowInputText_1": "모두",
+      "windowInputText_2": "일",
+      "windowInputText_3": "그리고"
+    },
+    "windowedCriteria": {
+      "windowedCriteriaText_1": "어디",
+      "windowedCriteriaText_2": "사이에",
+      "windowedCriteriaText_3": "그리고",
+      "windowedCriteriaText_4": "추가적인 제약 추가",
+      "windowedCriteriaText_5": "동일한 방문 발생 (Visit occurrence)으로 제한",
+      "windowedCriteriaText_6": "관찰기록 기간을 무시함"
+    },
+    "common": {
+      "addAttribute": "속성 추가"
+    },
+    "multiSelect": {
+      "noneSelectedText": "선택된 항목이 없습니다.",
+      "noneResultsText": "{0}에 대한 일치 항목이 없습니다.",
+      "countSelectedText": "{0} 개 항목 선택"
+    },
+    "generation": {
+      "selectSources": "소스 선택",
+      "generate": "생성",
+      "pickAtLeastOneSourceAlert": "생성할 소스를 하나 이상 선택하세요."
+    },
+    "nameValidation": {
+      "empty": "이름이 비어 있습니다.",
+      "invalidCharacters": "이름은 다음 문자를 포함할 수 없습니다. \\/:*?\"<>|  다른 이름을 선택하십시오.",
+      "length": "이름 길이가 <%=length%> 기호를 초과합니다. 다른 이름을 선택하십시오.",
+      "defaultName": "<%=analysisName%> 이름은 기본값(default)과 달라야합니다.",
+      "conceptSet": "컨셉 세트",
+      "cohortDefinition": "코호트 정의",
+      "characterization": "특성",
+      "featureAnalysis": "특성 분석",
+      "cohortPathway": "코호트 경로",
+      "irAnalysis": "발생률 분석",
+      "pleAnalysis": "인구 수준 효과 추정",
+      "plpAnalysis": "환자 수준 예측"
+    },
+    "checks": {
+      "runningDiagnostics": "진단 실행 중",
+      "fixIt": "수정"
+    }
+  },
+  "facets": {
+    "caption": {
+      "analysisName": "분석 이름",
+      "author": "등록자",
+      "class": "클래스",
+      "comparatorCohorts": "대조군(Comparator) 코호트",
+      "created": "등록일",
+      "domain": "도메인",
+      "drugLabelExists": "제안된 음성 대조군(Negative Control)",
+      "errorMsg": "오류 메시지",
+      "foundInProductLabelOrPublications": "제품 라벨 또는 출판물(Publication)에서 발견",
+      "foundInPublications": "출판물(Publication)에서 발견",
+      "foundProductLabel": "제품 라벨에서 발견",
+      "hasDescendantRecords": "하위 콘셉트 기록 유무",
+      "hasRecords": "기록 유무",
+      "invalidReason": "유효성",
+      "lastModified": "최신 수정",
+      "mappingType": "매핑 타입",
+      "match": "매치(Match)",
+      "modelName": "모델명",
+      "outcomeCohorts": "결과 코호트",
+      "provider": "제공자",
+      "riskWindow": "리스크 윈도우(Risk Window)",
+      "signalInFaers": "FAERS의 신호",
+      "source": "소스",
+      "standardConcept": "표준 컨셉",
+      "startDate": "시작일",
+      "targetCohorts": "표적 코호트",
+      "type": "유형",
+      "updated": "수정일",
+      "userSpecified": "사용자 지정",
+      "vocabulary": "용어",
+      "relationship": "관계",
+      "distance": "거리",
+      "severity": "중증도",
+      "designs": "설계"
+    },
+    "values": {
+      "warning": "경고",
+      "critical": "중대한",
+      "info": "정보"
+    },
+    "date": {
+      "justNow": "지금",
+      "lastWeek": "지난주",
+      "others": "2주 이상 이전",
+      "thisWeek": "이번주",
+      "within24Hours": "24시간 이내"
+    },
+    "match": {
+      "both": "둘다",
+      "only1": "오직 1",
+      "only2": "오직 2"
+    },
+    "type": {
+      "preset": "사전 설정",
+      "criteriaSet": "기준 세트",
+      "custom": "커스텀(custom)"
+    },
+    "designs": {
+      "myDesigns": "나의 설계",
+      "otherDesigns": "다른 설계"
+    }
+  },
+  "columns": {
+    "action": "조치",
+    "actions": "조치",
+    "adLdapUsername": "AD/LDAP 사용자 이름",
+    "adjustmentStrategy": "조절 전략",
+    "allowed": "허용 비용(Allowed cost)",
+    "allowedChargedRatio": "허용/유료(Charged)",
+    "allowedPmPm": "허용 비용(Allowed cost) PMPM",
+    "analysis": "분석",
+    "analysisName": "분석 이름",
+    "ancestors": "조상",
+    "atlasLogin": "Atlas 로그인",
+    "atlasRole": "Atlas 역할",
+    "atlasRoles": "Atlas 역할",
+    "author": "등록자",
+    "avg": "평균",
+    "binary": "바이너리 (Binary)",
+    "broadConcept": "광범위한 컨셉",
+    "charged": "청구된 비용(Charged cost)",
+    "chargedPmPm": "청구된 비용(Charged cost) PMPM",
+    "checkConnection": "연결 확인",
+    "class": "클래스",
+    "code": "코드",
+    "comparator": "비교군",
+    "comparatorCohortName": "대조군(Comparator) 코호트 이름",
+    "comparatorId": "대조군(Comparator)  ID",
+    "conceptCode": "컨셉 코드",
+    "conceptId": "컨셉 아이디",
+    "conceptName": "컨셉 이름",
+    "conditionConceptId": "진단(Condition) 컨셉 ID",
+    "conditionConceptName": "진단(Condition) 컨셉 이름",
+    "copy": "복사하기",
+    "count": "건수",
+    "covariate": "공변량",
+    "covariateSettings": "공변량 설정",
+    "created": "등록일",
+    "date": "날짜",
+    "daysSupplyAvg": "평균 투약 일수",
+    "daysSupplyPer1000PerYear": "투약 일수 / 1K / 년",
+    "daysSupplyTotal": "투약 일수",
+    "descendants": "하위 컨셉",
+    "description": "설명",
+    "design": "설계",
+    "dialect": "Dialect",
+    "distance": "거리",
+    "domain": "도메인",
+    "drc": "하위 기록 개수",
+    "drugClass": "컨셉 클래스",
+    "drugConceptId": "약물 컨셉 ID",
+    "drugConceptName": "약물 컨셉 이름",
+    "drugId": "OMOP 컨셉",
+    "drugInducedConcept": "약물에 의한 컨셉",
+    "drugLabelExists": "약물 라벨이 있음",
+    "drugName": "약물",
+    "drugVocabularyId": "컨셉 어휘(Concept vocabulary)",
+    "duration": "지속일",
+    "enabled": "활성화 됨",
+    "endDate": "종료일",
+    "endDay": "종료일",
+    "ends": "종료",
+    "evidence": "증거(Evidence)",
+    "evidenceSource": "증거(Evidence) 소스",
+    "exclCovariates": "공변량(Covariate) 제외",
+    "exclude": "제외 컨셉",
+    "excluded": "제외",
+    "execute": "실행",
+    "executionId": "실행 아이디",
+    "explore": "관계 탐색",
+    "exposurePct": "노출(Exposed) 퍼센트",
+    "exposureAvg": "1,000 명당 평균 노출(Exposure) 연도",
+    "exposureTotal": "수년간 총 노출(Exposed)",
+    "faersCountAncestor": "FAERS 카운트 (상위 컨셉 매치)",
+    "faersCountDescendant": "FAERS 카운트 (하위 컨셉 매치)",
+    "faersCountExact": "FAERS 카운트 (정확한 컨셉 매치)",
+    "faersCountParent": "FAERS 카운트 (부모 컨셉 매치)",
+    "finished": "종료",
+    "firstExposureOnly": "첫번째 노출(Exposure)에 한하여",
+    "groupName": "그룹 이름",
+    "id": "아이디",
+    "incidence": "발생률(incidence)",
+    "inclCovariates": "공변량(Covariate) 포함",
+    "includeAllOutcomes": "모든 아웃컴(outcome) 포함",
+    "included": "포함된",
+    "includedUsers": "포함된 사용자",
+    "indicatedContraindicated": "명시된(Indicated) / 사용이 금지된(Contraindicated)",
+    "ingredient": "재료",
+    "jobName": "작업 이름",
+    "lastExecuted": "마지막 실행",
+    "lengthOfStayAvg": "평균 체류일",
+    "lengthOfStayTotal": "체류일",
+    "linkout": "링크아웃",
+    "login": "로그인",
+    "mapped": "매핑된 컨셉",
+    "mappingType": "매핑 타입",
+    "match": "매치(Match)",
+    "max": "최대값",
+    "median": "중앙값",
+    "message": "메시지",
+    "min": "최소값",
+    "minimumTimeAtRisk": "최소 위험 노출 기간",
+    "model": "모델",
+    "modelName": "모델 이름",
+    "modelSettings": "모형 설정",
+    "modified": "수정일",
+    "name": "이름",
+    "ncOutcomes": "음성 대조군 결과",
+    "nextExecution": "다음 실행",
+    "notPrevalent": "만연하지 않음(Not Prevalent)",
+    "optimizedOut": "최적화",
+    "options": "옵션",
+    "outcomeCohortName": "아웃컴(outcome) 코호트 이름",
+    "outcomeId": "아웃컴(outcome) ID",
+    "outcomeModel": "결과 모델",
+    "outcomeName": "아웃컴(outcome) 코호트 이름",
+    "outcomes": "결과",
+    "p10": "분위수 10%",
+    "p25": "분위수 25%",
+    "p75": "분위수 75%",
+    "p90": "분위수 90%",
+    "paid": "지불된 비용(Paid cost)",
+    "paidAllowedRatio": "유료(paid)/허용",
+    "paidPmPm": "지불된 비용(Paid cost) PMPM",
+    "pct": "퍼센트",
+    "diff": "차이",
+    "remain": "잔류",
+    "periodEnd": "기간 종료",
+    "periodStart": "기간 시작",
+    "permission": "승인",
+    "personsCount": "환자수",
+    "personCount": "환자수",
+    "personsPct": "사람 %",
+    "pregnancyConcept": "임신 컨셉",
+    "prevalence": "유병율",
+    "priorOutcomeLookback": "이전 아웃컴(outcome) 룩백(Lookback)",
+    "productLabelAncestor": "제품 라벨 (상위 컨셉 매치)",
+    "productLabelCountDescendant": "제품 라벨 카운드 (하위 컨셉 매치)",
+    "productLabelExact": "제품 라벨 (정확한 컨셉 매치)",
+    "productLabelParent": "제품 라벨 (부모 컨셉 매치)",
+    "progress": "진행",
+    "provider": "제공자",
+    "publicationCountAncestor": "출판물(Publication) 카운트 (상위 컨셉 매치)",
+    "publicationCountDescendant": "출판물(Publication) 카운트 (하위 컨셉 매치)",
+    "publicationCountExact": "출판물(Publication) 카운트 (정확한 컨셉 매치)",
+    "publicationCountParent": "출판물(Publication) 카운트 (부모 컨셉 매치)",
+    "quantityAvg": "평균 수량",
+    "quantityPer1000PerYear": "수량 / 1K / 년",
+    "quantityTotal": "총 수량",
+    "rc": "기록 개수",
+    "recordCounts": "기록 수 (RC / DRC)",
+    "refreshCache": "캐시 새로 고침",
+    "relationshipType": "관계 타입",
+    "remove": "제거",
+    "removeSubjectsWithPriorOutcome": "이전 아웃컴(outcome) 기록이 있는 환자 제거",
+    "requireTimeAtRisk": "필요한 위험 측정 기간 (Time At Risk)",
+    "results": "결과",
+    "riskWindowEnd": "리스크 윈도우(Risk Window) 종료",
+    "riskWindowStart": "리스크 윈도우(Risk Window) 시작",
+    "role": "역할",
+    "roleName": "역할 이름",
+    "selected": "선택된",
+    "severity": "중증도",
+    "sortOrder": "정렬 순서",
+    "sourceNameSourceKey": "데이터 소스 이름 [소스 키]",
+    "sourceName": "데이터 소스 이름",
+    "standardConceptCaption": "표준 컨셉",
+    "standardConceptCode": "표준 컨셉 코드",
+    "standardType": "표준 타입",
+    "startDate": "시작일",
+    "startDay": "시작일",
+    "started": "시작",
+    "status": "상태",
+    "stddev": "표준 편차",
+    "strata": "계층화",
+    "suggestedNegativeControl": "제안된 음성 대조군(Negative Control)",
+    "tableQualifiers": "테이블 Qualifiers",
+    "target": "대상군",
+    "targetCohortName": "표적(Target) 코호트 이름",
+    "targetId": "표적(Target) ID",
+    "targetName": "표적(Target) 코호트 이름",
+    "temporal": "일시적인",
+    "timeAtRisk": "위험 노출 기간",
+    "timeAtRiskEnd": "위험 노출 기간 종료일",
+    "timeAtRiskStart": "위험 노출 기간 시작일",
+    "title": "제목",
+    "totalRecords": "총 레코드",
+    "type": "유형",
+    "uniqueIdentifier": "고유 식별자",
+    "updated": "수정일",
+    "userExcluded": "사용자 제외",
+    "userIncluded": "사용자 포함",
+    "value": "값",
+    "visitsCount": "레코드",
+    "visitsPer1000": "레코드 / 1K",
+    "visitsPer1000PerYear": "레코드 / 1K / 년",
+    "visitsPer1000WithVisits": "레코드 / 1K + 레코드",
+    "vocabulary": "용어",
+    "vocabularyVersion": "용어 버전",
+    "washoutPeriod": "워시 아웃(Washout) 기간",
+    "pctWithPathway": "경로(Pathway) %",
+    "pctOfCohort": "코호트 비율 %",
+    "eventCohort": "이벤트 코호트",
+    "rank": "순위",
+    "distinctEventCohorts": "고유(Distinct) 이벤트 코호트",
+    "sampleId": "Sample Id",
+    "sampleName": "Sample name",
+    "numberOfPatients": "Number of patients",
+    "selectionCriteria": "Selection criteria",
+    "personId": "Person ID",
+    "gender": "Gender",
+    "ageAtIndex": "Age at index"
+  },
+  "dataSources": {
+    "achillesHeelReport": {
+      "achillesHeelResults": "Achilles Heel 결과",
+      "message": "메시지",
+      "messageType": "메시지 유형"
+    },
+    "const": {
+      "lengthOfEra": "기간의 길이",
+      "recordsPerPerson": "사람 당 기록수"
+    },
+    "dashboardReport": {
+      "age": "나이",
+      "ageAtFirstObservation": "관찰 시작 연령",
+      "cdmSummary": "CDM 요약",
+      "cumulativeObservation": "누적 관찰기간",
+      "date": "날짜",
+      "days": "일",
+      "people": "환자 수",
+      "percentOfPopulation": "모집단 중 퍼센트",
+      "personsWithContinuousObservationByMonth": "월별 연속 관찰 대상자",
+      "populationByGender": "성비",
+      "years": "세"
+    },
+    "datadensityReport": {
+      "conceptType": "컨셉 타입",
+      "conceptsPerPerson": "1 인당 컨셉",
+      "numberOfRecords": "레코드 수",
+      "recordsPerPerson": "1 인당 기록",
+      "totalRows": "총 기록(행)",
+      "year": "년"
+    },
+    "deathReport": {
+      "ageAtDeath": "사망시 나이",
+      "ageAtFirstOccurence": "처음 발생시의 나이",
+      "ageDecile": "연령 십분위",
+      "date": "날짜",
+      "deathByType": "유형별 사망",
+      "deathPrevalenceByAgeGenderYear": "연령, 성별, 년도별 사망률",
+      "deathPrevalenceByMonth": "월별 사망률",
+      "gender": "성별",
+      "prevalencePer1000People": "1000명당 유병율",
+      "yearOfObservation": "관찰 년도"
+    },
+    "drilldown": {
+      "ageAtFirstOccurrence": "첫 발생시 연령",
+      "chartFormat": {
+        "ageAtFirstOccurrence": "첫 발생시 연령",
+        "ageDecile": "연령 십분위",
+        "date": "날짜",
+        "frequencyDistribution": {
+          "xLabel1": "카운트 ( \"x \" 이상",
+          "xLabel2": "들)"
+        },
+        "gender": "성별",
+        "percentOfTotalNumberOfPersons": "총 인원의 %",
+        "prevalencePer1000People": "1000명당 유병율",
+        "yearOfObservation": "관찰 년도"
+      },
+      "drilldownReport": "상세 보고서",
+      "frequencyDistribution": "빈도 분포",
+      "lowerLimitDistribution": "하한 분포",
+      "measurementRecordsByUnit": "단위",
+      "measurementValueDistribution": "측정 값 분포",
+      "noData": "데이터 없음",
+      "operatorConcept": "연산자 컨셉",
+      "prevalence": "유병율",
+      "prevalenceByMonth": "월별 유병율",
+      "qualifierConcept": "한정자 컨셉",
+      "type": "유형",
+      "upperLimitDistribution": "상한 분포",
+      "valueAsConcept": "값 (컨셉아이디)",
+      "valuesRelativeToNormalRange": "이상값 여부",
+      "lengthOfEraDistribution": "기간 분포의 길이"
+    },
+    "errorLoadingReport": "보고서 로드 오류",
+    "headingTitle": "데이터 소스",
+    "loadingDrilldownReport": "상세페이지 로딩 중",
+    "loadingReport": "보고서 로드중",
+    "noPermission": "이 보고서를 볼 수 있는 권한이 없습니다.",
+    "numberOfPeople": "사람 수",
+    "observationPeriodReport" : {
+      "ageAtFirstObservation": "관찰 시작 연령",
+      "ageByGender": "성별별 연령",
+      "observationLength": "관찰기록 길이",
+      "durationByGender": "성별별 지속일",
+      "cumulativeObservation": "누적 관찰기간",
+      "durationByAgeDecile": "연령 십분위별 지속일",
+      "personsWithContinuousObservationByYear": "연도별 연속 관찰 환자 수",
+      "observationPeriodsPerPerson": "환자당 관찰기간",
+      "personsWithContinuousObservationByMonth": "월별 연속 관찰 환자 수",
+      "age": "연령",
+      "people": "환자 수",
+      "gender": "성별",
+      "days": "일 수",
+      "ageDecile": "연령 십분위",
+      "percentOfPopulation": "인구 비율",
+      "years": "년",
+      "date": "일"
+    },
+    "personReport": {
+      "ethnicity": "민족",
+      "ethnicityFooter": "해당 코호트에서 민족에 따라 계층화된 사람 수",
+      "gender": "성별",
+      "genderFooter": "해당 코호트에서 성별에 따라 계층화된 사람 수",
+      "numberOfPersons": "사람 수",
+      "race": "인종",
+      "raceFooter": "해당 코호트에서 인종에 따라 계층화된 사람 수 ",
+      "year": "년",
+      "yearOfBirth": "출생년도",
+      "yearOfBirthFooter": "해당 코호트에서 출생년도에 따라 시각화된 사람 수"
+    },
+    "prevalence": "유병율",
+    "reports": {
+      "achillesHeel": "아킬레스 힐(Achilles Heel)",
+      "conditionEra": "진단 기간 (condition era)",
+      "conditionOccurrence": "진단 발생(Condition occurrence)",
+      "dashboard": "대시보드(Dashboard)",
+      "dataDensity": "데이터 밀도(Density)",
+      "death": "사망",
+      "drugEra": "약물 기간 (Drug Era)",
+      "drugExposure": "약물 노출 (Drug Exposure)",
+      "measurement": "검사(Measurement)",
+      "observation": "관찰기록(Observation)",
+      "person": "사람",
+      "procedure": "수술 및 처치(Procedure)",
+      "titleTail": "보고서",
+      "visit": "방문",
+      "observationPeriod": "관찰기간"
+    },
+    "selectAReport": "보고서를 선택하십시오",
+    "selectASource": "소스를 선택하십시오",
+    "table": {
+      "tableTab": "테이블"
+    },
+    "treemap": {
+      "legend": {
+        "boxSize": "상자 크기 : ",
+        "color": "색상 : ",
+        "colorExplanation": "(색상이 어두울수록 기록 수 높음), Ctrl+클릭 : 확대, Alt+클릭 : 원래 크기로"
+      },
+      "treemapTab": "트리 맵"
+    }
+  },
+  "search": {
+    "advancedOptions": "고급 옵션",
+    "buttonTitle": "검색",
+    "classification": "분류",
+    "clearAllSelections": "모든 선택 지우기",
+    "domains": "도메인",
+    "headingTitle": "검색",
+    "loadingMessage": {
+      "domains": "도메인",
+      "loading": "로딩중",
+      "searchResults": "검색 결과",
+      "vocabularies": "용어(vocabularies)"
+    },
+    "noDomainsAvailable": "사용 가능한 도메인 없음",
+    "noResultsFoundFor": "에 대한 결과가 없습니다.",
+    "noVocabulariesAvailable": "사용 가능한 용어 없음",
+    "nonStandard": "비표준",
+    "placeholder": "여기에 검색어 입력",
+    "standard": "표준",
+    "tabs": {
+      "import": "불러오기",
+      "search": "검색"
+    },
+    "vocabularies": "용어(vocabularies)"
+  },
+  "cs": {
+    "browser": {
+      "caption": "컨셉 세트",
+      "compare": {
+        "compareConceptSets": "컨셉 세트 비교",
+        "comparisonResults": "비교 결과",
+        "conceptSet1": "컨셉 세트 1:",
+        "conceptSet2": "컨셉 세트 2:",
+        "heading": "컨셉 세트 비교",
+        "headingMessage": "이 유틸리티를 사용하여 두 컨셉 세트가 공유하고 있는 컨셉을 확인하세요",
+        "modalTitle": "컨셉 세트 선택",
+        "sameWarning": "동일한 컨셉 세트를 비교할 수 없습니다.",
+        "saveFromComparisonNameTail": "- 비교",
+        "saveMessage": "아래 선택에서 새 컨셉 세트 저장",
+        "saveWarning": "이 비교 기능을 수행하기 전에 현재의 컨셉 세트를 저장해야합니다.",
+        "viewCountMessage": "다음에 대한 데이터베이스 레코드 수 (RC) 및 하위 레코드 수 (DRC)보기 :"
+      },
+      "exportConceptSetsButton": "컨셉 세트 내보내기",
+      "exportConceptSetsNumber": "<b><%=num%></b> 내보내기 위해 선택된 컨셉 세트..",
+      "exportInstructions": " ",
+      "exportInstructionsText": "하단의 표에서 내보낼 컨셉 세트를 선택하시고, '컨셉 세트 내보내기'를 클릭하시어 컨셉 세트를 다운하십시오.",
+      "tabs": {
+        "export": "내보내기",
+        "list": "리스트"
+      }
+    },
+    "manager": {
+      "attemptingToFindMessage": "이 컨셉 세트에 대한 최적의 정의를 찾는 중...",
+      "cancelButton": "취소",
+      "caption": "컨셉 세트 # <%=id%>",
+      "changeColumnsButton": "열(Columns) 변경",
+      "conceptsRemovedHeading": "삭제된 컨셉",
+      "conceptsRemovedMessage": "다음 컨셉들은 최적화된 버전에 이미 포함되어 있으므로 제거되었습니다.",
+      "createOption": "새로운 컨셉 세트 생성",
+      "csAlreadyExistsMessage": "이 이름으로 설정된 컨셉 세트가 이미 있습니다. 다른 이름을 선택하십시오.",
+      "csDeleteConfirmMessage": "컨셉 세트를 삭제 하시겠습니까? 경고 : 삭제시 다시 되돌릴 수 없습니다!",
+      "csNotSavedConfirmMessage": "컨셉 세트 변경 사항은 저장되지 않습니다. 계속 하시겠습니까?",
+      "csSaveErrorMessage": "컨셉 세트를 저장하는 중에 오류가 발생했습니다.",
+      "exploreEvidence": {
+        "additionalInformation": "추가 정보:",
+        "anchor1": "ATLAS에서 음성 대조군(Negative Control) 얻기",
+        "anchor2": "음성 대조군(Negative Control) 프로세싱에 대한 높은 수준의 정보",
+        "anchor3": "추가적인 리소스(resources)",
+        "chooseAConceptSet": "컨셉 세트 선택",
+        "deletedCcMessage": "지정된 컨셉 세트 (#<%=cs%>)이 삭제되었습니다. 다른 컨셉 세트를 선택하십시오.",
+        "drugLabelEvidence": "약물 라벨 증거(Evidence) :",
+        "drugLabelEvidenceDetails": "세부사항",
+        "drugLabelEvidenceEnd": "CEM의 약물 라벨.",
+        "drugLabelEvidenceFound": "발견된",
+        "drugLabelEvidenceOf": "의",
+        "drugLabelsFound": "발견된 약물 라벨",
+        "drugLabelsNotFound": "약물 라벨을 찾을 수 없음",
+        "evidenceForAll": "전체(all)에 대한 증거(Evidence)",
+        "evidenceForAllFor": "에 대한",
+        "evidenceSources": "증거(Evidence) 소스",
+        "excludeLabel": "알려진 양성 대조군(positive controls)으로 제외하고 싶은 개념은 무엇입니까? (선택사항)",
+        "generate": "생성",
+        "generated": "생성 시작 시간",
+        "generationDuration": "생성 작업 시간",
+        "generationSettings": "실행(Generation) 설정",
+        "generationStatus": "생성 상태",
+        "includeLabel": "알려진 음성 대조군(Negative Control)으로 어떤 컨셉을 포함시키겠습니까? (선택사항)",
+        "invalidCsWarning": "저장된 컨셉은 여러 도메인 또는 조건 또는 약물 이외의 도메인에서 제공됩니다. 컨셉 세트에는 증거(Evidence)를 탐색하기 위해 조건 또는 약물만 포함되어야합니다.",
+        "loadingEvidence": "증거(Evidence) 로드",
+        "message1": "증거(Evidence)는 다음에서 유래됨",
+        "message2": "증거(Evidence)기반은 출판된 문헌, 제품 라벨 및 자발적 보고서에서 발견된 증거로 구성됩니다. 이 컨셉 세트에 포함 된 컨셉과 관련된 증거를 찾으려면 아래 증거 출처를 사용하십시오.",
+        "noCsWarning": "SNOMED의 Ingredient 클래스 수준 OR 조건에서 RxNorm 어휘에있는 약물로 컨셉 세트를 정의해야합니다. 컨셉 세트에는 증거(Evidence)를 탐색하기 위해 조건 또는 약물만 포함되어야합니다.",
+        "noEvidenceFoundFor": "증거(Evidence)가 없습니다.",
+        "saveNewButton": "아래 선택에서 새 컨셉 세트 저장",
+        "title": "증거(Evidence) 탐색 :",
+        "viewDatabaseRecordCounts": "다음에 대한 데이터베이스 레코드 카운트 (RC) 및 하위 레코드 카운트 (DRC) 보기 :",
+        "viewEvidence": "증거(Evidence) 보기",
+        "viewingEvidence": "증거(Evidence) 보기"
+      },
+      "fullyOptimizedMessage": "현재 컨셉 세트 정의는 완전히 최적화되어 있습니다.",
+      "optimize": "최적화",
+      "optimizedConceptSetHeading": "최적화된 컨셉 세트",
+      "overwriteOption": "현재 컨셉 세트 덮어 쓰기",
+      "pleaseProvideNameMessage": "새 컨셉 세트의 이름을 입력하십시오.",
+      "pleaseReviewMessage": "최적화된 정의 및 저장 옵션을 검토하십시오.",
+      "resetColumnsButton": "열 재설정",
+      "saveButton": "저장",
+      "saveOptions": "저장 옵션",
+      "showAllColumnsButton": "모든 열 표시",
+      "tabs": {
+        "compare": "비교",
+        "conceptSetExpression": "컨셉 세트 표현식",
+        "exploreEvidence": "Evidence 탐색",
+        "export": "내보내기",
+        "includedConcepts": "포함된 컨셉",
+        "includedSourceCodes": "포함된 소스 코드"
+      },
+      "concept": {
+        "title": "어휘(Vocabulary) > 컨셉",
+        "standard": "표준",
+        "nonStandard": "비표준",
+        "classification": "분류",
+        "tabs": {
+          "details": {
+            "caption": "세부사항",
+            "property": "특성",
+            "value": "값",
+            "conceptName": "컨셉 이름",
+            "domainId": "도메인 ID",
+            "conceptClassId": "컨셉 클래스 ID",
+            "vocabularyId": "어휘(Vocabulary) ID",
+            "conceptId": "컨셉 ID",
+            "conceptCode": "컨셉 코드",
+            "invalidReason": "무효한 근거",
+            "standardConcept": "표준 컨셉"
+          },
+          "relatedConcepts": {
+            "loading": "Loading related concepts...",
+            "caption": "관련 컨셉"
+          },
+          "hierarchy": {
+            "loading": "Loading hierarchy...",
+            "caption": "계층 구조",
+            "noHierarchyFoundMessage": "비표준 컨셉에 대한 계층 구조가 없습니다.",
+            "view": "보기:",
+            "fullHierarchy": "전체 계층 구조",
+            "parents": "부모",
+            "currentConcept": "현재 컨셉",
+            "children": "자식",
+            "noParentConceptsFound": "부모 컨셉이 없습니다.",
+            "noChildConceptsFound": "자식 컨셉이 없습니다."
+          },
+          "recordCounts": {
+            "loading": "Loading records count...",
+            "caption": "레코드 카운트",
+            "recordCountsAcrossSources": "소스의 레코드 카운트",
+            "failedToLoadData": "Failed to load data"
+          }
+        }
+      },
+      "conceptSetOptimization": "컨셉 세트 최적화"
+    }
+  },
+  "cc": {
+    "title": "코호트 특성",
+    "new": "새",
+    "loading": "코호트 특성(Characterization) 목록 로드중...",
+    "modals": {
+      "confirmChanges": "변경 사항이 저장되지 않습니다. 계속 하시겠습니까?",
+      "selectConceptSet": "컨셉 세트 선택하기",
+      "chooseAFeatureAnalyses": "기능(Feature) 분석 선택..."
+    },
+    "tabs": {
+      "characterizations": {
+        "newLabel": "특성",
+        "title": "특성"
+      },
+      "featureAnalyses": {
+        "newLabel": "특성 분석",
+        "title": "특성 분석"
+      }
+    },
+    "viewEdit": {
+      "caption": "특성(Characterization) #<%=id%>",
+      "loadingCohortCharacterization": "코호트 특성(Characterization) 로드중 ...",
+      "design": {
+        "description": "코호트 특성 분석은 개별 환자 수준의 공변량 데이터로부터 코호트 단위의 요약 통계 생성해 줍니다. 환자 수준의 공변량에 대한 요약 통계는 수, 평균, 표준편차, 분산, 최소값, 최대값, 중앙값, 범위 및 사분위수가 포함됩니다. 또한 시간과 관련된 공변량은 코호트 시작일이나 시간 간격(예: 주, 월, 분기, 연도) 등을 이용하여 층화할 수 있습니다.",
+        "fa": {
+          "actions": {
+            "remove": "삭제"
+          },
+          "title": "특성(feature) 분석"
+        },
+        "faParams": {
+          "modal": {
+            "namePlaceholder": "이름",
+            "submit": "제출",
+            "title": "새 파라미터 생성",
+            "valuePlaceholder": "값"
+          },
+          "newLabel": "새 파라미터",
+          "title": "특성(feature) 분석 파라미터"
+        },
+        "loading": "코호트 특성(Characterization) 설계 로드중 ...",
+        "subgroups": {
+          "messages": {
+            "nameIsEmpty": "하위 그룹 이름이 비어있습니다.",
+            "nameIsNotUnique": "하위 그룹 이름이 중복되었습니다."
+          },
+          "namePlaceholder": "층화(Strata) 이름",
+          "newSubgroup": "새 서브 그룹 분석",
+          "noSubgroups": "정의된 하위 그룹 없음",
+          "stratifiedByPlaceholder": "층화(Stratified)된",
+          "subgroupOnly": "서브 그룹 분석만 계산합니다.",
+          "title": "서브 그룹 분석"
+        }
+      },
+      "executions": {
+        "title": "실행",
+        "prevalenceStatConverter": {
+          "allStrata": "모든 층화(Strata)",
+          "explore": "탐색",
+          "loadingPrevalenceStats": "출현율(Prevalence) 통계로드 중 ...",
+          "cohort": "코호트:",
+          "exploringConceptHierarchyFor": "다음에 대한 컨셉 계층 탐색 :",
+          "ancestor": "상위",
+          "descendant": "하위",
+          "selected": "선택된"
+        }
+      },
+      "results": {
+        "detail": {
+          "date": "날짜:",
+          "design": "설계:",
+          "results": {
+            "label": "결과 :",
+            "text": "<%=reports%> 보고서"
+          }
+        },
+        "exploring": "탐색",
+        "exportAll": "모두 내보내기",
+        "filters": {
+          "analyses": "분석",
+          "cohorts": "코호트",
+          "domains": "도메인"
+        },
+        "hideEmptyResults": "빈 결과 숨기기",
+        "loading": "실행 결과 로드중...",
+        "showAllResults": "모든 결과 나타내기",
+        "table": {
+          "buttons": {
+            "exportComparison": "Export 비교"
+          }
+        },
+        "threshold": {
+          "apply": "적용",
+          "label": "결과를 필터링하여 출현율(Prevalence)이 다음보다 큰 공변량 :",
+          "placeholder": "임계치",
+          "text": "총 <%=totalResultsCount%> 레코드 중 가장 많이 사용되는 <%=resultsCountFiltered%>보기"
+        },
+        "title": "<%=sourceName%>에 대한 보고서",
+        "series": "시리즈",
+        "covariate": "공변량",
+        "allPrevalenceCovariates": "모든 출현율(Prevalence) 공변량"
+      },
+      "tabs": {
+        "design": "설계",
+        "executions": "실행",
+        "utilities": "유틸리티",
+        "messages": "메시지"
+      },
+      "utilities": {
+        "title": "유틸리티"
+      }
+    },
+    "fa": {
+      "tabs": {
+        "design": "설계",
+        "conceptSets": "컨셉 세트"
+      },
+      "addCriteriaFeature": "기준 기능(Feature) 추가",
+      "addNewCriteria": "새 기준 추가...",
+      "analysisSql": "분석 SQL:",
+      "analysisType": "분석 타입:",
+      "availableVariables": "사용 가능한 변수:",
+      "availableVariablesNote": "코호트 특성(Characterization) 파라미터에 지정된 모든 변수",
+      "caption": "기능(Feature) 분석 # <%=id%>",
+      "copiedToClipboard": "클립 보드에 복사되었습니다!",
+      "copySqlToClipboard": "분석 SQL 템플릿을 클립 보드로 복사",
+      "criteria": "기준",
+      "criteriaName": "기준 이름",
+      "custom": "커스텀",
+      "description": "설명",
+      "design": "설계",
+      "designOrNameAreEmpty": "설계 또는 이름이 비어 있습니다.",
+      "domain": "도메인:",
+      "featureExtractionPresetName": "FeatureExtraction 사전 설정 이름 :",
+      "loadingList": "기능(Feature) 분석 목록 로드중...",
+      "nameExistsAlert": "이 이름의 기능(Feature) 분석이 이미 있습니다. 다른 이름을 선택하십시오.",
+      "preset": "사전 설정",
+      "retrievingList": "기능(Feature) 분석 목록 검색중...",
+      "saveError": "기능(Feature 분석을 저장하는 중에 오류가 발생했습니다.",
+      "selectConceptSet": "컨셉 세트 선택하기",
+      "unsavedConfirmation": "변경 사항은 저장되지 않습니다. 계속 하시겠습니까?",
+      "warning": "Warning:",
+      "warningText": "You wouldn't be able to change the type of analysis after save."
+    }
+  },
+  "home": {
+    "description": "ATLAS는 환자 수준의 데이터 및 분석에 통합된 인터페이스를 제공하기 위해 <a href='http://www.ohdsi.org' target='_new'>OHDSI</a>의 일부로 개발된 오픈 소스 응용 프로그램입니다.",
+    "documentation": {
+      "text": "<a target='_new' href='http://www.ohdsi.org/web/wiki/doku.php?id=documentation:software:atlas'>ATLAS 사용 설명서는 여기에서 찾을 수 있습니다.</a>",
+      "title": "문서"
+    },
+    "gettingStarted": {
+      "newCohort": {
+        "button": "새로운 코호트 정의",
+        "description": "연구하려는 사람들의 그룹을 정의하여 연구를 시작하십시오"
+      },
+      "title": "시작하기",
+      "vocabulary": {
+        "button": "어휘(Vocabulary) 검색",
+        "description": "환자 수준 데이터를 설명하는 데 사용되는 전 세계의 다양한 온톨로지를 검색하십시오."
+      }
+    },
+    "releaseNotes": {
+      "issues": "이 최신 릴리스에는 <b><%=issues%></b> 가지 기능 향상 및 문제 해결이 포함되어 있습니다.",
+      "loadingReleaseInfo": "출시(release) 정보 로드중",
+      "title": "배포 노트"
+    },
+    "title": "홈",
+    "welcome": "ATLAS에 오신 것을 환영합니다."
+  },
+  "ir": {
+    "caption": "발생률 분석 #<%=id%>",
+    "cs": {
+      "modalTitle": "컨셉 세트 선택하기"
+    },
+    "deleteConfirmation": "발생률(incidence rate) 분석을 삭제 하시겠습니까? 경고 : 경고 : 삭제시 다시 되돌릴 수 없습니다!",
+    "deleteResultConfirmation": "<%=name%>의 결과를 제거 하시겠습니까?",
+    "editor": {
+      "addOutcomeCohort": "결과 코호트 추가",
+      "addStudyWindow": "연구 기간 범위 추가",
+      "addTargetCohort": "표적 코호트 추가",
+      "chooseACohort": "코호트 선택",
+      "newStratifyCriteria": "새로운 계층화 기준",
+      "noStudyWindowDefined": "연구 기간 범위를 정의하지 않습니다.",
+      "outcomeCohorts": "결과 코호트",
+      "removeStudyWindow": "연구 기간 범위 삭제",
+      "selectInclusionCriteriaMessage": "설정에 사용될 포함 기준을 선택하십시오.",
+      "stratifyCriteria": "계층화 기준 :",
+      "stratifyCriteriaMessage": "계층화 기준 : 계층화 기준에 기반한 고유 그룹으로 모집단을 분리하여 분석할 수 있는 계층화 기준에 의한 분석 기능을 선택적으로 수행할 수 있습니다.",
+      "studyCohorts": "연구 코호트",
+      "studyWindowText1": "연구 기간 범위는",
+      "studyWindowText2": "에서 시작하여",
+      "studyWindowText3": "종료됩니다.",
+      "targetCohorts": "표적 코호트",
+      "timeAtRisk": "위험 노출 기간",
+      "timeAtRiskStartsWithDays": "일을 더해서 시작합니다.",
+      "timeAtRiskEndsWithDays": "일을 더해서 종료됩니다.",
+      "timeAtRiskEndDate": "종료일",
+      "timeAtRiskEndsWith": "위험 노출 기간은",
+      "timeAtRiskMessage": "위험 노출 기간(Time at risk)은 코호트 시작일 또는 종료일을 기준으로 날짜를 설정하여 정의하고, 그 기간 동안에 결과의 \"위험에 노출된\" 환자를 고려합니다.",
+      "timeAtRiskPlus": "에",
+      "timeAtRiskStartDate": "시작일",
+      "timeAtRiskStartsWith": "위험 노출 기간은",
+      "timeAtRiskWarningMessage": "오류 : 위험 측정 기간 (Time At Risk)이 위험 측정 기간 종료 시점 또는 그 이후에 시작되어 위험 측정기간이 0이됩니다. 시작 오프셋이 끝 오프셋보다 큰지 확인하십시오."
+    },
+    "nameConflict": "이 이름의 발생률(incidence rate)이 이미 존재합니다. 다른 이름을 선택하십시오.",
+    "newanalysis": "새 분석",
+    "notSavedMessage": "발생률(incidence rate) 분석 변경 사항은 저장되지 않습니다. 계속 하시겠습니까?",
+    "results": {
+      "accessDenied": "접근 불가",
+      "andOutcomeCohort": "와 결과 코호트:",
+      "canceled": "취소",
+      "cases": "이벤트 환자수",
+      "close": "닫기",
+      "duration": "생성 작업 시간",
+      "exportToCsvButton": "CSV 파일로 분석결과 내보내기",
+      "failed": "실패",
+      "generationInProgress": "실행이 진행 중입니다.",
+      "loadingGenerationResultErrorMessage": "실행 결과 보고서를 로드하는 중에 오류가 발생했습니다.",
+      "loadingSummary": "요약 로드중...",
+      "perPersons": "환자 <%=multiplier%>명 당",
+      "perYears": "<%=multiplier%>년 당",
+      "persons": "환자수",
+      "proportion": "비율(Proportion)",
+      "rate": "율(Rate)",
+      "reports": "보고서",
+      "rerun": "재실행",
+      "running": "실행중",
+      "selectTargetAndOutcomeAlert": "생성할 표적(target) 및 아웃컴(outcome) 코호트를 하나 이상 선택해야합니다.",
+      "showingTargetCohort": "표적 코호트 표시:",
+      "sourceName": "사용된 데이터베이스 소스 이름",
+      "started": "생성 시작 시간",
+      "stratifyRule": "계층화 규칙",
+      "summaryStatistics": "통계 요약:",
+      "timeAtRisk": "위험 노출 기간",
+      "timeAtRiskYears": "(년수)"
+    },
+    "savingError": "발생률(incidence rate)을 저장하는 중에 오류가 발생했습니다.",
+    "tabs": {
+      "conceptSets": "컨셉 세트",
+      "definition": "정의",
+      "generation": "생성",
+      "utilities": "유틸리티",
+      "messages": "메시지"
+    },
+    "title": "발생률 분석"
+  },
+  "profiles": {
+    "ageAt": "나이 <%=age%>",
+    "atIndex": "인덱스 (Index)",
+    "atStartOfObservation": "관찰기록(Observation) 시작시",
+    "chart": {
+      "event": "이벤트:",
+      "startDate": "시작 날짜 :",
+      "startDay": "시작일 :"
+    },
+    "clearAllHighlightColors": "모든 하이라이트 색상 지우기",
+    "clickHereToSelectACohort": "코호트를 선택하려면 여기를 클릭하십시오",
+    "eventHighlighting": "이벤트 하이라이트",
+    "highlightEventsTooltip": "하이라이트 이벤트",
+    "loadingProfile": "데이터베이스에서 프로필 데이터 로드",
+    "personId": "사람(Person) ID",
+    "processingProfile": "프로필 데이터 프로세싱",
+    "recordCounts": "<%=count%> 이벤트",
+    "selectADataSource": "데이터 소스를 선택하십시오.",
+    "setSelectedEventsColor": "선택된 이벤트 색상 설정",
+    "title": "프로필",
+    "toggleChartTooltip": "차트 표시 전환",
+    "toggleTableTooltip": "테이블 표시 전환",
+    "сantFind": "찾을 수 없습니다"
+  },
+  "pathways": {
+    "loading": "경로 분석 목록 로드중...",
+    "manager": {
+      "caption": "코호트 경로 #<%=id%>",
+      "design": {
+        "analysisSettings": {
+          "combinationWindow": {
+            "description": "통합으로 간주되기 위해 두 개의 이벤트 코호트가 겹쳐야 하는 시간 범위.",
+            "title": "통합 기간 범위:"
+          },
+          "description": "경로 분석을 수행할 때 다음의 설정이 사용됩니다.",
+          "maximumPathLength": {
+            "description": "Sunburst plot에 포함될 경로 단계의 최대수.",
+            "title": "최대 경로 길이:"
+          },
+          "minimumCellCount": {
+            "description": "경로에서 수 집계를 위해 주어진 이벤트에 대한 표적 코호트의 최소 대상자 수.",
+            "title": "최소 분석 단위 수:"
+          },
+          "allowRepeats": {
+            "description": "Allow cohort events/combos to appear multiple times in the same pathway.",
+            "title": "Allow repeats:"
+          },
+          "title": "분석 설정"
+        },
+        "description": "코호트 경로(Cohort pathway)의 분석은 표적 코호트에 속한 사람들 중에서 이벤트 코호트로 정의된 여러 이벤트들이 발생한 전이 과정을 생성하는 프로세스로 정의됩니다.",
+        "eventCohorts": {
+          "description": "각 이벤트 코호트는 대상 코호트에 속한 사람들에게 발생할 수 있는 경로의 단계를 정의합니다.",
+          "title": "이벤트 코호트"
+        },
+        "targetCohorts": {
+          "description": "각각의 표적코호트는 이벤트 코호트를 통한 경로들로 분석됩니다.",
+          "title": "표적 코호트"
+        }
+      },
+      "executions": {
+        "title": "실행",
+        "dialogs": {
+          "design": {
+            "loadError": "설계를 로드할 수 없습니다.",
+            "title": "설계"
+          }
+        },
+        "results": {
+          "date": "날짜:",
+          "design": "설계:",
+          "details": {
+            "noPath": "경로가 선택되지 않음 : 상세정보를 위해 경로를 클릭하세요",
+            "title": "경로 상세정보"
+          },
+          "diagram": {
+            "title": "썬버스트(Sunburst) 플롯"
+          },
+          "filters": {
+            "cohorts": "코호트"
+          },
+          "legend": {
+            "eventCohorts": "이벤트 코호트",
+            "personsCount": "경로별 환자 수:",
+            "personsPortion": "전체 대상 코호트 환자 수 대비 pathway 내 환자 수 비율:",
+            "targetCohort": "표적 코호트",
+            "targetCohortCount": "표적 코호트 수:",
+            "title": "범례"
+          },
+          "noPathways": "경로가 발견되지 않았습니다",
+          "title": "Pathway 리포트",
+          "visualization": "시각화",
+          "tabular": "표의",
+          "tableview": {
+            "cohortName": "코호트 <%=name%>",
+            "maximumPathLength": "최대 경로 길이 :",
+            "allPathwaysTitle": "테이블 <%=index%> a : 모든 경로",
+            "eventCohortCountsByRank": "테이블 <%=index%> b : 순위별 이벤트 코호트 카운트",
+            "eventCohortCounts": "테이블 <%=index%> c : 이벤트 코호트 카운트",
+            "distinctEventCohorts": "테이블 <%=index%> d : 고유한 이벤트 코호트",
+            "stepN": "단계 <%=i%>",
+            "exactly": "정확히 <%=v%>"
+          }
+        }
+      },
+      "loading": "코호트 경로 분석 로드중...",
+      "messages": {
+        "alreadyExists": "이 이름의 코호트 경로가 이미 존재합니다. 다른 이름을 선택하십시오.",
+        "beforeClose": "변경 사항은 저장되지 않습니다. 계속 하시겠습니까?",
+        "deleteConfirmation": "확실합니까?",
+        "saveFailed": "코호트 경로를 저장하는 중에 오류가 발생했습니다.",
+        "notfound": "id = %d 인 경로 분석이 없습니다."
+      },
+      "tabs": {
+        "design": "설계",
+        "executions": "실행",
+        "utilities": "유틸리티",
+        "messages": "메시지"
+      },
+      "utilities": {
+        "title": "유틸리티"
+      }
+    },
+    "title": "코호트 경로"
+  },
+  "ple": {
+    "analysisExistsAlert": "이 이름의 추정(estimation) 분석이 이미 존재합니다. 다른 이름을 선택하십시오.",
+    "analysisSaveErrorAlert": "추정(estimation) 분석을 저장하는 중에 오류가 발생했습니다.",
+    "caption": "코호트 비교 분석",
+    "captionNumber": "코호트 비교 분석 #<%=id%>",
+    "changesNotSavedConfirmation": "추정(estimation) 분석 변경 사항은 저장되지 않습니다. 계속 하시겠습니까?",
+    "deleteConfirmation": "추정(estimation) 사양(specification)을 삭제 하시겠습니까? 경고 : 경고 : 삭제시 다시 되돌릴 수 없습니다!",
+    "retrievingEstimations": "추정(estimation) 검색 중",
+    "spec": {
+      "addAnalysisSettings": "분석 설정 추가",
+      "addComparisons": "비교군 추가",
+      "addOutcome": "결과 코호트 추가",
+      "analysisName": "분석 이름 :",
+      "analysisSettings": "분석 설정",
+      "analysisSettingsDescription": "분석 설정 추가 또는 업데이트",
+      "chooseYourComparatorCohort": "대조 코호트 선택하기:",
+      "chooseYourOutcomeCohorts:": "결과 코호트 선택하기:",
+      "chooseYourTargetCohort": "표적 코호트 선택 하기:",
+      "clickToViewDetails": "자세한 내용을 보려면 클릭하십시오.",
+      "comparison": "비교군 설정",
+      "comparisonDescription": "표적, 대조, 결과(들) 코호트과  음성 대조군 결과를 추가 또는 갱신합니다.",
+      "conceptsToExcludeLabel": "이 연구에 사용될 공변량을 구성 할 때 제외할 컨셉들을 선택하세요.*",
+      "conceptsToExcludeNoteAnalysis": "* 정의된 컨셉은 비교군 설정에서 정의한 컨셉과 결합됩니다.",
+      "conceptsToExcludeNoteComparisons": "* 정의된 컨셉은 분석 설정에서 정의한 컨셉과 결합됩니다.",
+      "conceptsToIncludeLabel": "이 연구에 사용될 공변량을 구성 할 때 포함할 컨셉들을 선택하세요. (비워두면 모든 컨셉이 사용됩니다.)*",
+      "conceptsToIncludeNoteAnalysis": "* 정의된 컨셉은 비교군 설정에서 정의한 컨셉과 결합됩니다.",
+      "conceptsToIncludeNoteComparisons": "* 정의된 컨셉은 분석 설정에서 정의한 컨셉과 결합됩니다.",
+      "controlSettings": "제어 설정",
+      "covariateSelection": "공변량 선택",
+      "covariateSettings": "공변량 설정",
+      "descriptionPlaceholder": "여기에 설명 입력 (최대 1000자)",
+      "evaluationSettings": "평가 설정",
+      "evaluationSettingsPanel": {
+        "additionalSettings": "추가 세팅",
+        "advancedSettingsStartsHere": "여기에서 고급 설정 시작",
+        "allowedRatio": "표적 신호 크기와 주입된 신호 크기 사이의 허용된 비율:",
+        "daysFrom": "일 수",
+        "daysFromCohortStartDate": "일 수 코호트 시작 일로부터",
+        "defineTimeAtRiskWindowEnd": "위험 노출 기간의 종료일을 정의하십시오.",
+        "defineTimeAtRiskWindowStart": "위험 노출 기간의 시작일을 표적/대조 코호트의 코호트 시작 날짜와 관련해 정의하십시오",
+        "effectSizes": "적용시킬 effect sizes를 입력하세요:",
+        "firstOutcomeToBeCreated": "처음으로 생성되는 새로운 결과 ID는 무엇인가요?",
+        "maxNumberOfPeopleToFit": "결과 모형을 적합시키는데 사용되는 최대 인원 수:",
+        "minNumberOfOutcomeEventsToBuildAModel": "모델을 구축하는데 요구되는 최소 결과 이벤트 수:",
+        "minNumberofOutcomeEventsToInjectASignal": "신호를 주입하는데 요구되는 최소 결과 이벤트 수:",
+        "minimumRequiredTime": "노출 전 최소 요구되는 연속 관찰 시간 (일) :",
+        "modelType": "모델 유형:",
+        "negativeControl": "음성 대조군 결과 코호트 정의",
+        "negativeControlDesc": "이 표현은 음성 대조군 결과로 사용하기 위한 코호트의 포함 조건과 지속 시간의 기준을 정의할 것입니다.",
+        "onlyFirstExposure": "대상자 당 첫번째 노출 건만 포함하겠습니까?",
+        "onlyFirstOutcome": "결과를 모델링 할때 환자마다 발생한 첫 번째 결과(outcome)만을 고려하겠습니까?",
+        "positiveControl": "양성 대조군 합성",
+        "positiveControlPerform": "신뢰 구간을 보정하기 위해 양성 대조군 합성을 수행해야 합니까?",
+        "removePeopleWithPrior": "이전에 결과(outcome)이 발생한 사람들을 제거하시겠습니까?",
+        "typeOfOccurence": "도메인에서 선택할 때 이벤트의 발생 유형.",
+        "whatDomains": "음성 대조군 결과를 탐지하기 위해 고려되어야 하는 도메인은? (여러 도메인을 선택하기 위해 control 키를 누르시오)",
+        "whenTrueDescendantConcepts": "참일 경우, 음성 대조군 결과의 concept ID의 하위 concept들 사용하여 결과를 찾고, occurrence를 concept id로 롤업(roll up)합니다:"
+      },
+      "from": "...에서",
+      "negativeControlConceptSet": "사용할 음성대조군 결과를 선택하기:",
+      "newAnalysis": "새로운 분석",
+      "options": {
+        "all": "전체",
+        "allOccurrences": "모든 발생",
+        "byPercent": "Percent에 따라",
+        "cohortEndDate": "코호트 종료일",
+        "cohortStartDate": "코호트 시작일",
+        "comparator": "대조 코호트",
+        "condition": "진단(condition)",
+        "coxProportionalHazards": "콕스 비례 위험 모형",
+        "device": "디바이스(Device)",
+        "drug": "약물(Drug)",
+        "firstOccurrence": "첫번째 발생",
+        "keepAll": "전체 유지",
+        "keepFirst": "첫번째 해당만 유지",
+        "logisticRegression": "로지스틱 회귀 분석",
+        "matchOnPropensityScore": "성향 점수로 매칭",
+        "matching": "<%=ratio%> : 1 매칭",
+        "measurement": "검사(Measurement)",
+        "none": "안함",
+        "observation": "관찰기록(Observation)",
+        "poisson": "포아송",
+        "poissonRegression": "포아송 회귀 분석",
+        "procedure": "수술 및 처치(Procedure)",
+        "propensityScore": "성향 점수",
+        "removeAll": "전체 제거",
+        "standardized": "표준화된",
+        "standardizedLogit": "표준화된 로짓",
+        "stratification": "층화 (stratum: <%=stratum%>)",
+        "stratifyOnPropensityScore": "성향 점수로 계층화",
+        "survival": "서바이벌",
+        "target": "표적 코호트",
+        "toEquipoise": "Equipoise에 따라",
+        "visit": "방문"
+      },
+      "outcomeModel": "결과 모델 설정",
+      "outcomeModelPanel": {
+        "covariates": "공변량도 결과 모델에 포함시켜야합니까?",
+        "regression": "회귀분석은 모집단 대상자에서 정의된 계층에 따라 조절되어야 합니까? (예: 성향 점수로 매칭 또는 계층화 함으로써)",
+        "regularization": "결과 모델을 적합할때, 정규화 기능을 사용하겠습니까? *",
+        "regularizationNote": "* 정규화는 관심 대상에는 적용되지 않을것입니다.",
+        "statisticalModel": "표적 코호트와 대조 코호트 간의 결과 위험도 평가에 사용될 통계 모델을 정의하십시오:",
+        "weighting": "처리 가중치의 역확률(IPTW, inverse probability of treatment weighting)을 사용합니까?"
+      },
+      "prior": "사전 정보",
+      "propensityScoreAdjustment": "성향 점수 보정",
+      "propensityScoreAdjustmentPanel": {
+        "baseSelection": "어떤 대상을 기준으로 계층을 결정할 것입니까? 계층은 동일한 크기로 정의됩니다.",
+        "caliperForMatching": "매칭시의 caliper값을 설정하세요:",
+        "caliperScale": "Caliper scale을 설정하세요:",
+        "covariateIdsMatch": "cohortMethodData에서 매치되어야하는 연구대상자의 하나 이상의 공변량 ID",
+        "covariateIdsPlaceholder": "하나 이상의 공변량 ID",
+        "covariateIdsStratify": "cohortMethodData에서 매치되어야하는 연구대상자의 하나 이상의 공변량 ID",
+        "howManyStrata": "성향 점수는 몇 개의 계층으로 나누겠습니까? 계층의 경계는 동일한 수의 표적 인원을 포함하도록 자동으로 정의됩니다.",
+        "howToTrim": "성향 점수 분포를 기반으로 코호트를 어떻게 잘라(trim)내시겠습니까?",
+        "lowerAndUpperBound": "환자를 분석에 활용할 수 있게 유지할 성향점수(preference score)의 상한 및 하한을 지정하십시오. (지정 : 최소 %, 최대 %, 예 : 25,75).",
+        "matchingOrStratification": "매칭 또는 계층화(stratification)를 수행하시겠습니까?",
+        "maxNumberOfPeople": "적절한 성향 점수 모델에 포함할 최대 환자수는 몇 명입니까? 이 숫자를 0으로 설정하면 down-sampling이 적용되지 않습니다.",
+        "maximumNumberOfPersons": "정의된 caliper 내에서 표적 코호트의 한사람에 최대 몇 명의 대조 코호트내 사람들을 매칭시키겠습니까? (0= 최대값이 없음을 의미 - 모든 대조 코호트의 사람들이 표적 코호트에 매칭됨):",
+        "testEachCovariate": "할당된 타겟(표적)과 각 공변량들의 상관관계를 검사하겠습니까? 공변량이 비정상적으로 높은 상관 관계 값(양수 또는 음수)를 갖는다면 오류를 발생시킬 것입니다.",
+        "trimFraction": "트림(Trim) 비율(Fraction) (1-100 %):",
+        "useRegularization": "성향 점수 모형을 적합할때, 정규화 기능을 사용하겠습니까?"
+      },
+      "selectCohort": "코호트 선택하기",
+      "selectConceptSet": "컨셉 세트 선택하기",
+      "selectCovariates": "공변량 선택",
+      "studyPopulation": "연구 모집단",
+      "studyPopulationPanel": {
+        "cohortCap": "표적 또는 대조 코호트가 설정한 값보다 큰 경우, 설정한 값 크기로 샘플링됩니다. (이 값이 0이면 최대 크기가 없음을 나타냅니다)",
+        "daysPriorOutcomes": "이전 아웃컴(outcome)을 확인할 때 몇일까지 되돌아봐야(look back) 합니까?",
+        "endDate": "연구 종료 날짜- 코호트 기준이 나타날 수있는 최대의 날짜를 지정하는 calendar date (모든 기간을 사용하려면 비워 두십시오). <b>중요</b>: 연구 종료일은 risk에 노출된 기간을 줄이는 데에도 사용되므로, 연구 종료일 이후의 결과는 고려되지 않습니다:",
+        "minimumObservations": "코호트에 포함될 환자의 기준 날짜 이전에 최소 요구되는 연속 관찰 시간",
+        "onlyFirst": "대상자의  첫 번째 노출만 포함됩니까?",
+        "removeDuplicates": "표적 및 대조 코호트에 모두 포함된 대상자를 제거하겠습니까?",
+        "removeSubjectsPriorRiskWindow": "위험 노출 기간 이전, 결과가 발생한 대상자를 제거합니까?",
+        "restrictToPeriod": "두가지의 노출이 모두 관찰되는 기간을 분석에서 제한하시겠습니까?",
+        "startDate": "연구 시작 날짜- 코호트 기준이 나타날 수있는 최소의 날짜를 지정하는 calendar date(모든 기간을 사용하려면 비워 두십시오):",
+        "subjectInMultipleCohorts": "만일 대상자가 여러 코호트에 중복되어 포함되어 있다면, 새로운 위험 노출 기간이 겹치지 않도록 위험 노출 기간을 중도 절단을 하시겠습니까?"
+      },
+      "timeAtRisk": "위험 노출 기간",
+      "timeAtRiskPanel": {
+        "daysFrom": "일 수",
+        "defineTheTimeAtRiskWindowEnd": "위험 노출 기간의 종료일을 정의하십시오.",
+        "defineTheTimeAtRiskWindowStart": "위험 노출 기간의 시작일을 표적/대조 코호트의 코호트 시작 날짜와 관련해 정의하십시오",
+        "minimumNumberOfDaysAtRisk": "최소 위험 노출 기간을 몇 일동안으로 설정하시겠습니까?"
+      },
+      "usingCovariates": "성향 점수 모델에 OHDSI 공변량을 사용합니다.",
+      "view": "보기:",
+      "viewAnalysisSettings": "분석 설정",
+      "viewComparisons": "비교군 설정",
+      "viewEvaluationSettings": "평가 설정",
+      "viewFull": "모두",
+      "viewFullSpecification": "전체 보기"
+    },
+    "tabs": {
+      "executions": "실행",
+      "specification": "설계",
+      "utilities": "유틸리티",
+      "messages": "메시지"
+    },
+    "title": "인구 수준 효과 추정",
+    "util": {
+      "downloadNameNote": "<b> 참고 : </ b> 패키지 이름은 영숫자 문자로만 구성되어야합니다. 공백이나 특수 문자는 허용되지 않습니다.",
+      "downloadNote": "ZIP 형식의 연구 패키지를 얻기 위해 연구 패키지의 이름을 입력하고 다운로드를 클릭하십시오.",
+      "downloadPackage": "연구 패키지 다운로드",
+      "downloadProblemsNote": "당신의 분석 사양의 문제를 검토하려면 다운로드 영역을 확인하십시오. Definition을 내보내기 전에 수정해야합니다.",
+      "issueComparison": "비교 설정에서 하나 이상의 표적(target), 대조(comparator) 그리고 아웃컴(outcome)을 지정해야합니다.",
+      "issueComparisonAndAnalysis": "반드시 유효한 비교 및 분석 설정을 1개 이상 지정해야 합니다.",
+      "issueDuplicate": "연구에 비교 또는 분석 설정 영역 중 하나에 중복 값이 있습니다.",
+      "issueNotSaved": "검토 및 다운로드 하기 전에 반드시 분석 설정을 저장하십시오.",
+      "issues": "당신의 연구는 다음과 같은 문제로 인해 전체 사양 세부 정보를 검토할 수 없고, 연구 패키지를 다운로드 할 수 없습니다:",
+      "packageNamePlaceholder": "패키지 이름...",
+      "reviewDownload": "검토 및 다운로드",
+      "reviewFullSpec": "전체 연구 사양 검토"
+    }
+  },
+  "jobs": {
+    "refreshJobs": "작업 새로 고침"
+  },
+  "configuration": {
+    "alerts": {
+      "clearLocalCache": "로컬 저장소가 지워졌습니다. 구성 정보를 다시 로드하려면 페이지를 새로 고침하세요.",
+      "clearServerCache": "서버 캐시가 지워졌습니다.",
+      "failUpdatePrioritySourceDaimon": "우선순위 소스(priority source) daimon을 업데이트하지 못했습니다."
+    },
+    "buttons": {
+      "check": "확인",
+      "refresh": "새로고침",
+      "clearConfigurationCache": "구성 캐시 지우기",
+      "clearServerCache": "서버 캐시 지우기",
+      "importUsers": "LDAP/AD에서 사용자 가져오기",
+      "managePermissions": "사용 권한 관리"
+    },
+    "changeSourcePriorities": "다음에서 소스 우선 순위 변경:",
+    "confirms": {
+      "clearServerCache": "서버 캐시를 지우시겠습니까?"
+    },
+    "executionEngine": "실행 엔진",
+    "newSource": "새로운 소스",
+    "priorityOptions": {
+      "application": "전체 어플리케이션",
+      "session": "현재 세션"
+    },
+    "roles": {
+      "importRoles": "역할 가져오기",
+      "nameIsEmpty": "역할 이름이 비어 있습니다.",
+      "newRole": "새로운 역할",
+      "roleTitle": "역할 #<%=id%>",
+      "tabs": {
+        "permissions": "사용권한",
+        "users": "사용자",
+        "utilities": "유틸리티"
+      },
+      "title": "역할"
+    },
+    "rolesImport": {
+      "alertDanger": "목록의 일부 권한 및 사용자는 이 Atlas 인스턴스(instance)에서 사용할 수 없습니다. 이러한 항목은 가져 오기(importing) 전에 필터링됩니다.",
+      "alertWarning": "목록의 일부 권한에는 소스 및 타겟 Atlas 인스턴스간에 매치가 보장되지 않는 특정 엔티티(entity) ID가 포함되어 있습니다.",
+      "emptyMessage": "역할 정의가 포함된 JSON을 텍스트 영역에 삽입합니다.",
+      "fixJson": "JSON 수정",
+      "processed": "<%=len%> 역할 중 <%=proc>을 생성했습니다.",
+      "removeThePermissions": "사용권한 삭제",
+      "rolesDefinitionJson": "역할 정의(Roles definition) JSON",
+      "title": "역할 가져오기"
+    },
+    "title": "환경설정",
+    "userImport": {
+      "findGroup": "그룹 찾기",
+      "importNow": "지금 가져오기",
+      "loadingHistory": "사용자 가져오기 작업(User Import Job) 히스토리 로드중 ...",
+      "loadingUserImportJobList": "사용자 가져오기 작업(User Import Job) 목록 로드중 ...",
+      "newScheduledImport": "새로 예약된 가져오기",
+      "scheduler": {
+        "after": "다음",
+        "enabled": "활성화 됨",
+        "ends": "끝",
+        "execute": "실행 :",
+        "executions": "실행",
+        "never": "결코 아닌 (Never)",
+        "on": "~에",
+        "preserveAssignedRoles": "할당된 역할 유지",
+        "repeat": "반복 :",
+        "schedule": "스케쥴",
+        "startOn": "시작 :"
+      },
+      "searchGroup": "그룹 검색:",
+      "searchGroupPlaceholder": "검색...",
+      "tabs": {
+        "jobHistory": "작업 히스토리",
+        "roleMapping": "역할 매핑",
+        "scheduler": "스케줄러"
+      },
+      "title": "LDAP/Active Directory에서 사용자 가져 오기",
+      "userImportJob": "사용자 가져오기 작업",
+      "wizard": {
+        "buttons": {
+          "next": "다음",
+          "prev": "이전",
+          "startImport": "가져오기 시작"
+        },
+        "editRoles": {
+          "title": "역할 수정"
+        },
+        "finalPage": {
+          "message": "사용자 가져오기가 완료되었습니다."
+        },
+        "help": {
+          "adLdapUsername": "AD/LDAP 사용자 이름",
+          "adLdapUsernameText": "이 필드는 LDAP/AD <b>Display Name</b> 필드에서 매핑됩니다.",
+          "atlasLogin": "Atlas 로그인",
+          "atlasLoginText": "이 필드는 LDAP / AD <b>login</b> 필드에서 직접 매핑되며 Atlas의 로그인으로 사용됩니다."
+        },
+        "import": {
+          "buttons": {
+            "checkAll": "모두 확인",
+            "uncheckAll": "모두 미선택"
+          },
+          "header": "가져올 사용자를 확인하십시오."
+        },
+        "roleMapping": {
+          "header": "필요한 경우 Atlas 역할에 대한 LDAP/Active Directory 그룹 매핑을 제공하십시오."
+        },
+        "selectSource": {
+          "buttons": {
+            "details": "세부사항",
+            "testConnection": "연결 테스트"
+          },
+          "header": "사용자를 가져올 제공자를 선택하십시오.",
+          "source": {
+            "activeDirectory": "Active Directory",
+            "ldap": "LDAP 서버"
+          }
+        },
+        "title": "사용자 가져 오기"
+      }
+    },
+    "viewEdit": {
+      "bigQuery": {
+        "button": {
+          "remove": {
+            "label": "삭제"
+          }
+        },
+        "password": {
+          "label": "서비스 계정 키 파일 (OAuthPvtKeyPath)"
+        }
+      },
+      "connectionString": {
+        "label": "연결 문자열 :",
+        "placeholder": "연결 문자열",
+        "title": "연결 문자열"
+      },
+      "dialect": {
+        "label": "소스 dialect:",
+        "options": {
+          "bigquery": "Google BigQuery",
+          "hive": "Hive LLAP",
+          "impala": "Impala",
+          "netezza": "IBM Netezza",
+          "oracle": "Oracle",
+          "pdw": "Microsoft PDW",
+          "postgresql": "PostgreSQL",
+          "redshift": "Amazon Redshift",
+          "sqlserver": "SQL server"
+        },
+        "title": "소스 dialect"
+      },
+      "krb": {
+        "adminServer": {
+          "label": "KrbAdminServer:",
+          "placeholder": "KrbAdminServer",
+          "title": "KrbAdminServer"
+        },
+        "authenticationMethod": {
+          "label": "Kerberos 인증 방법 :"
+        },
+        "buttons": {
+          "remove": "삭제:"
+        },
+        "hostFqdn": {
+          "label": "KrbHostFQDN:",
+          "placeholder": "KrbHostFQDN",
+          "title": "KrbHostFQDN이 jdbc 링크에서 parsed 되었습니다."
+        },
+        "keytab": {
+          "label": "키탭(Keytab)"
+        },
+        "password": {
+          "label": "비밀번호:",
+          "placeholder": "비밀번호",
+          "title": "비밀번호"
+        },
+        "realm": {
+          "label": "KrbRealm:",
+          "placeholder": "KrbAdminServer",
+          "title": "KrbRealm이 jdbc 링크에서 parsed 되었습니다."
+        },
+        "sourceDaimons": {
+          "label": "소스 다이몬(daimons)"
+        },
+        "userPassword": {
+          "label": "사용자 이름과 비밀번호"
+        },
+        "validation": {
+          "host": "&quot;KrbHostFQDN&quot;이 비어있습니다. 다음 형식으로 지정하십시오: &quot;KrbRealm=[value];&quot;",
+          "realm": "&quot;KrbRealm&quot;이 비어있습니다. 다음 형식으로 지정하십시오: &quot;KrbRealm=[value];&quot;"
+        }
+      },
+      "password": {
+        "label": "비밀번호:",
+        "placeholder": "비밀번호",
+        "title": "비밀번호"
+      },
+      "source": {
+        "alerts": {
+          "save": {
+            "error": "소스가 저장되지 않았습니다. <%= message%>",
+            "errorMessage": "이 문제를 해결하려면 관리자에게 문의하십시오."
+          },
+          "delete": {
+            "hasSelectedPriotirizableDaimons": "이 소스의 일부 다이몬(diamons)은 가장 높은 우선 순위를 부여 받았으며 애플리케이션에서 사용 중입니다. 소스를 삭제하려면 새로운 최우선 순위 다이몬(daimons)을 선택하십시오."
+          },
+          "sourceSelectedError": "id = <%=selectedSourceId%> 인 소스를 가져 오는 동안 오류가 발생했습니다."
+        },
+        "confirms": {
+          "close": "소스 변경 사항은 저장되지 않습니다. 계속 하시겠습니까?",
+          "delete": "소스를 삭제 하시겠습니까? 경고 : 삭제시 다시 되돌릴 수 없습니다!"
+        },
+        "label": "소스 키:",
+        "new": {
+          "placeholder": "새로운 소스"
+        },
+        "placeholder": "소스 키",
+        "title": "소스 <%=name%>",
+        "validation": {
+          "empty": "소스 이름이 비어 있습니다."
+        }
+      },
+      "username": {
+        "label": "사용자 이름:",
+        "placeholder": "사용자 이름",
+        "title": "사용자 이름",
+        "validation": {
+          "empty": "&quot;Username&quot;이 비어 있습니다."
+        }
+      }
+    }
+  },
+  "feedback": {
+    "pleaseContact": "Atlas 애플리케이션에 대한 액세스 또는 질문은 다음으로 문의하십시오.",
+    "title": "피드백"
+  },
+  "licenseAgreement": {
+    "accept": "동의하기",
+    "description": "SNOMED International SNOMED CT 브라우저 및 HemOnc를 사용하려면 다음 라이센스 계약에 동의하십시오.",
+    "reject": "거부",
+    "rejectWarning": "이 이용 약관에 동의하지 않으면 Atlas를 사용할 수 없습니다.",
+    "title": "라이센스 계약"
+  },
+  "cohortDefinitions": {
+    "closeYourCurrentCohort": "새로운 코호트 정의을 만들기 전에 현재 코호트 정의를 닫으십시오.",
+    "cohort": {
+      "modals": {
+        "analysisTypes": {
+          "bold_1": "빠른 분석",
+          "bold_2": "헬스케어 활용",
+          "bold_3": "전체 분석",
+          "text_1": "이 코호트의 출생 연도, 인구 통계, 약물 기간(drug eras) 및 진단 기간(condition eras)에 대한 빠른 개요를 제공하기 위해 최소한의 분석을 실행합니다. (예상시간: 10분)",
+          "text_2": "분석을 실행하여 노출, 방문 및 약물 사용 보고서를 제공합니다. (예상 시간: 10-40분)",
+          "text_3": "전체 특성(Characterization) 분석 보고서 세트를 실행합니다. (예상 : 60 분)",
+          "title": "분석 타입"
+        },
+        "cohortDefinition": {
+          "text_1": "코호트는 일정 기간 동안 하나 이상의 포함 기준을 충족하는 개인 집합으로 정의됩니다. 한 사람이 겹치지 않는 시간 간격 동안 한 코호트에 진입할 수 있는 기준 조건을 여러 번 만족할 수 있습니다. 코호트는 코호트 진입 기준 및 코호트 종료 기준을 지정하여 ATLAS에서 구성됩니다. 코호트 입력 기준은 하나 이상의 초기 이벤트를 선택하여 코호트 입력의 시작 날짜를 결정하고 선택적으로 자격이있는 이벤트를 필터링하는 추가 포함 기준을 지정하는 것을 포함합니다. 코호트 종료 기준이 각 코호트 항목 기록에 적용되어 개인의 에피소드가 더 이상 코호트에 적합하지 않은 경우 종료 날짜를 결정합니다.",
+          "title": "코호트 정의"
+        },
+        "linkToCohortDefinition": {
+          "text_1": "이 링크는 R과 같은 다른 도구의 Web API에서 직접 이 코호트 정의에 액세스하고 ATLAS 인스턴스(instances)를 통해 가져오는(importing) 데 사용할 수 있습니다.",
+          "title": "코호트 정의 링크"
+        },
+        "configureReportsToRun": {
+          "title": "실행할 레포트에 대한 환경 설정",
+          "run": "실행하기"
+        }
+      }
+    },
+    "cohortDefinitionManager": {
+      "closeCohortTitle": "코호트 정의 닫기",
+      "generationExitMessage": "실행 종료 메시지",
+      "retrievingCohortDefinitions": "코호트 정의 검색",
+      "cohortDefinitionManagerText_1": "코호트 생성되지 않음",
+      "cohortDefinitionManagerText_10": "Whoops",
+      "cohortDefinitionManagerText_11": "보고 시스템에 오류가 발생했습니다. ATLAS 관리 팀에 다음 세부 정보를 제공하거나 문제를 제출하십시오.",
+      "cohortDefinitionManagerText_12": "보고 생성 작업 실패",
+      "cohortDefinitionManagerText_13": "잠시 기다려 주세요.",
+      "cohortDefinitionManagerText_14": "보고서 상태가 로드될 때까지 기다리십시오.",
+      "cohortDefinitionManagerText_2": "사용자가 선택한 데이터 소스에 이 코호트가 생성되지 않았습니다. 레포트에 액세스하기 전에 생성 탭으로 돌아가 코호트를 생성하시기 바랍니다.",
+      "cohortDefinitionManagerText_3": "보고서가 생성되지 않음",
+      "cohortDefinitionManagerText_4": "이 코호트에 대한 보고서가 아직 생성되지 않았습니다. 보고서를 생성하려면 아래 생성(generate) 버튼을 클릭하십시오.",
+      "cohortDefinitionManagerText_5": "선택",
+      "cohortDefinitionManagerText_6": "레포트 조건 선택 패널에서 레포트 선택 사항을 확인하시기 바랍니다.",
+      "cohortDefinitionManagerText_7": "보고서 생성",
+      "cohortDefinitionManagerText_8": "사용할 수 없는 레포트",
+      "cohortDefinitionManagerText_9": "요청하신 레포트를 사용할 수 없습니다. 생성 버튼을 클릭하여 데이터 소소에 대한 코호트 레포트를 생성하십시오.",
+      "confirms": {
+        "close": "코호트 변경 사항은 저장되지 않습니다. 계속 하시겠습니까?",
+        "delete": "코호트 정의를 삭제 하시겠습니까? 경고 : 삭제시 다시 되돌릴 수 없습니다!",
+        "generateAnalyses": "이 작업은 <%=descr%>을 실행하며 약 <%=duration%>이 소요될 수 있습니다. 확실하십니까?",
+        "save": "코호트 정의는 일부 분석에서 참조되기 때문에 삭제할 수 없습니다.",
+        "saveAlert": "이 이름을 가진 코호트 정의가 이미 존재합니다. 다른 이름을 선택하십시오."
+      },
+      "createCopyCohortTitle": "이 코호트 정의의 사본 만들기",
+      "failedWithoutAnyMessage": "메시지없이 실패",
+      "generateAllAnalyses": {
+        "descr": "모든 분석",
+        "duration": "60-90 분"
+      },
+      "generateHealthcareAnalyses": {
+        "descr": "비용 및 활용 분석",
+        "duration": "10-45 분"
+      },
+      "generateQuickAnalysis": {
+        "descr": "코호트에 대한 빠른 개요를 제공하도록 설정된 최소 분석 셋",
+        "duration": "10 분"
+      },
+      "getLinkCohortTitle": "이 코호트 정의에 대한 링크 가져 오기",
+      "heraclesHeel": "헤라클레스 힐 (Heracles Heel)",
+      "panels": {
+        "appendix_1": "부록 1 : 컨셉 세트 정의",
+        "availableCDMSources": "사용 가능한 데이터 소스",
+        "fullAnalysis": "전체 분석",
+        "generate": "생성",
+        "generated": "생성 시작 시간",
+        "generationDuration": "생성 작업 시간",
+        "generationStatus": "생성 상태",
+        "graphicalView": "그래픽 보기",
+        "hideReports": "보고서 숨기기",
+        "importConceptIdentifiers": "컨셉 식별자(Concept Identifiers) 가져 오기",
+        "importConceptSetExpression": "컨셉 세트 불러오기",
+        "importSourceCodes": "소스 코드 가져 오기",
+        "json": "JSON",
+        "people": "환자 수",
+        "quickAnalysis": "빠른 분석",
+        "records": "기록 수",
+        "reload": "새로 고침",
+        "reportSelections": "레포트 조건 선택",
+        "sourceName": "데이터 소스 이름",
+        "sql": "SQL",
+        "textView": "텍스트 보기",
+        "utilization": "이용",
+        "viewReports": "레포트 보기"
+      },
+      "samples": {
+        "sampleSelections": "Sample Selections",
+        "selectASource": "소스를 선택하십시오",
+        "addNewSample": "Add new sample",
+        "cohortNotGeneratedNote": "This cohort has not been generated in the data source you selected. Please return to the generation tab to generate the cohort before accessing samples.",
+        "cohortShouldBeGenerated":  "Cohort should be generated before creating samples",
+        "errorFetchingList": "Error when fetching sample list, please try again later",
+        "errorDeleting": "Error when deleting sample, please try again later",
+        "errorFetchingData": "Error when fetching sample data, please try again later",
+        "errorRefreshing": "Error when refreshing sample, please try again later",
+        "modal": {
+          "title": "Create new sample",
+          "mandatoryFields": "* Mandatory fields",
+          "sampleName": "* Sample name",
+          "sampleNamePlaceholder": "Enter sample name",
+          "sampleNameEmpty": "Sample name cannot be empty",
+          "numberOfPatients": "* Number of patients",
+          "numberOfPatientsPlaceholder": "Enter a number",
+          "numberOfPatientsEmpty": "Number of patients must be a positive integer",
+          "selectAgeCriteria": "Select age criteria",
+          "lessThan": "Less than",
+          "lessOrEqualTo": "Less or equal to",
+          "equalTo": "Equal to",
+          "greaterThan": "Greater than",
+          "greaterOrEqualTo": "Greater or equal to",
+          "between": "Between",
+          "notBetween": "Not between",
+          "agePlaceholder": "Enter a number",
+          "ageError": "Age must be a non-negative integer",
+          "ageError2": "First and second age must be non-negative integers and not equal",
+          "indicateGender": "Indicate gender (leave empty to select all gender)",
+          "male": "Male",
+          "female": "Female",
+          "other": "Other",
+          "submit": "Submit",
+          "creatingSample": "Creating sample..."
+        }
+      },
+      "saveCohortTitle": "코호트 정의 저장",
+      "selectReport": "레포트 선택",
+      "tabs": {
+        "conceptSets": "컨셉 세트",
+        "definition": "정의",
+        "explore": "탐색",
+        "export": "내보내기",
+        "generation": "생성",
+        "samples": "Samples",
+        "messages": "메시지",
+        "reporting": "레포팅"
+      }
+    },
+    "cohortId": "코호트 번호 #<%=id%>",
+    "cohortreports": {
+      "inclusionReport": "포함 보고서",
+      "inclusionReportFor": " ",
+      "inclusionReportFor1": "에 대한 포함 조건 레포트",
+      "tabs": {
+        "byEvents": "이벤트에 따라",
+        "byPerson": "사람에 따라"
+      }
+    },
+    "costUtilization": {
+      "visualization": "시각화",
+      "rawData": "원본 데이터",
+      "allowedCharged": "허용/유료(Charged)",
+      "allowedCost": "허용 비용(Allowed cost)",
+      "allowedCostPmpm": "허용 비용(Allowed cost) pmpm",
+      "averageLengthOfStay": "평균 체류 기간 (일)",
+      "chargedCost": "청구된 비용(Charged cost)",
+      "chargedCostPMPM": "청구된 비용(Charged cost) PMPM",
+      "costUtilizationText_1": "CSV로 저장",
+      "displayCharts": "표시된 차트 :",
+      "drugUtilDetailedText_1": "약물 요약으로 돌아가기",
+      "drugUtilSummaryText_1": "자세한 통계를 보려면 약물을 클릭하십시오.",
+      "drugUtilText_1": "모든 약물에 대한 요약",
+      "drugUtilText_2": "자세한 약물 보고서",
+      "exposure1kYear": "노출/ p 1k /년",
+      "paidAllowed": "유료(paid)/허용",
+      "paidCost": "지불된 비용(Paid cost)",
+      "paidCostPMPM": "지불된 비용(Paid cost) PMPM",
+      "periodStart": "기간 시작",
+      "personCount": "사람 수",
+      "personExposureText_1": "사람 수",
+      "personExposureText_2": "수년간 총 노출",
+      "personExposureText_3": "평균 노출 연도 (per 1)",
+      "personExposureText_4": "자세한 통계를 사용할 수 없습니다.",
+      "personPercent": "사람 퍼센트",
+      "persons": "사람",
+      "recordsPer1000": "1,000 당 기록 (Records per 1,000)",
+      "recordsPer1000PerYear": "연간 1,000 당 기록 (Records per 1,000 Per Year)",
+      "recordsPer1000WithRecord": "기록이 있는 1,000 당 기록 (Records per 1,000 with record)",
+      "reportManager": {
+        "reportManagerText_1": "코호트 보고",
+        "reportManagerText_10": "인종",
+        "reportManagerText_11": "민족",
+        "reportManagerText_12": "보고되지 않음",
+        "reportManagerText_13": "이 보고서는 구현되지 않았습니다.",
+        "reportManagerText_14": "월별 유병율",
+        "reportManagerText_15": "코호트 시작",
+        "reportManagerText_16": "코호트의 시작부터 끝까지",
+        "reportManagerText_17": "코호트 시작부터 코호트 종료까지 기간별 사람 수",
+        "reportManagerText_18": "코호트 시작 연도별 코호트 시작시 연령 분포",
+        "reportManagerText_19": "나이 분포",
+        "reportManagerText_2": "코호트 정의 선택",
+        "reportManagerText_20": "코호트 시작시 성별에 따른 나이 분포",
+        "reportManagerText_21": "인덱스 날짜에서의 나이",
+        "reportManagerText_22": "Tornado",
+        "reportManagerText_23": "샘플 프로필",
+        "reportManagerText_24": "계층(Strata)에 대한 샘플 프로필을 보기 위해 Tornado Plot에서 Bar를 선택",
+        "reportManagerText_25": "진단 출현율 (condition prevalence)",
+        "reportManagerText_26": "테이블",
+        "reportManagerText_27": "트리 맵",
+        "reportManagerText_28": "상자 크기 : 출현율(Prevalence), 색상 : 상대 위험 로그 (빨간색에서 녹색 = 음에서 양으로), Ctrl- 클릭을 사용하여 확대/축소, Alt- 클릭을 사용하여 확대/축소 재설정",
+        "reportManagerText_29": "상세 보고서",
+        "reportManagerText_3": "데이터 완결성",
+        "reportManagerText_30": "인덱스 날짜 별 약물",
+        "reportManagerText_31": "첫 관찰기록 시 나이",
+        "reportManagerText_32": "코호트내 첫 관찰기록시 연령 분포.",
+        "reportManagerText_33": "성별에 따른 나이",
+        "reportManagerText_34": "성별로 층화된 코호트에서 첫 관찰기록 시 연령 분포.",
+        "reportManagerText_35": "관찰기록 길이",
+        "reportManagerText_36": "코호트내 총 관찰기록 시간 분포",
+        "reportManagerText_37": "성별에 따른 관찰기록 길이",
+        "reportManagerText_38": "코호트내 성별에 따른 총 관찰기록 시간 분포.",
+        "reportManagerText_39": "연령 십분 위별 관찰기록 길이",
+        "reportManagerText_4": "케어 사이트",
+        "reportManagerText_40": "한사람당 관찰기록 기간",
+        "reportManagerText_41": "월별 연속적으로 관찰기록된 사람",
+        "reportManagerText_42": "진단 기간 (condition era) 출현율(Prevalence)",
+        "reportManagerText_43": "월별 진단 기간 (condition era) 출현율(Prevalence)",
+        "reportManagerText_44": "최초 진단시 연령",
+        "reportManagerText_45": "진단 기간 (condition era)의 길이",
+        "reportManagerText_46": "수술 및 처치 (procedure) 출현율(Prevalence)",
+        "reportManagerText_47": "진단(condition) 출현율(Prevalence)",
+        "reportManagerText_48": "월별 진단(condition) 출현율(Prevalence)",
+        "reportManagerText_49": "진단(condition) 타입",
+        "reportManagerText_5": "날짜별 엔트로피",
+        "reportManagerText_50": "약물 기간 (Drug Era) 출현율(Prevalence)",
+        "reportManagerText_51": "월별 약물 기간 (Drug Era) 출현율(Prevalence)",
+        "reportManagerText_52": "성별에 따른 최초 노출 연령",
+        "reportManagerText_53": "기간 분포의 길이",
+        "reportManagerText_54": "약물 노출 (Drug exposure)",
+        "reportManagerText_55": "약물 노출 출현율(Prevalence)",
+        "reportManagerText_56": "월별 약물 노출 출현율(Prevalence)",
+        "reportManagerText_57": "최초 노출 나이",
+        "reportManagerText_58": "투약 일수 분포",
+        "reportManagerText_59": "수량 분포",
+        "reportManagerText_6": "생년",
+        "reportManagerText_60": "재처방 분포",
+        "reportManagerText_61": "타입별 약물",
+        "reportManagerText_62": "수술 및 처치 (procedure) 출현율(Prevalence)",
+        "reportManagerText_63": "월별 수술 및 처치 (procedure) 출현율(Prevalence)",
+        "reportManagerText_64": "타입별 수술 및 처치 (procedure)",
+        "reportManagerText_65": "첫 발생시 연령",
+        "reportManagerText_66": "연령, 성별, 년도별 사망률",
+        "reportManagerText_67": "월별 사망 출현율(Prevalence)",
+        "reportManagerText_68": "사망 세부 정보",
+        "reportManagerText_69": "사망시 연령",
+        "reportManagerText_7": "출생 연도에 따른 코호트 내 인구 수",
+        "reportManagerText_70": "사망 타입",
+        "reportManagerText_71": "코호트를 선택하려면 여기를 클릭하십시오",
+        "reportManagerText_8": "인구 통계 (Demographics)",
+        "reportManagerText_9": "성별"
+      },
+      "saveAsCSV": "CSV로 저장",
+      "totalExposure": "수년간 총 노출",
+      "totalLengthOfStay": "총 체류 기간 (일)",
+      "totalRecords": "총 레코드"
+    },
+    "filters": {
+      "visit": "방문",
+      "visitType": "방문 타입"
+    },
+    "newDefinition": "새 코호트",
+    "newDefinitionTitle": "새로운 코호트 정의 만들기",
+    "noConceptSets": "내보낼 컨셉 세트 없음",
+    "runDiagnostics": "진단 실행",
+    "saveDefinitionBefore": "내보내기 전에 저장해야 합니다",
+    "title": "코호트 정의"
+  },
+  "const": {
+    "disabledReason": {
+      "dirty": "생성전에 변경사항 저장",
+      "accessDenied": "접근 불가",
+      "invalidTar": "유효하지 않은 TAR(Time At Risk)",
+      "invalidDesign": "설계가 유효하지 않습니다",
+      "engineNotAvalable": "실행 엔진을 사용할 수 없습니다.",
+      "emptyCohorts": "코호트가 없습니다.",
+      "emptyInitionEvent": "초기 이벤트(initial event)가 설정되지 않았습니다"
+    },
+    "eventsList": {
+      "addConditionEra": {
+        "title": "Condition Era 추가 ",
+        "desc_initial": "특정 진단 기간을 가진 환자를 찾습니다.",
+        "desc_censoring": "diagnosis era를 기반으로 코호트를 종료합니다.",
+        "desc_group": "특정 Condition Era에 따라 환자를 찾습니다."
+      },
+      "addDemographic": {
+        "title": "Demographic 추가 ",
+        "desc_group": "인구 통계학적 기준을 기반으로 이벤트를 필터링합니다."
+      },
+      "addConditionOccurrence": {
+        "title": "Condition Occurrence 추가",
+        "desc_initial": "특정 진단을 가진 환자를 찾습니다.",
+        "desc_censoring": "diagnoses을 기반으로  코호트를 종료합니다.",
+        "desc_group": "특정 진단을 가진 환자를 찾습니다."
+      },
+      "addDeath": {
+        "title": "Death 추가",
+        "desc_initial": "Death를 기반으로 환자를 찾습니다.",
+        "desc_censoring": "Death에 따라 코호트를 종료합니다.",
+        "desc_group": "Death를 기반으로 환자를 찾습니다."
+      },
+      "addDeviceExposure": {
+        "title": "Device Exposure 추가",
+        "desc_initial": "Device exposure에 따라 환자를 찾습니다.",
+        "desc_censoring": "device exposure에 따라 코호트를 종료합니다.",
+        "desc_group": "Device exposure에 따라 환자를 찾습니다."
+      },
+      "addDoseEra": {
+        "title": "Dose Era 추가",
+        "desc_initial": "Dose Era에 따라 환자를 찾습니다.",
+        "desc_censoring": "도즈 기간 (Dose Era)을 기반으로 코호트를 나가게 합니다.",
+        "desc_group": "Dose Era에 따라 환자를 찾습니다."
+      },
+      "addDrugEra": {
+        "title": "Drug Era 추가",
+        "desc_initial": "시간이 지남에 따라 약물에 노출된  환자를 찾습니다.",
+        "desc_censoring": "시간에 따른 약물 복용을 기반으로 코호트를 나가게 합니다.",
+        "desc_group": "Drug Era에 따라 환자를 찾습니다."
+      },
+      "addDrugExposure": {
+        "title": "Drug Exposure 추가",
+        "desc_initial": "특정 Drug나 약 종류에 노출된 환자를 찾습니다.",
+        "desc_censoring": "특정 약물 또는 약물 클래스에 대한 노출을 기반으로 코호트를 나가게 합니다.",
+        "desc_group": "특정 Drug나 약 종류에 노출된 환자를 찾습니다."
+      },
+      "addMeasurement": {
+        "title": "Measurement 추가",
+        "desc_initial": "Measurement을 기반으로 환자를 찾습니다..",
+        "desc_censoring": "검사를 기반으로 코호트를 나가게 합니다.",
+        "desc_group": "Measurements을 기반으로 환자를 찾습니다."
+      },
+      "addObservation": {
+        "title": "Observation 추가",
+        "desc_initial": "Lab tests 또는 다른 observation을 기반으로 환자를 찾습니다.",
+        "desc_censoring": "혈액검사 또는 다른 관찰기록을 기반으로 코호트를 나가게 합니다.",
+        "desc_group": "Lab tests 또는 다른 observation을 기반으로 환자를 찾습니다."
+      },
+      "addObservationPeriod": {
+        "title": "Observation Period 추가",
+        "desc_initial": "Observation Period를 기반으로 환자를 찾습니다.",
+        "desc_group": "Observation Period를 기반으로 환자를 찾습니다."
+      },
+      "addPayerPlanPeriod": {
+        "title": "Payer Plan Period 추가",
+        "desc_initial": "Payer Plan Period에 따라 환자를 찾습니다.",
+        "desc_censoring": "Payer Plan Period에 따라 환자를 찾습니다.",
+        "desc_group": "Payer Plan Period에 따라 환자를 찾습니다."
+      },
+      "addProcedureOccurrence": {
+        "title": "Procedure  Occurrence 추가",
+        "desc_initial": "특정 procedure를 경험한 환자를 찾습니다.",
+        "desc_censoring": "수술 및 처치를 기반으로 코호트를 나가게 합니다.",
+        "desc_group": "특정 procedure를 경험한 환자를 찾습니다."
+      },
+      "addSpecimen": {
+        "title": "Specimen 추가",
+        "desc_initial": "Specimen을 기반으로 환자를 찾습니다.",
+        "desc_censoring": "Specimen을 기반으로 환자를 찾습니다.",
+        "desc_group": "Specimen을 기반으로 환자를 찾습니다."
+      },
+      "addLocationRegion": {
+        "title": "Location Region 추가",
+        "desc_group": "지리적 영역 내에서 환자를 찾습니다."
+      },
+      "addGroup": {
+        "title": "그룹 추가",
+        "desc_group": "그리고 / 또는'의 관계를 사용하여 기준들을 결합하기 위해 그룹 추가"
+      },
+      "addVisit": {
+        "title": "Visit 추가",
+        "desc_initial": "Visit 정보를 기반으로 환자를 찾습니다.",
+        "desc_censoring": "방문 기록을 기반으로 코호트를 나가게 합니다.",
+        "desc_group": "Visit 정보를 기반으로 환자를 찾습니다.",
+        "title_occurrence": "Visit 추가",
+        "desc_occurrence": "진단이 발생한 방문에 따라 Condition occurrence를 필터링합니다.",
+        "title_deviceexposure": "Visit 기준 추가",
+        "desc_deviceexposure": "의료기기 노출이 발생된 방문을 기반으로 Device Exposure을 필터링합니다.",
+        "title_drugexposure": "Visit 기준 추가",
+        "desc_drugexposure": "약물 노출이 발생한 방문에 따라 Drug Exposure를 필터링합니다.",
+        "title_measurement": "Visit 조건 추가",
+        "desc_measurement": "발생 방문일에 따라 Measurement를 필터링합니다.",
+        "title_observation": "Visit 조건 추가",
+        "desc_observation": "관찰이 발생한 방문을 기반으로 Observation을 필터링합니다.",
+        "title_procedureoccurrence": "Visit 조건 추가",
+        "desc_procedureoccurrence": "Procedure  발생 방문을 기반으로 Procedure Occurrence를 필터링합니다."
+      },
+      "addFirstDiagnosis": {
+        "title_era": "최초 진단 기준 추가",
+        "desc_era": "Condition Era를 환자의 전체 기록중 가장 처음 받은 진단으로 제한합니다.",
+        "title_occurrence": "First Diagnosis 추가",
+        "desc_occurrence": "새로운 진단만으로 Condition occurrences를 제한합니다.",
+        "title_deviceexposure": "First Exposure 기준 추가",
+        "desc_deviceexposure": "Device Exposure을 기록내 최초 exposure로 제한합니다.",
+        "title_dose": "First Exposure 조건 추가",
+        "desc_dose": "Dose Era를 최초 exposure로 제한합니다",
+        "title_drug": "First Exposure 기준 추가",
+        "desc_drug": "Drug Era를 기록 내 첫 약물 노출로 제한합니다.",
+        "title_drugexposure": "First Exposure 기준 추가",
+        "desc_drugexposure": "Drug Exposure을 기록 내 첫 약물 노출로  제한합니다.",
+        "title_measurement": "첫 측정(검사) 기준 추가",
+        "desc_measurement": "Measure을 기록 내 첫 발생 건으로 제한합니다.",
+        "title_observation": "First Observation 조건 추가",
+        "desc_observation": "Observation을 첫 발생으로 제한합니다.",
+        "title_observationperiod": "First Observation Period 조건",
+        "desc_observationperiod": "Observation Period을 기록 내 첫 기간으로 제한합니다.",
+        "title_payerplan": "First Payer Plan Period 조건",
+        "desc_payerplan": "Payer Plan Period을 기록 내 첫 기간으로 제한합니다.",
+        "title_procedureoccurrence": "First Procedure 조건 추가",
+        "desc_procedureoccurrence": "Procedure Occurrence를 기록 내 첫 검사로 제한합니다.",
+        "title_specimen": "First Occurrence 기준 추가",
+        "desc_specimen": "Specimen을 기록 내 첫 발생으로 제한합니다.",
+        "title_visit": "First Visit 조건 추가",
+        "desc_visit": "Visit occurrence를 첫 방문으로 제한합니다."
+      },
+      "addAgeAtStart": {
+        "title_era": "Era start 당시 Age 기준 추가",
+        "desc_era": "Era start 당시의 나이를 기준으로 Condition Era를 필터링합니다.",
+        "title_dose": "Age at Era Start 조건 추가",
+        "desc_dose": "Era 시작 연령에 따라 Dose Era를 필터링합니다.",
+        "title_drug": "Era start 당시 Age 기준 추가",
+        "desc_drug": "기간(era)이 시작되는 연령을 기준으로 약물 기간 (Drug Era)을 필터링 합니다.",
+        "title_observationperiod": "Age at Start 조건",
+        "desc_observationperiod": "관찰기간이 시작되는 연령에 따라 Period를 필터링합니다.",
+        "title_payerplan": "Age at Start 조건 추가",
+        "desc_payerplan": "Payer Plan Period가 시작되는 연령에 따라 Period를 필터링합니다."
+      },
+      "addAgeAtEnd": {
+        "title_era": "Era end 당시 Age 기준 추가",
+        "desc_era": "Era end 당시의 나이를 기준으로 Condition Era를 필터링합니다.",
+        "title_dose": "Age at Era End 조건 추가",
+        "desc_dose": "Era 종료 연령에 따라 Dose Era를 필터링합니다.",
+        "title_drug": "Age at Era End 기준 추가",
+        "desc_drug": "Era 종료 연령에 따라 Drug Era를 필터링합니다.",
+        "title_observationperiod": "Age End 조건 추가",
+        "desc_observationperiod": "관찰기간이 종료되는 연령에 따라 Period를 필터링합니다.",
+        "title_payerplan": "Age at End 조건 추가",
+        "desc_payerplan": "Payer Plan Period가 종료되는 연령에 따라 Period를 필터링합니다."
+      },
+      "addGender": {
+        "title_era": "Gender 기준 추가",
+        "desc_era": "성별을 기반으로 Condition Era를 필터링합니다.",
+        "title_occurrence": "Gender 추가",
+        "desc_occurrence": "성별에 따라 Condition occurrence를 필터링합니다.",
+        "title_death": "Gender 기준 추가",
+        "desc_death": "성별을 기반으로 사망을 필터링합니다.",
+        "title_deviceexposure": "Gender 기준 추가",
+        "desc_deviceexposure": "성별을 기반으로 Device Exposure을 필터링합니다.",
+        "title_dose": "Gender 기준 추가",
+        "desc_dose": "성별에 따라 Dose Era를 필터링합니다.",
+        "title_drug": "Gender 기준 추가",
+        "desc_drug": "성별을 기반으로 Drug Era를 필터링합니다.",
+        "title_drugexposure": "Gender 기준 추가",
+        "desc_drugexposure": "Drug Exposure를 필터링합니다.",
+        "title_measurement": "Gender 조건 추가",
+        "desc_measurement": "성별 조건에 따라 Measurement를 필터링합니다.",
+        "title_observation": "Gender 조건 추가",
+        "desc_observation": "성별에 따라 Observation을 필터링합니다.",
+        "title_payerplan": "Gender 조건 추가",
+        "desc_payerplan": "Gender을 기반으로 에 따라 Payer Plan Period를 필터링합니다.",
+        "title_procedureoccurrence": "Gender 조건 추가",
+        "desc_procedureoccurrence": "Gender을 기반으로 Procedure Occurrence를 필터링합니다.",
+        "title_specimen": "Gender 조건 추가",
+        "desc_specimen": "Gender을 기반으로  Specimen을 필터링합니다.",
+        "title_visit": "Gender 조건 추가",
+        "desc_visit": "성별에 따라 Visit occurrence를 필터링합니다.",
+        "title_demographic": "Gender 기준 추가",
+        "desc_demographic": "성별을 기반으로 이벤트를 필터링합니다."
+      },
+      "addStartDate": {
+        "title_era": "Start Date 기준 추가",
+        "desc_era": "Era Start Date에 따라 Condition Era를 필터링합니다.",
+        "title_occurrence": "Condition Start Date 추가",
+        "desc_occurrence": "Condition 시작일에 따라 Condition occurrence를 필터링합니다.",
+        "title_deviceexposure": "Start Date 기준 추가",
+        "desc_deviceexposure": "노출 시작 날짜로 디바이스 노출 (Device exposure)을 필터링합니다.",
+        "title_dose": "Era Start Date 조건 추가",
+        "desc_dose": "Era 시작일에 따라 Dose Era를 필터링합니다.",
+        "title_drug": "Era Start 기준 추가",
+        "desc_drug": "Era 시작일에 따라 Drug Era를 필터링합니다.",
+        "title_drugexposure": "Start Date 기준 추가",
+        "desc_drugexposure": "약물노출 시작일에 따라 Drug Exposure를 필터링합니다.",
+        "title_observationperiod": "Period Start Date 조건 추가",
+        "desc_observationperiod": "시작일에 따라 Observation Period를 필터링합니다.",
+        "title_payerplan": "Period Start Date조건 추가",
+        "desc_payerplan": "시작일에 따라 Payer Plan Period를 필터링합니다.",
+        "title_visit": "Start Date 기준 추가",
+        "desc_visit": "진단받은 시작일에 따라 Visit occurrence를 필터링합니다.",
+        "title_demographic": "Event Start Date 기준 추가",
+        "desc_demographic": "시작일에 따라 이벤트를 필터링합니다."
+      },
+      "addEndDate": {
+        "title_era": "End Date 기준 추가",
+        "desc_era": "Era End Date에 따라 Condition Era를 필터링합니다.",
+        "title_occurrence": "Condition End Date 추가",
+        "desc_occurrence": "Condition 종료일에 따라 Condition occurrence를 필터링합니다.",
+        "title_deviceexposure": "End Date 기준 추가",
+        "desc_deviceexposure": "노출 종료 날짜를 기준으로 디바이스 노출 (Device exposure)을 필터링합니다.",
+        "title_dose": "Era End Date 조건 추가",
+        "desc_dose": "Era 종료일에 따라 Dose Era를 필터링합니다",
+        "title_drug": "Era End 기준 추가",
+        "desc_drug": "Era 종료일에 따라 Drug Era를 필터링합니다.",
+        "title_drugexposure": "End Date 기준 추가",
+        "desc_drugexposure": "약물 노출 종료 날짜를 기준으로 약물 노출을 필터링합니다.",
+        "title_observationperiod": "Period End Date 조건 추가",
+        "desc_observationperiod": "종료일에 따라 Observation Period를 필터링합니다.",
+        "title_payerplan": "Period End Date 조건 추가",
+        "desc_payerplan": "종료일에 따라 Payer Plan Period를 필터링합니다.",
+        "title_visit": "End Date 기준 추가",
+        "desc_visit": "진단받은 종료일에 따라 Visit occurrence를 필터링합니다.",
+        "title_demographic": "Event End 기준 추가",
+        "desc_demographic": "종료일에 따라 이벤트를 필터링합니다."
+      },
+      "addConditonCount": {
+        "title_era": "Era Condition Count 기준 추가",
+        "desc_era": "Condition Count에 따라 Condition Era를 필터링합니다.",
+        "title_drug": "Era Exposure Count 조건 추가",
+        "desc_drug": "약물 노출에 따라 Drug Era를 필터링합니다."
+      },
+      "addRace": {
+        "title_demographic": "Race 기준 추가",
+        "desc_demographic": "인종에 따라 이벤트를 필터링합니다."
+      },
+      "addEthnicity": {
+        "title_demographic": "Ethnicity 기준 추가",
+        "desc_demographic": "민족에 따라 이벤트를 필터링합니다."
+      },
+      "addLength": {
+        "title_era": "Era Length 기준 추가",
+        "desc_era": "Era의 기간에 따라 Condition Era를 필터링합니다.",
+        "title_dose": "Era Length 조건 추가",
+        "desc_dose": "지속된 기간에 따라 Dose Era를 필터링합니다.",
+        "title_drug": "Era Length 기준 추가",
+        "desc_drug": "Era 기간에 따라 Drug Era를 필터링합니다.",
+        "title_observationperiod": "Period Length 조건 추가",
+        "desc_observationperiod": "지속된 기간에 따라 Observation Period를 필터링합니다.",
+        "title_payerplan": "Period Length 조건 추가",
+        "desc_payerplan": "지속된 기간에 따라 Payer Plan Period를 필터링합니다.",
+        "title_visit": "Visit Length 기준 추가",
+        "desc_visit": "지속된 기간에 따라 Visit occurrence를 필터링합니다."
+      },
+      "addNested": {
+        "title_era": "Nested 기준 추가...",
+        "desc_era": "Condition Era를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_occurrence": "Nested 기준 추가...",
+        "desc_occurrence": "Condition occurrence를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_death": "Nested 기준 추가...",
+        "desc_death": "Death를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_deviceexposure": "Nested 기준 추가...",
+        "desc_deviceexposure": "Device Exposure를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_dose": "Nested 기준 추가...",
+        "desc_dose": "Dose Era를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_drug": "Nested 기준 추가...",
+        "desc_drug": "Drug Era를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_drugexposure": "Nested 기준 추가...",
+        "desc_drugexposure": "Drug Exposure를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_measurement": "Nested 기준 추가...",
+        "desc_measurement": "Measurements를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_observation": "Nested 기준 추가...",
+        "desc_observation": "Observations를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_observationperiod": "Nested 기준 추가...",
+        "desc_observationperiod": "Observation Periods를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_payerplan": "Nested 기준 추가...",
+        "desc_payerplan": "Payer Plan Periods를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_procedureoccurrence": "Nested 기준 추가...",
+        "desc_procedureoccurrence": "Procedure occurrence를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_specimen": "Nested 기준 추가...",
+        "desc_specimen": "Specimens를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_visit": "Nested 기준 추가...",
+        "desc_visit": "Visit Occurrences를 기준 시점으로 사용하여 기준을 적용합니다."
+      },
+      "addAge": {
+        "title_occurrence": "Age at Occurrence 추가",
+        "desc_occurrence": "진단일 당시 연령에 따라 Condition occurrence를 필터링합니다.",
+        "title_death": "Age at Occurrence 기준 추가",
+        "desc_death": "사망 발생 연령에 따라 필터링합니다.",
+        "title_deviceexposure": "Age at Occurrence 기준 추가",
+        "desc_deviceexposure": "발생 연령에 따라 Device Exposure을 필터링합니다.",
+        "title_drugexposure": "Age at Occurrence 기준 추가",
+        "desc_drugexposure": "약물 노출 발생 연령에 따라 Drug Exposure를 필터링합니다.",
+        "title_measurement": "Age at Occurrence 조건 추가",
+        "desc_measurement": "발생 연령에 따라 Measurement를 필터링합니다.",
+        "title_observation": "Age at Occurrence 조건 추가",
+        "desc_observation": "발생 연령에 따라 Condition Occurrence를 필터링합니다.",
+        "title_procedureoccurrence": "Age at Occurrence 조건 추가",
+        "desc_procedureoccurrence": "발생 연령에 따라 Procedure Occurrence를 필터링합니다.",
+        "title_specimen": "Age at Occurrence 조건 추가",
+        "desc_specimen": "발생 시작 연령에 따라 Specimen을 필터링합니다.",
+        "title_visit": "Age at Occurrence 조건 추가",
+        "desc_visit": "방문 발생 연령에 따라 Visit occurrence를 필터링합니다.",
+        "title_demographic": "Age 기준 추가",
+        "desc_demographic": "연령을 기반으로 이벤트를 필터링합니다."
+      },
+      "addType": {
+        "title_occurrence": "Condition Type 추가",
+        "desc_occurrence": "Condition Type에 따라 Condition occurrence를 필터링합니다.",
+        "title_death": "Death Type 기준 추가",
+        "desc_death": "Death Type에 따라 사망을 필터링합니다.",
+        "title_deviceexposure": "Device Type 기준 추가",
+        "desc_deviceexposure": "노출 타입별로 디바이스 노출 (Device exposure)을 필터링합니다.",
+        "title_drugexposure": "Drug Type 기준 추가",
+        "desc_drugexposure": "Drug Type에 따라 Drug Exposure를 필터링합니다.",
+        "title_measurement": "Measurement Type 조건 추가",
+        "desc_measurement": "Measurement Type에 따라 Measurement를 필터링합니다.",
+        "title_observation": "Observation Type 조건 추가",
+        "desc_observation": "관찰된 형태에 따라 Observation을 필터링합니다.",
+        "title_observationperiod": "Period Type 조건 추가",
+        "desc_observationperiod": "Period Type에 따라 Observation Period를 필터링합니다.",
+        "title_procedureoccurrence": "Procedure Type 조건 추가",
+        "desc_procedureoccurrence": "Procedure Type에 따라 Procedure Occurrence를 필터링합니다.",
+        "title_specimen": "Specimen Type 조건 추가",
+        "desc_specimen": "Type에 따라 Specimen을 필터링합니다.",
+        "title_visit": "Visit Type 기준 추가",
+        "desc_visit": "Condition Type에 따라 Visit occurrence를 필터링합니다."
+      },
+      "addStopReason": {
+        "title_occurrence": "Stop Reason 추가",
+        "desc_occurrence": "Stop Reason 에 따라 Condition occurrence를 필터링합니다.",
+        "title_drugexposure": "Stop Reason 조건 추가",
+        "desc_drugexposure": "Stop reason에 따라 Drug Exposure를 필터링합니다."
+      },
+      "addPayerConcept": {
+        "title_payerplan": "Payer Concept 조건 추가",
+        "desc_payerplan": "Payer Concept에 따라 Payer Plan Period를 필터링합니다."
+      },
+      "addPlanConcept": {
+        "title_payerplan": "Plan Concept 조건 추가",
+        "desc_payerplan": "Plan Concept에 따라 Payer Plan Period를 필터링합니다."
+      },
+      "addSponsorConcept": {
+        "title_payerplan": "Sponsor Concept 조건 추가",
+        "desc_payerplan": "Sponsor Concept에 따라 Payer Plan Period를 필터링합니다."
+      },
+      "addStopReasonConcept": {
+        "title_payerplan": "Stop Reason Concept 조건 추가",
+        "desc_payerplan": "Stop Reason Concept에 따라 Payer Plan Period를 필터링합니다."
+      },
+      "addPayerSourceConcept": {
+        "title_payerplan": "Payer Source Concept 조건 추가",
+        "desc_payerplan": "Payer Source Concept에 따라 Payer Plan Period를 필터링합니다."
+      },
+      "addPlanSourceConcept": {
+        "title_payerplan": "Plan Source Concept 조건 추가",
+        "desc_payerplan": "Plan Source Concept에 따라 Payer Plan Period를 필터링합니다."
+      },
+      "addSponsorSourceConcept": {
+        "title_payerplan": "Sponsor Source Concept 조건 추가",
+        "desc_payerplan": "Sponsor Source Concept에 따라 Payer Plan Period를 필터링합니다."
+      },
+      "addStopReasonSourceConcept": {
+        "title_payerplan": "Stop Reason Source Concept 조건 추가",
+        "desc_payerplan": "Stop Reason Source Concept에 따라 Payer Plan Period를 필터링합니다."
+      },
+      "addSourceConcept": {
+        "title_occurrence": "Condition Source Concept 추가",
+        "desc_occurrence": "Condition Source Concept 에 따라 Condition occurrence를 필터링합니다.",
+        "title_death": "Cause of Death Source Concept 기준 추가",
+        "desc_death": "Death Source Concept에 따라 사망을 필터링합니다.",
+        "title_deviceexposure": "Device Source Concept 조건 추가",
+        "desc_deviceexposure": "Device Source Concept에 따라 Device Exposure을 필터링합니다.",
+        "title_measurement": "Measurement Source Concept 조건 추가",
+        "desc_measurement": "Measurement Source Concept에 따라 Measurement를 필터링합니다.",
+        "title_observation": "Observation Source Concept 조건 추가",
+        "desc_observation": "Source Concept에 따라 Observation을 필터링합니다.",
+        "title_procedureoccurrence": "Procedure Source Concept 조건 추가",
+        "desc_procedureoccurrence": "Procedure Source Concept에 따라 Procedure Occurrence를 필터링합니다.",
+        "title_visit": "Visit Source Concept 조건 추가",
+        "desc_visit": "Visit Source Concept에 따라 Visit occurrence를 필터링합니다."
+      },
+      "addProviderSpecialty": {
+        "title_occurrence": "Provider Specialty 추가",
+        "desc_occurrence": "의료서비스 제공자의 전공을 기반으로 Condition occurrence를 필터링합니다.",
+        "title_deviceexposure": "Provider Specialty 기준 추가",
+        "desc_deviceexposure": "의료서비스 제공자의 전공을 기반으로 Condition occurrence를 필터링합니다.",
+        "title_drugexposure": "Provider Specialty 기준 추가",
+        "desc_drugexposure": "의료서비스 제공자의 전공을 기반으로 Drug Exposure를 필터링합니다.",
+        "title_measurement": "Provider Specialty 기준 추가",
+        "desc_measurement": "의료서비스 제공자의 전공을 기반으로 Measurement를 필터링합니다.",
+        "title_observation": "Provider Specialty 기준 추가",
+        "desc_observation": "의료서비스 제공자의 전공을 기반으로 Observation를 필터링합니다.",
+        "title_procedureoccurrence": "Provider Specialty 기준 추가",
+        "desc_procedureoccurrence": "의료서비스 제공자의 전공을 기반으로 Procedure Occurrence를 필터링합니다.",
+        "title_visit": "Provider Specialty 조건 추가",
+        "desc_visit": "의료서비스 제공자의 전공을 기반으로  Visit occurrence를 필터링합니다."
+      },
+      "addDate": {
+        "title_death": "Death Date 기준 추가",
+        "desc_death": "해당 날짜에 따라 사망을 필터링합니다.",
+        "title_measurement": "Measurement Date 조건 추가",
+        "desc_measurement": "측정일에 따라 Measurement를 필터링합니다.",
+        "title_observation": "Observation Date 조건 추가",
+        "desc_observation": "발생일에 따라 Observation을 필터링합니다.",
+        "title_procedureoccurrence": "Start Date 기준 추가",
+        "desc_procedureoccurrence": "Procedure 시작일에 따라 Procedure Occurrence을 필터링합니다",
+        "title_specimen": "Specimen Date 조건 추가",
+        "desc_specimen": "검체 채취일에 따라 Specimen을 필터링합니다."
+      },
+      "addUniqueId": {
+        "title_deviceexposure": "Unique Id 기준 추가",
+        "desc_deviceexposure": "의료기기의 고유 ID에 따라 Device Exposure을 필터링합니다."
+      },
+      "addQuantity": {
+        "title_deviceexposure": "Quantity 기준 추가",
+        "desc_deviceexposure": "노출량에 따라 Device Exposure을 필터링합니다.",
+        "title_drugexposure": "Quantity 조건 추가",
+        "desc_drugexposure": "약물 처방 개수에 따라 Drug Exposure를 필터링합니다.",
+        "title_procedureoccurrence": "Quantity 조건 추가",
+        "desc_procedureoccurrence": "Procedure 수행된 양에 따라 Procedure Occurrence를 필터링합니다.",
+        "title_specimen": "Quantity 조건 추가",
+        "desc_specimen": "검체량에 따라 Specimen을 필터링합니다."
+      },
+      "addUnit": {
+        "title_dose": "Dose Unit 조건 추가",
+        "desc_dose": "약물 용량 단위에 따라 Dose Era를 필터링합니다.",
+        "title_drugexposure": "Dose Unit 조건 추가",
+        "desc_drugexposure": "약물 단위에 따라 Drug Exposure를 필터링합니다.",
+        "title_measurement": "Unit 조건 추가",
+        "desc_measurement": "Unit에 따라 Measurement를 필터링합니다.",
+        "title_observation": "Unit 조건 추가",
+        "desc_observation": "단위에 따라 Observation을 필터링합니다.",
+        "title_specimen": "Unit 조건 추가",
+        "desc_specimen": "검체 단위에 따라 Specimen을 필터링합니다."
+      },
+      "addValue": {
+        "title_dose": "Dose Value 조건 추가",
+        "desc_dose": "복용량에 대한 수치값에 따라 Dose Era를 필터링합니다.",
+        "title_measurement": "Value as Number 조건 추가",
+        "desc_measurement": "Value as Number에 따라 Measurement를 필터링합니다.",
+        "title_observation": "Value As Number 조건 추가",
+        "desc_observation": "숫자로 저장된 관찰의 결과값에 따라 Observation을 필터링합니다."
+      },
+      "addRefills": {
+        "title_drugexposure": "Refill 조건 추가",
+        "desc_drugexposure": "Refills에 따라 Drug Exposure를 필터링합니다."
+      },
+      "addDaysSupply": {
+        "title_drugexposure": "Days Supply 조건 추가",
+        "desc_drugexposure": "약물 처방일수에 따라 Drug Exposure를 필터링합니다."
+      },
+      "addRoute": {
+        "title_drugexposure": "Route 조건 추가",
+        "desc_drugexposure": "약물 투여 경로에 따라 Drug Exposure를 필터링합니다."
+      },
+      "addEffective": {
+        "title_drugexposure": "Effective Dose 조건 추가",
+        "desc_drugexposure": "유효량에 따라 Drug Exposure를 필터링합니다."
+      },
+      "addLotNumber": {
+        "title_drugexposure": "Lot Number 조건 추가",
+        "desc_drugexposure": "약물 제품 번호에 따라 Drug Exposure를 필터링합니다."
+      },
+      "addSource": {
+        "title_drugexposure": "Drug Source Concept 조건 추가",
+        "desc_drugexposure": "Drug Source Concept 에 따라 Drug Exposure를 필터링합니다."
+      },
+      "addOperator": {
+        "title_measurement": "Operator 조건 추가",
+        "desc_measurement": "(검사 결과에 따른) 연산자에 따라 Measurement를 필터링합니다."
+      },
+      "addValueAsString": {
+        "title_observation": "Value As String 조건 추가",
+        "desc_observation": "문자로 저장된 관찰의 결과값에 따라 Observation을 필터링합니다."
+      },
+      "addValueAsConcept": {
+        "title_measurement": "Value as Concept 조건 추가",
+        "desc_measurement": "Value as Concept에 따라 Measurement를 필터링합니다.",
+        "title_observation": "Value as Concept 조건 추가",
+        "desc_observation": "Concept ID로 저장된 관찰의 결과값에 따라 Observation을 필터링합니다."
+      },
+      "addAbnormal": {
+        "title_measurement": "Abnormal Result 조건 추가",
+        "desc_measurement": "정상범위에서 벗어난 측정값들을 포함하는 Measurement를 필터링합니다."
+      },
+      "addRangeLow": {
+        "title_measurement": "Low Range 조건 추가",
+        "desc_measurement": "측정값의 하한 범위에 따라 Measurement를 필터링합니다."
+      },
+      "addRangeHigh": {
+        "title_measurement": "High Range 조건 추가",
+        "desc_measurement": "측정값의 상한 범위에 따라 Measurement를 필터링합니다."
+      },
+      "addRangeLowRatio": {
+        "title_measurement": "Low Range Ratio 조건 추가",
+        "desc_measurement": "하한 범위에 대한 Ratio of Value as Number에 따라 Measurement를 필터링합니다."
+      },
+      "addRangeHighRatio": {
+        "title_measurement": "High Range Ratio 조건 추가",
+        "desc_measurement": "상한 범위에 대한 Ratio of Value as Number에 따라 Measurement를 필터링합니다."
+      },
+      "addQualifier": {
+        "title_observation": "Qualifier 조건 추가",
+        "desc_observation": "구분자에 따라 Observation을 필터링합니다."
+      },
+      "addUserDefined": {
+        "title_observationperiod": "Start and End Dates 정의",
+        "desc_observationperiod": "Observation Period에서 사용할 수 있는 시작일과 종료일에 대해 정의합니다.",
+        "title_payerplan": "Start and End Dates 정의",
+        "desc_payerplan": "Payer Plan Period에서 사용할 수 있는 시작일과 종료일에 대해 정의합니다."
+      },
+      "addModifier": {
+        "title_procedureoccurrence": "Modifier 조건 추가",
+        "desc_procedureoccurrence": "Procedure 절차 변경에 따라 Procedure Occurrence를 필터링합니다."
+      },
+      "addAnatomicSite": {
+        "title_specimen": "Anatomic Site 조건 추가",
+        "desc_specimen": "해부학적 위치에 따라 Specimen을 필터링합니다."
+      },
+      "addDiseaseStatus": {
+        "title_specimen": "Disease Status 조건 추가",
+        "desc_specimen": "질병 상태에 따라 Specimen을 필터링합니다."
+      },
+      "addSourceId": {
+        "title_specimen": "Source ID 조건 추가",
+        "desc_specimen": "검체 식별자에 따라 Specimen을 필터링합니다."
+      },
+      "addPlaceService": {
+        "title_visit": "Place of Service 조건 추가",
+        "desc_visit": "의료서비스가 진행된 장소를 기반으로 Visit occurrence를 필터링합니다."
+      },
+      "addPlaceServiceLocation": {
+        "title_visit": "Place of Service Location 조건 추가",
+        "desc_visit": "의료서비스가 위치한 장소를 기반으로 Visit occurrence를 필터링합니다"
+      },
+      "addPlaceServiceDistance": {
+        "title_visit": "서비스 장소 거리 기준 추가",
+        "desc_visit": "서비스 장소에서 환자까지의 거리를 기준으로 방문 발생을 필터링합니다."
+      }
+    },
+    "newEntityNames": {
+      "characterization": "새 특성",
+      "cohortDefinition": "새로운 코호트 정의",
+      "conceptSet": "새 컨셉 세트",
+      "featureAnalysis": "새 특성 분석",
+      "incidenceRate": "새 발생률 분석",
+      "pathway": "새 코호트 경로",
+      "ple": "새 인구 수준 효과 추정",
+      "plp": "새 환자 수준 예측",
+      "role": "새로운 역할",
+      "source": "새로운 소스"
+    },
+    "weekdays": {
+      "friday": {
+        "long": "금요일",
+        "short": "금"
+      },
+      "monday": {
+        "long": "월요일",
+        "short": "월"
+      },
+      "saturday": {
+        "long": "토요일",
+        "short": "토"
+      },
+      "sunday": {
+        "long": "일요일",
+        "short": "일"
+      },
+      "thursday": {
+        "long": "목요일",
+        "short": "목"
+      },
+      "tuesday": {
+        "long": "화요일",
+        "short": "화"
+      },
+      "wednesday": {
+        "long": "수요일",
+        "short": "수"
+      }
+    }
+  },
+  "notifications": {
+    "duration": "지속일",
+    "endTime": "종료 시간",
+    "explanation": "작업에 대한 알림이 여기에 표시됩니다. 작업에는 코호트 생성, 코호트보고 또는 완료하는 데 오랜 시간이 걸릴 수있는 기타 작업이 포함될 수 있습니다. 새 알림을 사용할 수있는 경우이 오른쪽 상단 알림 아이콘은 <i class='fa fa-bell pending'></i>을 강조 표시합니다.",
+    "hideCompletedJobsButton": "완료된 작업 숨기기",
+    "jobName": "작업 이름",
+    "showCompletedJobsButton": "완료된 작업 표시",
+    "status": "상태",
+    "title": "알림 (last <%=length%>)",
+    "tabs": {
+      "myJobs": "나의 실행내역",
+      "allJobs": "모든 실행내역"
+    }
+  },
+  "predictions": {
+    "analysisSettings": "분석 설정",
+    "confirmCatchSave": "예측 분석을 저장하는 중에 오류가 발생했습니다.",
+    "confirmChanges": "환자 수준 예측 변경 사항은 저장되지 않습니다. 계속 하시겠습니까?",
+    "confirmDelete": "환자 수준 예측 사양을 삭제 하시겠습니까? 경고 : 삭제시 다시 되돌릴 수 없습니다!",
+    "confirmSave": "이 이름의 예측 분석이 이미 존재합니다. 다른 이름을 선택하십시오.",
+    "covariateSettingsDesc": "공변량 설정 추가 또는 업데이트",
+    "covariateSettingsTitle": "공변량 설정",
+    "descriptionPlaceholder": "여기에 설명 입력 (최대 1000 자)",
+    "downloadStudyPackage": "학습 패키지 다운로드",
+    "retrievingPredictions": "예측 검색",
+    "editors": {
+      "evaluationEditorText_1": "훈련/시험 세트 (training/test set)를 분할하는 방법을 지정하세요.",
+      "evaluationEditorText_2": "시험 세트(test set)로 사용될 데이터의 백분율 (0-100 %):",
+      "evaluationEditorText_3": "교차 검정에 사용된 배수:",
+      "evaluationEditorText_4": "폴드(folds)",
+      "evaluationEditorText_5": "사람을 기준으로 훈련/시험 세트(training/test set)를 분할하는 경우, 사용할 시드값 (선택적):",
+      "executionEditorText_1": "샘플링 수행 여부:",
+      "executionEditorText_2": "샘플에 얼마나 많은 환자를 사용해야합니까?",
+      "executionEditorText_3": "최소 공변량 발생 : 만약 어떤 공변량이 지정한 값보다 적은 비율로 표적 모집단에서 발생하면 제거됩니다.",
+      "executionEditorText_4": "공변량 정규화:",
+      "populationEditorText_1": "표적 코호트 진입을 기준으로 위험 노출 구간(time-at-risk)의 시작일을 설정합니다:",
+      "populationEditorText_2": "포함한 컨셉 목록에  하위 컨셉을 추가합니까?",
+      "populationEditorText_3": "표적 코호트에 적용되는 최소 선행 관찰 기간",
+      "populationEditorText_4": "위험 노출 기간이 없는 대상자를 제거해야 합니까?",
+      "populationEditorText_5": "[예] 최소 위험노출 기간",
+      "populationEditorText_6": "최소 위험 노출 기간을 만족하지 못하더라도 결과가 나타난 사람을 포함하겠습니까?",
+      "populationEditorText_7": "각 대상자의 처음 노출 기록만 포함하겠습니까?",
+      "populationEditorText_8": "코호트 진입 전 결과를 경험한 환자를 제거하시겠습니까?",
+      "populationEditorText_9": "[예] 코호트 진입으로부터 몇일 전까지의 결과(outcome) 발생을 볼 것인지?",
+      "predictionCovariatePlaceholder": "공변량 ID",
+      "predictionEditorText_1": "환자 수준 예측 모델의 기준 공변량에 어떤 컨셉을 포함하시겠습니까? (모든 것을 포함하려면 비워 둡니다)",
+      "predictionEditorText_2": "포함한 컨셉 목록에  하위 컨셉을 추가합니까?",
+      "predictionEditorText_3": "환자 수준 예측 모델의 기준 공변량에 어떤 컨셉을 제외하시겠습니까? (모든 것을 포함하려면 비워 둡니다)",
+      "predictionEditorText_4": "제외된 컨셉 목록에 하위 컨셉을 추가합니까?",
+      "predictionEditorText_5": "쉼표로 구분되는 공변량 ID의 리스트의 범위 설정:",
+      "predictionSelectConceptSet": "컨셉 세트 선택하기",
+      "predictionSelectCovariates": "공변량 선택"
+    },
+    "export": "내보내기",
+    "fullAnalysisList": "전체 분석 목록",
+    "import": "불러오기",
+    "inputTypes": {
+      "adaBoost": "Ada Boost 모델 설정",
+      "adaBoostSettings": {
+        "desc_learningRate": "학습률(Learning rate)은 각 분류자의 기여도를 감소시킵니다. 학습률(Learning rate)과 estimator 수(nEstimator) 사이에는 상충 관계가 있습니다.",
+        "desc_nEstimators": "부스팅이 종료되는 최대 estimator 수",
+        "name_learningRate": "학습률(learning rate)",
+        "name_nEstimators": "최대 estimator 수"
+      },
+      "decisionTree": "의사결정나무 모델 설정",
+      "decisionTreeSettings": {
+        "desc_classWeight": "클래스 가중치",
+        "desc_maxDepth": "최대 상호 작용 개수 - 해당값이 크면 모델 학습이 느려집니다",
+        "desc_minImpurityDecrease": "트리 성장 (tree growth) 의 조기 중지에 대한 임계값(threshold).  불순도(Impurity)가 임계값을 초과하면 노드가 분할되고, 그렇지 않으면 잎 노드(leaf)가 됩니다.",
+        "desc_minSamplesLeaf": "리프당 최소 샘플 수",
+        "desc_minSamplesSplit": "분할 시 최소 샘플 수",
+        "desc_plot": "분할 시 최소 샘플 수",
+        "name_classWeight": "클래스 가중치",
+        "name_maxDepth": "최대 깊이 설정",
+        "name_minImpurityDecrease": "최소 impurity split",
+        "name_minSamplesLeaf": "리프당 최소 샘플",
+        "name_minSamplesSplit": "분할 시 최소 샘플 수",
+        "name_plot": "분할 시 최소 샘플 수"
+      },
+      "gradientBoostingMachine": "Gradient Boosting Machine 모델 설정",
+      "gradientBoostingMachineSettings": {
+        "desc_learnRate": "학습률(boosting learning rate)",
+        "desc_maxDepth": "최대 상호 작용 개수 - 해당값이 크면 모델 학습이 느려집니다",
+        "desc_minRows": "트리의 각 끝 노드에 필요한 최소 행의 갯수",
+        "desc_nthread": "사용할 컴퓨터 스레드 수 (사용 가능한 코어 수는 몇 개입니까?)",
+        "desc_ntrees": "사용할 트리 개수",
+        "name_learnRate": "학습률(boosting learning rate)",
+        "name_maxDepth": "최대 상호 작용 개수",
+        "name_minRows": "최소 행의 개수",
+        "name_nthread": "계산을위한 컴퓨터 스레드",
+        "name_ntrees": "사용할 트리 개수"
+      },
+      "knnSettings": {
+        "desc_k": "고려할 이웃의 수(K)",
+        "name_k": "K Nearest Neighbors 모델 설정"
+      },
+      "lassoLogisticRegression": "Lasso 로지스틱 회귀 모델 설정",
+      "lassoLogisticRegressionSettings": {
+        "desc": "자동 람다 검색의 시작값으로 사용되는 단일 값",
+        "name": "자동 람다 검색의 시작 값"
+      },
+      "mlpSettings": {
+        "desc_alpha": "L2 정규화(regularization) 값",
+        "desc_size": "히든 노드 수",
+        "name_alpha": "알파",
+        "name_size": "히든 노드 수"
+      },
+      "multilayerPerceptionModel": "Multilayer Perception 모델 설정",
+      "naiveBayes": "Naive Bayes 모델 설정",
+      "nearestNeighbors": "K Nearest Neighbors 모델 설정",
+      "randomForest": "Random Forest 모델 설정",
+      "randomForestSettings": {
+        "desc_maxDepth": "최대 상호 작용 개수 - 해당값이 클수록 모델 학습이 느려집니다 (기본값 = 4,6,17)",
+        "desc_mtries": "각 트리에 포함할 feature의 수 (-1은 기본값으로서, 전체 수의 제곱근입니다)",
+        "desc_ntrees": "사용할 트리 개수",
+        "desc_varImp": "모델 적합(model fitting) 전 초기 변수 선정을 수행하여 유용한 변수를 선별합니다.",
+        "name_maxDepth": "최대 깊이 설정",
+        "name_mtries": "트리 당 feature의 수",
+        "name_ntrees": "사용할 트리 개수",
+        "name_varImp": "초기 변수 선택 수행"
+      }
+    },
+    "defaultValue": "(기본값 = <%=defaultValue%>):",
+    "item": {
+      "addCovariateSettings": "공변량 설정 추가",
+      "addModelSettings": "모델 설정 추가",
+      "addOutcomeCohort": "결과 코호트 추가",
+      "addPopulationSettings": "모집단 설정 추가",
+      "addTargetCohort": "표적 코호트 추가",
+      "all": "모두",
+      "analysisSettings": "분석 설정",
+      "covariateSettings": "공변량 설정",
+      "executionSettings": "실행 설정",
+      "modelSettings": "모형 설정",
+      "outcomeCohort": "결과 코호트",
+      "populationSettings": "모집단 설정",
+      "predictionProblemSettings": "예측 문제 설정",
+      "targetCohort": "표적 코호트",
+      "trainingSettings": "트레이닝 설정",
+      "view": "보기:"
+    },
+    "itemId": "환자 수준 예측 #<%=id%>",
+    "modelSettingsDesc": "아래 옵션을 사용하여 모델 설정을 편집하십시오.",
+    "modelSettingsTitle": "모형 설정",
+    "naiveMessage": "Naive Bayes에 대한 설정 조건은 없습니다.",
+    "newItem": "새 환자 수준 예측",
+    "newItemPlaceholder": "새 환자 수준 예측",
+    "pleaseNote": "참고:",
+    "populationSettingsDesc": "모집단 설정 추가 또는 업데이트  (+ 모집단 설정 추가)",
+    "populationSettingsTitle": "모집단 설정",
+    "predictionProblemSettings": "예측 문제 설정",
+    "resetToDefault": "기본값(default)으로 재설정",
+    "reviewAndDownload": "리뷰 & 다운로드",
+    "reviewFullStudy": "전체 연구 사양 검토",
+    "selectCohort": "코호트 선택하기",
+    "tabs": {
+      "executions": "실행",
+      "specification": "설계",
+      "utilities": "유틸리티",
+      "messages": "메시지"
+    },
+    "title": "환자 수준 예측",
+    "usingDefault": "기본값(default) 사용",
+    "utilitiesText_1": "당신의 연구는 다음과 같은 문제로 인해 전체 사양 세부 정보를 검토할 수 없고, 연구 패키지를 다운로드 할 수 없습니다.:",
+    "utilitiesText_2": "다음 항목은 적어도 하나씩 지정해야 합니다: 표적 코호트, 결과 코호트, 모델 설정, 공변량 설정 및 모집단 설정.",
+    "utilitiesText_3": "연구에 모델 설정, 공변량 설정 및 모집단 설정 영역 중 하나에 중복 값이 포함되어 있습니다. 계속하려면 이러한 오류를 검토하고 수정하세요.",
+    "utilitiesText_4": "검토 및 다운로드 하기 전에 반드시 분석 설정을 저장하십시오.",
+    "utilitiesText_5": "아래의 전체 연구 사양을 검토하고 페이지를 아래로 스크롤하여 연구 패키지를 다운로드하십시오.",
+    "utilitiesText_6": "ZIP 형식의 연구 패키지를 얻기 위해 연구 패키지의 이름을 입력하고 &quot;다운로드&quot 을 클릭하십시오.",
+    "utilitiesText_7": "패키지 이름은 영숫자 문자로만 구성되어야합니다. 공백이나 특수 문자는 허용되지 않습니다.",
+    "utilitiesText_8": "당신의 분석 사양의 문제를 검토하려면 다운로드 영역을 확인하십시오. Definition을 내보내기 전에 수정해야합니다..",
+    "packageName": "패키지 이름..."
+  }
+}

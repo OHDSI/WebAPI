@@ -69,6 +69,7 @@ public interface Constants {
 
   interface Headers {
     String AUTH_PROVIDER = "x-auth-provider";
+    String USER_LANGAUGE = "User-Language";
   }
 
   interface SecurityProviders {

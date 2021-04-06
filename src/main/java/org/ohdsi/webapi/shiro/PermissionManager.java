@@ -145,9 +145,12 @@ public class PermissionManager {
     
     UserEntity user = userRepository.findByLogin(login);
     if (user != null) {
-      String currentName = name != null ? name : login;
-      if(!currentName.equals(user.getName())) {
-        user.setName(currentName);
+      if (user.getName() == null) {
+        String nameToSet = name;
+        if (name == null) {
+          nameToSet = login;
+        }
+        user.setName(nameToSet);
         user = userRepository.save(user);
       }
       return user;

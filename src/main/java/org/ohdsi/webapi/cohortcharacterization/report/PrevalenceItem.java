@@ -47,22 +47,22 @@ public class PrevalenceItem<T extends PrevalenceItem> extends ExportItem<T> {
     **/
     @Override
     protected double calcDiff(PrevalenceItem another) {
-      double pTreatment = avg == null ? 0 : avg;
+      double pTarget = avg == null ? 0 : avg;
       double pCompare = another.avg == null ? 0 : another.avg;
 
-      double sdOverall = Math.sqrt(((pTreatment * (1.0 - pTreatment)) + (pCompare * (1.0 - pCompare)))/2);
-      if (sdOverall == 0) { 
+      double pooledError = Math.sqrt(((pTarget * (1.0 - pTarget)) + (pCompare * (1.0 - pCompare)))/2);
+      if (pooledError == 0) { 
         // undefined case where denom = 0
-        if (pTreatment != pCompare) {
+        if (pTarget != pCompare) {
           // return +/- INF based on if T is bigger.
-          return pTreatment > pCompare ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+          return pTarget > pCompare ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
         } else {
           // pTreatment and pCompare are same, so return 0
           return 0.0d;
         }
       } else {
         // calculate the standard mean differnce
-        return (pTreatment - pCompare) / sdOverall;
+        return (pTarget - pCompare) / pooledError;
       }
     }
 

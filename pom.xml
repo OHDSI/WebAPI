@@ -1593,7 +1593,7 @@
     <profile>
       <id>webapi-gis</id>
       <properties>
-        <atlasgis.version>1.0.1-SNAPSHOT</atlasgis.version>
+        <atlasgis.version>1.0.1</atlasgis.version>
         <gis.enabled>true</gis.enabled>
       </properties>
       <dependencies>

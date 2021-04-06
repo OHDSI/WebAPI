@@ -32,5 +32,6 @@ public class FeatureAnalysisAggregateToDTOConverter extends BaseConvertionServic
     if (source instanceof FeAnalysisAggregateEntity) {
       dto.setDefault(((FeAnalysisAggregateEntity) source).isDefault());
     }
+    dto.setMissingMeansZero(source.isMissingMeansZero());
   }
 }

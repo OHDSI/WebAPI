@@ -50,8 +50,8 @@ public class PrevalenceItem<T extends PrevalenceItem> extends ExportItem<T> {
       double pTreatment = avg == null ? 0 : avg;
       double pCompare = another.avg == null ? 0 : another.avg;
 
-      double pooledPrevalence = (pTreatment * (1.0 - pTreatment)) + (pCompare * (1.0 - pCompare));
-      if (pooledPrevalence == 0) { 
+      double sdOverall = Math.sqrt(((pTreatment * (1.0 - pTreatment)) + (pCompare * (1.0 - pCompare)))/2);
+      if (sdOverall == 0) { 
         // undefined case where denom = 0
         if (pTreatment != pCompare) {
           // return +/- INF based on if T is bigger.
@@ -62,7 +62,7 @@ public class PrevalenceItem<T extends PrevalenceItem> extends ExportItem<T> {
         }
       } else {
         // calculate the standard mean differnce
-        return (pTreatment - pCompare) / Math.sqrt((pooledPrevalence / 2));
+        return (pTreatment - pCompare) / sdOverall;
       }
     }
 

@@ -2373,6 +2373,11 @@
             "ldap": "LDAP 서버"
           }
         },
+        "provider" : {
+          "connection": {
+            "failed": "Connection failed. Please see server logs for details."
+          }
+        },
         "title": "사용자 가져 오기"
       }
     },

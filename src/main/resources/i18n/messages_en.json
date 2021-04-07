@@ -2373,6 +2373,11 @@
             "ldap": "LDAP server"
           }
         },
+        "provider" : {
+          "connection": {
+            "failed": "Connection failed. Please see server logs for details."
+          }
+        },
         "title": "Importing users"
       }
     },

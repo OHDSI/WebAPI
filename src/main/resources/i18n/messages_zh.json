@@ -2373,6 +2373,11 @@
             "ldap": "LDAP服务器"
           }
         },
+        "provider" : {
+          "connection": {
+            "failed": "Connection failed. Please see server logs for details."
+          }
+        },
         "title": "导入用户"
       }
     },

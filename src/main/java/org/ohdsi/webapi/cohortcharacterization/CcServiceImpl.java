@@ -51,7 +51,6 @@ import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
 import org.ohdsi.webapi.feanalysis.event.FeAnalysisChangedEvent;
-import org.ohdsi.webapi.i18n.I18nService;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.service.FeatureExtractionService;
@@ -187,7 +186,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     private final EntityManager entityManager;
     private final ApplicationEventPublisher eventPublisher;
 
-    private final I18nService i18nService;
     private final JobRepository jobRepository;
     private final SourceAwareSqlRender sourceAwareSqlRender;
     private final JobService jobService;
@@ -207,7 +205,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             final FeatureExtractionService featureExtractionService,
             final ConversionService conversionService,
             final DesignImportService designImportService,
-            final I18nService i18nService,
             final JobRepository jobRepository,
             final AnalysisGenerationInfoEntityRepository analysisGenerationInfoEntityRepository,
             final SourceService sourceService,
@@ -228,7 +225,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         this.ccGenerationRepository = ccGenerationRepository;
         this.featureExtractionService = featureExtractionService;
         this.designImportService = designImportService;
-        this.i18nService = i18nService;
         this.jobRepository = jobRepository;
         this.analysisGenerationInfoEntityRepository = analysisGenerationInfoEntityRepository;
         this.sourceService = sourceService;
@@ -822,10 +818,9 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                 }
             }
             if (!ignoreSummary) {
-                final String translatedName = i18nService.translate("cc.viewEdit.results.allPrevalenceCovariates", "All prevalence covariates");
                 // summary comparative reports are only available for prevalence type
                 if (!simpleResultSummary.isEmpty()) {
-                    Report simpleSummaryData = new Report(translatedName, simpleResultSummary);
+                    Report simpleSummaryData = new Report("All prevalence covariates", simpleResultSummary);
                     simpleSummaryData.header = executionPrevalenceHeaderLines;
                     simpleSummaryData.isSummary = true;
                     simpleSummaryData.resultType = PREVALENCE;
@@ -833,7 +828,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                 }
                 // comparative mode
                 if (!comparativeResultSummary.isEmpty()) {
-                    Report comparativeSummaryData = new Report(translatedName, comparativeResultSummary);
+                    Report comparativeSummaryData = new Report("All prevalence covariates", comparativeResultSummary);
                     comparativeSummaryData.header = executionComparativeHeaderLines;
                     comparativeSummaryData.isSummary = true;
                     comparativeSummaryData.isComparative = true;

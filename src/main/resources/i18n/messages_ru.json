@@ -1,0 +1,3555 @@
+{
+  "locale": "ru",
+  "datatable": {
+    "language": {
+      "decimal": "десятичный",
+      "emptyTable": "В таблице нет данных",
+      "info": "Показано с _START_ по _END_ из _TOTAL_ записей",
+      "infoEmpty": "Показано с 0 по 0 из 0 записей",
+      "infoFiltered": "(отфильтровано из _MAX_ записей)",
+      "infoPostFix": "",
+      "thousands": ",",
+      "lengthMenu": "Показывать по _MENU_ записей",
+      "loadingRecords": "Загружается...",
+      "processing": "Обрабатывается...",
+      "search": "Фильтр:",
+      "searchPlaceholder": "Поиск...",
+      "zeroRecords": "Подходящие записи не найдены",
+      "all": "Все",
+      "paginate": {
+        "first": "Первая",
+        "last": "Последняя",
+        "next": "Дальше",
+        "previous": "Назад"
+      },
+      "buttons": {
+        "colvis": "Отображать колонки",
+        "copy": "Копировать",
+        "changeColumns": "Изменить колонки",
+        "showAllColumns": "Показать все колонки",
+        "resetColumns": "Сбросить колонки"
+      },
+      "aria": {
+        "sortAscending": ": нажмите для сортировки по возрастанию",
+        "sortDescending": ": нажмите для сортировки по убыванию"
+      }
+    }
+  },
+  "format": {
+    "number": "# ###,##",
+    "date": {
+      "shortdate": "DD.MM",
+      "mediumdate": "DD.MM.YYYY",
+      "datetime": "DD.MM.YYYY HH:mm",
+      "minutes": "мин",
+      "seconds": "сек"
+    }
+  },
+  "executionStatus": {
+    "values": {
+      "FAILED": "ОШИБКА",
+      "COMPLETED": "ГОТОВ",
+      "STOPPED": "ОСТАНОВЛЕН",
+      "CANCELED": "ОТМЕНЕН",
+      "PENDING": "В ОЧЕРЕДИ",
+      "RUNNING": "ВЫПОЛНЯЕТСЯ",
+      "STARTED": "ЗАПУСКАЕТСЯ"
+    }
+  },
+  "common": {
+    "loading": "Загрузка",
+    "loadingWithDots": "Загрузка...",
+    "unsaved": "(не сохранено)",
+    "save": "Сохранить",
+    "close": "Закрыть",
+    "copy": "Копировать",
+    "copyOf": "Копия <%=name%>",
+    "createACopy": "Создать копию",
+    "configureAccess": "Настроить доступ",
+    "accessDenied": "Доступ запрещен",
+    "delete": "Удалить",
+    "download": "Скачать",
+    "downloading": "Скачивание...",
+    "import": "Импорт",
+    "export": "Экспорт",
+    "daysAbbr": "д",
+    "and": "и",
+    "or": "или",
+    "min": "минимум",
+    "cancel": "Отмена",
+    "set": "Установить",
+    "search": "Поиск",
+    "preview": "Предпросмотр",
+    "progress": "Прогресс",
+    "refresh": "Обновить",
+    "days": "дней",
+    "add": "Добавить",
+    "selectAll": "Выбрать все",
+    "deselectAll": "Отменить выбор",
+    "notEnoughPermissions": "Недостаточно прав",
+    "noChangesToPersist": "Нет изменений для сохранения",
+    "copyToClipboard": "Скопировать в буфер обмена",
+    "copiedToClipboard": "Скопировано!",
+    "configureAccessModal": {
+      "loadingAccessList": "Загрузка списков доступа...",
+      "addWriteAccessToRole": "Добавить разрешение на запись роли:",
+      "rolesWithWriteAccess": "Роли с разрешением на запись:",
+      "revoke": "Отозвать"
+    },
+    "unspecified": "НЕ ОПРЕДЕЛЕНО!",
+    "menu": "Меню",
+    "noData": "Нет данных",
+    "readOnly": "(Только чтение)"
+  },
+  "commonErrors": {
+    "browserWarning": "Пожалуйста, обратите внимание, что официально поддерживается только браузер Chrome версии не ниже v.63",
+    "initFailed": "Ошибка инициализации приложения",
+    "noSources": "В текущем WebAPI не определено ни одного источника.<br/>Пожалуйста, добавьте источники на странице <a href=\"#/configure\">конфигурации</a>.",
+    "webapiConnectError": "Ошибка соединения с WebAPI.<br/>Чтобы решить эту проблему, пожалуйста, свяжитесь с администратором."
+  },
+  "navigation": {
+    "home": "Начало",
+    "datasources": "Источники данных",
+    "search": "Поиск",
+    "conceptsets": "Наборы концепций",
+    "cohortdefinitions": "Когорты",
+    "characterizations": "Характеризации",
+    "pathways": "Исходы когорты",
+    "incidencerate": "Инцидентность",
+    "profiles": "Профили",
+    "estimation": "Оценочный анализ",
+    "prediction": "Прогнозирование",
+    "jobs": "Задания",
+    "configuration": "Конфигурация",
+    "feedback": "Обратная связь"
+  },
+  "options": {
+    "atMost": "В большинстве",
+    "exactly": "Точно",
+    "atLeast": "Как минимум",
+    "all": "Все",
+    "before": "Перед",
+    "after": "После",
+    "any": "любой",
+    "allEvents": "Все события",
+    "earliestEvents": "Самое раннее событие",
+    "latestEvents": "Последнее мероприятие",
+    "startDate": "Дата начала",
+    "endDate": "Дата окончания",
+    "yes": "Да",
+    "no": "Нет",
+    "between": "между",
+    "notBetween": "не между",
+    "isAnyOf": "любой из",
+    "isNotAnyOf": "это не какой-либо из",
+    "indexStartDate": "дата начала индекса",
+    "indexEndDate": "дата окончания индекса",
+    "eventStarts": "событие начинается",
+    "eventEnds": "событие заканчивается",
+    "ww": "Еженедельно",
+    "mm": "Ежемесячно",
+    "qq": "Ежеквартально",
+    "yy": "Ежегодно",
+    "rollupUtilizationVisit": "Посещения",
+    "rollupUtilizationDrug": "Лекарства",
+    "periodType": "Period type",
+    "reports": "Отчеты",
+    "periods": "Периоды",
+    "rollups": "Накопления",
+    "allVisits": "Все посещения",
+    "allVisitTypes": "Все типы посещения",
+    "drugSource": "Источник наркотиков",
+    "allDrugSources": "Все источники наркотиков",
+    "endOfContinuousObservation": "конец непрерывного наблюдения",
+    "fixedDurationRelativeToInitialEvent": "фиксированная продолжительность относительно начального события",
+    "endOfContinuousDrugExposure": "конец непрерывного воздействия наркотиков",
+    "startsWith": "начиная с",
+    "contains": "содержащий",
+    "endsWith": "заканчивая",
+    "notStartsWith": "не начиная с",
+    "notContains": "не содержащий",
+    "notEndsWith": "не заканчивается",
+    "yesExact": "Да (точно)",
+    "yesDescendant": "Да (потомок)",
+    "yesParent": "Да (родитель)",
+    "included": "Включеный",
+    "excluded": "Исключенный",
+    "none": "ни один",
+    "true": "true",
+    "false": "false",
+    "balanced": "Balanced",
+    "time": "Время",
+    "person": "Пациент",
+    "reporting": {
+      "personsAndExposureDuringBaselinePeriod": "Люди и воздействие в течение базового периода",
+      "personsAndExposureDuringCohortPeriod": "Люди и воздействие в когортный период",
+      "visitsDuringBaselinePeriod": "Посещения в течение базового периода",
+      "visitDatesDuringBaselinePeriod": "Даты посещения в течение базового периода",
+      "careSiteVisitDatesDuringBaselinePeriod": "Даты посещения care-site в течение базового периода",
+      "visitsDuringCohortPeriod": "Посещения в течение когортного периода",
+      "visitDatesDuringCohortPeriod": "Даты посещения в течение когортного периода",
+      "careSiteVisitDatesDuringCohortPeriod": "Даты посещения care-site в течение когортного периода",
+      "drugUtilizationDuringBaselinePeriod": "Использование лекарств в течение базового периода",
+      "drugUtilizationDuringCohortPeriod": "Использование лекарств в течение когортного периода"
+    }
+  },
+  "components": {
+    "analysisExecution": {
+      "title": "Исследования",
+      "buttons": {
+        "allExecutions": "Все исследования (<%=submissions%>)",
+        "generate": "Выполнить",
+        "generating": "Выполнение",
+        "pending": "Ожидание",
+        "latestResult": "Просмотр последнего результата",
+        "downloadLatestResult": "Скачать последний результат"
+      },
+      "designModal": {
+        "title": "Дизайн"
+      },
+      "exitModal": {
+        "title": "Сообщение Исследования"
+      },
+      "messages": {
+        "permissions": "Надостаточно прав для просмотра результата"
+      },
+      "datatable": {
+        "viewReports": "Просмотр отчетов",
+        "sameAsNow": "(текущий)"
+      },
+      "noCompletedExecutionsForDataSource": "Для данного источника еще нет завершенных исследований.",
+      "stopGenerationConfirmation": "Действительно остановить исследование?"
+    },
+    "authorship": {
+      "created": "создано:",
+      "modified": "изменено:",
+      "on": " ",
+      "byCreated": "<%=createdBy%>",
+      "byModified": "<%=modifiedBy%>"
+    },
+    "windowedCriteria": {
+      "windowedCriteriaText_1": "где",
+      "windowedCriteriaText_2": "между",
+      "windowedCriteriaText_3": "а также",
+      "windowedCriteriaText_4": "добавить дополнительное ограничение",
+      "windowedCriteriaText_5": "ограничить одно и то же посещение",
+      "windowedCriteriaText_6": "игнорировать период наблюдения"
+    },
+    "evidencePairViewer": {
+      "evidencePairViewerText_1": "загрузка пар доказательств",
+      "evidencePairViewerText_2": "Если CommonEvidenceModel указал, что есть информация о ярлыке продукта для выбранной пары лекарственное средство (1 = true, 0 = false) Вы можете увидеть много этикеток продукта ниже. Количество меток не является информативным, поскольку неблагоприятное событие на одной метке должен быть на всех этикетках продукта. Таким образом, на этой странице будут показаны все ярлыки продуктов для выбранной пары лекарственное средство.",
+      "evidencePairViewerText_3": "Если CommonEvidenceModel перечислил несколько публикаций, во всплывающем окне «Просмотр доказательств» одна публикация может появляться несколько раз в приведенных ниже результатах. Это связано с тем, что для каждой пары «состояние-лекарство», которое соответствует публикации, публикация будет отображаться в списке «Просмотр доказательств».",
+      "evidencePairViewerText_4": "Нажмите здесь для получения дополнительной информации об этом списке доказательств",
+      "evidencePairViewerText_5": "Скрыть детали",
+      "evidencePairViewerText_6": "Набор понятий не помечен как действительный для получения результатов. Пожалуйста, убедитесь, что этот концептуальный набор содержит только УСЛОВИЯ или ПРЕПАРАТЫ."
+    },
+    "navigateControls": {
+      "navigateControlsText_1": "Модель общих доказательств"
+    },
+    "feasibilityAttritionReport": {
+      "attritionVisualization": "Визуализация истощения",
+      "inclusionRule": "Правило включения",
+      "percentRemain": "% оставаться",
+      "precentDiff": "% разность"
+    },
+    "feasibilityIntersectReport": {
+      "inclusionRule": "Правило включения",
+      "percentSatisfied": "% Доволен",
+      "percentToGain": "% Получить",
+      "populationVisualization": "Визуализация населения",
+      "rectSummary": "<%=size%> люди (<%=percentage%>%), <%=passCount%> критерии пройдены, <%=failCount%> критерии не пройдены."
+    },
+    "endStrategyEditor": {
+      "eventWillPersistUntil": "Событие будет продолжаться до:",
+      "eventWillPersistUntil2": " "
+    },
+    "endStrategyViewer": {
+      "endDateStrategy": "Конечная дата стратегии",
+      "endStrategyViewerText_1": "Стратегия конечной даты не выбрана. По умолчанию конечной датой когорты будет конец периода наблюдения, который содержит индексное событие."
+    },
+    "multiInput": {
+      "action": "Действие",
+      "remove": "Удалить",
+      "add": "Добавить"
+    },
+    "generateComponent": {
+      "generate": "генерировать",
+      "generating": "порождающий"
+    },
+    "textFilter": {
+      "startsWith": "Начиная с",
+      "contains": "Содержащие",
+      "endsWith": "Окончание с",
+      "notStartsWith": "Не начиная с",
+      "notContains": "Не содержащие",
+      "notEndsWith": "Не заканчивается"
+    },
+    "period": {
+      "starting": "начало",
+      "andEnding": "и окончание",
+      "periodText_1": "Примечание: будут использоваться только периоды наблюдения, включающие даты начала и окончания."
+    },
+    "inclusionRuleEditor": {
+      "unnamedCriteria": "Безымянный критерий",
+      "copy": "Копия",
+      "delete": "Удалить",
+      "ruleDescriptionPlaceholder": "введите описание правила"
+    },
+    "feasibilityReportViewer": {
+      "feasibilityReportViewerText_1": "Степень совпадения",
+      "feasibilityReportViewerText_2": "Совпадений",
+      "feasibilityReportViewerText_3": "Утерян от цензуры",
+      "feasibilityReportViewerText_4": "Всего событий",
+      "feasibilityReportViewerText_5": "Сводные статистические данные:",
+      "feasibilityReportViewerText_6": "Переключиться на вид истощения",
+      "feasibilityReportViewerText_7": "Переключиться на пересечение",
+      "feasibilityReportViewerText_8": "Не определены правила включения для этого определения когорты."
+    },
+    "accessDenied": {
+      "forbidden": {
+        "message1": "У вас нет доступа к этой функции.",
+        "message2": "Для получения дополнительной информации о том, как получить доступ, пожалуйста, свяжитесь с системным администратором."
+      },
+      "unauthenticated": {
+        "message": "Доступ к этому разделу ограничен. Пожалуйста,",
+        "login": "войдите"
+      }
+    },
+    "filterPanel": {
+      "title": "Фильтрация",
+      "buttons": {
+        "apply": "Применить",
+        "clear": "Сбросить"
+      }
+    },
+    "export": {
+      "button": "Экспорт",
+      "progress": "экспорт в процессе"
+    },
+    "import": {
+      "button": "Импорт",
+      "denied": "Отсутствуют права на импорт",
+      "progress": "импорт в процессе"
+    },
+    "linkedCohortList": {
+      "defaultTitle": "Когорты",
+      "defaultNewItemLabel": "Импорт",
+      "dialog": {
+        "title": "Выберите когорту"
+      },
+      "table": {
+        "actions": {
+          "edit": "Правка когорты",
+          "remove": "Удалить"
+        }
+      }
+    },
+    "linkedEntityList": {
+      "defaultNewItemLabel": "Импорт"
+    },
+    "userBar": {
+      "signin": "Войти",
+      "signout": "Выйти"
+    },
+    "welcome": {
+      "close": "Закрыть",
+      "loggedIn": "Пользователь зашел как '<%= login %>'",
+      "loggedInExp": "Пользователь зашел как '<%= login %>' (до: <%= expiration %>)",
+      "messages": {
+        "badCredentials": "Неверное имя пользователя или пароль",
+        "loginFailed": "Ошибка входа",
+        "expired": "Ваша сессия истекла. Пожалуйста войдите заново.",
+        "refresh": "Ваша сессия истекла. Пожалуйста обновите страницу."
+      },
+      "runas": "Войти как",
+      "signinWith": "Войти с помощью:",
+      "signout": "Выйти",
+      "submit": "Отправить",
+      "username": "Имя пользователя",
+      "password": "Пароль",
+      "wait": "Пожалуйста подождите..."
+    },
+    "atlasCohortEditor": {
+      "enterCohortPlaceholder": "Введите описание определения когорты здесь",
+      "importConceptSet": "Импортировать набор концепций из репозитория ..."
+    },
+    "cohortExpressionEditor": {
+      "cohortEntryEvents": "События входа",
+      "cohortEntryEventsText_1": "События - это записанные наблюдения с указанием времени для людей, такие как воздействие наркотиков, условия, процедуры, измерения и посещения. Все события имеют дату начала и дату окончания, хотя некоторые события могут иметь дату начала и дату окончания с одинаковым значением (например, процедуры или измерения).",
+      "inclusionCriteria": "Критерии включения",
+      "inclusionCriteriaText": "Отборочная когорта будет определяться как все лица, которые имеют начальное событие, удовлетворяют начальным критериям включения в событие и отвечают всем дополнительным квалификационным критериям включения. Каждый квалификационный критерий включения будет оцениваться для определения влияния критериев на истощение людей из первоначальной когорты.",
+      "cohortExit": "Выход из когорты",
+      "cohortExitText_1": "Для всех квалификационных событий должна быть спецификация того, когда каждое событие заканчивается присутствием в когорте. По умолчанию событие заканчивается в конце периода наблюдения, содержащего соответствующее исходное событие, но также могут быть указаны даты окончания события:",
+      "cohortExitTitle_1": "Даты окончания мероприятия",
+      "cohortExitText_2": "Квалификационное начальное событие может быть установлено как завершающееся после фиксированного периода времени относительно даты начала или окончания события, или дата окончания может быть основана на конце непрерывного воздействия набора лекарств, определенных набором понятий.",
+      "cohortExitTitle_2": "Цензура События",
+      "cohortExitText_3": "Критерии могут быть использованы для оповещения об окончании события. Если между датой начала и окончания квалифицируемого события определено цензурное событие, в качестве даты выхода будет использоваться дата цензурного события.",
+      "cohortEntryEventsText_2": "События, имеющие любой из следующих критериев:",
+      "addInitialEvent": "Добавить начальное событие",
+      "deleteCriteria": "Удалить критерии",
+      "cohortEntryEventsText_3": "с непрерывным наблюдением не менее",
+      "cohortEntryEventsText_4": "дней до и",
+      "cohortEntryEventsText_5": "дней после даты индекса",
+      "cohortEntryEventsText_6": "Ограничить начальные события до:",
+      "cohortEntryEventsText_7": "на человека.",
+      "restrictInitialEventsTitle": "Ограничить начальные события до:",
+      "removeRestriction": "Удалить начальное ограничение события",
+      "restrictInitialEventsButton": "Ограничить начальные события",
+      "inclusionCriteriaTitle": "Критерии включения",
+      "newInclusionCriteria": "Новые критерии включения",
+      "inclusionCriteriaText_1": "Ограничить квалификационные события:",
+      "cohortExitTitle": "Выход из когорты",
+      "eventPersistence": "Постоянство события:",
+      "censoringEvents": "Цензура События:",
+      "cohortExitText_4": "Выход из группы на основе следующих критериев:",
+      "addCensoringEvent": "Добавить событие цензуры",
+      "cohortExitText_5": "События цензуры не выбраны.",
+      "cohortErasTitle": "Когорт Эра",
+      "cohortErasText_1": "Укажите размер разрыва коллапса эпохи:",
+      "cohortErasText_2": "Даты начала когорты левого цензора в",
+      "cohortErasText_2_1": " ",
+      "cohortErasText_3": "Дата окончания когорты правого цензора",
+      "cohortErasText_3_1": " ",
+      "addTrimmingOptions": "добавить параметры обрезки ...",
+      "unnamedCriteria": "Безымянный критерий",
+      "copyOf": "Копия:",
+      "noCensoring": "Нет цензуры",
+      "indexMessage": "Дата индекса относится к событию из критериев вхождения в группу.",
+      "days": "дней"
+    },
+    "conditionEra": {
+      "criteriaText_1": "состояние эпохи",
+      "addAttribute": "Добавить атрибут ...",
+      "attributeText_1": "впервые в истории человека",
+      "attributeText_2": "эра начала это:",
+      "attributeText_3": "конец эпохи это:",
+      "attributeText_4": "с количеством появлений",
+      "attributeText_5": "с длиной эры",
+      "attributeText_6": "с возрастом в годах в начале эры",
+      "attributeText_7": "с возрастом в годах в конце эры",
+      "attributeText_8": "с полом:",
+      "attributeText_9": "дней",
+      "anyConditionButton": "Любое условие",
+      "returnText_1": "Дата индекса относится к условию эпохи"
+    },
+    "conditionOccurrence": {
+      "conditionOccurrenceText_1": "возникновение условия",
+      "addAttribute": "Добавить атрибут...",
+      "anyCondition": "Любое условие",
+      "conditionOccurrenceText_2": "впервые в истории человека",
+      "conditionOccurrenceText_3": "Начало вхождения:",
+      "conditionOccurrenceText_4": "Конец появления:",
+      "conditionType": "Тип условия",
+      "conditionOccurrenceText_5": "с причиной остановки",
+      "conditionOccurrenceText_6": "Концепция источника условия",
+      "conditionOccurrenceText_7": "с возрастом",
+      "conditionOccurrenceText_8": "с полом:",
+      "conditionOccurrenceText_9": "со специальностью поставщика:",
+      "conditionOccurrenceText_10": "с посещением:",
+      "conditionOccurrenceText_11": "gender is any of:",
+      "conditionOccurrenceText_12": "provider specialty is any of:",
+      "conditionOccurrenceText_13": "visit occurrence is any of:",
+      "indexDataText": "Дата индекса относится к условию возникновения <%= conceptSetName %>"
+    },
+    "conditionDeath": {
+      "anyDeath": "Любая смерть",
+      "addAttribute": "Добавить атрибут ...",
+      "deathType": "Тип смерти",
+      "conditionDeathText_1": "случай смерти от",
+      "conditionDeathText_2": "Начало вхождения:",
+      "conditionDeathText_3": "Концепция источника смерти",
+      "conditionDeathText_4": "с возрастом",
+      "conditionDeathText_5": "с полом:",
+      "conditionDeathText_6": "пол любой из:",
+      "indexDataText": "Дата индекса относится к событию смерти <%= conceptSetName %>."
+    },
+    "conditionDevice": {
+      "anyDevice": "Любое устройство",
+      "addAttribute": "Добавить атрибут ...",
+      "deviceType": "Тип устройства",
+      "conditionDeviceText_1": "устройство воздействия",
+      "conditionDeviceText_2": "впервые в истории человека",
+      "conditionDeviceText_3": "Начало вхождения:",
+      "conditionDeviceText_4": "Конец появления:",
+      "conditionDeviceText_5": "с уникальным идентификатором устройства",
+      "conditionDeviceText_6": "с количеством",
+      "conditionDeviceText_7": "Концепция источника устройства",
+      "conditionDeviceText_8": "с возрастом",
+      "conditionDeviceText_9": "с полом:",
+      "conditionDeviceText_10": "со специальностью поставщика:",
+      "conditionDeviceText_11": "с посещением:",
+      "conditionDeviceText_12": "пол любой из:",
+      "conditionDeviceText_13": "Специализация провайдера:",
+      "conditionDeviceText_14": "Событием посещения является любое из:",
+      "indexDataText": "Дата индекса относится к экспозиции устройства <%= conceptSetName %>"
+    },
+    "conditionDose": {
+      "anyDrug": "Любой наркотик",
+      "anyDoseEra": "Любая эра дозы",
+      "addAttribute": "Добавить атрибут...",
+      "conditionDoseText_1": "эра дозы",
+      "conditionDoseText_2": "впервые в истории человека",
+      "conditionDoseText_3": "эра начала это:",
+      "conditionDoseText_4": "Конец эпохи это:",
+      "conditionDoseText_5": "с блоком:",
+      "conditionDoseText_6": "с величиной дозы",
+      "conditionDoseText_7": "с длиной эры",
+      "conditionDoseText_8": "с возрастом в годах в начале эры",
+      "conditionDoseText_9": "с возрастом в годах в конце эры",
+      "conditionDoseText_10": "с полом:",
+      "conditionDoseText_11": "Единицей является любой из:",
+      "conditionDoseText_12": "пол любой из:",
+      "indexDataText": "Дата индекса относится к эре дозы <%= conceptSetName %>."
+    },
+    "conditionDrug": {
+      "anyDrug": "Любой наркотик",
+      "addAttribute": "Добавить атрибут...",
+      "conditionDrugText_1": "и другая эра",
+      "conditionDrugText_2": "впервые в истории человека",
+      "conditionDrugText_3": "эра начала это:",
+      "conditionDrugText_4": "Конец эпохи это:",
+      "conditionDrugText_5": "с учетом воздействия",
+      "conditionDrugText_6": "с разрывом дней",
+      "conditionDrugText_7": "дней",
+      "conditionDrugText_8": "с длиной эры",
+      "conditionDrugText_9": "с возрастом в годах в начале эры",
+      "conditionDrugText_10": "с возрастом в годах в конце эры",
+      "conditionDrugText_11": "с полом:",
+      "conditionDrugText_12": "пол любой из:",
+      "indexDataText": "Дата индекса относится к эре наркотиков <%= conceptSetName %>."
+    },
+    "conditionDrugExposure": {
+      "anyDrug": "Любой наркотик",
+      "addAttribute": "Добавить атрибут...",
+      "drugType": "Тип лекарства",
+      "conditionDrugExposureText_1": "наркотическое воздействие",
+      "conditionDrugExposureText_2": "впервые в истории человека",
+      "conditionDrugExposureText_3": "начало появления:",
+      "conditionDrugExposureText_4": "конец вхождения:",
+      "conditionDrugExposureText_5": "с причиной остановки",
+      "conditionDrugExposureText_6": "с добавками",
+      "conditionDrugExposureText_7": "с количеством",
+      "conditionDrugExposureText_8": "с поставками дней",
+      "conditionDrugExposureText_9": "Концепция маршрута это:",
+      "conditionDrugExposureText_10": "с эффективной дозой препарата",
+      "conditionDrugExposureText_11": "Единица дозы является:",
+      "conditionDrugExposureText_12": "с номером лота",
+      "conditionDrugExposureText_13": "Концепция источника наркотиков:",
+      "conditionDrugExposureText_14": "с возрастом",
+      "conditionDrugExposureText_15": "с полом:",
+      "conditionDrugExposureText_16": "со специальностью поставщика:",
+      "conditionDrugExposureText_17": "с посещением:",
+      "conditionDrugExposureText_18": "Концепция маршрута - это любое из:",
+      "conditionDrugExposureText_19": "Единицей дозы является любая из:",
+      "conditionDrugExposureText_20": "пол любой из:",
+      "conditionDrugExposureText_21": "Специализация провайдера:",
+      "conditionDrugExposureText_22": "Событием посещения является любое из:",
+      "indexDataText": "Дата индекса относится к воздействию наркотиков на <%= conceptSetName %>."
+    },
+    "conditionMeasurement": {
+      "anyMeasurement": "Любое измерение",
+      "addAttribute": "Добавить атрибут...",
+      "measurementType": "Тип измерения",
+      "conditionMeasurementText_1": "измерение",
+      "conditionMeasurementText_2": "впервые в истории человека",
+      "conditionMeasurementText_3": "начало появления:",
+      "conditionMeasurementText_5": "Оператор значения измерения:",
+      "conditionMeasurementText_6": "со значением как число",
+      "conditionMeasurementText_7": "Ценность как Концепция:",
+      "conditionMeasurementText_8": "Единица:",
+      "conditionMeasurementText_9": "с низким диапазоном",
+      "conditionMeasurementText_10": "с диапазоном низкого отношения",
+      "conditionMeasurementText_11": "с высоким диапазоном",
+      "conditionMeasurementText_12": "with Range High Ratio",
+      "conditionMeasurementText_13": "с ненормальным результатом",
+      "conditionMeasurementText_14": "Концепция источника измерения",
+      "conditionMeasurementText_15": "с возрастом",
+      "conditionMeasurementText_16": "с полом:",
+      "conditionMeasurementText_17": "со специальностью поставщика:",
+      "conditionMeasurementText_18": "с посещением:",
+      "conditionMeasurementText_19": "Оператором значения измерения является любой из:",
+      "conditionMeasurementText_20": "Значение как понятие - это любое из:",
+      "conditionMeasurementText_21": "Единицей является любой из:",
+      "conditionMeasurementText_22": "с меньшим диапазоном",
+      "conditionMeasurementText_23": "с меньшим коэффициентом дальности",
+      "conditionMeasurementText_24": "с высоким диапазоном",
+      "conditionMeasurementText_25": "с высоким коэффициентом дальности",
+      "conditionMeasurementText_26": "пол любой из:",
+      "conditionMeasurementText_27": "Специализация провайдера:",
+      "conditionMeasurementText_28": "Событием посещения является любое из:",
+      "indexDataText": "Дата индекса относится к измерению <%= conceptSetName %>."
+    },
+    "conditionObservation": {
+      "anyObservation": "Любое Наблюдение",
+      "addAttribute": "Добавить атрибут...",
+      "observationType": "Тип наблюдения",
+      "conditionObservationText_1": "наблюдение",
+      "conditionObservationText_2": "впервые в истории человека",
+      "conditionObservationText_3": "начало появления:",
+      "conditionObservationText_4": "со значением как число",
+      "conditionObservationText_5": "со значением как строка",
+      "conditionObservationText_6": "с ценностью как концепцией:",
+      "conditionObservationText_7": "с классификатором:",
+      "conditionObservationText_8": "с блоком:",
+      "conditionObservationText_9": "Концепция источника наблюдения:",
+      "conditionObservationText_10": "с возрастом",
+      "conditionObservationText_11": "с полом:",
+      "conditionObservationText_12": "с специальностью поставщика:",
+      "conditionObservationText_13": "с посещением:",
+      "conditionObservationText_14": "Значение как понятие - это любое из:",
+      "conditionObservationText_15": "Квалификатор является любым из:",
+      "conditionObservationText_16": "Единицей является любой из:",
+      "conditionObservationText_17": "пол любой из:",
+      "conditionObservationText_18": "Специализация провайдера:",
+      "conditionObservationText_19": "Событием посещения является любое из:",
+      "indexDataText": "Дата индекса относится к наблюдению за <%= conceptSetName %>."
+    },
+    "conditionObservationPeriod": {
+      "addAttribute": "Добавить атрибут...",
+      "conditionObservationText_1": "Периоды наблюдения по следующим критериям:",
+      "conditionObservationText_2": "ограничен первым периодом наблюдения пациентов",
+      "conditionObservationText_3": "используя указанный период:",
+      "conditionObservationText_4": "начало периода наблюдения:",
+      "conditionObservationText_5": "конец периода наблюдения:",
+      "conditionObservationText_6": "Тип периода:",
+      "conditionObservationText_7": "с возрастом в годах на начало периода",
+      "conditionObservationText_8": "с возрастом в годах на конец периода",
+      "conditionObservationText_9": "с продолжительностью периода",
+      "conditionObservationText_10": "дней.",
+      "conditionObservationText_11": "период наблюдения",
+      "conditionObservationText_12": "Тип периода - любой из:"
+    },
+    "conditionPayerPlanPeriod": {
+      "anyPayer": "Любой плательщик",
+      "anyPlan": "Любой план",
+      "anySponsor": "Любой Спонсор",
+      "anyStopReason": "Любая причина остановки",
+      "anyPayerSource": "Любой источник плательщика",
+      "anyPlanSource": "Любой источник плана",
+      "anySponsorSource": "Любой Спонсор Источник",
+      "anyStopReasonSource": "Любой источник причины остановки",
+      "addAttribute": "Добавить атрибут...",
+      "conditionPayerPlanText_1": "периоды плана плательщика по следующим критериям:",
+      "conditionPayerPlanText_2": "ограничено периодом плана первого плательщика пациентов",
+      "conditionPayerPlanText_3": "с возрастом в начале периода",
+      "conditionPayerPlanText_4": "с возрастом на конец периода",
+      "conditionPayerPlanText_5": "с продолжительностью периода",
+      "conditionPayerPlanText_6": "с полом:",
+      "conditionPayerPlanText_7": "используя указанный период",
+      "conditionPayerPlanText_8": "Начало периода действия плана плательщика:",
+      "conditionPayerPlanText_9": "Конец периода действия плана плательщика:",
+      "conditionPayerPlanText_10": "Концепция плательщика",
+      "conditionPayerPlanText_11": "Концепция плана",
+      "conditionPayerPlanText_12": "Концепция спонсора",
+      "conditionPayerPlanText_13": "Остановить причину",
+      "conditionPayerPlanText_14": "Концепция источника плательщика",
+      "conditionPayerPlanText_15": "Концепция источника плана",
+      "conditionPayerPlanText_16": "Спонсор Источник Концепция",
+      "conditionPayerPlanText_17": "Стоп Причина Источник Концепция",
+      "conditionPayerPlanText_18": "Примечание. Критерии периода плана плательщика доступны только в CDM v5.3 и более поздних версиях.",
+      "conditionPayerPlanText_19": "период плана плательщика",
+      "conditionPayerPlanText_20": "используя указанный период:",
+      "conditionPayerPlanText_21": "начало периода",
+      "conditionPayerPlanText_22": "конец периода",
+      "conditionPayerPlanText_23": "с возрастом в начале",
+      "conditionPayerPlanText_24": "с возрастом в конце",
+      "conditionPayerPlanText_25": "пол любой из:",
+      "indexDataText": "Дата индекса относится к периоду плана плательщика."
+    },
+    "conditionProcedureOccurrence": {
+      "addAttribute": "Добавить атрибут...",
+      "anyProcedure": "Любая процедура",
+      "procedureType": "Тип процедуры",
+      "conditionProcedureOccurrenceText_1": "процедура возникновения",
+      "conditionProcedureOccurrenceText_2": "впервые в истории человека",
+      "conditionProcedureOccurrenceText_3": "Начало вхождения:",
+      "conditionProcedureOccurrenceText_4": "Модификатор это:",
+      "conditionProcedureOccurrenceText_5": "с количеством",
+      "conditionProcedureOccurrenceText_6": "Концепция источника процедуры:",
+      "conditionProcedureOccurrenceText_7": "с возрастом:",
+      "conditionProcedureOccurrenceText_8": "с полом:",
+      "conditionProcedureOccurrenceText_9": "со специальностью поставщика:",
+      "conditionProcedureOccurrenceText_10": "с посещением:",
+      "conditionProcedureOccurrenceText_11": "Модификатор является любым из:",
+      "conditionProcedureOccurrenceText_12": "пол любой из:",
+      "conditionProcedureOccurrenceText_13": "Специализация провайдера:",
+      "conditionProcedureOccurrenceText_14": "Событием посещения является любое из:",
+      "indexDataText": "Дата индекса относится к процедуре <%= conceptSetName %>."
+    },
+    "conditionSpecimen": {
+      "addAttribute": "Добавить атрибут...",
+      "anySpecimen": "Любой образец",
+      "specimenType": "v",
+      "conditionSpecimeText_1": "образец",
+      "conditionSpecimeText_2": "впервые в истории человека",
+      "conditionSpecimeText_3": "Начало вхождения:",
+      "conditionSpecimeText_4": "с количеством",
+      "conditionSpecimeText_5": "с блоком:",
+      "conditionSpecimeText_6": "с анатомическим сайтом:",
+      "conditionSpecimeText_7": "со статусом заболевания:",
+      "conditionSpecimeText_8": "с идентификатором источника",
+      "conditionSpecimeText_9": "с возрастом",
+      "conditionSpecimeText_10": "с полом:",
+      "conditionSpecimeText_11": "Единицей является любой из:",
+      "conditionSpecimeText_12": "Анатомический сайт - это любой из:",
+      "conditionSpecimeText_13": "Состояние болезни является любой из:",
+      "conditionSpecimeText_14": "пол любой из:",
+      "indexDataText": "Дата индекса относится к образцу <%= conceptSetName %>."
+    },
+    "conditionVisit": {
+      "addAttribute": "Добавить атрибут...",
+      "anyVisit": "Любое посещение",
+      "visitType": "Тип посещения",
+      "anyLocation": "Любое место",
+      "conditionSpecimeText_1": "посещение",
+      "conditionSpecimeText_2": "впервые в истории человека",
+      "conditionSpecimeText_3": "Начало вхождения:",
+      "conditionSpecimeText_4": "Конец появления:",
+      "conditionSpecimeText_5": "Визит Источник Концепция",
+      "conditionSpecimeText_6": "с продолжительностью посещения",
+      "conditionSpecimeText_7": "с возрастом",
+      "conditionSpecimeText_8": "с полом:",
+      "conditionSpecimeText_9": "со специальностью поставщика:",
+      "conditionSpecimeText_10": "с местом службы:",
+      "conditionSpecimeText_11": "с местом обслуживания, расположенным в:",
+      "conditionSpecimeText_12": "с расстоянием от места службы до пациента",
+      "conditionSpecimeText_13": "с продолжительностью посещения",
+      "conditionSpecimeText_14": "пол любой из:",
+      "conditionSpecimeText_15": "Специализация провайдера:",
+      "indexDataText": "Дата индекса относится к посещению <%= conceptSetName %>."
+    },
+    "dateRange": {
+      "before": "Перед",
+      "onOrBefore": "Или раньше",
+      "on": "На",
+      "after": "После",
+      "onOrAfter": "На или после",
+      "between": "Между",
+      "notBetween": "Не между",
+      "and": "и",
+      "firstPlaceholder": "ГГГГ-ММ-ДД",
+      "inclusive": "включительно"
+    },
+    "numericRange": {
+      "lessThan": "Меньше, чем",
+      "lessOrEqualTo": "Меньше или равно",
+      "equalTo": "Равно",
+      "greaterThan": "Больше чем",
+      "greaterOrEqualTo": "Больше или равно",
+      "between": "Между",
+      "notBetween": "Не между"
+    },
+    "conceptPicker": {
+      "addButton": "Добавить",
+      "importButton": "Импорт",
+      "importConcepts": "Импортировать концепции",
+      "done": "Выполнено",
+      "selectConcept": "Выберите концепцию",
+      "search": "Поиск",
+      "waitMessage": "Пожалуйста, подождите, пока провайдер словарного запаса не начинает...",
+      "addSelected": "Добавить выбранные",
+      "addAndClose": "Добавить и закрыть",
+      "close": "Закрыть"
+    },
+    "criteriaGroup": {
+      "having": "имеющий",
+      "havingCapital": "Имеющий",
+      "followingCriteria": "из следующих критериев:",
+      "addCriteria": "Добавить критерии в группу ...",
+      "withFollowingCriteria": "со следующими критериями события:",
+      "deleteCriteria": "Удалить критерии",
+      "deleteGroup": "Удалить группу",
+      "with": "с",
+      "usingDistinct": "используя различные",
+      "usingAll": "используя все",
+      "occurrencesOf": "появления:",
+      "occurrenceOf": "появление:",
+      "where": "где",
+      "between": "между",
+      "and": "а также",
+      "addAdditionalConstraint": "добавить дополнительное ограничение",
+      "criteriaGroupText_1": "ограничить одно и то же посещение",
+      "criteriaGroupText_2": "разрешить события за пределами периода наблюдения",
+      "occurringWithinTheSameVisit": "встречаемое в пределах того же посещения"
+    },
+    "customEraStrategy": {
+      "customEraStrategyText_1": "Непрерывная выдержка:",
+      "customEraStrategyText_2": "Укажите набор понятий, содержащий один или несколько препаратов. Эпоха наркотиков будет получена из всех событий воздействия наркотиков для любого из препаратов в наборе понятий, используя указанное постоянное окно в качестве максимально допустимого разрыва в днях между последовательными событиями воздействия и добавление указанного окна наблюдения к окончательному событию воздействия. Если дата окончания события воздействия не указана, то датой окончания события воздействия считается дата начала события + запас дней в случаях, когда количество дней доступно, или дата начала события + 1 день в противном случае. Постоянство этого события гарантирует, что дата окончания когорты будет не больше даты окончания эры наркотиков.",
+      "customEraStrategyText_3": "Концептуальный набор, содержащий интересующий вас препарат (ы):",
+      "customEraStrategyText_4": "Окно постоянства: максимально",
+      "customEraStrategyText_5": "Окно наблюдения: добавить ",
+      "customEraStrategyText_6": "дни до конца эры постоянного воздействия в качестве дополнительного периода наблюдения до выхода из когорты.",
+      "customEraStrategyText_7": "Используйте количество дней и дату окончания воздействия для продолжительности воздействия.",
+      "customEraStrategyText_8": "изменение",
+      "customEraStrategyText_9": "Принудительное количество дней воздействия наркотиков:",
+      "customEraStrategyText_10": "дней.",
+      "customEraStrategyText_11": "Пользовательские Критерии Эры Наркотиков",
+      "customEraStrategyText_12": "Эта стратегия создает эру наркотиков из кодов, найденных в указанном наборе понятий. Если индексное событие найдено в пределах эры, в дате окончания когорты будет использоваться дата окончания эры. В противном случае он будет использовать дату окончания периода наблюдения, которая содержит индексное событие.",
+      "customEraStrategyText_13": "Используйте дату окончания эры ",
+      "customEraStrategyText_14": "позволяющий",
+      "customEraStrategyText_15": "дни между выставками",
+      "customEraStrategyText_16": "добавление",
+      "customEraStrategyText_17": "дни после окончания воздействия",
+      "customEraStrategyText_18": "использование дней поставки и даты окончания воздействия для продолжительности воздействия.",
+      "customEraStrategyText_19": "форсирование дней воздействия лекарств на:",
+      "selectDrugConceptSet": "Выберите набор концепций лекарств"
+    },
+    "dateOffsetStrategy": {
+      "dateOffsetStrategyText_1": "Постоянная длительность:",
+      "dateOffsetStrategyText_2": "Дата окончания события определяется путем добавления количества дней к дате начала или окончания события. Если к дате начала события добавляется смещение, все эпизоды когорты будут иметь одинаковую фиксированную продолжительность (при условии дальнейшей цензуры). Если к дате окончания события добавляется смещение, люди в когорте могут иметь различное время продолжительности когорты из-за различной продолжительности события (например, периоды постоянного воздействия наркотиков или длительность пребывания в больнице). Постоянство этого события гарантирует, что дата окончания когорты будет не больше выбранной даты события индекса плюс смещение дней.",
+      "dateOffsetStrategyText_3": "Дата события для смещения от:",
+      "dateOffsetStrategyText_3_1": " ",
+      "dateOffsetStrategyText_4": "Смещение количества дней:",
+      "dateOffsetStrategyText_5": "дней",
+      "dateOffsetStrategyText_6": "Критерии выхода из даты смещения",
+      "dateOffsetStrategyText_7": "Эта дата окончания определения когорты будет индексом события",
+      "dateOffsetStrategyText_8": "плюс"
+    },
+    "windowInput": {
+      "windowInputText_1": "Все",
+      "windowInputText_2": "дней",
+      "windowInputText_3": "а также"
+    },
+    "demographicCriteria": {
+      "addAttribute": "Добавить атрибут ...",
+      "withAge": "с возрастом",
+      "withGenderOf": "с полом:",
+      "withRaceOf": "с расой:",
+      "withEthnicity": "с этнической принадлежностью:",
+      "occurrenceStart": "Начало вхождения:",
+      "occurrenceEnd": "Конец появления:",
+      "demographicCriteriaText_1": "пол любой из:",
+      "demographicCriteriaText_2": "Раса это любой из:",
+      "demographicCriteriaText_3": "Этнос любой из:"
+    },
+    "expressionCartoonBindings": {
+      "primaryCriteria": "Основные критерии",
+      "any": "Любые",
+      "one": "один",
+      "s": " ",
+      "those": "те",
+      "the": " ",
+      "paramOf": "<%=param%>",
+      "atParamOf": "В <%=param%>",
+      "or": "или",
+      "and": "и",
+      "anyParam": "любой <%=param%>",
+      "domain": "домен",
+      "all": "все",
+      "distinct": "отчетливый",
+      "before": "до",
+      "after": "после",
+      "noCriteriaGroup": "Нет критериев группы",
+      "additionalCriteria": "Дополнительные критерии",
+      "noAdditionalCriteria": "Никаких дополнительных критериев",
+      "inclusionRules": "Правила включения",
+      "noInclusionRules": "Нет правил включения",
+      "condition": "условие",
+      "drug": "лекарство",
+      "drugEra": "эра наркотиков",
+      "conditionEra": "состояние эпохи",
+      "doseEra": "эра дозы",
+      "procedure": "процедура",
+      "observation": "наблюдение",
+      "device": "устройство",
+      "measurement": "измерение",
+      "specimen": "образец",
+      "death": "смерть",
+      "observationPeriod": "период наблюдения",
+      "visit": "посещение",
+      "era": "эпоха",
+      "daysSupply": "Дни питания",
+      "visitCapital": "Посещение",
+      "expressionCartoonBindingsText_1": "следующий основной критерий",
+      "expressionCartoonBindingsText_2": "<%=oneOrAny%> из следующих <%=pcListLength%> основных критериев",
+      "expressionCartoonBindingsText_3": "Результаты будут генерироваться для каждого события, соответствующего человеку <%=pcCritMatch%>. Окончательные результаты будут ограничены событиями <%=thoseOrthe%>, соответствующими любым дополнительным критериям и правилам включения.",
+      "expressionCartoonBindingsText_4": "Результаты будут сгенерированы для совпадения одного события <%=pLimitTypeToLowerCase%> <%=pcCritMatch%>.",
+      "expressionCartoonBindingsText_5": "Дата индекса результата <%=pcPlural%> будет датой начала <%=pcPlural%> соответствующего события первичного критерия <%=pcPlural%>.",
+      "expressionCartoonBindingsText_6": "Ограничить людей, имеющих события, соответствующие <%=critgroupTypeToLowerCase%> из следующих критериев.",
+      "expressionCartoonBindingsText_7": "События должны начинаться в скобках",
+      "expressionCartoonBindingsText_8": "относительно даты индекса Линии и стрелки представляют требуемую продолжительность этих событий.",
+      "expressionCartoonBindingsText_9": "с <%=type%> <%=count%> с использованием <%=distinctOrAll%> вхождений",
+      "expressionCartoonBindingsText_10": "происходит между индексами <%=startDays%> days <%=beforeArAfterStart%> и <%=endDays%> days <%=beforeArAfterEnd%>"
+    },
+    "conceptSet": {
+      "exportAllToCSV": "Экспортировать все наборы концепций в CSV",
+      "exportingToCsv": "Экспортирование всех наборов концепций в CSV",
+      "importingConceptSet": "Импортирование набора концепций",
+      "conceptSetExpression": "Определение набора концепций",
+      "includedConcepts": "Включенные концепции",
+      "includedSourceCodes": "Включенные исходные коды",
+      "deleteConfirm": "Вы действительно хотите удалить <%=name%>?",
+      "conceptSetExpressionJSON": "JSON-определение набора концепций",
+      "clickToClear": "нажмите, чтобы очистить",
+      "closeConceptSet": "Закрыть набор концепций",
+      "conceptIdentifiers": "Идентификаторы концепций",
+      "conceptIdentifierList": "Список идентификаторов концепций",
+      "includedConceptIdentifierList": "Список идентификаторов включенных концепций",
+      "loadingForExport": "Загрузка для экспорта...",
+      "exportToCsv": "Экспорт в CSV",
+      "sourceCodes": "Исходные коды",
+      "repository": "Репозиторий",
+      "conceptSet": "Набор концепций",
+      "appendConceptSetExpression": "Добавить определение набора концепций",
+      "overwriteConceptSetExpression": "Перезаписать определение набора концепций",
+      "enterConceptIdentifiers": "Введите идентификаторы концепций",
+      "enterSourceCodes": "Введите исходные коды",
+      "name": "Имя:",
+      "addConcepts": "Добавить концепции",
+      "removeSelected": "Удалить выбранные",
+      "deleteConceptSet": "Удалить набор концепций",
+      "copyToConceptSetRepository": "Копировать в репозиторий наборов концепций",
+      "notEnoughPermissions": "Недостаточно прав для <%=action%> набора концепций",
+      "actionEdit": "редактирования",
+      "actionCreate": "создания",
+      "overwriteConfirm": "Вы действительно хотите перезаписать текущее выражение набора концепций?",
+      "loadingIncludedConcepts": "Загрузка включенных концепций",
+      "commonAncestors": "Общие предки",
+      "loadingIncludedSourcecodes": "Загрузка включенных исходных кодов"
+    },
+    "conceptLegend": {
+      "standard": "Стандартный",
+      "nonStandard": "Нестандартный",
+      "classification": "Классификация"
+    },
+    "conceptAddBox": {
+      "addToConceptSet": "Добавить в набор концепций",
+      "addToNewConceptSet": "Добавить в новый набор концепций",
+      "selectConceptSet": "Выбрать набор концепций",
+      "exclude": "Исключенные",
+      "descendants": "Потомки",
+      "mapped": "Сопоставленные",
+      "addedToConceptSet": "Добавлено в набор концепций!"
+    },
+    "conceptSetSelector": {
+      "importConcept": "Импортировать концепцию",
+      "clearConceptSet": "Очистить концепцию",
+      "searchWithTripleDots": "Поиск..."
+    },
+    "conceptSetSaveModal": {
+      "saveNewConceptSet": "Сохранение нового набора концепций",
+      "conceptSetAlreadyExists": "Набор концепций уже существует",
+      "conceptSetNameLabel": "Имя набора концепций:",
+      "conceptSetNamePlaceholder": "Имя набора концепций"
+    },
+    "conceptSetBuilder": {
+      "unnamedConceptSet": "Безымянный набор концепций",
+      "pleaseSelectCodesetToModify": "Выберите, пожалуйста, набор для модификации...",
+      "newConceptSet": "Новый набор концепций",
+      "export": "Экспорт",
+      "exportConceptSetTitle": "Экспорт набора концепций...",
+      "import": "Импорт",
+      "importConceptSetTitle": "Импорт набора концепций...",
+      "importConceptSetPlaceholder": "Импорт набора концепций",
+      "conceptSet": "Набор концепций",
+      "includedConcepts": "Включенные концепции",
+      "mappedConcepts": "Сопоставленные концепции",
+      "load": "Загрузить",
+      "delete": "Удалить",
+      "removeSelected": "Удалить выбранные",
+      "selectConceptSet": "Выберите набор концепций..."
+    },
+    "cyclops": {
+      "controlEditor": {
+        "maxIterations": "Максимальное количество итераций Cyclops, которое нужно предпринять, прежде чем возвращать ошибку, из-за которой не удалось выполнить схождение:",
+        "maxRelativeChange": "Максимальное относительное изменение критерия сходимости от последовательных итераций для достижения сходимости:",
+        "convergenceType": "Выберите тип сходимости:",
+        "crossValidationSearchType": "Выберите тип поиска перекрестной проверки:",
+        "lowerPrior": "Нижний предыдущий предел отклонения:",
+        "upperPrior": "Верхний предыдущий предел отклонения:",
+        "numberOfSteps": "Количество шагов:",
+        "numberOfRandomFolds": "Количество случайных сгибов для перекрестной проверки:",
+        "numberOfRepetitions": "Количество повторений <%=num%>-кратной перекрестной проверки:",
+        "umberOfRepetitionsOfData": "Количество повторений данных для перекрестной проверки:",
+        "noiseLevel": "Уровень шума при выводе экрана Cyclops:",
+        "resetAllCoefficients": "Сброс всех коэффициентов до 0 между подгонками модели при перекрестной проверке:",
+        "startingVariance": "Начальная дисперсия для автоматического поиска перекрестной проверки; -1 = использовать оценку на основе данных:",
+        "useTheKarush": "Использовать условия Karush-Kuhn-Tucker, чтобы ограничить поиск:",
+        "sizeMultiplier": "Множитель размера для активного набора:",
+        "nameOfExchangeableSamplingUnit": "Наименование сменной единицы выборки. Опция <i>byPid</i> выделяет целые страты. Опция <i>byRow</i> выбирает отдельные строки. Если установлено значение <i>auto</i>, <i>byRow</i> будет использоваться для всех моделей, кроме условных моделей, где среднее число строк на страту меньше, чем число страт:",
+        "initialBound": "Начальная граница:",
+        "maxBoundCount": "Максимальное количество границ:"
+      },
+      "prior": {
+        "distribution": "Укажите распределение априорной вероятности:",
+        "mapping": "Дочернее-родительское сопоставление для иерархической априорной вероятности:",
+        "crossValidation": "Выполнять перекрестную проверку, для определения дисперсии априорной вероятности:",
+        "interceptCoefficient": "Перехватыват коэффициента в априорную вероятность:",
+        "distributionVariance": "Укажите дисперсию распределения априорной вероятности:",
+        "vector": "Укажите вектор чисел или ковариатные идентификаторы для исключения из априорной вероятности:",
+        "neighborhoods": "Список окрестностей первого порядка для частично слитой априорной вероятности:"
+      },
+      "options": {
+        "none": "Нет",
+        "hierarchical": "Иерархическое",
+        "laplace": "Лаплас",
+        "normal": "Нормальное",
+        "auto": "Авто",
+        "grid": "Грид",
+        "gradient": "Градиент",
+        "mittal": "Митталь",
+        "lange": "Ланге",
+        "silent": "Молча",
+        "quiet": "Тихо",
+        "noisy": "Шумно"
+      }
+    },
+    "featureextraction": {
+      "covariateSettingsEditor": {
+        "gender": "Пол",
+        "age": "Возраст",
+        "ageGroups": "Группы возрастов",
+        "race": "Раса",
+        "ethnicity": "Национальность",
+        "indexYear": "Год индексации",
+        "indexMonth": "Месяц индексации",
+        "priorObservationTime": "Предыдущее<br/>время наблюлений",
+        "postObservationTime": "Последующее<br/>время наблюдений",
+        "timeInCohort": "Время<br/>в когорте",
+        "indexYearMonth": "Индекс<br/>год и месяц",
+        "demographics": "Демография",
+        "timeBoundCovariates": "Ковариаты временных границ",
+        "setTheTimeWindows": "Установка временных окон для ковариат с привязкой ко времени в днях относительно индекса когорты",
+        "domain": "Домен",
+        "anyTimePrior": "Любое время до",
+        "longTerm": "Долгосрочно",
+        "mediumTerm": "Среднесрочно",
+        "shortTerm": "Краткосрочно",
+        "endDays": "Конечные дни",
+        "timeWindows": "Временные окна",
+        "allTime": "Все время",
+        "setTheTimeBoundEraCovariates": "Установка временных окон ковариатов эр",
+        "overlapping": "Пересечение",
+        "eraStart": "Начало эры",
+        "condition": "Условие",
+        "conditionGroup": "Группа условий",
+        "drug": "Лекарство",
+        "drugGroup": "Группа лекарств",
+        "distinctCount": "Distinct счет",
+        "setTheTimeBoundCovariates": "Установка временных окон ковариатов",
+        "conditionPrimaryInpatient": "Состояние - Первичное Стационарное",
+        "procedure": "Процедура",
+        "measurement": "Измерение",
+        "measurementValue": "Измерение - Значение",
+        "measurementRangeGroup": "Измерение - Группа диапазона",
+        "observation": "Наблюдение",
+        "device": "Устройство",
+        "visitCount": "Визит - счет",
+        "visitConceptCount": "Визит - число концепций",
+        "setTheIndexScoreCovariates": "Установка ковариатов индекса оценки",
+        "indexScoreType": "Тип индекса оценки"
+      }
+    },
+    "cohortExpressionViewer": {
+      "initialEventCohort": "Начальная группа событий",
+      "cohortExpressionViewerText_1": "Люди, имеющие любое из следующего:",
+      "cohortExpressionViewerText_2": "с непрерывным наблюдением не менее",
+      "cohortExpressionViewerText_3": "дней до и",
+      "cohortExpressionViewerText_4": "дней после даты индекса",
+      "cohortExpressionViewerText_5": "и ограничить начальные события: ",
+      "cohortExpressionViewerText_6": "на человека",
+      "cohortExpressionViewerText_7": "Для людей, соответствующих Первичным событиям, укажите:",
+      "cohortExpressionViewerText_8": "Ограничить когорту начальных событий до:",
+      "cohortExpressionViewerText_9": "Правила включения",
+      "cohortExpressionViewerText_10": "Ограничить квалификационную когорту до:",
+      "cohortExpressionViewerText_11": "Цензура События:",
+      "cohortExpressionViewerText_12": "Выйти из группы на основе следующего:",
+      "cohortExpressionViewerText_13": "Стратегия разрушения когорты:",
+      "cohortExpressionViewerText_14": "Свернуть когорту по эпохе с размером разрыва",
+      "cohortExpressionViewerText_15": "Критерии включения #(<%=index%>): <%=name%>"
+    },
+    "exploreCohort": {
+      "fetchingFirst": "Выборка первая",
+      "members": "члены",
+      "exploreCohortText_1": "Эта группа не имеет участников, доступных для просмотра. Пожалуйста, проверьте статус генерации в разделе «Определение когорты» Atlas.",
+      "exploreCohortText_2": "В этой группе нет доступных членов для просмотра для выбранного источника данных. Пожалуйста, убедитесь, что вы сгенерировали когорту на вкладке Генерация."
+    },
+    "locationRegion": {
+      "anyLocationRegion": "Любой регион",
+      "criteria": {
+        "of": "регион местоположения",
+        "correlatedCriteria": {
+          "option": {
+            "description": "Применить критерии, используя регион местоположения в качестве события индекса",
+            "text": "Добавить вложенный критерий..."
+          }
+        },
+        "startDate": {
+          "option": {
+            "description": "Фильтровать регионы по дате, когда человек начал там жить",
+            "text": "Добавить критерий даты начала..."
+          },
+          "text": "начитается:"
+        },
+        "endDate": {
+          "option": {
+            "description": "Фильтровать регионы по дате, когда человек закончил там жить",
+            "text": "Добавить критерий даты окончания..."
+          },
+          "text": "заканчивается:"
+        },
+        "indexData": {
+          "text": "Дата индекса относится к региону расположения <%= conceptSetName %>."
+        }
+      }
+    },
+    "common": {
+      "addAttribute": "Добавить атрибут..."
+    },
+    "multiSelect": {
+      "noneSelectedText": "Ничего не выбрано",
+      "noneResultsText": "Не найдено совпадений для {0}",
+      "countSelectedText": "Выбрано {0} из {1}"
+    },
+    "generation": {
+      "selectSources": "Выберите источник",
+      "generate": "Генерировать",
+      "pickAtLeastOneSourceAlert": "Пожалуйста, выберите хотя бы один источник"
+    },
+    "executionUtils": {
+      "startNewExecutionInParallelConfirmation": "Исследование на данном источнике уже запущено. Вы уверены, что хотите запустить параллельно еще одно?"
+    },
+    "nameValidation": {
+      "empty": "Имя не может быть пустым.",
+      "invalidCharacters": "Имя не может содержать следующие символы: \\/:*?\"<>|  Пожалуйста, выберите другое имя.",
+      "length": "Длина имени превышает <%=length%> символов. Пожалуйста, выберите другое имя.",
+      "defaultName": "Имя <%=analysisName%> должно отличаться от умолчательного.",
+      "conceptSet": "набора концепций",
+      "cohortDefinition": "определения когорты",
+      "characterization": "характеризации",
+      "featureAnalysis": "функционального анализа",
+      "cohortPathway": "исхода когорты",
+      "irAnalysis": "анализа уровня заболеваемости",
+      "pleAnalysis": "анализа оценки уровня населения",
+      "plpAnalysis": "прогнозирования уровня пациента"
+    },
+    "checks": {
+      "runningDiagnostics": "Выполнение диагностики",
+      "fixIt": "Исправить"
+    }
+  },
+  "facets": {
+    "caption": {
+      "mappingType": "Тип отображения",
+      "source": "Источник",
+      "created": "Создано",
+      "updated": "Обновлено",
+      "lastModified": "Последняя правка",
+      "author": "Автор",
+      "match": "Соответствие",
+      "vocabulary": "Словарь",
+      "class": "Класс",
+      "domain": "Домен",
+      "standardConcept": "Стандартная концепция",
+      "invalidReason": "Причина невалидности",
+      "hasRecords": "Есть записи",
+      "hasDescendantRecords": "Есть записи-наследники",
+      "targetCohorts": "Целевые когорты",
+      "modelName": "Название модели",
+      "riskWindow": "Окно Риска",
+      "comparatorCohorts": "Когорты-компараторы",
+      "outcomeCohorts": "Исходящие когорты",
+      "analysisName": "Имя анализа",
+      "provider": "Провайдер",
+      "startDate": "Дата начала",
+      "errorMsg": "Ошибка",
+      "foundInPublications": "Найдено в публикациях",
+      "foundProductLabel": "Найдено на ярлыке продукта",
+      "foundInProductLabelOrPublications": "Найдено в ярлыке продукта или публикациях",
+      "signalInFaers": "Сигнал в FAERS",
+      "userSpecified": "Пользователь указан",
+      "type": "Тип",
+      "drugLabelExists": "Предлагаемый отрицательный контроль",
+      "relationship": "Отношения",
+      "distance": "Дистанция",
+      "severity": "Строгость",
+      "designs": "Дизайны"
+    },
+    "values": {
+      "warning": "Предупреждение",
+      "critical":"Критический",
+      "info":"Информация"
+    },
+    "date": {
+      "justNow": "Только что",
+      "within24Hours": "В последние 24 часа",
+      "thisWeek": "На этой неделе",
+      "lastWeek": "На прошлой неделе",
+      "others": "Более 2 недель назад"
+    },
+    "match": {
+      "only1": "Только 1",
+      "only2": "Только 2",
+      "both": "Оба"
+    },
+    "type": {
+      "preset": "Пресет",
+      "criteriaSet": "Набор критериев",
+      "custom": "Пользовательский"
+    },
+    "designs": {
+      "myDesigns": "Мои дизайны",
+      "otherDesigns": "Прочие дизайны"
+    }
+  },
+  "columns": {
+    "id": "ID",
+    "name": "Наименование",
+    "type": "Тип",
+    "code": "Код",
+    "remove": "Удаление",
+    "created": "Создано",
+    "updated": "Обновлено",
+    "modified": "Изменено",
+    "author": "Автор",
+    "conceptId": "ID концепции",
+    "conceptCode": "Код концепции",
+    "conceptName": "Имя концепции",
+    "excluded": "Исключенный",
+    "class": "Класс",
+    "standardType": "Стандартный тип",
+    "standardConceptCaption": "Стандартная концепция",
+    "standardConceptCode": "Код стандартной концепции",
+    "rc": "RC",
+    "drc": "DRC",
+    "domain": "Домен",
+    "vocabulary": "Словарь",
+    "ancestors": "Предки",
+    "exclude": "Исключить",
+    "descendants": "Наследники",
+    "mapped": "Сопоставлено",
+    "match": "Соответствие",
+    "severity": "Строгость",
+    "targetName": "Название целевой группы",
+    "outcomeId": "Идентификатор результата",
+    "outcomeName": "Название группы результатов",
+    "modelName": "Название модели",
+    "modelSettings": "Настройки модели",
+    "covariateSettings": "Ковариат Настройки",
+    "riskWindowStart": "Старт окна риска",
+    "riskWindowEnd": "Конец окна риска",
+    "binary": "Двоичный",
+    "model": "Модель",
+    "options": "Опции",
+    "firstExposureOnly": "Только первое знакомство",
+    "washoutPeriod": "Период вымывания",
+    "includeAllOutcomes": "Включить все результаты",
+    "removeSubjectsWithPriorOutcome": "Удалить объекты с предварительным результатом",
+    "priorOutcomeLookback": "Предыдущий результат",
+    "requireTimeAtRisk": "Требуемое время риска",
+    "minimumTimeAtRisk": "Минимальное время риска",
+    "temporal": "Временной",
+    "date": "Дата",
+    "status": "Статус",
+    "duration": "Продолжительность",
+    "results": "Результаты",
+    "targetId": "ID цели",
+    "target": "Цель",
+    "comparatorId": "ID компаратора",
+    "comparator": "Компаратор",
+    "outcomes": "Результаты",
+    "ncOutcomes": "NC результаты",
+    "inclCovariates": "Вкл ковариаты",
+    "exclCovariates": "Искл ковариаты",
+    "copy": "Копирование",
+    "description": "Описание",
+    "timeAtRiskStart": "Время риска, начало",
+    "timeAtRiskEnd": "Время риска, конец",
+    "adjustmentStrategy": "Стратегия регулирования",
+    "outcomeModel": "Результирующая модель",
+    "targetCohortName": "Имя целевой когорты",
+    "comparatorCohortName": "Имя когорты-компаратора",
+    "outcomeCohortName": "Имя исходящей когорты",
+    "analysisName": "Имя анализа",
+    "timeAtRisk": "Время риска",
+    "executionId": "ID генерации",
+    "jobName": "Имя задания",
+    "startDate": "Дата начала",
+    "startDay": "День начала",
+    "endDate": "Дата окончания",
+    "endDay": "День окончания",
+    "totalRecords": "Всего записей",
+    "provider": "Провайдер",
+    "enabled": "Включено",
+    "execute": "Выполнить",
+    "ends": "Окончание",
+    "lastExecuted": "Дата последнего выполенения",
+    "nextExecution": "Следующее выполнение",
+    "selected": "Выбрано",
+    "atlasRole": "Роль в Атласе",
+    "atlasRoles": "Роли в Атласе",
+    "role": "Роль",
+    "roleName": "Наименование роли",
+    "login": "Логин",
+    "groupName": "Имя группы",
+    "atlasLogin": "Логин в Атласе",
+    "adLdapUsername": "Имя пользователя AD/LDAP",
+    "included": "Включено",
+    "permission": "Разрешения",
+    "includedUsers": "Включенные пользователи",
+    "title": "Заголовок",
+    "started": "Запущено",
+    "finished": "Завершено",
+    "message": "Сообщение",
+    "relationshipType": "Тип отношений",
+    "distance": "Расстояние",
+    "analysis": "Анализ",
+    "periodStart": "Начало периода",
+    "periodEnd": "Конец периода",
+    "personsCount": "Люди",
+    "personsPct": "Люди %",
+    "visitsCount": "Записи",
+    "daysSupplyTotal": "Дни Поставки",
+    "daysSupplyAvg": "Avg. Дни Поставки",
+    "daysSupplyPer1000PerYear": "Дни поставки / 1К / год",
+    "quantityTotal": "Общее количество",
+    "quantityAvg": "Avg. Количество",
+    "quantityPer1000PerYear": "Количество / 1K / год",
+    "visitsPer1000": "Записи / 1K",
+    "visitsPer1000WithVisits": "Записи / 1К + запись",
+    "visitsPer1000PerYear": "Записи / 1K / год",
+    "lengthOfStayTotal": "Дни пребывания",
+    "lengthOfStayAvg": "Avg. Дни пребывания",
+    "exposureTotal": "Общая экспозиция в годах",
+    "exposurePct": "Процент подвергается",
+    "exposureAvg": "Средний год воздействия на 1000 человек",
+    "allowed": "Допустимая стоимость",
+    "allowedPmPm": "Допустимая стоимость PMPM",
+    "charged": "Взимается стоимость",
+    "chargedPmPm": "Начисленная стоимость PMPM",
+    "paid": "Оплаченная стоимость",
+    "paidPmPm": "Оплачиваемая стоимость PMPM",
+    "allowedChargedRatio": "Разрешено / заряжено",
+    "paidAllowedRatio": "Платный / Разрешенный",
+    "drugId": "Концепция ОМОП",
+    "drugName": "Препарат",
+    "drugVocabularyId": "Концептуальный словарь",
+    "drugClass": "Концептуальный класс",
+    "progress": "Прогресс",
+    "linkout": "Ссылка из",
+    "uniqueIdentifier": "Уникальный идентификатор",
+    "evidenceSource": "Источник доказательств",
+    "drugConceptId": "Идентификатор понятия наркотика",
+    "drugConceptName": "Название концепции лекарства",
+    "conditionConceptId": "Идентификатор концепции состояния",
+    "conditionConceptName": "Название концепции состояния",
+    "mappingType": "Тип отображения",
+    "suggestedNegativeControl": "Предлагаемый отрицательный контроль",
+    "sortOrder": "Порядок сортировки",
+    "publicationCountDescendant": "Количество публикаций (Потомок концепции матча)",
+    "publicationCountExact": "Количество публикаций (Точное соответствие концепции)",
+    "publicationCountParent": "Количество публикаций (Концепция родительского соответствия)",
+    "publicationCountAncestor": "Количество публикаций (Концепция Предка соответствия)",
+    "indicatedContraindicated": "Указано / Противопоказано",
+    "broadConcept": "Широкая концепция",
+    "drugInducedConcept": "Индуцированная наркотиками концепция",
+    "pregnancyConcept": "Концепция беременности",
+    "productLabelCountDescendant": "Количество меток продукта (Потомок концепции соответствия)",
+    "productLabelExact": "Метка продукта (точное совпадение концепции)",
+    "productLabelParent": "Метка продукта (родительское соответствие концепции)",
+    "productLabelAncestor": "Метка продукта (Концепция Предка Матч)",
+    "faersCountDescendant": "Счет FAERS (потомок концептуального матча)",
+    "faersCountExact": "Счет FAERS (точное совпадение концепции)",
+    "faersCountParent": "Счет FAERS (совпадение концепции родителя)",
+    "faersCountAncestor": "Счет ФАЕРС (концепция предков)",
+    "userExcluded": "Пользователь исключен",
+    "userIncluded": "Пользователь включен",
+    "optimizedOut": "Оптимизированный",
+    "notPrevalent": "Не распространен",
+    "drugLabelExists": "Наркотик существует",
+    "action": "Действие",
+    "actions": "Действия",
+    "value": "Значение",
+    "design": "Дизайн",
+    "count": "Количество",
+    "avg": "Среднее",
+    "stddev": "Std Dev",
+    "median": "Медиана",
+    "pct": "Процент",
+    "covariate": "Ковариат",
+    "explore": "Исследование",
+    "min": "Минимум",
+    "p10": "p10",
+    "p25": "p25",
+    "p75": "p75",
+    "p90": "p90",
+    "max": "Максимум",
+    "remain": "Остаток",
+    "diff": "Разница",
+    "sourceNameSourceKey": "Имя источника [Ключ источника]",
+    "sourceName": "Имя источника",
+    "tableQualifiers": "Квалификаторы таблиц",
+    "dialect": "Диалект",
+    "vocabularyVersion": "Версия словаря",
+    "evidence": "Свидетельство",
+    "recordCounts": "Количество записоей (RC / DRC)",
+    "incidence": "Инцидент",
+    "checkConnection": "Проверить соединение",
+    "refreshCache": "Обновить кэш",
+    "strata": "Срез",
+    "prevalence": "Распространенность",
+    "personCount": "Количество человек",
+    "pctWithPathway": "% с исходом",
+    "pctOfCohort": "% от когорты",
+    "eventCohort": "Когорта событий",
+    "rank": "Ранг",
+    "distinctEventCohorts": "Отдельные когорты событий",
+    "ingredient": "Ингредиент",
+    "sampleId": "ID образца",
+    "sampleName": "Имя образца",
+    "numberOfPatients": "Количество пациентов",
+    "selectionCriteria": "Критерий выбора",
+    "personId": "ID пациента",
+    "gender": "Пол",
+    "ageAtIndex": "Возраст по индексу"
+  },
+  "dataSources": {
+    "headingTitle": "Источники данных",
+    "selectASource": "Выберите источник данных",
+    "selectAReport": "Выберите отчет",
+    "loadingReport": "Загрузка отчета",
+    "errorLoadingReport": "Ошибка загрузки отчета",
+    "noPermission": "У вас недостаточно прав для просмотра этого отчета",
+    "reports": {
+      "titleTail": ". Отчет",
+      "dashboard": "Дашборд",
+      "dataDensity": "Плотность данных",
+      "person": "Люди",
+      "visit": "Визиты",
+      "conditionOccurrence": "Встречаемость состояния",
+      "conditionEra": "Эра состояния",
+      "procedure": "Процедуры",
+      "drugExposure": "Воздействие лекарств",
+      "drugEra": "Эра лекарств",
+      "measurement": "Измерения",
+      "observation": "Наблюдения",
+      "death": "Смерти",
+      "achillesHeel": "Ахиллесова пята",
+      "observationPeriod": "Период наблюдений"
+    },
+    "const": {
+      "recordsPerPerson": "Записей на человека",
+      "lengthOfEra": "Длительность эры"
+    },
+    "dashboardReport": {
+      "cumulativeObservation": "Сводные данные по обследованиям",
+      "personsWithContinuousObservationByMonth": "Люди с продолжительным обследованием по месяцам",
+      "populationByGender": "Население по полу",
+      "cdmSummary": "Сводные данные CDM",
+      "ageAtFirstObservation": "Возраст при первом обследовании",
+      "people": "Люди",
+      "age": "Возраст",
+      "percentOfPopulation": "Процент населения",
+      "date": "Дата",
+      "days": "Дни",
+      "years": "Годы"
+    },
+    "datadensityReport": {
+      "recordsPerPerson": "Записей на человека",
+      "conceptsPerPerson": "Концепций на человека",
+      "totalRows": "Всего записей",
+      "year": "Год",
+      "numberOfRecords": "Количество записей",
+      "conceptType": "Тип концепции"
+    },
+    "personReport": {
+      "yearOfBirth": "Год рождения",
+      "yearOfBirthFooter": "Количество людей в этой когорте показано относительно их года рождения.",
+      "gender": "Пол",
+      "genderFooter": "Количество людей в этой когорте с распределением по полу.",
+      "ethnicity": "Национальность",
+      "ethnicityFooter": "Количество людей в этой когорте с распределением по национальности.",
+      "race": "Раса",
+      "raceFooter": "Количество людей в этой когорте с распределением по расе.",
+      "year": "Год",
+      "numberOfPersons": "Количество человек"
+    },
+    "deathReport": {
+      "date": "Дата",
+      "yearOfObservation": "Год наблюдения",
+      "deathPrevalenceByAgeGenderYear": "Распространенность по возрасту",
+      "gender": "Пол",
+      "prevalencePer1000People": "Распространенность на 1000 человек",
+      "deathPrevalenceByMonth": "Распространенность по месяцам",
+      "ageAtDeath": "Возраст на момент смерти",
+      "deathByType": "Смерть по типу",
+      "ageAtFirstOccurence": "Возраст при первом вхождении",
+      "ageDecile": "Децильный коэффициент возраста"
+    },
+    "achillesHeelReport": {
+      "achillesHeelResults": "Ахиллесова пята - результаты",
+      "messageType": "Тип сообщения",
+      "message": "Сообщение"
+    },
+    "numberOfPeople": "Количество человек",
+    "prevalence": "Распространенность",
+    "treemap": {
+      "treemapTab": "Карта",
+      "legend": {
+        "colorExplanation": "(от светлого к темному = низкий к высокому), нажмите Ctrl-Click для увеличения, Alt-Click для сброса увеличения",
+        "boxSize": "Размер области:",
+        "color": "Цвет:"
+      }
+    },
+    "table": {
+      "tableTab": "Таблица"
+    },
+    "loadingDrilldownReport": "Загрузка развернутого отчета",
+    "drilldown": {
+      "noData": "Нет данных",
+      "drilldownReport": ". Развернутый отчет",
+      "prevalence": "Распространенность",
+      "lowerLimitDistribution": "Распределение по нижней границе",
+      "upperLimitDistribution": "Распределение по верхней границе",
+      "valueAsConcept": "Значение концепции",
+      "operatorConcept": "Концепция оператор",
+      "prevalenceByMonth": "Распространенность по месяцам",
+      "type": "Тип",
+      "measurementRecordsByUnit": "Измерение записей по юнитам",
+      "measurementValueDistribution": "Распределение значений",
+      "valuesRelativeToNormalRange": "Значения относительно нормального интервала",
+      "qualifierConcept": "Спецификатор концепции",
+      "frequencyDistribution": "Распределение по частоте",
+      "ageAtFirstOccurrence": "Возраст при первом вхождении",
+      "lengthOfEraDistribution": "Распределение длительности эры",
+      "chartFormat": {
+        "percentOfTotalNumberOfPersons": "% от общего количества человек",
+        "date": "Дата",
+        "prevalencePer1000People": "Распространенность на 100 человек",
+        "gender": "Пол",
+        "ageAtFirstOccurrence": "Возраст при первом вхождении",
+        "yearOfObservation": "Год обследования",
+        "ageDecile": "Децильный коэффициент возраста",
+        "frequencyDistribution": {
+          "xLabel1": "Количество ('x' и более ",
+          "xLabel2": ")"
+        }
+      }
+    },
+    "observationPeriodReport" : {
+      "ageAtFirstObservation": "Возраст при первом наблюдении",
+      "ageByGender": "Возраст по полу",
+      "observationLength": "Длительность наблюдения",
+      "durationByGender": "Длительность по полу",
+      "cumulativeObservation": "Кумулятивное наблюдение",
+      "durationByAgeDecile": "Децильная длительность по возрасту",
+      "personsWithContinuousObservationByYear": "Пациенты с продолжительным наблюдением по годам",
+      "observationPeriodsPerPerson": "Периоды наблюдений на человека",
+      "personsWithContinuousObservationByMonth": "Пациенты с продолжительным наблюдением по месяцам",
+      "age": "Возраст",
+      "people": "Пациенты",
+      "gender": "Пол",
+      "days": "Дни",
+      "ageDecile": "Децильный возраст",
+      "percentOfPopulation": "Процент населения",
+      "years": "Годы",
+      "date": "Дата"
+    }
+  },
+  "search": {
+    "headingTitle": "Поиск",
+    "tabs": {
+      "search": "Поиск",
+      "import": "Импорт"
+    },
+    "placeholder": "Введите здесь ключевые слова для поиска",
+    "buttonTitle": "Поиск",
+    "loadingMessage": {
+      "loading": "Загружаются",
+      "domains": "домены",
+      "vocabularies": "словари",
+      "searchResults": "результаты поиска"
+    },
+    "advancedOptions": "Расширенные параметры поиска",
+    "clearAllSelections": "Очистить выделение",
+    "domains": "Домены",
+    "vocabularies": "Словари",
+    "standard": "Стандартный",
+    "nonStandard": "Нестандартный",
+    "classification": "Классификация",
+    "noVocabulariesAvailable": "Нет доступных словарей",
+    "noDomainsAvailable": "Нет доступных доменов",
+    "noResultsFoundFor": "Ничего не найдено для"
+  },
+  "cs": {
+    "manager": {
+      "tabs": {
+        "conceptSetExpression": "Определение набора концепций",
+        "includedSourceCodes": "Исходный код",
+        "export": "Экспорт",
+        "compare": "Сравнение",
+        "includedConcepts": "Включенные концепции",
+        "exploreEvidence": "Исследовать Свидетельство"
+      },
+      "exploreEvidence": {
+        "title": "Исследование Свидетельства:",
+        "invalidCsWarning": "Сохраненные вами концепции исходят из разных доменов или из домена вне условий или препаратов. Набор концепций должен содержать ТОЛЬКО условия ИЛИ препараты, чтобы запустить исследование.",
+        "noCsWarning": "Необходимо определитьнабор концепций с препаратами из словаря RxNorm на уровне класса Ingredient ИЛИ Conditions из SNOMED. Набор концепций должен содержать ТОЛЬКО условия ИЛИ препараты, чтобы запустить исследование.",
+        "deletedCcMessage": "Набор концепаций (<%=cs%>) был удален. Пожалуйста, выберите другой набор концепций.",
+        "drugLabelsFound": "Найдено меток лекарств",
+        "noEvidenceFoundFor": "Не найдено свидетельств для",
+        "anchor1": "Получение Negative Controls из ATLAS",
+        "anchor2": "Высокоуровневая информация по Negative Controls",
+        "anchor3": "Дополнительные ресурсы",
+        "drugLabelEvidenceDetails": "подробности",
+        "drugLabelEvidenceOf": "из",
+        "includeLabel": "Какие концепты вы хотите включить как известные negative controls? (необязательно)",
+        "evidenceSources": "Источники Свидетельства",
+        "viewDatabaseRecordCounts": "Просмотр количества записей в БД (RC) и количества записей-потомков (DRC) для:",
+        "generationSettings": "Настройки генерации",
+        "generate": "Сгенерировать",
+        "generated": "Сгенерировано",
+        "generationStatus": "Статус генерации",
+        "generationDuration": "Продолжительность генерации",
+        "additionalInformation": "Дополнительная информаций:",
+        "excludeLabel": "Какие концепты вы хотите исключить как известные positive controls? (необязательно)",
+        "loadingEvidence": "загрузка Свидетельства",
+        "viewingEvidence": "Спросмотр Свидетельства",
+        "evidenceForAll": "Свидетельство для всех",
+        "chooseAConceptSet": "Выберите набор концепций",
+        "drugLabelEvidence": "Свидетельств меток лекарств:",
+        "drugLabelEvidenceFound": "Найдено",
+        "drugLabelsNotFound": "Меток лекарств не найдено",
+        "drugLabelEvidenceEnd": "меток лекарств в CEM.",
+        "saveNewButton": "Сохранить новый набор концепций из списка ниже",
+        "viewEvidence": "Просмотр Свидетельства",
+        "evidenceForAllFor": "для",
+        "message1": "Свидетельство происходит из",
+        "message2": "Основа Свидетельства состоит из Свидетельства, найденного в опубликованнай литературе."
+      },
+      "caption": "Набор концепций №<%=id%>",
+      "csAlreadyExistsMessage": "Набор концепций с таким именем уже существует. Пожалуйста, выберите другое имя.",
+      "csDeleteConfirmMessage": "Удалить набор концепций? Предупреждение: это действие необратимо.",
+      "csNotSavedConfirmMessage": "Изменения не сохранены. Продолжить?",
+      "conceptsRemovedMessage": "Следующие концепции были удалены, поскольку оптимизированная версия уже их содержит.",
+      "optimizedConceptSetHeading": "Оптимизированный набор концепций",
+      "saveOptions": "Параметры сохранения",
+      "cancelButton": "Отмена",
+      "optimize": "Оптимизировать",
+      "conceptsRemovedHeading": "Наборы концепций удалены",
+      "csSaveErrorMessage": "Ошибка сохранения набора концепций.",
+      "saveButton": "Сохранить",
+      "pleaseReviewMessage": "Пожалуйста пересмотрите параметры оптимизации и сохранения",
+      "pleaseProvideNameMessage": "Пожалуйста, назовите ваш новый набор концепций:",
+      "resetColumnsButton": "Сброс",
+      "showAllColumnsButton": "Показать все",
+      "overwriteOption": "Перезаписать текущий набор концепций",
+      "fullyOptimizedMessage": "Текущее определение набора концепций полностью оптимизировано.",
+      "createOption": "Создать новый набор концепций",
+      "changeColumnsButton": "Изменить колонки",
+      "attemptingToFindMessage": "Попытка найти оптимальное определение для текущего набора концепций...",
+      "concept": {
+        "title": "Словарь > Концепция",
+        "standard": "Стандартная",
+        "nonStandard": "Нестандартная",
+        "classification": "Классификация",
+        "tabs": {
+          "details": {
+            "caption": "Детали",
+            "property": "Свойство",
+            "value": "Значение",
+            "conceptName": "Имя кнонцепции",
+            "domainId": "Id домена",
+            "conceptClassId": "Id класса концепции",
+            "vocabularyId": "Id словаря",
+            "conceptId": "Id концепции",
+            "conceptCode": "Код концепции",
+            "invalidReason": "Причина невалидности",
+            "standardConcept": "Стандартная концепция"
+          },
+          "relatedConcepts": {
+            "loading": "Загрузка связанных концепций...",
+            "caption": "Связанные концепции"
+          },
+          "hierarchy": {
+            "loading": "Загрузка иерархии...",
+            "caption": "Иерархия",
+            "noHierarchyFoundMessage": "Не найдена иерархия для нестандартных концепций.",
+            "view": "Отображать:",
+            "fullHierarchy": "Полная иерархия",
+            "parents": "Предки",
+            "currentConcept": "Текущая концепция",
+            "children": "Потомки",
+            "noParentConceptsFound": "Концепции-предки не найдены",
+            "noChildConceptsFound": "Концепции-потомки не найдены"
+          },
+          "recordCounts": {
+            "loading": "Подсчет количества записей...",
+            "caption": "Количество записей",
+            "recordCountsAcrossSources": "Количество записей из разных источников",
+            "failedToLoadData": "Ошибка загрузки данных"
+          }
+        }
+      },
+      "conceptSetOptimization": "Concept Set Optimization"
+    },
+    "browser": {
+      "exportConceptSetsButton": "Экспорт наборов концепций",
+      "exportInstructions": "Инструкция:",
+      "exportInstructionsText": "Выберите наборы концепций в таблице. Затем нажмите кнопку «Экспорт наборов концепций», которая запустит скачивание в новом окне.",
+      "caption": "Наборы концепций",
+      "exportConceptSetsNumber": "Выбрано наборов концепций для экспорта: <b><%=num%></b>.",
+      "tabs": {
+        "list": "Список",
+        "export": "Экспорт"
+      },
+      "compare": {
+        "heading": "Сравнение наборов концепций",
+        "headingMessage": "Сравнение двух наборов концепций на предмет содержания общих концепций",
+        "modalTitle": "Выберите набор концепций",
+        "viewCountMessage": "Количество записей в БД (RC) и количество записей-потомков (DRC) для:",
+        "conceptSet1": "Набор концепций 1:",
+        "compareConceptSets": "Сравнение наборов концепций",
+        "conceptSet2": "Набор концепций 2:",
+        "comparisonResults": "Результат сравнения",
+        "sameWarning": "Невозможно сравнить один и тот же набор концепций",
+        "saveMessage": "Сохранить набор концепций из списка ниже",
+        "saveWarning": "Сохраните, пожалуйста, текущий набор концепций перед сравнением.",
+        "saveFromComparisonNameTail": " - из сравнения"
+      }
+    }
+  },
+  "cc": {
+    "title": "Характеризация Когорт",
+    "new": "Создать",
+    "loading": "Загружается список Характеризаций Когорт...",
+    "modals": {
+      "confirmChanges": "Ваши изменения не сохранены. Желаете ли вы продолжить?",
+      "selectConceptSet": "Выбрать набор концепций...",
+      "chooseAFeatureAnalyses": "Выбрать функциональные анализы..."
+    },
+    "tabs": {
+      "characterizations": {
+        "title": "Характеризации",
+        "newLabel": "Характеризацию"
+      },
+      "featureAnalyses": {
+        "title": "Функциональные анализы",
+        "newLabel": "Функциональный анализ"
+      }
+    },
+    "viewEdit": {
+      "caption": "Характеризация №<%=id%>",
+      "loadingCohortCharacterization": "Загрузка характеризации когорты...",
+      "tabs": {
+        "design": "Дизайн",
+        "executions": "Исследования",
+        "utilities": "Дополнительно",
+        "messages": "Сообщения"
+      },
+      "design": {
+        "loading": "Идёт загрузка дизайна Характеризации Когорты...",
+        "description": "<b>Характеризация когорты</b> это процесс генерации сводного статистического отчета распределения когорты по ковариатам. Сводный статистический отчет по ковариатам может содержать количество, среднее значение, СКО, дисперсию, минимальное или максимальное значение, медиану, диапазон значений или квантили. Дополнительно, ковариаты содержащие период могут быть распределены по времени для временных анализов, таких как фиксированные интервалы относительно cohort_start_date (например, каждые 7 дней, каждые 30 дней и т.д.), или интервалы календарных дат, такие как календарная неделя, календарный месяц, квартал или год.",
+        "fa": {
+          "title": "Функциональные анализы",
+          "actions": {
+            "remove": "Удалить"
+          }
+        },
+        "faParams": {
+          "title": "Параметры функциональных анализов",
+          "newLabel": "Новый параметр",
+          "modal": {
+            "title": "Создание нового параметра",
+            "submit": "Создать",
+            "namePlaceholder": "Имя",
+            "valuePlaceholder": "Значение"
+          }
+        },
+        "subgroups": {
+          "title": "Анализы подгрупп",
+          "newSubgroup": "Новая подгруппа",
+          "noSubgroups": "Подгруппы не назначены",
+          "subgroupOnly": "Вычислять только анализы подгрупп",
+          "namePlaceholder": "Наименование подгруппы",
+          "stratifiedByPlaceholder": "Сделать срез по",
+          "messages": {
+            "nameIsEmpty": "Наименование подгруппы не заполнено.",
+            "nameIsNotUnique": "Наименование подгруппы не уникально."
+          }
+        }
+      },
+      "executions": {
+        "title": "Исследования",
+        "prevalenceStatConverter": {
+          "allStrata": "Все срезы",
+          "explore": "Исследовать",
+          "loadingPrevalenceStats": "Загрузка статистики распространенности...",
+          "cohort": "Когорта:",
+          "exploringConceptHierarchyFor": "Исследование иерархии концепций для:",
+          "ancestor": "Предок",
+          "descendant": "Потомок",
+          "selected": "Выбрано"
+        }
+      },
+      "utilities": {
+        "title": "Дополнительно"
+      },
+      "results": {
+        "loading": "Идёт загрузка результатов исследования...",
+        "title": "Отчеты для <%= sourceName %>",
+        "showAllResults": "Показать все результаты",
+        "hideEmptyResults": "Скрыть пустые результаты",
+        "exploring": "Исследование",
+        "detail": {
+          "date": "Дата:",
+          "design": "Дизайн:",
+          "results": {
+            "label": "Результаты:",
+            "text": "<%= reports %> отчет(-ов)"
+          }
+        },
+        "filters": {
+          "cohorts": "Когорты",
+          "analyses": "Анализы",
+          "domains": "Домены"
+        },
+        "threshold": {
+          "label": "Показать в результатах ковариаты с уровнем выше чем:",
+          "placeholder": "Пороговое значение",
+          "apply": "Применить",
+          "text": "Показаны наиболее значимые <%= resultsCountFiltered %> из <%= totalResultsCount %> записей"
+        },
+        "exportAll": "Экспортировать все",
+        "table": {
+          "buttons": {
+            "exportComparison": "Экспорт сравнения"
+          }
+        },
+        "series": "Серии",
+        "covariate": "Ковариат",
+        "allPrevalenceCovariates": "Все ковариаты распространенности"
+      }
+    },
+    "fa": {
+      "tabs": {
+        "design": "Дизайн",
+        "conceptSets": "Наборы концепций"
+      },
+      "loadingList": "Загрузка списка функциональных анализов...",
+      "retrievingList": "Получение списка функциональных анализов...",
+      "caption": "Функциональный анализ №<%=id%>",
+      "designOrNameAreEmpty": "Дизайн или имя - пустые",
+      "unsavedConfirmation": "Изменения не сохранены. Продолжить?",
+      "nameExistsAlert": "Анализ с таким именем уже существует. Пожалуйста, выберите другое имя.",
+      "saveError": "Ошибка сохранения анализа.",
+      "description": "Описание",
+      "domain": "Домен:",
+      "design": "Дизайн",
+      "preset": "Пресет",
+      "criteria": "Критерий",
+      "custom": "Пользовательский",
+      "featureExtractionPresetName": "Имя пресета",
+      "analysisType": "Тип анализа",
+      "addCriteriaFeature": "Добавить критерий",
+      "addNewCriteria": "Добавить новый критерий...",
+      "criteriaName": "Имя критерия",
+      "analysisSql": "SQL анализа",
+      "copySqlToClipboard": "Скопировать SQL шаблона в бфер обмена",
+      "copiedToClipboard": "Скопировано!",
+      "availableVariables": "Доступные переменные",
+      "availableVariablesNote": "переменные, определенные в параметрах Характеризации",
+      "selectConceptSet": "Выберите набор концепций...",
+      "warning": "Внимание:",
+      "warningText": "После сохранения вы не сможете изменить тип анализа."
+    }
+  },
+  "home": {
+    "description": "АТЛАС это продукт с открытым исходным кодом, разработанный в рамках <a href=\"http://www.ohdsi.org\" target=\"_new\">OHDSI</a>, предоставляющий доступ к данным пациентов и аналитике.",
+    "documentation": {
+      "title": "Документация",
+      "text": "Руководство пользователя АТЛАС можно найти <a target=\"_new\" href=\"http://www.ohdsi.org/web/wiki/doku.php?id=documentation:software:atlas\">здесь</a>."
+    },
+    "gettingStarted": {
+      "title": "Начало работы",
+      "newCohort": {
+        "button": "Создать Новую Когорту",
+        "description": "Начать исследование с определения группы людей, которых вы хотите изучить"
+      },
+      "vocabulary": {
+        "button": "Поиск по Словарю",
+        "description": "Найти различные онтологии, используемые для описания данных пациента по всему миру"
+      }
+    },
+    "releaseNotes": {
+      "title": "Примечания к Релизу",
+      "issues": "<br/> Данный релиз содержит <b><%=issues%></b> улучшений и исправлений:",
+      "loadingReleaseInfo": "Загрузка данных о Релизе"
+    },
+    "title": "Начало",
+    "welcome": "Добро пожаловать в Атлас."
+  },
+  "ir": {
+    "title": "Анализ инцидентности",
+    "caption": "Анализ инцидентности №<%=id%>",
+    "newanalysis": "Новый анализ",
+    "notSavedMessage": "Анализ инцидентности не сохранен. Вы действительно хотите удалить изменения?",
+    "nameConflict": "Анализ с таким имененм уже существует. Пожалуйста, выберите другое имя.",
+    "savingError": "Ошибка при сохранении анализа.",
+    "deleteConfirmation": "Действительно удалить анализ? Предупреждение: это действие необратимо!",
+    "deleteResultConfirmation": "Удалить результат генерации <%=name%>?",
+    "tabs": {
+      "definition": "Определение",
+      "conceptSets": "Наборы концепций",
+      "generation": "Генерация",
+      "utilities": "Утилиты",
+      "messages": "Сообщения"
+    },
+    "editor": {
+      "studyCohorts": "Изучение когорт",
+      "targetCohorts": "Целевые когорты",
+      "outcomeCohorts": "Исходящие когорты",
+      "addTargetCohort": "Добавить целевую когорту",
+      "addOutcomeCohort": "Добавить исходящую когорту",
+      "chooseACohort": "Выберите когорту",
+      "timeAtRisk": "Время риска",
+      "timeAtRiskMessage": "Время риска определяет временное окно относительно даты начала и окончания когорты с оффсетом для принятия во внимание людей 'с риском'.",
+      "timeAtRiskStartsWith": "Время риска начинается",
+      "timeAtRiskStartDate": "дата начала",
+      "timeAtRiskEndsWith": "Время риска заканчивается",
+      "timeAtRiskEndDate": "дата окончания",
+      "timeAtRiskPlus": "плюс",
+      "timeAtRiskStartsWithDays": "дней.",
+      "timeAtRiskEndsWithDays": "дней.",
+      "timeAtRiskWarningMessage": "Ошибка: дата начала позже даты оканчания",
+      "addStudyWindow": "Добавить окно изучения",
+      "noStudyWindowDefined": "Окно изучения не определено.",
+      "studyWindowText1": "Окно изучения начинается",
+      "studyWindowText2": "и заканчивается",
+      "studyWindowText3": ".",
+      "removeStudyWindow": "Удалить окно изучения",
+      "selectInclusionCriteriaMessage": "Пожалуйста выберите критерий для редактирования.",
+      "stratifyCriteria": "Критерий стратификации:",
+      "stratifyCriteriaMessage": "Вы можете добавить необязательный критерий стратификации, который разделит популяцию на уникальные группы, основываясь на удовлетворяющих им критериях.",
+      "newStratifyCriteria": "Новый критерий стратификации"
+    },
+    "cs": {
+      "modalTitle": "Выберите набор концепций"
+    },
+    "results": {
+      "selectTargetAndOutcomeAlert": "Пожалуйста, выберите целевую и исходящую когорту.",
+      "loadingGenerationResultErrorMessage": "Ошибка генерации отчета",
+      "showingTargetCohort": "Целевая когорта:",
+      "andOutcomeCohort": "и исходящая когорта:",
+      "generationInProgress": "Генерация в процессе",
+      "accessDenied": "Доступ запрещен",
+      "exportToCsvButton": "Экспорт в CSV",
+      "sourceName": "Имя источника",
+      "persons": "Люди",
+      "cases": "Случаи",
+      "proportion": "Пропорция",
+      "timeAtRisk": "Время риска",
+      "timeAtRiskYears": "(годы)",
+      "rate": "Отношение",
+      "started": "Запущено",
+      "duration": "Длительность",
+      "perYears": "на <%=multiplier%> лет",
+      "perPersons": "на <%=multiplier%> человек",
+      "reports": "Отчеты",
+      "rerun": "Перезапуск",
+      "running": "Запущено",
+      "close": "Закрыть",
+      "canceled": "ОТМЕНЕНО",
+      "failed": "ОШИБКА",
+      "loadingSummary": "Загрузка сводных данных...",
+      "summaryStatistics": "Сводная статистика:",
+      "stratifyRule": "Правило стратификации"
+    }
+  },
+  "profiles": {
+    "title": "Профили",
+    "selectADataSource": "Выберите источник данных",
+    "personId": "ID профиля",
+    "loadingProfile": "Загрузка данных профиля",
+    "processingProfile": "Обработка профиля",
+    "сantFind": "Не найдено",
+    "toggleChartTooltip": "Включить/выключить график",
+    "toggleTableTooltip": "Включить/выключить таблицу",
+    "highlightEventsTooltip": "Подсветка событий",
+    "eventHighlighting": "Подсветка событий",
+    "setSelectedEventsColor": "Установить цвет для выбранных событий",
+    "clearAllHighlightColors": "Очистить все цвета подстветки",
+    "clickHereToSelectACohort": "Нажмите здесь, чтобы выбрать когорту",
+    "recordCounts": "<%=count%> записей",
+    "ageAt": "Возраст <%=age%>",
+    "atIndex": "при индексировании",
+    "atStartOfObservation": "при начале наблюдений",
+    "chart": {
+      "event": "Событие: ",
+      "startDay": "День начала: ",
+      "startDate": "Дата начала: "
+    }
+  },
+  "pathways": {
+    "title": "Анализы Исходов Когорты",
+    "loading": "Загружается список Анализов Исходов...",
+    "manager": {
+      "loading": "Загружается Анализ Исходов Когорты...",
+      "caption": "Анализ Исходов Когорты №<%=id%>",
+      "messages": {
+        "alreadyExists": "Анализ с таким именем уже существует. Пожалуста, выберите другое наименование.",
+        "beforeClose": "Ваши изменения не сохранены. Вы хотите продолжить?",
+        "deleteConfirmation": "Вы уверены?",
+        "saveFailed": "При сохранении анализа произошла ошибка.",
+        "notfound": "Анализ Исходов с Ид = %d не найден."
+      },
+      "tabs": {
+        "design": "Дизайн",
+        "executions": "Исследования",
+        "utilities": "Дополнительно",
+        "messages": "Сообщения"
+      },
+      "design": {
+        "description": "<b>Анализ Исходов Когорты</b> определяется как процесс генерации аггрегированной последовательности переходов между Когортой Событий среди людей из Целевых Когорт.",
+        "targetCohorts": {
+          "title": "Целевые Когорты",
+          "description": "Каждая из Целевых когорт будет проанализирована по исходам из когорт событий."
+        },
+        "eventCohorts": {
+          "title": "Когорты Событий",
+          "description": "Каждая из Когорт Событий определяет возможный исход для персон из Целевой Когорты."
+        },
+        "analysisSettings": {
+          "title": "Настройки Анализа",
+          "description": "Данный набор параметров будет использован при выполнении анализа исходов.",
+          "combinationWindow": {
+            "title": "Окно Сочетания:",
+            "description": "Временные рамки в течение которых два события из когорт событий должны перекрываться, чтобы считаться сочетанием."
+          },
+          "minimumCellCount": {
+            "title": "Мин. размер ячейки:",
+            "description": "Минимальное количество субъектов из целевой когорты участвующих в событии чтобы быть включенными в анализ."
+          },
+          "maximumPathLength": {
+            "title": "Макс. длина пути:",
+            "description": "Максимальное количество шагов в данном анализе, которые будут отображены на диаграмме."
+          },
+          "allowRepeats": {
+            "title": "Разрешить повторы:",
+            "description": "Позволять событиям когорты появляться несколько раз в одном и том же исходе."
+          }
+        }
+      },
+      "executions": {
+        "title": "Исследования",
+        "dialogs": {
+          "design": {
+            "title": "Дизайн",
+            "loadError": "Не удалось загрузить дизайн"
+          }
+        },
+        "results": {
+          "title": "Отчет по Исследованию для",
+          "date": "Дата:",
+          "design": "Дизайн:",
+          "details": {
+            "title": "Подробности",
+            "noPath": "Исход не выбран: щёлкните по исходу для просмотра деталей."
+          },
+          "diagram": {
+            "title": "Диаграмма"
+          },
+          "filters": {
+            "cohorts": "Когорты"
+          },
+          "legend": {
+            "title": "Легенда",
+            "targetCohort": "Целевая Когорта",
+            "targetCohortCount": "Записей в целевой когорте:",
+            "personsCount": "К-во персон с исходами:",
+            "personsPortion": "Доля персон с исходами:",
+            "eventCohorts": "Когорты Событий"
+          },
+          "noPathways": "Исходы в результате исследования не были найдены",
+          "visualization": "Визуализация",
+          "tabular": "Таблица",
+          "tableview": {
+            "cohortName": "Когорта <%=name%>",
+            "maximumPathLength": "Максимальная длина пути:",
+            "allPathwaysTitle": "Таблица <%=index%>a: Все исходы",
+            "eventCohortCountsByRank": "Таблица <%=index%>b: Количество когорт событий по рангу",
+            "eventCohortCounts": "Таблица <%=index%>c: Количество когорт событий",
+            "distinctEventCohorts": "Таблица <%=index%>d: Когорты событий",
+            "stepN": "Шаг <%=i%>",
+            "exactly": "Точно <%=v%>"
+          }
+        }
+      },
+      "utilities": {
+        "title": "Дополнительно"
+      }
+    }
+  },
+  "ple": {
+    "title": "Анализ оценки уровня воздействия на население",
+    "analysisExistsAlert": "Анализ с таким именем уже существует. Пожалуйста, введите другое имя анализа.",
+    "analysisSaveErrorAlert": "Ошибка при попытке сохранения анализа.",
+    "changesNotSavedConfirmation": "Изменения не сохранены. Вы действительно хотите закрыть спецификацию? Это действие будет невозможно отменить.",
+    "deleteConfirmation": "Действительно удалить спецификацию? Это действие будет невозможно отменить.",
+    "caption": "Сравнительный анализ когорты",
+    "captionNumber": "Сравнительный анализ №<%=id%>",
+    "retrievingEstimations": "получение оценок",
+    "tabs": {
+      "specification": "Спецификация",
+      "executions": "Исследования",
+      "utilities": "Утилиты",
+      "messages": "Сообщения"
+    },
+    "spec": {
+      "descriptionPlaceholder": "введите описание (не более 1000 символов)",
+      "view": "Отображать:",
+      "viewFull": "Все",
+      "viewFullSpecification": "Все",
+      "viewComparisons": "Сравнения",
+      "viewAnalysisSettings": "Настройки анализа",
+      "viewEvaluationSettings": "Настройки вычислений",
+      "addComparisons": "Добавить сравнения",
+      "comparison": "Сравнение",
+      "comparisonDescription": "Добавние или правка цели, компаратора, результирующих когорт и результирующих наборов концепций",
+      "chooseYourTargetCohort": "Выберите целевую когорту:",
+      "chooseYourComparatorCohort": "Выберите когорту-компаратор:",
+      "chooseYourOutcomeCohorts:": "Выберите результирующую когорту:",
+      "addOutcome": "Добавить",
+      "negativeControlConceptSet": "Набор концепций негативного контроля:",
+      "covariateSelection": "Выбор ковариата",
+      "conceptsToIncludeLabel": "Концепции для <b>включения</b> при составлении ковариатов, которые будут использоваться в данном изучении (оставьте вустым, если хотите использовать все концепции)*",
+      "conceptsToIncludeNoteComparisons": "* Концепции, определенные здесь, комбинируются с теми, которые определены в секции Настроек анализа.",
+      "conceptsToIncludeNoteAnalysis": "* Концепции, определенные здесь, комбинируются с теми, которые определены в секции Сравнений.",
+      "conceptsToExcludeLabel": "Концепции для <b>исключения</b> при составлении ковариатов, которые будут использоваться в данном изучении*",
+      "conceptsToExcludeNoteComparisons": "* Концепции, определенные здесь, комбинируются с теми, которые определены в секции Настроек анализа.",
+      "conceptsToExcludeNoteAnalysis": "* Концепции, определенные здесь, комбинируются с теми, которые определены в секции Сравнений.",
+      "selectConceptSet": "Выбор набора концепций",
+      "selectCohort": "Выбор когорты",
+      "usingCovariates": "Для моделирования используются ковариаты OHDSI",
+      "clickToViewDetails": "нажмите здесь, чтобы посмотреть детали",
+      "selectCovariates": "Выбор ковариатов",
+      "analysisSettings": "Настройки анализа",
+      "newAnalysis": "Новый анализ",
+      "addAnalysisSettings": "Добавить настройки",
+      "analysisSettingsDescription": "Добавление или редактирование настроек анализа",
+      "analysisName": "Наименование анализа",
+      "studyPopulation": "Изучение популяции",
+      "covariateSettings": "Настройки ковариатов",
+      "timeAtRisk": "Время риска",
+      "from": "от",
+      "propensityScoreAdjustment": "Настройка показателя склонности",
+      "outcomeModel": "Исходящяя модель",
+      "controlSettings": "Настройки контроля",
+      "prior": "Априорная вероятность",
+      "studyPopulationPanel": {
+        "startDate": "Дата начала - нижний порог индекса когорты (оставьте пустым, если предполагается использовать все время)",
+        "endDate": "Дата окончания - верхний порог индекса когорты (оставьте пустым, если предполагается использовать все время)",
+        "restrictToPeriod": "Ограничить периодом, когда обе сущности присутствуют в данных (например, когда оба лекарства представлены на рынке)",
+        "onlyFirst": "Включать только первое вхождение сущности на одного субъекта?",
+        "removeDuplicates": "Удалить субъектов, находящихся и в целевой когорте и в когорте-компараторе?",
+        "minimumObservations": "Минимальное время постоянного наблюдения (дней)",
+        "subjectInMultipleCohorts": "Если субъект в нескольких когортах, должно ди время риска подвергаться цензуре в случае начала нового времени риска для избежания наложений?",
+        "removeSubjectsPriorRiskWindow": "Удалять субъектов, которые имеют выход до начала окна времени риска?",
+        "daysPriorOutcomes": "Сколько дней назад отсчитывать при определении преждевременных выходов?",
+        "cohortCap": "Если целевая или исходящая когорта больше этого числа, приводить размер к этому числу (0 - маскимальный размер)"
+      },
+      "timeAtRiskPanel": {
+        "defineTheTimeAtRiskWindowStart": "Начало окна времени риска относительно записи в целевой когорте и когорте-компараторе:",
+        "defineTheTimeAtRiskWindowEnd": "Окончание окна времени риска:",
+        "minimumNumberOfDaysAtRisk": "Минимальное количество дней риска?",
+        "daysFrom": "дней от"
+      },
+      "propensityScoreAdjustmentPanel": {
+        "howToTrim": "Как урезать когорту, основываясь на распредлении показателей склонности?",
+        "trimFraction": "Доля урезания (1-100%):",
+        "lowerAndUpperBound": "Укажите нижний и верхний предел (шаблон: min %, max %, например: 25,75):",
+        "matchingOrStratification": "Делать сопоставление или стратификацию:",
+        "maxNumberOfPeople": "Максимальное количество людей для включения (установка данного показателя в 0 означает, что будет применен даунсамплинг):",
+        "testEachCovariate": "Тестировать каждый ковариат на корреляцию с целевым назначением? Если любой из ковариатов имеет необычно высокую корреляцию (позитивную или негативную), то будет ошибка:",
+        "useRegularization": "Использовать регуляризацию?",
+        "maximumNumberOfPersons": "Каково максимальное количество людей в компараторе для сопоставления с каждым человеком в внутри измерителя (0 = нет максимума - все компараторы будуи назначены целевому человеку):",
+        "caliperForMatching": "Измеритель для сопоставления:",
+        "caliperScale": "Масштаб измерителя:",
+        "covariateIdsMatch": "Один или более ID ковариатов в объекте cohortMethodData, с которыми субъект также должен быть сопоставлен:",
+        "covariateIdsPlaceholder": "Один или более ID ковариатов",
+        "howManyStrata": "На сколько слоев следует разделить оценку склонности? Границы страт определяются автоматически, чтобы содержать равное количество целевых лиц:",
+        "baseSelection": "Основная выборка субъектов, где должны быть определены границы страт. Слои определяются как слои одинакового размера внутри этой выборки:",
+        "covariateIdsStratify": "Один или несколько ID ковариатов в объекте cohortMethodData, по которым субъекты также должны быть стратифицированы:"
+      },
+      "outcomeModelPanel": {
+        "statisticalModel": "Укажите статистическую модель, используемую для оценки риска исхода между целевой когортой и когортой-компаратором:",
+        "regression": "Обуславливать ли регрессию стратами, определенными в объекте популяции (например, путем сопоставления или стратификации по показателям склонности)?",
+        "covariates": "Следует ли включать ковариаты в модель результатов?",
+        "weighting": "Использовать обратную вероятность взвешивания лечения?",
+        "regularization": "Использовать регуляризацию при подборе модели результата? *",
+        "regularizationNote": "* Регуляризация не будет применяться к выявлению интереса"
+      },
+      "evaluationSettings": "Настройки вычислений",
+      "evaluationSettingsPanel": {
+        "negativeControl": "Определение когорты результатов отрицательного контроля",
+        "negativeControlDesc": "Это выражение будет определять критерии для включения и продолжительность времени для когорт, предназначенных для использования в качестве отрицательных результатов контроля.",
+        "positiveControl": "Синтез положительного контроля",
+        "positiveControlPerform": "Выполнять сонтез положительного контроля? (для калибровки доверительных интервалов)",
+        "typeOfOccurence": "Тип возникновения события при выборе из домена:",
+        "whenTrueDescendantConcepts": "Если выбрано, концепции-потомки для идентификаторов понятий результата отрицательного контроля будут использоваться для обнаружения результата и сворачивания вхождения в идентификатор концепции:",
+        "whatDomains": "Какие домены следует учитывать для выявления отрицательных результатов контроля? (Удерживайте Ctrl, чтобы выбрать несколько доменов)",
+        "modelType": "Тип модели:",
+        "defineTimeAtRiskWindowStart": "Определите время начала периода риска:",
+        "daysFromCohortStartDate": "дней от начала когорты",
+        "defineTimeAtRiskWindowEnd": "Определите время окончания периода риска:",
+        "daysFrom": "дней от",
+        "minimumRequiredTime": "Минимальное требуемое время непрерывного наблюдения (в днях) до воздействия:",
+        "onlyFirstExposure": "Должна ли быть включена только первая экспозиция для каждого субъекта?",
+        "onlyFirstOutcome": "Должен ли учитываться только первый результат на человека при моделировании результата?",
+        "removePeopleWithPrior": "Удалить людей с предыдущими результатами?",
+        "advancedSettingsStartsHere": "Далее начинаются расширенные настройки",
+        "additionalSettings": "Дополнительные настройки",
+        "maxNumberOfPeopleToFit": "Максимальное количество людей, которые подходили для модели результата:",
+        "effectSizes": "Какие размеры эффекта должны быть включены:",
+        "allowedRatio": "Допустимое соотношение между целевым и введенным размером сигнала:",
+        "firstOutcomeToBeCreated": "Первый новый идентификатор результата, который должен быть создан?",
+        "minNumberOfOutcomeEventsToBuildAModel": "Минимальное количество итоговых событий, необходимых для построения модели:",
+        "minNumberofOutcomeEventsToInjectASignal": "Минимальное количество исходящих событий, необходимых для введения сигнала:"
+      },
+      "options": {
+        "keepAll": "Оставить все",
+        "keepFirst": "Оставить первый",
+        "removeAll": "Удалить все",
+        "none": "Никак",
+        "byPercent": "По процентам",
+        "toEquipoise": "Уравновесить",
+        "matchOnPropensityScore": "Сопоставить по оценке склонности",
+        "stratifyOnPropensityScore": "Стратифицировать по оценке склонности",
+        "standardizedLogit": "Стандартизированный Logit",
+        "standardized": "Стандартизированный",
+        "propensityScore": "Оценка склонности",
+        "all": "Все",
+        "target": "Цель",
+        "comparator": "Компаратор",
+        "logisticRegression": "Логистическая регрессия",
+        "poissonRegression": "Пуассоновская регрессия",
+        "coxProportionalHazards": "Пропорциональные опасности Кокса",
+        "allOccurrences": "Все вхождения",
+        "firstOccurrence": "Первое вхождение",
+        "condition": "Условие",
+        "drug": "Лекарство",
+        "device": "Устройство",
+        "measurement": "Измерение",
+        "observation": "Наблюдение",
+        "procedure": "Процедура",
+        "visit": "Визит",
+        "poisson": "Пуассон",
+        "survival": "Выживание",
+        "cohortStartDate": "времени начала когорты",
+        "cohortEndDate": "времени окончания когорты",
+        "matching": "Сопоставление 1:<%=ratio%>",
+        "stratification": "Стратификация (<%=stratum%> страт)"
+      }
+    },
+    "util": {
+      "issues": "Ваше исследование имеет следующие проблемы, которые мешают вам просмотреть полную информацию о спецификации и загрузить файл исследования:",
+      "issueComparisonAndAnalysis": "Необходимо указать хотя бы одно сравнение и один анализ.",
+      "issueComparison": "Вы должны указать хотя бы одну цель",
+      "issueDuplicate": "Ваше исследование содержит повторяющиеся значения в одной из следующих областей: Сравнения или Настройки анализа.",
+      "issueNotSaved": "Вы должны сохранить анализ, прежде чем вы сможете просмотреть и скачать.",
+      "reviewDownload": "Предпросмотр и скачивание",
+      "reviewFullSpec": "Предпросмотр полной спецификации исследования",
+      "downloadPackage": "Скачивание иследования",
+      "downloadNote": "Укажите название файла и нажмите «Скачать», чтобы получить файл в формате ZIP.",
+      "packageNamePlaceholder": "Имя файла...",
+      "downloadNameNote": "<b>Обратите внимание:</b> Имя пакета должно состоять только из буквенно-цифровых символов. Пробелы или специальные символы не допускаются.",
+      "downloadProblemsNote": "Пожалуйста, ознакомьтесь с разделом загрузок, чтобы просмотреть проблемы в спецификации анализа. Они должны быть исправлены, прежде чем вы сможете экспортировать свое определение."
+    }
+  },
+  "jobs": {
+    "refreshJobs": "Обновить список"
+  },
+  "configuration": {
+    "title": "Конфигурация",
+    "changeSourcePriorities": "Менять приоритеты источника:",
+    "newSource": "Новый источник",
+    "executionEngine": "Движок генерации",
+    "buttons": {
+      "check": "Проверка",
+      "refresh": "Обновить",
+      "clearConfigurationCache": "Очистить кэш конфигурации",
+      "managePermissions": "Управление разрешениями",
+      "importUsers": "Импорт пользователей из LDAP/AD",
+      "clearServerCache": "Очистить серверный кэш"
+    },
+    "priorityOptions": {
+      "session": "В текущей сессии",
+      "application": "Во всем приложении"
+    },
+    "alerts": {
+      "clearLocalCache": "Локальное хранилище очищено. Пожалуйста, перезагрузите страницу, чтобы обновитьинформацию о конфигурации.",
+      "clearServerCache": "Серверный кэш очищен",
+      "failUpdatePrioritySourceDaimon": "Не удалось обновить демона приоритета источника"
+    },
+    "confirms": {
+      "clearServerCache": "Вы действительно хотите очистить серверный кэш?"
+    },
+    "viewEdit": {
+      "source": {
+        "title": "Источник <%=name%>",
+        "new": {
+          "placeholder": "Новый источник"
+        },
+        "validation": {
+          "empty": "Имя источника не может быть пустым"
+        },
+        "label": "Ключ источника:",
+        "placeholder": "Ключ источника",
+        "alerts": {
+          "save": {
+            "errorMessage": "Пожалуйста, свяжитесь с администратором, чтобы решить эту проблему.",
+            "error": "Источник не сохранен. <%= message %>"
+          },
+          "delete": {
+            "hasSelectedPriotirizableDaimons": "Некоторые даймоны этого источника получили наивысший приоритет и используются приложением. Выберите новые первоочередные даймоны, чтобы удалить источник."
+          },
+          "sourceSelectedError": "При выборе источника с d=<%=selectedSourceId%> произошла ошибка."
+        },
+        "confirms": {
+          "close": "Изменения не сохранены. Действительно продолжить?",
+          "delete": "Удалить источник? Это действие необратимо!"
+        }
+      },
+      "dialect": {
+        "label": "Диалект источника:",
+        "title": "Диалект источника",
+        "options": {
+          "postgresql": "PostgreSQL",
+          "sqlserver": "SQL server",
+          "oracle": "Oracle",
+          "redshift": "Amazon Redshift",
+          "bigquery": "Google BigQuery",
+          "impala": "Impala",
+          "pdw": "Microsoft PDW",
+          "netezza": "IBM Netezza",
+          "hive": "Hive LLAP"
+        }
+      },
+      "connectionString": {
+        "label": "Строка подключения:",
+        "placeholder": "Строка подключения",
+        "title": "Строка подключения"
+      },
+      "username": {
+        "label": "Пользователь:",
+        "placeholder": "Пользователь",
+        "title": "Пользователь",
+        "validation": {
+          "empty": "Поле \"Пользователь\" не может быть пустым."
+        }
+      },
+      "password": {
+        "label": "Пароль:",
+        "placeholder": "Пароль",
+        "title": "Пароль"
+      },
+      "krb": {
+        "adminServer": {
+          "label": "KrbAdminServer:",
+          "placeholder": "KrbAdminServer",
+          "title": "KrbAdminServer"
+        },
+        "realm": {
+          "label": "KrbRealm:",
+          "placeholder": "KrbAdminServer",
+          "title": "KrbRealm взят из JDBC-строки подключения"
+        },
+        "hostFqdn": {
+          "label": "KrbHostFQDN:",
+          "placeholder": "KrbHostFQDN",
+          "title": "KrbHostFQDN взят из JDBC-строки подключения"
+        },
+        "authenticationMethod": {
+          "label": "Метод аутентификации Kerberos:"
+        },
+        "keytab": {
+          "label": "Keytab"
+        },
+        "buttons": {
+          "remove": "Удалить:"
+        },
+        "userPassword": {
+          "label": "Имя пользователя и пароль"
+        },
+        "password": {
+          "label": "Пароль:",
+          "placeholder": "Пароль",
+          "title": "Пароль"
+        },
+        "sourceDaimons": {
+          "label": "Даймоны источника"
+        },
+        "validation": {
+          "host": "\"KrbHostFQDN\" is empty. Please specify it in the following format: \"KrbHostFQDN=[value];\"",
+          "realm": "\"KrbRealm\" is empty. Please specify it in the following format: \"KrbRealm=[value];\""
+        }
+      },
+      "bigQuery": {
+        "password": {
+          "label": "Файл-ключ сервисного аккаунта (OAuthPvtKeyPath)"
+        },
+        "button": {
+          "remove": {
+            "label": "Удалить"
+          }
+        }
+      }
+    },
+    "userImport": {
+      "title": "Импорт пользователей из LDAP/Active Directory",
+      "importNow": "Импортировать",
+      "newScheduledImport": "Импорт по расписанию",
+      "loadingUserImportJobList": "Загрузка списка заданий импорта...",
+      "loadingHistory": "Загрузка истории заданий импорта...",
+      "userImportJob": "Задание импорта пользователей",
+      "tabs": {
+        "scheduler": "Планировщик",
+        "roleMapping": "Назначение соответствий ролей",
+        "jobHistory": "История заданий"
+      },
+      "scheduler": {
+        "schedule": "Расписание",
+        "enabled": "Включено",
+        "preserveAssignedRoles": "Сохранять назначенные роли",
+        "startOn": "Дата запуска:",
+        "ends": "Окончание",
+        "never": "Никогда",
+        "execute": "Выполнять:",
+        "repeat": "Повторить:",
+        "after": "После выполнений",
+        "executions": "Исследования",
+        "on": "До даты"
+      },
+      "findGroup": "Найти группу",
+      "searchGroup": "Поиск группы",
+      "searchGroupPlaceholder": "Поиск...",
+      "wizard": {
+        "title": "Импорт пользователей",
+        "buttons": {
+          "prev": "Назад",
+          "next": "Далее",
+          "startImport": "Начать импорт"
+        },
+        "selectSource": {
+          "header": "Пожалуйста, выберите провайдера для импорта пользователей.",
+          "buttons": {
+            "details": "Детали",
+            "testConnection": "Тест соединения"
+          },
+          "source": {
+            "activeDirectory": "Active Directory",
+            "ldap": "LDAP сервер"
+          }
+        },
+        "provider" : {
+          "connection": {
+            "failed": "Ошибка проверки соединения. Пожалуйста, смотрите подробности в логах сервера."
+          }
+        },
+        "roleMapping": {
+          "header": "При необходимости предоставьте сопоставление групп LDAP / Active Directory ролям Atlas."
+        },
+        "import": {
+          "header": "Пожалуйста, выберите пользователей для импорта",
+          "buttons": {
+            "checkAll": "Выбрать все",
+            "uncheckAll": "Снять выбор"
+          }
+        },
+        "finalPage": {
+          "message": "Импорт пользователей завершен."
+        },
+        "editRoles": {
+          "title": "Редактирование ролей"
+        },
+        "help": {
+          "adLdapUsername": "Имя пользователя AD/LDAP",
+          "adLdapUsernameText": "Этополе соответствует полю LDAP/AD <b>Display Name</b>.",
+          "atlasLogin": "Логин Атлас",
+          "atlasLoginText": "Это поле напрямую соответствует полю LDAP/AD <b>login</b> и будет использовано в качестве логина для входа в Атлас."
+        }
+      }
+    },
+    "roles": {
+      "title": "Роли",
+      "roleTitle": "Роль <%=id%>",
+      "newRole": "Новая роль",
+      "nameIsEmpty": "Имя не может быть пустым.",
+      "importRoles": "Импорт ролей",
+      "tabs": {
+        "users": "Пользователи",
+        "permissions": "Разрешения",
+        "utilities": "Утилиты"
+      }
+    },
+    "rolesImport": {
+      "title": "Импорт ролей",
+      "emptyMessage": "Вставьте в текстовое поле JSON, содержащий определения ролей",
+      "rolesDefinitionJson": "JSON с определением ролей",
+      "processed": "Обработано <%=proc%> из <%=len%> ролей.",
+      "alertDanger": "Некоторые разрешения и пользователи в списке недоступны в этом экземпляре Atlas. Эти элементы будут отфильтрованы перед импортом.",
+      "fixJson": "Исправить JSON",
+      "alertWarning": "Некоторые из разрешений в списке содержат идентификаторы сущностей, которые не гарантируют совпадение между исходным и целевым экземплярами Atlas.",
+      "removeThePermissions": "Удалить разрешения"
+    }
+  },
+  "feedback": {
+    "title": "Обратная связь",
+    "pleaseContact": "Для доступа или вопросов, касающихся приложения Atlas, пожалуйста, свяжитесь с:"
+  },
+  "licenseAgreement": {
+    "title": "Лицензионное соглашение",
+    "description": "Чтобы использовать SNOMED International SNOMED CT Browser и HemOnc, примите следующее лицензионное соглашение:",
+    "rejectWarning": "Без принятия этих условий вы не сможете использовать Atlas",
+    "reject": "Отказаться",
+    "accept": "Принять"
+  },
+  "cohortDefinitions": {
+    "closeYourCurrentCohort": "Пожалуйста, закройте текущее определение когорты перед созданием нового",
+    "cohort": {
+      "modals": {
+        "analysisTypes": {
+          "bold_1": "Быстрый анализ",
+          "bold_2": "Использование здравоохранения",
+          "bold_3": "Полный анализ",
+          "text_1": "Проводит минимальный анализ, чтобы получить быстрый обзор года рождения этой группы, демографических данных, эпох лекарств и состояний. (по оценкам: 10 минут)",
+          "text_2": "Запускает анализы для предоставления отчетов об экспозиции, посещении и использовании наркотиков. (по оценкам: 10 - 40 минут)",
+          "text_3": "Запускает полный набор отчетов о характеристиках. (по оценкам: 60 минут)",
+          "title": "Типы анализа"
+        },
+        "cohortDefinition": {
+          "text_1": "Когорта определяется как набор лиц, удовлетворяющих одному или нескольким критериям включения в течение определенного периода времени. Один человек может претендовать на одну группу несколько раз в течение непересекающихся интервалов времени. Когорты строятся в ATLAS путем указания критериев входа в когорту и критериев выхода из когорты. Критерии входа в когорту включают в себя выбор одного или нескольких начальных событий, которые определяют дату начала для записи в когорте, и, при необходимости, указание дополнительных критериев включения, которые отфильтровывают для соответствующих событий. Критерии выхода из группы применяются к каждой записи в группе, чтобы определить дату окончания, когда эпизод этого человека больше не подходит для этой группы.",
+          "title": "Определение когорты"
+        },
+        "linkToCohortDefinition": {
+          "text_1": "Эта ссылка может использоваться для доступа к этому определению когорты непосредственно из Web API из других инструментов, таких как R, а также для импорта через экземпляры ATLAS.",
+          "title": "Ссылка на определение когорты"
+        },
+        "configureReportsToRun": {
+          "title": "Настройка отчетов для запуска",
+          "run": "Запуск"
+        }
+      }
+    },
+    "cohortDefinitionManager": {
+      "closeCohortTitle": "Закрыть определение когорты",
+      "generationExitMessage": "Сообщение о выходе из генерации",
+      "retrievingCohortDefinitions": "получение когортных определений",
+      "cohortDefinitionManagerText_1": "Когорта не генерируется",
+      "cohortDefinitionManagerText_10": "Возгласы",
+      "cohortDefinitionManagerText_11": "Система отчетов обнаружила ошибку. Пожалуйста, предоставьте следующую информацию вашей администрации ATLAS или отправьте вопрос на",
+      "cohortDefinitionManagerText_12": "Ошибка создания отчета",
+      "cohortDefinitionManagerText_13": "Подождите",
+      "cohortDefinitionManagerText_14": "Пожалуйста, подождите, пока будет загружен статус отчета.",
+      "cohortDefinitionManagerText_2": "Эта когорта не была сгенерирована в выбранном вами источнике данных. Пожалуйста, вернитесь на вкладку генерации, чтобы сгенерировать группу, прежде чем получить доступ к отчетам",
+      "cohortDefinitionManagerText_3": "Отчеты не созданы",
+      "cohortDefinitionManagerText_4": "Отчеты еще не были сгенерированы для этой группы. Пожалуйста, нажмите кнопку «Создать» ниже, чтобы сгенерировать отчеты.",
+      "cohortDefinitionManagerText_5": "Сделать выбор",
+      "cohortDefinitionManagerText_6": "Пожалуйста, сделайте выбор на панели «Выбор отчетов».",
+      "cohortDefinitionManagerText_7": "Генерация отчетов",
+      "cohortDefinitionManagerText_8": "Отчет недоступен",
+      "cohortDefinitionManagerText_9": "Запрошенный вами отчет недоступен. Пожалуйста, нажмите кнопку Создать, чтобы сгенерировать когортные отчеты для этого источника данных.",
+      "confirms": {
+        "close": "Изменения в вашей группе не сохраняются. Желаете ли вы продолжить?",
+        "delete": "Удалить когортное определение? Предупреждение: удаление не может быть отменено!",
+        "generateAnalyses": "Это запустит <%=descr%> и может занять около <%=duration%>. Вы уверены?",
+        "save": "Произошла ошибка при попытке сохранить определение когорты.",
+        "saveAlert": "Определение когорты с таким именем уже существует. Пожалуйста, выберите другое имя."
+      },
+      "createCopyCohortTitle": "Создать копию этого определения когорты",
+      "failedWithoutAnyMessage": "Не удалось без какого-либо сообщения",
+      "generateAllAnalyses": {
+        "descr": "все анализы",
+        "duration": "60-90 минут"
+      },
+      "generateHealthcareAnalyses": {
+        "descr": "Анализ затрат и использования",
+        "duration": "10-45 минут"
+      },
+      "generateQuickAnalysis": {
+        "descr": "минимальный набор анализов для быстрого обзора группы",
+        "duration": "10 минут"
+      },
+      "getLinkCohortTitle": "Получить ссылку на это определение когорты",
+      "heraclesHeel": "Heracles Heel",
+      "panels": {
+        "appendix_1": "Приложение 1: Определения концептуального набора",
+        "availableCDMSources": "Доступные источники CDM",
+        "fullAnalysis": "Полный анализ",
+        "generate": "генерировать",
+        "generated": "Сформирован",
+        "generationDuration": "Продолжительность генерации",
+        "generationStatus": "Статус генерации",
+        "graphicalView": "Графический вид",
+        "hideReports": "Скрыть отчеты",
+        "importConceptIdentifiers": "Импорт идентификаторов концепций",
+        "importConceptSetExpression": "Импорт определения набора концепций",
+        "importSourceCodes": "Импорт исходных кодов",
+        "json": "JSON",
+        "people": "Количество пациентов",
+        "quickAnalysis": "Быстрый анализ",
+        "records": "Записей",
+        "reload": "Перезагрузить",
+        "reportSelections": "Выбор отчетов",
+        "sourceName": "Имя источника",
+        "sql": "SQL",
+        "textView": "Текстовый вид",
+        "utilization": "Использование",
+        "viewReports": "Просмотр отчетов"
+      },
+      "samples": {
+        "sampleSelections": "Выбор образца",
+        "selectASource": "Выберите источник данных",
+        "addNewSample": "Добавить новый образец",
+        "cohortNotGeneratedNote": "Когорта не сгенерирована на этом источнике. Пожалуйста, перейдите на вкладку генерации и сгенерируйте когорту перед тем, как получить доступ к образцам.",
+        "cohortShouldBeGenerated":  "Перед созданием образцов необходимо сгенерировать когорту",
+        "errorFetchingList": "Ошибка получения списка образцов",
+        "errorDeleting": "Ошибка удаления образца",
+        "errorFetchingData": "Ошибка получения данных образца",
+        "errorRefreshing": "Ошибка обновления образца",
+        "modal": {
+          "title": "Создание нового образца",
+          "mandatoryFields": "* Обязательные поля",
+          "sampleName": "* Имя образца",
+          "sampleNamePlaceholder": "Введите имя образца",
+          "sampleNameEmpty": "Имя образца не может быть пустым",
+          "numberOfPatients": "* Количество пациентов",
+          "numberOfPatientsPlaceholder": "Введите число",
+          "numberOfPatientsEmpty": "Количество пациентов должно быть положительным числом",
+          "selectAgeCriteria": "Выберите возрастной критерий",
+          "lessThan": "Менее чем",
+          "lessOrEqualTo": "Менее чем или равно",
+          "equalTo": "Равно",
+          "greaterThan": "Более чем",
+          "greaterOrEqualTo": "Более чем или равно",
+          "between": "Между",
+          "notBetween": "Не между",
+          "agePlaceholder": "Введите число",
+          "ageError": "Возраст должен быть положительным числом",
+          "ageError2": "Первый и второй возраст должны быть положительными числами и не равны",
+          "indicateGender": "Выберите пол (оставьте пустым, чтобы выбрать все)",
+          "male": "Мужской",
+          "female": "Женский",
+          "other": "Другой",
+          "submit": "Отправить",
+          "creatingSample": "Создание образца..."
+        }
+      },
+      "saveCohortTitle": "Сохранить определение когорты",
+      "selectReport": "Выбор отчета",
+      "tabs": {
+        "conceptSets": "Наборы концепций",
+        "definition": "Определение",
+        "explore": "Проводить исследования",
+        "export": "Экспорт",
+        "generation": "Генерация",
+        "samples": "Образцы",
+        "messages": "Сообщения",
+        "reporting": "Составление отчетов"
+      }
+    },
+    "cohortId": "Когорта #<%=id%>",
+    "cohortreports": {
+      "inclusionReport": "Отчет о включении",
+      "inclusionReportFor": "Отчет о включении для",
+      "inclusionReportFor1": " ",
+      "tabs": {
+        "byEvents": "По событиям",
+        "byPerson": "По человеку"
+      }
+    },
+    "costUtilization": {
+      "visualization": "Визуализация",
+      "rawData": "Необработанные данные",
+      "allowedCharged": "Разрешено / Заряженные",
+      "allowedCost": "Допустимая стоимость",
+      "allowedCostPmpm": "Разрешенная стоимость",
+      "averageLengthOfStay": "Средняя продолжительность пребывания (в днях)",
+      "chargedCost": "Взимается стоимость",
+      "chargedCostPMPM": "Начисленная стоимость PMPM",
+      "costUtilizationText_1": "Подробная статистика недоступна",
+      "displayCharts": "Отображаемые графики:",
+      "drugUtilDetailedText_1": "Вернуться к сводке лекарств",
+      "drugUtilSummaryText_1": "Нажмите на лекарство, чтобы получить подробную статистику:",
+      "drugUtilText_1": "Резюме для всех лекарств",
+      "drugUtilText_2": "Подробный отчет о наркотиках для",
+      "exposure1kYear": "Выдержка / ч 1к / год",
+      "paidAllowed": "Платные / Разрешено",
+      "paidCost": "Оплаченная стоимость",
+      "paidCostPMPM": "Платная стоимость PMPM",
+      "periodStart": "Начало периода",
+      "personCount": "Количество людей",
+      "personExposureText_1": "Количество людей",
+      "personExposureText_2": "Общая экспозиция в годах",
+      "personExposureText_3": "Средний год воздействия на 1000 человек",
+      "personExposureText_4": "Подробная статистика недоступна",
+      "personPercent": "Процент лиц",
+      "persons": "лиц",
+      "recordsPer1000": "Записей на 1000",
+      "recordsPer1000PerYear": "Записей на 1000 в год",
+      "recordsPer1000WithRecord": "Записей на 1000 с записью",
+      "reportManager": {
+        "reportManagerText_1": "Когортная отчетность",
+        "reportManagerText_10": "раса",
+        "reportManagerText_11": "Этнос",
+        "reportManagerText_12": "Отчет не выполнен",
+        "reportManagerText_13": "Этот отчет не был выполнен.",
+        "reportManagerText_14": "Распространенность по месяцам",
+        "reportManagerText_15": "Когортный старт",
+        "reportManagerText_16": "Персоны в Когорте от начала до конца",
+        "reportManagerText_17": "Количество человек по длительности от начала когорты до конца когорты",
+        "reportManagerText_18": "Распределение по возрасту в начале когорты по году начала когорты",
+        "reportManagerText_19": "Распределение по возрасту",
+        "reportManagerText_2": "Выберите когортное определение",
+        "reportManagerText_20": "Распределение по возрасту в начале когорты по полу",
+        "reportManagerText_21": "Возраст в указателе",
+        "reportManagerText_22": "Торнадо",
+        "reportManagerText_23": "Образцы профилей",
+        "reportManagerText_24": "Выберите бар на графике торнадо, чтобы просмотреть образцы профилей для этих слоев.",
+        "reportManagerText_25": "Распространенность условий",
+        "reportManagerText_26": "Таблица",
+        "reportManagerText_27": "TreeMap",
+        "reportManagerText_28": "Размер коробки: Распространенность, Цвет: Журнал относительного риска (от красного к зеленому = отрицательный к положительному), используйте Ctrl-Click для увеличения, Alt-Click для сброса масштаба",
+        "reportManagerText_29": "Детальный отчет",
+        "reportManagerText_3": "Полнота данных",
+        "reportManagerText_30": "Наркотики по дате индекса",
+        "reportManagerText_31": "Возраст при первом наблюдении",
+        "reportManagerText_32": "Распределение по возрасту при первом наблюдении в когорте.",
+        "reportManagerText_33": "Возраст по полу",
+        "reportManagerText_34": "Распределение по возрасту при первом наблюдении в когорте стратифицировано по полу.",
+        "reportManagerText_35": "Длина наблюдения",
+        "reportManagerText_36": "Распределение общего времени наблюдения в когорте.",
+        "reportManagerText_37": "Длина наблюдения по полу",
+        "reportManagerText_38": "Распределение общего времени наблюдения в когорте по полу.",
+        "reportManagerText_39": "Продолжительность наблюдения по возрасту",
+        "reportManagerText_4": "Сайт по уходу",
+        "reportManagerText_40": "Периоды наблюдения на человека",
+        "reportManagerText_41": "Лица с постоянным наблюдением по месяцам",
+        "reportManagerText_42": "Состояние Эра Распространенность",
+        "reportManagerText_43": "Эра условий Распространенность по месяцам",
+        "reportManagerText_44": "Возраст при первом диагнозе",
+        "reportManagerText_45": "Продолжительность эры условия",
+        "reportManagerText_46": "Распространенность процедур",
+        "reportManagerText_47": "Распространенность условий",
+        "reportManagerText_48": "Распространенность условий по месяцам",
+        "reportManagerText_49": "Тип условия",
+        "reportManagerText_5": "Энтропия по дате",
+        "reportManagerText_50": "Распространенность наркотиков эпохи",
+        "reportManagerText_51": "Распространенность лекарственной эры по месяцам",
+        "reportManagerText_52": "Возраст при первом воздействии по полу",
+        "reportManagerText_53": "Длина Эры Распределения",
+        "reportManagerText_54": "Воздействие наркотиков",
+        "reportManagerText_55": "Распространенность воздействия наркотиков",
+        "reportManagerText_56": "Распространенность воздействия наркотиков по месяцам",
+        "reportManagerText_57": "Возраст при первом воздействии",
+        "reportManagerText_58": "Распределение дней снабжения",
+        "reportManagerText_59": "Распределение количества",
+        "reportManagerText_6": "Год рождения",
+        "reportManagerText_60": "Распределение заправок",
+        "reportManagerText_61": "Наркотики по типу",
+        "reportManagerText_62": "Распространенность процедур",
+        "reportManagerText_63": "Распространенность процедур по месяцам",
+        "reportManagerText_64": "Процедуры по типу",
+        "reportManagerText_65": "Возраст при первом появлении",
+        "reportManagerText_66": "Распространенность смерти по возрасту, полу, году",
+        "reportManagerText_67": "Death Prevalence by Month",
+        "reportManagerText_68": "Детали смерти",
+        "reportManagerText_69": "Возраст на смерть",
+        "reportManagerText_7": "Число людей в этой когорте показано с учетом их года рождения.",
+        "reportManagerText_70": "Смерть по типу",
+        "reportManagerText_71": "Нажмите здесь, чтобы выбрать когорту",
+        "reportManagerText_8": "Демография",
+        "reportManagerText_9": "Пол"
+      },
+      "saveAsCSV": "Сохранить как CSV",
+      "totalExposure": "Общая экспозиция в годах",
+      "totalLengthOfStay": "Общая продолжительность пребывания (в днях)",
+      "totalRecords": "Всего записей"
+    },
+    "filters": {
+      "visit": "Посещение",
+      "visitType": "Тип посещения"
+    },
+    "newDefinition": "Новая когорта",
+    "newDefinitionTitle": "Создать новую когорту",
+    "noConceptSets": "Нет концепций для экспорта",
+    "runDiagnostics": "Запустить диагностику",
+    "saveDefinitionBefore": "Вы должны сохранить определение, прежде чем сможете экспортировать",
+    "title": "Определения когорт"
+  },
+  "predictions": {
+    "analysisSettings": "Настройки анализа",
+    "confirmCatchSave": "Произошла ошибка при попытке сохранить прогнозный анализ.",
+    "confirmChanges": "Изменения прогноза уровня пациента не сохраняются. Желаете ли вы продолжить?",
+    "confirmDelete": "Удалить спецификацию прогноза уровня пациента? Предупреждение: удаление не может быть отменено!",
+    "confirmSave": "Прогнозный анализ с таким именем уже существует. Пожалуйста, выберите другое имя.",
+    "covariateSettingsDesc": "Добавить или обновить параметры ковариации",
+    "covariateSettingsTitle": "Ковариат Настройки",
+    "descriptionPlaceholder": "введите описание здесь (не более 1000 символов)",
+    "downloadStudyPackage": "Скачать учебный пакет",
+    "defaultValue": "(по умолчанию = <%=defaultValue%>):",
+    "retrievingPredictions": "получение прогнозов",
+    "editors": {
+      "evaluationEditorText_1": "Укажите, как разбить набор тестов / поездов:",
+      "evaluationEditorText_2": "Процент данных, которые будут использоваться в качестве тестового набора (0-100%):",
+      "evaluationEditorText_3": "Количество сгибов, используемых при перекрестной проверке:",
+      "evaluationEditorText_4": "складки",
+      "evaluationEditorText_5": "Семя, использовавшееся для разделения набора «тест / поезд» при использовании теста «Разделение человека» (необязательно):",
+      "executionEditorText_1": "Выполните выборку:",
+      "executionEditorText_2": "Сколько пациентов использовать для подгруппы?",
+      "executionEditorText_3": "Минимальное ковариатное вхождение: если ковариата встречается в части целевой совокупности меньше, чем это значение, оно будет удалено:",
+      "executionEditorText_4": "Нормализовать ковариаты:",
+      "populationEditorText_1": "Определите начало окна риска, относительно записи целевой группы:",
+      "populationEditorText_2": "Определите конец окна времени риска:",
+      "populationEditorText_3": "Минимальный период просмотра применяется к целевой когорте:",
+      "populationEditorText_4": "Должны ли быть удалены предметы без риска?",
+      "populationEditorText_5": "Минимальное время риска:",
+      "populationEditorText_6": "Включите людей с результатами, которые не наблюдались в течение всего периода риска?",
+      "populationEditorText_7": "Должна ли быть включена только первая экспозиция для каждого субъекта?",
+      "populationEditorText_8": "Удалить пациентов, которые наблюдали результат до входа в когорту?",
+      "populationEditorText_9": "Сколько дней можно оглянуться от записи в когорте для получения результата?",
+      "predictionCovariatePlaceholder": "Ковариатные идентификаторы",
+      "predictionEditorText_1": "Какие концепции вы хотите включить в базовые ковариаты в модели прогнозирования уровня пациента? (Оставьте пустым, если хотите включить все)",
+      "predictionEditorText_2": "Нужно ли добавлять потомки в список включенных концепций?",
+      "predictionEditorText_3": "Какие понятия вы хотите исключить в базовых ковариатах в модели прогнозирования уровня пациента? (Оставьте пустым, если хотите включить все)",
+      "predictionEditorText_4": "Нужно ли добавлять потомки в список исключенных концепций?",
+      "predictionEditorText_5": "Разделенный запятыми список ковариатных идентификаторов, который должен быть ограничен:",
+      "predictionSelectConceptSet": "Выберите набор концепций...",
+      "predictionSelectCovariates": "Выберите Ковариаты"
+    },
+    "export": "Экспорт",
+    "fullAnalysisList": "Полный список анализа",
+    "import": "Импорт",
+    "inputTypes": {
+      "adaBoost": "Ада Буст",
+      "adaBoostSettings": {
+        "desc_learningRate": "Скорость обучения сокращает вклад каждого классификатора. Существует компромисс между скоростью обучения и nEstimators.",
+        "desc_nEstimators": "Максимальное количество оценок, при которых бустинг прекращается",
+        "name_learningRate": "Скорость обучения",
+        "name_nEstimators": "Максимальное количество оценок"
+      },
+      "decisionTree": "Древо решений",
+      "decisionTreeSettings": {
+        "desc_classWeight": "Вес класса",
+        "desc_maxDepth": "Максимальное количество взаимодействий - большое значение приведет к медленной модели обучения",
+        "desc_minImpurityDecrease": "Порог для ранней остановки роста деревьев. Узел расколется, если его примесь выше порога, в противном случае это лист.",
+        "desc_minSamplesLeaf": "Минимальное количество образцов на лист",
+        "desc_minSamplesSplit": "Минимальные выборки на сплит",
+        "desc_plot": "Минимальные выборки на сплит",
+        "name_classWeight": "Вес класса",
+        "name_maxDepth": "Максимальная глубина",
+        "name_minImpurityDecrease": "Минимальное разделение примесей",
+        "name_minSamplesLeaf": "Минимальное количество образцов на лист",
+        "name_minSamplesSplit": "Минимальное количество выборок на сплит",
+        "name_plot": "Минимальное количество выборок на сплит"
+      },
+      "gradientBoostingMachine": "Машина повышения градиента",
+      "gradientBoostingMachineSettings": {
+        "desc_learnRate": "Повышение скорости обучения",
+        "desc_maxDepth": "Максимальное количество взаимодействий - большое значение приведет к медленной модели обучения",
+        "desc_minRows": "Минимальное количество строк, необходимое на каждом конечном узле дерева",
+        "desc_nthread": "Количество используемых компьютерных потоков (сколько у вас ядер?)",
+        "desc_ntrees": "Количество деревьев для строительства",
+        "name_learnRate": "Повышение скорости обучения",
+        "name_maxDepth": "Максимальное количество взаимодействий",
+        "name_minRows": "Минимальное количество рядов",
+        "name_nthread": "Компьютерные темы для вычислений",
+        "name_ntrees": "Деревья для строительства"
+      },
+      "knnSettings": {
+        "desc_k": "Количество соседей, чтобы рассмотреть",
+        "name_k": "Количество соседей"
+      },
+      "lassoLogisticRegression": "Лассо логистическая регрессия",
+      "lassoLogisticRegressionSettings": {
+        "desc": "Одно значение, используемое в качестве начального значения для автоматического поиска лямбда",
+        "name": "Начальное значение для автоматического поиска лямбда"
+      },
+      "mlpSettings": {
+        "desc_alpha": "Регуляризация l2",
+        "desc_size": "Количество скрытых узлов",
+        "name_alpha": "Альфа",
+        "name_size": "Количество скрытых узлов"
+      },
+      "multilayerPerceptionModel": "Многослойная модель персептрона",
+      "naiveBayes": "Наивный байесовский",
+      "nearestNeighbors": "Ближайшие соседи",
+      "randomForest": "Случайный Лес",
+      "randomForestSettings": {
+        "desc_maxDepth": "Максимальное количество взаимодействий - большое значение приведет к медленной модели обучения",
+        "desc_mtries": "Количество объектов, включаемых в каждое дерево (по умолчанию - квадратный корень от общего числа объектов)",
+        "desc_ntrees": "Количество деревьев для строительства",
+        "desc_varImp": "Выполните первоначальный выбор переменной до подгонки модели, чтобы выбрать полезные переменные",
+        "name_maxDepth": "Максимальная глубина",
+        "name_mtries": "Количество функций дерева",
+        "name_ntrees": "Количество деревьев для строительства",
+        "name_varImp": "Выполните начальный выбор переменной"
+      }
+    },
+    "item": {
+      "addCovariateSettings": "Добавить настройки ковариат",
+      "addModelSettings": "Добавить настройки модели",
+      "addOutcomeCohort": "Добавить исход когорты",
+      "addPopulationSettings": "Добавить настройки населения",
+      "addTargetCohort": "Добавить целевую группу",
+      "all": "Все",
+      "analysisSettings": "Настройки анализа",
+      "covariateSettings": "Ковариат Настройки",
+      "executionSettings": "Настройки выполнения",
+      "modelSettings": "Настройки модели",
+      "outcomeCohort": "Результат Когорты",
+      "populationSettings": "Настройки населения",
+      "predictionProblemSettings": "Настройки задачи прогноза",
+      "targetCohort": "Целевые когорты",
+      "trainingSettings": "Настройки обучения",
+      "view": "Отображать:"
+    },
+    "itemId": "Прогнозирование уровня пациента #<%=id%>",
+    "modelSettingsDesc": "Используйте параметры ниже для редактирования настроек модели",
+    "modelSettingsTitle": "Настройки модели",
+    "naiveMessage": "Там нет настроек для редактирования наивный байесовский",
+    "newItem": "Новое прогнозирование уровня пациента",
+    "newItemPlaceholder": "Новое прогнозирование уровня пациента",
+    "pleaseNote": "Пожалуйста, обратите внимание:",
+    "populationSettingsDesc": "Добавить или обновить настройки населения",
+    "populationSettingsTitle": "Настройки населения",
+    "predictionProblemSettings": "Настройки задачи прогноза",
+    "resetToDefault": "Восстановление значений по умолчанию",
+    "reviewAndDownload": "Предпросмотр и скачивание",
+    "reviewFullStudy": "Ознакомьтесь с полной спецификацией исследования",
+    "selectCohort": "Выберите группу...",
+    "tabs": {
+      "executions": "Выполнения",
+      "specification": "Спецификации",
+      "utilities": "Утилиты",
+      "messages": "Сообщения"
+    },
+    "title": "Прогнозирование уровня пациента",
+    "usingDefault": "Использование по умолчанию",
+    "utilitiesText_1": "Ваше исследование имеет следующие проблемы, которые мешают вам просмотреть полную информацию о спецификации и загрузить исследование пакет:",
+    "utilitiesText_2": "Вы должны указать хотя бы 1 из них: целевая когорта, исходная когорта, параметры модели, параметры ковариации и параметры населения.",
+    "utilitiesText_3": "Ваше исследование содержит повторяющиеся значения в одной из следующих областей: Настройки модели, Настройки ковариации и Настройки населения. Пожалуйста, просмотрите и исправьте эти ошибки, чтобы продолжить.",
+    "utilitiesText_4": "Вы должны сохранить свой анализ, прежде чем вы сможете просмотреть и загрузить.",
+    "utilitiesText_5": "Пожалуйста, ознакомьтесь с полной спецификацией исследования ниже и прокрутите страницу вниз, чтобы загрузить учебный пакет.",
+    "utilitiesText_6": "Укажите название учебного пакета и нажмите «Скачать», чтобы получить учебный пакет в формате ZIP.",
+    "utilitiesText_7": "Имя пакета должно состоять только из буквенно-цифровых символов. Пробелы или специальные символы не допускаются.",
+    "utilitiesText_8": "Пожалуйста, ознакомьтесь с разделом загрузок, чтобы просмотреть проблемы с вашей спецификацией анализа. Они должны быть исправлены, прежде чем вы сможете экспортировать свое определение.",
+    "packageName": "Имя файла..."
+  },
+  "const": {
+    "disabledReason": {
+      "dirty": "Сохраните изменения перед выполнением исследования",
+      "accessDenied": "Доступ запрещен",
+      "invalidTar": "Неправильное окно риска",
+      "invalidDesign": "Неправильный дизайн",
+      "engineNotAvalable": "Недоступен движок генерации исследований",
+      "emptyCohorts": "Не найдены когорты",
+      "emptyInitionEvent": "Не установлено начальное событие"
+    },
+    "eventsList": {
+      "addConditionEra": {
+        "title": "Добавить условие Эра",
+        "desc_initial": "Найти пациентов с определенным диагнозом эпохи.",
+        "desc_censoring": "Выйти из когорты, основанной на диагнозе эпохи.",
+        "desc_group": "Найти пациентов с конкретными условиями эпохи."
+      },
+      "addDemographic": {
+        "title": "Добавить демографический",
+        "desc_group": "Фильтрация событий по демографическим критериям."
+      },
+      "addConditionOccurrence": {
+        "title": "Добавить условие возникновения",
+        "desc_initial": "Найти пациентов с конкретными диагнозами.",
+        "desc_censoring": "Выйти из когорты на основании диагнозов.",
+        "desc_group": "Найти пациентов с конкретными условиями."
+      },
+      "addDeath": {
+        "title": "Добавить смерть",
+        "desc_initial": "Найти пациентов на основании смерти.",
+        "desc_censoring": "Выйти из когорты в зависимости от смерти.",
+        "desc_group": "Найти пациентов на основании смерти."
+      },
+      "addDeviceExposure": {
+        "title": "Добавить экспозицию устройства",
+        "desc_initial": "Поиск пациентов на основе воздействия устройства.",
+        "desc_censoring": "Выход из когорты в зависимости от воздействия устройства.",
+        "desc_group": "Поиск пациентов на основе воздействия устройства."
+      },
+      "addDoseEra": {
+        "title": "Добавить эру дозы",
+        "desc_initial": "Найти пациентов с дозами эры.",
+        "desc_censoring": "Выйти из когорты в зависимости от дозы.",
+        "desc_group": "Найти пациентов с дозами эры."
+      },
+      "addDrugEra": {
+        "title": "Добавить эпоху наркотиков",
+        "desc_initial": "Найти пациентов с воздействием наркотиков с течением времени.",
+        "desc_censoring": "Выход из когорты по наркотикам со временем.",
+        "desc_group": "Найти пациентов с наркотиками эпох."
+      },
+      "addDrugExposure": {
+        "title": "Добавить наркотик воздействия",
+        "desc_initial": "Найти пациентов с воздействием определенных наркотиков или классов наркотиков.",
+        "desc_censoring": "Выход из когорты в зависимости от воздействия определенных наркотиков или классов наркотиков.",
+        "desc_group": "Найти пациентов с воздействием определенных наркотиков или классов наркотиков."
+      },
+      "addMeasurement": {
+        "title": "Добавить измерение",
+        "desc_initial": "Найти пациентов на основе измерений.",
+        "desc_censoring": "Выйти из когорты на основе измерений.",
+        "desc_group": "Найти пациентов на основе измерений."
+      },
+      "addObservation": {
+        "title": "Добавить наблюдение",
+        "desc_initial": "Поиск пациентов на основе наблюдений.",
+        "desc_censoring": "Выйдите из когорты на основе лабораторных тестов или других наблюдений.",
+        "desc_group": "Поиск пациентов на основе наблюдений."
+      },
+      "addObservationPeriod": {
+        "title": "Добавить период наблюдения",
+        "desc_initial": "Поиск пациентов на основе периода наблюдения.",
+        "desc_group": "Поиск пациентов на основе периодов наблюдения."
+      },
+      "addPayerPlanPeriod": {
+        "title": "Добавить период плана плательщика",
+        "desc_initial": "Поиск пациентов на основе периода плана плательщика.",
+        "desc_censoring": "Поиск пациентов на основе периода плана плательщика.",
+        "desc_group": "Поиск пациентов на основе периода плана плательщика."
+      },
+      "addProcedureOccurrence": {
+        "title": "Добавление процедуры вхождения",
+        "desc_initial": "Найдите пациентов, которые испытали определенную процедуру.",
+        "desc_censoring": "Выйти из когорты на основе процедур.",
+        "desc_group": "Найдите пациентов, которые испытали определенную процедуру."
+      },
+      "addSpecimen": {
+        "title": "Добавить образец",
+        "desc_initial": "Найти пациентов на основе образцов.",
+        "desc_censoring": "Найти пациентов на основе образцов.",
+        "desc_group": "Найти пациентов на основе образцов."
+      },
+      "addLocationRegion": {
+        "title": "Добавить регион Регион",
+        "desc_group": "Найти пациентов в пределах географической области."
+      },
+      "addGroup": {
+        "title": "Добавить группу",
+        "desc_group": "Добавьте группу, чтобы объединить критерии, используя и / или отношения."
+      },
+      "addVisit": {
+        "title": "Добавить визит",
+        "desc_initial": "Поиск пациентов на основе информации о посещении.",
+        "desc_censoring": "Выход из группы на основе информации о посещении.",
+        "desc_group": "Поиск пациентов на основе информации о посещении.",
+        "title_occurrence": "Добавить визит",
+        "desc_occurrence": "Условие фильтра Происходит в зависимости от момента посещения диагноза.",
+        "title_deviceexposure": "Добавить визит",
+        "desc_deviceexposure": "Фильтр экспозиций на основе посещения посещения экспозиции.",
+        "title_drugexposure": "Добавить визит",
+        "desc_drugexposure": "Фильтрация воздействия наркотиков на основе посещения посещения воздействия наркотиков.",
+        "title_measurement": "Добавить визит",
+        "desc_measurement": "Фильтр измерений основан на посещении измерений.",
+        "title_observation": "Добавить визит",
+        "desc_observation": "Фильтр наблюдений, основанный на посещении наблюдений.",
+        "title_procedureoccurrence": "Добавить визит",
+        "desc_procedureoccurrence": "Процедура фильтра Вхождения, основанные на посещении процедуры."
+      },
+      "addFirstDiagnosis": {
+        "title_era": "Добавить первый диагноз",
+        "desc_era": "Ограничьте Эры Условий первой эрой диагноза в истории.",
+        "title_occurrence": "Добавить первый диагноз",
+        "desc_occurrence": "Предельное состояние Появление нового диагноза.",
+        "title_deviceexposure": "Добавить критерии первого воздействия",
+        "desc_deviceexposure": "Ограничить воздействие устройства на первое воздействие в истории.",
+        "title_dose": "Добавить критерии первого воздействия",
+        "desc_dose": "Ограничьте дозу Era до нового воздействия.",
+        "title_drug": "Добавить критерии первого воздействия",
+        "desc_drug": "Ограничьте Эры Наркотиков первым воздействием в истории.",
+        "title_drugexposure": "Добавить критерии первого воздействия",
+        "desc_drugexposure": "Ограничить воздействие наркотиков первым воздействием в истории.",
+        "title_measurement": "Добавить критерии первого измерения",
+        "desc_measurement": "Предельные меры для первого появления в истории.",
+        "title_observation": "Добавить первые критерии наблюдения",
+        "desc_observation": "Ограничить наблюдения первым случаем.",
+        "title_observationperiod": "Критерии первого периода наблюдения",
+        "desc_observationperiod": "Ограничить период наблюдения первым периодом в истории.",
+        "title_payerplan": "Критерии периода действия плана первого плательщика",
+        "desc_payerplan": "Ограничить период плана плательщика первым периодом в истории.",
+        "title_procedureoccurrence": "Добавить критерии первой процедуры",
+        "desc_procedureoccurrence": "Предельная процедура Происшествия к первой процедуре в истории.",
+        "title_specimen": "Добавить критерии первого появления",
+        "desc_specimen": "Ограничить образец первым в истории.",
+        "title_visit": "Добавить критерии первого посещения",
+        "desc_visit": "Ограниченный визит Происходит до первого посещения."
+      },
+      "addAgeAtStart": {
+        "title_era": "Добавить Возраст в Эру Начальные Критерии",
+        "desc_era": "Состояние фильтра Эры по возрасту в начале эры.",
+        "title_dose": "Добавить Возраст в Эру Начальные Критерии",
+        "desc_dose": "Отфильтруйте наркотик Эры по возрасту в начале эры.",
+        "title_drug": "Добавить Возраст в Эру Начальные Критерии",
+        "desc_drug": "Отфильтруйте наркотик Эры по возрасту в начале эры.",
+        "title_observationperiod": "Добавить возраст в начале критерии",
+        "desc_observationperiod": "Фильтровать периоды по возрасту при запуске.",
+        "title_payerplan": "Добавить возраст в начале критерии",
+        "desc_payerplan": "Фильтровать периоды по возрасту при запуске."
+      },
+      "addAgeAtEnd": {
+        "title_era": "Добавить возраст на конец эры Критерии",
+        "desc_era": "Условия фильтра Эры по возрасту в конце эры.",
+        "title_dose": "Добавить возраст на конец эры Критерии",
+        "desc_dose": "Отфильтруйте наркотик Эры по возрасту в конце эры.",
+        "title_drug": "Добавить возраст на конец эры Критерии",
+        "desc_drug": "Отфильтруйте наркотик Эры по возрасту в конце эры.",
+        "title_observationperiod": "Добавить возраст в конце критерия",
+        "desc_observationperiod": "Фильтровать периоды по возрасту в конце.",
+        "title_payerplan": "Добавить возраст в конце критерия",
+        "desc_payerplan": "Фильтровать периоды по возрасту в конце."
+      },
+      "addGender": {
+        "title_era": "Добавить гендерные критерии",
+        "desc_era": "Эра условия фильтра на основе пола.",
+        "title_occurrence": "Добавить гендерные критерии",
+        "desc_occurrence": "Фильтровать вхождения в зависимости от пола.",
+        "title_death": "Добавить гендерные критерии",
+        "desc_death": "Фильтровать смерти на основе пола.",
+        "title_deviceexposure": "Добавить гендерные критерии",
+        "desc_deviceexposure": "Фильтр устройств воздействия на основе пола.",
+        "title_dose": "Добавить гендерные критерии",
+        "desc_dose": "Эра фильтра наркотиков на основе пола.",
+        "title_drug": "Добавить гендерные критерии",
+        "desc_drug": "Эра фильтра наркотиков на основе пола.",
+        "title_drugexposure": "Добавить гендерные критерии",
+        "desc_drugexposure": "Фильтр воздействия наркотиков на основе пола.",
+        "title_measurement": "Добавить гендерные критерии",
+        "desc_measurement": "Фильтр измерений на основе пола.",
+        "title_observation": "Добавить гендерные критерии",
+        "desc_observation": "Фильтр наблюдений по полу.",
+        "title_payerplan": "Добавить гендерные критерии",
+        "desc_payerplan": "Фильтровать периоды плана плательщика по полу.",
+        "title_procedureoccurrence": "Добавить гендерные критерии",
+        "desc_procedureoccurrence": "Процедура фильтра В зависимости от пола.",
+        "title_specimen": "Добавить гендерные критерии",
+        "desc_specimen": "Фильтровать образцы по полу.",
+        "title_visit": "Добавить гендерные критерии",
+        "desc_visit": "Фильтр посещений в зависимости от пола.",
+        "title_demographic": "Добавить гендерные критерии",
+        "desc_demographic": "Фильтровать события по полу."
+      },
+      "addStartDate": {
+        "title_era": "Добавить критерии даты начала",
+        "desc_era": "Эра условия фильтра по дате начала эры.",
+        "title_occurrence": "Добавить критерии даты начала",
+        "desc_occurrence": "Фильтровать вхождения условий по дате начала условия.",
+        "title_deviceexposure": "Добавить критерии даты начала",
+        "desc_deviceexposure": "Фильтруйте экспозиции устройства по дате начала экспозиции.",
+        "title_dose": "Добавить критерии даты начала",
+        "desc_dose": "Отфильтруйте эры дозы по дате начала эры.",
+        "title_drug": "Добавить критерии даты начала",
+        "desc_drug": "Фильтровать эры наркотиков по дате начала эры.",
+        "title_drugexposure": "Добавить критерии даты начала",
+        "desc_drugexposure": "Фильтрация воздействия наркотиков по дате начала воздействия препарата.",
+        "title_observationperiod": "Добавить критерии даты начала",
+        "desc_observationperiod": "Фильтруйте периоды наблюдения по дате начала.",
+        "title_payerplan": "Добавить критерии даты начала",
+        "desc_payerplan": "Фильтровать периоды плана плательщика по дате начала.",
+        "title_visit": "Добавить критерии даты начала",
+        "desc_visit": "Отфильтруйте количество посещений по дате начала условия.",
+        "title_demographic": "Добавить критерии даты начала",
+        "desc_demographic": "Фильтровать события по дате начала."
+      },
+      "addEndDate": {
+        "title_era": "Добавить критерии даты окончания",
+        "desc_era": "Эра условия фильтра по дате окончания эры",
+        "title_occurrence": "Добавить дату окончания условия",
+        "desc_occurrence": "Фильтровать вхождения условий по дате окончания условия.",
+        "title_deviceexposure": "Добавить критерии даты окончания",
+        "desc_deviceexposure": "Фильтруйте экспозиции устройства по дате окончания экспозиции.",
+        "title_dose": "Добавить критерии даты окончания эры",
+        "desc_dose": "Отфильтруйте эры дозы к дате окончания эры",
+        "title_drug": "Добавить критерии даты окончания эры",
+        "desc_drug": "Отфильтруйте эры лекарств по дате окончания эры.",
+        "title_drugexposure": "Добавить критерии даты окончания",
+        "desc_drugexposure": "Фильтрация воздействия наркотиков по дате окончания воздействия препарата.",
+        "title_observationperiod": "Добавить критерии даты окончания периода",
+        "desc_observationperiod": "Фильтруйте периоды наблюдения по дате окончания.",
+        "title_payerplan": "Добавить критерии даты окончания периода",
+        "desc_payerplan": "Отфильтруйте периоды плана плательщика по дате окончания.",
+        "title_visit": "Добавить критерии даты окончания",
+        "desc_visit": "Отфильтруйте события посещения по дате окончания условия.",
+        "title_demographic": "Добавить критерий даты окончания мероприятия",
+        "desc_demographic": "Фильтровать события по дате окончания."
+      },
+      "addConditonCount": {
+        "title_era": "Добавить критерии подсчета эры",
+        "desc_era": "Эра условия фильтра по количеству условий.",
+        "title_drug": "Добавить критерий подсчета эры",
+        "desc_drug": "Отфильтруйте эры наркотиков по количеству экспозиций."
+      },
+      "addRace": {
+        "title_demographic": "Добавить критерии гонки",
+        "desc_demographic": "Фильтровать события по расе."
+      },
+      "addEthnicity": {
+        "title_demographic": "Добавить критерии этнической принадлежности",
+        "desc_demographic": "Фильтровать события по этнической принадлежности."
+      },
+      "addLength": {
+        "title_era": "Добавить критерии длины эры",
+        "desc_era": "Эра условия фильтра по продолжительности эры.",
+        "title_dose": "Добавить критерии длины эры",
+        "desc_dose": "Фильтрация эр наркотиков по продолжительности эры.",
+        "title_drug": "Добавить критерии длины эры",
+        "desc_drug": "Фильтрация эр наркотиков по продолжительности эры.",
+        "title_observationperiod": "Добавить критерии длины периода",
+        "desc_observationperiod": "Фильтруйте периоды наблюдения по продолжительности.",
+        "title_payerplan": "Добавить критерии длины периода",
+        "desc_payerplan": "Фильтровать периоды плана плательщика по продолжительности.",
+        "title_visit": "Добавить критерии продолжительности посещения",
+        "desc_visit": "Отфильтруйте количество посещений по продолжительности."
+      },
+      "addNested": {
+        "title_era": "Добавить вложенные критерии ...",
+        "desc_era": "Применить критерии, используя условную эру в качестве события индекса.",
+        "title_occurrence": "Добавить вложенные критерии ...",
+        "desc_occurrence": "Применить критерии, используя условие в качестве события индекса.",
+        "title_death": "Добавить вложенные критерии ...",
+        "desc_death": "Применить критерии, используя случай смерти в качестве индексного события.",
+        "title_deviceexposure": "Добавить вложенные критерии ...",
+        "desc_deviceexposure": "Применить критерии, используя экспозицию устройства в качестве индексного события.",
+        "title_dose": "Добавить вложенные критерии ...",
+        "desc_dose": "Применить критерии, используя эру дозы в качестве индекса события.",
+        "title_drug": "Добавить вложенные критерии ...",
+        "desc_drug": "Применить критерии, используя эпоху наркотиков в качестве индекса события.",
+        "title_drugexposure": "Добавить вложенные критерии ...",
+        "desc_drugexposure": "Применить критерии, используя воздействие препарата в качестве индекса события.",
+        "title_measurement": "Добавить вложенные критерии ...",
+        "desc_measurement": "Применить критерии, используя измерение в качестве индексного события.",
+        "title_observation": "Добавить вложенные критерии ...",
+        "desc_observation": "Применить критерии, используя наблюдение в качестве индексного события.",
+        "title_observationperiod": "Добавить вложенные критерии ...",
+        "desc_observationperiod": "Применить критерии, используя период наблюдения в качестве индексного события.",
+        "title_payerplan": "Добавить вложенные критерии ...",
+        "desc_payerplan": "Применить критерии, используя период плана плательщика в качестве события индекса.",
+        "title_procedureoccurrence": "Добавить вложенные критерии ...",
+        "desc_procedureoccurrence": "Применить критерии, используя вхождение процедуры в качестве события индекса.",
+        "title_specimen": "Добавить вложенные критерии ...",
+        "desc_specimen": "Применить критерии, используя образец в качестве индексного события.",
+        "title_visit": "Добавить вложенные критерии ...",
+        "desc_visit": "Применить критерии, используя посещение в качестве события индекса."
+      },
+      "addAge": {
+        "title_occurrence": "Добавить возраст при возникновении",
+        "desc_occurrence": "Условие фильтра Случаи по возрасту при появлении.",
+        "title_death": "Добавить возраст при возникновении",
+        "desc_death": "Фильтровать по возрасту на момент смерти.",
+        "title_deviceexposure": "Добавить возраст при возникновении",
+        "desc_deviceexposure": "Воздействие фильтра устройства по возрасту на момент появления.",
+        "title_drugexposure": "Добавить возраст при возникновении",
+        "desc_drugexposure": "Фильтрация воздействия наркотиков по возрасту на момент появления.",
+        "title_measurement": "Добавить возраст при возникновении",
+        "desc_measurement": "Фильтр Измерения по возрасту при появлении.",
+        "title_observation": "Добавить возраст при возникновении",
+        "desc_observation": "Условие фильтра Случаи по возрасту при появлении.",
+        "title_procedureoccurrence": "Добавить возраст при возникновении",
+        "desc_procedureoccurrence": "Процедура фильтра Вхождения по возрасту при появлении.",
+        "title_specimen": "Добавить возраст при возникновении",
+        "desc_specimen": "Фильтруйте образцы по возрасту при появлении.",
+        "title_visit": "Добавить возраст при возникновении",
+        "desc_visit": "Фильтр Количество посещений по возрасту при появлении.",
+        "title_demographic": "Добавить возрастные критерии",
+        "desc_demographic": "Фильтровать события по возрасту."
+      },
+      "addType": {
+        "title_occurrence": "Добавить тип условия",
+        "desc_occurrence": "Фильтровать вхождения условий по типу условия.",
+        "title_death": "Добавить критерии типа смерти",
+        "desc_death": "Фильтр по типу смерти.",
+        "title_deviceexposure": "Добавить критерии типа устройства",
+        "desc_deviceexposure": "Фильтруйте экспозиции устройства по типу экспозиции.",
+        "title_drugexposure": "Добавить критерии типа устройства",
+        "desc_drugexposure": "Фильтрация воздействия наркотиков по типу препарата.",
+        "title_measurement": "Добавить критерии типа измерения",
+        "desc_measurement": "Фильтруйте измерения по типу измерения.",
+        "title_observation": "Добавить критерии типа наблюдения",
+        "desc_observation": "Фильтр наблюдений по типу.",
+        "title_observationperiod": "Добавить критерии типа периода",
+        "desc_observationperiod": "Фильтруйте периоды наблюдения по типу.",
+        "title_procedureoccurrence": "Добавить критерии типа процедуры",
+        "desc_procedureoccurrence": "Фильтровать вхождения процедуры по типу процедуры.",
+        "title_specimen": "Добавить критерий типа образца",
+        "desc_specimen": "Фильтровать образец по типу.",
+        "title_visit": "Добавить критерии посещения типа",
+        "desc_visit": "Фильтровать вхождения условий по типу условия."
+      },
+      "addStopReason": {
+        "title_occurrence": "Добавить Стоп Причина",
+        "desc_occurrence": "Фильтровать вхождения в условия по причине остановки.",
+        "title_drugexposure": "Добавить критерий остановки причины",
+        "desc_drugexposure": "Фильтрация воздействия наркотиков по причине остановки."
+      },
+      "addPayerConcept": {
+        "title_payerplan": "Добавить критерии концепции плательщика",
+        "desc_payerplan": "Фильтруйте периоды плана плательщика концепцией плательщика."
+      },
+      "addPlanConcept": {
+        "title_payerplan": "Добавить критерии концепции плана",
+        "desc_payerplan": "Фильтруйте периоды плана плательщика по концепции плана."
+      },
+      "addSponsorConcept": {
+        "title_payerplan": "Добавить концепцию спонсора",
+        "desc_payerplan": "Фильтруйте периоды плана плательщика по концепции спонсора."
+      },
+      "addStopReasonConcept": {
+        "title_payerplan": "Добавить критерий концепции",
+        "desc_payerplan": "Фильтруйте периоды плана плательщика концепцией причины стопа."
+      },
+      "addPayerSourceConcept": {
+        "title_payerplan": "Добавить критерии концепции источника плательщика",
+        "desc_payerplan": "Фильтруйте периоды плана плательщика по концепции источника плательщика."
+      },
+      "addPlanSourceConcept": {
+        "title_payerplan": "Добавить критерии концепции источника плана",
+        "desc_payerplan": "Фильтруйте периоды плана плательщика по концепции источника плана."
+      },
+      "addSponsorSourceConcept": {
+        "title_payerplan": "Добавить спонсорские критерии концепции источника",
+        "desc_payerplan": "Фильтруйте периоды плана плательщика по концепции источника спонсора."
+      },
+      "addStopReasonSourceConcept": {
+        "title_payerplan": "Добавить Стоп-причину Критерии концепции источника",
+        "desc_payerplan": "Фильтруйте периоды плана плательщика концепцией источника причины стопа."
+      },
+      "addSourceConcept": {
+        "title_occurrence": "Добавить концепцию источника условия",
+        "desc_occurrence": "Происхождение условий фильтра по концепции источника условия.",
+        "title_death": "Добавить причину смерти Концепция источника Критерии",
+        "desc_death": "Фильтр смерти по концепции источника смерти.",
+        "title_deviceexposure": "Добавить критерий концепции источника устройства",
+        "desc_deviceexposure": "Воздействия устройства фильтра по концепции источника устройства.",
+        "title_measurement": "Добавить критерии концепции источника измерения",
+        "desc_measurement": "Фильтр измерений по концепции источника измерений.",
+        "title_observation": "Добавить критерии концепции источника наблюдения",
+        "desc_observation": "Фильтр наблюдений по концепции источника.",
+        "title_procedureoccurrence": "Добавить процедуру Исходные критерии концепции",
+        "desc_procedureoccurrence": "Фильтровать вхождения процедуры по концепции источника процедуры.",
+        "title_visit": "Добавить критерий концепции посещения источника",
+        "desc_visit": "Отфильтруйте события посещения по концепции источника посещения."
+      },
+      "addProviderSpecialty": {
+        "title_occurrence": "Добавить специальность провайдера",
+        "desc_occurrence": "Условие фильтра Происходит в зависимости от специализации поставщика.",
+        "title_deviceexposure": "Добавить Критерии Специальности Провайдера",
+        "desc_deviceexposure": "Фильтрация устройств на основе специализации поставщика.",
+        "title_drugexposure": "Добавить Критерии Специальности Провайдера",
+        "desc_drugexposure": "Фильтр воздействия наркотиков на основе специализации поставщика.",
+        "title_measurement": "Добавить Критерии Специальности Провайдера",
+        "desc_measurement": "Фильтр измерений на основе специализации поставщика.",
+        "title_observation": "Добавить Критерии Специальности Провайдера",
+        "desc_observation": "Фильтр наблюдений на основе специализации поставщика.",
+        "title_procedureoccurrence": "Добавить Критерии Специальности Провайдера",
+        "desc_procedureoccurrence": "Процедура фильтра Случаи, основанные на специальности поставщика.",
+        "title_visit": "Добавить Критерии Специальности Провайдера",
+        "desc_visit": "Фильтр посещений в зависимости от специальности поставщика."
+      },
+      "addDate": {
+        "title_death": "Добавить критерии даты смерти",
+        "desc_death": "Фильтр смерти по дате.",
+        "title_measurement": "Добавить критерий даты измерения",
+        "desc_measurement": "Фильтр измерений по дате.",
+        "title_observation": "Добавить критерии даты наблюдения",
+        "desc_observation": "Фильтр наблюдений по дате.",
+        "title_procedureoccurrence": "Добавить критерии даты начала",
+        "desc_procedureoccurrence": "Фильтровать вхождения процедуры по дате начала процедуры.",
+        "title_specimen": "Добавить критерий даты образца",
+        "desc_specimen": "Фильтровать образец по дате."
+      },
+      "addUniqueId": {
+        "title_deviceexposure": "Добавить критерии уникального идентификатора",
+        "desc_deviceexposure": "Фильтрация воздействия устройства по уникальному идентификатору устройства."
+      },
+      "addQuantity": {
+        "title_deviceexposure": "Добавить количественные критерии",
+        "desc_deviceexposure": "Воздействие устройства фильтра по количеству.",
+        "title_drugexposure": "Добавить количественные критерии",
+        "desc_drugexposure": "Фильтрация воздействия наркотиков по количеству.",
+        "title_procedureoccurrence": "Добавить количественные критерии",
+        "desc_procedureoccurrence": "Процедура фильтра По количеству.",
+        "title_specimen": "Добавить количественные критерии",
+        "desc_specimen": "Фильтровать наблюдения по количеству."
+      },
+      "addUnit": {
+        "title_dose": "Добавить критерии дозы",
+        "desc_dose": "Отфильтруйте эры дозы с помощью устройства.",
+        "title_drugexposure": "Добавить критерии дозы",
+        "desc_drugexposure": "Фильтр воздействия наркотиков по единице дозы.",
+        "title_measurement": "Добавить критерии объекта",
+        "desc_measurement": "Фильтр измерений по единице.",
+        "title_observation": "Добавить критерии объекта",
+        "desc_observation": "Фильтровать наблюдения по единицам.",
+        "title_specimen": "Добавить критерии объекта",
+        "desc_specimen": "Фильтровать образцы по единицам."
+      },
+      "addValue": {
+        "title_dose": "Добавить критерии стоимости дозы",
+        "desc_dose": "Отфильтруйте эры дозы по величине дозы.",
+        "title_measurement": "Добавить значение в качестве числовых критериев",
+        "desc_measurement": "Фильтруйте измерения по значению как число.",
+        "title_observation": "Добавить значение в качестве числовых критериев",
+        "desc_observation": "Фильтруйте наблюдения по значению как числу."
+      },
+      "addRefills": {
+        "title_drugexposure": "Добавить критерии пополнения",
+        "desc_drugexposure": "Фильтрация воздействия наркотиков по заправкам."
+      },
+      "addDaysSupply": {
+        "title_drugexposure": "Добавить критерии поставки дней",
+        "desc_drugexposure": "Фильтр воздействия наркотиков по дням поставок."
+      },
+      "addRoute": {
+        "title_drugexposure": "Добавить критерии маршрута",
+        "desc_drugexposure": "Фильтрация воздействия наркотиков по маршруту."
+      },
+      "addEffective": {
+        "title_drugexposure": "Добавить критерии эффективной дозы",
+        "desc_drugexposure": "Фильтрация воздействия лекарств по эффективной дозе."
+      },
+      "addLotNumber": {
+        "title_drugexposure": "Добавить критерии номера лота",
+        "desc_drugexposure": "Фильтрация воздействия наркотиков по номеру лота."
+      },
+      "addSource": {
+        "title_drugexposure": "Добавить критерии концепции источника наркотиков",
+        "desc_drugexposure": "Воздействия наркотиков фильтра по концепции источника наркотиков."
+      },
+      "addOperator": {
+        "title_measurement": "Добавить критерии оператора",
+        "desc_measurement": "Фильтр измерений по оператору."
+      },
+      "addValueAsString": {
+        "title_observation": "Добавить значение в качестве строковых критериев",
+        "desc_observation": "Фильтруйте наблюдения по значению в виде строки."
+      },
+      "addValueAsConcept": {
+        "title_measurement": "Добавить ценность как концептуальные критерии",
+        "desc_measurement": "Фильтр измерений по значению как концепция.",
+        "title_observation": "Добавить ценность как концептуальные критерии",
+        "desc_observation": "Фильтруйте наблюдения по значению как концепции."
+      },
+      "addAbnormal": {
+        "title_measurement": "Добавить критерии ненормального результата",
+        "desc_measurement": "Измерения фильтра включают те, которые выходят за пределы нормального диапазона."
+      },
+      "addRangeLow": {
+        "title_measurement": "Добавить критерии низкого диапазона",
+        "desc_measurement": "Фильтр измерений нижнего диапазона."
+      },
+      "addRangeHigh": {
+        "title_measurement": "Добавить критерии высокого диапазона",
+        "desc_measurement": "Фильтруйте измерения по типу измерения."
+      },
+      "addRangeLowRatio": {
+        "title_measurement": "Добавить критерии низкого диапазона",
+        "desc_measurement": "Фильтруйте измерения по соотношению значения как числа к низкому диапазону."
+      },
+      "addRangeHighRatio": {
+        "title_measurement": "Добавить критерии высокого диапазона",
+        "desc_measurement": "Фильтруйте измерения по соотношению значения как числа к высокому диапазону."
+      },
+      "addQualifier": {
+        "title_observation": "Добавить критерии квалификации",
+        "desc_observation": "Фильтр наблюдений по классификатору."
+      },
+      "addUserDefined": {
+        "title_observationperiod": "Укажите даты начала и окончания",
+        "desc_observationperiod": "Укажите начальную и конечную дату для использования в период наблюдения.",
+        "title_payerplan": "Укажите даты начала и окончания",
+        "desc_payerplan": "Укажите даты начала и окончания, которые будут использоваться в Период Плана Плательщика."
+      },
+      "addModifier": {
+        "title_procedureoccurrence": "Добавить критерий модификатора",
+        "desc_procedureoccurrence": "Процедура фильтра Происходит по модификатору."
+      },
+      "addAnatomicSite": {
+        "title_specimen": "Добавить анатомические критерии сайта",
+        "desc_specimen": "Фильтровать образцы по анатомическому сайту."
+      },
+      "addDiseaseStatus": {
+        "title_specimen": "Добавить критерии статуса заболевания",
+        "desc_specimen": "Фильтровать образцы по состоянию болезни."
+      },
+      "addSourceId": {
+        "title_specimen": "Добавить критерии идентификатора источника",
+        "desc_specimen": "Фильтровать образцы по идентификатору источника."
+      },
+      "addPlaceService": {
+        "title_visit": "Добавить критерии обслуживания",
+        "desc_visit": "Фильтр посещений в зависимости от места обслуживания."
+      },
+      "addPlaceServiceLocation": {
+        "title_visit": "Добавить критерий места обслуживания",
+        "desc_visit": "Фильтр посещений в зависимости от места обслуживания пациента."
+      },
+      "addPlaceServiceDistance": {
+        "title_visit": "Добавить критерий расстояния до места обслуживания",
+        "desc_visit": "Фильтр посещений в зависимости от расстояния от места обслуживания до пациента."
+      }
+    },
+    "newEntityNames": {
+      "characterization": "Новая характеристика",
+      "featureAnalysis": "Новый функциональный анализ",
+      "cohortDefinition": "Новая когорта",
+      "incidenceRate": "Новый анализ уровня заболеваемости",
+      "pathway": "Новый анализ исходов когорты",
+      "ple": "Новый анализ оценки уровня населения",
+      "conceptSet": "Новый набор концепций",
+      "plp": "Новое прогнозирование уровня пациента",
+      "source": "Новый источник",
+      "role": "Новая роль"
+    },
+    "weekdays": {
+      "sunday": {
+        "long": "Воскресенье",
+        "short": "Вс"
+      },
+      "monday": {
+        "long": "Понедельник",
+        "short": "Пн"
+      },
+      "tuesday": {
+        "long": "Вторник",
+        "short": "Вт"
+      },
+      "wednesday": {
+        "long": "Среда",
+        "short": "Ср"
+      },
+      "thursday": {
+        "long": "Четверг",
+        "short": "Чт"
+      },
+      "friday": {
+        "long": "Пятница",
+        "short": "Пт"
+      },
+      "saturday": {
+        "long": "Суббота",
+        "short": "Сб"
+      }
+    }
+  },
+  "notifications": {
+    "title": "Уведомления (последние <%=length%>)",
+    "explanation": "Здесь будут отображены уведомления для задач. Задачи включают генерацию когорт, отчеты и другие долговременные процессы. Иконка цведомлений <i class=\"fa fa-bell pending\"></i> будет подсвечена, если есть новые уведомления.",
+    "jobName": "Имя задачи",
+    "duration": "Длительность",
+    "endTime": "Время окончания",
+    "status": "Состояние",
+    "showCompletedJobsButton": "Показать завершенные задачи",
+    "hideCompletedJobsButton": "Скрыть завершенные задачи",
+    "tabs": {
+      "myJobs": "Мои задачи",
+      "allJobs": "Все задачи"
+    }
+  }
+}

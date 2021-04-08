@@ -11,8 +11,7 @@ import org.ohdsi.webapi.cohortresults.ExposureCohortSearch;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
-
-public class CohortResultsServiceTest extends AbstractServiceTest {
+public class CohortResultsServiceTest extends AbstractSpringBootServiceTest {
 
   @Autowired
   private CohortResultsService cohortResultsService;
@@ -83,14 +82,14 @@ public class CohortResultsServiceTest extends AbstractServiceTest {
   public void prepareGetTimeToEventDrilldown() throws IOException {
 
     ExposureCohortSearch search = new ExposureCohortSearch();
-    search.exposureCohortList = new String[]{"1", "2"};
-    search.outcomeCohortList = new String[]{"3", "4"};
+    search.exposureCohortList = new String[]{"1"};
+    search.outcomeCohortList = new String[]{"2"};
 
     PreparedStatementRenderer psr = cohortResultsService.prepareGetTimeToEventDrilldown(search, getSource());
     assertSqlEquals("/cohortresults/sql/cohortSpecific/getTimeToEventDrilldown-expected.sql", psr);
 
     for (Object param : psr.getOrderedParamsList()) {
-      assertTrue("1".equals(param) || "2".equals(param) || "3".equals(param) || "4".equals(param));
+      assertTrue("1".equals(param) || "2".equals(param));
     }
   }
 

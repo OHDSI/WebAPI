@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 
@@ -117,22 +118,28 @@ public class EvidenceService extends AbstractDaoService implements GeneratesNoti
         @JsonProperty("targetDomain")
         public String targetDomain = "CONDITION";
         @JsonProperty("drugConceptIds")
-        public String[] drugConceptIds;
+        public int[] drugConceptIds;
         @JsonProperty("conditionConceptIds")
-        public String[] conditionConceptIds;
+        public int[] conditionConceptIds;
         @JsonProperty("sourceIds")
         public String[] sourceIds;
 
         public String getDrugConceptIds() {
-            return StringUtils.join(drugConceptIds, ",");
+            return StringUtils.join(drugConceptIds, ',');
         }
 
         public String getConditionConceptIds() {
-            return StringUtils.join(conditionConceptIds, ",");
+            return StringUtils.join(conditionConceptIds, ',');
         }
 
         public String getSourceIds() {
-            return "'" + StringUtils.join(sourceIds, "','") + "'";
+            if (sourceIds != null) {
+                List<String> ids = Arrays.stream(sourceIds)
+                        .map(sourceId -> sourceId.replaceAll("(\"|')", ""))
+                        .collect(Collectors.toList());
+                return "'" + StringUtils.join(ids, "','") + "'";
+            }
+            return "''";
         }
     }
 

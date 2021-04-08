@@ -1,22 +1,22 @@
 package org.ohdsi.webapi.check.builder;
 
-import com.google.common.reflect.TypeToken;
-import java.lang.reflect.ParameterizedType;
+import org.ohdsi.webapi.check.validator.Path;
+import org.ohdsi.webapi.check.validator.Validator;
+import org.ohdsi.webapi.check.validator.ValidatorGroup;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.ohdsi.webapi.check.validator.Path;
-import org.ohdsi.webapi.check.validator.Validator;
-import org.ohdsi.webapi.check.validator.ValidatorGroup;
 
 public class ValidatorGroupBuilder<T, V> extends ValidatorBaseBuilder<T, ValidatorGroup<T, V>, ValidatorGroupBuilder<T, V>> {
 
     protected List<ValidatorBuilder<V>> validatorBuilders = new ArrayList<>();
     protected List<ValidatorGroupBuilder<V, ?>> validatorGroupBuilders = new ArrayList<>();
     protected Function<T, V> valueGetter;
+    protected Function<T, Boolean> conditionGetter = t -> true;
 
     public ValidatorGroupBuilder<T, V> valueGetter(Function<T, V> valueGetter) {
 
@@ -24,6 +24,11 @@ public class ValidatorGroupBuilder<T, V> extends ValidatorBaseBuilder<T, Validat
         return this;
     }
 
+    public ValidatorGroupBuilder<T, V> conditionGetter(Function<T, Boolean> conditionGetter) {
+
+        this.conditionGetter = conditionGetter;
+        return this;
+    }
 
     public ValidatorGroupBuilder<T, V> validators(List<ValidatorBuilder<V>> validators) {
 
@@ -61,7 +66,7 @@ public class ValidatorGroupBuilder<T, V> extends ValidatorBaseBuilder<T, Validat
         List<ValidatorGroup<V, ?>> groups = initAndBuildList(this.validatorGroupBuilders);
         List<Validator<V>> validators = initAndBuildList(this.validatorBuilders);
 
-        return new ValidatorGroup<>(validators, groups, valueGetter);
+        return new ValidatorGroup<>(validators, groups, valueGetter, conditionGetter);
     }
 
     private <U> List<U> initAndBuildList(List<? extends ValidatorBaseBuilder<V, U, ?>> builders) {
@@ -72,6 +77,9 @@ public class ValidatorGroupBuilder<T, V> extends ValidatorBaseBuilder<T, Validat
             }
             if (Objects.isNull(builder.getBasePath())) {
                 builder.basePath(createChildPath());
+            }
+            if (Objects.isNull(builder.severity)) {
+                builder.severity(this.severity);
             }
         });
         return builders.stream()

@@ -8,7 +8,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.ohdsi.webapi.WebApi;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
 import org.ohdsi.webapi.service.IRAnalysisResource;
 import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
@@ -17,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @RunWith(JUnitParamsRunner.class)
-@SpringBootTest(classes = WebApi.class)
+@SpringBootTest
 public class IREntityTest extends ITStarter implements TestCreate, TestCopy<IRAnalysisDTO> {
     @Autowired
     protected IRAnalysisResource irAnalysisResource;

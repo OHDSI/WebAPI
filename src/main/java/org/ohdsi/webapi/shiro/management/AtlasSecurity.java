@@ -111,6 +111,10 @@ public abstract class AtlasSecurity extends Security {
 
             .addRestPath("/permission/access/**/*", JWT_AUTHC) // Authorization check is done inside controller
 
+            //i18n
+            .addRestPath("/i18n")
+            .addRestPath("/i18n/**")
+
             .addProtectedRestPath("/**/*");
   }
 

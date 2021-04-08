@@ -13,7 +13,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.ohdsi.webapi.WebApi;
 import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.prediction.PredictionAnalysis;
 import org.ohdsi.webapi.prediction.PredictionController;
@@ -27,7 +26,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.convert.ConversionService;
 
 @RunWith(JUnitParamsRunner.class)
-@SpringBootTest(classes = WebApi.class)
+@SpringBootTest
 public class PredictionEntityTest extends ITStarter implements TestCreate, TestCopy<PredictionAnalysisDTO>, TestImport<PredictionAnalysisDTO, PatientLevelPredictionAnalysisImpl> {
     @Autowired
     protected ConversionService conversionService;

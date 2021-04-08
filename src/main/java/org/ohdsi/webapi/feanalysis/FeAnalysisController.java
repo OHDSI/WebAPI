@@ -213,10 +213,12 @@ public class FeAnalysisController {
 
     @GET
     @Path("/aggregates")
+    @Produces(MediaType.APPLICATION_JSON)
     public List<FeAnalysisAggregateDTO> listAggregates() {
-        return service.findAggregates().stream()
+        List<FeAnalysisAggregateDTO> result = service.findAggregates().stream()
                 .map(this::convertFeAnalysisAggregateToDto)
                 .collect(Collectors.toList());
+        return result;
     }
 
     private FeAnalysisShortDTO convertFeAnaysisToShortDto(final FeatureAnalysis entity) {

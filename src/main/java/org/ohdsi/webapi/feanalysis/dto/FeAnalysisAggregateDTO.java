@@ -27,7 +27,7 @@ public class FeAnalysisAggregateDTO implements FeatureAnalysisAggregate {
   private TableJoin joinType;
   @JsonProperty("joinCondition")
   private String joinCondition;
-  @JsonProperty("default")
+  @JsonProperty("isDefault")
   private boolean isDefault;
   @JsonProperty("missingMeansZero")
   private boolean missingMeansZero;

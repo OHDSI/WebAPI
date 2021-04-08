@@ -29,6 +29,7 @@ public class FeatureAnalysisAggregateToDTOConverter extends BaseConvertionServic
     dto.setJoinTable(source.getJoinTable());
     dto.setJoinType(source.getJoinType());
     dto.setJoinCondition(source.getJoinCondition());
+    dto.setAdditionalColumns(source.getAdditionalColumns());
     if (source instanceof FeAnalysisAggregateEntity) {
       dto.setDefault(((FeAnalysisAggregateEntity) source).isDefault());
     }

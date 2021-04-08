@@ -31,7 +31,7 @@ public class FeAnalysisAggregateDTO implements FeatureAnalysisAggregate {
   private boolean isDefault;
   @JsonProperty("missingMeansZero")
   private boolean missingMeansZero;
-  
+  @JsonProperty("additionalColumns")
   private List<CriteriaColumn> columns;  
 
   @Override
@@ -40,7 +40,7 @@ public class FeAnalysisAggregateDTO implements FeatureAnalysisAggregate {
     return columns;
   }
 
-  public void setCriteriaColumns(List<CriteriaColumn> columns) {
+  public void setAdditionalColumns(List<CriteriaColumn> columns) {
     this.columns = columns;
   }  
 

@@ -253,6 +253,7 @@
     <gis.enabled>false</gis.enabled>
 
     <!-- I18n -->
+    <i18n.enabled>true</i18n.enabled>
     <i18n.defaultLocale>en</i18n.defaultLocale>
   </properties>
   <build>

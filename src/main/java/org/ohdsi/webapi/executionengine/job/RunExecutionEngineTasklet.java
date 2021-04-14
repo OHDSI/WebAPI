@@ -32,7 +32,7 @@ public class RunExecutionEngineTasklet extends BaseExecutionTasklet {
     @Override
     public RepeatStatus execute(StepContribution stepContribution, ChunkContext chunkContext) throws Exception {
 
-        final Long jobId = chunkContext.getStepContext().getStepExecution().getJobExecution().getJobId();
+        final Long jobId = chunkContext.getStepContext().getStepExecution().getJobExecution().getId();
         Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
         final String updatePassword = jobParams.get(UPDATE_PASSWORD).toString();
         final String executableFilename = jobParams.get(EXECUTABLE_FILE_NAME).toString();

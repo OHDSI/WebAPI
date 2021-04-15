@@ -1081,7 +1081,10 @@
       "signout": "退出账户",
       "submit": "提交",
       "username": "用户名",
-      "wait": "请稍候..."
+      "wait": "请稍候...",
+      "saml": {
+        "loginRequired": "Please log out from your Identity Provider and try to log in again"
+      }
     },
     "windowInput": {
       "windowInputText_1": "全部",

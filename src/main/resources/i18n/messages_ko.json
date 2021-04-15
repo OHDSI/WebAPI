@@ -1081,7 +1081,10 @@
       "signout": "로그 아웃",
       "submit": "제출",
       "username": "사용자 이름",
-      "wait": "잠시만 기다려주세요..."
+      "wait": "잠시만 기다려주세요...",
+      "saml": {
+        "loginRequired": "Please log out from your Identity Provider and try to log in again"
+      }
     },
     "windowInput": {
       "windowInputText_1": "모두",

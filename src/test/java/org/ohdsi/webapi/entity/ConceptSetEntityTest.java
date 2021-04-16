@@ -1,5 +1,6 @@
-package org.ohdsi.webapi.test.entity;
+package org.ohdsi.webapi.entity;
 
+import static org.ohdsi.webapi.service.ConceptSetService.COPY_NAME;
 import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
 
 import junitparams.JUnitParamsRunner;
@@ -8,21 +9,22 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
-import org.ohdsi.webapi.service.IRAnalysisResource;
-import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
+import org.ohdsi.webapi.AbstractDatabaseTest;
+import org.ohdsi.webapi.conceptset.ConceptSetRepository;
+import org.ohdsi.webapi.service.ConceptSetService;
+import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.test.ITStarter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @RunWith(JUnitParamsRunner.class)
 @SpringBootTest
-public class IREntityTest extends ITStarter implements TestCreate, TestCopy<IRAnalysisDTO> {
+public class ConceptSetEntityTest extends AbstractDatabaseTest implements TestCreate, TestCopy<ConceptSetDTO> {
     @Autowired
-    protected IRAnalysisResource irAnalysisResource;
+    protected ConceptSetService csService;
     @Autowired
-    protected IncidenceRateAnalysisRepository irRepository;
-    private IRAnalysisDTO firstSavedDTO;
+    protected ConceptSetRepository csRepository;
+    private ConceptSetDTO firstSavedDTO;
 
     // in JUnit 4 it's impossible to mark methods inside interface with annotations, it was implemented in JUnit 5. After upgrade it's needed
     // to mark interface methods with @Test, @Before, @After and to remove them from this class
@@ -30,7 +32,7 @@ public class IREntityTest extends ITStarter implements TestCreate, TestCopy<IRAn
     @Override
     public void tearDownDB() {
 
-        irRepository.deleteAll();
+        csRepository.deleteAll();
     }
 
     @Before
@@ -79,9 +81,10 @@ public class IREntityTest extends ITStarter implements TestCreate, TestCopy<IRAn
     }
 
     @Override
-    public IRAnalysisDTO createCopy(IRAnalysisDTO dto) {
-
-        return irAnalysisResource.copy(dto.getId());
+    public ConceptSetDTO createCopy(ConceptSetDTO dto) {
+        
+        dto.setName(csService.getNameForCopy(dto.getId()).get(COPY_NAME));
+        return csService.createConceptSet(dto);
     }
 
     @Override
@@ -91,22 +94,22 @@ public class IREntityTest extends ITStarter implements TestCreate, TestCopy<IRAn
     }
 
     @Override
-    public IRAnalysisDTO getFirstSavedDTO() {
+    public ConceptSetDTO getFirstSavedDTO() {
 
         return firstSavedDTO;
     }
 
     @Override
-    public IRAnalysisDTO createEntity(String name) {
+    public ConceptSetDTO createEntity(String name) {
 
-        IRAnalysisDTO dto = new IRAnalysisDTO();
+        ConceptSetDTO dto = new ConceptSetDTO();
         dto.setName(name);
-        return irAnalysisResource.createAnalysis(dto);
+        return csService.createConceptSet(dto);
     }
 
     @Override
     public String getConstraintName() {
 
-        return "uq_ir_name";
+        return "uq_cs_name";
     }
 }

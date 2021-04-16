@@ -1,8 +1,6 @@
 package org.ohdsi.webapi.test;
 
 import com.opentable.db.postgres.embedded.EmbeddedPostgres;
-import java.io.IOException;
-import java.sql.SQLException;
 import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.junit.AfterClass;
@@ -10,34 +8,23 @@ import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.mockito.Mockito;
-import org.ohdsi.webapi.test.entity.AbstractShiro;
-import org.ohdsi.webapi.test.entity.CCEntityTest;
-import org.ohdsi.webapi.test.entity.CohortDefinitionEntityTest;
-import org.ohdsi.webapi.test.entity.ConceptSetEntityTest;
-import org.ohdsi.webapi.test.entity.EstimationEntityTest;
-import org.ohdsi.webapi.test.entity.IREntityTest;
-import org.ohdsi.webapi.test.entity.PathwayEntityTest;
-import org.ohdsi.webapi.test.entity.PredictionEntityTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.context.TestPropertySource;
+
+import javax.sql.DataSource;
+import java.io.IOException;
+import java.sql.SQLException;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
         SecurityIT.class,
         JobServiceIT.class,
-        VocabularyServiceIT.class,
-        CohortAnalysisServiceIT.class,        
-        ConceptSetEntityTest.class,
-        CohortDefinitionEntityTest.class,
-        CCEntityTest.class,
-        IREntityTest.class,
-        PathwayEntityTest.class,
-        EstimationEntityTest.class,
-        PredictionEntityTest.class        
+        CohortAnalysisServiceIT.class,
+        VocabularyServiceIT.class
 })
 @TestPropertySource(locations = "/application-test.properties")
-public class ITStarter extends AbstractShiro{
+public class ITStarter extends AbstractShiro {
 
     private static EmbeddedPostgres pg;
     private static final Logger log = LoggerFactory.getLogger(ITStarter.class);
@@ -68,6 +55,10 @@ public class ITStarter extends AbstractShiro{
             //bind the subject to the current thread
             setSubject(subjectUnderTest);
         }
+    }
+
+    public static DataSource getDataSource() {
+        return pg.getPostgresDatabase();
     }
 
     @AfterClass

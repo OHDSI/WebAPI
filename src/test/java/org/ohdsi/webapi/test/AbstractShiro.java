@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.test.entity;
+package org.ohdsi.webapi.test;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;

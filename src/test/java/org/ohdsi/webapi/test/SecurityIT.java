@@ -2,7 +2,6 @@ package org.ohdsi.webapi.test;
 
 
 import com.github.springtestdbunit.annotation.DatabaseOperation;
-import com.github.springtestdbunit.annotation.DatabaseSetup;
 import com.github.springtestdbunit.annotation.DatabaseTearDown;
 import com.google.common.collect.ImmutableMap;
 import org.glassfish.jersey.server.model.Parameter;
@@ -18,22 +17,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.ws.rs.core.MediaType;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
@@ -42,10 +32,12 @@ public class SecurityIT extends WebApiIT {
 
     private final Map<String, HttpStatus> EXPECTED_RESPONSE_CODES = ImmutableMap.<String, HttpStatus>builder()
             .put("/info/", HttpStatus.OK)
+            .put("/i18n/", HttpStatus.OK)
+            .put("/i18n/locales", HttpStatus.OK)
             .put("/ddl/results", HttpStatus.OK)
             .put("/ddl/cemresults", HttpStatus.OK)
             .put("/saml/saml-metadata", HttpStatus.OK)
-            .put("/saml/slo", HttpStatus.FOUND)
+            .put("/saml/slo", HttpStatus.TEMPORARY_REDIRECT)
             .build();
 
     @Autowired
@@ -72,7 +64,6 @@ public class SecurityIT extends WebApiIT {
     }
 
     @Test
-    @DatabaseSetup("/database/source.xml")
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     public void testServiceSecurity() {
 

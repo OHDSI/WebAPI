@@ -31,7 +31,7 @@
     <jackson.databind.version>2.10.5.1</jackson.databind.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
     <skipUnitTests>false</skipUnitTests>
-    <skipITtests>true</skipITtests>
+    <skipITtests>false</skipITtests>
     <miredot.phase>package</miredot.phase>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>

@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.test.entity;
+package org.ohdsi.webapi.entity;
 
 import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
 
@@ -8,6 +8,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.pathway.PathwayController;
 import org.ohdsi.webapi.pathway.PathwayService;
@@ -23,7 +24,7 @@ import org.springframework.core.convert.ConversionService;
 
 @RunWith(JUnitParamsRunner.class)
 @SpringBootTest
-public class PathwayEntityTest extends ITStarter implements TestCreate, TestCopy<PathwayAnalysisDTO>, TestImport<PathwayAnalysisDTO, PathwayAnalysisExportDTO> {
+public class PathwayEntityTest extends AbstractDatabaseTest implements TestCreate, TestCopy<PathwayAnalysisDTO>, TestImport<PathwayAnalysisDTO, PathwayAnalysisExportDTO> {
     @Autowired
     protected ConversionService conversionService;
     @Autowired

@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.test.entity;
+package org.ohdsi.webapi.entity;
 
 import static org.junit.Assert.assertEquals;
 import static org.ohdsi.webapi.test.TestConstants.COPY_PREFIX;
@@ -6,7 +6,7 @@ import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
 
 import org.ohdsi.webapi.CommonDTO;
 
-public interface TestCopy <T extends CommonDTO> extends EntityMethods{
+public interface TestCopy <T extends CommonDTO> extends EntityMethods {
 
     T createCopy(T dto) throws Exception;
 

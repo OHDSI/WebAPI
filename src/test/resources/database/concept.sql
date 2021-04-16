@@ -1,0 +1,2 @@
+insert into @cdm_database_schema.concept (concept_id, concept_name, domain_id, vocabulary_id, concept_class_id, standard_concept, concept_code, valid_start_date, valid_end_date, invalid_reason)
+values (1,'Sample concept','Metadata','Domain','Domain','','OMOP generated','1970-01-01','2099-12-31','');

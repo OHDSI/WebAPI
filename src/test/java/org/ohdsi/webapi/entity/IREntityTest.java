@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.test.entity;
+package org.ohdsi.webapi.entity;
 
 import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
 
@@ -8,21 +8,22 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
-import org.ohdsi.webapi.service.CohortDefinitionService;
+import org.ohdsi.webapi.AbstractDatabaseTest;
+import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
+import org.ohdsi.webapi.service.IRAnalysisResource;
+import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
 import org.ohdsi.webapi.test.ITStarter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @RunWith(JUnitParamsRunner.class)
 @SpringBootTest
-public class CohortDefinitionEntityTest extends ITStarter implements TestCreate, TestCopy<CohortDTO>{
+public class IREntityTest extends AbstractDatabaseTest implements TestCreate, TestCopy<IRAnalysisDTO> {
     @Autowired
-    private CohortDefinitionService cdService;
+    protected IRAnalysisResource irAnalysisResource;
     @Autowired
-    protected CohortDefinitionRepository cdRepository;
-    private CohortDTO firstSavedDTO;
+    protected IncidenceRateAnalysisRepository irRepository;
+    private IRAnalysisDTO firstSavedDTO;
 
     // in JUnit 4 it's impossible to mark methods inside interface with annotations, it was implemented in JUnit 5. After upgrade it's needed
     // to mark interface methods with @Test, @Before, @After and to remove them from this class
@@ -30,7 +31,7 @@ public class CohortDefinitionEntityTest extends ITStarter implements TestCreate,
     @Override
     public void tearDownDB() {
 
-        cdRepository.deleteAll();
+        irRepository.deleteAll();
     }
 
     @Before
@@ -39,7 +40,7 @@ public class CohortDefinitionEntityTest extends ITStarter implements TestCreate,
 
         TestCreate.super.init();
     }
-    
+
     @Test
     @Override
     public void shouldNotCreateEntityWithDuplicateName() {
@@ -79,9 +80,9 @@ public class CohortDefinitionEntityTest extends ITStarter implements TestCreate,
     }
 
     @Override
-    public CohortDTO createCopy(CohortDTO dto) {
+    public IRAnalysisDTO createCopy(IRAnalysisDTO dto) {
 
-        return cdService.copy(dto.getId());
+        return irAnalysisResource.copy(dto.getId());
     }
 
     @Override
@@ -91,22 +92,22 @@ public class CohortDefinitionEntityTest extends ITStarter implements TestCreate,
     }
 
     @Override
-    public CohortDTO getFirstSavedDTO() {
+    public IRAnalysisDTO getFirstSavedDTO() {
 
         return firstSavedDTO;
     }
 
     @Override
-    public String getConstraintName() {
+    public IRAnalysisDTO createEntity(String name) {
 
-        return "uq_cd_name";
+        IRAnalysisDTO dto = new IRAnalysisDTO();
+        dto.setName(name);
+        return irAnalysisResource.createAnalysis(dto);
     }
 
     @Override
-    public CohortDTO createEntity(String name) {
+    public String getConstraintName() {
 
-        CohortDTO dto = new CohortDTO();
-        dto.setName(name);
-        return cdService.createCohortDefinition(dto);
+        return "uq_ir_name";
     }
 }

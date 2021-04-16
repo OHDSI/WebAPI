@@ -87,7 +87,9 @@ pipeline {
           }
         }
         container('kaniko') {
-          sh "/kaniko/executor -f \$(pwd)/Dockerfile -c \$(pwd) --cache=true --destination=973455288590.dkr.ecr.eu-west-1.amazonaws.com/honeur/webapi:latest"
+          dir('Atlas') {
+            sh "/kaniko/executor -f \$(pwd)/Dockerfile -c \$(pwd) --cache=true --destination=973455288590.dkr.ecr.eu-west-1.amazonaws.com/honeur/webapi:latest"
+          }
         }
       }
     }

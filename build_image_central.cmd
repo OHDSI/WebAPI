@@ -1,0 +1,1 @@
+CALL docker build --no-cache -t honeur/webapi .

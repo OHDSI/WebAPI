@@ -74,6 +74,7 @@ public class PathwayController {
 
     @POST
     @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
     public PathwayAnalysisDTO copy(@PathParam("id") final Integer id) {
 
         PathwayAnalysisDTO dto = get(id);

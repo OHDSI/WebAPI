@@ -1081,7 +1081,10 @@
       "signout": "退出账户",
       "submit": "提交",
       "username": "用户名",
-      "wait": "请稍候..."
+      "wait": "请稍候...",
+      "saml": {
+        "loginRequired": "Please log out from your Identity Provider and try to log in again"
+      }
     },
     "windowInput": {
       "windowInputText_1": "全部",
@@ -1395,13 +1398,13 @@
     "eventCohort": "事件队列",
     "rank": "序列",
     "distinctEventCohorts": "不同的事件队列",
-    "sampleId": "Sample Id",
-    "sampleName": "Sample name",
-    "numberOfPatients": "Number of patients",
-    "selectionCriteria": "Selection criteria",
-    "personId": "Person ID",
-    "gender": "Gender",
-    "ageAtIndex": "Age at index"
+    "sampleId": "样本编号",
+    "sampleName": "样本名称",
+    "numberOfPatients": "患者数量",
+    "selectionCriteria": "选择标准",
+    "personId": "患者编号",
+    "gender": "性别",
+    "ageAtIndex": "索引日期时的年龄"
   },
   "dataSources": {
     "achillesHeelReport": {
@@ -1683,11 +1686,11 @@
             "standardConcept": "标准概念"
           },
           "relatedConcepts": {
-            "loading": "Loading related concepts...",
+            "loading": "正在加载相关概念…",
             "caption": "有关的概念"
           },
           "hierarchy": {
-            "loading": "Loading hierarchy...",
+            "loading": "正在加载层级结构…",
             "caption": "层级结构",
             "noHierarchyFoundMessage": "未找到非标准概念的层次结构。",
             "view": "视图/查看：",
@@ -1699,10 +1702,10 @@
             "noChildConceptsFound": "找不到子概念"
           },
           "recordCounts": {
-            "loading": "Loading records count...",
+            "loading": "正在加载记录数…",
             "caption": "记录计数",
             "recordCountsAcrossSources": "从来源中得到的记录数",
-            "failedToLoadData": "Failed to load data"
+            "failedToLoadData": "无法加载数据"
           }
         }
       },
@@ -1850,8 +1853,8 @@
       "saveError": "尝试保存特征分析时发生错误。",
       "selectConceptSet": "选择概念集...",
       "unsavedConfirmation": "您的更改未保存。 您想继续吗？",
-      "warning": "Warning:",
-      "warningText": "You wouldn't be able to change the type of analysis after save."
+      "warning": "警告：",
+      "warningText": "保存后，您将无法更改分析类型。"
     }
   },
   "home": {
@@ -2001,7 +2004,7 @@
           },
           "allowRepeats": {
             "description": "Allow cohort events/combos to appear multiple times in the same pathway.",
-            "title": "Allow repeats:"
+            "title": "允许重复："
           },
           "title": "分析设置"
         },
@@ -2598,41 +2601,41 @@
         "viewReports": "查看报告"
       },
       "samples": {
-        "sampleSelections": "Sample Selections",
+        "sampleSelections": "样本选择",
         "selectASource": "请选择一个来源",
-        "addNewSample": "Add new sample",
-        "cohortNotGeneratedNote": "This cohort has not been generated in the data source you selected. Please return to the generation tab to generate the cohort before accessing samples.",
-        "cohortShouldBeGenerated":  "Cohort should be generated before creating samples",
-        "errorFetchingList": "Error when fetching sample list, please try again later",
-        "errorDeleting": "Error when deleting sample, please try again later",
-        "errorFetchingData": "Error when fetching sample data, please try again later",
-        "errorRefreshing": "Error when refreshing sample, please try again later",
+        "addNewSample": "添加新样本",
+        "cohortNotGeneratedNote": "这个队列尚未在您选择的数据源中生成。在访问样本前，请返回到生成标签生成队列。",
+        "cohortShouldBeGenerated":  "必须在创建样本之前生成队列",
+        "errorFetchingList": "取得样本列表时候有错误，请稍后再试",
+        "errorDeleting": "删除样本时候有错误，请稍后再试",
+        "errorFetchingData": "取得样本数据时候有错误，请稍后再试",
+        "errorRefreshing": "刷新样本时候有错误，请稍后再试",
         "modal": {
-          "title": "Create new sample",
-          "mandatoryFields": "* Mandatory fields",
-          "sampleName": "* Sample name",
-          "sampleNamePlaceholder": "Enter sample name",
-          "sampleNameEmpty": "Sample name cannot be empty",
-          "numberOfPatients": "* Number of patients",
-          "numberOfPatientsPlaceholder": "Enter a number",
-          "numberOfPatientsEmpty": "Number of patients must be a positive integer",
-          "selectAgeCriteria": "Select age criteria",
-          "lessThan": "Less than",
-          "lessOrEqualTo": "Less or equal to",
-          "equalTo": "Equal to",
-          "greaterThan": "Greater than",
-          "greaterOrEqualTo": "Greater or equal to",
-          "between": "Between",
-          "notBetween": "Not between",
-          "agePlaceholder": "Enter a number",
-          "ageError": "Age must be a non-negative integer",
-          "ageError2": "First and second age must be non-negative integers and not equal",
-          "indicateGender": "Indicate gender (leave empty to select all gender)",
-          "male": "Male",
-          "female": "Female",
-          "other": "Other",
-          "submit": "Submit",
-          "creatingSample": "Creating sample..."
+          "title": "创建新样本",
+          "mandatoryFields": "*必填字段",
+          "sampleName": "*样本名称",
+          "sampleNamePlaceholder": "输入样本名称",
+          "sampleNameEmpty": "样本名称不能为空",
+          "numberOfPatients": "*患者数量",
+          "numberOfPatientsPlaceholder": "输入一个数字",
+          "numberOfPatientsEmpty": "患者数量必须正整数",
+          "selectAgeCriteria": "选择年龄标准",
+          "lessThan": "小于",
+          "lessOrEqualTo": "小于等于",
+          "equalTo": "等于",
+          "greaterThan": "大于",
+          "greaterOrEqualTo": "大于等于",
+          "between": "介于…之间",
+          "notBetween": "不介于…之间",
+          "agePlaceholder": "输入一个数字",
+          "ageError": "年龄必须为非负的整数",
+          "ageError2": "第一个和第二个年龄必须为非负且互不相等的整数。",
+          "indicateGender": "选择性别（留空以选择所有性别）",
+          "male": "男性",
+          "female": "女性",
+          "other": "其他",
+          "submit": "提交",
+          "creatingSample": "创建新样本…"
         }
       },
       "saveCohortTitle": "保存队列定义",
@@ -2643,7 +2646,7 @@
         "explore": "关系探索",
         "export": "导出",
         "generation": "生成",
-        "samples": "Samples",
+        "samples": "样本",
         "messages": "提示信息",
         "reporting": "报告"
       }

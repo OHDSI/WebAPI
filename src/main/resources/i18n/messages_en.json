@@ -1081,7 +1081,10 @@
       "signout": "Sign Out",
       "submit": "Submit",
       "username": "Username",
-      "wait": "Please wait..."
+      "wait": "Please wait...",
+      "saml": {
+        "loginRequired": "Please log out from your Identity Provider and try to log in again"
+      }
     },
     "windowInput": {
       "windowInputText_1": "All",

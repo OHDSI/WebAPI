@@ -1024,7 +1024,7 @@
             "description": "사람이 그곳에 거주를 종료한 날짜에 따라 위치 필터링",
             "text": "End Date 기준 추가..."
           },
-          "text": "end is:"
+          "text": "종료일:"
         },
         "indexData": {
           "text": "인덱스 날짜(Index date)는 <%=conceptSetName%>의 지역 위치(location region)기록의 날짜를 나타냅니다."
@@ -1081,7 +1081,10 @@
       "signout": "로그 아웃",
       "submit": "제출",
       "username": "사용자 이름",
-      "wait": "잠시만 기다려주세요..."
+      "wait": "잠시만 기다려주세요...",
+      "saml": {
+        "loginRequired": "Please log out from your Identity Provider and try to log in again"
+      }
     },
     "windowInput": {
       "windowInputText_1": "모두",
@@ -1235,7 +1238,7 @@
     "descendants": "하위 컨셉",
     "description": "설명",
     "design": "설계",
-    "dialect": "Dialect",
+    "dialect": "통용어",
     "distance": "거리",
     "domain": "도메인",
     "drc": "하위 기록 개수",
@@ -1395,13 +1398,13 @@
     "eventCohort": "이벤트 코호트",
     "rank": "순위",
     "distinctEventCohorts": "고유(Distinct) 이벤트 코호트",
-    "sampleId": "Sample Id",
-    "sampleName": "Sample name",
-    "numberOfPatients": "Number of patients",
-    "selectionCriteria": "Selection criteria",
-    "personId": "Person ID",
-    "gender": "Gender",
-    "ageAtIndex": "Age at index"
+    "sampleId": "샘플 아이디",
+    "sampleName": "샘플 이름",
+    "numberOfPatients": "환자 수",
+    "selectionCriteria": "선택 기준",
+    "personId": "환자 아이디",
+    "gender": "성별",
+    "ageAtIndex": "기준 시점 나이"
   },
   "dataSources": {
     "achillesHeelReport": {
@@ -1683,11 +1686,11 @@
             "standardConcept": "표준 컨셉"
           },
           "relatedConcepts": {
-            "loading": "Loading related concepts...",
+            "loading": "관련 컨셉 로딩…",
             "caption": "관련 컨셉"
           },
           "hierarchy": {
-            "loading": "Loading hierarchy...",
+            "loading": "계층 로딩…",
             "caption": "계층 구조",
             "noHierarchyFoundMessage": "비표준 컨셉에 대한 계층 구조가 없습니다.",
             "view": "보기:",
@@ -1699,10 +1702,10 @@
             "noChildConceptsFound": "자식 컨셉이 없습니다."
           },
           "recordCounts": {
-            "loading": "Loading records count...",
+            "loading": "기록 수 로딩…",
             "caption": "레코드 카운트",
             "recordCountsAcrossSources": "소스의 레코드 카운트",
-            "failedToLoadData": "Failed to load data"
+            "failedToLoadData": "데이터 로드 실패"
           }
         }
       },
@@ -1850,8 +1853,8 @@
       "saveError": "기능(Feature 분석을 저장하는 중에 오류가 발생했습니다.",
       "selectConceptSet": "컨셉 세트 선택하기",
       "unsavedConfirmation": "변경 사항은 저장되지 않습니다. 계속 하시겠습니까?",
-      "warning": "Warning:",
-      "warningText": "You wouldn't be able to change the type of analysis after save."
+      "warning": "경고:",
+      "warningText": "저장 후에는 분석 유형을 변경할 수 없습니다."
     }
   },
   "home": {
@@ -2000,8 +2003,8 @@
             "title": "최소 분석 단위 수:"
           },
           "allowRepeats": {
-            "description": "Allow cohort events/combos to appear multiple times in the same pathway.",
-            "title": "Allow repeats:"
+            "description": "코호트 이벤트/콤보가 동일한 경로에서 여러 번 표시 되도록 허용.",
+            "title": "반복 허용:"
           },
           "title": "분석 설정"
         },
@@ -2598,41 +2601,41 @@
         "viewReports": "레포트 보기"
       },
       "samples": {
-        "sampleSelections": "Sample Selections",
+        "sampleSelections": "샘플 선택",
         "selectASource": "소스를 선택하십시오",
-        "addNewSample": "Add new sample",
-        "cohortNotGeneratedNote": "This cohort has not been generated in the data source you selected. Please return to the generation tab to generate the cohort before accessing samples.",
-        "cohortShouldBeGenerated":  "Cohort should be generated before creating samples",
-        "errorFetchingList": "Error when fetching sample list, please try again later",
-        "errorDeleting": "Error when deleting sample, please try again later",
-        "errorFetchingData": "Error when fetching sample data, please try again later",
-        "errorRefreshing": "Error when refreshing sample, please try again later",
+        "addNewSample": "새로운 샘플 추가",
+        "cohortNotGeneratedNote": "이 코호트는 선택한 데이터 소스에서 생성되지 않았습니다. 샘플에 접근하기 전에, 생성 탭으로 돌아가서 코호트를 생성하십시오.",
+        "cohortShouldBeGenerated":  "샘플을 만들기 전에 코호트가 생성되야 합니다",
+        "errorFetchingList": "샘플 목록을 가져 오는 중에 오류가 발생했습니다. 나중에 다시 시도하십시오",
+        "errorDeleting": "샘플을 삭제하는 중에 오류가 발생했습니다. 나중에 다시 시도하십시오",
+        "errorFetchingData": "샘플 데이터를 가져오는 중에 오류가 발생했습니다. 나중에 다시 시도하십시오",
+        "errorRefreshing": "샘플을 새로 고침 할때 오류가 발생했습니다. 나중에 다시 시도하십시오",
         "modal": {
-          "title": "Create new sample",
-          "mandatoryFields": "* Mandatory fields",
-          "sampleName": "* Sample name",
-          "sampleNamePlaceholder": "Enter sample name",
-          "sampleNameEmpty": "Sample name cannot be empty",
-          "numberOfPatients": "* Number of patients",
-          "numberOfPatientsPlaceholder": "Enter a number",
-          "numberOfPatientsEmpty": "Number of patients must be a positive integer",
-          "selectAgeCriteria": "Select age criteria",
-          "lessThan": "Less than",
-          "lessOrEqualTo": "Less or equal to",
-          "equalTo": "Equal to",
-          "greaterThan": "Greater than",
-          "greaterOrEqualTo": "Greater or equal to",
-          "between": "Between",
-          "notBetween": "Not between",
-          "agePlaceholder": "Enter a number",
-          "ageError": "Age must be a non-negative integer",
-          "ageError2": "First and second age must be non-negative integers and not equal",
-          "indicateGender": "Indicate gender (leave empty to select all gender)",
-          "male": "Male",
-          "female": "Female",
-          "other": "Other",
-          "submit": "Submit",
-          "creatingSample": "Creating sample..."
+          "title": "새로운 샘플 생성",
+          "mandatoryFields": "* 필수 항목",
+          "sampleName": "* 샘플 이름",
+          "sampleNamePlaceholder": "샘플 이름 입력",
+          "sampleNameEmpty": "샘플 이름은 비워 둘 수 없습니다",
+          "numberOfPatients": "* 환자 수",
+          "numberOfPatientsPlaceholder": "숫자 입력",
+          "numberOfPatientsEmpty": "환자 수는 양의 정수여야 합니다",
+          "selectAgeCriteria": "나이 기준 선택",
+          "lessThan": "보다 작은",
+          "lessOrEqualTo": "보다 작거나 같은",
+          "equalTo": "같은",
+          "greaterThan": "보다 큰",
+          "greaterOrEqualTo": "보다 크거나 같은",
+          "between": "사이에",
+          "notBetween": "사이에 있는 않은",
+          "agePlaceholder": "숫자 입력",
+          "ageError": "나이는 음이 아닌 정수여야 합니다",
+          "ageError2": "첫번째와 두번째 나이는 음이 아닌 정수여야 하며, 같지 않아야 합니다",
+          "indicateGender": "성별 표시 (모든 성별을 선택하려면 비워 두십시오)",
+          "male": "남자",
+          "female": "여자",
+          "other": "그 외",
+          "submit": "제출",
+          "creatingSample": "샘플 생성중..."
         }
       },
       "saveCohortTitle": "코호트 정의 저장",
@@ -2643,7 +2646,7 @@
         "explore": "탐색",
         "export": "내보내기",
         "generation": "생성",
-        "samples": "Samples",
+        "samples": "샘플",
         "messages": "메시지",
         "reporting": "레포팅"
       }

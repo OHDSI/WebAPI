@@ -31,7 +31,7 @@
     <jackson.databind.version>2.10.5.1</jackson.databind.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
     <skipUnitTests>false</skipUnitTests>
-    <skipITtests>true</skipITtests>
+    <skipITtests>false</skipITtests>
     <miredot.phase>package</miredot.phase>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
@@ -151,7 +151,7 @@
     <security.duration.increment>10</security.duration.increment>
 
     <security.saml.enabled>false</security.saml.enabled>
-    <security.saml.entityId>com:odysseusinc:atlas:sp</security.saml.entityId>
+    <security.saml.entityId></security.saml.entityId>
     <security.saml.idpMetadataLocation></security.saml.idpMetadataLocation>
     <security.saml.keyManager.keyStoreFile></security.saml.keyManager.keyStoreFile>
     <security.saml.keyManager.storePassword></security.saml.keyManager.storePassword>
@@ -160,6 +160,7 @@
     <security.saml.metadataLocation></security.saml.metadataLocation>
     <security.saml.callbackUrl></security.saml.callbackUrl>
     <security.saml.sloUrl></security.saml.sloUrl>
+    <security.saml.maximumAuthenticationLifetime>60</security.saml.maximumAuthenticationLifetime>
 
     <security.auth.windows.enabled>true</security.auth.windows.enabled>
     <security.auth.kerberos.enabled>true</security.auth.kerberos.enabled>
@@ -253,6 +254,7 @@
     <gis.enabled>false</gis.enabled>
 
     <!-- I18n -->
+    <i18n.enabled>true</i18n.enabled>
     <i18n.defaultLocale>en</i18n.defaultLocale>
   </properties>
   <build>

@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.test.entity;
+package org.ohdsi.webapi.entity;
 
 import static org.junit.Assert.assertEquals;
 import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;

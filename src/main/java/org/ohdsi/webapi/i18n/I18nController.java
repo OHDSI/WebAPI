@@ -1,13 +1,10 @@
 package org.ohdsi.webapi.i18n;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.ohdsi.circe.helper.ResourceHelper;
+import com.google.common.collect.ImmutableList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 
-import javax.annotation.PostConstruct;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -15,8 +12,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.net.URL;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -24,6 +19,9 @@ import java.util.Objects;
 @Path("/i18n/")
 @Controller
 public class I18nController {
+
+  @Value("${i18n.enabled}")
+  private boolean i18nEnabled = true;
 
   @Value("${i18n.defaultLocale}")
   private String defaultLocale = "en";
@@ -37,7 +35,7 @@ public class I18nController {
   public Response getResources(@Context ContainerRequestContext requestContext) {
 
     Locale locale = (Locale) requestContext.getProperty("language");
-    if (locale == null || !isLocaleSupported(locale.getLanguage())) {
+    if (!this.i18nEnabled || locale == null || !isLocaleSupported(locale.getLanguage())) {
       locale = Locale.forLanguageTag(defaultLocale);
     }
     String messages = i18nService.getLocaleResource(locale);
@@ -53,7 +51,11 @@ public class I18nController {
   @Path("/locales")
   @Produces(MediaType.APPLICATION_JSON)
   public List<LocaleDTO> getAvailableLocales() {
+    if (this.i18nEnabled) {
+      return i18nService.getAvailableLocales();
+    }
 
-    return i18nService.getAvailableLocales();
+    // if i18n is disabled, then return only default locale
+    return ImmutableList.of(new LocaleDTO(this.defaultLocale, null, true));
   }
 }

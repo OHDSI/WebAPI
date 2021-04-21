@@ -37,7 +37,6 @@ public class JobServiceIT extends WebApiIT {
     private String endpointJobExecutionAlternative;
     
     @Test
-    @DatabaseSetup("/database/source.xml")
     public void createAndFindJob() {
         //create/queue job
         final ResponseEntity<JobExecutionResource> postEntity = getRestTemplate().postForEntity(this.endpointExample, null,

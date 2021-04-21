@@ -27,11 +27,17 @@ public interface Constants {
           "jobName",
           "jobAuthor",
           "cohort_definition_id",
+          "cohortId",
+          "cohortDefinitionIds",
           "source_id",
+          "sourceKey",
+          "scriptType",
           "analysis_id",
           "concept_set_id",
           "cohort_characterization_id",
-          "pathway_analysis_id"
+          "pathway_analysis_id",
+          "estimation_analysis_id",
+          "prediction_analysis_id"
   );
 
   interface SqlSchemaPlaceholders {

@@ -14,6 +14,7 @@ public enum FilterTemplates {
     GITHUB_AUTHC("githubAuthc"),
     CAS_AUTHC("casAuthc"),
     SAML_AUTHC("samlAuthc"),
+    SAML_AUTHC_FORCE("samlAuthcForce"),
     
 
     NO_SESSION_CREATION("noSessionCreation"),

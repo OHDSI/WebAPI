@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.test.entity;
+package org.ohdsi.webapi.entity;
 
 import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
 
@@ -8,6 +8,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.cohortcharacterization.CcController;
 import org.ohdsi.webapi.cohortcharacterization.CcService;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
@@ -22,7 +23,7 @@ import org.springframework.core.convert.ConversionService;
 
 @RunWith(JUnitParamsRunner.class)
 @SpringBootTest
-public class CCEntityTest extends ITStarter implements TestCreate, TestCopy<CohortCharacterizationDTO>, TestImport<CohortCharacterizationDTO, CcExportDTO> {
+public class CCEntityTest extends AbstractDatabaseTest implements TestCreate, TestCopy<CohortCharacterizationDTO>, TestImport<CohortCharacterizationDTO, CcExportDTO> {
     @Autowired
     protected ConversionService conversionService;
     @Autowired

@@ -9,7 +9,7 @@ with concepts as (
 ), counts as (
 	select stratum_1 concept_id, max(count_value) agg_count_value
 	from result_schema.achilles_results
-	where analysis_id in (2, 4, 5, 201, 225, 301, 325, 401, 425, 501, 505, 525, 601, 625, 701, 725, 801, 825, 826, 827, 901, 1001, 1201, 1425, 1801, 1825, 1826, 1827, 2101, 2125, 2301)
+	where analysis_id in (2, 4, 5, 201, 225, 301, 325, 401, 425, 501, 505, 525, 601, 625, 701, 725, 801, 825, 826, 827, 901, 1001, 1201, 1203, 1425, 1801, 1825, 1826, 1827, 2101, 2125, 2301)
 	group by stratum_1
 	union
 	select stratum_2 as concept_id, sum(count_value) as agg_count_value

@@ -3,12 +3,13 @@ package org.ohdsi.webapi.cohortcharacterization.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.ohdsi.analysis.CohortMetadata;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
+import org.ohdsi.webapi.cohortdefinition.CohortMetadataExt;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class BaseCcDTO<T extends CohortMetadata, F extends FeAnalysisShortDTO> extends CcShortDTO {
+public class BaseCcDTO<T extends CohortMetadataExt, F extends FeAnalysisShortDTO> extends CcShortDTO {
 
   private Collection<T> cohorts = new ArrayList<>();
   private Collection<F> featureAnalyses = new ArrayList<>();

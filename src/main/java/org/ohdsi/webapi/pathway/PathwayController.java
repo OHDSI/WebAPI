@@ -27,6 +27,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.Collections;
@@ -65,6 +66,7 @@ public class PathwayController {
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
     public PathwayAnalysisDTO create(final PathwayAnalysisDTO dto) {
 
         PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
@@ -75,6 +77,7 @@ public class PathwayController {
     @POST
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
     public PathwayAnalysisDTO copy(@PathParam("id") final Integer id) {
 
         PathwayAnalysisDTO dto = get(id);
@@ -87,6 +90,7 @@ public class PathwayController {
     @Path("/import")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
     public PathwayAnalysisDTO importAnalysis(final PathwayAnalysisExportDTO dto) {
 
         dto.setName(pathwayService.getNameWithSuffix(dto.getName()));
@@ -99,6 +103,7 @@ public class PathwayController {
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
     public Page<PathwayAnalysisDTO> list(@Pagination Pageable pageable) {
 
         return pathwayService.getPage(pageable).map(pa -> {
@@ -121,6 +126,7 @@ public class PathwayController {
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
     public PathwayAnalysisDTO update(@PathParam("id") final Integer id, @RequestBody final PathwayAnalysisDTO dto) {
 
         PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
@@ -133,6 +139,7 @@ public class PathwayController {
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
     public PathwayAnalysisDTO get(@PathParam("id") final Integer id) {
 
         PathwayAnalysisEntity pathwayAnalysis = pathwayService.getById(id);
@@ -149,6 +156,7 @@ public class PathwayController {
     @Path("/{id}/export")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
     public String export(@PathParam("id") final Integer id) {
 
         PathwayAnalysisEntity pathwayAnalysis = pathwayService.getById(id);
@@ -179,6 +187,7 @@ public class PathwayController {
     @Path("/{id}/generation/{sourceKey}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
     public JobExecutionResource generatePathways(
             @PathParam("id") final Integer pathwayAnalysisId,
             @PathParam("sourceKey") final String sourceKey

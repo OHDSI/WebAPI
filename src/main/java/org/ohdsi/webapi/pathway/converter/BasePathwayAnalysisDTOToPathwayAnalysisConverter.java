@@ -1,25 +1,21 @@
 package org.ohdsi.webapi.pathway.converter;
 
 import org.apache.commons.lang3.StringUtils;
-import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.dto.BasePathwayAnalysisDTO;
+import org.ohdsi.webapi.service.converters.BaseCommonDTOExtToEntityExtConverter;
 
-public abstract class BasePathwayAnalysisDTOToPathwayAnalysisConverter<T extends BasePathwayAnalysisDTO> extends BaseConversionServiceAwareConverter<T, PathwayAnalysisEntity> {
+public abstract class BasePathwayAnalysisDTOToPathwayAnalysisConverter<S extends BasePathwayAnalysisDTO, T extends PathwayAnalysisEntity> extends
+        BaseCommonDTOExtToEntityExtConverter<S, T> {
 
     @Override
-    public PathwayAnalysisEntity convert(T source) {
-
-        PathwayAnalysisEntity pathwayAnalysis = new PathwayAnalysisEntity();
-
-        pathwayAnalysis.setId(source.getId());
-        pathwayAnalysis.setName(StringUtils.trim(source.getName()));
-        pathwayAnalysis.setCombinationWindow(source.getCombinationWindow());
-        pathwayAnalysis.setMinSegmentLength(source.getMinSegmentLength());
-        pathwayAnalysis.setMinCellCount(source.getMinCellCount());
-        pathwayAnalysis.setMaxDepth(source.getMaxDepth());
-        pathwayAnalysis.setAllowRepeats(source.isAllowRepeats());
-
-        return pathwayAnalysis;
+    protected void doConvert(S source, T target) {
+        source.setId(source.getId());
+        source.setName(StringUtils.trim(source.getName()));
+        source.setCombinationWindow(source.getCombinationWindow());
+        source.setMinSegmentLength(source.getMinSegmentLength());
+        source.setMinCellCount(source.getMinCellCount());
+        source.setMaxDepth(source.getMaxDepth());
+        source.setAllowRepeats(source.isAllowRepeats());
     }
 }

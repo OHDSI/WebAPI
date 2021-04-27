@@ -47,6 +47,11 @@ import org.ohdsi.webapi.shiro.management.datasource.SourceIdAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.tag.TagService;
+import org.ohdsi.webapi.tag.domain.Tag;
+import org.ohdsi.webapi.tag.domain.TagAssetType;
+import org.ohdsi.webapi.tag.domain.TagInfo;
+import org.ohdsi.webapi.tag.dto.TagInfoDTO;
 import org.ohdsi.webapi.util.*;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.NameUtils;
@@ -168,6 +173,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 
 	@PersistenceContext
 	protected EntityManager entityManager;
+
+	@Autowired
+	private TagService tagService;
 
 	private final MarkdownRender markdownPF = new MarkdownRender();
 
@@ -361,7 +369,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Transactional
 	public List<CohortMetadataDTO> getCohortDefinitionList() {
-
+		List<TagInfoDTO> count = tagService.listInfoDTO(TagAssetType.COHORT, "");
 		List<CohortDefinition> definitions = cohortDefinitionRepository.list();
 
 		return definitions.stream()

@@ -1,4 +1,9 @@
 CREATE SEQUENCE ${ohdsiSchema}.tags_seq;
+CREATE SEQUENCE ${ohdsiSchema}.concept_set_tags_seq;
+CREATE SEQUENCE ${ohdsiSchema}.cohort_tags_seq;
+CREATE SEQUENCE ${ohdsiSchema}.cohort_characterization_tags_seq;
+CREATE SEQUENCE ${ohdsiSchema}.ir_tags_seq;
+CREATE SEQUENCE ${ohdsiSchema}.pathway_tags_seq;
 
 -- Possible types are:
 -- 0 - System (predefined) tags
@@ -18,7 +23,7 @@ CREATE TABLE ${ohdsiSchema}.tags
     CONSTRAINT fk_tags_sec_user_updater FOREIGN KEY (modified_by_id) REFERENCES ${ohdsiSchema}.sec_user (id)
 );
 
-CREATE UNIQUE INDEX tags_name_idx ON ${ohdsiSchema}.tags USING btree (name);
+CREATE UNIQUE INDEX tags_name_idx ON ${ohdsiSchema}.tags USING btree (LOWER(name));
 
 CREATE TABLE ${ohdsiSchema}.tag_groups
 (
@@ -30,8 +35,10 @@ CREATE TABLE ${ohdsiSchema}.tag_groups
 
 CREATE TABLE ${ohdsiSchema}.concept_set_tags
 (
+    id             int4 NOT NULL DEFAULT nextval('${ohdsiSchema}.concept_set_tags_seq'),
     concept_set_id int4 NOT NULL,
     tag_id         int4 NOT NULL,
+    CONSTRAINT pk_concept_set_tags_id PRIMARY KEY (id),
     CONSTRAINT concept_set_tags_un UNIQUE (concept_set_id, tag_id),
     CONSTRAINT concept_set_tags_fk_sets FOREIGN KEY (concept_set_id) REFERENCES ${ohdsiSchema}.concept_set (concept_set_id) ON DELETE CASCADE,
     CONSTRAINT concept_set_tags_fk_tags FOREIGN KEY (tag_id) REFERENCES ${ohdsiSchema}.tags (id) ON DELETE CASCADE
@@ -42,8 +49,10 @@ CREATE INDEX concept_set_tags_tag_id_idx ON ${ohdsiSchema}.concept_set_tags USIN
 
 CREATE TABLE ${ohdsiSchema}.cohort_tags
 (
+    id        int4 NOT NULL DEFAULT nextval('${ohdsiSchema}.cohort_tags_seq'),
     cohort_id int4 NOT NULL,
     tag_id    int4 NOT NULL,
+    CONSTRAINT pk_cohort_tags_id PRIMARY KEY (id),
     CONSTRAINT cohort_tags_un UNIQUE (cohort_id, tag_id),
     CONSTRAINT cohort_tags_fk_definitions FOREIGN KEY (cohort_id) REFERENCES ${ohdsiSchema}.cohort_definition (id) ON DELETE CASCADE,
     CONSTRAINT cohort_tags_fk_tags FOREIGN KEY (tag_id) REFERENCES ${ohdsiSchema}.tags (id) ON DELETE CASCADE
@@ -54,8 +63,10 @@ CREATE INDEX cohort_tags_tag_id_idx ON ${ohdsiSchema}.cohort_tags USING btree (t
 
 CREATE TABLE ${ohdsiSchema}.cohort_characterization_tags
 (
+    id                         int4 NOT NULL DEFAULT nextval('${ohdsiSchema}.cohort_characterization_tags_seq'),
     cohort_characterization_id int4 NOT NULL,
     tag_id                     int4 NOT NULL,
+    CONSTRAINT pk_cohort_characterization_tags_id PRIMARY KEY (id),
     CONSTRAINT cc_tags_un UNIQUE (cohort_characterization_id, tag_id),
     CONSTRAINT cc_tags_fk_ccs FOREIGN KEY (cohort_characterization_id) REFERENCES ${ohdsiSchema}.cohort_characterization (id) ON DELETE CASCADE,
     CONSTRAINT cc_tags_fk_tags FOREIGN KEY (tag_id) REFERENCES ${ohdsiSchema}.tags (id) ON DELETE CASCADE
@@ -66,8 +77,10 @@ CREATE INDEX cc_tags_tag_id_idx ON ${ohdsiSchema}.cohort_characterization_tags U
 
 CREATE TABLE ${ohdsiSchema}.ir_tags
 (
+    id          int4 NOT NULL DEFAULT nextval('${ohdsiSchema}.ir_tags_seq'),
     analysis_id int4 NOT NULL,
     tag_id      int4 NOT NULL,
+    CONSTRAINT pk_ir_tags_id PRIMARY KEY (id),
     CONSTRAINT ir_tags_un UNIQUE (analysis_id, tag_id),
     CONSTRAINT ir_tags_fk_irs FOREIGN KEY (analysis_id) REFERENCES ${ohdsiSchema}.ir_analysis (id) ON DELETE CASCADE,
     CONSTRAINT ir_tags_fk_tags FOREIGN KEY (tag_id) REFERENCES ${ohdsiSchema}.tags (id) ON DELETE CASCADE
@@ -78,8 +91,10 @@ CREATE INDEX ir_tags_tag_id_idx ON ${ohdsiSchema}.ir_tags USING btree (tag_id);
 
 CREATE TABLE ${ohdsiSchema}.pathway_tags
 (
+    id                  int4 NOT NULL DEFAULT nextval('${ohdsiSchema}.pathway_tags_seq'),
     pathway_analysis_id int4 NOT NULL,
     tag_id              int4 NOT NULL,
+    CONSTRAINT pk_pathway_tags_id PRIMARY KEY (id),
     CONSTRAINT pathway_tags_un UNIQUE (pathway_analysis_id, tag_id),
     CONSTRAINT ir_tags_fk_irs FOREIGN KEY (pathway_analysis_id) REFERENCES ${ohdsiSchema}.pathway_analysis (id) ON DELETE CASCADE,
     CONSTRAINT ir_tags_fk_tags FOREIGN KEY (tag_id) REFERENCES ${ohdsiSchema}.tags (id) ON DELETE CASCADE

@@ -1,10 +1,10 @@
 package org.ohdsi.webapi.tag;
 
-import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.webapi.i18n.I18nService;
+import org.ohdsi.webapi.tag.domain.TagAssetType;
 import org.ohdsi.webapi.tag.dto.TagDTO;
+import org.ohdsi.webapi.tag.dto.TagInfoDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.Consumes;
@@ -42,8 +42,9 @@ public class TagController {
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public List<TagDTO> list(@QueryParam("namePart") String namePart) {
-        return tagService.listDTO(namePart);
+    public List<TagInfoDTO> list(@QueryParam("assetType") String assetType,
+                                 @QueryParam("namePart") String namePart) {
+        return tagService.listInfoDTO(TagAssetType.fromName(assetType), namePart);
     }
 
 //    @PUT

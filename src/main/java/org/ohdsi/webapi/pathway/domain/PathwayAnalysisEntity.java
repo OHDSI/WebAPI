@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.pathway.domain;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -15,7 +16,7 @@ import javax.persistence.OneToMany;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.webapi.model.CommonEntityExt;
-import org.ohdsi.webapi.tag.Tag;
+import org.ohdsi.webapi.tag.domain.Tag;
 
 @Entity(name = "pathway_analysis")
 public class PathwayAnalysisEntity extends CommonEntityExt<Integer> {
@@ -63,7 +64,7 @@ public class PathwayAnalysisEntity extends CommonEntityExt<Integer> {
     @JoinTable(name = "pathway_tags",
             joinColumns = @JoinColumn(name = "pathway_analysis_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
-    private Set<Tag> tags;
+    private List<Tag> tags;
 
     @Override
     public Integer getId() {
@@ -165,12 +166,12 @@ public class PathwayAnalysisEntity extends CommonEntityExt<Integer> {
     }
 
     @Override
-    public Set<Tag> getTags() {
+    public List<Tag> getTags() {
         return tags;
     }
 
     @Override
-    public void setTags(Set<Tag> tags) {
+    public void setTags(List<Tag> tags) {
         this.tags = tags;
     }
 }

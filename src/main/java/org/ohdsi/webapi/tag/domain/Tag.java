@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.tag;
+package org.ohdsi.webapi.tag.domain;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
@@ -13,7 +13,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
-import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity(name = "Tag")
@@ -35,7 +36,7 @@ public class Tag extends CommonEntity<Integer> {
     @JoinTable(name = "tag_groups",
             joinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "group_id", referencedColumnName = "id"))
-    private Set<Tag> groups;
+    private List<Tag> groups;
 
     @Column
     private String name;
@@ -67,11 +68,24 @@ public class Tag extends CommonEntity<Integer> {
         this.type = type;
     }
 
-    public Set<Tag> getGroups() {
+    public List<Tag> getGroups() {
         return groups;
     }
 
-    public void setGroups(Set<Tag> groups) {
+    public void setGroups(List<Tag> groups) {
         this.groups = groups;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Tag tag = (Tag) o;
+        return name.equals(tag.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name);
     }
 }

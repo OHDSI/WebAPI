@@ -14,13 +14,12 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
-import org.ohdsi.webapi.tag.Tag;
-import org.ohdsi.webapi.tag.dto.TagDTO;
+import org.ohdsi.webapi.tag.domain.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import static org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType.CRITERIA_SET;
@@ -61,8 +60,8 @@ public abstract class BaseCcDTOToCcEntityConverter<T extends BaseCcDTO<? extends
     cohortCharacterization.setConceptSetEntity(conceptSetEntity);
 
     if (Objects.nonNull(source.getTags())) {
-      Set<Tag> tags = source.getTags().stream()
-              .map(tag -> conversionService.convert(tag, Tag.class)).collect(Collectors.toSet());
+      List<Tag> tags = source.getTags().stream()
+              .map(tag -> conversionService.convert(tag, Tag.class)).collect(Collectors.toList());
       cohortCharacterization.setTags(tags);
     }
 

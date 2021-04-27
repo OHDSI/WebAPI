@@ -1,9 +1,7 @@
 package org.ohdsi.webapi.tag.converter;
 
-import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
-import org.ohdsi.webapi.prediction.PredictionAnalysis;
 import org.ohdsi.webapi.service.converters.BaseCommonEntityToDTOConverter;
-import org.ohdsi.webapi.tag.Tag;
+import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.tag.dto.TagDTO;
 import org.springframework.stereotype.Component;
 

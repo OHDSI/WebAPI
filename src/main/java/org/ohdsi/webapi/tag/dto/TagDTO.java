@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.ohdsi.webapi.service.dto.CommonEntityDTO;
-import org.ohdsi.webapi.tag.TagType;
+import org.ohdsi.webapi.tag.domain.TagType;
 
 import java.util.Set;
 

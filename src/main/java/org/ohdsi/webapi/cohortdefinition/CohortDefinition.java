@@ -46,9 +46,8 @@ import org.ohdsi.analysis.Cohort;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisGenerationInfo;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
-import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.model.CommonEntityExt;
-import org.ohdsi.webapi.tag.*;
+import org.ohdsi.webapi.tag.domain.Tag;
 
 /**
  * JPA Entity for Cohort Definitions
@@ -106,7 +105,7 @@ public class CohortDefinition extends CommonEntityExt<Integer> implements Serial
   @JoinTable(name = "cohort_tags",
           joinColumns = @JoinColumn(name = "cohort_id", referencedColumnName = "id"),
           inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
-  private Set<Tag> tags;
+  private List<Tag> tags;
 
   @Override
   public Integer getId() {
@@ -202,12 +201,12 @@ public class CohortDefinition extends CommonEntityExt<Integer> implements Serial
   }
 
   @Override
-  public Set<Tag> getTags() {
+  public List<Tag> getTags() {
     return tags;
   }
 
   @Override
-  public void setTags(Set<Tag> tags) {
+  public void setTags(List<Tag> tags) {
     this.tags = tags;
   }
 }

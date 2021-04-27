@@ -6,7 +6,6 @@ import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEnti
 import org.ohdsi.webapi.cohortcharacterization.dto.BaseCcDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcParameterDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcStrataDTO;
-import org.ohdsi.webapi.tag.Tag;
 import org.ohdsi.webapi.tag.dto.TagDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 

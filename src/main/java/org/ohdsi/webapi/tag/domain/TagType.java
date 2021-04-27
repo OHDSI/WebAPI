@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.tag;
+package org.ohdsi.webapi.tag.domain;
 
 public enum TagType {
     SYSTEM, CUSTOM, PRIZM

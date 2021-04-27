@@ -16,6 +16,7 @@
 package org.ohdsi.webapi.conceptset;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -29,7 +30,7 @@ import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.webapi.model.CommonEntityExt;
-import org.ohdsi.webapi.tag.Tag;
+import org.ohdsi.webapi.tag.domain.Tag;
 
 /**
  *
@@ -59,7 +60,7 @@ public class ConceptSet extends CommonEntityExt<Integer> implements Serializable
   @JoinTable(name = "concept_set_tags",
           joinColumns = @JoinColumn(name = "concept_set_id", referencedColumnName = "concept_set_id"),
           inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
-  private Set<Tag> tags;
+  private List<Tag> tags;
 
   @Override
   public Integer getId() {
@@ -78,11 +79,11 @@ public class ConceptSet extends CommonEntityExt<Integer> implements Serializable
     this.name = name;
   }
 
-  public Set<Tag> getTags() {
+  public List<Tag> getTags() {
     return tags;
   }
 
-  public void setTags(Set<Tag> tags) {
+  public void setTags(List<Tag> tags) {
     this.tags = tags;
   }
 }

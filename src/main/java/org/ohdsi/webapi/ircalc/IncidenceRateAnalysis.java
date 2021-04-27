@@ -17,14 +17,14 @@ package org.ohdsi.webapi.ircalc;
 
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.persistence.*;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
-import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.model.CommonEntityExt;
-import org.ohdsi.webapi.tag.Tag;
+import org.ohdsi.webapi.tag.domain.Tag;
 
 /**
  *
@@ -73,7 +73,7 @@ public class IncidenceRateAnalysis extends CommonEntityExt<Integer> implements S
   @JoinTable(name = "ir_tags",
           joinColumns = @JoinColumn(name = "analysis_id", referencedColumnName = "id"),
           inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
-  private Set<Tag> tags;
+  private List<Tag> tags;
 
   @Override
   public Integer getId() {
@@ -122,12 +122,12 @@ public class IncidenceRateAnalysis extends CommonEntityExt<Integer> implements S
   }
 
   @Override
-  public Set<Tag> getTags() {
+  public List<Tag> getTags() {
     return tags;
   }
 
   @Override
-  public void setTags(Set<Tag> tags) {
+  public void setTags(List<Tag> tags) {
     this.tags = tags;
   }
 }

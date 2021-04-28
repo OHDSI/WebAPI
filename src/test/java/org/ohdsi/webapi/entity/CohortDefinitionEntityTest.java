@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.test.entity;
+package org.ohdsi.webapi.entity;
 
 import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
 
@@ -8,7 +8,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.ohdsi.webapi.WebApi;
+import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.service.CohortDefinitionService;
@@ -17,8 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @RunWith(JUnitParamsRunner.class)
-@SpringBootTest(classes = WebApi.class)
-public class CohortDefinitionEntityTest extends ITStarter implements TestCreate, TestCopy<CohortDTO>{
+@SpringBootTest
+public class CohortDefinitionEntityTest extends AbstractDatabaseTest implements TestCreate, TestCopy<CohortDTO>{
     @Autowired
     private CohortDefinitionService cdService;
     @Autowired

@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.test.entity;
+package org.ohdsi.webapi.entity;
 
 import static org.ohdsi.webapi.service.ConceptSetService.COPY_NAME;
 import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
@@ -9,7 +9,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.ohdsi.webapi.WebApi;
+import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.conceptset.ConceptSetRepository;
 import org.ohdsi.webapi.service.ConceptSetService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
@@ -18,8 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @RunWith(JUnitParamsRunner.class)
-@SpringBootTest(classes = WebApi.class)
-public class ConceptSetEntityTest extends ITStarter implements TestCreate, TestCopy<ConceptSetDTO> {
+@SpringBootTest
+public class ConceptSetEntityTest extends AbstractDatabaseTest implements TestCreate, TestCopy<ConceptSetDTO> {
     @Autowired
     protected ConceptSetService csService;
     @Autowired

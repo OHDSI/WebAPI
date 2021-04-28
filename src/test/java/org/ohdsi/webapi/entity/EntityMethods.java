@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.test.entity;
+package org.ohdsi.webapi.entity;
 
 import org.ohdsi.webapi.CommonDTO;
 import org.springframework.test.context.TestContextManager;

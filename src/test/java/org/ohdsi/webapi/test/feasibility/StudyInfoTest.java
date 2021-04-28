@@ -19,7 +19,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import org.junit.Test;
 import org.ohdsi.webapi.AbstractDatabaseTest;
-import org.ohdsi.webapi.WebApi;
 import org.ohdsi.webapi.feasibility.FeasibilityStudy;
 import org.ohdsi.webapi.feasibility.FeasibilityStudyRepository;
 import org.ohdsi.webapi.feasibility.StudyGenerationInfo;
@@ -35,7 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * @author Chris Knoll <cknoll@ohdsi.org>
  */
-@SpringBootTest(classes = WebApi.class)
+@SpringBootTest
 @Rollback
 public class StudyInfoTest extends AbstractDatabaseTest {
 

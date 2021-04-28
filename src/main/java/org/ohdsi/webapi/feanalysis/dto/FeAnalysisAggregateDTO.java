@@ -1,11 +1,15 @@
 package org.ohdsi.webapi.feanalysis.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 import org.ohdsi.analysis.TableJoin;
 import org.ohdsi.analysis.cohortcharacterization.design.AggregateFunction;
+import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysisAggregate;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
+import org.ohdsi.circe.cohortdefinition.builders.CriteriaColumn;
 
-public class FeAnalysisAggregateDTO {
+public class FeAnalysisAggregateDTO implements FeatureAnalysisAggregate {
 
   @JsonProperty("id")
   private Integer id;
@@ -25,6 +29,20 @@ public class FeAnalysisAggregateDTO {
   private String joinCondition;
   @JsonProperty("isDefault")
   private boolean isDefault;
+  @JsonProperty("missingMeansZero")
+  private boolean missingMeansZero;
+  @JsonProperty("additionalColumns")
+  private List<CriteriaColumn> columns;  
+
+  @Override
+  public List<CriteriaColumn> getAdditionalColumns() {
+
+    return columns;
+  }
+
+  public void setAdditionalColumns(List<CriteriaColumn> columns) {
+    this.columns = columns;
+  }  
 
   public Integer getId() {
     return id;
@@ -97,4 +115,19 @@ public class FeAnalysisAggregateDTO {
   public void setJoinCondition(String joinCondition) {
     this.joinCondition = joinCondition;
   }
+
+  public boolean isMissingMeansZero() {
+    return missingMeansZero;
+  }
+
+  public void setMissingMeansZero(boolean missingMeansZero) {
+    this.missingMeansZero = missingMeansZero;
+  }
+  @JsonIgnore
+  @Override
+  /* this is required by the interface, although not used anywhere */
+  public boolean hasQuery() {
+    return false;
+  }  
+
 }

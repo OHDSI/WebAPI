@@ -1,0 +1,19 @@
+[
+  {
+    "code": "en",
+    "name": "English",
+    "default": true
+  },
+  {
+    "code": "ru",
+    "name": "Русский"
+  },
+  {
+    "code": "ko",
+    "name": "한국어"
+  },
+  {
+    "code": "zh",
+    "name": "中文"
+  }
+]

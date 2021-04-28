@@ -1,9 +1,14 @@
-package org.ohdsi.webapi.test.entity;
+package org.ohdsi.webapi.entity;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
+
+import com.odysseusinc.arachne.commons.types.DBMSType;
+import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.apache.commons.io.FileUtils;
@@ -13,7 +18,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ohdsi.analysis.Utils;
-import org.ohdsi.webapi.WebApi;
+import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetailsRepository;
 import org.ohdsi.webapi.estimation.Estimation;
@@ -23,8 +28,12 @@ import org.ohdsi.webapi.estimation.dto.EstimationDTO;
 import org.ohdsi.webapi.estimation.repository.EstimationRepository;
 import org.ohdsi.webapi.estimation.specification.EstimationAnalysisImpl;
 import org.ohdsi.webapi.model.CommonEntity;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.test.ITStarter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.convert.ConversionService;
 
@@ -33,8 +42,8 @@ import static org.ohdsi.analysis.estimation.design.EstimationTypeEnum.COMPARATIV
 import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
 
 @RunWith(JUnitParamsRunner.class)
-@SpringBootTest(classes = WebApi.class)
-public class EstimationEntityTest extends ITStarter implements TestCreate, TestCopy<EstimationDTO>, TestImport<EstimationDTO,EstimationAnalysisImpl> {
+@SpringBootTest
+public class EstimationEntityTest extends AbstractDatabaseTest implements TestCreate, TestCopy<EstimationDTO>, TestImport<EstimationDTO,EstimationAnalysisImpl> {
     @Autowired
     protected ConversionService conversionService;
     @Autowired
@@ -45,6 +54,9 @@ public class EstimationEntityTest extends ITStarter implements TestCreate, TestC
     protected EstimationService pleService;
     @Autowired
     protected CohortDefinitionDetailsRepository cdRepository;
+    @Autowired
+    private SourceRepository sourceRepository;
+
     private EstimationDTO firstSavedDTO;
     private static String PLE_SPECIFICATION;
 
@@ -67,8 +79,10 @@ public class EstimationEntityTest extends ITStarter implements TestCreate, TestC
     @Before
     @Override
     public void init() throws Exception {
-
         TestCreate.super.init();
+        truncateTable(String.format("%s.%s", "public", "source"));
+        resetSequence(String.format("%s.%s", "public", "source_sequence"));
+        sourceRepository.saveAndFlush(getCdmSource());
     }
 
     @Test
@@ -228,5 +242,38 @@ public class EstimationEntityTest extends ITStarter implements TestCreate, TestC
     public EstimationDTO doImport(EstimationAnalysisImpl dto) throws Exception {
 
         return pleController.importAnalysis(dto);
+    }
+
+    private Source getCdmSource() throws SQLException {
+        Source source = new Source();
+        source.setSourceName("Embedded PG");
+        source.setSourceKey("Embedded_PG");
+        source.setSourceDialect(DBMSType.POSTGRESQL.getOhdsiDB());
+        source.setSourceConnection(getDataSource().getConnection().getMetaData().getURL());
+        source.setUsername("postgres");
+        source.setPassword("postgres");
+        source.setKrbAuthMethod(KerberosAuthMechanism.PASSWORD);
+
+        SourceDaimon cdmDaimon = new SourceDaimon();
+        cdmDaimon.setPriority(1);
+        cdmDaimon.setDaimonType(SourceDaimon.DaimonType.CDM);
+        cdmDaimon.setTableQualifier("cdm");
+        cdmDaimon.setSource(source);
+
+        SourceDaimon vocabDaimon = new SourceDaimon();
+        vocabDaimon.setPriority(1);
+        vocabDaimon.setDaimonType(SourceDaimon.DaimonType.Vocabulary);
+        vocabDaimon.setTableQualifier("cdm");
+        vocabDaimon.setSource(source);
+
+        SourceDaimon resultsDaimon = new SourceDaimon();
+        resultsDaimon.setPriority(1);
+        resultsDaimon.setDaimonType(SourceDaimon.DaimonType.Results);
+        resultsDaimon.setTableQualifier("results");
+        resultsDaimon.setSource(source);
+
+        source.setDaimons(Arrays.asList(cdmDaimon, vocabDaimon, resultsDaimon));
+
+        return source;
     }
 }

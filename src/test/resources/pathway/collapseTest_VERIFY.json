@@ -1,10 +1,16 @@
 {
   "results.pathway_analysis_codes": [
     {
+      "code": 1,
+      "name": "[TxP] Cohort 1",
+      "is_combo": 0 
+    },
+    {
       "code": 2,
       "name": "[TxP] Cohort 2",
-      "is_combo": 0 
-    },{
+      "is_combo": 0
+    },
+    {
       "code": 3,
       "name": "[TxP] Cohort 1,[TxP] Cohort 2",
       "is_combo": 1 

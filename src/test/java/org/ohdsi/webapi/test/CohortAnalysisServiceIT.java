@@ -16,21 +16,36 @@ import com.github.springtestdbunit.annotation.DatabaseOperation;
 import com.github.springtestdbunit.annotation.DatabaseSetup;
 import com.github.springtestdbunit.annotation.DatabaseTearDown;
 import java.util.Collections;
+
+import org.junit.Before;
 import org.junit.Test;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
 import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.source.SourceRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 
+@DatabaseSetup("/database/cohort.xml")
 @DatabaseTearDown(value = "/database/empty.xml", type = DatabaseOperation.DELETE_ALL)
 public class CohortAnalysisServiceIT extends WebApiIT {
 
     @Value("${cohortanalysis.endpoint}")
     private String endpointCohortAnalysis;
-    private static final String SOURCE_KEY = "110k";
+
+    @Autowired
+    private SourceRepository sourceRepository;
+
+    @Before
+    public void init() throws Exception {
+        truncateTable(String.format("%s.%s", "public", "source"));
+        resetSequence(String.format("%s.%s", "public", "source_sequence"));
+        sourceRepository.saveAndFlush(getCdmSource());
+        prepareCdmSchema();
+        prepareResultSchema();
+    }
 
     @Test
-    @DatabaseSetup("/database/source.xml")
     public void canCreateAnalysis() {
 
         //Arrange

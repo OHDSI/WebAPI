@@ -1,10 +1,15 @@
-package org.ohdsi.webapi.test.entity;
+package org.ohdsi.webapi.entity;
 
 import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
+import java.util.Arrays;
+
+import com.odysseusinc.arachne.commons.types.DBMSType;
+import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.apache.commons.io.FileUtils;
@@ -13,7 +18,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.ohdsi.webapi.WebApi;
+import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.prediction.PredictionAnalysis;
 import org.ohdsi.webapi.prediction.PredictionController;
@@ -21,20 +26,25 @@ import org.ohdsi.webapi.prediction.PredictionService;
 import org.ohdsi.webapi.prediction.dto.PredictionAnalysisDTO;
 import org.ohdsi.webapi.prediction.repository.PredictionAnalysisRepository;
 import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceDaimon;
+import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.test.ITStarter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.convert.ConversionService;
 
 @RunWith(JUnitParamsRunner.class)
-@SpringBootTest(classes = WebApi.class)
-public class PredictionEntityTest extends ITStarter implements TestCreate, TestCopy<PredictionAnalysisDTO>, TestImport<PredictionAnalysisDTO, PatientLevelPredictionAnalysisImpl> {
+@SpringBootTest
+public class PredictionEntityTest extends AbstractDatabaseTest implements TestCreate, TestCopy<PredictionAnalysisDTO>, TestImport<PredictionAnalysisDTO, PatientLevelPredictionAnalysisImpl> {
     @Autowired
     protected ConversionService conversionService;
     @Autowired
     protected PredictionController plpController;
     @Autowired
     protected PredictionAnalysisRepository plpRepository;
+    @Autowired
+    private SourceRepository sourceRepository;
     @Autowired
     protected PredictionService plpService;
     private PredictionAnalysisDTO firstSavedDTO;
@@ -59,8 +69,10 @@ public class PredictionEntityTest extends ITStarter implements TestCreate, TestC
     @Before
     @Override
     public void init() throws Exception {
-
         TestCreate.super.init();
+        truncateTable(String.format("%s.%s", "public", "source"));
+        resetSequence(String.format("%s.%s", "public", "source_sequence"));
+        sourceRepository.saveAndFlush(getCdmSource());
     }
 
     @Test
@@ -190,5 +202,38 @@ public class PredictionEntityTest extends ITStarter implements TestCreate, TestC
     public PredictionAnalysisDTO doImport(PatientLevelPredictionAnalysisImpl dto) throws Exception {
 
         return plpController.importAnalysis(dto);
+    }
+
+    private Source getCdmSource() throws SQLException {
+        Source source = new Source();
+        source.setSourceName("Embedded PG");
+        source.setSourceKey("Embedded_PG");
+        source.setSourceDialect(DBMSType.POSTGRESQL.getOhdsiDB());
+        source.setSourceConnection(getDataSource().getConnection().getMetaData().getURL());
+        source.setUsername("postgres");
+        source.setPassword("postgres");
+        source.setKrbAuthMethod(KerberosAuthMechanism.PASSWORD);
+
+        SourceDaimon cdmDaimon = new SourceDaimon();
+        cdmDaimon.setPriority(1);
+        cdmDaimon.setDaimonType(SourceDaimon.DaimonType.CDM);
+        cdmDaimon.setTableQualifier("cdm");
+        cdmDaimon.setSource(source);
+
+        SourceDaimon vocabDaimon = new SourceDaimon();
+        vocabDaimon.setPriority(1);
+        vocabDaimon.setDaimonType(SourceDaimon.DaimonType.Vocabulary);
+        vocabDaimon.setTableQualifier("cdm");
+        vocabDaimon.setSource(source);
+
+        SourceDaimon resultsDaimon = new SourceDaimon();
+        resultsDaimon.setPriority(1);
+        resultsDaimon.setDaimonType(SourceDaimon.DaimonType.Results);
+        resultsDaimon.setTableQualifier("results");
+        resultsDaimon.setSource(source);
+
+        source.setDaimons(Arrays.asList(cdmDaimon, vocabDaimon, resultsDaimon));
+
+        return source;
     }
 }

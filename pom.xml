@@ -21,6 +21,7 @@
     <bouncycastle.version>1.68</bouncycastle.version>
     <shiro.version>1.7.1</shiro.version>
     <dom4j.version>2.1.3</dom4j.version>
+    <hydra.version>0.2.0</hydra.version>
 
     <circe.version>1.9.2</circe.version>
     <jersey.version>2.14</jersey.version>
@@ -232,9 +233,6 @@
     <!-- Use "-" for files without extension, "*" for all files, extension must not include a leading dot. Use comma to separate values.
      In case of "*" other values will be ignored -->
     <sensitiveinfo.analysis.extensions>txt</sensitiveinfo.analysis.extensions>
-
-    <hydra.externalPackage.prediction></hydra.externalPackage.prediction>
-    <hydra.externalPackage.estimation></hydra.externalPackage.estimation>
 
     <!-- Cache Config -->
     <spring.cache.jcache.config>classpath:config/ehcache.xml</spring.cache.jcache.config>
@@ -866,7 +864,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>hydra</artifactId>
-      <version>0.0.11</version>
+      <version>${hydra.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.ohdsi</groupId>

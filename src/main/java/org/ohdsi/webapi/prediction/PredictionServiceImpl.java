@@ -64,17 +64,10 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
 
     private static final EntityGraph DEFAULT_ENTITY_GRAPH = EntityGraphUtils.fromAttributePaths("source", "analysisExecution.resultFiles");
 
-    // This path can used when skeleton is packed inside WebAPI.war
-    // For example PREDICTION_SKELETON = "/resources/prediction/skeleton/SkeletonPredictionStudy_0.0.1.zip";
-    private static final String PREDICTION_SKELETON = "";
-
     private final EntityGraph COMMONS_ENTITY_GRAPH = EntityUtils.fromAttributePaths(
             "createdBy",
             "modifiedBy"
     );
-
-    @Value("${hydra.externalPackage.prediction}")
-    private String externalPackagePath;
 
     @Autowired
     private PredictionAnalysisRepository predictionAnalysisRepository;
@@ -323,22 +316,9 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         if (packageName == null || !Utils.isAlphaNumeric(packageName)) {
             throw new IllegalArgumentException("The package name must be alphanumeric only.");
         }
-        File externalFile = null;
-        try {
-            analysis.setPackageName(packageName);
-            try {
-                externalFile = TempFileUtils.copyResourceToTempFile(PREDICTION_SKELETON, "plp", ".zip");
-            } catch (Exception e) {
-                log.warn("Failed to load skeleton from resource, {}. Ignored and used default", e.getMessage());
-            }
-            if (Objects.nonNull(externalFile)) {
-                super.hydrateAnalysis(analysis, externalFile.getAbsolutePath(), out);
-            } else {
-                super.hydrateAnalysis(analysis, externalPackagePath, out);
-            }
-        } finally {
-            FileUtils.deleteQuietly(externalFile);
-        }
+        analysis.setSkeletonVersion("v0.0.6");
+        analysis.setPackageName(packageName);
+        super.hydrateAnalysis(analysis, out);
     }
 
 

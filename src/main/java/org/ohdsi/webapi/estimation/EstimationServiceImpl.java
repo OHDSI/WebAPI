@@ -86,10 +86,6 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     private static final String CONCEPT_SET_XREF_KEY_INCLUDED_COVARIATE_CONCEPT_IDS = "includedCovariateConceptIds";
     private static final String CONCEPT_SET_XREF_KEY_EXCLUDED_COVARIATE_CONCEPT_IDS = "excludedCovariateConceptIds";
 
-    // This path can used when skeleton is packed inside WebAPI.war
-    // For example ESTIMATION_SKELETON = "/resources/estimation/skeleton/ComparativeEffectStudy_v0.0.1.zip";
-    private static final String ESTIMATION_SKELETON = "/resources/estimation/skeleton/";
-
     private final String EXEC_SCRIPT = ResourceHelper.GetResourceAsString("/resources/estimation/r/runAnalysis.R");
 
     private final EntityGraph DEFAULT_ENTITY_GRAPH = EntityGraphUtils.fromAttributePaths("source", "analysisExecution.resultFiles");
@@ -98,9 +94,6 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
             "createdBy",
             "modifiedBy"
     );
-
-    @Value("${hydra.externalPackage.estimation}")
-    private String externalPackagePath;
 
     @PersistenceContext
     protected EntityManager entityManager;
@@ -425,23 +418,8 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         if (packageName == null || !Utils.isAlphaNumeric(packageName)) {
             throw new IllegalArgumentException("The package name must be alphanumeric only.");
         }
-        File externalFile = null;
-        try {
-            analysis.setPackageName(packageName);
-            try {
-                externalFile = TempFileUtils.copyResourceToTempFile(ESTIMATION_SKELETON, "ple", ".zip");
-            } catch (Exception e) {
-                log.warn("Failed to load skeleton from resource, {}. Ignored and used default", e.getMessage());
-            }
-            if (Objects.nonNull(externalFile)) {
-                super.hydrateAnalysis(analysis, externalFile.getAbsolutePath(), out);
-            } else {
-                super.hydrateAnalysis(analysis, externalPackagePath, out);
-            }
-        } finally {
-            FileUtils.deleteQuietly(externalFile);
-        }
-
+        analysis.setPackageName(packageName);
+        super.hydrateAnalysis(analysis, out);
     }
 
     @Override

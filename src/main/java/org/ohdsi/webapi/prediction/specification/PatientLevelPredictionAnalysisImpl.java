@@ -28,7 +28,7 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
   private String organizationName = null;
   private String packageName = null;
   private SkeletonTypeEnum skeletonType = SkeletonTypeEnum.PATIENT_LEVEL_PREDICTION_STUDY;
-  private String skeletonVersion = "v0.0.1";
+  private String skeletonVersion = "v0.0.6";
   private String createdBy = null;
   private String createdDate = null;
   private String modifiedBy = null;

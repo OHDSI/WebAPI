@@ -36,11 +36,9 @@ import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.SessionUtils;
-import org.ohdsi.webapi.util.TempFileUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -57,6 +55,7 @@ import java.util.stream.Collectors;
 import static org.ohdsi.webapi.Constants.GENERATE_PREDICTION_ANALYSIS;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Params.PREDICTION_ANALYSIS_ID;
+import static org.ohdsi.webapi.Constants.Params.PREDICTION_SKELETON_VERSION;
 
 @Service
 @Transactional
@@ -202,6 +201,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         expression.setName(StringUtils.trim(pred.getName()));
         expression.setDescription(pred.getDescription());
         expression.setOrganizationName(env.getRequiredProperty("organization.name"));
+        expression.setSkeletonVersion(PREDICTION_SKELETON_VERSION);
 
         // Retrieve the cohort definition details
         ArrayList<AnalysisCohortDefinition> detailedList = new ArrayList<>();
@@ -316,7 +316,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         if (packageName == null || !Utils.isAlphaNumeric(packageName)) {
             throw new IllegalArgumentException("The package name must be alphanumeric only.");
         }
-        analysis.setSkeletonVersion("v0.0.6");
+        analysis.setSkeletonVersion(PREDICTION_SKELETON_VERSION);
         analysis.setPackageName(packageName);
         super.hydrateAnalysis(analysis, out);
     }

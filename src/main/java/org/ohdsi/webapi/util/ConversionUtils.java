@@ -11,7 +11,6 @@ import org.springframework.core.convert.support.GenericConversionService;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ConversionUtils {
@@ -19,8 +18,8 @@ public class ConversionUtils {
         ConversionUtils.convertMetadata(conversionService, source, target);
 
         if (Objects.nonNull(source.getTags())) {
-            Set<TagDTO> tags = source.getTags().stream()
-                    .map(tag -> conversionService.convert(tag, TagDTO.class)).collect(Collectors.toSet());
+            List<TagDTO> tags = source.getTags().stream()
+                    .map(tag -> conversionService.convert(tag, TagDTO.class)).collect(Collectors.toList());
             target.setTags(tags);
         }
     }

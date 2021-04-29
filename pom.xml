@@ -256,6 +256,12 @@
     <!-- I18n -->
     <i18n.enabled>true</i18n.enabled>
     <i18n.defaultLocale>en</i18n.defaultLocale>
+
+    <!-- Tags -->
+    <tag.enabled>true</tag.enabled>
+    <!-- Period between refreshes of materialized view with statistics -->
+    <!-- 10 minutes by default -->
+    <tag.refreshStat.period>600000</tag.refreshStat.period>
   </properties>
   <build>
     <finalName>WebAPI</finalName>

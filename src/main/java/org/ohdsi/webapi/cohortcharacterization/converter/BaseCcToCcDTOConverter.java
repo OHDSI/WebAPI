@@ -9,6 +9,7 @@ import org.ohdsi.webapi.cohortcharacterization.dto.CcStrataDTO;
 import org.ohdsi.webapi.tag.dto.TagDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
@@ -37,8 +38,8 @@ public abstract class BaseCcToCcDTOConverter<T extends BaseCcDTO> extends BaseCc
     cohortCharacterizationDTO.setStrataConceptSets(source.getStrataConceptSets());
 
     if (Objects.nonNull(source.getTags())) {
-      Set<TagDTO> tags = source.getTags().stream()
-              .map(tag -> conversionService.convert(tag, TagDTO.class)).collect(Collectors.toSet());
+      List<TagDTO> tags = source.getTags().stream()
+              .map(tag -> conversionService.convert(tag, TagDTO.class)).collect(Collectors.toList());
       cohortCharacterizationDTO.setTags(tags);
     }
 

@@ -71,7 +71,7 @@ public class IncidenceRateAnalysis extends CommonEntityExt<Integer> implements S
 
   @ManyToMany(targetEntity = Tag.class, fetch = FetchType.LAZY)
   @JoinTable(name = "ir_tags",
-          joinColumns = @JoinColumn(name = "analysis_id", referencedColumnName = "id"),
+          joinColumns = @JoinColumn(name = "asset_id", referencedColumnName = "id"),
           inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
   private List<Tag> tags;
 

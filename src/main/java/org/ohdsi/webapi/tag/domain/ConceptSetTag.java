@@ -7,9 +7,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-@Entity(name = "CohortTag")
-@Table(name = "cohort_tags")
-public class CohortTag {
+@Entity(name = "ConceptSetTag")
+@Table(name = "concept_set_tags")
+public class ConceptSetTag {
     @EmbeddedId
     private AssetTagPK assetId;
 

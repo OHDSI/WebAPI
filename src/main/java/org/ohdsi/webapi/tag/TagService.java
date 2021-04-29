@@ -1,30 +1,38 @@
 package org.ohdsi.webapi.tag;
 
-import org.apache.commons.lang3.StringUtils;
+import org.glassfish.jersey.internal.util.Producer;
+import org.ohdsi.webapi.cache.CacheService;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.tag.domain.Tag;
-import org.ohdsi.webapi.tag.domain.TagAssetType;
 import org.ohdsi.webapi.tag.domain.TagInfo;
 import org.ohdsi.webapi.tag.dto.TagDTO;
-import org.ohdsi.webapi.tag.dto.TagInfoDTO;
 import org.ohdsi.webapi.tag.repository.TagRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class TagService extends AbstractDaoService {
+    private static final Logger logger = LoggerFactory.getLogger(CacheService.class);
     private final TagRepository tagRepository;
     private final EntityManager entityManager;
     private final ConversionService conversionService;
+
+    private final ArrayList<Producer<List<TagInfo>>> infoProducers;
 
     @Autowired
     public TagService(
@@ -34,19 +42,35 @@ public class TagService extends AbstractDaoService {
         this.tagRepository = tagRepository;
         this.entityManager = entityManager;
         this.conversionService = conversionService;
+
+        this.infoProducers = new ArrayList<>();
+        this.infoProducers.add(tagRepository::findCohortTagInfo);
+        this.infoProducers.add(tagRepository::findCcTagInfo);
+        this.infoProducers.add(tagRepository::findConceptSetTagInfo);
+        this.infoProducers.add(tagRepository::findIrTagInfo);
+        this.infoProducers.add(tagRepository::findPathwayTagInfo);
     }
 
-    public TagDTO createFromDTO(TagDTO dto) {
+    public TagDTO create(TagDTO dto) {
         Tag tag = conversionService.convert(dto, Tag.class);
         Tag saved = create(tag);
         return conversionService.convert(saved, TagDTO.class);
     }
 
     public Tag create(Tag tag) {
+        List<Integer> groupIds = tag.getGroups().stream()
+                .map(Tag::getId)
+                .collect(Collectors.toList());
+        List<Tag> groups = findByIdIn(groupIds);
+        tag.setGroups(groups);
         tag.setCreatedBy(getCurrentUser());
         tag.setCreatedDate(new Date());
 
         return save(tag);
+    }
+
+    public Tag getById(Integer id) {
+        return tagRepository.findOne(id);
     }
 
     public TagDTO getDTOById(Integer id) {
@@ -54,53 +78,39 @@ public class TagService extends AbstractDaoService {
         return conversionService.convert(tag, TagDTO.class);
     }
 
-    public Tag getById(Integer id) {
-        return tagRepository.findOne(id);
-    }
-
-    public List<TagInfoDTO> listInfoDTO(TagAssetType assetType, String namePart) {
-        return listInfo(assetType, namePart).stream()
-                .map(tag -> conversionService.convert(tag, TagInfoDTO.class))
+    public List<TagDTO> listInfoDTO(String namePart) {
+        this.refreshTagStatistics();
+        return listInfo(namePart).stream()
+                .map(tag -> conversionService.convert(tag, TagDTO.class))
                 .collect(Collectors.toList());
     }
 
-    public List<TagInfo> listInfo(TagAssetType assetType, String namePart) {
-        List<TagInfo> tagInfos = new ArrayList<>();
-        switch (assetType) {
-            case CONCEPT_SET:
-                break;
-            case COHORT: {
-                tagInfos = tagRepository.findAllCohortTagsByNameInterface(namePart);
-                break;
-            }
-            case COHORT_CHARACTERIZATION:
-                break;
-            case INCIDENT_RATE:
-                break;
-            case PATHWAY:
-                break;
-            default: {
-                throw new IllegalArgumentException("unknown asset type");
-            }
-        }
-        tagInfos.forEach(t -> System.out.println(t.getTag().getName() + "--" + t.getTagCount()));
-        return tagInfos;
+    public List<Tag> listInfo(String namePart) {
+        return tagRepository.findAllTags(namePart);
     }
 
-//	@Override
-//	public PathwayAnalysisEntity update(PathwayAnalysisEntity forUpdate) {
-//
-//		PathwayAnalysisEntity existing = getById(forUpdate.getId());
-//
-//		copyProps(forUpdate, existing);
-//		updateCohorts(existing, existing.getTargetCohorts(), forUpdate.getTargetCohorts());
-//		updateCohorts(existing, existing.getEventCohorts(), forUpdate.getEventCohorts());
-//
-//		existing.setModifiedBy(getCurrentUser());
-//		existing.setModifiedDate(new Date());
-//
-//		return save(existing);
-//	}
+    public List<Tag> findByIdIn(List<Integer> ids) {
+        return tagRepository.findByIdIn(ids);
+    }
+
+    public TagDTO update(Integer id, TagDTO entity) {
+        Tag existing = tagRepository.findOne(id);
+        Tag toUpdate = this.conversionService.convert(entity, Tag.class);
+
+        List<Integer> groupIds = toUpdate.getGroups().stream()
+                .map(Tag::getId)
+                .collect(Collectors.toList());
+        List<Tag> groups = findByIdIn(groupIds);
+        toUpdate.setGroups(groups);
+
+        toUpdate.setCreatedBy(existing.getCreatedBy());
+        toUpdate.setCreatedDate(existing.getCreatedDate());
+        toUpdate.setModifiedBy(getCurrentUser());
+        toUpdate.setModifiedDate(new Date());
+
+        Tag saved = save(toUpdate);
+        return conversionService.convert(saved, TagDTO.class);
+    }
 
     public void delete(Integer id) {
         tagRepository.delete(id);
@@ -110,5 +120,46 @@ public class TagService extends AbstractDaoService {
         tag = tagRepository.saveAndFlush(tag);
         entityManager.refresh(tag);
         return tagRepository.findOne(tag.getId());
+    }
+
+    @Transactional
+    @Scheduled(fixedDelayString = "${tag.refreshStat.period}")
+    public void refreshTagStatistics() {
+        logger.info("Starting tags statistics refreshing");
+        try {
+            // Getting tag statistics in one query with multiple join clauses
+            // will take significant amount of time
+            // So we'll get this information for each asset in series
+            Map<Integer, TagDTO> infoMap = new HashMap<>();
+            this.infoProducers.forEach(producer -> processTagInfo(producer, infoMap));
+
+            List<Tag> tags = tagRepository.findAll();
+            tags = tags.stream()
+                    .map(tag -> {
+                        TagDTO info = infoMap.get(tag.getId());
+                        tag.setCount(info.getCount());
+                        return tag;
+                    })
+                    .collect(Collectors.toList());
+            tagRepository.save(tags);
+        } catch (Exception e) {
+            logger.error("Cannot refresh tags statistics");
+        }
+        logger.info("Finishing tags statistics refreshing");
+    }
+
+    private void processTagInfo(Producer<List<TagInfo>> infoProducer,
+                                Map<Integer, TagDTO> infoMap) {
+        List<TagInfo> tagInfos = infoProducer.call();
+        tagInfos.forEach(info -> {
+            int id = info.getTag().getId();
+            TagDTO dto = infoMap.get(id);
+            if (dto == null) {
+                infoMap.put(id, new TagDTO());
+                dto = infoMap.get(id);
+            }
+            int count = dto.getCount() + info.getCount();
+            dto.setCount(count);
+        });
     }
 }

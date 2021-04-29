@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.tables.TablesExtension;
-import org.commonmark.node.*;
+import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.ohdsi.analysis.Utils;
@@ -30,10 +30,10 @@ import org.ohdsi.webapi.cohortdefinition.InclusionRuleReport;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortGenerationInfoDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
-import org.ohdsi.webapi.cohortsample.CleanupCohortSamplesTasklet;
-import org.ohdsi.webapi.cohortsample.CohortSamplingService;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
 import org.ohdsi.webapi.cohortdefinition.event.CohortDefinitionChangedEvent;
+import org.ohdsi.webapi.cohortsample.CleanupCohortSamplesTasklet;
+import org.ohdsi.webapi.cohortsample.CohortSamplingService;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.common.sensitiveinfo.CohortGenerationSensitiveInfoService;
@@ -47,13 +47,12 @@ import org.ohdsi.webapi.shiro.management.datasource.SourceIdAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.tag.TagService;
 import org.ohdsi.webapi.tag.domain.Tag;
-import org.ohdsi.webapi.tag.domain.TagAssetType;
-import org.ohdsi.webapi.tag.domain.TagInfo;
-import org.ohdsi.webapi.tag.dto.TagInfoDTO;
-import org.ohdsi.webapi.util.*;
 import org.ohdsi.webapi.util.ExceptionUtils;
+import org.ohdsi.webapi.util.ExportUtil;
+import org.ohdsi.webapi.util.HttpUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -71,6 +70,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import springfox.documentation.service.Tags;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -91,6 +91,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -108,12 +109,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.ws.rs.core.Response.ResponseBuilder;
 
 import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
-import org.ohdsi.webapi.source.SourceService;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
@@ -369,7 +368,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Transactional
 	public List<CohortMetadataDTO> getCohortDefinitionList() {
-		List<TagInfoDTO> count = tagService.listInfoDTO(TagAssetType.COHORT, "");
+		tagService.listInfoDTO("");
 		List<CohortDefinition> definitions = cohortDefinitionRepository.list();
 
 		return definitions.stream()
@@ -751,5 +750,33 @@ public class CohortDefinitionService extends AbstractDaoService {
 			res = Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE);
 		}
 		return res.build();
+	}
+
+	@POST
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/{id}/tag/")
+	@Transactional
+	public void assignTag(@PathParam("id") final int id, final int tagId) {
+		CohortDefinition def = cohortDefinitionRepository.findOne(id);
+		if (Objects.nonNull(def)) {
+			Tag tag = tagService.getById(tagId);
+			if (Objects.nonNull(tag)) {
+				def.getTags().add(tag);
+			}
+		}
+	}
+
+	@DELETE
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/{id}/tag/{tagId}")
+	@Transactional
+	public void unassignTag(@PathParam("id") final int id, @PathParam("id") final int tagId) {
+		CohortDefinition def = cohortDefinitionRepository.findOne(id);
+		if (Objects.nonNull(def)) {
+			List<Tag> tags = def.getTags().stream()
+					.filter(t -> t.getId() != tagId)
+					.collect(Collectors.toList());
+			def.setTags(tags);
+		}
 	}
 }

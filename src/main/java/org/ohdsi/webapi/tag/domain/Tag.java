@@ -3,8 +3,10 @@ package org.ohdsi.webapi.tag.domain;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.webapi.model.CommonEntity;
+import org.ohdsi.webapi.tag.converter.TagTypeConverter;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -15,7 +17,6 @@ import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 @Entity(name = "Tag")
 @Table(name = "tags")
@@ -42,7 +43,15 @@ public class Tag extends CommonEntity<Integer> {
     private String name;
 
     @Column
+    @Convert(converter = TagTypeConverter.class)
     private TagType type;
+
+    @Column(name = "count")
+    private int count;
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public Integer getId() {
         return id;
@@ -74,6 +83,14 @@ public class Tag extends CommonEntity<Integer> {
 
     public void setGroups(List<Tag> groups) {
         this.groups = groups;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
     }
 
     @Override

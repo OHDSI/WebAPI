@@ -58,7 +58,7 @@ public class ConceptSet extends CommonEntityExt<Integer> implements Serializable
 
   @ManyToMany(targetEntity = Tag.class, fetch = FetchType.LAZY)
   @JoinTable(name = "concept_set_tags",
-          joinColumns = @JoinColumn(name = "concept_set_id", referencedColumnName = "concept_set_id"),
+          joinColumns = @JoinColumn(name = "asset_id", referencedColumnName = "concept_set_id"),
           inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
   private List<Tag> tags;
 

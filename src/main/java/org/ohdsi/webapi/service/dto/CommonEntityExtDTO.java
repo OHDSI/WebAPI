@@ -9,18 +9,19 @@ import org.ohdsi.webapi.tag.dto.TagDTO;
 import org.ohdsi.webapi.user.dto.UserDTO;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class CommonEntityExtDTO extends CommonEntityDTO{
   @JsonProperty
-  private Set<TagDTO> tags;
+  private List<TagDTO> tags;
 
-  public Set<TagDTO> getTags() {
+  public List<TagDTO> getTags() {
     return tags;
   }
 
-  public void setTags(Set<TagDTO> tags) {
+  public void setTags(List<TagDTO> tags) {
     this.tags = tags;
   }
 }

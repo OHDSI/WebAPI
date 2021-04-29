@@ -5,6 +5,7 @@ import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.tag.dto.TagDTO;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -13,12 +14,13 @@ public class TagToTagDTOConverter extends BaseCommonEntityToDTOConverter<Tag, Ta
     @Override
     protected void doConvert(Tag source, TagDTO target) {
         target.setId(source.getId());
-        Set<TagDTO> groups = source.getGroups().stream()
+        List<TagDTO> groups = source.getGroups().stream()
                 .map(t -> conversionService.convert(t, TagDTO.class))
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
         target.setGroups(groups);
         target.setName(source.getName());
         target.setType(source.getType());
+        target.setCount(source.getCount());
     }
 
     protected TagDTO createResultObject() {

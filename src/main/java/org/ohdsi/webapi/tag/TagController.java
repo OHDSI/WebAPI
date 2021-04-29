@@ -1,9 +1,7 @@
 package org.ohdsi.webapi.tag;
 
 import org.ohdsi.webapi.i18n.I18nService;
-import org.ohdsi.webapi.tag.domain.TagAssetType;
 import org.ohdsi.webapi.tag.dto.TagDTO;
-import org.ohdsi.webapi.tag.dto.TagInfoDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -11,6 +9,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -35,29 +34,23 @@ public class TagController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public TagDTO create(final TagDTO dto) {
-        return tagService.createFromDTO(dto);
+        return tagService.create(dto);
     }
 
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public List<TagInfoDTO> list(@QueryParam("assetType") String assetType,
-                                 @QueryParam("namePart") String namePart) {
-        return tagService.listInfoDTO(TagAssetType.fromName(assetType), namePart);
+    public List<TagDTO> list(@QueryParam("namePart") String namePart) {
+        return tagService.listInfoDTO(namePart);
     }
 
-//    @PUT
-//    @Path("/{id}")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    public TagDTO update(@PathParam("id") final Integer id, @RequestBody final TagDTO dto) {
-//
-//        PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
-//        pathwayAnalysis.setId(id);
-//        tagService.update(pathwayAnalysis);
-//        return reloadAndConvert(id);
-//    }
+    @PUT
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public TagDTO update(@PathParam("id") final Integer id, final TagDTO dto) {
+        return tagService.update(id, dto);
+    }
 
     @GET
     @Path("/{id}")

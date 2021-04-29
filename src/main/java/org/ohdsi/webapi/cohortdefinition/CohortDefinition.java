@@ -103,7 +103,7 @@ public class CohortDefinition extends CommonEntityExt<Integer> implements Serial
 
   @ManyToMany(targetEntity = Tag.class, fetch = FetchType.LAZY)
   @JoinTable(name = "cohort_tags",
-          joinColumns = @JoinColumn(name = "cohort_id", referencedColumnName = "id"),
+          joinColumns = @JoinColumn(name = "asset_id", referencedColumnName = "id"),
           inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
   private List<Tag> tags;
 

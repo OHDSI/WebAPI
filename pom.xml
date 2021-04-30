@@ -6,7 +6,7 @@
   <groupId>org.ohdsi</groupId>
   <artifactId>WebAPI</artifactId>
   <packaging>war</packaging>
-  <version>1.7</version>
+  <version>1.8</version>
   <name>WebAPI</name>
   <properties>
     <webapi.version>2.7.1</webapi.version>
@@ -236,11 +236,12 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
+        <version>3.8.0</version>
         <inherited>true</inherited>
         <configuration>
           <source>1.8</source>
           <target>1.8</target>
+          <release>8</release>
         </configuration>
       </plugin>
       <plugin>
@@ -289,14 +290,6 @@
         <groupId>com.qmino</groupId>
         <artifactId>miredot-plugin</artifactId>
         <version>2.1.2</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>restdoc</goal>
-            </goals>
-          </execution>
-        </executions>
         <configuration>
           <licence>cHJvamVjdHxvcmcub2hkc2kuV2ViQVBJfDIwMjAtMDMtMzF8dHJ1ZXwtMSNNQzBDRkNNQ2R2ZEhjbDg0Z2tONVI3bHlmQ2Y4SnNkYUFoVUFoMkdtOUVFdy9RelpLVzM1V2p6a2FsdzJZV009</licence>
           <restModel>
@@ -334,8 +327,16 @@
       <plugin>
         <groupId>com.lazerycode.jmeter</groupId>
         <artifactId>jmeter-maven-plugin</artifactId>
-        <version>2.7.0</version>
+        <version>3.3.0</version>
         <executions>
+          <!-- Generate JMeter configuration -->
+          <execution>
+            <id>configuration</id>
+            <goals>
+              <goal>configure</goal>
+            </goals>
+          </execution>
+          <!-- Run JMeter tests -->
           <execution>
             <id>jmeter-tests</id>
             <phase>verify</phase>
@@ -343,8 +344,17 @@
               <goal>jmeter</goal>
             </goals>
           </execution>
+          <!-- Fail build on errors in test -->
+          <execution>
+            <id>check-results</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>results</goal>
+            </goals>
+          </execution>
         </executions>
         <configuration>
+          <generateReports>true</generateReports>
           <propertiesUser>
             <cas.url>${CENTRAL_CAS_URL}</cas.url>
             <cas.central.callback.url>${CENTRAL_WEBAPI_URL}/user/login/cas</cas.central.callback.url>
@@ -353,6 +363,8 @@
             <webapi.local.url>${REMOTE_WEBAPI_URL}</webapi.local.url>
             <webapi.central.user>${CENTRAL_WEBAPI_USERNAME}</webapi.central.user>
             <webapi.central.password>${CENTRAL_WEBAPI_PASSWORD}</webapi.central.password>
+            <webapi.sourcekey>${WEBAPI_SOURCEKEY}</webapi.sourcekey>
+            <storage.central.url>${CENTRAL_STORAGE_URL}</storage.central.url>
           </propertiesUser>
         </configuration>
       </plugin>

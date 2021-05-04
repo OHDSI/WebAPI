@@ -1193,6 +1193,9 @@
     "designs": {
       "myDesigns": "我的设计",
       "otherDesigns": "其他设计"
+    },
+    "tags": {
+      "untagged": "Untagged"
     }
   },
   "columns": {

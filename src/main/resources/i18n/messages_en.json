@@ -1129,6 +1129,9 @@
     "checks": {
       "runningDiagnostics": "Running Diagnostics",
       "fixIt": "Fix It"
+    },
+    "tags": {
+      "title": "Assign Tags"
     }
   },
   "facets": {
@@ -1193,6 +1196,9 @@
     "designs": {
       "myDesigns": "My designs",
       "otherDesigns": "Other designs"
+    },
+    "tags": {
+      "untagged": "Untagged"
     }
   },
   "columns": {

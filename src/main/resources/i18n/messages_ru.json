@@ -1193,6 +1193,9 @@
     "designs": {
       "myDesigns": "Мои дизайны",
       "otherDesigns": "Прочие дизайны"
+    },
+    "tags": {
+      "untagged": "Без ярлыка"
     }
   },
   "columns": {

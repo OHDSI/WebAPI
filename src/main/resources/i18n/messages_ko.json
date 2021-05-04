@@ -1193,6 +1193,9 @@
     "designs": {
       "myDesigns": "나의 설계",
       "otherDesigns": "다른 설계"
+    },
+    "tags": {
+      "untagged": "Untagged"
     }
   },
   "columns": {

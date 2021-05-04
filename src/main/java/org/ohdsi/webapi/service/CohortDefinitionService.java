@@ -770,7 +770,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/tag/{tagId}")
 	@Transactional
-	public void unassignTag(@PathParam("id") final int id, @PathParam("id") final int tagId) {
+	public void unassignTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
 		CohortDefinition def = cohortDefinitionRepository.findOne(id);
 		if (Objects.nonNull(def)) {
 			List<Tag> tags = def.getTags().stream()

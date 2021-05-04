@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.tag;
 
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.i18n.I18nService;
 import org.ohdsi.webapi.tag.dto.TagDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Path("/tag")
@@ -41,6 +44,9 @@ public class TagController {
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     public List<TagDTO> list(@QueryParam("namePart") String namePart) {
+        if (StringUtils.isBlank(namePart)) {
+            return Collections.emptyList();
+        }
         return tagService.listInfoDTO(namePart);
     }
 

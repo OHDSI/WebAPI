@@ -4,9 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.ohdsi.webapi.service.dto.CommonEntityDTO;
+import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.tag.domain.TagType;
 
+import javax.persistence.Column;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -16,7 +19,7 @@ public class TagDTO extends CommonEntityDTO {
     int id;
 
     @JsonProperty
-    private List<TagDTO> groups;
+    private Set<TagDTO> groups;
 
     @JsonProperty
     private String name;
@@ -27,6 +30,15 @@ public class TagDTO extends CommonEntityDTO {
     @JsonProperty
     private int count;
 
+    @JsonProperty
+    private Boolean showGroup;
+
+    @JsonProperty
+    private String icon;
+
+    @JsonProperty
+    private String color;
+
     public Integer getId() {
         return id;
     }
@@ -35,11 +47,11 @@ public class TagDTO extends CommonEntityDTO {
         this.id = id;
     }
 
-    public List<TagDTO> getGroups() {
+    public Set<TagDTO> getGroups() {
         return groups;
     }
 
-    public void setGroups(List<TagDTO> groups) {
+    public void setGroups(Set<TagDTO> groups) {
         this.groups = groups;
     }
 
@@ -69,5 +81,42 @@ public class TagDTO extends CommonEntityDTO {
 
     public void setCount(int count) {
         this.count = count;
+    }
+
+    public Boolean getShowGroup() {
+        return showGroup;
+    }
+
+    public void setShowGroup(Boolean showGroup) {
+        this.showGroup = showGroup;
+    }
+
+    public String getIcon() {
+        return icon;
+    }
+
+    public void setIcon(String icon) {
+        this.icon = icon;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TagDTO tag = (TagDTO) o;
+        return name.equals(tag.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name);
     }
 }

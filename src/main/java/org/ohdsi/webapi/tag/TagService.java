@@ -19,9 +19,10 @@ import javax.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -62,7 +63,7 @@ public class TagService extends AbstractDaoService {
                 .map(Tag::getId)
                 .collect(Collectors.toList());
         List<Tag> groups = findByIdIn(groupIds);
-        tag.setGroups(groups);
+        tag.setGroups(new HashSet<>(groups));
         tag.setCreatedBy(getCurrentUser());
         tag.setCreatedDate(new Date());
 
@@ -79,14 +80,23 @@ public class TagService extends AbstractDaoService {
     }
 
     public List<TagDTO> listInfoDTO(String namePart) {
-        this.refreshTagStatistics();
         return listInfo(namePart).stream()
+                .map(tag -> conversionService.convert(tag, TagDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    public List<TagDTO> listInfoDTO() {
+        return listInfo().stream()
                 .map(tag -> conversionService.convert(tag, TagDTO.class))
                 .collect(Collectors.toList());
     }
 
     public List<Tag> listInfo(String namePart) {
         return tagRepository.findAllTags(namePart);
+    }
+
+    public List<Tag> listInfo() {
+        return tagRepository.findAll();
     }
 
     public List<Tag> findByIdIn(List<Integer> ids) {
@@ -101,7 +111,7 @@ public class TagService extends AbstractDaoService {
                 .map(Tag::getId)
                 .collect(Collectors.toList());
         List<Tag> groups = findByIdIn(groupIds);
-        toUpdate.setGroups(groups);
+        toUpdate.setGroups(new HashSet<>(groups));
 
         toUpdate.setCreatedBy(existing.getCreatedBy());
         toUpdate.setCreatedDate(existing.getCreatedDate());
@@ -137,7 +147,9 @@ public class TagService extends AbstractDaoService {
             tags = tags.stream()
                     .map(tag -> {
                         TagDTO info = infoMap.get(tag.getId());
-                        tag.setCount(info.getCount());
+                        if (Objects.nonNull(info)) {
+                            tag.setCount(info.getCount());
+                        }
                         return tag;
                     })
                     .collect(Collectors.toList());
@@ -154,7 +166,7 @@ public class TagService extends AbstractDaoService {
         tagInfos.forEach(info -> {
             int id = info.getTag().getId();
             TagDTO dto = infoMap.get(id);
-            if (dto == null) {
+            if (Objects.isNull(dto)) {
                 infoMap.put(id, new TagDTO());
                 dto = infoMap.get(id);
             }

@@ -8,7 +8,7 @@ import java.util.Set;
 
 @MappedSuperclass
 public abstract class CommonEntityExt<T extends Number> extends CommonEntity<T> {
-    public abstract List<Tag> getTags();
+    public abstract Set<Tag> getTags();
 
-    public abstract void setTags(List<Tag> tags);
+    public abstract void setTags(Set<Tag> tags);
 }

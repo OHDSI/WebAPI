@@ -105,7 +105,7 @@ public class CohortDefinition extends CommonEntityExt<Integer> implements Serial
   @JoinTable(name = "cohort_tags",
           joinColumns = @JoinColumn(name = "asset_id", referencedColumnName = "id"),
           inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
-  private List<Tag> tags;
+  private Set<Tag> tags;
 
   @Override
   public Integer getId() {
@@ -201,12 +201,12 @@ public class CohortDefinition extends CommonEntityExt<Integer> implements Serial
   }
 
   @Override
-  public List<Tag> getTags() {
+  public Set<Tag> getTags() {
     return tags;
   }
 
   @Override
-  public void setTags(List<Tag> tags) {
+  public void setTags(Set<Tag> tags) {
     this.tags = tags;
   }
 }

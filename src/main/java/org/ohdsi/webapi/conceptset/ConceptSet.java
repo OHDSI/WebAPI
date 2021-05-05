@@ -60,7 +60,7 @@ public class ConceptSet extends CommonEntityExt<Integer> implements Serializable
   @JoinTable(name = "concept_set_tags",
           joinColumns = @JoinColumn(name = "asset_id", referencedColumnName = "concept_set_id"),
           inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
-  private List<Tag> tags;
+  private Set<Tag> tags;
 
   @Override
   public Integer getId() {
@@ -79,11 +79,11 @@ public class ConceptSet extends CommonEntityExt<Integer> implements Serializable
     this.name = name;
   }
 
-  public List<Tag> getTags() {
+  public Set<Tag> getTags() {
     return tags;
   }
 
-  public void setTags(List<Tag> tags) {
+  public void setTags(Set<Tag> tags) {
     this.tags = tags;
   }
 }

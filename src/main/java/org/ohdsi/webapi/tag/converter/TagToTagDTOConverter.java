@@ -14,13 +14,16 @@ public class TagToTagDTOConverter extends BaseCommonEntityToDTOConverter<Tag, Ta
     @Override
     protected void doConvert(Tag source, TagDTO target) {
         target.setId(source.getId());
-        List<TagDTO> groups = source.getGroups().stream()
+        Set<TagDTO> groups = source.getGroups().stream()
                 .map(t -> conversionService.convert(t, TagDTO.class))
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
         target.setGroups(groups);
         target.setName(source.getName());
         target.setType(source.getType());
         target.setCount(source.getCount());
+        target.setColor(source.getColor());
+        target.setIcon(source.getIcon());
+        target.setShowGroup(source.getShowGroup());
     }
 
     protected TagDTO createResultObject() {

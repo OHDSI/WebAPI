@@ -17,6 +17,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity(name = "Tag")
 @Table(name = "tags")
@@ -37,7 +38,7 @@ public class Tag extends CommonEntity<Integer> {
     @JoinTable(name = "tag_groups",
             joinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "group_id", referencedColumnName = "id"))
-    private List<Tag> groups;
+    private Set<Tag> groups;
 
     @Column
     private String name;
@@ -48,6 +49,15 @@ public class Tag extends CommonEntity<Integer> {
 
     @Column(name = "count")
     private int count;
+
+    @Column(name = "show_group")
+    private Boolean showGroup;
+
+    @Column(name = "icon")
+    private String icon;
+
+    @Column(name = "color")
+    private String color;
 
     public void setId(int id) {
         this.id = id;
@@ -77,11 +87,11 @@ public class Tag extends CommonEntity<Integer> {
         this.type = type;
     }
 
-    public List<Tag> getGroups() {
+    public Set<Tag> getGroups() {
         return groups;
     }
 
-    public void setGroups(List<Tag> groups) {
+    public void setGroups(Set<Tag> groups) {
         this.groups = groups;
     }
 
@@ -91,6 +101,30 @@ public class Tag extends CommonEntity<Integer> {
 
     public void setCount(int count) {
         this.count = count;
+    }
+
+    public Boolean getShowGroup() {
+        return showGroup;
+    }
+
+    public void setShowGroup(Boolean showGroup) {
+        this.showGroup = showGroup;
+    }
+
+    public String getIcon() {
+        return icon;
+    }
+
+    public void setIcon(String icon) {
+        this.icon = icon;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
     }
 
     @Override

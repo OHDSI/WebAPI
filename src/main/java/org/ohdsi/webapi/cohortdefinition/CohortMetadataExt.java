@@ -7,5 +7,5 @@ import java.util.List;
 import java.util.Set;
 
 public interface CohortMetadataExt extends CohortMetadata {
-    List<TagDTO> getTags();
+    Set<TagDTO> getTags();
 }

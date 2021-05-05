@@ -38,8 +38,8 @@ public abstract class BaseCcToCcDTOConverter<T extends BaseCcDTO> extends BaseCc
     cohortCharacterizationDTO.setStrataConceptSets(source.getStrataConceptSets());
 
     if (Objects.nonNull(source.getTags())) {
-      List<TagDTO> tags = source.getTags().stream()
-              .map(tag -> conversionService.convert(tag, TagDTO.class)).collect(Collectors.toList());
+      Set<TagDTO> tags = source.getTags().stream()
+              .map(tag -> conversionService.convert(tag, TagDTO.class)).collect(Collectors.toSet());
       cohortCharacterizationDTO.setTags(tags);
     }
 

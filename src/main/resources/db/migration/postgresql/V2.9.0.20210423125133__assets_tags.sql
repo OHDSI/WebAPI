@@ -1,18 +1,22 @@
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
-VALUES
-(NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'tag:get', 'List tags'),
-(NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'tag:post', 'Create tag'),
-(NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'tag:*:put', 'Update tag'),
-(NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'tag:*:get', 'Get tag'),
-(NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'tag:*:delete', 'Delete tag'),
-(NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohortdefinition:*:tag:post', 'Assign tag to cohort definition'),
-(NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohortdefinition:*:tag:*:delete', 'Unassign tag from cohort definition');
+VALUES (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'tag:get', 'List tags'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'tag:search:get', 'Search tags by name'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'tag:post', 'Create tag'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'tag:*:put', 'Update tag'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'tag:*:get', 'Get tag'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'tag:*:delete', 'Delete tag'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohortdefinition:*:tag:post',
+        'Assign tag to cohort definition'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohortdefinition:*:tag:*:delete',
+        'Unassign tag from cohort definition');
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
 SELECT sr.id, sp.id
-FROM ${ohdsiSchema}.sec_permission SP, ${ohdsiSchema}.sec_role sr
+FROM ${ohdsiSchema}.sec_permission SP,
+     ${ohdsiSchema}.sec_role sr
 WHERE sp.value IN (
                    'tag:get',
+                   'tag:search:get',
                    'tag:post',
                    'tag:*:put',
                    'tag:*:get',
@@ -33,6 +37,9 @@ CREATE TABLE ${ohdsiSchema}.tags
     name           VARCHAR                  NOT NULL,
     type           int4                     NOT NULL DEFAULT 0,
     count          int4                     NOT NULL DEFAULT 0,
+    show_group     bool                     NULL,
+    icon           varchar                  NULL,
+    color          varchar                  NULL,
     created_by_id  INTEGER,
     created_date   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (now()),
     modified_by_id INTEGER,

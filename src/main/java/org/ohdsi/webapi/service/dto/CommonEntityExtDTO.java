@@ -15,13 +15,13 @@ import java.util.Set;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class CommonEntityExtDTO extends CommonEntityDTO{
   @JsonProperty
-  private List<TagDTO> tags;
+  private Set<TagDTO> tags;
 
-  public List<TagDTO> getTags() {
+  public Set<TagDTO> getTags() {
     return tags;
   }
 
-  public void setTags(List<TagDTO> tags) {
+  public void setTags(Set<TagDTO> tags) {
     this.tags = tags;
   }
 }

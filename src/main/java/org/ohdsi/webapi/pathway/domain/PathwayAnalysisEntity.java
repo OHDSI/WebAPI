@@ -64,7 +64,7 @@ public class PathwayAnalysisEntity extends CommonEntityExt<Integer> {
     @JoinTable(name = "pathway_tags",
             joinColumns = @JoinColumn(name = "asset_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
-    private List<Tag> tags;
+    private Set<Tag> tags;
 
     @Override
     public Integer getId() {
@@ -166,12 +166,12 @@ public class PathwayAnalysisEntity extends CommonEntityExt<Integer> {
     }
 
     @Override
-    public List<Tag> getTags() {
+    public Set<Tag> getTags() {
         return tags;
     }
 
     @Override
-    public void setTags(List<Tag> tags) {
+    public void setTags(Set<Tag> tags) {
         this.tags = tags;
     }
 }

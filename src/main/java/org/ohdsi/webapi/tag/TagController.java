@@ -41,13 +41,20 @@ public class TagController {
     }
 
     @GET
-    @Path("/")
+    @Path("/search")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<TagDTO> list(@QueryParam("namePart") String namePart) {
+    public List<TagDTO> search(@QueryParam("namePart") String namePart) {
         if (StringUtils.isBlank(namePart)) {
             return Collections.emptyList();
         }
         return tagService.listInfoDTO(namePart);
+    }
+
+    @GET
+    @Path("/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<TagDTO> list() {
+        return tagService.listInfoDTO();
     }
 
     @PUT

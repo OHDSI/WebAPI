@@ -45,7 +45,7 @@ public class MandatoryTagValidator<T extends Collection<? extends TagDTO>> exten
         return NULL_OR_EMPTY;
     }
 
-    private void findParentGroup(List<Tag> groups, Set<String> groupNames) {
+    private void findParentGroup(Set<Tag> groups, Set<String> groupNames) {
         groups.forEach(g -> {
             groupNames.add(g.getName());
             findParentGroup(g.getGroups(), groupNames);

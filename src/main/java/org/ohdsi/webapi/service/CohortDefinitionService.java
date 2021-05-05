@@ -773,9 +773,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 	public void unassignTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
 		CohortDefinition def = cohortDefinitionRepository.findOne(id);
 		if (Objects.nonNull(def)) {
-			List<Tag> tags = def.getTags().stream()
+			Set<Tag> tags = def.getTags().stream()
 					.filter(t -> t.getId() != tagId)
-					.collect(Collectors.toList());
+					.collect(Collectors.toSet());
 			def.setTags(tags);
 		}
 	}

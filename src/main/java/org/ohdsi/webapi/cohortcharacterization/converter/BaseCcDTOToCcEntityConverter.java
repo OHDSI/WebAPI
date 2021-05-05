@@ -60,8 +60,8 @@ public abstract class BaseCcDTOToCcEntityConverter<T extends BaseCcDTO<? extends
     cohortCharacterization.setConceptSetEntity(conceptSetEntity);
 
     if (Objects.nonNull(source.getTags())) {
-      List<Tag> tags = source.getTags().stream()
-              .map(tag -> conversionService.convert(tag, Tag.class)).collect(Collectors.toList());
+      Set<Tag> tags = source.getTags().stream()
+              .map(tag -> conversionService.convert(tag, Tag.class)).collect(Collectors.toSet());
       cohortCharacterization.setTags(tags);
     }
 

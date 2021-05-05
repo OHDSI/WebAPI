@@ -76,7 +76,7 @@ public class CohortCharacterizationEntity extends CommonEntityExt<Long> implemen
     @JoinTable(name = "cohort_characterization_tags",
             joinColumns = @JoinColumn(name = "asset_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
-    private List<Tag> tags;
+    private Set<Tag> tags;
     
     @Override
     public Set<CohortDefinition> getCohorts() {
@@ -172,11 +172,11 @@ public class CohortCharacterizationEntity extends CommonEntityExt<Long> implemen
         this.hashCode = hashCode;
     }
 
-    public List<Tag> getTags() {
+    public Set<Tag> getTags() {
         return tags;
     }
 
-    public void setTags(List<Tag> tags) {
+    public void setTags(Set<Tag> tags) {
         this.tags = tags;
     }
 }

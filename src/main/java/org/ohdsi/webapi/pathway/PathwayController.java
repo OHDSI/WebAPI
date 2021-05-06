@@ -8,6 +8,7 @@ import org.ohdsi.webapi.check.checker.pathway.PathwayChecker;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
+import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.i18n.I18nService;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnalysisConverter;
@@ -18,6 +19,8 @@ import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.tag.TagService;
+import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +37,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Path("/pathway-analysis")
@@ -48,9 +52,10 @@ public class PathwayController {
     private final I18nService i18nService;
     private PathwayChecker checker;
     private PermissionService permissionService;
+    private final TagService tagService;
 
     @Autowired
-    public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService, PathwayChecker checker, PermissionService permissionService, I18nService i18nService) {
+    public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService, PathwayChecker checker, PermissionService permissionService, I18nService i18nService, TagService tagService) {
 
         this.conversionService = conversionService;
         this.converterUtils = converterUtils;
@@ -60,6 +65,7 @@ public class PathwayController {
         this.i18nService = i18nService;
         this.checker = checker;
         this.permissionService = permissionService;
+        this.tagService = tagService;
     }
 
     @POST
@@ -307,5 +313,33 @@ public class PathwayController {
     public CheckResult runDiagnostics(PathwayAnalysisDTO pathwayAnalysisDTO){
 
         return new CheckResult(checker.check(pathwayAnalysisDTO));
+    }
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/tag/")
+    @Transactional
+    public void assignTag(@PathParam("id") final int id, final int tagId) {
+        PathwayAnalysisEntity pathwayAnalysis = pathwayService.getById(id);
+        if (Objects.nonNull(pathwayAnalysis)) {
+            Tag tag = tagService.getById(tagId);
+            if (Objects.nonNull(tag)) {
+                pathwayAnalysis.getTags().add(tag);
+            }
+        }
+    }
+
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/tag/{tagId}")
+    @Transactional
+    public void unassignTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
+        PathwayAnalysisEntity pathwayAnalysis = pathwayService.getById(id);
+        if (Objects.nonNull(pathwayAnalysis)) {
+            Set<Tag> tags = pathwayAnalysis.getTags().stream()
+                    .filter(t -> t.getId() != tagId)
+                    .collect(Collectors.toSet());
+            pathwayAnalysis.setTags(tags);
+        }
     }
 }

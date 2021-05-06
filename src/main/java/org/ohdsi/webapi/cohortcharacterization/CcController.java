@@ -33,6 +33,8 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
+import org.ohdsi.webapi.tag.TagService;
+import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.HttpUtils;
@@ -65,6 +67,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -82,6 +85,7 @@ public class CcController {
     private final SourceService sourceService;
     private CharacterizationChecker checker;
     private PermissionService permissionService;
+    private final TagService tagService;
 
     public CcController(
             final CcService service,
@@ -90,7 +94,8 @@ public class CcController {
             final ConverterUtils converterUtils,
             CommonGenerationSensitiveInfoService sensitiveInfoService,
             SourceService sourceService, CharacterizationChecker checker,
-            PermissionService permissionService) {
+            PermissionService permissionService,
+            TagService tagService) {
         this.service = service;
         this.feAnalysisService = feAnalysisService;
         this.conversionService = conversionService;
@@ -99,6 +104,7 @@ public class CcController {
         this.sourceService = sourceService;
         this.checker = checker;
         this.permissionService = permissionService;
+        this.tagService = tagService;
         FeatureExtraction.init(null);
     }
 
@@ -414,6 +420,34 @@ public class CcController {
                 .type(MediaType.APPLICATION_OCTET_STREAM)
                 .header("Content-Disposition", String.format("attachment; filename=\"cohort_characterization_study_%d_export.zip\"", analysisId))
                 .build();
+    }
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/tag/")
+    @javax.transaction.Transactional
+    public void assignTag(@PathParam("id") final long id, final int tagId) {
+        CohortCharacterizationEntity entity = service.findById(id);
+        if (Objects.nonNull(entity)) {
+            Tag tag = tagService.getById(tagId);
+            if (Objects.nonNull(tag)) {
+                entity.getTags().add(tag);
+            }
+        }
+    }
+
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/tag/{tagId}")
+    @javax.transaction.Transactional
+    public void unassignTag(@PathParam("id") final long id, @PathParam("tagId") final int tagId) {
+        CohortCharacterizationEntity entity = service.findById(id);
+        if (Objects.nonNull(entity)) {
+            Set<Tag> tags = entity.getTags().stream()
+                    .filter(t -> t.getId() != tagId)
+                    .collect(Collectors.toSet());
+            entity.setTags(tags);
+        }
     }
 
     private void convertPresetAnalysesToLocal(List<? extends CcResult> ccResults) {

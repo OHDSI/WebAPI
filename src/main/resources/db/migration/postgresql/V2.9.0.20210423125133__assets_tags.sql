@@ -8,6 +8,22 @@ VALUES (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'tag:get', 'List tags')
        (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohortdefinition:*:tag:post',
         'Assign tag to cohort definition'),
        (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohortdefinition:*:tag:*:delete',
+        'Unassign tag from cohort definition'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'conceptset:*:tag:post',
+        'Assign tag to cohort definition'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'conceptset:*:tag:*:delete',
+        'Unassign tag from cohort definition'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterization:*:tag:post',
+        'Assign tag to cohort definition'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterization:*:tag:*:delete',
+        'Unassign tag from cohort definition'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'ir:*:tag:post',
+        'Assign tag to cohort definition'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'ir:*:tag:*:delete',
+        'Unassign tag from cohort definition'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'pathway-analysis:*:tag:post',
+        'Assign tag to cohort definition'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'pathway-analysis:*:tag:*:delete',
         'Unassign tag from cohort definition');
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
@@ -22,7 +38,15 @@ WHERE sp.value IN (
                    'tag:*:get',
                    'tag:*:delete',
                    'cohortdefinition:*:tag:post',
-                   'cohortdefinition:*:tag:*:delete')
+                   'cohortdefinition:*:tag:*:delete',
+                   'conceptset:*:tag:post',
+                   'conceptset:*:tag:*:delete',
+                   'cohort-characterization:*:tag:post',
+                   'cohort-characterization:*:tag:*:delete',
+                   'ir:*:tag:post',
+                   'ir:*:tag:*:delete',
+                   'pathway-analysis:*:tag:post',
+                   'pathway-analysis:*:tag:*:delete')
   AND sr.name IN ('Atlas users');
 
 CREATE SEQUENCE ${ohdsiSchema}.tags_seq;

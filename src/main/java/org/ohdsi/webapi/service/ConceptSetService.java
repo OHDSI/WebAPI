@@ -27,6 +27,7 @@ import javax.ws.rs.core.Response;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
@@ -41,6 +42,8 @@ import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.source.SourceService;
+import org.ohdsi.webapi.tag.TagService;
+import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
@@ -81,6 +84,9 @@ public class ConceptSetService extends AbstractDaoService {
 
     @Autowired
     private PermissionService permissionService;
+
+    @Autowired
+    private TagService tagService;
 
     public static final String COPY_NAME = "copyName";
 
@@ -381,4 +387,32 @@ public class ConceptSetService extends AbstractDaoService {
           throw e;
       }
   }
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/tag/")
+    @Transactional
+    public void assignTag(@PathParam("id") final int id, final int tagId) {
+        ConceptSet conceptSet = getConceptSetRepository().findById(id);
+        if (Objects.nonNull(conceptSet)) {
+            Tag tag = tagService.getById(tagId);
+            if (Objects.nonNull(tag)) {
+                conceptSet.getTags().add(tag);
+            }
+        }
+    }
+
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/tag/{tagId}")
+    @Transactional
+    public void unassignTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
+        ConceptSet conceptSet = getConceptSetRepository().findById(id);
+        if (Objects.nonNull(conceptSet)) {
+            Set<Tag> tags = conceptSet.getTags().stream()
+                    .filter(t -> t.getId() != tagId)
+                    .collect(Collectors.toSet());
+            conceptSet.setTags(tags);
+        }
+    }
 }

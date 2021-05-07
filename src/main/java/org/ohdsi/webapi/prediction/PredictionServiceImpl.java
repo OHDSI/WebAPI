@@ -36,9 +36,11 @@ import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.util.TempFileUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -55,7 +57,6 @@ import java.util.stream.Collectors;
 import static org.ohdsi.webapi.Constants.GENERATE_PREDICTION_ANALYSIS;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Params.PREDICTION_ANALYSIS_ID;
-import static org.ohdsi.webapi.Constants.Params.PREDICTION_SKELETON_VERSION;
 
 @Service
 @Transactional
@@ -63,10 +64,15 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
 
     private static final EntityGraph DEFAULT_ENTITY_GRAPH = EntityGraphUtils.fromAttributePaths("source", "analysisExecution.resultFiles");
 
+    private static final String PREDICTION_SKELETON = "/resources/prediction/skeleton/SkeletonPredictionStudy_0.0.1.zip";
+
     private final EntityGraph COMMONS_ENTITY_GRAPH = EntityUtils.fromAttributePaths(
             "createdBy",
             "modifiedBy"
     );
+
+    @Value("${hydra.externalPackage.prediction}")
+    private String externalPackagePath;
 
     @Autowired
     private PredictionAnalysisRepository predictionAnalysisRepository;
@@ -201,7 +207,6 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         expression.setName(StringUtils.trim(pred.getName()));
         expression.setDescription(pred.getDescription());
         expression.setOrganizationName(env.getRequiredProperty("organization.name"));
-        expression.setSkeletonVersion(PREDICTION_SKELETON_VERSION);
 
         // Retrieve the cohort definition details
         ArrayList<AnalysisCohortDefinition> detailedList = new ArrayList<>();
@@ -316,9 +321,22 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         if (packageName == null || !Utils.isAlphaNumeric(packageName)) {
             throw new IllegalArgumentException("The package name must be alphanumeric only.");
         }
-        analysis.setSkeletonVersion(PREDICTION_SKELETON_VERSION);
-        analysis.setPackageName(packageName);
-        super.hydrateAnalysis(analysis, out);
+        File externalFile = null;
+        try {
+            analysis.setPackageName(packageName);
+            try {
+                externalFile = TempFileUtils.copyResourceToTempFile(PREDICTION_SKELETON, "plp", ".zip");
+            } catch (IOException e) {
+                log.warn("Failed to load skeleton from resource, {}. Ignored and used default", e.getMessage());
+            }
+            if (StringUtils.isNotEmpty(externalPackagePath)) {
+                super.hydrateAnalysis(analysis, externalPackagePath, out);
+            } else if (Objects.nonNull(externalFile)) {
+                super.hydrateAnalysis(analysis, externalFile.getAbsolutePath(), out);
+            }
+        } finally {
+            FileUtils.deleteQuietly(externalFile);
+        }
     }
 
 

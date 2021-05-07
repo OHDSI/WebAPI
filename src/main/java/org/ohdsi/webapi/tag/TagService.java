@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -172,6 +173,27 @@ public class TagService extends AbstractDaoService {
             }
             int count = dto.getCount() + info.getCount();
             dto.setCount(count);
+        });
+    }
+
+    public List<Tag> findMandatoryTags() {
+        return tagRepository.findMandatoryTags();
+    }
+
+    public Set<Integer> getAllGroupsForTag(Integer id) {
+        Tag tag = getById(id);
+        Set<Integer> groupIds = new HashSet<>();
+        if (Objects.nonNull(tag)) {
+            groupIds.add(tag.getId());
+            findParentGroup(tag.getGroups(), groupIds);
+        }
+        return groupIds;
+    }
+
+    private void findParentGroup(Set<Tag> groups, Set<Integer> groupIds) {
+        groups.forEach(g -> {
+            groupIds.add(g.getId());
+            findParentGroup(g.getGroups(), groupIds);
         });
     }
 }

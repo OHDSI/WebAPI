@@ -10,12 +10,12 @@ public abstract class BasePathwayAnalysisDTOToPathwayAnalysisConverter<S extends
 
     @Override
     protected void doConvert(S source, T target) {
-        source.setId(source.getId());
-        source.setName(StringUtils.trim(source.getName()));
-        source.setCombinationWindow(source.getCombinationWindow());
-        source.setMinSegmentLength(source.getMinSegmentLength());
-        source.setMinCellCount(source.getMinCellCount());
-        source.setMaxDepth(source.getMaxDepth());
-        source.setAllowRepeats(source.isAllowRepeats());
+        target.setId(source.getId());
+        target.setName(StringUtils.trim(source.getName()));
+        target.setCombinationWindow(source.getCombinationWindow());
+        target.setMinSegmentLength(source.getMinSegmentLength());
+        target.setMinCellCount(source.getMinCellCount());
+        target.setMaxDepth(source.getMaxDepth());
+        target.setAllowRepeats(source.isAllowRepeats());
     }
 }

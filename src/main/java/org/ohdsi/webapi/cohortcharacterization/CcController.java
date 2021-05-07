@@ -238,7 +238,8 @@ public class CcController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public CheckResult runDiagnostics(CohortCharacterizationDTO characterizationDTO){
-
+        CohortCharacterizationEntity cc = service.findById(characterizationDTO.getId());
+        characterizationDTO = convertCcToDto(cc);
         return new CheckResult(checker.check(characterizationDTO));
     }
 

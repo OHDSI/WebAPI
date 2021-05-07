@@ -7,8 +7,11 @@ import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.check.CheckResult;
 import org.ohdsi.webapi.check.Checker;
 import org.ohdsi.webapi.check.checker.characterization.CharacterizationChecker;
+import org.ohdsi.webapi.check.checker.tag.helper.TagHelper;
 import org.ohdsi.webapi.check.warning.Warning;
 import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
+import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -18,11 +21,13 @@ public class CharacterizationCheckerTest extends BaseCheckerTest {
     private static final String JSON_NO_COHORTS = "/check/checker/characterization-no-cohorts.json";
     private static final String JSON_NO_FEATURE_ANALYSES = "/check/checker/characterization-no-fa.json";
     private CharacterizationChecker checker;
+    @Autowired
+    private TagHelper<CohortCharacterizationDTO> tagHelper;
 
     @Before
     public void setUp() {
 
-        checker = new CharacterizationChecker();
+        checker = new CharacterizationChecker(tagHelper);
         checker.init();
     }
 

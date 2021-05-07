@@ -24,6 +24,9 @@ public class TagToTagDTOConverter extends BaseCommonEntityToDTOConverter<Tag, Ta
         target.setColor(source.getColor());
         target.setIcon(source.getIcon());
         target.setShowGroup(source.getShowGroup());
+        target.setExtra(source.getExtra());
+        target.setMultiSelection(source.getMultiSelection());
+        target.setMandatory(source.getMandatory());
     }
 
     protected TagDTO createResultObject() {

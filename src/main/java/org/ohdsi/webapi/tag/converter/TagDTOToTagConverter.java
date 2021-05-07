@@ -28,5 +28,8 @@ public class TagDTOToTagConverter extends BaseCommonDTOToEntityConverter<TagDTO,
         target.setColor(source.getColor());
         target.setIcon(source.getIcon());
         target.setShowGroup(source.getShowGroup());
+        target.setExtra(source.getExtra());
+        target.setMultiSelection(source.getMultiSelection());
+        target.setMandatory(source.getMandatory());
     }
 }

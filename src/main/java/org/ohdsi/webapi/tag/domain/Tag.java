@@ -53,11 +53,20 @@ public class Tag extends CommonEntity<Integer> {
     @Column(name = "show_group")
     private Boolean showGroup;
 
+    @Column(name = "multi_selection")
+    private Boolean multiSelection;
+
+    @Column(name = "extra")
+    private Boolean extra;
+
     @Column(name = "icon")
     private String icon;
 
     @Column(name = "color")
     private String color;
+
+    @Column(name = "mandatory")
+    private Boolean mandatory;
 
     public void setId(int id) {
         this.id = id;
@@ -125,6 +134,30 @@ public class Tag extends CommonEntity<Integer> {
 
     public void setColor(String color) {
         this.color = color;
+    }
+
+    public Boolean getMultiSelection() {
+        return multiSelection;
+    }
+
+    public void setMultiSelection(Boolean multiSelection) {
+        this.multiSelection = multiSelection;
+    }
+
+    public Boolean getExtra() {
+        return extra;
+    }
+
+    public void setExtra(Boolean extra) {
+        this.extra = extra;
+    }
+
+    public Boolean getMandatory() {
+        return mandatory;
+    }
+
+    public void setMandatory(Boolean mandatory) {
+        this.mandatory = mandatory;
     }
 
     @Override

@@ -7,8 +7,11 @@ import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.check.CheckResult;
 import org.ohdsi.webapi.check.Checker;
 import org.ohdsi.webapi.check.checker.pathway.PathwayChecker;
+import org.ohdsi.webapi.check.checker.tag.helper.TagHelper;
 import org.ohdsi.webapi.check.warning.Warning;
+import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -18,11 +21,13 @@ public class PathwayCheckerTest extends BaseCheckerTest {
     private static final String JSON_VALID = "/check/checker/pathway-valid.json";
     private static final String JSON_INVALID = "/check/checker/pathway-invalid.json";
     private PathwayChecker checker;
+    @Autowired
+    private TagHelper<PathwayAnalysisDTO> tagHelper;
 
     @Before
     public void setUp() {
 
-        checker = new PathwayChecker();
+        checker = new PathwayChecker(tagHelper);
         checker.init();
     }
 

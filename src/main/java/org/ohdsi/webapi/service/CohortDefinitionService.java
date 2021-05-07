@@ -15,12 +15,19 @@ import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.check.Checker;
+import org.ohdsi.circe.check.warnings.BaseWarning;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.circe.cohortdefinition.printfriendly.MarkdownRender;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.webapi.Constants;
+import org.ohdsi.webapi.check.CheckResult;
+import org.ohdsi.webapi.check.checker.cohort.CohortChecker;
+import org.ohdsi.webapi.check.warning.DefaultWarning;
+import org.ohdsi.webapi.check.warning.Warning;
+import org.ohdsi.webapi.check.warning.WarningSeverity;
+import org.ohdsi.webapi.check.warning.WarningUtils;
 import org.ohdsi.webapi.cohortdefinition.CleanupCohortTasklet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
@@ -175,6 +182,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 
 	@Autowired
 	private TagService tagService;
+
+	@Autowired
+	private CohortChecker cohortChecker;
 
 	private final MarkdownRender markdownPF = new MarkdownRender();
 
@@ -713,9 +723,15 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Transactional
-	public CheckResultDTO runDiagnostics(CohortExpression expression) {
+	public CheckResult runDiagnostics(CohortDTO cohortDTO) {
 		Checker checker = new Checker();
-		return new CheckResultDTO(checker.check(expression));
+		CheckResultDTO checkResultDTO = new CheckResultDTO(checker.check(cohortDTO.getExpression()));
+		List<Warning> circeWarnings = checkResultDTO.getWarnings().stream()
+				.map(WarningUtils::convertCirceWarning)
+				.collect(Collectors.toList());
+		CheckResult checkResult = new CheckResult(cohortChecker.check(cohortDTO));
+		checkResult.getWarnings().addAll(circeWarnings);
+		return checkResult;
 	}
 
 	@POST

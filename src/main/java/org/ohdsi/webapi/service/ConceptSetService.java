@@ -25,15 +25,23 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.shiro.authz.UnauthorizedException;
+import org.ohdsi.circe.check.Checker;
 import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
+import org.ohdsi.webapi.check.CheckResult;
+import org.ohdsi.webapi.check.checker.cohort.CohortChecker;
+import org.ohdsi.webapi.check.checker.conceptset.ConceptSetChecker;
+import org.ohdsi.webapi.check.warning.Warning;
+import org.ohdsi.webapi.check.warning.WarningUtils;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
 import org.ohdsi.webapi.security.PermissionService;
+import org.ohdsi.webapi.service.dto.CheckResultDTO;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
@@ -87,6 +95,9 @@ public class ConceptSetService extends AbstractDaoService {
 
     @Autowired
     private TagService tagService;
+
+    @Autowired
+    private ConceptSetChecker checker;
 
     public static final String COPY_NAME = "copyName";
 
@@ -414,5 +425,14 @@ public class ConceptSetService extends AbstractDaoService {
                     .collect(Collectors.toSet());
             conceptSet.setTags(tags);
         }
+    }
+
+    @POST
+    @Path("/check")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
+    public CheckResult runDiagnostics(ConceptSetDTO conceptSetDTO) {
+        return new CheckResult(checker.check(conceptSetDTO));
     }
 }

@@ -48,4 +48,6 @@ public interface TagRepository extends JpaRepository<Tag, Integer> {
             "GROUP BY t.id")
     List<TagInfo> findPathwayTagInfo();
 
+    @Query("SELECT t FROM Tag t WHERE t.mandatory = 'TRUE'")
+    List<Tag> findMandatoryTags();
 }

@@ -11,6 +11,7 @@ import org.ohdsi.webapi.cohortcharacterization.domain.CcStrataEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.BaseCcDTO;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortMetadataExt;
 import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
 
 import static org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType.CRITERIA_SET;
 
-public abstract class BaseCcDTOToCcEntityConverter<T extends BaseCcDTO<? extends CohortMetadata, ? extends FeAnalysisShortDTO>>
+public abstract class BaseCcDTOToCcEntityConverter<T extends BaseCcDTO<? extends CohortMetadataExt, ? extends FeAnalysisShortDTO>>
         extends BaseConversionServiceAwareConverter<T, CohortCharacterizationEntity> {
 
   @Autowired

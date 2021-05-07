@@ -34,10 +34,19 @@ public class TagDTO extends CommonEntityDTO {
     private Boolean showGroup;
 
     @JsonProperty
+    private Boolean multiSelection;
+
+    @JsonProperty
+    private Boolean extra;
+
+    @JsonProperty
     private String icon;
 
     @JsonProperty
     private String color;
+
+    @JsonProperty
+    private Boolean mandatory;
 
     public Integer getId() {
         return id;
@@ -105,6 +114,30 @@ public class TagDTO extends CommonEntityDTO {
 
     public void setColor(String color) {
         this.color = color;
+    }
+
+    public Boolean getMultiSelection() {
+        return multiSelection;
+    }
+
+    public void setMultiSelection(Boolean multiSelection) {
+        this.multiSelection = multiSelection;
+    }
+
+    public Boolean getExtra() {
+        return extra;
+    }
+
+    public void setExtra(Boolean extra) {
+        this.extra = extra;
+    }
+
+    public Boolean getMandatory() {
+        return mandatory;
+    }
+
+    public void setMandatory(Boolean mandatory) {
+        this.mandatory = mandatory;
     }
 
     @Override

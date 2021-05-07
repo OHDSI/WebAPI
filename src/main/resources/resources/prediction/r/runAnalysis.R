@@ -46,10 +46,12 @@ tryCatch({
                 createValidationPackage = F,
                 packageResults = T,
                 minCellCount = 5,
-                cdmVersion = 5,
-                createShiny = T)
+                cdmVersion = 5)
+
+        populateShinyApp(shinyDirectory = system.file('shiny', 'PLPViewer', package = '@packageName'), resultDirectory = outputFolder)
+
         # To run PLP Viewer shiny app call:
-        PatientLevelPrediction::viewMultiplePlp(outputFolder)
+        # PatientLevelPrediction::viewPlp(readRDS("./ShinyApp/data/Analysis_1/plpResult.rds"))
 }, finally = {
         remove.packages('@packageName')
 })

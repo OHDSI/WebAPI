@@ -53,9 +53,6 @@ public class CohortSample extends CommonEntity<Integer> {
 
 	@Column(name = "\"size\"")
 	private int size;
-	
-	@Column(name = "annotated")
-    private boolean annotated;
 
 	@Transient
 	private List<SampleElement> elements;
@@ -139,9 +136,5 @@ public class CohortSample extends CommonEntity<Integer> {
 	public void setAgeMode(String ageMode) {
 		this.ageMode = ageMode;
 	}
-	
-	public boolean setAnnotated() {
-        return annotated;
-    }
 
 }

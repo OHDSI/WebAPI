@@ -89,6 +89,7 @@ public class PathwayController {
         PathwayAnalysisDTO dto = get(id);
         dto.setId(null);
         dto.setName(pathwayService.getNameForCopy(dto.getName()));
+        dto.setTags(null);
         return create(dto);
     }
 
@@ -98,7 +99,7 @@ public class PathwayController {
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
     public PathwayAnalysisDTO importAnalysis(final PathwayAnalysisExportDTO dto) {
-
+        dto.setTags(null);
         dto.setName(pathwayService.getNameWithSuffix(dto.getName()));
         PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
         PathwayAnalysisEntity imported = pathwayService.importAnalysis(pathwayAnalysis);
@@ -318,28 +319,32 @@ public class PathwayController {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/")
-    @Transactional
+    @javax.transaction.Transactional
     public void assignTag(@PathParam("id") final int id, final int tagId) {
-        PathwayAnalysisEntity pathwayAnalysis = pathwayService.getById(id);
-        if (Objects.nonNull(pathwayAnalysis)) {
-            Tag tag = tagService.getById(tagId);
-            if (Objects.nonNull(tag)) {
-                pathwayAnalysis.getTags().add(tag);
-            }
-        }
+        pathwayService.assignTag(id, tagId, false);
     }
 
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/{tagId}")
-    @Transactional
+    @javax.transaction.Transactional
     public void unassignTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
-        PathwayAnalysisEntity pathwayAnalysis = pathwayService.getById(id);
-        if (Objects.nonNull(pathwayAnalysis)) {
-            Set<Tag> tags = pathwayAnalysis.getTags().stream()
-                    .filter(t -> t.getId() != tagId)
-                    .collect(Collectors.toSet());
-            pathwayAnalysis.setTags(tags);
-        }
+        pathwayService.unassignTag(id, tagId, false);
+    }
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/protectedtag/")
+    @javax.transaction.Transactional
+    public void assignPermissionProtectedTag(@PathParam("id") final int id, final int tagId) {
+        pathwayService.assignTag(id, tagId, true);
+    }
+
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/protectedtag/{tagId}")
+    @javax.transaction.Transactional
+    public void unassignPermissionProtectedTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
+        pathwayService.unassignTag(id, tagId, true);
     }
 }

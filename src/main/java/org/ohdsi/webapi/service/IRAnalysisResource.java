@@ -170,4 +170,14 @@ public interface IRAnalysisResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/{tagId}")
     void unassignTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId);
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/protectedtag/")
+    void assignPermissionProtectedTag(@PathParam("id") final int id, final int tagId);
+
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/protectedtag/{tagId}")
+    void unassignPermissionProtectedTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId);
 }

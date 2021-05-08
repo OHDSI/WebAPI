@@ -20,16 +20,8 @@ public class IRCheckerTest extends BaseCheckerTest {
     private static final String JSON_VALID = "/check/checker/ir-valid.json";
     private static final String JSON_NO_EXPRESSION = "/check/checker/ir-no-expression.json";
     private static final String JSON_NO_COHORTS = "/check/checker/ir-no-cohorts.json";
-    private IRChecker checker;
     @Autowired
-    private TagHelper<IRAnalysisDTO> tagHelper;
-
-    @Before
-    public void setUp() {
-
-        checker = new IRChecker(tagHelper);
-        checker.init();
-    }
+    private IRChecker checker;
 
     @Test
     public void checkValid() throws IOException {

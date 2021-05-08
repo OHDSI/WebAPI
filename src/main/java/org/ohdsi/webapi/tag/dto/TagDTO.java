@@ -4,11 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.ohdsi.webapi.service.dto.CommonEntityDTO;
-import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.tag.domain.TagType;
 
-import javax.persistence.Column;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -16,7 +13,7 @@ import java.util.Set;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TagDTO extends CommonEntityDTO {
     @JsonProperty
-    int id;
+    Integer id;
 
     @JsonProperty
     private Set<TagDTO> groups;
@@ -31,13 +28,13 @@ public class TagDTO extends CommonEntityDTO {
     private int count;
 
     @JsonProperty
-    private Boolean showGroup;
+    private boolean showGroup;
 
     @JsonProperty
-    private Boolean multiSelection;
+    private boolean multiSelection;
 
     @JsonProperty
-    private Boolean extra;
+    private boolean permissionProtected;
 
     @JsonProperty
     private String icon;
@@ -46,8 +43,12 @@ public class TagDTO extends CommonEntityDTO {
     private String color;
 
     @JsonProperty
-    private Boolean mandatory;
+    private boolean mandatory;
 
+    @JsonProperty
+    private boolean allowCustom;
+
+    @Override
     public Integer getId() {
         return id;
     }
@@ -64,10 +65,12 @@ public class TagDTO extends CommonEntityDTO {
         this.groups = groups;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
@@ -80,10 +83,6 @@ public class TagDTO extends CommonEntityDTO {
         this.type = type;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
     public int getCount() {
         return count;
     }
@@ -92,12 +91,28 @@ public class TagDTO extends CommonEntityDTO {
         this.count = count;
     }
 
-    public Boolean getShowGroup() {
+    public boolean isShowGroup() {
         return showGroup;
     }
 
-    public void setShowGroup(Boolean showGroup) {
+    public void setShowGroup(boolean showGroup) {
         this.showGroup = showGroup;
+    }
+
+    public boolean isMultiSelection() {
+        return multiSelection;
+    }
+
+    public void setMultiSelection(boolean multiSelection) {
+        this.multiSelection = multiSelection;
+    }
+
+    public boolean isPermissionProtected() {
+        return permissionProtected;
+    }
+
+    public void setPermissionProtected(boolean permissionProtected) {
+        this.permissionProtected = permissionProtected;
     }
 
     public String getIcon() {
@@ -116,28 +131,20 @@ public class TagDTO extends CommonEntityDTO {
         this.color = color;
     }
 
-    public Boolean getMultiSelection() {
-        return multiSelection;
-    }
-
-    public void setMultiSelection(Boolean multiSelection) {
-        this.multiSelection = multiSelection;
-    }
-
-    public Boolean getExtra() {
-        return extra;
-    }
-
-    public void setExtra(Boolean extra) {
-        this.extra = extra;
-    }
-
-    public Boolean getMandatory() {
+    public boolean isMandatory() {
         return mandatory;
     }
 
-    public void setMandatory(Boolean mandatory) {
+    public void setMandatory(boolean mandatory) {
         this.mandatory = mandatory;
+    }
+
+    public boolean isAllowCustom() {
+        return allowCustom;
+    }
+
+    public void setAllowCustom(boolean allowCustom) {
+        this.allowCustom = allowCustom;
     }
 
     @Override

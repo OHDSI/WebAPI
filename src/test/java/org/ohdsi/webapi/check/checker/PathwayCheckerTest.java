@@ -20,16 +20,8 @@ import java.util.Optional;
 public class PathwayCheckerTest extends BaseCheckerTest {
     private static final String JSON_VALID = "/check/checker/pathway-valid.json";
     private static final String JSON_INVALID = "/check/checker/pathway-invalid.json";
-    private PathwayChecker checker;
     @Autowired
-    private TagHelper<PathwayAnalysisDTO> tagHelper;
-
-    @Before
-    public void setUp() {
-
-        checker = new PathwayChecker(tagHelper);
-        checker.init();
-    }
+    private PathwayChecker checker;
 
     @Test
     public void checkValid() throws IOException {

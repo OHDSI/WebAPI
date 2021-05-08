@@ -20,16 +20,8 @@ public class CharacterizationCheckerTest extends BaseCheckerTest {
     private static final String JSON_VALID = "/check/checker/characterization-valid.json";
     private static final String JSON_NO_COHORTS = "/check/checker/characterization-no-cohorts.json";
     private static final String JSON_NO_FEATURE_ANALYSES = "/check/checker/characterization-no-fa.json";
-    private CharacterizationChecker checker;
     @Autowired
-    private TagHelper<CohortCharacterizationDTO> tagHelper;
-
-    @Before
-    public void setUp() {
-
-        checker = new CharacterizationChecker(tagHelper);
-        checker.init();
-    }
+    private CharacterizationChecker checker;
 
     @Test
     public void checkValid() throws IOException {

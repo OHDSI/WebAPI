@@ -13,6 +13,7 @@ import org.ohdsi.webapi.check.warning.Warning;
 import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
 import org.ohdsi.webapi.prediction.dto.PredictionAnalysisDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -23,14 +24,8 @@ public class PredictionCheckerTest extends BaseCheckerTest {
     private static final String JSON_VALID = "/check/checker/prediction-valid.json";
     private static final String JSON_INVALID_VALUES = "/check/checker/prediction-invalid-values.json";
     private static final String JSON_NO_VALUES = "/check/checker/prediction-no-values.json";
+    @Autowired
     private PredictionChecker checker;
-
-    @Before
-    public void setUp() {
-
-        checker = new PredictionChecker();
-        checker.init();
-    }
 
     @Test
     public void checkValid() throws IOException {

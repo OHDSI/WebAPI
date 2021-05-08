@@ -41,9 +41,11 @@ public class MandatoryTagValidator<T extends Collection<? extends TagDTO>> exten
                     .count();
 
             isValid = count == 0;
-            if (!isValid) {
-                context.addWarning(getSeverity(), getErrorMessage(value), path);
-            }
+        } else {
+            isValid = tagService.findMandatoryTags().size() == 0;
+        }
+        if (!isValid) {
+            context.addWarning(getSeverity(), getErrorMessage(value), path);
         }
         return isValid;
     }

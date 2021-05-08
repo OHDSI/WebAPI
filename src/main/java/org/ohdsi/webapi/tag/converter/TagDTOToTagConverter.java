@@ -5,7 +5,6 @@ import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.tag.dto.TagDTO;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,9 +26,10 @@ public class TagDTOToTagConverter extends BaseCommonDTOToEntityConverter<TagDTO,
         target.setCount(source.getCount());
         target.setColor(source.getColor());
         target.setIcon(source.getIcon());
-        target.setShowGroup(source.getShowGroup());
-        target.setExtra(source.getExtra());
-        target.setMultiSelection(source.getMultiSelection());
-        target.setMandatory(source.getMandatory());
+        target.setShowGroup(source.isShowGroup());
+        target.setPermissionProtected(source.isPermissionProtected());
+        target.setMultiSelection(source.isMultiSelection());
+        target.setMandatory(source.isMandatory());
+        target.setAllowCustom(source.isAllowCustom());
     }
 }

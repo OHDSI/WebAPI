@@ -15,7 +15,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -32,7 +31,7 @@ public class Tag extends CommonEntity<Integer> {
             }
     )
     @GeneratedValue(generator = "tags_generator")
-    private int id;
+    private Integer id;
 
     @ManyToMany(targetEntity = Tag.class, fetch = FetchType.LAZY)
     @JoinTable(name = "tag_groups",
@@ -51,13 +50,13 @@ public class Tag extends CommonEntity<Integer> {
     private int count;
 
     @Column(name = "show_group")
-    private Boolean showGroup;
+    private boolean showGroup;
 
     @Column(name = "multi_selection")
-    private Boolean multiSelection;
+    private boolean multiSelection;
 
-    @Column(name = "extra")
-    private Boolean extra;
+    @Column(name = "permission_protected")
+    private boolean permissionProtected;
 
     @Column(name = "icon")
     private String icon;
@@ -66,18 +65,26 @@ public class Tag extends CommonEntity<Integer> {
     private String color;
 
     @Column(name = "mandatory")
-    private Boolean mandatory;
+    private boolean mandatory;
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    @Column(name = "allow_custom")
+    private boolean allowCustom;
 
+    @Override
     public Integer getId() {
         return id;
     }
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public Set<Tag> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(Set<Tag> groups) {
+        this.groups = groups;
     }
 
     public String getName() {
@@ -96,14 +103,6 @@ public class Tag extends CommonEntity<Integer> {
         this.type = type;
     }
 
-    public Set<Tag> getGroups() {
-        return groups;
-    }
-
-    public void setGroups(Set<Tag> groups) {
-        this.groups = groups;
-    }
-
     public int getCount() {
         return count;
     }
@@ -112,12 +111,28 @@ public class Tag extends CommonEntity<Integer> {
         this.count = count;
     }
 
-    public Boolean getShowGroup() {
+    public boolean isShowGroup() {
         return showGroup;
     }
 
-    public void setShowGroup(Boolean showGroup) {
+    public void setShowGroup(boolean showGroup) {
         this.showGroup = showGroup;
+    }
+
+    public boolean isMultiSelection() {
+        return multiSelection;
+    }
+
+    public void setMultiSelection(boolean multiSelection) {
+        this.multiSelection = multiSelection;
+    }
+
+    public boolean isPermissionProtected() {
+        return permissionProtected;
+    }
+
+    public void setPermissionProtected(boolean permissionProtected) {
+        this.permissionProtected = permissionProtected;
     }
 
     public String getIcon() {
@@ -136,28 +151,20 @@ public class Tag extends CommonEntity<Integer> {
         this.color = color;
     }
 
-    public Boolean getMultiSelection() {
-        return multiSelection;
-    }
-
-    public void setMultiSelection(Boolean multiSelection) {
-        this.multiSelection = multiSelection;
-    }
-
-    public Boolean getExtra() {
-        return extra;
-    }
-
-    public void setExtra(Boolean extra) {
-        this.extra = extra;
-    }
-
-    public Boolean getMandatory() {
+    public boolean isMandatory() {
         return mandatory;
     }
 
-    public void setMandatory(Boolean mandatory) {
+    public void setMandatory(boolean mandatory) {
         this.mandatory = mandatory;
+    }
+
+    public boolean isAllowCustom() {
+        return allowCustom;
+    }
+
+    public void setAllowCustom(boolean allowCustom) {
+        this.allowCustom = allowCustom;
     }
 
     @Override

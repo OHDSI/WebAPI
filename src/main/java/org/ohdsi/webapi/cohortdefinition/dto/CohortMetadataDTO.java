@@ -3,7 +3,7 @@ package org.ohdsi.webapi.cohortdefinition.dto;
 import org.ohdsi.webapi.cohortdefinition.CohortMetadataExt;
 import org.ohdsi.webapi.service.dto.CommonEntityExtDTO;
 
-public class CohortMetadataDTO extends CommonEntityExtDTO implements CohortMetadataExt {
+public abstract class CohortMetadataDTO extends CommonEntityExtDTO implements CohortMetadataExt {
 
     private Integer id;
     private String name;

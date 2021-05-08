@@ -19,7 +19,7 @@ public class CohortDTOToCohortDefinitionConverter extends BaseCohortDTOToCohortD
         super.doConvert(source, target);
         if (source.getExpression() != null) {
             final CohortDefinitionDetails details = new CohortDefinitionDetails();
-            final String expression = convertExpression(target);
+            final String expression = convertExpression(source);
             details.setExpression(expression);
             target.setDetails(details);
         }

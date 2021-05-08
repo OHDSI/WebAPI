@@ -397,6 +397,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
     @Override
     public IRAnalysisDTO doImport(final IRAnalysisDTO dto) {
+        dto.setTags(null);
         if (dto.getExpression() != null) {
             try {
                 IncidenceRateAnalysisExportExpression expression = objectMapper.readValue(
@@ -637,6 +638,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   @Transactional
   public IRAnalysisDTO copy(final int id) {
     IRAnalysisDTO analysis = getAnalysis(id);
+    analysis.setTags(null);
     analysis.setId(null); // clear the ID
     analysis.setName(getNameForCopy(analysis.getName()));
     return createAnalysis(analysis);
@@ -794,25 +796,29 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   @Override
   @Transactional
   public void assignTag(final int id, final int tagId) {
-    IncidenceRateAnalysis analysis = irAnalysisRepository.findOne(id);
-    if (Objects.nonNull(analysis)) {
-      Tag tag = tagService.getById(tagId);
-      if (Objects.nonNull(tag)) {
-        analysis.getTags().add(tag);
-      }
-    }
+    IncidenceRateAnalysis entity = irAnalysisRepository.findOne(id);
+    assignTag(entity, tagId, false);
   }
 
   @Override
   @Transactional
   public void unassignTag(final int id, final int tagId) {
-    IncidenceRateAnalysis analysis = irAnalysisRepository.findOne(id);
-    if (Objects.nonNull(analysis)) {
-      Set<Tag> tags = analysis.getTags().stream()
-              .filter(t -> t.getId() != tagId)
-              .collect(Collectors.toSet());
-      analysis.setTags(tags);
-    }
+    IncidenceRateAnalysis entity = irAnalysisRepository.findOne(id);
+    unassignTag(entity, tagId, false);
+  }
+
+  @Override
+  @Transactional
+  public void assignPermissionProtectedTag(final int id, final int tagId) {
+    IncidenceRateAnalysis entity = irAnalysisRepository.findOne(id);
+    assignTag(entity, tagId, true);
+  }
+
+  @Override
+  @Transactional
+  public void unassignPermissionProtectedTag(final int id, final int tagId) {
+    IncidenceRateAnalysis entity = irAnalysisRepository.findOne(id);
+    unassignTag(entity, tagId, false);
   }
 
   @PostConstruct

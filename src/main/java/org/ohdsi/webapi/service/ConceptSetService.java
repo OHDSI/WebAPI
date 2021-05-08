@@ -291,6 +291,7 @@ public class ConceptSetService extends AbstractDaoService {
         ConceptSet updated = new ConceptSet();
         updated.setCreatedBy(user);
         updated.setCreatedDate(new Date());
+        updated.setTags(null);
         updateConceptSet(updated, conceptSet);
         return conversionService.convert(updated, ConceptSetDTO.class);
     }
@@ -404,13 +405,8 @@ public class ConceptSetService extends AbstractDaoService {
     @Path("/{id}/tag/")
     @Transactional
     public void assignTag(@PathParam("id") final int id, final int tagId) {
-        ConceptSet conceptSet = getConceptSetRepository().findById(id);
-        if (Objects.nonNull(conceptSet)) {
-            Tag tag = tagService.getById(tagId);
-            if (Objects.nonNull(tag)) {
-                conceptSet.getTags().add(tag);
-            }
-        }
+        ConceptSet entity = getConceptSetRepository().findById(id);
+        assignTag(entity, tagId, false);
     }
 
     @DELETE
@@ -418,13 +414,26 @@ public class ConceptSetService extends AbstractDaoService {
     @Path("/{id}/tag/{tagId}")
     @Transactional
     public void unassignTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
-        ConceptSet conceptSet = getConceptSetRepository().findById(id);
-        if (Objects.nonNull(conceptSet)) {
-            Set<Tag> tags = conceptSet.getTags().stream()
-                    .filter(t -> t.getId() != tagId)
-                    .collect(Collectors.toSet());
-            conceptSet.setTags(tags);
-        }
+        ConceptSet entity = getConceptSetRepository().findById(id);
+        unassignTag(entity, tagId, false);
+    }
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/protectedtag/")
+    @Transactional
+    public void assignPermissionProtectedTag(@PathParam("id") final int id, final int tagId) {
+        ConceptSet entity = getConceptSetRepository().findById(id);
+        assignTag(entity, tagId, true);
+    }
+
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/protectedtag/{tagId}")
+    @Transactional
+    public void unassignPermissionProtectedTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
+        ConceptSet entity = getConceptSetRepository().findById(id);
+        unassignTag(entity, tagId, true);
     }
 
     @POST

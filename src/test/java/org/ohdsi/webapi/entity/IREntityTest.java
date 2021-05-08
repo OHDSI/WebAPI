@@ -1,23 +1,16 @@
 package org.ohdsi.webapi.entity;
 
-import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
-
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
 import org.ohdsi.webapi.service.IRAnalysisResource;
 import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
-import org.ohdsi.webapi.test.ITStarter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@RunWith(JUnitParamsRunner.class)
-@SpringBootTest
+import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
+
 public class IREntityTest extends AbstractDatabaseTest implements TestCreate, TestCopy<IRAnalysisDTO> {
     @Autowired
     protected IRAnalysisResource irAnalysisResource;
@@ -70,13 +63,10 @@ public class IREntityTest extends AbstractDatabaseTest implements TestCreate, Te
     }
 
     @Test
-    @Parameters({
-            "abcde, abc, abc", "abcde (1), abcde, abcde (2)"
-    })
     @Override
-    public void shouldCopyOfPartlySameName(String firstName, String secondName, String assertionName) throws Exception {
+    public void shouldCopyOfPartlySameName() throws Exception {
 
-        TestCopy.super.shouldCopyOfPartlySameName(firstName, secondName, assertionName);
+        TestCopy.super.shouldCopyOfPartlySameName();
     }
 
     @Override

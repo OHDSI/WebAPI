@@ -31,6 +31,7 @@ import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.security.PermissionService;
+import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.tag.TagService;
@@ -124,6 +125,7 @@ public class CcController {
         CohortCharacterizationDTO dto = getDesign(id);
         dto.setName(service.getNameForCopy(dto.getName()));
         dto.setId(null);
+        dto.setTags(null);
         dto.getStratas().forEach(s -> s.setId(null));
         dto.getParameters().forEach(p -> p.setId(null));
         return create(dto);
@@ -208,6 +210,7 @@ public class CcController {
     @Consumes(MediaType.APPLICATION_JSON)
     public CohortCharacterizationDTO doImport(final CcExportDTO dto) {
         dto.setName(service.getNameWithSuffix(dto.getName()));
+        dto.setTags(null);
         final CohortCharacterizationEntity entity = conversionService.convert(dto, CohortCharacterizationEntity.class);
         return conversionService.convert(service.importCc(entity), CohortCharacterizationDTO.class);
     }
@@ -238,8 +241,6 @@ public class CcController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public CheckResult runDiagnostics(CohortCharacterizationDTO characterizationDTO){
-        CohortCharacterizationEntity cc = service.findById(characterizationDTO.getId());
-        characterizationDTO = convertCcToDto(cc);
         return new CheckResult(checker.check(characterizationDTO));
     }
 
@@ -428,13 +429,7 @@ public class CcController {
     @Path("/{id}/tag/")
     @javax.transaction.Transactional
     public void assignTag(@PathParam("id") final long id, final int tagId) {
-        CohortCharacterizationEntity entity = service.findById(id);
-        if (Objects.nonNull(entity)) {
-            Tag tag = tagService.getById(tagId);
-            if (Objects.nonNull(tag)) {
-                entity.getTags().add(tag);
-            }
-        }
+        service.assignTag(id, tagId, false);
     }
 
     @DELETE
@@ -442,13 +437,23 @@ public class CcController {
     @Path("/{id}/tag/{tagId}")
     @javax.transaction.Transactional
     public void unassignTag(@PathParam("id") final long id, @PathParam("tagId") final int tagId) {
-        CohortCharacterizationEntity entity = service.findById(id);
-        if (Objects.nonNull(entity)) {
-            Set<Tag> tags = entity.getTags().stream()
-                    .filter(t -> t.getId() != tagId)
-                    .collect(Collectors.toSet());
-            entity.setTags(tags);
-        }
+        service.unassignTag(id, tagId, false);
+    }
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/pemissionprotectedtag/")
+    @javax.transaction.Transactional
+    public void assignPermissionProtectedTag(@PathParam("id") final long id, final int tagId) {
+        service.assignTag(id, tagId, true);
+    }
+
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/pemissionprotectedtag/{tagId}")
+    @javax.transaction.Transactional
+    public void unassignPermissionProtectedTag(@PathParam("id") final long id, @PathParam("tagId") final int tagId) {
+        service.unassignTag(id, tagId, true);
     }
 
     private void convertPresetAnalysesToLocal(List<? extends CcResult> ccResults) {

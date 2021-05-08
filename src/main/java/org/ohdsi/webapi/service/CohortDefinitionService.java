@@ -37,6 +37,7 @@ import org.ohdsi.webapi.cohortdefinition.InclusionRuleReport;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortGenerationInfoDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataImplDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
 import org.ohdsi.webapi.cohortdefinition.event.CohortDefinitionChangedEvent;
 import org.ohdsi.webapi.cohortsample.CleanupCohortSamplesTasklet;
@@ -383,7 +384,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 
 		return definitions.stream()
 						.map(def -> {
-							CohortMetadataDTO dto = conversionService.convert(def, CohortMetadataDTO.class);
+							CohortMetadataDTO dto = conversionService.convert(def, CohortMetadataImplDTO.class);
 							permissionService.fillWriteAccess(def, dto);
 							return dto;
 						})
@@ -586,6 +587,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 	public CohortDTO copy(@PathParam("id") final int id) {
 		CohortDTO sourceDef = getCohortDefinition(id);
 		sourceDef.setId(null); // clear the ID
+		sourceDef.setTags(null);
 		sourceDef.setName(NameUtils.getNameForCopy(sourceDef.getName(), this::getNamesLike, cohortDefinitionRepository.findByName(sourceDef.getName())));
 		CohortDTO copyDef = createCohortDefinition(sourceDef);
 
@@ -773,13 +775,8 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Path("/{id}/tag/")
 	@Transactional
 	public void assignTag(@PathParam("id") final int id, final int tagId) {
-		CohortDefinition def = cohortDefinitionRepository.findOne(id);
-		if (Objects.nonNull(def)) {
-			Tag tag = tagService.getById(tagId);
-			if (Objects.nonNull(tag)) {
-				def.getTags().add(tag);
-			}
-		}
+		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
+		assignTag(entity, tagId, false);
 	}
 
 	@DELETE
@@ -787,12 +784,25 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Path("/{id}/tag/{tagId}")
 	@Transactional
 	public void unassignTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
-		CohortDefinition def = cohortDefinitionRepository.findOne(id);
-		if (Objects.nonNull(def)) {
-			Set<Tag> tags = def.getTags().stream()
-					.filter(t -> t.getId() != tagId)
-					.collect(Collectors.toSet());
-			def.setTags(tags);
-		}
+		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
+		unassignTag(entity, tagId, false);
+	}
+
+	@POST
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/{id}/protectedtag/")
+	@Transactional
+	public void assignPermissionProtectedTag(@PathParam("id") final int id, final int tagId) {
+		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
+		assignTag(entity, tagId, true);
+	}
+
+	@DELETE
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/{id}/protectedtag/{tagId}")
+	@Transactional
+	public void unassignPermissionProtectedTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
+		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
+		unassignTag(entity, tagId, true);
 	}
 }

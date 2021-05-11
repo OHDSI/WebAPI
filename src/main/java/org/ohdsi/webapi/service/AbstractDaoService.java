@@ -329,9 +329,4 @@ public abstract class AbstractDaoService extends AbstractAdminService {
       }
     }
   }
-
-  protected <T extends Number> CommonEntityExt<T> getEntity(T id) {
-    // Must be overridden in services with tagging
-    return null;
-  }
 }

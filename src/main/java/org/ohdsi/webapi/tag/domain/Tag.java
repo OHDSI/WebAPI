@@ -70,6 +70,9 @@ public class Tag extends CommonEntity<Integer> {
     @Column(name = "allow_custom")
     private boolean allowCustom;
 
+    @Column(name = "description")
+    private String description;
+
     @Override
     public Integer getId() {
         return id;
@@ -165,6 +168,14 @@ public class Tag extends CommonEntity<Integer> {
 
     public void setAllowCustom(boolean allowCustom) {
         this.allowCustom = allowCustom;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override

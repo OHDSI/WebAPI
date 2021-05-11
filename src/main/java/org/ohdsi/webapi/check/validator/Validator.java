@@ -28,14 +28,18 @@ public abstract class Validator<T> {
 
     public abstract boolean validate(T value, Context context);
 
-    protected String getErrorMessage(T value) {
+    protected String getErrorMessage(T value, Object... params) {
         StringBuilder sb = new StringBuilder();
         if (this.attrNameValueGetter != null) {
             sb.append("(")
                     .append(this.attrNameValueGetter.apply(value))
                     .append(") - ");
         }
-        sb.append(this.errorMessage != null ? this.errorMessage : getDefaultErrorMessage());
+        String msg = this.errorMessage != null ? this.errorMessage : getDefaultErrorMessage();
+        if (params.length > 0) {
+            msg = String.format(msg, params);
+        }
+        sb.append(msg);
         return sb.toString();
     }
 

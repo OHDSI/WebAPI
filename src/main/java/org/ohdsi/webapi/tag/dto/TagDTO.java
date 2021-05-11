@@ -48,6 +48,9 @@ public class TagDTO extends CommonEntityDTO {
     @JsonProperty
     private boolean allowCustom;
 
+    @JsonProperty
+    private String description;
+
     @Override
     public Integer getId() {
         return id;
@@ -145,6 +148,14 @@ public class TagDTO extends CommonEntityDTO {
 
     public void setAllowCustom(boolean allowCustom) {
         this.allowCustom = allowCustom;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override

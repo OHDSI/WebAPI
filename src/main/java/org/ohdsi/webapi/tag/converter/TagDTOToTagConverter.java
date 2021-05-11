@@ -31,5 +31,6 @@ public class TagDTOToTagConverter extends BaseCommonDTOToEntityConverter<TagDTO,
         target.setMultiSelection(source.isMultiSelection());
         target.setMandatory(source.isMandatory());
         target.setAllowCustom(source.isAllowCustom());
+        target.setDescription(source.getDescription());
     }
 }

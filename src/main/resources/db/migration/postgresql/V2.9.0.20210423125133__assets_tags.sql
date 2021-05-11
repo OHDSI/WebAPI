@@ -101,6 +101,7 @@ CREATE TABLE ${ohdsiSchema}.tags
     permission_protected bool                     NOT NULL DEFAULT FALSE,
     mandatory            bool                     NOT NULL DEFAULT FALSE,
     allow_custom         bool                     NOT NULL DEFAULT FALSE,
+    description          varchar                  NULL,
     created_by_id        INTEGER,
     created_date         TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (now()),
     modified_by_id       INTEGER,

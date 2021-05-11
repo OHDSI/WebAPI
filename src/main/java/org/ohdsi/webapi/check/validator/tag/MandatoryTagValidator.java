@@ -10,13 +10,16 @@ import org.ohdsi.webapi.tag.dto.TagDTO;
 import org.ohdsi.webapi.tag.repository.TagRepository;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class MandatoryTagValidator<T extends Collection<? extends TagDTO>> extends Validator<T> {
-    private static final String INVALID = "no assigned mandatory tags";
+    private static final String INVALID = "no assigned tags from mandatory groups %s";
 
     private final TagService tagService;
 
@@ -36,20 +39,24 @@ public class MandatoryTagValidator<T extends Collection<? extends TagDTO>> exten
                 groupIds.addAll(ids);
             });
             List<Tag> mandatoryTags = tagService.findMandatoryTags();
-            long count = mandatoryTags.stream()
+            List<Tag> absentTags = mandatoryTags.stream()
                     .filter(t -> !groupIds.contains(t.getId()))
-                    .count();
+                    .collect(Collectors.toList());
 
-            isValid = count == 0;
+            isValid = absentTags.size() == 0;
+            if (!isValid) {
+                String absentTagNames = absentTags.stream()
+                        .map(Tag::getName)
+                        .collect(Collectors.joining("], [", "[", "]"));
+                context.addWarning(getSeverity(), getErrorMessage(value, absentTagNames), path);
+            }
         } else {
             isValid = tagService.findMandatoryTags().size() == 0;
-        }
-        if (!isValid) {
-            context.addWarning(getSeverity(), getErrorMessage(value), path);
         }
         return isValid;
     }
 
+    @Override
     protected String getDefaultErrorMessage() {
         return INVALID;
     }

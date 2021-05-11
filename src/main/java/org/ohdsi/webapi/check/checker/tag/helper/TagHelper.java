@@ -2,6 +2,7 @@ package org.ohdsi.webapi.check.checker.tag.helper;
 
 import org.ohdsi.webapi.check.builder.ValidatorGroupBuilder;
 import org.ohdsi.webapi.check.builder.tag.MandatoryTagValidatorBuilder;
+import org.ohdsi.webapi.check.warning.WarningSeverity;
 import org.ohdsi.webapi.service.dto.CommonEntityExtDTO;
 import org.ohdsi.webapi.tag.TagService;
 import org.ohdsi.webapi.tag.dto.TagDTO;
@@ -28,6 +29,7 @@ public class TagHelper<T extends CommonEntityExtDTO> {
                 new ValidatorGroupBuilder<T, Collection<? extends TagDTO>>()
                         .attrName("Tags")
                         .conditionGetter(t -> enabled)
+                        .severity(WarningSeverity.WARNING)
                         .valueGetter(T::getTags)
                         .validators(
                                 new MandatoryTagValidatorBuilder<>(tagService)

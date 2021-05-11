@@ -61,26 +61,33 @@ WHERE sp.value IN (
                    'tag:*:delete',
                    'cohortdefinition:*:tag:post',
                    'cohortdefinition:*:tag:*:delete',
-                   'cohortdefinition:*:protectedtag:post',
-                   'cohortdefinition:*:protectedtag:*:delete',
                    'conceptset:*:tag:post',
                    'conceptset:*:tag:*:delete',
-                   'conceptset:*:protectedtag:post',
-                   'conceptset:*:protectedtag:*:delete',
                    'conceptset:check:post',
                    'cohort-characterization:*:tag:post',
                    'cohort-characterization:*:tag:*:delete',
-                   'cohort-characterization:*:protectedtag:post',
-                   'cohort-characterization:*:protectedtag:*:delete',
                    'ir:*:tag:post',
                    'ir:*:tag:*:delete',
+                   'pathway-analysis:*:tag:post',
+                   'pathway-analysis:*:tag:*:delete')
+  AND sr.name IN ('Atlas users');
+
+INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
+SELECT sr.id, sp.id
+FROM ${ohdsiSchema}.sec_permission SP,
+     ${ohdsiSchema}.sec_role sr
+WHERE sp.value IN (
+                   'cohortdefinition:*:protectedtag:post',
+                   'cohortdefinition:*:protectedtag:*:delete',
+                   'conceptset:*:protectedtag:post',
+                   'conceptset:*:protectedtag:*:delete',
+                   'cohort-characterization:*:protectedtag:post',
+                   'cohort-characterization:*:protectedtag:*:delete',
                    'ir:*:protectedtag:post',
                    'ir:*:protectedtag:*:delete',
-                   'pathway-analysis:*:tag:post',
-                   'pathway-analysis:*:tag:*:delete',
                    'pathway-analysis:*:protectedtag:post',
                    'pathway-analysis:*:protectedtag:*:delete')
-  AND sr.name IN ('Atlas users');
+  AND sr.name IN ('admin');
 
 CREATE SEQUENCE ${ohdsiSchema}.tags_seq;
 

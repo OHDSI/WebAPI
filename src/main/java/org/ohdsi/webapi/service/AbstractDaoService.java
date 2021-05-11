@@ -11,6 +11,7 @@ import org.ohdsi.webapi.IExecutionInfo;
 import org.ohdsi.webapi.common.sensitiveinfo.AbstractAdminService;
 import org.ohdsi.webapi.conceptset.ConceptSetItemRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetRepository;
+import org.ohdsi.webapi.exception.BadRequestAtlasException;
 import org.ohdsi.webapi.model.CommonEntityExt;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
@@ -32,6 +33,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.ws.rs.BadRequestException;
 import java.io.File;
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -306,7 +308,7 @@ public abstract class AbstractDaoService extends AbstractAdminService {
       Tag tag = tagService.getById(tagId);
       if (Objects.nonNull(tag)) {
         if (isPermissionProtected != tag.isPermissionProtected()) {
-          throw new IllegalArgumentException();
+          throw new BadRequestAtlasException("Wrong endpoint is used for assigning tag");
         }
         entity.getTags().add(tag);
       }
@@ -318,7 +320,7 @@ public abstract class AbstractDaoService extends AbstractAdminService {
       Tag tag = tagService.getById(tagId);
       if (Objects.nonNull(tag)) {
         if (isPermissionProtected != tag.isPermissionProtected()) {
-          throw new IllegalArgumentException();
+          throw new BadRequestAtlasException("Wrong endpoint is used for unassigning tag");
         }
         Set<Tag> tags = entity.getTags().stream()
                 .filter(t -> t.getId() != tagId)

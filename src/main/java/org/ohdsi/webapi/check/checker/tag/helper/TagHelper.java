@@ -26,7 +26,7 @@ public class TagHelper<T extends CommonEntityExtDTO> {
     public ValidatorGroupBuilder<T, Collection<? extends TagDTO>> prepareTagBuilder() {
         ValidatorGroupBuilder<T, Collection<? extends TagDTO>> builder =
                 new ValidatorGroupBuilder<T, Collection<? extends TagDTO>>()
-                        .attrName("design")
+                        .attrName("Tags")
                         .conditionGetter(t -> enabled)
                         .valueGetter(T::getTags)
                         .validators(

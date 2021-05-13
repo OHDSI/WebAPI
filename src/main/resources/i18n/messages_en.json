@@ -74,6 +74,7 @@
     "copyOf": "Copy of <%=name%>",
     "copyToClipboard": "Copy to clipboard",
     "createACopy": "Create a copy",
+    "create": "Create",
     "days": "days",
     "daysAbbr": "d",
     "delete": "Delete",
@@ -99,7 +100,8 @@
     "unspecified": "UNSPECIFIED!",
     "menu": "Menu",
     "noData": "No data",
-    "readOnly": "(Read only)"
+    "readOnly": "(Read only)",
+    "tags": "Tags"
   },
   "commonErrors": {
     "noSources": "The current WebAPI has no sources defined.<br/>Please add one or more on <a href=\"#/configure\">configuration</a> page.",
@@ -1131,7 +1133,23 @@
       "fixIt": "Fix It"
     },
     "tags": {
-      "title": "Assign Tags"
+      "title": "Assign Tags",
+      "tabs": {
+        "studyAssetTags": "Study Asset Tags",
+        "reference": "Reference"
+      },
+      "availableTags": "Available tags:",
+      "assign": "Assign",
+      "unassign": "Unassign",
+      "notPermitted": "Not permitted",
+      "assignExistingTag": "Create custom tag",
+      "tagNamePlaceholder": "Tag name",
+      "assignedTags": "Assigned tags:",
+      "tagGroups": "Tag groups:",
+      "tagGroup:": "Tag group:",
+      "showTags": "Show tags",
+      "tagNameExistsWarning": "Tag <%=tagName%> already exists.",
+      "cannotUnassignProtectedTagWarning": "Cannot unassign protected tag: <%=tagName%>"
     }
   },
   "facets": {
@@ -1410,7 +1428,9 @@
     "selectionCriteria": "Selection criteria",
     "personId": "Person ID",
     "gender": "Gender",
-    "ageAtIndex": "Age at index"
+    "ageAtIndex": "Age at index",
+    "usageCount": "Usage count",
+    "group": "Group"
   },
   "dataSources": {
     "achillesHeelReport": {
@@ -1670,7 +1690,8 @@
         "exploreEvidence": "Explore Evidence",
         "export": "Export",
         "includedConcepts": "Included Concepts",
-        "includedSourceCodes": "Included Source Codes"
+        "includedSourceCodes": "Included Source Codes",
+        "messages": "Messages"
       },
       "concept": {
         "title": "Vocabulary > Concept",

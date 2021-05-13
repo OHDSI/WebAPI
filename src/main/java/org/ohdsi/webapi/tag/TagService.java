@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class TagService extends AbstractDaoService {
-    private static final Logger logger = LoggerFactory.getLogger(CacheService.class);
+    private static final Logger logger = LoggerFactory.getLogger(TagService.class);
     private final TagRepository tagRepository;
     private final EntityManager entityManager;
     private final ConversionService conversionService;

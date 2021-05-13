@@ -23,12 +23,10 @@ import java.util.List;
 @Controller
 public class TagController {
     private final TagService tagService;
-    private final I18nService i18nService;
 
     @Autowired
-    public TagController(TagService pathwayService, I18nService i18nService) {
+    public TagController(TagService pathwayService) {
         this.tagService = pathwayService;
-        this.i18nService = i18nService;
     }
 
     @POST

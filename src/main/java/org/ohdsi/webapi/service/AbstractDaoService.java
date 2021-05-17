@@ -34,6 +34,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.ForbiddenException;
 import java.io.File;
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -327,6 +328,15 @@ public abstract class AbstractDaoService extends AbstractAdminService {
                 .collect(Collectors.toSet());
         entity.setTags(tags);
       }
+    }
+  }
+
+  protected void checkOwnerOrAdmin(UserEntity owner) {
+    UserEntity user = getCurrentUser();
+    Long ownerId = Objects.nonNull(owner) ? owner.getId() : null;
+
+    if (!(user.getId().equals(ownerId) || isAdmin())) {
+      throw new ForbiddenException();
     }
   }
 }

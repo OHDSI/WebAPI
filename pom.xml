@@ -262,6 +262,9 @@
     <!-- Period between refreshes of materialized view with statistics -->
     <!-- 10 minutes by default -->
     <tag.refreshStat.period>600000</tag.refreshStat.period>
+
+    <!-- Versioning -->
+    <versioning.maxAttempt>10</versioning.maxAttempt>
   </properties>
   <build>
     <finalName>WebAPI</finalName>

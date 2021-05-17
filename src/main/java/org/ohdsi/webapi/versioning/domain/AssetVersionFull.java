@@ -34,8 +34,8 @@ public abstract class AssetVersionFull extends CommonEntity<Long> {
         return name;
     }
 
-    public void setName(String description) {
-        this.name = description;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public int getVersion() {

@@ -23,6 +23,12 @@
 	<logger name="org.pac4j">
 		<level value="${logging.level.org.pac4j:INFO}" />
 	</logger>
+	<logger name="org.hibernate.SQL">
+		<level value="DEBUG" />
+	</logger>
+	<logger name="org.hibernate.type.descriptor.sql.BasicBinder">
+		<level value="TRACE" />
+	</logger>
 	<root>
 		<level value="${logging.level.root}" />
 		<appender-ref ref="stdout" />

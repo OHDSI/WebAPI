@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AssetVersionJsonDTO extends AssetVersionDTO {
+public class AssetVersionFullDTO extends AssetVersionBaseDTO {
     @JsonProperty
     private String assetJson;
 

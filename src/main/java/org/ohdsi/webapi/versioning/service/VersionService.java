@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
+import javax.ws.rs.NotFoundException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -98,6 +99,9 @@ public class VersionService<T extends AssetVersionFull> extends AbstractDaoServi
 
     public T update(AssetVersionType type, T assetVersion) {
         T currentVersion = getRepository(type).findOne(assetVersion.getId());
+        if (Objects.isNull(currentVersion)) {
+            throw new NotFoundException("Version not found");
+        }
         checkOwnerOrAdmin(currentVersion.getCreatedBy());
 
         currentVersion.setName(assetVersion.getName());
@@ -108,6 +112,9 @@ public class VersionService<T extends AssetVersionFull> extends AbstractDaoServi
 
     public void delete(AssetVersionType type, Long id) {
         T currentVersion = getRepository(type).findOne(id);
+        if (Objects.isNull(currentVersion)) {
+            throw new NotFoundException("Version not found");
+        }
         checkOwnerOrAdmin(currentVersion.getCreatedBy());
         currentVersion.setArchived(true);
     }

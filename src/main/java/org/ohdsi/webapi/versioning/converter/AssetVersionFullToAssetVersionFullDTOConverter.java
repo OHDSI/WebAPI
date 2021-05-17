@@ -2,14 +2,14 @@ package org.ohdsi.webapi.versioning.converter;
 
 import org.ohdsi.webapi.service.converters.BaseCommonEntityToDTOConverter;
 import org.ohdsi.webapi.versioning.domain.AssetVersionFull;
-import org.ohdsi.webapi.versioning.dto.AssetVersionJsonDTO;
+import org.ohdsi.webapi.versioning.dto.AssetVersionFullDTO;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AssetVersionJsonToAssetVersionJsonDTOConverter extends
-        BaseCommonEntityToDTOConverter<AssetVersionFull, AssetVersionJsonDTO> {
+public class AssetVersionFullToAssetVersionFullDTOConverter extends
+        BaseCommonEntityToDTOConverter<AssetVersionFull, AssetVersionFullDTO> {
     @Override
-    protected void doConvert(AssetVersionFull source, AssetVersionJsonDTO target) {
+    protected void doConvert(AssetVersionFull source, AssetVersionFullDTO target) {
         target.setName(source.getName());
         target.setAssetId(source.getAssetId());
         target.setId(source.getId());
@@ -19,7 +19,7 @@ public class AssetVersionJsonToAssetVersionJsonDTOConverter extends
     }
 
     @Override
-    protected AssetVersionJsonDTO createResultObject() {
-        return new AssetVersionJsonDTO();
+    protected AssetVersionFullDTO createResultObject() {
+        return new AssetVersionFullDTO();
     }
 }

@@ -10,7 +10,7 @@ import java.util.Date;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AssetVersionDTO extends CommonEntityDTO {
+public class AssetVersionBaseDTO extends CommonEntityDTO {
     @JsonProperty
     private Long id;
 

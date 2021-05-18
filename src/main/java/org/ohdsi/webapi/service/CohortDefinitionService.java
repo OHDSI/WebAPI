@@ -66,6 +66,7 @@ import org.ohdsi.webapi.versioning.domain.AssetVersionType;
 import org.ohdsi.webapi.versioning.domain.CohortVersion;
 import org.ohdsi.webapi.versioning.dto.AssetVersionBaseDTO;
 import org.ohdsi.webapi.versioning.dto.AssetVersionDTO;
+import org.ohdsi.webapi.versioning.dto.AssetVersionUpdateDTO;
 import org.ohdsi.webapi.versioning.service.VersionService;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
@@ -465,12 +466,6 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Path("/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public CohortRawDTO getCohortDefinitionRaw(@PathParam("id") final int id) {
-		List<AssetVersionBase> versions = versionService.getVersions(AssetVersionType.COHORT, id);
-		if (versions.size() > 0) {
-			CohortRawDTO versionDTO = service.getVersion(id, versions.get(0).getId());
-			System.out.println(versionDTO);
-		}
-
 		return getTransactionTemplate().execute(transactionStatus -> {
 			CohortDefinition d = this.cohortDefinitionRepository.findOneWithDetail(id);
 			ExceptionUtils.throwNotFoundExceptionIfNull(d, String.format("There is no cohort definition with id = %d.", id));
@@ -905,9 +900,8 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/version")
 	@Transactional
-	public AssetVersionBaseDTO updateVersion(@PathParam("id") final int id, AssetVersionDTO versionDTO) {
-		CohortVersion version = conversionService.convert(versionDTO, CohortVersion.class);
-		CohortVersion updated = versionService.update(AssetVersionType.COHORT, version);
+	public AssetVersionBaseDTO updateVersion(@PathParam("id") final int id, AssetVersionUpdateDTO updateDTO) {
+		CohortVersion updated = versionService.update(AssetVersionType.COHORT, updateDTO);
 		return conversionService.convert(updated, AssetVersionBaseDTO.class);
 	}
 

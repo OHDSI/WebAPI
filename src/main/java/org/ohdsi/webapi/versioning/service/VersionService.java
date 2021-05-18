@@ -5,6 +5,7 @@ import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.versioning.domain.AssetVersionBase;
 import org.ohdsi.webapi.versioning.domain.AssetVersion;
 import org.ohdsi.webapi.versioning.domain.AssetVersionType;
+import org.ohdsi.webapi.versioning.dto.AssetVersionUpdateDTO;
 import org.ohdsi.webapi.versioning.repository.CharacterizationVersionRepository;
 import org.ohdsi.webapi.versioning.repository.CohortVersionRepository;
 import org.ohdsi.webapi.versioning.repository.ConceptSetVersionRepository;
@@ -97,14 +98,15 @@ public class VersionService<T extends AssetVersion> extends AbstractDaoService {
         return assetVersion;
     }
 
-    public T update(AssetVersionType type, T assetVersion) {
-        T currentVersion = getRepository(type).findOne(assetVersion.getId());
+    public T update(AssetVersionType type, AssetVersionUpdateDTO updateDTO) {
+        T currentVersion = getRepository(type).findOne(updateDTO.getId());
         if (Objects.isNull(currentVersion)) {
             throw new NotFoundException("Version not found");
         }
         checkOwnerOrAdmin(currentVersion.getCreatedBy());
 
-        currentVersion.setComment(assetVersion.getComment());
+        currentVersion.setComment(updateDTO.getComment());
+        currentVersion.setArchived(updateDTO.isArchived());
         return save(type, currentVersion);
     }
 

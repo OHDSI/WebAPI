@@ -9,6 +9,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.PathParam;
+
+import org.ohdsi.webapi.cohortsample.CohortSamplingService;
+import org.ohdsi.webapi.cohortsample.dto.SampleElementDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.ohdsi.webapi.annotation.annotation.AnnotationService;
@@ -18,10 +21,12 @@ import org.ohdsi.webapi.annotation.set.QuestionSet;
 import org.ohdsi.webapi.annotation.result.Result;
 
 
-
 @Path("annotations")
 @Component
 public class AnnotationController {
+
+  @Autowired
+  public CohortSamplingService cohortSamplingService;
 
   @Autowired
   private AnnotationService annotationService;
@@ -47,31 +52,42 @@ public class AnnotationController {
   }
 
   @POST
-  @Path("/")
+  @Path("/sample")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public void addAnnotation(AnnotationDto annotationDto) {
+    System.out.println("annotationDto: "+annotationDto);
+    System.out.println("annotationDtoGetId: "+annotationDto.getId());
+    System.out.println("annotationDtoGesampleId"+annotationDto.getsampleId());
+    System.out.println("annotationDtoGetAnnotationSetID"+annotationDto.getannotationSetId());
+    List<SampleElementDTO> temp = cohortSamplingService.getSample(annotationDto.getsampleId().intValue(), false).getElements();
+    System.out.println("SampleElementDTO"+temp);
+    for (SampleElementDTO element : temp){
+      System.out.println("element"+element);
+      System.out.println("element GetPersonID"+element.getPersonId());
+      Annotation annotation = new Annotation();
+      annotation.setId(annotationDto.getId());
+      annotation.setSubjectId(Long.parseLong(element.getPersonId()));
+      annotation.setCohortSampleId(annotationDto.getsampleId());
+      QuestionSet set = questionSetRepository.findById(annotationDto.getannotationSetId());
+      annotation.setSet(set);
+      annotationService.addAnnotation(annotation, annotationDto.getSampleName());
+    }
 
-    Annotation annotation = new Annotation();
-    annotation.setId(annotationDto.getId());
-    annotation.setSubjectId(annotationDto.getSubjectId());
-    annotation.setCohortSampleId(annotationDto.getCohortSampleId());
-    QuestionSet set = questionSetRepository.findById(annotationDto.getSetId());
-    annotation.setSet(set);
 
-    annotationDto.getResults().forEach((resultDto) -> {
-      Result result = new Result();
-      result.setQuestionId(resultDto.getQuestionId());
-      result.setAnswerId(resultDto.getAnswerId());
-      result.setSetId(set.getId());
-      result.setSubjectId(annotationDto.getSubjectId());
-      result.setValue(resultDto.getValue());
-      result.setType(resultDto.getType());
-      result.setSampleName(annotationDto.getSampleName());
-      annotation.addToResults(result);
-    });
+//    TODO: Add back in question set and answer linking
 
-    annotationService.addAnnotation(annotation, annotationDto.getSampleName());
+//    annotationDto.getResults().forEach((resultDto) -> {
+//      Result result = new Result();
+//      result.setQuestionId(resultDto.getQuestionId());
+//      result.setAnswerId(resultDto.getAnswerId());
+//      result.setSetId(set.getId());
+//      result.setSubjectId(annotationDto.getSubjectId());
+//      result.setValue(resultDto.getValue());
+//      result.setType(resultDto.getType());
+//      result.setSampleName(annotationDto.getSampleName());
+//      annotation.addToResults(result);
+//    });
   }
 
 //just for testing

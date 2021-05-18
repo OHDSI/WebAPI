@@ -8,8 +8,8 @@ public class AnnotationDto {
 
   private Long id;
   private Long subjectId;
-  private Long cohortSampleId;
-  private Long setId;
+  private Long sampleId;
+  private Long annotationSetId;
   private String name;
   private Set<ResultDto> results = new HashSet();
 
@@ -46,29 +46,29 @@ public class AnnotationDto {
   /**
    * @return the cohortId
    */
-  public Long getCohortSampleId() {
-    return cohortSampleId;
+  public Long getsampleId() {
+    return sampleId;
   }
 
   /**
    * @param cohortId the cohortId to set
    */
-  public void setCohortSampleId(Long cohortSampleId) {
-    this.cohortSampleId = cohortSampleId;
+  public void setsampleId(Long sampleId) {
+    this.sampleId = sampleId;
   }
 
   /**
    * @return the setId
    */
-  public Long getSetId() {
-    return setId;
+  public Long getannotationSetId() {
+    return annotationSetId;
   }
 
   /**
    * @param setId the setId to set
    */
-  public void setSetId(Long setId) {
-    this.setId = setId;
+  public void setannotationSetId(Long setId) {
+    this.annotationSetId = setId;
   }
 
 	/**

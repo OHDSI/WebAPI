@@ -5,7 +5,7 @@ import org.ohdsi.webapi.shiro.Entities.UserEntity;
 
 import java.util.Date;
 
-public class AssetVersionBase {
+public class VersionBase {
     private long id;
 
     private int assetId;
@@ -20,7 +20,7 @@ public class AssetVersionBase {
 
     private boolean archived;
 
-    public AssetVersionBase(long id, int assetId, String comment, int version, UserEntity createdBy, Date createdDate, boolean archived) {
+    public VersionBase(long id, int assetId, String comment, int version, UserEntity createdBy, Date createdDate, boolean archived) {
         this.id = id;
         this.assetId = assetId;
         this.comment = comment;

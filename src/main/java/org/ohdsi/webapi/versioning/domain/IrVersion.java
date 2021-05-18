@@ -11,7 +11,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "ir_versions")
-public class IrVersion extends AssetVersion {
+public class IrVersion extends Version {
     @GenericGenerator(
             name = "ir_version_generator",
             strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",

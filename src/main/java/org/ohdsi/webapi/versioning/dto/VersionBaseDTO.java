@@ -9,15 +9,27 @@ import java.util.Date;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AssetVersionUpdateDTO {
+public class VersionBaseDTO {
     @JsonProperty
     private Long id;
+
+    @JsonProperty
+    private int assetId;
 
     @JsonProperty
     private String comment;
 
     @JsonProperty
+    private int version;
+
+    @JsonProperty
     private boolean archived;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private UserDTO createdBy;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Date createdDate;
 
     public Long getId() {
         return id;
@@ -27,12 +39,44 @@ public class AssetVersionUpdateDTO {
         this.id = id;
     }
 
+    public int getAssetId() {
+        return assetId;
+    }
+
+    public void setAssetId(int assetId) {
+        this.assetId = assetId;
+    }
+
     public String getComment() {
         return comment;
     }
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
+    public UserDTO getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(UserDTO createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
     }
 
     public boolean isArchived() {

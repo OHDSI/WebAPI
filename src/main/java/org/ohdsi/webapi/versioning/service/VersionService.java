@@ -2,10 +2,10 @@ package org.ohdsi.webapi.versioning.service;
 
 import org.ohdsi.webapi.exception.AtlasException;
 import org.ohdsi.webapi.service.AbstractDaoService;
-import org.ohdsi.webapi.versioning.domain.AssetVersionBase;
-import org.ohdsi.webapi.versioning.domain.AssetVersion;
-import org.ohdsi.webapi.versioning.domain.AssetVersionType;
-import org.ohdsi.webapi.versioning.dto.AssetVersionUpdateDTO;
+import org.ohdsi.webapi.versioning.domain.Version;
+import org.ohdsi.webapi.versioning.domain.VersionBase;
+import org.ohdsi.webapi.versioning.domain.VersionType;
+import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.ohdsi.webapi.versioning.repository.CharacterizationVersionRepository;
 import org.ohdsi.webapi.versioning.repository.CohortVersionRepository;
 import org.ohdsi.webapi.versioning.repository.ConceptSetVersionRepository;
@@ -31,13 +31,13 @@ import java.util.Objects;
 
 @Service
 @Transactional
-public class VersionService<T extends AssetVersion> extends AbstractDaoService {
+public class VersionService<T extends Version> extends AbstractDaoService {
     @Value("${versioning.maxAttempt}")
     private int maxAttempt;
 
     private static final Logger logger = LoggerFactory.getLogger(VersionService.class);
     private final EntityManager entityManager;
-    private final Map<AssetVersionType, VersionRepository<T>> repositoryMap;
+    private final Map<VersionType, VersionRepository<T>> repositoryMap;
 
     @Autowired
     private VersionService<T> versionService;
@@ -53,22 +53,22 @@ public class VersionService<T extends AssetVersion> extends AbstractDaoService {
         this.entityManager = entityManager;
 
         this.repositoryMap = new HashMap<>();
-        this.repositoryMap.put(AssetVersionType.COHORT, (VersionRepository<T>) cohortRepository);
-        this.repositoryMap.put(AssetVersionType.CONCEPT_SET, (VersionRepository<T>) conceptSetVersionRepository);
-        this.repositoryMap.put(AssetVersionType.CHARACTERIZATION, (VersionRepository<T>) characterizationVersionRepository);
-        this.repositoryMap.put(AssetVersionType.INCIDENCE_RATE, (VersionRepository<T>) irRepository);
-        this.repositoryMap.put(AssetVersionType.PATHWAY, (VersionRepository<T>) pathwayRepository);
+        this.repositoryMap.put(VersionType.COHORT, (VersionRepository<T>) cohortRepository);
+        this.repositoryMap.put(VersionType.CONCEPT_SET, (VersionRepository<T>) conceptSetVersionRepository);
+        this.repositoryMap.put(VersionType.CHARACTERIZATION, (VersionRepository<T>) characterizationVersionRepository);
+        this.repositoryMap.put(VersionType.INCIDENCE_RATE, (VersionRepository<T>) irRepository);
+        this.repositoryMap.put(VersionType.PATHWAY, (VersionRepository<T>) pathwayRepository);
     }
 
-    private VersionRepository<T> getRepository(AssetVersionType type) {
+    private VersionRepository<T> getRepository(VersionType type) {
         return repositoryMap.get(type);
     }
 
-    public List<AssetVersionBase> getVersions(AssetVersionType type, int assetId) {
+    public List<VersionBase> getVersions(VersionType type, int assetId) {
         return getRepository(type).findAllVersions(assetId);
     }
 
-    public T create(AssetVersionType type, T assetVersion) {
+    public T create(VersionType type, T assetVersion) {
         assetVersion.setCreatedBy(getCurrentUser());
         assetVersion.setCreatedDate(new Date());
 
@@ -98,7 +98,7 @@ public class VersionService<T extends AssetVersion> extends AbstractDaoService {
         return assetVersion;
     }
 
-    public T update(AssetVersionType type, AssetVersionUpdateDTO updateDTO) {
+    public T update(VersionType type, VersionUpdateDTO updateDTO) {
         T currentVersion = getRepository(type).findOne(updateDTO.getId());
         if (Objects.isNull(currentVersion)) {
             throw new NotFoundException("Version not found");
@@ -110,7 +110,7 @@ public class VersionService<T extends AssetVersion> extends AbstractDaoService {
         return save(type, currentVersion);
     }
 
-    public void delete(AssetVersionType type, Long id) {
+    public void delete(VersionType type, Long id) {
         T currentVersion = getRepository(type).findOne(id);
         if (Objects.isNull(currentVersion)) {
             throw new NotFoundException("Version not found");
@@ -119,12 +119,12 @@ public class VersionService<T extends AssetVersion> extends AbstractDaoService {
         currentVersion.setArchived(true);
     }
 
-    public T getById(AssetVersionType type, Long id) {
+    public T getById(VersionType type, Long id) {
         return getRepository(type).findOne(id);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public T save(AssetVersionType type, T version) {
+    public T save(VersionType type, T version) {
         version = getRepository(type).saveAndFlush(version);
         entityManager.refresh(version);
         return getRepository(type).findOne(version.getId());

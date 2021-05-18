@@ -1,5 +1,5 @@
 package org.ohdsi.webapi.versioning.domain;
 
-public enum AssetVersionType {
+public enum VersionType {
     CONCEPT_SET, COHORT, CHARACTERIZATION, INCIDENCE_RATE, PATHWAY
 }

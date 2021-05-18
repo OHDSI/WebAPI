@@ -11,7 +11,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "cohort_characterization_versions")
-public class CohortCharacterizationVersion extends AssetVersion {
+public class CohortCharacterizationVersion extends Version {
     @GenericGenerator(
             name = "cc_version_generator",
             strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",

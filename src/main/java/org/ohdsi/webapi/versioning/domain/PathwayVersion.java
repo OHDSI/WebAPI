@@ -11,7 +11,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "pathway_versions")
-public class PathwayVersion extends AssetVersion {
+public class PathwayVersion extends Version {
     @GenericGenerator(
             name = "pathway_version_generator",
             strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",

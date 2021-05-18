@@ -60,13 +60,12 @@ import org.ohdsi.webapi.util.HttpUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
-import org.ohdsi.webapi.versioning.domain.AssetVersionBase;
-import org.ohdsi.webapi.versioning.domain.AssetVersion;
-import org.ohdsi.webapi.versioning.domain.AssetVersionType;
+import org.ohdsi.webapi.versioning.domain.VersionBase;
+import org.ohdsi.webapi.versioning.domain.Version;
+import org.ohdsi.webapi.versioning.domain.VersionType;
 import org.ohdsi.webapi.versioning.domain.CohortVersion;
-import org.ohdsi.webapi.versioning.dto.AssetVersionBaseDTO;
-import org.ohdsi.webapi.versioning.dto.AssetVersionDTO;
-import org.ohdsi.webapi.versioning.dto.AssetVersionUpdateDTO;
+import org.ohdsi.webapi.versioning.dto.VersionBaseDTO;
+import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.ohdsi.webapi.versioning.service.VersionService;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
@@ -83,21 +82,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.EntityManager;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.PersistenceContext;
 import javax.servlet.ServletContext;
 import javax.transaction.Transactional;
@@ -128,7 +113,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -526,7 +510,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 			currentDefinition = this.cohortDefinitionRepository.save(currentDefinition);
 			eventPublisher.publishEvent(new CohortDefinitionChangedEvent(currentDefinition));
 		} catch (Exception e) {
-			versionService.delete(AssetVersionType.COHORT, version.getId());
+			versionService.delete(VersionType.COHORT, version.getId());
 			throw e;
 		}
 		return getCohortDefinition(id);
@@ -843,10 +827,10 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/version/")
 	@Transactional
-	public List<AssetVersionBaseDTO> getVersions(@PathParam("id") final int id) {
-		List<AssetVersionBase> versions = versionService.getVersions(AssetVersionType.COHORT, id);
+	public List<VersionBaseDTO> getVersions(@PathParam("id") final int id) {
+		List<VersionBase> versions = versionService.getVersions(VersionType.COHORT, id);
 		return versions.stream()
-				.map(v -> conversionService.convert(v, AssetVersionBaseDTO.class))
+				.map(v -> conversionService.convert(v, VersionBaseDTO.class))
 				.collect(Collectors.toList());
 	}
 
@@ -858,7 +842,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 		CohortDefinition def = this.cohortDefinitionRepository.findOneWithDetail(id);
 		ExceptionUtils.throwNotFoundExceptionIfNull(def, String.format("There is no cohort definition with id = %d.", id));
 
-		CohortVersion version = versionService.getById(AssetVersionType.COHORT, versionId);
+		CohortVersion version = versionService.getById(VersionType.COHORT, versionId);
 		ExceptionUtils.throwNotFoundExceptionIfNull(version, String.format("There is no cohort version with id = %d.", versionId));
 //		CohortDefinition versionDef = Utils.deserialize(version.getAssetJson(), CohortDefinition.class);
 
@@ -900,9 +884,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/version")
 	@Transactional
-	public AssetVersionBaseDTO updateVersion(@PathParam("id") final int id, AssetVersionUpdateDTO updateDTO) {
-		CohortVersion updated = versionService.update(AssetVersionType.COHORT, updateDTO);
-		return conversionService.convert(updated, AssetVersionBaseDTO.class);
+	public VersionBaseDTO updateVersion(@PathParam("id") final int id, VersionUpdateDTO updateDTO) {
+		CohortVersion updated = versionService.update(VersionType.COHORT, updateDTO);
+		return conversionService.convert(updated, VersionBaseDTO.class);
 	}
 
 	@DELETE
@@ -910,9 +894,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Path("/{id}/version/{versionId}")
 	@Transactional
 	public void deleteVersion(@PathParam("id") final int id, @PathParam("versionId") final long versionId) {
-		AssetVersion version = versionService.getById(AssetVersionType.COHORT, versionId);
+		Version version = versionService.getById(VersionType.COHORT, versionId);
 		ExceptionUtils.throwNotFoundExceptionIfNull(version, String.format("There is no cohort version with id = %d.", versionId));
-		versionService.delete(AssetVersionType.COHORT, versionId);
+		versionService.delete(VersionType.COHORT, versionId);
 	}
 
 	private CohortVersion saveVersion(int id) {
@@ -939,7 +923,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 //				log.error("Error occurred during serializing version", e);
 //				throw new AtlasException("Error occurred during saving version");
 //			}
-			return versionService.create(AssetVersionType.COHORT, version);
+			return versionService.create(VersionType.COHORT, version);
 		});
 	}
 }

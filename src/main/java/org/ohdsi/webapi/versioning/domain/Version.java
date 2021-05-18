@@ -10,7 +10,7 @@ import javax.persistence.MappedSuperclass;
 import java.util.Date;
 
 @MappedSuperclass
-public abstract class AssetVersion {
+public abstract class Version {
     @Column(name = "asset_id")
     private int assetId;
 

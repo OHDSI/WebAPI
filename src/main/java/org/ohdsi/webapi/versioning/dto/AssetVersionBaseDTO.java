@@ -3,14 +3,13 @@ package org.ohdsi.webapi.versioning.dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.ohdsi.webapi.service.dto.CommonEntityDTO;
 import org.ohdsi.webapi.user.dto.UserDTO;
 
 import java.util.Date;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AssetVersionBaseDTO extends CommonEntityDTO {
+public class AssetVersionBaseDTO {
     @JsonProperty
     private Long id;
 

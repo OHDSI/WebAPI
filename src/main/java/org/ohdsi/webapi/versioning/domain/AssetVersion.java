@@ -1,12 +1,16 @@
 package org.ohdsi.webapi.versioning.domain;
 
-import org.ohdsi.webapi.model.CommonEntity;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
 
 import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
+import java.util.Date;
 
 @MappedSuperclass
-public abstract class AssetVersionFull extends CommonEntity<Long> {
+public abstract class AssetVersion {
     @Column(name = "asset_id")
     private int assetId;
 
@@ -22,6 +26,13 @@ public abstract class AssetVersionFull extends CommonEntity<Long> {
     @Column(name = "asset_json")
     private String assetJson;
 
+    @Column(name = "created_date", updatable = false)
+    private Date createdDate;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_id", updatable = false)
+    private UserEntity createdBy;
+
     public int getAssetId() {
         return assetId;
     }
@@ -34,8 +45,8 @@ public abstract class AssetVersionFull extends CommonEntity<Long> {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setName(String description) {
+        this.name = description;
     }
 
     public int getVersion() {
@@ -65,4 +76,20 @@ public abstract class AssetVersionFull extends CommonEntity<Long> {
     public abstract Long getId();
 
     public abstract void setId(Long id);
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public UserEntity getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(UserEntity createdBy) {
+        this.createdBy = createdBy;
+    }
 }

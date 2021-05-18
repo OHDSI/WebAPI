@@ -3,7 +3,7 @@ package org.ohdsi.webapi.versioning.service;
 import org.ohdsi.webapi.exception.AtlasException;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.versioning.domain.AssetVersionBase;
-import org.ohdsi.webapi.versioning.domain.AssetVersionFull;
+import org.ohdsi.webapi.versioning.domain.AssetVersion;
 import org.ohdsi.webapi.versioning.domain.AssetVersionType;
 import org.ohdsi.webapi.versioning.repository.CharacterizationVersionRepository;
 import org.ohdsi.webapi.versioning.repository.CohortVersionRepository;
@@ -30,7 +30,7 @@ import java.util.Objects;
 
 @Service
 @Transactional
-public class VersionService<T extends AssetVersionFull> extends AbstractDaoService {
+public class VersionService<T extends AssetVersion> extends AbstractDaoService {
     @Value("${versioning.maxAttempt}")
     private int maxAttempt;
 
@@ -105,8 +105,6 @@ public class VersionService<T extends AssetVersionFull> extends AbstractDaoServi
         checkOwnerOrAdmin(currentVersion.getCreatedBy());
 
         currentVersion.setName(assetVersion.getName());
-        currentVersion.setModifiedBy(getCurrentUser());
-        currentVersion.setModifiedDate(new Date());
         return save(type, currentVersion);
     }
 

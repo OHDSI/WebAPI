@@ -18,9 +18,5 @@ public interface AssetVersionBase {
 
     Date getCreatedDate();
 
-    UserEntity getModifiedBy();
-
-    Date getModifiedDate();
-
     boolean isArchived();
 }

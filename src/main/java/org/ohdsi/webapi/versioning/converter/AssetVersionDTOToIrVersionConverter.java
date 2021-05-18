@@ -4,7 +4,7 @@ import org.ohdsi.webapi.versioning.domain.IrVersion;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AssetVersionDTOToIrVersionConverter extends BaseAssetVersionFullDTOToAssetVersionFullConverter<IrVersion> {
+public class AssetVersionDTOToIrVersionConverter extends BaseAssetVersionDTOToAssetVersionConverter<IrVersion> {
     @Override
     protected IrVersion createResultObject() {
         return new IrVersion();

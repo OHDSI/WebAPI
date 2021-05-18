@@ -6,6 +6,7 @@
 package org.ohdsi.webapi.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.commonmark.Extension;
@@ -13,6 +14,8 @@ import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.check.Checker;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
@@ -25,11 +28,14 @@ import org.ohdsi.webapi.check.CheckResult;
 import org.ohdsi.webapi.check.checker.cohort.CohortChecker;
 import org.ohdsi.webapi.check.warning.Warning;
 import org.ohdsi.webapi.check.warning.WarningUtils;
+import org.ohdsi.webapi.cohortanalysis.CohortAnalysisGenerationInfo;
+import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortdefinition.CleanupCohortTasklet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
+import org.ohdsi.webapi.cohortdefinition.ExpressionType;
 import org.ohdsi.webapi.cohortdefinition.InclusionRuleReport;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortGenerationInfoDTO;
@@ -43,6 +49,7 @@ import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.common.sensitiveinfo.CohortGenerationSensitiveInfoService;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
+import org.ohdsi.webapi.exception.AtlasException;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.security.PermissionService;
@@ -54,6 +61,7 @@ import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.tag.TagService;
+import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.HttpUtils;
@@ -61,11 +69,11 @@ import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.versioning.domain.AssetVersionBase;
-import org.ohdsi.webapi.versioning.domain.AssetVersionFull;
+import org.ohdsi.webapi.versioning.domain.AssetVersion;
 import org.ohdsi.webapi.versioning.domain.AssetVersionType;
 import org.ohdsi.webapi.versioning.domain.CohortVersion;
 import org.ohdsi.webapi.versioning.dto.AssetVersionBaseDTO;
-import org.ohdsi.webapi.versioning.dto.AssetVersionFullDTO;
+import org.ohdsi.webapi.versioning.dto.AssetVersionDTO;
 import org.ohdsi.webapi.versioning.service.VersionService;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
@@ -82,7 +90,21 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.EntityManager;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.PersistenceContext;
 import javax.servlet.ServletContext;
 import javax.transaction.Transactional;
@@ -113,6 +135,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -191,6 +214,12 @@ public class CohortDefinitionService extends AbstractDaoService {
 
 	@Autowired
 	private VersionService<CohortVersion> versionService;
+
+	@Autowired
+	private ConceptSetService conceptSetService;
+
+	@Autowired
+	private CohortDefinitionService service;
 
 	private final MarkdownRender markdownPF = new MarkdownRender();
 
@@ -444,6 +473,11 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Path("/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public CohortRawDTO getCohortDefinitionRaw(@PathParam("id") final int id) {
+		List<AssetVersionBase> versions = versionService.getVersions(AssetVersionType.COHORT, id);
+		if (versions.size() > 0) {
+			AssetVersionDTO versionDTO = service.getVersion(id, versions.get(0).getId());
+			System.out.println(versionDTO);
+		}
 
 		return getTransactionTemplate().execute(transactionStatus -> {
 			CohortDefinition d = this.cohortDefinitionRepository.findOneWithDetail(id);
@@ -489,8 +523,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 	public CohortDTO saveCohortDefinition(@PathParam("id") final int id, CohortDTO def) {
 		Date currentTime = Calendar.getInstance().getTime();
 
-		CohortDefinition versionDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
-		entityManager.detach(versionDefinition);
+		saveVersion(id);
 
 		CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
 		UserEntity modifier = userRepository.findByLogin(security.getSubject());
@@ -504,7 +537,6 @@ public class CohortDefinitionService extends AbstractDaoService {
 
 		currentDefinition = this.cohortDefinitionRepository.save(currentDefinition);
 		eventPublisher.publishEvent(new CohortDefinitionChangedEvent(currentDefinition));
-		saveVersion(versionDefinition);
 		return getCohortDefinition(id);
 	}
 
@@ -830,18 +862,41 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/version/{versionId}")
 	@Transactional
-	public AssetVersionFullDTO getVersion(@PathParam("id") final int id, @PathParam("versionId") final long versionId) {
-		AssetVersionFull version = versionService.getById(AssetVersionType.COHORT, versionId);
+	public AssetVersionDTO getVersion(@PathParam("id") final int id, @PathParam("versionId") final long versionId) {
+		CohortDefinition def = this.cohortDefinitionRepository.findOneWithDetail(id);
+		ExceptionUtils.throwNotFoundExceptionIfNull(def, String.format("There is no cohort definition with id = %d.", id));
 
+		AssetVersion version = versionService.getById(AssetVersionType.COHORT, versionId);
 		ExceptionUtils.throwNotFoundExceptionIfNull(version, String.format("There is no cohort version with id = %d.", versionId));
-		return conversionService.convert(version, AssetVersionFullDTO.class);
+		CohortDefinition versionDef = Utils.deserialize(version.getAssetJson(), CohortDefinition.class);
+
+		versionDef.setCohortAnalysisGenerationInfoList(def.getCohortAnalysisGenerationInfoList());
+		versionDef.setTags(def.getTags());
+		versionDef.setName(def.getName());
+		versionDef.setCohortAnalysisGenerationInfoList(def.getCohortAnalysisGenerationInfoList());
+		versionDef.setGenerationInfoList(def.getGenerationInfoList());
+		versionDef.setCohortCharacterizations(def.getCohortCharacterizations());
+		versionDef.setTags(def.getTags());
+
+		CohortExpression expression = CohortExpression.fromJson(versionDef.getDetails().getExpression());
+		if (Objects.nonNull(expression.conceptSets)) {
+			for (int i = 0; i < expression.conceptSets.length; i++) {
+				ConceptSet conceptSet = expression.conceptSets[i];
+				conceptSet.expression = conceptSetService.getConceptSetExpression(conceptSet.id);
+				conceptSet.name = conceptSetService.getConceptSet(conceptSet.id).getName();
+			}
+		}
+		String expStr = Utils.serialize(expression);
+		versionDef.getDetails().setExpression(expStr);
+
+		return conversionService.convert(versionDef, AssetVersionDTO.class);
 	}
 
 	@PUT
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/version")
 	@Transactional
-	public AssetVersionBaseDTO getVersion(@PathParam("id") final int id, AssetVersionFullDTO versionDTO) {
+	public AssetVersionBaseDTO updateVersion(@PathParam("id") final int id, AssetVersionDTO versionDTO) {
 		CohortVersion version = conversionService.convert(versionDTO, CohortVersion.class);
 		CohortVersion updated = versionService.update(AssetVersionType.COHORT, version);
 		return conversionService.convert(updated, AssetVersionBaseDTO.class);
@@ -852,25 +907,35 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Path("/{id}/version/{versionId}")
 	@Transactional
 	public void deleteVersion(@PathParam("id") final int id, @PathParam("versionId") final long versionId) {
-		AssetVersionFull version = versionService.getById(AssetVersionType.COHORT, versionId);
+		AssetVersion version = versionService.getById(AssetVersionType.COHORT, versionId);
 		ExceptionUtils.throwNotFoundExceptionIfNull(version, String.format("There is no cohort version with id = %d.", versionId));
 		versionService.delete(AssetVersionType.COHORT, versionId);
 	}
 
-	private void saveVersion(CohortDefinition versionDefinition) {
-		versionDefinition.getCohortAnalysisGenerationInfoList().clear();
-		versionDefinition.getTags().clear();
-		CohortExpression expression = CohortExpression.fromJson(versionDefinition.getDetails().getExpression());
-		if (Objects.nonNull(expression.conceptSets)) {
-			for (int i = 0; i < expression.conceptSets.length; i++) {
-				ConceptSet conceptSet = expression.conceptSets[i];
-				conceptSet.expression = null;
-				conceptSet.name = null;
+	private void saveVersion(int id) {
+		// need transaction to get access to lazy collections
+		getTransactionTemplate().execute(transactionStatus -> {
+			CohortDefinition existingDef = this.cohortDefinitionRepository.findOneWithDetail(id);
+			CohortDefinition versionDef = new CohortDefinition();
+			versionDef.setDescription(existingDef.getDescription());
+			versionDef.setId(existingDef.getId());
+
+			CohortDefinitionDetails details = new CohortDefinitionDetails();
+			details.setExpression(existingDef.getDetails().getExpression());
+			versionDef.setDetails(details);
+
+			versionDef.setExpressionType(existingDef.getExpressionType());
+
+			CohortVersion version = new CohortVersion();
+			version.setAssetId(id);
+			try {
+				version.setAssetJson(objectMapper.writeValueAsString(versionDef));
+			} catch (JsonProcessingException e) {
+				log.error("Error occurred during serializing version", e);
+				throw new AtlasException("Error occurred during saving version");
 			}
-		}
-		CohortVersion version = new CohortVersion();
-		version.setAssetId(versionDefinition.getId());
-		version.setAssetJson(Utils.serialize(versionDefinition));
-		versionService.create(AssetVersionType.COHORT, version);
+			versionService.create(AssetVersionType.COHORT, version);
+			return version;
+		});
 	}
 }

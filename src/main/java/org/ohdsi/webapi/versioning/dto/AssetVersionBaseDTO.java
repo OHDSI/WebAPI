@@ -17,7 +17,7 @@ public class AssetVersionBaseDTO {
     private int assetId;
 
     @JsonProperty
-    private String name;
+    private String comment;
 
     @JsonProperty
     private int version;
@@ -47,12 +47,12 @@ public class AssetVersionBaseDTO {
         this.assetId = assetId;
     }
 
-    public String getName() {
-        return name;
+    public String getComment() {
+        return comment;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
     public int getVersion() {

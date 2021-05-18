@@ -18,7 +18,7 @@ public abstract class BaseAssetVersionDTOToAssetVersionConverter<T extends Asset
         target.setVersion(source.getVersion());
         target.setAssetId(source.getAssetId());
         target.setId(source.getId());
-        target.setName(source.getName());
+        target.setComment(source.getComment());
         target.setArchived(source.isArchived());
         target.setAssetJson(source.getAssetJson());
     }

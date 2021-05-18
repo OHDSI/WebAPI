@@ -10,7 +10,7 @@ public interface AssetVersionBase {
 
     int getAssetId();
 
-    String getName();
+    String getComment();
 
     int getVersion();
 

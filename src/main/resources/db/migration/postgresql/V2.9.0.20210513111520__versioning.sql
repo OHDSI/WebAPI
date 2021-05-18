@@ -30,7 +30,8 @@ CREATE TABLE ${ohdsiSchema}.cohort_versions
 (
     id            int8                     NOT NULL DEFAULT nextval('${ohdsiSchema}.cohort_version_seq'),
     asset_id      int4                     NOT NULL,
-    name          varchar                  NULL,
+    comment       varchar                  NULL,
+    description   varchar                  NULL,
     version       int4                     NOT NULL DEFAULT 1,
     asset_json    varchar                  NOT NULL,
     archived      bool                     NOT NULL DEFAULT FALSE,
@@ -48,7 +49,7 @@ CREATE TABLE ${ohdsiSchema}.cohort_characterization_versions
 (
     id            int8                     NOT NULL DEFAULT nextval('${ohdsiSchema}.cc_version_seq'),
     asset_id      int4                     NOT NULL,
-    name          varchar                  NULL,
+    comment       varchar                  NULL,
     version       int4                     NOT NULL DEFAULT 1,
     asset_json    varchar                  NOT NULL,
     archived      bool                     NOT NULL DEFAULT FALSE,
@@ -66,7 +67,7 @@ CREATE TABLE ${ohdsiSchema}.concept_set_versions
 (
     id            int8                     NOT NULL DEFAULT nextval('${ohdsiSchema}.concept_set_version_seq'),
     asset_id      int4                     NOT NULL,
-    name          varchar                  NULL,
+    comment       varchar                  NULL,
     version       int4                     NOT NULL DEFAULT 1,
     asset_json    varchar                  NOT NULL,
     archived      bool                     NOT NULL DEFAULT FALSE,
@@ -84,7 +85,7 @@ CREATE TABLE ${ohdsiSchema}.ir_versions
 (
     id            int8                     NOT NULL DEFAULT nextval('${ohdsiSchema}.ir_version_seq'),
     asset_id      int4                     NOT NULL,
-    name          varchar                  NULL,
+    comment       varchar                  NULL,
     version       int4                     NOT NULL DEFAULT 1,
     asset_json    varchar                  NOT NULL,
     archived      bool                     NOT NULL DEFAULT FALSE,
@@ -102,7 +103,7 @@ CREATE TABLE ${ohdsiSchema}.pathway_versions
 (
     id            int8                     NOT NULL DEFAULT nextval('${ohdsiSchema}.pathway_version_seq'),
     asset_id      int4                     NOT NULL,
-    name          varchar                  NULL,
+    comment       varchar                  NULL,
     version       int4                     NOT NULL DEFAULT 1,
     asset_json    varchar                  NOT NULL,
     archived      bool                     NOT NULL DEFAULT FALSE,

@@ -104,7 +104,7 @@ public class VersionService<T extends AssetVersion> extends AbstractDaoService {
         }
         checkOwnerOrAdmin(currentVersion.getCreatedBy());
 
-        currentVersion.setName(assetVersion.getName());
+        currentVersion.setComment(assetVersion.getComment());
         return save(type, currentVersion);
     }
 

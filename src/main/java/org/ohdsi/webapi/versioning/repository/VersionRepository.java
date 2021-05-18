@@ -13,7 +13,7 @@ public interface VersionRepository<T extends AssetVersion> extends JpaRepository
     @Query("SELECT max(v.version) from #{#entityName} v WHERE v.assetId = ?1")
     Integer getLatestVersion(int assetId);
 
-    @Query("SELECT v.id AS id, v.assetId AS assetId, v.name AS name, " +
+    @Query("SELECT v.id AS id, v.assetId AS assetId, v.comment AS comment, " +
             "v.version AS version, uc AS createdBy, " +
             "v.createdDate AS createdDate, v.archived AS archived " +
             "FROM #{#entityName} v, UserEntity uc " +

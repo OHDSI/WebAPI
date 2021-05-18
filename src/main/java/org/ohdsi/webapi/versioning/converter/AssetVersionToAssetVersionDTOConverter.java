@@ -12,7 +12,7 @@ public class AssetVersionToAssetVersionDTOConverter<S extends AssetVersion, T ex
     public AssetVersionDTO convert(AssetVersion source) {
         AssetVersionDTO target = new AssetVersionDTO();
 
-        target.setName(source.getName());
+        target.setComment(source.getComment());
         target.setAssetId(source.getAssetId());
         target.setId(source.getId());
         target.setVersion(source.getVersion());

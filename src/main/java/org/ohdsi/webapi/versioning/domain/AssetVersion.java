@@ -14,8 +14,8 @@ public abstract class AssetVersion {
     @Column(name = "asset_id")
     private int assetId;
 
-    @Column(name = "name")
-    private String name;
+    @Column(name = "comment")
+    private String comment;
 
     @Column(name = "version")
     private int version;
@@ -41,12 +41,12 @@ public abstract class AssetVersion {
         this.assetId = assetId;
     }
 
-    public String getName() {
-        return name;
+    public String getComment() {
+        return comment;
     }
 
-    public void setName(String description) {
-        this.name = description;
+    public void setComment(String description) {
+        this.comment = description;
     }
 
     public int getVersion() {

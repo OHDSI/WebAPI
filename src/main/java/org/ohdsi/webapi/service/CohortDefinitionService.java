@@ -839,43 +839,13 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Path("/{id}/version/{versionId}")
 	@Transactional
 	public CohortRawDTO getVersion(@PathParam("id") final int id, @PathParam("versionId") final long versionId) {
-		CohortDefinition def = this.cohortDefinitionRepository.findOneWithDetail(id);
-		ExceptionUtils.throwNotFoundExceptionIfNull(def, String.format("There is no cohort definition with id = %d.", id));
-
 		CohortVersion version = versionService.getById(VersionType.COHORT, versionId);
 		ExceptionUtils.throwNotFoundExceptionIfNull(version, String.format("There is no cohort version with id = %d.", versionId));
-//		CohortDefinition versionDef = Utils.deserialize(version.getAssetJson(), CohortDefinition.class);
 
 		CohortDefinitionDetails details = new CohortDefinitionDetails();
 		details.setExpression(version.getAssetJson());
 
-		CohortDefinition versionDef = new CohortDefinition();
-		versionDef.setCohortAnalysisGenerationInfoList(def.getCohortAnalysisGenerationInfoList());
-		versionDef.setId(def.getId());
-		versionDef.setTags(def.getTags());
-		versionDef.setName(def.getName());
-		versionDef.setDescription(version.getDescription());
-		versionDef.setExpressionType(def.getExpressionType());
-		versionDef.setDetails(details);
-		versionDef.setCohortAnalysisGenerationInfoList(def.getCohortAnalysisGenerationInfoList());
-		versionDef.setGenerationInfoList(def.getGenerationInfoList());
-		versionDef.setCohortCharacterizations(def.getCohortCharacterizations());
-		versionDef.setTags(def.getTags());
-		versionDef.setCreatedBy(def.getCreatedBy());
-		versionDef.setCreatedDate(def.getCreatedDate());
-		versionDef.setModifiedBy(def.getModifiedBy());
-		versionDef.setModifiedDate(def.getModifiedDate());
-
-//		CohortExpression expression = CohortExpression.fromJson(versionDef.getDetails().getExpression());
-//		if (Objects.nonNull(expression.conceptSets)) {
-//			for (int i = 0; i < expression.conceptSets.length; i++) {
-//				ConceptSet conceptSet = expression.conceptSets[i];
-//				conceptSet.expression = conceptSetService.getConceptSetExpression(conceptSet.id);
-//				conceptSet.name = conceptSetService.getConceptSet(conceptSet.id).getName();
-//			}
-//		}
-//		String expStr = Utils.serialize(expression);
-//		versionDef.getDetails().setExpression(expStr);
+		CohortDefinition versionDef = conversionService.convert(version, CohortDefinition.class);
 
 		return conversionService.convert(versionDef, CohortRawDTO.class);
 	}
@@ -903,26 +873,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 		// need transaction to get access to lazy collections
 		return getTransactionTemplate().execute(transactionStatus -> {
 			CohortDefinition existingDef = this.cohortDefinitionRepository.findOneWithDetail(id);
-//			CohortDefinition versionDef = new CohortDefinition();
-//			versionDef.setDescription(existingDef.getDescription());
-//			versionDef.setId(existingDef.getId());
-
-//			CohortDefinitionDetails details = new CohortDefinitionDetails();
-//			details.setExpression(existingDef.getDetails().getExpression());
-//			versionDef.setDetails(details);
-
-//			versionDef.setExpressionType(existingDef.getExpressionType());
-//
-			CohortVersion version = new CohortVersion();
-			version.setAssetId(id);
-			version.setDescription(existingDef.getDescription());
-			version.setAssetJson(existingDef.getDetails().getExpression());
-//			try {
-//				version.setAssetJson(objectMapper.writeValueAsString(versionDef));
-//			} catch (JsonProcessingException e) {
-//				log.error("Error occurred during serializing version", e);
-//				throw new AtlasException("Error occurred during saving version");
-//			}
+			CohortVersion version = conversionService.convert(existingDef, CohortVersion.class);
 			return versionService.create(VersionType.COHORT, version);
 		});
 	}

@@ -82,6 +82,8 @@ public class VersionService<T extends Version> extends AbstractDaoService {
             Integer latestVersion = getRepository(type).getLatestVersion(assetVersion.getAssetId());
             if (Objects.nonNull(latestVersion)) {
                 assetVersion.setVersion(latestVersion + 1);
+            } else {
+                assetVersion.setVersion(1);
             }
 
             try {

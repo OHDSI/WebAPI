@@ -8,11 +8,14 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.IExecutionInfo;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.common.sensitiveinfo.AbstractAdminService;
 import org.ohdsi.webapi.conceptset.ConceptSetItemRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetRepository;
 import org.ohdsi.webapi.exception.BadRequestAtlasException;
+import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.model.CommonEntityExt;
+import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
@@ -23,11 +26,15 @@ import org.ohdsi.webapi.tag.TagService;
 import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.DataSourceDTOParser;
+import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.ohdsi.webapi.versioning.domain.Version;
+import org.ohdsi.webapi.versioning.domain.VersionType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -118,6 +125,9 @@ public abstract class AbstractDaoService extends AbstractAdminService {
 
   @Autowired
   private TagService tagService;
+
+  @Autowired
+  private PermissionService permissionService;
 
   public SourceRepository getSourceRepository() {
     return sourceRepository;
@@ -336,6 +346,15 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     Long ownerId = Objects.nonNull(owner) ? owner.getId() : null;
 
     if (!(user.getId().equals(ownerId) || isAdmin())) {
+      throw new ForbiddenException();
+    }
+  }
+
+  protected void checkOwnerOrAdminOrGranted(CommonEntity entity) {
+    UserEntity user = getCurrentUser();
+    Long ownerId = Objects.nonNull(entity.getCreatedBy()) ? entity.getCreatedBy().getId() : null;
+
+    if (!(user.getId().equals(ownerId) || isAdmin() || permissionService.hasWriteAccess(entity))) {
       throw new ForbiddenException();
     }
   }

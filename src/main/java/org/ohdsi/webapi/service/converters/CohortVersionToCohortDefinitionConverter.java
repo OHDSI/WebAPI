@@ -58,30 +58,6 @@ public class CohortVersionToCohortDefinitionConverter
         target.setModifiedBy(def.getModifiedBy());
         target.setModifiedDate(def.getModifiedDate());
 
-        CohortExpression expression = CohortExpression.fromJson(def.getDetails().getExpression());
-        if (Objects.nonNull(expression.conceptSets)) {
-            List<ConceptSet> absentSets = new ArrayList<>();
-            for (int i = 0; i < expression.conceptSets.length; i++) {
-                ConceptSet conceptSet = expression.conceptSets[i];
-                org.ohdsi.webapi.conceptset.ConceptSet existingConceptSet = conceptSetRepository.findById(conceptSet.id);
-                if (Objects.nonNull(existingConceptSet)) {
-                    conceptSet.expression = conceptSetService.getConceptSetExpression(conceptSet.id);
-                    conceptSet.name = conceptSetService.getConceptSet(conceptSet.id).getName();
-                } else {
-                    absentSets.add(conceptSet);
-                }
-            }
-            if (!absentSets.isEmpty()) {
-                String sets = absentSets.stream()
-                        .map(c -> String.format("%s (%d)", c.name, c.id))
-                        .collect(Collectors.joining("], [", "[", "]"));
-                String prefix = absentSets.size() == 1 ? "Concept Set " : "Concept Sets ";
-                throw new BadRequestAtlasException(prefix + sets + " are absent");
-            }
-        }
-        String expStr = Utils.serialize(expression);
-        target.getDetails().setExpression(expStr);
-
         return target;
     }
 }

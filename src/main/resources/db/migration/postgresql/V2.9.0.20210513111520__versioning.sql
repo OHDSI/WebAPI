@@ -6,7 +6,9 @@ VALUES (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohortdefinition:*:ver
        (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohortdefinition:*:version:*:put',
         'Update cohort version info'),
        (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohortdefinition:*:version:*:delete',
-        'Delete cohort version info');
+        'Delete cohort version info'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohortdefinition:*:version:*:createAsset:put',
+        'Copy cohort version as new cohort');
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
 SELECT sr.id, sp.id
@@ -16,7 +18,8 @@ WHERE sp.value IN (
                    'cohortdefinition:*:version:get',
                    'cohortdefinition:*:version:*:get',
                    'cohortdefinition:*:version:*:put',
-                   'cohortdefinition:*:version:*:delete')
+                   'cohortdefinition:*:version:*:delete',
+                   'cohortdefinition:*:version:*:createAsset:put')
   AND sr.name IN ('Atlas users');
 
 CREATE SEQUENCE ${ohdsiSchema}.cohort_version_seq;

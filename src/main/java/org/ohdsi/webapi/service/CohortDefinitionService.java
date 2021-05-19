@@ -854,11 +854,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Transactional
 	public VersionBaseDTO updateVersion(@PathParam("id") final int id, @PathParam("versionId") final long versionId,
 										VersionUpdateDTO updateDTO) {
-		Version version = versionService.getById(VersionType.COHORT, versionId);
-		if (version.getAssetId() != id) {
-			throw new BadRequestException("Version does not belong to selected entity");
-		}
+		checkVersion(id, versionId);
 		CohortVersion updated = versionService.update(VersionType.COHORT, updateDTO);
+
 		return conversionService.convert(updated, VersionBaseDTO.class);
 	}
 
@@ -867,14 +865,48 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Path("/{id}/version/{versionId}")
 	@Transactional
 	public void deleteVersion(@PathParam("id") final int id, @PathParam("versionId") final long versionId) {
-		Version version = versionService.getById(VersionType.COHORT, versionId);
-		ExceptionUtils.throwNotFoundExceptionIfNull(version, String.format("There is no cohort version with id = %d.", versionId));
+		checkVersion(id, versionId);
 		versionService.delete(VersionType.COHORT, versionId);
 	}
 
+	@PUT
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/{id}/version/{versionId}/createAsset")
+	@Transactional
+	public CohortDTO copyAssetFromVersion(@PathParam("id") final int id, @PathParam("versionId") final long versionId) {
+		checkVersion(id, versionId);
+		CohortVersion version = versionService.getById(VersionType.COHORT, versionId);
+		ExceptionUtils.throwNotFoundExceptionIfNull(version, String.format("There is no cohort version with id = %d.", versionId));
+
+		CohortDefinitionDetails details = new CohortDefinitionDetails();
+		details.setExpression(version.getAssetJson());
+
+		CohortDefinition versionDef = conversionService.convert(version, CohortDefinition.class);
+
+		CohortDTO sourceDef = conversionService.convert(versionDef, CohortDTO.class);
+		sourceDef.setId(null);
+		sourceDef.setTags(null);
+		sourceDef.setName(NameUtils.getNameForCopy(sourceDef.getName(), this::getNamesLike, cohortDefinitionRepository.findByName(sourceDef.getName())));
+		return createCohortDefinition(sourceDef);
+	}
+
+	private void checkVersion(int id, long versionId) {
+		Version version = versionService.getById(VersionType.COHORT, versionId);
+		ExceptionUtils.throwNotFoundExceptionIfNull(version, String.format("There is no cohort version with id = %d.", versionId));
+		if (version.getAssetId() != id) {
+			throw new BadRequestException("Version does not belong to selected entity");
+		}
+		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
+		checkOwnerOrAdminOrGranted(entity);
+	}
+
 	private CohortVersion saveVersion(int id) {
-		CohortDefinition existingDef = this.cohortDefinitionRepository.findOneWithDetail(id);
-		CohortVersion version = conversionService.convert(existingDef, CohortVersion.class);
+		CohortDefinition def = this.cohortDefinitionRepository.findOneWithDetail(id);
+		CohortVersion version = conversionService.convert(def, CohortVersion.class);
+
+		UserEntity user = Objects.nonNull(def.getModifiedBy()) ? def.getModifiedBy() : def.getCreatedBy();
+		version.setCreatedBy(user);
+		version.setCreatedDate(new Date());
 		return versionService.create(VersionType.COHORT, version);
 	}
 }

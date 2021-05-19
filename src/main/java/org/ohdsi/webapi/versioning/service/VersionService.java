@@ -2,6 +2,7 @@ package org.ohdsi.webapi.versioning.service;
 
 import org.ohdsi.webapi.exception.AtlasException;
 import org.ohdsi.webapi.service.AbstractDaoService;
+import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.versioning.domain.Version;
 import org.ohdsi.webapi.versioning.domain.VersionBase;
 import org.ohdsi.webapi.versioning.domain.VersionType;
@@ -69,13 +70,10 @@ public class VersionService<T extends Version> extends AbstractDaoService {
     }
 
     public T create(VersionType type, T assetVersion) {
-        assetVersion.setCreatedBy(getCurrentUser());
-        assetVersion.setCreatedDate(new Date());
-
         int attemptsCounter = 0;
         boolean saved = false;
         // Trying to save current version. Current version is selected from database
-        // If current version number is used - get latest version from database again and try to save.
+        // If current version number is already used - get latest version from database again and try to save.
         while (!saved && attemptsCounter < maxAttempt) {
             attemptsCounter++;
 
@@ -105,7 +103,6 @@ public class VersionService<T extends Version> extends AbstractDaoService {
         if (Objects.isNull(currentVersion)) {
             throw new NotFoundException("Version not found");
         }
-        checkOwnerOrAdmin(currentVersion.getCreatedBy());
 
         currentVersion.setComment(updateDTO.getComment());
         currentVersion.setArchived(updateDTO.isArchived());
@@ -117,7 +114,6 @@ public class VersionService<T extends Version> extends AbstractDaoService {
         if (Objects.isNull(currentVersion)) {
             throw new NotFoundException("Version not found");
         }
-        checkOwnerOrAdmin(currentVersion.getCreatedBy());
         currentVersion.setArchived(true);
     }
 

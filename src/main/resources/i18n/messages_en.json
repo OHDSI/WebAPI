@@ -2582,9 +2582,10 @@
       "confirms": {
         "close": "Your cohort changes are not saved. Would you like to continue?",
         "delete": "Delete cohort definition? Warning: deletion can not be undone!",
+        "deleteConflict": "Cohort definition cannot be deleted because it is referenced in some analysis.",
         "generateAnalyses": "This will run <%=descr%> and may take about <%=duration%>. Are you sure?",
-        "save": "Cohort definition cannot be deleted because it is referenced in some analysis.",
-        "saveAlert": "A cohort definition with this name already exists. Please choose a different name."
+        "saveAlert": "A cohort definition with this name already exists. Please choose a different name.",
+        "saveError": "An error occurred while attempting to save a cohort definition."
       },
       "createCopyCohortTitle": "Create a copy of this cohort definition",
       "failedWithoutAnyMessage": "Failed without any message",

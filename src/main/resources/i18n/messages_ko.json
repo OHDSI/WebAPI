@@ -2582,9 +2582,10 @@
       "confirms": {
         "close": "코호트 변경 사항은 저장되지 않습니다. 계속 하시겠습니까?",
         "delete": "코호트 정의를 삭제 하시겠습니까? 경고 : 삭제시 다시 되돌릴 수 없습니다!",
+        "deleteConflict": "코호트 정의는 일부 분석에서 참조되기 때문에 삭제할 수 없습니다.",
         "generateAnalyses": "이 작업은 <%=descr%>을 실행하며 약 <%=duration%>이 소요될 수 있습니다. 확실하십니까?",
-        "save": "코호트 정의는 일부 분석에서 참조되기 때문에 삭제할 수 없습니다.",
-        "saveAlert": "이 이름을 가진 코호트 정의가 이미 존재합니다. 다른 이름을 선택하십시오."
+        "saveAlert": "이 이름을 가진 코호트 정의가 이미 존재합니다. 다른 이름을 선택하십시오.",
+        "saveError": "An error occurred while attempting to save a cohort definition."
       },
       "createCopyCohortTitle": "이 코호트 정의의 사본 만들기",
       "failedWithoutAnyMessage": "메시지없이 실패",

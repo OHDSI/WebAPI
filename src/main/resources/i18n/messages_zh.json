@@ -2582,9 +2582,10 @@
       "confirms": {
         "close": "您的队列更改未保存。  您想继续吗？",
         "delete": "删除队列定义？ 警告：删除无法撤销！",
+        "deleteConflict": "无法删除队列定义，因为在某些分析中已引用该定义。",
         "generateAnalyses": "这将运行<%=descr%>，可能需要大约<%=duration%>。你确定吗？",
-        "save": "无法删除队列定义，因为在某些分析中已引用该定义。",
-        "saveAlert": "具有该名称的队列定义已存在。 请选择其他名称。"
+        "saveAlert": "具有该名称的队列定义已存在。 请选择其他名称。",
+        "saveError": "An error occurred while attempting to save a cohort definition."
       },
       "createCopyCohortTitle": "创建此队列定义的副本",
       "failedWithoutAnyMessage": "失败，没有任何消息",

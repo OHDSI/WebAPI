@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.service.converters;
+package org.ohdsi.webapi.cohortdefinition.converter;
 
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;

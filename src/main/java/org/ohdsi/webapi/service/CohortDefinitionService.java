@@ -36,6 +36,7 @@ import org.ohdsi.webapi.cohortdefinition.dto.CohortGenerationInfoDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataImplDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortVersionFullDTO;
 import org.ohdsi.webapi.cohortdefinition.event.CohortDefinitionChangedEvent;
 import org.ohdsi.webapi.cohortsample.CleanupCohortSamplesTasklet;
 import org.ohdsi.webapi.cohortsample.CohortSamplingService;
@@ -64,6 +65,7 @@ import org.ohdsi.webapi.versioning.domain.VersionBase;
 import org.ohdsi.webapi.versioning.domain.Version;
 import org.ohdsi.webapi.versioning.domain.VersionType;
 import org.ohdsi.webapi.versioning.domain.CohortVersion;
+import org.ohdsi.webapi.versioning.dto.CohortVersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionBaseDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.ohdsi.webapi.versioning.service.VersionService;
@@ -826,6 +828,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Path("/{id}/version/")
 	@Transactional
 	public List<VersionBaseDTO> getVersions(@PathParam("id") final int id) {
+		CohortVersionFullDTO dto = getVersion(id, 1);
 		List<VersionBase> versions = versionService.getVersions(VersionType.COHORT, id);
 		return versions.stream()
 				.map(v -> conversionService.convert(v, VersionBaseDTO.class))
@@ -836,16 +839,24 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/version/{versionId}")
 	@Transactional
-	public CohortRawDTO getVersion(@PathParam("id") final int id, @PathParam("versionId") final long versionId) {
+	public CohortVersionFullDTO getVersion(@PathParam("id") final int id, @PathParam("versionId") final long versionId) {
 		CohortVersion version = versionService.getById(VersionType.COHORT, versionId);
 		ExceptionUtils.throwNotFoundExceptionIfNull(version, String.format("There is no cohort version with id = %d.", versionId));
+
+		if (version.getAssetId() != id) {
+			throw new BadRequestException("Version does not belong to selected entity");
+		}
 
 		CohortDefinitionDetails details = new CohortDefinitionDetails();
 		details.setExpression(version.getAssetJson());
 
 		CohortDefinition versionDef = conversionService.convert(version, CohortDefinition.class);
 
-		return conversionService.convert(versionDef, CohortRawDTO.class);
+		CohortVersionFullDTO fullDTO = new CohortVersionFullDTO();
+		fullDTO.setCohortRawDTO(conversionService.convert(versionDef, CohortRawDTO.class));
+		fullDTO.setCohortVersionDTO(conversionService.convert(version, VersionBaseDTO.class));
+
+		return fullDTO;
 	}
 
 	@PUT

@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.service.converters;
+package org.ohdsi.webapi.cohortdefinition.converter;
 
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
@@ -25,12 +25,6 @@ public class CohortVersionToCohortDefinitionConverter
         extends BaseConversionServiceAwareConverter<CohortVersion, CohortDefinition> {
     @Autowired
     private CohortDefinitionRepository cohortDefinitionRepository;
-
-    @Autowired
-    private ConceptSetService conceptSetService;
-
-    @Autowired
-    private ConceptSetRepository conceptSetRepository;
 
     @Override
     public CohortDefinition convert(CohortVersion source) {

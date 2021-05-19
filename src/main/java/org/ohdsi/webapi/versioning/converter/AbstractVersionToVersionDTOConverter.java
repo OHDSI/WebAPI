@@ -2,9 +2,7 @@ package org.ohdsi.webapi.versioning.converter;
 
 import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
 import org.ohdsi.webapi.user.dto.UserDTO;
-import org.ohdsi.webapi.versioning.domain.CohortVersion;
 import org.ohdsi.webapi.versioning.domain.Version;
-import org.ohdsi.webapi.versioning.dto.CohortVersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.springframework.stereotype.Component;
 

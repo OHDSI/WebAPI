@@ -3,7 +3,7 @@ VALUES (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohortdefinition:*:ver
         'Get list of cohort versions'),
        (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohortdefinition:*:version:*:get',
         'Get cohort version'),
-       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohortdefinition:*:version:put',
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohortdefinition:*:version:*:put',
         'Update cohort version info'),
        (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohortdefinition:*:version:*:delete',
         'Delete cohort version info');
@@ -15,7 +15,7 @@ FROM ${ohdsiSchema}.sec_permission SP,
 WHERE sp.value IN (
                    'cohortdefinition:*:version:get',
                    'cohortdefinition:*:version:*:get',
-                   'cohortdefinition:*:version:put',
+                   'cohortdefinition:*:version:*:put',
                    'cohortdefinition:*:version:*:delete')
   AND sr.name IN ('Atlas users');
 

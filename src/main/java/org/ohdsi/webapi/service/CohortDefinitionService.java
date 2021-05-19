@@ -86,6 +86,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.ServletContext;
 import javax.transaction.Transactional;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -491,28 +492,25 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Path("/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
+	@Transactional
 	public CohortDTO saveCohortDefinition(@PathParam("id") final int id, CohortDTO def) {
 		Date currentTime = Calendar.getInstance().getTime();
 
-		CohortVersion version = saveVersion(id);
+		saveVersion(id);
 
-		try {
-			CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
-			UserEntity modifier = userRepository.findByLogin(security.getSubject());
+		CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
+		UserEntity modifier = userRepository.findByLogin(security.getSubject());
 
-			currentDefinition.setName(def.getName())
-					.setDescription(def.getDescription())
-					.setExpressionType(def.getExpressionType())
-					.getDetails().setExpression(Utils.serialize(def.getExpression()));
-			currentDefinition.setModifiedBy(modifier);
-			currentDefinition.setModifiedDate(currentTime);
+		currentDefinition.setName(def.getName())
+				.setDescription(def.getDescription())
+				.setExpressionType(def.getExpressionType())
+				.getDetails().setExpression(Utils.serialize(def.getExpression()));
+		currentDefinition.setModifiedBy(modifier);
+		currentDefinition.setModifiedDate(currentTime);
 
-			currentDefinition = this.cohortDefinitionRepository.save(currentDefinition);
-			eventPublisher.publishEvent(new CohortDefinitionChangedEvent(currentDefinition));
-		} catch (Exception e) {
-			versionService.delete(VersionType.COHORT, version.getId());
-			throw e;
-		}
+		currentDefinition = this.cohortDefinitionRepository.save(currentDefinition);
+		eventPublisher.publishEvent(new CohortDefinitionChangedEvent(currentDefinition));
+
 		return getCohortDefinition(id);
 	}
 
@@ -852,9 +850,14 @@ public class CohortDefinitionService extends AbstractDaoService {
 
 	@PUT
 	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/{id}/version")
+	@Path("/{id}/version/{versionId}")
 	@Transactional
-	public VersionBaseDTO updateVersion(@PathParam("id") final int id, VersionUpdateDTO updateDTO) {
+	public VersionBaseDTO updateVersion(@PathParam("id") final int id, @PathParam("versionId") final long versionId,
+										VersionUpdateDTO updateDTO) {
+		Version version = versionService.getById(VersionType.COHORT, versionId);
+		if (version.getAssetId() != id) {
+			throw new BadRequestException("Version does not belong to selected entity");
+		}
 		CohortVersion updated = versionService.update(VersionType.COHORT, updateDTO);
 		return conversionService.convert(updated, VersionBaseDTO.class);
 	}
@@ -870,11 +873,8 @@ public class CohortDefinitionService extends AbstractDaoService {
 	}
 
 	private CohortVersion saveVersion(int id) {
-		// need transaction to get access to lazy collections
-		return getTransactionTemplate().execute(transactionStatus -> {
-			CohortDefinition existingDef = this.cohortDefinitionRepository.findOneWithDetail(id);
-			CohortVersion version = conversionService.convert(existingDef, CohortVersion.class);
-			return versionService.create(VersionType.COHORT, version);
-		});
+		CohortDefinition existingDef = this.cohortDefinitionRepository.findOneWithDetail(id);
+		CohortVersion version = conversionService.convert(existingDef, CohortVersion.class);
+		return versionService.create(VersionType.COHORT, version);
 	}
 }

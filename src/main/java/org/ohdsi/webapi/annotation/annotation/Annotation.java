@@ -41,13 +41,13 @@ public class Annotation {
   @JoinColumn(name = "set_id")
   private QuestionSet set;
 
-  @OneToMany(
-    fetch = FetchType.EAGER,
-    mappedBy = "annotation",
-    cascade = CascadeType.ALL,
-    orphanRemoval = true
-  )
-  private Set<Result> results = new HashSet();
+  // @OneToMany(
+  //   fetch = FetchType.EAGER,
+  //   mappedBy = "annotation",
+  //   cascade = CascadeType.ALL,
+  //   orphanRemoval = true
+  // )
+  // private Set<Result> results = new HashSet();
 
   //***** GETTERS/SETTERS ******
 
@@ -107,24 +107,24 @@ public class Annotation {
     this.set = set;
   }
 
-	/**
-	 * @return the results
-	 */
-	public Set<Result> getResults() {
-			return new HashSet<Result>(results);
-	}
+	// /**
+	//  * @return the results
+	//  */
+	// public Set<Result> getResults() {
+	// 		return new HashSet<Result>(results);
+	// }
 
-	/**
-	 * @param results the results to set
-	 */
-	protected void setResults(Set<Result> results) {
-			this.results = results;
-	}
+	// /**
+	//  * @param results the results to set
+	//  */
+	// protected void setResults(Set<Result> results) {
+	// 		this.results = results;
+	// }
 
-  public void addToResults(Result result) {
-      result.setAnnotation(this);
-      this.results.add(result);
-  }
+ //  public void addToResults(Result result) {
+ //      result.setAnnotation(this);
+ //      this.results.add(result);
+ //  }
 
 
 // public void setSampleName(String name) {

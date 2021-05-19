@@ -34,8 +34,7 @@ public class AnnotationService {
 
   public List<Annotation> getAnnotations() {
     List<Annotation> annotations = new ArrayList();
-    annotationRepository.findAll()
-    .forEach(annotations::add);
+    annotationRepository.findAll().forEach(annotations::add);
     return annotations;
   }
 

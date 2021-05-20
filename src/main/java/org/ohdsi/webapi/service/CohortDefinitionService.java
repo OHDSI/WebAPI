@@ -827,7 +827,6 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Path("/{id}/version/")
 	@Transactional
 	public List<VersionDTO> getVersions(@PathParam("id") final int id) {
-		CohortVersionFullDTO dto = getVersion(id, 1);
 		List<VersionBase> versions = versionService.getVersions(VersionType.COHORT, id);
 		return versions.stream()
 				.map(v -> conversionService.convert(v, VersionDTO.class))

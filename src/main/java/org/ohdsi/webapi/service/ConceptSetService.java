@@ -24,16 +24,11 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.webapi.check.CheckResult;
 import org.ohdsi.webapi.check.checker.conceptset.ConceptSetChecker;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
 import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
@@ -57,7 +52,7 @@ import org.ohdsi.webapi.versioning.domain.ConceptSetVersion;
 import org.ohdsi.webapi.versioning.domain.Version;
 import org.ohdsi.webapi.versioning.domain.VersionBase;
 import org.ohdsi.webapi.versioning.domain.VersionType;
-import org.ohdsi.webapi.versioning.dto.VersionBaseDTO;
+import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.ohdsi.webapi.versioning.service.VersionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -461,10 +456,10 @@ public class ConceptSetService extends AbstractDaoService {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/")
     @Transactional
-    public List<VersionBaseDTO> getVersions(@PathParam("id") final int id) {
+    public List<VersionDTO> getVersions(@PathParam("id") final int id) {
         List<VersionBase> versions = versionService.getVersions(VersionType.CONCEPT_SET, id);
         return versions.stream()
-                .map(v -> conversionService.convert(v, VersionBaseDTO.class))
+                .map(v -> conversionService.convert(v, VersionDTO.class))
                 .collect(Collectors.toList());
     }
 
@@ -484,12 +479,12 @@ public class ConceptSetService extends AbstractDaoService {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{versionId}")
     @Transactional
-    public VersionBaseDTO updateVersion(@PathParam("id") final int id, @PathParam("versionId") final long versionId,
-                                        VersionUpdateDTO updateDTO) {
+    public VersionDTO updateVersion(@PathParam("id") final int id, @PathParam("versionId") final long versionId,
+                                    VersionUpdateDTO updateDTO) {
         checkVersion(id, versionId);
         ConceptSetVersion updated = versionService.update(VersionType.CONCEPT_SET, updateDTO);
 
-        return conversionService.convert(updated, VersionBaseDTO.class);
+        return conversionService.convert(updated, VersionDTO.class);
     }
 
     @DELETE

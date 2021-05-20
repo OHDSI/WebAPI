@@ -3,12 +3,11 @@ package org.ohdsi.webapi.versioning.converter;
 import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
 import org.ohdsi.webapi.user.dto.UserDTO;
 import org.ohdsi.webapi.versioning.domain.VersionBase;
-import org.ohdsi.webapi.versioning.dto.VersionBaseDTO;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.springframework.stereotype.Component;
 
 @Component
-public class VersionBaseToVersionDTOConverter extends BaseConversionServiceAwareConverter<VersionBase, VersionBaseDTO> {
+public class VersionBaseToVersionDTOConverter extends BaseConversionServiceAwareConverter<VersionBase, VersionDTO> {
     @Override
     public VersionDTO convert(VersionBase source) {
         VersionDTO target = new VersionDTO();

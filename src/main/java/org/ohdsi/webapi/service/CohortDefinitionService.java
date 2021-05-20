@@ -65,8 +65,7 @@ import org.ohdsi.webapi.versioning.domain.VersionBase;
 import org.ohdsi.webapi.versioning.domain.Version;
 import org.ohdsi.webapi.versioning.domain.VersionType;
 import org.ohdsi.webapi.versioning.domain.CohortVersion;
-import org.ohdsi.webapi.versioning.dto.CohortVersionDTO;
-import org.ohdsi.webapi.versioning.dto.VersionBaseDTO;
+import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.ohdsi.webapi.versioning.service.VersionService;
 import org.springframework.batch.core.Job;
@@ -827,11 +826,11 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/version/")
 	@Transactional
-	public List<VersionBaseDTO> getVersions(@PathParam("id") final int id) {
+	public List<VersionDTO> getVersions(@PathParam("id") final int id) {
 		CohortVersionFullDTO dto = getVersion(id, 1);
 		List<VersionBase> versions = versionService.getVersions(VersionType.COHORT, id);
 		return versions.stream()
-				.map(v -> conversionService.convert(v, VersionBaseDTO.class))
+				.map(v -> conversionService.convert(v, VersionDTO.class))
 				.collect(Collectors.toList());
 	}
 
@@ -854,7 +853,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 
 		CohortVersionFullDTO fullDTO = new CohortVersionFullDTO();
 		fullDTO.setCohortRawDTO(conversionService.convert(versionDef, CohortRawDTO.class));
-		fullDTO.setCohortVersionDTO(conversionService.convert(version, VersionBaseDTO.class));
+		fullDTO.setCohortVersionDTO(conversionService.convert(version, VersionDTO.class));
 
 		return fullDTO;
 	}
@@ -863,12 +862,12 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/version/{versionId}")
 	@Transactional
-	public VersionBaseDTO updateVersion(@PathParam("id") final int id, @PathParam("versionId") final long versionId,
-										VersionUpdateDTO updateDTO) {
+	public VersionDTO updateVersion(@PathParam("id") final int id, @PathParam("versionId") final long versionId,
+									VersionUpdateDTO updateDTO) {
 		checkVersion(id, versionId);
 		CohortVersion updated = versionService.update(VersionType.COHORT, updateDTO);
 
-		return conversionService.convert(updated, VersionBaseDTO.class);
+		return conversionService.convert(updated, VersionDTO.class);
 	}
 
 	@DELETE

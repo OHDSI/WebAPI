@@ -1,12 +1,11 @@
 package org.ohdsi.webapi.cohortdefinition.dto;
 
-import org.ohdsi.webapi.versioning.dto.CohortVersionDTO;
-import org.ohdsi.webapi.versioning.dto.VersionBaseDTO;
+import org.ohdsi.webapi.versioning.dto.VersionDTO;
 
 public class CohortVersionFullDTO {
     private CohortRawDTO cohortRawDTO;
 
-    private VersionBaseDTO cohortVersionDTO;
+    private VersionDTO cohortVersionDTO;
 
     public CohortRawDTO getCohortRawDTO() {
         return cohortRawDTO;
@@ -16,11 +15,11 @@ public class CohortVersionFullDTO {
         this.cohortRawDTO = cohortRawDTO;
     }
 
-    public VersionBaseDTO getCohortVersionDTO() {
+    public VersionDTO getCohortVersionDTO() {
         return cohortVersionDTO;
     }
 
-    public void setCohortVersionDTO(VersionBaseDTO cohortVersionDTO) {
+    public void setCohortVersionDTO(VersionDTO cohortVersionDTO) {
         this.cohortVersionDTO = cohortVersionDTO;
     }
 }

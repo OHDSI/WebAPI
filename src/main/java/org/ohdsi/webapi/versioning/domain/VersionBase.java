@@ -5,6 +5,7 @@ import org.ohdsi.webapi.shiro.Entities.UserEntity;
 
 import java.util.Date;
 
+// Projection class
 public class VersionBase {
     private long id;
 

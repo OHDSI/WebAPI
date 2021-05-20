@@ -914,8 +914,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 		CohortVersion version = conversionService.convert(def, CohortVersion.class);
 
 		UserEntity user = Objects.nonNull(def.getModifiedBy()) ? def.getModifiedBy() : def.getCreatedBy();
+		Date versionDate = Objects.nonNull(def.getModifiedDate()) ? def.getModifiedDate() : def.getCreatedDate();
 		version.setCreatedBy(user);
-		version.setCreatedDate(new Date());
+		version.setCreatedDate(versionDate);
 		return versionService.create(VersionType.COHORT, version);
 	}
 }

@@ -34,7 +34,7 @@ import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
-import org.ohdsi.webapi.conceptset.ConceptSetVersionDto;
+import org.ohdsi.webapi.conceptset.dto.ConceptSetVersionFullDTO;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
@@ -101,6 +101,9 @@ public class ConceptSetService extends AbstractDaoService {
     private ConceptSetChecker checker;
 
     @Autowired
+    private ConceptSetService conceptSetService;
+
+    @Autowired
     private VersionService<ConceptSetVersion> versionService;
 
     public static final String COPY_NAME = "copyName";
@@ -109,6 +112,7 @@ public class ConceptSetService extends AbstractDaoService {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public ConceptSetDTO getConceptSet(@PathParam("id") final int id) {
+
         ConceptSet conceptSet = getConceptSetRepository().findById(id);
         ExceptionUtils.throwNotFoundExceptionIfNull(conceptSet, String.format("There is no concept set with id = %d.", id));
         return conversionService.convert(conceptSet, ConceptSetDTO.class);
@@ -137,6 +141,31 @@ public class ConceptSetService extends AbstractDaoService {
     }
 
     @GET
+    @Path("{id}/version/{versionId}/expression")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ConceptSetExpression getConceptSetExpression(@PathParam("id") final int id,
+                                                        @PathParam("versionId") final long versionId) {
+        SourceInfo sourceInfo = sourceService.getPriorityVocabularySourceInfo();
+        if (sourceInfo == null) {
+            throw new UnauthorizedException();
+        }
+        return getConceptSetExpression(id, versionId, sourceInfo);
+    }
+
+    @GET
+    @Path("{id}/version/{versionId}/expression/{sourceKey}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ConceptSetExpression getConceptSetExpression(@PathParam("id") final int id,
+                                                        @PathParam("versionId") final long versionId,
+                                                        @PathParam("sourceKey") final String sourceKey) {
+        SourceInfo sourceInfo = sourceService.getPriorityVocabularySourceInfo();
+        if (sourceInfo == null) {
+            throw new UnauthorizedException();
+        }
+        return getConceptSetExpression(id, versionId, sourceInfo);
+    }
+
+    @GET
     @Path("{id}/expression")
     @Produces(MediaType.APPLICATION_JSON)
     public ConceptSetExpression getConceptSetExpression(@PathParam("id") final int id) {
@@ -144,7 +173,7 @@ public class ConceptSetService extends AbstractDaoService {
         if (sourceInfo == null) {
             throw new UnauthorizedException();
         }
-        return getConceptSetExpression(id, sourceInfo);
+        return getConceptSetExpression(id, null, sourceInfo);
     }
 
     @GET
@@ -154,10 +183,10 @@ public class ConceptSetService extends AbstractDaoService {
 
         Source source = sourceService.findBySourceKey(sourceKey);
         sourceAccessor.checkAccess(source);
-        return getConceptSetExpression(id, source.getSourceInfo());
+        return getConceptSetExpression(id, null, source.getSourceInfo());
     }
 
-    private ConceptSetExpression getConceptSetExpression(int id, SourceInfo sourceInfo) {
+    private ConceptSetExpression getConceptSetExpression(int id, Long versionId, SourceInfo sourceInfo) {
         HashMap<Long, Concept> map = new HashMap<>();
 
         // create our expression to return
@@ -165,7 +194,12 @@ public class ConceptSetService extends AbstractDaoService {
         ArrayList<ConceptSetExpression.ConceptSetItem> expressionItems = new ArrayList<>();
 
         List<ConceptSetItem> repositoryItems = new ArrayList<>();
-        getConceptSetItems(id).forEach(repositoryItems::add);
+        if (Objects.isNull(versionId)) {
+            getConceptSetItems(id).forEach(repositoryItems::add);
+        } else {
+            ConceptSetVersionFullDTO dto = getVersion(id, versionId);
+            repositoryItems.addAll(dto.getItems());
+        }
 
         // collect the unique concept IDs so we can load the concept object later.
         for (ConceptSetItem csi : repositoryItems) {
@@ -467,12 +501,11 @@ public class ConceptSetService extends AbstractDaoService {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{versionId}")
     @Transactional
-    public List<ConceptSetItem> getVersion(@PathParam("id") final int id, @PathParam("versionId") final long versionId) {
+    public ConceptSetVersionFullDTO getVersion(@PathParam("id") final int id, @PathParam("versionId") final long versionId) {
+        checkVersion(id, versionId);
         ConceptSetVersion version = versionService.getById(VersionType.CONCEPT_SET, versionId);
-        ExceptionUtils.throwNotFoundExceptionIfNull(version, String.format("There is no concept set version with id = %d.", versionId));
 
-        TypeDescriptor descriptor = TypeDescriptor.collection(List.class, TypeDescriptor.valueOf(ConceptSetItem.class));
-        return (List<ConceptSetItem>) conversionService.convert(version, descriptor);
+        return conversionService.convert(version, ConceptSetVersionFullDTO.class);
     }
 
     @PUT
@@ -482,6 +515,7 @@ public class ConceptSetService extends AbstractDaoService {
     public VersionDTO updateVersion(@PathParam("id") final int id, @PathParam("versionId") final long versionId,
                                     VersionUpdateDTO updateDTO) {
         checkVersion(id, versionId);
+        updateDTO.setId(versionId);
         ConceptSetVersion updated = versionService.update(VersionType.CONCEPT_SET, updateDTO);
 
         return conversionService.convert(updated, VersionDTO.class);
@@ -505,13 +539,14 @@ public class ConceptSetService extends AbstractDaoService {
         ConceptSetVersion version = versionService.getById(VersionType.CONCEPT_SET, versionId);
         ExceptionUtils.throwNotFoundExceptionIfNull(version, String.format("There is no concept set version with id = %d.", versionId));
 
-        ConceptSetVersionDto versionDto = conversionService.convert(version, ConceptSetVersionDto.class);
-        versionDto.setId(null);
-        versionDto.setName(NameUtils.getNameForCopy(versionDto.getName(), this::getNamesLike, getConceptSetRepository().findByName(versionDto.getName())));
-        ConceptSetDTO conceptSetDTO = createConceptSet(versionDto);
-        saveConceptSetItems(conceptSetDTO.getId(), versionDto.getItems().toArray(new ConceptSetItem[0]));
+        ConceptSetVersionFullDTO fullDTO = conversionService.convert(version, ConceptSetVersionFullDTO.class);
+        ConceptSetDTO conceptSetDTO = fullDTO.getConceptSetDTO();
+        conceptSetDTO.setId(null);
+        conceptSetDTO.setName(NameUtils.getNameForCopy(conceptSetDTO.getName(), this::getNamesLike, getConceptSetRepository().findByName(conceptSetDTO.getName())));
+        ConceptSetDTO createdDTO = createConceptSet(conceptSetDTO);
+        saveConceptSetItems(createdDTO.getId(), fullDTO.getItems().toArray(new ConceptSetItem[0]));
 
-        return conceptSetDTO;
+        return createdDTO;
     }
 
     private void checkVersion(int id, long versionId) {

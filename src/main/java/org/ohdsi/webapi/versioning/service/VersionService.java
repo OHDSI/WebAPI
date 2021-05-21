@@ -2,7 +2,6 @@ package org.ohdsi.webapi.versioning.service;
 
 import org.ohdsi.webapi.exception.AtlasException;
 import org.ohdsi.webapi.service.AbstractDaoService;
-import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.versioning.domain.Version;
 import org.ohdsi.webapi.versioning.domain.VersionBase;
 import org.ohdsi.webapi.versioning.domain.VersionType;
@@ -24,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
 import javax.ws.rs.NotFoundException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

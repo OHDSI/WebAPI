@@ -194,12 +194,6 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Autowired
 	private VersionService<CohortVersion> versionService;
 
-	@Autowired
-	private ConceptSetService conceptSetService;
-
-	@Autowired
-	private CohortDefinitionService service;
-
 	private final MarkdownRender markdownPF = new MarkdownRender();
 
 	private final List<Extension> extensions = Arrays.asList(TablesExtension.create());
@@ -838,12 +832,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Path("/{id}/version/{versionId}")
 	@Transactional
 	public CohortVersionFullDTO getVersion(@PathParam("id") final int id, @PathParam("versionId") final long versionId) {
+		checkVersion(id, versionId);
 		CohortVersion version = versionService.getById(VersionType.COHORT, versionId);
 		ExceptionUtils.throwNotFoundExceptionIfNull(version, String.format("There is no cohort version with id = %d.", versionId));
-
-		if (version.getAssetId() != id) {
-			throw new BadRequestException("Version does not belong to selected entity");
-		}
 
 		CohortDefinitionDetails details = new CohortDefinitionDetails();
 		details.setExpression(version.getAssetJson());

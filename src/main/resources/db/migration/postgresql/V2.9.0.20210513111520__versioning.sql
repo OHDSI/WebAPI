@@ -8,7 +8,21 @@ VALUES (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohortdefinition:*:ver
        (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohortdefinition:*:version:*:delete',
         'Delete cohort version info'),
        (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohortdefinition:*:version:*:createAsset:put',
-        'Copy cohort version as new cohort');
+        'Copy cohort version as new cohort'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'conceptset:*:version:get',
+        'Get list of concept set versions'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'conceptset:*:version:*:get',
+        'Get concept set version'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'conceptset:*:version:*:put',
+        'Update concept set version info'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'conceptset:*:version:*:delete',
+        'Delete concept set version info'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'conceptset:*:version:*:createAsset:put',
+        'Copy concept set version as new concept set'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'conceptset:*:version:*:expression:get',
+        'Get expression for concept set items for default source'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'conceptset:*:version:*:expression:*:get',
+        'Get expression for concept set items for certain source');
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
 SELECT sr.id, sp.id
@@ -19,7 +33,14 @@ WHERE sp.value IN (
                    'cohortdefinition:*:version:*:get',
                    'cohortdefinition:*:version:*:put',
                    'cohortdefinition:*:version:*:delete',
-                   'cohortdefinition:*:version:*:createAsset:put')
+                   'cohortdefinition:*:version:*:createAsset:put',
+                   'conceptset:*:version:get',
+                   'conceptset:*:version:*:get',
+                   'conceptset:*:version:*:put',
+                   'conceptset:*:version:*:delete',
+                   'conceptset:*:version:*:createAsset:put',
+                   'conceptset:*:version:*:expression:get',
+                   'conceptset:*:version:*:expression:*:get')
   AND sr.name IN ('Atlas users');
 
 CREATE SEQUENCE ${ohdsiSchema}.cohort_version_seq;

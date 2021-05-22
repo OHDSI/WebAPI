@@ -11,8 +11,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "concept_set_versions")
-public class ConceptSetVersion extends Version {
+@Table(name = "cohort_characterization_versions")
+public class CharacterizationVersion extends Version {
     @EmbeddedId
     private VersionPK pk;
 

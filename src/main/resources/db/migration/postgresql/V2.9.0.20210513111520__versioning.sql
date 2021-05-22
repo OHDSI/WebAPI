@@ -22,7 +22,17 @@ VALUES (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohortdefinition:*:ver
        (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'conceptset:*:version:*:expression:get',
         'Get expression for concept set items for default source'),
        (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'conceptset:*:version:*:expression:*:get',
-        'Get expression for concept set items for certain source');
+        'Get expression for concept set items for certain source'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterization:*:version:get',
+        'Get list of characterization versions'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterization:*:version:*:get',
+        'Get characterization version'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterization:*:version:*:put',
+        'Update characterization version info'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterization:*:version:*:delete',
+        'Delete characterization version info'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterization:*:version:*:createAsset:put',
+        'Copy characterization version as new cohort');
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
 SELECT sr.id, sp.id
@@ -40,20 +50,18 @@ WHERE sp.value IN (
                    'conceptset:*:version:*:delete',
                    'conceptset:*:version:*:createAsset:put',
                    'conceptset:*:version:*:expression:get',
-                   'conceptset:*:version:*:expression:*:get')
+                   'conceptset:*:version:*:expression:*:get',
+                   'cohort-characterization:*:version:get',
+                   'cohort-characterization:*:version:*:get',
+                   'cohort-characterization:*:version:*:put',
+                   'cohort-characterization:*:version:*:delete',
+                   'cohort-characterization:*:version:*:createAsset:put')
   AND sr.name IN ('Atlas users');
-
-CREATE SEQUENCE ${ohdsiSchema}.cohort_version_seq;
-CREATE SEQUENCE ${ohdsiSchema}.cc_version_seq;
-CREATE SEQUENCE ${ohdsiSchema}.concept_set_version_seq;
-CREATE SEQUENCE ${ohdsiSchema}.ir_version_seq;
-CREATE SEQUENCE ${ohdsiSchema}.pathway_version_seq;
 
 -- Cohorts
 CREATE TABLE ${ohdsiSchema}.cohort_versions
 (
-    id            int8                     NOT NULL DEFAULT nextval('${ohdsiSchema}.cohort_version_seq'),
-    asset_id      int4                     NOT NULL,
+    asset_id      int8                     NOT NULL,
     comment       varchar                  NULL,
     description   varchar                  NULL,
     version       int4                     NOT NULL DEFAULT 1,
@@ -61,8 +69,7 @@ CREATE TABLE ${ohdsiSchema}.cohort_versions
     archived      bool                     NOT NULL DEFAULT FALSE,
     created_by_id INTEGER,
     created_date  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (now()),
-    CONSTRAINT cohort_versions_un UNIQUE (asset_id, version),
-    CONSTRAINT pk_cohort_versions_id PRIMARY KEY (id),
+    CONSTRAINT pk_cohort_versions_id PRIMARY KEY (asset_id, version),
     CONSTRAINT fk_cohort_versions_sec_user_creator FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user (id)
 );
 
@@ -71,16 +78,14 @@ CREATE INDEX cohort_versions_asset_idx ON ${ohdsiSchema}.cohort_versions USING b
 -- Cohort characterizations
 CREATE TABLE ${ohdsiSchema}.cohort_characterization_versions
 (
-    id            int8                     NOT NULL DEFAULT nextval('${ohdsiSchema}.cc_version_seq'),
-    asset_id      int4                     NOT NULL,
+    asset_id      int8                     NOT NULL,
     comment       varchar                  NULL,
     version       int4                     NOT NULL DEFAULT 1,
     asset_json    varchar                  NOT NULL,
     archived      bool                     NOT NULL DEFAULT FALSE,
     created_by_id INTEGER,
     created_date  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (now()),
-    CONSTRAINT cohort_characterization_versions_un UNIQUE (asset_id, version),
-    CONSTRAINT pk_cc_versions_id PRIMARY KEY (id),
+    CONSTRAINT pk_cc_versions_id PRIMARY KEY (asset_id, version),
     CONSTRAINT fk_cc_versions_sec_user_creator FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user (id)
 );
 
@@ -89,16 +94,14 @@ CREATE INDEX cc_versions_asset_idx ON ${ohdsiSchema}.cohort_characterization_ver
 -- Concept sets
 CREATE TABLE ${ohdsiSchema}.concept_set_versions
 (
-    id            int8                     NOT NULL DEFAULT nextval('${ohdsiSchema}.concept_set_version_seq'),
-    asset_id      int4                     NOT NULL,
+    asset_id      int8                     NOT NULL,
     comment       varchar                  NULL,
     version       int4                     NOT NULL DEFAULT 1,
     asset_json    varchar                  NOT NULL,
     archived      bool                     NOT NULL DEFAULT FALSE,
     created_by_id INTEGER,
     created_date  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (now()),
-    CONSTRAINT concept_set_versions_un UNIQUE (asset_id, version),
-    CONSTRAINT pk_concept_set_versions_id PRIMARY KEY (id),
+    CONSTRAINT pk_concept_set_versions_id PRIMARY KEY (asset_id, version),
     CONSTRAINT fk_concept_set_versions_sec_user_creator FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user (id)
 );
 
@@ -107,16 +110,14 @@ CREATE INDEX concept_set_versions_asset_idx ON ${ohdsiSchema}.concept_set_versio
 -- Incidence rates
 CREATE TABLE ${ohdsiSchema}.ir_versions
 (
-    id            int8                     NOT NULL DEFAULT nextval('${ohdsiSchema}.ir_version_seq'),
-    asset_id      int4                     NOT NULL,
+    asset_id      int8                     NOT NULL,
     comment       varchar                  NULL,
     version       int4                     NOT NULL DEFAULT 1,
     asset_json    varchar                  NOT NULL,
     archived      bool                     NOT NULL DEFAULT FALSE,
     created_by_id INTEGER,
     created_date  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (now()),
-    CONSTRAINT ir_versions_un UNIQUE (asset_id, version),
-    CONSTRAINT pk_ir_versions_id PRIMARY KEY (id),
+    CONSTRAINT pk_ir_versions_id PRIMARY KEY (asset_id, version),
     CONSTRAINT fk_ir_versions_sec_user_creator FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user (id)
 );
 
@@ -125,16 +126,14 @@ CREATE INDEX ir_versions_asset_idx ON ${ohdsiSchema}.ir_versions USING btree (as
 -- Pathways
 CREATE TABLE ${ohdsiSchema}.pathway_versions
 (
-    id            int8                     NOT NULL DEFAULT nextval('${ohdsiSchema}.pathway_version_seq'),
-    asset_id      int4                     NOT NULL,
+    asset_id      int8                     NOT NULL,
     comment       varchar                  NULL,
     version       int4                     NOT NULL DEFAULT 1,
     asset_json    varchar                  NOT NULL,
     archived      bool                     NOT NULL DEFAULT FALSE,
     created_by_id INTEGER,
     created_date  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (now()),
-    CONSTRAINT pathway_versions_un UNIQUE (asset_id, version),
-    CONSTRAINT pk_pathway_versions_id PRIMARY KEY (id),
+    CONSTRAINT pk_pathway_versions_id PRIMARY KEY (asset_id, version),
     CONSTRAINT fk_pathway_versions_sec_user_creator FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user (id)
 );
 

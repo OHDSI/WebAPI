@@ -3,12 +3,16 @@ package org.ohdsi.webapi.versioning.dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.ohdsi.webapi.versioning.domain.VersionPK;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class VersionUpdateDTO {
     @JsonProperty
-    private Long id;
+    private Long assetId;
+
+    @JsonProperty
+    private int version;
 
     @JsonProperty
     private String comment;
@@ -16,12 +20,20 @@ public class VersionUpdateDTO {
     @JsonProperty
     private boolean archived;
 
-    public Long getId() {
-        return id;
+    public Long getAssetId() {
+        return assetId;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setAssetId(long assetId) {
+        this.assetId = assetId;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
     }
 
     public String getComment() {
@@ -38,5 +50,9 @@ public class VersionUpdateDTO {
 
     public void setArchived(boolean archived) {
         this.archived = archived;
+    }
+
+    public VersionPK getVersionPk() {
+        return new VersionPK(assetId, version);
     }
 }

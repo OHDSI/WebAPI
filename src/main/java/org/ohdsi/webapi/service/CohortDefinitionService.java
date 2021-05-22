@@ -44,6 +44,7 @@ import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.common.sensitiveinfo.CohortGenerationSensitiveInfoService;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
+import org.ohdsi.webapi.conceptset.dto.ConceptSetVersionFullDTO;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.security.PermissionService;
@@ -184,9 +185,6 @@ public class CohortDefinitionService extends AbstractDaoService {
 
 	@PersistenceContext
 	protected EntityManager entityManager;
-
-	@Autowired
-	private TagService tagService;
 
 	@Autowired
 	private CohortChecker cohortChecker;
@@ -386,7 +384,6 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Transactional
 	public List<CohortMetadataDTO> getCohortDefinitionList() {
-		tagService.listInfoDTO("");
 		List<CohortDefinition> definitions = cohortDefinitionRepository.list();
 
 		return definitions.stream()
@@ -461,7 +458,6 @@ public class CohortDefinitionService extends AbstractDaoService {
 	 * @return
 	 */
 	public CohortDTO getCohortDefinition(final int id) {
-
 		return getTransactionTemplate().execute(transactionStatus -> {
 			CohortDefinition d = this.cohortDefinitionRepository.findOneWithDetail(id);
 			ExceptionUtils.throwNotFoundExceptionIfNull(d, String.format("There is no cohort definition with id = %d.", id));
@@ -569,9 +565,8 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Transactional
 	public List<CohortGenerationInfoDTO> getInfo(@PathParam("id") final int id) {
 		CohortDefinition def = this.cohortDefinitionRepository.findOne(id);
-		if (Objects.isNull(def)) {
-			throw new IllegalArgumentException(String.format("There is no cohort definition with id = %d.", id));
-		}
+		ExceptionUtils.throwNotFoundExceptionIfNull(def, String.format("There is no cohort definition with id = %d.", id));
+
 		Set<CohortGenerationInfo> infoList = def.getGenerationInfoList();
 
 		List<CohortGenerationInfo> result = infoList.stream().filter(genInfo -> sourceIdAccessor.hasAccess(genInfo.getId().getSourceId())).collect(Collectors.toList());
@@ -820,7 +815,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/version/")
 	@Transactional
-	public List<VersionDTO> getVersions(@PathParam("id") final int id) {
+	public List<VersionDTO> getVersions(@PathParam("id") final long id) {
 		List<VersionBase> versions = versionService.getVersions(VersionType.COHORT, id);
 		return versions.stream()
 				.map(v -> conversionService.convert(v, VersionDTO.class))
@@ -829,32 +824,34 @@ public class CohortDefinitionService extends AbstractDaoService {
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/{id}/version/{versionId}")
+	@Path("/{id}/version/{version}")
 	@Transactional
-	public CohortVersionFullDTO getVersion(@PathParam("id") final int id, @PathParam("versionId") final long versionId) {
-		checkVersion(id, versionId);
-		CohortVersion version = versionService.getById(VersionType.COHORT, versionId);
-		ExceptionUtils.throwNotFoundExceptionIfNull(version, String.format("There is no cohort version with id = %d.", versionId));
+	public CohortVersionFullDTO getVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
+		checkVersion(id, version);
+		CohortVersion cohortVersion = versionService.getById(VersionType.COHORT, id, version);
+		ExceptionUtils.throwNotFoundExceptionIfNull(cohortVersion, String.format("There is no cohort version with id = %d.", version));
 
 		CohortDefinitionDetails details = new CohortDefinitionDetails();
-		details.setExpression(version.getAssetJson());
+		details.setExpression(cohortVersion.getAssetJson());
 
-		CohortDefinition versionDef = conversionService.convert(version, CohortDefinition.class);
+		CohortDefinition versionDef = conversionService.convert(cohortVersion, CohortDefinition.class);
 
 		CohortVersionFullDTO fullDTO = new CohortVersionFullDTO();
 		fullDTO.setCohortRawDTO(conversionService.convert(versionDef, CohortRawDTO.class));
-		fullDTO.setCohortVersionDTO(conversionService.convert(version, VersionDTO.class));
+		fullDTO.setCohortVersionDTO(conversionService.convert(cohortVersion, VersionDTO.class));
 
 		return fullDTO;
 	}
 
 	@PUT
 	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/{id}/version/{versionId}")
+	@Path("/{id}/version/{version}")
 	@Transactional
-	public VersionDTO updateVersion(@PathParam("id") final int id, @PathParam("versionId") final long versionId,
+	public VersionDTO updateVersion(@PathParam("id") final int id, @PathParam("version") final int version,
 									VersionUpdateDTO updateDTO) {
-		checkVersion(id, versionId);
+		checkVersion(id, version);
+		updateDTO.setAssetId(id);
+		updateDTO.setVersion(version);
 		CohortVersion updated = versionService.update(VersionType.COHORT, updateDTO);
 
 		return conversionService.convert(updated, VersionDTO.class);
@@ -862,26 +859,26 @@ public class CohortDefinitionService extends AbstractDaoService {
 
 	@DELETE
 	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/{id}/version/{versionId}")
+	@Path("/{id}/version/{version}")
 	@Transactional
-	public void deleteVersion(@PathParam("id") final int id, @PathParam("versionId") final long versionId) {
-		checkVersion(id, versionId);
-		versionService.delete(VersionType.COHORT, versionId);
+	public void deleteVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
+		checkVersion(id, version);
+		versionService.delete(VersionType.COHORT, id, version);
 	}
 
 	@PUT
 	@Produces(MediaType.APPLICATION_JSON)
-	@Path("/{id}/version/{versionId}/createAsset")
+	@Path("/{id}/version/{version}/createAsset")
 	@Transactional
-	public CohortDTO copyAssetFromVersion(@PathParam("id") final int id, @PathParam("versionId") final long versionId) {
-		checkVersion(id, versionId);
-		CohortVersion version = versionService.getById(VersionType.COHORT, versionId);
-		ExceptionUtils.throwNotFoundExceptionIfNull(version, String.format("There is no cohort version with id = %d.", versionId));
+	public CohortDTO copyAssetFromVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
+		checkVersion(id, version);
+		CohortVersion cohortVersion = versionService.getById(VersionType.COHORT, id, version);
+		ExceptionUtils.throwNotFoundExceptionIfNull(cohortVersion, String.format("There is no cohort version with id = %d.", version));
 
 		CohortDefinitionDetails details = new CohortDefinitionDetails();
-		details.setExpression(version.getAssetJson());
+		details.setExpression(cohortVersion.getAssetJson());
 
-		CohortDefinition versionDef = conversionService.convert(version, CohortDefinition.class);
+		CohortDefinition versionDef = conversionService.convert(cohortVersion, CohortDefinition.class);
 
 		CohortDTO sourceDef = conversionService.convert(versionDef, CohortDTO.class);
 		sourceDef.setId(null);
@@ -890,12 +887,11 @@ public class CohortDefinitionService extends AbstractDaoService {
 		return createCohortDefinition(sourceDef);
 	}
 
-	private void checkVersion(int id, long versionId) {
-		Version version = versionService.getById(VersionType.COHORT, versionId);
-		ExceptionUtils.throwNotFoundExceptionIfNull(version, String.format("There is no cohort version with id = %d.", versionId));
-		if (version.getAssetId() != id) {
-			throw new BadRequestException("Version does not belong to selected entity");
-		}
+	private void checkVersion(int id, int version) {
+		Version cohortVersion = versionService.getById(VersionType.COHORT, id, version);
+		ExceptionUtils.throwNotFoundExceptionIfNull(cohortVersion,
+				String.format("There is no cohort version with id = %d.", version));
+
 		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
 		checkOwnerOrAdminOrGranted(entity);
 	}

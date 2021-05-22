@@ -4,6 +4,7 @@ import org.ohdsi.webapi.exception.AtlasException;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.versioning.domain.Version;
 import org.ohdsi.webapi.versioning.domain.VersionBase;
+import org.ohdsi.webapi.versioning.domain.VersionPK;
 import org.ohdsi.webapi.versioning.domain.VersionType;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.ohdsi.webapi.versioning.repository.CharacterizationVersionRepository;
@@ -63,7 +64,7 @@ public class VersionService<T extends Version> extends AbstractDaoService {
         return repositoryMap.get(type);
     }
 
-    public List<VersionBase> getVersions(VersionType type, int assetId) {
+    public List<VersionBase> getVersions(VersionType type, long assetId) {
         return getRepository(type).findAllVersions(assetId);
     }
 
@@ -97,7 +98,7 @@ public class VersionService<T extends Version> extends AbstractDaoService {
     }
 
     public T update(VersionType type, VersionUpdateDTO updateDTO) {
-        T currentVersion = getRepository(type).findOne(updateDTO.getId());
+        T currentVersion = getRepository(type).findOne(updateDTO.getVersionPk());
         if (Objects.isNull(currentVersion)) {
             throw new NotFoundException("Version not found");
         }
@@ -107,22 +108,24 @@ public class VersionService<T extends Version> extends AbstractDaoService {
         return save(type, currentVersion);
     }
 
-    public void delete(VersionType type, Long id) {
-        T currentVersion = getRepository(type).findOne(id);
+    public void delete(VersionType type, long assetId, int version) {
+        VersionPK pk = new VersionPK(assetId, version);
+        T currentVersion = getRepository(type).getOne(pk);
         if (Objects.isNull(currentVersion)) {
             throw new NotFoundException("Version not found");
         }
         currentVersion.setArchived(true);
     }
 
-    public T getById(VersionType type, Long id) {
-        return getRepository(type).findOne(id);
+    public T getById(VersionType type, long assetId, int version) {
+        VersionPK pk = new VersionPK(assetId, version);
+        return getRepository(type).findOne(pk);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public T save(VersionType type, T version) {
         version = getRepository(type).saveAndFlush(version);
         entityManager.refresh(version);
-        return getRepository(type).findOne(version.getId());
+        return getRepository(type).getOne(version.getPk());
     }
 }

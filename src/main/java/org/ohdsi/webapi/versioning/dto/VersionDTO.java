@@ -11,10 +11,7 @@ import java.util.Date;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class VersionDTO {
     @JsonProperty
-    private Long id;
-
-    @JsonProperty
-    private int assetId;
+    private Long assetId;
 
     @JsonProperty
     private String comment;
@@ -31,19 +28,11 @@ public class VersionDTO {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Date createdDate;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public int getAssetId() {
+    public Long getAssetId() {
         return assetId;
     }
 
-    public void setAssetId(int assetId) {
+    public void setAssetId(Long assetId) {
         this.assetId = assetId;
     }
 

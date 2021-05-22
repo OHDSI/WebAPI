@@ -2,6 +2,7 @@ package org.ohdsi.webapi.versioning.repository;
 
 import org.ohdsi.webapi.versioning.domain.Version;
 import org.ohdsi.webapi.versioning.domain.VersionBase;
+import org.ohdsi.webapi.versioning.domain.VersionPK;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.NoRepositoryBean;
@@ -9,16 +10,16 @@ import org.springframework.data.repository.NoRepositoryBean;
 import java.util.List;
 
 @NoRepositoryBean
-public interface VersionRepository<T extends Version> extends JpaRepository<T, Long> {
-    @Query("SELECT max(v.version) from #{#entityName} v WHERE v.assetId = ?1")
-    Integer getLatestVersion(int assetId);
+public interface VersionRepository<T extends Version> extends JpaRepository<T, VersionPK> {
+    @Query("SELECT max(v.pk.version) from #{#entityName} v WHERE v.pk.assetId = ?1")
+    Integer getLatestVersion(long assetId);
 
-    @Query("SELECT new org.ohdsi.webapi.versioning.domain.VersionBase(v.id, v.assetId, v.comment, " +
-            "v.version, uc, v.createdDate, v.archived) " +
+    @Query("SELECT new org.ohdsi.webapi.versioning.domain.VersionBase(v.pk.assetId, v.comment, " +
+            "v.pk.version, uc, v.createdDate, v.archived) " +
             "FROM #{#entityName} v, UserEntity uc " +
-            "WHERE v.assetId = ?1 AND uc = v.createdBy")
-    List<VersionBase> findAllVersions(int assetId);
+            "WHERE v.pk.assetId = ?1 AND uc = v.createdBy")
+    List<VersionBase> findAllVersions(long assetId);
 
-    @Query("SELECT v from #{#entityName} v WHERE v.assetId = ?1")
+    @Query("SELECT v from #{#entityName} v WHERE v.pk.assetId = ?1")
     List<T> findAll(int assetId);
 }

@@ -14,7 +14,6 @@ public class VersionToVersionDTOConverter extends BaseConversionServiceAwareConv
 
         target.setComment(source.getComment());
         target.setAssetId(source.getAssetId());
-        target.setId(source.getId());
         target.setVersion(source.getVersion());
         target.setArchived(source.isArchived());
         target.setCreatedBy(conversionService.convert(source.getCreatedBy(), UserDTO.class));

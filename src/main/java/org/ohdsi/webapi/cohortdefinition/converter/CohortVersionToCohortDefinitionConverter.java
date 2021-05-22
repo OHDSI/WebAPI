@@ -28,7 +28,7 @@ public class CohortVersionToCohortDefinitionConverter
 
     @Override
     public CohortDefinition convert(CohortVersion source) {
-        CohortDefinition def = this.cohortDefinitionRepository.findOneWithDetail(source.getAssetId());
+        CohortDefinition def = this.cohortDefinitionRepository.findOneWithDetail(source.getAssetId().intValue());
         ExceptionUtils.throwNotFoundExceptionIfNull(def,
                 String.format("There is no cohort definition with id = %d.", source.getAssetId()));
 

@@ -37,8 +37,9 @@ public class ConceptSetVersionToConceptSetVersionFullDTOConverter
             throw new RuntimeException(e);
         }
 
-        ConceptSet conceptSet = conceptSetRepository.findById(source.getAssetId());
-        ExceptionUtils.throwNotFoundExceptionIfNull(conceptSet, String.format("There is no concept set with id = %d.", source.getAssetId()));
+        ConceptSet conceptSet = conceptSetRepository.findById(source.getAssetId().intValue());
+        ExceptionUtils.throwNotFoundExceptionIfNull(conceptSet,
+                String.format("There is no concept set with id = %d.", source.getAssetId()));
 
         ConceptSetVersionFullDTO target = new ConceptSetVersionFullDTO();
         target.setItems(items);

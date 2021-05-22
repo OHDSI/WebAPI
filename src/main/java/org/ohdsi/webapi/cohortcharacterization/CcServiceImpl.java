@@ -26,6 +26,8 @@ import org.ohdsi.webapi.cohortcharacterization.dto.CcDistributionStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcVersionFullDTO;
+import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.ExecutionResultRequest;
 import org.ohdsi.webapi.cohortcharacterization.dto.ExportExecutionResultRequest;
 import org.ohdsi.webapi.cohortcharacterization.dto.GenerationResults;
@@ -40,6 +42,10 @@ import org.ohdsi.webapi.cohortcharacterization.repository.CcRepository;
 import org.ohdsi.webapi.cohortcharacterization.repository.CcStrataRepository;
 import org.ohdsi.webapi.cohortcharacterization.specification.CohortCharacterizationImpl;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortVersionFullDTO;
 import org.ohdsi.webapi.cohortdefinition.event.CohortDefinitionChangedEvent;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.AnalysisGenerationInfoEntity;
@@ -55,6 +61,7 @@ import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.service.FeatureExtractionService;
 import org.ohdsi.webapi.service.JobService;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.annotations.CcGenerationId;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
@@ -63,12 +70,21 @@ import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
+import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.SourceUtils;
 import org.ohdsi.webapi.util.TempFileUtils;
+import org.ohdsi.webapi.versioning.domain.CharacterizationVersion;
+import org.ohdsi.webapi.versioning.domain.CohortVersion;
+import org.ohdsi.webapi.versioning.domain.Version;
+import org.ohdsi.webapi.versioning.domain.VersionBase;
+import org.ohdsi.webapi.versioning.domain.VersionType;
+import org.ohdsi.webapi.versioning.dto.VersionDTO;
+import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
+import org.ohdsi.webapi.versioning.service.VersionService;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
@@ -89,8 +105,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -192,6 +216,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     private final JobInvalidator jobInvalidator;
     private final GenericConversionService genericConversionService;
     private final VocabularyService vocabularyService;
+    private VersionService<CharacterizationVersion> versionService;
 
     private final Environment env;
 
@@ -215,6 +240,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             final ApplicationEventPublisher eventPublisher,
             final JobInvalidator jobInvalidator,
             final VocabularyService vocabularyService,
+            final VersionService<CharacterizationVersion> versionService,
             @Qualifier("conversionService") final GenericConversionService genericConversionService,
             Environment env) {
         this.repository = ccRepository;
@@ -236,6 +262,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         this.jobInvalidator = jobInvalidator;
         this.vocabularyService = vocabularyService;
         this.genericConversionService = genericConversionService;
+        this.versionService = versionService;
         this.env = env;
         SerializedCcToCcConverter.setConversionService(conversionService);
     }
@@ -925,6 +952,101 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                     && Objects.equals(jobParameters.getString(COHORT_CHARACTERIZATION_ID), Long.toString(id))
                     && Objects.equals(getJobName(), jobName);
         });
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/")
+    public List<VersionDTO> getVersions(@PathParam("id") final long id) {
+        List<VersionBase> versions = versionService.getVersions(VersionType.CHARACTERIZATION, id);
+        return versions.stream()
+                .map(v -> genericConversionService.convert(v, VersionDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/{version}")
+    public CcVersionFullDTO getVersion(@PathParam("id") final long id, @PathParam("version") final int version) {
+        checkVersion(id, version);
+        CharacterizationVersion characterizationVersion = versionService.getById(VersionType.CHARACTERIZATION, id, version);
+        ExceptionUtils.throwNotFoundExceptionIfNull(characterizationVersion,
+                String.format("There is no cohort characterization version with id = %d.", version));
+
+        CohortCharacterizationImpl characterization =
+                genericConversionService.convert(characterizationVersion, CohortCharacterizationImpl.class);
+        CohortCharacterizationEntity entity =
+                genericConversionService.convert(characterization, CohortCharacterizationEntity.class);
+
+        CcVersionFullDTO fullDTO = new CcVersionFullDTO();
+        fullDTO.setCharacterizationDTO(genericConversionService.convert(entity, CohortCharacterizationDTO.class));
+        fullDTO.setVersionDTO(genericConversionService.convert(characterizationVersion, VersionDTO.class));
+
+        return fullDTO;
+    }
+
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/{version}")
+    public VersionDTO updateVersion(@PathParam("id") final long id, @PathParam("version") final int version,
+                                    VersionUpdateDTO updateDTO) {
+        checkVersion(id, version);
+        updateDTO.setAssetId(id);
+        updateDTO.setVersion(version);
+        CharacterizationVersion updated = versionService.update(VersionType.CHARACTERIZATION, updateDTO);
+
+        return genericConversionService.convert(updated, VersionDTO.class);
+    }
+
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/{version}")
+    public void deleteVersion(@PathParam("id") final long id, @PathParam("version") final int version) {
+        checkVersion(id, version);
+        versionService.delete(VersionType.CHARACTERIZATION, id, version);
+    }
+
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/{version}/createAsset")
+    public CohortCharacterizationDTO copyAssetFromVersion(@PathParam("id") final long id,
+                                                          @PathParam("version") final int version) {
+        checkVersion(id, version);
+        CharacterizationVersion characterizationVersion = versionService.getById(VersionType.CHARACTERIZATION, id, version);
+        ExceptionUtils.throwNotFoundExceptionIfNull(characterizationVersion,
+                String.format("There is no cohort characterization version with id = %d.", version));
+
+        CohortCharacterizationImpl characterization =
+                genericConversionService.convert(characterizationVersion, CohortCharacterizationImpl.class);
+        CohortCharacterizationEntity entity =
+                genericConversionService.convert(characterization, CohortCharacterizationEntity.class);
+        entity.setId(null);
+        entity.setTags(null);
+        entity.setName(NameUtils.getNameForCopy(entity.getName(), this::getNamesLike, repository.findByName(entity.getName())));
+
+        CohortCharacterizationEntity saved = createCc(entity);
+        return genericConversionService.convert(saved, CohortCharacterizationDTO.class);
+    }
+
+    private void checkVersion(long id, int version) {
+        Version characterizationVersion = versionService.getById(VersionType.CHARACTERIZATION, id, version);
+        ExceptionUtils.throwNotFoundExceptionIfNull(characterizationVersion,
+                String.format("There is no cohort characterization version with id = %d.", version));
+
+        CohortCharacterizationEntity entity = findById(id);
+        checkOwnerOrAdminOrGranted(entity);
+    }
+
+    public CharacterizationVersion saveVersion(long id) {
+        CohortCharacterizationEntity def = findById(id);
+        CohortCharacterizationImpl characterization = genericConversionService.convert(def, CohortCharacterizationImpl.class);
+        CharacterizationVersion version = genericConversionService.convert(characterization, CharacterizationVersion.class);
+
+        UserEntity user = Objects.nonNull(def.getModifiedBy()) ? def.getModifiedBy() : def.getCreatedBy();
+        Date versionDate = Objects.nonNull(def.getModifiedDate()) ? def.getModifiedDate() : def.getCreatedDate();
+        version.setCreatedBy(user);
+        version.setCreatedDate(versionDate);
+        return versionService.create(VersionType.CHARACTERIZATION, version);
     }
 
     private List<String> getNamesLike(String copyName) {

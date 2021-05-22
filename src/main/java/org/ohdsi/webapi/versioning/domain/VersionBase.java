@@ -7,9 +7,7 @@ import java.util.Date;
 
 // Projection class
 public class VersionBase {
-    private long id;
-
-    private int assetId;
+    private Long assetId;
 
     private String comment;
 
@@ -21,8 +19,7 @@ public class VersionBase {
 
     private boolean archived;
 
-    public VersionBase(long id, int assetId, String comment, int version, UserEntity createdBy, Date createdDate, boolean archived) {
-        this.id = id;
+    public VersionBase(long assetId, String comment, int version, UserEntity createdBy, Date createdDate, boolean archived) {
         this.assetId = assetId;
         this.comment = comment;
         this.version = version;
@@ -31,11 +28,7 @@ public class VersionBase {
         this.archived = archived;
     }
 
-    public long getId() {
-        return id;
-    }
-
-    public int getAssetId() {
+    public Long getAssetId() {
         return assetId;
     }
 

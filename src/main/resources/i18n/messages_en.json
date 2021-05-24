@@ -898,6 +898,9 @@
       "button": "Export",
       "progress": "export in progress"
     },
+    "exportSql": {
+      "incorrectDesign": "Cannot generate SQL: design of the analysis is incorrect"
+    },
     "feasibilityAttritionReport": {
       "attritionVisualization": "Attrition Visualization",
       "inclusionRule": "Inclusion Rule",

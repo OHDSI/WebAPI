@@ -28,7 +28,7 @@ public class JobExecutionToDTOConverter extends BaseConversionServiceAwareConver
         final JobExecution execution = entity.getJobExecution();
         final JobInstance instance = execution.getJobInstance();
         final JobInstanceResource instanceResource = new JobInstanceResource(instance.getInstanceId(), instance.getJobName());
-        return new JobExecutionResource(instanceResource, execution.getJobId());
+        return new JobExecutionResource(instanceResource, entity.getJobExecution().getId());
     }
 
     @Override

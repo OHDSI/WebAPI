@@ -531,8 +531,6 @@ public class ConceptSetService extends AbstractDaoService {
     public ConceptSetDTO copyAssetFromVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
         checkVersion(id, version);
         ConceptSetVersion conceptSetVersion = versionService.getById(VersionType.CONCEPT_SET, id, version);
-        ExceptionUtils.throwNotFoundExceptionIfNull(conceptSetVersion,
-                String.format("There is no concept set version with id = %d.", version));
 
         ConceptSetVersionFullDTO fullDTO = conversionService.convert(conceptSetVersion, ConceptSetVersionFullDTO.class);
         ConceptSetDTO conceptSetDTO = fullDTO.getConceptSetDTO();

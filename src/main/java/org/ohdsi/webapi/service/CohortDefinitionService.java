@@ -829,11 +829,6 @@ public class CohortDefinitionService extends AbstractDaoService {
 	public CohortVersionFullDTO getVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
 		checkVersion(id, version);
 		CohortVersion cohortVersion = versionService.getById(VersionType.COHORT, id, version);
-		ExceptionUtils.throwNotFoundExceptionIfNull(cohortVersion, String.format("There is no cohort version with id = %d.", version));
-
-		CohortDefinitionDetails details = new CohortDefinitionDetails();
-		details.setExpression(cohortVersion.getAssetJson());
-
 		CohortDefinition versionDef = conversionService.convert(cohortVersion, CohortDefinition.class);
 
 		CohortVersionFullDTO fullDTO = new CohortVersionFullDTO();
@@ -873,18 +868,14 @@ public class CohortDefinitionService extends AbstractDaoService {
 	public CohortDTO copyAssetFromVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
 		checkVersion(id, version);
 		CohortVersion cohortVersion = versionService.getById(VersionType.COHORT, id, version);
-		ExceptionUtils.throwNotFoundExceptionIfNull(cohortVersion, String.format("There is no cohort version with id = %d.", version));
-
-		CohortDefinitionDetails details = new CohortDefinitionDetails();
-		details.setExpression(cohortVersion.getAssetJson());
-
 		CohortDefinition versionDef = conversionService.convert(cohortVersion, CohortDefinition.class);
 
-		CohortDTO sourceDef = conversionService.convert(versionDef, CohortDTO.class);
-		sourceDef.setId(null);
-		sourceDef.setTags(null);
-		sourceDef.setName(NameUtils.getNameForCopy(sourceDef.getName(), this::getNamesLike, cohortDefinitionRepository.findByName(sourceDef.getName())));
-		return createCohortDefinition(sourceDef);
+		CohortDTO dto = conversionService.convert(versionDef, CohortDTO.class);
+		dto.setId(null);
+		dto.setTags(null);
+		dto.setName(NameUtils.getNameForCopy(dto.getName(), this::getNamesLike,
+				cohortDefinitionRepository.findByName(dto.getName())));
+		return createCohortDefinition(dto);
 	}
 
 	private void checkVersion(int id, int version) {
@@ -905,5 +896,18 @@ public class CohortDefinitionService extends AbstractDaoService {
 		version.setCreatedBy(user);
 		version.setCreatedDate(versionDate);
 		return versionService.create(VersionType.COHORT, version);
+	}
+
+	public List<CohortDTO> getCohortDTOs(List<Integer> ids) {
+		return ids.stream()
+				.map(id -> {
+					CohortDefinition def = cohortDefinitionRepository.findOne(id);
+					if (Objects.isNull(def)) {
+						return null;
+					}
+					return conversionService.convert(def, CohortDTO.class);
+				})
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
 	}
 }

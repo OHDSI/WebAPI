@@ -970,8 +970,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     public CcVersionFullDTO getVersion(@PathParam("id") final long id, @PathParam("version") final int version) {
         checkVersion(id, version);
         CharacterizationVersion characterizationVersion = versionService.getById(VersionType.CHARACTERIZATION, id, version);
-        ExceptionUtils.throwNotFoundExceptionIfNull(characterizationVersion,
-                String.format("There is no cohort characterization version with id = %d.", version));
 
         CohortCharacterizationImpl characterization =
                 genericConversionService.convert(characterizationVersion, CohortCharacterizationImpl.class);
@@ -1013,8 +1011,6 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                                                           @PathParam("version") final int version) {
         checkVersion(id, version);
         CharacterizationVersion characterizationVersion = versionService.getById(VersionType.CHARACTERIZATION, id, version);
-        ExceptionUtils.throwNotFoundExceptionIfNull(characterizationVersion,
-                String.format("There is no cohort characterization version with id = %d.", version));
 
         CohortCharacterizationImpl characterization =
                 genericConversionService.convert(characterizationVersion, CohortCharacterizationImpl.class);

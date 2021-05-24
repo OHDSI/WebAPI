@@ -35,10 +35,10 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortVersionFullDTO;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
-import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.ircalc.AnalysisReport;
 import org.ohdsi.webapi.ircalc.ExecutionInfo;
 import org.ohdsi.webapi.ircalc.IRAnalysisInfoListener;
@@ -50,6 +50,7 @@ import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisDetails;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisExportExpression;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisExpression;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
+import org.ohdsi.webapi.ircalc.dto.IRVersionFullDTO;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.security.PermissionService;
@@ -65,13 +66,19 @@ import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceService;
-import org.ohdsi.webapi.tag.TagService;
-import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.versioning.domain.CohortVersion;
+import org.ohdsi.webapi.versioning.domain.IRVersion;
+import org.ohdsi.webapi.versioning.domain.Version;
+import org.ohdsi.webapi.versioning.domain.VersionBase;
+import org.ohdsi.webapi.versioning.domain.VersionType;
+import org.ohdsi.webapi.versioning.dto.VersionDTO;
+import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
+import org.ohdsi.webapi.versioning.service.VersionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.JobParameters;
@@ -80,7 +87,6 @@ import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -89,12 +95,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -185,7 +186,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   private PermissionService permissionService;
 
   @Autowired
-  private TagService tagService;
+  private VersionService<IRVersion> versionService;
 
   public IRAnalysisService(final ObjectMapper objectMapper) {
 
@@ -385,9 +386,8 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   }
 
   @Override
-  @Transactional(readOnly = true)
+  @Transactional
   public IRAnalysisDTO getAnalysis(final int id) {
-
     return getTransactionTemplate().execute(transactionStatus -> {
       IncidenceRateAnalysis a = this.irAnalysisRepository.findOne(id);
       ExceptionUtils.throwNotFoundExceptionIfNull(a, String.format(NO_INCIDENCE_RATE_ANALYSIS_MESSAGE, id));
@@ -451,6 +451,8 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     @Transactional
   public IRAnalysisDTO saveAnalysis(final int id, IRAnalysisDTO analysis) {
     Date currentTime = Calendar.getInstance().getTime();
+
+    saveVersion(id);
 
     UserEntity user = userRepository.findByLogin(security.getSubject());
     IncidenceRateAnalysis updatedAnalysis = this.irAnalysisRepository.findOne(id);
@@ -821,6 +823,61 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     unassignTag(entity, tagId, false);
   }
 
+  @Override
+  public List<VersionDTO> getVersions(long id) {
+    List<VersionBase> versions = versionService.getVersions(VersionType.INCIDENCE_RATE, id);
+    return versions.stream()
+            .map(v -> conversionService.convert(v, VersionDTO.class))
+            .collect(Collectors.toList());
+  }
+
+  @Override
+  @Transactional
+  public IRVersionFullDTO getVersion(int id, int version) {
+    checkVersion(id, version);
+    IRVersion irVersion = versionService.getById(VersionType.INCIDENCE_RATE, id, version);
+    IncidenceRateAnalysis analysis = conversionService.convert(irVersion, IncidenceRateAnalysis.class);
+
+    IRVersionFullDTO fullDTO = new IRVersionFullDTO();
+    fullDTO.setIrAnalysisDTO(conversionService.convert(analysis, IRAnalysisDTO.class));
+    fullDTO.setVersionDTO(conversionService.convert(irVersion, VersionDTO.class));
+
+    return fullDTO;
+  }
+
+  @Override
+  @Transactional
+  public VersionDTO updateVersion(int id, int version, VersionUpdateDTO updateDTO) {
+    checkVersion(id, version);
+    updateDTO.setAssetId(id);
+    updateDTO.setVersion(version);
+    IRVersion updated = versionService.update(VersionType.INCIDENCE_RATE, updateDTO);
+
+    return conversionService.convert(updated, VersionDTO.class);
+  }
+
+  @Override
+  @Transactional
+  public void deleteVersion(int id, int version) {
+    checkVersion(id, version);
+    versionService.delete(VersionType.INCIDENCE_RATE, id, version);
+  }
+
+  @Override
+  @Transactional
+  public IRAnalysisDTO copyAssetFromVersion(int id, int version) {
+    checkVersion(id, version);
+    IRVersion irVersion = versionService.getById(VersionType.INCIDENCE_RATE, id, version);
+    IncidenceRateAnalysis analysis = conversionService.convert(irVersion, IncidenceRateAnalysis.class);
+
+    IRAnalysisDTO dto = conversionService.convert(analysis, IRAnalysisDTO.class);
+    dto.setId(null);
+    dto.setTags(null);
+    dto.setName(NameUtils.getNameForCopy(dto.getName(), this::getNamesLike,
+            irAnalysisRepository.findByName(dto.getName())));
+    return createAnalysis(dto);
+  }
+
   @PostConstruct
   public void init() {
 
@@ -895,5 +952,25 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
       }
     }
     return sourceAvailable;
+  }
+
+  private void checkVersion(int id, int version) {
+    Version irVersion = versionService.getById(VersionType.INCIDENCE_RATE, id, version);
+    ExceptionUtils.throwNotFoundExceptionIfNull(irVersion,
+            String.format("There is no incidence rates analysis version with id = %d.", version));
+
+    IncidenceRateAnalysis entity = this.irAnalysisRepository.findOne(id);
+    checkOwnerOrAdminOrGranted(entity);
+  }
+
+  private IRVersion saveVersion(int id) {
+    IncidenceRateAnalysis def = this.irAnalysisRepository.findOne(id);
+    IRVersion version = conversionService.convert(def, IRVersion.class);
+
+    UserEntity user = Objects.nonNull(def.getModifiedBy()) ? def.getModifiedBy() : def.getCreatedBy();
+    Date versionDate = Objects.nonNull(def.getModifiedDate()) ? def.getModifiedDate() : def.getCreatedDate();
+    version.setCreatedBy(user);
+    version.setCreatedDate(versionDate);
+    return versionService.create(VersionType.INCIDENCE_RATE, version);
   }
 }

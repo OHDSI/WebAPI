@@ -32,7 +32,17 @@ VALUES (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohortdefinition:*:ver
        (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterization:*:version:*:delete',
         'Delete characterization version info'),
        (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohort-characterization:*:version:*:createAsset:put',
-        'Copy characterization version as new cohort');
+        'Copy characterization version as new cohort'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'ir:*:version:get',
+        'Get list of incidence rate analysis versions'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'ir:*:version:*:get',
+        'Get incidence rate analysis version'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'ir:*:version:*:put',
+        'Update incidence rate analysis version info'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'ir:*:version:*:delete',
+        'Delete incidence rate analysis version info'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'ir:*:version:*:createAsset:put',
+        'Copy incidence rate analysis version as new cohort');
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
 SELECT sr.id, sp.id
@@ -55,7 +65,12 @@ WHERE sp.value IN (
                    'cohort-characterization:*:version:*:get',
                    'cohort-characterization:*:version:*:put',
                    'cohort-characterization:*:version:*:delete',
-                   'cohort-characterization:*:version:*:createAsset:put')
+                   'cohort-characterization:*:version:*:createAsset:put'
+                   'ir:*:version:get',
+                   'ir:*:version:*:get',
+                   'ir:*:version:*:put',
+                   'ir:*:version:*:delete',
+                   'ir:*:version:*:createAsset:put')
   AND sr.name IN ('Atlas users');
 
 -- Cohorts
@@ -112,6 +127,7 @@ CREATE TABLE ${ohdsiSchema}.ir_versions
 (
     asset_id      int8                     NOT NULL,
     comment       varchar                  NULL,
+    description   varchar                  NULL,
     version       int4                     NOT NULL DEFAULT 1,
     asset_json    varchar                  NOT NULL,
     archived      bool                     NOT NULL DEFAULT FALSE,

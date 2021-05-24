@@ -1,14 +1,27 @@
 package org.ohdsi.webapi.service;
 
 import org.ohdsi.webapi.check.CheckResult;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortVersionFullDTO;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.ircalc.AnalysisReport;
+import org.ohdsi.webapi.ircalc.dto.IRVersionFullDTO;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.service.dto.AnalysisInfoDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisShortDTO;
 import org.ohdsi.webapi.tag.domain.Tag;
+import org.ohdsi.webapi.util.ExceptionUtils;
+import org.ohdsi.webapi.util.NameUtils;
+import org.ohdsi.webapi.versioning.domain.CohortVersion;
+import org.ohdsi.webapi.versioning.domain.VersionBase;
+import org.ohdsi.webapi.versioning.domain.VersionType;
+import org.ohdsi.webapi.versioning.dto.VersionDTO;
+import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 
 import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
@@ -180,4 +193,30 @@ public interface IRAnalysisResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/protectedtag/{tagId}")
     void unassignPermissionProtectedTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId);
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/")
+    List<VersionDTO> getVersions(@PathParam("id") final long id);
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/{version}")
+    IRVersionFullDTO getVersion(@PathParam("id") final int id, @PathParam("version") final int version);
+
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/{version}")
+    VersionDTO updateVersion(@PathParam("id") final int id, @PathParam("version") final int version,
+                                    VersionUpdateDTO updateDTO);
+
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/{version}")
+    void deleteVersion(@PathParam("id") final int id, @PathParam("version") final int version) ;
+
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/{version}/createAsset")
+    IRAnalysisDTO copyAssetFromVersion(@PathParam("id") final int id, @PathParam("version") final int version);
 }

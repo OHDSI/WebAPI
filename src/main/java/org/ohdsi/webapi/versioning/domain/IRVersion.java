@@ -12,9 +12,12 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "ir_versions")
-public class IrVersion extends Version {
+public class IRVersion extends Version {
     @EmbeddedId
     private VersionPK pk;
+
+    @Column(name = "description")
+    private String description;
 
     @Override
     public VersionPK getPk() {
@@ -24,5 +27,13 @@ public class IrVersion extends Version {
     @Override
     public void setPk(VersionPK pk) {
         this.pk = pk;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

@@ -897,6 +897,9 @@
       "button": "导出",
       "progress": "导出过程中"
     },
+    "exportSql": {
+      "incorrectDesign": "Cannot generate SQL: design of the analysis is incorrect"
+    },
     "feasibilityAttritionReport": {
       "attritionVisualization": "流失可视化",
       "inclusionRule": "纳入规则",

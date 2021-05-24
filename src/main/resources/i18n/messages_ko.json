@@ -897,6 +897,9 @@
       "button": "내보내기",
       "progress": "추출(export) 진행중"
     },
+    "exportSql": {
+      "incorrectDesign": "Cannot generate SQL: design of the analysis is incorrect"
+    },
     "feasibilityAttritionReport": {
       "attritionVisualization": "축소 시각화",
       "inclusionRule": "포함 규칙",

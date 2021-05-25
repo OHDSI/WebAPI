@@ -35,7 +35,6 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortVersionFullDTO;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
@@ -71,7 +70,6 @@ import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
-import org.ohdsi.webapi.versioning.domain.CohortVersion;
 import org.ohdsi.webapi.versioning.domain.IRVersion;
 import org.ohdsi.webapi.versioning.domain.Version;
 import org.ohdsi.webapi.versioning.domain.VersionBase;
@@ -836,13 +834,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   public IRVersionFullDTO getVersion(int id, int version) {
     checkVersion(id, version);
     IRVersion irVersion = versionService.getById(VersionType.INCIDENCE_RATE, id, version);
-    IncidenceRateAnalysis analysis = conversionService.convert(irVersion, IncidenceRateAnalysis.class);
-
-    IRVersionFullDTO fullDTO = new IRVersionFullDTO();
-    fullDTO.setIrAnalysisDTO(conversionService.convert(analysis, IRAnalysisDTO.class));
-    fullDTO.setVersionDTO(conversionService.convert(irVersion, VersionDTO.class));
-
-    return fullDTO;
+    return conversionService.convert(irVersion, IRVersionFullDTO.class);
   }
 
   @Override
@@ -868,9 +860,9 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   public IRAnalysisDTO copyAssetFromVersion(int id, int version) {
     checkVersion(id, version);
     IRVersion irVersion = versionService.getById(VersionType.INCIDENCE_RATE, id, version);
-    IncidenceRateAnalysis analysis = conversionService.convert(irVersion, IncidenceRateAnalysis.class);
+    IRVersionFullDTO fullDTO = conversionService.convert(irVersion, IRVersionFullDTO.class);
 
-    IRAnalysisDTO dto = conversionService.convert(analysis, IRAnalysisDTO.class);
+    IRAnalysisDTO dto = fullDTO.getIrAnalysisDTO();
     dto.setId(null);
     dto.setTags(null);
     dto.setName(NameUtils.getNameForCopy(dto.getName(), this::getNamesLike,

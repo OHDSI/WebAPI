@@ -42,10 +42,6 @@ import org.ohdsi.webapi.cohortcharacterization.repository.CcRepository;
 import org.ohdsi.webapi.cohortcharacterization.repository.CcStrataRepository;
 import org.ohdsi.webapi.cohortcharacterization.specification.CohortCharacterizationImpl;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortVersionFullDTO;
 import org.ohdsi.webapi.cohortdefinition.event.CohortDefinitionChangedEvent;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.AnalysisGenerationInfoEntity;
@@ -78,7 +74,6 @@ import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.SourceUtils;
 import org.ohdsi.webapi.util.TempFileUtils;
 import org.ohdsi.webapi.versioning.domain.CharacterizationVersion;
-import org.ohdsi.webapi.versioning.domain.CohortVersion;
 import org.ohdsi.webapi.versioning.domain.Version;
 import org.ohdsi.webapi.versioning.domain.VersionBase;
 import org.ohdsi.webapi.versioning.domain.VersionType;
@@ -105,7 +100,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
@@ -971,16 +965,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         checkVersion(id, version);
         CharacterizationVersion characterizationVersion = versionService.getById(VersionType.CHARACTERIZATION, id, version);
 
-        CohortCharacterizationImpl characterization =
-                genericConversionService.convert(characterizationVersion, CohortCharacterizationImpl.class);
-        CohortCharacterizationEntity entity =
-                genericConversionService.convert(characterization, CohortCharacterizationEntity.class);
-
-        CcVersionFullDTO fullDTO = new CcVersionFullDTO();
-        fullDTO.setCharacterizationDTO(genericConversionService.convert(entity, CohortCharacterizationDTO.class));
-        fullDTO.setVersionDTO(genericConversionService.convert(characterizationVersion, VersionDTO.class));
-
-        return fullDTO;
+        return genericConversionService.convert(characterizationVersion, CcVersionFullDTO.class);
     }
 
     @PUT
@@ -1012,10 +997,9 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         checkVersion(id, version);
         CharacterizationVersion characterizationVersion = versionService.getById(VersionType.CHARACTERIZATION, id, version);
 
-        CohortCharacterizationImpl characterization =
-                genericConversionService.convert(characterizationVersion, CohortCharacterizationImpl.class);
+        CcVersionFullDTO fullDTO = genericConversionService.convert(characterizationVersion, CcVersionFullDTO.class);
         CohortCharacterizationEntity entity =
-                genericConversionService.convert(characterization, CohortCharacterizationEntity.class);
+                genericConversionService.convert(fullDTO.getCharacterizationDTO(), CohortCharacterizationEntity.class);
         entity.setId(null);
         entity.setTags(null);
         entity.setName(NameUtils.getNameForCopy(entity.getName(), this::getNamesLike, repository.findByName(entity.getName())));
@@ -1035,8 +1019,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     public CharacterizationVersion saveVersion(long id) {
         CohortCharacterizationEntity def = findById(id);
-        CohortCharacterizationImpl characterization = genericConversionService.convert(def, CohortCharacterizationImpl.class);
-        CharacterizationVersion version = genericConversionService.convert(characterization, CharacterizationVersion.class);
+        CharacterizationVersion version = genericConversionService.convert(def, CharacterizationVersion.class);
 
         UserEntity user = Objects.nonNull(def.getModifiedBy()) ? def.getModifiedBy() : def.getCreatedBy();
         Date versionDate = Objects.nonNull(def.getModifiedDate()) ? def.getModifiedDate() : def.getCreatedDate();

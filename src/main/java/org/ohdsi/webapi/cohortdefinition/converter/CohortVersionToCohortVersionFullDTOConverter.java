@@ -6,12 +6,18 @@ import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortVersionFullDTO;
 import org.ohdsi.webapi.conceptset.ConceptSetRepository;
+import org.ohdsi.webapi.conceptset.dto.ConceptSetVersionFullDTO;
 import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
 import org.ohdsi.webapi.exception.BadRequestAtlasException;
 import org.ohdsi.webapi.service.ConceptSetService;
+import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.versioning.domain.CohortVersion;
+import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,13 +27,13 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
-public class CohortVersionToCohortDefinitionConverter
-        extends BaseConversionServiceAwareConverter<CohortVersion, CohortDefinition> {
+public class CohortVersionToCohortVersionFullDTOConverter
+        extends BaseConversionServiceAwareConverter<CohortVersion, CohortVersionFullDTO> {
     @Autowired
     private CohortDefinitionRepository cohortDefinitionRepository;
 
     @Override
-    public CohortDefinition convert(CohortVersion source) {
+    public CohortVersionFullDTO convert(CohortVersion source) {
         CohortDefinition def = this.cohortDefinitionRepository.findOneWithDetail(source.getAssetId().intValue());
         ExceptionUtils.throwNotFoundExceptionIfNull(def,
                 String.format("There is no cohort definition with id = %d.", source.getAssetId()));
@@ -35,22 +41,23 @@ public class CohortVersionToCohortDefinitionConverter
         CohortDefinitionDetails details = new CohortDefinitionDetails();
         details.setExpression(source.getAssetJson());
 
-        CohortDefinition target = new CohortDefinition();
-        target.setCohortAnalysisGenerationInfoList(def.getCohortAnalysisGenerationInfoList());
-        target.setId(def.getId());
-        target.setTags(def.getTags());
-        target.setName(def.getName());
-        target.setDescription(source.getDescription());
-        target.setExpressionType(def.getExpressionType());
-        target.setDetails(details);
-        target.setCohortAnalysisGenerationInfoList(def.getCohortAnalysisGenerationInfoList());
-        target.setGenerationInfoList(def.getGenerationInfoList());
-        target.setCohortCharacterizations(def.getCohortCharacterizations());
-        target.setTags(def.getTags());
-        target.setCreatedBy(def.getCreatedBy());
-        target.setCreatedDate(def.getCreatedDate());
-        target.setModifiedBy(def.getModifiedBy());
-        target.setModifiedDate(def.getModifiedDate());
+        CohortDefinition entity = new CohortDefinition();
+        entity.setId(def.getId());
+        entity.setTags(def.getTags());
+        entity.setName(def.getName());
+        entity.setDescription(source.getDescription());
+        entity.setExpressionType(def.getExpressionType());
+        entity.setDetails(details);
+        entity.setCohortAnalysisGenerationInfoList(def.getCohortAnalysisGenerationInfoList());
+        entity.setGenerationInfoList(def.getGenerationInfoList());
+        entity.setCreatedBy(def.getCreatedBy());
+        entity.setCreatedDate(def.getCreatedDate());
+        entity.setModifiedBy(def.getModifiedBy());
+        entity.setModifiedDate(def.getModifiedDate());
+
+        CohortVersionFullDTO target = new CohortVersionFullDTO();
+        target.setCohortVersionDTO(conversionService.convert(source, VersionDTO.class));
+        target.setCohortRawDTO(conversionService.convert(entity, CohortRawDTO.class));
 
         return target;
     }

@@ -2,6 +2,7 @@ package org.ohdsi.webapi.cohortcharacterization.converter;
 
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.cohortcharacterization.CcService;
+import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.specification.CohortCharacterizationImpl;
 import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
 import org.ohdsi.webapi.util.ExportUtil;
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class CharacterizationToCharacterizationVersionConverter
-        extends BaseConversionServiceAwareConverter<CohortCharacterizationImpl, CharacterizationVersion> {
+        extends BaseConversionServiceAwareConverter<CohortCharacterizationEntity, CharacterizationVersion> {
     @Autowired
     private CcService ccService;
 
@@ -20,13 +21,15 @@ public class CharacterizationToCharacterizationVersionConverter
     private Environment env;
 
     @Override
-    public CharacterizationVersion convert(CohortCharacterizationImpl source) {
-        ExportUtil.clearCreateAndUpdateInfo(source);
-        source.getFeatureAnalyses().forEach(ExportUtil::clearCreateAndUpdateInfo);
-        source.getCohorts().forEach(ExportUtil::clearCreateAndUpdateInfo);
-        source.setOrganizationName(env.getRequiredProperty("organization.name"));
+    public CharacterizationVersion convert(CohortCharacterizationEntity source) {
+        CohortCharacterizationImpl characterizationImpl =
+                conversionService.convert(source, CohortCharacterizationImpl.class);
+        ExportUtil.clearCreateAndUpdateInfo(characterizationImpl);
+        characterizationImpl.getFeatureAnalyses().forEach(ExportUtil::clearCreateAndUpdateInfo);
+        characterizationImpl.getCohorts().forEach(ExportUtil::clearCreateAndUpdateInfo);
+        characterizationImpl.setOrganizationName(env.getRequiredProperty("organization.name"));
 
-        String expression = Utils.serialize(source, true);
+        String expression = Utils.serialize(characterizationImpl, true);
 
         CharacterizationVersion target = new CharacterizationVersion();
         target.setAssetId(source.getId());

@@ -5,7 +5,7 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
 import org.ohdsi.webapi.service.converters.BaseCommonDTOExtToEntityExtConverter;
 
-public class BaseCohortDTOToCohortDefinitionConverter<V extends CohortMetadataDTO> extends BaseCommonDTOExtToEntityExtConverter<V, CohortDefinition> {
+public abstract class BaseCohortDTOToCohortDefinitionConverter<V extends CohortMetadataDTO> extends BaseCommonDTOExtToEntityExtConverter<V, CohortDefinition> {
 
     @Override
     protected void doConvert(V source, CohortDefinition target) {

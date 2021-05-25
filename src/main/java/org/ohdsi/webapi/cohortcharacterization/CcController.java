@@ -178,9 +178,9 @@ public class CcController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public CohortCharacterizationDTO getDesign(@PathParam("id") final Long id) {
-        CohortCharacterization  cc = service.findByIdWithLinkedEntities(id);
+        CohortCharacterizationEntity cc = service.findByIdWithLinkedEntities(id);
         ExceptionUtils.throwNotFoundExceptionIfNull(cc, String.format("There is no cohort characterization with id = %d.", id));
-        return convertCcToDto(service.findByIdWithLinkedEntities(id));
+        return convertCcToDto(cc);
     }
 
     @GET

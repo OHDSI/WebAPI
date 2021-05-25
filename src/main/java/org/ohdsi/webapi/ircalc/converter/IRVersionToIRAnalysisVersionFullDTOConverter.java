@@ -7,9 +7,12 @@ import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisDetails;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisExportExpression;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
+import org.ohdsi.webapi.ircalc.dto.IRVersionFullDTO;
 import org.ohdsi.webapi.service.CohortDefinitionService;
+import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.versioning.domain.IRVersion;
+import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +22,9 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
 
 @Component
-public class IRVersionToIRAnalysisConverter
-        extends BaseConversionServiceAwareConverter<IRVersion, IncidenceRateAnalysis> {
-    private static final Logger log = LoggerFactory.getLogger(IRVersionToIRAnalysisConverter.class);
+public class IRVersionToIRAnalysisVersionFullDTOConverter
+        extends BaseConversionServiceAwareConverter<IRVersion, IRVersionFullDTO> {
+    private static final Logger log = LoggerFactory.getLogger(IRVersionToIRAnalysisVersionFullDTOConverter.class);
 
     @Autowired
     private IncidenceRateAnalysisRepository analysisRepository;
@@ -33,24 +36,23 @@ public class IRVersionToIRAnalysisConverter
     private CohortDefinitionService cohortService;
 
     @Override
-    public IncidenceRateAnalysis convert(IRVersion source) {
+    public IRVersionFullDTO convert(IRVersion source) {
         IncidenceRateAnalysis def = this.analysisRepository.findOne(source.getAssetId().intValue());
         ExceptionUtils.throwNotFoundExceptionIfNull(def,
                 String.format("There is no incidence rate analysis with id = %d.", source.getAssetId()));
 
-        IncidenceRateAnalysis target = new IncidenceRateAnalysis();
-        target.setId(def.getId());
-        target.setTags(def.getTags());
-        target.setName(def.getName());
-        target.setDescription(source.getDescription());
-        target.setTags(def.getTags());
-        target.setCreatedBy(def.getCreatedBy());
-        target.setCreatedDate(def.getCreatedDate());
-        target.setModifiedBy(def.getModifiedBy());
-        target.setModifiedDate(def.getModifiedDate());
-        target.setExecutionInfoList(def.getExecutionInfoList());
+        IncidenceRateAnalysis entity = new IncidenceRateAnalysis();
+        entity.setId(def.getId());
+        entity.setTags(def.getTags());
+        entity.setName(def.getName());
+        entity.setDescription(source.getDescription());
+        entity.setCreatedBy(def.getCreatedBy());
+        entity.setCreatedDate(def.getCreatedDate());
+        entity.setModifiedBy(def.getModifiedBy());
+        entity.setModifiedDate(def.getModifiedDate());
+        entity.setExecutionInfoList(def.getExecutionInfoList());
 
-        IncidenceRateAnalysisDetails details = new IncidenceRateAnalysisDetails(target);
+        IncidenceRateAnalysisDetails details = new IncidenceRateAnalysisDetails(entity);
         try {
             IncidenceRateAnalysisExportExpression expression = objectMapper.readValue(
                     source.getAssetJson(), IncidenceRateAnalysisExportExpression.class);
@@ -66,7 +68,11 @@ public class IRVersionToIRAnalysisConverter
         }
         details.setExpression(source.getAssetJson());
 
-        target.setDetails(details);
+        entity.setDetails(details);
+
+        IRVersionFullDTO target = new IRVersionFullDTO();
+        target.setVersionDTO(conversionService.convert(source, VersionDTO.class));
+        target.setIrAnalysisDTO(conversionService.convert(entity, IRAnalysisDTO.class));
 
         return target;
     }

@@ -44,7 +44,6 @@ import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.common.sensitiveinfo.CohortGenerationSensitiveInfoService;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
-import org.ohdsi.webapi.conceptset.dto.ConceptSetVersionFullDTO;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.security.PermissionService;
@@ -55,7 +54,6 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.source.SourceService;
-import org.ohdsi.webapi.tag.TagService;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.HttpUtils;
@@ -88,7 +86,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.ServletContext;
 import javax.transaction.Transactional;
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -829,13 +826,8 @@ public class CohortDefinitionService extends AbstractDaoService {
 	public CohortVersionFullDTO getVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
 		checkVersion(id, version);
 		CohortVersion cohortVersion = versionService.getById(VersionType.COHORT, id, version);
-		CohortDefinition versionDef = conversionService.convert(cohortVersion, CohortDefinition.class);
 
-		CohortVersionFullDTO fullDTO = new CohortVersionFullDTO();
-		fullDTO.setCohortRawDTO(conversionService.convert(versionDef, CohortRawDTO.class));
-		fullDTO.setCohortVersionDTO(conversionService.convert(cohortVersion, VersionDTO.class));
-
-		return fullDTO;
+		return conversionService.convert(cohortVersion, CohortVersionFullDTO.class);
 	}
 
 	@PUT
@@ -868,9 +860,8 @@ public class CohortDefinitionService extends AbstractDaoService {
 	public CohortDTO copyAssetFromVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
 		checkVersion(id, version);
 		CohortVersion cohortVersion = versionService.getById(VersionType.COHORT, id, version);
-		CohortDefinition versionDef = conversionService.convert(cohortVersion, CohortDefinition.class);
-
-		CohortDTO dto = conversionService.convert(versionDef, CohortDTO.class);
+		CohortVersionFullDTO fullDTO = conversionService.convert(cohortVersion, CohortVersionFullDTO.class);
+		CohortDTO dto = conversionService.convert(fullDTO.getCohortRawDTO(), CohortDTO.class);
 		dto.setId(null);
 		dto.setTags(null);
 		dto.setName(NameUtils.getNameForCopy(dto.getName(), this::getNamesLike,
@@ -899,14 +890,15 @@ public class CohortDefinitionService extends AbstractDaoService {
 	}
 
 	public List<CohortDTO> getCohortDTOs(List<Integer> ids) {
+		return getCohorts(ids).stream()
+				.map(def -> conversionService.convert(def, CohortDTO.class))
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+	}
+
+	public List<CohortDefinition> getCohorts(List<Integer> ids) {
 		return ids.stream()
-				.map(id -> {
-					CohortDefinition def = cohortDefinitionRepository.findOne(id);
-					if (Objects.isNull(def)) {
-						return null;
-					}
-					return conversionService.convert(def, CohortDTO.class);
-				})
+				.map(id -> cohortDefinitionRepository.findOne(id))
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
 	}

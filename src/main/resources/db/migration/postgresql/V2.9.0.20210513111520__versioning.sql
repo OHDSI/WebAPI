@@ -42,7 +42,17 @@ VALUES (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'cohortdefinition:*:ver
        (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'ir:*:version:*:delete',
         'Delete incidence rate analysis version info'),
        (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'ir:*:version:*:createAsset:put',
-        'Copy incidence rate analysis version as new cohort');
+        'Copy incidence rate analysis version as new cohort'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'pathway:*:version:get',
+        'Get list of pathway analysis versions'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'pathway:*:version:*:get',
+        'Get pathway analysis version'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'pathway:*:version:*:put',
+        'Update pathway analysis version info'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'pathway:*:version:*:delete',
+        'Delete pathway analysis version info'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'pathway:*:version:*:createAsset:put',
+        'Copy pathway analysis version as new cohort');
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
 SELECT sr.id, sp.id
@@ -65,12 +75,17 @@ WHERE sp.value IN (
                    'cohort-characterization:*:version:*:get',
                    'cohort-characterization:*:version:*:put',
                    'cohort-characterization:*:version:*:delete',
-                   'cohort-characterization:*:version:*:createAsset:put'
+                   'cohort-characterization:*:version:*:createAsset:put',
                    'ir:*:version:get',
                    'ir:*:version:*:get',
                    'ir:*:version:*:put',
                    'ir:*:version:*:delete',
-                   'ir:*:version:*:createAsset:put')
+                   'ir:*:version:*:createAsset:put',
+                   'pathway:*:version:get',
+                   'pathway:*:version:*:get',
+                   'pathway:*:version:*:put',
+                   'pathway:*:version:*:delete',
+                   'pathway:*:version:*:createAsset:put')
   AND sr.name IN ('Atlas users');
 
 -- Cohorts

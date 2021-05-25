@@ -41,6 +41,7 @@
       "shortdate": "DD.MM",
       "mediumdate": "DD.MM.YYYY",
       "datetime": "DD.MM.YYYY HH:mm",
+      "datetimeWithSeconds": "DD.MM.YYYY HH:mm:ss",
       "minutes": "мин",
       "seconds": "сек"
     }

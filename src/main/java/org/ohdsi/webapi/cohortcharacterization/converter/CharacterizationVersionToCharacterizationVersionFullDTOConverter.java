@@ -9,7 +9,7 @@ import org.ohdsi.webapi.cohortcharacterization.specification.CohortCharacterizat
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
 import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
-import org.ohdsi.webapi.exception.BadRequestAtlasException;
+import org.ohdsi.webapi.exception.ConversionAtlasException;
 import org.ohdsi.webapi.service.CohortDefinitionService;
 import org.ohdsi.webapi.versioning.domain.CharacterizationVersion;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
@@ -48,7 +48,7 @@ public class CharacterizationVersionToCharacterizationVersionFullDTOConverter
                 .collect(Collectors.toList());
         List<CohortDefinition> cohorts = cohortService.getCohorts(ids);
         if (cohorts.size() != ids.size()) {
-            throw new BadRequestAtlasException("Could not restore. Version contains absent cohorts");
+            throw new ConversionAtlasException("Could not restore. Version contains absent cohorts");
         }
         entity.setCohortDefinitions(new HashSet<>(cohorts));
 

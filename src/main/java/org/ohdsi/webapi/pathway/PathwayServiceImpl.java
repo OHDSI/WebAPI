@@ -15,7 +15,6 @@ import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.AnalysisGenerationInfoEntity;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.common.generation.TransactionalTasklet;
-import org.ohdsi.webapi.exception.BadRequestAtlasException;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
 import org.ohdsi.webapi.ircalc.dto.IRVersionFullDTO;
 import org.ohdsi.webapi.job.GeneratesNotification;
@@ -68,7 +67,6 @@ import org.springframework.batch.core.configuration.annotation.StepBuilderFactor
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.domain.Page;
@@ -542,14 +540,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 	public PathwayVersionFullDTO getVersion(int id, int version) {
 		checkVersion(id, version);
 		PathwayVersion pathwayVersion = versionService.getById(VersionType.PATHWAY, id, version);
-		try {
-			return genericConversionService.convert(pathwayVersion, PathwayVersionFullDTO.class);
-		} catch (ConversionFailedException e) {
-			if (e.getCause() instanceof BadRequestAtlasException) {
-				throw (BadRequestAtlasException) e.getCause();
-			}
-			throw e;
-		}
+		return genericConversionService.convert(pathwayVersion, PathwayVersionFullDTO.class);
 	}
 
 	@Override
@@ -572,15 +563,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 	public PathwayAnalysisDTO copyAssetFromVersion(int id, int version) {
 		checkVersion(id, version);
 		PathwayVersion pathwayVersion = versionService.getById(VersionType.PATHWAY, id, version);
-		PathwayVersionFullDTO fullDTO;
-		try {
-			fullDTO = genericConversionService.convert(pathwayVersion, PathwayVersionFullDTO.class);
-		} catch (ConversionFailedException e) {
-			if (e.getCause() instanceof BadRequestAtlasException) {
-				throw (BadRequestAtlasException) e.getCause();
-			}
-			throw e;
-		}
+		PathwayVersionFullDTO fullDTO = genericConversionService.convert(pathwayVersion, PathwayVersionFullDTO.class);
 
 		PathwayAnalysisDTO dto = fullDTO.getPathwayAnalysisDTO();
 		dto.setId(null);

@@ -3,7 +3,7 @@ package org.ohdsi.webapi.pathway.converter;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
-import org.ohdsi.webapi.exception.BadRequestAtlasException;
+import org.ohdsi.webapi.exception.ConversionAtlasException;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayCohort;
 import org.ohdsi.webapi.pathway.domain.PathwayEventCohort;
@@ -68,7 +68,7 @@ public class PathwayVersionToPathwayVersionFullDTOConverter
 
         List<CohortDefinition> cohorts = cohortService.getCohorts(cohortIds);
         if (cohorts.size() != cohortIds.size()) {
-            throw new BadRequestAtlasException("Could not restore. Version contains absent cohorts");
+            throw new ConversionAtlasException("Could not restore. Version contains absent cohorts");
         }
         return cohorts.stream()
                 .map(c -> conversionService.convert(c, PathwayCohortDTO.class))

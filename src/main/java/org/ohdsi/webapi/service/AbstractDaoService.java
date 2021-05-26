@@ -35,6 +35,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import java.io.File;
 import java.io.IOException;
@@ -308,7 +309,7 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     return security.getSubject();
   }
 
-  protected void assignTag(CommonEntityExt<?> entity, int tagId, boolean isPermissionProtected) {
+  protected void assignTag(CommonEntityExt<?> entity, int tagId, boolean isPermissionProtected){
     if (Objects.nonNull(entity)) {
       Tag tag = tagService.getById(tagId);
       if (Objects.nonNull(tag)) {

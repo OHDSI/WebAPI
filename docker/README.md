@@ -1,5 +1,6 @@
 1. Create SSH keys in the same folder. Follow instructions here:
    https://support.atlassian.com/bitbucket-cloud/docs/set-up-an-ssh-key/
+   `Note: SSH key must be with empty password.`
    
 2. Add public key in Bitbucket:
    https://bitbucket.org/account/settings/ssh-keys/

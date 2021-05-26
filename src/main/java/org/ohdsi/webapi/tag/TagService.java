@@ -1,9 +1,7 @@
 package org.ohdsi.webapi.tag;
 
 import org.glassfish.jersey.internal.util.Producer;
-import org.ohdsi.webapi.cache.CacheService;
 import org.ohdsi.webapi.service.AbstractDaoService;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.tag.domain.TagInfo;
 import org.ohdsi.webapi.tag.domain.TagType;
@@ -18,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import javax.ws.rs.ForbiddenException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;

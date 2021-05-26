@@ -1,7 +1,6 @@
 package org.ohdsi.webapi.tag;
 
 import org.apache.commons.lang3.StringUtils;
-import org.ohdsi.webapi.i18n.I18nService;
 import org.ohdsi.webapi.tag.dto.TagDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

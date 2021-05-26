@@ -47,6 +47,7 @@ import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.AnalysisGenerationInfoEntity;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
+import org.ohdsi.webapi.exception.BadRequestAtlasException;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisCriteriaEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
@@ -90,6 +91,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.env.Environment;
@@ -948,30 +950,28 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         });
     }
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("/{id}/version/")
-    public List<VersionDTO> getVersions(@PathParam("id") final long id) {
+    public List<VersionDTO> getVersions(final long id) {
         List<VersionBase> versions = versionService.getVersions(VersionType.CHARACTERIZATION, id);
         return versions.stream()
                 .map(v -> genericConversionService.convert(v, VersionDTO.class))
                 .collect(Collectors.toList());
     }
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("/{id}/version/{version}")
-    public CcVersionFullDTO getVersion(@PathParam("id") final long id, @PathParam("version") final int version) {
+    public CcVersionFullDTO getVersion(final long id, final int version) {
         checkVersion(id, version);
         CharacterizationVersion characterizationVersion = versionService.getById(VersionType.CHARACTERIZATION, id, version);
 
-        return genericConversionService.convert(characterizationVersion, CcVersionFullDTO.class);
+        try {
+            return genericConversionService.convert(characterizationVersion, CcVersionFullDTO.class);
+        } catch (ConversionFailedException e) {
+            if (e.getCause() instanceof BadRequestAtlasException) {
+                throw (BadRequestAtlasException) e.getCause();
+            }
+            throw e;
+        }
     }
 
-    @PUT
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("/{id}/version/{version}")
-    public VersionDTO updateVersion(@PathParam("id") final long id, @PathParam("version") final int version,
+    public VersionDTO updateVersion(final long id, final int version,
                                     VersionUpdateDTO updateDTO) {
         checkVersion(id, version);
         updateDTO.setAssetId(id);
@@ -981,23 +981,24 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         return genericConversionService.convert(updated, VersionDTO.class);
     }
 
-    @DELETE
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("/{id}/version/{version}")
-    public void deleteVersion(@PathParam("id") final long id, @PathParam("version") final int version) {
+    public void deleteVersion(final long id, final int version) {
         checkVersion(id, version);
         versionService.delete(VersionType.CHARACTERIZATION, id, version);
     }
 
-    @PUT
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("/{id}/version/{version}/createAsset")
-    public CohortCharacterizationDTO copyAssetFromVersion(@PathParam("id") final long id,
-                                                          @PathParam("version") final int version) {
+    public CohortCharacterizationDTO copyAssetFromVersion(final long id, final int version) {
         checkVersion(id, version);
         CharacterizationVersion characterizationVersion = versionService.getById(VersionType.CHARACTERIZATION, id, version);
 
-        CcVersionFullDTO fullDTO = genericConversionService.convert(characterizationVersion, CcVersionFullDTO.class);
+        CcVersionFullDTO fullDTO;
+        try {
+            fullDTO = genericConversionService.convert(characterizationVersion, CcVersionFullDTO.class);
+        } catch (ConversionFailedException e) {
+            if (e.getCause() instanceof BadRequestAtlasException) {
+                throw (BadRequestAtlasException) e.getCause();
+            }
+            throw e;
+        }
         CohortCharacterizationEntity entity =
                 genericConversionService.convert(fullDTO.getCharacterizationDTO(), CohortCharacterizationEntity.class);
         entity.setId(null);

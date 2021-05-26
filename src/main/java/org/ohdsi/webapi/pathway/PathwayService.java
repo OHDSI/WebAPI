@@ -1,15 +1,29 @@
 package org.ohdsi.webapi.pathway;
 
+import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
+import org.ohdsi.webapi.ircalc.dto.IRVersionFullDTO;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisGenerationEntity;
+import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
+import org.ohdsi.webapi.pathway.dto.PathwayVersionFullDTO;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
+import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
 import org.ohdsi.webapi.shiro.annotations.PathwayAnalysisGenerationId;
+import org.ohdsi.webapi.util.NameUtils;
+import org.ohdsi.webapi.versioning.domain.IRVersion;
+import org.ohdsi.webapi.versioning.domain.PathwayVersion;
+import org.ohdsi.webapi.versioning.domain.VersionBase;
+import org.ohdsi.webapi.versioning.domain.VersionType;
+import org.ohdsi.webapi.versioning.dto.VersionDTO;
+import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public interface PathwayService {
 
@@ -52,4 +66,16 @@ public interface PathwayService {
     void assignTag(int id, int tagId, boolean isPermissionProtected);
 
     void unassignTag(int id, int tagId, boolean isPermissionProtected);
+
+    List<VersionDTO> getVersions(long id);
+
+    PathwayVersionFullDTO getVersion(int id, int version);
+
+    VersionDTO updateVersion(int id, int version, VersionUpdateDTO updateDTO);
+
+    void deleteVersion(int id, int version);
+
+    PathwayAnalysisDTO copyAssetFromVersion(int id, int version);
+
+    PathwayVersion saveVersion(int id);
 }

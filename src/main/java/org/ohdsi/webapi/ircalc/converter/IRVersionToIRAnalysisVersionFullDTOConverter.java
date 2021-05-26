@@ -3,6 +3,7 @@ package org.ohdsi.webapi.ircalc.converter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
+import org.ohdsi.webapi.exception.BadRequestAtlasException;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisDetails;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisExportExpression;
@@ -18,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
 
 @Component
@@ -60,7 +60,7 @@ public class IRVersionToIRAnalysisVersionFullDTOConverter
             expression.targetCohorts = cohortService.getCohortDTOs(expression.targetIds);
             if (expression.outcomeCohorts.size() != expression.outcomeIds.size() ||
                     expression.targetCohorts.size() != expression.targetIds.size()) {
-                throw new BadRequestException("Could not restore. Version contains absent cohorts");
+                throw new BadRequestAtlasException("Could not restore. Version contains absent cohorts");
             }
         } catch (JsonProcessingException e) {
             log.error("Error converting expression to object", e);

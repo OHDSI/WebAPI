@@ -1,7 +1,6 @@
 package org.ohdsi.webapi.versioning.domain;
 
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
-import org.ohdsi.webapi.tag.domain.AssetTagPK;
 
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
@@ -14,6 +13,9 @@ import java.util.Objects;
 
 @MappedSuperclass
 public abstract class Version {
+    @EmbeddedId
+    private VersionPK pk;
+
     @Column(name = "comment")
     private String comment;
 
@@ -29,6 +31,14 @@ public abstract class Version {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_id", updatable = false)
     private UserEntity createdBy;
+
+    public VersionPK getPk() {
+        return pk;
+    }
+
+    public void setPk(VersionPK pk) {
+        this.pk = pk;
+    }
 
     public String getComment() {
         return comment;
@@ -69,10 +79,6 @@ public abstract class Version {
     public void setCreatedBy(UserEntity createdBy) {
         this.createdBy = createdBy;
     }
-
-    public abstract VersionPK getPk() ;
-
-    public abstract void setPk(VersionPK pk);
 
     private VersionPK doGetPK() {
         if (Objects.isNull(getPk())) {

@@ -17,13 +17,14 @@ package org.ohdsi.webapi.util;
 
 import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.webapi.exception.BadRequestAtlasException;
+import org.ohdsi.webapi.exception.ConversionAtlasException;
 import org.ohdsi.webapi.exception.UserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.messaging.support.ErrorMessage;
 
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -57,6 +58,8 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
             responseStatus = Status.FORBIDDEN;
         } else if (ex instanceof NotFoundException) {
             responseStatus = Status.NOT_FOUND;
+        } else if (ex instanceof ConversionFailedException) {
+            responseStatus = Status.BAD_REQUEST;
         } else if (ex instanceof BadRequestAtlasException) {
             responseStatus = Status.BAD_REQUEST;
         } else if (ex instanceof UserException) {

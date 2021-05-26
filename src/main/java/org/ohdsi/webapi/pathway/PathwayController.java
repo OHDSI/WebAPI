@@ -8,7 +8,6 @@ import org.ohdsi.webapi.check.checker.pathway.PathwayChecker;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
-import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.i18n.I18nService;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnalysisConverter;
@@ -19,10 +18,10 @@ import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.tag.TagService;
-import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.ExceptionUtils;
+import org.ohdsi.webapi.versioning.dto.VersionDTO;
+import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
@@ -37,7 +36,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Path("/pathway-analysis")
@@ -52,10 +50,9 @@ public class PathwayController {
     private final I18nService i18nService;
     private PathwayChecker checker;
     private PermissionService permissionService;
-    private final TagService tagService;
 
     @Autowired
-    public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService, PathwayChecker checker, PermissionService permissionService, I18nService i18nService, TagService tagService) {
+    public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService, PathwayChecker checker, PermissionService permissionService, I18nService i18nService) {
 
         this.conversionService = conversionService;
         this.converterUtils = converterUtils;
@@ -65,7 +62,6 @@ public class PathwayController {
         this.i18nService = i18nService;
         this.checker = checker;
         this.permissionService = permissionService;
-        this.tagService = tagService;
     }
 
     @POST
@@ -135,7 +131,7 @@ public class PathwayController {
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
     public PathwayAnalysisDTO update(@PathParam("id") final Integer id, @RequestBody final PathwayAnalysisDTO dto) {
-
+        pathwayService.saveVersion(id);
         PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
         pathwayAnalysis.setId(id);
         pathwayService.update(pathwayAnalysis);
@@ -148,7 +144,6 @@ public class PathwayController {
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
     public PathwayAnalysisDTO get(@PathParam("id") final Integer id) {
-
         PathwayAnalysisEntity pathwayAnalysis = pathwayService.getById(id);
         ExceptionUtils.throwNotFoundExceptionIfNull(pathwayAnalysis, String.format(i18nService.translate("pathways.manager.messages.notfound", "There is no pathway analysis with id = %d."), id));
         Map<Integer, Integer> eventCodes = pathwayService.getEventCohortCodes(pathwayAnalysis);
@@ -319,7 +314,6 @@ public class PathwayController {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/")
-    @javax.transaction.Transactional
     public void assignTag(@PathParam("id") final int id, final int tagId) {
         pathwayService.assignTag(id, tagId, false);
     }
@@ -327,7 +321,6 @@ public class PathwayController {
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/{tagId}")
-    @javax.transaction.Transactional
     public void unassignTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
         pathwayService.unassignTag(id, tagId, false);
     }
@@ -335,7 +328,6 @@ public class PathwayController {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/protectedtag/")
-    @javax.transaction.Transactional
     public void assignPermissionProtectedTag(@PathParam("id") final int id, final int tagId) {
         pathwayService.assignTag(id, tagId, true);
     }
@@ -343,8 +335,43 @@ public class PathwayController {
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/protectedtag/{tagId}")
-    @javax.transaction.Transactional
     public void unassignPermissionProtectedTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
         pathwayService.unassignTag(id, tagId, true);
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/")
+    public List<VersionDTO> getVersions(@PathParam("id") final long id) {
+        return pathwayService.getVersions(id);
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/{version}")
+    public PathwayVersionFullDTO getVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
+        return pathwayService.getVersion(id, version);
+    }
+
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/{version}")
+    public VersionDTO updateVersion(@PathParam("id") final int id, @PathParam("version") final int version,
+                             VersionUpdateDTO updateDTO) {
+        return pathwayService.updateVersion(id, version, updateDTO);
+    }
+
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/{version}")
+    public void deleteVersion(@PathParam("id") final int id, @PathParam("version") final int version){
+        pathwayService.deleteVersion(id, version);
+    }
+
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/{version}/createAsset")
+    public PathwayAnalysisDTO copyAssetFromVersion(@PathParam("id") final int id, @PathParam("version") final int version){
+        return pathwayService.copyAssetFromVersion(id, version);
     }
 }

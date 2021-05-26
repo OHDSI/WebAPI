@@ -1,30 +1,16 @@
 package org.ohdsi.webapi.cohortdefinition.converter;
 
-import org.ohdsi.analysis.Utils;
-import org.ohdsi.circe.cohortdefinition.CohortExpression;
-import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortVersionFullDTO;
-import org.ohdsi.webapi.conceptset.ConceptSetRepository;
-import org.ohdsi.webapi.conceptset.dto.ConceptSetVersionFullDTO;
 import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
-import org.ohdsi.webapi.exception.BadRequestAtlasException;
-import org.ohdsi.webapi.service.ConceptSetService;
-import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.versioning.domain.CohortVersion;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Component
 public class CohortVersionToCohortVersionFullDTOConverter

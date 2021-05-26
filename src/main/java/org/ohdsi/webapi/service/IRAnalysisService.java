@@ -38,6 +38,7 @@ import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
+import org.ohdsi.webapi.exception.BadRequestAtlasException;
 import org.ohdsi.webapi.ircalc.AnalysisReport;
 import org.ohdsi.webapi.ircalc.ExecutionInfo;
 import org.ohdsi.webapi.ircalc.IRAnalysisInfoListener;
@@ -83,6 +84,7 @@ import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -834,7 +836,14 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   public IRVersionFullDTO getVersion(int id, int version) {
     checkVersion(id, version);
     IRVersion irVersion = versionService.getById(VersionType.INCIDENCE_RATE, id, version);
-    return conversionService.convert(irVersion, IRVersionFullDTO.class);
+    try {
+      return conversionService.convert(irVersion, IRVersionFullDTO.class);
+    } catch (ConversionFailedException e) {
+      if (e.getCause() instanceof BadRequestAtlasException) {
+        throw (BadRequestAtlasException) e.getCause();
+      }
+      throw e;
+    }
   }
 
   @Override
@@ -860,7 +869,15 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   public IRAnalysisDTO copyAssetFromVersion(int id, int version) {
     checkVersion(id, version);
     IRVersion irVersion = versionService.getById(VersionType.INCIDENCE_RATE, id, version);
-    IRVersionFullDTO fullDTO = conversionService.convert(irVersion, IRVersionFullDTO.class);
+    IRVersionFullDTO fullDTO;
+    try {
+      fullDTO = conversionService.convert(irVersion, IRVersionFullDTO.class);
+    } catch (ConversionFailedException e) {
+      if (e.getCause() instanceof BadRequestAtlasException) {
+        throw (BadRequestAtlasException) e.getCause();
+      }
+      throw e;
+    }
 
     IRAnalysisDTO dto = fullDTO.getIrAnalysisDTO();
     dto.setId(null);

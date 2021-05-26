@@ -532,6 +532,9 @@ public class ConceptSetService extends AbstractDaoService {
 
         ConceptSetVersionFullDTO fullDTO = conversionService.convert(conceptSetVersion, ConceptSetVersionFullDTO.class);
         ConceptSetDTO conceptSetDTO = fullDTO.getConceptSetDTO();
+        // Reset id so it won't be used during saving
+        conceptSetDTO.setId(0);
+        conceptSetDTO.setTags(null);
         conceptSetDTO.setName(NameUtils.getNameForCopy(conceptSetDTO.getName(), this::getNamesLike, getConceptSetRepository().findByName(conceptSetDTO.getName())));
         ConceptSetDTO createdDTO = createConceptSet(conceptSetDTO);
         saveConceptSetItems(createdDTO.getId(), fullDTO.getItems().toArray(new ConceptSetItem[0]));

@@ -60,7 +60,7 @@ public class IRVersionToIRAnalysisVersionFullDTOConverter
             expression.targetCohorts = cohortService.getCohortDTOs(expression.targetIds);
             if (expression.outcomeCohorts.size() != expression.outcomeIds.size() ||
                     expression.targetCohorts.size() != expression.targetIds.size()) {
-                throw new ConversionAtlasException("Could not restore. Version contains absent cohorts");
+                throw new ConversionAtlasException("Could not load version because it contains deleted cohorts");
             }
         } catch (JsonProcessingException e) {
             log.error("Error converting expression to object", e);

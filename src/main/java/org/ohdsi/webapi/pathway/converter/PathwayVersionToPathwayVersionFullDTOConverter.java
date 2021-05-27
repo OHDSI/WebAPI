@@ -68,7 +68,7 @@ public class PathwayVersionToPathwayVersionFullDTOConverter
 
         List<CohortDefinition> cohorts = cohortService.getCohorts(cohortIds);
         if (cohorts.size() != cohortIds.size()) {
-            throw new ConversionAtlasException("Could not restore. Version contains absent cohorts");
+            throw new ConversionAtlasException("Could not load version because it contains deleted cohorts");
         }
         return cohorts.stream()
                 .map(c -> conversionService.convert(c, PathwayCohortDTO.class))

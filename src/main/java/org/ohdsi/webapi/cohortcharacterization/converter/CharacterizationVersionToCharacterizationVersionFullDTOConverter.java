@@ -48,7 +48,7 @@ public class CharacterizationVersionToCharacterizationVersionFullDTOConverter
                 .collect(Collectors.toList());
         List<CohortDefinition> cohorts = cohortService.getCohorts(ids);
         if (cohorts.size() != ids.size()) {
-            throw new ConversionAtlasException("Could not restore. Version contains absent cohorts");
+            throw new ConversionAtlasException("Could not load version because it contains deleted cohorts");
         }
         entity.setCohortDefinitions(new HashSet<>(cohorts));
 

@@ -102,7 +102,10 @@
     "menu": "메뉴",
     "noData": "데이터 없음",
     "readOnly": "(읽기 전용)",
-    "tags": "Tags"
+    "tags": "Tags",
+    "backToCurrent": "Back to current version",
+    "saveAsCurrentVersion": "Save as current version",
+    "unsavedWarning": "Unsaved changes will be lost. Proceed?"
   },
   "commonErrors": {
     "noSources": "현재 WebAPI에 정의된 소스가 없습니다. <br/> 해당 페이지에서 하나 이상을 추가하십시오 <a href=\"#/configure\">configuration</a> page.",
@@ -199,6 +202,7 @@
   "components": {
     "authorship": {
       "created": "만들어진",
+      "versionCreated": "version created",
       "modified": "수정된",
       "on": "~에",
       "byCreated": "by <%=createdBy%>",
@@ -1154,6 +1158,16 @@
       "showTags": "Show tags",
       "tagNameExistsWarning": "Tag <%=tagName%> already exists.",
       "cannotUnassignProtectedTagWarning": "Cannot unassign protected tag: <%=tagName%>"
+    },
+    "versions": {
+      "loading": "Loading versions...",
+      "editComment": "Edit comment",
+      "addComment": "Add comment",
+      "commentPlaceholder": "Comment",
+      "preview": "Preview",
+      "viewing": "Viewing now",
+      "createACopy": "Create a copy",
+      "current": "Current"
     }
   },
   "facets": {
@@ -1434,7 +1448,10 @@
     "gender": "성별",
     "ageAtIndex": "기준 시점 나이",
     "usageCount": "Usage count",
-    "group": "Group"
+    "group": "Group",
+    "version": "Version",
+    "comment": "Comment",
+    "preview": "Preview"
   },
   "dataSources": {
     "achillesHeelReport": {
@@ -1634,6 +1651,7 @@
       "attemptingToFindMessage": "이 컨셉 세트에 대한 최적의 정의를 찾는 중...",
       "cancelButton": "취소",
       "caption": "컨셉 세트 # <%=id%>",
+      "captionVersion": "Concept Set #<%=id%> - Version <%=number%> Preview",
       "changeColumnsButton": "열(Columns) 변경",
       "conceptsRemovedHeading": "삭제된 컨셉",
       "conceptsRemovedMessage": "다음 컨셉들은 최적화된 버전에 이미 포함되어 있으므로 제거되었습니다.",
@@ -1695,6 +1713,7 @@
         "export": "내보내기",
         "includedConcepts": "포함된 컨셉",
         "includedSourceCodes": "포함된 소스 코드",
+        "versions": "Versions",
         "messages": "메시지"
       },
       "concept": {
@@ -1764,6 +1783,7 @@
     },
     "viewEdit": {
       "caption": "특성(Characterization) #<%=id%>",
+      "captionPreview": "Characterization #<%=id%> - Version <%=number%> Preview",
       "loadingCohortCharacterization": "코호트 특성(Characterization) 로드중 ...",
       "design": {
         "description": "코호트 특성 분석은 개별 환자 수준의 공변량 데이터로부터 코호트 단위의 요약 통계 생성해 줍니다. 환자 수준의 공변량에 대한 요약 통계는 수, 평균, 표준편차, 분산, 최소값, 최대값, 중앙값, 범위 및 사분위수가 포함됩니다. 또한 시간과 관련된 공변량은 코호트 시작일이나 시간 간격(예: 주, 월, 분기, 연도) 등을 이용하여 층화할 수 있습니다.",
@@ -1849,6 +1869,7 @@
         "design": "설계",
         "executions": "실행",
         "utilities": "유틸리티",
+        "versions": "Versions",
         "messages": "메시지"
       },
       "utilities": {
@@ -1915,6 +1936,7 @@
   },
   "ir": {
     "caption": "발생률 분석 #<%=id%>",
+    "captionVersion": "Incidence Rate Analysis #<%=id%> - Version <%=number%> Preview",
     "cs": {
       "modalTitle": "컨셉 세트 선택하기"
     },
@@ -1986,6 +2008,7 @@
       "definition": "정의",
       "generation": "생성",
       "utilities": "유틸리티",
+      "versions": "Versions",
       "messages": "메시지"
     },
     "title": "발생률 분석"
@@ -2018,6 +2041,7 @@
     "loading": "경로 분석 목록 로드중...",
     "manager": {
       "caption": "코호트 경로 #<%=id%>",
+      "captionVersion": "Cohort Pathway #<%=id%> - Version <%=number%> Preview",
       "design": {
         "analysisSettings": {
           "combinationWindow": {
@@ -2106,6 +2130,7 @@
         "design": "설계",
         "executions": "실행",
         "utilities": "유틸리티",
+        "versions": "Versions",
         "messages": "메시지"
       },
       "utilities": {
@@ -2680,10 +2705,12 @@
         "generation": "생성",
         "samples": "샘플",
         "messages": "메시지",
+        "versions": "Versions",
         "reporting": "레포팅"
       }
     },
-    "cohortId": "코호트 번호 #<%=id%>",
+    "cohortCaption": "코호트 번호 #<%=id%>",
+    "cohortCaptionPreview": "Cohort #<%=id%> - Version <%=number%> Preview",
     "cohortreports": {
       "inclusionReport": "포함 보고서",
       "inclusionReportFor": " ",

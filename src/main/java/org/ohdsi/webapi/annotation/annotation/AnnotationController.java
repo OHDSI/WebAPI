@@ -23,6 +23,7 @@ import org.ohdsi.webapi.annotation.annotation.Annotation;
 import org.ohdsi.webapi.annotation.set.QuestionSetRepository;
 import org.ohdsi.webapi.annotation.set.QuestionSet;
 import org.ohdsi.webapi.annotation.result.Result;
+import org.springframework.web.bind.annotation.RequestBody;
 
 
 @Path("annotations")
@@ -52,6 +53,7 @@ public class AnnotationController {
 
 
     if (cohortSampleId != null && subjectId != null && setId != null) {
+        System.out.println("made it into the search function");
         return annotationService.getAnnotationByCohortSampleIdAndBySubjectIdAndBySetId(cohortSampleId, subjectId, setId);
     }
 
@@ -62,15 +64,19 @@ public class AnnotationController {
   @Path("/")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public void addResult(Map<String, Object> payload) {
+  public void addResult(@RequestBody String payload) {
     System.out.println(payload);
-    System.out.println(payload.get("results"));
-    System.out.printf("cohortId: %s\n",payload.get("cohortId").toString());
-    System.out.printf("subjectId: %s\n",payload.get("subjectId").toString());
-    System.out.printf("setId: %s\n",payload.get("setId").toString());
-    Annotation tempAnnotation = annotationService.getAnnotationByCohortSampleIdAndBySubjectIdAndBySetId(Long.parseLong(payload.get("sampleName").toString())
-            ,Long.parseLong(payload.get("subjectId").toString()),Long.parseLong(payload.get("setId").toString())).get(0);
-    JSONArray array = new JSONArray(payload.get("results"));
+    JSONObject jsonpayload = new JSONObject(payload);
+    System.out.println(jsonpayload);
+    System.out.println(jsonpayload.get("results"));
+    System.out.printf("cohortId: %s\n",jsonpayload.get("cohortId").toString());
+    System.out.printf("cohortSampleId: %s\n",jsonpayload.get("sampleName").toString());
+    System.out.printf("subjectId: %s\n",jsonpayload.get("subjectId").toString());
+    System.out.printf("setId: %s\n",jsonpayload.get("setId").toString());
+    Annotation tempAnnotation = annotationService.getAnnotationByCohortSampleIdAndBySubjectIdAndBySetId(Long.parseLong(jsonpayload.get("sampleName").toString())
+            ,Long.parseLong(jsonpayload.get("subjectId").toString()),Long.parseLong(jsonpayload.get("setId").toString())).get(0);
+    System.out.printf("annotationID:%d\n",tempAnnotation.getId());
+    JSONArray array = jsonpayload.getJSONArray("results");
     for(int i=0; i < array.length(); i++){
       JSONObject object = array.getJSONObject(i);
       Result result = new Result();

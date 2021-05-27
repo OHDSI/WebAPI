@@ -32,16 +32,16 @@ public class Result {
   private Long answerId;
 
 //need charity's help here! these can all be retrieved from the annotation_id
-  @JsonIgnore
-  @Column(name = "set_id")
-  private Long setId;
+//  @JsonIgnore
+//  @Column(name = "set_id")
+//  private Long setId;
 
-  @Column(name = "sample_name")
-  private String sampleName;
+//  @Column(name = "sample_name")
+//  private String sampleName;
 
-  @JsonIgnore
-  @Column(name = "subject_id")
-  private Long subjectId;
+//  @JsonIgnore
+//  @Column(name = "subject_id")
+//  private Long subjectId;
 
   @Column(name = "value")
   private String value;
@@ -82,16 +82,16 @@ public class Result {
   /**
    * @return the subjectId
    */
-  public Long getSubjectId() {
-    return subjectId;
-  }
+//  public Long getSubjectId() {
+//    return subjectId;
+//  }
 
   /**
    * @param subjectId the subjectId to set
    */
-  public void setSubjectId(Long subjectId) {
-    this.subjectId = subjectId;
-  }
+//  public void setSubjectId(Long subjectId) {
+//    this.subjectId = subjectId;
+//  }
 
   /**
    * @return the answerId
@@ -110,16 +110,16 @@ public class Result {
   /**
    * @return the setId
    */
-  public Long getSetId() {
-    return setId;
-  }
+//  public Long getSetId() {
+//    return setId;
+//  }
 
   /**
    * @param setId the setId to set
    */
-  public void setSetId(Long setId) {
-    this.setId = setId;
-  }
+//  public void setSetId(Long setId) {
+//    this.setId = setId;
+//  }
 
   /**
    * @return the questionId
@@ -165,14 +165,12 @@ public class Result {
   /**
    * @return the type
    */
-  public String getSampleName() {
-    return sampleName;
-  }
+//  public String getSampleName() {
+//    return sampleName;
+//  }
 
   /**
    * @param type the type to set
    */
-  public void setSampleName(String name) {
-    this.sampleName = name;
-  }
+//  public void setSampleName(String name) {this.sampleName = name;}
 }

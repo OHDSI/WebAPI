@@ -84,7 +84,8 @@ public class AnnotationService {
         row[0] = samples.get(i);
         List<Object> answers = new ArrayList<>();
         for (int j = 0; j < qIDs.size(); j++) {
-          answers.add(resultRepository.getAnswers(sampleName, qIDs.get(j), samples.get(i)));
+//            TODO fix if necessary
+//          answers.add(resultRepository.getAnswers(sampleName, qIDs.get(j), samples.get(i)));
         }
 
         row[1] = answers;

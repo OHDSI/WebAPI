@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.annotation.annotation;
 
 import java.util.List;
+import java.util.Map;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -9,7 +10,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.PathParam;
+import org.json.JSONObject;
+import org.json.JSONArray;
 
+import org.ohdsi.webapi.annotation.result.ResultRepository;
 import org.ohdsi.webapi.cohortsample.CohortSamplingService;
 import org.ohdsi.webapi.cohortsample.dto.SampleElementDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +28,9 @@ import org.ohdsi.webapi.annotation.result.Result;
 @Path("annotations")
 @Component
 public class AnnotationController {
+
+  @Autowired
+  private ResultRepository resultRepository;
 
   @Autowired
   public CohortSamplingService cohortSamplingService;
@@ -52,6 +59,31 @@ public class AnnotationController {
   }
 
   @POST
+  @Path("/")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public void addResult(Map<String, Object> payload) {
+    System.out.println(payload);
+    System.out.println(payload.get("results"));
+    System.out.printf("cohortId: %s\n",payload.get("cohortId").toString());
+    System.out.printf("subjectId: %s\n",payload.get("subjectId").toString());
+    System.out.printf("setId: %s\n",payload.get("setId").toString());
+    Annotation tempAnnotation = annotationService.getAnnotationByCohortSampleIdAndBySubjectIdAndBySetId(Long.parseLong(payload.get("sampleName").toString())
+            ,Long.parseLong(payload.get("subjectId").toString()),Long.parseLong(payload.get("setId").toString())).get(0);
+    JSONArray array = new JSONArray(payload.get("results"));
+    for(int i=0; i < array.length(); i++){
+      JSONObject object = array.getJSONObject(i);
+      Result result = new Result();
+      result.setQuestionId(Long.parseLong(object.get("questionId").toString()));
+      result.setAnswerId(Long.parseLong(object.get("answerId").toString()));
+      result.setValue(object.get("value").toString());
+      result.setType(object.get("type").toString());
+      result.setAnnotation(tempAnnotation);
+      resultRepository.save(result);
+    }
+  }
+
+  @POST
   @Path("/sample")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
@@ -73,21 +105,6 @@ public class AnnotationController {
       annotation.setSet(set);
       annotationService.addAnnotation(annotation, annotationDto.getSampleName());
     }
-
-
-//    TODO: Add back in question set and answer linking
-
-//    annotationDto.getResults().forEach((resultDto) -> {
-//      Result result = new Result();
-//      result.setQuestionId(resultDto.getQuestionId());
-//      result.setAnswerId(resultDto.getAnswerId());
-//      result.setSetId(set.getId());
-//      result.setSubjectId(annotationDto.getSubjectId());
-//      result.setValue(resultDto.getValue());
-//      result.setType(resultDto.getType());
-//      result.setSampleName(annotationDto.getSampleName());
-//      annotation.addToResults(result);
-//    });
   }
 
 //just for testing

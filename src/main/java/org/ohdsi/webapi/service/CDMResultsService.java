@@ -154,10 +154,7 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
 
     private List<SimpleEntry<Integer, List<Long>>> convertToResponse(Collection<DescendantRecordCount> conceptRecordCounts) {
         return conceptRecordCounts.stream()
-                .map(descendantRecordCount -> new SimpleEntry<>(
-                        descendantRecordCount.getId(),
-                        Arrays.asList(descendantRecordCount.getRecordCount(), descendantRecordCount.getDescendantRecordCount())
-                ))
+                .map(c -> new SimpleEntry<>(c.getId(), c.getValues()))
                 .collect(Collectors.toList());
     }
     

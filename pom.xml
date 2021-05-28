@@ -32,8 +32,8 @@
     <jackson.version>2.10.5</jackson.version>
     <jackson.databind.version>2.10.5.1</jackson.databind.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
-    <skipUnitTests>false</skipUnitTests>
-    <skipITtests>false</skipITtests>
+    <skipUnitTests>true</skipUnitTests>
+    <skipITtests>true</skipITtests>
     <miredot.phase>package</miredot.phase>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
@@ -243,6 +243,9 @@
     <cache.generation.useAsync>false</cache.generation.useAsync>
     <!-- Period in milliseconds between running checks to detect freshness of cached data -->
     <cache.inspection.period>3600000</cache.inspection.period>
+
+    <!-- Achilles cache -->
+    <cache.achilles.usePersonCount>true</cache.achilles.usePersonCount>
 
     <!-- Build info -->
     <buildinfo.atlas.milestone.id>39</buildinfo.atlas.milestone.id>

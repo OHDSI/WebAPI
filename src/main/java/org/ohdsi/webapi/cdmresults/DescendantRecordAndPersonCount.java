@@ -14,14 +14,27 @@
  * limitations under the License.
  *
  */
-package org.ohdsi.webapi.cdmresults.mapper;
+package org.ohdsi.webapi.cdmresults;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import org.ohdsi.webapi.cdmresults.DescendantRecordCount;
+import java.util.Objects;
 
-public class DescendantRecordCountMapper extends BaseRecordCountMapper<DescendantRecordCount> {
-	protected DescendantRecordCount getResultObject() {
-		return new DescendantRecordCount();
-	}
+public class DescendantRecordAndPersonCount extends DescendantRecordCount {
+    private long personCount;
+    private long descendantPersonCount;
+
+    public long getPersonCount() {
+        return personCount;
+    }
+
+    public void setPersonCount(long personCount) {
+        this.personCount = personCount;
+    }
+
+    public long getDescendantPersonCount() {
+        return descendantPersonCount;
+    }
+
+    public void setDescendantPersonCount(long descendantPersonCount) {
+        this.descendantPersonCount = descendantPersonCount;
+    }
 }

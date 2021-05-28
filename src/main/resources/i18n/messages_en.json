@@ -105,7 +105,8 @@
     "tags": "Tags",
     "backToCurrent": "Back to current version",
     "saveAsCurrentVersion": "Save as current version",
-    "unsavedWarning": "Unsaved changes will be lost. Proceed?"
+    "unsavedWarning": "Unsaved changes will be lost. Proceed?",
+    "savePreviewWarning": "Save as current version?"
   },
   "commonErrors": {
     "noSources": "The current WebAPI has no sources defined.<br/>Please add one or more on <a href=\"#/configure\">configuration</a> page.",

@@ -105,7 +105,8 @@
     "tags": "Tags",
     "backToCurrent": "Back to current version",
     "saveAsCurrentVersion": "Save as current version",
-    "unsavedWarning": "Unsaved changes will be lost. Proceed?"
+    "unsavedWarning": "Unsaved changes will be lost. Proceed?",
+    "savePreviewWarning": "Save as current version?"
   },
   "commonErrors": {
     "noSources": "当前的WebAPI尚未定义源。<br/>请在<a href=\"#/configure\">配置</a>页上添加一个或多个。",

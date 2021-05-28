@@ -105,7 +105,8 @@
     "tags": "Tags",
     "backToCurrent": "Back to current version",
     "saveAsCurrentVersion": "Save as current version",
-    "unsavedWarning": "Unsaved changes will be lost. Proceed?"
+    "unsavedWarning": "Unsaved changes will be lost. Proceed?",
+    "savePreviewWarning": "Save as current version?"
   },
   "commonErrors": {
     "noSources": "현재 WebAPI에 정의된 소스가 없습니다. <br/> 해당 페이지에서 하나 이상을 추가하십시오 <a href=\"#/configure\">configuration</a> page.",

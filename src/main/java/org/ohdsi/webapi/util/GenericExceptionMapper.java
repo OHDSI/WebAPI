@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.messaging.support.ErrorMessage;
 
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -57,6 +58,8 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
             cause = cause.substring(cause.indexOf(DETAIL) + DETAIL.length());
             ex = new RuntimeException(cause);
         } else if (ex instanceof UnauthorizedException) {
+            responseStatus = Status.FORBIDDEN;
+        } else if (ex instanceof ForbiddenException) {
             responseStatus = Status.FORBIDDEN;
         } else if (ex instanceof NotFoundException) {
             responseStatus = Status.NOT_FOUND;

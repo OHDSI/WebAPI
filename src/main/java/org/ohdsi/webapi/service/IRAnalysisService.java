@@ -832,7 +832,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   @Override
   @Transactional
   public IRVersionFullDTO getVersion(int id, int version) {
-    checkVersion(id, version);
+    checkVersion(id, version, false);
     IRVersion irVersion = versionService.getById(VersionType.INCIDENCE_RATE, id, version);
     return conversionService.convert(irVersion, IRVersionFullDTO.class);
   }
@@ -858,7 +858,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   @Override
   @Transactional
   public IRAnalysisDTO copyAssetFromVersion(int id, int version) {
-    checkVersion(id, version);
+    checkVersion(id, version, false);
     IRVersion irVersion = versionService.getById(VersionType.INCIDENCE_RATE, id, version);
     IRVersionFullDTO fullDTO = conversionService.convert(irVersion, IRVersionFullDTO.class);
 
@@ -947,12 +947,18 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   }
 
   private void checkVersion(int id, int version) {
+    checkVersion(id, version, true);
+  }
+
+  private void checkVersion(int id, int version, boolean checkOwnerShip) {
     Version irVersion = versionService.getById(VersionType.INCIDENCE_RATE, id, version);
     ExceptionUtils.throwNotFoundExceptionIfNull(irVersion,
             String.format("There is no incidence rates analysis version with id = %d.", version));
 
     IncidenceRateAnalysis entity = this.irAnalysisRepository.findOne(id);
-    checkOwnerOrAdminOrGranted(entity);
+    if (checkOwnerShip) {
+      checkOwnerOrAdminOrGranted(entity);
+    }
   }
 
   private IRVersion saveVersion(int id) {

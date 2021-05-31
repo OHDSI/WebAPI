@@ -824,7 +824,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Path("/{id}/version/{version}")
 	@Transactional
 	public CohortVersionFullDTO getVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
-		checkVersion(id, version);
+		checkVersion(id, version, false);
 		CohortVersion cohortVersion = versionService.getById(VersionType.COHORT, id, version);
 
 		return conversionService.convert(cohortVersion, CohortVersionFullDTO.class);
@@ -858,7 +858,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Path("/{id}/version/{version}/createAsset")
 	@Transactional
 	public CohortDTO copyAssetFromVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
-		checkVersion(id, version);
+		checkVersion(id, version, false);
 		CohortVersion cohortVersion = versionService.getById(VersionType.COHORT, id, version);
 		CohortVersionFullDTO fullDTO = conversionService.convert(cohortVersion, CohortVersionFullDTO.class);
 		CohortDTO dto = conversionService.convert(fullDTO.getCohortRawDTO(), CohortDTO.class);
@@ -870,12 +870,18 @@ public class CohortDefinitionService extends AbstractDaoService {
 	}
 
 	private void checkVersion(int id, int version) {
+		checkVersion(id, version, true);
+	}
+
+	private void checkVersion(int id, int version, boolean checkOwnerShip) {
 		Version cohortVersion = versionService.getById(VersionType.COHORT, id, version);
 		ExceptionUtils.throwNotFoundExceptionIfNull(cohortVersion,
 				String.format("There is no cohort version with id = %d.", version));
 
 		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
-		checkOwnerOrAdminOrGranted(entity);
+		if (checkOwnerShip) {
+			checkOwnerOrAdminOrGranted(entity);
+		}
 	}
 
 	private CohortVersion saveVersion(int id) {

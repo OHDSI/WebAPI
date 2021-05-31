@@ -538,7 +538,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
 	@Override
 	public PathwayVersionFullDTO getVersion(int id, int version) {
-		checkVersion(id, version);
+		checkVersion(id, version, false);
 		PathwayVersion pathwayVersion = versionService.getById(VersionType.PATHWAY, id, version);
 		return genericConversionService.convert(pathwayVersion, PathwayVersionFullDTO.class);
 	}
@@ -561,7 +561,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
 	@Override
 	public PathwayAnalysisDTO copyAssetFromVersion(int id, int version) {
-		checkVersion(id, version);
+		checkVersion(id, version, false);
 		PathwayVersion pathwayVersion = versionService.getById(VersionType.PATHWAY, id, version);
 		PathwayVersionFullDTO fullDTO = genericConversionService.convert(pathwayVersion, PathwayVersionFullDTO.class);
 
@@ -576,12 +576,18 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 	}
 
 	private void checkVersion(int id, int version) {
+		checkVersion(id, version, true);
+	}
+
+	private void checkVersion(int id, int version, boolean checkOwnerShip) {
 		Version pathwayVersion = versionService.getById(VersionType.PATHWAY, id, version);
 		ExceptionUtils.throwNotFoundExceptionIfNull(pathwayVersion,
 				String.format("There is no pathway analysis version with id = %d.", version));
 
 		PathwayAnalysisEntity entity = this.pathwayAnalysisRepository.findOne(id);
-		checkOwnerOrAdminOrGranted(entity);
+		if (checkOwnerShip) {
+			checkOwnerOrAdminOrGranted(entity);
+		}
 	}
 
 	public PathwayVersion saveVersion(int id) {

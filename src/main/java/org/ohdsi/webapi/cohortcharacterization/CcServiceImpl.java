@@ -956,7 +956,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     }
 
     public CcVersionFullDTO getVersion(final long id, final int version) {
-        checkVersion(id, version);
+        checkVersion(id, version, false);
         CharacterizationVersion characterizationVersion = versionService.getById(VersionType.CHARACTERIZATION, id, version);
 
         return genericConversionService.convert(characterizationVersion, CcVersionFullDTO.class);
@@ -978,7 +978,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     }
 
     public CohortCharacterizationDTO copyAssetFromVersion(final long id, final int version) {
-        checkVersion(id, version);
+        checkVersion(id, version, false);
         CharacterizationVersion characterizationVersion = versionService.getById(VersionType.CHARACTERIZATION, id, version);
 
         CcVersionFullDTO fullDTO = genericConversionService.convert(characterizationVersion, CcVersionFullDTO.class);
@@ -993,12 +993,18 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     }
 
     private void checkVersion(long id, int version) {
+        checkVersion(id, version, true);
+    }
+
+    private void checkVersion(long id, int version, boolean checkOwnerShip) {
         Version characterizationVersion = versionService.getById(VersionType.CHARACTERIZATION, id, version);
         ExceptionUtils.throwNotFoundExceptionIfNull(characterizationVersion,
                 String.format("There is no cohort characterization version with id = %d.", version));
 
         CohortCharacterizationEntity entity = findById(id);
-        checkOwnerOrAdminOrGranted(entity);
+        if (checkOwnerShip) {
+            checkOwnerOrAdminOrGranted(entity);
+        }
     }
 
     public CharacterizationVersion saveVersion(long id) {

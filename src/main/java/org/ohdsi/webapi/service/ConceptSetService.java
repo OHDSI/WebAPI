@@ -493,7 +493,7 @@ public class ConceptSetService extends AbstractDaoService {
     @Path("/{id}/version/{version}")
     @Transactional
     public ConceptSetVersionFullDTO getVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
-        checkVersion(id, version);
+        checkVersion(id, version, false);
         ConceptSetVersion conceptSetVersion = versionService.getById(VersionType.CONCEPT_SET, id, version);
 
         return conversionService.convert(conceptSetVersion, ConceptSetVersionFullDTO.class);
@@ -527,7 +527,7 @@ public class ConceptSetService extends AbstractDaoService {
     @Path("/{id}/version/{version}/createAsset")
     @Transactional
     public ConceptSetDTO copyAssetFromVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
-        checkVersion(id, version);
+        checkVersion(id, version, false);
         ConceptSetVersion conceptSetVersion = versionService.getById(VersionType.CONCEPT_SET, id, version);
 
         ConceptSetVersionFullDTO fullDTO = conversionService.convert(conceptSetVersion, ConceptSetVersionFullDTO.class);
@@ -543,11 +543,17 @@ public class ConceptSetService extends AbstractDaoService {
     }
 
     private void checkVersion(int id, int version) {
+        checkVersion(id, version, true);
+    }
+
+    private void checkVersion(int id, int version, boolean checkOwnerShip) {
         Version conceptSetVersion = versionService.getById(VersionType.CONCEPT_SET, id, version);
         ExceptionUtils.throwNotFoundExceptionIfNull(conceptSetVersion, String.format("There is no concept set version with id = %d.", version));
 
         ConceptSet entity = getConceptSetRepository().findOne(id);
-        checkOwnerOrAdminOrGranted(entity);
+        if (checkOwnerShip) {
+            checkOwnerOrAdminOrGranted(entity);
+        }
     }
 
     private ConceptSetVersion saveVersion(int id) {

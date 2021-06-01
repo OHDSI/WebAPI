@@ -54,7 +54,7 @@ public class CharacterizationVersionToCharacterizationVersionFullDTOConverter
 
         CcVersionFullDTO target = new CcVersionFullDTO();
         target.setVersionDTO(conversionService.convert(source, VersionDTO.class));
-        target.setCharacterizationDTO(conversionService.convert(entity, CohortCharacterizationDTO.class));
+        target.setEntityDTO(conversionService.convert(entity, CohortCharacterizationDTO.class));
 
         return target;
     }

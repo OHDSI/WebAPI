@@ -72,7 +72,7 @@ public class IRVersionToIRAnalysisVersionFullDTOConverter
 
         IRVersionFullDTO target = new IRVersionFullDTO();
         target.setVersionDTO(conversionService.convert(source, VersionDTO.class));
-        target.setIrAnalysisDTO(conversionService.convert(entity, IRAnalysisDTO.class));
+        target.setEntityDTO(conversionService.convert(entity, IRAnalysisDTO.class));
 
         return target;
     }

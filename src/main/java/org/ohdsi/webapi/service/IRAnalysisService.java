@@ -862,7 +862,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     IRVersion irVersion = versionService.getById(VersionType.INCIDENCE_RATE, id, version);
     IRVersionFullDTO fullDTO = conversionService.convert(irVersion, IRVersionFullDTO.class);
 
-    IRAnalysisDTO dto = fullDTO.getIrAnalysisDTO();
+    IRAnalysisDTO dto = fullDTO.getEntityDTO();
     dto.setId(null);
     dto.setTags(null);
     dto.setName(NameUtils.getNameForCopy(dto.getName(), this::getNamesLike,

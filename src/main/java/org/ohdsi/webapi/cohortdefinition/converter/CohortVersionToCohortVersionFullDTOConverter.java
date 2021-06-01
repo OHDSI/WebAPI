@@ -42,8 +42,8 @@ public class CohortVersionToCohortVersionFullDTOConverter
         entity.setModifiedDate(def.getModifiedDate());
 
         CohortVersionFullDTO target = new CohortVersionFullDTO();
-        target.setCohortVersionDTO(conversionService.convert(source, VersionDTO.class));
-        target.setCohortRawDTO(conversionService.convert(entity, CohortRawDTO.class));
+        target.setVersionDTO(conversionService.convert(source, VersionDTO.class));
+        target.setEntityDTO(conversionService.convert(entity, CohortRawDTO.class));
 
         return target;
     }

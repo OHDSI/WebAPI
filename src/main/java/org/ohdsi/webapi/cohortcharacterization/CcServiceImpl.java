@@ -100,15 +100,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -983,7 +976,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
         CcVersionFullDTO fullDTO = genericConversionService.convert(characterizationVersion, CcVersionFullDTO.class);
         CohortCharacterizationEntity entity =
-                genericConversionService.convert(fullDTO.getCharacterizationDTO(), CohortCharacterizationEntity.class);
+                genericConversionService.convert(fullDTO.getEntityDTO(), CohortCharacterizationEntity.class);
         entity.setId(null);
         entity.setTags(null);
         entity.setName(NameUtils.getNameForCopy(entity.getName(), this::getNamesLike, repository.findByName(entity.getName())));

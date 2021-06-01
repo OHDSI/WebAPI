@@ -531,7 +531,7 @@ public class ConceptSetService extends AbstractDaoService {
         ConceptSetVersion conceptSetVersion = versionService.getById(VersionType.CONCEPT_SET, id, version);
 
         ConceptSetVersionFullDTO fullDTO = conversionService.convert(conceptSetVersion, ConceptSetVersionFullDTO.class);
-        ConceptSetDTO conceptSetDTO = fullDTO.getConceptSetDTO();
+        ConceptSetDTO conceptSetDTO = fullDTO.getEntityDTO();
         // Reset id so it won't be used during saving
         conceptSetDTO.setId(0);
         conceptSetDTO.setTags(null);

@@ -44,7 +44,7 @@ public class ConceptSetVersionToConceptSetVersionFullDTOConverter
         ConceptSetVersionFullDTO target = new ConceptSetVersionFullDTO();
         target.setItems(items);
         target.setVersionDTO(conversionService.convert(source, VersionDTO.class));
-        target.setConceptSetDTO(conversionService.convert(conceptSet, ConceptSetDTO.class));
+        target.setEntityDTO(conversionService.convert(conceptSet, ConceptSetDTO.class));
 
         return target;
     }

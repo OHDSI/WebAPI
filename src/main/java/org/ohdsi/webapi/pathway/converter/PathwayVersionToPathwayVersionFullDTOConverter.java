@@ -55,7 +55,7 @@ public class PathwayVersionToPathwayVersionFullDTOConverter
 
         PathwayVersionFullDTO target = new PathwayVersionFullDTO();
         target.setVersionDTO(conversionService.convert(source, VersionDTO.class));
-        target.setPathwayAnalysisDTO(conversionService.convert(entity, PathwayAnalysisDTO.class));
+        target.setEntityDTO(conversionService.convert(entity, PathwayAnalysisDTO.class));
 
         return target;
     }

@@ -861,7 +861,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 		checkVersion(id, version, false);
 		CohortVersion cohortVersion = versionService.getById(VersionType.COHORT, id, version);
 		CohortVersionFullDTO fullDTO = conversionService.convert(cohortVersion, CohortVersionFullDTO.class);
-		CohortDTO dto = conversionService.convert(fullDTO.getCohortRawDTO(), CohortDTO.class);
+		CohortDTO dto = conversionService.convert(fullDTO.getEntityDTO(), CohortDTO.class);
 		dto.setId(null);
 		dto.setTags(null);
 		dto.setName(NameUtils.getNameForCopy(dto.getName(), this::getNamesLike,

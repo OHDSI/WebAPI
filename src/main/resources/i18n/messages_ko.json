@@ -1620,7 +1620,8 @@
       "import": "불러오기",
       "search": "검색"
     },
-    "vocabularies": "용어(vocabularies)"
+    "vocabularies": "용어(vocabularies)",
+    "viewCountMessage":  "View record count for:"
   },
   "cs": {
     "browser": {

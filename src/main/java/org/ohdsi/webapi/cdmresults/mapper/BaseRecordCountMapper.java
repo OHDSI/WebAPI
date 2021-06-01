@@ -16,12 +16,20 @@
  */
 package org.ohdsi.webapi.cdmresults.mapper;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import org.ohdsi.webapi.cdmresults.DescendantRecordCount;
 
-public class DescendantRecordCountMapper extends BaseRecordCountMapper<DescendantRecordCount> {
-	protected DescendantRecordCount getResultObject() {
-		return new DescendantRecordCount();
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public abstract class BaseRecordCountMapper<T extends DescendantRecordCount> {
+	public T mapRow(ResultSet rs)
+			throws SQLException {
+		T descendantRecordCount = getResultObject();
+		descendantRecordCount.setId(rs.getInt("concept_id"));
+		descendantRecordCount.setRecordCount(rs.getLong("record_count"));
+		descendantRecordCount.setDescendantRecordCount(rs.getLong("descendant_record_count"));
+		return descendantRecordCount;
 	}
+
+	protected abstract T getResultObject();
 }

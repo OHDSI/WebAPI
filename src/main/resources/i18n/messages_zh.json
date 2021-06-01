@@ -1620,7 +1620,8 @@
       "import": "导入",
       "search": "搜索"
     },
-    "vocabularies": "术语集"
+    "vocabularies": "术语集",
+    "viewCountMessage":  "View record count for:"
   },
   "cs": {
     "browser": {

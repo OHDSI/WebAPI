@@ -12,6 +12,8 @@ import org.ohdsi.webapi.cdmresults.keys.TreemapKeyGenerator;
 import org.ohdsi.webapi.cdmresults.CDMResultsCacheTasklet;
 import org.ohdsi.webapi.cdmresults.DescendantRecordCount;
 import org.ohdsi.webapi.cdmresults.cache.CDMResultsCache;
+import org.ohdsi.webapi.cdmresults.mapper.BaseRecordCountMapper;
+import org.ohdsi.webapi.cdmresults.mapper.DescendantRecordAndPersonCountMapper;
 import org.ohdsi.webapi.cdmresults.mapper.DescendantRecordCountMapper;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.report.CDMAchillesHeel;
@@ -70,6 +72,10 @@ import java.util.stream.Collectors;
 public class CDMResultsService extends AbstractDaoService implements InitializingBean {
     private final Logger logger = LoggerFactory.getLogger(CDMResultsService.class);
 
+    private static final String CONCEPT_COUNT_SQL = "/resources/cdmresults/sql/getConceptRecordCount.sql";
+
+    private static final String CONCEPT_COUNT_PERSON_SQL = "/resources/cdmresults/sql/getConceptRecordPersonCount.sql";
+
     @Autowired
     private CDMResultsAnalysisRunner queryRunner;
 
@@ -94,7 +100,8 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     @Value("${cdm.result.cache.warming.enable}")
     private boolean cdmResultCacheWarmingEnable;
 
-    private DescendantRecordCountMapper descendantRecordCountMapper = new DescendantRecordCountMapper();
+    @Value("${cache.achilles.usePersonCount:false}")
+    private boolean usePersonCount;
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -147,10 +154,7 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
 
     private List<SimpleEntry<Integer, List<Long>>> convertToResponse(Collection<DescendantRecordCount> conceptRecordCounts) {
         return conceptRecordCounts.stream()
-                .map(descendantRecordCount -> new SimpleEntry<>(
-                        descendantRecordCount.getId(),
-                        Arrays.asList(descendantRecordCount.getRecordCount(), descendantRecordCount.getDescendantRecordCount())
-                ))
+                .map(c -> new SimpleEntry<>(c.getId(), c.getValues()))
                 .collect(Collectors.toList());
     }
     
@@ -170,9 +174,12 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
                 identifiers = identifiers.subList(0, parameterLimit );
             }
             PreparedStatementRenderer psr = prepareGetConceptRecordCount(identifiers.toArray(new Integer[0]), source);
+
+            BaseRecordCountMapper<?> mapper;
+            mapper = this.usePersonCount ? new DescendantRecordAndPersonCountMapper() : new DescendantRecordCountMapper();
             List<DescendantRecordCount> descendantRecordCounts = getSourceJdbcTemplate(source)
                     .query(psr.getSql(), psr.getSetter(),
-                            (resultSet, rowNum) -> descendantRecordCountMapper.mapRow(resultSet));
+                            (resultSet, rowNum) -> mapper.mapRow(resultSet));
 
             returnVal.addAll(descendantRecordCounts);
         }
@@ -181,7 +188,7 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
 
     protected PreparedStatementRenderer prepareGetConceptRecordCount(Integer[] identifiers, Source source) {
 
-        String sqlPath = "/resources/cdmresults/sql/getConceptRecordCount.sql";
+        String sqlPath = this.usePersonCount ? CONCEPT_COUNT_PERSON_SQL : CONCEPT_COUNT_SQL;
 
         String resultTableQualifierName = "resultTableQualifier";
         String vocabularyTableQualifierName = "vocabularyTableQualifier";
@@ -425,7 +432,7 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
                 .tasklet(dataDensityTasklet)
                 .build();
 
-        CDMResultsCacheTasklet resultsTasklet = new CDMResultsCacheTasklet(this.getSourceJdbcTemplate(source), getTransactionTemplateRequiresNew(), source);
+        CDMResultsCacheTasklet resultsTasklet = new CDMResultsCacheTasklet(this.getSourceJdbcTemplate(source), getTransactionTemplateRequiresNew(), source, usePersonCount);
         Step resultsStep = stepBuilderFactory.get(jobName + " results")
                 .tasklet(resultsTasklet)
                 .build();

@@ -345,7 +345,7 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     }
   }
 
-  protected void checkOwnerOrAdminOrGranted(CommonEntity entity) {
+  protected void checkOwnerOrAdminOrGranted(CommonEntity<?> entity) {
     UserEntity user = getCurrentUser();
     Long ownerId = Objects.nonNull(entity.getCreatedBy()) ? entity.getCreatedBy().getId() : null;
 

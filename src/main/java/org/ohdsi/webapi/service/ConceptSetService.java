@@ -251,6 +251,8 @@ public class ConceptSetService extends AbstractDaoService {
         getConceptSetItemRepository().deleteByConceptSetId(id);
 
         for (ConceptSetItem csi : items) {
+            // ID must be set to null in case of copying from version, so the new item will be created
+            csi.setId(0);
             csi.setConceptSetId(id);
             getConceptSetItemRepository().save(csi);
         }

@@ -31,7 +31,6 @@ public class CohortVersionToCohortVersionFullDTOConverter
         entity.setId(def.getId());
         entity.setTags(def.getTags());
         entity.setName(def.getName());
-        entity.setDescription(source.getDescription());
         entity.setExpressionType(def.getExpressionType());
         entity.setDetails(details);
         entity.setCohortAnalysisGenerationInfoList(def.getCohortAnalysisGenerationInfoList());
@@ -40,6 +39,8 @@ public class CohortVersionToCohortVersionFullDTOConverter
         entity.setCreatedDate(def.getCreatedDate());
         entity.setModifiedBy(def.getModifiedBy());
         entity.setModifiedDate(def.getModifiedDate());
+
+        entity.setDescription(source.getDescription());
 
         CohortVersionFullDTO target = new CohortVersionFullDTO();
         target.setVersionDTO(conversionService.convert(source, VersionDTO.class));

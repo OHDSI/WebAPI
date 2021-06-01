@@ -100,7 +100,8 @@ CREATE TABLE ${ohdsiSchema}.cohort_versions
     created_by_id INTEGER,
     created_date  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (now()),
     CONSTRAINT pk_cohort_versions_id PRIMARY KEY (asset_id, version),
-    CONSTRAINT fk_cohort_versions_sec_user_creator FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user (id)
+    CONSTRAINT fk_cohort_versions_sec_user_creator FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user (id),
+    CONSTRAINT fk_cohort_versions_asset_id FOREIGN KEY (asset_id) REFERENCES ${ohdsiSchema}.cohort_definition (id) ON DELETE CASCADE
 );
 
 CREATE INDEX cohort_versions_asset_idx ON ${ohdsiSchema}.cohort_versions USING btree (asset_id);
@@ -116,7 +117,8 @@ CREATE TABLE ${ohdsiSchema}.cohort_characterization_versions
     created_by_id INTEGER,
     created_date  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (now()),
     CONSTRAINT pk_cc_versions_id PRIMARY KEY (asset_id, version),
-    CONSTRAINT fk_cc_versions_sec_user_creator FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user (id)
+    CONSTRAINT fk_cc_versions_sec_user_creator FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user (id),
+    CONSTRAINT fk_cc_versions_asset_id FOREIGN KEY (asset_id) REFERENCES ${ohdsiSchema}.cohort_characterization (id) ON DELETE CASCADE
 );
 
 CREATE INDEX cc_versions_asset_idx ON ${ohdsiSchema}.cohort_characterization_versions USING btree (asset_id);
@@ -132,7 +134,8 @@ CREATE TABLE ${ohdsiSchema}.concept_set_versions
     created_by_id INTEGER,
     created_date  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (now()),
     CONSTRAINT pk_concept_set_versions_id PRIMARY KEY (asset_id, version),
-    CONSTRAINT fk_concept_set_versions_sec_user_creator FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user (id)
+    CONSTRAINT fk_concept_set_versions_sec_user_creator FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user (id),
+    CONSTRAINT fk_concept_set_versions_asset_id FOREIGN KEY (asset_id) REFERENCES ${ohdsiSchema}.concept_set (concept_set_id) ON DELETE CASCADE
 );
 
 CREATE INDEX concept_set_versions_asset_idx ON ${ohdsiSchema}.concept_set_versions USING btree (asset_id);
@@ -149,7 +152,8 @@ CREATE TABLE ${ohdsiSchema}.ir_versions
     created_by_id INTEGER,
     created_date  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (now()),
     CONSTRAINT pk_ir_versions_id PRIMARY KEY (asset_id, version),
-    CONSTRAINT fk_ir_versions_sec_user_creator FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user (id)
+    CONSTRAINT fk_ir_versions_sec_user_creator FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user (id),
+    CONSTRAINT fk_ir_versions_asset_id FOREIGN KEY (asset_id) REFERENCES ${ohdsiSchema}.ir_analysis (id) ON DELETE CASCADE
 );
 
 CREATE INDEX ir_versions_asset_idx ON ${ohdsiSchema}.ir_versions USING btree (asset_id);
@@ -165,7 +169,8 @@ CREATE TABLE ${ohdsiSchema}.pathway_versions
     created_by_id INTEGER,
     created_date  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (now()),
     CONSTRAINT pk_pathway_versions_id PRIMARY KEY (asset_id, version),
-    CONSTRAINT fk_pathway_versions_sec_user_creator FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user (id)
+    CONSTRAINT fk_pathway_versions_sec_user_creator FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user (id),
+    CONSTRAINT fk_pathway_versions_asset_id FOREIGN KEY (asset_id) REFERENCES ${ohdsiSchema}.pathway_analysis (id) ON DELETE CASCADE
 );
 
 CREATE INDEX pathway_versions_asset_idx ON ${ohdsiSchema}.pathway_versions USING btree (asset_id);

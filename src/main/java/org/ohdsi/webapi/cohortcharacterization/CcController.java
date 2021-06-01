@@ -456,7 +456,7 @@ public class CcController {
 
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/{id}/pemissionprotectedtag/")
+    @Path("/{id}/protectedtag/")
     @javax.transaction.Transactional
     public void assignPermissionProtectedTag(@PathParam("id") final long id, final int tagId) {
         service.assignTag(id, tagId, true);
@@ -464,7 +464,7 @@ public class CcController {
 
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/{id}/pemissionprotectedtag/{tagId}")
+    @Path("/{id}/protectedtag/{tagId}")
     @javax.transaction.Transactional
     public void unassignPermissionProtectedTag(@PathParam("id") final long id, @PathParam("tagId") final int tagId) {
         service.unassignTag(id, tagId, true);
@@ -473,21 +473,21 @@ public class CcController {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/")
-    public List<VersionDTO> getVersions(@PathParam("id") final int id) {
+    public List<VersionDTO> getVersions(@PathParam("id") final long id) {
         return service.getVersions(id);
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{version}")
-    public CcVersionFullDTO getVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
+    public CcVersionFullDTO getVersion(@PathParam("id") final long id, @PathParam("version") final int version) {
         return service.getVersion(id, version);
     }
 
     @PUT
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{version}")
-    public VersionDTO updateVersion(@PathParam("id") final int id, @PathParam("version") final int version,
+    public VersionDTO updateVersion(@PathParam("id") final long id, @PathParam("version") final int version,
                                     VersionUpdateDTO updateDTO) {
         return service.updateVersion(id, version, updateDTO);
     }
@@ -495,7 +495,7 @@ public class CcController {
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{version}")
-    public void deleteVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
+    public void deleteVersion(@PathParam("id") final long id, @PathParam("version") final int version) {
         service.deleteVersion(id, version);
     }
 

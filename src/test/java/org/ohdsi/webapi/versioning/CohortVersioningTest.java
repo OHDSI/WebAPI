@@ -7,7 +7,6 @@ import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortVersionFullDTO;
 import org.ohdsi.webapi.service.CohortDefinitionService;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +18,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 
-public class CohortVersioningTest extends BaseVersioningTest<CohortDefinition,
-        CohortDTO, CohortVersionFullDTO, Integer> {
+public class CohortVersioningTest extends BaseVersioningTest<CohortDTO, CohortVersionFullDTO, Integer> {
     private static final String JSON_PATH = "/versioning/cohort.json";
 
     @Autowired
@@ -41,13 +39,9 @@ public class CohortVersioningTest extends BaseVersioningTest<CohortDefinition,
     }
 
     @Override
-    public void createInitialDTO() throws IOException {
+    public void doCreateInitialData() throws IOException {
         String expression = getExpression(getExpressionPath());
         CohortDTO dto = deserializeExpression(expression);
-
-        UserEntity user = new UserEntity();
-        user.setLogin("anonymous");
-        userRepository.save(user);
 
         initialDTO = service.createCohortDefinition(dto);
     }
@@ -88,7 +82,7 @@ public class CohortVersioningTest extends BaseVersioningTest<CohortDefinition,
     }
 
     @Override
-    protected CohortDTO copyAssetFromVersion(Integer id, int version){
+    protected CohortDTO copyAssetFromVersion(Integer id, int version) {
         return service.copyAssetFromVersion(id, version);
     }
 

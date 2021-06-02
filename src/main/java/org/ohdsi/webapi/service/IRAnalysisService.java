@@ -818,7 +818,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   @Transactional
   public void unassignPermissionProtectedTag(final int id, final int tagId) {
     IncidenceRateAnalysis entity = irAnalysisRepository.findOne(id);
-    unassignTag(entity, tagId, false);
+    unassignTag(entity, tagId, true);
   }
 
   @Override

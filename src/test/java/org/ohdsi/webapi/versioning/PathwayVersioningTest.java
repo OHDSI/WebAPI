@@ -3,12 +3,10 @@ package org.ohdsi.webapi.versioning;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.pathway.PathwayController;
-import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisExportDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayVersionFullDTO;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisEntityRepository;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +16,8 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
 
-public class PathwayVersioningTest extends BaseVersioningTest<PathwayAnalysisEntity,
-        PathwayAnalysisDTO, PathwayVersionFullDTO, Integer> {
+public class PathwayVersioningTest extends BaseVersioningTest<PathwayAnalysisDTO, PathwayVersionFullDTO, Integer> {
     private static final String JSON_PATH = "/versioning/pathway.json";
 
     @Autowired
@@ -34,11 +30,7 @@ public class PathwayVersioningTest extends BaseVersioningTest<PathwayAnalysisEnt
     private CohortDefinitionRepository cohortRepository;
 
     @Override
-    public void createInitialDTO() throws IOException {
-        UserEntity user = new UserEntity();
-        user.setLogin("anonymous");
-        userRepository.save(user);
-
+    public void doCreateInitialData() throws IOException {
         String expression = getExpression(getExpressionPath());
         PathwayAnalysisExportDTO dto = Utils.deserialize(expression, PathwayAnalysisExportDTO.class);
         dto.setName("test dto name");

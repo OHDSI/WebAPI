@@ -1452,7 +1452,13 @@
     "group": "Group",
     "version": "Version",
     "comment": "Comment",
-    "preview": "Preview"
+    "preview": "Preview",
+    "pc": "PC",
+    "dpc": "DPC",
+    "rcTooltip": "Record Count",
+    "drcTooltip": "Descendant Record Count",
+    "pcTooltip": "Person Count",
+    "dpcTooltip": "Descendant Person Count"
   },
   "dataSources": {
     "achillesHeelReport": {

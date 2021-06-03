@@ -19,7 +19,7 @@ public class QuestionSet {
   @Id
   @GeneratedValue
   @Column(name = "set_id")
-  private Long id;
+  private int id;
 
   @Column(name = "cohort_definition_id")
   private int cohortId;
@@ -39,14 +39,14 @@ public class QuestionSet {
   /**
    * @return the id
    */
-  public Long getId() {
+  public int getId() {
     return id;
   }
 
   /**
 	 * @param id the id to set
 	 */
-  public void setId(Long id) {
+  public void setId(int id) {
     this.id = id;
   }
 

@@ -38,6 +38,10 @@ public class AnnotationService {
     return annotations;
   }
 
+    public Annotation getAnnotationsByAnnotationId(int annotationId) {
+        return annotationRepository.findByAnnotationId(annotationId);
+    }
+
   public List<Annotation> getAnnotationByCohortSampleIdAndBySubjectIdAndBySetId(Long cohortSampleId, Long subjectId, Long setId) {
     List<Annotation> annotations = new ArrayList();
     annotationRepository.findOneByCohortSampleIdAndSubjectIdAndSetId(cohortSampleId, subjectId, setId)

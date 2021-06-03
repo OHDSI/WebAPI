@@ -8,6 +8,6 @@ import org.ohdsi.webapi.annotation.set.QuestionSet;
 public interface QuestionSetRepository extends JpaRepository<QuestionSet, Long> {
 
   public Set<QuestionSet> findByCohortId(Integer cohortId);
-  public QuestionSet findById(Long id);
+  public QuestionSet findById(int id);
 
 }

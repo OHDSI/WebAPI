@@ -98,19 +98,30 @@ public class AnnotationController {
     System.out.println("annotationDtoGetId: "+annotationDto.getId());
     System.out.println("annotationDtoGesampleId"+annotationDto.getsampleId());
     System.out.println("annotationDtoGetAnnotationSetID"+annotationDto.getannotationSetId());
-    List<SampleElementDTO> temp = cohortSamplingService.getSample(annotationDto.getsampleId().intValue(), false).getElements();
+    List<SampleElementDTO> temp = cohortSamplingService.getSample(annotationDto.getsampleId(), false).getElements();
     System.out.println("SampleElementDTO"+temp);
     for (SampleElementDTO element : temp){
       System.out.println("element"+element);
       System.out.println("element GetPersonID"+element.getPersonId());
       Annotation annotation = new Annotation();
       annotation.setId(annotationDto.getId());
-      annotation.setSubjectId(Long.parseLong(element.getPersonId()));
+      annotation.setSubjectId(Integer.parseInt(element.getPersonId()));
       annotation.setCohortSampleId(annotationDto.getsampleId());
       QuestionSet set = questionSetRepository.findById(annotationDto.getannotationSetId());
       annotation.setSet(set);
       annotationService.addAnnotation(annotation, annotationDto.getSampleName());
     }
+  }
+
+  @GET
+  @Path("/getsets")
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<Annotation> getSets(
+    @QueryParam("cohortSampleId") final Long cohortSampleId,
+    @QueryParam("subjectId") final Long subjectId,
+    @QueryParam("setId") final Long setId
+  ) {
+    return annotationService.getAnnotations();
   }
 
 //just for testing

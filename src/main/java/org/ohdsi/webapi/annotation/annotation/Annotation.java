@@ -25,13 +25,13 @@ public class Annotation {
   @Id
   @GeneratedValue
   @Column(name = "annotation_id")
-  private Long id;
+  private int id;
 
   @Column(name = "subject_id")
-  private Long subjectId;
+  private int subjectId;
 
   @Column(name = "cohort_sample_id")
-  private Long cohortSampleId;
+  private int cohortSampleId;
 
   // @Column(name = "sample_name")
   // private String sampleName;
@@ -54,42 +54,42 @@ public class Annotation {
   /**
    * @return the id
    */
-  public Long getId() {
+  public int getId() {
     return id;
   }
 
   /**
 	 * @param id the id to set
 	 */
-  public void setId(Long id) {
+  public void setId(int id) {
     this.id = id;
   }
 
   /**
    * @return the subjectId
    */
-  public Long getSubjectId() {
+  public int getSubjectId() {
     return subjectId;
   }
 
   /**
    * @param subjectId the subjectId to set
    */
-  public void setSubjectId(Long subjectId) {
+  public void setSubjectId(int subjectId) {
     this.subjectId = subjectId;
   }
 
   /**
    * @return the cohortId
    */
-  public Long getCohortSampleId() {
+  public int getCohortSampleId() {
     return cohortSampleId;
   }
 
   /**
-   * @param cohortId the cohortId to set
+   * @param cohortSampleId the cohortId to set
    */
-  public void setCohortSampleId(Long cohortSampleId) {
+  public void setCohortSampleId(int cohortSampleId) {
     this.cohortSampleId = cohortSampleId;
   }
 

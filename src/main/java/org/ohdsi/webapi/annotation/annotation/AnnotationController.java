@@ -73,6 +73,7 @@ public class AnnotationController {
     System.out.printf("cohortSampleId: %s\n",jsonpayload.get("sampleName").toString());
     System.out.printf("subjectId: %s\n",jsonpayload.get("subjectId").toString());
     System.out.printf("setId: %s\n",jsonpayload.get("setId").toString());
+//    TODO: change this to use annotationService.getAnnotationsByAnnotationId potentially
     Annotation tempAnnotation = annotationService.getAnnotationByCohortSampleIdAndBySubjectIdAndBySetId(Long.parseLong(jsonpayload.get("sampleName").toString())
             ,Long.parseLong(jsonpayload.get("subjectId").toString()),Long.parseLong(jsonpayload.get("setId").toString())).get(0);
     System.out.printf("annotationID:%d\n",tempAnnotation.getId());

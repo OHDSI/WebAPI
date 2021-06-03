@@ -1,40 +1,27 @@
 package org.ohdsi.webapi.versioning;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortVersionFullDTO;
-import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
 import org.ohdsi.webapi.conceptset.ConceptSetRepository;
 import org.ohdsi.webapi.conceptset.dto.ConceptSetVersionFullDTO;
-import org.ohdsi.webapi.service.CohortDefinitionService;
 import org.ohdsi.webapi.service.ConceptSetService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 
-public class ConceptSetVersioningTest extends BaseVersioningTest<ConceptSet,
-        ConceptSetDTO, ConceptSetVersionFullDTO, Integer> {
+public class ConceptSetVersioningTest extends BaseVersioningTest<ConceptSetDTO, ConceptSetVersionFullDTO, Integer> {
     private static final String JSON_PATH = "/versioning/conceptset.json";
 
     @Autowired
@@ -47,13 +34,9 @@ public class ConceptSetVersioningTest extends BaseVersioningTest<ConceptSet,
     private ObjectMapper mapper;
 
     @Override
-    public void createInitialDTO() throws IOException {
+    public void doCreateInitialData() throws IOException {
         ConceptSetDTO dto = new ConceptSetDTO();
         dto.setName("test dto name");
-
-        UserEntity user = new UserEntity();
-        user.setLogin("anonymous");
-        userRepository.save(user);
 
         initialDTO = service.createConceptSet(dto);
 
@@ -107,7 +90,7 @@ public class ConceptSetVersioningTest extends BaseVersioningTest<ConceptSet,
     }
 
     @Override
-    protected ConceptSetDTO copyAssetFromVersion(Integer id, int version){
+    protected ConceptSetDTO copyAssetFromVersion(Integer id, int version) {
         return service.copyAssetFromVersion(id, version);
     }
 

@@ -2,12 +2,10 @@ package org.ohdsi.webapi.versioning;
 
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
-import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
 import org.ohdsi.webapi.ircalc.dto.IRVersionFullDTO;
 import org.ohdsi.webapi.service.IRAnalysisService;
 import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +17,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 
-public class IRVersioningTest extends BaseVersioningTest<IncidenceRateAnalysis,
-        IRAnalysisDTO, IRVersionFullDTO, Integer> {
+public class IRVersioningTest extends BaseVersioningTest<IRAnalysisDTO, IRVersionFullDTO, Integer> {
     private static final String JSON_PATH = "/versioning/ir.json";
 
     @Autowired
@@ -42,13 +39,9 @@ public class IRVersioningTest extends BaseVersioningTest<IncidenceRateAnalysis,
     }
 
     @Override
-    public void createInitialDTO() throws IOException {
+    public void doCreateInitialData() throws IOException {
         String expression = getExpression(getExpressionPath());
         IRAnalysisDTO dto = deserializeExpression(expression);
-
-        UserEntity user = new UserEntity();
-        user.setLogin("anonymous");
-        userRepository.save(user);
 
         initialDTO = service.doImport(dto);
     }

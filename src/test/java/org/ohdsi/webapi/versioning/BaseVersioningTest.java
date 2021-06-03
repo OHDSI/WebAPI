@@ -5,7 +5,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.ohdsi.webapi.AbstractDatabaseTest;
-import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.service.dto.CommonEntityExtDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
@@ -26,15 +25,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-// E - Entity
-// DC - dto used on clients
-// DS - dto used on server side
-// VF - full entity version dto
-// V - entity version
-// ID - type of entity id field
-public abstract class BaseVersioningTest<E extends CommonEntity<?>, DS extends CommonEntityExtDTO,
-        VF extends VersionFullDTO<?>, ID extends Number> extends AbstractDatabaseTest {
-    protected DS initialDTO;
+public abstract class BaseVersioningTest<S extends CommonEntityExtDTO,
+        T extends VersionFullDTO<?>, ID extends Number> extends AbstractDatabaseTest {
+    protected S initialDTO;
 
     @Autowired
     protected UserRepository userRepository;
@@ -48,7 +41,15 @@ public abstract class BaseVersioningTest<E extends CommonEntity<?>, DS extends C
     }
 
     @Before
-    public abstract void createInitialDTO() throws IOException;
+    public void createInitialData() throws IOException {
+        UserEntity user = new UserEntity();
+        user.setLogin("anonymous");
+        userRepository.save(user);
+
+        doCreateInitialData();
+    }
+
+    protected abstract void doCreateInitialData() throws IOException;
 
     @After
     public void clear() {
@@ -58,7 +59,7 @@ public abstract class BaseVersioningTest<E extends CommonEntity<?>, DS extends C
 
     @Test
     public void createAndGetVersion() throws Exception {
-        DS dto = getEntity(getId(initialDTO));
+        S dto = getEntity(getId(initialDTO));
         dto.setName(dto.getName() + "__copy");
         updateEntity(dto);
 
@@ -66,7 +67,7 @@ public abstract class BaseVersioningTest<E extends CommonEntity<?>, DS extends C
         assertEquals(1, versions.size());
 
         VersionDTO version = versions.get(0);
-        VF fullDTO = getVersion(getId(dto), version.getVersion());
+        T fullDTO = getVersion(getId(dto), version.getVersion());
         assertNotNull(fullDTO);
 
         checkClientDTOEquality(fullDTO);
@@ -74,7 +75,7 @@ public abstract class BaseVersioningTest<E extends CommonEntity<?>, DS extends C
 
     @Test
     public void deleteVersion() throws Exception {
-        DS dto = getEntity(getId(initialDTO));
+        S dto = getEntity(getId(initialDTO));
         dto.setName(dto.getName() + "__copy");
         updateEntity(dto);
 
@@ -90,7 +91,7 @@ public abstract class BaseVersioningTest<E extends CommonEntity<?>, DS extends C
 
     @Test
     public void createAndGetMultipleVersions() throws Exception {
-        DS dto = getEntity(getId(initialDTO));
+        S dto = getEntity(getId(initialDTO));
         int count = 3;
         for (int i = 0; i < count; i++) {
             updateEntity(dto);
@@ -102,7 +103,7 @@ public abstract class BaseVersioningTest<E extends CommonEntity<?>, DS extends C
 
     @Test
     public void updateVersion() throws Exception {
-        DS dto = getEntity(getId(initialDTO));
+        S dto = getEntity(getId(initialDTO));
         dto.setName(dto.getName() + "__copy");
         updateEntity(dto);
 
@@ -116,7 +117,7 @@ public abstract class BaseVersioningTest<E extends CommonEntity<?>, DS extends C
 
         updateVersion(getId(dto), version.getVersion(), updateDTO);
 
-        VF fullDTO = getVersion(getId(dto), version.getVersion());
+        T fullDTO = getVersion(getId(dto), version.getVersion());
         version = fullDTO.getVersionDTO();
         assertEquals(version.getComment(), updateDTO.getComment());
         assertEquals(version.isArchived(), updateDTO.isArchived());
@@ -124,38 +125,38 @@ public abstract class BaseVersioningTest<E extends CommonEntity<?>, DS extends C
 
     @Test
     public void copyAssetFromVersion() throws Exception {
-        DS dto = getEntity(getId(initialDTO));
+        S dto = getEntity(getId(initialDTO));
         dto.setName(dto.getName() + "__copy");
         updateEntity(dto);
 
         List<VersionDTO> versions = getVersions(getId(dto));
         VersionDTO version = versions.get(0);
 
-        DS newDTO = copyAssetFromVersion(getId(dto), version.getVersion());
+        S newDTO = copyAssetFromVersion(getId(dto), version.getVersion());
         checkServerDTOEquality(newDTO);
     }
 
     protected abstract void doClear();
 
-    protected abstract void checkServerDTOEquality(DS dto);
+    protected abstract void checkServerDTOEquality(S dto);
 
-    protected abstract void checkClientDTOEquality(VF dto);
+    protected abstract void checkClientDTOEquality(T dto);
 
     protected abstract List<VersionDTO> getVersions(ID id);
 
-    protected abstract VF getVersion(ID id, int version);
+    protected abstract T getVersion(ID id, int version);
 
     protected abstract String getExpressionPath();
 
-    protected abstract DS getEntity(ID id);
+    protected abstract S getEntity(ID id);
 
-    protected abstract DS updateEntity(DS dto) throws Exception;
+    protected abstract S updateEntity(S dto) throws Exception;
 
-    protected abstract DS copyAssetFromVersion(ID id, int version);
+    protected abstract S copyAssetFromVersion(ID id, int version);
 
     protected abstract void updateVersion(ID id, int version, VersionUpdateDTO updateDTO);
 
     protected abstract void deleteVersion(ID id, int version);
 
-    protected abstract ID getId(DS dto);
+    protected abstract ID getId(S dto);
 }

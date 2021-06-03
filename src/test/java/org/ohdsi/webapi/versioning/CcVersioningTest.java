@@ -9,8 +9,6 @@ import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
 import org.ohdsi.webapi.cohortcharacterization.repository.CcRepository;
 import org.ohdsi.webapi.cohortcharacterization.specification.CohortCharacterizationImpl;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +18,8 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
 
-public class CcVersioningTest extends BaseVersioningTest<CohortCharacterizationEntity,
-        CohortCharacterizationDTO, CcVersionFullDTO, Long> {
+public class CcVersioningTest extends BaseVersioningTest<CohortCharacterizationDTO, CcVersionFullDTO, Long> {
     private static final String JSON_PATH = "/versioning/characterization.json";
 
     @Autowired
@@ -36,7 +32,7 @@ public class CcVersioningTest extends BaseVersioningTest<CohortCharacterizationE
     private CohortDefinitionRepository cohortRepository;
 
     @Override
-    public void createInitialDTO() throws IOException {
+    public void doCreateInitialData() throws IOException {
         String expression = getExpression(getExpressionPath());
 
         CohortCharacterizationImpl characterizationImpl =
@@ -44,10 +40,6 @@ public class CcVersioningTest extends BaseVersioningTest<CohortCharacterizationE
         CohortCharacterizationEntity entity = conversionService.convert(characterizationImpl, CohortCharacterizationEntity.class);
         CcExportDTO exportDTO = conversionService.convert(entity, CcExportDTO.class);
         exportDTO.setName("test dto name");
-
-        UserEntity user = new UserEntity();
-        user.setLogin("anonymous");
-        userRepository.save(user);
 
         initialDTO = service.doImport(exportDTO);
     }

@@ -19,6 +19,7 @@ import org.ohdsi.webapi.exception.ConceptNotExistException;
 import org.ohdsi.webapi.exception.UserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.shiro.authz.UnauthorizedException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.messaging.support.ErrorMessage;
 
@@ -37,6 +38,7 @@ import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Objects;
 
 /**
+ *
  * @author fdefalco
  */
 

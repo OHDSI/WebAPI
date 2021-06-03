@@ -1158,7 +1158,8 @@
       "tagGroup:": "Tag group:",
       "showTags": "Show tags",
       "tagNameExistsWarning": "Tag <%=tagName%> already exists.",
-      "cannotUnassignProtectedTagWarning": "Cannot unassign protected tag: <%=tagName%>"
+      "cannotUnassignProtectedTagWarning": "Cannot unassign protected tag: <%=tagName%>",
+      "reassignConfirm": "The maximum number of assigned tags in the tag group \"<%=tagGroup%>\" is <%=maxNumber%>. The tag \"<%=tagName%>\" will be unassigned. Proceed?"
     },
     "versions": {
       "loading": "Loading versions...",

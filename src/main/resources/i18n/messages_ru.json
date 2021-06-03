@@ -1158,7 +1158,8 @@
       "tagGroup:": "Группа:",
       "showTags": "Показать теги",
       "tagNameExistsWarning": "Тег <%=tagName%> уже существует.",
-      "cannotUnassignProtectedTagWarning": "Невозможно отменить назначение защищенного тега: <%=tagName%>"
+      "cannotUnassignProtectedTagWarning": "Невозможно отменить назначение защищенного тега: <%=tagName%>",
+      "reassignConfirm": "Превышено максимальное количество назначенных тегов в группе \"<%=tagGroup%>\": не более <%=maxNumber%>. Тег \"<%=tagName%>\" будет снят. Продолжить?"
     },
     "versions": {
       "loading": "Загрузка версий...",

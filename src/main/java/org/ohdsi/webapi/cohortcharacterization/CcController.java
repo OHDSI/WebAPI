@@ -438,6 +438,12 @@ public class CcController {
                 .build();
     }
 
+    /**
+     * Assign tag to Cohort Characterization
+     *
+     * @param id
+     * @param tagId
+     */
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/")
@@ -446,6 +452,12 @@ public class CcController {
         service.assignTag(id, tagId, false);
     }
 
+    /**
+     * Unassign tag from Cohort Characterization
+     *
+     * @param id
+     * @param tagId
+     */
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/{tagId}")
@@ -454,6 +466,12 @@ public class CcController {
         service.unassignTag(id, tagId, false);
     }
 
+    /**
+     * Assign protected tag to Cohort Characterization
+     *
+     * @param id
+     * @param tagId
+     */
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/protectedtag/")
@@ -462,6 +480,12 @@ public class CcController {
         service.assignTag(id, tagId, true);
     }
 
+    /**
+     * Unassign protected tag from Cohort Characterization
+     *
+     * @param id
+     * @param tagId
+     */
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/protectedtag/{tagId}")
@@ -470,6 +494,12 @@ public class CcController {
         service.unassignTag(id, tagId, true);
     }
 
+    /**
+     * Get list of versions of Cohort Characterization
+     *
+     * @param id
+     * @return
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/")
@@ -477,6 +507,13 @@ public class CcController {
         return service.getVersions(id);
     }
 
+    /**
+     * Get version of Cohort Characterization
+     *
+     * @param id
+     * @param version
+     * @return
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{version}")
@@ -484,6 +521,14 @@ public class CcController {
         return service.getVersion(id, version);
     }
 
+    /**
+     * Update version of Cohort Characterization
+     *
+     * @param id
+     * @param version
+     * @param updateDTO
+     * @return
+     */
     @PUT
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{version}")
@@ -492,6 +537,12 @@ public class CcController {
         return service.updateVersion(id, version, updateDTO);
     }
 
+    /**
+     * Delete version of Cohort Characterization
+     *
+     * @param id
+     * @param version
+     */
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{version}")
@@ -499,6 +550,13 @@ public class CcController {
         service.deleteVersion(id, version);
     }
 
+    /**
+     * Create a new asset form version of Cohort Characterization
+     *
+     * @param id
+     * @param version
+     * @return
+     */
     @PUT
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{version}/createAsset")

@@ -772,6 +772,12 @@ public class CohortDefinitionService extends AbstractDaoService {
 		return res.build();
 	}
 
+	/**
+	 * Assign tag to Cohort Definition
+	 *
+	 * @param id
+	 * @param tagId
+	 */
 	@POST
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/tag/")
@@ -781,6 +787,12 @@ public class CohortDefinitionService extends AbstractDaoService {
 		assignTag(entity, tagId, false);
 	}
 
+	/**
+	 * Unassign tag from Cohort Definition
+	 *
+	 * @param id
+	 * @param tagId
+	 */
 	@DELETE
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/tag/{tagId}")
@@ -790,6 +802,12 @@ public class CohortDefinitionService extends AbstractDaoService {
 		unassignTag(entity, tagId, false);
 	}
 
+	/**
+	 * Assign protected tag to Cohort Definition
+	 *
+	 * @param id
+	 * @param tagId
+	 */
 	@POST
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/protectedtag/")
@@ -799,6 +817,12 @@ public class CohortDefinitionService extends AbstractDaoService {
 		assignTag(entity, tagId, true);
 	}
 
+	/**
+	 * Un assign protected tag from Cohort Definition
+	 *
+	 * @param id
+	 * @param tagId
+	 */
 	@DELETE
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/protectedtag/{tagId}")
@@ -808,6 +832,12 @@ public class CohortDefinitionService extends AbstractDaoService {
 		unassignTag(entity, tagId, true);
 	}
 
+	/**
+	 * Get list of versions of Cohort Definition
+	 *
+	 * @param id
+	 * @return
+	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/version/")
@@ -819,6 +849,13 @@ public class CohortDefinitionService extends AbstractDaoService {
 				.collect(Collectors.toList());
 	}
 
+	/**
+	 * Get version of Cohort Definition
+	 *
+	 * @param id
+	 * @param version
+	 * @return
+	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/version/{version}")
@@ -830,6 +867,14 @@ public class CohortDefinitionService extends AbstractDaoService {
 		return conversionService.convert(cohortVersion, CohortVersionFullDTO.class);
 	}
 
+	/**
+	 * Update version of Cohort Definition
+	 *
+	 * @param id
+	 * @param version
+	 * @param updateDTO
+	 * @return
+	 */
 	@PUT
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/version/{version}")
@@ -844,6 +889,12 @@ public class CohortDefinitionService extends AbstractDaoService {
 		return conversionService.convert(updated, VersionDTO.class);
 	}
 
+	/**
+	 * Delete version of Cohort Definition
+	 *
+	 * @param id
+	 * @param version
+	 */
 	@DELETE
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/version/{version}")
@@ -853,6 +904,13 @@ public class CohortDefinitionService extends AbstractDaoService {
 		versionService.delete(VersionType.COHORT, id, version);
 	}
 
+	/**
+	 * Create a new asset from version of Cohort Definition
+	 *
+	 * @param id
+	 * @param version
+	 * @return
+	 */
 	@PUT
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/version/{version}/createAsset")

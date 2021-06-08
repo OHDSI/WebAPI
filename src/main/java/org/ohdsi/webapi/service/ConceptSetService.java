@@ -434,6 +434,12 @@ public class ConceptSetService extends AbstractDaoService {
       }
   }
 
+    /**
+     * Assign tag to Concept Set
+     *
+     * @param id
+     * @param tagId
+     */
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/")
@@ -443,6 +449,12 @@ public class ConceptSetService extends AbstractDaoService {
         assignTag(entity, tagId, false);
     }
 
+    /**
+     * Unassign tag from Concept Set
+     *
+     * @param id
+     * @param tagId
+     */
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/{tagId}")
@@ -452,6 +464,12 @@ public class ConceptSetService extends AbstractDaoService {
         unassignTag(entity, tagId, false);
     }
 
+    /**
+     * Assign protected tag to Concept Set
+     *
+     * @param id
+     * @param tagId
+     */
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/protectedtag/")
@@ -461,6 +479,12 @@ public class ConceptSetService extends AbstractDaoService {
         assignTag(entity, tagId, true);
     }
 
+    /**
+     * Unassign protected tag from Concept Set
+     *
+     * @param id
+     * @param tagId
+     */
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/protectedtag/{tagId}")
@@ -479,6 +503,12 @@ public class ConceptSetService extends AbstractDaoService {
         return new CheckResult(checker.check(conceptSetDTO));
     }
 
+    /**
+     * Get list of versions of Concept Set
+     *
+     * @param id
+     * @return
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/")
@@ -490,6 +520,13 @@ public class ConceptSetService extends AbstractDaoService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Get version of Concept Set
+     *
+     * @param id
+     * @param version
+     * @return
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{version}")
@@ -501,6 +538,14 @@ public class ConceptSetService extends AbstractDaoService {
         return conversionService.convert(conceptSetVersion, ConceptSetVersionFullDTO.class);
     }
 
+    /**
+     * Update version of Concept Set
+     *
+     * @param id
+     * @param version
+     * @param updateDTO
+     * @return
+     */
     @PUT
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{version}")
@@ -515,6 +560,12 @@ public class ConceptSetService extends AbstractDaoService {
         return conversionService.convert(updated, VersionDTO.class);
     }
 
+    /**
+     * Delete version of Concept Set
+     *
+     * @param id
+     * @param version
+     */
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{version}")
@@ -524,6 +575,13 @@ public class ConceptSetService extends AbstractDaoService {
         versionService.delete(VersionType.CONCEPT_SET, id, version);
     }
 
+    /**
+     * Create a new asset form version of Concept Set
+     *
+     * @param id
+     * @param version
+     * @return
+     */
     @PUT
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{version}/createAsset")

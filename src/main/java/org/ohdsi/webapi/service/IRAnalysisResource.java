@@ -161,47 +161,105 @@ public interface IRAnalysisResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public CheckResult runDiagnostics(IRAnalysisDTO irAnalysisDTO);
 
+    /**
+     * Assign tag to IR Analysis
+     *
+     * @param id
+     * @param tagId
+     */
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/")
     void assignTag(@PathParam("id") final int id, final int tagId);
 
+    /**
+     * Unassign tag from IR Analysis
+     *
+     * @param id
+     * @param tagId
+     */
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/{tagId}")
     void unassignTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId);
 
+    /**
+     * Assign protected tag to IR Analysis
+     *
+     * @param id
+     * @param tagId
+     */
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/protectedtag/")
     void assignPermissionProtectedTag(@PathParam("id") final int id, final int tagId);
 
+    /**
+     * Unassign protected tag from IR Analysis
+     *
+     * @param id
+     * @param tagId
+     */
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/protectedtag/{tagId}")
     void unassignPermissionProtectedTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId);
 
+    /**
+     * Get list of versions of IR Analysis
+     *
+     * @param id
+     * @return
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/")
     List<VersionDTO> getVersions(@PathParam("id") final long id);
 
+    /**
+     * Get version of IR Analysis
+     *
+     * @param id
+     * @param version
+     * @return
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{version}")
     IRVersionFullDTO getVersion(@PathParam("id") final int id, @PathParam("version") final int version);
 
+    /**
+     * Update version of IR Analysis
+     *
+     * @param id
+     * @param version
+     * @param updateDTO
+     * @return
+     */
     @PUT
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{version}")
     VersionDTO updateVersion(@PathParam("id") final int id, @PathParam("version") final int version,
                                     VersionUpdateDTO updateDTO);
 
+    /**
+     * Delete version of IR Analysis
+     *
+     * @param id
+     * @param version
+     */
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{version}")
     void deleteVersion(@PathParam("id") final int id, @PathParam("version") final int version) ;
 
+    /**
+     * Create a new asset form version of IR Analysis
+     *
+     * @param id
+     * @param version
+     * @return
+     */
     @PUT
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{version}/createAsset")

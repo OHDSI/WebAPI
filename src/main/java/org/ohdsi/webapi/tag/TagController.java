@@ -28,6 +28,12 @@ public class TagController {
         this.tagService = pathwayService;
     }
 
+    /**
+     * Creates a tag.
+     *
+     * @param dto
+     * @return
+     */
     @POST
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
@@ -36,6 +42,13 @@ public class TagController {
         return tagService.create(dto);
     }
 
+    /**
+     * Returns list of tags, which names contain a provided substring.
+     *
+     * @summary Search tags by name part
+     * @param namePart
+     * @return
+     */
     @GET
     @Path("/search")
     @Produces(MediaType.APPLICATION_JSON)
@@ -46,6 +59,11 @@ public class TagController {
         return tagService.listInfoDTO(namePart);
     }
 
+    /**
+     * Returns list of all tags.
+     *
+     * @return
+     */
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
@@ -53,6 +71,13 @@ public class TagController {
         return tagService.listInfoDTO();
     }
 
+    /**
+     * Updates tag with ID={id}.
+     *
+     * @param id
+     * @param dto
+     * @return
+     */
     @PUT
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -61,6 +86,12 @@ public class TagController {
         return tagService.update(id, dto);
     }
 
+    /**
+     * Return tag by ID.
+     *
+     * @param id
+     * @return
+     */
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -69,6 +100,11 @@ public class TagController {
         return tagService.getDTOById(id);
     }
 
+    /**
+     * Deletes tag with ID={id}.
+     *
+     * @param id
+     */
     @DELETE
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)

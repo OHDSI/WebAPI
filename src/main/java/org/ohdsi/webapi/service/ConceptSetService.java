@@ -32,6 +32,7 @@ import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
+import org.ohdsi.webapi.exception.ConceptNotExistException;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
@@ -159,9 +160,14 @@ public class ConceptSetService extends AbstractDaoService {
             identifierIndex++;
         }
 
-        // assume we want to resolve using the priority vocabulary provider
-        Source vocabSourceInfo = sourceService.getPriorityVocabularySource();
-        Collection<Concept> concepts = vocabService.executeIdentifierLookup(vocabSourceInfo.getSourceKey(), identifiers);
+        Collection<Concept> concepts = vocabService.executeIdentifierLookup(sourceInfo.sourceKey, identifiers);
+        if (concepts.size() != identifiers.length) {
+            String ids = Arrays.stream(identifiers).boxed()
+                    .filter(identifier -> concepts.stream().noneMatch(c -> c.conceptId.equals(identifier)))
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(",", "(", ")"));
+            throw new ConceptNotExistException("Current data source does not contain required concepts " + ids);
+        }
         for(Concept concept : concepts) {
           map.put(concept.conceptId, concept); // associate the concept object to the conceptID in the map
         }

@@ -15,6 +15,7 @@
  */
 package org.ohdsi.webapi.util;
 
+import org.ohdsi.webapi.exception.ConceptNotExistException;
 import org.ohdsi.webapi.exception.UserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +61,8 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
             responseStatus = Status.INTERNAL_SERVER_ERROR;
             // Create new message to prevent sending error information to client
             ex = new RuntimeException(ex.getMessage());
+        } else if (ex instanceof ConceptNotExistException) {
+            responseStatus = Status.BAD_REQUEST;
         } else {
             responseStatus = Status.INTERNAL_SERVER_ERROR;
             // Create new message to prevent sending error information to client

@@ -2621,7 +2621,7 @@
           "sampleNameEmpty": "Sample name cannot be empty",
           "numberOfPatients": "* Number of patients",
           "numberOfPatientsPlaceholder": "Enter a number",
-          "numberOfPatientsEmpty": "Number of patients must be a positive integer",
+          "numberOfPatientsEmpty": "Number of patients must be a positive integer between 1 and 500",
           "selectAgeCriteria": "Select age criteria",
           "lessThan": "Less than",
           "lessOrEqualTo": "Less or equal to",

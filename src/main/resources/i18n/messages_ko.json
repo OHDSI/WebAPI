@@ -2621,7 +2621,7 @@
           "sampleNameEmpty": "샘플 이름은 비워 둘 수 없습니다",
           "numberOfPatients": "* 환자 수",
           "numberOfPatientsPlaceholder": "숫자 입력",
-          "numberOfPatientsEmpty": "환자 수는 양의 정수여야 합니다",
+          "numberOfPatientsEmpty": "Number of patients must be a positive integer between 1 and 500",
           "selectAgeCriteria": "나이 기준 선택",
           "lessThan": "보다 작은",
           "lessOrEqualTo": "보다 작거나 같은",

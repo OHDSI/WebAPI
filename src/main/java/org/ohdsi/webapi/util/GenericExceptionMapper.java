@@ -22,6 +22,7 @@ import org.apache.shiro.authz.UnauthorizedException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.messaging.support.ErrorMessage;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -56,6 +57,8 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
             responseStatus = Status.FORBIDDEN;
         } else if (ex instanceof NotFoundException) {
             responseStatus = Status.NOT_FOUND;
+        } else if (ex instanceof BadRequestException) {
+            responseStatus = Status.BAD_REQUEST;
         } else if (ex instanceof UserException) {
             responseStatus = Status.INTERNAL_SERVER_ERROR;
             // Create new message to prevent sending error information to client

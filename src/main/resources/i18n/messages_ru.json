@@ -2621,7 +2621,7 @@
           "sampleNameEmpty": "Имя образца не может быть пустым",
           "numberOfPatients": "* Количество пациентов",
           "numberOfPatientsPlaceholder": "Введите число",
-          "numberOfPatientsEmpty": "Количество пациентов должно быть положительным числом",
+          "numberOfPatientsEmpty": "Количество пациентов должно быть положительным числом от 1 до 500",
           "selectAgeCriteria": "Выберите возрастной критерий",
           "lessThan": "Менее чем",
           "lessOrEqualTo": "Менее чем или равно",

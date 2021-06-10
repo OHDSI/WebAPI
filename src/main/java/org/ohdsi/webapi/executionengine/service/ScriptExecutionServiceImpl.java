@@ -4,15 +4,23 @@ import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisReques
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestStatusDTO;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
 import com.odysseusinc.arachne.execution_engine_common.util.CommonFileUtils;
+import java.nio.file.Path;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import jersey.repackaged.com.google.common.collect.ImmutableList;
 import jersey.repackaged.com.google.common.collect.ImmutableMap;
+import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
+import net.lingala.zip4j.model.FileHeader;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
+import org.ohdsi.webapi.JobInvalidator;
+import org.ohdsi.webapi.exception.AtlasException;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
@@ -22,7 +30,7 @@ import org.ohdsi.webapi.executionengine.repository.ExecutionEngineGenerationRepo
 import org.ohdsi.webapi.executionengine.repository.InputFileRepository;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.HttpClient;
-import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.DataSourceDTOParser;
@@ -47,11 +55,11 @@ import java.io.*;
 import java.nio.file.Files;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 
-import static org.ohdsi.webapi.Constants.Variables.SOURCE;
+import static org.ohdsi.webapi.executionengine.service.AnalysisZipUtils.getHeadersForFilesThatWillBeAddedToZip;
 
 @Service
 @Transactional
@@ -64,8 +72,6 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
     private static final String ARACHNE_WAITING_COMPRESSED_RESULT_HEADER = "arachne-waiting-compressed-result";
     private static final String TEMPDIR_PREFIX = "webapi-exec";
 
-    private List<ExecutionEngineAnalysisStatus.Status> INVALIDATE_STATUSES = new ArrayList<>();
-
     @Autowired
     private HttpClient client;
 
@@ -77,8 +83,15 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
     private String resultCallback;
     @Value("${executionengine.updateStatusCallback}")
     private String updateStatusCallback;
+    @Value("${executionengine.resultExclusions}")
+    private String resultExclusions;
 
-    private List<ExecutionEngineAnalysisStatus.Status> FINAL_STATUES = ImmutableList.of(ExecutionEngineAnalysisStatus.Status.COMPLETED, ExecutionEngineAnalysisStatus.Status.COMPLETED);
+    private static List<ExecutionEngineAnalysisStatus.Status> INVALIDATE_STATUSES = ImmutableList.of(
+            ExecutionEngineAnalysisStatus.Status.RUNNING,
+            ExecutionEngineAnalysisStatus.Status.STARTED,
+            ExecutionEngineAnalysisStatus.Status.PENDING
+    );
+
 
     @Autowired
     private SourceService sourceService;
@@ -88,10 +101,10 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
     @Autowired
     private JobExplorer jobExplorer;
     @Autowired
-    private AnalysisExecutionRepository analysisExecutionRepository;
+    private JobInvalidator jobInvalidator;
 
     @Autowired
-    private AnalysisResultFileSensitiveInfoService sensitiveInfoService;
+    private AnalysisExecutionRepository analysisExecutionRepository;
 
     @Autowired
     private ExecutionEngineGenerationRepository executionEngineGenerationRepository;
@@ -102,9 +115,6 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
     ScriptExecutionServiceImpl() throws KeyManagementException, NoSuchAlgorithmException {
 
         HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
-        INVALIDATE_STATUSES.add(ExecutionEngineAnalysisStatus.Status.RUNNING);
-        INVALIDATE_STATUSES.add(ExecutionEngineAnalysisStatus.Status.STARTED);
-        INVALIDATE_STATUSES.add(ExecutionEngineAnalysisStatus.Status.PENDING);
     }
 
     @Override
@@ -117,9 +127,9 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
 
         final String analysisExecutionUrl = "/analyze";
         WebTarget webTarget = client.target(executionEngineURL + analysisExecutionUrl);
-        try {
+        try{
             File tempDir = Files.createTempDirectory(TEMPDIR_PREFIX).toFile();
-            try {
+            try{
                 saveFilesToTempDir(tempDir, files);
                 try(MultiPart multiPart = buildRequest(buildAnalysisRequest(executionId, dataSourceData, updatePassword, executableFilename), tempDir)) {
 
@@ -139,10 +149,10 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
                                         AnalysisRequestStatusDTO.class);
                     }
                 }
-            } finally {
+            }finally {
                 FileUtils.deleteQuietly(tempDir);
             }
-        }catch (ZipException | IOException e) {
+        }catch (IOException e) {
             log.error("Failed to compress request files", e);
             throw new InternalServerErrorException(e);
         }
@@ -155,10 +165,11 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
     }
 
     private void saveFilesToTempDir(File tempDir, List<AnalysisFile> files) {
+
         files.forEach(file -> {
             try(OutputStream out = new FileOutputStream(new File(tempDir, file.getFileName()))) {
                 IOUtils.write(file.getContents(), out);
-            } catch (IOException e) {
+            }catch (IOException e) {
                 log.error("Cannot build request to ExecutionEngine", e);
                 throw new InternalServerErrorException();
             }
@@ -185,6 +196,7 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
         analysisRequestDTO.setCallbackPassword(password);
         analysisRequestDTO.setRequested(new Date());
         analysisRequestDTO.setExecutableFileName(executableFileName);
+        analysisRequestDTO.setResultExclusions(resultExclusions);
         analysisRequestDTO.setResultCallback(
                 StrSubstitutor.replace(resultCallback,
                         ImmutableMap.of("id", executionId,
@@ -235,24 +247,25 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
     }
 
     @Override
-    public void updateAnalysisStatus(ExecutionEngineAnalysisStatus analysisExecution, ExecutionEngineAnalysisStatus.Status status) {
+    public void invalidateExecutions(Date invalidateDate) {
 
-        if (FINAL_STATUES.stream().noneMatch(s -> Objects.equals(s, status))) {
-            analysisExecution.setExecutionStatus(status);
-            analysisExecutionRepository.saveAndFlush(analysisExecution);
-        }
+        getTransactionTemplateRequiresNew().execute(status -> {
+            logger.info("Invalidating execution engine based analyses");
+            List<ExecutionEngineAnalysisStatus> executions = analysisExecutionRepository.findAllInvalidAnalysis(invalidateDate, ScriptExecutionServiceImpl.INVALIDATE_STATUSES);
+
+            executions.forEach(exec -> {
+                exec.setExecutionStatus(ExecutionEngineAnalysisStatus.Status.FAILED);
+                jobInvalidator.invalidateJobExecutionById(exec);
+            });
+            analysisExecutionRepository.save(executions);
+            return null;
+        });
     }
 
     @PostConstruct
     public void invalidateOutdatedAnalyses() {
 
-        getTransactionTemplateRequiresNew().execute(status -> {
-            logger.info("Invalidating execution engine based analyses");
-            List<ExecutionEngineAnalysisStatus> outdateExecutions = analysisExecutionRepository.findByExecutionStatusIn(INVALIDATE_STATUSES);
-            outdateExecutions.forEach(ee -> ee.setExecutionStatus(ExecutionEngineAnalysisStatus.Status.FAILED));
-            analysisExecutionRepository.save(outdateExecutions);
-            return null;
-        });
+        invalidateExecutions(new Date());
     }
 
     @Override
@@ -267,19 +280,78 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
         String fileName = "execution_" + executionId + "_result.zip";
         File archive = tempDirectory.resolve(fileName).toFile();
         archive.deleteOnExit();
-        Map<String, Object> variables = Collections.singletonMap(SOURCE, analysisExecution.getExecutionEngineGeneration().getSource());
 
-        try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(archive))) {
-            List<AnalysisResultFile> outputFiles = analysisExecution.getResultFiles(); //outputFileRepository.findByExecutionId(analysisExecution.getId());
-            for (AnalysisResultFile resultFile : outputFiles) {
-                ZipEntry entry = new ZipEntry(resultFile.getFileName());
-                entry.setSize(sensitiveInfoService.filterSensitiveInfo(resultFile, variables).getContents().length);
-                zos.putNextEntry(entry);
-                zos.write(resultFile.getContents());
-                zos.closeEntry();
+        try {
+            ZipFile resultZip = new ZipFile(archive);
+
+            List<AnalysisResultFile> zipFiles = analysisExecution.getResultFiles().stream()
+                    .filter(resultFile ->
+                            AnalysisZipUtils.isResultArchive(resultFile.getFileName()) ||
+                            AnalysisZipUtils.isResultArchiveVolume(resultFile.getFileName()))
+                    .collect(Collectors.toList());
+
+            List<AnalysisResultFile> otherFiles = analysisExecution.getResultFiles().stream()
+                    .filter(resultFile -> !zipFiles.contains(resultFile))
+                    .collect(Collectors.toList());
+
+            for (AnalysisResultFile resultFile : otherFiles) {
+                addFileToZip(resultZip, resultFile);
             }
+
+            copyContentOfOneZipToAnotherZip(zipFiles, resultZip,tempDirectory);
+        } catch (ZipException e) {
+            throw new AtlasException("Cannot process zip archive result", e);
+        }
+        return archive;
+    }
+
+
+    private void addFileToZip(ZipFile resultZip, AnalysisResultFile resultFile) throws ZipException {
+
+        resultZip.addStream(
+                new ByteArrayInputStream(resultFile.getContents()),
+                getHeadersForFilesThatWillBeAddedToZip(resultFile.getFileName())
+        );
+    }
+
+    private void copyContentOfOneZipToAnotherZip(List<AnalysisResultFile> zipWithMultivolume, ZipFile resultZip, Path tempDirectory) throws IOException, ZipException {
+
+        if (CollectionUtils.isEmpty(zipWithMultivolume)) {
+            return;
         }
 
-        return archive;
+        Optional<AnalysisResultFile> zipAnalysisFileOpt = zipWithMultivolume.stream()
+                .filter(file -> AnalysisZipUtils.isArchive(file.getFileName()))
+                .findFirst();
+
+        if (zipAnalysisFileOpt.isPresent()) {
+
+            AnalysisResultFile zipAnalysisFile = zipAnalysisFileOpt.orElse(null);
+            File zipFile = saveZipFileToTempDirectory(zipAnalysisFile, tempDirectory);
+            saveZipVolumeFilesToTempDirectory(zipWithMultivolume, tempDirectory);
+            ZipFile outZipFile = new ZipFile(zipFile);
+            //getFileHeaders return not generic List, that is already fixed in the last version of library
+            for (FileHeader header : (List< FileHeader>) outZipFile.getFileHeaders()) {
+                resultZip.addStream(
+                        outZipFile.getInputStream(header),
+                        getHeadersForFilesThatWillBeAddedToZip(header.getFileName())
+                );
+            }
+        }
+    }
+
+    private void saveZipVolumeFilesToTempDirectory(List<AnalysisResultFile> resultFiles, Path tempDirectory) throws IOException {
+        for (AnalysisResultFile resultFile : resultFiles) {
+            if (AnalysisZipUtils.isResultArchiveVolume(resultFile.getFileName())) {
+                saveZipFileToTempDirectory(resultFile, tempDirectory);
+            }
+        }
+    }
+
+    private File saveZipFileToTempDirectory(AnalysisResultFile resultFile, Path tempDirectory) throws IOException {
+
+        File file = tempDirectory.resolve(resultFile.getFileName()).toFile();
+        FileUtils.writeByteArrayToFile(file, resultFile.getContents());
+        return file;
     }
 }

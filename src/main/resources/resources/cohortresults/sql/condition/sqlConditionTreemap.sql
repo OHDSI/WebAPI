@@ -21,7 +21,8 @@ inner join (
     where analysis_id = 401 and cohort_definition_id = @cohortDefinitionId
 		GROUP BY stratum_1, count_value
 ) hr2 on hr1.stratum_1 = hr2.stratum_1
-INNER JOIN @ohdsi_database_schema.concept_hierarchy concept_hierarchy ON CAST(hr1.stratum_1 AS BIGINT) = concept_hierarchy.concept_id
+INNER JOIN @ohdsi_database_schema.concept_hierarchy concept_hierarchy
+  ON CAST(CASE WHEN isNumeric(hr1.stratum_1) = 1 THEN hr1.stratum_1 ELSE null END AS INT) = concept_hierarchy.concept_id
     AND concept_hierarchy.treemap='Condition'
 CROSS JOIN (
     select count_value from @ohdsi_database_schema.heracles_results where analysis_id = 1 and cohort_definition_id = @cohortDefinitionId

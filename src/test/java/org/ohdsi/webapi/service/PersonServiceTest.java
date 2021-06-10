@@ -1,12 +1,11 @@
 package org.ohdsi.webapi.service;
 
+import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.io.IOException;
 
 public class PersonServiceTest extends AbstractServiceTest {
 

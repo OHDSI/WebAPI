@@ -1,8 +1,7 @@
 package org.ohdsi.webapi.prediction.specification;
 
-import org.ohdsi.analysis.prediction.design.LassoLogisticRegressionSettings;
-
 import java.math.BigDecimal;
+import org.ohdsi.analysis.prediction.design.LassoLogisticRegressionSettings;
 
 /**
  *

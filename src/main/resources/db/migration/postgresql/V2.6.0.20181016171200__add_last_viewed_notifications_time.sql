@@ -1,4 +1,4 @@
-ALTER TABLE ${ohdsiSchema}.sec_user ADD IF NOT EXISTS last_viewed_notifications_time TIMESTAMP WITH TIME ZONE;
+ALTER TABLE ${ohdsiSchema}.sec_user ADD last_viewed_notifications_time TIMESTAMP WITH TIME ZONE;
 
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
 VALUES

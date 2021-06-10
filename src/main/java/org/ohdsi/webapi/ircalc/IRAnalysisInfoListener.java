@@ -13,7 +13,11 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.*;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Objects;
+import java.util.Optional;
 
 public class IRAnalysisInfoListener implements JobExecutionListener {
 

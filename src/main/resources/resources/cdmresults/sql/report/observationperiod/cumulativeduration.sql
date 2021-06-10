@@ -2,9 +2,9 @@ SELECT
   'Length of observation'                                  AS seriesName,
   xLengthOfObservation                                     AS xLengthOfObservation,
   round(1.0 * sum(ar2.count_value) / denom.count_value, 5) AS yPercentPersons
-FROM (SELECT *,
+FROM (SELECT ar.*,
         cast(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT) * 30 AS xLengthOfObservation
-      FROM @results_database_schema.achilles_results WHERE analysis_id = 108) ar1
+      FROM @results_database_schema.achilles_results ar WHERE analysis_id = 108) ar1
   INNER JOIN
   (
     SELECT *

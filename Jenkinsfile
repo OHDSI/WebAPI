@@ -1,33 +1,13 @@
 pipeline {
-    agent any
+    agent {
+        label 'amzl-honeur'
+    }
 
     stages {
-        stage("scm") {
-            steps {
-                dir('HONEUR-Security') {
-                    checkout([$class: 'GitSCM', branches: [[name: 'develop']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '6121a432-5731-44ea-8734-dcdb62d0f26d', url: 'https://github.com/solventrix/HONEUR-Security.git']]])
-                }
-                dir('HONEUR-Common') {
-                    checkout([$class: 'GitSCM', branches: [[name: 'develop']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '6121a432-5731-44ea-8734-dcdb62d0f26d', url: 'https://github.com/solventrix/HONEUR-Common.git']]])
-                }
-            }
-        }
-
-        stage("build dependencies") {
-            steps {
-                dir('HONEUR-Security') {
-                    sh './build.sh'
-                }
-                dir('HONEUR-Common') {
-                    sh './build.sh'
-                }
-            }
-        }
-
         stage("build") {
             steps {
                 dir('WebAPI') {
-                    sh './build_image_central.sh'
+                    sh './build.sh'
                 }
             }
         }

@@ -1,8 +1,7 @@
 package org.ohdsi.webapi.shiro.Entities;
 
-import org.springframework.data.repository.CrudRepository;
-
 import java.util.List;
+import org.springframework.data.repository.CrudRepository;
 
 /**
  *

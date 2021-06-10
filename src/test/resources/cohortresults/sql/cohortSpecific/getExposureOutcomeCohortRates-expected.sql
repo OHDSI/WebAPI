@@ -9,16 +9,16 @@ FROM
 (
     SELECT exposure_cohort_definition_id, outcome_cohort_definition_id, count_value
     FROM result_schema.penelope_results
-    WHERE exposure_cohort_definition_id in ( ? )
-    AND outcome_cohort_definition_id in ( ? )
+        WHERE exposure_cohort_definition_id = ?
+          AND outcome_cohort_definition_id = ?
     AND analysis_id = 0
 ) total
 LEFT JOIN
 (
     SELECT exposure_cohort_definition_id, outcome_cohort_definition_id, count_value
     FROM result_schema.penelope_results
-    WHERE exposure_cohort_definition_id in ( ? )
-    AND outcome_cohort_definition_id in ( ? )
+        WHERE exposure_cohort_definition_id = ?
+          AND outcome_cohort_definition_id = ?
     AND analysis_id = 1
     AND stratum_1 = 'Outcome pre-exposure'
 ) outcomepreexposure
@@ -28,8 +28,8 @@ LEFT JOIN
 (
     SELECT exposure_cohort_definition_id, outcome_cohort_definition_id, count_value
     FROM result_schema.penelope_results
-    WHERE exposure_cohort_definition_id in ( ? )
-    AND outcome_cohort_definition_id in ( ? )
+        WHERE exposure_cohort_definition_id = ?
+          AND outcome_cohort_definition_id = ?
     AND analysis_id = 1
     AND stratum_1 = 'Outcome post-exposure'
 ) outcomepostexposure
@@ -39,11 +39,11 @@ LEFT JOIN
 (
     SELECT exposure_cohort_definition_id, outcome_cohort_definition_id, sum(count_value) as time_at_risk
     FROM result_schema.penelope_results
-    WHERE exposure_cohort_definition_id in ( ? )
-    AND outcome_cohort_definition_id in ( ? )
+        WHERE exposure_cohort_definition_id = ?
+          AND outcome_cohort_definition_id = ?
     AND analysis_id = 10
     AND stratum_1 in ('Outcome post-exposure', 'Exposure with no outcome')
     GROUP BY exposure_cohort_definition_id, outcome_cohort_definition_id
 ) timeatrisk
 ON total.exposure_cohort_definition_id = timeatrisk.exposure_cohort_definition_id
-AND total.outcome_cohort_definition_id = timeatrisk.outcome_cohort_definition_id;
+AND total.outcome_cohort_definition_id = timeatrisk.outcome_cohort_definition_id

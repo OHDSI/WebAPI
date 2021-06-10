@@ -1,5 +1,10 @@
 package org.ohdsi.webapi.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 import org.ohdsi.webapi.source.Source;
@@ -9,12 +14,6 @@ import org.ohdsi.webapi.vocabulary.ConceptSearch;
 import org.ohdsi.webapi.vocabulary.DescendentOfAncestorSearch;
 import org.ohdsi.webapi.vocabulary.RelatedConceptSearch;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.io.IOException;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class VocabularyServiceTest extends AbstractServiceTest {
 

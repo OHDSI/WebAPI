@@ -15,8 +15,8 @@
  */
 package org.ohdsi.webapi.feasibility;
 
-import javax.xml.bind.annotation.XmlType;
 import java.util.List;
+import javax.xml.bind.annotation.XmlType;
 
 /**
  *

@@ -1,5 +1,9 @@
 package org.ohdsi.webapi.common.generation;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.commons.lang3.StringUtils;
+import org.ohdsi.analysis.Utils;
+import org.ohdsi.hydra.Hydra;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.executionengine.util.StringGenerationUtil;
@@ -7,12 +11,14 @@ import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.source.Source;
 import org.springframework.batch.core.JobParametersBuilder;
 
+import java.io.OutputStream;
+
 import static org.ohdsi.webapi.Constants.Params.*;
 
 public abstract class AnalysisExecutionSupport extends AbstractDaoService {
 
 
-  protected AnalysisFile prepareAnalysisExecution(String packageName, String packageFilename, Integer analysisId) {
+  protected AnalysisFile prepareAnalysisExecution(String packageName, String packageFilename, Number analysisId) {
       AnalysisFile execFile = new AnalysisFile();
       execFile.setFileName("runAnalysis.R");
       String[] paramNames = {"packageFile", "packageName", "analysisDir"};
@@ -34,6 +40,16 @@ public abstract class AnalysisExecutionSupport extends AbstractDaoService {
       builder.addString(EXECUTABLE_FILE_NAME, "runAnalysis.R");
       return builder;
   }
+
+    protected void hydrateAnalysis(Object analysis, String externalPackagePath, OutputStream out) throws JsonProcessingException {
+
+        String studySpecs = Utils.serialize(analysis, true);
+        Hydra h = new Hydra(studySpecs);
+        if (StringUtils.isNotEmpty(externalPackagePath)) {
+            h.setExternalSkeletonFileName(externalPackagePath);
+        }
+        h.hydrate(out);
+    }
 
   protected abstract String getExecutionScript();
 }

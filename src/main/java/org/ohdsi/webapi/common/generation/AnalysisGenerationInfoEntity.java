@@ -2,7 +2,11 @@ package org.ohdsi.webapi.common.generation;
 
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "analysis_generation_info")
@@ -18,6 +22,10 @@ public class AnalysisGenerationInfoEntity {
     public void setId(Long id) {
 
         this.id = id;
+    }
+
+    public String getDesign() {
+        return info.getDesign();
     }
 
     public void setDesign(String serializedDesign) {

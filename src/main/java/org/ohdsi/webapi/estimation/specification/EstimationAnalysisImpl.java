@@ -1,19 +1,22 @@
 package org.ohdsi.webapi.estimation.specification;
 
-import org.ohdsi.analysis.estimation.design.EstimationAnalysis;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.ohdsi.analysis.hydra.design.SkeletonTypeEnum;
+import org.ohdsi.analysis.estimation.design.EstimationAnalysis;
+import org.ohdsi.webapi.CommonDTO;
 import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
 import org.ohdsi.webapi.analysis.AnalysisConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetCrossReferenceImpl;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
  * @author asena5
  */
-public class EstimationAnalysisImpl implements EstimationAnalysis {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class EstimationAnalysisImpl implements EstimationAnalysis, CommonDTO {
   private Integer id = null;
   private String name = null;
   private String description = null;

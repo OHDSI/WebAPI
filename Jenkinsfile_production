@@ -1,5 +1,7 @@
 pipeline {
-    agent any
+    agent {
+        label 'amzl-honeur'
+    }
 
     stages {
         stage("re-tag and upload image") {

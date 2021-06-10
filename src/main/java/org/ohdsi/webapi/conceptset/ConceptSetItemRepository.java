@@ -15,9 +15,8 @@
  */
 package org.ohdsi.webapi.conceptset;
 
-import org.springframework.data.repository.CrudRepository;
-
 import java.util.List;
+import org.springframework.data.repository.CrudRepository;
 
 /**
  *

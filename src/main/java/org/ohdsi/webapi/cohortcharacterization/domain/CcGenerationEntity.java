@@ -1,9 +1,12 @@
 package org.ohdsi.webapi.cohortcharacterization.domain;
 
-import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
-import org.ohdsi.webapi.common.generation.CommonGeneration;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
-import javax.persistence.*;
+import org.ohdsi.webapi.common.generation.CommonGeneration;
 
 @Entity
 @Table(name = "cc_generation")
@@ -15,9 +18,5 @@ public class CcGenerationEntity extends CommonGeneration {
 
     public CohortCharacterizationEntity getCohortCharacterization() {
         return cohortCharacterization;
-    }
-
-    public CohortCharacterizationEntity getDesign() {
-            return info != null ? new SerializedCcToCcConverter().convertToEntityAttribute(info.getDesign()) : null;
     }
 }

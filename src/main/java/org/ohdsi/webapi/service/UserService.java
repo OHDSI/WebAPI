@@ -9,13 +9,14 @@ import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.user.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  *
@@ -23,8 +24,7 @@ import java.util.*;
  */
 
 @Path("/")
-@Component("userService")
-@ConditionalOnProperty(value = "datasource.honeur.enabled", havingValue = "false")
+@Component
 public class UserService {
 
   @Autowired
@@ -41,13 +41,14 @@ public class UserService {
   public UserService() {
     this.roleCreatorPermissionsTemplate.put("role:%s:permissions:*:put", "Add permissions to role with ID = %s");
     this.roleCreatorPermissionsTemplate.put("role:%s:permissions:*:delete", "Remove permissions from role with ID = %s");
-    this.roleCreatorPermissionsTemplate.put("role:%s:post", "Update role with ID = %s");
+    this.roleCreatorPermissionsTemplate.put("role:%s:put", "Update role with ID = %s");
     this.roleCreatorPermissionsTemplate.put("role:%s:delete", "Delete role with ID = %s");
   }
 
   public static class User implements Comparable<User> {
     public Long id;
     public String login;
+    public String name;
     public List<Permission> permissions;
 
     public User() {}
@@ -55,6 +56,7 @@ public class UserService {
     public User(UserEntity userEntity) {
       this.id = userEntity.getId();
       this.login = userEntity.getLogin();
+      this.name = userEntity.getName();
     }
 
     @Override
@@ -110,6 +112,7 @@ public class UserService {
     User user = new User();
     user.id = currentUser.getId();
     user.login = currentUser.getLogin();
+    user.name = currentUser.getName();
     user.permissions = convertPermissions(permissions);
 
     return user;
@@ -118,9 +121,9 @@ public class UserService {
   @GET
   @Path("user/{userId}/permissions")
   @Produces(MediaType.APPLICATION_JSON)
-  public ArrayList<Permission> getUsersPermissions(@PathParam("userId") Long userId) throws Exception {
+  public List<Permission> getUsersPermissions(@PathParam("userId") Long userId) throws Exception {
     Set<PermissionEntity> permissionEntities = this.authorizer.getUserPermissions(userId);
-    ArrayList<Permission> permissions = convertPermissions(permissionEntities);
+    List<Permission> permissions = convertPermissions(permissionEntities);
     Collections.sort(permissions);
     return permissions;
   }
@@ -190,15 +193,14 @@ public class UserService {
   public void removeRole(@PathParam("roleId") Long roleId) {
     this.authorizer.removeRole(roleId);
     this.authorizer.removePermissionsFromTemplate(this.roleCreatorPermissionsTemplate, String.valueOf(roleId));
-    eventPublisher.publishEvent(new DeleteRoleEvent(this, roleId));
   }
 
   @GET
   @Path("role/{roleId}/permissions")
   @Produces(MediaType.APPLICATION_JSON)
-  public ArrayList<Permission> getRolePermissions(@PathParam("roleId") Long roleId) throws Exception {
+  public List<Permission> getRolePermissions(@PathParam("roleId") Long roleId) throws Exception {
     Set<PermissionEntity> permissionEntities = this.authorizer.getRolePermissions(roleId);
-    ArrayList<Permission> permissions = convertPermissions(permissionEntities);
+    List<Permission> permissions = convertPermissions(permissionEntities);
     Collections.sort(permissions);
     return permissions;
   }
@@ -257,23 +259,10 @@ public class UserService {
     }
   }
 
-  @GET
-  @Path("permission")
-  @Produces(MediaType.APPLICATION_JSON)
-  public ArrayList<Permission> getPermissions() {
-    Iterable<PermissionEntity> permissionEntities = this.authorizer.getPermissions();
-    ArrayList<Permission> permissions = convertPermissions(permissionEntities);
-    return permissions;
-  }
-
-  private ArrayList<Permission> convertPermissions(final Iterable<PermissionEntity> permissionEntities) {
-    ArrayList<Permission> permissions = new ArrayList<>();
-    for (PermissionEntity permissionEntity : permissionEntities) {
-      Permission permission = new Permission(permissionEntity);
-      permissions.add(permission);
-    }
-
-    return permissions;
+  private List<Permission> convertPermissions(final Iterable<PermissionEntity> permissionEntities) {
+    return StreamSupport.stream(permissionEntities.spliterator(), false)
+            .map(UserService.Permission::new)
+            .collect(Collectors.toList());
   }
 
   private ArrayList<Role> convertRoles(final Iterable<RoleEntity> roleEntities) {

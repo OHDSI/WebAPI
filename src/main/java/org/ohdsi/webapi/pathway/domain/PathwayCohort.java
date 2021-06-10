@@ -1,11 +1,16 @@
 package org.ohdsi.webapi.pathway.domain;
 
+import java.util.Objects;
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
-
-import javax.persistence.*;
-import java.util.Objects;
 
 @MappedSuperclass
 public abstract class PathwayCohort {

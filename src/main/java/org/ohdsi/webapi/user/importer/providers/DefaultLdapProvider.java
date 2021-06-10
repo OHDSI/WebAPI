@@ -45,10 +45,16 @@ public class DefaultLdapProvider extends AbstractLdapProvider {
   @Value("${security.ldap.system.username}")
   private String systemUsername;
 
+  @Value("${security.ldap.referral:#{null}}")
+  private String referral;
+
   @Value("${security.ldap.system.password}")
   private String systemPassword;
 
-  private static final Set<String> GROUP_CLASSES = ImmutableSet.of("groupOfUniqueNames", "groupOfNames");
+  @Value("${security.ldap.ignore.partial.result.exception:false}")
+  private Boolean ldapIgnorePartialResultException;
+
+  private static final Set<String> GROUP_CLASSES = ImmutableSet.of("groupOfUniqueNames", "groupOfNames", "posixGroup");
 
   private static final Set<String> USER_CLASSES = ImmutableSet.of("account", "person");
 
@@ -59,6 +65,7 @@ public class DefaultLdapProvider extends AbstractLdapProvider {
     contextSource.setBase(baseDn);
     contextSource.setUserDn(systemUsername);
     contextSource.setPassword(systemPassword);
+    contextSource.setReferral(referral);
     contextSource.setCacheEnvironmentProperties(false);
     contextSource.setAuthenticationSource(new AuthenticationSource() {
       @Override
@@ -72,7 +79,9 @@ public class DefaultLdapProvider extends AbstractLdapProvider {
       }
     });
 
-    return new LdapTemplate(contextSource);
+    LdapTemplate ldapTemplate = new LdapTemplate(contextSource);
+    ldapTemplate.setIgnorePartialResultException(ldapIgnorePartialResultException);
+    return ldapTemplate;
   }
 
   @Override

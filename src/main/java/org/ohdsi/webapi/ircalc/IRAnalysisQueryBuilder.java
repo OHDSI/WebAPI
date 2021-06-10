@@ -24,19 +24,21 @@ import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.circe.vocabulary.ConceptSetExpressionQueryBuilder;
 
 import java.util.ArrayList;
+import org.ohdsi.webapi.Constants;
+import org.ohdsi.webapi.util.SqlUtils;
 
 /**
  *
  * @author Chris Knoll <cknoll@ohdsi.org>
  */
 public class IRAnalysisQueryBuilder {
-  
+
   private final static ConceptSetExpressionQueryBuilder conceptSetQueryBuilder = new ConceptSetExpressionQueryBuilder();
   private final static CohortExpressionQueryBuilder cohortExpressionQueryBuilder = new CohortExpressionQueryBuilder();
   
   private final static String PERFORM_ANALYSIS_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/incidencerate/sql/performAnalysis.sql"); 
-  private final static String STRATA_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/incidencerate/sql/strata.sql");  
-  
+  private final static String STRATA_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/incidencerate/sql/strata.sql");
+
   public static class BuildExpressionQueryOptions {
     @JsonProperty("cdmSchema")  
     public String cdmSchema;
@@ -52,7 +54,14 @@ public class IRAnalysisQueryBuilder {
 
     @JsonProperty("cohortTable")
     public String cohortTable;
-  } 
+  }
+
+  private final ObjectMapper objectMapper;
+
+  public IRAnalysisQueryBuilder(ObjectMapper objectMapper) {
+
+    this.objectMapper = objectMapper;
+  }
 
   private String getStrataQuery(CriteriaGroup strataCriteria)
   {
@@ -62,22 +71,9 @@ public class IRAnalysisQueryBuilder {
     resultSql = StringUtils.replace(resultSql, "@additionalCriteriaQuery", additionalCriteriaQuery);
     return resultSql;
   }
-  
-  public String buildAnalysisQuery(IncidenceRateAnalysis analyisis, BuildExpressionQueryOptions options) {
-    String resultSql = PERFORM_ANALYSIS_QUERY_TEMPLATE;
-    IncidenceRateAnalysisExpression analysisExpression;
 
-    try
-    {
-      ObjectMapper mapper = new ObjectMapper();
-      analysisExpression = mapper.readValue(analyisis.getDetails().getExpression(), IncidenceRateAnalysisExpression.class);
-    }
-    catch (Exception e)
-    {
-      throw new RuntimeException(e);
-    }
-    
-    // everything deserialized successfully
+  public String buildAnalysisQuery(IncidenceRateAnalysisExpression analysisExpression, Integer analysisId, BuildExpressionQueryOptions options) {
+    String resultSql = PERFORM_ANALYSIS_QUERY_TEMPLATE;
 
     // target and outcome statements for analysis
     ArrayList<String> cohortIdStatements = new ArrayList<>();
@@ -88,52 +84,55 @@ public class IRAnalysisQueryBuilder {
     for (int outcomeId : analysisExpression.outcomeIds) {
       cohortIdStatements.add(String.format("SELECT %d as cohort_id, 1 as is_outcome", outcomeId));
     }
-    
+
     resultSql = StringUtils.replace(resultSql,"@cohortInserts", StringUtils.join(cohortIdStatements,"\nUNION\n"));
 
     // apply adjustments
-    
+
     String adjustmentExpression = "DATEADD(day,%d,%s)";
-    
-    String adjustedStart = String.format(adjustmentExpression, 
+
+    String adjustedStart = String.format(adjustmentExpression,
             analysisExpression.timeAtRisk.start.offset,
-            analysisExpression.timeAtRisk.start.dateField == FieldOffset.DateField.StartDate ? "cohort_start_date" : "cohort_end_date");    
+            analysisExpression.timeAtRisk.start.dateField == FieldOffset.DateField.StartDate ? "cohort_start_date" : "cohort_end_date");
     resultSql = StringUtils.replace(resultSql,"@adjustedStart", adjustedStart);
 
-    String adjustedEnd = String.format(adjustmentExpression, 
+    String adjustedEnd = String.format(adjustmentExpression,
             analysisExpression.timeAtRisk.end.offset,
-            analysisExpression.timeAtRisk.end.dateField == FieldOffset.DateField.StartDate ? "cohort_start_date" : "cohort_end_date");    
+            analysisExpression.timeAtRisk.end.dateField == FieldOffset.DateField.StartDate ? "cohort_start_date" : "cohort_end_date");
     resultSql = StringUtils.replace(resultSql,"@adjustedEnd", adjustedEnd);
-    
+
     // apply study window WHERE clauses
     ArrayList<String> studyWindowClauses = new ArrayList<>();
     if (analysisExpression.studyWindow != null)
     {
       if (analysisExpression.studyWindow.startDate != null && analysisExpression.studyWindow.startDate.length() > 0)
-        studyWindowClauses.add(String.format("t.cohort_start_date >= '%s'", analysisExpression.studyWindow.startDate));
+        studyWindowClauses.add(String.format("t.cohort_start_date >= %s", SqlUtils.dateStringToSql(analysisExpression.studyWindow.startDate)));
       if (analysisExpression.studyWindow.endDate != null && analysisExpression.studyWindow.endDate.length() > 0)
-        studyWindowClauses.add(String.format("t.cohort_start_date <= '%s'", analysisExpression.studyWindow.endDate));
+        studyWindowClauses.add(String.format("t.cohort_start_date <= %s", SqlUtils.dateStringToSql(analysisExpression.studyWindow.endDate)));
     }
     if (studyWindowClauses.size() > 0)
       resultSql = StringUtils.replace(resultSql, "@cohortDataFilter", "AND " + StringUtils.join(studyWindowClauses," AND "));
     else
       resultSql = StringUtils.replace(resultSql, "@cohortDataFilter", "");
-    
+
     // add end dates if study window end is defined
     if (analysisExpression.studyWindow != null && analysisExpression.studyWindow.endDate != null && analysisExpression.studyWindow.endDate.length() > 0)
     {
-      StringBuilder endDatesQuery = new StringBuilder(String.format("UNION\nselect combos.target_id, combos.outcome_id, t.subject_id, t.cohort_start_date, '%s' as followup_end, 0 as is_case", analysisExpression.studyWindow.endDate));
-      endDatesQuery.append("\nFROM cteCohortCombos combos");
-      endDatesQuery.append("\nJOIN  cteCohortData t on combos.target_id = t.target_id and combos.outcome_id = t.outcome_id");
-      
+      StringBuilder endDatesQuery = new StringBuilder(
+              String.format("UNION\nselect combos.target_id, combos.outcome_id, t.subject_id, t.cohort_start_date, %s as followup_end, 0 as is_case",
+              SqlUtils.dateStringToSql(analysisExpression.studyWindow.endDate))
+      );
+      endDatesQuery.append("\nFROM #cteCohortCombos combos");
+      endDatesQuery.append("\nJOIN  #cteCohortData t on combos.target_id = t.target_id and combos.outcome_id = t.outcome_id");
+
       resultSql = StringUtils.replace(resultSql, "@EndDateUnions", endDatesQuery.toString());
     }
     else
       resultSql = StringUtils.replace(resultSql, "@EndDateUnions", "");
-    
+
     String codesetQuery = cohortExpressionQueryBuilder.getCodesetQuery(analysisExpression.conceptSets);
     resultSql = StringUtils.replace(resultSql, "@codesetQuery", codesetQuery);
-    
+
     ArrayList<String> strataInsert = new ArrayList<>();
     for (int i = 0; i < analysisExpression.strata.size(); i++)
     {
@@ -142,21 +141,30 @@ public class IRAnalysisQueryBuilder {
       stratumInsert = StringUtils.replace(stratumInsert, "@strata_sequence", "" +  i);
       strataInsert.add(stratumInsert);
     }
-    
+
     resultSql = StringUtils.replace(resultSql,"@strataCohortInserts", StringUtils.join(strataInsert,"\n"));
-    
+
     if (options != null)
     {
       // replease query parameters with tokens
-      resultSql = StringUtils.replace(resultSql, "@cdm_database_schema", options.cdmSchema);
-      resultSql = StringUtils.replace(resultSql, "@results_database_schema", options.resultsSchema);
-      resultSql = StringUtils.replace(resultSql, "@vocabulary_database_schema", options.vocabularySchema);
-      resultSql = StringUtils.replace(resultSql, "@temp_database_schema", options.tempSchema);
+      resultSql = StringUtils.replace(resultSql, Constants.SqlSchemaPlaceholders.CDM_DATABASE_SCHEMA_PLACEHOLDER, options.cdmSchema);
+      resultSql = StringUtils.replace(resultSql, Constants.SqlSchemaPlaceholders.RESULTS_DATABASE_SCHEMA_PLACEHOLDER, options.resultsSchema);
+      resultSql = StringUtils.replace(resultSql, Constants.SqlSchemaPlaceholders.VOCABULARY_DATABASE_SCHEMA_PLACEHOLDER, options.vocabularySchema);
+      resultSql = StringUtils.replace(resultSql, Constants.SqlSchemaPlaceholders.TEMP_DATABASE_SCHEMA_PLACEHOLDER, options.tempSchema);
       resultSql = StringUtils.replace(resultSql, "@cohort_table", options.cohortTable);
     }
-    
-    resultSql = StringUtils.replace(resultSql, "@analysisId", analyisis.getId().toString());
+
+    resultSql = StringUtils.replace(resultSql, "@analysisId", analysisId.toString());
 
     return resultSql;
+  }
+
+  public String buildAnalysisQuery(IncidenceRateAnalysis analyisis, BuildExpressionQueryOptions options) {
+    try {
+      IncidenceRateAnalysisExpression analysisExpression = objectMapper.readValue(analyisis.getDetails().getExpression(), IncidenceRateAnalysisExpression.class);
+      return buildAnalysisQuery(analysisExpression, analyisis.getId(), options);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
  }

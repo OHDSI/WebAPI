@@ -1,9 +1,8 @@
 package org.ohdsi.webapi.estimation.comparativecohortanalysis.specification;
 
-import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.ComparativeCohortAnalysis;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.ComparativeCohortAnalysis;
 
 /**
  *

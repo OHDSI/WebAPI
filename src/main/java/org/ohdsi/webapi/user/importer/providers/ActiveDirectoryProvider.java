@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.odysseusinc.arachne.commons.utils.QuoteUtils.dequote;
 import static org.ohdsi.webapi.user.importer.providers.OhdsiLdapUtils.valueAsList;
-import static org.ohdsi.webapi.util.QuoteUtils.dequote;
 
 @Component
 @ConditionalOnProperty("security.ad.url")
@@ -42,7 +42,10 @@ public class ActiveDirectoryProvider extends AbstractLdapProvider {
   @Value("${security.ad.system.password}")
   private String adSystemPassword;
 
-  @Value("${security.ad.ignore.partial.result.exception}")
+  @Value("${security.ad.referral:#{null}}")
+  private String referral;
+
+  @Value("${security.ad.ignore.partial.result.exception:false}")
   private Boolean adIgnorePartialResultException;
 
   @Value("${security.ad.result.count.limit:30000}")
@@ -65,6 +68,7 @@ public class ActiveDirectoryProvider extends AbstractLdapProvider {
     contextSource.setUserDn(dequote(adSystemUsername));
     contextSource.setPassword(dequote(adSystemPassword));
     contextSource.setCacheEnvironmentProperties(false);
+    contextSource.setReferral(dequote(referral));
     contextSource.setAuthenticationStrategy(new SimpleDirContextAuthenticationStrategy());
     contextSource.setAuthenticationSource(new AuthenticationSource() {
       @Override

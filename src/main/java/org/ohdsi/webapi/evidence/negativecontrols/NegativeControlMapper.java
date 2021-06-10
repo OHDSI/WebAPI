@@ -5,10 +5,10 @@
  */
 package org.ohdsi.webapi.evidence.negativecontrols;
 
-import org.springframework.jdbc.core.RowMapper;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import org.springframework.jdbc.core.RowMapper;
 
 /**
  *

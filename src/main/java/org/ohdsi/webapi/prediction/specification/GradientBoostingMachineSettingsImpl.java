@@ -1,12 +1,11 @@
 package org.ohdsi.webapi.prediction.specification;
 
-import org.ohdsi.analysis.prediction.design.GradientBoostingMachineSettings;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.InputMismatchException;
 import java.util.List;
+import org.ohdsi.analysis.prediction.design.GradientBoostingMachineSettings;
 
 /**
  *

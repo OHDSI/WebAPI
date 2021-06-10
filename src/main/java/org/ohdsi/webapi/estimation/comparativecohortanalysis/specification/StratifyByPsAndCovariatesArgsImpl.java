@@ -1,12 +1,11 @@
 package org.ohdsi.webapi.estimation.comparativecohortanalysis.specification;
 
-import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.BaseSelectionEnum;
 import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.StratifyByPsAndCovariatesArgs;
+import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.BaseSelectionEnum;
 import org.ohdsi.webapi.RLangClassImpl;
-
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
+import javax.validation.constraints.*;
 
 /**
  *

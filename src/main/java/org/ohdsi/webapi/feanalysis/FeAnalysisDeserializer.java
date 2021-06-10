@@ -3,30 +3,30 @@ package org.ohdsi.webapi.feanalysis;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.type.CollectionType;
-import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
-import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
-import org.ohdsi.circe.cohortdefinition.ConceptSet;
-import org.ohdsi.webapi.cohortcharacterization.CcResultType;
-import org.ohdsi.webapi.feanalysis.dto.BaseFeAnalysisCriteriaDTO;
-import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
-import org.ohdsi.webapi.feanalysis.dto.FeAnalysisWithConceptSetDTO;
-
-import javax.annotation.PostConstruct;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import com.fasterxml.jackson.databind.type.CollectionType;
+import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
+import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
+import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
+import org.ohdsi.circe.cohortdefinition.ConceptSet;
+import org.ohdsi.webapi.feanalysis.dto.BaseFeAnalysisCriteriaDTO;
+import org.ohdsi.webapi.feanalysis.dto.FeAnalysisAggregateDTO;
+import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
+import org.ohdsi.webapi.feanalysis.dto.FeAnalysisWithConceptSetDTO;
+import org.springframework.beans.factory.annotation.Autowired;
+
 public class FeAnalysisDeserializer extends JsonDeserializer<FeAnalysisDTO> {
-    
-    private ObjectMapper objectMapper = new ObjectMapper();
-    
-    @PostConstruct
-    private void init() {
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
+
+    @Autowired
+    private ObjectMapper objectMapper;
     
     // need to look around and find a way to override procedure of base mapping
     // and handle only a design field
@@ -40,27 +40,27 @@ public class FeAnalysisDeserializer extends JsonDeserializer<FeAnalysisDTO> {
         FeAnalysisDTO dto = createDto(node);
 
         final JsonNode name = node.get("name");
-        if (name != null) {
+        if (name != null && !name.isNull()) {
             dto.setName(name.textValue());    
         }
 
         final JsonNode description = node.get("description");
-        if (description != null) {
+        if (description != null && !name.isNull()) {
             dto.setDescription(description.textValue());    
         }
 
         final JsonNode descr = node.get("descr");
-        if (descr != null) {
+        if (descr != null && !descr.isNull()) {
             dto.setDescription(descr.textValue());
         }
 
         final JsonNode id = node.get("id");
-        if (id != null) {
+        if (id != null && !id.isNull()) {
             dto.setId(id.intValue());
         }
 
         final JsonNode domain = node.get("domain");
-        if (domain != null) {
+        if (domain != null && !domain.isNull()) {
             final String domainString = domain.textValue();
             dto.setDomain(StandardFeatureAnalysisDomain.valueOf(domainString));
         }
@@ -98,7 +98,7 @@ public class FeAnalysisDeserializer extends JsonDeserializer<FeAnalysisDTO> {
     private StandardFeatureAnalysisType getType(JsonNode jsonNode) {
         final JsonNode type = jsonNode.get("type");
         StandardFeatureAnalysisType result = null;
-        if (Objects.nonNull(type)) {
+        if (Objects.nonNull(type) && !type.isNull()) {
             result = StandardFeatureAnalysisType.valueOf(type.textValue());
         }
         return result;

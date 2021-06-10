@@ -1,10 +1,23 @@
 package org.ohdsi.webapi.service;
 
+import org.ohdsi.webapi.check.CheckResult;
+import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.ircalc.AnalysisReport;
 import org.ohdsi.webapi.job.JobExecutionResource;
-import org.springframework.transaction.annotation.Transactional;
+import org.ohdsi.webapi.service.dto.AnalysisInfoDTO;
+import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
+import org.ohdsi.webapi.service.dto.IRAnalysisShortDTO;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -20,7 +33,13 @@ public interface IRAnalysisResource {
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
-    List<IRAnalysisService.IRAnalysisListItem> getIRAnalysisList();
+    List<IRAnalysisShortDTO> getIRAnalysisList();
+
+    @GET
+    @Path("/{id}/exists")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    int getCountIRWithSameName(@PathParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name);
 
     /**
      * Creates the incidence rate analysis
@@ -32,21 +51,30 @@ public interface IRAnalysisResource {
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    @Transactional
-    IRAnalysisService.IRAnalysisDTO createAnalysis(IRAnalysisService.IRAnalysisDTO analysis);
+    IRAnalysisDTO createAnalysis(IRAnalysisDTO analysis);
 
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    @Transactional(readOnly = true)
-    IRAnalysisService.IRAnalysisDTO getAnalysis(@PathParam("id") final int id);
+    IRAnalysisDTO getAnalysis(@PathParam("id") final int id);
+
+    @POST
+    @Path("/design")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    IRAnalysisDTO doImport(final IRAnalysisDTO dto);
+
+    @GET
+    @Path("/{id}/design")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    IRAnalysisDTO export(@PathParam("id") final Integer id);
 
     @PUT
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    @Transactional
-    IRAnalysisService.IRAnalysisDTO saveAnalysis(@PathParam("id") final int id, IRAnalysisService.IRAnalysisDTO analysis);
+    IRAnalysisDTO saveAnalysis(@PathParam("id") final int id, IRAnalysisDTO analysis);
 
     @GET
     @Path("/{analysis_id}/execute/{sourceKey}")
@@ -61,14 +89,12 @@ public interface IRAnalysisResource {
     @GET
     @Path("/{id}/info")
     @Produces(MediaType.APPLICATION_JSON)
-    @Transactional(readOnly = true)
-    List<IRAnalysisService.AnalysisInfoDTO> getAnalysisInfo(@PathParam("id") final int id);
+    List<AnalysisInfoDTO> getAnalysisInfo(@PathParam("id") final int id);
 
     @GET
     @Path("/{id}/info/{sourceKey}")
     @Produces(MediaType.APPLICATION_JSON)
-    @Transactional(readOnly = true)
-    IRAnalysisService.AnalysisInfoDTO getAnalysisInfo(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey);
+    AnalysisInfoDTO getAnalysisInfo(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey);
 
     /**
      * Deletes the specified cohort definition
@@ -78,7 +104,6 @@ public interface IRAnalysisResource {
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/info/{sourceKey}")
-    @Transactional
     void deleteInfo(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey);
 
     /**
@@ -89,7 +114,6 @@ public interface IRAnalysisResource {
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}")
-    @Transactional
     void delete(@PathParam("id") final int id);
 
     /**
@@ -99,9 +123,7 @@ public interface IRAnalysisResource {
      * @return Response containing binary stream of zipped data
      */
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/export")
-    @Transactional
     Response export(@PathParam("id") final int id);
 
     /**
@@ -113,13 +135,23 @@ public interface IRAnalysisResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/copy")
-    @Transactional
-    IRAnalysisService.IRAnalysisDTO copy(@PathParam("id") final int id);
+    IRAnalysisDTO copy(@PathParam("id") final int id);
 
     @GET
     @Path("/{id}/report/{sourceKey}")
     @Produces(MediaType.APPLICATION_JSON)
-    @Transactional
-    AnalysisReport getAnalysisReport(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey, 
+    AnalysisReport getAnalysisReport(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey,
                                      @QueryParam("targetId") final int targetId, @QueryParam("outcomeId") final int outcomeId );
+
+    @Path("/sql")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public GenerateSqlResult generateSql(IRAnalysisService.GenerateSqlRequest request);
+
+    @POST
+    @Path("/check")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public CheckResult runDiagnostics(IRAnalysisDTO irAnalysisDTO);
 }

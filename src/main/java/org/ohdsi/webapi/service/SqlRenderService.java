@@ -1,22 +1,21 @@
 package org.ohdsi.webapi.service;
 
+import static org.ohdsi.webapi.Constants.DEFAULT_DIALECT;
+import static org.ohdsi.webapi.Constants.SqlSchemaPlaceholders.TEMP_DATABASE_SCHEMA_PLACEHOLDER;
+
+import java.util.Collections;
+import java.util.Map;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.sqlrender.SourceStatement;
 import org.ohdsi.webapi.sqlrender.TranslatedStatement;
 import org.ohdsi.webapi.util.SessionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-
-import javax.servlet.ServletContext;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  *
@@ -25,62 +24,52 @@ import java.util.HashMap;
 @Path("/sqlrender/")
 public class SqlRenderService {
 
-    @Context
-    ServletContext context;
-    @Autowired
-    ApplicationContext applicationContext;
-
     @Path("translate")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public TranslatedStatement translateSQLFromSourceStatement(SourceStatement sourceStatement) {
+        if (sourceStatement == null) {
+            return new TranslatedStatement();
+        }
+        sourceStatement.setOracleTempSchema(TEMP_DATABASE_SCHEMA_PLACEHOLDER);
+        return translatedStatement(sourceStatement);
+    }
 
+    public TranslatedStatement translatedStatement(SourceStatement sourceStatement) {
         return translateSQL(sourceStatement);
     }
 
-    static TranslatedStatement translateSQL(SourceStatement sourceStatement) {
+
+    public static TranslatedStatement translateSQL(SourceStatement sourceStatement) {
 
         TranslatedStatement translated = new TranslatedStatement();
+        if (sourceStatement == null) {
+            return translated;
+        }
 
         try {
+            Map<String, String> parameters = sourceStatement.getParameters() == null ? Collections.emptyMap() : sourceStatement.getParameters();
 
-            String parameterKeys[] = getMapKeys(sourceStatement.parameters);
-            String parameterValues[] = getMapValues(sourceStatement.parameters, parameterKeys);
+            String renderedSQL = SqlRender.renderSql(
+                    sourceStatement.getSql(),
+                    parameters.keySet().toArray(new String[0]),
+                    parameters.values().toArray(new String[0]));
 
-            String renderedSQL = SqlRender.renderSql(sourceStatement.sql, parameterKeys, parameterValues);
+            translated.setTargetSQL(translateSql( sourceStatement, renderedSQL));
 
-            if ((sourceStatement.targetDialect == null) || ("sql server".equals(sourceStatement.targetDialect))) {
-                translated.targetSQL = renderedSQL;
-            } else {
-                translated.targetSQL = SqlTranslate.translateSql(renderedSQL, sourceStatement.targetDialect, SessionUtils.sessionId(), sourceStatement.oracleTempSchema);
-            }
-
+            return translated;
         } catch (Exception exception) {
             throw new RuntimeException(exception);
         }
 
-        return translated;
     }
 
-    private static String[] getMapKeys(HashMap<String, String> parameters) {
-        if (parameters == null) {
-            return null;
-        } else {
-            return parameters.keySet().toArray(new String[parameters.keySet().size()]);
+    private static String translateSql(SourceStatement sourceStatement, String renderedSQL) {
+        if (StringUtils.isEmpty(sourceStatement.getTargetDialect()) || DEFAULT_DIALECT.equals(sourceStatement.getTargetDialect())) {
+            return renderedSQL;
         }
-    }
-
-    private static String[] getMapValues(HashMap<String, String> parameters, String[] parameterKeys) {
-        ArrayList<String> parameterValues = new ArrayList<>();
-        if (parameters == null) {
-            return null;
-        } else {
-            for (String parameterKey : parameterKeys) {
-                parameterValues.add(parameters.get(parameterKey));
-            }
-            return parameterValues.toArray(new String[parameterValues.size()]);
-        }
+        return SqlTranslate.translateSql(renderedSQL, sourceStatement.getTargetDialect(), SessionUtils.sessionId(), sourceStatement.getOracleTempSchema());
     }
 
 }

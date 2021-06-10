@@ -1,5 +1,9 @@
 package org.ohdsi.webapi.evidence.negativecontrols;
 
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Map;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
@@ -18,11 +22,6 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
-
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Map;
 
 public class NegativeControlTasklet implements Tasklet {
 

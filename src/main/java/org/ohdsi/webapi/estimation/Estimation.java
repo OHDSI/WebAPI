@@ -1,16 +1,20 @@
 package org.ohdsi.webapi.estimation;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Lob;
+import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.ohdsi.analysis.estimation.design.EstimationTypeEnum;
 import org.ohdsi.webapi.model.CommonEntity;
 
-import javax.persistence.*;
-
 @Entity(name = "Estimation")
 @Table(name="estimation")
-public class Estimation extends CommonEntity {
+public class Estimation extends CommonEntity<Integer> {
     @Id
     @GenericGenerator(
         name = "estimation_generator",
@@ -40,6 +44,7 @@ public class Estimation extends CommonEntity {
     /**
      * @return the id
      */
+    @Override
     public Integer getId() {
         return id;
     }

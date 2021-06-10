@@ -1,14 +1,13 @@
 package org.ohdsi.webapi.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.io.IOException;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class TherapyPathResultsServiceTest extends AbstractServiceTest {
 

@@ -1,4 +1,4 @@
-ALTER TABLE ${ohdsiSchema}.analysis_execution ADD IF NOT EXISTS job_execution_id BIGINT;
+ALTER TABLE ${ohdsiSchema}.analysis_execution ADD job_execution_id BIGINT;
 
 alter table ${ohdsiSchema}.analysis_execution drop column analysis_id;
 ALTER TABLE ${ohdsiSchema}.analysis_execution DROP COLUMN analysis_type;

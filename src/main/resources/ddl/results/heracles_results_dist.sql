@@ -1,3 +1,5 @@
+--HINT PARTITION(cohort_definition_id int)
+--HINT BUCKET(analysis_id, 64)
 IF OBJECT_ID('@results_schema.heracles_results_dist', 'U') IS NULL
 create table @results_schema.heracles_results_dist
 (
@@ -18,6 +20,5 @@ create table @results_schema.heracles_results_dist
 	p25_value float,
 	p75_value float,
 	p90_value float,
-	last_update_time datetime
-          CONSTRAINT DF_heracles_results_dist_last_update DEFAULT GETDATE()
+	last_update_time datetime DEFAULT GETDATE()
 );

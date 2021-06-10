@@ -14,6 +14,11 @@
  */
 package org.ohdsi.webapi;
 
+import java.util.ArrayList;
+import java.util.List;
+import javax.inject.Inject;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.QueryParam;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.server.internal.inject.AbstractContainerRequestValueFactory;
@@ -22,12 +27,6 @@ import org.glassfish.jersey.server.spi.internal.ValueFactoryProvider;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-
-import javax.inject.Inject;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.QueryParam;
-import java.util.ArrayList;
-import java.util.List;
 
 public class PageableValueFactoryProvider implements ValueFactoryProvider {
 

@@ -3,6 +3,15 @@ package org.ohdsi.webapi.util;
 import com.odysseusinc.arachne.commons.types.DBMSType;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AuthMethod;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.charset.Charset;
+import java.nio.file.Paths;
+import java.util.*;
+
 import com.odysseusinc.arachne.execution_engine_common.util.BigQueryUtils;
 import com.odysseusinc.arachne.execution_engine_common.util.ConnectionParams;
 import com.odysseusinc.arachne.execution_engine_common.util.ConnectionParamsParser;
@@ -13,14 +22,6 @@ import org.ohdsi.webapi.KerberosUtils;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Objects;
-
 import static com.odysseusinc.arachne.commons.types.DBMSType.BIGQUERY;
 import static com.odysseusinc.arachne.commons.types.DBMSType.IMPALA;
 
@@ -29,6 +30,7 @@ public final class DataSourceDTOParser {
     public static DataSourceUnsecuredDTO parseDTO(Source source) {
         ConnectionParams params = parse(source);
         DataSourceUnsecuredDTO dto = new DataSourceUnsecuredDTO();
+        dto.setName(source.getSourceName());
         dto.setType(getDbmsType(source));
         dto.setConnectionString(params.getConnectionString());
         dto.setUsername(params.getUser());
@@ -57,7 +59,7 @@ public final class DataSourceDTOParser {
             String keyPath = BigQueryUtils.getBigQueryKeyPath(source.getSourceConnection());
             if (StringUtils.isNotEmpty(keyPath) && Paths.get(keyPath).toFile().exists()) {
                 try(Reader r = new FileReader(new File(keyPath))) {
-                    return IOUtils.toByteArray(r);
+                    return IOUtils.toByteArray(r, Charset.defaultCharset());
                 }
             }
         }
@@ -82,7 +84,7 @@ public final class DataSourceDTOParser {
         return Arrays.stream(DBMSType.values())
                     .filter(type -> Objects.equals(type.getOhdsiDB(), source.getSourceDialect()))
                     .findFirst()
-                    .orElseThrow(() -> new RuntimeException("Unsupported data source dialect"));
+                    .orElseThrow(() -> new RuntimeException(String.format("Unsupported data source dialect: %s", source.getSourceDialect())));
     }
 
 }

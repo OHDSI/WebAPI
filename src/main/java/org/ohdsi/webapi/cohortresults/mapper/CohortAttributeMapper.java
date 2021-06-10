@@ -1,10 +1,10 @@
 package org.ohdsi.webapi.cohortresults.mapper;
 
-import org.ohdsi.webapi.cohortresults.CohortAttribute;
-import org.springframework.jdbc.core.RowMapper;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import org.ohdsi.webapi.cohortresults.CohortAttribute;
+import org.springframework.jdbc.core.RowMapper;
 
 public class CohortAttributeMapper implements RowMapper<CohortAttribute> {
 

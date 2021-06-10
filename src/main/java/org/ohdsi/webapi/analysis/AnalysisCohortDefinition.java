@@ -2,12 +2,11 @@ package org.ohdsi.webapi.analysis;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.text.SimpleDateFormat;
 import org.ohdsi.analysis.Cohort;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.ExpressionType;
-
-import java.text.SimpleDateFormat;
 
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class AnalysisCohortDefinition implements Cohort {

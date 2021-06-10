@@ -1,19 +1,16 @@
 package org.ohdsi.webapi.source;
 
-import org.hibernate.HibernateException;
-import org.hibernate.engine.spi.SharedSessionContractImplementor;
-import org.jasypt.hibernate4.type.AbstractEncryptedAsStringType;
-
+import com.odysseusinc.datasourcemanager.encryption.EncryptorUtils;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Objects;
+import org.hibernate.HibernateException;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
+import org.jasypt.hibernate4.type.AbstractEncryptedAsStringType;
 
 public class CheckedEncryptedStringType extends AbstractEncryptedAsStringType {
-
-    public static final String ENCODED_PREFIX = "ENC(";
-    public static final String ENCODED_SUFFIX = ")";
 
     @Override
     protected Object convertToObject(String value) {
@@ -25,16 +22,15 @@ public class CheckedEncryptedStringType extends AbstractEncryptedAsStringType {
     public void nullSafeSet(PreparedStatement st, Object value, int index, SharedSessionContractImplementor session) throws HibernateException, SQLException {
 
         checkInitialization();
-        if (Objects.nonNull(value)){
-            if (Objects.nonNull(this.encryptor) && !(this.encryptor instanceof NotEncrypted)) {
-                String encrypted = this.encryptor.encrypt(convertToString(value));
-                st.setString(index, ENCODED_PREFIX + encrypted + ENCODED_SUFFIX);
-            } else {
-                st.setString(index, convertToString(value));
-            }
-        } else {
+        final String message = convertToString(value);
+
+        if (Objects.isNull(message)) {
             st.setNull(index, Types.VARCHAR);
+            return;
         }
+
+        String encrypted = EncryptorUtils.encrypt(this.encryptor, message);
+        st.setString(index, encrypted);
     }
 
     @Override
@@ -42,17 +38,12 @@ public class CheckedEncryptedStringType extends AbstractEncryptedAsStringType {
 
         checkInitialization();
         final String message = rs.getString(names[0]);
-        Object result;
+
         if (Objects.isNull(message)) {
             return null;
         }
-        if (Objects.nonNull(this.encryptor) && !(this.encryptor instanceof NotEncrypted) && message.startsWith(ENCODED_PREFIX)) {
-            String value = message.substring(ENCODED_PREFIX.length(), message.length() - ENCODED_SUFFIX.length());
-            result = convertToObject(encryptor.decrypt(value));
-        } else {
-            result = message;
-        }
-        return result;
+
+        return EncryptorUtils.decrypt(this.encryptor, message);
     }
 
     @Override

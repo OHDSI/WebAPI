@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.util;
 
-import javax.ws.rs.NotFoundException;
 import java.util.Objects;
+import javax.ws.rs.NotFoundException;
 
 public class ExceptionUtils {
 

@@ -1,8 +1,16 @@
 package org.ohdsi.webapi.cohortcharacterization.dto;
 
-import org.ohdsi.webapi.cohortcharacterization.CcResultType;
 
-public class CcResult {
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = CcPrevalenceStat.class),
+        @JsonSubTypes.Type(value = CcDistributionStat.class)
+})
+public abstract class CcResult {
     
     private Long id;
     private String faType;

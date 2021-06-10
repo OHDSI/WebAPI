@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.source;
 
-import javax.validation.constraints.NotNull;
 import java.util.Collection;
+import javax.validation.constraints.NotNull;
 
 public class SourceRequest {
     @NotNull

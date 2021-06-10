@@ -1,12 +1,12 @@
 package org.ohdsi.webapi.executionengine.service;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Date;
+import java.util.List;
 import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
 import org.ohdsi.webapi.source.Source;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
 
 public interface ScriptExecutionService {
 
@@ -19,7 +19,7 @@ public interface ScriptExecutionService {
 
     String getExecutionStatus(Long executionId);
 
-    void updateAnalysisStatus(ExecutionEngineAnalysisStatus analysisExecution, ExecutionEngineAnalysisStatus.Status running);
-
     File getExecutionResult(Long executionId) throws IOException;
+
+    void invalidateExecutions(Date invalidateDate);
 }

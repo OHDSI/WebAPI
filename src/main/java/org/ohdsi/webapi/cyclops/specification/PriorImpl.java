@@ -1,15 +1,13 @@
 package org.ohdsi.webapi.cyclops.specification;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.ohdsi.analysis.cyclops.design.Prior;
-import org.ohdsi.analysis.cyclops.design.PriorTypeEnum;
-import org.ohdsi.webapi.RLangClassImpl;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.InputMismatchException;
 import java.util.List;
+import org.ohdsi.analysis.cyclops.design.*;
+import org.ohdsi.webapi.RLangClassImpl;
 
 /**
  *

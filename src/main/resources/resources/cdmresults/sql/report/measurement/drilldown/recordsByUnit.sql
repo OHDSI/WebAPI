@@ -4,8 +4,8 @@ select c1.concept_id as measurement_concept_id,
        c2.concept_name as concept_name,
        ar1.count_value as count_value
 from (
-       select cast(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END as int) stratum_1, 
-              cast(CASE WHEN isNumeric(stratum_2) = 1 THEN stratum_2 ELSE null END as int) stratum_2, count_value
+       select cast(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE '0' END as int) stratum_1,
+              cast(CASE WHEN isNumeric(stratum_2) = 1 THEN stratum_2 ELSE '0' END as int) stratum_2, count_value
        from @results_database_schema.achilles_results
        where analysis_id = 1807
        group by analysis_id, stratum_1, stratum_2, count_value

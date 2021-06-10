@@ -2,7 +2,7 @@ package org.ohdsi.webapi.sqlrender;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.ohdsi.sql.SqlRender;
-import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.stereotype.Component;

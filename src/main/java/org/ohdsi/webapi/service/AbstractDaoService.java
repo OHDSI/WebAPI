@@ -8,6 +8,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.IExecutionInfo;
+import org.ohdsi.webapi.common.sensitiveinfo.AbstractAdminService;
 import org.ohdsi.webapi.conceptset.ConceptSetItemRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetRepository;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
@@ -38,7 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class AbstractDaoService {
+public abstract class AbstractDaoService extends AbstractAdminService {
 
   protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -66,8 +67,8 @@ public abstract class AbstractDaoService {
   @Autowired
   private SourceRepository sourceRepository;
 
-  @Autowired 
-  ConceptSetItemRepository conceptSetItemRepository;
+  @Autowired
+  private ConceptSetItemRepository conceptSetItemRepository;
 
   @Autowired
   protected Security security;

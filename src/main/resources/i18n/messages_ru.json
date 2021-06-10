@@ -3060,6 +3060,10 @@
         "title_procedureoccurrence": "Добавить визит",
         "desc_procedureoccurrence": "Процедура фильтра Вхождения, основанные на посещении процедуры."
       },
+      "addConditionStatus": {
+        "title_occurrence": "Add Condition Status",
+        "desc_occurrence": "Filter Condition Occurrences based on condition status."
+      },
       "addFirstDiagnosis": {
         "title_era": "Добавить первый диагноз",
         "desc_era": "Ограничьте Эры Условий первой эрой диагноза в истории.",

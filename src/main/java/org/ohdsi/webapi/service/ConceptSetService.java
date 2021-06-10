@@ -160,7 +160,14 @@ public class ConceptSetService extends AbstractDaoService {
             identifierIndex++;
         }
 
-        Collection<Concept> concepts = vocabService.executeIdentifierLookup(sourceInfo.sourceKey, identifiers);
+        String sourceKey;
+        if (Objects.isNull(sourceInfo)) {
+            sourceKey = sourceService.getPriorityVocabularySource().getSourceKey();
+        } else {
+            sourceKey = sourceInfo.sourceKey;
+        }
+
+        Collection<Concept> concepts = vocabService.executeIdentifierLookup(sourceKey, identifiers);
         if (concepts.size() != identifiers.length) {
             String ids = Arrays.stream(identifiers).boxed()
                     .filter(identifier -> concepts.stream().noneMatch(c -> c.conceptId.equals(identifier)))

@@ -13,8 +13,6 @@ if [ "$1" = 'run-webapi' ]; then
 
     if [[ ! -z "$FEDER8_WEBAPI_CENTRAL" && "$FEDER8_WEBAPI_CENTRAL" == "true" ]]; then
       JAVA_OPTS="${JAVA_OPTS} -Dsecurity.oid.clientId=${FEDER8_WEBAPI_OIDC_CLIENT_ID} -Dsecurity.oid.apiSecret=${FEDER8_WEBAPI_OIDC_SECRET} -Dsecurity.oid.url=${FEDER8_WEBAPI_OIDC_ISSUER_URI} -Dsecurity.oid.redirectUrl=${FEDER8_WEBAPI_OIDC_REDIRECT_URL}"
-    else
-
     fi
   fi
 

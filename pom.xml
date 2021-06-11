@@ -186,7 +186,7 @@
     <server.ssl.key-store></server.ssl.key-store>
     <server.ssl.key-store-password></server.ssl.key-store-password>
     <server.ssl.key-password></server.ssl.key-password>
-    <server.servlet.context-path>/WebAPI</server.servlet.context-path>
+    <server.servlet.context-path></server.servlet.context-path>
 
     <arachne.version>1.17.1</arachne.version>
     <jersey-media-multipart.version>2.25.1</jersey-media-multipart.version>

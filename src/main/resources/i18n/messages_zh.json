@@ -2619,7 +2619,7 @@
           "sampleName": "*样本名称",
           "sampleNamePlaceholder": "输入样本名称",
           "sampleNameEmpty": "样本名称不能为空",
-          "numberOfPatients": "*患者数量",
+          "numberOfPatients": "* Number of patients (from 1 to 500)",
           "numberOfPatientsPlaceholder": "输入一个数字",
           "numberOfPatientsEmpty": "Number of patients must be a positive integer between 1 and 500",
           "selectAgeCriteria": "选择年龄标准",

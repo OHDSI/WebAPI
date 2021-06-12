@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+  <!--Tomcat needs writing access to path mentioned in FileNamePattern-->
+  <appender name="webapi" class="org.apache.log4j.rolling.RollingFileAppender">
+      <rollingPolicy class="org.apache.log4j.rolling.TimeBasedRollingPolicy">
+          <param name="FileNamePattern" value="/var/log/ohdsi/webapi.%d{yyyy-MM-dd}.log.gz" />
+      </rollingPolicy>
+      <layout class="org.apache.log4j.PatternLayout">
+          <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss} %-5p - %m%n" />
+      </layout>
+  </appender>
+
+  <!--Tomcat needs writing access to path mentioned in FileNamePattern-->
+  <appender name="audit" class="org.apache.log4j.rolling.RollingFileAppender">
+      <rollingPolicy class="org.apache.log4j.rolling.TimeBasedRollingPolicy">
+          <param name="FileNamePattern" value="/var/log/ohdsi/audit-webapi.%d{yyyy-MM-dd}.log.gz" />
+      </rollingPolicy>
+      <layout class="org.apache.log4j.PatternLayout">
+          <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %m%n" />
+      </layout>
+  </appender>
+
+	<logger name="org.ohdsi">
+		<level value="${logging.level.org.ohdsi}" />
+	</logger>
+	<logger name="org.springframework.orm">
+		<level value="${logging.level.org.springframework.orm}" />
+	</logger>
+	<logger name="org.springframework.jdbc">
+		<level value="${logging.level.org.springframework.jdbc}" />
+	</logger>
+	<logger name="org.apache.shiro">
+		<level value="${logging.level.org.apache.shiro}" />
+	</logger>
+	<logger name="org.pac4j">
+		<level value="${logging.level.org.pac4j:INFO}" />
+	</logger>
+
+	<logger name="org.ohdsi.webapi.service.auditlogger.AuditLogger" additivity="false">
+		<appender-ref ref="audit" />
+	</logger>
+
+	<root>
+		<level value="${logging.level.root}" />
+		<appender-ref ref="webapi" />
+	</root>
+</log4j:configuration>

@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import static java.util.Arrays.asList;
-import static org.apache.commons.lang3.builder.ToStringStyle.NO_CLASS_NAME_STYLE;
 
 public class AuditLogger {
 
@@ -26,13 +25,13 @@ public class AuditLogger {
         if (arguments.length != argumentNames.length) {
             return asList(arguments)
                     .stream()
-                    .map(arg -> ToStringBuilder.reflectionToString(arg, NO_CLASS_NAME_STYLE))
+                    .map(arg -> ToStringBuilder.reflectionToString(arg, new CustomRecursiveToStringStyleForLogging()))
                     .collect(Collectors.joining());
         }
 
         List<String> argumentList = new ArrayList<String>();
         IntStream.range(0, arguments.length)
-                .forEach(idx -> argumentList.add(argumentNames[idx] + ":" + ToStringBuilder.reflectionToString(arguments[idx], NO_CLASS_NAME_STYLE)));
+                .forEach(idx -> argumentList.add(argumentNames[idx] + ":" + ToStringBuilder.reflectionToString(arguments[idx], new CustomRecursiveToStringStyleForLogging())));
 
         return String.join(" ", argumentList);
     }

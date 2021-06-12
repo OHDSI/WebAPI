@@ -25,14 +25,27 @@ public class AuditLogger {
         if (arguments.length != argumentNames.length) {
             return asList(arguments)
                     .stream()
-                    .map(arg -> ToStringBuilder.reflectionToString(arg, new CustomRecursiveToStringStyleForLogging()))
+                    .map(arg -> getObjectValue(arg))
                     .collect(Collectors.joining());
         }
 
         List<String> argumentList = new ArrayList<String>();
         IntStream.range(0, arguments.length)
-                .forEach(idx -> argumentList.add(argumentNames[idx] + ":" + ToStringBuilder.reflectionToString(arguments[idx], new CustomRecursiveToStringStyleForLogging())));
+                .forEach(idx -> argumentList.add(argumentNames[idx] + ":" + getObjectValue(arguments[idx])));
 
-        return String.join(" ", argumentList);
+        return String.join(",", argumentList);
     }
+
+    private static String getObjectValue(Object object) {
+        if (object == null) {
+            return "";
+        }
+
+        if ( object instanceof String) {
+            return object.toString();
+        }
+
+        return ToStringBuilder.reflectionToString(object, new CustomRecursiveToStringStyleForLogging());
+    }
+
 }

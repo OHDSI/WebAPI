@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -ex
 
-VERSION=2.0.0
-TAG=2.9.0-$VERSION
+VERSION=latest
+TAG=$VERSION
 
 touch webapi.env
 
@@ -12,12 +12,15 @@ echo "FEDER8_WEBAPI_CENTRAL=true" >> webapi.env
 echo "FEDER8_WEBAPI_OIDC_CLIENT_ID=default" >> webapi.env
 echo "FEDER8_WEBAPI_OIDC_SECRET=default-secret" >> webapi.env
 echo "FEDER8_WEBAPI_OIDC_ISSUER_URI=https://cas-dev.honeur.org/oidc/.well-known/openid-configuration" >> webapi.env
-echo "FEDER8_WEBAPI_OIDC_REDIRECT_URL=http://localhost/index.html#/welcome/" >> webapi.env
+echo "FEDER8_WEBAPI_OIDC_REDIRECT_URL_API=http://localhost:8080/user/oauth/callback" >> webapi.env
+echo "FEDER8_WEBAPI_OIDC_REDIRECT_URL_UI=http://localhost:8081/index.html#/welcome/" >> webapi.env
+echo "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=54322" >> webapi.env
 
 docker run \
 --rm \
 --name webapi \
 -p 8080:8080 \
+-p 54322:54322 \
 -v shared:/var/lib/shared \
 --env-file webapi.env \
 --network honeur-net \

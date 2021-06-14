@@ -26,6 +26,7 @@ public enum FilterTemplates {
     HIDE_RESOURCE("hideResource"),
     LOGOUT("logout"),
     UPDATE_TOKEN("updateToken"),
+    UPDATE_ATLAS_ROLE_FROM_TOKEN("updateAtlasRolesFromToken"),
     JDBC_FILTER("jdbcFilter"),
     KERBEROS_FILTER("kerberosFilter"),
     LDAP_FILTER("ldapFilter"),

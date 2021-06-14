@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -x
 
 if [ "$1" = 'run-webapi' ]; then
   set -e

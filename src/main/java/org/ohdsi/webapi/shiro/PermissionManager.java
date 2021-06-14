@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -96,6 +97,18 @@ public class PermissionManager {
     UserRoleEntity userRole = this.userRoleRepository.findByUserAndRole(user, role);
     if (userRole != null)
       this.userRoleRepository.delete(userRole);
+  }
+
+  public void removeUserFromAllRole(String login) {
+    Guard.checkNotEmpty(login);
+
+    UserEntity user = this.getUserByLogin(login);
+
+    List<UserRoleEntity> userRoles = this.userRoleRepository.findByUser(user);
+    for (UserRoleEntity userRole : userRoles) {
+      if(!userRole.getRole().getName().equalsIgnoreCase(login))
+        this.userRoleRepository.delete(userRole);
+    }
   }
 
   public Iterable<RoleEntity> getRoles(boolean includePersonalRoles) {

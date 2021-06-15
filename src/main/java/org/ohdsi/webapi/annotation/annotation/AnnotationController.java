@@ -55,9 +55,8 @@ public class AnnotationController {
     returnAnnotations = getFullAnnotations(cohortSampleId,subjectId,setId);
     List<AnnotationSummary> summaries = new ArrayList();
     for(Annotation singleAnno : returnAnnotations){
-      System.out.println(singleAnno);
+//      TODO see about doing this in a more performant matter?
       AnnotationSummary tempAnnoSummary=new AnnotationSummary(singleAnno);
-      System.out.println(tempAnnoSummary);
       summaries.add(tempAnnoSummary);
     }
     return summaries;

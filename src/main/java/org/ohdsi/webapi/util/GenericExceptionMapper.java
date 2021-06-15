@@ -32,6 +32,9 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.UndeclaredThrowableException;
+import java.util.Objects;
 
 /**
  *
@@ -66,6 +69,20 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
             ex = new RuntimeException(ex.getMessage());
         } else if (ex instanceof ConceptNotExistException) {
             responseStatus = Status.BAD_REQUEST;
+        } else if (ex instanceof UndeclaredThrowableException) {
+            Throwable throwable = getThrowable((UndeclaredThrowableException)ex);
+            if (Objects.nonNull(throwable)) {
+                if (throwable instanceof ConceptNotExistException) {
+                    responseStatus = Status.BAD_REQUEST;
+                    ex = throwable;
+                } else {
+                    responseStatus = Status.INTERNAL_SERVER_ERROR;
+                    ex = new RuntimeException("An exception occurred: " + ex.getClass().getName());
+                }
+            } else {
+                responseStatus = Status.INTERNAL_SERVER_ERROR;
+                ex = new RuntimeException("An exception occurred: " + ex.getClass().getName());
+            }
         } else {
             responseStatus = Status.INTERNAL_SERVER_ERROR;
             // Create new message to prevent sending error information to client
@@ -78,5 +95,13 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
                 .entity(errorMessage)
                 .type(MediaType.APPLICATION_JSON)
                 .build();
+    }
+
+    private Throwable getThrowable(UndeclaredThrowableException ex) {
+        if (Objects.nonNull(ex.getUndeclaredThrowable()) && ex.getUndeclaredThrowable() instanceof InvocationTargetException) {
+            InvocationTargetException ite = (InvocationTargetException) ex.getUndeclaredThrowable();
+            return ite.getTargetException();
+        }
+        return null;
     }
 }

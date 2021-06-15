@@ -27,6 +27,10 @@ public class TreatmentLine extends Criteria {
     public NumericRange drugExposureCount;
     @JsonProperty("TreatmentLineType")
     public Concept[] treatmentLineType;
+    @JsonProperty("TreatmentLineTypeExclude")
+    public boolean treatmentLineTypeExclude = false;
+    @JsonProperty("TreatmentLineSourceConcept")
+    public Integer treatmentLineSourceConcept;
     @JsonProperty("Age")
     public NumericRange age;
     @JsonProperty("Gender")

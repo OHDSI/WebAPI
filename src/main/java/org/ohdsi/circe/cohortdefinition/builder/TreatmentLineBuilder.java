@@ -118,7 +118,8 @@ public class TreatmentLineBuilder<T extends TreatmentLine> extends CriteriaSqlBu
 
         // treatment line type
         if (criteria.treatmentLineType != null && criteria.treatmentLineType.length > 0) {
-            whereClauses.add(String.format("P.treatment_type_id in (%s)", StringUtils.join(getConceptIdsFromConcepts(criteria.treatmentLineType), ",")));
+            ArrayList<Long> conceptIds = getConceptIdsFromConcepts(criteria.treatmentLineType);
+            whereClauses.add(String.format("C.treatment_type_id %s in (%s)", (criteria.treatmentLineTypeExclude ? "not" : ""), StringUtils.join(conceptIds, ",")));
         }
 
         if (criteria.age != null) {

@@ -24,7 +24,7 @@
 
     <circe.version>1.9.4</circe.version>
     <jersey.version>2.14</jersey.version>
-    <SqlRender.version>1.7.0</SqlRender.version>
+    <SqlRender.version>1.7.0.101</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
     <pac4j.version>4.0.0</pac4j.version>
     <jackson.version>2.10.5</jackson.version>
@@ -1338,6 +1338,46 @@
                   <version>${impala.driver.version}</version>
                   <packaging>jar</packaging>
                   <file>${impala.classpath}/ImpalaJDBC42.jar</file>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>webapi-spark</id>
+      <properties>
+        <spark.enabled>true</spark.enabled>
+        <!-- Spark JDBC driver path -->
+        <spark.classpath>${basedir}/src/main/extras/spark</spark.classpath>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.simba</groupId>
+          <artifactId>spark</artifactId>
+          <version>2.6.3.1003</version>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-install-plugin</artifactId>
+            <version>2.5.2</version>
+            <executions>
+              <execution>
+                <id>spark-jdbc</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <groupId>com.simba</groupId>
+                  <artifactId>spark</artifactId>
+                  <version>2.6.3.1003</version>
+                  <packaging>jar</packaging>
+                  <file>${spark.classpath}/spark-2.6.3.1003.jar</file>
                 </configuration>
               </execution>
             </executions>

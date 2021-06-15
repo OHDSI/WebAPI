@@ -18,6 +18,7 @@ package org.ohdsi.webapi.cohortcharacterization;
 import com.google.common.collect.ImmutableList;
 import com.odysseusinc.arachne.commons.types.DBMSType;
 import org.ohdsi.cohortcharacterization.CCQueryBuilder;
+import org.ohdsi.sql.BigQuerySparkTranslate;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
@@ -34,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.sql.SQLException;
 import java.util.Map;
 
 import static org.ohdsi.webapi.Constants.Params.*;
@@ -101,6 +103,14 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
                     .replaceAll("#", tempSchema + "." + sessionId + "_")
                     .replaceAll("tempdb\\.\\.", "");
         }
+        if (source.getSourceDialect().equals("spark")) {
+            try {
+                sql = BigQuerySparkTranslate.sparkHandleInsert(sql, source.getSourceConnection());
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
         final String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), sessionId, tempSchema);
         return SqlSplit.splitSql(translatedSql);
     }

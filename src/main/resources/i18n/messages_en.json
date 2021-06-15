@@ -2901,6 +2901,10 @@
         "title_procedureoccurrence": "Add Visit Criteria",
         "desc_procedureoccurrence": "Filter Procedure Occurrences based on visit occurrence of procedure."
       },
+      "addConditionStatus": {
+        "title_occurrence": "Add Condition Status",
+        "desc_occurrence": "Filter Condition Occurrences based on condition status."
+      },
       "addFirstDiagnosis": {
         "title_era": "Add First Diagnosis Criteria",
         "desc_era": "Limit Condition Eras to first diagnosis era in history.",

@@ -2901,6 +2901,10 @@
         "title_procedureoccurrence": "Visit 조건 추가",
         "desc_procedureoccurrence": "Procedure  발생 방문을 기반으로 Procedure Occurrence를 필터링합니다."
       },
+      "addConditionStatus": {
+        "title_occurrence": "Add Condition Status",
+        "desc_occurrence": "Filter Condition Occurrences based on condition status."
+      },
       "addFirstDiagnosis": {
         "title_era": "최초 진단 기준 추가",
         "desc_era": "Condition Era를 환자의 전체 기록중 가장 처음 받은 진단으로 제한합니다.",

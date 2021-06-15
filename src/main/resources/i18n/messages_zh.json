@@ -2901,6 +2901,10 @@
         "title_procedureoccurrence": "添加就诊",
         "desc_procedureoccurrence": "按照操作时的就诊筛选操作"
       },
+      "addConditionStatus": {
+        "title_occurrence": "Add Condition Status",
+        "desc_occurrence": "Filter Condition Occurrences based on condition status."
+      },
       "addFirstDiagnosis": {
         "title_era": "添加初始诊断",
         "desc_era": "将诊断周期限制在患者整个记录的最早诊断",

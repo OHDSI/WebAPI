@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.util;
 
+import org.ohdsi.sql.BigQuerySparkTranslate;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.jdbc.core.*;
@@ -77,8 +78,16 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
         }
         else {
           for (int i = 0; i < sql.length; i++) {
-            this.currSql = sql[i];
-            if (!stmt.execute(sql[i])) {
+            if (stmt.getConnection().getMetaData().getURL().startsWith("jdbc:spark")) {
+              this.currSql = BigQuerySparkTranslate.sparkHandleInsert(sql[i], stmt.getConnection());
+              if (this.currSql == "" || this.currSql.isEmpty() || this.currSql == null) {
+                rowsAffected[i] = -1;
+                continue;
+              }
+            } else {
+              this.currSql = sql[i];
+            }
+            if (!stmt.execute(this.currSql)) {
               rowsAffected[i] = stmt.getUpdateCount();
             }
             else if (!suppressApiException) {

@@ -3061,8 +3061,8 @@
         "desc_procedureoccurrence": "Процедура фильтра Вхождения, основанные на посещении процедуры."
       },
       "addConditionStatus": {
-        "title_occurrence": "Add Condition Status",
-        "desc_occurrence": "Filter Condition Occurrences based on condition status."
+        "title_occurrence": "Добавить статус условия",
+        "desc_occurrence": "Фильтровать возникновение условия на основе статуса"
       },
       "addFirstDiagnosis": {
         "title_era": "Добавить первый диагноз",

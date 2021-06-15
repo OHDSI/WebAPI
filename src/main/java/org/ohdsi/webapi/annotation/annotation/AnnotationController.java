@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.annotation.annotation;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.ws.rs.GET;
@@ -45,19 +46,49 @@ public class AnnotationController {
   @GET
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
-  public List<Annotation> getAnnotations(
-    @QueryParam("cohortSampleId") final Long cohortSampleId,
-    @QueryParam("subjectId") final Long subjectId,
-    @QueryParam("setId") final Long setId
+  public List<AnnotationSummary> getAnnotations(
+    @QueryParam("cohortSampleId") final int cohortSampleId,
+    @QueryParam("subjectId") final int subjectId,
+    @QueryParam("setId") final int setId
   ) {
-
-
-    if (cohortSampleId != null && subjectId != null && setId != null) {
-        System.out.println("made it into the search function");
-        return annotationService.getAnnotationByCohortSampleIdAndBySubjectIdAndBySetId(cohortSampleId, subjectId, setId);
+    List<Annotation> returnAnnotations;
+    returnAnnotations = getFullAnnotations(cohortSampleId,subjectId,setId);
+    List<AnnotationSummary> summaries = new ArrayList();
+    for(Annotation singleAnno : returnAnnotations){
+      System.out.println(singleAnno);
+      AnnotationSummary tempAnnoSummary=new AnnotationSummary(singleAnno);
+      System.out.println(tempAnnoSummary);
+      summaries.add(tempAnnoSummary);
     }
+    return summaries;
+  }
 
-    return annotationService.getAnnotations();
+  @GET
+  @Path("/fullquestion")
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<Annotation> getFullAnnotations(
+          @QueryParam("cohortSampleId") final int cohortSampleId,
+          @QueryParam("subjectId") final int subjectId,
+          @QueryParam("setId") final int setId
+          ) {
+    List<Annotation> returnAnnotations=null;
+    if (cohortSampleId != 0 && subjectId != 0 && setId != 0) {
+      System.out.println("made it into the search function");
+      returnAnnotations= annotationService.getAnnotationByCohortSampleIdAndBySubjectIdAndByQuestionSetId(cohortSampleId, subjectId, setId);
+    }
+    else if (cohortSampleId !=0 && setId!=0){
+      returnAnnotations= annotationService.getAnnotationByCohortSampleIdAndByQuestionSetId(cohortSampleId,setId);
+    }
+    else if(cohortSampleId!=0){
+      returnAnnotations= annotationService.getAnnotationsByCohortSampleId(cohortSampleId);
+    }
+    else if(setId !=0){
+      returnAnnotations= annotationService.getAnnotationsByQuestionSetId(setId);
+    }
+    else{
+      returnAnnotations=annotationService.getAnnotations();
+    }
+    return returnAnnotations;
   }
 
   @POST
@@ -74,8 +105,8 @@ public class AnnotationController {
     System.out.printf("subjectId: %s\n",jsonpayload.get("subjectId").toString());
     System.out.printf("setId: %s\n",jsonpayload.get("setId").toString());
 //    TODO: change this to use annotationService.getAnnotationsByAnnotationId potentially
-    Annotation tempAnnotation = annotationService.getAnnotationByCohortSampleIdAndBySubjectIdAndBySetId(Long.parseLong(jsonpayload.get("sampleName").toString())
-            ,Long.parseLong(jsonpayload.get("subjectId").toString()),Long.parseLong(jsonpayload.get("setId").toString())).get(0);
+    Annotation tempAnnotation = annotationService.getAnnotationByCohortSampleIdAndBySubjectIdAndByQuestionSetId(Integer.parseInt(jsonpayload.get("sampleName").toString())
+            ,Integer.parseInt(jsonpayload.get("subjectId").toString()),Integer.parseInt(jsonpayload.get("setId").toString())).get(0);
     System.out.printf("annotationID:%d\n",tempAnnotation.getId());
     JSONArray array = jsonpayload.getJSONArray("results");
     for(int i=0; i < array.length(); i++){
@@ -108,8 +139,8 @@ public class AnnotationController {
       annotation.setId(annotationDto.getId());
       annotation.setSubjectId(Integer.parseInt(element.getPersonId()));
       annotation.setCohortSampleId(annotationDto.getsampleId());
-      QuestionSet set = questionSetRepository.findById(annotationDto.getannotationSetId());
-      annotation.setSet(set);
+      QuestionSet questionSet = questionSetRepository.findById(annotationDto.getannotationSetId());
+      annotation.setQuestionSet(questionSet);
       annotationService.addAnnotation(annotation, annotationDto.getSampleName());
     }
   }

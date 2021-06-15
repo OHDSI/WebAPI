@@ -42,16 +42,20 @@ public class AnnotationService {
         return annotationRepository.findByAnnotationId(annotationId);
     }
 
-  public List<Annotation> getAnnotationByCohortSampleIdAndBySubjectIdAndBySetId(Long cohortSampleId, Long subjectId, Long setId) {
+  public List<Annotation> getAnnotationByCohortSampleIdAndBySubjectIdAndByQuestionSetId(int cohortSampleId, int subjectId, int questionSetId) {
+    System.out.printf("cohortSampleId %d\n",cohortSampleId);
+    System.out.printf("subjectId %d\n",subjectId);
+    System.out.printf("questionSetId %d\n",questionSetId);
+
     List<Annotation> annotations = new ArrayList();
-    annotationRepository.findOneByCohortSampleIdAndSubjectIdAndSetId(cohortSampleId, subjectId, setId)
+    annotationRepository.findOneByCohortSampleIdAndSubjectIdAndQuestionSetId(cohortSampleId, subjectId, questionSetId)
     .forEach(annotations::add);
     return annotations;
   }
 
-  public List<Annotation> getAnnotationByCohortSampleIdAndBySetId(Long cohortSampleId, Long setId) {
+  public List<Annotation> getAnnotationByCohortSampleIdAndByQuestionSetId(int cohortSampleId, int setId) {
     List<Annotation> annotations = new ArrayList();
-    annotationRepository.findByCohortSampleIdAndSetId(cohortSampleId, setId)
+    annotationRepository.findByCohortSampleIdAndQuestionSetId(cohortSampleId, setId)
     .forEach(annotations::add);
     return annotations;
   }
@@ -101,4 +105,10 @@ public class AnnotationService {
     return results;
   }
 
+    public List<Annotation> getAnnotationsByCohortSampleId(int cohortSampleId) {
+      return annotationRepository.findByCohortSampleId(cohortSampleId);
+    }
+    public List<Annotation> getAnnotationsByQuestionSetId(int questionSetId) {
+        return annotationRepository.findByQuestionSetId(questionSetId);
+    }
 }

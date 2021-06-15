@@ -9,8 +9,10 @@ import org.springframework.data.repository.query.Param;
 
 public interface AnnotationRepository extends JpaRepository<Annotation, Long> {
 
-  public Set<Annotation> findOneByCohortSampleIdAndSubjectIdAndSetId(Long cohortSampleId, Long subjectId, Long setId);
-  public List<Annotation> findByCohortSampleIdAndSetId(Long cohortSampleId, Long setId);
+  public Set<Annotation> findOneByCohortSampleIdAndSubjectIdAndQuestionSetId(int cohortSampleId, int subjectId, int questionSetId);
+  public List<Annotation> findByCohortSampleIdAndQuestionSetId(int cohortSampleId, int questionSetId);
+  public List<Annotation> findByCohortSampleId(int cohortSampleId);
+  public List<Annotation> findByQuestionSetId(int questionSetId);
 
   @Query("Select a FROM Annotation a WHERE a.id = ?1")
   public Annotation findByAnnotationId(int annotation_id);

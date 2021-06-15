@@ -12,6 +12,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.JoinColumn;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.ohdsi.webapi.annotation.result.Result;
 import org.ohdsi.webapi.annotation.set.QuestionSet;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -35,11 +37,10 @@ public class Annotation {
 
   // @Column(name = "sample_name")
   // private String sampleName;
-
-  @JsonIgnore
+  
   @ManyToOne
-  @JoinColumn(name = "set_id")
-  private QuestionSet set;
+  @JoinColumn(name = "question_set_id")
+  private QuestionSet questionSet;
 
   // @OneToMany(
   //   fetch = FetchType.EAGER,
@@ -96,15 +97,15 @@ public class Annotation {
   /**
    * @return the set
    */
-  public QuestionSet getSet() {
-    return set;
+  public QuestionSet getQuestionSet() {
+    return questionSet;
   }
 
   /**
    * @param set the set to set
    */
-  public void setSet(QuestionSet set) {
-    this.set = set;
+  public void setQuestionSet(QuestionSet questionSet) {
+    this.questionSet = questionSet;
   }
 
 	// /**

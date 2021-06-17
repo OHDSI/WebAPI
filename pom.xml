@@ -79,7 +79,7 @@
 
     <security.provider>DisabledSecurity</security.provider>
     <security.token.expiration>43200</security.token.expiration>
-    <security.origin>http://localhost</security.origin>
+    <security.origin>*</security.origin>
     <security.ssl.enabled>false</security.ssl.enabled>
     <security.oauth.callback.ui>http://localhost/Atlas/#/welcome</security.oauth.callback.ui>
     <security.oauth.callback.api>http://localhost:8080/WebAPI/user/oauth/callback</security.oauth.callback.api>
@@ -238,7 +238,7 @@
 
     <!-- Cache Config -->
     <spring.cache.jcache.config>classpath:config/ehcache.xml</spring.cache.jcache.config>
-    <cdm.result.cache.warming.enable>true</cdm.result.cache.warming.enable>
+    <cdm.result.cache.warming.enable>false</cdm.result.cache.warming.enable>
     <cache.generation.invalidAfterDays>30</cache.generation.invalidAfterDays>
     <cache.generation.cleanupInterval>3600000</cache.generation.cleanupInterval>
     <cache.generation.useAsync>false</cache.generation.useAsync>

@@ -1160,6 +1160,15 @@
       "tagNameExistsWarning": "Tag <%=tagName%> already exists.",
       "cannotUnassignProtectedTagWarning": "Cannot unassign protected tag: <%=tagName%>"
     },
+    "heading": {
+      "tag": {
+        "tooltip": {
+          "tag": "Tag:",
+          "group": "Group:",
+          "groups": "Groups:"
+        }
+      }
+    },
     "versions": {
       "loading": "Loading versions...",
       "editComment": "Edit comment",

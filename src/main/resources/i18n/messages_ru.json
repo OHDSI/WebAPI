@@ -1160,6 +1160,15 @@
       "tagNameExistsWarning": "Тег <%=tagName%> уже существует.",
       "cannotUnassignProtectedTagWarning": "Невозможно отменить назначение защищенного тега: <%=tagName%>"
     },
+    "heading": {
+      "tag": {
+        "tooltip": {
+          "tag": "Тег:",
+          "group": "Группа:",
+          "groups": "Группы:"
+        }
+      }
+    },
     "versions": {
       "loading": "Загрузка версий...",
       "editComment": "Редактирование комментария",

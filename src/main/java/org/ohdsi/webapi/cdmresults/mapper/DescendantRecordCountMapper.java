@@ -28,6 +28,7 @@ public class DescendantRecordCountMapper {
 		descendantRecordCount.setId(rs.getInt("concept_id"));
 		descendantRecordCount.setRecordCount(rs.getLong("record_count"));
 		descendantRecordCount.setDescendantRecordCount(rs.getLong("descendant_record_count"));
+		descendantRecordCount.setPersonRecordCount(rs.getLong("person_record_count"));
 		return descendantRecordCount;
 	}
 }

@@ -64,11 +64,26 @@ WHERE analysis_id IN (405, 605, 705, 805, 807, 1805, 1807, 2105)
 		    but this subquery only gets the type or unit concept_ids, i.e., stratum_2
 		*/
 GROUP BY stratum_2
+), persons AS (
+    SELECT
+        stratum_1 AS     concept_id,
+        MAX(count_value) agg_count_value
+    FROM @resultTableQualifier.achilles_results
+    WHERE analysis_id IN (400, 600, 700, 800, 1800)
+        /* analyses:
+            Number of persons with at least one condition occurrence, by condition_concept_id
+            Number of persons with at least one procedure occurrence, by procedure_concept_id
+            Number of persons with at least one drug exposure, by drug_concept_id
+            Number of persons with at least one observation occurrence, by observation_concept_id
+            Number of persons with at least one measurement occurrence, by measurement_concept_id
+        */
+    GROUP BY stratum_1
 )
 SELECT
   concepts.ancestor_id               concept_id,
   isnull(max(c1.agg_count_value), 0) record_count,
-  isnull(sum(c2.agg_count_value), 0) descendant_record_count
+  isnull(sum(c2.agg_count_value), 0) descendant_record_count,
+  isnull(max(c3.agg_count_value), 0) person_record_count
 /*
 	in this main query and in the second subquery above, use sum to aggregate all descendant record counts togather
 	but for ancestor record counts, the same value will be repeated for each row of join, so use max to get a single copy of that value
@@ -76,5 +91,6 @@ SELECT
 FROM concepts
   LEFT JOIN counts c1 ON concepts.ancestor_id = c1.concept_id
   LEFT JOIN counts c2 ON concepts.descendant_id = c2.concept_id
+  LEFT JOIN persons c3 ON concepts.ancestor_id = c3.concept_id
 GROUP BY concepts.ancestor_id
 ;

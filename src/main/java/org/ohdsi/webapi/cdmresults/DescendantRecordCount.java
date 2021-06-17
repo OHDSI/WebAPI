@@ -23,6 +23,7 @@ public class DescendantRecordCount{
     private int id;
     private long recordCount;
     private long descendantRecordCount;
+    private long personRecordCount;
 
     public int getId() {
         return id;
@@ -46,6 +47,14 @@ public class DescendantRecordCount{
 
     public void setDescendantRecordCount(long descendantRecordCount) {
         this.descendantRecordCount = descendantRecordCount;
+    }
+
+    public long getPersonRecordCount() {
+        return personRecordCount;
+    }
+
+    public void setPersonRecordCount(long personRecordCount) {
+        this.personRecordCount = personRecordCount;
     }
 
     @Override

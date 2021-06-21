@@ -1142,23 +1142,26 @@
       "fixIt": "수정"
     },
     "tags": {
+      "loadingTags": "Loading tags list...",
       "title": "Assign Tags",
       "tabs": {
         "studyAssetTags": "Study Asset Tags",
         "reference": "Reference"
       },
-      "availableTags": "Available tags:",
       "assign": "Assign",
       "unassign": "Unassign",
       "notPermitted": "Not permitted",
       "assignExistingTag": "Create custom tag",
       "tagNamePlaceholder": "Tag name",
-      "assignedTags": "Assigned tags:",
       "tagGroups": "Tag groups:",
-      "tagGroup:": "Tag group:",
+      "tagGroup": "Tag group:",
       "showTags": "Show tags",
       "tagNameExistsWarning": "Tag <%=tagName%> already exists.",
-      "cannotUnassignProtectedTagWarning": "Cannot unassign protected tag: <%=tagName%>"
+      "cannotUnassignProtectedTagWarning": "Cannot unassign protected tag: <%=tagName%>",
+      "reassignConfirm": "The maximum number of assigned tags in the tag group \"<%=tagGroup%>\" is <%=maxNumber%>. The tag \"<%=tagName%>\" will be unassigned. Proceed?",
+      "typeSystem": "System",
+      "typeCustom": "Free-form",
+      "createAndAssign": "Create and Assign"
     },
     "heading": {
       "tag": {

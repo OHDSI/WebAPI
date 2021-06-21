@@ -1142,23 +1142,26 @@
       "fixIt": "Исправить"
     },
     "tags": {
+      "loadingTags": "Загрузка списка тегов...",
       "title": "Назначение тегов",
       "tabs": {
         "studyAssetTags": "Теги",
         "reference": "Справка"
       },
-      "availableTags": "Доступные теги:",
       "assign": "Назначить",
       "unassign": "Отменить",
-      "notPermitted": "Недостаточно прав",
+      "notPermitted": "Нет прав",
       "assignExistingTag": "Создать пользовательский тег",
       "tagNamePlaceholder": "Имя тега",
-      "assignedTags": "Назначенные теги:",
       "tagGroups": "Группы тегов:",
-      "tagGroup:": "Группа:",
+      "tagGroup": "Группа:",
       "showTags": "Показать теги",
       "tagNameExistsWarning": "Тег <%=tagName%> уже существует.",
-      "cannotUnassignProtectedTagWarning": "Невозможно отменить назначение защищенного тега: <%=tagName%>"
+      "cannotUnassignProtectedTagWarning": "Невозможно отменить назначение защищенного тега: <%=tagName%>",
+      "reassignConfirm": "Максимальное количество назначенных тегов из группы \"<%=tagGroup%>\": <%=maxNumber%>. Назначение тега \"<%=tagName%>\" будет снято. Продолжить?",
+      "typeSystem": "Системные",
+      "typeCustom": "Пользовательские",
+      "createAndAssign": "Создать и назначить"
     },
     "heading": {
       "tag": {

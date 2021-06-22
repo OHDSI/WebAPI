@@ -911,7 +911,9 @@
       "overwriteConfirm": "Вы действительно хотите перезаписать текущее выражение набора концепций?",
       "loadingIncludedConcepts": "Загрузка включенных концепций",
       "commonAncestors": "Общие предки",
-      "loadingIncludedSourcecodes": "Загрузка включенных исходных кодов"
+      "loadingIncludedSourcecodes": "Загрузка включенных исходных кодов",
+      "expressionResolveError": "Ошибка загрузки выражения набора концепций!",
+      "forbiddenError": "Недостаточно прав для работы с выражением набора концепций."
     },
     "conceptLegend": {
       "standard": "Стандартный",

@@ -398,7 +398,9 @@
       "overwriteConfirm": "Are you sure you want to overwrite current Concept Set Expression?",
       "loadingIncludedConcepts": "Loading Included Concepts",
       "commonAncestors": "Common Ancestors",
-      "loadingIncludedSourcecodes": "Loading Included Sourcecodes"
+      "loadingIncludedSourcecodes": "Loading Included Sourcecodes",
+      "expressionResolveError": "Error occurred during resolving expression!",
+      "forbiddenError": "You are not authorized to view the concept set expression."
     },
     "conceptLegend": {
       "standard": "Standard",

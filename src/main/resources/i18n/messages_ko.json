@@ -349,7 +349,9 @@
       "overwriteConfirm": "현재의 컨셉 세트 표현을 정말 덮어씌우시겠습니까?",
       "loadingIncludedConcepts": "포함된 컨셉 로딩 중",
       "commonAncestors": "공통 상위 컨셉",
-      "loadingIncludedSourcecodes": "포함된 소스 코드 로딩 중"
+      "loadingIncludedSourcecodes": "포함된 소스 코드 로딩 중",
+      "expressionResolveError": "Error occurred during resolving expression!",
+      "forbiddenError": "You are not authorized to view the concept set expression."
     },
     "conceptLegend": {
       "standard": "표준",

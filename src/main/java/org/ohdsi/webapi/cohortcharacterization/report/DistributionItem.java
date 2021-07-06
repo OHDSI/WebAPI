@@ -69,7 +69,7 @@ public class DistributionItem extends PrevalenceItem<DistributionItem> {
         double sd1 = stdDev;
         double sd2 = another.stdDev;
 
-        double sd = Math.sqrt(sd1 * sd1 + sd2 * sd2);
+        double sd = Math.sqrt((sd1 * sd1 + sd2 * sd2)/2.0);
         // prevent division by zero
         return sd != 0D ? (avg - another.avg) / sd : 0;
     }

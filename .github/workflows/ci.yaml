@@ -40,7 +40,7 @@ jobs:
               ${{ runner.os }}-maven-
 
       - name: Build code
-        run: mvn -B -DskipTests -P${{ env.MAVEN_PROFILE }} package
+        run: mvn -B -DskipTests=true -DskipUnitTests=true -P${{ env.MAVEN_PROFILE }} package
 
       - name: Test
         # Skipping unit and integration tests for now, because they keep failing.

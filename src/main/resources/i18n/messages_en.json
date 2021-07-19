@@ -395,7 +395,6 @@
       "appendConceptSetExpression": "Append Concept Set Expression",
       "overwriteConceptSetExpression": "Overwrite Concept Set Expression",
       "enterConceptIdentifiers": "Enter Concept Identifiers",
-      "enterSourceCodes": "Enter Source Codes",
       "name": "Name:",
       "addConcepts": "Add Concepts",
       "removeSelected": "Remove Selected",
@@ -409,7 +408,15 @@
       "commonAncestors": "Common Ancestors",
       "loadingIncludedSourcecodes": "Loading Included Sourcecodes",
       "expressionResolveError": "Error occurred during resolving expression!",
-      "forbiddenError": "You are not authorized to view the concept set expression."
+      "forbiddenError": "You are not authorized to view the concept set expression.",
+      "import": {
+        "sourceCodes": {
+          "enterSourceCodes": "Enter Source Codes",
+          "searchConcepts": "Search concepts",
+          "searchingConcepts": "Searching concepts...",
+          "notFound": "Not found:"
+        }
+      }
     },
     "conceptLegend": {
       "standard": "Standard",

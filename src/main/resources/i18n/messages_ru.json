@@ -908,7 +908,6 @@
       "appendConceptSetExpression": "Добавить определение набора концепций",
       "overwriteConceptSetExpression": "Перезаписать определение набора концепций",
       "enterConceptIdentifiers": "Введите идентификаторы концепций",
-      "enterSourceCodes": "Введите исходные коды",
       "name": "Имя:",
       "addConcepts": "Добавить концепции",
       "removeSelected": "Удалить выбранные",
@@ -922,7 +921,15 @@
       "commonAncestors": "Общие предки",
       "loadingIncludedSourcecodes": "Загрузка включенных исходных кодов",
       "expressionResolveError": "Ошибка загрузки выражения набора концепций!",
-      "forbiddenError": "Недостаточно прав для работы с выражением набора концепций."
+      "forbiddenError": "Недостаточно прав для работы с выражением набора концепций.",
+      "import": {
+        "sourceCodes": {
+          "enterSourceCodes": "Введите коды коды концепций",
+          "searchConcepts": "Поиск концепций",
+          "searchingConcepts": "Поиск концепций...",
+          "notFound": "Не найдено:"
+        }
+      }
     },
     "conceptLegend": {
       "standard": "Стандартный",

@@ -360,7 +360,12 @@
       "commonAncestors": "공통 상위 컨셉",
       "loadingIncludedSourcecodes": "포함된 소스 코드 로딩 중",
       "expressionResolveError": "Error occurred during resolving expression!",
-      "forbiddenError": "You are not authorized to view the concept set expression."
+      "forbiddenError": "You are not authorized to view the concept set expression.",
+      "import": {
+        "repository": {
+          "overwriteCheckboxLabel": "Overwrite concept set items (append if not checked)"
+        }
+      }
     },
     "conceptLegend": {
       "standard": "표준",

@@ -922,7 +922,12 @@
       "commonAncestors": "Общие предки",
       "loadingIncludedSourcecodes": "Загрузка включенных исходных кодов",
       "expressionResolveError": "Ошибка загрузки выражения набора концепций!",
-      "forbiddenError": "Недостаточно прав для работы с выражением набора концепций."
+      "forbiddenError": "Недостаточно прав для работы с выражением набора концепций.",
+      "import": {
+        "repository": {
+          "overwriteCheckboxLabel": "Заменить концепции текущего набора (добавить, если не отмечено)"
+        }
+      }
     },
     "conceptLegend": {
       "standard": "Стандартный",

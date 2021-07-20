@@ -409,7 +409,12 @@
       "commonAncestors": "Common Ancestors",
       "loadingIncludedSourcecodes": "Loading Included Sourcecodes",
       "expressionResolveError": "Error occurred during resolving expression!",
-      "forbiddenError": "You are not authorized to view the concept set expression."
+      "forbiddenError": "You are not authorized to view the concept set expression.",
+      "import": {
+        "repository": {
+          "overwriteCheckboxLabel": "Overwrite concept set items (append if not checked)"
+        }
+      }
     },
     "conceptLegend": {
       "standard": "Standard",

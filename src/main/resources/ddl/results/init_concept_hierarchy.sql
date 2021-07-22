@@ -7,9 +7,9 @@ INSERT INTO @results_schema.concept_hierarchy
 	(concept_id, concept_name, treemap, concept_hierarchy_type, level1_concept_name, level2_concept_name, level3_concept_name, level4_concept_name)
 SELECT
 	snomed.concept_id,
-    snomed.concept_name AS concept_name,
-	CAST(NULL AS VARCHAR(20)) as concept_hierarchy_type,
+  snomed.concept_name AS concept_name,
 	CAST('Condition' AS VARCHAR(20)) AS treemap,
+	CAST(NULL AS VARCHAR(20)) as concept_hierarchy_type,
 	pt_to_hlt.pt_concept_name as level1_concept_name,
 	hlt_to_hlgt.hlt_concept_name as level2_concept_name,
 	hlgt_to_soc.hlgt_concept_name as level3_concept_name,

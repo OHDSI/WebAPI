@@ -26,7 +26,7 @@
 
     <circe.version>1.9.4</circe.version>
     <jersey.version>2.14</jersey.version>
-    <SqlRender.version>1.7.0.101</SqlRender.version>
+    <SqlRender.version>1.8.3</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
     <pac4j.version>4.0.0</pac4j.version>
     <jackson.version>2.10.5</jackson.version>
@@ -190,7 +190,7 @@
     <server.ssl.key-password></server.ssl.key-password>
     <server.servlet.context-path>/WebAPI</server.servlet.context-path>
 
-    <arachne.version>1.17.1</arachne.version>
+    <arachne.version>1.17.2</arachne.version>
     <jersey-media-multipart.version>2.25.1</jersey-media-multipart.version>
     <execution.invalidation.period>600000</execution.invalidation.period>
     <execution.invalidation.maxage.hours>12</execution.invalidation.maxage.hours>

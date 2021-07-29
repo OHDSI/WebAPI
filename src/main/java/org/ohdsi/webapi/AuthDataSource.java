@@ -52,6 +52,12 @@ public class AuthDataSource {
     private int maxPoolSize;
     @Value("${spring.datasource.hikari.minimum-idle}")
     private int minPoolIdle;
+    @Value("${spring.datasource.hikari.connection-timeout}")
+    private int connectionTimeout;
+    @Value("${spring.datasource.hikari.register-mbeans}")
+    private boolean registerMbeans;
+    @Value("${spring.datasource.hikari.mbean-name}")
+    private String mbeanName;
 
     @Bean(name = "authDataSource")
     public DataSource authDataSource() {
@@ -64,9 +70,12 @@ public class AuthDataSource {
             config.setPassword(password);
             config.setSchema(schema);
             config.setConnectionTestQuery(testQuery);
+            config.setConnectionTimeout(connectionTimeout);
             config.setMaximumPoolSize(maxPoolSize);
             config.setMinimumIdle(minPoolIdle);
             config.setValidationTimeout(validationTimeout);
+            config.setPoolName(mbeanName);
+            config.setRegisterMbeans(registerMbeans);
             return new HikariDataSource(config);
         } catch (Exception ex) {
             logger.error("Failed to initialize connection to DB used for authentication: {}", ex.getMessage());

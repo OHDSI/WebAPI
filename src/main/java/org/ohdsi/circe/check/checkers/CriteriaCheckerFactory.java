@@ -1,27 +1,9 @@
-/*
- *   Copyright 2017 Observational Health Data Sciences and Informatics
- *   Licensed under the Apache License, Version 2.0 (the "License");
- *   you may not use this file except in compliance with the License.
- *   You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *   Unless required by applicable law or agreed to in writing, software
- *   distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *   See the License for the specific language governing permissions and
- *   limitations under the License.
- *
- *   Authors: Vitaly Koulakov
- *
- */
-
 package org.ohdsi.circe.check.checkers;
-
-import org.ohdsi.circe.cohortdefinition.*;
 
 import java.util.Objects;
 import java.util.function.Function;
+
+import org.ohdsi.circe.cohortdefinition.*;
 
 class CriteriaCheckerFactory {
 
@@ -54,7 +36,7 @@ class CriteriaCheckerFactory {
         } else if (criteria instanceof DrugExposure) {
             result = c -> Objects.equals(((DrugExposure)c).codesetId, conceptSet.id) || Objects.equals(((DrugExposure)c).drugSourceConcept, conceptSet.id);
         } else if (criteria instanceof TreatmentLine) {
-            result = c -> Objects.equals(((TreatmentLine) c).codesetId, conceptSet.id);
+            result = c -> Objects.equals(((TreatmentLine)c).codesetId, conceptSet.id);
         } else if (criteria instanceof Measurement) {
             result = c -> Objects.equals(((Measurement)c).codesetId, conceptSet.id) || Objects.equals(((Measurement)c).measurementSourceConcept, conceptSet.id);
         } else if (criteria instanceof Observation) {
@@ -65,6 +47,8 @@ class CriteriaCheckerFactory {
             result = c -> Objects.equals(((Specimen)c).codesetId, conceptSet.id);
         } else if (criteria instanceof VisitOccurrence) {
             result = c -> Objects.equals(((VisitOccurrence) c).codesetId, conceptSet.id);
+        } else if (criteria instanceof LocationRegion) {
+            result = c -> Objects.equals(((LocationRegion) c).codesetId, conceptSet.id);
         }
         return result;
     }

@@ -1,8 +1,12 @@
 package org.ohdsi.webapi.cohortdefinition.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.ohdsi.analysis.CohortMetadata;
+import org.ohdsi.webapi.service.dto.CommonEntityDTO;
 
-public class CohortMetadataDTO implements CohortMetadata {
+import java.util.Date;
+
+public class CohortMetadataDTO extends CommonEntityDTO implements CohortMetadata {
 
     private Integer id;
     private String name;

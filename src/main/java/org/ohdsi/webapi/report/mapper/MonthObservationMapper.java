@@ -3,8 +3,8 @@
     import org.ohdsi.webapi.report.MonthObservationRecord;
     import org.springframework.jdbc.core.RowMapper;
 
-    import java.sql.ResultSet;
-    import java.sql.SQLException;
+	import java.sql.ResultSet;
+	import java.sql.SQLException;
 
 	public class MonthObservationMapper implements RowMapper<MonthObservationRecord> {
 

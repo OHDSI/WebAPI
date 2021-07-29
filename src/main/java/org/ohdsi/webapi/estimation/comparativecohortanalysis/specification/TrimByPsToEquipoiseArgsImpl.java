@@ -2,7 +2,6 @@ package org.ohdsi.webapi.estimation.comparativecohortanalysis.specification;
 
 import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.TrimByPsToEquipoiseArgs;
 import org.ohdsi.webapi.RLangClassImpl;
-
 import java.util.ArrayList;
 import java.util.List;
 

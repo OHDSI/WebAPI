@@ -1,17 +1,22 @@
 package org.ohdsi.webapi.feanalysis;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
-import org.ohdsi.webapi.cohortcharacterization.CcResultType;
+import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.feanalysis.domain.*;
+import org.ohdsi.webapi.feanalysis.event.FeAnalysisChangedEvent;
+import org.ohdsi.webapi.feanalysis.repository.FeAnalysisAggregateRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisCriteriaRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisEntityRepository;
 import org.ohdsi.webapi.feanalysis.repository.FeAnalysisWithStringEntityRepository;
-import org.ohdsi.webapi.service.AbstractDaoService;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.EntityUtils;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,15 +24,22 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.NotFoundException;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import org.ohdsi.webapi.service.AbstractDaoService;
+import org.ohdsi.webapi.service.VocabularyService;
 
 @Service
 @Transactional(readOnly = true)
 public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnalysisService {
     
-    private FeAnalysisEntityRepository analysisRepository;
-    private FeAnalysisCriteriaRepository criteriaRepository;
-    private FeAnalysisWithStringEntityRepository stringAnalysisRepository;
+    private final FeAnalysisEntityRepository analysisRepository;
+    private final FeAnalysisCriteriaRepository criteriaRepository;
+    private final FeAnalysisWithStringEntityRepository stringAnalysisRepository;
+    private final VocabularyService vocabularyService;
+    
+    private final ApplicationEventPublisher eventPublisher;
+    private FeAnalysisAggregateRepository aggregateRepository;
 
     private final EntityGraph defaultEntityGraph = EntityUtils.fromAttributePaths(
             "createdBy",
@@ -37,15 +49,26 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     public FeAnalysisServiceImpl(
             final FeAnalysisEntityRepository analysisRepository,
             final FeAnalysisCriteriaRepository criteriaRepository, 
-            final FeAnalysisWithStringEntityRepository stringAnalysisRepository) {
+            final FeAnalysisWithStringEntityRepository stringAnalysisRepository,
+            final VocabularyService vocabularyService,
+            final FeAnalysisAggregateRepository aggregateRepository,
+            final ApplicationEventPublisher eventPublisher) {
         this.analysisRepository = analysisRepository;
         this.criteriaRepository = criteriaRepository;
         this.stringAnalysisRepository = stringAnalysisRepository;
+        this.vocabularyService = vocabularyService;
+        this.aggregateRepository = aggregateRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
     public Page<FeAnalysisEntity> getPage(final Pageable pageable) {
         return analysisRepository.findAll(pageable, defaultEntityGraph);
+    }
+    
+    @Override
+    public int getCountFeWithSameName(Integer id, String name){
+        return analysisRepository.getCountFeWithSameName(id, name);
     }
 
     @Override
@@ -68,14 +91,36 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     }
 
     @Override
+    public Optional<FeAnalysisEntity> findByName(String name) {
+        return analysisRepository.findByName(name);
+    }
+
+    @Override
     @Transactional
     public FeAnalysisWithCriteriaEntity createCriteriaAnalysis(final FeAnalysisWithCriteriaEntity analysis) {
         FeAnalysisWithCriteriaEntity newAnalysis = newAnalysis(analysis);
         newAnalysis.setDesign(Collections.emptyList());
         final FeAnalysisWithCriteriaEntity entityWithMainFields = saveNew(newAnalysis);
+        if (createOrUpdateConceptSetEntity(entityWithMainFields, analysis.getConceptSetEntity())) {
+            analysisRepository.save(entityWithMainFields);
+        }
         final List<FeAnalysisCriteriaEntity> criteriaList = createCriteriaListForAnalysis(entityWithMainFields, analysis.getDesign());
         entityWithMainFields.setDesign(criteriaList);
         return entityWithMainFields;
+    }
+
+    private boolean createOrUpdateConceptSetEntity(FeAnalysisWithCriteriaEntity analysis, FeAnalysisConcepsetEntity modifiedConceptSet) {
+
+        if (Objects.nonNull(modifiedConceptSet)) {
+            FeAnalysisConcepsetEntity concepsetEntity = Optional.ofNullable(analysis.getConceptSetEntity())
+                    .orElseGet(FeAnalysisConcepsetEntity::new);
+            concepsetEntity.setFeatureAnalysis(analysis);
+            concepsetEntity.setRawExpression(modifiedConceptSet.getRawExpression());
+            analysis.setConceptSetEntity(concepsetEntity);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private <T extends FeAnalysisEntity> T saveNew(T entity) {
@@ -115,7 +160,6 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     public FeAnalysisEntity updateAnalysis(Integer feAnalysisId, FeAnalysisEntity updatedEntity) {
 
         FeAnalysisEntity savedEntity = findById(feAnalysisId).orElseThrow(NotFoundException::new);
-        UserEntity user = getCurrentUser();
 
         checkEntityLocked(savedEntity);
         savedEntity.setDescr(updatedEntity.getDescr());
@@ -124,13 +168,7 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
                   savedWithCriteria = (FeAnalysisWithCriteriaEntity) savedEntity;
           removeFeAnalysisCriteriaEntities(savedWithCriteria, updatedWithCriteriaEntity);
           updatedWithCriteriaEntity.getDesign().forEach(criteria -> criteria.setFeatureAnalysis(savedWithCriteria));
-          if (Objects.nonNull(updatedWithCriteriaEntity.getConceptSetEntity())) {
-            FeAnalysisConcepsetEntity concepsetEntity = Optional.ofNullable(((FeAnalysisWithCriteriaEntity) savedEntity).getConceptSetEntity())
-                    .orElseGet(FeAnalysisConcepsetEntity::new);
-            concepsetEntity.setFeatureAnalysis(savedWithCriteria);
-            concepsetEntity.setRawExpression(updatedWithCriteriaEntity.getConceptSetEntity().getRawExpression());
-            savedWithCriteria.setConceptSetEntity(concepsetEntity);
-          }
+          createOrUpdateConceptSetEntity((FeAnalysisWithCriteriaEntity) savedEntity, updatedWithCriteriaEntity.getConceptSetEntity());
         }
         savedEntity.setDesign(updatedEntity.getDesign());
         if (Objects.nonNull(updatedEntity.getDomain())) {
@@ -146,9 +184,11 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
         if (Objects.nonNull(updatedEntity.getType())) {
             savedEntity.setType(updatedEntity.getType());
         }
-        savedEntity.setModifiedBy(user);
+        savedEntity.setModifiedBy(getCurrentUser());
         savedEntity.setModifiedDate(new Date());
-        return analysisRepository.save(savedEntity);
+        savedEntity = analysisRepository.save(savedEntity);
+        eventPublisher.publishEvent(new FeAnalysisChangedEvent(savedEntity));
+        return savedEntity;
     }
 
     private void removeFeAnalysisCriteriaEntities(FeAnalysisWithCriteriaEntity<?> original, FeAnalysisWithCriteriaEntity<?> updated) {
@@ -171,10 +211,65 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     public void deleteAnalysis(int id) {
         deleteAnalysis(analysisRepository.findById(id).orElseThrow(() -> new RuntimeException("There is no Feature Analysis with id = " + id)));
     }
+    
+    @Override
+    public List<String> getNamesLike(String name) {
+        return analysisRepository.findAllByNameStartsWith(name).stream().map(FeAnalysisEntity::getName).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ConceptSetExport> exportConceptSets(FeAnalysisWithCriteriaEntity<?> analysisEntity) {
+
+        SourceInfo sourceInfo = new SourceInfo(vocabularyService.getPriorityVocabularySource());
+        List<ConceptSet> conceptSets = analysisEntity.getConceptSets();
+        return conceptSets.stream()
+                .map(cs -> vocabularyService.exportConceptSet(cs, sourceInfo))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<? extends FeAnalysisEntity> findByDesignAndName(final FeAnalysisWithStringEntity withStringEntity, final String name) {
+        return this.findByDesignAndPredicate(withStringEntity.getDesign(), f -> Objects.equals(f.getName(), name));
+    }
+
+    @Override
+    public Optional<FeAnalysisEntity> findByCriteriaListAndCsAndDomainAndStat(List<? extends FeAnalysisCriteriaEntity> newCriteriaList, FeAnalysisWithCriteriaEntity<? extends FeAnalysisCriteriaEntity> newFeAnalysis) {
+        Map<FeAnalysisWithCriteriaEntity, List<FeAnalysisCriteriaEntity>> feAnalysisEntityListMap = newCriteriaList.stream()
+                .map(c -> criteriaRepository.findAllByExpressionString(c.getExpressionString()))
+                .flatMap(List::stream).collect(Collectors.groupingBy(FeAnalysisCriteriaEntity::getFeatureAnalysis));
+        return feAnalysisEntityListMap.entrySet().stream().filter(e -> {
+            FeAnalysisWithCriteriaEntity feAnalysis = e.getKey();
+            return checkCriteriaList(e.getValue(), newCriteriaList) &&
+                    CollectionUtils.isEqualCollection(feAnalysis.getConceptSets(), newFeAnalysis.getConceptSets()) &&
+                    feAnalysis.getDomain().equals(newFeAnalysis.getDomain()) &&
+                    feAnalysis.getStatType().equals(newFeAnalysis.getStatType());
+            }).findAny().map(Map.Entry::getKey);
+    }
+
+    private boolean checkCriteriaList(List<FeAnalysisCriteriaEntity> curCriteriaList, List<? extends FeAnalysisCriteriaEntity> newCriteriaList) {
+        List<String> currentList = curCriteriaList.stream().map(FeAnalysisCriteriaEntity::getExpressionString).collect(Collectors.toList());
+        List<String> newList = newCriteriaList.stream().map(FeAnalysisCriteriaEntity::getExpressionString).collect(Collectors.toList());
+        return CollectionUtils.isEqualCollection(currentList, newList);
+    }
+
+    private Optional<? extends FeAnalysisEntity> findByDesignAndPredicate(final String design, final Predicate<FeAnalysisEntity> f) {
+        List<? extends FeAnalysisEntity> detailsFromDb = stringAnalysisRepository.findByDesign(design);
+        return detailsFromDb
+                .stream()
+                .filter(f)
+                .findFirst();
+    }
+    
 
     private void checkEntityLocked(FeAnalysisEntity entity) {
         if (entity.getLocked() == Boolean.TRUE) {
             throw new IllegalArgumentException(String.format("Feature analysis %s is locked.", entity.getName()));
         }
+    }
+
+    @Override
+    public List<FeAnalysisAggregateEntity> findAggregates() {
+
+        return aggregateRepository.findAll();
     }
 }

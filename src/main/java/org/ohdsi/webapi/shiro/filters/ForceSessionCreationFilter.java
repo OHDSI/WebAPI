@@ -1,12 +1,11 @@
 package org.ohdsi.webapi.shiro.filters;
 
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.support.DefaultSubjectContext;
 import org.apache.shiro.web.servlet.AdviceFilter;
-
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 
 /**
  *

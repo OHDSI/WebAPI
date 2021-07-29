@@ -22,5 +22,8 @@ CREATE TABLE @results_schema.cc_results
   p75_value DOUBLE PRECISION,
   p90_value DOUBLE PRECISION,
   max_value DOUBLE PRECISION,
-  cohort_definition_id BIGINT
+  cohort_definition_id BIGINT,
+  aggregate_id INTEGER,
+  aggregate_name VARCHAR(1000),
+  missing_means_zero INTEGER
 );

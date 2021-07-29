@@ -2,12 +2,11 @@ package org.ohdsi.webapi.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.aspectj.lang.JoinPoint;
-import org.junit.Test;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
+import org.aspectj.lang.JoinPoint;
+import org.junit.Test;
 
 public class JsonMappingTest {
 

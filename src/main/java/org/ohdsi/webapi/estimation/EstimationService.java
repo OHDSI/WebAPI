@@ -3,6 +3,7 @@ package org.ohdsi.webapi.estimation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.ohdsi.webapi.estimation.domain.EstimationGenerationEntity;
 import org.ohdsi.webapi.estimation.specification.EstimationAnalysisImpl;
+import org.ohdsi.webapi.job.JobExecutionResource;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -16,13 +17,15 @@ public interface EstimationService {
   Estimation updateEstimation(final int id, Estimation est) throws Exception;
   Estimation copy(final int id) throws Exception;
   Estimation getAnalysis(int id);
+  EstimationAnalysisImpl getAnalysisExpression(int id);
+  EstimationAnalysisImpl exportAnalysis(Estimation est, String sourceKey);
   EstimationAnalysisImpl exportAnalysis(Estimation est);
   Estimation importAnalysis(EstimationAnalysisImpl est) throws Exception;
   String getNameForCopy(String dtoName);
   void hydrateAnalysis(EstimationAnalysisImpl analysis, String packageName, OutputStream out) throws JsonProcessingException;
-  void runGeneration(Estimation estimation, String sourceKey) throws IOException;
+  JobExecutionResource runGeneration(Estimation estimation, String sourceKey) throws IOException;
   List<EstimationGenerationEntity> getEstimationGenerations(Integer estimationAnalysisId);
   EstimationGenerationEntity getGeneration(Long generationId);
-  int countLikeName(String copyName); 
   Estimation getById(Integer id);
+  int getCountEstimationWithSameName(Integer id, String name);
 }

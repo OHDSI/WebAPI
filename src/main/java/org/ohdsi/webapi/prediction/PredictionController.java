@@ -3,17 +3,23 @@ package org.ohdsi.webapi.prediction;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.Constants;
+import org.ohdsi.webapi.check.CheckResult;
+import org.ohdsi.webapi.check.checker.prediction.PredictionChecker;
 import org.ohdsi.webapi.common.SourceMapKey;
+import org.ohdsi.webapi.common.analyses.CommonAnalysisDTO;
 import org.ohdsi.webapi.common.generation.ExecutionBasedGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
 import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
+import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.prediction.domain.PredictionGenerationEntity;
 import org.ohdsi.webapi.prediction.dto.PredictionAnalysisDTO;
 import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl;
-import org.ohdsi.webapi.service.SourceService;
-import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.security.PermissionService;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.ExceptionUtils;
-import org.ohdsi.webapi.util.UserUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
@@ -27,12 +33,15 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Controller
 @Path("/prediction/")
 public class PredictionController {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(PredictionController.class);
 
   private static final String NO_PREDICTION_ANALYSIS_MESSAGE = "There is no prediction analysis with id = %d.";
   private static final String NO_GENERATION_MESSAGE = "There is no generation with id = %d";
@@ -48,6 +57,9 @@ public class PredictionController {
   private final SourceService sourceService;
 
   private final ScriptExecutionService executionService;
+  private final PredictionChecker checker;
+
+  private PermissionService permissionService;
 
   @Autowired
   public PredictionController(PredictionService service,
@@ -55,33 +67,39 @@ public class PredictionController {
                               ConverterUtils converterUtils,
                               CommonGenerationSensitiveInfoService sensitiveInfoService,
                               SourceService sourceService,
-                              ScriptExecutionService executionService) {
+                              ScriptExecutionService executionService, PredictionChecker checker,
+                              PermissionService permissionService) {
     this.service = service;
     this.conversionService = conversionService;
     this.converterUtils = converterUtils;
     this.sensitiveInfoService = sensitiveInfoService;
     this.sourceService = sourceService;
     this.executionService = executionService;
+    this.checker = checker;
+    this.permissionService = permissionService;
   }
 
   @GET
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
-  public List<PredictionListItem> getAnalysisList() {
+  public List<CommonAnalysisDTO> getAnalysisList() {
 
     return StreamSupport
             .stream(service.getAnalysisList().spliterator(), false)
-            .map(pred -> {
-              PredictionListItem item = new PredictionListItem();
-              item.analysisId = pred.getId();
-              item.name = pred.getName();
-              item.description = pred.getDescription();
-              item.createdBy = UserUtils.nullSafeLogin(pred.getCreatedBy());
-              item.createdDate = pred.getCreatedDate();
-              item.modifiedBy = UserUtils.nullSafeLogin(pred.getModifiedBy());
-              item.modifiedDate = pred.getModifiedDate();
-              return item;
-            }).collect(Collectors.toList());
+            .map(analysis -> {
+              CommonAnalysisDTO dto = conversionService.convert(analysis, CommonAnalysisDTO.class);
+              permissionService.fillWriteAccess(analysis, dto);
+              return dto;
+            })
+            .collect(Collectors.toList());
+  }
+
+  @GET
+  @Path("/{id}/exists")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public int getCountPredictionWithSameName(@PathParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+    return service.getCountPredictionWithSameName(id, name);
   }
 
   @DELETE
@@ -96,8 +114,8 @@ public class PredictionController {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public PredictionAnalysisDTO createAnalysis(PredictionAnalysis pred) {
-
-    return conversionService.convert(service.createAnalysis(pred), PredictionAnalysisDTO.class);
+    PredictionAnalysis analysis = service.createAnalysis(pred);
+    return reloadAndConvert(analysis.getId());
   }
 
   @PUT
@@ -105,16 +123,16 @@ public class PredictionController {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public PredictionAnalysisDTO updateAnalysis(@PathParam("id") int id, PredictionAnalysis pred) {
-
-    return conversionService.convert(service.updateAnalysis(id, pred), PredictionAnalysisDTO.class);
+    service.updateAnalysis(id, pred);
+    return reloadAndConvert(id);
   }
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}/copy")
   public PredictionAnalysisDTO copy(@PathParam("id") int id) {
-
-    return conversionService.convert(service.copy(id), PredictionAnalysisDTO.class);
+    PredictionAnalysis analysis = service.copy(id);
+    return reloadAndConvert(analysis.getId());
   }
 
   @GET
@@ -140,8 +158,13 @@ public class PredictionController {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public PredictionAnalysisDTO importAnalysis(PatientLevelPredictionAnalysisImpl analysis) throws Exception {
+
+    if (Objects.isNull(analysis)) {
+      LOGGER.error("Failed to import Prediction, empty or not valid source JSON");
+      throw new InternalServerErrorException();
+    }
     PredictionAnalysis importedAnalysis = service.importAnalysis(analysis);
-    return conversionService.convert(importedAnalysis, PredictionAnalysisDTO.class);
+    return reloadAndConvert(importedAnalysis.getId());
   }  
 
   @GET
@@ -174,12 +197,17 @@ public class PredictionController {
   @Path("{id}/generation/{sourceKey}")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public void runGeneration(@PathParam("id") Integer predictionAnalysisId,
-                     @PathParam("sourceKey") String sourceKey) throws IOException {
+  public JobExecutionResource runGeneration(@PathParam("id") Integer predictionAnalysisId,
+                                            @PathParam("sourceKey") String sourceKey) throws IOException {
 
     PredictionAnalysis predictionAnalysis = service.getAnalysis(predictionAnalysisId);
     ExceptionUtils.throwNotFoundExceptionIfNull(predictionAnalysis, String.format(NO_PREDICTION_ANALYSIS_MESSAGE, predictionAnalysisId));
-    service.runGeneration(predictionAnalysis, sourceKey);
+    PredictionAnalysisDTO predictionAnalysisDTO = conversionService.convert(predictionAnalysis, PredictionAnalysisDTO.class);
+    CheckResult checkResult = runDiagnostics(predictionAnalysisDTO);
+    if (checkResult.hasCriticalErrors()) {
+      throw new RuntimeException("Cannot be generated due to critical errors in design. Call 'check' service for further details");
+    }
+    return service.runGeneration(predictionAnalysis, sourceKey);
   }
 
   @GET
@@ -187,7 +215,7 @@ public class PredictionController {
   @Produces(MediaType.APPLICATION_JSON)
   public List<ExecutionBasedGenerationDTO> getGenerations(@PathParam("id") Integer predictionAnalysisId) {
 
-    Map<String, SourceInfo> sourcesMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_KEY);
+    Map<String, Source> sourcesMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_KEY);
     List<PredictionGenerationEntity> predictionGenerations = service.getPredictionGenerations(predictionAnalysisId);
     List<ExecutionBasedGenerationDTO> dtos = converterUtils.convertList(predictionGenerations, ExecutionBasedGenerationDTO.class);
     return sensitiveInfoService.filterSensitiveInfo(dtos, info -> Collections.singletonMap(Constants.Variables.SOURCE, sourcesMap.get(info.getSourceKey())));
@@ -216,4 +244,18 @@ public class PredictionController {
             .build();
   }
 
+    private PredictionAnalysisDTO reloadAndConvert(Integer id) {
+        // Before conversion entity must be refreshed to apply entity graphs
+        PredictionAnalysis analysis = service.getById(id);
+        return conversionService.convert(analysis, PredictionAnalysisDTO.class);
+    }
+
+    @POST
+    @Path("/check")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public CheckResult runDiagnostics(PredictionAnalysisDTO predictionAnalysisDTO){
+
+        return new CheckResult(checker.check(predictionAnalysisDTO));
+    }
 }

@@ -17,4 +17,5 @@ public class FeAnalysisWithConceptSetDTO extends FeAnalysisDTO {
   public void setConceptSets(List<ConceptSet> conceptSets) {
     this.conceptSets = conceptSets;
   }
+
 }

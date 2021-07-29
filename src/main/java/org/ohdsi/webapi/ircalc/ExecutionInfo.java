@@ -15,16 +15,17 @@
  */
 package org.ohdsi.webapi.ircalc;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.io.Serializable;
+import java.util.Date;
+import javax.persistence.*;
+
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.IExecutionInfo;
 import org.ohdsi.webapi.source.Source;
-
-import javax.persistence.*;
-import java.io.Serializable;
-import java.util.Date;
 
 /**
  *

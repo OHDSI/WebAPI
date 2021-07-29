@@ -1,11 +1,10 @@
 package org.ohdsi.webapi.featureextraction.specification;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.ohdsi.analysis.featureextraction.design.CovariateSettings;
-import org.ohdsi.webapi.RLangClassImpl;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.ohdsi.analysis.featureextraction.design.*;
+import org.ohdsi.webapi.RLangClassImpl;
 
 /**
  *

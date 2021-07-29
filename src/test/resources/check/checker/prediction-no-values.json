@@ -1,0 +1,4830 @@
+{
+  "getPlpDataArgs": {
+    "maxSampleSize": null,
+    "washoutPeriod": 0
+  },
+  "id": 1,
+  "name": "New Patient Level Prediction Analysis12",
+  "description": "sdf",
+  "version": "v2.7.0",
+  "organizationName": "OHDSI",
+  "packageName": null,
+  "skeletonType": "PatientLevelPredictionStudy",
+  "skeletonVersion": "v0.0.1",
+  "createdBy": null,
+  "createdDate": null,
+  "modifiedBy": null,
+  "modifiedDate": null,
+  "cohortDefinitions": [
+    {
+      "id": 9,
+      "name": "Graham replication:  warfarin new users with prior atrial fibrillation",
+      "description": null,
+      "expression": {
+        "cdmVersionRange": ">=5.0.0",
+        "Title": null,
+        "PrimaryCriteria": {
+          "CriteriaList": [
+            {
+              "DrugExposure": {
+                "CorrelatedCriteria": null,
+                "CodesetId": 8,
+                "First": true,
+                "OccurrenceStartDate": {
+                  "Value": "2010-10-19",
+                  "Op": "gte",
+                  "Extent": null
+                },
+                "OccurrenceEndDate": null,
+                "DrugType": null,
+                "DrugTypeExclude": false,
+                "StopReason": null,
+                "Refills": null,
+                "Quantity": null,
+                "DaysSupply": null,
+                "RouteConcept": null,
+                "EffectiveDrugDose": null,
+                "DoseUnit": null,
+                "LotNumber": null,
+                "DrugSourceConcept": null,
+                "Age": {
+                  "Value": 65,
+                  "Op": "gte",
+                  "Extent": null
+                },
+                "Gender": null,
+                "ProviderSpecialty": null,
+                "VisitType": null
+              }
+            }
+          ],
+          "ObservationWindow": {
+            "PriorDays": 183,
+            "PostDays": 0
+          },
+          "PrimaryCriteriaLimit": {
+            "Type": "First"
+          }
+        },
+        "AdditionalCriteria": null,
+        "ConceptSets": [
+          {
+            "id": 0,
+            "name": "dabigatran",
+            "expression": {
+              "items": [
+                {
+                  "concept": {
+                    "CONCEPT_ID": 40228152,
+                    "CONCEPT_NAME": "dabigatran etexilate",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "1037042",
+                    "DOMAIN_ID": "Drug",
+                    "VOCABULARY_ID": "RxNorm",
+                    "CONCEPT_CLASS_ID": "Ingredient"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                }
+              ]
+            }
+          },
+          {
+            "id": 1,
+            "name": "Atrial fibrillation",
+            "expression": {
+              "items": [
+                {
+                  "concept": {
+                    "CONCEPT_ID": 313217,
+                    "CONCEPT_NAME": "Atrial fibrillation",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "49436004",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                }
+              ]
+            }
+          },
+          {
+            "id": 2,
+            "name": "Atrial flutter",
+            "expression": {
+              "items": [
+                {
+                  "concept": {
+                    "CONCEPT_ID": 314665,
+                    "CONCEPT_NAME": "Atrial flutter",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "5370000",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                }
+              ]
+            }
+          },
+          {
+            "id": 3,
+            "name": "rivaroxaban",
+            "expression": {
+              "items": [
+                {
+                  "concept": {
+                    "CONCEPT_ID": 40241331,
+                    "CONCEPT_NAME": "rivaroxaban",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "1114195",
+                    "DOMAIN_ID": "Drug",
+                    "VOCABULARY_ID": "RxNorm",
+                    "CONCEPT_CLASS_ID": "Ingredient"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                }
+              ]
+            }
+          },
+          {
+            "id": 4,
+            "name": "apixaban",
+            "expression": {
+              "items": [
+                {
+                  "concept": {
+                    "CONCEPT_ID": 43013024,
+                    "CONCEPT_NAME": "apixaban",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "1364430",
+                    "DOMAIN_ID": "Drug",
+                    "VOCABULARY_ID": "RxNorm",
+                    "CONCEPT_CLASS_ID": "Ingredient"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                }
+              ]
+            }
+          },
+          {
+            "id": 5,
+            "name": "long term care visit",
+            "expression": {
+              "items": [
+                {
+                  "concept": {
+                    "CONCEPT_ID": 42898160,
+                    "CONCEPT_NAME": "Long Term Care Visit",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "LTCP",
+                    "DOMAIN_ID": "Visit",
+                    "VOCABULARY_ID": "Visit",
+                    "CONCEPT_CLASS_ID": "Visit"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                }
+              ]
+            }
+          },
+          {
+            "id": 6,
+            "name": "Hospice observations",
+            "expression": {
+              "items": [
+                {
+                  "concept": {
+                    "CONCEPT_ID": 40483762,
+                    "CONCEPT_NAME": "Acute care hospice service",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "445449000",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Qualifier Value"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4123927,
+                    "CONCEPT_NAME": "Admission to hospice",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "305336008",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4086294,
+                    "CONCEPT_NAME": "Admission to hospice for respite",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "183921001",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4137269,
+                    "CONCEPT_NAME": "Discharge from hospice",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "306676000",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4137272,
+                    "CONCEPT_NAME": "Discharge from hospice day hospital",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "306681009",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4062333,
+                    "CONCEPT_NAME": "Full care by hospice",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "170935008",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 40481548,
+                    "CONCEPT_NAME": "Home hospice service",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "444933003",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Qualifier Value"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4109386,
+                    "CONCEPT_NAME": "Hospice",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "284546000",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4301458,
+                    "CONCEPT_NAME": "Hospice care",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "385763009",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4301459,
+                    "CONCEPT_NAME": "Hospice care management",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "385765002",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2720815,
+                    "CONCEPT_NAME": "Hospice care provided in inpatient hospice facility",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "Q5006",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2720814,
+                    "CONCEPT_NAME": "Hospice care provided in inpatient hospital",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "Q5005",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2720817,
+                    "CONCEPT_NAME": "Hospice care provided in inpatient psychiatric facility",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "Q5008",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2720816,
+                    "CONCEPT_NAME": "Hospice care provided in long term care facility",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "Q5007",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2720812,
+                    "CONCEPT_NAME": "Hospice care provided in nursing long term care facility (ltc) or non-skilled nursing facility (nf)",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "Q5003",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2720813,
+                    "CONCEPT_NAME": "Hospice care provided in skilled nursing facility (snf)",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "Q5004",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2617270,
+                    "CONCEPT_NAME": "Hospice care supervision",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "G0182",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2721445,
+                    "CONCEPT_NAME": "Hospice care, in the home, per diem",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "S9126",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2721700,
+                    "CONCEPT_NAME": "Hospice continuous home care; per hour",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "T2043",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2721702,
+                    "CONCEPT_NAME": "Hospice general inpatient care; per diem",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "T2045",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 40664432,
+                    "CONCEPT_NAME": "Hospice home care provided in a hospice facility",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "Q5010",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2721701,
+                    "CONCEPT_NAME": "Hospice inpatient respite care; per diem",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "T2044",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2721703,
+                    "CONCEPT_NAME": "Hospice long term care, room and board only; per diem",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "T2046",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2720811,
+                    "CONCEPT_NAME": "Hospice or home health care provided in assisted living facility",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "Q5002",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 38003372,
+                    "CONCEPT_NAME": "Hospice Room & Board-Nursing facility",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "0658",
+                    "DOMAIN_ID": "Revenue Code",
+                    "VOCABULARY_ID": "Revenue Code",
+                    "CONCEPT_CLASS_ID": "Revenue Code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2721699,
+                    "CONCEPT_NAME": "Hospice routine home care; per diem",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "T2042",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 38003368,
+                    "CONCEPT_NAME": "Hospice Service - Continuous Home Care",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "0652",
+                    "DOMAIN_ID": "Revenue Code",
+                    "VOCABULARY_ID": "Revenue Code",
+                    "CONCEPT_CLASS_ID": "Revenue Code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 38003366,
+                    "CONCEPT_NAME": "Hospice Service - General Classification",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "0650",
+                    "DOMAIN_ID": "Revenue Code",
+                    "VOCABULARY_ID": "Revenue Code",
+                    "CONCEPT_CLASS_ID": "Revenue Code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 38003370,
+                    "CONCEPT_NAME": "Hospice Service - General Inpatient Care (Non-respite)",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "0656",
+                    "DOMAIN_ID": "Revenue Code",
+                    "VOCABULARY_ID": "Revenue Code",
+                    "CONCEPT_CLASS_ID": "Revenue Code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 38003369,
+                    "CONCEPT_NAME": "Hospice Service - Impatient Respite Care",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "0655",
+                    "DOMAIN_ID": "Revenue Code",
+                    "VOCABULARY_ID": "Revenue Code",
+                    "CONCEPT_CLASS_ID": "Revenue Code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 38003373,
+                    "CONCEPT_NAME": "Hospice Service - Other",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "0659",
+                    "DOMAIN_ID": "Revenue Code",
+                    "VOCABULARY_ID": "Revenue Code",
+                    "CONCEPT_CLASS_ID": "Revenue Code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 38003371,
+                    "CONCEPT_NAME": "Hospice Service - Physician Services",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "0657",
+                    "DOMAIN_ID": "Revenue Code",
+                    "VOCABULARY_ID": "Revenue Code",
+                    "CONCEPT_CLASS_ID": "Revenue Code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 38003367,
+                    "CONCEPT_NAME": "Hospice Service - Routine Home Care",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "0651",
+                    "DOMAIN_ID": "Revenue Code",
+                    "VOCABULARY_ID": "Revenue Code",
+                    "CONCEPT_CLASS_ID": "Revenue Code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 38003131,
+                    "CONCEPT_NAME": "Incremental Nursing Charge Rate - Hospice",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "0235",
+                    "DOMAIN_ID": "Revenue Code",
+                    "VOCABULARY_ID": "Revenue Code",
+                    "CONCEPT_CLASS_ID": "Revenue Code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 38003066,
+                    "CONCEPT_NAME": "Private (Deluxe) - Hospice",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "0145",
+                    "DOMAIN_ID": "Revenue Code",
+                    "VOCABULARY_ID": "Revenue Code",
+                    "CONCEPT_CLASS_ID": "Revenue Code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 38003036,
+                    "CONCEPT_NAME": "Room & Board - Private (Medical or General) - Hospice",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "0115",
+                    "DOMAIN_ID": "Revenue Code",
+                    "VOCABULARY_ID": "Revenue Code",
+                    "CONCEPT_CLASS_ID": "Revenue Code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 38003046,
+                    "CONCEPT_NAME": "Room & Board - Semi-private Two Bed (Medical or General) - Hospice",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "0125",
+                    "DOMAIN_ID": "Revenue Code",
+                    "VOCABULARY_ID": "Revenue Code",
+                    "CONCEPT_CLASS_ID": "Revenue Code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 38003076,
+                    "CONCEPT_NAME": "Room & Board Ward (Medical or General) - Hospice",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "0155",
+                    "DOMAIN_ID": "Revenue Code",
+                    "VOCABULARY_ID": "Revenue Code",
+                    "CONCEPT_CLASS_ID": "Revenue Code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4082084,
+                    "CONCEPT_NAME": "Routine admission to hospice",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "183920000",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4140947,
+                    "CONCEPT_NAME": "Seen in hospice",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "305911006",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 38003056,
+                    "CONCEPT_NAME": "Semi-Private - Three and Four Beds - Hospice",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "0135",
+                    "DOMAIN_ID": "Revenue Code",
+                    "VOCABULARY_ID": "Revenue Code",
+                    "CONCEPT_CLASS_ID": "Revenue Code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 915618,
+                    "CONCEPT_NAME": "Services performed by care coordinator in the hospice setting, each 15 minutes",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "G9477",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 915614,
+                    "CONCEPT_NAME": "Services performed by chaplain in the hospice setting, each 15 minutes",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "G9473",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 915615,
+                    "CONCEPT_NAME": "Services performed by dietary counselor in the hospice setting, each 15 minutes",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "G9474",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 915616,
+                    "CONCEPT_NAME": "Services performed by other counselor in the hospice setting, each 15 minutes",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "G9475",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 915619,
+                    "CONCEPT_NAME": "Services performed by other qualified therapist in the hospice setting, each 15 minutes",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "G9478",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 915620,
+                    "CONCEPT_NAME": "Services performed by qualified pharmacist in the hospice setting, each 15 minutes",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "G9479",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 915617,
+                    "CONCEPT_NAME": "Services performed by volunteer in the hospice setting, each 15 minutes",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "G9476",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4062044,
+                    "CONCEPT_NAME": "Shared care - hospice and GP",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "170936009",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2514512,
+                    "CONCEPT_NAME": "Supervision of a hospice patient (patient not present) requiring complex and multidisciplinary care modalities involving regular development and/or revision of care plans by that individual, review of subsequent reports of patient status, review of relate",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "99377",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "CPT4",
+                    "CONCEPT_CLASS_ID": "CPT4"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4086777,
+                    "CONCEPT_NAME": "Urgent admission to hospice",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "183919006",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                }
+              ]
+            }
+          },
+          {
+            "id": 7,
+            "name": "Heart valve disease, repair or replacement",
+            "expression": {
+              "items": [
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4060089,
+                    "CONCEPT_NAME": "H/O: artificial heart valve",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "161677002",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Context-dependent"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4195003,
+                    "CONCEPT_NAME": "Heart valve stenosis",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "44241007",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 44782431,
+                    "CONCEPT_NAME": "History of mechanical heart valve replacement",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "33711000119109",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Context-dependent"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4013355,
+                    "CONCEPT_NAME": "Implantation of heart valve",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "112815000",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4165384,
+                    "CONCEPT_NAME": "Implantation of heart valve prosthesis or synthetic device",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "47432005",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2617335,
+                    "CONCEPT_NAME": "Md inr test revie inter mgmt",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "G0250",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 43020459,
+                    "CONCEPT_NAME": "Mechanical breakdown of prosthetic heart valve",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "285961000119107",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 312773,
+                    "CONCEPT_NAME": "Mechanical complication due to heart valve prosthesis",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "43873004",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4020159,
+                    "CONCEPT_NAME": "Mechanical complication of heart valve prosthesis",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "213036006",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 44783274,
+                    "CONCEPT_NAME": "Mechanical heart valve replacement",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "699347000",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 315273,
+                    "CONCEPT_NAME": "Mitral valve stenosis",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "79619009",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4110937,
+                    "CONCEPT_NAME": "Non-rheumatic mitral valve stenosis",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "194727002",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2001447,
+                    "CONCEPT_NAME": "Open and other replacement of heart valve",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "35.2",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "ICD9Proc",
+                    "CONCEPT_CLASS_ID": "3-dig nonbill code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2001448,
+                    "CONCEPT_NAME": "Open and other replacement of unspecified heart valve",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "35.20",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "ICD9Proc",
+                    "CONCEPT_CLASS_ID": "4-dig billing code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4119522,
+                    "CONCEPT_NAME": "Prosthetic heart valve sample",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "258543009",
+                    "DOMAIN_ID": "Specimen",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Specimen"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4145884,
+                    "CONCEPT_NAME": "Prosthetic replacement of heart valve",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "307279007",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2617334,
+                    "CONCEPT_NAME": "Provide inr test mater/equip",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "G0249",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4339971,
+                    "CONCEPT_NAME": "Reinsertion of heart valve, prosthetic",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "233059007",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4121484,
+                    "CONCEPT_NAME": "Replacement of heart valve poppet, prosthetic",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "233912002",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4013356,
+                    "CONCEPT_NAME": "Resuture of heart valve prosthesis, poppet",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "112817008",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4181749,
+                    "CONCEPT_NAME": "Revision of prosthesis of heart valve",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "54315009",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4304541,
+                    "CONCEPT_NAME": "Rheumatic mitral valve insufficiency AND aortic valve stenosis",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "81552002",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                }
+              ]
+            }
+          },
+          {
+            "id": 8,
+            "name": "warfarin",
+            "expression": {
+              "items": [
+                {
+                  "concept": {
+                    "CONCEPT_ID": 1310149,
+                    "CONCEPT_NAME": "Warfarin",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "11289",
+                    "DOMAIN_ID": "Drug",
+                    "VOCABULARY_ID": "RxNorm",
+                    "CONCEPT_CLASS_ID": "Ingredient"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                }
+              ]
+            }
+          },
+          {
+            "id": 9,
+            "name": "Hip/knee joint replacement or revision",
+            "expression": {
+              "items": [
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2101660,
+                    "CONCEPT_NAME": "Anesthesia for open or surgical arthroscopic procedures on knee joint; total knee arthroplasty",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "01402",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "CPT4",
+                    "CONCEPT_CLASS_ID": "CPT4"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2101635,
+                    "CONCEPT_NAME": "Anesthesia for open procedures involving hip joint; revision of total hip arthroplasty",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "01215",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "CPT4",
+                    "CONCEPT_CLASS_ID": "CPT4"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2101634,
+                    "CONCEPT_NAME": "Anesthesia for open procedures involving hip joint; total hip arthroplasty",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "01214",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "CPT4",
+                    "CONCEPT_CLASS_ID": "CPT4"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2104836,
+                    "CONCEPT_NAME": "Arthroplasty, acetabular and proximal femoral prosthetic replacement (total hip arthroplasty), with or without autograft or allograft",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "27130",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "CPT4",
+                    "CONCEPT_CLASS_ID": "CPT4"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2103931,
+                    "CONCEPT_NAME": "Arthroplasty, elbow; with distal humerus and proximal ulnar prosthetic replacement (eg, total elbow)",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "24363",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "CPT4",
+                    "CONCEPT_CLASS_ID": "CPT4"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2105103,
+                    "CONCEPT_NAME": "Arthroplasty, knee, condyle and plateau; medial AND lateral compartments with or without patella resurfacing (total knee arthroplasty)",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "27447",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "CPT4",
+                    "CONCEPT_CLASS_ID": "CPT4"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2104837,
+                    "CONCEPT_NAME": "Conversion of previous hip surgery to total hip arthroplasty, with or without autograft or allograft",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "27132",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "CPT4",
+                    "CONCEPT_CLASS_ID": "CPT4"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2104835,
+                    "CONCEPT_NAME": "Hemiarthroplasty, hip, partial (eg, femoral stem prosthesis, bipolar arthroplasty)",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "27125",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "CPT4",
+                    "CONCEPT_CLASS_ID": "CPT4"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2000075,
+                    "CONCEPT_NAME": "Hip bearing surface, ceramic-on-ceramic",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "00.76",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "ICD9Proc",
+                    "CONCEPT_CLASS_ID": "4-dig billing code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2000076,
+                    "CONCEPT_NAME": "Hip bearing surface, ceramic-on-polyethylene",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "00.77",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "ICD9Proc",
+                    "CONCEPT_CLASS_ID": "4-dig billing code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2000074,
+                    "CONCEPT_NAME": "Hip bearing surface, metal-on-metal",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "00.75",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "ICD9Proc",
+                    "CONCEPT_CLASS_ID": "4-dig billing code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2000073,
+                    "CONCEPT_NAME": "Hip bearing surface, metal-on-polyethylene",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "00.74",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "ICD9Proc",
+                    "CONCEPT_CLASS_ID": "4-dig billing code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4001859,
+                    "CONCEPT_NAME": "Hip joint implantation",
+                    "STANDARD_CONCEPT": "N",
+                    "STANDARD_CONCEPT_CAPTION": "Non-Standard",
+                    "INVALID_REASON": "U",
+                    "INVALID_REASON_CAPTION": "Invalid",
+                    "CONCEPT_CODE": "119610009",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4134857,
+                    "CONCEPT_NAME": "Insertion of hip prosthesis",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "398010007",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4207955,
+                    "CONCEPT_NAME": "Insertion of hip prosthesis, total",
+                    "STANDARD_CONCEPT": "N",
+                    "STANDARD_CONCEPT_CAPTION": "Non-Standard",
+                    "INVALID_REASON": "U",
+                    "INVALID_REASON_CAPTION": "Invalid",
+                    "CONCEPT_CODE": "55423004",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2005902,
+                    "CONCEPT_NAME": "Partial hip replacement",
+                    "STANDARD_CONCEPT": "N",
+                    "STANDARD_CONCEPT_CAPTION": "Non-Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "81.52",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "ICD9Proc",
+                    "CONCEPT_CLASS_ID": "4-dig billing code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4162099,
+                    "CONCEPT_NAME": "Prosthetic arthroplasty of the hip",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "397956004",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2000085,
+                    "CONCEPT_NAME": "Resurfacing hip, partial, acetabulum",
+                    "STANDARD_CONCEPT": "N",
+                    "STANDARD_CONCEPT_CAPTION": "Non-Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "00.87",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "ICD9Proc",
+                    "CONCEPT_CLASS_ID": "4-dig billing code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2000084,
+                    "CONCEPT_NAME": "Resurfacing hip, partial, femoral head",
+                    "STANDARD_CONCEPT": "N",
+                    "STANDARD_CONCEPT_CAPTION": "Non-Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "00.86",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "ICD9Proc",
+                    "CONCEPT_CLASS_ID": "4-dig billing code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2000083,
+                    "CONCEPT_NAME": "Resurfacing hip, total, acetabulum and femoral head",
+                    "STANDARD_CONCEPT": "N",
+                    "STANDARD_CONCEPT_CAPTION": "Non-Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "00.85",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "ICD9Proc",
+                    "CONCEPT_CLASS_ID": "4-dig billing code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4010119,
+                    "CONCEPT_NAME": "Revision of hip replacement",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "112727005",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2000070,
+                    "CONCEPT_NAME": "Revision of hip replacement, acetabular component",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "00.71",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "ICD9Proc",
+                    "CONCEPT_CLASS_ID": "4-dig billing code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2000072,
+                    "CONCEPT_NAME": "Revision of hip replacement, acetabular liner and/or femoral head only",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "00.73",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "ICD9Proc",
+                    "CONCEPT_CLASS_ID": "4-dig billing code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2000069,
+                    "CONCEPT_NAME": "Revision of hip replacement, both acetabular and femoral components",
+                    "STANDARD_CONCEPT": "N",
+                    "STANDARD_CONCEPT_CAPTION": "Non-Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "00.70",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "ICD9Proc",
+                    "CONCEPT_CLASS_ID": "4-dig billing code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2000071,
+                    "CONCEPT_NAME": "Revision of hip replacement, femoral component",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "00.72",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "ICD9Proc",
+                    "CONCEPT_CLASS_ID": "4-dig billing code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2000080,
+                    "CONCEPT_NAME": "Revision of knee replacement, femoral component",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "00.82",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "ICD9Proc",
+                    "CONCEPT_CLASS_ID": "4-dig billing code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2000081,
+                    "CONCEPT_NAME": "Revision of knee replacement, patellar component",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "00.83",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "ICD9Proc",
+                    "CONCEPT_CLASS_ID": "4-dig billing code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2000079,
+                    "CONCEPT_NAME": "Revision of knee replacement, tibial component",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "00.81",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "ICD9Proc",
+                    "CONCEPT_CLASS_ID": "4-dig billing code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2000078,
+                    "CONCEPT_NAME": "Revision of knee replacement, total (all components)",
+                    "STANDARD_CONCEPT": "N",
+                    "STANDARD_CONCEPT_CAPTION": "Non-Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "00.80",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "ICD9Proc",
+                    "CONCEPT_CLASS_ID": "4-dig billing code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 45887894,
+                    "CONCEPT_NAME": "Revision of total hip arthroplasty",
+                    "STANDARD_CONCEPT": "C",
+                    "STANDARD_CONCEPT_CAPTION": "Classification",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "1004910",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "CPT4",
+                    "CONCEPT_CLASS_ID": "CPT4 Hierarchy"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2104839,
+                    "CONCEPT_NAME": "Revision of total hip arthroplasty; acetabular component only, with or without autograft or allograft",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "27137",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "CPT4",
+                    "CONCEPT_CLASS_ID": "CPT4"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2104838,
+                    "CONCEPT_NAME": "Revision of total hip arthroplasty; both components, with or without autograft or allograft",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "27134",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "CPT4",
+                    "CONCEPT_CLASS_ID": "CPT4"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2104840,
+                    "CONCEPT_NAME": "Revision of total hip arthroplasty; femoral component only, with or without allograft",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "27138",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "CPT4",
+                    "CONCEPT_CLASS_ID": "CPT4"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4266062,
+                    "CONCEPT_NAME": "Revision of total hip replacement",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "62402000",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2105128,
+                    "CONCEPT_NAME": "Revision of total knee arthroplasty, with or without allograft; 1 component",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "27486",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "CPT4",
+                    "CONCEPT_CLASS_ID": "CPT4"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2105129,
+                    "CONCEPT_NAME": "Revision of total knee arthroplasty, with or without allograft; femoral and entire tibial component",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "27487",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "CPT4",
+                    "CONCEPT_CLASS_ID": "CPT4"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2000082,
+                    "CONCEPT_NAME": "Revision of total knee replacement, tibial insert (liner)",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "00.84",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "ICD9Proc",
+                    "CONCEPT_CLASS_ID": "4-dig billing code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2005891,
+                    "CONCEPT_NAME": "Total hip replacement",
+                    "STANDARD_CONCEPT": "N",
+                    "STANDARD_CONCEPT_CAPTION": "Non-Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "81.51",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "ICD9Proc",
+                    "CONCEPT_CLASS_ID": "4-dig billing code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2005904,
+                    "CONCEPT_NAME": "Total knee replacement",
+                    "STANDARD_CONCEPT": "N",
+                    "STANDARD_CONCEPT_CAPTION": "Non-Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "81.54",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "ICD9Proc",
+                    "CONCEPT_CLASS_ID": "4-dig billing code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4203771,
+                    "CONCEPT_NAME": "Total replacement of hip",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "52734007",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2005903,
+                    "CONCEPT_NAME": "Revision of hip replacement, not otherwise specified",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "81.53",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "ICD9Proc",
+                    "CONCEPT_CLASS_ID": "4-dig billing code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2104914,
+                    "CONCEPT_NAME": "Open treatment of femoral fracture, proximal end, neck, internal fixation or prosthetic replacement",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "27236",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "CPT4",
+                    "CONCEPT_CLASS_ID": "CPT4"
+                  },
+                  "isExcluded": true,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                }
+              ]
+            }
+          },
+          {
+            "id": 10,
+            "name": "Hemodialysis, peritoneal dialysis, or kidney transplant",
+            "expression": {
+              "items": [
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4126124,
+                    "CONCEPT_NAME": "Acute disorder of hemodialysis",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "236538004",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4092504,
+                    "CONCEPT_NAME": "Adequacy of hemodialysis",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "251869004",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 435649,
+                    "CONCEPT_NAME": "Complication of hemodialysis",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "85223007",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 40480136,
+                    "CONCEPT_NAME": "Dependence on hemodialysis",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "443143006",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4181476,
+                    "CONCEPT_NAME": "Dependence on hemodialysis due to end stage renal disease",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "428982002",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 44786469,
+                    "CONCEPT_NAME": "Documentation of patient receiving maintenance hemodialysis for greater than or equal to 90 days with a catheter for documented reasons (e.g., other medical reasons, patient declined avf/avg, other patient reasons)",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "G9264",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4120120,
+                    "CONCEPT_NAME": "Hemodialysis",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "302497006",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2101833,
+                    "CONCEPT_NAME": "Hemodialysis plan of care documented (ESRD, P-ESRD)",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "0505F",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "CPT4",
+                    "CONCEPT_CLASS_ID": "CPT4"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4137616,
+                    "CONCEPT_NAME": "Hemodialysis-associated amyloidosis",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "32599008",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 313232,
+                    "CONCEPT_NAME": "Hemodialysis-associated hypotension",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "408667000",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4300099,
+                    "CONCEPT_NAME": "Hemodialysis-associated pruritus",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "403733004",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4297919,
+                    "CONCEPT_NAME": "Hemodialysis-associated pseudoporphyria",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "403732009",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4297658,
+                    "CONCEPT_NAME": "Hemodialysis-associated secondary amyloidosis of skin",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "402458002",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4099603,
+                    "CONCEPT_NAME": "Megaloblastic anemia due to hemodialysis",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "27366005",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 44782924,
+                    "CONCEPT_NAME": "Misplacement of hemodialysis catheter",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "698937002",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 44786470,
+                    "CONCEPT_NAME": "Patient receiving maintenance hemodialysis for greater than or equal to 90 days with a catheter as the mode of vascular access",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "G9265",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 44786471,
+                    "CONCEPT_NAME": "Patient receiving maintenance hemodialysis for greater than or equal to 90 days without a catheter as the mode of vascular access",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "G9266",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 43533281,
+                    "CONCEPT_NAME": "Patient receiving maintenance hemodialysis in an outpatient dialysis facility",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "G8956",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4324124,
+                    "CONCEPT_NAME": "Peritoneal dialysis",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "71192002",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2003564,
+                    "CONCEPT_NAME": "Peritoneal dialysis",
+                    "STANDARD_CONCEPT": "N",
+                    "STANDARD_CONCEPT_CAPTION": "Non-Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "54.98",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "ICD9Proc",
+                    "CONCEPT_CLASS_ID": "4-dig billing code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4300106,
+                    "CONCEPT_NAME": "Skin lesion associated with hemodialysis",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "402762007",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4046829,
+                    "CONCEPT_NAME": "Anesthesia for renal transplant, recipient",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "23137002",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2109584,
+                    "CONCEPT_NAME": "Backbench reconstruction of cadaver or living donor renal allograft prior to transplantation; ureteral anastomosis, each",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "50329",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "CPT4",
+                    "CONCEPT_CLASS_ID": "CPT4"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4021107,
+                    "CONCEPT_NAME": "Cadaveric renal transplant",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "175902000",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4197300,
+                    "CONCEPT_NAME": "Donor renal transplantation",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "313030004",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4324754,
+                    "CONCEPT_NAME": "Examination of recipient after kidney transplant",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "428645009",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4002215,
+                    "CONCEPT_NAME": "Kidney implantation",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "119980000",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4022805,
+                    "CONCEPT_NAME": "Live donor renal transplant",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "175901007",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2003626,
+                    "CONCEPT_NAME": "Other kidney transplantation",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "55.69",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "ICD9Proc",
+                    "CONCEPT_CLASS_ID": "4-dig billing code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 40664909,
+                    "CONCEPT_NAME": "Patient receiving hemodialysis, peritoneal dialysis or kidney transplantation",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "G8727",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2109586,
+                    "CONCEPT_NAME": "Renal allotransplantation, implantation of graft; without recipient nephrectomy",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "50360",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "CPT4",
+                    "CONCEPT_CLASS_ID": "CPT4"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2109589,
+                    "CONCEPT_NAME": "Renal autotransplantation, reimplantation of kidney",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "50380",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "CPT4",
+                    "CONCEPT_CLASS_ID": "CPT4"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4163566,
+                    "CONCEPT_NAME": "Renal replacement",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "398887003",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 37521745,
+                    "CONCEPT_NAME": "Renal transplant",
+                    "STANDARD_CONCEPT": "C",
+                    "STANDARD_CONCEPT_CAPTION": "Classification",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "10038533",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "MedDRA",
+                    "CONCEPT_CLASS_ID": "PT"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4346636,
+                    "CONCEPT_NAME": "Renal transplant arteriogram",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "241249008",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4346505,
+                    "CONCEPT_NAME": "Renal transplant venogram",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "241250008",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4347789,
+                    "CONCEPT_NAME": "Renal transplant venous sampling",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "241251007",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 2721092,
+                    "CONCEPT_NAME": "Simultaneous pancreas kidney transplantation",
+                    "STANDARD_CONCEPT": "N",
+                    "STANDARD_CONCEPT_CAPTION": "Non-Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "S2065",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "HCPCS",
+                    "CONCEPT_CLASS_ID": "HCPCS"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4322471,
+                    "CONCEPT_NAME": "Transplant of kidney",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "70536003",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4343000,
+                    "CONCEPT_NAME": "Xenograft renal transplant",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "236138007",
+                    "DOMAIN_ID": "Procedure",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                }
+              ]
+            }
+          },
+          {
+            "id": 11,
+            "name": "Deep vein thrombosis",
+            "expression": {
+              "items": [
+                {
+                  "concept": {
+                    "CONCEPT_ID": 435887,
+                    "CONCEPT_NAME": "Antepartum deep vein thrombosis",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "49956009",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": true,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 195562,
+                    "CONCEPT_NAME": "Hemorrhoids",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "70153002",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": true,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4179912,
+                    "CONCEPT_NAME": "Intracranial venous thrombosis",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "297157005",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": true,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 318137,
+                    "CONCEPT_NAME": "Phlebitis and thrombophlebitis of intracranial sinuses",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "192753009",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": true,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 199837,
+                    "CONCEPT_NAME": "Portal vein thrombosis",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "17920008",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": true,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 438820,
+                    "CONCEPT_NAME": "Postpartum deep phlebothrombosis",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "56272000",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": true,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4235812,
+                    "CONCEPT_NAME": "Septic thrombophlebitis",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "439731006",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": true,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4187790,
+                    "CONCEPT_NAME": "Thrombosis of retinal vein",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "46085004",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": true,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 318775,
+                    "CONCEPT_NAME": "Venous embolism",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "234049002",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 444247,
+                    "CONCEPT_NAME": "Venous thrombosis",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "111293003",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                }
+              ]
+            }
+          },
+          {
+            "id": 12,
+            "name": "Pulmonary embolism",
+            "expression": {
+              "items": [
+                {
+                  "concept": {
+                    "CONCEPT_ID": 40480461,
+                    "CONCEPT_NAME": "Infarction of lung due to iatrogenic pulmonary embolism",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "441746000",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 435026,
+                    "CONCEPT_NAME": "Obstetric pulmonary embolism",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "200284000",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": true,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 440417,
+                    "CONCEPT_NAME": "Pulmonary embolism",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "59282003",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 40479606,
+                    "CONCEPT_NAME": "Septic pulmonary embolism",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "441557008",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                }
+              ]
+            }
+          }
+        ],
+        "QualifiedLimit": {
+          "Type": "First"
+        },
+        "ExpressionLimit": {
+          "Type": "First"
+        },
+        "InclusionRules": [
+          {
+            "name": "Has prior atrial fibrillation or atrial flutter diagnosis",
+            "description": " ",
+            "expression": {
+              "Type": "ANY",
+              "Count": null,
+              "CriteriaList": [
+                {
+                  "Criteria": {
+                    "ConditionOccurrence": {
+                      "CorrelatedCriteria": null,
+                      "CodesetId": 1,
+                      "First": null,
+                      "OccurrenceStartDate": null,
+                      "OccurrenceEndDate": null,
+                      "ConditionType": null,
+                      "ConditionTypeExclude": false,
+                      "StopReason": null,
+                      "ConditionSourceConcept": null,
+                      "Age": null,
+                      "Gender": null,
+                      "ProviderSpecialty": null,
+                      "VisitType": null
+                    }
+                  },
+                  "StartWindow": {
+                    "Start": {
+                      "Days": null,
+                      "Coeff": -1
+                    },
+                    "End": {
+                      "Days": 0,
+                      "Coeff": 1
+                    },
+                    "UseIndexEnd": null,
+                    "UseEventEnd": false
+                  },
+                  "EndWindow": null,
+                  "RestrictVisit": false,
+                  "IgnoreObservationPeriod": false,
+                  "Occurrence": {
+                    "Type": 2,
+                    "Count": 1,
+                    "IsDistinct": false
+                  }
+                },
+                {
+                  "Criteria": {
+                    "ConditionOccurrence": {
+                      "CorrelatedCriteria": null,
+                      "CodesetId": 2,
+                      "First": null,
+                      "OccurrenceStartDate": null,
+                      "OccurrenceEndDate": null,
+                      "ConditionType": null,
+                      "ConditionTypeExclude": false,
+                      "StopReason": null,
+                      "ConditionSourceConcept": null,
+                      "Age": null,
+                      "Gender": null,
+                      "ProviderSpecialty": null,
+                      "VisitType": null
+                    }
+                  },
+                  "StartWindow": {
+                    "Start": {
+                      "Days": null,
+                      "Coeff": -1
+                    },
+                    "End": {
+                      "Days": 0,
+                      "Coeff": 1
+                    },
+                    "UseIndexEnd": null,
+                    "UseEventEnd": false
+                  },
+                  "EndWindow": null,
+                  "RestrictVisit": false,
+                  "IgnoreObservationPeriod": false,
+                  "Occurrence": {
+                    "Type": 2,
+                    "Count": 1,
+                    "IsDistinct": false
+                  }
+                }
+              ],
+              "DemographicCriteriaList": [],
+              "Groups": []
+            }
+          },
+          {
+            "name": "Has no prior treatment with comparator drug (dabigatran)",
+            "description": null,
+            "expression": {
+              "Type": "ALL",
+              "Count": null,
+              "CriteriaList": [
+                {
+                  "Criteria": {
+                    "DrugExposure": {
+                      "CorrelatedCriteria": null,
+                      "CodesetId": 0,
+                      "First": null,
+                      "OccurrenceStartDate": null,
+                      "OccurrenceEndDate": null,
+                      "DrugType": null,
+                      "DrugTypeExclude": false,
+                      "StopReason": null,
+                      "Refills": null,
+                      "Quantity": null,
+                      "DaysSupply": null,
+                      "RouteConcept": null,
+                      "EffectiveDrugDose": null,
+                      "DoseUnit": null,
+                      "LotNumber": null,
+                      "DrugSourceConcept": null,
+                      "Age": null,
+                      "Gender": null,
+                      "ProviderSpecialty": null,
+                      "VisitType": null
+                    }
+                  },
+                  "StartWindow": {
+                    "Start": {
+                      "Days": null,
+                      "Coeff": -1
+                    },
+                    "End": {
+                      "Days": 0,
+                      "Coeff": -1
+                    },
+                    "UseIndexEnd": null,
+                    "UseEventEnd": false
+                  },
+                  "EndWindow": null,
+                  "RestrictVisit": false,
+                  "IgnoreObservationPeriod": false,
+                  "Occurrence": {
+                    "Type": 0,
+                    "Count": 0,
+                    "IsDistinct": false
+                  }
+                }
+              ],
+              "DemographicCriteriaList": [],
+              "Groups": []
+            }
+          },
+          {
+            "name": "Has no prior treatment with other anticoagulants (rivaroxaban or apixaban)",
+            "description": null,
+            "expression": {
+              "Type": "ALL",
+              "Count": null,
+              "CriteriaList": [
+                {
+                  "Criteria": {
+                    "DrugExposure": {
+                      "CorrelatedCriteria": null,
+                      "CodesetId": 3,
+                      "First": null,
+                      "OccurrenceStartDate": null,
+                      "OccurrenceEndDate": null,
+                      "DrugType": null,
+                      "DrugTypeExclude": false,
+                      "StopReason": null,
+                      "Refills": null,
+                      "Quantity": null,
+                      "DaysSupply": null,
+                      "RouteConcept": null,
+                      "EffectiveDrugDose": null,
+                      "DoseUnit": null,
+                      "LotNumber": null,
+                      "DrugSourceConcept": null,
+                      "Age": null,
+                      "Gender": null,
+                      "ProviderSpecialty": null,
+                      "VisitType": null
+                    }
+                  },
+                  "StartWindow": {
+                    "Start": {
+                      "Days": null,
+                      "Coeff": -1
+                    },
+                    "End": {
+                      "Days": 0,
+                      "Coeff": 1
+                    },
+                    "UseIndexEnd": null,
+                    "UseEventEnd": false
+                  },
+                  "EndWindow": null,
+                  "RestrictVisit": false,
+                  "IgnoreObservationPeriod": false,
+                  "Occurrence": {
+                    "Type": 0,
+                    "Count": 0,
+                    "IsDistinct": false
+                  }
+                },
+                {
+                  "Criteria": {
+                    "DrugExposure": {
+                      "CorrelatedCriteria": null,
+                      "CodesetId": 4,
+                      "First": null,
+                      "OccurrenceStartDate": null,
+                      "OccurrenceEndDate": null,
+                      "DrugType": null,
+                      "DrugTypeExclude": false,
+                      "StopReason": null,
+                      "Refills": null,
+                      "Quantity": null,
+                      "DaysSupply": null,
+                      "RouteConcept": null,
+                      "EffectiveDrugDose": null,
+                      "DoseUnit": null,
+                      "LotNumber": null,
+                      "DrugSourceConcept": null,
+                      "Age": null,
+                      "Gender": null,
+                      "ProviderSpecialty": null,
+                      "VisitType": null
+                    }
+                  },
+                  "StartWindow": {
+                    "Start": {
+                      "Days": null,
+                      "Coeff": -1
+                    },
+                    "End": {
+                      "Days": 0,
+                      "Coeff": 1
+                    },
+                    "UseIndexEnd": null,
+                    "UseEventEnd": false
+                  },
+                  "EndWindow": null,
+                  "RestrictVisit": false,
+                  "IgnoreObservationPeriod": false,
+                  "Occurrence": {
+                    "Type": 0,
+                    "Count": 0,
+                    "IsDistinct": false
+                  }
+                }
+              ],
+              "DemographicCriteriaList": [],
+              "Groups": []
+            }
+          },
+          {
+            "name": "Not in a skilled nursing facility or nursing home, or receiving hospice care on the index date",
+            "description": null,
+            "expression": {
+              "Type": "ALL",
+              "Count": null,
+              "CriteriaList": [
+                {
+                  "Criteria": {
+                    "VisitOccurrence": {
+                      "CorrelatedCriteria": null,
+                      "CodesetId": 5,
+                      "First": null,
+                      "OccurrenceStartDate": null,
+                      "OccurrenceEndDate": null,
+                      "VisitType": null,
+                      "VisitTypeExclude": false,
+                      "VisitSourceConcept": null,
+                      "VisitLength": null,
+                      "Age": null,
+                      "Gender": null,
+                      "ProviderSpecialty": null,
+                      "PlaceOfService": null,
+                      "PlaceOfServiceLocation": null
+                    }
+                  },
+                  "StartWindow": {
+                    "Start": {
+                      "Days": 0,
+                      "Coeff": -1
+                    },
+                    "End": {
+                      "Days": 0,
+                      "Coeff": 1
+                    },
+                    "UseIndexEnd": null,
+                    "UseEventEnd": false
+                  },
+                  "EndWindow": null,
+                  "RestrictVisit": false,
+                  "IgnoreObservationPeriod": false,
+                  "Occurrence": {
+                    "Type": 0,
+                    "Count": 0,
+                    "IsDistinct": false
+                  }
+                },
+                {
+                  "Criteria": {
+                    "ProcedureOccurrence": {
+                      "CorrelatedCriteria": null,
+                      "CodesetId": 6,
+                      "First": null,
+                      "OccurrenceStartDate": null,
+                      "ProcedureType": null,
+                      "ProcedureTypeExclude": false,
+                      "Modifier": null,
+                      "Quantity": null,
+                      "ProcedureSourceConcept": null,
+                      "Age": null,
+                      "Gender": null,
+                      "ProviderSpecialty": null,
+                      "VisitType": null
+                    }
+                  },
+                  "StartWindow": {
+                    "Start": {
+                      "Days": null,
+                      "Coeff": -1
+                    },
+                    "End": {
+                      "Days": 0,
+                      "Coeff": 1
+                    },
+                    "UseIndexEnd": null,
+                    "UseEventEnd": false
+                  },
+                  "EndWindow": null,
+                  "RestrictVisit": false,
+                  "IgnoreObservationPeriod": false,
+                  "Occurrence": {
+                    "Type": 0,
+                    "Count": 0,
+                    "IsDistinct": false
+                  }
+                },
+                {
+                  "Criteria": {
+                    "Observation": {
+                      "CorrelatedCriteria": null,
+                      "CodesetId": 6,
+                      "First": null,
+                      "OccurrenceStartDate": null,
+                      "ObservationType": null,
+                      "ObservationTypeExclude": false,
+                      "ValueAsNumber": null,
+                      "ValueAsString": null,
+                      "ValueAsConcept": null,
+                      "Qualifier": null,
+                      "Unit": null,
+                      "ObservationSourceConcept": null,
+                      "Age": null,
+                      "Gender": null,
+                      "ProviderSpecialty": null,
+                      "VisitType": null
+                    }
+                  },
+                  "StartWindow": {
+                    "Start": {
+                      "Days": null,
+                      "Coeff": -1
+                    },
+                    "End": {
+                      "Days": 0,
+                      "Coeff": 1
+                    },
+                    "UseIndexEnd": null,
+                    "UseEventEnd": false
+                  },
+                  "EndWindow": null,
+                  "RestrictVisit": false,
+                  "IgnoreObservationPeriod": false,
+                  "Occurrence": {
+                    "Type": 0,
+                    "Count": 0,
+                    "IsDistinct": false
+                  }
+                }
+              ],
+              "DemographicCriteriaList": [],
+              "Groups": []
+            }
+          },
+          {
+            "name": "Not undergoing dialysis or kidney transplant recipient",
+            "description": " ",
+            "expression": {
+              "Type": "ALL",
+              "Count": null,
+              "CriteriaList": [
+                {
+                  "Criteria": {
+                    "ConditionOccurrence": {
+                      "CorrelatedCriteria": null,
+                      "CodesetId": 10,
+                      "First": null,
+                      "OccurrenceStartDate": null,
+                      "OccurrenceEndDate": null,
+                      "ConditionType": null,
+                      "ConditionTypeExclude": false,
+                      "StopReason": null,
+                      "ConditionSourceConcept": null,
+                      "Age": null,
+                      "Gender": null,
+                      "ProviderSpecialty": null,
+                      "VisitType": null
+                    }
+                  },
+                  "StartWindow": {
+                    "Start": {
+                      "Days": 183,
+                      "Coeff": -1
+                    },
+                    "End": {
+                      "Days": 0,
+                      "Coeff": 1
+                    },
+                    "UseIndexEnd": null,
+                    "UseEventEnd": false
+                  },
+                  "EndWindow": null,
+                  "RestrictVisit": false,
+                  "IgnoreObservationPeriod": false,
+                  "Occurrence": {
+                    "Type": 0,
+                    "Count": 0,
+                    "IsDistinct": false
+                  }
+                },
+                {
+                  "Criteria": {
+                    "ProcedureOccurrence": {
+                      "CorrelatedCriteria": null,
+                      "CodesetId": 10,
+                      "First": null,
+                      "OccurrenceStartDate": null,
+                      "ProcedureType": null,
+                      "ProcedureTypeExclude": false,
+                      "Modifier": null,
+                      "Quantity": null,
+                      "ProcedureSourceConcept": null,
+                      "Age": null,
+                      "Gender": null,
+                      "ProviderSpecialty": null,
+                      "VisitType": null
+                    }
+                  },
+                  "StartWindow": {
+                    "Start": {
+                      "Days": 183,
+                      "Coeff": -1
+                    },
+                    "End": {
+                      "Days": 0,
+                      "Coeff": 1
+                    },
+                    "UseIndexEnd": null,
+                    "UseEventEnd": false
+                  },
+                  "EndWindow": null,
+                  "RestrictVisit": false,
+                  "IgnoreObservationPeriod": false,
+                  "Occurrence": {
+                    "Type": 0,
+                    "Count": 0,
+                    "IsDistinct": false
+                  }
+                },
+                {
+                  "Criteria": {
+                    "Observation": {
+                      "CorrelatedCriteria": null,
+                      "CodesetId": 10,
+                      "First": null,
+                      "OccurrenceStartDate": null,
+                      "ObservationType": null,
+                      "ObservationTypeExclude": false,
+                      "ValueAsNumber": null,
+                      "ValueAsString": null,
+                      "ValueAsConcept": null,
+                      "Qualifier": null,
+                      "Unit": null,
+                      "ObservationSourceConcept": null,
+                      "Age": null,
+                      "Gender": null,
+                      "ProviderSpecialty": null,
+                      "VisitType": null
+                    }
+                  },
+                  "StartWindow": {
+                    "Start": {
+                      "Days": 183,
+                      "Coeff": -1
+                    },
+                    "End": {
+                      "Days": 0,
+                      "Coeff": 1
+                    },
+                    "UseIndexEnd": null,
+                    "UseEventEnd": false
+                  },
+                  "EndWindow": null,
+                  "RestrictVisit": false,
+                  "IgnoreObservationPeriod": false,
+                  "Occurrence": {
+                    "Type": 0,
+                    "Count": 0,
+                    "IsDistinct": false
+                  }
+                }
+              ],
+              "DemographicCriteriaList": [],
+              "Groups": []
+            }
+          },
+          {
+            "name": "No mitral valve disease, heart valve repair, or replacement in the prior 6 months",
+            "description": null,
+            "expression": {
+              "Type": "ALL",
+              "Count": null,
+              "CriteriaList": [
+                {
+                  "Criteria": {
+                    "ConditionOccurrence": {
+                      "CorrelatedCriteria": null,
+                      "CodesetId": 7,
+                      "First": null,
+                      "OccurrenceStartDate": null,
+                      "OccurrenceEndDate": null,
+                      "ConditionType": null,
+                      "ConditionTypeExclude": false,
+                      "StopReason": null,
+                      "ConditionSourceConcept": null,
+                      "Age": null,
+                      "Gender": null,
+                      "ProviderSpecialty": null,
+                      "VisitType": null
+                    }
+                  },
+                  "StartWindow": {
+                    "Start": {
+                      "Days": 183,
+                      "Coeff": -1
+                    },
+                    "End": {
+                      "Days": 0,
+                      "Coeff": 1
+                    },
+                    "UseIndexEnd": null,
+                    "UseEventEnd": false
+                  },
+                  "EndWindow": null,
+                  "RestrictVisit": false,
+                  "IgnoreObservationPeriod": false,
+                  "Occurrence": {
+                    "Type": 0,
+                    "Count": 0,
+                    "IsDistinct": false
+                  }
+                },
+                {
+                  "Criteria": {
+                    "ProcedureOccurrence": {
+                      "CorrelatedCriteria": null,
+                      "CodesetId": 7,
+                      "First": null,
+                      "OccurrenceStartDate": null,
+                      "ProcedureType": null,
+                      "ProcedureTypeExclude": false,
+                      "Modifier": null,
+                      "Quantity": null,
+                      "ProcedureSourceConcept": null,
+                      "Age": null,
+                      "Gender": null,
+                      "ProviderSpecialty": null,
+                      "VisitType": null
+                    }
+                  },
+                  "StartWindow": {
+                    "Start": {
+                      "Days": 183,
+                      "Coeff": -1
+                    },
+                    "End": {
+                      "Days": 0,
+                      "Coeff": 1
+                    },
+                    "UseIndexEnd": null,
+                    "UseEventEnd": false
+                  },
+                  "EndWindow": null,
+                  "RestrictVisit": false,
+                  "IgnoreObservationPeriod": false,
+                  "Occurrence": {
+                    "Type": 0,
+                    "Count": 0,
+                    "IsDistinct": false
+                  }
+                },
+                {
+                  "Criteria": {
+                    "Observation": {
+                      "CorrelatedCriteria": null,
+                      "CodesetId": 7,
+                      "First": null,
+                      "OccurrenceStartDate": null,
+                      "ObservationType": null,
+                      "ObservationTypeExclude": false,
+                      "ValueAsNumber": null,
+                      "ValueAsString": null,
+                      "ValueAsConcept": null,
+                      "Qualifier": null,
+                      "Unit": null,
+                      "ObservationSourceConcept": null,
+                      "Age": null,
+                      "Gender": null,
+                      "ProviderSpecialty": null,
+                      "VisitType": null
+                    }
+                  },
+                  "StartWindow": {
+                    "Start": {
+                      "Days": 183,
+                      "Coeff": -1
+                    },
+                    "End": {
+                      "Days": 0,
+                      "Coeff": 1
+                    },
+                    "UseIndexEnd": null,
+                    "UseEventEnd": false
+                  },
+                  "EndWindow": null,
+                  "RestrictVisit": false,
+                  "IgnoreObservationPeriod": false,
+                  "Occurrence": {
+                    "Type": 0,
+                    "Count": 0,
+                    "IsDistinct": false
+                  }
+                }
+              ],
+              "DemographicCriteriaList": [],
+              "Groups": []
+            }
+          },
+          {
+            "name": "No deep vein thrombosis or pulmonary embolism in the prior 6 months",
+            "description": null,
+            "expression": {
+              "Type": "ALL",
+              "Count": null,
+              "CriteriaList": [
+                {
+                  "Criteria": {
+                    "ConditionOccurrence": {
+                      "CorrelatedCriteria": null,
+                      "CodesetId": 11,
+                      "First": null,
+                      "OccurrenceStartDate": null,
+                      "OccurrenceEndDate": null,
+                      "ConditionType": null,
+                      "ConditionTypeExclude": false,
+                      "StopReason": null,
+                      "ConditionSourceConcept": null,
+                      "Age": null,
+                      "Gender": null,
+                      "ProviderSpecialty": null,
+                      "VisitType": null
+                    }
+                  },
+                  "StartWindow": {
+                    "Start": {
+                      "Days": 183,
+                      "Coeff": -1
+                    },
+                    "End": {
+                      "Days": 0,
+                      "Coeff": 1
+                    },
+                    "UseIndexEnd": null,
+                    "UseEventEnd": false
+                  },
+                  "EndWindow": null,
+                  "RestrictVisit": false,
+                  "IgnoreObservationPeriod": false,
+                  "Occurrence": {
+                    "Type": 0,
+                    "Count": 0,
+                    "IsDistinct": false
+                  }
+                },
+                {
+                  "Criteria": {
+                    "ConditionOccurrence": {
+                      "CorrelatedCriteria": null,
+                      "CodesetId": 12,
+                      "First": null,
+                      "OccurrenceStartDate": null,
+                      "OccurrenceEndDate": null,
+                      "ConditionType": null,
+                      "ConditionTypeExclude": false,
+                      "StopReason": null,
+                      "ConditionSourceConcept": null,
+                      "Age": null,
+                      "Gender": null,
+                      "ProviderSpecialty": null,
+                      "VisitType": null
+                    }
+                  },
+                  "StartWindow": {
+                    "Start": {
+                      "Days": 183,
+                      "Coeff": -1
+                    },
+                    "End": {
+                      "Days": 0,
+                      "Coeff": 1
+                    },
+                    "UseIndexEnd": null,
+                    "UseEventEnd": false
+                  },
+                  "EndWindow": null,
+                  "RestrictVisit": false,
+                  "IgnoreObservationPeriod": false,
+                  "Occurrence": {
+                    "Type": 0,
+                    "Count": 0,
+                    "IsDistinct": false
+                  }
+                }
+              ],
+              "DemographicCriteriaList": [],
+              "Groups": []
+            }
+          },
+          {
+            "name": "No joint replacement surgery in the prior 6 months",
+            "description": null,
+            "expression": {
+              "Type": "ALL",
+              "Count": null,
+              "CriteriaList": [
+                {
+                  "Criteria": {
+                    "ProcedureOccurrence": {
+                      "CorrelatedCriteria": null,
+                      "CodesetId": 9,
+                      "First": null,
+                      "OccurrenceStartDate": null,
+                      "ProcedureType": null,
+                      "ProcedureTypeExclude": false,
+                      "Modifier": null,
+                      "Quantity": null,
+                      "ProcedureSourceConcept": null,
+                      "Age": null,
+                      "Gender": null,
+                      "ProviderSpecialty": null,
+                      "VisitType": null
+                    }
+                  },
+                  "StartWindow": {
+                    "Start": {
+                      "Days": 183,
+                      "Coeff": -1
+                    },
+                    "End": {
+                      "Days": 0,
+                      "Coeff": 1
+                    },
+                    "UseIndexEnd": null,
+                    "UseEventEnd": false
+                  },
+                  "EndWindow": null,
+                  "RestrictVisit": false,
+                  "IgnoreObservationPeriod": false,
+                  "Occurrence": {
+                    "Type": 0,
+                    "Count": 0,
+                    "IsDistinct": false
+                  }
+                }
+              ],
+              "DemographicCriteriaList": [],
+              "Groups": []
+            }
+          }
+        ],
+        "EndStrategy": {
+          "CustomEra": {
+            "DrugCodesetId": 8,
+            "GapDays": 3,
+            "Offset": 0,
+            "DaysSupplyOverride": null
+          }
+        },
+        "CensoringCriteria": [
+          {
+            "DrugExposure": {
+              "CorrelatedCriteria": null,
+              "CodesetId": 0,
+              "First": null,
+              "OccurrenceStartDate": null,
+              "OccurrenceEndDate": null,
+              "DrugType": null,
+              "DrugTypeExclude": false,
+              "StopReason": null,
+              "Refills": null,
+              "Quantity": null,
+              "DaysSupply": null,
+              "RouteConcept": null,
+              "EffectiveDrugDose": null,
+              "DoseUnit": null,
+              "LotNumber": null,
+              "DrugSourceConcept": null,
+              "Age": null,
+              "Gender": null,
+              "ProviderSpecialty": null,
+              "VisitType": null
+            }
+          },
+          {
+            "DrugExposure": {
+              "CorrelatedCriteria": null,
+              "CodesetId": 4,
+              "First": null,
+              "OccurrenceStartDate": null,
+              "OccurrenceEndDate": null,
+              "DrugType": null,
+              "DrugTypeExclude": false,
+              "StopReason": null,
+              "Refills": null,
+              "Quantity": null,
+              "DaysSupply": null,
+              "RouteConcept": null,
+              "EffectiveDrugDose": null,
+              "DoseUnit": null,
+              "LotNumber": null,
+              "DrugSourceConcept": null,
+              "Age": null,
+              "Gender": null,
+              "ProviderSpecialty": null,
+              "VisitType": null
+            }
+          },
+          {
+            "DrugExposure": {
+              "CorrelatedCriteria": null,
+              "CodesetId": 3,
+              "First": null,
+              "OccurrenceStartDate": null,
+              "OccurrenceEndDate": null,
+              "DrugType": null,
+              "DrugTypeExclude": false,
+              "StopReason": null,
+              "Refills": null,
+              "Quantity": null,
+              "DaysSupply": null,
+              "RouteConcept": null,
+              "EffectiveDrugDose": null,
+              "DoseUnit": null,
+              "LotNumber": null,
+              "DrugSourceConcept": null,
+              "Age": null,
+              "Gender": null,
+              "ProviderSpecialty": null,
+              "VisitType": null
+            }
+          },
+          {
+            "ProcedureOccurrence": {
+              "CorrelatedCriteria": null,
+              "CodesetId": 10,
+              "First": null,
+              "OccurrenceStartDate": null,
+              "ProcedureType": null,
+              "ProcedureTypeExclude": false,
+              "Modifier": null,
+              "Quantity": null,
+              "ProcedureSourceConcept": null,
+              "Age": null,
+              "Gender": null,
+              "ProviderSpecialty": null,
+              "VisitType": null
+            }
+          },
+          {
+            "ConditionOccurrence": {
+              "CorrelatedCriteria": null,
+              "CodesetId": 10,
+              "First": null,
+              "OccurrenceStartDate": null,
+              "OccurrenceEndDate": null,
+              "ConditionType": null,
+              "ConditionTypeExclude": false,
+              "StopReason": null,
+              "ConditionSourceConcept": null,
+              "Age": null,
+              "Gender": null,
+              "ProviderSpecialty": null,
+              "VisitType": null
+            }
+          },
+          {
+            "VisitOccurrence": {
+              "CorrelatedCriteria": null,
+              "CodesetId": 5,
+              "First": null,
+              "OccurrenceStartDate": null,
+              "OccurrenceEndDate": null,
+              "VisitType": null,
+              "VisitTypeExclude": false,
+              "VisitSourceConcept": null,
+              "VisitLength": null,
+              "Age": null,
+              "Gender": null,
+              "ProviderSpecialty": null,
+              "PlaceOfService": null,
+              "PlaceOfServiceLocation": null
+            }
+          },
+          {
+            "ProcedureOccurrence": {
+              "CorrelatedCriteria": null,
+              "CodesetId": 6,
+              "First": null,
+              "OccurrenceStartDate": null,
+              "ProcedureType": null,
+              "ProcedureTypeExclude": false,
+              "Modifier": null,
+              "Quantity": null,
+              "ProcedureSourceConcept": null,
+              "Age": null,
+              "Gender": null,
+              "ProviderSpecialty": null,
+              "VisitType": null
+            }
+          }
+        ],
+        "CollapseSettings": {
+          "CollapseType": "ERA",
+          "EraPad": 0
+        },
+        "CensorWindow": {
+          "StartDate": null,
+          "EndDate": null
+        }
+      },
+      "expressionType": null,
+      "createdBy": "admin@odysseusinc.com",
+      "createdDate": "2020-05-20T13:08:41.163+0000",
+      "modifiedBy": null,
+      "modifiedDate": null
+    },
+    {
+      "id": 14,
+      "name": "[OHDSI Covid19-ODS] All Visits",
+      "description": null,
+      "expression": {
+        "cdmVersionRange": ">=5.0.0",
+        "Title": null,
+        "PrimaryCriteria": {
+          "CriteriaList": [
+            {
+              "VisitOccurrence": {
+                "CorrelatedCriteria": null,
+                "CodesetId": null,
+                "First": null,
+                "OccurrenceStartDate": null,
+                "OccurrenceEndDate": null,
+                "VisitType": null,
+                "VisitTypeExclude": false,
+                "VisitSourceConcept": null,
+                "VisitLength": null,
+                "Age": null,
+                "Gender": null,
+                "ProviderSpecialty": null,
+                "PlaceOfService": null,
+                "PlaceOfServiceLocation": null
+              }
+            }
+          ],
+          "ObservationWindow": {
+            "PriorDays": 0,
+            "PostDays": 0
+          },
+          "PrimaryCriteriaLimit": {
+            "Type": "All"
+          }
+        },
+        "AdditionalCriteria": {
+          "Type": "ANY",
+          "Count": null,
+          "CriteriaList": [
+            {
+              "Criteria": {
+                "ConditionOccurrence": {
+                  "CorrelatedCriteria": null,
+                  "CodesetId": 1,
+                  "First": null,
+                  "OccurrenceStartDate": null,
+                  "OccurrenceEndDate": null,
+                  "ConditionType": null,
+                  "ConditionTypeExclude": false,
+                  "StopReason": null,
+                  "ConditionSourceConcept": null,
+                  "Age": null,
+                  "Gender": null,
+                  "ProviderSpecialty": null,
+                  "VisitType": null
+                }
+              },
+              "StartWindow": {
+                "Start": {
+                  "Days": 14,
+                  "Coeff": -1
+                },
+                "End": {
+                  "Days": null,
+                  "Coeff": 1
+                },
+                "UseIndexEnd": false,
+                "UseEventEnd": false
+              },
+              "EndWindow": {
+                "Start": {
+                  "Days": null,
+                  "Coeff": -1
+                },
+                "End": {
+                  "Days": 0,
+                  "Coeff": 1
+                },
+                "UseIndexEnd": true,
+                "UseEventEnd": true
+              },
+              "RestrictVisit": false,
+              "IgnoreObservationPeriod": false,
+              "Occurrence": {
+                "Type": 2,
+                "Count": 1,
+                "IsDistinct": false
+              }
+            },
+            {
+              "Criteria": {
+                "ConditionOccurrence": {
+                  "CorrelatedCriteria": null,
+                  "CodesetId": null,
+                  "First": null,
+                  "OccurrenceStartDate": null,
+                  "OccurrenceEndDate": null,
+                  "ConditionType": null,
+                  "ConditionTypeExclude": false,
+                  "StopReason": null,
+                  "ConditionSourceConcept": 1,
+                  "Age": null,
+                  "Gender": null,
+                  "ProviderSpecialty": null,
+                  "VisitType": null
+                }
+              },
+              "StartWindow": {
+                "Start": {
+                  "Days": 14,
+                  "Coeff": -1
+                },
+                "End": {
+                  "Days": null,
+                  "Coeff": 1
+                },
+                "UseIndexEnd": false,
+                "UseEventEnd": false
+              },
+              "EndWindow": {
+                "Start": {
+                  "Days": null,
+                  "Coeff": -1
+                },
+                "End": {
+                  "Days": 0,
+                  "Coeff": 1
+                },
+                "UseIndexEnd": true,
+                "UseEventEnd": true
+              },
+              "RestrictVisit": false,
+              "IgnoreObservationPeriod": false,
+              "Occurrence": {
+                "Type": 2,
+                "Count": 1,
+                "IsDistinct": false
+              }
+            },
+            {
+              "Criteria": {
+                "Observation": {
+                  "CorrelatedCriteria": null,
+                  "CodesetId": null,
+                  "First": null,
+                  "OccurrenceStartDate": null,
+                  "ObservationType": null,
+                  "ObservationTypeExclude": false,
+                  "ValueAsNumber": null,
+                  "ValueAsString": null,
+                  "ValueAsConcept": null,
+                  "Qualifier": null,
+                  "Unit": null,
+                  "ObservationSourceConcept": 1,
+                  "Age": null,
+                  "Gender": null,
+                  "ProviderSpecialty": null,
+                  "VisitType": null
+                }
+              },
+              "StartWindow": {
+                "Start": {
+                  "Days": 14,
+                  "Coeff": -1
+                },
+                "End": {
+                  "Days": null,
+                  "Coeff": 1
+                },
+                "UseIndexEnd": false,
+                "UseEventEnd": false
+              },
+              "EndWindow": {
+                "Start": {
+                  "Days": null,
+                  "Coeff": -1
+                },
+                "End": {
+                  "Days": 0,
+                  "Coeff": 1
+                },
+                "UseIndexEnd": true,
+                "UseEventEnd": true
+              },
+              "RestrictVisit": false,
+              "IgnoreObservationPeriod": false,
+              "Occurrence": {
+                "Type": 2,
+                "Count": 1,
+                "IsDistinct": false
+              }
+            },
+            {
+              "Criteria": {
+                "Measurement": {
+                  "CorrelatedCriteria": null,
+                  "CodesetId": 2,
+                  "First": null,
+                  "OccurrenceStartDate": null,
+                  "MeasurementType": null,
+                  "MeasurementTypeExclude": false,
+                  "Operator": null,
+                  "ValueAsNumber": null,
+                  "ValueAsConcept": [
+                    {
+                      "CONCEPT_ID": 4126681,
+                      "CONCEPT_NAME": "Detected",
+                      "STANDARD_CONCEPT": null,
+                      "STANDARD_CONCEPT_CAPTION": "Unknown",
+                      "INVALID_REASON": null,
+                      "INVALID_REASON_CAPTION": "Unknown",
+                      "CONCEPT_CODE": "260373001",
+                      "DOMAIN_ID": "Meas Value",
+                      "VOCABULARY_ID": "SNOMED",
+                      "CONCEPT_CLASS_ID": null
+                    },
+                    {
+                      "CONCEPT_ID": 45877985,
+                      "CONCEPT_NAME": "Detected",
+                      "STANDARD_CONCEPT": null,
+                      "STANDARD_CONCEPT_CAPTION": "Unknown",
+                      "INVALID_REASON": null,
+                      "INVALID_REASON_CAPTION": "Unknown",
+                      "CONCEPT_CODE": "LA11882-0",
+                      "DOMAIN_ID": "Meas Value",
+                      "VOCABULARY_ID": "LOINC",
+                      "CONCEPT_CLASS_ID": null
+                    },
+                    {
+                      "CONCEPT_ID": 45884084,
+                      "CONCEPT_NAME": "Positive",
+                      "STANDARD_CONCEPT": null,
+                      "STANDARD_CONCEPT_CAPTION": "Unknown",
+                      "INVALID_REASON": null,
+                      "INVALID_REASON_CAPTION": "Unknown",
+                      "CONCEPT_CODE": "LA6576-8",
+                      "DOMAIN_ID": "Meas Value",
+                      "VOCABULARY_ID": "LOINC",
+                      "CONCEPT_CLASS_ID": null
+                    },
+                    {
+                      "CONCEPT_ID": 9191,
+                      "CONCEPT_NAME": "Positive",
+                      "STANDARD_CONCEPT": null,
+                      "STANDARD_CONCEPT_CAPTION": "Unknown",
+                      "INVALID_REASON": null,
+                      "INVALID_REASON_CAPTION": "Unknown",
+                      "CONCEPT_CODE": "10828004",
+                      "DOMAIN_ID": "Meas Value",
+                      "VOCABULARY_ID": "SNOMED",
+                      "CONCEPT_CLASS_ID": null
+                    }
+                  ],
+                  "Unit": null,
+                  "RangeLow": null,
+                  "RangeHigh": null,
+                  "RangeLowRatio": null,
+                  "RangeHighRatio": null,
+                  "Abnormal": null,
+                  "MeasurementSourceConcept": null,
+                  "Age": null,
+                  "Gender": null,
+                  "ProviderSpecialty": null,
+                  "VisitType": null
+                }
+              },
+              "StartWindow": {
+                "Start": {
+                  "Days": 14,
+                  "Coeff": -1
+                },
+                "End": {
+                  "Days": null,
+                  "Coeff": 1
+                },
+                "UseIndexEnd": false,
+                "UseEventEnd": false
+              },
+              "EndWindow": {
+                "Start": {
+                  "Days": null,
+                  "Coeff": -1
+                },
+                "End": {
+                  "Days": 0,
+                  "Coeff": 1
+                },
+                "UseIndexEnd": true,
+                "UseEventEnd": true
+              },
+              "RestrictVisit": false,
+              "IgnoreObservationPeriod": false,
+              "Occurrence": {
+                "Type": 2,
+                "Count": 1,
+                "IsDistinct": false
+              }
+            },
+            {
+              "Criteria": {
+                "Measurement": {
+                  "CorrelatedCriteria": null,
+                  "CodesetId": 2,
+                  "First": null,
+                  "OccurrenceStartDate": null,
+                  "MeasurementType": null,
+                  "MeasurementTypeExclude": false,
+                  "Operator": null,
+                  "ValueAsNumber": null,
+                  "ValueAsConcept": null,
+                  "Unit": null,
+                  "RangeLow": null,
+                  "RangeHigh": null,
+                  "RangeLowRatio": null,
+                  "RangeHighRatio": null,
+                  "Abnormal": null,
+                  "MeasurementSourceConcept": null,
+                  "Age": null,
+                  "Gender": null,
+                  "ProviderSpecialty": null,
+                  "VisitType": null
+                }
+              },
+              "StartWindow": {
+                "Start": {
+                  "Days": 14,
+                  "Coeff": -1
+                },
+                "End": {
+                  "Days": null,
+                  "Coeff": 1
+                },
+                "UseIndexEnd": false,
+                "UseEventEnd": false
+              },
+              "EndWindow": {
+                "Start": {
+                  "Days": null,
+                  "Coeff": -1
+                },
+                "End": {
+                  "Days": 0,
+                  "Coeff": 1
+                },
+                "UseIndexEnd": true,
+                "UseEventEnd": true
+              },
+              "RestrictVisit": false,
+              "IgnoreObservationPeriod": false,
+              "Occurrence": {
+                "Type": 2,
+                "Count": 1,
+                "IsDistinct": false
+              }
+            }
+          ],
+          "DemographicCriteriaList": [],
+          "Groups": []
+        },
+        "ConceptSets": [
+          {
+            "id": 0,
+            "name": "[OHDSI Covid19-ODS] Inpatient Visit",
+            "expression": {
+              "items": [
+                {
+                  "concept": {
+                    "CONCEPT_ID": 9201,
+                    "CONCEPT_NAME": "Inpatient Visit",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "IP",
+                    "DOMAIN_ID": "Visit",
+                    "VOCABULARY_ID": "Visit",
+                    "CONCEPT_CLASS_ID": "Visit"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                }
+              ]
+            }
+          },
+          {
+            "id": 1,
+            "name": "[OHDSI Covid19-ODS] COVID-19 - Standard and Source terminology",
+            "expression": {
+              "items": [
+                {
+                  "concept": {
+                    "CONCEPT_ID": 710158,
+                    "CONCEPT_NAME": "COVID-19 (machine translation)",
+                    "STANDARD_CONCEPT": "N",
+                    "STANDARD_CONCEPT_CAPTION": "Non-Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "U07.100",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "ICD10CN",
+                    "CONCEPT_CLASS_ID": "ICD10 code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": false,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 710155,
+                    "CONCEPT_NAME": "COVID-19 pneumonia (machine translation)",
+                    "STANDARD_CONCEPT": "N",
+                    "STANDARD_CONCEPT_CAPTION": "Non-Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "U07.100x003",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "ICD10CN",
+                    "CONCEPT_CLASS_ID": "ICD10 code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": false,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 710156,
+                    "CONCEPT_NAME": "COVID-19 pneumonia (machine translation)",
+                    "STANDARD_CONCEPT": "N",
+                    "STANDARD_CONCEPT_CAPTION": "Non-Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "U07.100x001",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "ICD10CN",
+                    "CONCEPT_CLASS_ID": "ICD10 code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": false,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 710159,
+                    "CONCEPT_NAME": "Confirmed COVID-19, excluding pneumonia (machine translation)",
+                    "STANDARD_CONCEPT": "N",
+                    "STANDARD_CONCEPT_CAPTION": "Non-Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "U07.100x002",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "ICD10CN",
+                    "CONCEPT_CLASS_ID": "ICD10 code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": false,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 37311061,
+                    "CONCEPT_NAME": "Disease caused by severe acute respiratory syndrome coronavirus 2",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "840539006",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 45756093,
+                    "CONCEPT_NAME": "Emergency use of U07.1",
+                    "STANDARD_CONCEPT": "N",
+                    "STANDARD_CONCEPT_CAPTION": "Non-Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "U07.1",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "ICD10",
+                    "CONCEPT_CLASS_ID": "ICD10 code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": false,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 710160,
+                    "CONCEPT_NAME": "Emergency use of U07.1 | Disease caused by severe acute respiratory syndrome coronavirus 2",
+                    "STANDARD_CONCEPT": "N",
+                    "STANDARD_CONCEPT_CAPTION": "Non-Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "U07.1",
+                    "DOMAIN_ID": "Observation",
+                    "VOCABULARY_ID": "ICD10CN",
+                    "CONCEPT_CLASS_ID": "ICD10 code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": false,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 42501115,
+                    "CONCEPT_NAME": "Emergency use of U07.1 | Disease caused by severe acute respiratory syndrome coronavirus 2",
+                    "STANDARD_CONCEPT": "N",
+                    "STANDARD_CONCEPT_CAPTION": "Non-Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "U07.1",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "KCD7",
+                    "CONCEPT_CLASS_ID": "KCD7 code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": false,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 586414,
+                    "CONCEPT_NAME": "Novel coronavirus infection",
+                    "STANDARD_CONCEPT": "N",
+                    "STANDARD_CONCEPT_CAPTION": "Non-Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "U18.1",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "KCD7",
+                    "CONCEPT_CLASS_ID": "KCD7 code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": false,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 45600471,
+                    "CONCEPT_NAME": "Other coronavirus as the cause of diseases classified elsewhere",
+                    "STANDARD_CONCEPT": "N",
+                    "STANDARD_CONCEPT_CAPTION": "Non-Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "B97.29",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "ICD10CM",
+                    "CONCEPT_CLASS_ID": "5-char billing code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": false,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 586415,
+                    "CONCEPT_NAME": "Provisional assignment of new diseases or emergency use",
+                    "STANDARD_CONCEPT": "N",
+                    "STANDARD_CONCEPT_CAPTION": "Non-Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "U18",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "KCD7",
+                    "CONCEPT_CLASS_ID": "KCD7 code"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": false,
+                  "includeMapped": false
+                }
+              ]
+            }
+          },
+          {
+            "id": 2,
+            "name": "[OHDSI Covid19-ODS] COVID-19 specific testing - Standard terminology",
+            "expression": {
+              "items": [
+                {
+                  "concept": {
+                    "CONCEPT_ID": 37310282,
+                    "CONCEPT_NAME": "2019 novel coronavirus detected",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "1240581000000104",
+                    "DOMAIN_ID": "Measurement",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 37310281,
+                    "CONCEPT_NAME": "2019 novel coronavirus not detected",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "1240591000000102",
+                    "DOMAIN_ID": "Measurement",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": true,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 756055,
+                    "CONCEPT_NAME": "Measurement of severe acute respiratory syndrome coronavirus 2",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "OMOP4873969",
+                    "DOMAIN_ID": "Measurement",
+                    "VOCABULARY_ID": "OMOP Extension",
+                    "CONCEPT_CLASS_ID": "Procedure"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                }
+              ]
+            }
+          }
+        ],
+        "QualifiedLimit": {
+          "Type": "First"
+        },
+        "ExpressionLimit": {
+          "Type": "First"
+        },
+        "InclusionRules": [
+          {
+            "name": "Age >= 18",
+            "description": null,
+            "expression": {
+              "Type": "ALL",
+              "Count": null,
+              "CriteriaList": [],
+              "DemographicCriteriaList": [
+                {
+                  "Age": {
+                    "Value": 18,
+                    "Op": "gte",
+                    "Extent": null
+                  },
+                  "Gender": null,
+                  "Race": null,
+                  "Ethnicity": null,
+                  "OccurrenceStartDate": null,
+                  "OccurrenceEndDate": null
+                }
+              ],
+              "Groups": []
+            }
+          }
+        ],
+        "EndStrategy": null,
+        "CensoringCriteria": [],
+        "CollapseSettings": {
+          "CollapseType": "ERA",
+          "EraPad": 0
+        },
+        "CensorWindow": {
+          "StartDate": null,
+          "EndDate": null
+        }
+      },
+      "expressionType": null,
+      "createdBy": "admin@odysseusinc.com",
+      "createdDate": "2020-05-25T07:50:15.103+0000",
+      "modifiedBy": null,
+      "modifiedDate": null
+    }
+  ],
+  "conceptSets": [],
+  "conceptSetCrossReference": [],
+  "targetIds": [],
+  "outcomeIds": [],
+  "covariateSettings": [],
+  "populationSettings": [],
+  "modelSettings": []
+}

@@ -3,8 +3,8 @@ package org.ohdsi.webapi.estimation.specification;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import org.ohdsi.analysis.estimation.design.EstimationAnalysisConst;
-import org.ohdsi.analysis.estimation.design.EstimationAnalysisSettings;
 import org.ohdsi.analysis.estimation.design.EstimationTypeEnum;
+import org.ohdsi.analysis.estimation.design.EstimationAnalysisSettings;
 import org.ohdsi.analysis.estimation.design.Settings;
 import org.ohdsi.webapi.estimation.comparativecohortanalysis.specification.ComparativeCohortAnalysisSettings;
 

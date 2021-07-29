@@ -1,0 +1,350 @@
+{
+  "name": "ibuprofen vs aspirin with strata",
+  "cohorts": [
+    {
+      "id": 45,
+      "name": "[ac 273 r1] adults aspirin",
+      "description": null,
+      "createdDate": "2019-08-12 11:30",
+      "modifiedDate": null,
+      "expression": {
+        "cdmVersionRange": ">=5.0.0",
+        "PrimaryCriteria": {
+          "CriteriaList": [
+            {
+              "DrugExposure": {
+                "CodesetId": 0,
+                "DrugTypeExclude": false
+              }
+            }
+          ],
+          "ObservationWindow": {
+            "PriorDays": 0,
+            "PostDays": 0
+          },
+          "PrimaryCriteriaLimit": {
+            "Type": "First"
+          }
+        },
+        "ConceptSets": [
+          {
+            "id": 0,
+            "name": "[ac 273 r1] aspirin",
+            "expression": {
+              "items": [
+                {
+                  "concept": {
+                    "CONCEPT_ID": 1112807,
+                    "CONCEPT_NAME": "Aspirin",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "1191",
+                    "DOMAIN_ID": "Drug",
+                    "VOCABULARY_ID": "RxNorm",
+                    "CONCEPT_CLASS_ID": "Ingredient"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                }
+              ]
+            }
+          }
+        ],
+        "QualifiedLimit": {
+          "Type": "First"
+        },
+        "ExpressionLimit": {
+          "Type": "First"
+        },
+        "InclusionRules": [
+          {
+            "name": "adults",
+            "expression": {
+              "Type": "ALL",
+              "CriteriaList": [],
+              "DemographicCriteriaList": [
+                {
+                  "Age": {
+                    "Value": 17,
+                    "Op": "gt"
+                  }
+                }
+              ],
+              "Groups": []
+            }
+          },
+          {
+            "name": "1 month observation",
+            "description": "",
+            "expression": {
+              "Type": "ALL",
+              "CriteriaList": [
+                {
+                  "Criteria": {
+                    "ObservationPeriod": {}
+                  },
+                  "StartWindow": {
+                    "Start": {
+                      "Days": 30,
+                      "Coeff": -1
+                    },
+                    "End": {
+                      "Coeff": 1
+                    },
+                    "UseIndexEnd": false,
+                    "UseEventEnd": false
+                  },
+                  "RestrictVisit": false,
+                  "IgnoreObservationPeriod": false,
+                  "Occurrence": {
+                    "Type": 2,
+                    "Count": 1,
+                    "IsDistinct": false
+                  }
+                }
+              ],
+              "DemographicCriteriaList": [],
+              "Groups": []
+            }
+          }
+        ],
+        "CensoringCriteria": [],
+        "CollapseSettings": {
+          "CollapseType": "ERA",
+          "EraPad": 0
+        },
+        "CensorWindow": {}
+      }
+    },
+    {
+      "id": 46,
+      "name": "[ac 273 r1] adults ibuprofen",
+      "description": null,
+      "createdDate": "2019-08-12 11:30",
+      "modifiedDate": null,
+      "expression": {
+        "cdmVersionRange": ">=5.0.0",
+        "PrimaryCriteria": {
+          "CriteriaList": [
+            {
+              "DrugExposure": {
+                "CodesetId": 0,
+                "DrugTypeExclude": false
+              }
+            }
+          ],
+          "ObservationWindow": {
+            "PriorDays": 0,
+            "PostDays": 0
+          },
+          "PrimaryCriteriaLimit": {
+            "Type": "First"
+          }
+        },
+        "ConceptSets": [
+          {
+            "id": 0,
+            "name": "[ac 273 r1] ibuprofen",
+            "expression": {
+              "items": [
+                {
+                  "concept": {
+                    "CONCEPT_ID": 1177480,
+                    "CONCEPT_NAME": "Ibuprofen",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "5640",
+                    "DOMAIN_ID": "Drug",
+                    "VOCABULARY_ID": "RxNorm",
+                    "CONCEPT_CLASS_ID": "Ingredient"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                }
+              ]
+            }
+          }
+        ],
+        "QualifiedLimit": {
+          "Type": "First"
+        },
+        "ExpressionLimit": {
+          "Type": "First"
+        },
+        "InclusionRules": [
+          {
+            "name": "adults",
+            "expression": {
+              "Type": "ALL",
+              "CriteriaList": [],
+              "DemographicCriteriaList": [
+                {
+                  "Age": {
+                    "Value": 17,
+                    "Op": "gt"
+                  }
+                }
+              ],
+              "Groups": []
+            }
+          }
+        ],
+        "CensoringCriteria": [],
+        "CollapseSettings": {
+          "CollapseType": "ERA",
+          "EraPad": 0
+        },
+        "CensorWindow": {}
+      }
+    }
+  ],
+  "featureAnalyses": [
+    {
+      "id": 118,
+      "type": "PRESET",
+      "name": "Condition Era Short Term",
+      "domain": "CONDITION",
+      "statType": "PREVALENCE",
+      "descr": "One covariate per condition in the condition_era table overlapping with any part of the short term window.",
+      "design": "ConditionEraShortTerm",
+      "description": "One covariate per condition in the condition_era table overlapping with any part of the short term window."
+    },
+    {
+      "id": 121,
+      "type": "PRESET",
+      "name": "Condition Era Long Term",
+      "domain": "CONDITION",
+      "statType": "PREVALENCE",
+      "descr": "One covariate per condition in the condition_era table overlapping with any part of the long term window.",
+      "design": "ConditionEraLongTerm",
+      "description": "One covariate per condition in the condition_era table overlapping with any part of the long term window."
+    },
+    {
+      "id": 133,
+      "type": "CRITERIA_SET",
+      "name": "demo_distribution",
+      "domain": "DEMOGRAPHICS",
+      "statType": "DISTRIBUTION",
+      "descr": "demo_distribution",
+      "design": [
+        {
+          "criteriaType": "DemographicCriteria",
+          "id": 14,
+          "name": "",
+          "expression": {
+            "Age": {
+              "Value": 15,
+              "Op": "gt",
+              "Extent": null
+            },
+            "Gender": null,
+            "Race": null,
+            "Ethnicity": null,
+            "OccurrenceStartDate": null,
+            "OccurrenceEndDate": null
+          }
+        }
+      ],
+      "description": "demo_distribution",
+      "conceptSets": []
+    },
+    {
+      "id": 134,
+      "type": "CRITERIA_SET",
+      "name": "age",
+      "domain": "DEMOGRAPHICS",
+      "statType": "PREVALENCE",
+      "descr": "Age criteria",
+      "design": [
+        {
+          "criteriaType": "CriteriaGroup",
+          "id": 15,
+          "name": "Age",
+          "expression": {
+            "Type": "ALL",
+            "Count": null,
+            "CriteriaList": [],
+            "DemographicCriteriaList": [
+              {
+                "Age": {
+                  "Value": 20,
+                  "Op": "bt",
+                  "Extent": 55
+                },
+                "Gender": null,
+                "Race": null,
+                "Ethnicity": null,
+                "OccurrenceStartDate": null,
+                "OccurrenceEndDate": null
+              }
+            ],
+            "Groups": []
+          }
+        }
+      ],
+      "description": "Age criteria",
+      "conceptSets": []
+    },
+    {
+      "id": 135,
+      "type": "CUSTOM_FE",
+      "name": "Custom analysis producing same results as Feature Extraction's \"One covariate per drug in the drug_era table overlapping with any time prior to index.\" ",
+      "domain": "DRUG",
+      "statType": "PREVALENCE",
+      "descr": "Custom analysis producing same results as Feature Extraction's \"One covariate per drug in the drug_era table overlapping with any time prior to index.\" ",
+      "design": "-- Custom analysis producing same results as Feature Extraction's \"One covariate per drug in the drug_era table overlapping with any time prior to index.\" \nSELECT\n  CAST(drug_concept_id AS BIGINT) * 1000 + @analysis_id AS covariate_id,\n  c.concept_name                                                                  AS covariate_name,\n  drug_concept_id                                                                 AS concept_id,\n  COUNT(*)                                                                            AS sum_value,\n  COUNT(*) * 1.0 / stat.total_cnt * 1.0                                   AS average_value\nFROM (\n       SELECT DISTINCT\n         drug_concept_id,\n         cohort.subject_id,\n         cohort.cohort_start_date\n       FROM @cohort_table cohort\n         INNER JOIN @cdm_database_schema.drug_era ON cohort.subject_id = drug_era.person_id\n       WHERE drug_era_start_date <= cohort.cohort_start_date\n             AND drug_concept_id != 0\n             AND cohort.cohort_definition_id = @cohort_id\n     ) drug_entries\n  JOIN @cdm_database_schema.concept c ON drug_entries.drug_concept_id = c.concept_id\n  CROSS JOIN (SELECT COUNT(*) total_cnt\n              FROM @cohort_table\n              WHERE cohort_definition_id = @cohort_id) stat\nGROUP BY drug_concept_id, c.concept_name, stat.total_cnt\n        ",
+      "description": "Custom analysis producing same results as Feature Extraction's \"One covariate per drug in the drug_era table overlapping with any time prior to index.\" "
+    }
+  ],
+  "parameters": [],
+  "stratas": [
+    {
+      "id": 14,
+      "name": "ladies",
+      "criteria": {
+        "Type": "ALL",
+        "Count": null,
+        "CriteriaList": [],
+        "DemographicCriteriaList": [
+          {
+            "Age": null,
+            "Gender": [
+              {
+                "CONCEPT_ID": 8532,
+                "CONCEPT_NAME": "FEMALE",
+                "STANDARD_CONCEPT": null,
+                "STANDARD_CONCEPT_CAPTION": "Unknown",
+                "INVALID_REASON": null,
+                "INVALID_REASON_CAPTION": "Unknown",
+                "CONCEPT_CODE": "F",
+                "DOMAIN_ID": "Gender",
+                "VOCABULARY_ID": "Gender",
+                "CONCEPT_CLASS_ID": null
+              }
+            ],
+            "Race": null,
+            "Ethnicity": null,
+            "OccurrenceStartDate": null,
+            "OccurrenceEndDate": null
+          }
+        ],
+        "Groups": []
+      }
+    }
+  ],
+  "strataOnly": true,
+  "strataConceptSets": [],
+  "createdAt": "2019-08-17 20:34:52",
+  "updatedAt": "2019-08-17 21:04:44",
+  "skeletonType": "CohortCharacterizationStudy",
+  "skeletonVersion": "v0.0.1",
+  "packageName": null,
+  "organizationName": "OHDSI",
+  "stratifiedBy": "yet"
+}

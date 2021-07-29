@@ -14,13 +14,13 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
+import java.io.Serializable;
+import javax.persistence.*;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.hibernate.annotations.Type;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
-
-import javax.persistence.*;
-import java.io.Serializable;
 
 /**
  *
@@ -36,7 +36,7 @@ public class CohortDefinitionDetails implements Serializable {
   private Integer id;
 
   @MapsId
-  @OneToOne
+  @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name="id")
   private CohortDefinition definition;
 

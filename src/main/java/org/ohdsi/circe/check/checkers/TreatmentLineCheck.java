@@ -18,21 +18,32 @@
 
 package org.ohdsi.circe.check.checkers;
 
-import org.ohdsi.circe.cohortdefinition.Criteria;
-import org.ohdsi.circe.cohortdefinition.TreatmentLine;
-
 import static org.ohdsi.circe.check.operations.Operations.match;
 
-public class TreatmentLineCheck extends BaseCriteriaCheck {
+import java.util.Objects;
+import org.ohdsi.circe.check.WarningSeverity;
+import org.ohdsi.circe.cohortdefinition.CorelatedCriteria;
+import org.ohdsi.circe.cohortdefinition.TreatmentLine;
+
+public class TreatmentLineCheck extends BaseCorelatedCriteriaCheck {
 
     private static final String EMPTY_VALUE_ERROR = "Treatment Line of %s contains empty %s";
+//    private static final String MISSING_DAYS_INFO = "Using drug era at %s criteria on medical claims (e.g., biologics) may not be accurate due to missing days supply information";
 
     @Override
-    protected void checkCriteria(Criteria criteria, String groupName, WarningReporter reporter) {
+    protected WarningSeverity defineSeverity() {
 
-        WarningReporterHelper helper = new WarningReporterHelper(reporter, EMPTY_VALUE_ERROR, groupName);
-        match(criteria)
-                .isA(TreatmentLine.class)
-                .then(c -> match((TreatmentLine)c));
+        return WarningSeverity.INFO;
     }
+
+    protected void checkCriteria(CorelatedCriteria criteria, String groupName, WarningReporter reporter) {
+
+        match(criteria.criteria)
+                .isA(TreatmentLine.class)
+                .then(c -> match(criteria)
+                        .when(treatmentLine -> Objects.isNull(treatmentLine.startWindow.start) && Objects.isNull(treatmentLine.startWindow.end)
+                                && Objects.isNull(treatmentLine.endWindow.start))
+                        .then(() -> reporter.add(EMPTY_VALUE_ERROR, groupName)));
+    }
+
 }

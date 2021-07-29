@@ -1,72 +1,78 @@
-### WebAPI
-OHDSI WebAPI contains all OHDSI services that can be called from OHDSI applications
+# OHDSI WebAPI
 
-_NOTE: Check license information for individual sources on the [Web API documentation page](http://www.ohdsi.org/web/wiki/doku.php?id=documentation:software:webapi)_
+OHDSI WebAPI contains all OHDSI RESTful services that can be called from OHDSI applications.
 
-#### Getting Started
+## Features
 
-New documentation can be found a the [Web API Installation Guide](http://www.ohdsi.org/web/wiki/doku.php?id=documentation:software:webapi:webapi_installation_guide)
+- Provides a centralized API for working with 1 or more databases converted to the [Common Data Model](https://github.com/OHDSI/CommonDataModel) (CDM) v5.
+- Searching the OMOP standardized vocabularies for medical concepts and constructing concept sets.
+- Defining cohort definitions for use in identifying patient populations.
+- Characterizing cohorts
+- Computing incidence rates
+- Retrieve patient profiles
+- Design population level estimation and patient level prediction studies
 
-##### Compilation
-Compiling the WebAPI project will require Maven.  Maven is a command line tool that will build the WAR for deployment to a servlet container.
+## Technology
 
-##### JDBC Drivers
-JDBC Drivers are not included with the source or any release packages.  Obtaining JDBC Drivers and making them available on the hosting server via environment classpath or web server configuration are left as an excercise for the developer / system administrator.  
+OHDSI WebAPI is a Java 8 web application that utilizes a database (PostgreSQL, SQL Server or Oracle) for storage.
 
-##### Configuration
-Once the source code is built and the resulting libraries are deployed to your web environment the **web.xml** file needs to be updated for your specific environment
+## System Requirements & Installation
 
-**database.driver** : this parameter specifies the class name of the driver for your database environment *(ie com.microsoft.sqlserver.jdbc.SQLServerDriver)*
+Documentation can be found a the [Web API Installation Guide](https://github.com/OHDSI/WebAPI/wiki) which covers the system requirements and installation instructions.
 
-**database.url** : this parameter specifies the connection string for your database environment
+## SAML Auth support
 
-**database.dialect** this parameter specifies the dialect of your database environment and is used by the SQLRender library to translate the embedded templated queries to one of the supported dialects (SQL Server, Oracle, PostgreSQL, Amazon RedShift)
+The following parameters are used:
 
-##### Testing
-Once your configuration is completed you can test the functionality of the WebAPI with the following types of requests:
+- `security.saml.idpMetadataLocation=classpath:saml/dev/idp-metadata.xml` - path to metadata used by identity provider
+- `security.saml.metadataLocation=saml/dev/sp-metadata.xml` - service provider metadata path
+- `security.saml.keyManager.keyStoreFile=classpath:saml/samlKeystore.jks` - path to keystore
+- `security.saml.keyManager.storePassword=nalle123` - keystore password
+- `security.saml.keyManager.passwords.arachnenetwork=nalle123` - private key password
+- `security.saml.keyManager.defaultKey=apollo` - keystore alias
+- `security.saml.sloUrl=https://localhost:8443/cas/logout` - identity provider logout URL
+- `security.saml.callbackUrl=http://localhost:8080/WebAPI/user/saml/callback` - URL called from identity provider after login
 
-* retrieve concept information for concept id 0
-```
-http://<YOUR SERVER>/WebAPI/vocabulary/concept/0
-```
-* find related concepts for concept id 0
-```
-http://<YOUR SERVER>/WebAPI/vocabulary/concept/0/related
-```
-* search the vocabulary for all concepts with the string cardiomyopathy in the concept name
-```
-http://<YOUR SERVER>/WebAPI/vocabulary/search/cardiomyopathy
-```
+Sample idp metadata and sp metadata config files for okta:
+- `saml/dev/idp-metadata-okta.xml`
+- `saml/dev/sp-metadata-okta.xml`
 
-#### Services
-The collection of RESTful services available in the WebAPI project.
+## Managing auth providers
 
-##### VocabularyService
-A RESTful service for querying the CDM Vocabulary.  Leveraged by [HERMES](https://github.com/OHDSI/Hermes).
+The following parameters are used to enable/disable certain provider:
 
-##### SqlRenderService
-A RESTful service that wraps the SQLRender project.
+- `security.auth.windows.enabled`
+- `security.auth.kerberos.enabled`
+- `security.auth.openid.enabled`
+- `security.auth.facebook.enabled`
+- `security.auth.github.enabled`
+- `security.auth.google.enabled`
+- `security.auth.jdbc.enabled`
+- `security.auth.ldap.enabled`
+- `security.auth.ad.enabled`
+- `security.auth.cas.enabled`
 
-##### JobService
-A RESTful service that returns JobInstanceResource or JobExecutionResource objects.  Typically a service will launch/queue a job and will be given JobExecutionResource.  This object will encapsulate the Job's id and Job's executionId, start/end times, and status.
+Acceptable values are `true` and `false`
 
-The JobService can be used to check on the status of a Job's execution as well as query information of a Job.
+## Geospatial support
 
-/job/{jobId} - returns JobInstanceResource from which you can obtain Job id and Job name.
+Instructions can be found at [webapi-component-geospatial](https://github.com/OHDSI/webapi-component-geospatial)
 
-/job/{jobId}/execution/{executionId} - return JobExecutionResource from which you can obtain JobInstanceResource information as well as the start/end times, status, etc.
+## Testing
 
-/job/execution/{executionId} - is an alternative to the previous endpoint.
+It was chosen to use embedded PG instead of H2 for unit tests since H2 doesn't support window functions, `md5` function, HEX to BIT conversion, `setval`, `set datestyle`, CTAS + CTE.
 
-See Jobs below for more detail.
+## Support
 
-#### Jobs
-Services within WebAPI may submit asynchronous jobs.  WebAPI uses Spring Batch for this "job server".  Spring Batch requires a few DB objects and will attempt to create these (tables, sequences) upon startup.  Spring Batch will review the DataSource to determine the vendor-specific script to execute.
-You may review DDL for your specific RDBMS vendor here: https://github.com/spring-projects/spring-batch/blob/3.0.3.RELEASE/spring-batch-core/src/main/resources/org/springframework/batch/core/ 
+- Developer questions/comments/feedback: [OHDSI forum](http://forums.ohdsi.org/c/developers)
+- We use the [GitHub issue tracker](https://github.com/OHDSI/WebAPI/issues) for all bugs/issues/enhancements.
 
-Services should use the org.ohdsi.webapi.JobTemplate to launch Jobs.  
+## Contribution
 
-See org.ohdsi.webapi.exampleapplication.ExampleApplicationConfig & ExampleApplicationWithJobService for how to submit jobs.
+### Versioning
 
-See JobServiceIT (integration test) for more detail (java client).
+- WebAPI follows [Semantic versioning](https://semver.org/);
+- Only Non-SNAPSHOT dependencies should be presented in POM.xml on release branches/tags.
 
+## License
+OHDSI WebAPI is licensed under Apache License 2.0

@@ -30,8 +30,13 @@ select
        r.max_value,
        r.cohort_definition_id,
        r.strata_id,
-       r.strata_name
+       r.strata_name,
+       r.aggregate_id,
+       r.aggregate_name,
+       r.missing_means_zero
 from @results_database_schema.cc_results r
   JOIN threshold_passed_ids tpi ON tpi.covariate_id = r.covariate_id
   JOIN @vocabulary_schema.concept c on c.concept_id = r.concept_id
 where r.cc_generation_id = @cohort_characterization_generation_id
+  and r.analysis_id in (@analysis_ids)
+  and r.cohort_definition_id in (@cohort_ids)

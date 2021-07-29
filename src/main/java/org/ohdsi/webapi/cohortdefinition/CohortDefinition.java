@@ -14,6 +14,32 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
+import javax.persistence.NamedSubgraph;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.analysis.Cohort;
@@ -21,10 +47,6 @@ import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisGenerationInfo;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.model.CommonEntity;
-
-import javax.persistence.*;
-import java.io.Serializable;
-import java.util.*;
 
 /**
  * JPA Entity for Cohort Definitions
@@ -37,7 +59,7 @@ import java.util.*;
     attributeNodes = { @NamedAttributeNode(value = "details", subgraph = "detailsGraph") },
     subgraphs = {@NamedSubgraph(name = "detailsGraph", type = CohortDefinitionDetails.class, attributeNodes = { @NamedAttributeNode(value="expression")})}
 )
-public class CohortDefinition extends CommonEntity implements Serializable, Cohort{
+public class CohortDefinition extends CommonEntity<Integer> implements Serializable, Cohort{
 
   private static final long serialVersionUID = 1L;
     
@@ -62,7 +84,7 @@ public class CohortDefinition extends CommonEntity implements Serializable, Coho
   @Column(name="expression_type")
   private ExpressionType expressionType;
   
-  @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional=true, orphanRemoval = true)
+  @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false, orphanRemoval = true, mappedBy="definition")
   @JoinColumn(name="id")
   private CohortDefinitionDetails details;
 
@@ -78,16 +100,7 @@ public class CohortDefinition extends CommonEntity implements Serializable, Coho
           inverseJoinColumns = @JoinColumn(name = "cohort_characterization_id", referencedColumnName = "id"))
   private List<CohortCharacterizationEntity> cohortCharacterizations = new ArrayList<>();
 
-  @Column(name = "uuid")
-  private UUID uuid;
-
-  @OneToOne
-  @JoinColumn(name = "previous_version", referencedColumnName = "uuid")
-  private CohortDefinition previousVersion;
-
-  @Column(name = "group_key")
-  private UUID groupKey;
-
+  @Override
   public Integer getId() {
     return id;
   }
@@ -178,32 +191,5 @@ public class CohortDefinition extends CommonEntity implements Serializable, Coho
   public void setCohortCharacterizations(final List<CohortCharacterizationEntity> cohortCharacterizations) {
 
     this.cohortCharacterizations = cohortCharacterizations;
-  }
-
-  public UUID getUuid() {
-    return uuid;
-  }
-
-  public CohortDefinition setUuid(UUID uuid) {
-    this.uuid = uuid;
-    return this;
-  }
-
-  public CohortDefinition getPreviousVersion() {
-    return previousVersion;
-  }
-
-  public CohortDefinition setPreviousVersion(CohortDefinition previousVersion) {
-    this.previousVersion = previousVersion;
-    return this;
-  }
-
-  public UUID getGroupKey() {
-    return groupKey;
-  }
-
-  public CohortDefinition setGroupKey(UUID groupKey) {
-    this.groupKey = groupKey;
-    return this;
   }
 }

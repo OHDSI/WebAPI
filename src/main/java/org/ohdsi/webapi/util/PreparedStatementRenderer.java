@@ -1,16 +1,24 @@
 package org.ohdsi.webapi.util;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import com.google.common.collect.ImmutableList;
+import com.odysseusinc.arachne.commons.types.DBMSType;
 import org.apache.commons.lang.ArrayUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.source.Source;
 import org.springframework.jdbc.core.PreparedStatementSetter;
-
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * This class encapsulates the conversion of Sql to a java.sql.PreparedStatement format and sets its ordered arguments in a PreparedStatementSetter object.
@@ -285,18 +293,18 @@ public class PreparedStatementRenderer implements ParameterizedSqlProvider {
 
   private Object convertPrimitiveArraysToWrapperArrays(Object value) {
 
-    if (value == null) return value;
+    if (value == null) return null;
     if (!value.getClass().isArray()) return value;
 
 
     if (value instanceof boolean[]) return ArrayUtils.toObject((boolean[]) value);
     if (value instanceof byte[]) return ArrayUtils.toObject((byte[]) value);
     if (value instanceof char[]) return ArrayUtils.toObject((char[]) value);
-    if (value instanceof char[]) return ArrayUtils.toObject((double[]) value);
-    if (value instanceof char[]) return ArrayUtils.toObject((float[]) value);
-    if (value instanceof char[]) return ArrayUtils.toObject((int[]) value);
+    if (value instanceof double[]) return ArrayUtils.toObject((double[]) value);
+    if (value instanceof float[]) return ArrayUtils.toObject((float[]) value);
+    if (value instanceof int[]) return ArrayUtils.toObject((int[]) value);
     if (value instanceof long[]) return ArrayUtils.toObject((long[]) value);
-    if (value instanceof char[]) return ArrayUtils.toObject((short[]) value);
+    if (value instanceof short[]) return ArrayUtils.toObject((short[]) value);
     return value;
   }
 

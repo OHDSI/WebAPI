@@ -1,8 +1,7 @@
 package org.ohdsi.webapi.prediction.specification;
 
-import org.ohdsi.analysis.prediction.design.GetDbPLPDataArgs;
-
 import java.math.BigDecimal;
+import org.ohdsi.analysis.prediction.design.GetDbPLPDataArgs;
 
 /**
  *

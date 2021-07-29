@@ -27,7 +27,7 @@ public abstract class AbstractLdapProvider implements LdapProvider {
 
     LdapTemplate ldapTemplate = getLdapTemplate();
     AndFilter filter = new AndFilter();
-    filter.and(getCriteria(OBJECTCLASS_ATTR, getGroupClasses()));
+//    filter.and(getCriteria(OBJECTCLASS_ATTR, getGroupClasses()));
     filter.and(new WhitespaceWildcardsFilter(CN_ATTR, searchStr));
     return ldapTemplate.search(LdapUtils.emptyLdapName(), filter.encode(), getAttributesMapper(LdapGroup::new));
   }

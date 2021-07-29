@@ -7,19 +7,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ConceptSetToConceptSetDTOConverter extends BaseCommonEntityToDTOConverter<ConceptSet, ConceptSetDTO> {
-
-  public ConceptSetToConceptSetDTOConverter(GenericConversionService conversionService) {
-
-    conversionService.addConverter(this);
-  }
-
   @Override
-  protected ConceptSetDTO newTarget() {
+  protected ConceptSetDTO createResultObject() {
     return new ConceptSetDTO();
   }
 
   @Override
-  protected void doConvert(ConceptSetDTO target, ConceptSet source) {
+  protected void doConvert(ConceptSet source, ConceptSetDTO target) {
     target.setId(source.getId());
     target.setName(source.getName());
   }

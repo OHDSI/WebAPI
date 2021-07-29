@@ -1,17 +1,16 @@
 package org.ohdsi.webapi.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
 import org.junit.Before;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.util.StringUtils;
-
-import java.io.IOException;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public abstract class AbstractServiceTest {
 

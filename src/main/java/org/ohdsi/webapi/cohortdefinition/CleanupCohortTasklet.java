@@ -15,6 +15,10 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -34,11 +38,6 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
-
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 /**
  *
@@ -86,7 +85,7 @@ public class CleanupCohortTasklet implements Tasklet {
 				getSourceJdbcTemplate(source).batchUpdate(deleteSql.split(";")); // use batch update since SQL translation may produce multiple statements
 				sourcesUpdated++;
 			} catch (Exception e) {
-				log.error("Error deleting results for cohort: {}", cohortId);
+				log.error("Error deleting results for cohort: {}, cause: {}", cohortId, e.getMessage());
 			}
 		}
     return sourcesUpdated;

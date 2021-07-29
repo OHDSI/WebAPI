@@ -37,12 +37,6 @@ test:
 	wget -O tests/test-rdf-evidencesummary.json "http://localhost:8080/WebAPI/LAERTES_CDM/evidence/evidencesummary?conditionID=139900&drugID=1115008&evidenceGroup=Literature"
 	wget -O tests/test-rdf-evidencedetails.json "http://localhost:8080/WebAPI/LAERTES_CDM/evidence/evidencedetails?conditionID=24134&drugID=1115008&evidenceType=SPL_SPLICER_ADR"
 
-test-sparql:
-	wget -O tests/test-rdf-info.json "http://localhost:8080/WebAPI/evidence/rdfinfo"
-	wget -O tests/test-rdf-commandlist.json "http://localhost:8080/WebAPI/evidence/?"
-	wget -O tests/test-rdf-linkoutdata.json "http://localhost:8080/WebAPI/LAERTES_CDM/evidence/linkoutdata/http%3A%252F%252Flocalhost%3A8080%252Fl%252Findex.php%3Fid%3Dsplicer-splicer-210"
-
-
 test-public:
 	wget -O tests/test-general-evidence.json "http://api.ohdsi.org/WebAPI/CS1/evidence/1000640"
 	wget -O /tmp/tests/test-drug-hoi.json "http://api.ohdsi.org/WebAPI/CS1/evidence/drughoi/1000640-137682"

@@ -1,1 +1,0 @@
-ALTER TABLE ${ohdsiSchema}.COHORT_DEFINITION ADD COLUMN group_key UUID;

@@ -8,20 +8,20 @@ select
 	round(1000*(1.0*hr1.count_value / t1.count_value),5) as Y_PREVALENCE_1000PP
 from (select cohort_definition_id,
 	stratum_1 as index_year,
-	cast(stratum_2 as integer) as gender_concept_id,
-	cast(stratum_3 as integer) as age_decile,
+	CAST(CASE WHEN isNumeric(stratum_2) = 1 THEN stratum_2 ELSE null END AS INT) as gender_concept_id,
+	CAST(CASE WHEN isNumeric(stratum_3) = 1 THEN stratum_3 ELSE null END AS INT) as age_decile,
 	count_value 
 	from @ohdsi_database_schema.heracles_results
 	where analysis_id in (1814)
 	and cohort_definition_id = @cohortDefinitionId
-	and cast(stratum_2 as integer) in (8507,8532)
-	and cast(stratum_3 as integer) >= 0 
+	and CAST(CASE WHEN isNumeric(stratum_2) = 1 THEN stratum_2 ELSE null END AS INT) in (8507,8532)
+	and CAST(CASE WHEN isNumeric(stratum_3) = 1 THEN stratum_3 ELSE null END AS INT) >= 0
 ) hr1
 	inner join 
 (
 	select stratum_1 as index_year,
-	cast(stratum_2 as integer) as gender_concept_id,
-	cast(stratum_3 as integer) as age_decile,
+	CAST(CASE WHEN isNumeric(stratum_2) = 1 THEN stratum_2 ELSE null END AS INT) as gender_concept_id,
+	CAST(CASE WHEN isNumeric(stratum_3) = 1 THEN stratum_3 ELSE null END AS INT) as age_decile,
 	count_value 
 	from @ohdsi_database_schema.heracles_results 
 	where analysis_id = 116

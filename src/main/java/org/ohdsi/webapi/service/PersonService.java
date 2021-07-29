@@ -15,11 +15,26 @@
  */
 package org.ohdsi.webapi.service;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
+import java.util.Objects;
+import java.util.Optional;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 import org.apache.shiro.SecurityUtils;
-import org.ohdsi.webapi.person.CohortPerson;
 import org.ohdsi.webapi.person.ObservationPeriod;
-import org.ohdsi.webapi.person.PersonProfile;
 import org.ohdsi.webapi.person.PersonRecord;
+import org.ohdsi.webapi.person.CohortPerson;
+import org.ohdsi.webapi.person.PersonProfile;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -27,16 +42,6 @@ import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.Comparator;
-import java.util.Objects;
-import java.util.Optional;
 
 @Path("{sourceKey}/person/")
 @Component

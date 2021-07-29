@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.service.converters;
 
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.springframework.core.convert.converter.Converter;
@@ -19,7 +20,7 @@ public class ConceptSetDTOToConceptSetConverter implements Converter<ConceptSetD
 
     ConceptSet conceptSet = new ConceptSet();
     conceptSet.setId(dto.getId());
-    conceptSet.setName(dto.getName());
+    conceptSet.setName(StringUtils.trim(dto.getName()));
     return conceptSet;
   }
 }

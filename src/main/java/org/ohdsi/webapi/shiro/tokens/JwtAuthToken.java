@@ -10,7 +10,7 @@ public class JwtAuthToken implements AuthenticationToken {
   
   private String subject;
   
-  public JwtAuthToken(String subject) {    
+  public JwtAuthToken(String subject) {
     this.subject = subject;
   }
   
@@ -22,5 +22,5 @@ public class JwtAuthToken implements AuthenticationToken {
   @Override
   public Object getCredentials() {
     return "";
-  }  
+  }
 }

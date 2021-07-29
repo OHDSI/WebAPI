@@ -1,3 +1,4 @@
+WebAPIConfig/
 *application.properties
 .idea/
 .metadata/
@@ -11,8 +12,9 @@ sandbox/
 /nbactions*.xml
 *~
 .DS_Store
-apache-tomcat-9.0.16/
-apache-tomcat-9.0.16-remote/
-target-central/
-target-remote/
-target-remote-secure/
+
+### Developer's personal properties ###
+**/resources/config/application*-dev-*.properties
+**/resources/config/application*-dev-*.yaml
+**/resources/config/application*-dev-*.yml
+/.vscode

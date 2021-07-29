@@ -1,11 +1,15 @@
-library(devtools)
-
 setwd("./")
 tryCatch({
-    unzip('@packageFile', exdir = file.path(".", "@analysisDir"))
-    install_local(file.path(".", "@analysisDir"))
+  unzip('@packageFile', exdir = file.path(".", "@analysisDir"))
+  callr::rcmd("build", c("@analysisDir", c("--no-build-vignettes")), echo = TRUE, show = TRUE)
+  pkg_file <- list.files(path = ".", pattern = "\\.tar\\.gz")[1]
+  tryCatch({
+    install.packages(pkg_file, repos = NULL, type="source", INSTALL_opts=c("--no-multiarch"))
+  }, finally = {
+    file.remove(pkg_file)
+  })
 }, finally = {
-    unlink('@analysisDir', recursive = TRUE, force = TRUE)
+  unlink('@analysisDir', recursive = TRUE, force = TRUE)
 })
 
 library(DatabaseConnector)
@@ -22,6 +26,7 @@ tryCatch({
         resultsDatabaseSchema <- Sys.getenv("RESULT_SCHEMA")
         cohortsDatabaseSchema <- Sys.getenv("TARGET_SCHEMA")
         cohortTable <- Sys.getenv("COHORT_TARGET_TABLE")
+        databaseId <- Sys.getenv("DATA_SOURCE_NAME")
         driversPath <- (function(path) if (path == "") NULL else path)( Sys.getenv("JDBC_DRIVER_PATH") )
 
         connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = dbms,
@@ -39,10 +44,9 @@ tryCatch({
                 cohortTable = cohortTable,
                 oracleTempSchema = resultsDatabaseSchema,
                 outputFolder = outputFolder,
-                databaseId = 'Synpuf',
+                databaseId = databaseId,
                 synthesizePositiveControls = TRUE,
                 runAnalyses = TRUE,
-                runDiagnostics = TRUE,
                 packageResults = TRUE,
                 maxCores = maxCores,
                 minCellCount = 5)

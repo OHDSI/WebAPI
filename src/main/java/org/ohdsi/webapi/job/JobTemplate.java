@@ -17,6 +17,7 @@ import javax.ws.rs.core.Response.Status;
 
 import static org.ohdsi.webapi.Constants.Params.JOB_AUTHOR;
 import static org.ohdsi.webapi.Constants.Params.JOB_START_TIME;
+import static org.ohdsi.webapi.Constants.SYSTEM_USER;
 import static org.ohdsi.webapi.Constants.WARM_CACHE;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
@@ -54,9 +55,9 @@ public class JobTemplate {
                 log.debug("JobExecution queued: {}", exec);
             }
         } catch (final JobExecutionAlreadyRunningException e) {
-            throw new WebApplicationException(Response.status(Status.CONFLICT).entity(whitelist(e)).build());
+            throw new WebApplicationException(e, Response.status(Status.CONFLICT).entity(whitelist(e)).build());
         } catch (final Exception e) {
-            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity(whitelist(e)).build());
+            throw new WebApplicationException(e, Response.status(Status.INTERNAL_SERVER_ERROR).entity(whitelist(e)).build());
         }
         return JobUtils.toJobExecutionResource(exec);
     }
@@ -85,6 +86,6 @@ public class JobTemplate {
     }
 
     private String getAuthorForTasklet(final String jobName) {
-        return WARM_CACHE.equals(jobName) ? "system" : security.getSubject();
+        return WARM_CACHE.equals(jobName) ? SYSTEM_USER : security.getSubject();
     }
 }

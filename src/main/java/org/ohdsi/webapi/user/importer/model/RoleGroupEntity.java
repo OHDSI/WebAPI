@@ -1,10 +1,17 @@
 package org.ohdsi.webapi.user.importer.model;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
-
-import javax.persistence.*;
 
 @Entity
 @Table(name = "sec_role_group")

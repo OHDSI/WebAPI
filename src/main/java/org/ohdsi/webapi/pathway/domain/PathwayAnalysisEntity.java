@@ -1,15 +1,19 @@
 package org.ohdsi.webapi.pathway.domain;
 
+import java.util.HashSet;
+import java.util.Set;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.webapi.model.CommonEntity;
 
-import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
-
 @Entity(name = "pathway_analysis")
-public class PathwayAnalysisEntity extends CommonEntity {
+public class PathwayAnalysisEntity extends CommonEntity<Integer> {
 
     @Id
     @GenericGenerator(
@@ -35,6 +39,9 @@ public class PathwayAnalysisEntity extends CommonEntity {
     @Column(name = "combination_window")
     private Integer combinationWindow;
 
+    @Column(name = "min_segment_length")
+    private Integer minSegmentLength;
+		
     @Column(name = "min_cell_count")
     private Integer minCellCount;
 
@@ -47,6 +54,7 @@ public class PathwayAnalysisEntity extends CommonEntity {
     @Column(name = "hash_code")
     private Integer hashCode;
 
+    @Override
     public Integer getId() {
 
         return id;
@@ -96,6 +104,14 @@ public class PathwayAnalysisEntity extends CommonEntity {
 
         this.combinationWindow = combinationWindow;
     }
+
+		public Integer getMinSegmentLength() {
+			return minSegmentLength;
+		}
+
+		public void setMinSegmentLength(Integer minSegmentLength) {
+			this.minSegmentLength = minSegmentLength;
+		}
 
     public Integer getMinCellCount() {
 

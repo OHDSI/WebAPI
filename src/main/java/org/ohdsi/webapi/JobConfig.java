@@ -1,14 +1,18 @@
 package org.ohdsi.webapi;
 
+import javax.annotation.PostConstruct;
+import javax.sql.DataSource;
+
+import org.apache.commons.lang3.StringUtils;
+import org.ohdsi.webapi.common.generation.AutoremoveJobListener;
 import org.ohdsi.webapi.common.generation.CancelJobListener;
 import org.ohdsi.webapi.job.JobTemplate;
+import org.ohdsi.webapi.service.JobService;
 import org.ohdsi.webapi.shiro.management.Security;
+import org.ohdsi.webapi.util.ManagedThreadPoolTaskExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.admin.service.JdbcSearchableJobExecutionDao;
-import org.springframework.batch.admin.service.JdbcSearchableJobInstanceDao;
-import org.springframework.batch.admin.service.SearchableJobExecutionDao;
-import org.springframework.batch.admin.service.SearchableJobInstanceDao;
+import org.springframework.batch.admin.service.*;
 import org.springframework.batch.core.configuration.BatchConfigurationException;
 import org.springframework.batch.core.configuration.annotation.BatchConfigurer;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
@@ -28,14 +32,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
-
-import javax.annotation.PostConstruct;
-import javax.sql.DataSource;
 
 /**
  * Had to copy DefaultBatchConfigurer and include within because jobLauncher config is private.
@@ -43,6 +45,7 @@ import javax.sql.DataSource;
  */
 @Configuration
 @EnableBatchProcessing
+@DependsOn({"batchDatabaseInitializer"})
 public class JobConfig {
     
     private static final Logger log = LoggerFactory.getLogger(CustomBatchConfigurer.class);
@@ -58,6 +61,15 @@ public class JobConfig {
 
     @Value("${spring.batch.taskExecutor.maxPoolSize}")
     private Integer maxPoolSize;
+
+    @Value("${spring.batch.taskExecutor.queueCapacity}")
+    private Integer queueCapacity;
+
+    @Value("${spring.batch.taskExecutor.threadGroupName}")
+    private String threadGroupName;
+
+    @Value("${spring.batch.taskExecutor.threadNamePrefix}")
+    private String threadNamePrefix;
     
     @Autowired
     private DataSource dataSource;
@@ -69,9 +81,16 @@ public class JobConfig {
     
     @Bean
     public TaskExecutor taskExecutor() {
-        final ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+        final ThreadPoolTaskExecutor taskExecutor = new ManagedThreadPoolTaskExecutor();
         taskExecutor.setCorePoolSize(corePoolSize);
         taskExecutor.setMaxPoolSize(maxPoolSize);
+        taskExecutor.setQueueCapacity(queueCapacity);
+        if (StringUtils.isNotBlank(threadGroupName)) {
+            taskExecutor.setThreadGroupName(threadGroupName);
+        }
+        if (StringUtils.isNotBlank(threadNamePrefix)) {
+            taskExecutor.setThreadNamePrefix(threadNamePrefix);
+        }
         taskExecutor.afterPropertiesSet();
         return taskExecutor;
     }

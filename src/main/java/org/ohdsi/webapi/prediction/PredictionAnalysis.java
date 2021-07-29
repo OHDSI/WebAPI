@@ -1,16 +1,20 @@
 package org.ohdsi.webapi.prediction;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Lob;
+import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.ohdsi.webapi.model.CommonEntity;
 
-import javax.persistence.*;
-
 
 @Entity(name = "PredictionAnalysis")
 @Table(name = "prediction")
-public class PredictionAnalysis extends CommonEntity {
+public class PredictionAnalysis extends CommonEntity<Integer> {
     @Id
     @GenericGenerator(
         name = "pred_generator",
@@ -37,6 +41,7 @@ public class PredictionAnalysis extends CommonEntity {
     /**
      * @return the id
      */
+    @Override
     public Integer getId() {
         return id;
     }

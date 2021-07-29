@@ -36,8 +36,6 @@ public class GenerationStatusConverter implements AttributeConverter<GenerationS
         return 1;
       case COMPLETE:
         return 2;
-      case IMPORTING:
-        return 3;
       default:
         throw new IllegalArgumentException("Unknown value: " + status);
     }
@@ -50,7 +48,6 @@ public class GenerationStatusConverter implements AttributeConverter<GenerationS
       case 0: return GenerationStatus.PENDING;
       case 1: return GenerationStatus.RUNNING;
       case 2: return GenerationStatus.COMPLETE;
-      case 3: return GenerationStatus.IMPORTING;
       default: throw new IllegalArgumentException("Unknown status value: " + statusValue);
     }
   }

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 public class CohortDefinitionToCohortMetadataDTOConverter extends BaseCohortDefinitionToCohortMetadataDTOConverter<CohortMetadataDTO> {
 
   @Override
-  protected CohortMetadataDTO getResultObject() {
+  protected CohortMetadataDTO createResultObject() {
     return new CohortMetadataDTO();
   }
 }

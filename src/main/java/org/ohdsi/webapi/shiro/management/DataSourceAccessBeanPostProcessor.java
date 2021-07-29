@@ -1,27 +1,29 @@
 package org.ohdsi.webapi.shiro.management;
 
+import org.aopalliance.intercept.MethodInterceptor;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.management.datasource.AccessorParameterBinding;
 import org.ohdsi.webapi.shiro.management.datasource.DataSourceAccessParameterResolver;
 import org.ohdsi.webapi.util.AnnotationReflectionUtils;
+import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 public class DataSourceAccessBeanPostProcessor implements BeanPostProcessor {
 
+  private Boolean proxyTargetClass;
+
   private DataSourceAccessParameterResolver accessParameterResolver;
 
-  public DataSourceAccessBeanPostProcessor(DataSourceAccessParameterResolver accessParameterResolver) {
+  public DataSourceAccessBeanPostProcessor(DataSourceAccessParameterResolver accessParameterResolver, Boolean proxyTargetClass) {
 
     this.accessParameterResolver = accessParameterResolver;
+    this.proxyTargetClass = proxyTargetClass;
   }
 
   @Override
@@ -34,23 +36,28 @@ public class DataSourceAccessBeanPostProcessor implements BeanPostProcessor {
   public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 
     Class type = bean.getClass();
-    final List<Method> methods = getMethodsAnnotatedWith(type);
+    final List<Method> annotatedMethods = getMethodsAnnotatedWith(type);
     Object result = bean;
-    if (!methods.isEmpty()) {
-      result = Proxy.newProxyInstance(type.getClassLoader(), type.getInterfaces(), (proxy, method, args) -> {
-
-        if (methods.stream().anyMatch(m -> Objects.equals(m.getName(), method.getName()))) {
-          Optional<Method> targetMethod = methods.stream().filter(m -> Objects.nonNull(findMethod(m, method))).findFirst();
-          if (targetMethod.isPresent()) {
-            AccessorParameterBinding<Object> binding = accessParameterResolver.resolveParameterBinding(targetMethod.get());
+    if (!annotatedMethods.isEmpty()) {
+      ProxyFactory factory = new ProxyFactory(bean);
+      factory.setProxyTargetClass(proxyTargetClass);
+      factory.addAdvice((MethodInterceptor) invocation -> {
+        Method method = invocation.getMethod();
+        Object[] args = invocation.getArguments();
+        Optional<Method> originalAnnotatedMethod = annotatedMethods.stream().filter(m ->
+            Objects.equals(m.getName(), method.getName())
+            && Objects.equals(m.getReturnType(), method.getReturnType())
+            && Arrays.equals(m.getParameterTypes(), method.getParameterTypes())).findFirst();
+        if (originalAnnotatedMethod.isPresent()) {
+            AccessorParameterBinding<Object> binding = accessParameterResolver.resolveParameterBinding(originalAnnotatedMethod.get());
             if (Objects.nonNull(binding)) {
               Object value = args[binding.getParameterIndex()];
               binding.getDataSourceAccessor().checkAccess(value);
             }
-          }
         }
         return method.invoke(bean, args);
       });
+      result = factory.getProxy();
     }
     return result;
   }

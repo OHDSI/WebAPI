@@ -1,13 +1,12 @@
 package org.ohdsi.webapi.estimation.specification;
 
-import org.ohdsi.analysis.estimation.design.PositiveControlSynthesisArgs;
-import org.ohdsi.analysis.estimation.design.PositiveControlSynthesisModelTypeEnum;
-import org.ohdsi.webapi.cyclops.specification.ControlImpl;
-import org.ohdsi.webapi.cyclops.specification.PriorImpl;
-import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.ohdsi.analysis.estimation.design.PositiveControlSynthesisModelTypeEnum;
+import org.ohdsi.analysis.estimation.design.PositiveControlSynthesisArgs;
+import org.ohdsi.webapi.cyclops.specification.ControlImpl;
+import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
+import org.ohdsi.webapi.cyclops.specification.PriorImpl;
 
 /**
  *

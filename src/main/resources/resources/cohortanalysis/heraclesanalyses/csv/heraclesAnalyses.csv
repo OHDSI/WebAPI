@@ -1,0 +1,232 @@
+analysisId,analysisName,sqlFileName,results,distResults
+0,Number of persons,0_numberOfPersons.sql,TRUE,TRUE
+1,Number of persons,1_numberOfPersons.sql,TRUE,FALSE
+2,Number of persons by gender,2_3_4_5_numberOfPersons.sql,TRUE,FALSE
+3,Number of persons by year of birth,2_3_4_5_numberOfPersons.sql,TRUE,FALSE
+4,Number of persons by race,2_3_4_5_numberOfPersons.sql,TRUE,FALSE
+5,Number of persons by ethnicity,2_3_4_5_numberOfPersons.sql,TRUE,FALSE
+7,Number of persons with invalid provider_id,7_8_9_numberOfPersonsWithInvalidId.sql,TRUE,FALSE
+8,Number of persons with invalid location_id,7_8_9_numberOfPersonsWithInvalidId.sql,TRUE,FALSE
+9,Number of persons with invalid care_site_id,7_8_9_numberOfPersonsWithInvalidId.sql,TRUE,FALSE
+101,"Number of persons by age, with age at first observation period",101_numberOfPersonsByAge.sql,TRUE,FALSE
+102,"Number of persons by gender by age, with age at first observation period",102_numberOfPersonsByGenderByAge.sql,TRUE,FALSE
+103,Distribution of age at first observation period,103_distributionOfAge.sql,FALSE,TRUE
+104,Distribution of age at first observation period by gender,104_distributionOfAgeByGender.sql,FALSE,TRUE
+105,Length of observation (days) of first observation period,105_lengthOfObservation.sql,FALSE,TRUE
+106,Length of observation (days) of first observation period by gender,106_lengthOfObservationByGender.sql,FALSE,TRUE
+107,Length of observation (days) of first observation period by age decile,107_lengthOfObservationByAgeDecile.sql,FALSE,TRUE
+108,"Number of persons by length of first observation period, in 30d increments",108_numberOfPersonsByLength.sql,TRUE,FALSE
+109,Number of persons with continuous observation in each year,109_numberOfPersonsWithContinuousObservationInEachYear.sql,TRUE,FALSE
+110,Number of persons with continuous observation in each month,110_numberOfPersonsWithContinuousObservationInEachMonth.sql,TRUE,FALSE
+111,Number of persons by observation period start month,111_112_numberOfPersosnByObservationPeriod.sql,TRUE,FALSE
+112,Number of persons by observation period end month,111_112_numberOfPersosnByObservationPeriod.sql,TRUE,FALSE
+113,Number of persons by number of observation periods,113_numberOfPersonsByNumberOfObservationPeriods.sql,TRUE,FALSE
+114,Number of persons with observation period before year-of-birth,114_numberOfPersonsWithOPBeforeYearOfBirth.sql,TRUE,FALSE
+115,Number of persons with observation period end < start,115_numberOfPersonsWithOPEndLesserThanStart.sql,TRUE,FALSE
+116,Number of persons with at least one day of observation in each year by gender and age decile,116_numberOfPersonsWithOneDayObservation.sql,TRUE,FALSE
+117,Number of persons with at least one day of observation in each year by gender and age decile,117_numberOfPersonsWithOneDayObservationInYear.sql,TRUE,FALSE
+200,"Number of persons with at least one visit occurrence, by visit_concept_id",200_201.sql,TRUE,FALSE
+201,"Number of visit occurrence records, by visit_concept_id",200_201.sql,TRUE,FALSE
+202,"Number of persons by visit occurrence start month, by visit_concept_id",202_numberOfPersonsByVisitOccurrenceStartMonth.sql,TRUE,FALSE
+203,Number of distinct visit occurrence concepts per person,203_numberOfVisitOccurrencePerPerson.sql,FALSE,TRUE
+204,"Number of persons with at least one visit occurrence, by visit_concept_id by calendar year by gender by age decile",204_numberOfPersonsWithVisitOccurrence.sql,TRUE,FALSE
+206,Distribution of age by visit_concept_id,206_distributionOfAge.sql,FALSE,TRUE
+207,Number of visit records with invalid person_id,207_numberOfVisitRecordsWithInvalidPersonId.sql,TRUE,FALSE
+208,Number of visit records outside valid observation period,208_numberOfVisitRecordsOutsideValidOP.sql,TRUE,FALSE
+209,Number of visit records with end date < start date,209_numberOfVisitRecordsWithEndDateLesserThanStartDate.sql,TRUE,FALSE
+210,Number of visit records with invalid care_site_id,210_numberOfVisitRecordsWithInvalidCareSiteId.sql,TRUE,FALSE
+211,Distribution of length of stay by visit_concept_id,211_distributionOfLengthOfStay.sql,FALSE,TRUE
+220,Number of visit occurrence records by condition occurrence start month,220_numberOfVisitOccurrenceByConditionOccurrenceStartMonth.sql,TRUE,FALSE
+400,"Number of persons with at least one condition occurrence, by condition_concept_id",400_401_numberOf.sql,TRUE,FALSE
+401,"Number of condition occurrence records, by condition_concept_id",400_401_numberOf.sql,TRUE,FALSE
+402,"Number of persons by condition occurrence start month, by condition_concept_id",402_numberOfPersonsByConditionOccurrenceStartMonth.sql,TRUE,FALSE
+403,Number of distinct condition occurrence concepts per person,403_numberOfConditionOccurrenceConceptsPerPerson.sql,FALSE,TRUE
+404,"Number of persons with at least one condition occurrence, by condition_concept_id by calendar year by gender by age decile",404_numberOfPersonsWithConditionOccurrence.sql,TRUE,FALSE
+405,"Number of condition occurrence records, by condition_concept_id by condition_type_concept_id",405_numberOfConditionOccurrence.sql,TRUE,FALSE
+406,Distribution of age by condition_concept_id,406_distributionOfAgeByConditionConceptId.sql,FALSE,TRUE
+409,Number of condition occurrence records with invalid person_id,409_numberOfConditionOccurrenceWithInvalidPersonId.sql,TRUE,FALSE
+410,Number of condition occurrence records outside valid observation period,410_numberOfConditionOccurrenceOutsideValidOP.sql,TRUE,FALSE
+411,Number of condition occurrence records with end date < start date,411_numberOfConditionOccurrenceWithEndDateLesserThanStartDate.sql,TRUE,FALSE
+412,Number of condition occurrence records with invalid provider_id,412_numberOfConditionOccurrenceWithInvalidProviderId.sql,TRUE,FALSE
+413,Number of condition occurrence records with invalid visit_id,413_numberOfConditionOccurrenceWithInvalidVisitId.sql,TRUE,FALSE
+420,Number of condition occurrence records by condition occurrence start month,420_numberOfConditionOccurrenceByConditionOccurrenceStartMonth.sql,TRUE,FALSE
+500,"Number of persons with death, by cause_of_death_concept_id",500_501.sql,TRUE,FALSE
+501,"Number of records of death, by cause_of_death_concept_id",500_501.sql,TRUE,FALSE
+502,Number of persons by condition occurrence start month,502_numberOfPersonsByConditionOccurrenceStartMonth.sql,TRUE,FALSE
+504,"Number of persons with a death, by calendar year by gender by age decile",504_numberOfPersonsWithDeath.sql,TRUE,FALSE
+505,"Number of death records, by death_type_concept_id",505_numberOfDeath.sql,TRUE,FALSE
+506,Distribution of age at death by gender,506_distributionOfAgeAtDeathByGender.sql,FALSE,TRUE
+509,Number of death records with invalid person_id,509_numberOfDeathWithInvalidPersonId.sql,TRUE,FALSE
+510,Number of death records outside valid observation period,510_numberOfDeathOutsideValidOP.sql,TRUE,FALSE
+511,Distribution of time from death to last condition,511_512_513_514_515.sql,FALSE,TRUE
+512,Distribution of time from death to last drug,511_512_513_514_515.sql,FALSE,TRUE
+513,Distribution of time from death to last visit,511_512_513_514_515.sql,FALSE,TRUE
+514,Distribution of time from death to last procedure,511_512_513_514_515.sql,FALSE,TRUE
+515,Distribution of time from death to last observation,511_512_513_514_515.sql,FALSE,TRUE
+600,"Number of persons with at least one procedure occurrence, by procedure_concept_id",600_601.sql,TRUE,FALSE
+601,"Number of procedure occurrence records, by procedure_concept_id",600_601.sql,TRUE,FALSE
+602,"Number of persons by procedure occurrence start month, by procedure_concept_id",602_numberOfPersonsByProcedureOccurrenceStartMonth.sql,TRUE,FALSE
+603,Number of distinct procedure occurrence concepts per person,603_numberOfProcedureOccurrenceConceptsPerPerson.sql,FALSE,TRUE
+604,"Number of persons with at least one procedure occurrence, by procedure_concept_id by calendar year by gender by age decile",604_numberOfPersonsWithProcedureOccurrence.sql,TRUE,FALSE
+605,"Number of procedure occurrence records, by procedure_concept_id by procedure_type_concept_id",605_numberOfProcedureOccurrence.sql,TRUE,FALSE
+606,Distribution of age by procedure_concept_id,606_distributionOfAgeByProcedureConceptId.sql,FALSE,TRUE
+609,Number of procedure occurrence records with invalid person_id,609_numberOfProcedureOccurrenceWithInvalidPersonId.sql,TRUE,FALSE
+610,Number of procedure occurrence records outside valid observation period,610_numberOfProcedureOccurrenceOutsideValidObservationPeriod.sql,TRUE,FALSE
+612,Number of procedure occurrence records with invalid provider_id,612_numberOfProcedureOccurrenceWithInvalidProviderId.sql,TRUE,FALSE
+613,Number of procedure occurrence records with invalid visit_id,613_numberOfProcedureOccurrenceWithInvalidVisitId.sql,TRUE,FALSE
+620,Number of procedure occurrence records by condition occurrence start month,620_numberOfProcedureOccurrenceByCOStartMonth.sql,TRUE,FALSE
+700,"Number of persons with at least one drug occurrence, by drug_concept_id",700_701.sql,TRUE,FALSE
+701,"Number of drug occurrence records, by drug_concept_id",700_701.sql,TRUE,FALSE
+702,"Number of persons by drug occurrence start month, by drug_concept_id",702_numberOfPersonsByDrugOccurrenceStartMonth.sql,TRUE,FALSE
+703,Number of distinct drug exposure concepts per person,703_numberOfDrugExposureConceptsPerPerson.sql,FALSE,TRUE
+704,"Number of persons with at least one drug occurrence, by drug_concept_id by calendar year by gender by age decile",704_numberOfPersonsWithDrugOccurrence.sql,TRUE,FALSE
+705,"Number of drug occurrence records, by drug_concept_id by drug_type_concept_id",705_numberOfDrugOccurrence.sql,TRUE,FALSE
+706,Distribution of age by drug_concept_id,706_distributionOfAgeByDrugConceptId.sql,FALSE,TRUE
+709,Number of drug exposure records with invalid person_id,709_numberOfDrugExposure.sql,TRUE,FALSE
+710,Number of drug exposure records outside valid observation period,710_numberOfDrugExposureOutsideValidOP.sql,TRUE,FALSE
+711,Number of drug exposure records with end date < start date,711_numberOfDrugExposureWithEndDateLesserThanStartDate.sql,TRUE,FALSE
+712,Number of drug exposure records with invalid provider_id,712_numberOfDrugExposureWithInvalidProviderId.sql,TRUE,FALSE
+713,Number of drug exposure records with invalid visit_id,713_numberOfDrugExposureWithInvalidVisitId.sql,TRUE,FALSE
+715,Distribution of days_supply by drug_concept_id,715_716_717.sql,FALSE,TRUE
+716,Distribution of refills by drug_concept_id,715_716_717.sql,FALSE,TRUE
+717,Distribution of quantity by drug_concept_id,715_716_717.sql,FALSE,TRUE
+720,Number of drug exposure records by drug start month,720_numberOfDrugExposureByDrugStartMonth.sql,TRUE,FALSE
+800,"Number of persons with at least one observation occurrence, by observation_concept_id",800_801.sql,TRUE,FALSE
+801,"Number of observation occurrence records, by observation_concept_id",800_801.sql,TRUE,FALSE
+802,"Number of persons by observation occurrence start month, by observation_concept_id",802_numberOfPersonsByObservationOccurrenceStartMonth.sql,TRUE,FALSE
+803,Number of distinct observation occurrence concepts per person,803_numberOfObservationOccurrenceConceptsPerPerson.sql,FALSE,TRUE
+804,"Number of persons with at least one observation occurrence, by observation_concept_id by calendar year by gender by age decile",804_numberOfPersonsWithObservationPeriod.sql,TRUE,FALSE
+805,"Number of observation occurrence records, by observation_concept_id by observation_type_concept_id",805_numberOfObservationOccurrence.sql,TRUE,FALSE
+806,Distribution of age by observation_concept_id,806_distributionOfAgeByObservationConceptId.sql,FALSE,TRUE
+807,"Number of observation occurrence records, by observation_concept_id and unit_concept_id",807_numberOfObservationOccurrence.sql,TRUE,FALSE
+809,Number of observation records with invalid person_id,809_numberOfObservation.sql,TRUE,FALSE
+810,Number of observation records outside valid observation period,810_numberOfObservationOutsideValidObservationPeriod.sql,TRUE,FALSE
+812,Number of observation records with invalid provider_id,812_numberOfObservationWithInvalidProviderId.sql,TRUE,FALSE
+813,Number of observation records with invalid visit_id,813_numberOfObservationWithInvalidVisitId.sql,TRUE,FALSE
+814,"Number of observation records with no value (numeric, string, or concept)",814_numberOfObservationWithNoValue.sql,TRUE,FALSE
+815,"Distribution of numeric values, by observation_concept_id and unit_concept_id",815_distributionOfNumericValues.sql,FALSE,TRUE
+820,Number of observation records by condition occurrence start month,820_numberOfObservationByConditionOccurrenceStartMonth.sql,TRUE,FALSE
+900,"Number of persons with at least one drug occurrence, by drug_concept_id",900_901.sql,TRUE,FALSE
+901,"Number of drug occurrence records, by drug_concept_id",900_901.sql,TRUE,FALSE
+902,"Number of persons by drug occurrence start month, by drug_concept_id",902_numberOfPersonsByDrugOccurrenceStartMonth.sql,TRUE,FALSE
+903,Number of distinct drug era concepts per person,903_numberOfDrugEraConceptsPerPerson.sql,FALSE,TRUE
+904,"Number of persons with at least one drug occurrence, by drug_concept_id by calendar year by gender by age decile",904_numberOfPersonsWithDrugOccurrence.sql,TRUE,FALSE
+906,Distribution of age by drug_concept_id,906_distributionOfAgeByDrugConceptId.sql,FALSE,TRUE
+907,"Distribution of drug era length, by drug_concept_id",907_distributionOfDrugEraLength.sql,FALSE,TRUE
+908,Number of drug eras with invalid person,908_numberOfDrugErasWithInvalidPerson.sql,TRUE,FALSE
+909,Number of drug eras outside valid observation period,909_numberOfDrugErasOutsideValidObservationPeriod.sql,TRUE,FALSE
+910,Number of drug eras with end date < start date,910_numberOfDrugErasWithEndDateLesserThanStartDate.sql,TRUE,FALSE
+920,Number of drug era records by drug era start month,920_numberOfDrugEraByDrugEraStartMonth.sql,TRUE,FALSE
+1000,"Number of persons with at least one condition occurrence, by condition_concept_id",1000_1001.sql,TRUE,FALSE
+1001,"Number of condition occurrence records, by condition_concept_id",1000_1001.sql,TRUE,FALSE
+1002,"Number of persons by condition occurrence start month, by condition_concept_id",1002_numberOfPersonsByConditionOccurrenceStartMonth.sql,TRUE,FALSE
+1003,Number of distinct condition era concepts per person,1003_numberOfConditionEraConceptsPerPerson.sql,FALSE,TRUE
+1004,"Number of persons with at least one condition occurrence, by condition_concept_id by calendar year by gender by age decile",1004_numberOfPersonsWithConditionOccurrence.sql,TRUE,FALSE
+1006,Distribution of age by condition_concept_id,1006_distributionOfAgeByConditionConceptId.sql,FALSE,TRUE
+1007,"Distribution of condition era length, by condition_concept_id",1007_distributionOfConditionEraLength.sql,FALSE,TRUE
+1008,Number of condition eras with invalid person,1008_numberOfConditionErasWithInvalidPerson.sql,TRUE,FALSE
+1009,Number of condition eras outside valid observation period,1009_numberOfConditionErasOutsideValidObservationPeriod.sql,TRUE,FALSE
+1010,Number of condition eras with end date < start date,1010_numberOfConditionErasWithEndDateLesserThanStartDate.sql,TRUE,FALSE
+1020,Number of drug era records by drug era start month,1020_numberOfDrugEraByDrugEraStartMonth.sql,TRUE,FALSE
+1100,Number of persons by location 3-digit zip,1100_1101.sql,TRUE,FALSE
+1101,Number of persons by location state,1100_1101.sql,TRUE,FALSE
+1200,Number of persons by place of service,1200_1201.sql,TRUE,FALSE
+1201,Number of visits by place of service,1200_1201.sql,TRUE,FALSE
+1300,"Number of persons with at least one measurement occurrence, by measurement_concept_id",1300_1301.sql,TRUE,FALSE
+1301,"Number of measurement occurrence records, by measurement_concept_id",1300_1301.sql,TRUE,FALSE
+1302,"Number of persons by measurement occurrence start month, by measurement_concept_id",1302_numberOfPersonsByMeasurementOccurrenceStartMonth.sql,TRUE,FALSE
+1303,Number of distinct measurement occurrence concepts per person,1303_numberOfMeasurementOccurrenceConceptsPerPerson.sql,FALSE,TRUE
+1304,"Number of persons with at least one measurement occurrence, by measurement_concept_id by calendar year by gender by age decile",1304_numberOfPersonsWithMeasurementOccurrence.sql,TRUE,FALSE
+1305,"Number of measurement occurrence records, by measurement_concept_id by measurement_type_concept_id",1305_numberOfMeasurementOccurrence.sql,TRUE,FALSE
+1306,Distribution of age by measurement_concept_id,1306_distributionOfAgeByMeasurementConceptId.sql,FALSE,TRUE
+1307,"Number of measurement occurrence records, by measurement_concept_id and unit_concept_id",1307_numberOfMeasurementOccurrence.sql,TRUE,FALSE
+1309,Number of measurement records with invalid person_id,1309_numberOfMeasurementWithInvalidPersonId.sql,TRUE,FALSE
+1310,Number of measurement records outside valid observation period,1310_numberOfMeasurementOutsideValidObservationPeriod.sql,TRUE,FALSE
+1312,Number of measurement records with invalid provider_id,1312_numberOfMeasurementWithInvalidProviderId.sql,TRUE,FALSE
+1313,Number of measurement records with invalid visit_id,1313_numberOfMeasurementWithInvalidVisitId.sql,TRUE,FALSE
+1314,"Number of measurement records with no value (numeric, string, or concept)",1314_numberOfMeasurementWithNoValue.sql,TRUE,FALSE
+1315,"Distribution of numeric values, by measurement_concept_id and unit_concept_id",1315_distributionOfNumericValues.sql,FALSE,TRUE
+1316,"Distribution of low range, by measurement_concept_id and unit_concept_id",1316_1317.sql,FALSE,TRUE
+1317,"Distribution of high range, by measurement_concept_id and unit_concept_id",1316_1317.sql,FALSE,TRUE
+1318,"Number of measurement records below/within/above normal range, by measurement_concept_id and unit_concept_id",1318_numberOfMeasurementBelowNormalRange.sql,TRUE,FALSE
+1320,Number of measurement records by condition occurrence start month,1320_numberOfMeasurementByConditionOccurrenceStartMonth.sql,TRUE,FALSE
+1700,Number of records by cohort_definition_id,1700_numberOfRecordsByCohortDefinitionId.sql,TRUE,FALSE
+1701,Number of records with cohort end date < cohort start date,1701_numberOfRecordsWithCohortEndDateLesserThanStartDate.sql,TRUE,FALSE
+1800,"Number of persons by age, with age at cohort start",1800_numberOfPersonsByAge.sql,TRUE,FALSE
+1801,Distribution of age at cohort start,1801_distributionOfAgeAtCohortStart.sql,FALSE,TRUE
+1802,Distribution of age at cohort start by gender,1802_1803.sql,FALSE,TRUE
+1803,Distribution of age at cohort start by cohort start year,1802_1803.sql,FALSE,TRUE
+1804,"Number of persons by duration from cohort start to cohort end, in 30d increments",1804_numberOfPersonsByDurationFromCohortStartToEnd.sql,TRUE,FALSE
+1805,"Number of persons by duration from observation start to cohort start, in 30d increments",1805_1806_1807.sql,TRUE,FALSE
+1806,"Number of persons by duration from cohort start to observation end, in 30d increments",1805_1806_1807.sql,TRUE,FALSE
+1807,"Number of persons by duration from cohort end to observation end, in 30d increments",1805_1806_1807.sql,TRUE,FALSE
+1808,Distribution of duration (days) from cohort start to cohort end,1808_distributionOfDurationFromCohortStartToEnd.sql,FALSE,TRUE
+1809,"Distribution of duration (days) from cohort start to cohort end, by gender",1809_1810.sql,FALSE,TRUE
+1810,"Distribution of duration (days) from cohort start to cohort end, by age decile",1809_1810.sql,FALSE,TRUE
+1811,Distribution of duration (days) from observation start to cohort start,1811_1812_1813.sql,FALSE,TRUE
+1812,Distribution of duration (days) from cohort start to observation end,1811_1812_1813.sql,FALSE,TRUE
+1813,Distribution of duration (days) from cohort end to observation end,1811_1812_1813.sql,FALSE,TRUE
+1814,Number of persons by cohort start year by gender by age decile,1814_numberOfPersonsByCohortStartYear.sql,TRUE,FALSE
+1815,Number of persons by cohort start month,1815_numberOfPersonsByCohortStartMonth.sql,TRUE,FALSE
+1816,Number of persons by number of cohort periods,1816_numberOfPersonsByNumberOfCohortPeriods.sql,TRUE,FALSE
+1820,"Number of persons by duration from cohort start to first occurrence of condition occurrence, by condition_concept_id",1820_numberOfPersonsByDurationFromCohortStartToFirstOccurrence.sql,TRUE,FALSE
+1821,"Number of events by duration from cohort start to all occurrences of condition occurrence, by condition_concept_id",1821_numberOfEventsByDurationFromCohortStartToAllOccurrencesOfCondition.sql,TRUE,FALSE
+1830,"Number of persons by duration from cohort start to first occurrence of procedure occurrence, by procedure_concept_id",1830_numberOfPersonsByDurationFormCohortStartToFirstOccurrence.sql,TRUE,FALSE
+1831,"Number of events by duration from cohort start to all occurrences of procedure occurrence, by procedure_concept_id",1831_numberOfEventsByDurationFromCohortStartToAllOccurrencesOfProcedure.sql,TRUE,FALSE
+1840,"Number of persons by duration from cohort start to first occurrence of drug_exposure, by drug_concept_id",1840_numberOfPersonsByDurationFromCohortStartToFirstOccurrenceOfDrug.sql,TRUE,FALSE
+1841,"Number of events by duration from cohort start to all occurrences of drug_exposure, by drug_concept_id",1841_numberOfEventsByDurationFromCohortStartToAllOccurrencesOfDrugExposure.sql,TRUE,FALSE
+1850,"Number of persons by duration from cohort start to first occurrence of observation, by observation_concept_id",1850_numberOfPersonsByDurationFromCohortStartToFirstOccurrenceOfObservation.sql,TRUE,FALSE
+1851,"Number of events by duration from cohort start to all occurrences of observation, by observation_concept_id",1851_numberOfEventsByDurationFromCohortStartToAllOccurrencesOfObservation.sql,TRUE,FALSE
+1860,"Number of persons by duration from cohort start to first occurrence of condition era, by condition_concept_id",1860_numberOfPersonsByDurationFromCohortStartToFirstOccurrenceOfConditionEra.sql,TRUE,FALSE
+1861,"Number of events by duration from cohort start to all occurrences of condition era, by condition_concept_id",1861_numberOfEventsByDurationFromCohortStartToAllOccurrencesOfConditionEra.sql,TRUE,FALSE
+1870,"Number of persons by duration from cohort start to first occurrence of drug era, by drug_concept_id",1870_numberOfPersonsByDurationFromCohortStartToFirstOccurrenceOfDrugEra.sql,TRUE,FALSE
+1871,"Number of events by duration from cohort start to all occurrences of drug era, by drug_concept_id",1871_numberOfEventsByDurationFromCohortStartToAllOccurrencesOfDrugEra.sql,TRUE,FALSE
+2001,Count and percentage of gender data completeness for age less than 10,2001_countAndPercentageOfGenderDataCompletenessForAge.sql,TRUE,FALSE
+2002,Count and percentage of gender data completeness for age between 10~20,2002_2003_2004_2005_2006.sql,TRUE,FALSE
+2003,Count and percentage of gender data completeness for age between 20~30,2002_2003_2004_2005_2006.sql,TRUE,FALSE
+2004,Count and percentage of gender data completeness for age between 30~40,2002_2003_2004_2005_2006.sql,TRUE,FALSE
+2005,Count and percentage of gender data completeness for age between 40~50,2002_2003_2004_2005_2006.sql,TRUE,FALSE
+2006,Count and percentage of gender data completeness for age between 50~60,2002_2003_2004_2005_2006.sql,TRUE,FALSE
+2007,Count and percentage of gender data completeness for age between 60+,2007_countAndPercentageOfGenderCompletenessForAge.sql,TRUE,FALSE
+2011,Count and percentage of race data completeness for age less than 10,2011_countAndPercentageOfRaceCompletenessForAge.sql,TRUE,FALSE
+2012,Count and percentage of race data completeness for age between 10~20,2012_2013_2014_2015_2016.sql,TRUE,FALSE
+2013,Count and percentage of race data completeness for age between 20~30,2012_2013_2014_2015_2016.sql,TRUE,FALSE
+2014,Count and percentage of race data completeness for age between 30~40,2012_2013_2014_2015_2016.sql,TRUE,FALSE
+2015,Count and percentage of race data completeness for age between 40~50,2012_2013_2014_2015_2016.sql,TRUE,FALSE
+2016,Count and percentage of race data completeness for age between 50~60,2012_2013_2014_2015_2016.sql,TRUE,FALSE
+2017,Count and percentage of race data completeness for age between 60+,2017_countAndPercentageOfRaceCompletenessForAge.sql,TRUE,FALSE
+2021,Count and percentage of ethnicity data completeness for age less than 10,2021_countAndPercentageOfEthnicityCompletenessForAge.sql,TRUE,FALSE
+2022,Count and percentage of ethnicity data completeness for age between 10~20,2022_2023_2024_2025_2026.sql,TRUE,FALSE
+2023,Count and percentage of ethnicity data completeness for age between 20~30,2022_2023_2024_2025_2026.sql,TRUE,FALSE
+2024,Count and percentage of ethnicity data completeness for age between 30~40,2022_2023_2024_2025_2026.sql,TRUE,FALSE
+2025,Count and percentage of ethnicity data completeness for age between 40~50,2022_2023_2024_2025_2026.sql,TRUE,FALSE
+2026,Count and percentage of ethnicity data completeness for age between 50~60,2022_2023_2024_2025_2026.sql,TRUE,FALSE
+2027,Count and percentage of ethnicity data completeness for age 60+,2027_countAndPercentageOfEthnicityCompletenessForAge.sql,TRUE,FALSE
+2031,Entropy,2031_entropy.sql,TRUE,FALSE
+2032,Care_site based entropy,2032_careSiteBasedEnthropy.sql,TRUE,FALSE
+3000,Number of persons by gender,3000_numberOfPersonsByGender.sql,TRUE,FALSE
+3001,Number of persons by gender,3001_numberOfPersonsByGender.sql,TRUE,FALSE
+4000,Distribution of observation period days by period_id in the 365 days prior to first cohort_start_date,4000_distributionOfObservationPeriodDaysByPeriodId.sql,FALSE,TRUE
+4001,"Number of subjects with visits by period_id, by visit_concept_id, by visit_type_concept_id in the 365d prior to first cohort start date",4001_numberOfSubjectsWithVisitsByPeriodId.sql,TRUE,FALSE
+4002,"Distribution of number of visit occurrence records per subject by period_id, by visit_concept_id, by visit_type_concept_id in 365d prior to cohort start date",4002_distributionOfNumberOfVisitOccurrencePerSubject.sql,FALSE,TRUE
+4003,"Distribution of number of visit dates per subject by period_id, by visit_concept_id, by visit_type_concept_id in 365d prior to first cohort start date",4003_distributionOfNumberOfVisitDatesPerSubject.sql,FALSE,TRUE
+4004,"Distribution of number of care_site+visit dates per subject by period_id, by visit_concept_id, by visit_type_concept_id in 365d prior to first cohort start date",4004_distributionOfNumberOfCareSiteAndVisitDatesPerSubject.sql,FALSE,TRUE
+4005,"Distribution of length of stay for inpatient visits per subject by period_id, by visit_concept_id, by visit_type_concept_id in the 365 days prior to first cohort_start_date",4005_distributionOfLengthOfStayForImpatientVisitsPerSubject.sql,FALSE,TRUE
+4006,"Distribution of observation period days per subject, by period_id during cohort period",4006_distributionOfObservationPeriodDaysPerSubject.sql,FALSE,TRUE
+4007,"Number of subjects with visits by period_id, by visit_concept_id, by visit_type_concept_id during the cohort period",4007_numberOfSubjectsWithVistitsPerPeriodId.sql,TRUE,FALSE
+4008,"Distribution of number of visit occurrence records per subject by period_id, by visit_concept_id, by visit_type_concept_id during the cohort period",4008_distributionOfNumberOfVisitOccurrencePerSubject.sql,FALSE,TRUE
+4009,"Distribution of number of visit dates per subject by period_id, by visit_concept_id, by visit_type_concept_id during the cohort period",4009_distributionOfNumberOfVisitDatesPerSubject.sql,FALSE,TRUE
+4010,"Distribution of number of care_site+visit dates per subject by period_id, by visit_concept_id, by visit_type_concept_id during the cohort period",4010_distributionOfNumberOfCareSiteAndVisitDatesPerSubject.sql,FALSE,TRUE
+4011,"Distribution of length of stay for inpatient visits per subject by period_id, by visit_concept_id, by visit_type_concept_id during cohort period",4011_distributionOfLengthOfStayForImpatientVisitsPerSubject.sql,FALSE,TRUE
+4012,"Number of subjects with Drug Exposure by period_id, by drug_concept_id, by drug_type_concept_id in the 365d prior to first cohort start date",4012_numberOfSubjectsWithDrugExposureByPeriodId.sql,TRUE,FALSE
+4013,"Distribution of number of Drug Exposure records per subject, by period_id, by drug_concept_id in 365d prior to first cohort start date",4013_distributionOfNumberOfDrugExposurePerSubject.sql,FALSE,TRUE
+4014,"Distribution of greater than 0 drug day supply per subject by period_id, by drug_concept_id in the 365d prior to first cohort start date",4014_distributionOfGreaterThan0DrugDaySupplyPerSubject.sql,FALSE,TRUE
+4015,"Distribution of greater than 0 drug quantity per subject by period_id, by drug_concept_id in the 365d prior to first cohort start date",4015_distributionOfGreaterThan0DrugQuantityPerSubject.sql,FALSE,TRUE
+4016,"Number of subjects with Drug Exposure by period_id, by drug_concept_id, by drug_type_concept_id during the cohort period",4016_numberOfSubjectsWithDrugExposureByPeriodId.sql,TRUE,FALSE
+4017,"Distribution of number of Drug Exposure records per subject, by period_id, by drug_concept_id during the cohort period",4017_distributionOfNumberOfDrugExposurePerSubject.sql,FALSE,TRUE
+4018,"Distribution of greater than 0 drug day supply per subject by period_id, by drug_concept_id during the cohort period",4018_distributionOfGreaterThan0DrugDaySupplyPerSubject.sql,FALSE,TRUE
+4019,"Distribution of greater than 0 drug quantity per subject by period_id, by drug_concept_id during the cohort period",4019_distributionOfGreaterThan0DrugQuantityPerSubject.sql,FALSE,TRUE
+4020,"Distribution of greater than 0 US$ cost per subject by period_id, by visit_concept_id, by visit_type_concept_id, by cost_concept_id, by cost_type_concept_id in the 365d prior to first cohort start date",4020_distributionOfGreaterThan0USDCostPerSubject.sql,FALSE,TRUE
+4021,"Distribution of greater than 0 US$ cost per subject by period_id, by visit_concept_id, by visit_type_concept_id, by cost_concept_id, by cost_type_concept_id during the cohort period",4021_distributionOfGreaterThan0USDCostPerSubject.sql,FALSE,TRUE
+4022,"Distribution of greater than 0 US$ cost per subject by period_id, by drug_concept_id, by drug_type_concept_id, by cost_concept_id, by cost_type_concept_id in the 365d prior to first cohort start date",4022_distributionOfGreaterThan0USDCostPerSubject.sql,FALSE,TRUE
+4023,"Distribution of greater than 0 US$ cost per subject by period_id, by drug_concept_id, by drug_type_concept_id, by cost_concept_id, by cost_type_concept_id, by cost_type_concept_id during the cohort period",4023_distributionOfGreaterThan0USDCostPerSubject.sql,FALSE,TRUE

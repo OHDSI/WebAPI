@@ -3,7 +3,15 @@ package org.ohdsi.webapi.common.generation;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.source.Source;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Embedded;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import java.util.Date;
 
 @MappedSuperclass
@@ -32,7 +40,7 @@ public abstract class CommonGeneration {
     private String exitMessage;
 
     @Embedded
-    protected AnalysisGenerationInfo info;
+    protected AnalysisGenerationBaseInfo info;
 
     public Long getId() {
 
@@ -63,8 +71,6 @@ public abstract class CommonGeneration {
 
         return exitMessage;
     }
-
-    public abstract <T> T getDesign();
 
     public Integer getHashCode() {
         return this.info != null ? this.info.getHashCode() : null;

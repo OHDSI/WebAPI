@@ -1,5 +1,10 @@
 package org.ohdsi.webapi.shiro.management;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import javax.servlet.Filter;
 import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.realm.Realm;
@@ -11,14 +16,7 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.Filter;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.CORS;
-import static org.ohdsi.webapi.shiro.management.FilterTemplates.HIDE_RESOURCE;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.*;
 /**
  *
  * @author gennadiy.anisimov
@@ -53,18 +51,8 @@ public class DisabledSecurity extends Security {
   }
 
   @Override
-  public Authenticator getAuthenticator() {
+  public ModularRealmAuthenticator getAuthenticator() {
     return new ModularRealmAuthenticator();
-  }
-
-  @Override
-  public void addSourceRole(String sourceKey) throws Exception {
-    //Do nothing
-  }
-
-  @Override
-  public void removeSourceRole(String sourceKey) throws Exception {
-    //Do nothing
   }
 
   @Override

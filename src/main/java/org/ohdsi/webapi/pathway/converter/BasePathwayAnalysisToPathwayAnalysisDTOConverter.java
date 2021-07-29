@@ -1,36 +1,27 @@
 package org.ohdsi.webapi.pathway.converter;
 
-import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.dto.BasePathwayAnalysisDTO;
-import org.ohdsi.webapi.user.dto.UserDTO;
+import org.ohdsi.webapi.service.converters.BaseCommonEntityToDTOConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 
-public abstract class BasePathwayAnalysisToPathwayAnalysisDTOConverter<T extends BasePathwayAnalysisDTO> extends BaseConversionServiceAwareConverter<PathwayAnalysisEntity, T> {
+public abstract class BasePathwayAnalysisToPathwayAnalysisDTOConverter<T extends BasePathwayAnalysisDTO>
+        extends BaseCommonEntityToDTOConverter<PathwayAnalysisEntity, T> {
 
     @Autowired
     protected ConversionService conversionService;
 
     @Override
-    public T convert(PathwayAnalysisEntity source) {
-
-        T dto = getTargetObject();
-
-        dto.setId(source.getId());
-        dto.setName(source.getName());
-        dto.setCombinationWindow(source.getCombinationWindow());
-        dto.setMinCellCount(source.getMinCellCount());
-        dto.setMaxDepth(source.getMaxDepth());
-        dto.setAllowRepeats(source.isAllowRepeats());
-        dto.setCreatedBy(conversionService.convert(source.getCreatedBy(), UserDTO.class));
-        dto.setCreatedDate(source.getCreatedDate());
-        dto.setModifiedBy(conversionService.convert(source.getModifiedBy(), UserDTO.class));
-        dto.setModifiedDate(source.getModifiedDate());
-        dto.setHashCode(source.getHashCode());
-
-        return dto;
+    public void doConvert(PathwayAnalysisEntity source, T target) {
+        target.setId(source.getId());
+        target.setName(StringUtils.trim(source.getName()));
+        target.setCombinationWindow(source.getCombinationWindow());
+        target.setMinSegmentLength(source.getMinSegmentLength());
+        target.setMinCellCount(source.getMinCellCount());
+        target.setMaxDepth(source.getMaxDepth());
+        target.setAllowRepeats(source.isAllowRepeats());
+        target.setHashCode(source.getHashCode());
     }
-
-    protected abstract T getTargetObject();
 }

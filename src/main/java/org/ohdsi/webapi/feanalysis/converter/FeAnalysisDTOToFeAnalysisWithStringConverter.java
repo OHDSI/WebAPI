@@ -1,8 +1,8 @@
 package org.ohdsi.webapi.feanalysis.converter;
 
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
-import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisDTO;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
 import org.springframework.stereotype.Component;
 
 @Component

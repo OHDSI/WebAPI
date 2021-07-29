@@ -1,6 +1,0 @@
-ALTER TABLE ${ohdsiSchema}.COHORT_DEFINITION ADD COLUMN uuid UUID;
-ALTER TABLE ${ohdsiSchema}.COHORT_DEFINITION ADD COLUMN previous_version UUID;
-
-ALTER TABLE ${ohdsiSchema}.COHORT_DEFINITION ADD CONSTRAINT unique_uuid UNIQUE (uuid);
-ALTER TABLE ${ohdsiSchema}.COHORT_DEFINITION ADD CONSTRAINT fk_previous_version
-  FOREIGN KEY (previous_version) REFERENCES ${ohdsiSchema}.COHORT_DEFINITION (uuid);

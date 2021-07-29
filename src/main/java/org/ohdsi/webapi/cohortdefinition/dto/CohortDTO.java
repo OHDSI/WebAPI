@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.cohortdefinition.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.ohdsi.analysis.Cohort;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.ExpressionType;
@@ -8,7 +9,8 @@ public class CohortDTO extends CohortMetadataDTO implements Cohort{
 
     private CohortExpression expression;
     private ExpressionType expressionType;
-    
+
+    @JsonSerialize(using = CohortDTOSerializer.class)
     public CohortExpression getExpression() {
         return expression;
     }

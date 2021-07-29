@@ -15,12 +15,15 @@
  */
 package org.ohdsi.webapi.conceptset;
 
+import java.io.Serializable;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.webapi.model.CommonEntity;
-
-import javax.persistence.*;
-import java.io.Serializable;
 
 /**
  *
@@ -28,7 +31,7 @@ import java.io.Serializable;
  */
 @Entity(name = "ConceptSet")
 @Table(name="concept_set")
-public class ConceptSet extends CommonEntity implements Serializable {
+public class ConceptSet extends CommonEntity<Integer> implements Serializable {
   
   @Id
   @GenericGenerator(
@@ -45,7 +48,8 @@ public class ConceptSet extends CommonEntity implements Serializable {
   
   @Column(name="concept_set_name")
   private String name;
-  
+
+  @Override
   public Integer getId() {
     return id;
   }

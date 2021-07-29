@@ -5,7 +5,7 @@ public class ConceptSetDTO extends CommonEntityDTO {
   private int id;
   private String name;
 
-  public int getId() {
+  public Integer getId() {
     return id;
   }
 

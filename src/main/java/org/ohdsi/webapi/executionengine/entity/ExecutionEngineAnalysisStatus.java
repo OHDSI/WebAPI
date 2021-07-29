@@ -75,4 +75,5 @@ public class ExecutionEngineAnalysisStatus {
     public void setResultFiles(List<AnalysisResultFile> resultFiles) {
       this.resultFiles = resultFiles;
     }
+
 }

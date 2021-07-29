@@ -1,16 +1,15 @@
 package org.ohdsi.webapi.estimation.dto;
 
-import org.ohdsi.analysis.estimation.design.EstimationTypeEnum;
-import org.ohdsi.webapi.common.analyses.CommonAnalysisDTO;
+public class EstimationDTO extends EstimationShortDTO {
+    private String specification;
 
-public class EstimationDTO extends CommonAnalysisDTO {
-    private EstimationTypeEnum type = EstimationTypeEnum.COMPARATIVE_COHORT_ANALYSIS;
-    
-    public void setType(EstimationTypeEnum type) {
-        this.type = type;
+    public String getSpecification() {
+
+        return specification;
     }
-    
-    public EstimationTypeEnum getType() {
-        return this.type;
+
+    public void setSpecification(String specification) {
+
+        this.specification = specification;
     }
 }

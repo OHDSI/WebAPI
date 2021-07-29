@@ -2,6 +2,7 @@ package org.ohdsi.circe.cohortdefinition;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import org.ohdsi.circe.cohortdefinition.builders.BuilderOptions;
 import org.ohdsi.circe.vocabulary.Concept;
 
 @JsonTypeName("TreatmentLine")
@@ -26,16 +27,17 @@ public class TreatmentLine extends Criteria {
     public NumericRange drugExposureCount;
     @JsonProperty("TreatmentLineType")
     public Concept[] treatmentLineType;
+    @JsonProperty("TreatmentLineTypeExclude")
+    public boolean treatmentLineTypeExclude = false;
+    @JsonProperty("TreatmentLineSourceConcept")
+    public Integer treatmentLineSourceConcept;
     @JsonProperty("Age")
     public NumericRange age;
     @JsonProperty("Gender")
     public Concept[] gender;
 
-    public TreatmentLine() {
-    }
-
     @Override
-    public String accept(IGetCriteriaSqlDispatcher dispatcher) {
-        return (dispatcher).getCriteriaSql(this);
+    public String accept(IGetCriteriaSqlDispatcher dispatcher, BuilderOptions options) {
+        return dispatcher.getCriteriaSql(this, options);
     }
 }

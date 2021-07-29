@@ -1,8 +1,15 @@
 package org.ohdsi.webapi.user.importer.model;
 
-import org.ohdsi.webapi.user.importer.repository.LdapProviderTypeConverter;
-
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import java.util.Date;
 
 @Entity
@@ -33,9 +40,9 @@ public class UserImportJobHistoryItem {
   @Column(name = "author")
   private String author;
 
-  @Column(name = "provider_type")
-  @Convert(converter = LdapProviderTypeConverter.class)
-  private LdapProviderType providerType;
+  @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @JoinColumn(name="user_import_id")
+  private UserImportJob userImport;
 
   @Column(name = "job_name")
   private String jobName;
@@ -64,12 +71,12 @@ public class UserImportJobHistoryItem {
     return author;
   }
 
-  public LdapProviderType getProviderType() {
-    return providerType;
+  public UserImportJob getUserImport() {
+    return userImport;
   }
 
   public String getJobName() {
-    return jobName;
+return jobName;
   }
 
   public String getExitCode() {

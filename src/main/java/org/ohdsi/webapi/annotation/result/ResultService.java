@@ -42,11 +42,11 @@ public class ResultService extends AbstractDaoService {
   @Autowired
   private AnnotationService annotationService;
 
-  public List<Result> getResultsByAnnotationID(int AnnotationID) {
-    return resultRepository.findByAnnotationId(AnnotationID);
-  }
+//  public List<Result> getResultsByAnnotationID(int AnnotationID) {
+//    return resultRepository.findByAnnotationId(AnnotationID);
+//  }
 
-  public Result getLatestResultByAnnotationID(int AnnotationID){
+  public List<Result> getResultsByAnnotationID(int AnnotationID){
     Result result= null;
     Annotation ourAnno =annotationService.getAnnotationsByAnnotationId(AnnotationID);
     CohortSample sample = sampleRepository.findById(ourAnno.getCohortSampleId());
@@ -55,14 +55,48 @@ public class ResultService extends AbstractDaoService {
     PreparedStatementRenderer renderer = new PreparedStatementRenderer(source, "/resources/annotationresult/sql/findResultsByAnnotationId.sql",
             new String[]{"results_schema", "CDM_schema"},
             new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results), source.getTableQualifier(SourceDaimon.DaimonType.CDM)},
-            "annotationId", AnnotationID);
+            "annotation_id", AnnotationID);
     Collection<String>  optionalFields = Collections.emptySet();
-    return jdbcTemplate.query(renderer.getSql(), renderer.getOrderedParams(),new ResultRowMapper(optionalFields)).get(0);
+    return jdbcTemplate.query(renderer.getSql(), renderer.getOrderedParams(),new ResultRowMapper(optionalFields));
   }
 
-  public List<Result> findByQuestionId(int questionID) {
-    return resultRepository.findByQuestionId(questionID);
+  public Result getResultByAnnotationIDAndQuestionID(int AnnotationID,int QuestionID){
+    System.out.printf("checking for result with questionID:%s and annotationID:%s \n",QuestionID,AnnotationID);
+    Annotation ourAnno =annotationService.getAnnotationsByAnnotationId(AnnotationID);
+    CohortSample sample = sampleRepository.findById(ourAnno.getCohortSampleId());
+    Source source = getSourceRepository().findBySourceId(sample.getSourceId());
+    JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
+    String[] sqlParameters = new String[] { "annotation_id", "question_id"};
+    Object[] sqlValues = new Object[] {AnnotationID,QuestionID};
+    PreparedStatementRenderer renderer = new PreparedStatementRenderer(source, "/resources/annotationresult/sql/findResultsByAnnotationIdAndQuestionId.sql",
+            new String[]{"results_schema", "CDM_schema"},
+            new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results), source.getTableQualifier(SourceDaimon.DaimonType.CDM)},
+            sqlParameters, sqlValues);
+    Collection<String>  optionalFields = Collections.emptySet();
+    System.out.printf("Running query: %s with params: %s\n",renderer.getSql(),renderer.getOrderedParams().toString());
+    List<Result> results= jdbcTemplate.query(renderer.getSql(), renderer.getOrderedParams(),new ResultRowMapper(optionalFields));
+    if (results.isEmpty()){
+      return null;
+    }
+    return results.get(0);
   }
+
+//  public List<Result> findByQuestionSetId(List<Integer> questionIDs) {
+//    Result result= null;
+//    for(int question : questionIDs){
+//      Annotation ourAnno =annotationService.getAnnotationsByQuestionSetId(question);
+//    }
+//    Annotation ourAnno =annotationService.getAnnotationsByAnnotationId(AnnotationID);
+//    CohortSample sample = sampleRepository.findById(ourAnno.getCohortSampleId());
+//    Source source = getSourceRepository().findBySourceId(sample.getSourceId());
+//    JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
+//    PreparedStatementRenderer renderer = new PreparedStatementRenderer(source, "/resources/annotationresult/sql/findResultsByQuestionSetId.sql",
+//            new String[]{"results_schema", "CDM_schema"},
+//            new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results), source.getTableQualifier(SourceDaimon.DaimonType.CDM)},
+//            "annotationId","questionId", AnnotationID);
+//    Collection<String>  optionalFields = Collections.emptySet();
+//    return jdbcTemplate.query(renderer.getSql(), renderer.getOrderedParams(),new ResultRowMapper(optionalFields)).get(0);
+//  }
 
   public void insertResults(Annotation annotation, JSONArray results) {
 //    might want to do a check- if the annotation ID+question ID already exists, update the existing row instead. Other option is just only query the latest instead
@@ -78,13 +112,25 @@ public class ResultService extends AbstractDaoService {
     String[] sqlParameters = new String[] { "annotation_id", "question_id", "answer_id", "value", "type" };
 
     String statement = null;
-    List<Object[]> variables = new ArrayList<>(results.length());
+    List<Object[]> variables = new ArrayList<>();
+    List<Object[]> deleteVariables = new ArrayList<>();
+    Boolean hasCleared=false;
     for(int i=0; i < results.length(); i++){
       JSONObject object = results.getJSONObject(i);
+      if(!hasCleared && getResultByAnnotationIDAndQuestionID(annotation.getId(),Integer.parseInt(object.get("questionId").toString()))!=null){
+//        this entry already exists, need to update here instead of adding to the pile
+        String[] deletesqlParameters = new String[] { "annotation_id", "question_id"};
+        Object[] deletesqlValues = new Object[] {annotation.getId(),Integer.parseInt(object.get("questionId").toString())};
+        PreparedStatementRenderer deleterenderer = new PreparedStatementRenderer(source, "/resources/annotationresult/sql/deleteResultsByAnnotationIdAndQuestionId.sql", parameters, parameterValues, deletesqlParameters, deletesqlValues);
+        String deleteStatement = deleterenderer.getSql();
+        deleteVariables.add(deleterenderer.getOrderedParams());
+        jdbcTemplate.batchUpdate(deleteStatement, deleteVariables);
+        hasCleared=true;
+      }
       Object[] sqlValues = new Object[] {
               annotation.getId(),
-              Long.parseLong(object.get("questionId").toString()),
-              Long.parseLong(object.get("answerId").toString()),
+              Integer.parseInt(object.get("questionId").toString()),
+              Integer.parseInt(object.get("answerId").toString()),
               object.get("value").toString(),
               object.get("type").toString() };
 
@@ -97,16 +143,13 @@ public class ResultService extends AbstractDaoService {
 
       variables.add(renderer.getOrderedParams());
     }
-    System.out.printf("variables: %s\n",variables);
+    System.out.printf("variables: %s\n",variables.toArray().toString());
     jdbcTemplate.batchUpdate(statement, variables);
   }
 
   /** Maps a SQL result to a sample element. */
-  private static class ResultRowMapper implements RowMapper<Result> {
+  private class ResultRowMapper implements RowMapper<Result> {
     private final Collection<String> optionalFields;
-
-    @Autowired
-    private AnnotationService annotationService;
 
     ResultRowMapper(Collection<String> optionalFields) {
       this.optionalFields = optionalFields;
@@ -114,10 +157,20 @@ public class ResultService extends AbstractDaoService {
 
     @Override
     public Result mapRow(ResultSet rs, int rowNum) throws SQLException {
+      int AnnotationIdInt=rs.getInt("annotation_id");
+      if(AnnotationIdInt == 0){
+        System.out.println("Annotation was null, none found");
+        return null;
+      }
       Result result = new Result();
-      result.setAnnotation(annotationService.getAnnotationsByAnnotationId(rs.getInt("annotation_id")));
-      result.setQuestionId(rs.getLong("question_id"));
-      result.setAnswerId(rs.getLong("answer_id"));
+      Annotation tempAnno = annotationService.getAnnotationsByAnnotationId(AnnotationIdInt);
+      if(tempAnno == null){
+        System.out.println("Annotation was null, none found");
+        return null;
+      }
+      result.setAnnotation(tempAnno);
+      result.setQuestionId(rs.getInt("question_id"));
+      result.setAnswerId(rs.getInt("answer_id"));
       result.setValue(rs.getString("value"));
       result.setType(rs.getString("type"));
       return result;

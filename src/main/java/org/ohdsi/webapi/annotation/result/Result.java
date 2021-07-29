@@ -18,7 +18,7 @@ public class Result {
   @Id
   @GeneratedValue
   @Column(name = "result_id")
-  private Long id;
+  private int id;
 
   @JsonIgnore
   @ManyToOne(fetch = FetchType.LAZY)
@@ -26,10 +26,10 @@ public class Result {
   private Annotation annotation;
 
   @Column(name = "question_id")
-  private Long questionId;
+  private int questionId;
 
   @Column(name = "answer_id")
-  private Long answerId;
+  private int answerId;
 
 //need charity's help here! these can all be retrieved from the annotation_id
 //  @JsonIgnore
@@ -54,14 +54,14 @@ public class Result {
   /**
    * @return the id
    */
-  public Long getId() {
+  public int getId() {
     return id;
   }
 
   /**
    * @param id the id to set
    */
-  public void setId(Long id) {
+  public void setId(int id) {
     this.id = id;
   }
 
@@ -96,14 +96,14 @@ public class Result {
   /**
    * @return the answerId
    */
-  public Long getAnswerId() {
+  public int getAnswerId() {
     return answerId;
   }
 
   /**
    * @param answerId the answerId to set
    */
-  public void setAnswerId(Long answerId) {
+  public void setAnswerId(int answerId) {
     this.answerId = answerId;
   }
 
@@ -124,14 +124,14 @@ public class Result {
   /**
    * @return the questionId
    */
-  public Long getQuestionId() {
+  public int getQuestionId() {
     return questionId;
   }
 
   /**
    * @param questionId the questionId to set
    */
-  public void setQuestionId(Long questionId) {
+  public void setQuestionId(int questionId) {
     this.questionId = questionId;
   }
 

@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.annotation.annotation;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ws.rs.GET;
@@ -182,4 +183,14 @@ public class AnnotationController {
       return annotationService.getAnnotationCSVData(cohortID, sourceKey, sampleName);
 
   }
+
+  @GET
+  @Path("/{annotationID}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Annotation getResults(@PathParam("annotationID") String annotationID) {
+    int annotationIdInt=Integer.parseInt(annotationID);
+    Annotation ourAnno =annotationService.getAnnotationsByAnnotationId(annotationIdInt);
+    return ourAnno;
+  }
 }
+

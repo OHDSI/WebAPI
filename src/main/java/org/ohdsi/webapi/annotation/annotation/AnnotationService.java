@@ -38,9 +38,12 @@ public class AnnotationService {
     return annotations;
   }
 
-    public Annotation getAnnotationsByAnnotationId(int annotationId) {
-        return annotationRepository.findByAnnotationId(annotationId);
-    }
+  public Annotation getAnnotationsByAnnotationId(int annotationId) {
+    System.out.printf("looking for annotation %s \n",annotationId);
+    Annotation result = annotationRepository.findByAnnotationId(annotationId);
+    System.out.printf("found annotation: %s \n",result.getId());
+    return result;
+  }
 
   public List<Annotation> getAnnotationByCohortSampleIdAndBySubjectIdAndByQuestionSetId(int cohortSampleId, int subjectId, int questionSetId) {
     System.out.printf("cohortSampleId %d\n",cohortSampleId);

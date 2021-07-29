@@ -35,8 +35,8 @@ public class ResultController {
     for(Result tempResult : tempResults ){
       System.out.println(tempResult);
       Map<String, String> testDict =new HashMap<String, String>();
-      testDict.put("questionId",tempResult.getQuestionId().toString());
-      testDict.put("answerId",tempResult.getAnswerId().toString());
+      testDict.put("questionId",String.valueOf(tempResult.getQuestionId()));
+      testDict.put("answerId",String.valueOf(tempResult.getAnswerId()));
       testDict.put("subjectId",Integer.toString(ourAnno.getSubjectId()));
       al.add(testDict);
     }

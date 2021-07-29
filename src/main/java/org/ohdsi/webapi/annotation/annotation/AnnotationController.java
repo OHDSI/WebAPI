@@ -14,9 +14,12 @@ import javax.ws.rs.PathParam;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
-import org.ohdsi.webapi.annotation.result.ResultRepository;
+import org.ohdsi.webapi.annotation.result.ResultService;
+import org.ohdsi.webapi.cohortsample.CohortSample;
+import org.ohdsi.webapi.cohortsample.CohortSampleRepository;
 import org.ohdsi.webapi.cohortsample.CohortSamplingService;
 import org.ohdsi.webapi.cohortsample.dto.SampleElementDTO;
+import org.ohdsi.webapi.source.Source;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.ohdsi.webapi.annotation.annotation.AnnotationService;
@@ -25,6 +28,7 @@ import org.ohdsi.webapi.annotation.set.QuestionSetRepository;
 import org.ohdsi.webapi.annotation.set.QuestionSet;
 import org.ohdsi.webapi.annotation.result.Result;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.ohdsi.webapi.service.AbstractDaoService;
 
 
 @Path("annotations")
@@ -32,7 +36,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class AnnotationController {
 
   @Autowired
-  private ResultRepository resultRepository;
+  private ResultService resultService;
 
   @Autowired
   public CohortSamplingService cohortSamplingService;
@@ -55,7 +59,7 @@ public class AnnotationController {
     returnAnnotations = getFullAnnotations(cohortSampleId,subjectId,setId);
     List<AnnotationSummary> summaries = new ArrayList();
     for(Annotation singleAnno : returnAnnotations){
-//      TODO see about doing this in a more performant matter?
+//      TODO see about doing this in a more performant manner?
       AnnotationSummary tempAnnoSummary=new AnnotationSummary(singleAnno);
       summaries.add(tempAnnoSummary);
     }
@@ -108,16 +112,18 @@ public class AnnotationController {
             ,Integer.parseInt(jsonpayload.get("subjectId").toString()),Integer.parseInt(jsonpayload.get("setId").toString())).get(0);
     System.out.printf("annotationID:%d\n",tempAnnotation.getId());
     JSONArray array = jsonpayload.getJSONArray("results");
-    for(int i=0; i < array.length(); i++){
-      JSONObject object = array.getJSONObject(i);
-      Result result = new Result();
-      result.setQuestionId(Long.parseLong(object.get("questionId").toString()));
-      result.setAnswerId(Long.parseLong(object.get("answerId").toString()));
-      result.setValue(object.get("value").toString());
-      result.setType(object.get("type").toString());
-      result.setAnnotation(tempAnnotation);
-      resultRepository.save(result);
-    }
+
+    resultService.insertResults(tempAnnotation,array);
+//    for(int i=0; i < array.length(); i++){
+//      JSONObject object = array.getJSONObject(i);
+//      Result result = new Result();
+//      result.setQuestionId(Long.parseLong(object.get("questionId").toString()));
+//      result.setAnswerId(Long.parseLong(object.get("answerId").toString()));
+//      result.setValue(object.get("value").toString());
+//      result.setType(object.get("type").toString());
+//      result.setAnnotation(tempAnnotation);
+//      resultService.save(result);
+//    }
   }
 
   @POST

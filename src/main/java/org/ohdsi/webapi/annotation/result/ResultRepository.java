@@ -17,8 +17,11 @@ public interface ResultRepository extends JpaRepository<Result, Long> {
 //    public Set<Result> findBySampleNameAndSubjectId(String sampleName, Long subject_id);
 
     @Query("select s.value from Result s where s.annotation=?1 and s.questionId = ?2")
-    public Set<Result> getAnswers(Annotation annotation, Long questionID);
+    public Set<Result> getAnswers(Annotation annotation, int questionID);
 
     @Query("select r FROM Result r WHERE r.annotation.id = ?1")
     List<Result> findByAnnotationId(int annotationId);
+
+    @Query("select r FROM Result r WHERE r.questionId = ?1")
+    List<Result> findByQuestionId(int questionId);
 }

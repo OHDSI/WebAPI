@@ -5,6 +5,7 @@ import javax.ws.rs.core.MediaType;
 
 import org.ohdsi.webapi.annotation.annotation.Annotation;
 import org.ohdsi.webapi.annotation.annotation.AnnotationService;
+import org.ohdsi.webapi.annotation.annotation.AnnotationSummary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.ohdsi.webapi.annotation.result.ResultService;
@@ -40,5 +41,23 @@ public class ResultController {
       al.add(testDict);
     }
     return al;
+  }
+
+  @GET
+  @Path("/")
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<Result> getResults(
+          @QueryParam("questionId") final int questionId
+  ) {
+    List<Result> results = null;
+    List<Annotation> blah = annotationService.getAnnotationsByQuestionSetId(questionId);
+    return results;
+  }
+
+  @Path("/{cohortDefinitionId}/{sourceKey}")
+  @POST
+  @Consumes(MediaType.APPLICATION_JSON)
+  public void createResult(){
+
   }
 }

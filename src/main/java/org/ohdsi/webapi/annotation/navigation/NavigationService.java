@@ -29,7 +29,7 @@ public class NavigationService extends AbstractDaoService {
     private CohortSampleRepository cohortSampleRepository;
 
 
-    public Navigation navData(Navigation nav, Long subjectId, String sampleName, int cohortId, Source source)
+    public Navigation navData(Navigation nav, int subjectId, String sampleName, int cohortId, Source source)
     {
         if (sampleName.indexOf("_") != -1) {
           sampleName = sampleName.replaceAll("_", " ");
@@ -40,15 +40,15 @@ public class NavigationService extends AbstractDaoService {
         int annCount = 0;
         boolean foundNext = false;
         for(int i = 0; i < sample.size(); i++) {
-          if((long) sample.get(i)[0] == subjectId) {
-            nav.setPrevSubjectId(i == 0 ? (long) sample.get(sample.size() - 1)[0] : (long) sample.get(i-1)[0]);
-            nav.setNextSubjectId(sample.size() == i + 1 ? (long) sample.get(0)[0] : (long) sample.get(i+1)[0]);
+          if((int) sample.get(i)[0] == subjectId) {
+            nav.setPrevSubjectId(i == 0 ? (int) sample.get(sample.size() - 1)[0] : (int) sample.get(i-1)[0]);
+            nav.setNextSubjectId(sample.size() == i + 1 ? (int) sample.get(0)[0] : (int) sample.get(i+1)[0]);
           }
           if ((boolean) sample.get(i)[1] == true) {
               annCount++;
           }
           if (!foundNext && (boolean) sample.get(i)[1] == true) {
-            nav.setNextUnannotatedSubjectId((long) sample.get(i)[0]);
+            nav.setNextUnannotatedSubjectId( (int)sample.get(i)[0]);
             foundNext = true;
           }
           

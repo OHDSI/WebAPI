@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.jpa.repository.Query;
 
 @Transactional
-public interface ResultRepository extends JpaRepository<Result, Long> {
+public interface ResultRepository extends JpaRepository<Result, Integer> {
 //    public Set<Result> findBySampleNameAndSubjectId(String sampleName, Long subject_id);
 
     @Query("select s.value from Result s where s.annotation=?1 and s.questionId = ?2")

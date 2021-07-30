@@ -19,7 +19,7 @@ public class Answer {
   @Id
   @GeneratedValue
   @Column(name = "answer_id")
-  private Long id;
+  private int id;
 
   @JsonIgnore
   @ManyToOne(fetch = FetchType.LAZY)
@@ -40,14 +40,14 @@ public class Answer {
   /**
    * @return the id
    */
-  public Long getId() {
+  public int getId() {
     return id;
   }
 
   /**
    * @param id the id to set
    */
-  public void setId(Long id) {
+  public void setId(int id) {
     this.id = id;
   }
 

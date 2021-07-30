@@ -2,8 +2,8 @@ package org.ohdsi.webapi.annotation.result;
 
 public class ResultDto {
 
-  private Long answerId;
-  private Long questionId;
+  private int answerId;
+  private int questionId;
   private String value;
   private String type;
 //  private String sampleName;
@@ -13,28 +13,28 @@ public class ResultDto {
   /**
    * @return the answerId
    */
-  public Long getAnswerId() {
+  public int getAnswerId() {
     return answerId;
   }
 
   /**
 	 * @param answerId the answerId to set
 	 */
-  public void setAnswerId(Long answerId) {
+  public void setAnswerId(int answerId) {
     this.answerId = answerId;
   }
 
   /**
    * @return the questionId
    */
-  public Long getQuestionId() {
+  public int getQuestionId() {
     return questionId;
   }
 
   /**
    * @param questionId the questionId to set
    */
-  public void setQuestionId(Long questionId) {
+  public void setQuestionId(int questionId) {
       this.questionId = questionId;
   }
 

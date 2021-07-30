@@ -39,7 +39,7 @@ public class NavigationController extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   public Navigation getNavigation(
     @QueryParam("cohortId") final int cohortId,
-    @QueryParam("subjectId") final Long subjectId,
+    @QueryParam("subjectId") final int subjectId,
     @QueryParam("sampleName") final String sampleName,
     @QueryParam("sourceKey") final String sourceKey
   ) {

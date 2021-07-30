@@ -3,9 +3,18 @@ package org.ohdsi.webapi.annotation.result;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
+import org.checkerframework.checker.units.qual.A;
 import org.ohdsi.webapi.annotation.annotation.Annotation;
 import org.ohdsi.webapi.annotation.annotation.AnnotationService;
 import org.ohdsi.webapi.annotation.annotation.AnnotationSummary;
+import org.ohdsi.webapi.annotation.question.Question;
+import org.ohdsi.webapi.annotation.question.QuestionService;
+import org.ohdsi.webapi.annotation.set.QuestionSet;
+import org.ohdsi.webapi.annotation.set.QuestionSetService;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
+import org.ohdsi.webapi.cohortsample.dto.CohortSampleDTO;
+import org.ohdsi.webapi.service.CohortSampleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.ohdsi.webapi.annotation.result.ResultService;
@@ -19,10 +28,22 @@ import java.util.*;
 public class ResultController {
 
   @Autowired
+  private CohortSampleService cohortSampleService;
+
+  @Autowired
   private ResultService resultService;
 
   @Autowired
+  private QuestionService questionService;
+
+  @Autowired
+  private QuestionSetService questionSetService;
+
+  @Autowired
   private AnnotationService annotationService;
+
+  @Autowired
+  private CohortDefinitionRepository cohortDefinitionRepository;
 
   @GET
   @Path("/{annotationID}")
@@ -50,6 +71,36 @@ public class ResultController {
           @QueryParam("questionSetId") final int questionId
   ) {
     return resultService.getResultsByQuestionSetId(questionId);
+  }
+
+  @GET
+  @Path("/completeResults")
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<SuperResultDto> getFullResults(
+          @QueryParam("questionSetId") final int questionSetId
+  ) {
+    List<Result> resultlist= resultService.getResultsByQuestionSetId(questionSetId);
+    List<SuperResultDto> superList = new ArrayList();
+    for (Result result : resultlist){
+      Question myQuestion = questionService.getQuestionByQuestionId(result.getQuestionId());
+      SuperResultDto tempdto = new SuperResultDto(result);
+      Annotation tempanno = annotationService.getAnnotationsByAnnotationId(result.getAnnotation());
+      tempdto.setCohortSampleId(tempanno.getCohortSampleId());
+      tempdto.setPatientId(tempanno.getSubjectId());
+      CohortSampleDTO cohortSample = cohortSampleService.getCohortSample(tempanno.getCohortSampleId(),"" );
+      CohortDefinition cohortDefinition= cohortDefinitionRepository.findOneWithDetail(cohortSample.getCohortDefinitionId());
+      tempdto.setCohortName(cohortDefinition.getName());
+      tempdto.setCohortId( cohortSample.getCohortDefinitionId());
+      tempdto.setDataSourceId(cohortSample.getSourceId());
+      tempdto.setCohortSampleName(cohortSample.getName());
+      tempdto.setQuestionSetId(questionSetId);
+      QuestionSet questionSet = questionSetService.findQuestionSetByQuestionSetId(questionSetId);
+      tempdto.setQuestionSetName(questionSet.getName());
+      tempdto.setCaseStatus(myQuestion.getCaseQuestion());
+      tempdto.setQuestionText(myQuestion.getText());
+      superList.add(tempdto);
+    }
+    return superList;
   }
 
   @Path("/{cohortDefinitionId}/{sourceKey}")

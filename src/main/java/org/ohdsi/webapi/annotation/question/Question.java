@@ -23,7 +23,7 @@ public class Question {
   @Id
   @GeneratedValue
   @Column(name = "question_id")
-  private Long id;
+  private int id;
 
   @Column(name = "question_name")
   private String text;
@@ -58,14 +58,14 @@ public class Question {
   /**
    * @return the id
    */
-  public Long getId() {
+  public int getId() {
     return id;
   }
 
   /**
 	 * @param id the id to set
 	 */
-  public void setId(Long id) {
+  public void setId(int id) {
     this.id = id;
   }
 

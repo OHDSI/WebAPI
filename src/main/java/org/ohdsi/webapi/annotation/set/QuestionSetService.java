@@ -31,4 +31,7 @@ public class QuestionSetService {
     questionSetRepository.save(set);
   }
 
+  public QuestionSet findQuestionSetByQuestionSetId(int questionSetId){
+    return questionSetRepository.findByQuestionSetId(questionSetId);
+  }
 }

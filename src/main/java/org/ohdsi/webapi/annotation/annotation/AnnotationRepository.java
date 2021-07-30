@@ -7,7 +7,7 @@ import org.ohdsi.webapi.annotation.annotation.Annotation;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface AnnotationRepository extends JpaRepository<Annotation, Long> {
+public interface AnnotationRepository extends JpaRepository<Annotation, Integer> {
 
   public Set<Annotation> findOneByCohortSampleIdAndSubjectIdAndQuestionSetId(int cohortSampleId, int subjectId, int questionSetId);
   public List<Annotation> findByCohortSampleIdAndQuestionSetId(int cohortSampleId, int questionSetId);

@@ -20,6 +20,10 @@ public class QuestionService {
     return questions;
   }
 
+  public Question getQuestionByQuestionId(int questionId){
+    return questionRepository.findByQuestionId(questionId);
+  }
+
   public void addQuestion(Question question) {
     questionRepository.save(question);
   }

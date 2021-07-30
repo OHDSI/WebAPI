@@ -155,9 +155,9 @@ public class AnnotationController {
   @Path("/getsets")
   @Produces(MediaType.APPLICATION_JSON)
   public List<Annotation> getSets(
-    @QueryParam("cohortSampleId") final Long cohortSampleId,
-    @QueryParam("subjectId") final Long subjectId,
-    @QueryParam("setId") final Long setId
+    @QueryParam("cohortSampleId") final int cohortSampleId,
+    @QueryParam("subjectId") final int subjectId,
+    @QueryParam("setId") final int setId
   ) {
     return annotationService.getAnnotations();
   }
@@ -167,7 +167,7 @@ public class AnnotationController {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public List<Object[]> getAnnotationCSV(
-      @QueryParam("cohortID") Long cohortID,
+      @QueryParam("cohortID") int cohortID,
       @QueryParam("sourceKey") String sourceKey,
       @QueryParam("sampleName") String sampleName
       ) {
@@ -176,7 +176,7 @@ public class AnnotationController {
           sampleName = sampleName.replaceAll("_", " ");
       }
 
-      if (cohortID == null || sourceKey == null || sampleName == null) {
+      if (cohortID == 0 || sourceKey == null || sampleName == null) {
         return null;
       }
 

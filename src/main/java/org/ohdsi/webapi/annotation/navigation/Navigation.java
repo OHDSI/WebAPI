@@ -2,9 +2,9 @@ package org.ohdsi.webapi.annotation.navigation;
 import java.util.List;
 public class Navigation {
 
-  private Long prevSubjectId;
-  private Long nextSubjectId;
-  private Long nextUnannotatedSubjectId;
+  private int prevSubjectId;
+  private int nextSubjectId;
+  private int nextUnannotatedSubjectId;
   private int numProfileSamples;
   private int numAnnotations;
 
@@ -13,42 +13,42 @@ public class Navigation {
   /**
    * @return the prevSubjectId
    */
-  public Long getPrevSubjectId() {
+  public int getPrevSubjectId() {
     return prevSubjectId;
   }
 
   /**
    * @param prevSubjectId the prevSubjectId to set
    */
-  public void setPrevSubjectId(Long prevSubjectId) {
+  public void setPrevSubjectId(int prevSubjectId) {
     this.prevSubjectId = prevSubjectId;
   }
 
   /**
    * @return the nextSubjectId
    */
-  public Long getNextSubjectId() {
+  public int getNextSubjectId() {
     return nextSubjectId;
   }
 
   /**
    * @param nextSubjectId the nextSubjectId to set
    */
-  public void setNextSubjectId(Long nextSubjectId) {
+  public void setNextSubjectId(int nextSubjectId) {
     this.nextSubjectId = nextSubjectId;
   }
 
   /**
    * @return the nextUnannotatedSubjectId
    */
-  public Long getNextUnannotatedSubjectId() {
+  public int getNextUnannotatedSubjectId() {
     return nextUnannotatedSubjectId;
   }
 
   /**
    * @param nextUnannotatedSubjectId the nextUnannotatedSubjectId to set
    */
-  public void setNextUnannotatedSubjectId(Long nextUnannotatedSubjectId) {
+  public void setNextUnannotatedSubjectId(int nextUnannotatedSubjectId) {
     this.nextUnannotatedSubjectId = nextUnannotatedSubjectId;
   }
 

@@ -39,11 +39,14 @@ public class AnnotationService {
   }
 
   public Annotation getAnnotationsByAnnotationId(int annotationId) {
-    System.out.printf("looking for annotation %s \n",annotationId);
     Annotation result = annotationRepository.findByAnnotationId(annotationId);
-    System.out.printf("found annotation: %s \n",result.getId());
     return result;
   }
+
+    public Annotation getAnnotationsByAnnotationId(Annotation annotation) {
+        Annotation result = annotationRepository.findByAnnotationId(annotation.getId());
+        return result;
+    }
 
   public List<Annotation> getAnnotationByCohortSampleIdAndBySubjectIdAndByQuestionSetId(int cohortSampleId, int subjectId, int questionSetId) {
     System.out.printf("cohortSampleId %d\n",cohortSampleId);
@@ -69,13 +72,13 @@ public class AnnotationService {
     return annotationRepository.save(annotation);
   }
 
-  public List<Object[]> getAnnotationCSVData(Long cohortID, String source, String sampleName) {
+  public List<Object[]> getAnnotationCSVData(int cohortID, String source, String sampleName) {
       List<Object[]> results = new ArrayList<Object[]>();
 //      List<Long> samples = cohortSampleRepository.getSampleMembership(sampleName, cohortID);
-      List<Long> samples = new ArrayList<Long>();
-      Set<QuestionSet> questionSet = questionSetRepository.findByCohortId(cohortID.intValue());
+      List<Integer> samples = new ArrayList<Integer>();
+      Set<QuestionSet> questionSet = questionSetRepository.findByCohortId(cohortID);
       List<QuestionSet> qs = new ArrayList<QuestionSet>(questionSet);
-      List<Long> qIDs = new ArrayList<Long>();
+      List<Integer> qIDs = new ArrayList<Integer>();
 
       for (Question q: qs.get(0).getQuestions()) {
         qIDs.add(q.getId());

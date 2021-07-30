@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.annotation.result;
 
+import io.swagger.models.auth.In;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.ohdsi.webapi.annotation.annotation.Annotation;
@@ -29,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ResultService extends AbstractDaoService {
@@ -59,8 +61,24 @@ public class ResultService extends AbstractDaoService {
             new String[]{"results_schema", "CDM_schema"},
             new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results), source.getTableQualifier(SourceDaimon.DaimonType.CDM)},
             "annotation_id", annotation.getId());
-    Collection<String>  optionalFields = Collections.emptySet();
-    return jdbcTemplate.query(renderer.getSql(), renderer.getOrderedParams(),new ResultRowMapper(optionalFields));
+    return jdbcTemplate.query(renderer.getSql(),new ResultRowMapper());
+  }
+
+  public List<Result> getResultsByAnnotations(List<Annotation> annotations){
+    String AnnotationIds=""+annotations.get(0).getId();
+    int[] annotationIds = annotations.stream()
+            .mapToInt(Annotation::getId)
+            .toArray();
+    System.out.println("AnnotationIDs: "+AnnotationIds);
+    CohortSample sample = sampleRepository.findById(annotations.get(0).getCohortSampleId());
+    Source source = getSourceRepository().findBySourceId(sample.getSourceId());
+    JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
+    PreparedStatementRenderer renderer = new PreparedStatementRenderer(source, "/resources/annotationresult/sql/findResultsByAnnotationIds.sql",
+            new String[]{"results_schema", "CDM_schema"},
+            new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results), source.getTableQualifier(SourceDaimon.DaimonType.CDM)},
+            "idList", annotationIds);
+    System.out.println(renderer);
+    return jdbcTemplate.query(renderer.getSql(),renderer.getOrderedParams(),new ResultRowMapper());
   }
 
   public Result getResultByAnnotationIDAndQuestionID(int AnnotationID,int QuestionID){
@@ -75,21 +93,24 @@ public class ResultService extends AbstractDaoService {
             new String[]{"results_schema", "CDM_schema"},
             new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results), source.getTableQualifier(SourceDaimon.DaimonType.CDM)},
             sqlParameters, sqlValues);
-    Collection<String>  optionalFields = Collections.emptySet();
     System.out.printf("Running query: %s with params: %s\n",renderer.getSql(),renderer.getOrderedParams().toString());
-    List<Result> results= jdbcTemplate.query(renderer.getSql(), renderer.getOrderedParams(),new ResultRowMapper(optionalFields));
+    List<Result> results= jdbcTemplate.query(renderer.getSql(), new ResultRowMapper());
     if (results.isEmpty()){
       return null;
     }
     return results.get(0);
   }
 
-  public List<Result> getResultsByQuestionSetId(int questionSetId) {
+  public <AnnotationCollection> List<Result> getResultsByQuestionSetId(int questionSetId) {
     List <Result> results = new ArrayList<Result>();
     List <Annotation> annos=annotationService.getAnnotationsByQuestionSetId(questionSetId);
-
-    for(Annotation anno : annos){
-      results.addAll(getResultsByAnnotation(anno));
+    List<ArrayList<Annotation>> collections = annos.stream()
+            .collect(Collectors.groupingBy(x -> x.getCohortSampleId()))
+            .entrySet().stream()
+            .map(e -> { ArrayList<Annotation> c = new ArrayList<Annotation>(); c.addAll(e.getValue()); return c; })
+            .collect(Collectors.toList());
+    for(ArrayList<Annotation> annoList : collections){
+      results.addAll(getResultsByAnnotations(annoList));
     }
     return results;
   }
@@ -154,10 +175,8 @@ public class ResultService extends AbstractDaoService {
 
   /** Maps a SQL result to a sample element. */
   private class ResultRowMapper implements RowMapper<Result> {
-    private final Collection<String> optionalFields;
 
-    ResultRowMapper(Collection<String> optionalFields) {
-      this.optionalFields = optionalFields;
+    ResultRowMapper() {
     }
 
     @Override

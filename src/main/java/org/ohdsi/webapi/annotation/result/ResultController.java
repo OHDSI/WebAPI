@@ -47,11 +47,9 @@ public class ResultController {
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
   public List<Result> getResults(
-          @QueryParam("questionId") final int questionId
+          @QueryParam("questionSetId") final int questionId
   ) {
-    List<Result> results = null;
-    List<Annotation> blah = annotationService.getAnnotationsByQuestionSetId(questionId);
-    return results;
+    return resultService.getResultsByQuestionSetId(questionId);
   }
 
   @Path("/{cohortDefinitionId}/{sourceKey}")

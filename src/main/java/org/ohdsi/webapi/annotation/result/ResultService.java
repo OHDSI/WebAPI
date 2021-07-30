@@ -47,15 +47,18 @@ public class ResultService extends AbstractDaoService {
 //  }
 
   public List<Result> getResultsByAnnotationID(int AnnotationID){
-    Result result= null;
     Annotation ourAnno =annotationService.getAnnotationsByAnnotationId(AnnotationID);
-    CohortSample sample = sampleRepository.findById(ourAnno.getCohortSampleId());
+    return getResultsByAnnotation(ourAnno);
+  }
+
+  public List<Result> getResultsByAnnotation(Annotation annotation){
+    CohortSample sample = sampleRepository.findById(annotation.getCohortSampleId());
     Source source = getSourceRepository().findBySourceId(sample.getSourceId());
     JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
     PreparedStatementRenderer renderer = new PreparedStatementRenderer(source, "/resources/annotationresult/sql/findResultsByAnnotationId.sql",
             new String[]{"results_schema", "CDM_schema"},
             new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results), source.getTableQualifier(SourceDaimon.DaimonType.CDM)},
-            "annotation_id", AnnotationID);
+            "annotation_id", annotation.getId());
     Collection<String>  optionalFields = Collections.emptySet();
     return jdbcTemplate.query(renderer.getSql(), renderer.getOrderedParams(),new ResultRowMapper(optionalFields));
   }
@@ -81,22 +84,30 @@ public class ResultService extends AbstractDaoService {
     return results.get(0);
   }
 
-//  public List<Result> findByQuestionSetId(List<Integer> questionIDs) {
-//    Result result= null;
-//    for(int question : questionIDs){
-//      Annotation ourAnno =annotationService.getAnnotationsByQuestionSetId(question);
-//    }
-//    Annotation ourAnno =annotationService.getAnnotationsByAnnotationId(AnnotationID);
-//    CohortSample sample = sampleRepository.findById(ourAnno.getCohortSampleId());
-//    Source source = getSourceRepository().findBySourceId(sample.getSourceId());
-//    JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
-//    PreparedStatementRenderer renderer = new PreparedStatementRenderer(source, "/resources/annotationresult/sql/findResultsByQuestionSetId.sql",
-//            new String[]{"results_schema", "CDM_schema"},
-//            new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results), source.getTableQualifier(SourceDaimon.DaimonType.CDM)},
-//            "annotationId","questionId", AnnotationID);
-//    Collection<String>  optionalFields = Collections.emptySet();
-//    return jdbcTemplate.query(renderer.getSql(), renderer.getOrderedParams(),new ResultRowMapper(optionalFields)).get(0);
-//  }
+  public List<Result> getResultsByQuestionSetId(int questionSetId) {
+    List <Result> results = new ArrayList<Result>();
+    List <Annotation> annos=annotationService.getAnnotationsByQuestionSetId(questionSetId);
+
+    for(Annotation anno : annos){
+      results.addAll(getResultsByAnnotation(anno));
+    }
+    return results;
+  }
+
+  public void deleteResultsByAnnotationIdAndQuestionId(Annotation annotation,int questionId){
+    List<Object[]> deleteVariables = new ArrayList<>();
+    CohortSample sample = sampleRepository.findById(annotation.getCohortSampleId());
+    Source source = getSourceRepository().findBySourceId(sample.getSourceId());
+    JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
+    String[] parameters = new String[] { "results_schema" };
+    String[] parameterValues = new String[] { source.getTableQualifier(SourceDaimon.DaimonType.Results) };
+    String[] deletesqlParameters = new String[] { "annotation_id", "question_id"};
+    Object[] deletesqlValues = new Object[] {annotation.getId(),questionId};
+    PreparedStatementRenderer deleterenderer = new PreparedStatementRenderer(source, "/resources/annotationresult/sql/deleteResultsByAnnotationIdAndQuestionId.sql", parameters, parameterValues, deletesqlParameters, deletesqlValues);
+    String deleteStatement = deleterenderer.getSql();
+    deleteVariables.add(deleterenderer.getOrderedParams());
+    jdbcTemplate.batchUpdate(deleteStatement, deleteVariables);
+  }
 
   public void insertResults(Annotation annotation, JSONArray results) {
 //    might want to do a check- if the annotation ID+question ID already exists, update the existing row instead. Other option is just only query the latest instead
@@ -113,18 +124,12 @@ public class ResultService extends AbstractDaoService {
 
     String statement = null;
     List<Object[]> variables = new ArrayList<>();
-    List<Object[]> deleteVariables = new ArrayList<>();
     Boolean hasCleared=false;
     for(int i=0; i < results.length(); i++){
       JSONObject object = results.getJSONObject(i);
       if(!hasCleared && getResultByAnnotationIDAndQuestionID(annotation.getId(),Integer.parseInt(object.get("questionId").toString()))!=null){
 //        this entry already exists, need to update here instead of adding to the pile
-        String[] deletesqlParameters = new String[] { "annotation_id", "question_id"};
-        Object[] deletesqlValues = new Object[] {annotation.getId(),Integer.parseInt(object.get("questionId").toString())};
-        PreparedStatementRenderer deleterenderer = new PreparedStatementRenderer(source, "/resources/annotationresult/sql/deleteResultsByAnnotationIdAndQuestionId.sql", parameters, parameterValues, deletesqlParameters, deletesqlValues);
-        String deleteStatement = deleterenderer.getSql();
-        deleteVariables.add(deleterenderer.getOrderedParams());
-        jdbcTemplate.batchUpdate(deleteStatement, deleteVariables);
+        deleteResultsByAnnotationIdAndQuestionId(annotation,Integer.parseInt(object.get("questionId").toString()));
         hasCleared=true;
       }
       Object[] sqlValues = new Object[] {
@@ -169,6 +174,7 @@ public class ResultService extends AbstractDaoService {
         return null;
       }
       result.setAnnotation(tempAnno);
+      result.setId(rs.getInt("result_id"));
       result.setQuestionId(rs.getInt("question_id"));
       result.setAnswerId(rs.getInt("answer_id"));
       result.setValue(rs.getString("value"));

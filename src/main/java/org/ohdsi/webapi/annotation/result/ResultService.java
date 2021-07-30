@@ -61,7 +61,7 @@ public class ResultService extends AbstractDaoService {
             new String[]{"results_schema", "CDM_schema"},
             new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results), source.getTableQualifier(SourceDaimon.DaimonType.CDM)},
             "annotation_id", annotation.getId());
-    return jdbcTemplate.query(renderer.getSql(),new ResultRowMapper());
+    return jdbcTemplate.query(renderer.getSql(),renderer.getOrderedParams(),new ResultRowMapper());
   }
 
   public List<Result> getResultsByAnnotations(List<Annotation> annotations){
@@ -94,7 +94,7 @@ public class ResultService extends AbstractDaoService {
             new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results), source.getTableQualifier(SourceDaimon.DaimonType.CDM)},
             sqlParameters, sqlValues);
     System.out.printf("Running query: %s with params: %s\n",renderer.getSql(),renderer.getOrderedParams().toString());
-    List<Result> results= jdbcTemplate.query(renderer.getSql(), new ResultRowMapper());
+    List<Result> results= jdbcTemplate.query(renderer.getSql(),renderer.getOrderedParams(), new ResultRowMapper());
     if (results.isEmpty()){
       return null;
     }

@@ -16,6 +16,8 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
+import java.util.Objects;
+
 import org.springframework.stereotype.Component;
 
 @Component
@@ -268,14 +270,15 @@ public class CDMResultsAnalysisRunner {
     }
 
     public JsonNode getDrilldown(JdbcTemplate jdbcTemplate,
-                                 final String domain,
-                                 final int conceptId,
+                                 String domain,
+                                 Integer conceptId,
                                  Source source) {
         ObjectNode objectNode = objectMapper.createObjectNode();
 
         ClassLoader cl = this.getClass().getClassLoader();
         ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(cl);
-        String pattern = BASE_SQL_PATH + "/report/" + domain.toLowerCase() + "/drilldown/*.sql";
+        String folder = Objects.nonNull(conceptId) ? "/drilldown/" : "/drilldownsummary/";
+        String pattern = BASE_SQL_PATH + "/report/" + domain.toLowerCase() + folder + "*.sql";
         try {
             Resource[] resources = resolver.getResources(pattern);
             for (Resource resource : resources) {

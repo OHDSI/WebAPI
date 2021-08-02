@@ -30,7 +30,7 @@ public interface Constants {
           "cohortId",
           "cohortDefinitionIds",
           "source_id",
-          "sourceKey",
+          "source_key",
           "scriptType",
           "analysis_id",
           "concept_set_id",
@@ -116,15 +116,5 @@ public interface Constants {
   interface CallbackUrlResolvers {
     String QUERY = "query";
     String PATH = "path";
-  }
-
-  interface Caches {
-    interface Datasources {
-      String DASHBOARD = "datasources.dashboard";
-      String PERSON = "datasources.person";
-      String DOMAIN = "datasources.domain";
-      String DRILLDOWN = "datasources.drilldown";
-      String DATADENSITY = "datasources.dataDensity";
-    }
   }
 }

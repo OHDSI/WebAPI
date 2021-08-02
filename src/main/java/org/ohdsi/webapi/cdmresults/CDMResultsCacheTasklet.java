@@ -100,22 +100,17 @@ public class CDMResultsCacheTasklet implements Tasklet {
         PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql_statement, tables, tableValues,
           SessionUtils.sessionId());
 
-        try {
-            BaseRecordCountMapper<?> mapper;
-            mapper = this.usePersonCount ? new DescendantRecordAndPersonCountMapper() : new DescendantRecordCountMapper();
+        BaseRecordCountMapper<?> mapper;
+        mapper = this.usePersonCount ? new DescendantRecordAndPersonCountMapper() : new DescendantRecordCountMapper();
 
-            transactionTemplate.execute(s -> {
-                jdbcTemplate.query(psr.getSql(), psr.getSetter(), resultSet -> {
-                    DescendantRecordCount descendantRecordCount = mapper.mapRow(resultSet);
-                    cdmResultsCache.cacheValue(descendantRecordCount);
-                });
-                return null;
+        transactionTemplate.execute(s -> {
+            jdbcTemplate.query(psr.getSql(), psr.getSetter(), resultSet -> {
+                DescendantRecordCount descendantRecordCount = mapper.mapRow(resultSet);
+                cdmResultsCache.cacheValue(descendantRecordCount);
             });
-            cdmResultsCache.warm();
-        } catch (Exception e) {
-            log.error("Failed to warm cache for {}. Exception: {}", source.getSourceKey(), e.getLocalizedMessage());
-            throw e;
-        }
+            return null;
+        });
+        cdmResultsCache.warm();
     }
 
 }

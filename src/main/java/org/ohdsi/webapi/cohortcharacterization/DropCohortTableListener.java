@@ -49,10 +49,10 @@ public class DropCohortTableListener extends JobExecutionListenerSupport {
     final String tempQualifier = SourceUtils.getTempQualifier(source, resultsQualifier);
     String toRemove = SqlTranslate.translateSql(sql, source.getSourceDialect(), null, tempQualifier);
 
-    if (Objects.equals(DBMSType.SPARK.getOhdsiDB(), source.getSourceDialect()) ||
-            Objects.equals(DBMSType.HIVE.getOhdsiDB(), source.getSourceDialect())) {
-      toRemove = StringUtils.remove(toRemove, ';');
-    }
+//    if (Objects.equals(DBMSType.SPARK.getOhdsiDB(), source.getSourceDialect()) ||
+//            Objects.equals(DBMSType.HIVE.getOhdsiDB(), source.getSourceDialect())) {
+//      toRemove = StringUtils.remove(toRemove, ';');
+//    }
     jdbcTemplate.execute(toRemove);
     return null;
   }

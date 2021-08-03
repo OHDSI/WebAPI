@@ -151,17 +151,6 @@ public class AnnotationController {
     }
   }
 
-  @GET
-  @Path("/getsets")
-  @Produces(MediaType.APPLICATION_JSON)
-  public List<Annotation> getSets(
-    @QueryParam("cohortSampleId") final int cohortSampleId,
-    @QueryParam("subjectId") final int subjectId,
-    @QueryParam("setId") final int setId
-  ) {
-    return annotationService.getAnnotations();
-  }
-
 //just for testing
   @Path("/csvData")
   @GET

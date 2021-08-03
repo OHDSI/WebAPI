@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.annotation.set;
 
+import org.ohdsi.webapi.annotation.annotation.Annotation;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
@@ -33,5 +34,9 @@ public class QuestionSetService {
 
   public QuestionSet findQuestionSetByQuestionSetId(int questionSetId){
     return questionSetRepository.findByQuestionSetId(questionSetId);
+  }
+
+  public List<QuestionSampleDto> getSamplesAndSetsByCohortId(int cohortId) {
+    return questionSetRepository.findSamplesAndSetsByCohortId(cohortId);
   }
 }

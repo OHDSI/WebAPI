@@ -8,6 +8,8 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.QueryParam;
+
+import org.ohdsi.webapi.annotation.annotation.Annotation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.ohdsi.webapi.annotation.set.QuestionSetService;
@@ -30,6 +32,15 @@ public class QuestionSetController {
     }
 
     return questionSetService.getSets();
+  }
+
+  @GET
+  @Path("getsets")
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<QuestionSampleDto> getSets(
+          @QueryParam("cohortId") final int cohortId
+  ) {
+    return questionSetService.getSamplesAndSetsByCohortId(cohortId);
   }
 
   @POST

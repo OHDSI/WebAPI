@@ -16,8 +16,6 @@ public class SuperResultDto {
 
   public SuperResultDto(Result result){
     this.value = result.getValue();
-
-
   }
 
   //***** GETTERS/SETTERS *****
@@ -66,15 +64,11 @@ public class SuperResultDto {
     return questionSetId;
   }
 
-  public void setQuestionSetId(int questionSetId) {
-    this.questionSetId = questionSetId;
-  }
+  public void setQuestionSetId(int questionSetId) {this.questionSetId = questionSetId;}
 
   public String getQuestionSetName() {return questionSetName;}
 
-  public void setQuestionSetName(String questionSetName) {
-    this.questionSetName = questionSetName;
-  }
+  public void setQuestionSetName(String questionSetName) { this.questionSetName = questionSetName; }
 
   public int getPatientId() {
     return patientId;

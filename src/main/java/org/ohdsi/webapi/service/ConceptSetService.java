@@ -23,6 +23,8 @@ import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.webapi.conceptset.ConceptSet;
@@ -30,6 +32,7 @@ import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
+import org.ohdsi.webapi.exception.ConceptNotExistException;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
@@ -117,8 +120,11 @@ public class ConceptSetService extends AbstractDaoService {
     @Path("{id}/expression")
     @Produces(MediaType.APPLICATION_JSON)
     public ConceptSetExpression getConceptSetExpression(@PathParam("id") final int id) {
-
-        return getConceptSetExpression(id, sourceService.getPriorityVocabularySourceInfo());
+        SourceInfo sourceInfo = sourceService.getPriorityVocabularySourceInfo();
+        if (sourceInfo == null) {
+            throw new UnauthorizedException();
+        }
+        return getConceptSetExpression(id, sourceInfo);
     }
 
     @GET
@@ -154,9 +160,21 @@ public class ConceptSetService extends AbstractDaoService {
             identifierIndex++;
         }
 
-        // assume we want to resolve using the priority vocabulary provider
-        Source vocabSourceInfo = sourceService.getPriorityVocabularySource();
-        Collection<Concept> concepts = vocabService.executeIdentifierLookup(vocabSourceInfo.getSourceKey(), identifiers);
+        String sourceKey;
+        if (Objects.isNull(sourceInfo)) {
+            sourceKey = sourceService.getPriorityVocabularySource().getSourceKey();
+        } else {
+            sourceKey = sourceInfo.sourceKey;
+        }
+
+        Collection<Concept> concepts = vocabService.executeIdentifierLookup(sourceKey, identifiers);
+        if (concepts.size() != identifiers.length) {
+            String ids = Arrays.stream(identifiers).boxed()
+                    .filter(identifier -> concepts.stream().noneMatch(c -> c.conceptId.equals(identifier)))
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(",", "(", ")"));
+            throw new ConceptNotExistException("Current data source does not contain required concepts " + ids);
+        }
         for(Concept concept : concepts) {
           map.put(concept.conceptId, concept); // associate the concept object to the conceptID in the map
         }

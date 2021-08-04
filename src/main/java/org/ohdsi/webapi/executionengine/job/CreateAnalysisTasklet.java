@@ -35,7 +35,7 @@ public class CreateAnalysisTasklet extends BaseExecutionTasklet {
     @Override
     public RepeatStatus execute(StepContribution stepContribution, ChunkContext context) throws Exception {
 
-        Long jobId = context.getStepContext().getStepExecution().getJobExecution().getJobId();
+        Long jobId = context.getStepContext().getStepExecution().getJobExecution().getId();
         Map<String, Object> jobParams = context.getStepContext().getJobParameters();
         final String updatePassword = jobParams.get(Constants.Params.UPDATE_PASSWORD).toString();
         final ExecutionEngineAnalysisStatus createAnalysis = service.createAnalysisExecution(

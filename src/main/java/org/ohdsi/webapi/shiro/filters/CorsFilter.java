@@ -4,6 +4,8 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.google.common.base.Joiner;
 import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.Constants;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
+import java.util.StringJoiner;
 
 /**
  *
@@ -50,7 +53,8 @@ public class CorsFilter extends AdviceFilter{
     String method = httpRequest.getMethod();
     if (requestMethod != null && "OPTIONS".equalsIgnoreCase(method)) {
       httpResponse.setHeader("Access-Control-Allow-Headers", "origin, content-type, accept, authorization, " +
-              Constants.Headers.AUTH_PROVIDER + ", " + Constants.Headers.ACTION_LOCATION);
+              Joiner.on(",").join(Constants.Headers.AUTH_PROVIDER, Constants.Headers.USER_LANGAUGE,
+                      Constants.Headers.ACTION_LOCATION));
       httpResponse.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
       httpResponse.setHeader("Access-Control-Max-Age", "1209600");
       httpResponse.setStatus(HttpServletResponse.SC_OK);
@@ -60,7 +64,8 @@ public class CorsFilter extends AdviceFilter{
 
     // continue processing request
     //
-    httpResponse.setHeader("Access-Control-Expose-Headers", "Bearer,x-auth-error," + Constants.Headers.AUTH_PROVIDER);
+    httpResponse.setHeader("Access-Control-Expose-Headers", "Bearer,x-auth-error," +
+            Joiner.on(",").join(Constants.Headers.AUTH_PROVIDER, Constants.Headers.USER_LANGAUGE));
     return true;
   }
 }

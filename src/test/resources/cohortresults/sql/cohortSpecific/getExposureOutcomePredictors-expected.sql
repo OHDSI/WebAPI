@@ -1,8 +1,8 @@
 WITH total_exposed_w_outcome AS (
 	SELECT exposure_cohort_definition_id, outcome_cohort_definition_id, count_value
 	FROM result_schema.penelope_results 
-	WHERE exposure_cohort_definition_id in ( ? )
-		AND outcome_cohort_definition_id in ( ? )
+    WHERE exposure_cohort_definition_id = ?
+      AND outcome_cohort_definition_id = ?
 		AND analysis_id = 1
 		AND stratum_1 = 'Outcome post-exposure'
 ),
@@ -10,8 +10,8 @@ total_exposed AS (
 	SELECT exposure_cohort_definition_id, outcome_cohort_definition_id, 
 		sum(count_value) as count_value
 	FROM result_schema.penelope_results 
-	WHERE exposure_cohort_definition_id in ( ? )
-		AND outcome_cohort_definition_id in ( ? )
+         WHERE exposure_cohort_definition_id = ?
+           AND outcome_cohort_definition_id = ?
 		AND analysis_id = 1
 		AND stratum_1 IN ('Exposure with no outcome','Outcome post-exposure')
 	GROUP BY exposure_cohort_definition_id, outcome_cohort_definition_id 
@@ -21,8 +21,8 @@ concept_w_outcome AS (
 		stratum_2 as concept_id,
 		count_value as count_value
 	FROM result_schema.penelope_results
-	WHERE exposure_cohort_definition_id in ( ? )
-		AND outcome_cohort_definition_id in ( ? )
+         WHERE exposure_cohort_definition_id = ?
+           AND outcome_cohort_definition_id = ?
 		AND analysis_id in (1822, 1832, 1852, 1872, 1882)
 		AND stratum_1 = 'Outcome post-exposure'
 		AND stratum_3 = '-1'
@@ -33,8 +33,8 @@ concept_total AS (
 		stratum_2 as concept_id,
 		SUM(count_value) as count_value
 	FROM result_schema.penelope_results
-	WHERE exposure_cohort_definition_id in ( ? )
-		AND outcome_cohort_definition_id in ( ? )
+         WHERE exposure_cohort_definition_id = ?
+           AND outcome_cohort_definition_id = ?
 		AND analysis_id in (1822, 1832, 1852, 1872, 1882)
 		AND stratum_1 in ('Exposure with no outcome','Outcome post-exposure')
 		AND stratum_3 = '-1'
@@ -67,4 +67,4 @@ FROM concept_total
 	INNER JOIN cdm_schema.concept
 	ON concept_total.concept_id = cast(concept.concept_id as varchar)
 WHERE concept_total.count_value > ?
-ORDER BY abs_std_diff desc;
+ORDER BY abs_std_diff desc

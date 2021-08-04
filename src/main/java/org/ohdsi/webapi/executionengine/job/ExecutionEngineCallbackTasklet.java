@@ -29,7 +29,7 @@ public class ExecutionEngineCallbackTasklet extends BaseExecutionTasklet {
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
 
-        final Long jobId = chunkContext.getStepContext().getStepExecution().getJobExecution().getJobId();
+        final Long jobId = chunkContext.getStepContext().getStepExecution().getJobExecution().getId();
         while (true) {
             entityManager.clear();
 

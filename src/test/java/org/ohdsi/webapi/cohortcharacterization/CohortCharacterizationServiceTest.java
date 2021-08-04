@@ -134,8 +134,10 @@ public class CohortCharacterizationServiceTest extends AbstractDatabaseTest {
         try {
             ZipFile zipFile = getZipFile(generationId, paramItem);
             if (paramItem.fileItems.isEmpty()) {
-                // File is empty
-                assertFalse(dataItemMessage, zipFile.isValidZipFile());
+                // File is valid
+                assertTrue(dataItemMessage, zipFile.isValidZipFile());
+                // but empty
+                assertTrue(dataItemMessage, zipFile.getFileHeaders().isEmpty());
             } else {
                 // File should not be empty
                 assertTrue(dataItemMessage, zipFile.isValidZipFile());

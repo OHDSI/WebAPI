@@ -79,6 +79,8 @@ from #yearly_dates yd
 -- ADD UNION ALLs for additional period definitions
 ) monthlyDates;
 
+TRUNCATE TABLE @results_schema.heracles_periods;
+
 INSERT INTO @results_schema.heracles_periods (period_id, period_name, period_order, period_type, period_start_date, period_end_date)
 select CAST(row_number() over (order by period_order, period_start_date) AS INT) as period_id
 			, period_name, period_order, period_type, period_start_date, period_end_date

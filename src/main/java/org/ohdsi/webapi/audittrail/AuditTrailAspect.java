@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.audittrail;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -66,11 +67,15 @@ public class AuditTrailAspect {
 
         final String token = TokenManager.extractToken(request);
         if (token != null) {
-            final String user = TokenManager.getSubject(token);
-            final String sessionId = (String) TokenManager.getBody(token).get(Constants.SESSION_ID);
+            try {
+                final String user = TokenManager.getSubject(token);
+                final String sessionId = (String) TokenManager.getBody(token).get(Constants.SESSION_ID);
 
-            entry.setCurrentUser(user);
-            entry.setSessionId(sessionId);
+                entry.setCurrentUser(user);
+                entry.setSessionId(sessionId);
+            } catch (final ExpiredJwtException e) {
+                // ignore expired token. let the application create a new one
+            }
         }
 
         entry.setActionLocation(request.getHeader(Constants.Headers.ACTION_LOCATION));

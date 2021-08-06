@@ -821,6 +821,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                     Report comparativeReport = new Report(analysisItem.getName(), analysisId, comparativeResultItem);
                     comparativeReport.header = executionComparativeHeaderLines;
                     comparativeReport.isComparative = true;
+                    comparativeReport.faType = analysisItem.getFaType();
+                    comparativeReport.domainId = feAnalysisMap.get(analysisItem.getName());
                     if (PREVALENCE.equals(analysisItem.getType())) {
                         comparativeReport.resultType = PREVALENCE;
                         // Summary comparative reports are only available for prevalence type

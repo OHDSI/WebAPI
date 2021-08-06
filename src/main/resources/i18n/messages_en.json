@@ -400,7 +400,9 @@
       "overwriteConfirm": "Are you sure you want to overwrite current Concept Set Expression?",
       "loadingIncludedConcepts": "Loading Included Concepts",
       "commonAncestors": "Common Ancestors",
-      "loadingIncludedSourcecodes": "Loading Included Sourcecodes"
+      "loadingIncludedSourcecodes": "Loading Included Sourcecodes",
+      "expressionResolveError": "Error occurred during resolving expression!",
+      "forbiddenError": "You are not authorized to view the concept set expression."
     },
     "conceptLegend": {
       "standard": "Standard",
@@ -896,6 +898,9 @@
     "export": {
       "button": "Export",
       "progress": "export in progress"
+    },
+    "exportSql": {
+      "incorrectDesign": "Cannot generate SQL: design of the analysis is incorrect"
     },
     "feasibilityAttritionReport": {
       "attritionVisualization": "Attrition Visualization",
@@ -2643,9 +2648,9 @@
           "sampleName": "* Sample name",
           "sampleNamePlaceholder": "Enter sample name",
           "sampleNameEmpty": "Sample name cannot be empty",
-          "numberOfPatients": "* Number of patients",
+          "numberOfPatients": "* Number of patients (from 1 to 500)",
           "numberOfPatientsPlaceholder": "Enter a number",
-          "numberOfPatientsEmpty": "Number of patients must be a positive integer",
+          "numberOfPatientsEmpty": "Number of patients must be a positive integer between 1 and 500",
           "selectAgeCriteria": "Select age criteria",
           "lessThan": "Less than",
           "lessOrEqualTo": "Less or equal to",
@@ -2924,6 +2929,10 @@
         "desc_observation": "Filter Observations based on visit occurrence of observation.",
         "title_procedureoccurrence": "Add Visit Criteria",
         "desc_procedureoccurrence": "Filter Procedure Occurrences based on visit occurrence of procedure."
+      },
+      "addConditionStatus": {
+        "title_occurrence": "Add Condition Status",
+        "desc_occurrence": "Filter Condition Occurrences based on condition status."
       },
       "addFirstDiagnosis": {
         "title_era": "Add First Diagnosis Criteria",

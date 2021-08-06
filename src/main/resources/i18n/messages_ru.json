@@ -328,6 +328,9 @@
       "button": "Экспорт",
       "progress": "экспорт в процессе"
     },
+    "exportSql": {
+      "incorrectDesign": "Невозможно сформировать SQL: некорректный дизайн анализа"
+    },
     "import": {
       "button": "Импорт",
       "denied": "Отсутствуют права на импорт",
@@ -910,7 +913,9 @@
       "overwriteConfirm": "Вы действительно хотите перезаписать текущее выражение набора концепций?",
       "loadingIncludedConcepts": "Загрузка включенных концепций",
       "commonAncestors": "Общие предки",
-      "loadingIncludedSourcecodes": "Загрузка включенных исходных кодов"
+      "loadingIncludedSourcecodes": "Загрузка включенных исходных кодов",
+      "expressionResolveError": "Ошибка загрузки выражения набора концепций!",
+      "forbiddenError": "Недостаточно прав для работы с выражением набора концепций."
     },
     "conceptLegend": {
       "standard": "Стандартный",
@@ -2643,9 +2648,9 @@
           "sampleName": "* Имя образца",
           "sampleNamePlaceholder": "Введите имя образца",
           "sampleNameEmpty": "Имя образца не может быть пустым",
-          "numberOfPatients": "* Количество пациентов",
+          "numberOfPatients": "* Количество пациентов (от 1 до 500)",
           "numberOfPatientsPlaceholder": "Введите число",
-          "numberOfPatientsEmpty": "Количество пациентов должно быть положительным числом",
+          "numberOfPatientsEmpty": "Количество пациентов должно быть положительным числом от 1 до 500",
           "selectAgeCriteria": "Выберите возрастной критерий",
           "lessThan": "Менее чем",
           "lessOrEqualTo": "Менее чем или равно",
@@ -3083,6 +3088,10 @@
         "desc_observation": "Фильтр наблюдений, основанный на посещении наблюдений.",
         "title_procedureoccurrence": "Добавить визит",
         "desc_procedureoccurrence": "Процедура фильтра Вхождения, основанные на посещении процедуры."
+      },
+      "addConditionStatus": {
+        "title_occurrence": "Добавить статус условия",
+        "desc_occurrence": "Фильтровать возникновение условия на основе статуса"
       },
       "addFirstDiagnosis": {
         "title_era": "Добавить первый диагноз",

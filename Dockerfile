@@ -1,4 +1,4 @@
-FROM maven:3.6-jdk-8 as builder
+FROM maven:3.6-jdk-11 as builder
 
 WORKDIR /code
 

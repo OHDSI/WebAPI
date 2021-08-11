@@ -1,13 +1,16 @@
 package org.ohdsi.webapi.annotation.result;
-
+//this table is for human viewing- don't expect to ever review this again
 public class SuperResultDto {
 
   private int cohortId;
   private String cohortName;
   private int dataSourceId;
+//  can be removed/changed to dataSourceKey
   private int cohortSampleId;
+//  can be removed ( cohortSampleId)
   private String cohortSampleName;
   private int questionSetId;
+//  can be remove (questionSetId)
   private String questionSetName;
   private int patientId;
   private String questionText;

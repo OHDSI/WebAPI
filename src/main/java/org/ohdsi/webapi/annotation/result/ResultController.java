@@ -79,9 +79,12 @@ public class ResultController {
   public List<SuperResultDto> getFullResults(
           @QueryParam("questionSetId") final int questionSetId
   ) {
+//    May want to replicate this but with an additional parameter-
+//    this would be (quesetionSetID + CohortSampleId) or AnnotationStudyId (aka the same thing)
     List<Result> resultlist= resultService.getResultsByQuestionSetId(questionSetId);
     List<SuperResultDto> superList = new ArrayList();
     for (Result result : resultlist){
+//      things we currently query for; Annotation Cohort Sample, Cohort Definition, QuestionSets
       Question myQuestion = questionService.getQuestionByQuestionId(result.getQuestionId());
       SuperResultDto tempdto = new SuperResultDto(result);
       Annotation tempanno = annotationService.getAnnotationsByAnnotationId(result.getAnnotation());
@@ -92,6 +95,7 @@ public class ResultController {
       tempdto.setCohortName(cohortDefinition.getName());
       tempdto.setCohortId( cohortSample.getCohortDefinitionId());
       tempdto.setDataSourceId(cohortSample.getSourceId());
+//      for above, it would be more useful to use DataSourceKey instead of ID
       tempdto.setCohortSampleName(cohortSample.getName());
       tempdto.setQuestionSetId(questionSetId);
       QuestionSet questionSet = questionSetService.findQuestionSetByQuestionSetId(questionSetId);

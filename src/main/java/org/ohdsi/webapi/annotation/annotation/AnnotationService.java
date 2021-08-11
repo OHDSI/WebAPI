@@ -60,6 +60,8 @@ public class AnnotationService {
   }
 
   public List<Annotation> getAnnotationByCohortSampleIdAndByQuestionSetId(int cohortSampleId, int setId) {
+//      this becomes getByStudyId
+//      checking if there is a study with the sample and question set that has already been created
     List<Annotation> annotations = new ArrayList();
     annotationRepository.findByCohortSampleIdAndQuestionSetId(cohortSampleId, setId)
     .forEach(annotations::add);
@@ -71,6 +73,10 @@ public class AnnotationService {
 //    TODO implement above function and getSampleMembership
     return annotationRepository.save(annotation);
   }
+
+    public Annotation addAnnotation(Annotation annotation) {
+        return annotationRepository.save(annotation);
+    }
 
   public List<Object[]> getAnnotationCSVData(int cohortID, String source, String sampleName) {
       List<Object[]> results = new ArrayList<Object[]>();

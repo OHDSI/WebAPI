@@ -59,3 +59,20 @@ CREATE TABLE ${ohdsiSchema}.annotation (
 
 CREATE INDEX idx_annotation_sample_subject ON ${ohdsiSchema}.annotation (cohort_sample_id,subject_id);
 CREATE INDEX idx_annotation_set ON ${ohdsiSchema}.annotation (set_id);
+
+CREATE TABLE ${ohdsiSchema}.annotation_study (
+   study_id integer NOT NULL,
+   cohort_sample_id integer NOT NULL,
+   question_set_id integer NOT NULL,
+   cohort_definition_id integer NOT NULL,
+   source_id integer NOT NULL,
+   CONSTRAINT annotation_study_pkey PRIMARY KEY (study_id),
+   CONSTRAINT annotation_study_set_fk FOREIGN KEY (question_set_id)
+       REFERENCES ${ohdsiSchema}.annotation_set(set_id),
+   CONSTRAINT annotation_study_sample_fk FOREIGN KEY (cohort_sample_id)
+       REFERENCES ${ohdsiSchema}.cohort_sample(id),
+   CONSTRAINT annotation_study_definition_fk FOREIGN KEY (cohort_definition_id)
+       REFERENCES ${ohdsiSchema}.cohort_definition(id),
+   CONSTRAINT annotation_study_source_fk FOREIGN KEY (source_id)
+       REFERENCES ${ohdsiSchema}.source(source_id)
+);

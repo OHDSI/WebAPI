@@ -16,11 +16,18 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 
 import org.ohdsi.webapi.annotation.result.ResultService;
+import org.ohdsi.webapi.annotation.study.Study;
+import org.ohdsi.webapi.annotation.study.StudyService;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortsample.CohortSample;
 import org.ohdsi.webapi.cohortsample.CohortSampleRepository;
 import org.ohdsi.webapi.cohortsample.CohortSamplingService;
+import org.ohdsi.webapi.cohortsample.SampleElement;
+import org.ohdsi.webapi.cohortsample.dto.CohortSampleDTO;
 import org.ohdsi.webapi.cohortsample.dto.SampleElementDTO;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.ohdsi.webapi.annotation.annotation.AnnotationService;
@@ -37,16 +44,28 @@ import org.ohdsi.webapi.service.AbstractDaoService;
 public class AnnotationController {
 
   @Autowired
+  private StudyService studyService;
+
+  @Autowired
   private ResultService resultService;
 
   @Autowired
-  public CohortSamplingService cohortSamplingService;
+  private CohortDefinitionRepository cohortDefinitionRepository;
+
+  @Autowired
+  private CohortSamplingService cohortSamplingService;
+
+  @Autowired
+  private CohortSampleRepository sampleRepository;
 
   @Autowired
   private AnnotationService annotationService;
 
   @Autowired
   private QuestionSetRepository questionSetRepository;
+
+  @Autowired
+  private SourceService sourceService;
 
   @GET
   @Path("/")
@@ -131,23 +150,29 @@ public class AnnotationController {
   @Path("/sample")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public void addAnnotation(AnnotationDto annotationDto) {
-    System.out.println("annotationDto: "+annotationDto);
-    System.out.println("annotationDtoGetId: "+annotationDto.getId());
-    System.out.println("annotationDtoGesampleId"+annotationDto.getsampleId());
-    System.out.println("annotationDtoGetAnnotationSetID"+annotationDto.getannotationSetId());
-    List<SampleElementDTO> temp = cohortSamplingService.getSample(annotationDto.getsampleId(), false).getElements();
-    System.out.println("SampleElementDTO"+temp);
+  public void addAnnotation(@RequestBody String payload) {
+    JSONObject jsonpayload = new JSONObject(payload);
+    int cohortSampleId = Integer.parseInt(jsonpayload.get("sampleId").toString());
+    CohortSample cohortSample =sampleRepository.findById(cohortSampleId);
+    List<SampleElementDTO> temp = cohortSamplingService.getSample(cohortSampleId, false).getElements();
+    Study study = new Study();
+    int questionSetId = Integer.parseInt(jsonpayload.get("annotationSetId").toString());
+    QuestionSet questionSet = questionSetRepository.findById(questionSetId);
+    study.setQuestionSet(questionSetRepository.findByQuestionSetId(questionSetId));
+    study.setCohortSample(cohortSample);
+    CohortDefinition cohortDefinition= cohortDefinitionRepository.findOneWithDetail(cohortSample.getCohortDefinitionId());
+    study.setCohortDefinition(cohortDefinition);
+    Source source = sourceService.findBySourceKey(jsonpayload.get("sourceKey").toString());
+    study.setSource(source);
+    studyService.addStudy(study);
     for (SampleElementDTO element : temp){
       System.out.println("element"+element);
       System.out.println("element GetPersonID"+element.getPersonId());
       Annotation annotation = new Annotation();
-      annotation.setId(annotationDto.getId());
       annotation.setSubjectId(Integer.parseInt(element.getPersonId()));
-      annotation.setCohortSampleId(annotationDto.getsampleId());
-      QuestionSet questionSet = questionSetRepository.findById(annotationDto.getannotationSetId());
+      annotation.setCohortSampleId(cohortSampleId);
       annotation.setQuestionSet(questionSet);
-      annotationService.addAnnotation(annotation, annotationDto.getSampleName());
+      annotationService.addAnnotation(annotation);
     }
   }
 

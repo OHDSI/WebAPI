@@ -148,6 +148,7 @@ public class ResultService extends AbstractDaoService {
     Boolean hasCleared=false;
     for(int i=0; i < results.length(); i++){
       JSONObject object = results.getJSONObject(i);
+//      I can check here by AnnotationID only? TODO
       if(!hasCleared && getResultByAnnotationIDAndQuestionID(annotation.getId(),Integer.parseInt(object.get("questionId").toString()))!=null){
 //        this entry already exists, need to update here instead of adding to the pile
         deleteResultsByAnnotationIdAndQuestionId(annotation,Integer.parseInt(object.get("questionId").toString()));

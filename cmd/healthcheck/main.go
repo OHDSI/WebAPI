@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-    contextPath := os.Getenv("SERVER_CONTEXT_PATH", "/")
+    contextPath := getenv("SERVER_CONTEXT_PATH", "/")
     if contextPath == "/" {
         contextPath = ""
     }
@@ -14,4 +14,12 @@ func main() {
 	if err != nil {
 		os.Exit(1)
 	}
+}
+
+func getenv(key, fallback string) string {
+    value := os.Getenv(key)
+    if len(value) == 0 {
+        return fallback
+    }
+    return value
 }

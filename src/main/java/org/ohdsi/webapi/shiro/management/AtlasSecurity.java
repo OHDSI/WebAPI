@@ -99,9 +99,6 @@ public abstract class AtlasSecurity extends Security {
     return filterChainBuilder
             // version info
             .addRestPath("/info")
-            // Actuator health
-            .addRestPath("/actuator/health/liveness")
-            .addRestPath("/actuator/health/readiness")
             // DDL service
             .addRestPath("/ddl/results")
             .addRestPath("/ddl/cemresults")

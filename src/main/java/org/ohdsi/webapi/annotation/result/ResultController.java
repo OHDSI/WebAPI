@@ -59,20 +59,11 @@ public class ResultController {
   @GET
   @Path("/{annotationID}")
   @Produces(MediaType.APPLICATION_JSON)
-  public ArrayList getResults(@PathParam("annotationID") String annotationID) {
+  public List<Result> getResults(@PathParam("annotationID") String annotationID) {
     int annotationIdInt=Integer.parseInt(annotationID);
     ArrayList al = new ArrayList();
     Annotation ourAnno =annotationService.getAnnotationsByAnnotationId(annotationIdInt);
-    List<Result> tempResults = resultService.getResultsByAnnotationID(annotationIdInt);
-    for(Result tempResult : tempResults ){
-      System.out.println(tempResult);
-      Map<String, String> testDict =new HashMap<String, String>();
-      testDict.put("questionId",String.valueOf(tempResult.getQuestionId()));
-      testDict.put("answerId",String.valueOf(tempResult.getAnswerId()));
-      testDict.put("subjectId",Integer.toString(ourAnno.getSubjectId()));
-      al.add(testDict);
-    }
-    return al;
+    return resultService.getResultsByAnnotationID(annotationIdInt);
   }
 
   @GET

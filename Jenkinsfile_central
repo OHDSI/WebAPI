@@ -15,7 +15,7 @@ pipeline {
         stage("upload image") {
             steps {
                 dir('WebAPI') {
-                    sh './publish.sh'
+                    sh './publish_central.sh'
                 }
             }
         }

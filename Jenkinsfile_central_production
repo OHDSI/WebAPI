@@ -7,7 +7,7 @@ pipeline {
         stage("re-tag and upload image") {
             steps {
                 dir('WebAPI') {
-                    sh './publish_production.sh'
+                    sh './publish_central_production.sh'
                 }
             }
         }

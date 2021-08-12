@@ -132,8 +132,8 @@ public class AnnotationController {
             ,Integer.parseInt(jsonpayload.get("subjectId").toString()),Integer.parseInt(jsonpayload.get("setId").toString())).get(0);
     System.out.printf("annotationID:%d\n",tempAnnotation.getId());
     JSONArray array = jsonpayload.getJSONArray("results");
-
-    resultService.insertResults(tempAnnotation,array);
+    Study study = studyService.getStudyByQuestionSetIdAndSampleId(jsonpayload.getInt("setId"),jsonpayload.getInt("cohortSampleId") );
+    resultService.insertResults(tempAnnotation,array,study);
 //    for(int i=0; i < array.length(); i++){
 //      JSONObject object = array.getJSONObject(i);
 //      Result result = new Result();

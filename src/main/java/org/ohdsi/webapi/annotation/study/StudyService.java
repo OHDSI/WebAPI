@@ -12,4 +12,10 @@ public class StudyService {
     public void addStudy(Study study) {
         studyRepository.save(study);
     }
+    public Study getStudyById(int studyId){
+        return studyRepository.findByStudyId(studyId);
+    }
+    public Study getStudyByQuestionSetIdAndSampleId(int questionSetId, int sampleId){
+        return studyRepository.findByQuestionSetIdAndSampleId(questionSetId,sampleId);
+    }
 }

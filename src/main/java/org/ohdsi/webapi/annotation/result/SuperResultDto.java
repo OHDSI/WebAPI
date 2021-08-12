@@ -1,16 +1,27 @@
 package org.ohdsi.webapi.annotation.result;
+
+import org.ohdsi.webapi.annotation.annotation.Annotation;
+import org.ohdsi.webapi.annotation.annotation.AnnotationService;
+import org.ohdsi.webapi.annotation.question.Question;
+import org.ohdsi.webapi.annotation.question.QuestionService;
+import org.ohdsi.webapi.annotation.study.Study;
+import org.ohdsi.webapi.source.Source;
+import org.springframework.beans.factory.annotation.Autowired;
+
 //this table is for human viewing- don't expect to ever review this again
 public class SuperResultDto {
 
+  @Autowired
+  private AnnotationService annotationService;
+
+  @Autowired
+  private QuestionService questionService;
+
   private int cohortId;
   private String cohortName;
-  private int dataSourceId;
+  private String dataSourceKey;
 //  can be removed/changed to dataSourceKey
-  private int cohortSampleId;
-//  can be removed ( cohortSampleId)
   private String cohortSampleName;
-  private int questionSetId;
-//  can be remove (questionSetId)
   private String questionSetName;
   private int patientId;
   private String questionText;
@@ -19,6 +30,32 @@ public class SuperResultDto {
 
   public SuperResultDto(Result result){
     this.value = result.getValue();
+  }
+
+  public SuperResultDto(Result result, Study study, Source source){
+    Question myQuestion = questionService.getQuestionByQuestionId(result.getQuestionId());
+    this.caseStatus = myQuestion.getCaseQuestion();
+    this.questionText = myQuestion.getText();
+    Annotation tempanno = annotationService.getAnnotationsByAnnotationId(result.getAnnotation());
+    this.value = result.getValue();
+    this.patientId = tempanno.getSubjectId();
+    this.cohortName= study.getCohortDefinition().getName();
+    this.cohortId = study.getCohortDefinition().getId();
+    this.dataSourceKey = source.getSourceKey();
+    this.cohortSampleName = study.getCohortSample().getName();
+    this.questionSetName = study.getQuestionSet().getName();
+  }
+
+  public SuperResultDto(Result result, Study study, Source source,Question myQuestion,Annotation tempanno){
+    this.caseStatus = myQuestion.getCaseQuestion();
+    this.questionText = myQuestion.getText();
+    this.value = result.getValue();
+    this.patientId = tempanno.getSubjectId();
+    this.cohortName= study.getCohortDefinition().getName();
+    this.cohortId = study.getCohortDefinition().getId();
+    this.dataSourceKey = source.getSourceKey();
+    this.cohortSampleName = study.getCohortSample().getName();
+    this.questionSetName = study.getQuestionSet().getName();
   }
 
   //***** GETTERS/SETTERS *****
@@ -39,20 +76,12 @@ public class SuperResultDto {
     this.cohortName = cohortName;
   }
 
-  public int getDataSourceId() {
-    return dataSourceId;
+  public String getDataSourceKey() {
+    return dataSourceKey;
   }
 
-  public void setDataSourceId(int dataSourceId) {
-    this.dataSourceId = dataSourceId;
-  }
-
-  public int getCohortSampleId() {
-    return cohortSampleId;
-  }
-
-  public void setCohortSampleId(int cohortSampleId) {
-    this.cohortSampleId = cohortSampleId;
+  public void setDataSourceKey(String dataSourceKey) {
+    this.dataSourceKey = dataSourceKey;
   }
 
   public String getCohortSampleName() {
@@ -62,12 +91,6 @@ public class SuperResultDto {
   public void setCohortSampleName(String cohortSampleName) {
     this.cohortSampleName = cohortSampleName;
   }
-
-  public int getQuestionSetId() {
-    return questionSetId;
-  }
-
-  public void setQuestionSetId(int questionSetId) {this.questionSetId = questionSetId;}
 
   public String getQuestionSetName() {return questionSetName;}
 

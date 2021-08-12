@@ -11,10 +11,14 @@ import org.ohdsi.webapi.annotation.question.Question;
 import org.ohdsi.webapi.annotation.question.QuestionService;
 import org.ohdsi.webapi.annotation.set.QuestionSet;
 import org.ohdsi.webapi.annotation.set.QuestionSetService;
+import org.ohdsi.webapi.annotation.study.Study;
+import org.ohdsi.webapi.annotation.study.StudyService;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortsample.dto.CohortSampleDTO;
 import org.ohdsi.webapi.service.CohortSampleService;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.ohdsi.webapi.annotation.result.ResultService;
@@ -22,6 +26,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Path("/annotations/results")
 @Component
@@ -44,6 +49,12 @@ public class ResultController {
 
   @Autowired
   private CohortDefinitionRepository cohortDefinitionRepository;
+
+  @Autowired
+  private StudyService studyService;
+
+  @Autowired
+  private SourceService sourceService;
 
   @GET
   @Path("/{annotationID}")
@@ -77,34 +88,50 @@ public class ResultController {
   @Path("/completeResults")
   @Produces(MediaType.APPLICATION_JSON)
   public List<SuperResultDto> getFullResults(
-          @QueryParam("questionSetId") final int questionSetId
+          @QueryParam("questionSetId") final int questionSetId,
+          @QueryParam("cohortSampleId") final int cohortSampleId,
+          @QueryParam("studyId") final int studyId
   ) {
 //    May want to replicate this but with an additional parameter-
 //    this would be (quesetionSetID + CohortSampleId) or AnnotationStudyId (aka the same thing)
-    List<Result> resultlist= resultService.getResultsByQuestionSetId(questionSetId);
+
+    Study study = null;
+    if(studyId!=0){
+      study=studyService.getStudyById(studyId);
+    }
+    else if (questionSetId!=0 && cohortSampleId!=0){
+      study=studyService.getStudyByQuestionSetIdAndSampleId(questionSetId,studyId);
+    }
+    else{
+      return null;
+    }
+    List<Result> resultlist=resultService.getResultsByStudy(study);
     List<SuperResultDto> superList = new ArrayList();
+//    Study finalStudy = study;
+    Source source = sourceService.findBySourceId(study.getCohortSample().getSourceId());
+//    List<SuperResultDto> fastlist = resultlist.stream().map(r -> new SuperResultDto(r, finalStudy,source)).collect(Collectors.toList());
+//    List<SuperResultDto> fastlist = resultlist.stream().map(r -> {
+//      Question myQuestion = questionService.getQuestionByQuestionId(r.getQuestionId());
+//      Annotation tempanno = annotationService.getAnnotationsByAnnotationId(r.getAnnotation());
+//      return new SuperResultDto(r, finalStudy,source,myQuestion,tempanno);
+//    } ).collect(Collectors.toList());
     for (Result result : resultlist){
 //      things we currently query for; Annotation Cohort Sample, Cohort Definition, QuestionSets
       Question myQuestion = questionService.getQuestionByQuestionId(result.getQuestionId());
       SuperResultDto tempdto = new SuperResultDto(result);
       Annotation tempanno = annotationService.getAnnotationsByAnnotationId(result.getAnnotation());
-      tempdto.setCohortSampleId(tempanno.getCohortSampleId());
       tempdto.setPatientId(tempanno.getSubjectId());
-      CohortSampleDTO cohortSample = cohortSampleService.getCohortSample(tempanno.getCohortSampleId(),"" );
-      CohortDefinition cohortDefinition= cohortDefinitionRepository.findOneWithDetail(cohortSample.getCohortDefinitionId());
-      tempdto.setCohortName(cohortDefinition.getName());
-      tempdto.setCohortId( cohortSample.getCohortDefinitionId());
-      tempdto.setDataSourceId(cohortSample.getSourceId());
-//      for above, it would be more useful to use DataSourceKey instead of ID
-      tempdto.setCohortSampleName(cohortSample.getName());
-      tempdto.setQuestionSetId(questionSetId);
-      QuestionSet questionSet = questionSetService.findQuestionSetByQuestionSetId(questionSetId);
-      tempdto.setQuestionSetName(questionSet.getName());
+      tempdto.setCohortName(study.getCohortDefinition().getName());
+      tempdto.setCohortId( study.getCohortDefinition().getId());
+      tempdto.setDataSourceKey(source.getSourceKey());
+      tempdto.setCohortSampleName(study.getCohortSample().getName());
+      tempdto.setQuestionSetName(study.getQuestionSet().getName());
       tempdto.setCaseStatus(myQuestion.getCaseQuestion());
       tempdto.setQuestionText(myQuestion.getText());
       superList.add(tempdto);
     }
     return superList;
+//    return fastlist;
   }
 
   @Path("/{cohortDefinitionId}/{sourceKey}")

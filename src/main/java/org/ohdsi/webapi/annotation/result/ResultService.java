@@ -7,6 +7,8 @@ import org.ohdsi.webapi.annotation.annotation.Annotation;
 import org.ohdsi.webapi.annotation.annotation.AnnotationService;
 import org.ohdsi.webapi.annotation.result.Result;
 import org.ohdsi.webapi.annotation.result.ResultRepository;
+import org.ohdsi.webapi.annotation.study.Study;
+import org.ohdsi.webapi.annotation.study.StudyService;
 import org.ohdsi.webapi.cohortsample.CohortSample;
 import org.ohdsi.webapi.cohortsample.CohortSampleRepository;
 import org.ohdsi.webapi.cohortsample.CohortSamplingService;
@@ -44,9 +46,8 @@ public class ResultService extends AbstractDaoService {
   @Autowired
   private AnnotationService annotationService;
 
-//  public List<Result> getResultsByAnnotationID(int AnnotationID) {
-//    return resultRepository.findByAnnotationId(AnnotationID);
-//  }
+  @Autowired
+  private StudyService studyService;
 
   public List<Result> getResultsByAnnotationID(int AnnotationID){
     Annotation ourAnno =annotationService.getAnnotationsByAnnotationId(AnnotationID);
@@ -101,7 +102,28 @@ public class ResultService extends AbstractDaoService {
     return results.get(0);
   }
 
-  public <AnnotationCollection> List<Result> getResultsByQuestionSetId(int questionSetId) {
+  public List<Result> getResultsByQuestionSetIdAndSampleId(int questionSetId,int sampleId){
+    Study study = studyService.getStudyByQuestionSetIdAndSampleId(questionSetId,sampleId);
+    return getResultsByStudyId(study.getId());
+  }
+
+  public List<Result> getResultsByStudyId(int studyId){
+    Study study = studyService.getStudyById(studyId);
+    return getResultsByStudy(study);
+  }
+
+  public List<Result> getResultsByStudy(Study study){
+    CohortSample sample = study.getCohortSample();
+    Source source = getSourceRepository().findBySourceId(sample.getSourceId());
+    JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
+    PreparedStatementRenderer renderer = new PreparedStatementRenderer(source, "/resources/annotationresult/sql/findResultsByStudyId.sql",
+            new String[]{"results_schema", "CDM_schema"},
+            new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results), source.getTableQualifier(SourceDaimon.DaimonType.CDM)},
+            "studyId", study.getId());
+    return jdbcTemplate.query(renderer.getSql(),renderer.getOrderedParams(),new ResultRowMapper());
+  }
+
+  public List<Result> getResultsByQuestionSetId(int questionSetId) {
     List <Result> results = new ArrayList<Result>();
     List <Annotation> annos=annotationService.getAnnotationsByQuestionSetId(questionSetId);
     List<ArrayList<Annotation>> collections = annos.stream()
@@ -130,7 +152,7 @@ public class ResultService extends AbstractDaoService {
     jdbcTemplate.batchUpdate(deleteStatement, deleteVariables);
   }
 
-  public void insertResults(Annotation annotation, JSONArray results) {
+  public void insertResults(Annotation annotation, JSONArray results, Study study) {
 //    might want to do a check- if the annotation ID+question ID already exists, update the existing row instead. Other option is just only query the latest instead
     CohortSample sample = sampleRepository.findById(annotation.getCohortSampleId());
     Source source = getSourceRepository().findBySourceId(sample.getSourceId());
@@ -141,7 +163,7 @@ public class ResultService extends AbstractDaoService {
 
     String[] parameters = new String[] { "results_schema" };
     String[] parameterValues = new String[] { source.getTableQualifier(SourceDaimon.DaimonType.Results) };
-    String[] sqlParameters = new String[] { "annotation_id", "question_id", "answer_id", "value", "type" };
+    String[] sqlParameters = new String[] { "annotation_id", "question_id", "answer_id", "value", "type", "study_id" };
 
     String statement = null;
     List<Object[]> variables = new ArrayList<>();
@@ -159,7 +181,8 @@ public class ResultService extends AbstractDaoService {
               Integer.parseInt(object.get("questionId").toString()),
               Integer.parseInt(object.get("answerId").toString()),
               object.get("value").toString(),
-              object.get("type").toString() };
+              object.get("type").toString(),
+              study.getId()};
 
       PreparedStatementRenderer renderer = new PreparedStatementRenderer(source, "/resources/annotationresult/sql/insertResults.sql", parameters, parameterValues, sqlParameters, sqlValues);
 

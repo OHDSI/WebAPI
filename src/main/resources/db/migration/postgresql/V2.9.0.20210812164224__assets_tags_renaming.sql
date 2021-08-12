@@ -1,3 +1,5 @@
+ALTER SEQUENCE ${ohdsiSchema}.tags_seq RENAME TO tag_seq;
+
 ALTER TABLE ${ohdsiSchema}.tags RENAME TO tag;
 ALTER TABLE ${ohdsiSchema}.tag_groups RENAME TO tag_group;
 ALTER TABLE ${ohdsiSchema}.concept_set_tags RENAME TO concept_set_tag;

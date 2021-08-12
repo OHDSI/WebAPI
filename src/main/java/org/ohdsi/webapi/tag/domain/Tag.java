@@ -26,7 +26,7 @@ public class Tag extends CommonEntity<Integer> {
             name = "tags_generator",
             strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
             parameters = {
-                    @org.hibernate.annotations.Parameter(name = "sequence_name", value = "tags_seq"),
+                    @org.hibernate.annotations.Parameter(name = "sequence_name", value = "tag_seq"),
                     @Parameter(name = "increment_size", value = "1")
             }
     )

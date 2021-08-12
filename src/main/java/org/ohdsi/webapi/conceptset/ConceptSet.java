@@ -57,7 +57,7 @@ public class ConceptSet extends CommonEntityExt<Integer> implements Serializable
   private String name;
 
   @ManyToMany(targetEntity = Tag.class, fetch = FetchType.LAZY)
-  @JoinTable(name = "concept_set_tags",
+  @JoinTable(name = "concept_set_tag",
           joinColumns = @JoinColumn(name = "asset_id", referencedColumnName = "concept_set_id"),
           inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
   private Set<Tag> tags;

@@ -8,7 +8,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 @Entity(name = "ConceptSetTag")
-@Table(name = "concept_set_tags")
+@Table(name = "concept_set_tag")
 public class ConceptSetTag {
     @EmbeddedId
     private AssetTagPK assetId;

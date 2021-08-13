@@ -40,6 +40,8 @@ public interface Constants {
           "prediction_analysis_id"
   );
 
+  String SESSION_ID = "Session-ID";
+
   interface SqlSchemaPlaceholders {
     String CDM_DATABASE_SCHEMA_PLACEHOLDER = "@cdm_database_schema";
     String RESULTS_DATABASE_SCHEMA_PLACEHOLDER = "@results_database_schema";
@@ -89,6 +91,7 @@ public interface Constants {
   interface Headers {
     String AUTH_PROVIDER = "x-auth-provider";
     String USER_LANGAUGE = "User-Language";
+    String ACTION_LOCATION = "action-location";
   }
 
   interface SecurityProviders {

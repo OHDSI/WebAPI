@@ -260,6 +260,10 @@
     <!-- Period between refreshes of materialized view with statistics -->
     <!-- 10 minutes by default -->
     <tag.refreshStat.period>600000</tag.refreshStat.period>
+
+    <audit.trail.enabled>false</audit.trail.enabled>
+    <audit.trail.log.file>/tmp/atlas/audit/audit.log</audit.trail.log.file>
+    <audit.trail.log.extraFile>/tmp/atlas/audit/audit-extra.log</audit.trail.log.extraFile>
   </properties>
   <build>
     <finalName>WebAPI</finalName>
@@ -1128,6 +1132,11 @@
       <artifactId>dom4j</artifactId>
       <version>${dom4j.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.cloudbees</groupId>
+      <artifactId>syslog-java-client</artifactId>
+      <version>1.1.7</version>
+    </dependency>
   </dependencies>
   <profiles>
     <profile>
@@ -1528,6 +1537,10 @@
             <exclusion>
               <artifactId>log4j</artifactId>
               <groupId>log4j</groupId>
+            </exclusion>
+            <exclusion>
+              <groupId>org.apache.logging.log4j</groupId>
+              <artifactId>*</artifactId>
             </exclusion>
             <exclusion>
               <artifactId>servlet-api</artifactId>

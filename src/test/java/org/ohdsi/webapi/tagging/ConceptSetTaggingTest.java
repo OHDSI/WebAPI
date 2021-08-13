@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 public class ConceptSetTaggingTest extends BaseTaggingTest<ConceptSetDTO, Integer> {
-    private static final String JSON_PATH = "/versioning/conceptset.json";
+    private static final String JSON_PATH = "/tagging/conceptset.json";
 
     @Autowired
     private ConceptSetService service;

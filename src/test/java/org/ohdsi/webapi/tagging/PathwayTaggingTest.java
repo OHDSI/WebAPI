@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.io.IOException;
 
 public class PathwayTaggingTest extends BaseTaggingTest<PathwayAnalysisDTO, Integer> {
-    private static final String JSON_PATH = "/versioning/pathway.json";
+    private static final String JSON_PATH = "/tagging/pathway.json";
 
     @Autowired
     private PathwayController service;

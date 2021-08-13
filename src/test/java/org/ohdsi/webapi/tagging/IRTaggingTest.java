@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.io.IOException;
 
 public class IRTaggingTest extends BaseTaggingTest<IRAnalysisDTO, Integer> {
-    private static final String JSON_PATH = "/versioning/ir.json";
+    private static final String JSON_PATH = "/tagging/ir.json";
 
     @Autowired
     private IRAnalysisService service;

@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.io.IOException;
 
 public class CohortTaggingTest extends BaseTaggingTest<CohortDTO, Integer> {
-    private static final String JSON_PATH = "/versioning/cohort.json";
+    private static final String JSON_PATH = "/tagging/cohort.json";
 
     @Autowired
     private CohortDefinitionService service;

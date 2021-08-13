@@ -27,7 +27,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 public class CcTaggingTest extends BaseTaggingTest<CohortCharacterizationDTO, Long> {
-    private static final String JSON_PATH = "/versioning/characterization.json";
+    private static final String JSON_PATH = "/tagging/characterization.json";
 
     @Autowired
     private CcController service;

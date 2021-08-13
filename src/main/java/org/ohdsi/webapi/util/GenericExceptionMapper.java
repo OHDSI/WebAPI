@@ -15,16 +15,13 @@
  */
 package org.ohdsi.webapi.util;
 
-import org.apache.shiro.authz.UnauthorizedException;
-import org.ohdsi.webapi.exception.BadRequestAtlasException;
-import org.ohdsi.webapi.exception.ConversionAtlasException;
 import org.ohdsi.webapi.exception.UserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.shiro.authz.UnauthorizedException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.messaging.support.ErrorMessage;
 
-import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -33,11 +30,9 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.UndeclaredThrowableException;
-import java.util.Objects;
 
 /**
+ *
  * @author fdefalco
  */
 
@@ -57,12 +52,12 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
             String cause = ex.getCause().getCause().getMessage();
             cause = cause.substring(cause.indexOf(DETAIL) + DETAIL.length());
             ex = new RuntimeException(cause);
-        } else if (ex instanceof UnauthorizedException) {
-            responseStatus = Status.FORBIDDEN;
-        } else if (ex instanceof ForbiddenException) {
+        } else if (ex instanceof UnauthorizedException || ex instanceof ForbiddenException) {
             responseStatus = Status.FORBIDDEN;
         } else if (ex instanceof NotFoundException) {
             responseStatus = Status.NOT_FOUND;
+        } else if (ex instanceof BadRequestException) {
+            responseStatus = Status.BAD_REQUEST;
         } else if (ex instanceof UndeclaredThrowableException) {
             Throwable throwable = getThrowable((UndeclaredThrowableException)ex);
             if (Objects.nonNull(throwable)) {
@@ -85,6 +80,22 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
             responseStatus = Status.INTERNAL_SERVER_ERROR;
             // Create new message to prevent sending error information to client
             ex = new RuntimeException(ex.getMessage());
+        } else if (ex instanceof ConceptNotExistException) {
+            responseStatus = Status.BAD_REQUEST;
+        } else if (ex instanceof UndeclaredThrowableException) {
+            Throwable throwable = getThrowable((UndeclaredThrowableException)ex);
+            if (Objects.nonNull(throwable)) {
+                if (throwable instanceof ConceptNotExistException) {
+                    responseStatus = Status.BAD_REQUEST;
+                    ex = throwable;
+                } else {
+                    responseStatus = Status.INTERNAL_SERVER_ERROR;
+                    ex = new RuntimeException("An exception occurred: " + ex.getClass().getName());
+                }
+            } else {
+                responseStatus = Status.INTERNAL_SERVER_ERROR;
+                ex = new RuntimeException("An exception occurred: " + ex.getClass().getName());
+            }
         } else {
             responseStatus = Status.INTERNAL_SERVER_ERROR;
             // Create new message to prevent sending error information to client
@@ -92,7 +103,7 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
         }
         // Clean stacktrace, but keep message
         ex.setStackTrace(new StackTraceElement[0]);
-        ErrorMessage  errorMessage = new ErrorMessage(ex);
+        ErrorMessage errorMessage = new ErrorMessage(ex);
         return Response.status(responseStatus)
                 .entity(errorMessage)
                 .type(MediaType.APPLICATION_JSON)

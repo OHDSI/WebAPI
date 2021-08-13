@@ -27,14 +27,11 @@ import javax.ws.rs.core.Response;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
-import org.ohdsi.webapi.check.CheckResult;
-import org.ohdsi.webapi.check.checker.conceptset.ConceptSetChecker;
 import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
-import org.ohdsi.webapi.conceptset.dto.ConceptSetVersionFullDTO;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
@@ -47,13 +44,6 @@ import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
-import org.ohdsi.webapi.versioning.domain.ConceptSetVersion;
-import org.ohdsi.webapi.versioning.domain.Version;
-import org.ohdsi.webapi.versioning.domain.VersionBase;
-import org.ohdsi.webapi.versioning.domain.VersionType;
-import org.ohdsi.webapi.versioning.dto.VersionDTO;
-import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
-import org.ohdsi.webapi.versioning.service.VersionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -205,9 +195,21 @@ public class ConceptSetService extends AbstractDaoService {
             identifierIndex++;
         }
 
-        // assume we want to resolve using the priority vocabulary provider
-        Source vocabSourceInfo = sourceService.getPriorityVocabularySource();
-        Collection<Concept> concepts = vocabService.executeIdentifierLookup(vocabSourceInfo.getSourceKey(), identifiers);
+        String sourceKey;
+        if (Objects.isNull(sourceInfo)) {
+            sourceKey = sourceService.getPriorityVocabularySource().getSourceKey();
+        } else {
+            sourceKey = sourceInfo.sourceKey;
+        }
+
+        Collection<Concept> concepts = vocabService.executeIdentifierLookup(sourceKey, identifiers);
+        if (concepts.size() != identifiers.length) {
+            String ids = Arrays.stream(identifiers).boxed()
+                    .filter(identifier -> concepts.stream().noneMatch(c -> c.conceptId.equals(identifier)))
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(",", "(", ")"));
+            throw new ConceptNotExistException("Current data source does not contain required concepts " + ids);
+        }
         for(Concept concept : concepts) {
           map.put(concept.conceptId, concept); // associate the concept object to the conceptID in the map
         }

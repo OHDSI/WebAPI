@@ -335,7 +335,7 @@ public class VocabularyService extends AbstractDaoService {
   }
 	
 	protected Collection<Concept> executeMappedLookup(Source source, long[] identifiers) {
-    Collection<Concept> concepts = new ArrayList<>();
+    Collection<Concept> concepts = new HashSet<>();
     if (identifiers.length == 0) {
       return concepts;
     } else {
@@ -351,7 +351,7 @@ public class VocabularyService extends AbstractDaoService {
 			}
 			PreparedStatementRenderer psr = prepareExecuteMappedLookup(identifiers, source);
 			return concepts.addAll(getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.rowMapper))
-							? concepts : new ArrayList<>();				
+							? concepts : new HashSet<>();
 		}
 	}
 

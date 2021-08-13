@@ -406,7 +406,9 @@
       "overwriteConfirm": "您确定要覆盖当前的概念集表达式吗？",
       "loadingIncludedConcepts": "加载包含的概念",
       "commonAncestors": "共同祖先",
-      "loadingIncludedSourcecodes": "加载包含的源代码"
+      "loadingIncludedSourcecodes": "加载包含的源代码",
+      "expressionResolveError": "Error occurred during resolving expression!",
+      "forbiddenError": "You are not authorized to view the concept set expression."
     },
     "conceptLegend": {
       "standard": "标准",
@@ -2682,9 +2684,9 @@
           "sampleName": "*样本名称",
           "sampleNamePlaceholder": "输入样本名称",
           "sampleNameEmpty": "样本名称不能为空",
-          "numberOfPatients": "*患者数量",
+          "numberOfPatients": "* Number of patients (from 1 to 500)",
           "numberOfPatientsPlaceholder": "输入一个数字",
-          "numberOfPatientsEmpty": "患者数量必须正整数",
+          "numberOfPatientsEmpty": "Number of patients must be a positive integer between 1 and 500",
           "selectAgeCriteria": "选择年龄标准",
           "lessThan": "小于",
           "lessOrEqualTo": "小于等于",
@@ -2965,6 +2967,10 @@
         "desc_observation": "按照观察时的就诊筛选观察",
         "title_procedureoccurrence": "添加就诊",
         "desc_procedureoccurrence": "按照操作时的就诊筛选操作"
+      },
+      "addConditionStatus": {
+        "title_occurrence": "Add Condition Status",
+        "desc_occurrence": "Filter Condition Occurrences based on condition status."
       },
       "addFirstDiagnosis": {
         "title_era": "添加初始诊断",

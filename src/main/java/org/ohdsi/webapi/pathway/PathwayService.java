@@ -3,8 +3,13 @@ package org.ohdsi.webapi.pathway;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisGenerationEntity;
+import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
+import org.ohdsi.webapi.pathway.dto.PathwayVersionFullDTO;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
 import org.ohdsi.webapi.shiro.annotations.PathwayAnalysisGenerationId;
+import org.ohdsi.webapi.versioning.domain.PathwayVersion;
+import org.ohdsi.webapi.versioning.dto.VersionDTO;
+import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

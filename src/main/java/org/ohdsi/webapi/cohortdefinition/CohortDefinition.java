@@ -47,6 +47,8 @@ import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisGenerationInfo;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.model.CommonEntity;
+import org.ohdsi.webapi.model.CommonEntityExt;
+import org.ohdsi.webapi.tag.domain.Tag;
 
 /**
  * JPA Entity for Cohort Definitions
@@ -101,7 +103,7 @@ public class CohortDefinition extends CommonEntityExt<Integer> implements Serial
   private List<CohortCharacterizationEntity> cohortCharacterizations = new ArrayList<>();
 
   @ManyToMany(targetEntity = Tag.class, fetch = FetchType.LAZY)
-  @JoinTable(name = "cohort_tags",
+  @JoinTable(name = "cohort_tag",
           joinColumns = @JoinColumn(name = "asset_id", referencedColumnName = "id"),
           inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
   private Set<Tag> tags;

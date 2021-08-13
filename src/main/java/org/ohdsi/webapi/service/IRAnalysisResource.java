@@ -3,10 +3,13 @@ package org.ohdsi.webapi.service;
 import org.ohdsi.webapi.check.CheckResult;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.ircalc.AnalysisReport;
+import org.ohdsi.webapi.ircalc.dto.IRVersionFullDTO;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.service.dto.AnalysisInfoDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisShortDTO;
+import org.ohdsi.webapi.versioning.dto.VersionDTO;
+import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;

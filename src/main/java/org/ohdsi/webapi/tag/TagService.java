@@ -2,6 +2,7 @@ package org.ohdsi.webapi.tag;
 
 import org.glassfish.jersey.internal.util.Producer;
 import org.ohdsi.webapi.service.AbstractDaoService;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.tag.domain.TagInfo;
 import org.ohdsi.webapi.tag.domain.TagType;

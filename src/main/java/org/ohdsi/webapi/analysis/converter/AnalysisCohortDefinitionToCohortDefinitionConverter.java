@@ -5,7 +5,9 @@ import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
+import org.springframework.stereotype.Component;
 
+@Component
 public class AnalysisCohortDefinitionToCohortDefinitionConverter<T extends AnalysisCohortDefinition> extends BaseConversionServiceAwareConverter<T, CohortDefinition> {
     
     @Override

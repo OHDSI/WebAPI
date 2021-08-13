@@ -1,19 +1,19 @@
 package org.ohdsi.webapi.entity;
 
+import org.ohdsi.webapi.CommonDTO;
+
 import static org.junit.Assert.assertEquals;
 import static org.ohdsi.webapi.test.TestConstants.COPY_PREFIX;
 import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
 
-import org.ohdsi.webapi.CommonDTO;
-
-public interface TestCopy <T extends CommonDTO> extends EntityMethods {
+public interface TestCopy<T extends CommonDTO> extends EntityMethods {
 
     T createCopy(T dto) throws Exception;
 
     T createEntity(String name) throws Exception;
 
     T getFirstSavedDTO();
-    
+
     default void shouldCopyWithUniqueName() throws Exception {
 
         //Action
@@ -22,7 +22,7 @@ public interface TestCopy <T extends CommonDTO> extends EntityMethods {
         //Assert
         assertEquals(COPY_PREFIX + NEW_TEST_ENTITY, copy.getName());
     }
-    
+
     default void shouldCopyFromCopy() throws Exception {
 
         //Action
@@ -32,7 +32,7 @@ public interface TestCopy <T extends CommonDTO> extends EntityMethods {
         //Assert
         assertEquals(COPY_PREFIX + COPY_PREFIX + NEW_TEST_ENTITY, secondCopy.getName());
     }
-    
+
     default void shouldCopySeveralTimesOriginal() throws Exception {
 
         //Action
@@ -43,8 +43,10 @@ public interface TestCopy <T extends CommonDTO> extends EntityMethods {
         assertEquals(COPY_PREFIX + NEW_TEST_ENTITY, firstCopy.getName());
         assertEquals(COPY_PREFIX + NEW_TEST_ENTITY + " (1)", secondCopy.getName());
     }
-    
-    default void shouldCopyOfPartlySameName(String firstName, String secondName, String assertionName) throws Exception {
+
+    default void shouldCopyOfPartlySameName() throws Exception {
+        String firstName = "abcde, abc, abc";
+        String secondName = "abcde (1), abcde, abcde (2)";
 
         //Arrange
         createEntity(COPY_PREFIX + firstName);
@@ -54,6 +56,6 @@ public interface TestCopy <T extends CommonDTO> extends EntityMethods {
         T copy = createCopy(savedDTO);
 
         //Assert
-        assertEquals(COPY_PREFIX + assertionName, copy.getName());
+        assertEquals(COPY_PREFIX + secondName, copy.getName());
     }
 }

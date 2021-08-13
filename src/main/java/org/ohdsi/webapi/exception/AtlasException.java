@@ -7,6 +7,11 @@ public class AtlasException extends RuntimeException {
         super(message, cause);
     }
 
+    public AtlasException(String message) {
+
+        super(message);
+    }
+
     public AtlasException(Throwable ex){
         super(ex);
     }

@@ -8,6 +8,7 @@ import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.sql.StringUtils;
+import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.common.DesignImportService;
@@ -495,6 +496,20 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 		final AnalysisGenerationInfoEntity entity = analysisGenerationInfoEntityRepository.findById(id)
 						.orElseThrow(() -> new IllegalArgumentException("Analysis with id: " + id + " cannot be found"));
 		return entity.getDesign();
+	}
+
+	@Override
+	@Transactional
+	public void assignTag(int id, int tagId, boolean isPermissionProtected) {
+		PathwayAnalysisEntity entity = getById(id);
+		assignTag(entity, tagId, isPermissionProtected);
+	}
+
+	@Override
+	@Transactional
+	public void unassignTag(int id, int tagId, boolean isPermissionProtected) {
+		PathwayAnalysisEntity entity = getById(id);
+		unassignTag(entity, tagId, isPermissionProtected);
 	}
 
 	private PathwayAnalysisResult queryGenerationResults(Source source, Long generationId) {

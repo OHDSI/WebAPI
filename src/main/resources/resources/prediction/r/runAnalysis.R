@@ -49,7 +49,7 @@ tryCatch({
                 cdmVersion = 5,
                 createShiny = T)
         # To run PLP Viewer shiny app call:
-        PatientLevelPrediction::viewMultiplePlp(outputFolder)
+        # PatientLevelPrediction::viewMultiplePlp(outputFolder)
 }, finally = {
         remove.packages('@packageName')
 })

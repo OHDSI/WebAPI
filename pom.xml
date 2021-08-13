@@ -255,6 +255,12 @@
     <i18n.enabled>true</i18n.enabled>
     <i18n.defaultLocale>en</i18n.defaultLocale>
 
+    <!-- Tags -->
+    <tag.enabled>true</tag.enabled>
+    <!-- Period between refreshes of materialized view with statistics -->
+    <!-- 10 minutes by default -->
+    <tag.refreshStat.period>600000</tag.refreshStat.period>
+
     <audit.trail.enabled>false</audit.trail.enabled>
     <audit.trail.log.file>/tmp/atlas/audit/audit.log</audit.trail.log.file>
     <audit.trail.log.extraFile>/tmp/atlas/audit/audit-extra.log</audit.trail.log.extraFile>

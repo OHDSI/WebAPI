@@ -74,6 +74,7 @@
     "copyToClipboard": "클립 보드에 복사",
     "copiedToClipboard": "클립 보드에 복사되었습니다!",
     "createACopy": "사본 만들기",
+    "create": "Create",
     "days": "일",
     "daysAbbr": "일",
     "delete": "삭제",
@@ -99,7 +100,8 @@
     "unspecified": "미지정!",
     "menu": "메뉴",
     "noData": "데이터 없음",
-    "readOnly": "(읽기 전용)"
+    "readOnly": "(읽기 전용)",
+    "tags": "Tags"
   },
   "commonErrors": {
     "noSources": "현재 WebAPI에 정의된 소스가 없습니다. <br/> 해당 페이지에서 하나 이상을 추가하십시오 <a href=\"#/configure\">configuration</a> page.",
@@ -1134,6 +1136,25 @@
     "checks": {
       "runningDiagnostics": "진단 실행 중",
       "fixIt": "수정"
+    },
+    "tags": {
+      "title": "Assign Tags",
+      "tabs": {
+        "studyAssetTags": "Study Asset Tags",
+        "reference": "Reference"
+      },
+      "availableTags": "Available tags:",
+      "assign": "Assign",
+      "unassign": "Unassign",
+      "notPermitted": "Not permitted",
+      "assignExistingTag": "Create custom tag",
+      "tagNamePlaceholder": "Tag name",
+      "assignedTags": "Assigned tags:",
+      "tagGroups": "Tag groups:",
+      "tagGroup:": "Tag group:",
+      "showTags": "Show tags",
+      "tagNameExistsWarning": "Tag <%=tagName%> already exists.",
+      "cannotUnassignProtectedTagWarning": "Cannot unassign protected tag: <%=tagName%>"
     }
   },
   "facets": {
@@ -1198,6 +1219,9 @@
     "designs": {
       "myDesigns": "나의 설계",
       "otherDesigns": "다른 설계"
+    },
+    "tags": {
+      "untagged": "Untagged"
     }
   },
   "columns": {
@@ -1409,7 +1433,9 @@
     "selectionCriteria": "선택 기준",
     "personId": "환자 아이디",
     "gender": "성별",
-    "ageAtIndex": "기준 시점 나이"
+    "ageAtIndex": "기준 시점 나이",
+    "usageCount": "Usage count",
+    "group": "Group"
   },
   "dataSources": {
     "achillesHeelReport": {
@@ -1669,7 +1695,8 @@
         "exploreEvidence": "Evidence 탐색",
         "export": "내보내기",
         "includedConcepts": "포함된 컨셉",
-        "includedSourceCodes": "포함된 소스 코드"
+        "includedSourceCodes": "포함된 소스 코드",
+        "messages": "메시지"
       },
       "concept": {
         "title": "어휘(Vocabulary) > 컨셉",

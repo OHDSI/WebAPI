@@ -31,8 +31,11 @@ import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.security.PermissionService;
+import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
+import org.ohdsi.webapi.tag.TagService;
+import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.HttpUtils;
@@ -65,6 +68,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -82,6 +86,7 @@ public class CcController {
     private final SourceService sourceService;
     private CharacterizationChecker checker;
     private PermissionService permissionService;
+    private final TagService tagService;
 
     public CcController(
             final CcService service,
@@ -90,7 +95,8 @@ public class CcController {
             final ConverterUtils converterUtils,
             CommonGenerationSensitiveInfoService sensitiveInfoService,
             SourceService sourceService, CharacterizationChecker checker,
-            PermissionService permissionService) {
+            PermissionService permissionService,
+            TagService tagService) {
         this.service = service;
         this.feAnalysisService = feAnalysisService;
         this.conversionService = conversionService;
@@ -99,6 +105,7 @@ public class CcController {
         this.sourceService = sourceService;
         this.checker = checker;
         this.permissionService = permissionService;
+        this.tagService = tagService;
         FeatureExtraction.init(null);
     }
 
@@ -118,6 +125,7 @@ public class CcController {
         CohortCharacterizationDTO dto = getDesign(id);
         dto.setName(service.getNameForCopy(dto.getName()));
         dto.setId(null);
+        dto.setTags(null);
         dto.getStratas().forEach(s -> s.setId(null));
         dto.getParameters().forEach(p -> p.setId(null));
         return create(dto);
@@ -202,6 +210,7 @@ public class CcController {
     @Consumes(MediaType.APPLICATION_JSON)
     public CohortCharacterizationDTO doImport(final CcExportDTO dto) {
         dto.setName(service.getNameWithSuffix(dto.getName()));
+        dto.setTags(null);
         final CohortCharacterizationEntity entity = conversionService.convert(dto, CohortCharacterizationEntity.class);
         return conversionService.convert(service.importCc(entity), CohortCharacterizationDTO.class);
     }
@@ -232,7 +241,6 @@ public class CcController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public CheckResult runDiagnostics(CohortCharacterizationDTO characterizationDTO){
-
         return new CheckResult(checker.check(characterizationDTO));
     }
 
@@ -414,6 +422,38 @@ public class CcController {
                 .type(MediaType.APPLICATION_OCTET_STREAM)
                 .header("Content-Disposition", String.format("attachment; filename=\"cohort_characterization_study_%d_export.zip\"", analysisId))
                 .build();
+    }
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/tag/")
+    @javax.transaction.Transactional
+    public void assignTag(@PathParam("id") final long id, final int tagId) {
+        service.assignTag(id, tagId, false);
+    }
+
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/tag/{tagId}")
+    @javax.transaction.Transactional
+    public void unassignTag(@PathParam("id") final long id, @PathParam("tagId") final int tagId) {
+        service.unassignTag(id, tagId, false);
+    }
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/pemissionprotectedtag/")
+    @javax.transaction.Transactional
+    public void assignPermissionProtectedTag(@PathParam("id") final long id, final int tagId) {
+        service.assignTag(id, tagId, true);
+    }
+
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/pemissionprotectedtag/{tagId}")
+    @javax.transaction.Transactional
+    public void unassignPermissionProtectedTag(@PathParam("id") final long id, @PathParam("tagId") final int tagId) {
+        service.unassignTag(id, tagId, true);
     }
 
     private void convertPresetAnalysesToLocal(List<? extends CcResult> ccResults) {

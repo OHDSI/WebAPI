@@ -38,6 +38,7 @@ import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.common.DesignImportService;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
+import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.ircalc.AnalysisReport;
 import org.ohdsi.webapi.ircalc.ExecutionInfo;
 import org.ohdsi.webapi.ircalc.IRAnalysisInfoListener;
@@ -64,6 +65,8 @@ import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceService;
+import org.ohdsi.webapi.tag.TagService;
+import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.NameUtils;
@@ -86,7 +89,12 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -175,6 +183,9 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
   @Autowired
   private PermissionService permissionService;
+
+  @Autowired
+  private TagService tagService;
 
   public IRAnalysisService(final ObjectMapper objectMapper) {
 
@@ -386,6 +397,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
     @Override
     public IRAnalysisDTO doImport(final IRAnalysisDTO dto) {
+        dto.setTags(null);
         if (dto.getExpression() != null) {
             try {
                 IncidenceRateAnalysisExportExpression expression = objectMapper.readValue(
@@ -626,6 +638,7 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   @Transactional
   public IRAnalysisDTO copy(final int id) {
     IRAnalysisDTO analysis = getAnalysis(id);
+    analysis.setTags(null);
     analysis.setId(null); // clear the ID
     analysis.setName(getNameForCopy(analysis.getName()));
     return createAnalysis(analysis);
@@ -778,6 +791,34 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
       analysis.getExecutionInfoList().remove(itemToRemove);
 
     irAnalysisRepository.save(analysis);
+  }
+
+  @Override
+  @Transactional
+  public void assignTag(final int id, final int tagId) {
+    IncidenceRateAnalysis entity = irAnalysisRepository.findOne(id);
+    assignTag(entity, tagId, false);
+  }
+
+  @Override
+  @Transactional
+  public void unassignTag(final int id, final int tagId) {
+    IncidenceRateAnalysis entity = irAnalysisRepository.findOne(id);
+    unassignTag(entity, tagId, false);
+  }
+
+  @Override
+  @Transactional
+  public void assignPermissionProtectedTag(final int id, final int tagId) {
+    IncidenceRateAnalysis entity = irAnalysisRepository.findOne(id);
+    assignTag(entity, tagId, true);
+  }
+
+  @Override
+  @Transactional
+  public void unassignPermissionProtectedTag(final int id, final int tagId) {
+    IncidenceRateAnalysis entity = irAnalysisRepository.findOne(id);
+    unassignTag(entity, tagId, true);
   }
 
   @PostConstruct

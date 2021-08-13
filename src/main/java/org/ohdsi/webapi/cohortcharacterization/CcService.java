@@ -82,4 +82,8 @@ public interface CcService {
 
     @EventListener
     void onFeAnalysisChanged(FeAnalysisChangedEvent event);
+
+    void assignTag(long id, int tagId, boolean isPermissionProtected);
+
+    void unassignTag(long id, int tagId, boolean isPermissionProtected);
 }

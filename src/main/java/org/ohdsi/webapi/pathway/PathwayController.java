@@ -8,6 +8,7 @@ import org.ohdsi.webapi.check.checker.pathway.PathwayChecker;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
+import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.i18n.I18nService;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnalysisConverter;
@@ -18,6 +19,8 @@ import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.tag.TagService;
+import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,12 +30,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Path("/pathway-analysis")
@@ -47,9 +52,10 @@ public class PathwayController {
     private final I18nService i18nService;
     private PathwayChecker checker;
     private PermissionService permissionService;
+    private final TagService tagService;
 
     @Autowired
-    public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService, PathwayChecker checker, PermissionService permissionService, I18nService i18nService) {
+    public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService, PathwayChecker checker, PermissionService permissionService, I18nService i18nService, TagService tagService) {
 
         this.conversionService = conversionService;
         this.converterUtils = converterUtils;
@@ -59,12 +65,14 @@ public class PathwayController {
         this.i18nService = i18nService;
         this.checker = checker;
         this.permissionService = permissionService;
+        this.tagService = tagService;
     }
 
     @POST
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
     public PathwayAnalysisDTO create(final PathwayAnalysisDTO dto) {
 
         PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
@@ -75,11 +83,13 @@ public class PathwayController {
     @POST
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
     public PathwayAnalysisDTO copy(@PathParam("id") final Integer id) {
 
         PathwayAnalysisDTO dto = get(id);
         dto.setId(null);
         dto.setName(pathwayService.getNameForCopy(dto.getName()));
+        dto.setTags(null);
         return create(dto);
     }
 
@@ -87,8 +97,9 @@ public class PathwayController {
     @Path("/import")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
     public PathwayAnalysisDTO importAnalysis(final PathwayAnalysisExportDTO dto) {
-
+        dto.setTags(null);
         dto.setName(pathwayService.getNameWithSuffix(dto.getName()));
         PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
         PathwayAnalysisEntity imported = pathwayService.importAnalysis(pathwayAnalysis);
@@ -99,6 +110,7 @@ public class PathwayController {
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
     public Page<PathwayAnalysisDTO> list(@Pagination Pageable pageable) {
 
         return pathwayService.getPage(pageable).map(pa -> {
@@ -121,6 +133,7 @@ public class PathwayController {
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
     public PathwayAnalysisDTO update(@PathParam("id") final Integer id, @RequestBody final PathwayAnalysisDTO dto) {
 
         PathwayAnalysisEntity pathwayAnalysis = conversionService.convert(dto, PathwayAnalysisEntity.class);
@@ -133,6 +146,7 @@ public class PathwayController {
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
     public PathwayAnalysisDTO get(@PathParam("id") final Integer id) {
 
         PathwayAnalysisEntity pathwayAnalysis = pathwayService.getById(id);
@@ -149,6 +163,7 @@ public class PathwayController {
     @Path("/{id}/export")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
     public String export(@PathParam("id") final Integer id) {
 
         PathwayAnalysisEntity pathwayAnalysis = pathwayService.getById(id);
@@ -179,6 +194,7 @@ public class PathwayController {
     @Path("/{id}/generation/{sourceKey}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
     public JobExecutionResource generatePathways(
             @PathParam("id") final Integer pathwayAnalysisId,
             @PathParam("sourceKey") final String sourceKey
@@ -298,5 +314,37 @@ public class PathwayController {
     public CheckResult runDiagnostics(PathwayAnalysisDTO pathwayAnalysisDTO){
 
         return new CheckResult(checker.check(pathwayAnalysisDTO));
+    }
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/tag/")
+    @javax.transaction.Transactional
+    public void assignTag(@PathParam("id") final int id, final int tagId) {
+        pathwayService.assignTag(id, tagId, false);
+    }
+
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/tag/{tagId}")
+    @javax.transaction.Transactional
+    public void unassignTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
+        pathwayService.unassignTag(id, tagId, false);
+    }
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/protectedtag/")
+    @javax.transaction.Transactional
+    public void assignPermissionProtectedTag(@PathParam("id") final int id, final int tagId) {
+        pathwayService.assignTag(id, tagId, true);
+    }
+
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/protectedtag/{tagId}")
+    @javax.transaction.Transactional
+    public void unassignPermissionProtectedTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
+        pathwayService.unassignTag(id, tagId, true);
     }
 }

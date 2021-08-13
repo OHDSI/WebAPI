@@ -292,6 +292,20 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     }
 
     @Override
+    @Transactional
+    public void assignTag(long id, int tagId, boolean isPermissionProtected) {
+        CohortCharacterizationEntity entity = findById(id);
+        assignTag(entity, tagId, isPermissionProtected);
+    }
+
+    @Override
+    @Transactional
+    public void unassignTag(long id, int tagId, boolean isPermissionProtected) {
+        CohortCharacterizationEntity entity = findById(id);
+        unassignTag(entity, tagId, isPermissionProtected);
+    }
+
+    @Override
     public int getCountCcWithSameName(Long id, String name) {
         return repository.getCountCcWithSameName(id, name);
     }

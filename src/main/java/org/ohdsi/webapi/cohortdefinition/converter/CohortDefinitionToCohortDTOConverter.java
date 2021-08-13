@@ -1,10 +1,8 @@
 package org.ohdsi.webapi.cohortdefinition.converter;
 
-import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
 import org.springframework.stereotype.Component;
 
 @Component

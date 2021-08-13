@@ -7,8 +7,10 @@ import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.estimation.specification.EstimationAnalysisImpl;
 import org.ohdsi.webapi.model.CommonEntity;
+import org.ohdsi.webapi.model.CommonEntityExt;
 import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl;
 import org.ohdsi.webapi.service.dto.CommonEntityDTO;
+import org.ohdsi.webapi.service.dto.CommonEntityExtDTO;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -122,6 +124,16 @@ public class ExportUtil {
     }
 
     public static void clearCreateAndUpdateInfo(CommonEntityDTO commonEntityDTO) {
+        clearMetadataInfo(commonEntityDTO);
+    }
+
+    public static void clearCreateAndUpdateInfo(CommonEntityExtDTO commonEntityDTO) {
+        // prevent tags from being exported
+        commonEntityDTO.setTags(null);
+        clearMetadataInfo(commonEntityDTO);
+    }
+
+    private static void clearMetadataInfo(CommonEntityDTO commonEntityDTO) {
         commonEntityDTO.setCreatedBy(null);
         commonEntityDTO.setCreatedDate(null);
         commonEntityDTO.setModifiedBy(null);
@@ -129,6 +141,16 @@ public class ExportUtil {
     }
 
     public static void clearCreateAndUpdateInfo(CommonEntity commonEntity) {
+        clearMetadataInfo(commonEntity);
+    }
+
+    public static void clearCreateAndUpdateInfo(CommonEntityExt commonEntity) {
+        // prevent tags from being exported
+        commonEntity.setTags(null);
+        clearMetadataInfo(commonEntity);
+    }
+
+    private static void clearMetadataInfo(CommonEntity commonEntity) {
         commonEntity.setCreatedBy(null);
         commonEntity.setCreatedDate(null);
         commonEntity.setModifiedBy(null);

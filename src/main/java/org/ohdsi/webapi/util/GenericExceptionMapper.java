@@ -53,7 +53,7 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
         ex.printStackTrace(new PrintWriter(errorStackTrace));
         LOGGER.error(errorStackTrace.toString());
         Status responseStatus;
-        if(ex instanceof DataIntegrityViolationException) {
+        if (ex instanceof DataIntegrityViolationException) {
             responseStatus = Status.CONFLICT;
             String cause = ex.getCause().getCause().getMessage();
             cause = cause.substring(cause.indexOf(DETAIL) + DETAIL.length());

@@ -48,4 +48,8 @@ public interface PathwayService {
     void cancelGeneration(Integer pathwayAnalysisId, Integer sourceId);
 
     String findDesignByGenerationId(@PathwayAnalysisGenerationId final Long id);
+
+    void assignTag(int id, int tagId, boolean isPermissionProtected);
+
+    void unassignTag(int id, int tagId, boolean isPermissionProtected);
 }

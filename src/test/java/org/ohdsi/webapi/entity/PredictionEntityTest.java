@@ -1,23 +1,12 @@
 package org.ohdsi.webapi.entity;
 
-import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
-import java.util.Arrays;
-
 import com.odysseusinc.arachne.commons.types.DBMSType;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.prediction.PredictionAnalysis;
@@ -29,13 +18,17 @@ import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisI
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceRepository;
-import org.ohdsi.webapi.test.ITStarter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.convert.ConversionService;
 
-@RunWith(JUnitParamsRunner.class)
-@SpringBootTest
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
+import java.util.Arrays;
+
+import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
+
 public class PredictionEntityTest extends AbstractDatabaseTest implements TestCreate, TestCopy<PredictionAnalysisDTO>, TestImport<PredictionAnalysisDTO, PatientLevelPredictionAnalysisImpl> {
     @Autowired
     protected ConversionService conversionService;
@@ -104,13 +97,9 @@ public class PredictionEntityTest extends AbstractDatabaseTest implements TestCr
     }
 
     @Test
-    @Parameters({
-            "abcde, abc, abc", "abcde (1), abcde, abcde (2)"
-    })
     @Override
-    public void shouldCopyOfPartlySameName(String firstName, String secondName, String assertionName) throws Exception {
-
-        TestCopy.super.shouldCopyOfPartlySameName(firstName, secondName, assertionName);
+    public void shouldCopyOfPartlySameName() throws Exception {
+        TestCopy.super.shouldCopyOfPartlySameName();
     }
 
     @Test

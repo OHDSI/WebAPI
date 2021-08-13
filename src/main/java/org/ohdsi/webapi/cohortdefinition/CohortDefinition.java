@@ -46,8 +46,7 @@ import org.ohdsi.analysis.Cohort;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisGenerationInfo;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
-import org.ohdsi.webapi.model.CommonEntityExt;
-import org.ohdsi.webapi.tag.domain.Tag;
+import org.ohdsi.webapi.model.CommonEntity;
 
 /**
  * JPA Entity for Cohort Definitions

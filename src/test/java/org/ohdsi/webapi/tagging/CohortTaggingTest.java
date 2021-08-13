@@ -1,12 +1,5 @@
 package org.ohdsi.webapi.tagging;
 
-import org.ohdsi.analysis.Utils;
-import org.ohdsi.webapi.cohortcharacterization.CcController;
-import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
-import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
-import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
-import org.ohdsi.webapi.cohortcharacterization.repository.CcRepository;
-import org.ohdsi.webapi.cohortcharacterization.specification.CohortCharacterizationImpl;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;

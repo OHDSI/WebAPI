@@ -1,17 +1,24 @@
 package org.ohdsi.webapi.tagging;
 
+<<<<<<< HEAD
 import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
 import org.junit.Test;
+=======
+>>>>>>> origin/master
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.cohortcharacterization.CcController;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
+<<<<<<< HEAD
 import org.ohdsi.webapi.cohortcharacterization.dto.CcShortDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcVersionFullDTO;
+=======
+>>>>>>> origin/master
 import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
 import org.ohdsi.webapi.cohortcharacterization.repository.CcRepository;
 import org.ohdsi.webapi.cohortcharacterization.specification.CohortCharacterizationImpl;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
+<<<<<<< HEAD
 import org.ohdsi.webapi.exception.BadRequestAtlasException;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.tag.domain.Tag;

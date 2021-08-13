@@ -8,7 +8,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 @Entity(name = "PathwayTag")
-@Table(name = "pathway_tags")
+@Table(name = "pathway_tag")
 public class PathwayTag {
     @EmbeddedId
     private AssetTagPK assetId;

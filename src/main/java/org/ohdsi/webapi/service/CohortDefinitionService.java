@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.tables.TablesExtension;
-import org.commonmark.node.Node;
+import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.ohdsi.analysis.Utils;
@@ -21,10 +21,6 @@ import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.circe.cohortdefinition.printfriendly.MarkdownRender;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.webapi.Constants;
-import org.ohdsi.webapi.check.CheckResult;
-import org.ohdsi.webapi.check.checker.cohort.CohortChecker;
-import org.ohdsi.webapi.check.warning.Warning;
-import org.ohdsi.webapi.check.warning.WarningUtils;
 import org.ohdsi.webapi.cohortdefinition.CleanupCohortTasklet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
@@ -34,12 +30,10 @@ import org.ohdsi.webapi.cohortdefinition.InclusionRuleReport;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortGenerationInfoDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataImplDTO;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortVersionFullDTO;
-import org.ohdsi.webapi.cohortdefinition.event.CohortDefinitionChangedEvent;
 import org.ohdsi.webapi.cohortsample.CleanupCohortSamplesTasklet;
 import org.ohdsi.webapi.cohortsample.CohortSamplingService;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
+import org.ohdsi.webapi.cohortdefinition.event.CohortDefinitionChangedEvent;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.common.sensitiveinfo.CohortGenerationSensitiveInfoService;
@@ -53,20 +47,11 @@ import org.ohdsi.webapi.shiro.management.datasource.SourceIdAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
-import org.ohdsi.webapi.source.SourceService;
+import org.ohdsi.webapi.util.*;
 import org.ohdsi.webapi.util.ExceptionUtils;
-import org.ohdsi.webapi.util.ExportUtil;
-import org.ohdsi.webapi.util.HttpUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
-import org.ohdsi.webapi.versioning.domain.VersionBase;
-import org.ohdsi.webapi.versioning.domain.Version;
-import org.ohdsi.webapi.versioning.domain.VersionType;
-import org.ohdsi.webapi.versioning.domain.CohortVersion;
-import org.ohdsi.webapi.versioning.dto.VersionDTO;
-import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
-import org.ohdsi.webapi.versioning.service.VersionService;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -101,7 +86,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -119,10 +103,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.ws.rs.core.Response.ResponseBuilder;
 
 import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
+import org.ohdsi.webapi.source.SourceService;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
@@ -184,12 +170,15 @@ public class CohortDefinitionService extends AbstractDaoService {
 	protected EntityManager entityManager;
 
 	@Autowired
+	private TagService tagService;
+
+	@Autowired
 	private CohortChecker cohortChecker;
 
 	@Autowired
 	private VersionService<CohortVersion> versionService;
 
-	private final MarkdownRender markdownPF = new MarkdownRender();
+	pprivate final MarkdownRender markdownPF = new MarkdownRender();
 
 	private final List<Extension> extensions = Arrays.asList(TablesExtension.create());
 

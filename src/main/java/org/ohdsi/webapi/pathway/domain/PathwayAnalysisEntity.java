@@ -1,25 +1,19 @@
 package org.ohdsi.webapi.pathway.domain;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
-import org.ohdsi.webapi.model.CommonEntityExt;
-import org.ohdsi.webapi.tag.domain.Tag;
+import org.ohdsi.webapi.model.CommonEntity;
 
 @Entity(name = "pathway_analysis")
-public class PathwayAnalysisEntity extends CommonEntityExt<Integer> {
+public class PathwayAnalysisEntity extends CommonEntity<Integer> {
 
     @Id
     @GenericGenerator(
@@ -61,7 +55,7 @@ public class PathwayAnalysisEntity extends CommonEntityExt<Integer> {
     private Integer hashCode;
 
     @ManyToMany(targetEntity = Tag.class, fetch = FetchType.LAZY)
-    @JoinTable(name = "pathway_tags",
+    @JoinTable(name = "pathway_tag",
             joinColumns = @JoinColumn(name = "asset_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
     private Set<Tag> tags;

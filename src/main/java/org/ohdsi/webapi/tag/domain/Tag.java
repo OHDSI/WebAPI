@@ -19,14 +19,14 @@ import java.util.Objects;
 import java.util.Set;
 
 @Entity(name = "Tag")
-@Table(name = "tags")
+@Table(name = "tag")
 public class Tag extends CommonEntity<Integer> {
     @Id
     @GenericGenerator(
             name = "tags_generator",
             strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
             parameters = {
-                    @org.hibernate.annotations.Parameter(name = "sequence_name", value = "tags_seq"),
+                    @org.hibernate.annotations.Parameter(name = "sequence_name", value = "tag_seq"),
                     @Parameter(name = "increment_size", value = "1")
             }
     )
@@ -34,7 +34,7 @@ public class Tag extends CommonEntity<Integer> {
     private Integer id;
 
     @ManyToMany(targetEntity = Tag.class, fetch = FetchType.LAZY)
-    @JoinTable(name = "tag_groups",
+    @JoinTable(name = "tag_group",
             joinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "group_id", referencedColumnName = "id"))
     private Set<Tag> groups;

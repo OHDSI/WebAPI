@@ -8,7 +8,6 @@ import org.ohdsi.webapi.pathway.PathwayController;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisExportDTO;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisEntityRepository;
-import org.ohdsi.webapi.service.CohortDefinitionService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;

@@ -20,8 +20,6 @@ import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.ExceptionUtils;
-import org.ohdsi.webapi.versioning.dto.VersionDTO;
-import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
@@ -29,7 +27,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.Collections;
@@ -50,9 +47,10 @@ public class PathwayController {
     private final I18nService i18nService;
     private PathwayChecker checker;
     private PermissionService permissionService;
+    private final TagService tagService;
 
     @Autowired
-    public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService, PathwayChecker checker, PermissionService permissionService, I18nService i18nService) {
+    public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService, PathwayChecker checker, PermissionService permissionService, I18nService i18nService, TagService tagService) {
 
         this.conversionService = conversionService;
         this.converterUtils = converterUtils;
@@ -62,6 +60,7 @@ public class PathwayController {
         this.i18nService = i18nService;
         this.checker = checker;
         this.permissionService = permissionService;
+        this.tagService = tagService;
     }
 
     @POST

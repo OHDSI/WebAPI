@@ -11,18 +11,12 @@ import org.ohdsi.webapi.IExecutionInfo;
 import org.ohdsi.webapi.common.sensitiveinfo.AbstractAdminService;
 import org.ohdsi.webapi.conceptset.ConceptSetItemRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetRepository;
-import org.ohdsi.webapi.exception.BadRequestAtlasException;
-import org.ohdsi.webapi.model.CommonEntity;
-import org.ohdsi.webapi.model.CommonEntityExt;
-import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceHelper;
 import org.ohdsi.webapi.source.SourceRepository;
-import org.ohdsi.webapi.tag.TagService;
-import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.DataSourceDTOParser;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
@@ -35,8 +29,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.ForbiddenException;
 import java.io.File;
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -46,9 +38,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public abstract class AbstractDaoService extends AbstractAdminService {
 

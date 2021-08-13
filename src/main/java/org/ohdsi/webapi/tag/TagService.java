@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import javax.ws.rs.ForbiddenException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -116,7 +117,7 @@ public class TagService extends AbstractDaoService {
     public TagDTO update(Integer id, TagDTO entity) {
         Tag existing = tagRepository.findOne(id);
 
-        checkOwnerOrAdmin(existing.getCreatedBy());
+        checkOwnerOrAdmin(existing.getCreatedBy().getId());
         checkType(existing.getType());
 
         Tag toUpdate = this.conversionService.convert(entity, Tag.class);
@@ -139,10 +140,17 @@ public class TagService extends AbstractDaoService {
     public void delete(Integer id) {
         Tag existing = tagRepository.findOne(id);
 
-        checkOwnerOrAdmin(existing.getCreatedBy());
+        checkOwnerOrAdmin(existing.getCreatedBy().getId());
         checkType(existing.getType());
 
         tagRepository.delete(id);
+    }
+
+    private void checkOwnerOrAdmin(Long tagOwnerId) {
+        UserEntity user = getCurrentUser();
+        if (!(user.getId().equals(tagOwnerId) || isAdmin())) {
+            throw new ForbiddenException();
+        }
     }
 
     private void checkType(TagType type) {

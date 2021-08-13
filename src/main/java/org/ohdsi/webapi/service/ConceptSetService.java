@@ -27,14 +27,11 @@ import javax.ws.rs.core.Response;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
-import org.ohdsi.webapi.check.CheckResult;
-import org.ohdsi.webapi.check.checker.conceptset.ConceptSetChecker;
 import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
-import org.ohdsi.webapi.conceptset.dto.ConceptSetVersionFullDTO;
 import org.ohdsi.webapi.exception.ConceptNotExistException;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
@@ -48,13 +45,6 @@ import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
-import org.ohdsi.webapi.versioning.domain.ConceptSetVersion;
-import org.ohdsi.webapi.versioning.domain.Version;
-import org.ohdsi.webapi.versioning.domain.VersionBase;
-import org.ohdsi.webapi.versioning.domain.VersionType;
-import org.ohdsi.webapi.versioning.dto.VersionDTO;
-import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
-import org.ohdsi.webapi.versioning.service.VersionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -92,6 +82,9 @@ public class ConceptSetService extends AbstractDaoService {
 
     @Autowired
     private PermissionService permissionService;
+
+    @Autowired
+    private TagService tagService;
 
     @Autowired
     private ConceptSetChecker checker;

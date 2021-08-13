@@ -10,7 +10,6 @@ import org.ohdsi.webapi.security.model.EntityPermissionSchemaResolver;
 import org.ohdsi.webapi.security.model.EntityType;
 import org.ohdsi.webapi.security.model.SourcePermissionSchema;
 import org.ohdsi.webapi.security.model.UserSimpleAuthorizationInfo;
-import org.ohdsi.webapi.service.converters.BaseCommonEntityToDTOConverter;
 import org.ohdsi.webapi.service.dto.CommonEntityDTO;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.PermissionRepository;
@@ -30,7 +29,6 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.annotation.PostConstruct;

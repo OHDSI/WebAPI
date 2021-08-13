@@ -11,17 +11,21 @@ import org.springframework.stereotype.Component;
 import java.util.HashSet;
 
 @Component
-public class PathwayAnalysisDTOToPathwayAnalysisEntityConverter extends BasePathwayAnalysisDTOToPathwayAnalysisConverter<PathwayAnalysisDTO> {
+public class PathwayAnalysisDTOToPathwayAnalysisEntityConverter extends
+        BasePathwayAnalysisDTOToPathwayAnalysisConverter<PathwayAnalysisDTO, PathwayAnalysisEntity> {
 
     @Autowired
     private ConverterUtils converterUtils;
 
-    public PathwayAnalysisEntity convert(PathwayAnalysisDTO source) {
+    @Override
+    public void doConvert(PathwayAnalysisDTO source, PathwayAnalysisEntity target) {
+        super.doConvert(source, target);
+        target.setEventCohorts(new HashSet<>(converterUtils.convertList(source.getEventCohorts(), PathwayEventCohort.class)));
+        target.setTargetCohorts(new HashSet<>(converterUtils.convertList(source.getTargetCohorts(), PathwayTargetCohort.class)));
+    }
 
-        PathwayAnalysisEntity result = super.convert(source);
-        result.setEventCohorts(new HashSet<>(converterUtils.convertList(source.getEventCohorts(), PathwayEventCohort.class)));
-        result.setTargetCohorts(new HashSet<>(converterUtils.convertList(source.getTargetCohorts(), PathwayTargetCohort.class)));
-
-        return result;
+    @Override
+    protected PathwayAnalysisEntity createResultObject() {
+        return new PathwayAnalysisEntity();
     }
 }

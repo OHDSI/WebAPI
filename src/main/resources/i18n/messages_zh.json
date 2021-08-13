@@ -74,6 +74,7 @@
     "copyOf": "<%=name%>的副本",
     "copyToClipboard": "复制到剪贴版",
     "createACopy": "建立副本",
+    "create": "Create",
     "days": "天",
     "daysAbbr": "天",
     "delete": "删除",
@@ -99,7 +100,8 @@
     "unspecified": "未完成！",
     "menu": "菜单",
     "noData": "没有数据",
-    "readOnly": "（只读）"
+    "readOnly": "（只读）",
+    "tags": "Tags"
   },
   "commonErrors": {
     "noSources": "当前的WebAPI尚未定义源。<br/>请在<a href=\"#/configure\">配置</a>页上添加一个或多个。",
@@ -1134,6 +1136,25 @@
     "checks": {
       "runningDiagnostics": "正在运行诊断",
       "fixIt": "修复它"
+    },
+    "tags": {
+      "title": "Assign Tags",
+      "tabs": {
+        "studyAssetTags": "Study Asset Tags",
+        "reference": "Reference"
+      },
+      "availableTags": "Available tags:",
+      "assign": "Assign",
+      "unassign": "Unassign",
+      "notPermitted": "Not permitted",
+      "assignExistingTag": "Create custom tag",
+      "tagNamePlaceholder": "Tag name",
+      "assignedTags": "Assigned tags:",
+      "tagGroups": "Tag groups:",
+      "tagGroup:": "Tag group:",
+      "showTags": "Show tags",
+      "tagNameExistsWarning": "Tag <%=tagName%> already exists.",
+      "cannotUnassignProtectedTagWarning": "Cannot unassign protected tag: <%=tagName%>"
     }
   },
   "facets": {
@@ -1198,6 +1219,9 @@
     "designs": {
       "myDesigns": "我的设计",
       "otherDesigns": "其他设计"
+    },
+    "tags": {
+      "untagged": "Untagged"
     }
   },
   "columns": {
@@ -1409,7 +1433,9 @@
     "selectionCriteria": "选择标准",
     "personId": "患者编号",
     "gender": "性别",
-    "ageAtIndex": "索引日期时的年龄"
+    "ageAtIndex": "索引日期时的年龄",
+    "usageCount": "Usage count",
+    "group": "Group"
   },
   "dataSources": {
     "achillesHeelReport": {
@@ -1669,7 +1695,8 @@
         "exploreEvidence": "探索证据",
         "export": "导出",
         "includedConcepts": "包含的概念",
-        "includedSourceCodes": "包含的源代码"
+        "includedSourceCodes": "包含的源代码",
+        "messages": "提示信息"
       },
       "concept": {
         "title": "术语集 > 概念",

@@ -1,13 +1,13 @@
 package org.ohdsi.webapi.entity;
 
+import org.ohdsi.webapi.CommonDTO;
+import org.ohdsi.webapi.model.CommonEntity;
+
 import static org.junit.Assert.assertEquals;
 import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
 import static org.ohdsi.webapi.test.TestConstants.SOME_UNIQUE_TEST_NAME;
 
-import org.ohdsi.webapi.CommonDTO;
-import org.ohdsi.webapi.model.CommonEntity;
-
-public interface TestImport <T extends CommonDTO, U extends CommonDTO> extends EntityMethods{
+public interface TestImport<T extends CommonDTO, U extends CommonDTO> extends EntityMethods {
 
     CommonEntity getEntity(int id);
 

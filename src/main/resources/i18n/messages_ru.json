@@ -65,6 +65,7 @@
     "copy": "Копировать",
     "copyOf": "Копия <%=name%>",
     "createACopy": "Создать копию",
+    "create": "Создать",
     "configureAccess": "Настроить доступ",
     "accessDenied": "Доступ запрещен",
     "delete": "Удалить",
@@ -99,7 +100,8 @@
     "unspecified": "НЕ ОПРЕДЕЛЕНО!",
     "menu": "Меню",
     "noData": "Нет данных",
-    "readOnly": "(Только чтение)"
+    "readOnly": "(Только чтение)",
+    "tags": "Теги"
   },
   "commonErrors": {
     "browserWarning": "Пожалуйста, обратите внимание, что официально поддерживается только браузер Chrome версии не ниже v.63",
@@ -1134,6 +1136,25 @@
     "checks": {
       "runningDiagnostics": "Выполнение диагностики",
       "fixIt": "Исправить"
+    },
+    "tags": {
+      "title": "Назначение тегов",
+      "tabs": {
+        "studyAssetTags": "Теги",
+        "reference": "Справка"
+      },
+      "availableTags": "Доступные теги:",
+      "assign": "Назначить",
+      "unassign": "Отменить",
+      "notPermitted": "Недостаточно прав",
+      "assignExistingTag": "Создать пользовательский тег",
+      "tagNamePlaceholder": "Имя тега",
+      "assignedTags": "Назначенные теги:",
+      "tagGroups": "Группы тегов:",
+      "tagGroup:": "Группа:",
+      "showTags": "Показать теги",
+      "tagNameExistsWarning": "Тег <%=tagName%> уже существует.",
+      "cannotUnassignProtectedTagWarning": "Невозможно отменить назначение защищенного тега: <%=tagName%>"
     }
   },
   "facets": {
@@ -1198,6 +1219,9 @@
     "designs": {
       "myDesigns": "Мои дизайны",
       "otherDesigns": "Прочие дизайны"
+    },
+    "tags": {
+      "untagged": "Без ярлыка"
     }
   },
   "columns": {
@@ -1409,7 +1433,9 @@
     "selectionCriteria": "Критерий выбора",
     "personId": "ID пациента",
     "gender": "Пол",
-    "ageAtIndex": "Возраст по индексу"
+    "ageAtIndex": "Возраст по индексу",
+    "usageCount": "Количество использований",
+    "group": "Группа"
   },
   "dataSources": {
     "headingTitle": "Источники данных",
@@ -1587,7 +1613,8 @@
         "export": "Экспорт",
         "compare": "Сравнение",
         "includedConcepts": "Включенные концепции",
-        "exploreEvidence": "Исследовать Свидетельство"
+        "exploreEvidence": "Исследовать Свидетельство",
+        "messages": "Сообщения"
       },
       "exploreEvidence": {
         "title": "Исследование Свидетельства:",

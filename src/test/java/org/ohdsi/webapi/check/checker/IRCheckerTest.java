@@ -7,8 +7,11 @@ import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.check.CheckResult;
 import org.ohdsi.webapi.check.Checker;
 import org.ohdsi.webapi.check.checker.ir.IRChecker;
+import org.ohdsi.webapi.check.checker.tag.helper.TagHelper;
 import org.ohdsi.webapi.check.warning.Warning;
+import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -17,14 +20,8 @@ public class IRCheckerTest extends BaseCheckerTest {
     private static final String JSON_VALID = "/check/checker/ir-valid.json";
     private static final String JSON_NO_EXPRESSION = "/check/checker/ir-no-expression.json";
     private static final String JSON_NO_COHORTS = "/check/checker/ir-no-cohorts.json";
+    @Autowired
     private IRChecker checker;
-
-    @Before
-    public void setUp() {
-
-        checker = new IRChecker();
-        checker.init();
-    }
 
     @Test
     public void checkValid() throws IOException {

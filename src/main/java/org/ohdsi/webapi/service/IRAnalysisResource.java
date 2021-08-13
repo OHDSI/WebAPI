@@ -2,12 +2,15 @@ package org.ohdsi.webapi.service;
 
 import org.ohdsi.webapi.check.CheckResult;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
+import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.ircalc.AnalysisReport;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.service.dto.AnalysisInfoDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisShortDTO;
+import org.ohdsi.webapi.tag.domain.Tag;
 
+import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -21,6 +24,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Path("/ir/")
 public interface IRAnalysisResource {
@@ -154,4 +160,24 @@ public interface IRAnalysisResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public CheckResult runDiagnostics(IRAnalysisDTO irAnalysisDTO);
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/tag/")
+    void assignTag(@PathParam("id") final int id, final int tagId);
+
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/tag/{tagId}")
+    void unassignTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId);
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/protectedtag/")
+    void assignPermissionProtectedTag(@PathParam("id") final int id, final int tagId);
+
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/protectedtag/{tagId}")
+    void unassignPermissionProtectedTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId);
 }

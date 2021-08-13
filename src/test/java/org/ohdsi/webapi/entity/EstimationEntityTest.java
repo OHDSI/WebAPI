@@ -1,22 +1,12 @@
 package org.ohdsi.webapi.entity;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.List;
-
 import com.odysseusinc.arachne.commons.types.DBMSType;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
@@ -31,19 +21,21 @@ import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceRepository;
-import org.ohdsi.webapi.test.ITStarter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.convert.ConversionService;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.ohdsi.analysis.estimation.design.EstimationTypeEnum.COMPARATIVE_COHORT_ANALYSIS;
 import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
 
-@RunWith(JUnitParamsRunner.class)
-@SpringBootTest
-public class EstimationEntityTest extends AbstractDatabaseTest implements TestCreate, TestCopy<EstimationDTO>, TestImport<EstimationDTO,EstimationAnalysisImpl> {
+public class EstimationEntityTest extends AbstractDatabaseTest implements TestCreate, TestCopy<EstimationDTO>, TestImport<EstimationDTO, EstimationAnalysisImpl> {
     @Autowired
     protected ConversionService conversionService;
     @Autowired
@@ -114,13 +106,10 @@ public class EstimationEntityTest extends AbstractDatabaseTest implements TestCr
     }
 
     @Test
-    @Parameters({
-            "abcde, abc, abc", "abcde (1), abcde, abcde (2)"
-    })
     @Override
-    public void shouldCopyOfPartlySameName(String firstName, String secondName, String assertionName) throws Exception {
+    public void shouldCopyOfPartlySameName() throws Exception {
 
-        TestCopy.super.shouldCopyOfPartlySameName(firstName, secondName, assertionName);
+        TestCopy.super.shouldCopyOfPartlySameName();
     }
 
     @Test

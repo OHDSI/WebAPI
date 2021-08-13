@@ -16,14 +16,21 @@
 package org.ohdsi.webapi.conceptset;
 
 import java.io.Serializable;
+import java.util.List;
+import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
-import org.ohdsi.webapi.model.CommonEntity;
+import org.ohdsi.webapi.model.CommonEntityExt;
+import org.ohdsi.webapi.tag.domain.Tag;
 
 /**
  *
@@ -31,7 +38,7 @@ import org.ohdsi.webapi.model.CommonEntity;
  */
 @Entity(name = "ConceptSet")
 @Table(name="concept_set")
-public class ConceptSet extends CommonEntity<Integer> implements Serializable {
+public class ConceptSet extends CommonEntityExt<Integer> implements Serializable {
   
   @Id
   @GenericGenerator(
@@ -49,6 +56,12 @@ public class ConceptSet extends CommonEntity<Integer> implements Serializable {
   @Column(name="concept_set_name")
   private String name;
 
+  @ManyToMany(targetEntity = Tag.class, fetch = FetchType.LAZY)
+  @JoinTable(name = "concept_set_tag",
+          joinColumns = @JoinColumn(name = "asset_id", referencedColumnName = "concept_set_id"),
+          inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
+  private Set<Tag> tags;
+
   @Override
   public Integer getId() {
     return id;
@@ -64,5 +77,13 @@ public class ConceptSet extends CommonEntity<Integer> implements Serializable {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public Set<Tag> getTags() {
+    return tags;
+  }
+
+  public void setTags(Set<Tag> tags) {
+    this.tags = tags;
   }
 }

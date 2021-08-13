@@ -1,13 +1,8 @@
 package org.ohdsi.webapi.entity;
 
-import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
-
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.cohortcharacterization.CcController;
 import org.ohdsi.webapi.cohortcharacterization.CcService;
@@ -16,13 +11,12 @@ import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
 import org.ohdsi.webapi.cohortcharacterization.repository.CcRepository;
 import org.ohdsi.webapi.model.CommonEntity;
-import org.ohdsi.webapi.test.ITStarter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.transaction.annotation.Transactional;
 
-@RunWith(JUnitParamsRunner.class)
-@SpringBootTest
+import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
+
 public class CCEntityTest extends AbstractDatabaseTest implements TestCreate, TestCopy<CohortCharacterizationDTO>, TestImport<CohortCharacterizationDTO, CcExportDTO> {
     @Autowired
     protected ConversionService conversionService;
@@ -79,17 +73,15 @@ public class CCEntityTest extends AbstractDatabaseTest implements TestCreate, Te
     }
 
     @Test
-    @Parameters({
-            "abcde, abc, abc", "abcde (1), abcde, abcde (2)"
-    })
     @Override
-    public void shouldCopyOfPartlySameName(String firstName, String secondName, String assertionName) throws Exception {
+    public void shouldCopyOfPartlySameName() throws Exception {
 
-        TestCopy.super.shouldCopyOfPartlySameName(firstName, secondName, assertionName);
+        TestCopy.super.shouldCopyOfPartlySameName();
     }
 
     @Test
     @Override
+    @Transactional
     public void shouldImportUniqueName() throws Exception {
 
         TestImport.super.shouldImportUniqueName();
@@ -97,6 +89,7 @@ public class CCEntityTest extends AbstractDatabaseTest implements TestCreate, Te
 
     @Test
     @Override
+    @Transactional
     public void shouldImportWithTheSameName() throws Exception {
 
         TestImport.super.shouldImportWithTheSameName();
@@ -104,6 +97,7 @@ public class CCEntityTest extends AbstractDatabaseTest implements TestCreate, Te
 
     @Test
     @Override
+    @Transactional
     public void shouldImportWhenEntityWithNameExists() throws Exception {
 
         TestImport.super.shouldImportWhenEntityWithNameExists();

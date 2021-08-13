@@ -1,13 +1,9 @@
 package org.ohdsi.webapi.cohortcharacterization.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import java.util.Date;
-import org.ohdsi.webapi.cohortcharacterization.CcConst;
-import org.ohdsi.webapi.service.dto.CommonEntityDTO;
-import org.ohdsi.webapi.user.dto.UserDTO;
+import org.ohdsi.webapi.service.dto.CommonEntityExtDTO;
 
-public class CcShortDTO extends CommonEntityDTO {
-    
+public class CcShortDTO extends CommonEntityExtDTO {
+
     private Long id;
     private Integer hashCode;
     private String name;

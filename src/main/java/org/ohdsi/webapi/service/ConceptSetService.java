@@ -25,8 +25,16 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.shiro.authz.UnauthorizedException;
+import org.ohdsi.circe.check.Checker;
 import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
+import org.ohdsi.webapi.check.CheckResult;
+import org.ohdsi.webapi.check.checker.cohort.CohortChecker;
+import org.ohdsi.webapi.check.checker.conceptset.ConceptSetChecker;
+import org.ohdsi.webapi.check.warning.Warning;
+import org.ohdsi.webapi.check.warning.WarningUtils;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
@@ -34,6 +42,7 @@ import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
 import org.ohdsi.webapi.exception.ConceptNotExistException;
 import org.ohdsi.webapi.security.PermissionService;
+import org.ohdsi.webapi.service.dto.CheckResultDTO;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
@@ -42,6 +51,8 @@ import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.source.SourceService;
+import org.ohdsi.webapi.tag.TagService;
+import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
@@ -82,6 +93,12 @@ public class ConceptSetService extends AbstractDaoService {
 
     @Autowired
     private PermissionService permissionService;
+
+    @Autowired
+    private TagService tagService;
+
+    @Autowired
+    private ConceptSetChecker checker;
 
     public static final String COPY_NAME = "copyName";
 
@@ -287,6 +304,7 @@ public class ConceptSetService extends AbstractDaoService {
         ConceptSet updated = new ConceptSet();
         updated.setCreatedBy(user);
         updated.setCreatedDate(new Date());
+        updated.setTags(null);
         updateConceptSet(updated, conceptSet);
         return conversionService.convert(updated, ConceptSetDTO.class);
     }
@@ -394,4 +412,49 @@ public class ConceptSetService extends AbstractDaoService {
           throw e;
       }
   }
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/tag/")
+    @Transactional
+    public void assignTag(@PathParam("id") final int id, final int tagId) {
+        ConceptSet entity = getConceptSetRepository().findById(id);
+        assignTag(entity, tagId, false);
+    }
+
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/tag/{tagId}")
+    @Transactional
+    public void unassignTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
+        ConceptSet entity = getConceptSetRepository().findById(id);
+        unassignTag(entity, tagId, false);
+    }
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/protectedtag/")
+    @Transactional
+    public void assignPermissionProtectedTag(@PathParam("id") final int id, final int tagId) {
+        ConceptSet entity = getConceptSetRepository().findById(id);
+        assignTag(entity, tagId, true);
+    }
+
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/protectedtag/{tagId}")
+    @Transactional
+    public void unassignPermissionProtectedTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
+        ConceptSet entity = getConceptSetRepository().findById(id);
+        unassignTag(entity, tagId, true);
+    }
+
+    @POST
+    @Path("/check")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
+    public CheckResult runDiagnostics(ConceptSetDTO conceptSetDTO) {
+        return new CheckResult(checker.check(conceptSetDTO));
+    }
 }

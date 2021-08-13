@@ -5,7 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 @Entity(name = "CohortVersion")
-@Table(name = "cohort_versions")
+@Table(name = "cohort_version")
 public class CohortVersion extends Version {
     @Column(name = "description")
     private String description;

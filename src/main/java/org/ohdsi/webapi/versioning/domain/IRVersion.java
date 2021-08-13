@@ -5,7 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "ir_versions")
+@Table(name = "ir_version")
 public class IRVersion extends Version {
     @Column(name = "description")
     private String description;

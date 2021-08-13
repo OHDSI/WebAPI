@@ -18,8 +18,6 @@ package org.ohdsi.webapi.cdmresults;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.webapi.cache.ResultsCache;
 import org.ohdsi.webapi.cdmresults.cache.CDMResultsCache;
-import org.ohdsi.webapi.cdmresults.mapper.BaseRecordCountMapper;
-import org.ohdsi.webapi.cdmresults.mapper.DescendantRecordAndPersonCountMapper;
 import org.ohdsi.webapi.cdmresults.mapper.DescendantRecordCountMapper;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -32,7 +30,12 @@ import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.transaction.support.TransactionTemplate;
+
+import java.sql.ResultSet;
+import java.util.AbstractMap;
+import java.util.HashMap;
 
 /**
  * @author fdefalco
@@ -40,28 +43,16 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class CDMResultsCacheTasklet implements Tasklet {
     private static final Logger log = LoggerFactory.getLogger(CDMResultsCacheTasklet.class);
 
-    private static final String FALLBACK_CONCEPT_COUNT_SQL =
-            "/resources/cdmresults/sql/loadConceptRecordCountCacheFull.sql";
-    private static final String FALLBACK_CONCEPT_COUNT_PERSON_SQL =
-            "/resources/cdmresults/sql/loadConceptRecordPersonCountCacheFull.sql";
-    private static final String CONCEPT_COUNT_SQL =
-            "/resources/cdmresults/sql/loadConceptRecordCountCache.sql";
-    private static final String CONCEPT_COUNT_PERSON_SQL =
-            "/resources/cdmresults/sql/loadConceptRecordPersonCountCache.sql";
-
     private final JdbcTemplate jdbcTemplate;
     private final TransactionTemplate transactionTemplate;
     private final Source source;
     private final DescendantRecordCountMapper descendantRecordCountMapper;
-    private final boolean usePersonCount;
 
-    public CDMResultsCacheTasklet(final JdbcTemplate t, final TransactionTemplate transactionTemplate, final Source s,
-                                  boolean usePersonCount) {
+    public CDMResultsCacheTasklet(final JdbcTemplate t, final TransactionTemplate transactionTemplate, final Source s) {
         jdbcTemplate = t;
         this.transactionTemplate = transactionTemplate;
         source = s;
         descendantRecordCountMapper = new DescendantRecordCountMapper();
-        this.usePersonCount = usePersonCount;
     }
 
     @Override
@@ -75,14 +66,12 @@ public class CDMResultsCacheTasklet implements Tasklet {
     
     private void warm(CDMResultsCache cdmResultsCache) {
         try {
-            String sqlPath = this.usePersonCount ? CONCEPT_COUNT_PERSON_SQL : CONCEPT_COUNT_SQL;
-            warmCdmCache(cdmResultsCache, sqlPath);
+            warmCdmCache(cdmResultsCache, "/resources/cdmresults/sql/loadConceptRecordCountCache.sql");
         } catch (Exception e) {
             log.warn("Failed to warm cache for {}. Trying to execute caching from scratch. Exception: {}",
                     source.getSourceKey(), e.getLocalizedMessage());
             try {
-                String sqlPath = this.usePersonCount ? FALLBACK_CONCEPT_COUNT_PERSON_SQL : FALLBACK_CONCEPT_COUNT_SQL;
-                warmCdmCache(cdmResultsCache, sqlPath);
+                warmCdmCache(cdmResultsCache, "/resources/cdmresults/sql/loadConceptRecordCountCacheFull.sql");
             } catch (Exception ex) {
                 log.error("Failed to warm cache from scratch for {}. Exception: {}", source.getSourceKey(), ex.getLocalizedMessage());
             }
@@ -101,12 +90,9 @@ public class CDMResultsCacheTasklet implements Tasklet {
           SessionUtils.sessionId());
 
         try {
-            BaseRecordCountMapper<?> mapper;
-            mapper = this.usePersonCount ? new DescendantRecordAndPersonCountMapper() : new DescendantRecordCountMapper();
-
             transactionTemplate.execute(s -> {
                 jdbcTemplate.query(psr.getSql(), psr.getSetter(), resultSet -> {
-                    DescendantRecordCount descendantRecordCount = mapper.mapRow(resultSet);
+                    DescendantRecordCount descendantRecordCount = descendantRecordCountMapper.mapRow(resultSet);
                     cdmResultsCache.cacheValue(descendantRecordCount);
                 });
                 return null;

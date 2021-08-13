@@ -124,7 +124,7 @@ public class AnnotationController {
     System.out.println(jsonpayload);
     System.out.println(jsonpayload.get("results"));
     System.out.printf("cohortId: %s\n",jsonpayload.get("cohortId").toString());
-    System.out.printf("cohortSampleId: %s\n",jsonpayload.get("sampleName").toString());
+    System.out.printf("cohortSampleId: %s\n",jsonpayload.get("cohortSampleId").toString());
     System.out.printf("subjectId: %s\n",jsonpayload.get("subjectId").toString());
     System.out.printf("setId: %s\n",jsonpayload.get("setId").toString());
 //    TODO: change this to use annotationService.getAnnotationsByAnnotationId potentially

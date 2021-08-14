@@ -91,7 +91,7 @@ public class ResultController {
       study=studyService.getStudyById(studyId);
     }
     else if (questionSetId!=0 && cohortSampleId!=0){
-      study=studyService.getStudyByQuestionSetIdAndSampleId(questionSetId,studyId);
+      study=studyService.getStudyByQuestionSetIdAndSampleId(questionSetId,cohortSampleId);
     }
     else{
       return null;

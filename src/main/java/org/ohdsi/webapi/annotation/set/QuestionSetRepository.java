@@ -17,6 +17,6 @@ public interface QuestionSetRepository extends JpaRepository<QuestionSet, Intege
   @Query("Select a FROM QuestionSet a WHERE a.id = ?1")
   public QuestionSet findByQuestionSetId(int questionId);
 
-  @Query("Select distinct new org.ohdsi.webapi.annotation.set.QuestionSampleDto(q.id,c.id,q.name,c.name) FROM QuestionSet q LEFT JOIN Annotation a ON a.questionSet.id = q.id LEFT JOIN CohortSample c ON c.id = a.cohortSampleId WHERE q.cohortId = ?1")
+  @Query("Select distinct new org.ohdsi.webapi.annotation.set.QuestionSampleDto(q.id,c.id,q.name,c.name) FROM QuestionSet q INNER JOIN Annotation a ON a.questionSet.id = q.id INNER JOIN CohortSample c ON c.id = a.cohortSampleId WHERE q.cohortId = ?1")
   public List<QuestionSampleDto> findSamplesAndSetsByCohortId(int cohortId);
 }

@@ -118,6 +118,7 @@ public class ResultController {
       Annotation tempanno = annotationService.getAnnotationsByAnnotationId(result.getAnnotation());
       Answer tempAnswer = answerService.getAnswerById(result.getAnswerId());
       tempdto.setAnswerText(tempAnswer.getText());
+      tempdto.setAnswerValue(tempAnswer.getValue());
       tempdto.setPatientId(tempanno.getSubjectId());
       tempdto.setCohortName(study.getCohortDefinition().getName());
       tempdto.setCohortId( study.getCohortDefinition().getId());
@@ -126,7 +127,6 @@ public class ResultController {
       tempdto.setQuestionSetName(study.getQuestionSet().getName());
       tempdto.setCaseStatus(myQuestion.getCaseQuestion());
       tempdto.setQuestionText(myQuestion.getText());
-//      tempdto.setAnswerValue(result.getValue());
       superList.add(tempdto);
     }
     return superList;

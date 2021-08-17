@@ -15,4 +15,5 @@ public class AnswerService {
     answerRepository.save(answer);
   }
 
+  public Answer getAnswerById(int answerId){return answerRepository.findByAnswerId(answerId);}
 }

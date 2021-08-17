@@ -7,6 +7,8 @@ import org.checkerframework.checker.units.qual.A;
 import org.ohdsi.webapi.annotation.annotation.Annotation;
 import org.ohdsi.webapi.annotation.annotation.AnnotationService;
 import org.ohdsi.webapi.annotation.annotation.AnnotationSummary;
+import org.ohdsi.webapi.annotation.answer.Answer;
+import org.ohdsi.webapi.annotation.answer.AnswerService;
 import org.ohdsi.webapi.annotation.question.Question;
 import org.ohdsi.webapi.annotation.question.QuestionService;
 import org.ohdsi.webapi.annotation.set.QuestionSet;
@@ -55,6 +57,9 @@ public class ResultController {
 
   @Autowired
   private SourceService sourceService;
+
+  @Autowired
+  private AnswerService answerService;
 
   @GET
   @Path("/{annotationID}")
@@ -111,6 +116,8 @@ public class ResultController {
       Question myQuestion = questionService.getQuestionByQuestionId(result.getQuestionId());
       SuperResultDto tempdto = new SuperResultDto(result);
       Annotation tempanno = annotationService.getAnnotationsByAnnotationId(result.getAnnotation());
+      Answer tempAnswer = answerService.getAnswerById(result.getAnswerId());
+      tempdto.setAnswerText(tempAnswer.getText());
       tempdto.setPatientId(tempanno.getSubjectId());
       tempdto.setCohortName(study.getCohortDefinition().getName());
       tempdto.setCohortId( study.getCohortDefinition().getId());
@@ -119,6 +126,7 @@ public class ResultController {
       tempdto.setQuestionSetName(study.getQuestionSet().getName());
       tempdto.setCaseStatus(myQuestion.getCaseQuestion());
       tempdto.setQuestionText(myQuestion.getText());
+//      tempdto.setAnswerValue(result.getValue());
       superList.add(tempdto);
     }
     return superList;

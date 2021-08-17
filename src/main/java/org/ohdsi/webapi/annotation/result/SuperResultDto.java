@@ -2,6 +2,8 @@ package org.ohdsi.webapi.annotation.result;
 
 import org.ohdsi.webapi.annotation.annotation.Annotation;
 import org.ohdsi.webapi.annotation.annotation.AnnotationService;
+import org.ohdsi.webapi.annotation.answer.Answer;
+import org.ohdsi.webapi.annotation.answer.AnswerService;
 import org.ohdsi.webapi.annotation.question.Question;
 import org.ohdsi.webapi.annotation.question.QuestionService;
 import org.ohdsi.webapi.annotation.study.Study;
@@ -17,27 +19,32 @@ public class SuperResultDto {
   @Autowired
   private QuestionService questionService;
 
+  @Autowired
+  private AnswerService answerService;
+
   private int cohortId;
   private String cohortName;
   private String dataSourceKey;
-//  can be removed/changed to dataSourceKey
   private String cohortSampleName;
   private String questionSetName;
   private int patientId;
   private String questionText;
-  private String value;
+  private String answerText;
+  private String answerValue;
   private Boolean caseStatus;
 
   public SuperResultDto(Result result){
-    this.value = result.getValue();
+    this.answerValue = result.getValue();
   }
 
   public SuperResultDto(Result result, Study study, Source source){
     Question myQuestion = questionService.getQuestionByQuestionId(result.getQuestionId());
     this.caseStatus = myQuestion.getCaseQuestion();
     this.questionText = myQuestion.getText();
+    Answer tempAnswer = answerService.getAnswerById(result.getAnswerId());
+    this.answerText = tempAnswer.getText();
     Annotation tempanno = annotationService.getAnnotationsByAnnotationId(result.getAnnotation());
-    this.value = result.getValue();
+    this.answerValue = result.getValue();
     this.patientId = tempanno.getSubjectId();
     this.cohortName= study.getCohortDefinition().getName();
     this.cohortId = study.getCohortDefinition().getId();
@@ -49,13 +56,15 @@ public class SuperResultDto {
   public SuperResultDto(Result result, Study study, Source source,Question myQuestion,Annotation tempanno){
     this.caseStatus = myQuestion.getCaseQuestion();
     this.questionText = myQuestion.getText();
-    this.value = result.getValue();
+    this.answerValue = result.getValue();
     this.patientId = tempanno.getSubjectId();
     this.cohortName= study.getCohortDefinition().getName();
     this.cohortId = study.getCohortDefinition().getId();
     this.dataSourceKey = source.getSourceKey();
     this.cohortSampleName = study.getCohortSample().getName();
     this.questionSetName = study.getQuestionSet().getName();
+    Answer tempAnswer = answerService.getAnswerById(result.getAnswerId());
+    this.answerText = tempAnswer.getText();
   }
 
   //***** GETTERS/SETTERS *****
@@ -112,12 +121,16 @@ public class SuperResultDto {
     this.questionText = questionText;
   }
 
-  public String getValue() {
-    return value;
+  public String getAnswerText() {return answerText;}
+
+  public void setAnswerText(String answerText) {this.answerText = answerText;}
+
+  public String getAnswerValue() {
+    return answerValue;
   }
 
-  public void setValue(String value) {
-    this.value = value;
+  public void setAnswerValue(String answerValue) {
+    this.answerValue = answerValue;
   }
 
   public Boolean getCaseStatus() {

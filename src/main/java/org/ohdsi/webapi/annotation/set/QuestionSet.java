@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.annotation.set;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -32,7 +33,7 @@ public class QuestionSet {
     cascade = CascadeType.ALL,
     orphanRemoval = true
   )
-  private Set<Question> questions = new HashSet();
+  private Set<Question> questions = new LinkedHashSet();
 
   //***** GETTERS/SETTERS ******
 
@@ -83,13 +84,13 @@ public class QuestionSet {
    * @return the questions
    */
   public Set<Question> getQuestions() {
-      return new HashSet<Question>(questions);
+      return new LinkedHashSet<Question>(questions);
   }
 
   /**
    * @param questions the questions to set
    */
-  protected void setQuestions(Set<Question> questions) {
+  protected void setQuestions(LinkedHashSet<Question> questions) {
       this.questions = questions;
   }
 

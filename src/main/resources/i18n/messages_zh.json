@@ -41,6 +41,7 @@
       "shortdate": "MM/dd",
       "mediumdate": "MM/dd/YYYY",
       "datetime": "MM/DD/YYYY h:mm A",
+      "datetimeWithSeconds": "MM/DD/YYYY h:mm:ss A",
       "minutes": "分",
       "seconds": "秒"
     }
@@ -101,7 +102,11 @@
     "menu": "菜单",
     "noData": "没有数据",
     "readOnly": "（只读）",
-    "tags": "Tags"
+    "tags": "Tags",
+    "backToCurrent": "Back to current version",
+    "saveAsCurrentVersion": "Save as current version",
+    "unsavedWarning": "Unsaved changes will be lost. Proceed?",
+    "savePreviewWarning": "Save as current version?"
   },
   "commonErrors": {
     "noSources": "当前的WebAPI尚未定义源。<br/>请在<a href=\"#/configure\">配置</a>页上添加一个或多个。",
@@ -198,6 +203,7 @@
   "components": {
     "authorship": {
       "created": "被创造",
+      "versionCreated": "version created",
       "modified": "修改的",
       "on": "基于/在",
       "byCreated": "由 <%=createdBy%>创建",
@@ -1154,7 +1160,18 @@
       "tagGroup:": "Tag group:",
       "showTags": "Show tags",
       "tagNameExistsWarning": "Tag <%=tagName%> already exists.",
-      "cannotUnassignProtectedTagWarning": "Cannot unassign protected tag: <%=tagName%>"
+      "cannotUnassignProtectedTagWarning": "Cannot unassign protected tag: <%=tagName%>",
+      "reassignConfirm": "The maximum number of assigned tags in the tag group \"<%=tagGroup%>\" is <%=maxNumber%>. The tag \"<%=tagName%>\" will be unassigned. Proceed?"
+    },
+    "versions": {
+      "loading": "Loading versions...",
+      "editComment": "Edit comment",
+      "addComment": "Add comment",
+      "commentPlaceholder": "Comment",
+      "preview": "Preview",
+      "viewing": "Viewing now",
+      "createACopy": "Create a copy",
+      "current": "Current"
     }
   },
   "facets": {
@@ -1435,7 +1452,16 @@
     "gender": "性别",
     "ageAtIndex": "索引日期时的年龄",
     "usageCount": "Usage count",
-    "group": "Group"
+    "group": "Group",
+    "version": "Version",
+    "comment": "Comment",
+    "preview": "Preview",
+    "pc": "PC",
+    "dpc": "DPC",
+    "rcTooltip": "Record Count",
+    "drcTooltip": "Descendant Record Count",
+    "pcTooltip": "Person Count",
+    "dpcTooltip": "Descendant Person Count"
   },
   "dataSources": {
     "achillesHeelReport": {
@@ -1603,7 +1629,8 @@
       "import": "导入",
       "search": "搜索"
     },
-    "vocabularies": "术语集"
+    "vocabularies": "术语集",
+    "viewCountMessage":  "View record count for:"
   },
   "cs": {
     "browser": {
@@ -1635,6 +1662,7 @@
       "attemptingToFindMessage": "正在尝试为此概念集找到最佳定义...",
       "cancelButton": "取消",
       "caption": "概念集 #<%=id%>",
+      "captionVersion": "Concept Set #<%=id%> - Version <%=number%> Preview",
       "changeColumnsButton": "修改列",
       "conceptsRemovedHeading": "概念移除",
       "conceptsRemovedMessage": "由于优化版本已包含以下概念，因此删除了以下概念。",
@@ -1696,6 +1724,7 @@
         "export": "导出",
         "includedConcepts": "包含的概念",
         "includedSourceCodes": "包含的源代码",
+        "versions": "Versions",
         "messages": "提示信息"
       },
       "concept": {
@@ -1765,6 +1794,7 @@
     },
     "viewEdit": {
       "caption": "特征描述 #<%=id%>",
+      "captionPreview": "Characterization #<%=id%> - Version <%=number%> Preview",
       "loadingCohortCharacterization": "正在载入队列表征...",
       "design": {
         "description": "队列表征被定义为一种从病人级别的协变量数据生成队列级别描述性摘要统计信息的过程。各个级别协变量的摘要统计信息可以是数字，均值，标准差，方差，最小值，最大值，中位数，范围和四分位数。 此外，可以将一段时间内的协变量分层为时间序列分析的时间单位，例如相对于cohort_start_date的固定时间间隔（例如，每7天，每30天等），或以绝对时间间隔（例如，日历中的周，月，季度，年）。",
@@ -1850,6 +1880,7 @@
         "design": "设计",
         "executions": "执行",
         "utilities": "程序",
+        "versions": "Versions",
         "messages": "提示信息"
       },
       "utilities": {
@@ -1916,6 +1947,7 @@
   },
   "ir": {
     "caption": "发病率分析 #<%=id%>",
+    "captionVersion": "Incidence Rate Analysis #<%=id%> - Version <%=number%> Preview",
     "cs": {
       "modalTitle": "选择概念集..."
     },
@@ -1987,6 +2019,7 @@
       "definition": "定义",
       "generation": "生成",
       "utilities": "程序",
+      "versions": "Versions",
       "messages": "提示信息"
     },
     "title": "发病率分析"
@@ -2019,6 +2052,7 @@
     "loading": "正在加载路径分析列表...",
     "manager": {
       "caption": "队列路径 #<%=id%>",
+      "captionVersion": "Cohort Pathway #<%=id%> - Version <%=number%> Preview",
       "design": {
         "analysisSettings": {
           "combinationWindow": {
@@ -2107,6 +2141,7 @@
         "design": "设计",
         "executions": "执行",
         "utilities": "程序",
+        "versions": "Versions",
         "messages": "提示信息"
       },
       "utilities": {
@@ -2587,9 +2622,10 @@
       "confirms": {
         "close": "您的队列更改未保存。  您想继续吗？",
         "delete": "删除队列定义？ 警告：删除无法撤销！",
+        "deleteConflict": "无法删除队列定义，因为在某些分析中已引用该定义。",
         "generateAnalyses": "这将运行<%=descr%>，可能需要大约<%=duration%>。你确定吗？",
-        "save": "无法删除队列定义，因为在某些分析中已引用该定义。",
-        "saveAlert": "具有该名称的队列定义已存在。 请选择其他名称。"
+        "saveAlert": "具有该名称的队列定义已存在。 请选择其他名称。",
+        "saveError": "An error occurred while attempting to save a cohort definition."
       },
       "createCopyCohortTitle": "创建此队列定义的副本",
       "failedWithoutAnyMessage": "失败，没有任何消息",
@@ -2680,10 +2716,12 @@
         "generation": "生成",
         "samples": "样本",
         "messages": "提示信息",
+        "versions": "Versions",
         "reporting": "报告"
       }
     },
-    "cohortId": "队列 #<%=id%>",
+    "cohortCaption": "队列 #<%=id%>",
+    "cohortCaptionPreview": "Cohort #<%=id%> - Version <%=number%> Preview",
     "cohortreports": {
       "inclusionReport": "纳入条件报告",
       "inclusionReportFor": " ",

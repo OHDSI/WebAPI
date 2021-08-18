@@ -16,6 +16,8 @@
  */
 package org.ohdsi.webapi.cdmresults;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 public class DescendantRecordCount{
@@ -46,6 +48,10 @@ public class DescendantRecordCount{
 
     public void setDescendantRecordCount(long descendantRecordCount) {
         this.descendantRecordCount = descendantRecordCount;
+    }
+
+    public List<Long> getValues() {
+        return Arrays.asList(recordCount, descendantRecordCount);
     }
 
     @Override

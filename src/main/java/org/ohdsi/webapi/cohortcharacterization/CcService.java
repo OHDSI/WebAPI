@@ -5,6 +5,8 @@ import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcVersionFullDTO;
+import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.ExecutionResultRequest;
 import org.ohdsi.webapi.cohortcharacterization.dto.ExportExecutionResultRequest;
 import org.ohdsi.webapi.cohortcharacterization.dto.GenerationResults;
@@ -12,6 +14,9 @@ import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.cohortdefinition.event.CohortDefinitionChangedEvent;
 import org.ohdsi.webapi.feanalysis.event.FeAnalysisChangedEvent;
 import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.versioning.domain.CharacterizationVersion;
+import org.ohdsi.webapi.versioning.dto.VersionDTO;
+import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -86,4 +91,16 @@ public interface CcService {
     void assignTag(long id, int tagId, boolean isPermissionProtected);
 
     void unassignTag(long id, int tagId, boolean isPermissionProtected);
+
+    List<VersionDTO> getVersions(long id);
+
+    CcVersionFullDTO getVersion(long id, int version);
+
+    VersionDTO updateVersion(long id, int version, VersionUpdateDTO updateDTO);
+
+    void deleteVersion(long id, int version);
+
+    CohortCharacterizationDTO copyAssetFromVersion(long id, int version);
+
+    CharacterizationVersion saveVersion(long id);
 }

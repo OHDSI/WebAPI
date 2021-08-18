@@ -20,6 +20,7 @@ import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
+import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.model.CommonEntityExt;
 import org.ohdsi.webapi.tag.domain.Tag;
 

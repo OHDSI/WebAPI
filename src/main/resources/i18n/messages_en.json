@@ -41,6 +41,7 @@
       "shortdate": "MM/dd",
       "mediumdate": "MM/dd/YYYY",
       "datetime": "MM/DD/YYYY h:mm A",
+      "datetimeWithSeconds": "MM/DD/YYYY h:mm:ss A",
       "minutes": "min",
       "seconds": "sec"
     }
@@ -101,7 +102,11 @@
     "menu": "Menu",
     "noData": "No data",
     "readOnly": "(Read only)",
-    "tags": "Tags"
+    "tags": "Tags",
+    "backToCurrent": "Back to current version",
+    "saveAsCurrentVersion": "Save as current version",
+    "unsavedWarning": "Unsaved changes will be lost. Proceed?",
+    "savePreviewWarning": "Save as current version?"
   },
   "commonErrors": {
     "noSources": "The current WebAPI has no sources defined.<br/>Please add one or more on <a href=\"#/configure\">configuration</a> page.",
@@ -198,6 +203,7 @@
   "components": {
     "authorship": {
       "created": "created",
+      "versionCreated": "version created",
       "modified": "modified",
       "on": "on",
       "byCreated": "by <%=createdBy%>",
@@ -1154,7 +1160,18 @@
       "tagGroup:": "Tag group:",
       "showTags": "Show tags",
       "tagNameExistsWarning": "Tag <%=tagName%> already exists.",
-      "cannotUnassignProtectedTagWarning": "Cannot unassign protected tag: <%=tagName%>"
+      "cannotUnassignProtectedTagWarning": "Cannot unassign protected tag: <%=tagName%>",
+      "reassignConfirm": "The maximum number of assigned tags in the tag group \"<%=tagGroup%>\" is <%=maxNumber%>. The tag \"<%=tagName%>\" will be unassigned. Proceed?"
+    },
+    "versions": {
+      "loading": "Loading versions...",
+      "editComment": "Edit comment",
+      "addComment": "Add comment",
+      "commentPlaceholder": "Comment",
+      "preview": "Preview",
+      "viewing": "Viewing now",
+      "createACopy": "Create a copy",
+      "current": "Current"
     }
   },
   "facets": {
@@ -1435,7 +1452,16 @@
     "gender": "Gender",
     "ageAtIndex": "Age at index",
     "usageCount": "Usage count",
-    "group": "Group"
+    "group": "Group",
+    "version": "Version",
+    "comment": "Comment",
+    "preview": "Preview",
+    "pc": "PC",
+    "dpc": "DPC",
+    "rcTooltip": "Record Count",
+    "drcTooltip": "Descendant Record Count",
+    "pcTooltip": "Person Count",
+    "dpcTooltip": "Descendant Person Count"
   },
   "dataSources": {
     "achillesHeelReport": {
@@ -1603,7 +1629,8 @@
       "import": "Import",
       "search": "Search"
     },
-    "vocabularies": "Vocabularies"
+    "vocabularies": "Vocabularies",
+    "viewCountMessage":  "View record count for:"
   },
   "cs": {
     "browser": {
@@ -1635,6 +1662,7 @@
       "attemptingToFindMessage": "Attempting to find an optimal definition for this concept set...",
       "cancelButton": "Cancel",
       "caption": "Concept Set #<%=id%>",
+      "captionVersion": "Concept Set #<%=id%> - Version <%=number%> Preview",
       "changeColumnsButton": "Change Columns",
       "conceptsRemovedHeading": "Concepts Removed",
       "conceptsRemovedMessage": "The following concepts were removed since the optimized version already includes them.",
@@ -1696,6 +1724,7 @@
         "export": "Export",
         "includedConcepts": "Included Concepts",
         "includedSourceCodes": "Included Source Codes",
+        "versions": "Versions",
         "messages": "Messages"
       },
       "concept": {
@@ -1765,6 +1794,7 @@
     },
     "viewEdit": {
       "caption": "Characterization #<%=id%>",
+      "captionPreview": "Characterization #<%=id%> - Version <%=number%> Preview",
       "loadingCohortCharacterization": "Loading Cohort Characterization...",
       "design": {
         "description": "<b>Cohort characterization</b> is defined as the process of generating cohort level descriptive summary statistics from person level covariate data. Summary statistics of these person level covariates may be count, mean, sd, var, min, max, median, range, and quantiles. In addition, covariates during a period may be stratified into temporal units of time for time-series analysis such as fixed intervals of time relative to cohort_start_date (e.g. every 7 days, every 30 days etc.), or in absolute calendar intervals such as calendar-week, calendar-month, calendar-quarter, calendar-year.",
@@ -1850,6 +1880,7 @@
         "design": "Design",
         "executions": "Executions",
         "utilities": "Utilities",
+        "versions": "Versions",
         "messages": "Messages"
       },
       "utilities": {
@@ -1916,6 +1947,7 @@
   },
   "ir": {
     "caption": "Incidence Rate Analysis #<%=id%>",
+    "captionVersion": "Incidence Rate Analysis #<%=id%> - Version <%=number%> Preview",
     "cs": {
       "modalTitle": "Select Concept Set..."
     },
@@ -1987,6 +2019,7 @@
       "definition": "Definition",
       "generation": "Generation",
       "utilities": "Utilities",
+      "versions": "Versions",
       "messages": "Messages"
     },
     "title": "Incidence Rate Analysis"
@@ -2019,6 +2052,7 @@
     "loading": "Loading Pathway Analysis list...",
     "manager": {
       "caption": "Cohort Pathway #<%=id%>",
+      "captionVersion": "Cohort Pathway #<%=id%> - Version <%=number%> Preview",
       "design": {
         "analysisSettings": {
           "combinationWindow": {
@@ -2107,6 +2141,7 @@
         "design": "Design",
         "executions": "Executions",
         "utilities": "Utilities",
+        "versions": "Versions",
         "messages": "Messages"
       },
       "utilities": {
@@ -2587,9 +2622,10 @@
       "confirms": {
         "close": "Your cohort changes are not saved. Would you like to continue?",
         "delete": "Delete cohort definition? Warning: deletion can not be undone!",
+        "deleteConflict": "Cohort definition cannot be deleted because it is referenced in some analysis.",
         "generateAnalyses": "This will run <%=descr%> and may take about <%=duration%>. Are you sure?",
-        "save": "Cohort definition cannot be deleted because it is referenced in some analysis.",
-        "saveAlert": "A cohort definition with this name already exists. Please choose a different name."
+        "saveAlert": "A cohort definition with this name already exists. Please choose a different name.",
+        "saveError": "An error occurred while attempting to save a cohort definition."
       },
       "createCopyCohortTitle": "Create a copy of this cohort definition",
       "failedWithoutAnyMessage": "Failed without any message",
@@ -2680,10 +2716,12 @@
         "generation": "Generation",
         "samples": "Samples",
         "messages": "Messages",
+        "versions": "Versions",
         "reporting": "Reporting"
       }
     },
-    "cohortId": "Cohort #<%=id%>",
+    "cohortCaption": "Cohort #<%=id%>",
+    "cohortCaptionPreview": "Cohort #<%=id%> - Version <%=number%> Preview",
     "cohortreports": {
       "inclusionReport": "Inclusion Report",
       "inclusionReportFor": "Inclusion Report for",

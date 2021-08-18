@@ -15,7 +15,9 @@
  */
 package org.ohdsi.webapi.util;
 
+import org.ohdsi.webapi.exception.BadRequestAtlasException;
 import org.ohdsi.webapi.exception.ConceptNotExistException;
+import org.ohdsi.webapi.exception.ConversionAtlasException;
 import org.ohdsi.webapi.exception.UserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +66,24 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
             responseStatus = Status.NOT_FOUND;
         } else if (ex instanceof BadRequestException) {
             responseStatus = Status.BAD_REQUEST;
+        } else if (ex instanceof UndeclaredThrowableException) {
+            Throwable throwable = getThrowable((UndeclaredThrowableException)ex);
+            if (Objects.nonNull(throwable)) {
+                if (throwable instanceof BadRequestAtlasException) {
+                    responseStatus = Status.BAD_REQUEST;
+                    ex = throwable;
+                } else if (throwable instanceof ConversionAtlasException) {
+                    responseStatus = Status.BAD_REQUEST;
+                    // New exception must be created or direct self-reference exception will be thrown
+                    ex = new RuntimeException(throwable.getMessage());
+                } else {
+                    responseStatus = Status.INTERNAL_SERVER_ERROR;
+                    ex = new RuntimeException("An exception occurred: " + ex.getClass().getName());
+                }
+            } else {
+                responseStatus = Status.INTERNAL_SERVER_ERROR;
+                ex = new RuntimeException("An exception occurred: " + ex.getClass().getName());
+            }
         } else if (ex instanceof UserException) {
             responseStatus = Status.INTERNAL_SERVER_ERROR;
             // Create new message to prevent sending error information to client

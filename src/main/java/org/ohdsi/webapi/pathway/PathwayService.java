@@ -3,8 +3,13 @@ package org.ohdsi.webapi.pathway;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisGenerationEntity;
+import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
+import org.ohdsi.webapi.pathway.dto.PathwayVersionFullDTO;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
 import org.ohdsi.webapi.shiro.annotations.PathwayAnalysisGenerationId;
+import org.ohdsi.webapi.versioning.domain.PathwayVersion;
+import org.ohdsi.webapi.versioning.dto.VersionDTO;
+import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -52,4 +57,16 @@ public interface PathwayService {
     void assignTag(int id, int tagId, boolean isPermissionProtected);
 
     void unassignTag(int id, int tagId, boolean isPermissionProtected);
+
+    List<VersionDTO> getVersions(long id);
+
+    PathwayVersionFullDTO getVersion(int id, int version);
+
+    VersionDTO updateVersion(int id, int version, VersionUpdateDTO updateDTO);
+
+    void deleteVersion(int id, int version);
+
+    PathwayAnalysisDTO copyAssetFromVersion(int id, int version);
+
+    PathwayVersion saveVersion(int id);
 }

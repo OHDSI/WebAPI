@@ -231,7 +231,8 @@ public class PermissionService {
         this.permissionCache.set(new ConcurrentHashMap<>());
     }
 
-    public void fillWriteAccess(CommonEntity entity, CommonEntityDTO entityDTO) {
+    public boolean hasWriteAccess(CommonEntity entity) {
+        boolean hasAccess = false;
         if (securityEnabled && entity.getCreatedBy() != null) {
             try {
                 String login = this.permissionManager.getSubjectName();
@@ -242,16 +243,21 @@ public class PermissionService {
                     List<RoleDTO> roles = getRolesHavingPermissions(entityType, entity.getId());
 
                     Collection<String> userRoles = authorizationInfo.getRoles();
-                    boolean hasRole = roles.stream()
+                    hasAccess = roles.stream()
                             .anyMatch(r -> userRoles.stream()
                                     .anyMatch(re -> re.equals(r.getName())));
-
-                    entityDTO.setHasWriteAccess(hasRole);
                 }
             } catch (Exception e) {
                 logger.error("Error getting user roles and permissions", e);
                 throw new RuntimeException(e);
             }
+        }
+        return hasAccess;
+    }
+
+    public void fillWriteAccess(CommonEntity entity, CommonEntityDTO entityDTO) {
+        if (securityEnabled && entity.getCreatedBy() != null) {
+            entityDTO.setHasWriteAccess(hasWriteAccess(entity));
         }
     }
 }

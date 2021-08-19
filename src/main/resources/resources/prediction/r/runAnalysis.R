@@ -32,6 +32,10 @@ tryCatch({
                                                                         password = pwd,
                                                                         pathToDriver = driversPath)
 
+        connectionDetails$user <- function() Sys.getenv("DBMS_USERNAME")
+        connectionDetails$password <- function() Sys.getenv("DBMS_PASSWORD")
+        connectionDetails$connectionString <- function() Sys.getenv("CONNECTION_STRING")
+
         outputFolder <- file.path(getwd(), 'results')
         dir.create(outputFolder)
 

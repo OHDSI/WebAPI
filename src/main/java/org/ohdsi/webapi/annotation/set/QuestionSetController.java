@@ -1,16 +1,12 @@
 package org.ohdsi.webapi.annotation.set;
 
 import java.util.List;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.QueryParam;
 
 import org.ohdsi.webapi.annotation.annotation.Annotation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.ohdsi.webapi.annotation.set.QuestionSetService;
 import org.ohdsi.webapi.annotation.set.QuestionSet;
@@ -41,6 +37,20 @@ public class QuestionSetController {
           @QueryParam("cohortId") final int cohortId
   ) {
     return questionSetService.getSamplesAndSetsByCohortId(cohortId);
+  }
+
+  @GET
+  @Path("deleteSet/{questionSetId}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public ResponseEntity<?> deleteSet(
+          @PathParam("questionSetId") int questionSetId
+  ) {
+    if(questionSetService.deleteQuestionSet(questionSetId)){
+      return ResponseEntity.status(200).body("The Question Set has been deleted");
+    }
+    else{
+      return ResponseEntity.status(400).body("Could not delete the Question Set");
+    }
   }
 
   @POST

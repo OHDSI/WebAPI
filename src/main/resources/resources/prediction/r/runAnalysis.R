@@ -50,8 +50,7 @@ tryCatch({
                 createValidationPackage = F,
                 packageResults = T,
                 minCellCount = 5,
-                cdmVersion = 5,
-                createShiny = T)
+                cdmVersion = 5)
         # To run PLP Viewer shiny app call:
         # PatientLevelPrediction::viewMultiplePlp(outputFolder)
 }, finally = {

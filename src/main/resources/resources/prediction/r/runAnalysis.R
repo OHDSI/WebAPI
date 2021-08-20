@@ -32,6 +32,7 @@ tryCatch({
                                                                         password = pwd,
                                                                         pathToDriver = driversPath)
 
+        # Evaluating can't use global environment in child threads
         connectionDetails$user <- function() Sys.getenv("DBMS_USERNAME")
         connectionDetails$password <- function() Sys.getenv("DBMS_PASSWORD")
         connectionDetails$connectionString <- function() Sys.getenv("CONNECTION_STRING")

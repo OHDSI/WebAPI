@@ -118,7 +118,7 @@ public class ResultController {
       Annotation tempanno = annotationService.getAnnotationsByAnnotationId(result.getAnnotation());
       Answer tempAnswer = answerService.getAnswerById(result.getAnswerId());
       tempdto.setAnswerText(tempAnswer.getText());
-      tempdto.setAnswerValue(tempAnswer.getValue());
+      tempdto.setAnswerValue(result.getValue());
       tempdto.setPatientId(tempanno.getSubjectId());
       tempdto.setCohortName(study.getCohortDefinition().getName());
       tempdto.setCohortId( study.getCohortDefinition().getId());

@@ -1,9 +1,7 @@
 package org.ohdsi.webapi.annotation.annotation;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -14,7 +12,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.PathParam;
 import org.json.JSONObject;
 import org.json.JSONArray;
-
 import org.ohdsi.webapi.annotation.result.ResultService;
 import org.ohdsi.webapi.annotation.study.Study;
 import org.ohdsi.webapi.annotation.study.StudyService;
@@ -23,20 +20,14 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortsample.CohortSample;
 import org.ohdsi.webapi.cohortsample.CohortSampleRepository;
 import org.ohdsi.webapi.cohortsample.CohortSamplingService;
-import org.ohdsi.webapi.cohortsample.SampleElement;
-import org.ohdsi.webapi.cohortsample.dto.CohortSampleDTO;
 import org.ohdsi.webapi.cohortsample.dto.SampleElementDTO;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.ohdsi.webapi.annotation.annotation.AnnotationService;
-import org.ohdsi.webapi.annotation.annotation.Annotation;
 import org.ohdsi.webapi.annotation.set.QuestionSetRepository;
 import org.ohdsi.webapi.annotation.set.QuestionSet;
-import org.ohdsi.webapi.annotation.result.Result;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.ohdsi.webapi.service.AbstractDaoService;
 
 
 @Path("annotations")

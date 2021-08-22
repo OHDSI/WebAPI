@@ -1,11 +1,8 @@
 package org.ohdsi.webapi.annotation.set;
 
-import org.ohdsi.webapi.annotation.question.Question;
 import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.List;
 import java.util.Set;
-import org.ohdsi.webapi.annotation.set.QuestionSet;
 import org.springframework.data.jpa.repository.Query;
 
 

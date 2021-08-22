@@ -6,7 +6,6 @@ public class ResultDto {
   private int questionId;
   private String value;
   private String type;
-//  private String sampleName;
 
   //***** GETTERS/SETTERS ******
 
@@ -66,17 +65,4 @@ public class ResultDto {
     this.type = type;
   }
 
-  /**
-   * @return the type
-   */
-//  public String getSampleName() {
-//    return sampleName;
-//  }
-
-  /**
-   * @param type the type to set
-   */
-//  public void setSampleName(String name) {
-//    this.sampleName = name;
-//  }
 }

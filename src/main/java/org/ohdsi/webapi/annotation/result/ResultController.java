@@ -3,39 +3,24 @@ package org.ohdsi.webapi.annotation.result;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
-import org.checkerframework.checker.units.qual.A;
 import org.ohdsi.webapi.annotation.annotation.Annotation;
 import org.ohdsi.webapi.annotation.annotation.AnnotationService;
-import org.ohdsi.webapi.annotation.annotation.AnnotationSummary;
 import org.ohdsi.webapi.annotation.answer.Answer;
 import org.ohdsi.webapi.annotation.answer.AnswerService;
 import org.ohdsi.webapi.annotation.question.Question;
 import org.ohdsi.webapi.annotation.question.QuestionService;
-import org.ohdsi.webapi.annotation.set.QuestionSet;
-import org.ohdsi.webapi.annotation.set.QuestionSetService;
 import org.ohdsi.webapi.annotation.study.Study;
 import org.ohdsi.webapi.annotation.study.StudyService;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
-import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
-import org.ohdsi.webapi.cohortsample.dto.CohortSampleDTO;
-import org.ohdsi.webapi.service.CohortSampleService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.ohdsi.webapi.annotation.result.ResultService;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Path("/annotations/results")
 @Component
 public class ResultController {
-
-  @Autowired
-  private CohortSampleService cohortSampleService;
 
   @Autowired
   private ResultService resultService;
@@ -44,13 +29,7 @@ public class ResultController {
   private QuestionService questionService;
 
   @Autowired
-  private QuestionSetService questionSetService;
-
-  @Autowired
   private AnnotationService annotationService;
-
-  @Autowired
-  private CohortDefinitionRepository cohortDefinitionRepository;
 
   @Autowired
   private StudyService studyService;
@@ -64,11 +43,8 @@ public class ResultController {
   @GET
   @Path("/{annotationID}")
   @Produces(MediaType.APPLICATION_JSON)
-  public List<Result> getResults(@PathParam("annotationID") String annotationID) {
-    int annotationIdInt=Integer.parseInt(annotationID);
-    ArrayList al = new ArrayList();
-    Annotation ourAnno =annotationService.getAnnotationsByAnnotationId(annotationIdInt);
-    return resultService.getResultsByAnnotationID(annotationIdInt);
+  public List<Result> getResultsByAnnotationId(@PathParam("annotationID") int annotationID) {
+    return resultService.getResultsByAnnotationId(annotationID);
   }
 
   @GET
@@ -88,9 +64,6 @@ public class ResultController {
           @QueryParam("cohortSampleId") final int cohortSampleId,
           @QueryParam("studyId") final int studyId
   ) {
-//    May want to replicate this but with an additional parameter-
-//    this would be (quesetionSetID + CohortSampleId) or AnnotationStudyId (aka the same thing)
-
     Study study = null;
     if(studyId!=0){
       study=studyService.getStudyById(studyId);
@@ -103,16 +76,8 @@ public class ResultController {
     }
     List<Result> resultlist=resultService.getResultsByStudy(study);
     List<SuperResultDto> superList = new ArrayList();
-//    Study finalStudy = study;
     Source source = sourceService.findBySourceId(study.getCohortSample().getSourceId());
-//    List<SuperResultDto> fastlist = resultlist.stream().map(r -> new SuperResultDto(r, finalStudy,source)).collect(Collectors.toList());
-//    List<SuperResultDto> fastlist = resultlist.stream().map(r -> {
-//      Question myQuestion = questionService.getQuestionByQuestionId(r.getQuestionId());
-//      Annotation tempanno = annotationService.getAnnotationsByAnnotationId(r.getAnnotation());
-//      return new SuperResultDto(r, finalStudy,source,myQuestion,tempanno);
-//    } ).collect(Collectors.toList());
     for (Result result : resultlist){
-//      things we currently query for; Annotation Cohort Sample, Cohort Definition, QuestionSets
       Question myQuestion = questionService.getQuestionByQuestionId(result.getQuestionId());
       SuperResultDto tempdto = new SuperResultDto(result);
       Annotation tempanno = annotationService.getAnnotationsByAnnotationId(result.getAnnotation());
@@ -130,13 +95,5 @@ public class ResultController {
       superList.add(tempdto);
     }
     return superList;
-//    return fastlist;
-  }
-
-  @Path("/{cohortDefinitionId}/{sourceKey}")
-  @POST
-  @Consumes(MediaType.APPLICATION_JSON)
-  public void createResult(){
-
   }
 }

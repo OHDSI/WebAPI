@@ -30,15 +30,12 @@ public class ResultService extends AbstractDaoService {
   private CohortSampleRepository sampleRepository;
 
   @Autowired
-  private ResultRepository resultRepository;
-
-  @Autowired
   private AnnotationService annotationService;
 
   @Autowired
   private StudyService studyService;
 
-  public List<Result> getResultsByAnnotationID(int AnnotationID){
+  public List<Result> getResultsByAnnotationId(int AnnotationID){
     Annotation ourAnno =annotationService.getAnnotationsByAnnotationId(AnnotationID);
     return getResultsByAnnotation(ourAnno);
   }
@@ -159,7 +156,7 @@ public class ResultService extends AbstractDaoService {
     Boolean hasCleared=false;
     for(int i=0; i < results.length(); i++){
       JSONObject object = results.getJSONObject(i);
-      if(!hasCleared && !getResultsByAnnotationID(annotation.getId()).isEmpty()){
+      if(!hasCleared && !getResultsByAnnotationId(annotation.getId()).isEmpty()){
 //        this entry already exists, need to update here instead of adding to the pile
         deleteResultsByAnnotationId(annotation);
         hasCleared=true;

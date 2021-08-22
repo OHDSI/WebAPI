@@ -8,6 +8,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.JoinColumn;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.ohdsi.webapi.annotation.question.Question;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -17,7 +20,15 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class Answer {
 
   @Id
-  @GeneratedValue
+  @GenericGenerator(
+          name="answer_generator",
+          strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+          parameters = {
+                  @Parameter(name="sequence_name",value="annotation_answer_sequence"),
+                  @Parameter(name="increment_size",value="1")
+          }
+  )
+  @GeneratedValue(generator = "answer_generator")
   @Column(name = "answer_id")
   private int id;
 

@@ -4,6 +4,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.persistence.*;
 
+import org.hibernate.annotations.GenericGenerator;
 import org.ohdsi.webapi.annotation.question.Question;
 
 @Entity(name = "QuestionSet")
@@ -11,7 +12,15 @@ import org.ohdsi.webapi.annotation.question.Question;
 public class QuestionSet {
 
   @Id
-  @GeneratedValue
+  @GenericGenerator(
+          name="set_generator",
+          strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+          parameters = {
+                  @org.hibernate.annotations.Parameter(name="sequence_name",value="annotation_question_set_sequence"),
+                  @org.hibernate.annotations.Parameter(name="increment_size",value="1")
+          }
+  )
+  @GeneratedValue(generator = "set_generator")
   @Column(name = "set_id")
   private int id;
 

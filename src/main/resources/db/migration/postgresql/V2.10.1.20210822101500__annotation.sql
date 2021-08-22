@@ -1,5 +1,7 @@
+CREATE SEQUENCE ${ohdsiSchema}.annotation_question_set_sequence;
+
 CREATE TABLE ${ohdsiSchema}.annotation_set (
-    set_id integer NOT NULL,
+    set_id integer NOT NULL DEFAULT NEXTVAL('annotation_question_set_sequence'),
     name  VARCHAR(255) NOT NULL,
     cohort_definition_id integer NOT NULL,
     date_created TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (now()),
@@ -11,8 +13,10 @@ CREATE TABLE ${ohdsiSchema}.annotation_set (
 
 CREATE INDEX idx_cohort_annotation_set ON ${ohdsiSchema}.annotation_set (cohort_definition_id);
 
+CREATE SEQUENCE ${ohdsiSchema}.annotation_question_sequence;
+
 CREATE TABLE ${ohdsiSchema}.annotation_question (
-    question_id integer NOT NULL,
+    question_id integer NOT NULL DEFAULT NEXTVAL('annotation_question_sequence'),
     set_id integer NOT NULL,
     question_name  VARCHAR(255) NOT NULL,
     question_type  VARCHAR(50) NOT NULL,
@@ -28,9 +32,10 @@ CREATE TABLE ${ohdsiSchema}.annotation_question (
 
 CREATE INDEX idx_annotation_set_question ON ${ohdsiSchema}.annotation_question (set_id);
 
+CREATE SEQUENCE ${ohdsiSchema}.annotation_answer_sequence;
 
 CREATE TABLE ${ohdsiSchema}.annotation_answer (
-    answer_id integer NOT NULL,
+    answer_id integer NOT NULL DEFAULT NEXTVAL('annotation_answer_sequence'),
     question_id integer NOT NULL,
     text character varying(250) NOT NULL,
     value character varying(250) NOT NULL,
@@ -43,6 +48,7 @@ CREATE TABLE ${ohdsiSchema}.annotation_answer (
 CREATE INDEX idx_annotation_answer_question ON ${ohdsiSchema}.annotation_question (question_id);
 
 CREATE SEQUENCE ${ohdsiSchema}.annotation_sequence;
+
 CREATE TABLE ${ohdsiSchema}.annotation (
     annotation_id integer NOT NULL DEFAULT NEXTVAL('annotation_sequence'),
     subject_id integer NOT NULL,
@@ -60,8 +66,10 @@ CREATE TABLE ${ohdsiSchema}.annotation (
 CREATE INDEX idx_annotation_sample_subject ON ${ohdsiSchema}.annotation (cohort_sample_id,subject_id);
 CREATE INDEX idx_annotation_set ON ${ohdsiSchema}.annotation (question_set_id);
 
+CREATE SEQUENCE ${ohdsiSchema}.annotation_study_sequence;
+
 CREATE TABLE ${ohdsiSchema}.annotation_study (
-   study_id integer NOT NULL,
+   study_id integer NOT NULL DEFAULT NEXTVAL('annotation_study_sequence'),
    cohort_sample_id integer NOT NULL,
    question_set_id integer NOT NULL,
    cohort_definition_id integer NOT NULL,

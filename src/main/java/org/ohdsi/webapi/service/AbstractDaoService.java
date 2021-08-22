@@ -11,12 +11,18 @@ import org.ohdsi.webapi.IExecutionInfo;
 import org.ohdsi.webapi.common.sensitiveinfo.AbstractAdminService;
 import org.ohdsi.webapi.conceptset.ConceptSetItemRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetRepository;
+import org.ohdsi.webapi.exception.BadRequestAtlasException;
+import org.ohdsi.webapi.model.CommonEntity;
+import org.ohdsi.webapi.model.CommonEntityExt;
+import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceHelper;
 import org.ohdsi.webapi.source.SourceRepository;
+import org.ohdsi.webapi.tag.TagService;
+import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.DataSourceDTOParser;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
@@ -29,6 +35,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.ws.rs.ForbiddenException;
 import java.io.File;
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -38,6 +45,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public abstract class AbstractDaoService extends AbstractAdminService {
 
@@ -106,6 +116,12 @@ public abstract class AbstractDaoService extends AbstractAdminService {
 
   @Autowired
   private SourceHelper sourceHelper;
+
+  @Autowired
+  private TagService tagService;
+
+  @Autowired
+  private PermissionService permissionService;
 
   public SourceRepository getSourceRepository() {
     return sourceRepository;
@@ -292,4 +308,48 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     return security.getSubject();
   }
 
+  protected void assignTag(CommonEntityExt<?> entity, int tagId, boolean isPermissionProtected){
+    if (Objects.nonNull(entity)) {
+      Tag tag = tagService.getById(tagId);
+      if (Objects.nonNull(tag)) {
+        if (isPermissionProtected != tag.isPermissionProtected()) {
+          throw new BadRequestAtlasException("Wrong endpoint is used for assigning tag");
+        }
+        entity.getTags().add(tag);
+      }
+    }
+  }
+
+  protected void unassignTag(CommonEntityExt<?> entity, int tagId, boolean isPermissionProtected) {
+    if (Objects.nonNull(entity)) {
+      Tag tag = tagService.getById(tagId);
+      if (Objects.nonNull(tag)) {
+        if (isPermissionProtected != tag.isPermissionProtected()) {
+          throw new BadRequestAtlasException("Wrong endpoint is used for unassigning tag");
+        }
+        Set<Tag> tags = entity.getTags().stream()
+                .filter(t -> t.getId() != tagId)
+                .collect(Collectors.toSet());
+        entity.setTags(tags);
+      }
+    }
+  }
+
+  protected void checkOwnerOrAdmin(UserEntity owner) {
+    UserEntity user = getCurrentUser();
+    Long ownerId = Objects.nonNull(owner) ? owner.getId() : null;
+
+    if (!(user.getId().equals(ownerId) || isAdmin())) {
+      throw new ForbiddenException();
+    }
+  }
+
+  protected void checkOwnerOrAdminOrGranted(CommonEntity<?> entity) {
+    UserEntity user = getCurrentUser();
+    Long ownerId = Objects.nonNull(entity.getCreatedBy()) ? entity.getCreatedBy().getId() : null;
+
+    if (!(user.getId().equals(ownerId) || isAdmin() || permissionService.hasWriteAccess(entity))) {
+      throw new ForbiddenException();
+    }
+  }
 }

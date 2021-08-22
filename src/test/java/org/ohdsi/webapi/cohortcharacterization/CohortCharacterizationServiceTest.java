@@ -23,6 +23,7 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceRepository;
+import org.ohdsi.webapi.source.SourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.Response;
@@ -64,6 +65,9 @@ public class CohortCharacterizationServiceTest extends AbstractDatabaseTest {
 
     @Autowired
     private SourceRepository sourceRepository;
+
+    @Autowired
+    private SourceService sourceService;
     
     @Value("${datasource.ohdsi.schema}")
     private String ohdsiSchema;
@@ -134,8 +138,10 @@ public class CohortCharacterizationServiceTest extends AbstractDatabaseTest {
         try {
             ZipFile zipFile = getZipFile(generationId, paramItem);
             if (paramItem.fileItems.isEmpty()) {
-                // File is empty
-                assertFalse(dataItemMessage, zipFile.isValidZipFile());
+                // File is valid
+                assertTrue(dataItemMessage, zipFile.isValidZipFile());
+                // but empty
+                assertTrue(dataItemMessage, zipFile.getFileHeaders().isEmpty());
             } else {
                 // File should not be empty
                 assertTrue(dataItemMessage, zipFile.isValidZipFile());

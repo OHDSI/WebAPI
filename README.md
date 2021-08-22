@@ -76,5 +76,3 @@ It was chosen to use embedded PG instead of H2 for unit tests since H2 doesn't s
 
 ## License
 OHDSI WebAPI is licensed under Apache License 2.0
-
-

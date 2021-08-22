@@ -23,6 +23,8 @@ import javax.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.webapi.model.CommonEntity;
+import org.ohdsi.webapi.model.CommonEntityExt;
+import org.ohdsi.webapi.tag.domain.Tag;
 
 /**
  *
@@ -37,7 +39,7 @@ import org.ohdsi.webapi.model.CommonEntity;
           attributeNodes = @NamedAttributeNode("executionInfoList")
   )
 })
-public class IncidenceRateAnalysis extends CommonEntity<Integer> implements Serializable {
+public class IncidenceRateAnalysis extends CommonEntityExt<Integer> implements Serializable {
   private static final long serialVersionUID = 1L;
   
   @Id
@@ -66,6 +68,12 @@ public class IncidenceRateAnalysis extends CommonEntity<Integer> implements Seri
   
   @OneToMany(fetch= FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "analysis", orphanRemoval=true)
   private Set<ExecutionInfo> executionInfoList = new HashSet<>();
+
+  @ManyToMany(targetEntity = Tag.class, fetch = FetchType.LAZY)
+  @JoinTable(name = "ir_tag",
+          joinColumns = @JoinColumn(name = "asset_id", referencedColumnName = "id"),
+          inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
+  private Set<Tag> tags;
 
   @Override
   public Integer getId() {
@@ -111,5 +119,15 @@ public class IncidenceRateAnalysis extends CommonEntity<Integer> implements Seri
   public IncidenceRateAnalysis setExecutionInfoList(Set<ExecutionInfo> executionInfoList) {
     this.executionInfoList = executionInfoList;
     return this;
+  }
+
+  @Override
+  public Set<Tag> getTags() {
+    return tags;
+  }
+
+  @Override
+  public void setTags(Set<Tag> tags) {
+    this.tags = tags;
   }
 }

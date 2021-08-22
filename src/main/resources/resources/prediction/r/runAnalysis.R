@@ -32,6 +32,11 @@ tryCatch({
                                                                         password = pwd,
                                                                         pathToDriver = driversPath)
 
+        # Evaluating can't use global environment in child threads
+        connectionDetails$user <- function() Sys.getenv("DBMS_USERNAME")
+        connectionDetails$password <- function() Sys.getenv("DBMS_PASSWORD")
+        connectionDetails$connectionString <- function() Sys.getenv("CONNECTION_STRING")
+
         outputFolder <- file.path(getwd(), 'results')
         dir.create(outputFolder)
 
@@ -47,11 +52,8 @@ tryCatch({
                 packageResults = T,
                 minCellCount = 5,
                 cdmVersion = 5)
-
-        populateShinyApp(shinyDirectory = system.file('shiny', 'PLPViewer', package = '@packageName'), resultDirectory = outputFolder)
-
         # To run PLP Viewer shiny app call:
-        # PatientLevelPrediction::viewPlp(readRDS("./ShinyApp/data/Analysis_1/plpResult.rds"))
+        # PatientLevelPrediction::viewMultiplePlp(outputFolder)
 }, finally = {
         remove.packages('@packageName')
 })

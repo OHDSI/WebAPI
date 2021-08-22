@@ -18,6 +18,7 @@ import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcShortDTO;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcVersionFullDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.ExportExecutionResultRequest;
 import org.ohdsi.webapi.cohortcharacterization.dto.GenerationResults;
@@ -33,9 +34,12 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
+import org.ohdsi.webapi.tag.TagService;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.HttpUtils;
+import org.ohdsi.webapi.versioning.dto.VersionDTO;
+import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
@@ -82,6 +86,7 @@ public class CcController {
     private final SourceService sourceService;
     private CharacterizationChecker checker;
     private PermissionService permissionService;
+    private final TagService tagService;
 
     public CcController(
             final CcService service,
@@ -90,7 +95,8 @@ public class CcController {
             final ConverterUtils converterUtils,
             CommonGenerationSensitiveInfoService sensitiveInfoService,
             SourceService sourceService, CharacterizationChecker checker,
-            PermissionService permissionService) {
+            PermissionService permissionService,
+            TagService tagService) {
         this.service = service;
         this.feAnalysisService = feAnalysisService;
         this.conversionService = conversionService;
@@ -99,6 +105,7 @@ public class CcController {
         this.sourceService = sourceService;
         this.checker = checker;
         this.permissionService = permissionService;
+        this.tagService = tagService;
         FeatureExtraction.init(null);
     }
 
@@ -106,6 +113,7 @@ public class CcController {
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
     public CohortCharacterizationDTO create(final CohortCharacterizationDTO dto) {
         final CohortCharacterizationEntity createdEntity = service.createCc(conversionService.convert(dto, CohortCharacterizationEntity.class));
         return conversionService.convert(createdEntity, CohortCharacterizationDTO.class);
@@ -118,6 +126,7 @@ public class CcController {
         CohortCharacterizationDTO dto = getDesign(id);
         dto.setName(service.getNameForCopy(dto.getName()));
         dto.setId(null);
+        dto.setTags(null);
         dto.getStratas().forEach(s -> s.setId(null));
         dto.getParameters().forEach(p -> p.setId(null));
         return create(dto);
@@ -156,9 +165,9 @@ public class CcController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public CohortCharacterizationDTO getDesign(@PathParam("id") final Long id) {
-        CohortCharacterization  cc = service.findByIdWithLinkedEntities(id);
+        CohortCharacterizationEntity cc = service.findByIdWithLinkedEntities(id);
         ExceptionUtils.throwNotFoundExceptionIfNull(cc, String.format("There is no cohort characterization with id = %d.", id));
-        return convertCcToDto(service.findByIdWithLinkedEntities(id));
+        return convertCcToDto(cc);
     }
 
     @GET
@@ -190,6 +199,7 @@ public class CcController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public CohortCharacterizationDTO update(@PathParam("id") final Long id, final CohortCharacterizationDTO dto) {
+        service.saveVersion(dto.getId());
         final CohortCharacterizationEntity entity = conversionService.convert(dto, CohortCharacterizationEntity.class);
         entity.setId(id);
         final CohortCharacterizationEntity updatedEntity = service.updateCc(entity);
@@ -202,6 +212,7 @@ public class CcController {
     @Consumes(MediaType.APPLICATION_JSON)
     public CohortCharacterizationDTO doImport(final CcExportDTO dto) {
         dto.setName(service.getNameWithSuffix(dto.getName()));
+        dto.setTags(null);
         final CohortCharacterizationEntity entity = conversionService.convert(dto, CohortCharacterizationEntity.class);
         return conversionService.convert(service.importCc(entity), CohortCharacterizationDTO.class);
     }
@@ -232,7 +243,6 @@ public class CcController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public CheckResult runDiagnostics(CohortCharacterizationDTO characterizationDTO){
-
         return new CheckResult(checker.check(characterizationDTO));
     }
 
@@ -414,6 +424,133 @@ public class CcController {
                 .type(MediaType.APPLICATION_OCTET_STREAM)
                 .header("Content-Disposition", String.format("attachment; filename=\"cohort_characterization_study_%d_export.zip\"", analysisId))
                 .build();
+    }
+
+    /**
+     * Assign tag to Cohort Characterization
+     *
+     * @param id
+     * @param tagId
+     */
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/tag/")
+    @javax.transaction.Transactional
+    public void assignTag(@PathParam("id") final long id, final int tagId) {
+        service.assignTag(id, tagId, false);
+    }
+
+    /**
+     * Unassign tag from Cohort Characterization
+     *
+     * @param id
+     * @param tagId
+     */
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/tag/{tagId}")
+    @javax.transaction.Transactional
+    public void unassignTag(@PathParam("id") final long id, @PathParam("tagId") final int tagId) {
+        service.unassignTag(id, tagId, false);
+    }
+
+    /**
+     * Assign protected tag to Cohort Characterization
+     *
+     * @param id
+     * @param tagId
+     */
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/protectedtag/")
+    @javax.transaction.Transactional
+    public void assignPermissionProtectedTag(@PathParam("id") final long id, final int tagId) {
+        service.assignTag(id, tagId, true);
+    }
+
+    /**
+     * Unassign protected tag from Cohort Characterization
+     *
+     * @param id
+     * @param tagId
+     */
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/protectedtag/{tagId}")
+    @javax.transaction.Transactional
+    public void unassignPermissionProtectedTag(@PathParam("id") final long id, @PathParam("tagId") final int tagId) {
+        service.unassignTag(id, tagId, true);
+    }
+
+    /**
+     * Get list of versions of Cohort Characterization
+     *
+     * @param id
+     * @return
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/")
+    public List<VersionDTO> getVersions(@PathParam("id") final long id) {
+        return service.getVersions(id);
+    }
+
+    /**
+     * Get version of Cohort Characterization
+     *
+     * @param id
+     * @param version
+     * @return
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/{version}")
+    public CcVersionFullDTO getVersion(@PathParam("id") final long id, @PathParam("version") final int version) {
+        return service.getVersion(id, version);
+    }
+
+    /**
+     * Update version of Cohort Characterization
+     *
+     * @param id
+     * @param version
+     * @param updateDTO
+     * @return
+     */
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/{version}")
+    public VersionDTO updateVersion(@PathParam("id") final long id, @PathParam("version") final int version,
+                                    VersionUpdateDTO updateDTO) {
+        return service.updateVersion(id, version, updateDTO);
+    }
+
+    /**
+     * Delete version of Cohort Characterization
+     *
+     * @param id
+     * @param version
+     */
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/{version}")
+    public void deleteVersion(@PathParam("id") final long id, @PathParam("version") final int version) {
+        service.deleteVersion(id, version);
+    }
+
+    /**
+     * Create a new asset form version of Cohort Characterization
+     *
+     * @param id
+     * @param version
+     * @return
+     */
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/{version}/createAsset")
+    public CohortCharacterizationDTO copyAssetFromVersion(@PathParam("id") final long id,
+                                                          @PathParam("version") final int version) {
+        return service.copyAssetFromVersion(id, version);
     }
 
     private void convertPresetAnalysesToLocal(List<? extends CcResult> ccResults) {

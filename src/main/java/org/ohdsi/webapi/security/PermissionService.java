@@ -10,7 +10,6 @@ import org.ohdsi.webapi.security.model.EntityPermissionSchemaResolver;
 import org.ohdsi.webapi.security.model.EntityType;
 import org.ohdsi.webapi.security.model.SourcePermissionSchema;
 import org.ohdsi.webapi.security.model.UserSimpleAuthorizationInfo;
-import org.ohdsi.webapi.service.converters.BaseCommonEntityToDTOConverter;
 import org.ohdsi.webapi.service.dto.CommonEntityDTO;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.PermissionRepository;
@@ -30,7 +29,6 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.annotation.PostConstruct;
@@ -233,7 +231,8 @@ public class PermissionService {
         this.permissionCache.set(new ConcurrentHashMap<>());
     }
 
-    public void fillWriteAccess(CommonEntity entity, CommonEntityDTO entityDTO) {
+    public boolean hasWriteAccess(CommonEntity entity) {
+        boolean hasAccess = false;
         if (securityEnabled && entity.getCreatedBy() != null) {
             try {
                 String login = this.permissionManager.getSubjectName();
@@ -244,16 +243,21 @@ public class PermissionService {
                     List<RoleDTO> roles = getRolesHavingPermissions(entityType, entity.getId());
 
                     Collection<String> userRoles = authorizationInfo.getRoles();
-                    boolean hasRole = roles.stream()
+                    hasAccess = roles.stream()
                             .anyMatch(r -> userRoles.stream()
                                     .anyMatch(re -> re.equals(r.getName())));
-
-                    entityDTO.setHasWriteAccess(hasRole);
                 }
             } catch (Exception e) {
                 logger.error("Error getting user roles and permissions", e);
                 throw new RuntimeException(e);
             }
+        }
+        return hasAccess;
+    }
+
+    public void fillWriteAccess(CommonEntity entity, CommonEntityDTO entityDTO) {
+        if (securityEnabled && entity.getCreatedBy() != null) {
+            entityDTO.setHasWriteAccess(hasWriteAccess(entity));
         }
     }
 }

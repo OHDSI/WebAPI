@@ -26,6 +26,8 @@ import org.ohdsi.webapi.cohortcharacterization.dto.CcDistributionStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcVersionFullDTO;
+import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.ExecutionResultRequest;
 import org.ohdsi.webapi.cohortcharacterization.dto.ExportExecutionResultRequest;
 import org.ohdsi.webapi.cohortcharacterization.dto.GenerationResults;
@@ -55,6 +57,7 @@ import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.service.FeatureExtractionService;
 import org.ohdsi.webapi.service.JobService;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.annotations.CcGenerationId;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
@@ -63,12 +66,20 @@ import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
+import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.SourceUtils;
 import org.ohdsi.webapi.util.TempFileUtils;
+import org.ohdsi.webapi.versioning.domain.CharacterizationVersion;
+import org.ohdsi.webapi.versioning.domain.Version;
+import org.ohdsi.webapi.versioning.domain.VersionBase;
+import org.ohdsi.webapi.versioning.domain.VersionType;
+import org.ohdsi.webapi.versioning.dto.VersionDTO;
+import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
+import org.ohdsi.webapi.versioning.service.VersionService;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
@@ -192,6 +203,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     private final JobInvalidator jobInvalidator;
     private final GenericConversionService genericConversionService;
     private final VocabularyService vocabularyService;
+    private VersionService<CharacterizationVersion> versionService;
 
     private final Environment env;
 
@@ -215,6 +227,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             final ApplicationEventPublisher eventPublisher,
             final JobInvalidator jobInvalidator,
             final VocabularyService vocabularyService,
+            final VersionService<CharacterizationVersion> versionService,
             @Qualifier("conversionService") final GenericConversionService genericConversionService,
             Environment env) {
         this.repository = ccRepository;
@@ -236,6 +249,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         this.jobInvalidator = jobInvalidator;
         this.vocabularyService = vocabularyService;
         this.genericConversionService = genericConversionService;
+        this.versionService = versionService;
         this.env = env;
         SerializedCcToCcConverter.setConversionService(conversionService);
     }
@@ -289,6 +303,20 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
         List<CohortCharacterizationEntity> ccList = repository.findByFeatureAnalysis(event.getFeAnalysis());
         ccList.forEach(this::saveCc);
+    }
+
+    @Override
+    @Transactional
+    public void assignTag(long id, int tagId, boolean isPermissionProtected) {
+        CohortCharacterizationEntity entity = findById(id);
+        assignTag(entity, tagId, isPermissionProtected);
+    }
+
+    @Override
+    @Transactional
+    public void unassignTag(long id, int tagId, boolean isPermissionProtected) {
+        CohortCharacterizationEntity entity = findById(id);
+        unassignTag(entity, tagId, isPermissionProtected);
     }
 
     @Override
@@ -807,6 +835,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                     Report comparativeReport = new Report(analysisItem.getName(), analysisId, comparativeResultItem);
                     comparativeReport.header = executionComparativeHeaderLines;
                     comparativeReport.isComparative = true;
+                    comparativeReport.faType = analysisItem.getFaType();
+                    comparativeReport.domainId = feAnalysisMap.get(analysisItem.getName());
                     if (PREVALENCE.equals(analysisItem.getType())) {
                         comparativeReport.resultType = PREVALENCE;
                         // Summary comparative reports are only available for prevalence type
@@ -911,6 +941,76 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                     && Objects.equals(jobParameters.getString(COHORT_CHARACTERIZATION_ID), Long.toString(id))
                     && Objects.equals(getJobName(), jobName);
         });
+    }
+
+    public List<VersionDTO> getVersions(final long id) {
+        List<VersionBase> versions = versionService.getVersions(VersionType.CHARACTERIZATION, id);
+        return versions.stream()
+                .map(v -> genericConversionService.convert(v, VersionDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    public CcVersionFullDTO getVersion(final long id, final int version) {
+        checkVersion(id, version, false);
+        CharacterizationVersion characterizationVersion = versionService.getById(VersionType.CHARACTERIZATION, id, version);
+
+        return genericConversionService.convert(characterizationVersion, CcVersionFullDTO.class);
+    }
+
+    public VersionDTO updateVersion(final long id, final int version,
+                                    VersionUpdateDTO updateDTO) {
+        checkVersion(id, version);
+        updateDTO.setAssetId(id);
+        updateDTO.setVersion(version);
+        CharacterizationVersion updated = versionService.update(VersionType.CHARACTERIZATION, updateDTO);
+
+        return genericConversionService.convert(updated, VersionDTO.class);
+    }
+
+    public void deleteVersion(final long id, final int version) {
+        checkVersion(id, version);
+        versionService.delete(VersionType.CHARACTERIZATION, id, version);
+    }
+
+    public CohortCharacterizationDTO copyAssetFromVersion(final long id, final int version) {
+        checkVersion(id, version, false);
+        CharacterizationVersion characterizationVersion = versionService.getById(VersionType.CHARACTERIZATION, id, version);
+
+        CcVersionFullDTO fullDTO = genericConversionService.convert(characterizationVersion, CcVersionFullDTO.class);
+        CohortCharacterizationEntity entity =
+                genericConversionService.convert(fullDTO.getEntityDTO(), CohortCharacterizationEntity.class);
+        entity.setId(null);
+        entity.setTags(null);
+        entity.setName(NameUtils.getNameForCopy(entity.getName(), this::getNamesLike, repository.findByName(entity.getName())));
+
+        CohortCharacterizationEntity saved = createCc(entity);
+        return genericConversionService.convert(saved, CohortCharacterizationDTO.class);
+    }
+
+    private void checkVersion(long id, int version) {
+        checkVersion(id, version, true);
+    }
+
+    private void checkVersion(long id, int version, boolean checkOwnerShip) {
+        Version characterizationVersion = versionService.getById(VersionType.CHARACTERIZATION, id, version);
+        ExceptionUtils.throwNotFoundExceptionIfNull(characterizationVersion,
+                String.format("There is no cohort characterization version with id = %d.", version));
+
+        CohortCharacterizationEntity entity = findById(id);
+        if (checkOwnerShip) {
+            checkOwnerOrAdminOrGranted(entity);
+        }
+    }
+
+    public CharacterizationVersion saveVersion(long id) {
+        CohortCharacterizationEntity def = findById(id);
+        CharacterizationVersion version = genericConversionService.convert(def, CharacterizationVersion.class);
+
+        UserEntity user = Objects.nonNull(def.getModifiedBy()) ? def.getModifiedBy() : def.getCreatedBy();
+        Date versionDate = Objects.nonNull(def.getModifiedDate()) ? def.getModifiedDate() : def.getCreatedDate();
+        version.setCreatedBy(user);
+        version.setCreatedDate(versionDate);
+        return versionService.create(VersionType.CHARACTERIZATION, version);
     }
 
     private List<String> getNamesLike(String copyName) {

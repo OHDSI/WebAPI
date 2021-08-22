@@ -36,6 +36,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertEquals;
+
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.ohdsi.circe.helper.ResourceHelper;
@@ -119,6 +121,14 @@ public class PathwayAnalysisTest extends AbstractDatabaseTest {
     truncateTable(String.format("%s.%s", ohdsiSchema, "generation_cache"));
     prepareCdmSchema();
     prepareResultSchema();    
+  }
+
+  @After
+  public void tearDownDB() {
+    truncateTable(String.format("%s.%s", ohdsiSchema, "cohort_definition"));
+    resetSequence(String.format("%s.%s", ohdsiSchema, "cohort_definition_sequence"));
+    truncateTable(String.format("%s.%s", ohdsiSchema, "pathway_analysis"));
+    resetSequence(String.format("%s.%s", ohdsiSchema, "pathway_analysis_sequence"));
   }
 
   private static void prepareResultSchema() {

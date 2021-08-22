@@ -55,9 +55,9 @@ public class JobTemplate {
                 log.debug("JobExecution queued: {}", exec);
             }
         } catch (final JobExecutionAlreadyRunningException e) {
-            throw new WebApplicationException(Response.status(Status.CONFLICT).entity(whitelist(e)).build());
+            throw new WebApplicationException(e, Response.status(Status.CONFLICT).entity(whitelist(e)).build());
         } catch (final Exception e) {
-            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity(whitelist(e)).build());
+            throw new WebApplicationException(e, Response.status(Status.INTERNAL_SERVER_ERROR).entity(whitelist(e)).build());
         }
         return JobUtils.toJobExecutionResource(exec);
     }

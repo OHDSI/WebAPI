@@ -4,15 +4,16 @@
 TRUNCATE TABLE @results_schema.concept_hierarchy;
 /********** CONDITION/CONDITION_ERA **********/
 INSERT INTO @results_schema.concept_hierarchy
-	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name, level4_concept_name)
+	(concept_id, concept_name, treemap, concept_hierarchy_type, level1_concept_name, level2_concept_name, level3_concept_name, level4_concept_name)
 SELECT
 	snomed.concept_id,
-  snomed.concept_name AS snomed_concept_name,
+  snomed.concept_name AS concept_name,
 	CAST('Condition' AS VARCHAR(20)) AS treemap,
-	pt_to_hlt.pt_concept_name,
-	hlt_to_hlgt.hlt_concept_name,
-	hlgt_to_soc.hlgt_concept_name,
-	soc.concept_name AS soc_concept_name
+	CAST(NULL AS VARCHAR(20)) as concept_hierarchy_type,
+	pt_to_hlt.pt_concept_name as level1_concept_name,
+	hlt_to_hlgt.hlt_concept_name as level2_concept_name,
+	hlgt_to_soc.hlgt_concept_name as level3_concept_name,
+	soc.concept_name AS level4_concept_name
 FROM (
 	SELECT
 		concept_id,
@@ -75,15 +76,16 @@ LEFT JOIN @vocab_schema.concept soc ON hlgt_to_soc.soc_concept_id = soc.concept_
 
 /********** DRUG **********/
 INSERT INTO @results_schema.concept_hierarchy
-	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name, level4_concept_name)
+	(concept_id, concept_name, treemap, concept_hierarchy_type, level1_concept_name, level2_concept_name, level3_concept_name, level4_concept_name)
 SELECT
 	rxnorm.concept_id,
-	rxnorm.concept_name AS rxnorm_concept_name,
+	rxnorm.concept_name AS concept_name,
 	CAST('Drug' AS VARCHAR(20)) AS treemap,
-	rxnorm.rxnorm_ingredient_concept_name,
-	atc5_to_atc3.atc5_concept_name,
-	atc3_to_atc1.atc3_concept_name,
-	atc1.concept_name AS atc1_concept_name
+	CAST(NULL AS VARCHAR(20)) as concept_hierarchy_type,
+	rxnorm.rxnorm_ingredient_concept_name as level1_concept_name,
+	atc5_to_atc3.atc5_concept_name as level2_concept_name,
+	atc3_to_atc1.atc3_concept_name as level3_concept_name,
+	atc1.concept_name AS level4_concept_name
 FROM (
 	SELECT
 		c1.concept_id,
@@ -142,14 +144,16 @@ LEFT JOIN @vocab_schema.concept atc1 ON atc3_to_atc1.atc1_concept_id = atc1.conc
 
 /********** DRUG_ERA **********/
 INSERT INTO @results_schema.concept_hierarchy
-	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name)
+	(concept_id, concept_name, treemap, concept_hierarchy_type, level1_concept_name, level2_concept_name, level3_concept_name, level4_concept_name)
 SELECT
-	rxnorm.rxnorm_ingredient_concept_id,
-	rxnorm.rxnorm_ingredient_concept_name,
+	rxnorm.rxnorm_ingredient_concept_id as concept_id,
+	rxnorm.rxnorm_ingredient_concept_name as concept_name,
 	CAST('Drug Era' AS VARCHAR(20)) AS treemap,
-	atc5_to_atc3.atc5_concept_name,
-	atc3_to_atc1.atc3_concept_name,
-	atc1.concept_name AS atc1_concept_name
+	CAST(NULL AS VARCHAR(20)) as concept_hierarchy_type,
+	atc5_to_atc3.atc5_concept_name as level1_concept_name,
+	atc3_to_atc1.atc3_concept_name as level2_concept_name,
+	atc1.concept_name AS level3_concept_name,
+	CAST(NULL AS VARCHAR(255)) as level4_concept_name
 FROM (
 	SELECT
 		c2.concept_id   AS rxnorm_ingredient_concept_id,
@@ -203,14 +207,16 @@ LEFT JOIN @vocab_schema.concept atc1 ON atc3_to_atc1.atc1_concept_id = atc1.conc
 
 /********** MEASUREMENT **********/
 INSERT INTO @results_schema.concept_hierarchy
-	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name)
+	(concept_id, concept_name, treemap, concept_hierarchy_type, level1_concept_name, level2_concept_name, level3_concept_name, level4_concept_name)
 SELECT
 	m.concept_id,
 	m.concept_name AS concept_name,
 	CAST('Measurement' AS VARCHAR(20)) AS treemap,
+	CAST(NULL AS VARCHAR(20)) as concept_hierarchy_type,
 	CAST(max(c1.concept_name) AS VARCHAR(255)) AS level1_concept_name,
 	CAST(max(c2.concept_name) AS VARCHAR(255)) AS level2_concept_name,
-	CAST(max(c3.concept_name) AS VARCHAR(255)) AS level3_concept_name
+	CAST(max(c3.concept_name) AS VARCHAR(255)) AS level3_concept_name,
+	CAST(NULL AS VARCHAR(255)) as level4_concept_name
 FROM (
 	SELECT DISTINCT
 		concept_id,
@@ -228,14 +234,16 @@ GROUP BY M.concept_id, M.concept_name;
 
 /********** OBSERVATION **********/
 INSERT INTO @results_schema.concept_hierarchy
-	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name)
+	(concept_id, concept_name, treemap, concept_hierarchy_type, level1_concept_name, level2_concept_name, level3_concept_name, level4_concept_name)
 SELECT
 	obs.concept_id,
 	obs.concept_name AS concept_name,
 	CAST('Observation' AS VARCHAR(20)) AS treemap,
+	CAST(NULL AS VARCHAR(20)) as concept_hierarchy_type,
 	CAST(max(c1.concept_name) AS VARCHAR(255)) AS level1_concept_name,
 	CAST(max(c2.concept_name) AS VARCHAR(255)) AS level2_concept_name,
-	CAST(max(c3.concept_name) AS VARCHAR(255)) AS level3_concept_name
+	CAST(max(c3.concept_name) AS VARCHAR(255)) AS level3_concept_name,
+	CAST(NULL AS VARCHAR(255)) as level4_concept_name
 FROM (
 	SELECT
 		concept_id,
@@ -253,14 +261,16 @@ GROUP BY obs.concept_id, obs.concept_name;
 
 /********** PROCEDURE **********/
 INSERT INTO @results_schema.concept_hierarchy
-	(concept_id, concept_name, treemap, level1_concept_name, level2_concept_name, level3_concept_name)
+	(concept_id, concept_name, treemap, concept_hierarchy_type, level1_concept_name, level2_concept_name, level3_concept_name, level4_concept_name)
 SELECT
 	procs.concept_id,
 	CAST(procs.proc_concept_name AS VARCHAR(400)) AS concept_name,
 	CAST('Procedure' AS VARCHAR(20)) AS treemap,
-	CAST(max(proc_hierarchy.os3_concept_name) AS VARCHAR(255)) AS level2_concept_name,
-	CAST(max(proc_hierarchy.os2_concept_name) AS VARCHAR(255)) AS level3_concept_name,
-	CAST(max(proc_hierarchy.os1_concept_name) AS VARCHAR(255)) AS level4_concept_name
+	CAST(NULL AS VARCHAR(20)) as concept_hierarchy_type,
+	CAST(max(proc_hierarchy.os3_concept_name) AS VARCHAR(255)) AS level1_concept_name,
+	CAST(max(proc_hierarchy.os2_concept_name) AS VARCHAR(255)) AS level2_concept_name,
+	CAST(max(proc_hierarchy.os1_concept_name) AS VARCHAR(255)) AS level3_concept_name,
+	CAST(NULL AS VARCHAR(255)) as level4_concept_name
 FROM
 (
 	SELECT
@@ -323,7 +333,7 @@ LEFT JOIN (
 			c2.concept_name    AS os3_concept_name
 		FROM @vocab_schema.concept_ancestor ca1
 		INNER JOIN @vocab_schema.concept c1 ON ca1.DESCENDANT_CONCEPT_ID = c1.concept_id
-		INNER JOIN @vocab_schema.concept_ancestor ca2 ON c1.concept_id = ca2.ANCESTOR_CONCEPT_ID 
+		INNER JOIN @vocab_schema.concept_ancestor ca2 ON c1.concept_id = ca2.ANCESTOR_CONCEPT_ID
 		INNER JOIN @vocab_schema.concept c2 ON ca2.DESCENDANT_CONCEPT_ID = c2.concept_id
 		WHERE ca1.ancestor_concept_id = 4040390
 			AND ca1.Min_LEVELS_OF_SEPARATION = 2

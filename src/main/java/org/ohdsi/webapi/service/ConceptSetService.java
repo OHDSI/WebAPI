@@ -23,13 +23,19 @@ import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
+import org.ohdsi.webapi.check.CheckResult;
+import org.ohdsi.webapi.check.checker.conceptset.ConceptSetChecker;
 import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
+import org.ohdsi.webapi.conceptset.dto.ConceptSetVersionFullDTO;
+import org.ohdsi.webapi.exception.ConceptNotExistException;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
@@ -39,9 +45,17 @@ import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.source.SourceService;
+import org.ohdsi.webapi.tag.TagService;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
+import org.ohdsi.webapi.versioning.domain.ConceptSetVersion;
+import org.ohdsi.webapi.versioning.domain.Version;
+import org.ohdsi.webapi.versioning.domain.VersionBase;
+import org.ohdsi.webapi.versioning.domain.VersionType;
+import org.ohdsi.webapi.versioning.dto.VersionDTO;
+import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
+import org.ohdsi.webapi.versioning.service.VersionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -80,6 +94,15 @@ public class ConceptSetService extends AbstractDaoService {
     @Autowired
     private PermissionService permissionService;
 
+    @Autowired
+    private TagService tagService;
+
+    @Autowired
+    private ConceptSetChecker checker;
+
+    @Autowired
+    private VersionService<ConceptSetVersion> versionService;
+
     public static final String COPY_NAME = "copyName";
 
     @Path("{id}")
@@ -114,11 +137,39 @@ public class ConceptSetService extends AbstractDaoService {
     }
 
     @GET
+    @Path("{id}/version/{version}/expression")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ConceptSetExpression getConceptSetExpression(@PathParam("id") final int id,
+                                                        @PathParam("version") final int version) {
+        SourceInfo sourceInfo = sourceService.getPriorityVocabularySourceInfo();
+        if (sourceInfo == null) {
+            throw new UnauthorizedException();
+        }
+        return getConceptSetExpression(id, version, sourceInfo);
+    }
+
+    @GET
+    @Path("{id}/version/{version}/expression/{sourceKey}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ConceptSetExpression getConceptSetExpression(@PathParam("id") final int id,
+                                                        @PathParam("version") final int version,
+                                                        @PathParam("sourceKey") final String sourceKey) {
+        SourceInfo sourceInfo = sourceService.getPriorityVocabularySourceInfo();
+        if (sourceInfo == null) {
+            throw new UnauthorizedException();
+        }
+        return getConceptSetExpression(id, version, sourceInfo);
+    }
+
+    @GET
     @Path("{id}/expression")
     @Produces(MediaType.APPLICATION_JSON)
     public ConceptSetExpression getConceptSetExpression(@PathParam("id") final int id) {
-
-        return getConceptSetExpression(id, sourceService.getPriorityVocabularySourceInfo());
+        SourceInfo sourceInfo = sourceService.getPriorityVocabularySourceInfo();
+        if (sourceInfo == null) {
+            throw new UnauthorizedException();
+        }
+        return getConceptSetExpression(id, null, sourceInfo);
     }
 
     @GET
@@ -128,10 +179,10 @@ public class ConceptSetService extends AbstractDaoService {
 
         Source source = sourceService.findBySourceKey(sourceKey);
         sourceAccessor.checkAccess(source);
-        return getConceptSetExpression(id, source.getSourceInfo());
+        return getConceptSetExpression(id, null, source.getSourceInfo());
     }
 
-    private ConceptSetExpression getConceptSetExpression(int id, SourceInfo sourceInfo) {
+    private ConceptSetExpression getConceptSetExpression(int id, Integer version, SourceInfo sourceInfo) {
         HashMap<Long, Concept> map = new HashMap<>();
 
         // create our expression to return
@@ -139,7 +190,12 @@ public class ConceptSetService extends AbstractDaoService {
         ArrayList<ConceptSetExpression.ConceptSetItem> expressionItems = new ArrayList<>();
 
         List<ConceptSetItem> repositoryItems = new ArrayList<>();
-        getConceptSetItems(id).forEach(repositoryItems::add);
+        if (Objects.isNull(version)) {
+            getConceptSetItems(id).forEach(repositoryItems::add);
+        } else {
+            ConceptSetVersionFullDTO dto = getVersion(id, version);
+            repositoryItems.addAll(dto.getItems());
+        }
 
         // collect the unique concept IDs so we can load the concept object later.
         for (ConceptSetItem csi : repositoryItems) {
@@ -154,9 +210,21 @@ public class ConceptSetService extends AbstractDaoService {
             identifierIndex++;
         }
 
-        // assume we want to resolve using the priority vocabulary provider
-        Source vocabSourceInfo = sourceService.getPriorityVocabularySource();
-        Collection<Concept> concepts = vocabService.executeIdentifierLookup(vocabSourceInfo.getSourceKey(), identifiers);
+        String sourceKey;
+        if (Objects.isNull(sourceInfo)) {
+            sourceKey = sourceService.getPriorityVocabularySource().getSourceKey();
+        } else {
+            sourceKey = sourceInfo.sourceKey;
+        }
+
+        Collection<Concept> concepts = vocabService.executeIdentifierLookup(sourceKey, identifiers);
+        if (concepts.size() != identifiers.length) {
+            String ids = Arrays.stream(identifiers).boxed()
+                    .filter(identifier -> concepts.stream().noneMatch(c -> c.conceptId.equals(identifier)))
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(",", "(", ")"));
+            throw new ConceptNotExistException("Current data source does not contain required concepts " + ids);
+        }
         for(Concept concept : concepts) {
           map.put(concept.conceptId, concept); // associate the concept object to the conceptID in the map
         }
@@ -200,6 +268,8 @@ public class ConceptSetService extends AbstractDaoService {
         getConceptSetItemRepository().deleteByConceptSetId(id);
 
         for (ConceptSetItem csi : items) {
+            // ID must be set to null in case of copying from version, so the new item will be created
+            csi.setId(0);
             csi.setConceptSetId(id);
             getConceptSetItemRepository().save(csi);
         }
@@ -269,6 +339,7 @@ public class ConceptSetService extends AbstractDaoService {
         ConceptSet updated = new ConceptSet();
         updated.setCreatedBy(user);
         updated.setCreatedDate(new Date());
+        updated.setTags(null);
         updateConceptSet(updated, conceptSet);
         return conversionService.convert(updated, ConceptSetDTO.class);
     }
@@ -291,12 +362,15 @@ public class ConceptSetService extends AbstractDaoService {
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
     public ConceptSetDTO updateConceptSet(@PathParam("id") final int id, ConceptSetDTO conceptSetDTO) throws Exception {
 
         ConceptSet updated = getConceptSetRepository().findById(id);
         if (updated == null) {
           throw new Exception("Concept Set does not exist.");
         }
+
+        saveVersion(id);
 
         ConceptSet conceptSet = conversionService.convert(conceptSetDTO, ConceptSet.class);
         return conversionService.convert(updateConceptSet(updated, conceptSet), ConceptSetDTO.class);
@@ -376,4 +450,197 @@ public class ConceptSetService extends AbstractDaoService {
           throw e;
       }
   }
+
+    /**
+     * Assign tag to Concept Set
+     *
+     * @param id
+     * @param tagId
+     */
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/tag/")
+    @Transactional
+    public void assignTag(@PathParam("id") final int id, final int tagId) {
+        ConceptSet entity = getConceptSetRepository().findById(id);
+        assignTag(entity, tagId, false);
+    }
+
+    /**
+     * Unassign tag from Concept Set
+     *
+     * @param id
+     * @param tagId
+     */
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/tag/{tagId}")
+    @Transactional
+    public void unassignTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
+        ConceptSet entity = getConceptSetRepository().findById(id);
+        unassignTag(entity, tagId, false);
+    }
+
+    /**
+     * Assign protected tag to Concept Set
+     *
+     * @param id
+     * @param tagId
+     */
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/protectedtag/")
+    @Transactional
+    public void assignPermissionProtectedTag(@PathParam("id") final int id, final int tagId) {
+        ConceptSet entity = getConceptSetRepository().findById(id);
+        assignTag(entity, tagId, true);
+    }
+
+    /**
+     * Unassign protected tag from Concept Set
+     *
+     * @param id
+     * @param tagId
+     */
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/protectedtag/{tagId}")
+    @Transactional
+    public void unassignPermissionProtectedTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
+        ConceptSet entity = getConceptSetRepository().findById(id);
+        unassignTag(entity, tagId, true);
+    }
+
+    @POST
+    @Path("/check")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
+    public CheckResult runDiagnostics(ConceptSetDTO conceptSetDTO) {
+        return new CheckResult(checker.check(conceptSetDTO));
+    }
+
+    /**
+     * Get list of versions of Concept Set
+     *
+     * @param id
+     * @return
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/")
+    @Transactional
+    public List<VersionDTO> getVersions(@PathParam("id") final int id) {
+        List<VersionBase> versions = versionService.getVersions(VersionType.CONCEPT_SET, id);
+        return versions.stream()
+                .map(v -> conversionService.convert(v, VersionDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Get version of Concept Set
+     *
+     * @param id
+     * @param version
+     * @return
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/{version}")
+    @Transactional
+    public ConceptSetVersionFullDTO getVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
+        checkVersion(id, version, false);
+        ConceptSetVersion conceptSetVersion = versionService.getById(VersionType.CONCEPT_SET, id, version);
+
+        return conversionService.convert(conceptSetVersion, ConceptSetVersionFullDTO.class);
+    }
+
+    /**
+     * Update version of Concept Set
+     *
+     * @param id
+     * @param version
+     * @param updateDTO
+     * @return
+     */
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/{version}")
+    @Transactional
+    public VersionDTO updateVersion(@PathParam("id") final int id, @PathParam("version") final int version,
+                                    VersionUpdateDTO updateDTO) {
+        checkVersion(id, version);
+        updateDTO.setAssetId(id);
+        updateDTO.setVersion(version);
+        ConceptSetVersion updated = versionService.update(VersionType.CONCEPT_SET, updateDTO);
+
+        return conversionService.convert(updated, VersionDTO.class);
+    }
+
+    /**
+     * Delete version of Concept Set
+     *
+     * @param id
+     * @param version
+     */
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/{version}")
+    @Transactional
+    public void deleteVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
+        checkVersion(id, version);
+        versionService.delete(VersionType.CONCEPT_SET, id, version);
+    }
+
+    /**
+     * Create a new asset form version of Concept Set
+     *
+     * @param id
+     * @param version
+     * @return
+     */
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/{version}/createAsset")
+    @Transactional
+    public ConceptSetDTO copyAssetFromVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
+        checkVersion(id, version, false);
+        ConceptSetVersion conceptSetVersion = versionService.getById(VersionType.CONCEPT_SET, id, version);
+
+        ConceptSetVersionFullDTO fullDTO = conversionService.convert(conceptSetVersion, ConceptSetVersionFullDTO.class);
+        ConceptSetDTO conceptSetDTO = fullDTO.getEntityDTO();
+        // Reset id so it won't be used during saving
+        conceptSetDTO.setId(0);
+        conceptSetDTO.setTags(null);
+        conceptSetDTO.setName(NameUtils.getNameForCopy(conceptSetDTO.getName(), this::getNamesLike, getConceptSetRepository().findByName(conceptSetDTO.getName())));
+        ConceptSetDTO createdDTO = createConceptSet(conceptSetDTO);
+        saveConceptSetItems(createdDTO.getId(), fullDTO.getItems().toArray(new ConceptSetItem[0]));
+
+        return createdDTO;
+    }
+
+    private void checkVersion(int id, int version) {
+        checkVersion(id, version, true);
+    }
+
+    private void checkVersion(int id, int version, boolean checkOwnerShip) {
+        Version conceptSetVersion = versionService.getById(VersionType.CONCEPT_SET, id, version);
+        ExceptionUtils.throwNotFoundExceptionIfNull(conceptSetVersion, String.format("There is no concept set version with id = %d.", version));
+
+        ConceptSet entity = getConceptSetRepository().findOne(id);
+        if (checkOwnerShip) {
+            checkOwnerOrAdminOrGranted(entity);
+        }
+    }
+
+    private ConceptSetVersion saveVersion(int id) {
+        ConceptSet def = getConceptSetRepository().findById(id);
+        ConceptSetVersion version = conversionService.convert(def, ConceptSetVersion.class);
+
+        UserEntity user = Objects.nonNull(def.getModifiedBy()) ? def.getModifiedBy() : def.getCreatedBy();
+        Date versionDate = Objects.nonNull(def.getModifiedDate()) ? def.getModifiedDate() : def.getCreatedDate();
+        version.setCreatedBy(user);
+        version.setCreatedDate(versionDate);
+        return versionService.create(VersionType.CONCEPT_SET, version);
+    }
 }

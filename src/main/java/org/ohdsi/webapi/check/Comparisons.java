@@ -2,6 +2,7 @@ package org.ohdsi.webapi.check;
 
 import org.ohdsi.circe.cohortdefinition.DateRange;
 import org.ohdsi.circe.cohortdefinition.NumericRange;
+import org.ohdsi.circe.cohortdefinition.Period;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -32,6 +33,18 @@ public class Comparisons {
         } catch (DateTimeParseException ignored) {
             return false;
         }
+    }
+
+    public static Boolean startIsGreaterThanEnd(Period p) {
+        try{
+            if (Objects.nonNull(p.startDate) && Objects.nonNull(p.endDate)) {
+                LocalDate startDate = LocalDate.parse(p.startDate);
+                LocalDate endDate = LocalDate.parse(p.endDate);
+                return startDate.isAfter(endDate);
+            }
+        }catch (DateTimeParseException ignored) {
+        }
+        return false;
     }
 
     public static Boolean isStartNegative(NumericRange r) {

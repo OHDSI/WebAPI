@@ -76,6 +76,8 @@ public class CohortSampleService {
 	@Path("/{cohortDefinitionId}/{sourceKey}/{sampleId}")
 	@GET
 	public CohortSampleDTO getCohortSample(
+			@PathParam("cohortDefinitionId") int cohortDefinitionId,
+			@PathParam("sourceKey") String sourceKey,
 			@PathParam("sampleId") Integer sampleId,
 			@DefaultValue("") @QueryParam("fields") String fields
 	) {
@@ -87,6 +89,8 @@ public class CohortSampleService {
 	@Path("/{cohortDefinitionId}/{sourceKey}/{sampleId}/refresh")
 	@POST
 	public CohortSampleDTO refreshCohortSample(
+			@PathParam("cohortDefinitionId") int cohortDefinitionId,
+			@PathParam("sourceKey") String sourceKey,
 			@PathParam("sampleId") Integer sampleId,
 			@DefaultValue("") @QueryParam("fields") String fields
 	) {

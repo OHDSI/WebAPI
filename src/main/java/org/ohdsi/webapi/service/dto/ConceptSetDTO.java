@@ -1,15 +1,15 @@
 package org.ohdsi.webapi.service.dto;
 
-public class ConceptSetDTO extends CommonEntityDTO {
+public class ConceptSetDTO extends CommonEntityExtDTO {
 
-  private int id;
+  private Integer id;
   private String name;
 
   public Integer getId() {
     return id;
   }
 
-  public void setId(int id) {
+  public void setId(Integer id) {
     this.id = id;
   }
 

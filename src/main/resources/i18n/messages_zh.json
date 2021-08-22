@@ -1,0 +1,3632 @@
+{
+  "locale": "zh",
+  "datatable": {
+    "language": {
+      "decimal": "",
+      "emptyTable": "表中没有数据",
+      "info": "显示_TOTAL_项中的_START_到_END_",
+      "infoEmpty": "显示0项中的0到0",
+      "infoFiltered": "(从总共 _MAX_ 的实体中筛选)",
+      "infoPostFix": "",
+      "thousands": ",",
+      "lengthMenu": "显示 _MENU_ 项",
+      "loadingRecords": "加载中...",
+      "processing": "处理中...",
+      "search": "过滤",
+      "searchPlaceholder": "搜索...",
+      "zeroRecords": "没有发现匹配的记录",
+      "all": "全部",
+      "paginate": {
+        "first": "第一个",
+        "last": "最后一个",
+        "next": "下一页",
+        "previous": "上一页"
+      },
+      "buttons": {
+        "colvis": "显示各列",
+        "copy": "复制",
+        "changeColumns": "修改列",
+        "resetColumns": "重置列",
+        "showAllColumns": "显示所有列"
+      },
+      "aria": {
+        "sortAscending": ": 激活以对列进行升序排序",
+        "sortDescending": ": 激活以对列进行降序排序"
+      }
+    }
+  },
+  "format": {
+    "number": "# ###.##",
+    "date": {
+      "shortdate": "MM/dd",
+      "mediumdate": "MM/dd/YYYY",
+      "datetime": "MM/DD/YYYY h:mm A",
+      "datetimeWithSeconds": "MM/DD/YYYY h:mm:ss A",
+      "minutes": "分",
+      "seconds": "秒"
+    }
+  },
+  "executionStatus": {
+    "values": {
+      "FAILED": "失败",
+      "COMPLETED": "完成的",
+      "STOPPED": "已停止",
+      "CANCELED": "取消的",
+      "PENDING": "待处理",
+      "RUNNING": "正在运行",
+      "STARTED": "已开始"
+    }
+  },
+  "common": {
+    "accessDenied": "拒绝访问",
+    "add": "添加",
+    "and": "以及",
+    "cancel": "取消",
+    "close": "关闭",
+    "configureAccess": "配合访问",
+    "configureAccessModal": {
+      "addWriteAccessToRole": "添加对任务的写入权限：",
+      "loadingAccessList": "正在加载访问列表...",
+      "revoke": "撤消",
+      "rolesWithWriteAccess": "具有写访问权的角色："
+    },
+    "copiedToClipboard": "已复制到剪贴板！",
+    "copy": "复制",
+    "copyOf": "<%=name%>的副本",
+    "copyToClipboard": "复制到剪贴版",
+    "createACopy": "建立副本",
+    "create": "Create",
+    "days": "天",
+    "daysAbbr": "天",
+    "delete": "删除",
+    "deselectAll": "全部取消选择",
+    "download": "下载",
+    "downloading": "下载...",
+    "export": "导出",
+    "import": "导入",
+    "loading": "载入中",
+    "loadingWithDots": "载入中...",
+    "min": "最小值",
+    "noChangesToPersist": "无需更改即可保留",
+    "notEnoughPermissions": "权限不足",
+    "or": "或者",
+    "preview": "预览",
+    "progress": "进展",
+    "refresh": "刷新",
+    "save": "保存",
+    "search": "搜索",
+    "selectAll": "全选",
+    "set": "集合",
+    "unsaved": "(未保存的)",
+    "unspecified": "未完成！",
+    "menu": "菜单",
+    "noData": "没有数据",
+    "readOnly": "（只读）",
+    "tags": "Tags",
+    "backToCurrent": "Back to current version",
+    "saveAsCurrentVersion": "Save as current version",
+    "unsavedWarning": "Unsaved changes will be lost. Proceed?",
+    "savePreviewWarning": "Save as current version?"
+  },
+  "commonErrors": {
+    "noSources": "当前的WebAPI尚未定义源。<br/>请在<a href=\"#/configure\">配置</a>页上添加一个或多个。",
+    "webapiConnectError": "无法连接到WebAPI的实例。<br/>请与您的管理员联系以解决此问题。",
+    "browserWarning": "请注意，仅正式支持版本低于v.63的Chrome浏览器",
+    "initFailed": "应用程序初始化失败"
+  },
+  "navigation": {
+    "characterizations": "特征描述",
+    "cohortdefinitions": "队列定义",
+    "conceptsets": "概念集",
+    "configuration": "环境设定",
+    "datasources": "数据来源",
+    "estimation": "估计",
+    "feedback": "意见反馈",
+    "home": "首页",
+    "incidencerate": "发病率",
+    "jobs": "执行历史",
+    "pathways": "队列路径",
+    "prediction": "预测",
+    "profiles": "数据概要",
+    "search": "搜索"
+  },
+  "options": {
+    "after": "在  之后",
+    "all": "所有",
+    "allDrugSources": "所有药物来源",
+    "allEvents": "所有事件",
+    "allVisitTypes": "所有就诊类别",
+    "allVisits": "所有就诊",
+    "any": "任意一个",
+    "atLeast": "至少",
+    "atMost": "最多",
+    "before": "先于",
+    "between": "之间",
+    "contains": "包含",
+    "drugSource": "药物来源",
+    "earliestEvents": "第一个事件",
+    "endDate": "结束日期",
+    "endOfContinuousDrugExposure": "药物的持续使用结束为止",
+    "endOfContinuousObservation": "连续观察期结束",
+    "endsWith": "结尾于",
+    "eventEnds": "事件终止",
+    "eventStarts": "事件开始",
+    "exactly": "准确",
+    "fixedDurationRelativeToInitialEvent": "相对于初始事件的固定持续时间",
+    "indexEndDate": "索引结束日期",
+    "indexStartDate": "索引开始日期",
+    "isAnyOf": "是任何",
+    "isNotAnyOf": "不是任何",
+    "latestEvents": "最后一个事件",
+    "mm": "每月一次",
+    "no": "否",
+    "notBetween": "不介于",
+    "notContains": "不包含",
+    "notEndsWith": "不以 结尾",
+    "notStartsWith": "不以...开头",
+    "periodType": "周期类型",
+    "periods": "期间",
+    "qq": "每季度一次",
+    "reports": "报告",
+    "rollupUtilizationDrug": "用药",
+    "rollupUtilizationVisit": "就诊",
+    "rollups": "汇总",
+    "startDate": "开始日期",
+    "startsWith": "从...开始",
+    "ww": "每周一次",
+    "yes": "是",
+    "yy": "每年一次",
+    "yesDescendant": "是（后代的）",
+    "yesExact": "是（准确的）",
+    "yesParent": "是（父母的）",
+    "included": "已包含",
+    "excluded": "排除概念",
+    "none": "无",
+    "true": "真正",
+    "false": "假",
+    "balanced": "均衡",
+    "time": "时间",
+    "person": "病人",
+    "reporting": {
+      "personsAndExposureDuringBaselinePeriod": "在基线期间的人和暴露",
+      "personsAndExposureDuringCohortPeriod": "队列中的人和暴露",
+      "visitsDuringBaselinePeriod": "在基线期间的访问",
+      "visitDatesDuringBaselinePeriod": "在基线期间的访问日期",
+      "careSiteVisitDatesDuringBaselinePeriod": "在基线期间访问医疗机构的日期",
+      "visitsDuringCohortPeriod": "队列中的就诊次数",
+      "visitDatesDuringCohortPeriod": "队列中的访问日期",
+      "careSiteVisitDatesDuringCohortPeriod": "队列中的访问医疗机构的日期",
+      "drugUtilizationDuringBaselinePeriod": "在基线期间的药物使用",
+      "drugUtilizationDuringCohortPeriod": "队列中的药物使用"
+    }
+  },
+  "components": {
+    "authorship": {
+      "created": "被创造",
+      "versionCreated": "version created",
+      "modified": "修改的",
+      "on": "基于/在",
+      "byCreated": "由 <%=createdBy%>创建",
+      "byModified": "由 <%=modifiedBy%>修改"
+    },
+    "accessDenied": {
+      "forbidden": {
+        "message1": "您无权使用此功能。",
+        "message2": "有关如何获得访问权限的更多信息，请联系系统管理员。"
+      },
+      "unauthenticated": {
+        "login": "登录",
+        "message": "此功能受保护。请"
+      }
+    },
+    "analysisExecution": {
+      "title": "执行",
+      "buttons": {
+        "allExecutions": "所有的执行结果 (<%=submissions%>)",
+        "generate": "生成",
+        "generating": "生成",
+        "pending": "等待中",
+        "latestResult": "查看最后结果",
+        "downloadLatestResult": "下载最新结果"
+      },
+      "designModal": {
+        "title": "设计"
+      },
+      "exitModal": {
+        "title": "执行退出消息"
+      },
+      "messages": {
+        "permissions": "没有足够的权限来查看结果"
+      },
+      "datatable": {
+        "viewReports": "查看报告",
+        "sameAsNow": "(和现在一样)"
+      },
+      "noCompletedExecutionsForDataSource": "数据源尚未完成执行。",
+      "stopGenerationConfirmation": "您要停止生成吗？"
+    },
+    "atlasCohortEditor": {
+      "enterCohortPlaceholder": "在此输入队列定义描述",
+      "importConceptSet": "从存储库中加载概念集"
+    },
+    "expressionCartoonBindings": {
+      "primaryCriteria": "主要标准",
+      "any": "任意",
+      "one": "一个",
+      "s": "s",
+      "those": "那些",
+      "the": "the",
+      "paramOf": "<%=param%> 的",
+      "atParamOf": "在 <%=param%>",
+      "or": "或者",
+      "and": "以及",
+      "anyParam": "任意 <%=param%>",
+      "domain": "域",
+      "all": "所有",
+      "distinct": "不同",
+      "before": "先于",
+      "after": "在  之后",
+      "noCriteriaGroup": "没有条件组",
+      "additionalCriteria": "附加标准",
+      "noAdditionalCriteria": "没有其他条件",
+      "inclusionRules": "纳入规则",
+      "noInclusionRules": "没有包含规则",
+      "condition": "诊断",
+      "drug": "用药",
+      "drugEra": "用药周期",
+      "conditionEra": "诊断周期",
+      "doseEra": "剂量周期",
+      "procedure": "手术操作",
+      "observation": "观察",
+      "device": "医疗设备",
+      "measurement": "检查检验",
+      "specimen": "标本",
+      "death": "死亡",
+      "observationPeriod": "观察期",
+      "visit": "就诊",
+      "era": "周期",
+      "daysSupply": "供给天数",
+      "visitCapital": "就诊",
+      "expressionCartoonBindingsText_1": "以下主要标准",
+      "expressionCartoonBindingsText_2": "<%=oneOrAny%> 以下 <%=pcListLength%> 的主要标准",
+      "expressionCartoonBindingsText_3": "将为每个匹配 <%=pcCritMatch%>的病人事件生成结果。最终结果将限于与任何其他条件和包含规则匹配的<%=thoseOrthe%>事件。",
+      "expressionCartoonBindingsText_4": "将为<%=pLimitTypeToLowerCase%>单个事件匹配<%=pcCritMatch%>生成结果。",
+      "expressionCartoonBindingsText_5": "结果索引date <％= pcPlural％>将是匹配的主要标准事件<％= pcPlural％>的开始日期<％= pcPlural％>。",
+      "expressionCartoonBindingsText_6": "仅限事件符合以下条件的人<%=critgroupTypeToLowerCase%>。",
+      "expressionCartoonBindingsText_7": "活动必须在方括号内开始",
+      "expressionCartoonBindingsText_8": "相对于索引日期。 线和箭头表示这些事件所需的持续时间。",
+      "expressionCartoonBindingsText_9": "使用<%=distinctOrAll%>出现的<%=type%> <%=count%>",
+      "expressionCartoonBindingsText_10": "发生在<%=startDays%>天<%=beforeArAfterStart%>和<%=endDays%>天<%=beforeArAfterEnd%>索引之间"
+    },
+    "cohortExpressionEditor": {
+      "addCensoringEvent": "添加删失事件",
+      "addInitialEvent": "添加初始事件",
+      "addTrimmingOptions": "添加修剪选项",
+      "censoringEvents": "删失事件：",
+      "cohortEntryEvents": "队列入组事件",
+      "cohortEntryEventsText_1": "事件记录了该病人的带时间戳的观察结果，例如药物暴露，诊断，手术操作，检查检验和就诊。 所有事件都有开始日期和结束日期，尽管某些事件可能具有相同值的开始日期和结束日期（例如手术操作和检查检验）。",
+      "cohortEntryEventsText_2": "符合以下任何条件的事件",
+      "cohortEntryEventsText_3": "在事件索引日期之前至少连续观察",
+      "cohortEntryEventsText_4": "天，之后至少连续观察",
+      "cohortEntryEventsText_5": "事件索引日期后的天数",
+      "cohortEntryEventsText_6": "将每人的初始事件限制为：",
+      "cohortEntryEventsText_7": "每个病人",
+      "cohortErasText_1": "设置周期时间间隔为：",
+      "cohortErasText_2": "左删失队列开始日期至",
+      "cohortErasText_2_1": " ",
+      "cohortErasText_3": "右删失队列结束日期至",
+      "cohortErasText_3_1": " ",
+      "cohortErasTitle": "队列周期",
+      "cohortExit": "队列退出",
+      "cohortExitText_1": "对于所有符合条件的事件，必须有一个规范来说明每个事件在队列中何时结束。 默认情况下，事件在包含有效的初始事件的观察期结束时结束，但是也可以指定事件结束日期：",
+      "cohortExitText_2": "可以将合格的初始事件设置为在相对于事件开始或结束日期的固定时间段之后结束，或者结束日期可以基于对概念集标识的一组药物的持续暴露的结束。",
+      "cohortExitText_3": "条件可以用来表示事件结束。 如果在符合条件的事件的开始日期和结束日期之间标识了截尾事件，那么截尾事件的日期将用作退出日期。",
+      "cohortExitText_4": "队列根据以下条件退出：",
+      "cohortExitText_5": "未选择删失事件",
+      "cohortExitTitle": "队列退出",
+      "cohortExitTitle_1": "事件终止日期",
+      "cohortExitTitle_2": "审查事件",
+      "copyOf": "副本: ",
+      "days": "天",
+      "deleteCriteria": "删除条件",
+      "eventPersistence": "事件持续性",
+      "inclusionCriteria": "纳入标准",
+      "inclusionCriteriaText": "合格队列将定义为具有初始事件，满足初始事件包含标准并满足所有其他附加合格条件的所有病人。将评估每个合格的纳入标准，以确定该标准对最初队列中病人流失的影响。",
+      "inclusionCriteriaText_1": "将每人的初始事件限制为：",
+      "inclusionCriteriaTitle": "纳入标准",
+      "indexMessage": "索引日期指的是队列入组条件中的事件。",
+      "newInclusionCriteria": "新建纳入标准",
+      "noCensoring": "无审查",
+      "removeRestriction": "删除初始事件限制",
+      "restrictInitialEventsButton": "限定初始事件",
+      "restrictInitialEventsTitle": "限定初始事件为",
+      "unnamedCriteria": "为纳入标准设置一个名称"
+    },
+    "cohortExpressionViewer": {
+      "cohortExpressionViewerText_1": "符合以下条件之一的人",
+      "cohortExpressionViewerText_10": "将队列的符合条件限定为：",
+      "cohortExpressionViewerText_11": "删失事件：",
+      "cohortExpressionViewerText_12": "根据以下说明退出队列：",
+      "cohortExpressionViewerText_13": "队列周期时间间隔策略",
+      "cohortExpressionViewerText_14": "设置周期时间间隔为: ",
+      "cohortExpressionViewerText_15": "纳入标准 #(<%=index%>): <%=name%>",
+      "cohortExpressionViewerText_2": "在事件索引日期之前至少连续观察",
+      "cohortExpressionViewerText_3": "天，之后至少连续观察",
+      "cohortExpressionViewerText_4": "事件索引日期后的天数",
+      "cohortExpressionViewerText_5": "并将初始事件限制为",
+      "cohortExpressionViewerText_6": "每人。",
+      "cohortExpressionViewerText_7": "对于匹配主要事件的病人，包括：",
+      "cohortExpressionViewerText_8": "将初始事件队列限制为：",
+      "cohortExpressionViewerText_9": "纳入规则",
+      "initialEventCohort": "初始事件队列 "
+    },
+    "conceptPicker": {
+      "addAndClose": "添加并且关闭",
+      "addButton": "添加",
+      "addSelected": "添加选择的",
+      "close": "关闭",
+      "done": "完成",
+      "importButton": "导入",
+      "importConcepts": "导入概念",
+      "search": "搜索",
+      "selectConcept": "选择概念",
+      "waitMessage": "术语集提供程序启动时，请稍候..."
+    },
+    "conceptSet": {
+      "exportAllToCSV": "将所有概念集导出到CSV",
+      "exportingToCsv": "将所有概念集导出到CSV",
+      "importingConceptSet": "正在导入概念集",
+      "conceptSetExpression": "概念集表达",
+      "includedConcepts": "包含的概念",
+      "includedSourceCodes": "包含的源代码",
+      "deleteConfirm": "是否要删除<%=name%>？",
+      "conceptSetExpressionJSON": "以JSON表示的概念集",
+      "clickToClear": "单击以删除",
+      "closeConceptSet": "关闭概念集",
+      "conceptIdentifiers": "概念标识符",
+      "conceptIdentifierList": "概念标识符列表",
+      "includedConceptIdentifierList": "包含的概念标识符列表",
+      "loadingForExport": "正在加载以供导出...",
+      "exportToCsv": "导出到CSV",
+      "conceptSet": "概念集",
+      "sourceCodes": "源代码",
+      "repository": "存储库",
+      "appendConceptSetExpression": "追加概念集表达式",
+      "overwriteConceptSetExpression": "覆盖概念集表达式",
+      "enterConceptIdentifiers": "输入概念标识符",
+      "enterSourceCodes": "输入源代码",
+      "name": "概念集名称",
+      "addConcepts": "添加概念",
+      "removeSelected": "删除选定的",
+      "deleteConceptSet": "删除概念集",
+      "copyToConceptSetRepository": "复制到概念集存储库",
+      "notEnoughPermissions": "没有足够的权限来访问<%=action%>概念集",
+      "actionEdit": "编辑",
+      "actionCreate": "创建",
+      "overwriteConfirm": "您确定要覆盖当前的概念集表达式吗？",
+      "loadingIncludedConcepts": "加载包含的概念",
+      "commonAncestors": "共同祖先",
+      "loadingIncludedSourcecodes": "加载包含的源代码",
+      "expressionResolveError": "Error occurred during resolving expression!",
+      "forbiddenError": "You are not authorized to view the concept set expression."
+    },
+    "conceptLegend": {
+      "standard": "标准",
+      "nonStandard": "非标准",
+      "classification": "分类"
+    },
+    "conceptAddBox": {
+      "addToConceptSet": "添加到概念集",
+      "addToNewConceptSet": "添加到新概念集",
+      "selectConceptSet": "选择概念集",
+      "exclude": "排除",
+      "descendants": "后代",
+      "mapped": "映射的",
+      "addedToConceptSet": "已添加到概念集！"
+    },
+    "conceptSetBuilder": {
+      "conceptSet": "概念集",
+      "delete": "删除",
+      "export": "导出",
+      "exportConceptSetTitle": "导出概念集...",
+      "import": "导入",
+      "importConceptSetPlaceholder": "导入概念集",
+      "importConceptSetTitle": "导入概念集...",
+      "includedConcepts": "包含的概念",
+      "load": "加载",
+      "mappedConcepts": "映射的概念",
+      "newConceptSet": "新建概念集",
+      "pleaseSelectCodesetToModify": "请选择要编辑的代码集",
+      "removeSelected": "删除选定的",
+      "selectConceptSet": "选择概念集...",
+      "unnamedConceptSet": "设置概念集名称"
+    },
+    "conceptSetSaveModal": {
+      "conceptSetAlreadyExists": "概念集已经存在",
+      "conceptSetNameLabel": "概念集名称:",
+      "conceptSetNamePlaceholder": "概念集名称",
+      "saveNewConceptSet": "保存新概念集"
+    },
+    "conceptSetSelector": {
+      "clearConceptSet": "清除概念集",
+      "importConcept": "导入概念集",
+      "searchWithTripleDots": "搜索..."
+    },
+    "conditionDeath": {
+      "addAttribute": "添加属性",
+      "anyDeath": "任何死亡",
+      "conditionDeathText_1": "从    的死亡",
+      "conditionDeathText_2": "发生开始为：",
+      "conditionDeathText_3": "死亡源概念是",
+      "conditionDeathText_4": "年龄为",
+      "conditionDeathText_5": "具有以下性别：",
+      "conditionDeathText_6": "性别是以下任一：",
+      "deathType": "死亡类型",
+      "indexDataText": "索引日期是指<%=conceptSetName%>的死亡事件。"
+    },
+    "conditionDevice": {
+      "addAttribute": "添加属性",
+      "anyDevice": "任何医疗设备",
+      "conditionDeviceText_1": "一个    的医疗设备使用",
+      "conditionDeviceText_10": "医疗提供者的专业/专科：",
+      "conditionDeviceText_11": "有以下就诊：",
+      "conditionDeviceText_12": "性别是以下任一：",
+      "conditionDeviceText_13": "医疗保健提供者专业是以下任何一种：",
+      "conditionDeviceText_14": "就诊是以下任何一种：",
+      "conditionDeviceText_2": "这是该人病史上的第一次",
+      "conditionDeviceText_3": "发生开始为：",
+      "conditionDeviceText_4": "发生的终点是：",
+      "conditionDeviceText_5": "具有唯一的设备ID",
+      "conditionDeviceText_6": "有数量",
+      "conditionDeviceText_7": "医疗设备源概念是",
+      "conditionDeviceText_8": "年龄为",
+      "conditionDeviceText_9": "具有以下性别：",
+      "deviceType": "医疗设备类别",
+      "indexDataText": "索引日期是指医疗设备使用<%= conceptSetName %>。"
+    },
+    "conditionDose": {
+      "addAttribute": "添加属性",
+      "anyDoseEra": "任何计量周期",
+      "anyDrug": "任何用药",
+      "conditionDoseText_1": "一个    的计量周期",
+      "conditionDoseText_10": "具有以下性别：",
+      "conditionDoseText_11": "单位是以下任一：",
+      "conditionDoseText_12": "性别是以下任一：",
+      "conditionDoseText_2": "这是该人病史上的第一次",
+      "conditionDoseText_3": "周期开始于",
+      "conditionDoseText_4": "周期结束于:",
+      "conditionDoseText_5": "单位为：",
+      "conditionDoseText_6": "剂量值为",
+      "conditionDoseText_7": "周期长度为",
+      "conditionDoseText_8": "在周期（era）开始时的年龄为（年）",
+      "conditionDoseText_9": "在周期（era）结束时的年龄为（年）",
+      "indexDataText": "索引日期指的是<%=conceptSetName%>的剂量周期。"
+    },
+    "conditionDrug": {
+      "addAttribute": "添加属性",
+      "anyDrug": "任何用药",
+      "conditionDrugText_1": "一个    的用药周期",
+      "conditionDrugText_10": "在周期（era）结束时的年龄为（年）",
+      "conditionDrugText_11": "具有以下性别：",
+      "conditionDrugText_12": "性别是以下任一：",
+      "conditionDrugText_2": "这是该人病史上的第一次",
+      "conditionDrugText_3": "周期开始于",
+      "conditionDrugText_4": "周期结束于:",
+      "conditionDrugText_5": "暴露次数为",
+      "conditionDrugText_6": "间隔天数为",
+      "conditionDrugText_7": "天",
+      "conditionDrugText_8": "周期长度为",
+      "conditionDrugText_9": "在周期（era）开始时的年龄为（年）",
+      "indexDataText": "索引日期指的是<%=conceptSetName%>的用药周期。"
+    },
+    "conditionDrugExposure": {
+      "addAttribute": "添加属性",
+      "anyDrug": "任何用药",
+      "conditionDrugExposureText_1": "一个    的药物暴露",
+      "conditionDrugExposureText_10": "有效药物剂量",
+      "conditionDrugExposureText_11": "剂量单位为：",
+      "conditionDrugExposureText_12": "有很多",
+      "conditionDrugExposureText_13": "药物来源概念是：",
+      "conditionDrugExposureText_14": "年龄为",
+      "conditionDrugExposureText_15": "具有以下性别：",
+      "conditionDrugExposureText_16": "医疗提供者的专业/专科：",
+      "conditionDrugExposureText_17": "有以下就诊：",
+      "conditionDrugExposureText_18": "路径概念为以下任何一项：",
+      "conditionDrugExposureText_19": "剂量单位是以下任何一种：",
+      "conditionDrugExposureText_2": "这是该人病史上的第一次",
+      "conditionDrugExposureText_20": "性别是以下任一：",
+      "conditionDrugExposureText_21": "医疗保健提供者专业是以下任何一种：",
+      "conditionDrugExposureText_22": "就诊是以下任何一种：",
+      "conditionDrugExposureText_3": "发生开始为：",
+      "conditionDrugExposureText_4": "发生的终点是：",
+      "conditionDrugExposureText_5": "有一个停止原因",
+      "conditionDrugExposureText_6": "有药物补充",
+      "conditionDrugExposureText_7": "有数量",
+      "conditionDrugExposureText_8": "每日供应量：",
+      "conditionDrugExposureText_9": "路径概念是：",
+      "drugType": "药物种类",
+      "indexDataText": "索引日期指的是<%=conceptSetName%>的药物暴露。"
+    },
+    "conditionEra": {
+      "addAttribute": "添加属性",
+      "anyConditionButton": "任何诊断",
+      "attributeText_1": "这是该人病史上的第一次",
+      "attributeText_2": "周期开始于",
+      "attributeText_3": "周期结束于:",
+      "attributeText_4": "出现次数为",
+      "attributeText_5": "周期长度为",
+      "attributeText_6": "在周期（era）开始时的年龄为（年）",
+      "attributeText_7": "在周期（era）结束时的年龄为（年）",
+      "attributeText_8": "具有以下性别：",
+      "attributeText_9": "天",
+      "criteriaText_1": "一个    的诊断周期",
+      "returnText_1": "索引日期指的是诊断周期"
+    },
+    "conditionMeasurement": {
+      "addAttribute": "添加属性",
+      "anyMeasurement": "任何检查检验",
+      "conditionMeasurementText_1": "一个    的检查检验",
+      "conditionMeasurementText_10": "量程比低",
+      "conditionMeasurementText_11": "高范围",
+      "conditionMeasurementText_12": "量程比高",
+      "conditionMeasurementText_13": "结果异常",
+      "conditionMeasurementText_14": "检查检验源概念是",
+      "conditionMeasurementText_15": "年龄为",
+      "conditionMeasurementText_16": "具有以下性别：",
+      "conditionMeasurementText_17": "医疗提供者的专业/专科：",
+      "conditionMeasurementText_18": "有以下就诊：",
+      "conditionMeasurementText_19": "检查检验值运算符是以下任一项：",
+      "conditionMeasurementText_2": "这是该人病史上的第一次",
+      "conditionMeasurementText_20": "作为概念的值是以下任何一种：",
+      "conditionMeasurementText_21": "单位是以下任一：",
+      "conditionMeasurementText_22": "小范围",
+      "conditionMeasurementText_23": "量程比低",
+      "conditionMeasurementText_24": "高范围",
+      "conditionMeasurementText_25": "量程比高",
+      "conditionMeasurementText_26": "性别是以下任一：",
+      "conditionMeasurementText_27": "医疗保健提供者专业是以下任何一种：",
+      "conditionMeasurementText_28": "就诊是以下任何一种：",
+      "conditionMeasurementText_3": "发生开始为：",
+      "conditionMeasurementText_5": "检查检验值运算符为：",
+      "conditionMeasurementText_6": "以数字作为值",
+      "conditionMeasurementText_7": "作为概念的值是：",
+      "conditionMeasurementText_8": "单位是：",
+      "conditionMeasurementText_9": "低范围",
+      "measurementType": "检查检验类型",
+      "indexDataText": "索引日期是指<%=conceptSetName%>的检查检验。"
+    },
+    "conditionObservation": {
+      "addAttribute": "添加属性",
+      "anyObservation": "任何观察",
+      "conditionObservationText_1": "一个       的观察",
+      "conditionObservationText_10": "年龄为",
+      "conditionObservationText_11": "具有以下性别：",
+      "conditionObservationText_12": "医疗提供者的专业/专科：",
+      "conditionObservationText_13": "有以下就诊：",
+      "conditionObservationText_14": "作为概念的值是以下任何一种：",
+      "conditionObservationText_15": "以下任何一种合格者：",
+      "conditionObservationText_16": "单位是以下任一：",
+      "conditionObservationText_17": "性别是以下任一：",
+      "conditionObservationText_18": "医疗保健提供者专业是以下任何一种：",
+      "conditionObservationText_19": "就诊是以下任何一种：",
+      "conditionObservationText_2": "这是该人病史上的第一次",
+      "conditionObservationText_3": "发生开始为：",
+      "conditionObservationText_4": "以数字作为值",
+      "conditionObservationText_5": "以字符串作为值",
+      "conditionObservationText_6": "以概念作为值",
+      "conditionObservationText_7": "有预选条件：",
+      "conditionObservationText_8": "单位为：",
+      "conditionObservationText_9": "观察源概念是：",
+      "observationType": "观察类型",
+      "indexDataText": "索引日期是指对<%=conceptSetName%>的观察。"
+    },
+    "conditionObservationPeriod": {
+      "addAttribute": "添加属性",
+      "conditionObservationText_1": "符合以下条件的观察期：",
+      "conditionObservationText_10": "天",
+      "conditionObservationText_11": "一个观察周期",
+      "conditionObservationText_12": "周期类型为以下任何一种：",
+      "conditionObservationText_2": "仅限患者第一个观察期",
+      "conditionObservationText_3": "使用指定的时间段：",
+      "conditionObservationText_4": "观察期开始为：",
+      "conditionObservationText_5": "观察期结束为：",
+      "conditionObservationText_6": "周期类型为：",
+      "conditionObservationText_7": "在阶段（period）开始时的年龄为（年）",
+      "conditionObservationText_8": "在阶段（period）结束时的年龄为（年）",
+      "conditionObservationText_9": "有期间持续时间为"
+    },
+    "conditionOccurrence": {
+      "addAttribute": "添加属性",
+      "anyCondition": "任何诊断",
+      "conditionOccurrenceText_1": "一个    的诊断",
+      "conditionOccurrenceText_10": "有以下就诊：",
+      "conditionOccurrenceText_11": "性别是以下任一：",
+      "conditionOccurrenceText_12": "医疗保健提供者专业是以下任何一种：",
+      "conditionOccurrenceText_13": "就诊是以下任何一种：",
+      "conditionOccurrenceText_2": "这是该人病史上的第一次",
+      "conditionOccurrenceText_3": "发生开始为：",
+      "conditionOccurrenceText_4": "发生的终点是：",
+      "conditionOccurrenceText_5": "有一个停止原因",
+      "conditionOccurrenceText_6": "诊断源概念是",
+      "conditionOccurrenceText_7": "年龄为",
+      "conditionOccurrenceText_8": "具有以下性别：",
+      "conditionOccurrenceText_9": "医疗提供者的专业/专科：",
+      "conditionType": "诊断类别",
+      "indexDataText": "索引日期是指<%=conceptSetName%>的诊断出现。"
+    },
+    "conditionPayerPlanPeriod": {
+      "addAttribute": "添加属性",
+      "anyPayer": "任何付款方",
+      "anyPayerSource": "任何付款方来源",
+      "anyPlan": "任何计划",
+      "anyPlanSource": "任何计划来源",
+      "anySponsor": "任何申办方",
+      "anySponsorSource": "任何申办方来源",
+      "anyStopReason": "任何停止原因",
+      "anyStopReasonSource": "任何停止原因来源",
+      "conditionPayerPlanText_1": "符合以下条件的付款人计划期：",
+      "conditionPayerPlanText_10": "付款方的概念是",
+      "conditionPayerPlanText_11": "计划概念为",
+      "conditionPayerPlanText_12": "标本概念为",
+      "conditionPayerPlanText_13": "终止原因概念为",
+      "conditionPayerPlanText_14": "付款方源概念为",
+      "conditionPayerPlanText_15": "计划源概念为",
+      "conditionPayerPlanText_16": "标本来源概念为",
+      "conditionPayerPlanText_17": "终止原因源概念为",
+      "conditionPayerPlanText_18": "注意：付款方计划期限标准仅在CDM v5.3和更高版本中可用。",
+      "conditionPayerPlanText_19": "一个付款方计划周期",
+      "conditionPayerPlanText_2": "仅限患者第一付款方计划期",
+      "conditionPayerPlanText_20": "使用指定的时间段：",
+      "conditionPayerPlanText_21": "周期开始为",
+      "conditionPayerPlanText_22": "周期结束为",
+      "conditionPayerPlanText_23": "开始时年龄为",
+      "conditionPayerPlanText_24": "最终年龄为",
+      "conditionPayerPlanText_25": "性别是以下任一：",
+      "conditionPayerPlanText_3": "在阶段（period ）结束时的年龄为",
+      "conditionPayerPlanText_4": "在阶段（period ）结束时的年龄为",
+      "conditionPayerPlanText_5": "有期间持续时间为",
+      "conditionPayerPlanText_6": "具有以下性别：",
+      "conditionPayerPlanText_7": "使用指定的时间段：",
+      "conditionPayerPlanText_8": "付款方计划期开始：",
+      "conditionPayerPlanText_9": "付款方计划期结束：",
+      "indexDataText": "索引日期是指付款方计划期。"
+    },
+    "conditionProcedureOccurrence": {
+      "addAttribute": "添加属性",
+      "anyProcedure": "任何操作",
+      "conditionProcedureOccurrenceText_1": "一个    的操作",
+      "conditionProcedureOccurrenceText_10": "有以下就诊：",
+      "conditionProcedureOccurrenceText_11": "修饰符是以下任何一种：",
+      "conditionProcedureOccurrenceText_12": "性别是以下任一：",
+      "conditionProcedureOccurrenceText_13": "医疗保健提供者专业是以下任何一种：",
+      "conditionProcedureOccurrenceText_14": "就诊是以下任何一种：",
+      "conditionProcedureOccurrenceText_2": "这是该人病史上的第一次",
+      "conditionProcedureOccurrenceText_3": "发生开始为：",
+      "conditionProcedureOccurrenceText_4": "修饰符为：",
+      "conditionProcedureOccurrenceText_5": "有数量",
+      "conditionProcedureOccurrenceText_6": "手术操作源概念是:",
+      "conditionProcedureOccurrenceText_7": "年龄为：",
+      "conditionProcedureOccurrenceText_8": "具有以下性别：",
+      "conditionProcedureOccurrenceText_9": "医疗提供者的专业/专科：",
+      "procedureType": "手术操作种类",
+      "indexDataText": "索引日期是指<%=conceptSetName%>的操作。"
+    },
+    "conditionSpecimen": {
+      "addAttribute": "添加属性",
+      "anySpecimen": "任何标本",
+      "conditionSpecimeText_1": "一个    的标本信息",
+      "conditionSpecimeText_10": "具有以下性别：",
+      "conditionSpecimeText_11": "单位是以下任一：",
+      "conditionSpecimeText_12": "解剖部位为：",
+      "conditionSpecimeText_13": "疾病状况是以下任何一种：",
+      "conditionSpecimeText_14": "性别是以下任一：",
+      "conditionSpecimeText_2": "这是该人病史上的第一次",
+      "conditionSpecimeText_3": "发生开始为：",
+      "conditionSpecimeText_4": "有数量",
+      "conditionSpecimeText_5": "单位为：",
+      "conditionSpecimeText_6": "解剖部位：",
+      "conditionSpecimeText_7": "疾病状况：",
+      "conditionSpecimeText_8": "源ID为",
+      "conditionSpecimeText_9": "年龄为",
+      "specimenType": "标本类型",
+      "indexDataText": "索引日期是指<%=conceptSetName%>的标本。"
+    },
+    "conditionVisit": {
+      "addAttribute": "添加属性",
+      "anyLocation": "任何位置",
+      "anyVisit": "任何就诊",
+      "conditionSpecimeText_1": "一个    的就诊",
+      "conditionSpecimeText_10": "服务地点：",
+      "conditionSpecimeText_11": "服务地点位于：",
+      "conditionSpecimeText_12": "从服务地点到患者的距离",
+      "conditionSpecimeText_13": "就诊长度为",
+      "conditionSpecimeText_14": "性别是以下任一：",
+      "conditionSpecimeText_15": "医疗保健提供者专业是以下任何一种：",
+      "conditionSpecimeText_2": "这是该人病史上的第一次",
+      "conditionSpecimeText_3": "发生开始为：",
+      "conditionSpecimeText_4": "发生的终点是：",
+      "conditionSpecimeText_5": "就诊源概念是",
+      "conditionSpecimeText_6": "就诊持续时间为",
+      "conditionSpecimeText_7": "年龄为",
+      "conditionSpecimeText_8": "具有以下性别：",
+      "conditionSpecimeText_9": "医疗提供者的专业/专科：",
+      "visitType": "就诊类别",
+      "indexDataText": "索引日期是指对<%=conceptSetName%>的就诊。"
+    },
+    "criteriaGroup": {
+      "addAdditionalConstraint": "添加其他约束",
+      "addCriteria": "添加条件到组",
+      "and": "以及",
+      "between": "之间",
+      "criteriaGroupText_1": "仅限同一次就诊",
+      "criteriaGroupText_2": "允许观察期以外的事件",
+      "deleteCriteria": "删除条件",
+      "deleteGroup": "删除组",
+      "followingCriteria": "个条件",
+      "having": "必须满足以下",
+      "havingCapital": "必须满足以下",
+      "occurrencesOf": "发生：",
+      "occurrenceOf": "发生：",
+      "usingAll": "全部使用",
+      "usingDistinct": "使用不同的",
+      "where": "其中",
+      "with": "与",
+      "withFollowingCriteria": "具有以下事件条件：",
+      "occurringWithinTheSameVisit": "在同一次就诊中发生"
+    },
+    "customEraStrategy": {
+      "customEraStrategyText_1": "持续使用的持续时间：",
+      "customEraStrategyText_10": "强制药物暴露天数供应为：",
+      "customEraStrategyText_11": "天",
+      "customEraStrategyText_12": "该策略根据在指定概念集中找到的代码创建了用药周期。如果在某个周期内发现了索引事件，则队列的结束日期将使用该周期的结束日期。否则，它将使用包含索引事件的观察期结束日期。",
+      "customEraStrategyText_13": "使用周期的结束日期",
+      "customEraStrategyText_14": "允许的",
+      "customEraStrategyText_15": "两次暴露之间的天数",
+      "customEraStrategyText_16": "添加",
+      "customEraStrategyText_17": "暴露结束后的天数",
+      "customEraStrategyText_18": "使用天数供应和暴露结束日期作为暴露持续时间。",
+      "customEraStrategyText_19": "强制药物暴露天数供应为：",
+      "customEraStrategyText_2": "定义包含一种或者多种药物的概念集。药物周期来自于概念集中所有药物的药使用事件，指定的持续时间窗定义为连续两次药物使用与最后一次药物使用加上特定的观测时间窗之间的最大允许天数间隔。如果未提供药物使用的结束日期，则应该使用药物开始日期+供应日期，如果没有供应日期的话，使用药物开始日期+1天作为药物使用的结束日期。事件持续性可确保对垒结束日期不大于药物周期结束日期。",
+      "customEraStrategyText_3": "选择感兴趣的药物概念集：",
+      "customEraStrategyText_4": "持续时间窗：推测持续使用的周期是两次使用记录之间的间隔最长为",
+      "customEraStrategyText_5": "推断持久性暴露周期的暴露记录之间的天数",
+      "customEraStrategyText_6": "监测时间窗：在持续使用周期结束后增加",
+      "customEraStrategyText_7": "天作为在队列结束之前进行额外的监测",
+      "customEraStrategyText_8": "使用天数供应和暴露结束日期作为暴露持续时间。",
+      "customEraStrategyText_9": "修改",
+      "selectDrugConceptSet": "选择药物概念集"
+    },
+    "cyclops": {
+      "controlEditor": {
+        "convergenceType": "选择收敛类型：",
+        "crossValidationSearchType": "选择交叉验证搜索类型：",
+        "initialBound": "初始bound：",
+        "lowerPrior": "先前的差异下限：",
+        "maxBoundCount": "最大bound数：",
+        "maxIterations": "在返回无法收敛的错误之前，尝试执行最大的Cyclops迭代。",
+        "maxRelativeChange": "收敛准则从连续迭代到实现收敛的最大相对变化。",
+        "nameOfExchangeableSamplingUnit": "可互换的采样单位名称。“byPid”选项选择整个图层。“byRow”选项选择一行。如果设置为“auto”，则“byRow”用于除条件模型以外的所有模型，在条件模型(conditional models)中，每层的平均行数少于层数。",
+        "noiseLevel": "Cyclops 的屏幕输出的噪音水平：",
+        "numberOfRandomFolds": "用于交叉验证的随机折叠数：",
+        "numberOfRepetitions": "<%=num%>-fold 交叉验证的重复次数：",
+        "numberOfSteps": "步骤数：",
+        "resetAllCoefficients": "在交叉验证下，将模型拟合之间的所有系数重置为0：",
+        "sizeMultiplier": "活动集合的大小乘数：",
+        "startingVariance": "自动搜索交叉验证的起始差异； -1 =使用基于数据的估算值：",
+        "umberOfRepetitionsOfData": "交叉验证的数据重复次数：",
+        "upperPrior": "先验差异上限：",
+        "useTheKarush": "使用Karush-Kuhn-Tucker条件限制搜索范围："
+      },
+      "options": {
+        "auto": "自动",
+        "gradient": "梯度",
+        "grid": "格",
+        "hierarchical": "有层级的",
+        "lange": "长",
+        "laplace": "Laplace",
+        "mittal": "Mittal",
+        "noisy": "嘈杂",
+        "none": "无",
+        "normal": "正常",
+        "quiet": "安静",
+        "silent": "无声"
+      },
+      "prior": {
+        "crossValidation": "执行交叉验证以确定先验差异：",
+        "distribution": "指定先前的分配：",
+        "distributionVariance": "指定先验分布方差：",
+        "interceptCoefficient": "强制intercept coefficient 成先验：",
+        "mapping": "子级到父级的优先级映射：",
+        "neighborhoods": "部分融合的先验的一阶邻域列表：",
+        "vector": "定义一个数字向量或协变量ID，以排除在先验之外："
+      }
+    },
+    "dateOffsetStrategy": {
+      "dateOffsetStrategyText_6": "日期偏移量退出条件",
+      "dateOffsetStrategyText_7": "此队列定义的结束日期将是索引事件的",
+      "dateOffsetStrategyText_8": "加",
+      "dateOffsetStrategyText_1": "固定期限的持续时间：",
+      "dateOffsetStrategyText_2": "事件结束日期是从事件的开始日期或者结束日期上增加几天。如果将偏移日期添加到事件的开始日期，所有在队列中的人群都会有相同的固定期限（有待进一步审查）。如果在事件的结束日期上添加了偏移天数，则该队列中的人群可能会由于事件持续时间的不同（例如持续药物暴露或者就诊时间）而有不一样的队列持续时间。事件持续性可确保队列结束日期不大于选定的索引事件日期加上偏移天数。",
+      "dateOffsetStrategyText_3": "从",
+      "dateOffsetStrategyText_3_1": "的事件日期偏移",
+      "dateOffsetStrategyText_4": "偏移天数：",
+      "dateOffsetStrategyText_5": "天"
+    },
+    "dateRange": {
+      "after": "在  之后",
+      "and": "以及",
+      "before": "先于",
+      "between": "之间",
+      "firstPlaceholder": "YYYY-MM-DD",
+      "notBetween": "不介于",
+      "on": "基于/在",
+      "onOrAfter": "在或之后",
+      "onOrBefore": "在或之前",
+      "inclusive": "包括的"
+    },
+    "demographicCriteria": {
+      "addAttribute": "添加属性",
+      "demographicCriteriaText_1": "性别是以下任一：",
+      "demographicCriteriaText_2": "种族是以下任何一项：",
+      "demographicCriteriaText_3": "民族是任一：",
+      "occurrenceEnd": "发生的终点是：",
+      "occurrenceStart": "发生开始为：",
+      "withAge": "年龄为",
+      "withEthnicity": "具有以下民族：",
+      "withGenderOf": "具有以下性别：",
+      "withRaceOf": "具有以下种族："
+    },
+    "endStrategyEditor": {
+      "eventWillPersistUntil": "事件将一直持续到",
+      "eventWillPersistUntil2": " "
+    },
+    "endStrategyViewer": {
+      "endDateStrategy": "结束日期策略",
+      "endStrategyViewerText_1": "未选择结束日期策略。默认情况下，队列结束日期是包含索引事件的观察期的结束日期。"
+    },
+    "evidencePairViewer": {
+      "evidencePairViewerText_1": "加载证据对",
+      "evidencePairViewerText_2": "如果通用证据模型CommonEvidenceModel指示 存在所选 药物-诊断 的关系对的产品标签信息（1 =正确，0 =否），您可能会在下面看到许多产品标签。 标签的数量是无意义的，因为一个标签上的不良事件被认为是所有产品标签上的事件。 因此，此页面将显示所选 药物-诊断 关系对的所有产品标签。",
+      "evidencePairViewerText_3": "如果通用证据模型CommonEvidenceModel列出了许多出版物，则在“查看证据”弹出窗口中，一个出版物可能在以下结果中多次出现。 这是因为对于出版物匹配的每个 药物-诊断 关系对，出版物都会显示在“查看证据”列表中。",
+      "evidencePairViewerText_4": "单击此处以获取有关此证据列表的更多信息",
+      "evidencePairViewerText_5": "隐藏细节",
+      "evidencePairViewerText_6": "未将概念集标记为有效以生成结果。 请确保此概念集仅包含诊断或药物。"
+    },
+    "executionUtils": {
+      "startNewExecutionInParallelConfirmation": "这个来源的生成已经开始。 您确定要并行地开始一个新的吗？"
+    },
+    "exploreCohort": {
+      "fetchingFirst": "首先获取",
+      "members": "成员",
+      "exploreCohortText_1": "该队列没有可供查看的成员。请在Atlas的“队列定义”部分中检查生成状态。",
+      "exploreCohortText_2": "该队列没有成员可用于查看所选数据源。请确保您已使用“生成”标签生成了队列。"
+    },
+    "export": {
+      "button": "导出",
+      "progress": "导出过程中"
+    },
+    "exportSql": {
+      "incorrectDesign": "Cannot generate SQL: design of the analysis is incorrect"
+    },
+    "feasibilityAttritionReport": {
+      "attritionVisualization": "流失可视化",
+      "inclusionRule": "纳入规则",
+      "percentRemain": "保留百分比",
+      "precentDiff": "差异百分比"
+    },
+    "feasibilityIntersectReport": {
+      "inclusionRule": "纳入规则",
+      "percentSatisfied": "满足纳入规则的百分比（%）",
+      "percentToGain": "不满足纳入规则的百分比（%）",
+      "populationVisualization": "人群可视化",
+      "rectSummary": "<%=size%>的病人（<%=percentage%>％），<%=passCount%>个条件通过，<%=failCount%>个条件失败。"
+    },
+    "feasibilityReportViewer": {
+      "feasibilityReportViewerText_1": "匹配率",
+      "feasibilityReportViewerText_2": "符合条件",
+      "feasibilityReportViewerText_3": "失去审查",
+      "feasibilityReportViewerText_4": "总事件",
+      "feasibilityReportViewerText_5": "统计摘要",
+      "feasibilityReportViewerText_6": "切换到流失视图",
+      "feasibilityReportViewerText_7": "切换到相交视图",
+      "feasibilityReportViewerText_8": "没有为此队列定义指定包含规则。"
+    },
+    "featureextraction": {
+      "covariateSettingsEditor": {
+        "age": "年龄",
+        "ageGroups": "年龄组",
+        "allTime": "一直",
+        "anyTimePrior": "之前任何时间",
+        "condition": "诊断",
+        "conditionGroup": "诊断组",
+        "conditionPrimaryInpatient": "诊断 - 原发住院",
+        "demographics": "人口统计",
+        "device": "医疗设备",
+        "distinctCount": "不重复记录值",
+        "domain": "域",
+        "drug": "用药",
+        "drugGroup": "药物组",
+        "endDays": "结束日期",
+        "eraStart": "周期开始",
+        "ethnicity": "民族",
+        "gender": "性别",
+        "indexMonth": "索引月份",
+        "indexScoreType": "指数得分类型",
+        "indexYear": "索引年份",
+        "indexYearMonth": "索引<br/>年 & 月",
+        "longTerm": "长期",
+        "measurement": "检查检验",
+        "measurementRangeGroup": "检查检验-范围组",
+        "measurementValue": "检查检验-值",
+        "mediumTerm": "中期",
+        "observation": "观察",
+        "overlapping": "重叠",
+        "postObservationTime": "发布<br/>观察时间",
+        "priorObservationTime": "以前的<br/>观察时间",
+        "procedure": "手术操作",
+        "race": "种族",
+        "setTheIndexScoreCovariates": "设置 index score协变量",
+        "setTheTimeBoundCovariates": "设置 time bound协变量",
+        "setTheTimeBoundEraCovariates": "设置time bound era 协变量",
+        "setTheTimeWindows": "要设置Time bound 协变量，请设置从队列索引日期开始的日期间隔。",
+        "shortTerm": "短期",
+        "timeBoundCovariates": "时限协变量",
+        "timeInCohort": "时间<br/>在队列中",
+        "timeWindows": "时间窗",
+        "visitConceptCount": "就诊 - 概念计数",
+        "visitCount": "就诊 - 计数"
+      }
+    },
+    "filterPanel": {
+      "buttons": {
+        "apply": "应用",
+        "clear": "清除"
+      },
+      "title": "筛选面板"
+    },
+    "generateComponent": {
+      "generate": "生成",
+      "generating": "生成中"
+    },
+    "import": {
+      "button": "导入",
+      "denied": "导入不被允许",
+      "progress": "导入中"
+    },
+    "inclusionRuleEditor": {
+      "copy": "复制",
+      "delete": "删除",
+      "ruleDescriptionPlaceholder": "输入纳入标准的描述",
+      "unnamedCriteria": "为纳入标准设置一个名称"
+    },
+    "linkedCohortList": {
+      "defaultNewItemLabel": "导入",
+      "defaultTitle": "队列定义",
+      "dialog": {
+        "title": "选择一个队列定义"
+      },
+      "table": {
+        "actions": {
+          "edit": "编辑队列",
+          "remove": "删除"
+        }
+      }
+    },
+    "linkedEntityList": {
+      "defaultNewItemLabel": "导入"
+    },
+    "locationRegion": {
+      "anyLocationRegion": "任何位置区域",
+      "criteria": {
+        "of": "一个    的位置区域",
+        "correlatedCriteria": {
+          "option": {
+            "description": "使用位置区域作为索引事件来应用条件",
+            "text": "添加嵌套条件"
+          }
+        },
+        "startDate": {
+          "option": {
+            "description": "按照此人开始居住的日期筛选位置",
+            "text": "添加开始日期条件"
+          },
+          "text": "开始是："
+        },
+        "endDate": {
+          "option": {
+            "description": "按照此人结束居住的日期筛选位置",
+            "text": "添加结束日期条件"
+          },
+          "text": "结束是："
+        },
+        "indexData": {
+          "text": "索引日期是指<%=conceptSetName%>的位置区域。"
+        }
+      }
+    },
+    "multiInput": {
+      "action": "行动",
+      "add": "添加",
+      "remove": "删除"
+    },
+    "navigateControls": {
+      "navigateControlsText_1": "通用证据模型"
+    },
+    "numericRange": {
+      "between": "之间",
+      "equalTo": "等于",
+      "greaterOrEqualTo": "大于或等于",
+      "greaterThan": "大于或等于",
+      "lessOrEqualTo": "小于或等于",
+      "lessThan": "少于",
+      "notBetween": "不介于"
+    },
+    "period": {
+      "andEnding": "以及结束",
+      "periodText_1": "注意：仅使用包含开始日期和结束日期的观察期。",
+      "starting": "开始"
+    },
+    "textFilter": {
+      "contains": "包含",
+      "endsWith": "结尾于",
+      "notContains": "不包含",
+      "notEndsWith": "不以      结尾",
+      "notStartsWith": "不以...开头",
+      "startsWith": "从...开始"
+    },
+    "userBar": {
+      "signin": "登陆",
+      "signout": "退出账户"
+    },
+    "welcome": {
+      "close": "关闭",
+      "loggedIn": "以'<%=login%>'登录",
+      "loggedInExp": "以'<%=login%>'登录（exp：<%=expiration%>）",
+      "messages": {
+        "badCredentials": "无效凭证",
+        "expired": "您的会话已过期。 请重新登录。",
+        "loginFailed": "登录失败",
+        "refresh": "您的会话已过期。 请刷新页面以继续。"
+      },
+      "password": "密码",
+      "runas": "运行为",
+      "signinWith": "登陆使用：",
+      "signout": "退出账户",
+      "submit": "提交",
+      "username": "用户名",
+      "wait": "请稍候...",
+      "saml": {
+        "loginRequired": "Please log out from your Identity Provider and try to log in again"
+      }
+    },
+    "windowInput": {
+      "windowInputText_1": "全部",
+      "windowInputText_2": "天",
+      "windowInputText_3": "以及"
+    },
+    "windowedCriteria": {
+      "windowedCriteriaText_1": "其中",
+      "windowedCriteriaText_2": "之间",
+      "windowedCriteriaText_3": "以及",
+      "windowedCriteriaText_4": "添加其他约束",
+      "windowedCriteriaText_5": "仅限同一次就诊",
+      "windowedCriteriaText_6": "忽略观察期"
+    },
+    "common": {
+      "addAttribute": "添加属性"
+    },
+    "multiSelect": {
+      "noneSelectedText": "没有选择",
+      "noneResultsText": "找不到与{0}相匹配的内容",
+      "countSelectedText": "{0} 个条目被选中"
+    },
+    "generation": {
+      "selectSources": "选择来源",
+      "generate": "生成",
+      "pickAtLeastOneSourceAlert": "至少选择一个来源来生成"
+    },
+    "nameValidation": {
+      "empty": "名称为空。",
+      "invalidCharacters": "该名称不能包含以下任何字符：\\/:*?\"<>|  请选择其他名称。",
+      "length": "名称长度超过<%=length%>个符号。请选择其他名称。",
+      "defaultName": "<%=analysisName%>的名称应与默认名称不同。",
+      "conceptSet": "概念集",
+      "cohortDefinition": "队列定义",
+      "characterization": "建特征描述",
+      "featureAnalysis": "特性分析",
+      "cohortPathway": "队列路径",
+      "irAnalysis": "发病率分析",
+      "pleAnalysis": "建人口水平效应估计",
+      "plpAnalysis": "患者水平预测"
+    },
+    "checks": {
+      "runningDiagnostics": "正在运行诊断",
+      "fixIt": "修复它"
+    },
+    "tags": {
+      "title": "Assign Tags",
+      "tabs": {
+        "studyAssetTags": "Study Asset Tags",
+        "reference": "Reference"
+      },
+      "availableTags": "Available tags:",
+      "assign": "Assign",
+      "unassign": "Unassign",
+      "notPermitted": "Not permitted",
+      "assignExistingTag": "Create custom tag",
+      "tagNamePlaceholder": "Tag name",
+      "assignedTags": "Assigned tags:",
+      "tagGroups": "Tag groups:",
+      "tagGroup:": "Tag group:",
+      "showTags": "Show tags",
+      "tagNameExistsWarning": "Tag <%=tagName%> already exists.",
+      "cannotUnassignProtectedTagWarning": "Cannot unassign protected tag: <%=tagName%>",
+      "reassignConfirm": "The maximum number of assigned tags in the tag group \"<%=tagGroup%>\" is <%=maxNumber%>. The tag \"<%=tagName%>\" will be unassigned. Proceed?"
+    },
+    "versions": {
+      "loading": "Loading versions...",
+      "editComment": "Edit comment",
+      "addComment": "Add comment",
+      "commentPlaceholder": "Comment",
+      "preview": "Preview",
+      "viewing": "Viewing now",
+      "createACopy": "Create a copy",
+      "current": "Current"
+    }
+  },
+  "facets": {
+    "caption": {
+      "analysisName": "分析名称",
+      "author": "作者",
+      "class": "类别",
+      "comparatorCohorts": "比较队列名字",
+      "created": "建立",
+      "domain": "域",
+      "drugLabelExists": "建议的阴性对照",
+      "errorMsg": "错误讯息",
+      "foundInProductLabelOrPublications": "在产品标签或出版物中找到",
+      "foundInPublications": "在出版物中找到",
+      "foundProductLabel": "在产品标签上找到",
+      "hasDescendantRecords": "有子集数据",
+      "hasRecords": "有数据",
+      "invalidReason": "失效原因",
+      "lastModified": "最后修改",
+      "mappingType": "映射类型",
+      "match": "匹配",
+      "modelName": "型号名称",
+      "outcomeCohorts": "结果队列",
+      "provider": "医疗保健提供者",
+      "riskWindow": "风险窗口",
+      "signalInFaers": "FAERS中的信号",
+      "source": "来源",
+      "standardConcept": "标准概念",
+      "startDate": "开始日期",
+      "targetCohorts": "目标队列",
+      "type": "类型",
+      "updated": "更新",
+      "userSpecified": "用户指定",
+      "vocabulary": "术语集",
+      "relationship": "关系",
+      "distance": "距离",
+      "severity": "严重程度",
+      "designs": "设计"
+    },
+    "values": {
+      "warning": "警告",
+      "critical": "关键的",
+      "info": "信息"
+    },
+    "date": {
+      "justNow": "现在",
+      "lastWeek": "上个星期",
+      "others": "2+ 星期之前",
+      "thisWeek": "本星期",
+      "within24Hours": "24小时内"
+    },
+    "match": {
+      "both": "都",
+      "only1": "只有唯一的",
+      "only2": "仅有2"
+    },
+    "type": {
+      "preset": "预设值",
+      "criteriaSet": "标准集",
+      "custom": "自定义"
+    },
+    "designs": {
+      "myDesigns": "我的设计",
+      "otherDesigns": "其他设计"
+    },
+    "tags": {
+      "untagged": "Untagged"
+    }
+  },
+  "columns": {
+    "action": "行动",
+    "actions": "行动",
+    "adLdapUsername": "AD/LDAP 用户名",
+    "adjustmentStrategy": "调整策略",
+    "allowed": "允许费用",
+    "allowedChargedRatio": "允许的/收费的",
+    "allowedPmPm": "允许费用PMPM",
+    "analysis": "分析",
+    "analysisName": "分析名称",
+    "ancestors": "祖先",
+    "atlasLogin": "Atlas 登录",
+    "atlasRole": "Atlas的角色",
+    "atlasRoles": "Atlas的角色",
+    "author": "作者",
+    "avg": "平均值",
+    "binary": "二元",
+    "broadConcept": "广义概念",
+    "charged": "收费费用",
+    "chargedPmPm": "收费费用 PMPM",
+    "checkConnection": "检查连接",
+    "class": "类别",
+    "code": "编码",
+    "comparator": "对照队列",
+    "comparatorCohortName": "比较队列名字",
+    "comparatorId": "比较ID",
+    "conceptCode": "概念集代码",
+    "conceptId": "概念集编号",
+    "conceptName": "概念集名称",
+    "conditionConceptId": "诊断概念ID",
+    "conditionConceptName": "诊断概念名",
+    "copy": "复制",
+    "count": "计数",
+    "covariate": "协变量",
+    "covariateSettings": "协变量设置",
+    "created": "建立时间",
+    "date": "日期",
+    "daysSupplyAvg": "平均供给天数",
+    "daysSupplyPer1000PerYear": "供给天数 /1千 /年",
+    "daysSupplyTotal": "供给天数",
+    "descendants": "子概念（后代）",
+    "description": "描述",
+    "design": "设计",
+    "dialect": "方言",
+    "distance": "距离",
+    "domain": "域",
+    "drc": "后代记录数（DRC）",
+    "drugClass": "概念类别",
+    "drugConceptId": "药物概念Id",
+    "drugConceptName": "药物概念名称",
+    "drugId": "OMOP概念",
+    "drugInducedConcept": "用药引起的概念",
+    "drugLabelExists": "存在药物标签",
+    "drugName": "用药",
+    "drugVocabularyId": "概念术语集",
+    "duration": "持续时间",
+    "enabled": "已启用",
+    "endDate": "结束日期",
+    "endDay": "结束日期",
+    "ends": "结束",
+    "evidence": "证据",
+    "evidenceSource": "证据来源",
+    "exclCovariates": "排除协变量",
+    "exclude": "排除概念",
+    "excluded": "排除概念",
+    "execute": "执行",
+    "executionId": "执行ID",
+    "explore": "关系探索",
+    "exposurePct": "暴露的百分比",
+    "exposureAvg": "每1000人的平均暴露年数",
+    "exposureTotal": "年总暴露量",
+    "faersCountAncestor": "FAERS计数（祖先概念匹配）",
+    "faersCountDescendant": "FAERS计数（后代概念匹配）",
+    "faersCountExact": "FAERS计数（精确概念匹配）",
+    "faersCountParent": "FAERS计数（父概念匹配）",
+    "finished": "已完成",
+    "firstExposureOnly": "仅初次暴露",
+    "groupName": "组名",
+    "id": "编号",
+    "incidence": "发病率（Incidence）",
+    "inclCovariates": "包含协变量",
+    "includeAllOutcomes": "包括所有结果",
+    "included": "已包含",
+    "includedUsers": "包含的用户",
+    "indicatedContraindicated": "指示/禁忌",
+    "ingredient": "成分",
+    "jobName": "作业名称",
+    "lastExecuted": "最后执行",
+    "lengthOfStayAvg": "平均停留天数",
+    "lengthOfStayTotal": "停留天数",
+    "linkout": "链接输出",
+    "login": "登录",
+    "mapped": "映射的概念",
+    "mappingType": "映射类型",
+    "match": "匹配",
+    "max": "最大值",
+    "median": "中位数",
+    "message": "讯息",
+    "min": "最小值",
+    "minimumTimeAtRisk": "最小风险暴露期",
+    "model": "模型",
+    "modelName": "型号名称",
+    "modelSettings": "模型设置",
+    "modified": "修改",
+    "name": "名称",
+    "ncOutcomes": "负控制结果",
+    "nextExecution": "下次执行",
+    "notPrevalent": "不普遍",
+    "optimizedOut": "优化了",
+    "options": "选择",
+    "outcomeCohortName": "结果队列名称",
+    "outcomeId": "结果编号",
+    "outcomeModel": "结果模型",
+    "outcomeName": "结果队列名称",
+    "outcomes": "结果队列",
+    "p10": "十分位数10％",
+    "p25": "四分位数25％",
+    "p75": "四分位数75％",
+    "p90": "十分位数90％",
+    "paid": "支付的费用",
+    "paidAllowedRatio": "支付的/允许的",
+    "paidPmPm": "支付的费用PMPM",
+    "pct": "百分比",
+    "diff": "差异",
+    "remain": "保留",
+    "periodEnd": "周期结束",
+    "periodStart": "周期开始",
+    "permission": "权限",
+    "personsCount": "患者人数",
+    "personCount": "病人数",
+    "personsPct": "％的病人",
+    "pregnancyConcept": "怀孕概念",
+    "prevalence": "患病率",
+    "priorOutcomeLookback": "先前结果回溯",
+    "productLabelAncestor": "产品标签（祖先概念匹配）",
+    "productLabelCountDescendant": "产品标签计数（后代概念匹配）",
+    "productLabelExact": "产品标签（精确概念匹配）",
+    "productLabelParent": "产品标签（父概念匹配）",
+    "progress": "进展",
+    "provider": "医疗保健提供者",
+    "publicationCountAncestor": "发布计数（祖先概念匹配）",
+    "publicationCountDescendant": "发布计数（后代概念匹配）",
+    "publicationCountExact": "发布计数（精确概念匹配）",
+    "publicationCountParent": "发布计数（父概念匹配）",
+    "quantityAvg": "平均数量",
+    "quantityPer1000PerYear": "数量/ 1K /年",
+    "quantityTotal": "总数量",
+    "rc": "记录数RC",
+    "recordCounts": "记录计数 (RC / DRC)",
+    "refreshCache": "刷新缓存",
+    "relationshipType": "关系类型",
+    "remove": "删除",
+    "removeSubjectsWithPriorOutcome": "删除事先有结果的对象",
+    "requireTimeAtRisk": "需要的时间风险窗",
+    "results": "结果",
+    "riskWindowEnd": "风险窗口结束",
+    "riskWindowStart": "风险窗口开始",
+    "role": "角色",
+    "roleName": "角色名称",
+    "selected": "已选的",
+    "severity": "严重程度",
+    "sortOrder": "排序",
+    "sourceNameSourceKey": "源名称[源密钥]",
+    "sourceName": "数据源名称",
+    "standardConceptCaption": "标准概念",
+    "standardConceptCode": "标准概念代码",
+    "standardType": "标准类别",
+    "startDate": "开始日期",
+    "startDay": "开始日",
+    "started": "已开始",
+    "status": "状态",
+    "stddev": "标准差",
+    "strata": "分层的",
+    "suggestedNegativeControl": "建议的阴性对照",
+    "tableQualifiers": "表限定符",
+    "target": "目标队列",
+    "targetCohortName": "目标队列名称",
+    "targetId": "目标编号",
+    "targetName": "目标队列名称",
+    "temporal": "暂时的",
+    "timeAtRisk": "风险暴露期",
+    "timeAtRiskEnd": "风险暴露期结束日期",
+    "timeAtRiskStart": "风险暴露期开始日期",
+    "title": "标题",
+    "totalRecords": "总记录",
+    "type": "类型",
+    "uniqueIdentifier": "唯一标识符",
+    "updated": "更新时间",
+    "userExcluded": "被排除的用户",
+    "userIncluded": "包括的用户",
+    "value": "值",
+    "visitsCount": "记录",
+    "visitsPer1000": "记录/1000",
+    "visitsPer1000PerYear": "每年记录/1000",
+    "visitsPer1000WithVisits": "记录/1000+记录",
+    "vocabulary": "术语集",
+    "vocabularyVersion": "术语表版本",
+    "washoutPeriod": "洗脱期",
+    "pctWithPathway": "% 有诊疗路径",
+    "pctOfCohort": "% 的队列",
+    "eventCohort": "事件队列",
+    "rank": "序列",
+    "distinctEventCohorts": "不同的事件队列",
+    "sampleId": "样本编号",
+    "sampleName": "样本名称",
+    "numberOfPatients": "患者数量",
+    "selectionCriteria": "选择标准",
+    "personId": "患者编号",
+    "gender": "性别",
+    "ageAtIndex": "索引日期时的年龄",
+    "usageCount": "Usage count",
+    "group": "Group",
+    "version": "Version",
+    "comment": "Comment",
+    "preview": "Preview",
+    "pc": "PC",
+    "dpc": "DPC",
+    "rcTooltip": "Record Count",
+    "drcTooltip": "Descendant Record Count",
+    "pcTooltip": "Person Count",
+    "dpcTooltip": "Descendant Person Count"
+  },
+  "dataSources": {
+    "achillesHeelReport": {
+      "achillesHeelResults": "Achilles Heel 结果",
+      "message": "讯息",
+      "messageType": "讯息类型"
+    },
+    "const": {
+      "lengthOfEra": "周期的长短",
+      "recordsPerPerson": "每人记录"
+    },
+    "dashboardReport": {
+      "age": "年龄",
+      "ageAtFirstObservation": "开始观察的年龄",
+      "cdmSummary": "通用数据模型(CDM)摘要",
+      "cumulativeObservation": "累计观察期",
+      "date": "日期",
+      "days": "天",
+      "people": "人数",
+      "percentOfPopulation": "人口百分比",
+      "personsWithContinuousObservationByMonth": "每月连续观察对象",
+      "populationByGender": "人口(按性别)",
+      "years": "年份"
+    },
+    "datadensityReport": {
+      "conceptType": "概念类别",
+      "conceptsPerPerson": "每人的概念",
+      "numberOfRecords": "记录的数量",
+      "recordsPerPerson": "每人记录",
+      "totalRows": "总记录（行）",
+      "year": "年"
+    },
+    "deathReport": {
+      "ageAtDeath": "死亡年龄",
+      "ageAtFirstOccurence": "首次出现的年龄",
+      "ageDecile": "年龄十分位数",
+      "date": "日期",
+      "deathByType": "按类型死亡",
+      "deathPrevalenceByAgeGenderYear": "按年龄，性别和年分的死亡率",
+      "deathPrevalenceByMonth": "每月死亡率",
+      "gender": "性别",
+      "prevalencePer1000People": "每1000人的患病率",
+      "yearOfObservation": "观察年"
+    },
+    "drilldown": {
+      "ageAtFirstOccurrence": "首次出现的年龄",
+      "chartFormat": {
+        "ageAtFirstOccurrence": "首次出现的年龄",
+        "ageDecile": "年龄十分位数",
+        "date": "日期",
+        "frequencyDistribution": {
+          "xLabel1": "计数（“x”或更多",
+          "xLabel2": "s)"
+        },
+        "gender": "性别",
+        "percentOfTotalNumberOfPersons": "% 的病人总数",
+        "prevalencePer1000People": "每1000人的患病率",
+        "yearOfObservation": "观察年"
+      },
+      "drilldownReport": "深入报告",
+      "frequencyDistribution": "频率分布",
+      "lowerLimitDistribution": "下限分布",
+      "measurementRecordsByUnit": "单位检查检验记录",
+      "measurementValueDistribution": "检查检验值分布",
+      "noData": "没有数据",
+      "operatorConcept": "手术操作概念",
+      "prevalence": "患病率",
+      "prevalenceByMonth": "每月患病率",
+      "qualifierConcept": "合格概念",
+      "type": "类型",
+      "upperLimitDistribution": "上限分布",
+      "valueAsConcept": "值作为概念",
+      "valuesRelativeToNormalRange": "相对于正常范围的值",
+      "lengthOfEraDistribution": "周期分布的长度"
+    },
+    "errorLoadingReport": "加载报告时出错",
+    "headingTitle": "数据来源",
+    "loadingDrilldownReport": "载入深入报表",
+    "loadingReport": "载入报告",
+    "noPermission": "您无权查看此报告",
+    "numberOfPeople": "人数",
+    "observationPeriodReport" : {
+      "ageAtFirstObservation": "开始观察的年龄",
+      "ageByGender": "年龄（按性别）",
+      "observationLength": "观测长度",
+      "durationByGender": "持续时间（按性别）",
+      "cumulativeObservation": "累计观察期",
+      "durationByAgeDecile": "持续时间（按年龄十分位数）",
+      "personsWithContinuousObservationByYear": "逐年连续观察的人",
+      "observationPeriodsPerPerson": "每人的观察期",
+      "personsWithContinuousObservationByMonth": "每月连续观察对象",
+      "age": "年龄",
+      "people": "人数",
+      "gender": "性别",
+      "days": "天",
+      "ageDecile": "年龄十分位数",
+      "percentOfPopulation": "人口百分比",
+      "years": "年",
+      "date": "日期"
+    },
+    "personReport": {
+      "ethnicity": "民族",
+      "ethnicityFooter": "队列中按民族划分的人数",
+      "gender": "性别",
+      "genderFooter": "队列中按性别划分的人数",
+      "numberOfPersons": "人数",
+      "race": "种族",
+      "raceFooter": "队列中按种族划分的人数",
+      "year": "年",
+      "yearOfBirth": "出生年份",
+      "yearOfBirthFooter": "队列中按出生年份可视化的人数"
+    },
+    "prevalence": "患病率",
+    "reports": {
+      "achillesHeel": "Achilles Heel",
+      "conditionEra": "疾病/症状持续时间",
+      "conditionOccurrence": "疾病/症状",
+      "dashboard": "仪表板",
+      "dataDensity": "数据密度",
+      "death": "死亡",
+      "drugEra": "用药持续时间",
+      "drugExposure": "药物使用",
+      "measurement": "化验/检测指标",
+      "observation": "观测",
+      "person": "患者信息",
+      "procedure": "操作信息",
+      "titleTail": "报告",
+      "visit": "就诊",
+      "observationPeriod": "观察期"
+    },
+    "selectAReport": "请选择一个报告",
+    "selectASource": "请选择一个来源",
+    "table": {
+      "tableTab": "表"
+    },
+    "treemap": {
+      "legend": {
+        "boxSize": "框大小:",
+        "color": "颜色:",
+        "colorExplanation": "(较深的颜色表示较高的记录数),Ctrl +单击:放大,Alt +单击:返回原始大小"
+      },
+      "treemapTab": "树状图"
+    }
+  },
+  "search": {
+    "advancedOptions": "高级选项",
+    "buttonTitle": "搜索",
+    "classification": "分类",
+    "clearAllSelections": "清除所有选择",
+    "domains": "域",
+    "headingTitle": "搜索",
+    "loadingMessage": {
+      "domains": "域",
+      "loading": "载入中",
+      "searchResults": "搜索结果",
+      "vocabularies": "术语集"
+    },
+    "noDomainsAvailable": "没有可用的域",
+    "noResultsFoundFor": "找不到结果",
+    "noVocabulariesAvailable": "没有可用的词汇",
+    "nonStandard": "非标准",
+    "placeholder": "在这里输入您的搜索",
+    "standard": "标准",
+    "tabs": {
+      "import": "导入",
+      "search": "搜索"
+    },
+    "vocabularies": "术语集",
+    "viewCountMessage":  "View record count for:"
+  },
+  "cs": {
+    "browser": {
+      "caption": "概念集",
+      "compare": {
+        "compareConceptSets": "比较概念集",
+        "comparisonResults": "对照结果",
+        "conceptSet1": "概念集 1:",
+        "conceptSet2": "概念集 2:",
+        "heading": "概念集比较",
+        "headingMessage": "使用此实用程序可以比较两个概念集的内容，以查看它们可以共享哪些概念。",
+        "modalTitle": "选择一个概念集",
+        "sameWarning": "您无法比较相同的概念集。",
+        "saveFromComparisonNameTail": " - 来自对照",
+        "saveMessage": "从下面的选择中保存新概念集",
+        "saveWarning": "您必须保存当前概念集，然后才能执行此比较。",
+        "viewCountMessage": "查看以下数据库的数据库记录计数（RC）和后代记录计数（DRC）："
+      },
+      "exportConceptSetsButton": "导出概念集",
+      "exportConceptSetsNumber": "选择<b><%=num%></b>个概念集导出",
+      "exportInstructions": "说明:",
+      "exportInstructionsText": "通过选择网格中的每一行，选择一组要导出的概念。 完成后，使用“导出概念集”按钮开始在新窗口中下载。",
+      "tabs": {
+        "export": "导出",
+        "list": "列表"
+      }
+    },
+    "manager": {
+      "attemptingToFindMessage": "正在尝试为此概念集找到最佳定义...",
+      "cancelButton": "取消",
+      "caption": "概念集 #<%=id%>",
+      "captionVersion": "Concept Set #<%=id%> - Version <%=number%> Preview",
+      "changeColumnsButton": "修改列",
+      "conceptsRemovedHeading": "概念移除",
+      "conceptsRemovedMessage": "由于优化版本已包含以下概念，因此删除了以下概念。",
+      "createOption": "创建新概念集",
+      "csAlreadyExistsMessage": "使用该名称的概念集已经存在。 请选择其他名称。",
+      "csDeleteConfirmMessage": "删除概念集？警告：删除无法撤销！",
+      "csNotSavedConfirmMessage": "您的概念集更改未保存。  您想继续吗？",
+      "csSaveErrorMessage": "尝试保存概念集时发生错误。",
+      "exploreEvidence": {
+        "additionalInformation": "附加信息：",
+        "anchor1": "从ATLAS获得阴性对照",
+        "anchor2": "有关阴性对照处理的高级信息",
+        "anchor3": "额外资源",
+        "chooseAConceptSet": "选择一个概念集",
+        "deletedCcMessage": "指定的概念集（＃<%=cs%>）已删除。 请选择其他概念集。",
+        "drugLabelEvidence": "药物标签证据：",
+        "drugLabelEvidenceDetails": "细节",
+        "drugLabelEvidenceEnd": "CEM中的药物标签。",
+        "drugLabelEvidenceFound": "找到了",
+        "drugLabelEvidenceOf": "的",
+        "drugLabelsFound": "找到药物标签",
+        "drugLabelsNotFound": "找不到药物标签",
+        "evidenceForAll": "所有的证据",
+        "evidenceForAllFor": "对于",
+        "evidenceSources": "证据来源",
+        "excludeLabel": "您想排除哪些概念作为已知的阳性对照？ （可选的）",
+        "generate": "生成",
+        "generated": "创建开始时间",
+        "generationDuration": "创建用时",
+        "generationSettings": "生成设置",
+        "generationStatus": "生成状态",
+        "includeLabel": "您想包括哪些概念作为已知的阴性对照？ （可选的）",
+        "invalidCsWarning": "您保存的概念来自多个域，或者来自诊断或药物以外的域。 概念集必须仅包含诊断或药物才能探索证据。",
+        "loadingEvidence": "加载证据",
+        "message1": "证据来源于",
+        "message2": "证据包括公开发表的文献，产品标签和自发报告中的证据。 使用下面的证据来源，找出与该概念集中包含的概念相关的证据。",
+        "noCsWarning": "您必须使用RxNorm词汇表中的“成分”类级别或SMONED中的“诊断”定义的药物，来定义概念集。 概念集必须仅包含诊断或药物才能探索证据。",
+        "noEvidenceFoundFor": "找不到证据",
+        "saveNewButton": "从下面的选择中保存新概念集",
+        "title": "探索证据:",
+        "viewDatabaseRecordCounts": "查看以下数据库的数据库记录计数（RC）和后代记录计数（DRC）：",
+        "viewEvidence": "查看证据",
+        "viewingEvidence": "查看证据"
+      },
+      "fullyOptimizedMessage": "当前的概念集定义已完全优化。",
+      "optimize": "优化",
+      "optimizedConceptSetHeading": "优化概念集",
+      "overwriteOption": "覆盖当前概念集",
+      "pleaseProvideNameMessage": "请提供新概念集的名称：",
+      "pleaseReviewMessage": "请查看优化的定义和保存选项。",
+      "resetColumnsButton": "重置列",
+      "saveButton": "保存",
+      "saveOptions": "保存选项",
+      "showAllColumnsButton": "显示所有列",
+      "tabs": {
+        "compare": "比较",
+        "conceptSetExpression": "概念集表达",
+        "exploreEvidence": "探索证据",
+        "export": "导出",
+        "includedConcepts": "包含的概念",
+        "includedSourceCodes": "包含的源代码",
+        "versions": "Versions",
+        "messages": "提示信息"
+      },
+      "concept": {
+        "title": "术语集 > 概念",
+        "standard": "标准",
+        "nonStandard": "非标准",
+        "classification": "分类",
+        "tabs": {
+          "details": {
+            "caption": "细节",
+            "property": "性能",
+            "value": "值",
+            "conceptName": "概念集名称",
+            "domainId": "域ID",
+            "conceptClassId": "概念类别 Id",
+            "vocabularyId": "术语Id",
+            "conceptId": "概念集编号",
+            "conceptCode": "概念集代码",
+            "invalidReason": "失效原因",
+            "standardConcept": "标准概念"
+          },
+          "relatedConcepts": {
+            "loading": "正在加载相关概念…",
+            "caption": "有关的概念"
+          },
+          "hierarchy": {
+            "loading": "正在加载层级结构…",
+            "caption": "层级结构",
+            "noHierarchyFoundMessage": "未找到非标准概念的层次结构。",
+            "view": "视图/查看：",
+            "fullHierarchy": "完整层级",
+            "parents": "父概念",
+            "currentConcept": "当前概念",
+            "children": "子集",
+            "noParentConceptsFound": "找不到父级概念",
+            "noChildConceptsFound": "找不到子概念"
+          },
+          "recordCounts": {
+            "loading": "正在加载记录数…",
+            "caption": "记录计数",
+            "recordCountsAcrossSources": "从来源中得到的记录数",
+            "failedToLoadData": "无法加载数据"
+          }
+        }
+      },
+      "conceptSetOptimization": "概念集优化"
+    }
+  },
+  "cc": {
+    "title": "队列特征",
+    "new": "新",
+    "loading": "正在载入队列表征列表...",
+    "modals": {
+      "confirmChanges": "您的更改未保存。 您想继续吗？",
+      "selectConceptSet": "选择概念集...",
+      "chooseAFeatureAnalyses": "选择一个功能分析…"
+    },
+    "tabs": {
+      "characterizations": {
+        "newLabel": "队列特征",
+        "title": "特征描述"
+      },
+      "featureAnalyses": {
+        "newLabel": "特征分析",
+        "title": "特征分析"
+      }
+    },
+    "viewEdit": {
+      "caption": "特征描述 #<%=id%>",
+      "captionPreview": "Characterization #<%=id%> - Version <%=number%> Preview",
+      "loadingCohortCharacterization": "正在载入队列表征...",
+      "design": {
+        "description": "队列表征被定义为一种从病人级别的协变量数据生成队列级别描述性摘要统计信息的过程。各个级别协变量的摘要统计信息可以是数字，均值，标准差，方差，最小值，最大值，中位数，范围和四分位数。 此外，可以将一段时间内的协变量分层为时间序列分析的时间单位，例如相对于cohort_start_date的固定时间间隔（例如，每7天，每30天等），或以绝对时间间隔（例如，日历中的周，月，季度，年）。",
+        "fa": {
+          "actions": {
+            "remove": "删除"
+          },
+          "title": "特征分析"
+        },
+        "faParams": {
+          "modal": {
+            "namePlaceholder": "名称",
+            "submit": "提交",
+            "title": "创建新参数",
+            "valuePlaceholder": "值"
+          },
+          "newLabel": "新参数",
+          "title": "特征分析参数"
+        },
+        "loading": "正在载入队列表征设计...",
+        "subgroups": {
+          "messages": {
+            "nameIsEmpty": "亚组名称为空。",
+            "nameIsNotUnique": "亚组名称重复。"
+          },
+          "namePlaceholder": "层级名称",
+          "newSubgroup": "新的亚组",
+          "noSubgroups": "未定义子组",
+          "stratifiedByPlaceholder": "分层",
+          "subgroupOnly": "仅计算亚组分析。",
+          "title": "亚组分析"
+        }
+      },
+      "executions": {
+        "title": "执行",
+        "prevalenceStatConverter": {
+          "allStrata": "所有阶层",
+          "explore": "关系探索",
+          "loadingPrevalenceStats": "正在加载流行率统计信息...",
+          "cohort": "队列:",
+          "exploringConceptHierarchyFor": "探索概念的层次结构：",
+          "ancestor": "祖先",
+          "descendant": "子概念（后代）",
+          "selected": "已选的"
+        }
+      },
+      "results": {
+        "detail": {
+          "date": "日期:",
+          "design": "设计:",
+          "results": {
+            "label": "结果：",
+            "text": "<%= reports %> 的报告"
+          }
+        },
+        "exploring": "探索",
+        "exportAll": "全部导出",
+        "filters": {
+          "analyses": "分析",
+          "cohorts": "队列",
+          "domains": "域"
+        },
+        "hideEmptyResults": "隐藏空的结果",
+        "loading": "正在载入执行结果...",
+        "showAllResults": "显示所有结果",
+        "table": {
+          "buttons": {
+            "exportComparison": "导出对照"
+          }
+        },
+        "threshold": {
+          "apply": "应用",
+          "label": "筛选协变量结果以将患病率大于：",
+          "placeholder": "阈值",
+          "text": "查看全部<%=totalResultsCount%>条记录中最普遍的<%=resultsCountFiltered%>"
+        },
+        "title": "<%=sourceName%>的报告",
+        "series": "系列",
+        "covariate": "协变量",
+        "allPrevalenceCovariates": "所有患病率的协变量"
+      },
+      "tabs": {
+        "design": "设计",
+        "executions": "执行",
+        "utilities": "程序",
+        "versions": "Versions",
+        "messages": "提示信息"
+      },
+      "utilities": {
+        "title": "程序"
+      }
+    },
+    "fa": {
+      "tabs": {
+        "design": "设计",
+        "conceptSets": "概念集"
+      },
+      "addCriteriaFeature": "添加条件功能",
+      "addNewCriteria": "添加新条件...",
+      "analysisSql": "分析SQL:",
+      "analysisType": "分析类型：",
+      "availableVariables": "可用变量",
+      "availableVariablesNote": "队列表征参数中指定的所有变量",
+      "caption": "功能分析＃<%=id%>",
+      "copiedToClipboard": "已复制到剪贴板！",
+      "copySqlToClipboard": "将Analysis SQL模板复制到剪贴板",
+      "criteria": "条件",
+      "criteriaName": "条件名称",
+      "custom": "自定义",
+      "description": "说明",
+      "design": "设计",
+      "designOrNameAreEmpty": "设计或名称为空",
+      "domain": "域/领域:",
+      "featureExtractionPresetName": "FeatureExtraction预设名称：",
+      "loadingList": "正在加载功能分析列表...",
+      "nameExistsAlert": "具有该名称的特征分析已经存在。 请选择其他名称。",
+      "preset": "预设值",
+      "retrievingList": "检索特征分析列表...",
+      "saveError": "尝试保存特征分析时发生错误。",
+      "selectConceptSet": "选择概念集...",
+      "unsavedConfirmation": "您的更改未保存。 您想继续吗？",
+      "warning": "警告：",
+      "warningText": "保存后，您将无法更改分析类型。"
+    }
+  },
+  "home": {
+    "description": "ATLAS作为<a href='http://www.ohdsi.org' target='_new'>OHDSI</a>的开发的开源应用程序，旨在为患者水平的数据和分析提供集成界面。",
+    "documentation": {
+      "text": "可在此处找到<a target='_new' href='http://www.ohdsi.org/web/wiki/doku.php?id=documentation:software:atlas'>《ATLAS用户指南》</a>。",
+      "title": "参考文档"
+    },
+    "gettingStarted": {
+      "newCohort": {
+        "button": "定义新队列",
+        "description": "通过定义要研究的人群来开始研究"
+      },
+      "title": "由此开始",
+      "vocabulary": {
+        "button": "词汇检索",
+        "description": "搜索世界各地用于描述患者水平数据的各种本体"
+      }
+    },
+    "releaseNotes": {
+      "issues": "最新版本包括<b><%=issues%></b>项增强功能和故障排除:",
+      "loadingReleaseInfo": "加载发布信息",
+      "title": "部署说明"
+    },
+    "title": "首页",
+    "welcome": "欢迎使用ATLAS。"
+  },
+  "ir": {
+    "caption": "发病率分析 #<%=id%>",
+    "captionVersion": "Incidence Rate Analysis #<%=id%> - Version <%=number%> Preview",
+    "cs": {
+      "modalTitle": "选择概念集..."
+    },
+    "deleteConfirmation": "删除发病率分析？ 警告：删除操作无法撤消！",
+    "deleteResultConfirmation": "您是否真的要删除<%=name%>的结果？",
+    "editor": {
+      "addOutcomeCohort": "添加结果队列",
+      "addStudyWindow": "添加研究期",
+      "addTargetCohort": "添加目标队列",
+      "chooseACohort": "选择一个队列",
+      "newStratifyCriteria": "新的分层标准",
+      "noStudyWindowDefined": "未定义研究期。",
+      "outcomeCohorts": "结果队列",
+      "removeStudyWindow": "删除研究期",
+      "selectInclusionCriteriaMessage": "请选择一个合格的纳排条件进行编辑。",
+      "stratifyCriteria": "分层标准：",
+      "stratifyCriteriaMessage": "您可以提供一个可选的分层条件，以根据满足您的条件的标准将总体分为唯一的组。",
+      "studyCohorts": "研究队列",
+      "studyWindowText1": "研究期开始于",
+      "studyWindowText2": "研究期结束于",
+      "studyWindowText3": ".",
+      "targetCohorts": "目标队列",
+      "timeAtRisk": "风险暴露期",
+      "timeAtRiskStartsWithDays": "天开始",
+      "timeAtRiskEndsWithDays": "天结束",
+      "timeAtRiskEndDate": "结束日期",
+      "timeAtRiskEndsWith": "风险时间窗从",
+      "timeAtRiskMessage": "风险时间窗定义了相对于队列开始日期或者结束日期的时间窗口，并且考虑到患者患有结果变量风险的偏移量。",
+      "timeAtRiskPlus": "添加",
+      "timeAtRiskStartDate": "开始日期",
+      "timeAtRiskStartsWith": "风险时间窗从",
+      "timeAtRiskWarningMessage": "错误：风险时间在风险时间结束时或之后开始，导致风险时间为零。 请确保起始偏移量大于结束偏移量。"
+    },
+    "nameConflict": "使用该名称的发病率已经存在。 请选择其他名称。",
+    "newanalysis": "新建分析",
+    "notSavedMessage": "发病率分析的更改还没有保存。您想继续吗？",
+    "results": {
+      "accessDenied": "拒绝访问",
+      "andOutcomeCohort": "和结果队列：",
+      "canceled": "取消的",
+      "cases": "患者事件数",
+      "close": "关闭",
+      "duration": "用时",
+      "exportToCsvButton": "将分析结果导出到CSV文档",
+      "failed": "失败",
+      "generationInProgress": "生成正在进行中",
+      "loadingGenerationResultErrorMessage": "加载生成结果报告时出错",
+      "loadingSummary": "正在载入摘要...",
+      "perPersons": "每<%=multiplier%>患者",
+      "perYears": "每<%=multiplier%>年",
+      "persons": "患者人数",
+      "proportion": "发病比",
+      "rate": "发生率",
+      "reports": "报告书",
+      "rerun": "重新运行",
+      "running": "正在运行",
+      "selectTargetAndOutcomeAlert": "您应该至少选择一个目标和结果队列来生成",
+      "showingTargetCohort": "显示目标队列：",
+      "sourceName": "来源名称",
+      "started": "创建开始时间",
+      "stratifyRule": "分层条件",
+      "summaryStatistics": "统计摘要",
+      "timeAtRisk": "时间风险窗",
+      "timeAtRiskYears": "（年）"
+    },
+    "savingError": "尝试保存发病率时发生错误。",
+    "tabs": {
+      "conceptSets": "概念集",
+      "definition": "定义",
+      "generation": "生成",
+      "utilities": "程序",
+      "versions": "Versions",
+      "messages": "提示信息"
+    },
+    "title": "发病率分析"
+  },
+  "profiles": {
+    "ageAt": "年龄 <%=age%>",
+    "atIndex": "在索引",
+    "atStartOfObservation": "在观测开始时",
+    "chart": {
+      "event": "事件：",
+      "startDate": "开始日期：",
+      "startDay": "开始日："
+    },
+    "clearAllHighlightColors": "清除所有突出显示的颜色",
+    "clickHereToSelectACohort": "单击此处选择一个队列",
+    "eventHighlighting": "事件重点",
+    "highlightEventsTooltip": "突出的事件",
+    "loadingProfile": "从数据库加载配置文件数据",
+    "personId": "病人ID",
+    "processingProfile": "处理配置文件数据",
+    "recordCounts": "<%=count%> 的事件",
+    "selectADataSource": "选择数据源",
+    "setSelectedEventsColor": "设置所选事件的颜色",
+    "title": "数据概要",
+    "toggleChartTooltip": "切换图表显示",
+    "toggleTableTooltip": "切换表显示",
+    "сantFind": "无法找到"
+  },
+  "pathways": {
+    "loading": "正在加载路径分析列表...",
+    "manager": {
+      "caption": "队列路径 #<%=id%>",
+      "captionVersion": "Cohort Pathway #<%=id%> - Version <%=number%> Preview",
+      "design": {
+        "analysisSettings": {
+          "combinationWindow": {
+            "description": "两个事件队列必须联合使用才能被视为组合的时间窗。",
+            "title": "联合治疗的时间窗："
+          },
+          "description": "执行路径分析时，使用以下参数集",
+          "maximumPathLength": {
+            "description": "在sunburst图中保罗的指定路径的最大步骤数。",
+            "title": "最大路径长度："
+          },
+          "minimumCellCount": {
+            "description": "目标队列中有定义的事件队列的最小受试者数，以便于在途径中进行计数。",
+            "title": "最少分析的单位数："
+          },
+          "allowRepeats": {
+            "description": "Allow cohort events/combos to appear multiple times in the same pathway.",
+            "title": "允许重复："
+          },
+          "title": "分析设置"
+        },
+        "description": "队列路径定义是在目标队列人群中生成事件队列序列的过程。",
+        "eventCohorts": {
+          "description": "每个事件队列都定义了目标队列中病人可能发生的路径中的步骤。",
+          "title": "事件队列"
+        },
+        "targetCohorts": {
+          "description": "对于每个目标队列分析事件队列的途径",
+          "title": "目标队列"
+        }
+      },
+      "executions": {
+        "title": "执行",
+        "dialogs": {
+          "design": {
+            "loadError": "无法加载设计",
+            "title": "设计"
+          }
+        },
+        "results": {
+          "date": "日期:",
+          "design": "设计:",
+          "details": {
+            "noPath": "未选择路径：单击路径以获取详细信息",
+            "title": "路径细节"
+          },
+          "diagram": {
+            "title": "朝阳图"
+          },
+          "filters": {
+            "cohorts": "队列"
+          },
+          "legend": {
+            "eventCohorts": "事件队列",
+            "personsCount": "接受治疗的患者人数：",
+            "personsPortion": "接受治疗的患者占目标人群总数的比例：",
+            "targetCohort": "目标队列",
+            "targetCohortCount": "目标队列人数：",
+            "title": "图例"
+          },
+          "noPathways": "未找到任何途径",
+          "title": "路径分析",
+          "visualization": "可视化",
+          "tabular": "表格",
+          "tableview": {
+            "cohortName": "队列 <%=name%>",
+            "maximumPathLength": "最大路径长度：",
+            "allPathwaysTitle": "表<%=index%>a：所有路径",
+            "eventCohortCountsByRank": "表<%=index%>b：按排名划分的事件队列计数",
+            "eventCohortCounts": "表<%=index%>c：事件同类群组计数",
+            "distinctEventCohorts": "表<%=index%>d：不同事件队列",
+            "stepN": "步骤<%=i%>",
+            "exactly": "准确<%=v%>"
+          }
+        }
+      },
+      "loading": "正在载入队列路径...",
+      "messages": {
+        "alreadyExists": "具有该名称的队列路径已经存在。 请选择其他名称。",
+        "beforeClose": "您的更改未保存。 您想继续吗？",
+        "deleteConfirmation": "您确定么？",
+        "saveFailed": "尝试保存队列路径时发生错误。",
+        "notfound": "没有ID=%d的路径分析。"
+      },
+      "tabs": {
+        "design": "设计",
+        "executions": "执行",
+        "utilities": "程序",
+        "versions": "Versions",
+        "messages": "提示信息"
+      },
+      "utilities": {
+        "title": "程序"
+      }
+    },
+    "title": "队列路径"
+  },
+  "ple": {
+    "analysisExistsAlert": "使用此名称的估算分析已经存在。 请选择其他名称。",
+    "analysisSaveErrorAlert": "尝试保存估算分析时发生错误。",
+    "caption": "比较队列分析",
+    "captionNumber": "比较队列分析 #<%=id%>",
+    "changesNotSavedConfirmation": "PLE估计分析更改不会保存。 你想继续吗？",
+    "deleteConfirmation": "删除PLE估计规范？ 警告：删除操作无法撤消！",
+    "retrievingEstimations": "检索估计",
+    "spec": {
+      "addAnalysisSettings": "添加分析设置",
+      "addComparisons": "添加比较队列",
+      "addOutcome": "添加结果",
+      "analysisName": "分析名称：",
+      "analysisSettings": "分析设置",
+      "analysisSettingsDescription": "添加或更新分析设置",
+      "chooseYourComparatorCohort": "选择对照队列：",
+      "chooseYourOutcomeCohorts:": "选择结果队列：",
+      "chooseYourTargetCohort": "选择目标队列：",
+      "clickToViewDetails": "点击查看详细信息",
+      "comparison": "比较队列",
+      "comparisonDescription": "添加或更新目标，对照，结果队列和阴性对照结果。",
+      "conceptsToExcludeLabel": "构建本研究中使用的协变量时，<b>排除</b>的概念。*",
+      "conceptsToExcludeNoteAnalysis": "* 这边定义的概念和比较部分定义的进行了合并。",
+      "conceptsToExcludeNoteComparisons": "* 这边定义的概念和分析设置部分定义的进行了合并。",
+      "conceptsToIncludeLabel": "构建本研究中使用的协变量时，<b>包括</b>的概念。 （如果要包括每个概念，请留空。）*",
+      "conceptsToIncludeNoteAnalysis": "* 这边定义的概念和比较部分定义的进行了合并。",
+      "conceptsToIncludeNoteComparisons": "* 这边定义的概念和分析设置部分定义的进行了合并。",
+      "controlSettings": "对照设置",
+      "covariateSelection": "协变量选择",
+      "covariateSettings": "协变量设置",
+      "descriptionPlaceholder": "在此处输入说明（最多1000个字符）",
+      "evaluationSettings": "评估设置",
+      "evaluationSettingsPanel": {
+        "additionalSettings": "其他设置",
+        "advancedSettingsStartsHere": "高级设置从此处开始",
+        "allowedRatio": "目标信号大小和注入信号大小之间的允许比率：",
+        "daysFrom": "距天数",
+        "daysFromCohortStartDate": "从队列开始日期算起的天数",
+        "defineTimeAtRiskWindowEnd": "定义风险暴露期的结束日期",
+        "defineTimeAtRiskWindowStart": "定义相对于目标/对照队列的开始日期的风险暴露期的开始日期",
+        "effectSizes": "输入要应用的效果大小",
+        "firstOutcomeToBeCreated": "首次生成的新结果ID是什么？",
+        "maxNumberOfPeopleToFit": "用于拟合结果模型的最大人数：",
+        "minNumberOfOutcomeEventsToBuildAModel": "建立模型所需的最少结果事件数",
+        "minNumberofOutcomeEventsToInjectASignal": "注入信号所需的最少结果事件数",
+        "minimumRequiredTime": "暴露前所需的最短连续观察时间（以天为单位）：",
+        "modelType": "模型类型：",
+        "negativeControl": "阴性对照结果队列定义",
+        "negativeControlDesc": "此表达式将定义纳入标准和队列的持续时间，以用作阴性对照结果。",
+        "onlyFirstExposure": "是否应该仅包括每个对象的第一次暴露？",
+        "onlyFirstOutcome": "在对结果进行建模时，您会只考虑每个患者的第一个结果吗？",
+        "positiveControl": "阳性对照合成",
+        "positiveControlPerform": "我们是否应该进行阳性对照综合以纠正置信区间？",
+        "removePeopleWithPrior": "确定要删除以前有结果的人吗？",
+        "typeOfOccurence": "从域中选择时事件发生的类型",
+        "whatDomains": "应该考虑哪些域来检测阴性对照结果？ （按控制键选择多个域）",
+        "whenTrueDescendantConcepts": "如果为真，则使用阴性对照结果的Concept ID的子概念找到结果，并将结果汇总为Concept ID。"
+      },
+      "from": "从",
+      "negativeControlConceptSet": "选择阴性对照结果：",
+      "newAnalysis": "新建分析",
+      "options": {
+        "all": "所有",
+        "allOccurrences": "所有出现",
+        "byPercent": "根据百分比",
+        "cohortEndDate": "队列结束日期",
+        "cohortStartDate": "队列开始日期",
+        "comparator": "对照队列",
+        "condition": "诊断",
+        "coxProportionalHazards": "考克斯比例风险模型",
+        "device": "医疗设备",
+        "drug": "用药",
+        "firstOccurrence": "第一次出现",
+        "keepAll": "保留所有",
+        "keepFirst": "仅保留第一项",
+        "logisticRegression": "逻辑回归",
+        "matchOnPropensityScore": "按倾向得分匹配",
+        "matching": "<%=ratio%>:1 匹配",
+        "measurement": "检查检验",
+        "none": "无",
+        "observation": "观察",
+        "poisson": "泊松",
+        "poissonRegression": "泊松回归",
+        "procedure": "手术操作",
+        "propensityScore": "倾向指数",
+        "removeAll": "全部删除",
+        "standardized": "标准化的",
+        "standardizedLogit": "标准化Logit",
+        "stratification": "分层（层：<%=stratum%>）",
+        "stratifyOnPropensityScore": "按倾向得分分层",
+        "survival": "生存",
+        "target": "目标队列",
+        "toEquipoise": "根据平衡",
+        "visit": "就诊"
+      },
+      "outcomeModel": "结果模型设置",
+      "outcomeModelPanel": {
+        "covariates": "协变量是否也应包括在结果模型中？",
+        "regression": "回归分析是否需要根据人口目标中定义的层次结构进行调整（例如，通过倾向得分进行匹配或分层）？",
+        "regularization": "在拟合结果模型时使用正则化吗？ *",
+        "regularizationNote": "* 正则化将不会被运用于感兴趣的暴露, 而只会应用于协变量。",
+        "statisticalModel": "定义一个统计模型，该模型将用于评估目标人群和对照人群之间的风险。",
+        "weighting": "使用治疗加权的逆概率？"
+      },
+      "prior": "先验变量",
+      "propensityScoreAdjustment": "倾向得分调整",
+      "propensityScoreAdjustmentPanel": {
+        "baseSelection": "您将使用哪个受众群体来确定您的等级？ 图层以相同的大小定义。",
+        "caliperForMatching": "匹配的卡尺是什么：",
+        "caliperScale": "卡尺刻度是多少：",
+        "covariateIdsMatch": "cohortMethodData对象中的一个或多个相匹配的协变量ID。",
+        "covariateIdsPlaceholder": "一个或多个协变量ID",
+        "covariateIdsStratify": "cohortMethodData对象中的一个或多个协变量ID，也应对此主题进行分层。",
+        "howManyStrata": "您要划分倾向得分多少层？这些层的边界会自动定义为包含相同数量的目标。",
+        "howToTrim": "您如何根据倾向得分分布来调整队列？",
+        "lowerAndUpperBound": "指定保持人员的偏好分数的上限和下限（指定为：最小百分比，最大百分比，例如：25,75）：",
+        "matchingOrStratification": "您要执行匹配还是分层？",
+        "maxNumberOfPeople": "适当的倾向评分模型中要包括的最大患者人数是多少？将此数字设置为0不会应用下采样。",
+        "maximumNumberOfPersons": "在定义的卡尺内，要与目标手臂中的每个人相匹配的比较器手臂中的最大人数是多少？ （0 =表示没有最大值-所有比较器将分配给目标人员）：",
+        "testEachCovariate": "您是否要检查分配的目标（目标）与每个协变量的相关性？如果协变量具有异常高的相关值（正值或负值），则会引发错误。",
+        "trimFraction": "修剪分数（1-100％）：",
+        "useRegularization": "在拟合倾向模型时使用正则化吗？"
+      },
+      "selectCohort": "选择队列...",
+      "selectConceptSet": "选择概念集...",
+      "selectCovariates": "选择协变量...",
+      "studyPopulation": "研究人群",
+      "studyPopulationPanel": {
+        "cohortCap": "如果目标或比较者队列大于此数目，则将采样到此大小。（如果该值为0，则表示没有最大大小。）",
+        "daysPriorOutcomes": "确定先验结果时，我们应该回顾多少天？",
+        "endDate": "研究结束日期-一个日历日期，指定了可以显示队列索引的最大日期（留空以供所有时间使用。）重要提示：研究结束日期还用于截断风险窗口，这意味着研究结束日期之后不会有任何结果被考虑。",
+        "minimumObservations": "要在索引日期之前将一个人纳入队列的最短连续观察时间。",
+        "onlyFirst": "仅包括受试者的第一暴露？",
+        "removeDuplicates": "删除目标队列和比较队列中的受试者？",
+        "removeSubjectsPriorRiskWindow": "删除在风险窗口开始之前有结果的受试者？",
+        "restrictToPeriod": "将研究限制在数据中同时存在两种暴露的时期？ （例如，两种药物都在市场上销售时）",
+        "startDate": "研究开始日期-指定队列索引可以显示的最短日期（留空以始终使用）：",
+        "subjectInMultipleCohorts": "如果一个受试者属于多个队列，那么在新的风险时间开始以防止重叠时，应该对风险时间进行审查吗？"
+      },
+      "timeAtRisk": "风险暴露期",
+      "timeAtRiskPanel": {
+        "daysFrom": "距天数",
+        "defineTheTimeAtRiskWindowEnd": "定义风险暴露期的结束日期。",
+        "defineTheTimeAtRiskWindowStart": "定义相对于目标/对照队列的开始日期的风险暴露期的开始日期",
+        "minimumNumberOfDaysAtRisk": "您想设置多少天的最小风险暴露期？"
+      },
+      "usingCovariates": "使用OHDSI协变量进行倾向评分模型。",
+      "view": "视图/查看：",
+      "viewAnalysisSettings": "分析设置",
+      "viewComparisons": "比较队列",
+      "viewEvaluationSettings": "评估设置",
+      "viewFull": "全部",
+      "viewFullSpecification": "查看全部"
+    },
+    "tabs": {
+      "executions": "执行",
+      "specification": "说明",
+      "utilities": "程序",
+      "messages": "提示信息"
+    },
+    "title": "人口水平效应估计",
+    "util": {
+      "downloadNameNote": "<b>请注意：</b>程序包名称应仅包含字母数字字符。 不允许使用空格或特殊字符。",
+      "downloadNote": "请提供研究封包的名称，然后单击下载以ZIP格式获取研究封包。",
+      "downloadPackage": "下载研究包",
+      "downloadProblemsNote": "请查看下载区域以查看分析规范中的问题。 必须先更正这些问题，然后才能导出定义。",
+      "issueComparison": "您必须在比较设置中至少指定1个目标， 比较和结果。",
+      "issueComparisonAndAnalysis": "您必须至少指定1个有效的比较和分析设置。",
+      "issueDuplicate": "您的研究在以下区域之一中包含重复的值：比较或分析设置。",
+      "issueNotSaved": "在查看和下载之前，请务必保存分析设置。",
+      "issues": "您的研究存在以下问题，这些问题使您无法查看完整的规范详细信息，并无法下载研究包：",
+      "packageNamePlaceholder": "封装名字...",
+      "reviewDownload": "审查 & 下载",
+      "reviewFullSpec": "查看完整研究规范"
+    }
+  },
+  "jobs": {
+    "refreshJobs": "刷新工作"
+  },
+  "configuration": {
+    "alerts": {
+      "clearLocalCache": "本地存储已清除。 请刷新页面以重新加载配置信息。",
+      "clearServerCache": "服务器缓存已清除。",
+      "failUpdatePrioritySourceDaimon": "无法更新优先级源守护程序"
+    },
+    "buttons": {
+      "check": "检查",
+      "refresh": "刷新",
+      "clearConfigurationCache": "清除配置缓存",
+      "clearServerCache": "清除服务器缓存",
+      "importUsers": "从LDAP / AD导入用户",
+      "managePermissions": "管理权限"
+    },
+    "changeSourcePriorities": "更改源优先级：",
+    "confirms": {
+      "clearServerCache": "您确定要清除服务器缓存吗？"
+    },
+    "executionEngine": "执行引擎",
+    "newSource": "新来源",
+    "priorityOptions": {
+      "application": "整体应用",
+      "session": "当前会话"
+    },
+    "roles": {
+      "importRoles": "导入角色",
+      "nameIsEmpty": "角色名称为空。",
+      "newRole": "新角色",
+      "roleTitle": "角色 #<%=id%>",
+      "tabs": {
+        "permissions": "权限",
+        "users": "用户",
+        "utilities": "程序"
+      },
+      "title": "角色"
+    },
+    "rolesImport": {
+      "alertDanger": "列表中的某些权限和用户在此Atlas实例上不可用。 这些项目将在导入前进行过滤。",
+      "alertWarning": "列表中的某些权限包含特定的实体ID，这些ID不能保证在源Atlas实例和目标Atlas实例之间匹配。",
+      "emptyMessage": "在文本区域中插入包含角色定义的JSON",
+      "fixJson": "修复JSON",
+      "processed": "已创建<%=len%>个角色的<%=proc>个。",
+      "removeThePermissions": "删除权限",
+      "rolesDefinitionJson": "角色定义JSON",
+      "title": "导入角色"
+    },
+    "title": "配置",
+    "userImport": {
+      "findGroup": "查找组",
+      "importNow": "立即导入",
+      "loadingHistory": "正在加载用户导入作业历史记录...",
+      "loadingUserImportJobList": "正在加载用户导入作业列表...",
+      "newScheduledImport": "新计划的导入",
+      "scheduler": {
+        "after": "在  之后",
+        "enabled": "已启用",
+        "ends": "结束",
+        "execute": "执行：",
+        "executions": "执行",
+        "never": "决不",
+        "on": "基于/在",
+        "preserveAssignedRoles": "保留分配的角色",
+        "repeat": "重复以下步骤：",
+        "schedule": "时间表",
+        "startOn": "开始："
+      },
+      "searchGroup": "搜索组：",
+      "searchGroupPlaceholder": "搜索...",
+      "tabs": {
+        "jobHistory": "工作/作业经历",
+        "roleMapping": "角色映射",
+        "scheduler": "时间表"
+      },
+      "title": "从LDAP / Active Directory导入用户",
+      "userImportJob": "用户导入作业",
+      "wizard": {
+        "buttons": {
+          "next": "下一个",
+          "prev": "上一个",
+          "startImport": "开始导入"
+        },
+        "editRoles": {
+          "title": "编辑角色"
+        },
+        "finalPage": {
+          "message": "用户的导入已完成。"
+        },
+        "help": {
+          "adLdapUsername": "AD/LDAP 用户名",
+          "adLdapUsernameText": "此字段是从LDAP/AD<b>显示名称</b>字段映射的。",
+          "atlasLogin": "Atlas 登录",
+          "atlasLoginText": "此字段直接从LDAP/AD<b>login</b>字段映射，将用作Atlas的登录名。"
+        },
+        "import": {
+          "buttons": {
+            "checkAll": "检查全部",
+            "uncheckAll": "取消所有"
+          },
+          "header": "请检查要导入的用户"
+        },
+        "roleMapping": {
+          "header": "如果需要，请提供映射到Atlas角色的LDAP / Active Directory组。"
+        },
+        "selectSource": {
+          "buttons": {
+            "details": "细节",
+            "testConnection": "测试连接"
+          },
+          "header": "请选择要从中导入用户的提供方。",
+          "source": {
+            "activeDirectory": "活动目录",
+            "ldap": "LDAP服务器"
+          }
+        },
+        "provider" : {
+          "connection": {
+            "failed": "Connection failed. Please see server logs for details."
+          }
+        },
+        "title": "导入用户"
+      }
+    },
+    "viewEdit": {
+      "bigQuery": {
+        "button": {
+          "remove": {
+            "label": "删除"
+          }
+        },
+        "password": {
+          "label": "服务帐户密钥文件（OAuthPvtKeyPath）"
+        }
+      },
+      "connectionString": {
+        "label": "连接字符串：",
+        "placeholder": "连接字符串",
+        "title": "连接字符串"
+      },
+      "dialect": {
+        "label": "源语言：",
+        "options": {
+          "bigquery": "Google BigQuery",
+          "hive": "Hive LLAP",
+          "impala": "Impala",
+          "netezza": "IBM Netezza",
+          "oracle": "Oracle",
+          "pdw": "微软PDW",
+          "postgresql": "PostgreSQL",
+          "redshift": "Amazon Redshift",
+          "sqlserver": "SQL服务器"
+        },
+        "title": "源语言"
+      },
+      "krb": {
+        "adminServer": {
+          "label": "KrbAdminServer:",
+          "placeholder": "KrbAdminServer",
+          "title": "KrbAdminServer"
+        },
+        "authenticationMethod": {
+          "label": "Kerberos身份验证方法："
+        },
+        "buttons": {
+          "remove": "移除/删除："
+        },
+        "hostFqdn": {
+          "label": "KrbHostFQDN:",
+          "placeholder": "KrbHostFQDN",
+          "title": "KrbHostFQDN是从jdbc链接解析的"
+        },
+        "keytab": {
+          "label": "键表"
+        },
+        "password": {
+          "label": "密码：",
+          "placeholder": "密码",
+          "title": "密码"
+        },
+        "realm": {
+          "label": "KrbRealm:",
+          "placeholder": "KrbAdminServer",
+          "title": "KrbRealm是从jdbc链接解析的"
+        },
+        "sourceDaimons": {
+          "label": "源daimons"
+        },
+        "userPassword": {
+          "label": "用户名和密码"
+        },
+        "validation": {
+          "host": "&quot;KrbHostFQDN&quot; 是空的/没有的，请按下面的格式将它详细化: &quot;KrbHostFQDN=[value];&quot;",
+          "realm": "&quot;KrbRealm&quot; 是空的/没有的，请按下面的格式将它详细化: &quot;KrbRealm=[value];&quot;"
+        }
+      },
+      "password": {
+        "label": "密码：",
+        "placeholder": "密码",
+        "title": "密码"
+      },
+      "source": {
+        "alerts": {
+          "save": {
+            "error": "来源未被保存。 <%=message%>",
+            "errorMessage": "请与您的管理员联系以解决此问题。"
+          },
+          "delete": {
+            "hasSelectedPriotirizableDaimons": "此来源的某些daimons被赋予最高优先级，并且正在由应用程序使用。 选择新的最高优先级daimons以删除来源。"
+          },
+          "sourceSelectedError": "尝试获取id = <%=selectedSourceId%>的源时发生错误。"
+        },
+        "confirms": {
+          "close": "源的更改不会保存。 你想继续吗？",
+          "delete": "删除来源？ 警告：删除操作无法撤消！"
+        },
+        "label": "源密钥：",
+        "new": {
+          "placeholder": "新来源"
+        },
+        "placeholder": "源密钥",
+        "title": "来源<%=name%>",
+        "validation": {
+          "empty": "源名称为空"
+        }
+      },
+      "username": {
+        "label": "用户名：",
+        "placeholder": "用户名",
+        "title": "用户名",
+        "validation": {
+          "empty": "&quot;Username&quot; 是空的/没有的。"
+        }
+      }
+    }
+  },
+  "feedback": {
+    "pleaseContact": "有关Atlas应用程序的访问或问题，请联系：",
+    "title": "反馈"
+  },
+  "licenseAgreement": {
+    "accept": "接受",
+    "description": "为了使用SNOMED International SNOMED CTBrowser和HemOnc，请接受以下许可协议：",
+    "reject": "拒绝",
+    "rejectWarning": "不接受此条款和条件，您将无法使用Atlas",
+    "title": "许可协议"
+  },
+  "cohortDefinitions": {
+    "closeYourCurrentCohort": "在创建新的队列定义之前，请先关闭您的当前队列定义",
+    "cohort": {
+      "modals": {
+        "analysisTypes": {
+          "bold_1": "快速分析",
+          "bold_2": "医疗保健利用",
+          "bold_3": "全面分析",
+          "text_1": "进行最少的分析，以快速概览该队列的出生年份，人口统计，毒品时代和状况时代。 （估计：10分钟）",
+          "text_2": "运行分析以提供暴露，就诊和药物使用报告。 （估计：10-40分钟）",
+          "text_3": "运行完整的特征报告集。 （估计：60分钟）",
+          "title": "分析类型"
+        },
+        "cohortDefinition": {
+          "text_1": "队列定义为在一段时间内满足一个或多个入选标准的一组人。 在不重叠的时间间隔内，一个人可以多次获得一个队列的资格。 通过指定队列进入标准和队列退出标准在ATLAS中构建队列。 进入队列的标准涉及选择一个或多个初始事件，这些事件确定了进入队列的开始日期，并可以选择指定其他包含条件以筛选符合条件的事件。 队列退出标准被应用于每个队列进入记录，以确定该病人的经历不再符合该队列资格的结束日期。",
+          "title": "队列定义"
+        },
+        "linkToCohortDefinition": {
+          "text_1": "该链接可用于直接从Web工具（例如R）从WebAPI访问此队列定义，以及用于跨ATLAS实例导入。",
+          "title": "链接到队列定义"
+        },
+        "configureReportsToRun": {
+          "title": "设置要运行报告的设置",
+          "run": "运行"
+        }
+      }
+    },
+    "cohortDefinitionManager": {
+      "closeCohortTitle": "关闭队列定义",
+      "generationExitMessage": "生成退出消息",
+      "retrievingCohortDefinitions": "检索队列定义",
+      "cohortDefinitionManagerText_1": "未生成队列",
+      "cohortDefinitionManagerText_10": "哎呀",
+      "cohortDefinitionManagerText_11": "报告系统遇到错误。请向您的ATLAS管理团队提供以下详细信息，或在以下日期提交问题",
+      "cohortDefinitionManagerText_12": "创建报告作业失败",
+      "cohortDefinitionManagerText_13": "请稍候",
+      "cohortDefinitionManagerText_14": "请等待一段时间，以加载报告状态。",
+      "cohortDefinitionManagerText_2": "未在您选择的数据源中创建此队列。访问报告之前，请返回创建标签并创建一个队列。",
+      "cohortDefinitionManagerText_3": "报告未生成",
+      "cohortDefinitionManagerText_4": "尚未为该队列生成报告。 请单击下面的生成按钮以生成报告。",
+      "cohortDefinitionManagerText_5": "选择",
+      "cohortDefinitionManagerText_6": "请在报告条件选择界面中选择。",
+      "cohortDefinitionManagerText_7": "生成报告",
+      "cohortDefinitionManagerText_8": "报告不可用",
+      "cohortDefinitionManagerText_9": "请求的报告不可用。请点击生成按钮在数据源中生成队列报告。",
+      "confirms": {
+        "close": "您的队列更改未保存。  您想继续吗？",
+        "delete": "删除队列定义？ 警告：删除无法撤销！",
+        "deleteConflict": "无法删除队列定义，因为在某些分析中已引用该定义。",
+        "generateAnalyses": "这将运行<%=descr%>，可能需要大约<%=duration%>。你确定吗？",
+        "saveAlert": "具有该名称的队列定义已存在。 请选择其他名称。",
+        "saveError": "An error occurred while attempting to save a cohort definition."
+      },
+      "createCopyCohortTitle": "创建此队列定义的副本",
+      "failedWithoutAnyMessage": "失败，没有任何消息",
+      "generateAllAnalyses": {
+        "descr": "所有分析",
+        "duration": "60-90 分钟"
+      },
+      "generateHealthcareAnalyses": {
+        "descr": "成本效用分析",
+        "duration": "10-45 分钟"
+      },
+      "generateQuickAnalysis": {
+        "descr": "进行最少的分析以快速了解队列",
+        "duration": "10 分钟"
+      },
+      "getLinkCohortTitle": "获取队列定义的链接",
+      "heraclesHeel": "Heracles Heel",
+      "panels": {
+        "appendix_1": "附录1：概念集定义",
+        "availableCDMSources": "可用的CDM数据源",
+        "fullAnalysis": "全面分析",
+        "generate": "生成",
+        "generated": "创建开始时间",
+        "generationDuration": "创建用时",
+        "generationStatus": "生成状态",
+        "graphicalView": "图片展示",
+        "hideReports": "隐藏报告",
+        "importConceptIdentifiers": "导入概念标识符",
+        "importConceptSetExpression": "导入概念集表达式",
+        "importSourceCodes": "导入源代码",
+        "json": "JSON格式",
+        "people": "人数",
+        "quickAnalysis": "快速分析",
+        "records": "记录数",
+        "reload": "重新载入",
+        "reportSelections": "选择报告条件",
+        "sourceName": "来源名称",
+        "sql": "SQL",
+        "textView": "文字展示",
+        "utilization": "使用",
+        "viewReports": "查看报告"
+      },
+      "samples": {
+        "sampleSelections": "样本选择",
+        "selectASource": "请选择一个来源",
+        "addNewSample": "添加新样本",
+        "cohortNotGeneratedNote": "这个队列尚未在您选择的数据源中生成。在访问样本前，请返回到生成标签生成队列。",
+        "cohortShouldBeGenerated":  "必须在创建样本之前生成队列",
+        "errorFetchingList": "取得样本列表时候有错误，请稍后再试",
+        "errorDeleting": "删除样本时候有错误，请稍后再试",
+        "errorFetchingData": "取得样本数据时候有错误，请稍后再试",
+        "errorRefreshing": "刷新样本时候有错误，请稍后再试",
+        "modal": {
+          "title": "创建新样本",
+          "mandatoryFields": "*必填字段",
+          "sampleName": "*样本名称",
+          "sampleNamePlaceholder": "输入样本名称",
+          "sampleNameEmpty": "样本名称不能为空",
+          "numberOfPatients": "* Number of patients (from 1 to 500)",
+          "numberOfPatientsPlaceholder": "输入一个数字",
+          "numberOfPatientsEmpty": "Number of patients must be a positive integer between 1 and 500",
+          "selectAgeCriteria": "选择年龄标准",
+          "lessThan": "小于",
+          "lessOrEqualTo": "小于等于",
+          "equalTo": "等于",
+          "greaterThan": "大于",
+          "greaterOrEqualTo": "大于等于",
+          "between": "介于…之间",
+          "notBetween": "不介于…之间",
+          "agePlaceholder": "输入一个数字",
+          "ageError": "年龄必须为非负的整数",
+          "ageError2": "第一个和第二个年龄必须为非负且互不相等的整数。",
+          "indicateGender": "选择性别（留空以选择所有性别）",
+          "male": "男性",
+          "female": "女性",
+          "other": "其他",
+          "submit": "提交",
+          "creatingSample": "创建新样本…"
+        }
+      },
+      "saveCohortTitle": "保存队列定义",
+      "selectReport": "请选择一个报告",
+      "tabs": {
+        "conceptSets": "概念集",
+        "definition": "定义",
+        "explore": "关系探索",
+        "export": "导出",
+        "generation": "生成",
+        "samples": "样本",
+        "messages": "提示信息",
+        "versions": "Versions",
+        "reporting": "报告"
+      }
+    },
+    "cohortCaption": "队列 #<%=id%>",
+    "cohortCaptionPreview": "Cohort #<%=id%> - Version <%=number%> Preview",
+    "cohortreports": {
+      "inclusionReport": "纳入条件报告",
+      "inclusionReportFor": " ",
+      "inclusionReportFor1": "的纳入条件报告",
+      "tabs": {
+        "byEvents": "根据事件",
+        "byPerson": "根据人"
+      }
+    },
+    "costUtilization": {
+      "visualization": "可视化",
+      "rawData": "原始数据",
+      "allowedCharged": "允许的/收费的",
+      "allowedCost": "允许费用",
+      "allowedCostPmpm": "允许费用 pmpm",
+      "averageLengthOfStay": "平均停留时间（天）",
+      "chargedCost": "收费费用",
+      "chargedCostPMPM": "收费费用 PMPM",
+      "costUtilizationText_1": "另存为CSV",
+      "displayCharts": "显示的图表：",
+      "drugUtilDetailedText_1": "返回药物摘要",
+      "drugUtilSummaryText_1": "单击药物以获取详细的统计信息：",
+      "drugUtilText_1": "所有药物摘要",
+      "drugUtilText_2": "的详细药物报告",
+      "exposure1kYear": "暴露/1000人/年",
+      "paidAllowed": "支付的/允许的",
+      "paidCost": "支付的费用",
+      "paidCostPMPM": "支付的费用PMPM",
+      "periodStart": "周期开始",
+      "personCount": "病人数",
+      "personExposureText_1": "病人数",
+      "personExposureText_2": "年总暴露量",
+      "personExposureText_3": "每1   的平均暴露年数",
+      "personExposureText_4": "没有详细的统计信息",
+      "personPercent": "病人百分比",
+      "persons": "患者人数",
+      "recordsPer1000": "记录/1000",
+      "recordsPer1000PerYear": "每年的记录/1000",
+      "recordsPer1000WithRecord": "每1000条记录（含记录）",
+      "reportManager": {
+        "reportManagerText_1": "队列报告",
+        "reportManagerText_10": "种族",
+        "reportManagerText_11": "民族",
+        "reportManagerText_12": "报告未执行",
+        "reportManagerText_13": "该报告尚未执行。",
+        "reportManagerText_14": "每月患病率",
+        "reportManagerText_15": "队列开始",
+        "reportManagerText_16": "从头到尾都在队列中的病人",
+        "reportManagerText_17": "从队列开始到队列结束的人数/持续时间",
+        "reportManagerText_18": "队列开始时按队列开始年份划分的年龄分布",
+        "reportManagerText_19": "年龄分布",
+        "reportManagerText_2": "选择队列定义",
+        "reportManagerText_20": "队列开始时按性别划分的年龄分布",
+        "reportManagerText_21": "索引时的年龄",
+        "reportManagerText_22": "龙卷风图",
+        "reportManagerText_23": "样本资料",
+        "reportManagerText_24": "从龙卷风图中选择一个条形图以查看该层的样本剖面。",
+        "reportManagerText_25": "诊断患病率",
+        "reportManagerText_26": "表",
+        "reportManagerText_27": "树状图",
+        "reportManagerText_28": "方框大小：患病率，颜色：相对风险的对数（红色到绿色=负到正），使用Ctrl单击以放大，Alt单击以重置缩放",
+        "reportManagerText_29": "深入报告",
+        "reportManagerText_3": "数据完整性",
+        "reportManagerText_30": "药物按索引日期",
+        "reportManagerText_31": "开始观察的年龄",
+        "reportManagerText_32": "队列中初次观察时的年龄分布。",
+        "reportManagerText_33": "年龄（基于性别）",
+        "reportManagerText_34": "在按性别分层的队列中，初次观察时的年龄分布。",
+        "reportManagerText_35": "观察长度",
+        "reportManagerText_36": "队列中总观察时间的分布。",
+        "reportManagerText_37": "观察长度/性别",
+        "reportManagerText_38": "队列中按性别划分的总观察时间分布。",
+        "reportManagerText_39": "观察长度/年龄十分位数",
+        "reportManagerText_4": "医疗保健地",
+        "reportManagerText_40": "每人观察期",
+        "reportManagerText_41": "每月连续观察对象",
+        "reportManagerText_42": "诊断周期患病率",
+        "reportManagerText_43": "诊断周期每月患病率",
+        "reportManagerText_44": "首次诊断的年龄",
+        "reportManagerText_45": "诊断周期的长度",
+        "reportManagerText_46": "手术操作患病率",
+        "reportManagerText_47": "诊断患病率",
+        "reportManagerText_48": "诊断每月患病率",
+        "reportManagerText_49": "诊断类别",
+        "reportManagerText_5": "日期熵",
+        "reportManagerText_50": "用药周期发病率",
+        "reportManagerText_51": "用药周期发病率（按月份）",
+        "reportManagerText_52": "首次暴露的年龄（基于性别）",
+        "reportManagerText_53": "周期分布的长度",
+        "reportManagerText_54": "药物暴露",
+        "reportManagerText_55": "药物暴露发病率",
+        "reportManagerText_56": "药物暴露发病率（按月份）",
+        "reportManagerText_57": "首次暴露的年龄",
+        "reportManagerText_58": "供给天数分布",
+        "reportManagerText_59": "数量分配",
+        "reportManagerText_6": "出生年份",
+        "reportManagerText_60": "续药的分配",
+        "reportManagerText_61": "药物类型",
+        "reportManagerText_62": "手术操作患病率",
+        "reportManagerText_63": "每月手术操作患病率",
+        "reportManagerText_64": "手术操作按类型",
+        "reportManagerText_65": "首次出现的年龄",
+        "reportManagerText_66": "按年龄，性别和年分的死亡率",
+        "reportManagerText_67": "每月死亡率",
+        "reportManagerText_68": "死亡详情",
+        "reportManagerText_69": "死亡年龄",
+        "reportManagerText_7": "队列中按出生年份可视化的人数",
+        "reportManagerText_70": "按类型死亡",
+        "reportManagerText_71": "单击此处选择一个队列",
+        "reportManagerText_8": "人口统计",
+        "reportManagerText_9": "性别"
+      },
+      "saveAsCSV": "另存为CSV",
+      "totalExposure": "年总暴露量",
+      "totalLengthOfStay": "总逗留时间（天）",
+      "totalRecords": "总记录"
+    },
+    "filters": {
+      "visit": "就诊",
+      "visitType": "就诊类别"
+    },
+    "newDefinition": "新建队列",
+    "newDefinitionTitle": "创建新的队列定义",
+    "noConceptSets": "没有要导出的概念",
+    "runDiagnostics": "运行诊断",
+    "saveDefinitionBefore": "队列定义必须在导出之前保存",
+    "title": "队列定义"
+  },
+  "const": {
+    "disabledReason": {
+      "dirty": "先保存更改再进行生成",
+      "accessDenied": "访问被拒绝",
+      "invalidTar": "无效的风险暴露期",
+      "invalidDesign": "设计是无效的",
+      "engineNotAvalable": "执行引擎不可用",
+      "emptyCohorts": "找不到队列",
+      "emptyInitionEvent": "未设置初始事件"
+    },
+    "eventsList": {
+      "addConditionEra": {
+        "title": "添加诊断周期",
+        "desc_initial": "查找具有特定诊断期的患者",
+        "desc_censoring": "队列根据诊断周期退出",
+        "desc_group": "查找具有特定诊断期的患者"
+      },
+      "addDemographic": {
+        "title": "添加人口学信息",
+        "desc_group": "按照人口学条筛选事件"
+      },
+      "addConditionOccurrence": {
+        "title": "添加诊断",
+        "desc_initial": "查找具有特定诊断的患者",
+        "desc_censoring": "队列根据诊断退出",
+        "desc_group": "查找具有特定诊断的患者"
+      },
+      "addDeath": {
+        "title": "添加死亡信息",
+        "desc_initial": "按照死亡查找患者",
+        "desc_censoring": "队列根据死亡退出",
+        "desc_group": "按照死亡查找患者"
+      },
+      "addDeviceExposure": {
+        "title": "添加医疗设备使用",
+        "desc_initial": "按照医疗设备使用查找患者",
+        "desc_censoring": "队列根据医疗设备使用退出",
+        "desc_group": "按照医疗设备使用查找患者"
+      },
+      "addDoseEra": {
+        "title": "添加剂量周期",
+        "desc_initial": "按照剂量周期查找患者",
+        "desc_censoring": "根据剂量周期退出队列。",
+        "desc_group": "按照剂量周期查找患者"
+      },
+      "addDrugEra": {
+        "title": "添加用药周期",
+        "desc_initial": "查找随事件推移接触该药物的患者",
+        "desc_censoring": "随着时间的推移，根据药物退出队列。",
+        "desc_group": "根据药物周期查找患者"
+      },
+      "addDrugExposure": {
+        "title": "添加药物暴露信息",
+        "desc_initial": "查找接触过特定药物或者药物类型的患者",
+        "desc_censoring": "根据对特定药物或药物类别的暴露情况退出队列。",
+        "desc_group": "查找接触过特定药物或者药物类型的患者"
+      },
+      "addMeasurement": {
+        "title": "添加检查检验信息",
+        "desc_initial": "按照测量结果查找患者",
+        "desc_censoring": "根据检验检测退出队列。",
+        "desc_group": "按照测量结果查找患者"
+      },
+      "addObservation": {
+        "title": "添加观察",
+        "desc_initial": "按照观察结果查找患者",
+        "desc_censoring": "根据实验室检测或其他观察结果退出队列。",
+        "desc_group": "按照观察结果查找患者"
+      },
+      "addObservationPeriod": {
+        "title": "添加观察周期",
+        "desc_initial": "根据观察期查找患者",
+        "desc_group": "根据观察周期查找患者"
+      },
+      "addPayerPlanPeriod": {
+        "title": "添加付费方计划周期",
+        "desc_initial": "根据付费方计划周期查找患者",
+        "desc_censoring": "根据付费方计划周期查找患者",
+        "desc_group": "根据付费方计划周期查找患者"
+      },
+      "addProcedureOccurrence": {
+        "title": "添加操作",
+        "desc_initial": "查找经历过特定操作的患者",
+        "desc_censoring": "根据手术操作退出群组。",
+        "desc_group": "查找经历过特定操作的患者"
+      },
+      "addSpecimen": {
+        "title": "添加标本信息",
+        "desc_initial": "按照标本查找患者",
+        "desc_censoring": "按照标本查找患者",
+        "desc_group": "按照标本查找患者"
+      },
+      "addLocationRegion": {
+        "title": "添加位置信息",
+        "desc_group": "根据地理区域查找患者"
+      },
+      "addGroup": {
+        "title": "新增群组",
+        "desc_group": "使用“和/或者”关系添加群组并合并条件"
+      },
+      "addVisit": {
+        "title": "添加就诊信息",
+        "desc_initial": "按照就诊信息查找患者",
+        "desc_censoring": "根据就诊信息退出队列。",
+        "desc_group": "按照就诊信息查找患者",
+        "title_occurrence": "添加就诊条件",
+        "desc_occurrence": "按照诊断发生时的就诊筛选诊断",
+        "title_deviceexposure": "添加就诊条件",
+        "desc_deviceexposure": "按照设备使用时的就诊筛选",
+        "title_drugexposure": "添加就诊",
+        "desc_drugexposure": "按照药物使用时的就诊筛选药物使用",
+        "title_measurement": "添加就诊条件",
+        "desc_measurement": "按照测量时的就诊筛选测量",
+        "title_observation": "添加就诊条件",
+        "desc_observation": "按照观察时的就诊筛选观察",
+        "title_procedureoccurrence": "添加就诊",
+        "desc_procedureoccurrence": "按照操作时的就诊筛选操作"
+      },
+      "addConditionStatus": {
+        "title_occurrence": "Add Condition Status",
+        "desc_occurrence": "Filter Condition Occurrences based on condition status."
+      },
+      "addFirstDiagnosis": {
+        "title_era": "添加初始诊断",
+        "desc_era": "将诊断周期限制在患者整个记录的最早诊断",
+        "title_occurrence": "添加首次诊断条件",
+        "desc_occurrence": "诊断仅限于新诊断",
+        "title_deviceexposure": "添加首次医疗设备使用标准条件",
+        "desc_deviceexposure": "将设备使用限定于记录中的第一次使用",
+        "title_dose": "添加初始暴露条件",
+        "desc_dose": "将剂量周期限制在整个记录的初始暴露",
+        "title_drug": "添加初始暴露条件",
+        "desc_drug": "将用药周期限制在整个记录的初始暴露",
+        "title_drugexposure": "添加初始使用条件",
+        "desc_drugexposure": "将药物使用限制在整个记录的初始使用",
+        "title_measurement": "添加初始测量条件",
+        "desc_measurement": "将测量限制在整个记录的初始测量",
+        "title_observation": "添加初始观察条件",
+        "desc_observation": "将测量限制在整个记录的初始观察",
+        "title_observationperiod": "添加初始观察期条件",
+        "desc_observationperiod": "将观察期限制在整个记录的第一个周期",
+        "title_payerplan": "添加初始付费方计划周期条件",
+        "desc_payerplan": "将付费方计划周期限制为整个记录的初始周期",
+        "title_procedureoccurrence": "添加首次操作条件",
+        "desc_procedureoccurrence": "将操作限制在整个记录的初始操作",
+        "title_specimen": "添加首次出现条件",
+        "desc_specimen": "将标本限制于记录中第一次出现",
+        "title_visit": "添加首次就诊条件",
+        "desc_visit": "将就诊限制于第一次就诊"
+      },
+      "addAgeAtStart": {
+        "title_era": "按照周期开始标准添加年龄",
+        "desc_era": "按照诊断开始时的年龄筛选诊断周期",
+        "title_dose": "按照周期开始标准添加年龄条件",
+        "desc_dose": "按照剂量周期开始时的年龄筛选剂量周期",
+        "title_drug": "按照周期开始标准添加年龄",
+        "desc_drug": "按照用药周期开始时的年龄筛选用药周期",
+        "title_observationperiod": "添加年龄开始条件",
+        "desc_observationperiod": "按照观察期开始的年龄筛选观察期",
+        "title_payerplan": "按照开始条件添加年龄",
+        "desc_payerplan": "按照付费方计划周期开始的年龄筛选付费方计划周期"
+      },
+      "addAgeAtEnd": {
+        "title_era": "按照周期结束标准添加年龄",
+        "desc_era": "按照诊断结束时的年龄筛选诊断周期",
+        "title_dose": "按照周期结束标准添加年龄条件",
+        "desc_dose": "按照剂量周期结束时的年龄筛选诊断周期",
+        "title_drug": "按照周期结束标准添加年龄",
+        "desc_drug": "按照用药周期结束时的年龄筛选用药周期",
+        "title_observationperiod": "添加年龄结束条件",
+        "desc_observationperiod": "按照观察期结束的年龄筛选观察期",
+        "title_payerplan": "按照结束条件添加年龄",
+        "desc_payerplan": "按照付费方计划周期结束的年龄筛选付费方计划周期"
+      },
+      "addGender": {
+        "title_era": "添加性别条件",
+        "desc_era": "按照性别筛选诊断周期",
+        "title_occurrence": "添加性别条件",
+        "desc_occurrence": "按照性别筛选诊断",
+        "title_death": "添加性别条件",
+        "desc_death": "按照性别筛选死亡",
+        "title_deviceexposure": "添加性别条件",
+        "desc_deviceexposure": "按照性别筛选设备使用",
+        "title_dose": "添加性别条件",
+        "desc_dose": "按照性别筛选剂量周期",
+        "title_drug": "添加性别条件",
+        "desc_drug": "按照性别筛选用药周期",
+        "title_drugexposure": "添加性别",
+        "desc_drugexposure": "按照性别筛选药物使用",
+        "title_measurement": "添加性别",
+        "desc_measurement": "按照性别筛选测量",
+        "title_observation": "添加性别",
+        "desc_observation": "按照性别筛选观察",
+        "title_payerplan": "添加性别",
+        "desc_payerplan": "按照性别筛选付费方计划周期",
+        "title_procedureoccurrence": "添加性别",
+        "desc_procedureoccurrence": "按照性别筛选操作",
+        "title_specimen": "添加性别条件",
+        "desc_specimen": "按照性别筛选标本",
+        "title_visit": "添加性别条件",
+        "desc_visit": "按照性别筛选就诊",
+        "title_demographic": "添加性别条件",
+        "desc_demographic": "按照性别筛选事件"
+      },
+      "addStartDate": {
+        "title_era": "添加开始日期条件",
+        "desc_era": "按照周期开始日期筛选诊断周期",
+        "title_occurrence": "添加诊断开始日期条件",
+        "desc_occurrence": "按照诊断开始日期筛选诊断",
+        "title_deviceexposure": "添加开始日期条件",
+        "desc_deviceexposure": "按照操作开始日期筛选设备使用",
+        "title_dose": "添加开始日期条件",
+        "desc_dose": "按照周期开始日期筛选剂量周期",
+        "title_drug": "添加开始日期条件",
+        "desc_drug": "按照周期开始日期筛选用药周期",
+        "title_drugexposure": "添加开始日期条件",
+        "desc_drugexposure": "按照药物使用开始日期筛选药物使用",
+        "title_observationperiod": "添加周期开始日期",
+        "desc_observationperiod": "按照观察期周期开始日期筛选观察期",
+        "title_payerplan": "添加开始日期条件",
+        "desc_payerplan": "按照开始日期筛选付费方计划周期",
+        "title_visit": "添加开始日期条件",
+        "desc_visit": "按照诊断开始日期筛选就诊",
+        "title_demographic": "添加事件开始日期条件",
+        "desc_demographic": "按照开始日期筛选事件"
+      },
+      "addEndDate": {
+        "title_era": "添加结束日期条件",
+        "desc_era": "按照周期结束日期筛选诊断周期",
+        "title_occurrence": "添加诊断结束日期条件",
+        "desc_occurrence": "按照诊断结束日期筛选诊断",
+        "title_deviceexposure": "添加结束日期条件",
+        "desc_deviceexposure": "按照操作结束日期筛选设备使用",
+        "title_dose": "添加结束日期条件",
+        "desc_dose": "按照周期结束日期筛选剂量周期",
+        "title_drug": "添加结束日期条件",
+        "desc_drug": "按照周期结束日期筛选用药周期",
+        "title_drugexposure": "添加结束日期条件",
+        "desc_drugexposure": "按照药物使用结束日期筛选药物使用",
+        "title_observationperiod": "添加周期结束日期",
+        "desc_observationperiod": "按照观察期周期结束日期筛选观察期",
+        "title_payerplan": "添加结束日期条件",
+        "desc_payerplan": "按照结束日期筛选付费方计划周期",
+        "title_visit": "添加结束日期条件",
+        "desc_visit": "按照诊断结束日期筛选就诊",
+        "title_demographic": "添加事件结束日期条件",
+        "desc_demographic": "按照结束日期筛选事件"
+      },
+      "addConditonCount": {
+        "title_era": "添加诊断周期计数条件",
+        "desc_era": "按照条件计数筛选诊断周期",
+        "title_drug": "添加用药周期药物使用量条件",
+        "desc_drug": "按照药物使用数量筛选用药周期"
+      },
+      "addRace": {
+        "title_demographic": "添加人种条件",
+        "desc_demographic": "按照人种筛选事件"
+      },
+      "addEthnicity": {
+        "title_demographic": "添加种族条件",
+        "desc_demographic": "按照种族筛选事件"
+      },
+      "addLength": {
+        "title_era": "添加周期长度条件",
+        "desc_era": "按照时代持续时间筛选诊断周期",
+        "title_dose": "添加周期长度条件",
+        "desc_dose": "按照时代持续时间筛选剂量周期",
+        "title_drug": "添加周期长度条件",
+        "desc_drug": "按照时代持续时间筛选用药周期",
+        "title_observationperiod": "添加观察期长度条件",
+        "desc_observationperiod": "按照持续时间筛选观察期",
+        "title_payerplan": "添加周期长度条件",
+        "desc_payerplan": "按照周期时长筛选付费方计划周期",
+        "title_visit": "添加就诊时长条件",
+        "desc_visit": "按照就诊时长筛选就诊"
+      },
+      "addNested": {
+        "title_era": "添加嵌套条件",
+        "desc_era": "应用诊断日期作为索引日期的条件",
+        "title_occurrence": "添加嵌套条件",
+        "desc_occurrence": "应用诊断日期作为索引日期的条件",
+        "title_death": "添加嵌套条件",
+        "desc_death": "应用诊断日期作为索引日期的条件",
+        "title_deviceexposure": "添加嵌套条件",
+        "desc_deviceexposure": "应用设备使用日期作为索引日期",
+        "title_dose": "添加嵌套条件",
+        "desc_dose": "应用诊断日期作为索引日期的条件",
+        "title_drug": "添加嵌套条件",
+        "desc_drug": "应用诊断日期作为索引日期的条件",
+        "title_drugexposure": "添加嵌套条件",
+        "desc_drugexposure": "应用诊断日期作为索引日期的条件",
+        "title_measurement": "添加嵌套条件",
+        "desc_measurement": "应用诊断日期作为索引日期的条件",
+        "title_observation": "添加嵌套条件",
+        "desc_observation": "应用观察日期作为索引日期",
+        "title_observationperiod": "添加嵌套条件",
+        "desc_observationperiod": "应用诊断日期作为索引日期的条件",
+        "title_payerplan": "添加嵌套条件",
+        "desc_payerplan": "应用诊断日期作为索引日期的条件",
+        "title_procedureoccurrence": "添加嵌套条件",
+        "desc_procedureoccurrence": "应用操作日期作为索引日期",
+        "title_specimen": "添加嵌套条件",
+        "desc_specimen": "应用诊断日期作为索引日期的条件",
+        "title_visit": "添加嵌套条件",
+        "desc_visit": "应用诊断日期作为索引日期的条件"
+      },
+      "addAge": {
+        "title_occurrence": "添加诊断时的年龄条件",
+        "desc_occurrence": "按照诊断发生时的年龄筛选诊断",
+        "title_death": "添加发生时的年龄标准条件",
+        "desc_death": "按照死亡年龄筛选",
+        "title_deviceexposure": "按照医疗设备使用标准添加年龄",
+        "desc_deviceexposure": "按照设备使用时的年龄筛选",
+        "title_drugexposure": "按照药物使用添加年龄",
+        "desc_drugexposure": "按照药物使用时的年龄筛选药物使用",
+        "title_measurement": "按照测量添加年龄",
+        "desc_measurement": "按照测量时的年龄筛选测量",
+        "title_observation": "按照观察添加年龄",
+        "desc_observation": "按照观察时的年龄筛选观察",
+        "title_procedureoccurrence": "按照操作发生添加年龄",
+        "desc_procedureoccurrence": "按照操作发生时的年龄筛选操作",
+        "title_specimen": "添加出现时年龄条件",
+        "desc_specimen": "按照标本出现时的年龄筛选标本",
+        "title_visit": "添加就诊时年龄条件",
+        "desc_visit": "按照就诊时的年龄筛选就诊",
+        "title_demographic": "添加年龄条件",
+        "desc_demographic": "按照年龄筛选事件"
+      },
+      "addType": {
+        "title_occurrence": "添加诊断类型条件",
+        "desc_occurrence": "按照诊断类型筛选诊断",
+        "title_death": "添加死亡类型条件",
+        "desc_death": "按照死亡类型筛选",
+        "title_deviceexposure": "添加设备类型条件",
+        "desc_deviceexposure": "按照设备类型筛选",
+        "title_drugexposure": "添加药物类型条件",
+        "desc_drugexposure": "按照药物类型标准筛选药物使用",
+        "title_measurement": "添加测量类型条件",
+        "desc_measurement": "按照测量类型标准筛选测量",
+        "title_observation": "添加观察类型条件",
+        "desc_observation": "按照观察类型标准筛选观察",
+        "title_observationperiod": "添加观察期类型条件",
+        "desc_observationperiod": "按照观察期类型筛选观察期",
+        "title_procedureoccurrence": "添加操作类型条件",
+        "desc_procedureoccurrence": "按照操作类型标准筛选操作.",
+        "title_specimen": "添加标本条件",
+        "desc_specimen": "按照标本类型筛选标本",
+        "title_visit": "添加就诊类型条件",
+        "desc_visit": "按照诊断类型筛选就诊"
+      },
+      "addStopReason": {
+        "title_occurrence": "添加停止原因条件",
+        "desc_occurrence": "按照停止原因筛选诊断",
+        "title_drugexposure": "添加停止原因条件",
+        "desc_drugexposure": "按照停止原因筛选药物使用"
+      },
+      "addPayerConcept": {
+        "title_payerplan": "添加付费方概念条件",
+        "desc_payerplan": "按照付费方概念筛选付费方计划周期"
+      },
+      "addPlanConcept": {
+        "title_payerplan": "添加计划概念条件",
+        "desc_payerplan": "按照计划概念筛选付费方计划周期"
+      },
+      "addSponsorConcept": {
+        "title_payerplan": "添加赞助商概念条件",
+        "desc_payerplan": "按照赞助商概念筛选付费方计划周期"
+      },
+      "addStopReasonConcept": {
+        "title_payerplan": "添加停止原因条件",
+        "desc_payerplan": "按照停止原因筛选付费方计划周期"
+      },
+      "addPayerSourceConcept": {
+        "title_payerplan": "添加付费方源概念条件",
+        "desc_payerplan": "按照付费方源概念筛选付费方计划周期"
+      },
+      "addPlanSourceConcept": {
+        "title_payerplan": "添加计划源概念条件",
+        "desc_payerplan": "按照计划源概念筛选付费方计划周期"
+      },
+      "addSponsorSourceConcept": {
+        "title_payerplan": "添加赞助方源概念条件",
+        "desc_payerplan": "按照赞助方源概念条件筛选付费方计划周期"
+      },
+      "addStopReasonSourceConcept": {
+        "title_payerplan": "添加停止原因条件",
+        "desc_payerplan": "按照停止原因筛选付费方计划周期"
+      },
+      "addSourceConcept": {
+        "title_occurrence": "添加诊断源概念条件",
+        "desc_occurrence": "按照诊断源概念筛选诊断",
+        "title_death": "添加死亡源概念的原因条件",
+        "desc_death": "按照死亡源概念筛选",
+        "title_deviceexposure": "添加设备源概念标准条件",
+        "desc_deviceexposure": "按照设备源概念筛选",
+        "title_measurement": "添加测量源概念条件",
+        "desc_measurement": "按照测量源概念筛选测量",
+        "title_observation": "添加观察源概念条件",
+        "desc_observation": "按照观察源概念筛选观察",
+        "title_procedureoccurrence": "添加操作源概念条件",
+        "desc_procedureoccurrence": "按照操作源概念筛选药物暴露",
+        "title_visit": "添加就诊源概念条件",
+        "desc_visit": "按照就诊源概念筛选就诊"
+      },
+      "addProviderSpecialty": {
+        "title_occurrence": "添加提供者领域条件",
+        "desc_occurrence": "按照医疗保健提供者领域筛选诊断",
+        "title_deviceexposure": "添加提供者领域条件",
+        "desc_deviceexposure": "按照医疗保健提供者领域筛选",
+        "title_drugexposure": "添加提供者领域条件",
+        "desc_drugexposure": "按照医疗保健提供者领域筛选药物使用",
+        "title_measurement": "添加提供者领域条件",
+        "desc_measurement": "按照医疗保健提供者领域筛选测量",
+        "title_observation": "添加提供者领域条件",
+        "desc_observation": "按照医疗保健提供者领域筛选观察",
+        "title_procedureoccurrence": "添加提供者领域条件",
+        "desc_procedureoccurrence": "按照医疗保健提供者领域筛选操作",
+        "title_visit": "添加提供者领域条件",
+        "desc_visit": "按照医疗保健提供者领域筛选就诊"
+      },
+      "addDate": {
+        "title_death": "添加死亡日期条件",
+        "desc_death": "按照死亡日期筛选",
+        "title_measurement": "添加测量日期条件",
+        "desc_measurement": "按照测量日期筛选测量",
+        "title_observation": "添加观察日期条件",
+        "desc_observation": "按照测量日期筛选观察",
+        "title_procedureoccurrence": "添加开始日期条件",
+        "desc_procedureoccurrence": "按照操作开始日期筛选设备使用",
+        "title_specimen": "添加标本日期条件",
+        "desc_specimen": "按照标本日期筛选标本"
+      },
+      "addUniqueId": {
+        "title_deviceexposure": "添加唯一ID标准条件",
+        "desc_deviceexposure": "按照设备使用是的唯一ID筛选"
+      },
+      "addQuantity": {
+        "title_deviceexposure": "添加数量标准条件",
+        "desc_deviceexposure": "按照设备使用次数筛选",
+        "title_drugexposure": "添加数量条件",
+        "desc_drugexposure": "按照数量筛选药物使用",
+        "title_procedureoccurrence": "添加数量条件",
+        "desc_procedureoccurrence": "按照数量筛选操作",
+        "title_specimen": "添加数量条件",
+        "desc_specimen": "按照标本数量筛选标本"
+      },
+      "addUnit": {
+        "title_dose": "添加剂量单位条件",
+        "desc_dose": "按照药物剂量单位筛选剂量周期",
+        "title_drugexposure": "添加剂量单位条件",
+        "desc_drugexposure": "按照剂量单位筛选药物使用",
+        "title_measurement": "添加单位条件",
+        "desc_measurement": "按照单位筛选测量",
+        "title_observation": "添加单位条件",
+        "desc_observation": "按照单位筛选观察",
+        "title_specimen": "添加单位条件",
+        "desc_specimen": "按照标本单位筛选标本"
+      },
+      "addValue": {
+        "title_dose": "添加剂量值条件",
+        "desc_dose": "按照剂量数值筛选剂量周期",
+        "title_measurement": "添加测量值条件",
+        "desc_measurement": "按照测量值筛选测量",
+        "title_observation": "添加数字值条件",
+        "desc_observation": "按照存储为数字的观察结果筛选观察"
+      },
+      "addRefills": {
+        "title_drugexposure": "添加药物补充条件",
+        "desc_drugexposure": "按照补充条件筛选药物使用"
+      },
+      "addDaysSupply": {
+        "title_drugexposure": "添加供应天数条件",
+        "desc_drugexposure": "按照供应天数筛选药物使用"
+      },
+      "addRoute": {
+        "title_drugexposure": "添加用药途径条件",
+        "desc_drugexposure": "按照用药途径筛选药物使用"
+      },
+      "addEffective": {
+        "title_drugexposure": "添加有效剂量条件",
+        "desc_drugexposure": "按照有效剂量筛选药物使用"
+      },
+      "addLotNumber": {
+        "title_drugexposure": "添加批号条件",
+        "desc_drugexposure": "按照药品编号筛选药物使用"
+      },
+      "addSource": {
+        "title_drugexposure": "添加药物源概念条件",
+        "desc_drugexposure": "按照药物源概念筛选药物使用"
+      },
+      "addOperator": {
+        "title_measurement": "添加操作员条件",
+        "desc_measurement": "按照操作员筛选测量"
+      },
+      "addValueAsString": {
+        "title_observation": "添加字符值条件",
+        "desc_observation": "按照存储为字符的观察结果筛选观察"
+      },
+      "addValueAsConcept": {
+        "title_measurement": "添加测量概念条件",
+        "desc_measurement": "按照测量概念值筛选测量",
+        "title_observation": "添加概念值条件",
+        "desc_observation": "按照存储为概念ID的结果筛选观察"
+      },
+      "addAbnormal": {
+        "title_measurement": "添加异常结果条件",
+        "desc_measurement": "筛选超出正常范围值的测量"
+      },
+      "addRangeLow": {
+        "title_measurement": "添加下限范围条件",
+        "desc_measurement": "按照测量值下限范围筛选测量"
+      },
+      "addRangeHigh": {
+        "title_measurement": "添加上限范围条件",
+        "desc_measurement": "按照测量值上限范围筛选测量"
+      },
+      "addRangeLowRatio": {
+        "title_measurement": "添加下限范围比率条件",
+        "desc_measurement": "按照测量值除以下线范围值筛选测量"
+      },
+      "addRangeHighRatio": {
+        "title_measurement": "添加上限范围比率条件",
+        "desc_measurement": "按照测量值除以上限范围值筛选测量"
+      },
+      "addQualifier": {
+        "title_observation": "添加限定符条件",
+        "desc_observation": "按照限定符条件筛选观察"
+      },
+      "addUserDefined": {
+        "title_observationperiod": "开始日期和结束日期定义",
+        "desc_observationperiod": "定义观察期的开始日期和结束日期",
+        "title_payerplan": "开始日期和结束日期定义",
+        "desc_payerplan": "定义付费方计划周期的开始日期和结束日期"
+      },
+      "addModifier": {
+        "title_procedureoccurrence": "添加修饰符条件",
+        "desc_procedureoccurrence": "按照修饰符筛选操作"
+      },
+      "addAnatomicSite": {
+        "title_specimen": "添加解剖部位条件",
+        "desc_specimen": "按照解剖部位筛选标本"
+      },
+      "addDiseaseStatus": {
+        "title_specimen": "添加疾病状态条件",
+        "desc_specimen": "按照疾病状态筛选标本"
+      },
+      "addSourceId": {
+        "title_specimen": "添加源编号条件",
+        "desc_specimen": "按照源编号筛选标本"
+      },
+      "addPlaceService": {
+        "title_visit": "添加服务地点条件",
+        "desc_visit": "按照医疗保健服务地点筛选就诊"
+      },
+      "addPlaceServiceLocation": {
+        "title_visit": "添加服务位置条件",
+        "desc_visit": "按照医疗保健服务位置筛选就诊"
+      },
+      "addPlaceServiceDistance": {
+        "title_visit": "添加服务地点距离标准",
+        "desc_visit": "根据从服务地点到患者的距离，筛选就诊。"
+      }
+    },
+    "newEntityNames": {
+      "characterization": "新建特征描述",
+      "cohortDefinition": "新队列定义",
+      "conceptSet": "新概念集",
+      "featureAnalysis": "新特性分析",
+      "incidenceRate": "新发病率分析",
+      "pathway": "新队列路径",
+      "ple": "新建人口水平效应估计",
+      "plp": "新患者水平预测",
+      "role": "新角色",
+      "source": "新来源"
+    },
+    "weekdays": {
+      "friday": {
+        "long": "星期五",
+        "short": "FR"
+      },
+      "monday": {
+        "long": "星期一",
+        "short": "MO"
+      },
+      "saturday": {
+        "long": "星期六",
+        "short": "SA"
+      },
+      "sunday": {
+        "long": "星期日",
+        "short": "SU"
+      },
+      "thursday": {
+        "long": "星期四",
+        "short": "TH"
+      },
+      "tuesday": {
+        "long": "星期二",
+        "short": "TU"
+      },
+      "wednesday": {
+        "long": "星期三",
+        "short": "WE"
+      }
+    }
+  },
+  "notifications": {
+    "duration": "持续时间",
+    "endTime": "结束时间",
+    "explanation": "作业通知将在此处显示。 一项作业可能包括队列生成，队列报告，或其他可能需要很长时间才能完成的任务。 如果有新的通知可用，则此右上角的通知图标将突出显示<i class='fa fa-bell pending'></i>。",
+    "hideCompletedJobsButton": "隐藏完成的工作",
+    "jobName": "作业名称",
+    "showCompletedJobsButton": "显示完成的工作",
+    "status": "状态",
+    "title": "通知（最后<%=length%>）",
+    "tabs": {
+      "myJobs": "我的任务",
+      "allJobs": "所有任务"
+    }
+  },
+  "predictions": {
+    "analysisSettings": "分析设置",
+    "confirmCatchSave": "尝试保存预测分析时发生错误。",
+    "confirmChanges": "患者水平预测的更改不会保存。 你想继续吗？",
+    "confirmDelete": "删除患者水平预测规范？ 警告：删除操作无法撤消！",
+    "confirmSave": "使用该名称的预测分析已经存在。 请选择其他名称。",
+    "covariateSettingsDesc": "添加或更新协变量设置",
+    "covariateSettingsTitle": "协变量设置",
+    "descriptionPlaceholder": "在此处输入说明（最多1000个字符）",
+    "downloadStudyPackage": "下载研究包",
+    "defaultValue": "(默认值 = <%=defaultValue%>):",
+    "retrievingPredictions": "检索预测",
+    "editors": {
+      "evaluationEditorText_1": "指定如何分割测试/训练集：",
+      "evaluationEditorText_2": "用作测试集的数据百分比（0-100％）：",
+      "evaluationEditorText_3": "用于交叉测试的倍数：",
+      "evaluationEditorText_4": "折",
+      "evaluationEditorText_5": "按人员划分训练/测试集时要使用的种子值（可选）：",
+      "executionEditorText_1": "执行采样：",
+      "executionEditorText_2": "应使用多少患者作为样本？",
+      "executionEditorText_3": "最小协变量出现：如果目标群体中的任何协变量发生率低于指定值，则将其删除：",
+      "executionEditorText_4": "标准化协变量：",
+      "populationEditorText_1": "根据目标队列设置 time-at-risk窗口的开始",
+      "populationEditorText_2": "应将后代概念添加到所包含概念的列表中吗？",
+      "populationEditorText_3": "对目标队列应用的最短回溯期：",
+      "populationEditorText_4": "是否应该删除没有 time at risk 的对象？",
+      "populationEditorText_5": "最小风险暴露期",
+      "populationEditorText_6": "包括那些在整个风险时期内未观察到结果的人吗？",
+      "populationEditorText_7": "是否应该仅包括每个主体的第一次暴露？",
+      "populationEditorText_8": "您确定要删除参加该队列研究的患者吗？",
+      "populationEditorText_9": "您将在队列进入前几天看到结果？",
+      "predictionCovariatePlaceholder": "协变量ID",
+      "predictionEditorText_1": "您想在患者水平预测模型的基线协变量中包括哪些概念？ （如果要包含所有内容，请保留空白）",
+      "predictionEditorText_2": "应将后代概念添加到所包含概念的列表中吗？",
+      "predictionEditorText_3": "您想在患者水平预测模型的基线协变量中排除哪些概念？ （如果要包含所有内容，请保留空白）",
+      "predictionEditorText_4": "应将后代概念添加到排除的概念列表中吗？",
+      "predictionEditorText_5": "以逗号分隔的协变量ID列表，应限于：",
+      "predictionSelectConceptSet": "选择概念集...",
+      "predictionSelectCovariates": "选择协变量"
+    },
+    "export": "导出",
+    "fullAnalysisList": "完整分析清单",
+    "import": "导入",
+    "inputTypes": {
+      "adaBoost": "自适应增强",
+      "adaBoostSettings": {
+        "desc_learningRate": "学习率降低了每个分类器的贡献。 学习率和估计量（nEstimator）之间需要权衡。",
+        "desc_nEstimators": "提升结束时的最大估计量",
+        "name_learningRate": "学习率",
+        "name_nEstimators": "最大估计量"
+      },
+      "decisionTree": "决策树",
+      "decisionTreeSettings": {
+        "desc_classWeight": "类别权重",
+        "desc_maxDepth": "最大数量的交互-较大的值将导致模型训练缓慢",
+        "desc_minImpurityDecrease": "提前停止树木生长的阈值。 如果杂质超过阈值，则将该节点拆分，否则它将成为叶节点。",
+        "desc_minSamplesLeaf": "每片叶子的最小样本数",
+        "desc_minSamplesSplit": "每次拆分的最小样本数",
+        "desc_plot": "每次拆分的最小样本数",
+        "name_classWeight": "类别权重",
+        "name_maxDepth": "最大深度",
+        "name_minImpurityDecrease": "最小 impurity split",
+        "name_minSamplesLeaf": "每片叶子的最小样本",
+        "name_minSamplesSplit": "拆分的最小样本数",
+        "name_plot": "拆分的最小样本数"
+      },
+      "gradientBoostingMachine": "梯度提升机",
+      "gradientBoostingMachineSettings": {
+        "desc_learnRate": "提升学习率",
+        "desc_maxDepth": "最大数量的交互-较大的值将导致模型训练缓慢",
+        "desc_minRows": "树的每个末端节点所需的最小行数",
+        "desc_nthread": "要使用的计算机线程数（您有多少个内核？）",
+        "desc_ntrees": "要构建的树木数量",
+        "name_learnRate": "提高学习率",
+        "name_maxDepth": "最大互动次数",
+        "name_minRows": "最小行数",
+        "name_nthread": "用于计算的计算机线程",
+        "name_ntrees": "使用的树木数量"
+      },
+      "knnSettings": {
+        "desc_k": "要考虑的邻居数",
+        "name_k": "邻居数"
+      },
+      "lassoLogisticRegression": "Lasso逻辑回归",
+      "lassoLogisticRegressionSettings": {
+        "desc": "单个值用作自动lambda搜索的起始值",
+        "name": "自动Lambda搜索的起始值"
+      },
+      "mlpSettings": {
+        "desc_alpha": "l2正则化",
+        "desc_size": "隐藏节点数",
+        "name_alpha": "Alpha",
+        "name_size": "隐藏节点数"
+      },
+      "multilayerPerceptionModel": "多层感知器模型",
+      "naiveBayes": "朴素贝叶斯",
+      "nearestNeighbors": "K近邻算法",
+      "randomForest": "随机森林",
+      "randomForestSettings": {
+        "desc_maxDepth": "最大数量的交互-较大的值将导致模型训练缓慢",
+        "desc_mtries": "要包括在每棵树中的要素数量（-1是总数的默认平方根）",
+        "desc_ntrees": "要构建的树木数量",
+        "desc_varImp": "在拟合模型之前执行初始变量选择以选择有用的变量",
+        "name_maxDepth": "最大深度",
+        "name_mtries": "树特征数",
+        "name_ntrees": "待建树数量",
+        "name_varImp": "执行初始变量选择"
+      }
+    },
+    "item": {
+      "addCovariateSettings": "添加协变量设置",
+      "addModelSettings": "添加模型设置",
+      "addOutcomeCohort": "添加结果队列",
+      "addPopulationSettings": "添加人群设置",
+      "addTargetCohort": "添加目标队列",
+      "all": "全部",
+      "analysisSettings": "分析设置",
+      "covariateSettings": "协变量设置",
+      "executionSettings": "执行设置",
+      "modelSettings": "模型设置",
+      "outcomeCohort": "结果队列",
+      "populationSettings": "人群设置",
+      "predictionProblemSettings": "预测问题设置",
+      "targetCohort": "目标队列",
+      "trainingSettings": "训练设置",
+      "view": "视图/查看："
+    },
+    "itemId": "患者水平预测 #<%=id%>",
+    "modelSettingsDesc": "使用以下选项编辑模型设置",
+    "modelSettingsTitle": "模型设置",
+    "naiveMessage": "没有要编辑的朴素贝叶斯设置",
+    "newItem": "新患者水平预测",
+    "newItemPlaceholder": "新患者水平预测",
+    "pleaseNote": "请注意：",
+    "populationSettingsDesc": "添加或更新人口设置",
+    "populationSettingsTitle": "人群设置",
+    "predictionProblemSettings": "预测问题设置",
+    "resetToDefault": "重置为默认",
+    "reviewAndDownload": "审查 & 下载",
+    "reviewFullStudy": "查看完整研究规范",
+    "selectCohort": "选择队列...",
+    "tabs": {
+      "executions": "执行",
+      "specification": "说明",
+      "utilities": "程序",
+      "messages": "提示信息"
+    },
+    "title": "患者水平预测",
+    "usingDefault": "使用默认的",
+    "utilitiesText_1": "您的研究存在以下问题，这些问题使您无法查看完整的规范详细信息，并无法下载研究包：",
+    "utilitiesText_2": "您必须至少指定一个：目标队列，结果队列，模型设置，协变量设置和总体设置。",
+    "utilitiesText_3": "您的研究在以下区域之一中包含重复值：模型设置，协变量设置和人群设置。 请查看并修复这些错误以继续。",
+    "utilitiesText_4": "在查看和下载之前，请务必保存分析设置。",
+    "utilitiesText_5": "请查看下面的完整研究规范，然后向下滚动页面以下载研究封包。",
+    "utilitiesText_6": "请提供研究封包的名称，然后点击“下载”获得ZIP格式的研究封包。",
+    "utilitiesText_7": "软件包名称应仅包含字母数字字符。不允许使用空格或特殊字符。",
+    "utilitiesText_8": "请查看下载区域以查看分析规范中的问题。 必须先更正这些问题，然后才能导出定义。",
+    "packageName": "封装名字..."
+  }
+}

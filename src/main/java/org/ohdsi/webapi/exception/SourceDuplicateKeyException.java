@@ -12,7 +12,7 @@ public class SourceDuplicateKeyException extends UserException {
         super(message);
     }
 
-    public SourceDuplicateKeyException(Throwable ex){
+    public SourceDuplicateKeyException(Throwable ex) {
         super(ex);
     }
 }

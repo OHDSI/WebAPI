@@ -1,5 +1,6 @@
 package org.ohdsi.webapi;
 
+import com.google.common.collect.ImmutableList;
 import org.springframework.batch.core.ExitStatus;
 
 public interface Constants {
@@ -22,6 +23,25 @@ public interface Constants {
   String TEMP_COHORT_TABLE_PREFIX = "temp_cohort_";
   Float DEFAULT_THRESHOLD = 0.01f;
 
+  ImmutableList<String> ALLOWED_JOB_EXECUTION_PARAMETERS = ImmutableList.of(
+          "jobName",
+          "jobAuthor",
+          "cohort_definition_id",
+          "cohortId",
+          "cohortDefinitionIds",
+          "source_id",
+          "sourceKey",
+          "scriptType",
+          "analysis_id",
+          "concept_set_id",
+          "cohort_characterization_id",
+          "pathway_analysis_id",
+          "estimation_analysis_id",
+          "prediction_analysis_id"
+  );
+
+  String SESSION_ID = "Session-ID";
+
   interface SqlSchemaPlaceholders {
     String CDM_DATABASE_SCHEMA_PLACEHOLDER = "@cdm_database_schema";
     String RESULTS_DATABASE_SCHEMA_PLACEHOLDER = "@results_database_schema";
@@ -36,6 +56,7 @@ public interface Constants {
     String COHORT_CHARACTERIZATION_ID = "cohort_characterization_id";
     String PATHWAY_ANALYSIS_ID = "pathway_analysis_id";
     String PREDICTION_ANALYSIS_ID = "prediction_analysis_id";
+    String PREDICTION_SKELETON_VERSION = "v0.0.6";
     String ESTIMATION_ANALYSIS_ID = "estimation_analysis_id";
     String UPDATE_PASSWORD = "update_password";
     String SOURCE_ID = "source_id";
@@ -69,6 +90,8 @@ public interface Constants {
 
   interface Headers {
     String AUTH_PROVIDER = "x-auth-provider";
+    String USER_LANGAUGE = "User-Language";
+    String ACTION_LOCATION = "action-location";
   }
 
   interface SecurityProviders {

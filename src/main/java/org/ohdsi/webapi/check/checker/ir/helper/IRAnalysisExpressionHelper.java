@@ -1,13 +1,16 @@
 package org.ohdsi.webapi.check.checker.ir.helper;
 
-import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
+import org.ohdsi.webapi.check.builder.IterableForEachValidatorBuilder;
 import org.ohdsi.webapi.check.builder.NotNullNotEmptyValidatorBuilder;
 import org.ohdsi.webapi.check.builder.PredicateValidatorBuilder;
 import org.ohdsi.webapi.check.builder.ValidatorGroupBuilder;
 import org.ohdsi.webapi.ircalc.DateRange;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisExpression;
+import org.ohdsi.webapi.ircalc.StratifyRule;
+
+import java.util.Collection;
+import java.util.List;
 
 public class IRAnalysisExpressionHelper {
 
@@ -41,6 +44,16 @@ public class IRAnalysisExpressionHelper {
                 .valueGetter(t -> t.studyWindow)
                 .validators(
                         new PredicateValidatorBuilder<DateRange>().predicate(w -> StringUtils.isNotBlank(w.startDate) && StringUtils.isNotBlank(w.endDate))
+                );
+    }
+
+    public static ValidatorGroupBuilder<IncidenceRateAnalysisExpression, Collection<? extends StratifyRule>> prepareStratifyRuleBuilder() {
+
+        return new ValidatorGroupBuilder<IncidenceRateAnalysisExpression, Collection<? extends StratifyRule>>()
+                .valueGetter(t -> t.strata)
+                .validators(
+                        new IterableForEachValidatorBuilder<StratifyRule>()
+                                .groups(IRStrataHelper.prepareStrataBuilder())
                 );
     }
 }

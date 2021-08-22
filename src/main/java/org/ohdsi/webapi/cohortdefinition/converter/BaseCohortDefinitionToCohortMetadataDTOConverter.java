@@ -2,10 +2,10 @@ package org.ohdsi.webapi.cohortdefinition.converter;
 
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
-import org.ohdsi.webapi.service.converters.BaseCommonEntityToDTOConverter;
+import org.ohdsi.webapi.service.converters.BaseCommonEntityExtToDTOExtConverter;
 
 public abstract class BaseCohortDefinitionToCohortMetadataDTOConverter<T extends CohortMetadataDTO>
-        extends BaseCommonEntityToDTOConverter<CohortDefinition, T> {
+        extends BaseCommonEntityExtToDTOExtConverter<CohortDefinition, T> {
 
     @Override
     public void doConvert(CohortDefinition def, T target) {

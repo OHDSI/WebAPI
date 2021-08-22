@@ -136,5 +136,4 @@ public class CohortSample extends CommonEntity<Integer> {
 	public void setAgeMode(String ageMode) {
 		this.ageMode = ageMode;
 	}
-
 }

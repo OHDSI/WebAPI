@@ -7,6 +7,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.JoinColumn;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.ohdsi.webapi.annotation.set.QuestionSet;
 
 @Entity(name = "Annotation")
@@ -16,7 +19,15 @@ import org.ohdsi.webapi.annotation.set.QuestionSet;
 public class Annotation {
 
   @Id
-  @GeneratedValue
+  @GenericGenerator(
+    name="annotation_generator",
+    strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+    parameters = {
+      @Parameter(name="sequence_name",value="annotation_sequence"),
+      @Parameter(name="increment_size",value="1")
+    }
+  )
+  @GeneratedValue(generator = "annotation_generator")
   @Column(name = "annotation_id")
   private int id;
 

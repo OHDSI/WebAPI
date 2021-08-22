@@ -42,23 +42,23 @@ CREATE TABLE ${ohdsiSchema}.annotation_answer (
 
 CREATE INDEX idx_annotation_answer_question ON ${ohdsiSchema}.annotation_question (question_id);
 
+CREATE SEQUENCE ${ohdsiSchema}.annotation_sequence;
 CREATE TABLE ${ohdsiSchema}.annotation (
-    annotation_id integer NOT NULL,
+    annotation_id integer NOT NULL DEFAULT NEXTVAL('annotation_sequence'),
     subject_id integer NOT NULL,
     cohort_sample_id integer NOT NULL,
-    set_id integer NOT NULL,
+    question_set_id integer NOT NULL,
     date_created TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (now()),
-    --user_id integer,
     CONSTRAINT annotation_pkey PRIMARY KEY (annotation_id),
-    CONSTRAINT annotation_set_fk FOREIGN KEY (set_id)
+    CONSTRAINT annotation_set_fk FOREIGN KEY (question_set_id)
         REFERENCES ${ohdsiSchema}.annotation_set(set_id),
     CONSTRAINT annotation_sample_fk FOREIGN KEY (cohort_sample_id)
             REFERENCES ${ohdsiSchema}.cohort_sample(id),
-    CONSTRAINT unq_subject_sample_set UNIQUE(subject_id, cohort_sample_id, set_id)
+    CONSTRAINT unq_subject_sample_set UNIQUE(subject_id, cohort_sample_id, question_set_id)
 );
 
 CREATE INDEX idx_annotation_sample_subject ON ${ohdsiSchema}.annotation (cohort_sample_id,subject_id);
-CREATE INDEX idx_annotation_set ON ${ohdsiSchema}.annotation (set_id);
+CREATE INDEX idx_annotation_set ON ${ohdsiSchema}.annotation (question_set_id);
 
 CREATE TABLE ${ohdsiSchema}.annotation_study (
    study_id integer NOT NULL,

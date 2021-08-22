@@ -137,7 +137,7 @@ public class AnnotationController {
     Study study = new Study();
     int questionSetId = Integer.parseInt(jsonpayload.get("annotationSetId").toString());
     QuestionSet questionSet = questionSetRepository.findById(questionSetId);
-    study.setQuestionSet(questionSetRepository.findByQuestionSetId(questionSetId));
+    study.setQuestionSet(questionSetRepository.findById(questionSetId));
     study.setCohortSample(cohortSample);
     CohortDefinition cohortDefinition= cohortDefinitionRepository.findOneWithDetail(cohortSample.getCohortDefinitionId());
     study.setCohortDefinition(cohortDefinition);

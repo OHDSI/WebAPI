@@ -13,9 +13,5 @@ public interface AnnotationRepository extends JpaRepository<Annotation, Integer>
   public List<Annotation> findByCohortSampleIdAndQuestionSetId(int cohortSampleId, int questionSetId);
   public List<Annotation> findByCohortSampleId(int cohortSampleId);
   public List<Annotation> findByQuestionSetId(int questionSetId);
-
-  @Query("Select a FROM Annotation a WHERE a.id = ?1")
-  public Annotation findByAnnotationId(int annotation_id);
-//  @Query(value="SELECT * FROM ohdsi.annotation",nativeQuery = true)
-//  public List<Annotation> findAllAnnotations();
+  public Annotation findById(int annotation_id);
 }

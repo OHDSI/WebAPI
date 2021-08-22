@@ -18,12 +18,12 @@ public class AnnotationService {
   }
 
   public Annotation getAnnotationsByAnnotationId(int annotationId) {
-    Annotation result = annotationRepository.findByAnnotationId(annotationId);
+    Annotation result = annotationRepository.findById(annotationId);
     return result;
   }
 
   public Annotation getAnnotationsByAnnotationId(Annotation annotation) {
-    Annotation result = annotationRepository.findByAnnotationId(annotation.getId());
+    Annotation result = annotationRepository.findById(annotation.getId());
     return result;
   }
 

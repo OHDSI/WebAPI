@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.annotation.set;
 
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.persistence.*;

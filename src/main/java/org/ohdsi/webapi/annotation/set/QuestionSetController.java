@@ -4,12 +4,9 @@ import java.util.List;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
-import org.ohdsi.webapi.annotation.annotation.Annotation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.ohdsi.webapi.annotation.set.QuestionSetService;
-import org.ohdsi.webapi.annotation.set.QuestionSet;
 
 @Path("annotations/")
 @Component

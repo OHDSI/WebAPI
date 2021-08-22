@@ -5,8 +5,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.List;
-import org.ohdsi.webapi.annotation.set.QuestionSetRepository;
-import org.ohdsi.webapi.annotation.set.QuestionSet;
 
 @Service
 public class QuestionSetService {
@@ -36,7 +34,7 @@ public class QuestionSetService {
   }
 
   public QuestionSet findQuestionSetByQuestionSetId(int questionSetId){
-    return questionSetRepository.findByQuestionSetId(questionSetId);
+    return questionSetRepository.findById(questionSetId);
   }
 
   public List<QuestionSampleDto> getSamplesAndSetsByCohortId(int cohortId) {

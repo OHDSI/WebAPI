@@ -35,9 +35,6 @@ public class Annotation {
   @Column(name = "cohort_sample_id")
   private int cohortSampleId;
 
-  // @Column(name = "sample_name")
-  // private String sampleName;
-
   @ManyToOne
   @JoinColumn(name = "question_set_id")
   private QuestionSet questionSet;

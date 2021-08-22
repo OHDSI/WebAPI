@@ -8,6 +8,5 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface QuestionRepository extends JpaRepository<Question, Integer> {
-    @Query("Select a FROM Question a WHERE a.id = ?1")
-    public Question findByQuestionId(int questionId);
+    public Question findById(int questionId);
 }

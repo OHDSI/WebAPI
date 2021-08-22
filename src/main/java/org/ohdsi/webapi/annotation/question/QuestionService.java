@@ -21,7 +21,7 @@ public class QuestionService {
   }
 
   public Question getQuestionByQuestionId(int questionId){
-    return questionRepository.findByQuestionId(questionId);
+    return questionRepository.findById(questionId);
   }
 
   public void addQuestion(Question question) {

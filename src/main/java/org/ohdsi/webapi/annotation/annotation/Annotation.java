@@ -42,14 +42,6 @@ public class Annotation {
   @JoinColumn(name = "question_set_id")
   private QuestionSet questionSet;
 
-  // @OneToMany(
-  //   fetch = FetchType.EAGER,
-  //   mappedBy = "annotation",
-  //   cascade = CascadeType.ALL,
-  //   orphanRemoval = true
-  // )
-  // private Set<Result> results = new HashSet();
-
   //***** GETTERS/SETTERS ******
 
   /**

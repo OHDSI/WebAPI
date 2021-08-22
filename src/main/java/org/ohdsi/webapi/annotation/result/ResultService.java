@@ -1,18 +1,13 @@
 package org.ohdsi.webapi.annotation.result;
 
-import io.swagger.models.auth.In;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.ohdsi.webapi.annotation.annotation.Annotation;
 import org.ohdsi.webapi.annotation.annotation.AnnotationService;
-import org.ohdsi.webapi.annotation.result.Result;
-import org.ohdsi.webapi.annotation.result.ResultRepository;
 import org.ohdsi.webapi.annotation.study.Study;
 import org.ohdsi.webapi.annotation.study.StudyService;
 import org.ohdsi.webapi.cohortsample.CohortSample;
 import org.ohdsi.webapi.cohortsample.CohortSampleRepository;
-import org.ohdsi.webapi.cohortsample.CohortSamplingService;
-import org.ohdsi.webapi.cohortsample.SampleElement;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -22,15 +17,9 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.MediaType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -137,16 +126,16 @@ public class ResultService extends AbstractDaoService {
     return results;
   }
 
-  public void deleteResultsByAnnotationIdAndQuestionId(Annotation annotation,int questionId){
+  public void deleteResultsByAnnotationId(Annotation annotation){
     List<Object[]> deleteVariables = new ArrayList<>();
     CohortSample sample = sampleRepository.findById(annotation.getCohortSampleId());
     Source source = getSourceRepository().findBySourceId(sample.getSourceId());
     JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
     String[] parameters = new String[] { "results_schema" };
     String[] parameterValues = new String[] { source.getTableQualifier(SourceDaimon.DaimonType.Results) };
-    String[] deletesqlParameters = new String[] { "annotation_id", "question_id"};
-    Object[] deletesqlValues = new Object[] {annotation.getId(),questionId};
-    PreparedStatementRenderer deleterenderer = new PreparedStatementRenderer(source, "/resources/annotationresult/sql/deleteResultsByAnnotationIdAndQuestionId.sql", parameters, parameterValues, deletesqlParameters, deletesqlValues);
+    String[] deletesqlParameters = new String[] { "annotation_id"};
+    Object[] deletesqlValues = new Object[] {annotation.getId()};
+    PreparedStatementRenderer deleterenderer = new PreparedStatementRenderer(source, "/resources/annotationresult/sql/deleteResultsByAnnotationId.sql", parameters, parameterValues, deletesqlParameters, deletesqlValues);
     String deleteStatement = deleterenderer.getSql();
     deleteVariables.add(deleterenderer.getOrderedParams());
     jdbcTemplate.batchUpdate(deleteStatement, deleteVariables);
@@ -170,10 +159,9 @@ public class ResultService extends AbstractDaoService {
     Boolean hasCleared=false;
     for(int i=0; i < results.length(); i++){
       JSONObject object = results.getJSONObject(i);
-//      I can check here by AnnotationID only? TODO
-      if(!hasCleared && getResultByAnnotationIDAndQuestionID(annotation.getId(),Integer.parseInt(object.get("questionId").toString()))!=null){
+      if(!hasCleared && !getResultsByAnnotationID(annotation.getId()).isEmpty()){
 //        this entry already exists, need to update here instead of adding to the pile
-        deleteResultsByAnnotationIdAndQuestionId(annotation,Integer.parseInt(object.get("questionId").toString()));
+        deleteResultsByAnnotationId(annotation);
         hasCleared=true;
       }
       Object[] sqlValues = new Object[] {

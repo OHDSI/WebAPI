@@ -79,7 +79,7 @@ public class AnnotationController {
     returnAnnotations = getFullAnnotations(cohortSampleId,subjectId,setId);
     List<AnnotationSummary> summaries = new ArrayList();
     for(Annotation singleAnno : returnAnnotations){
-//      TODO see about doing this in a more performant manner?
+//      can we see about doing this in a more performant manner?
       AnnotationSummary tempAnnoSummary=new AnnotationSummary(singleAnno);
       summaries.add(tempAnnoSummary);
     }
@@ -134,16 +134,6 @@ public class AnnotationController {
     JSONArray array = jsonpayload.getJSONArray("results");
     Study study = studyService.getStudyByQuestionSetIdAndSampleId(jsonpayload.getInt("setId"),jsonpayload.getInt("cohortSampleId") );
     resultService.insertResults(tempAnnotation,array,study);
-//    for(int i=0; i < array.length(); i++){
-//      JSONObject object = array.getJSONObject(i);
-//      Result result = new Result();
-//      result.setQuestionId(Long.parseLong(object.get("questionId").toString()));
-//      result.setAnswerId(Long.parseLong(object.get("answerId").toString()));
-//      result.setValue(object.get("value").toString());
-//      result.setType(object.get("type").toString());
-//      result.setAnnotation(tempAnnotation);
-//      resultService.save(result);
-//    }
   }
 
   @POST
@@ -174,28 +164,6 @@ public class AnnotationController {
       annotation.setQuestionSet(questionSet);
       annotationService.addAnnotation(annotation);
     }
-  }
-
-//just for testing
-  @Path("/csvData")
-  @GET
-  @Produces(MediaType.APPLICATION_JSON)
-  public List<Object[]> getAnnotationCSV(
-      @QueryParam("cohortID") int cohortID,
-      @QueryParam("sourceKey") String sourceKey,
-      @QueryParam("sampleName") String sampleName
-      ) {
-
-      if (sampleName.indexOf("_") != -1) {
-          sampleName = sampleName.replaceAll("_", " ");
-      }
-
-      if (cohortID == 0 || sourceKey == null || sampleName == null) {
-        return null;
-      }
-
-      return annotationService.getAnnotationCSVData(cohortID, sourceKey, sampleName);
-
   }
 
   @GET

@@ -96,33 +96,5 @@ public class Annotation {
   public void setQuestionSet(QuestionSet questionSet) {
     this.questionSet = questionSet;
   }
-
-	// /**
-	//  * @return the results
-	//  */
-	// public Set<Result> getResults() {
-	// 		return new HashSet<Result>(results);
-	// }
-
-	// /**
-	//  * @param results the results to set
-	//  */
-	// protected void setResults(Set<Result> results) {
-	// 		this.results = results;
-	// }
-
- //  public void addToResults(Result result) {
- //      result.setAnnotation(this);
- //      this.results.add(result);
- //  }
-
-
-// public void setSampleName(String name) {
-//     this.sampleName = name;
-// }
-
-// public String getSampleName() {
-//     return this.sampleName;
-// }
-
+  
 }

@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.annotation.study;
 
+import org.hibernate.annotations.GenericGenerator;
 import org.ohdsi.webapi.annotation.set.QuestionSet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortsample.CohortSample;
@@ -11,7 +12,15 @@ import javax.persistence.*;
 @Table(name = "annotation_study")
 public class Study {
     @Id
-    @GeneratedValue
+    @GenericGenerator(
+            name="annotation_study_generator",
+            strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+            parameters = {
+                    @org.hibernate.annotations.Parameter(name="sequence_name",value="annotation_study_seq"),
+                    @org.hibernate.annotations.Parameter(name="increment_size",value="1")
+            }
+    )
+    @GeneratedValue(generator = "annotation_study_generator")
     @Column(name = "study_id")
     private int id;
 

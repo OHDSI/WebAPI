@@ -1,57 +1,16 @@
 package org.ohdsi.webapi.annotation.result;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.ManyToOne;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.JoinColumn;
 import org.ohdsi.webapi.annotation.annotation.Annotation;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
-@Entity(name = "Result")
-@Table(name = "annotation_result")
 public class Result {
 
-  @Id
-  @GeneratedValue
-  @Column(name = "result_id")
-  private int id;
-
-  @JsonIgnore
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "annotation_id")
   private Annotation annotation;
-
-  @Column(name = "question_id")
   private int questionId;
-
-  @Column(name = "answer_id")
   private int answerId;
-
-  @Column(name = "value")
   private String value;
-
-  @Column(name = "type")
   private String type;
 
   //***** GETTERS/SETTERS ******
-
-  /**
-   * @return the id
-   */
-  public int getId() {
-    return id;
-  }
-
-  /**
-   * @param id the id to set
-   */
-  public void setId(int id) {
-    this.id = id;
-  }
 
   /**
    * @return the annotation

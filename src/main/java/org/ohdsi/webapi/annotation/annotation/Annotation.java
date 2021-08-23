@@ -23,7 +23,7 @@ public class Annotation {
     name="annotation_generator",
     strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
     parameters = {
-      @Parameter(name="sequence_name",value="annotation_sequence"),
+      @Parameter(name="sequence_name",value="annotation_seq"),
       @Parameter(name="increment_size",value="1")
     }
   )

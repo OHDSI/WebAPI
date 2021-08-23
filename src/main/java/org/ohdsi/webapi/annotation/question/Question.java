@@ -27,7 +27,7 @@ public class Question {
           name="question_generator",
           strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
           parameters = {
-                  @org.hibernate.annotations.Parameter(name="sequence_name",value="annotation_question_sequence"),
+                  @org.hibernate.annotations.Parameter(name="sequence_name",value="annotation_question_seq"),
                   @org.hibernate.annotations.Parameter(name="increment_size",value="1")
           }
   )

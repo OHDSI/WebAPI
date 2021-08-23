@@ -202,7 +202,6 @@ public class ResultService extends AbstractDaoService {
         return null;
       }
       result.setAnnotation(tempAnno);
-      result.setId(rs.getInt("result_id"));
       result.setQuestionId(rs.getInt("question_id"));
       result.setAnswerId(rs.getInt("answer_id"));
       result.setValue(rs.getString("value"));

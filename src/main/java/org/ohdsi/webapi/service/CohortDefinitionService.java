@@ -21,6 +21,10 @@ import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.circe.cohortdefinition.printfriendly.MarkdownRender;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.webapi.Constants;
+import org.ohdsi.webapi.check.CheckResult;
+import org.ohdsi.webapi.check.checker.cohort.CohortChecker;
+import org.ohdsi.webapi.check.warning.Warning;
+import org.ohdsi.webapi.check.warning.WarningUtils;
 import org.ohdsi.webapi.cohortdefinition.CleanupCohortTasklet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
@@ -30,6 +34,8 @@ import org.ohdsi.webapi.cohortdefinition.InclusionRuleReport;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortGenerationInfoDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataImplDTO;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortVersionFullDTO;
 import org.ohdsi.webapi.cohortsample.CleanupCohortSamplesTasklet;
 import org.ohdsi.webapi.cohortsample.CohortSamplingService;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
@@ -52,6 +58,13 @@ import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.versioning.domain.CohortVersion;
+import org.ohdsi.webapi.versioning.domain.Version;
+import org.ohdsi.webapi.versioning.domain.VersionBase;
+import org.ohdsi.webapi.versioning.domain.VersionType;
+import org.ohdsi.webapi.versioning.dto.VersionDTO;
+import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
+import org.ohdsi.webapi.versioning.service.VersionService;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -168,9 +181,6 @@ public class CohortDefinitionService extends AbstractDaoService {
 
 	@PersistenceContext
 	protected EntityManager entityManager;
-
-	@Autowired
-	private TagService tagService;
 
 	@Autowired
 	private CohortChecker cohortChecker;

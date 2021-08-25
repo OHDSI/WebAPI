@@ -49,6 +49,7 @@ import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisDetails;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisExportExpression;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisExpression;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
+import org.ohdsi.webapi.ircalc.dto.IRVersionFullDTO;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.security.PermissionService;
@@ -69,6 +70,13 @@ import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.versioning.domain.IRVersion;
+import org.ohdsi.webapi.versioning.domain.Version;
+import org.ohdsi.webapi.versioning.domain.VersionBase;
+import org.ohdsi.webapi.versioning.domain.VersionType;
+import org.ohdsi.webapi.versioning.dto.VersionDTO;
+import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
+import org.ohdsi.webapi.versioning.service.VersionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.JobParameters;
@@ -177,9 +185,6 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
   @Autowired
   private VersionService<IRVersion> versionService;
-
-  @Autowired
-  private TagService tagService;
 
   public IRAnalysisService(final ObjectMapper objectMapper) {
 

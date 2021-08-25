@@ -5,12 +5,18 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.webapi.model.CommonEntity;
+import org.ohdsi.webapi.model.CommonEntityExt;
+import org.ohdsi.webapi.tag.domain.Tag;
 
 @Entity(name = "pathway_analysis")
 public class PathwayAnalysisEntity extends CommonEntityExt<Integer> {

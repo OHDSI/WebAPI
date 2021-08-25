@@ -15,6 +15,9 @@
  */
 package org.ohdsi.webapi.util;
 
+import org.ohdsi.webapi.exception.BadRequestAtlasException;
+import org.ohdsi.webapi.exception.ConceptNotExistException;
+import org.ohdsi.webapi.exception.ConversionAtlasException;
 import org.ohdsi.webapi.exception.UserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +25,8 @@ import org.apache.shiro.authz.UnauthorizedException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.messaging.support.ErrorMessage;
 
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -30,6 +35,9 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.UndeclaredThrowableException;
+import java.util.Objects;
 
 /**
  *

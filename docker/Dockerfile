@@ -40,10 +40,10 @@ RUN mkdir /app
 WORKDIR /app/
 
 # Clone repos
-RUN git clone --branch phase1 git@bitbucket.org:Odysseus/webapi.git
-RUN git clone --branch phase1 git@bitbucket.org:Odysseus/atlas.git
-RUN git clone --branch phase1 git@bitbucket.org:Odysseus/sqlrender.git
-RUN git clone --branch phase1 git@bitbucket.org:Odysseus/arachnecommons.git
+RUN git clone --branch phase1_2.10 git@bitbucket.org:Odysseus/webapi.git
+RUN git clone --branch phase1_2.10 git@bitbucket.org:Odysseus/atlas.git
+RUN git clone --branch phase1_2.10 git@bitbucket.org:Odysseus/sqlrender.git
+RUN git clone --branch phase1_2.10 git@bitbucket.org:Odysseus/arachnecommons.git
 
 # SqlRender
 # ADD SqlRender-1.7.0.101.jar /root/SqlRender-1.7.0.101.jar

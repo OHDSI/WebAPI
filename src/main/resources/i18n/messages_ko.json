@@ -357,7 +357,9 @@
       "overwriteConfirm": "현재의 컨셉 세트 표현을 정말 덮어씌우시겠습니까?",
       "loadingIncludedConcepts": "포함된 컨셉 로딩 중",
       "commonAncestors": "공통 상위 컨셉",
-      "loadingIncludedSourcecodes": "포함된 소스 코드 로딩 중"
+      "loadingIncludedSourcecodes": "포함된 소스 코드 로딩 중",
+      "expressionResolveError": "Error occurred during resolving expression!",
+      "forbiddenError": "You are not authorized to view the concept set expression."
     },
     "conceptLegend": {
       "standard": "표준",
@@ -1148,13 +1150,15 @@
         "studyAssetTags": "Study Asset Tags",
         "reference": "Reference"
       },
+      "availableTags": "Available tags:",
       "assign": "Assign",
       "unassign": "Unassign",
       "notPermitted": "Not permitted",
       "assignExistingTag": "Create custom tag",
       "tagNamePlaceholder": "Tag name",
+      "assignedTags": "Assigned tags:",
       "tagGroups": "Tag groups:",
-      "tagGroup": "Tag group:",
+      "tagGroup:": "Tag group:",
       "showTags": "Show tags",
       "tagNameExistsWarning": "Tag <%=tagName%> already exists.",
       "cannotUnassignProtectedTagWarning": "Cannot unassign protected tag: <%=tagName%>",
@@ -2693,9 +2697,9 @@
           "sampleName": "* 샘플 이름",
           "sampleNamePlaceholder": "샘플 이름 입력",
           "sampleNameEmpty": "샘플 이름은 비워 둘 수 없습니다",
-          "numberOfPatients": "* 환자 수",
+          "numberOfPatients": "* Number of patients (from 1 to 500)",
           "numberOfPatientsPlaceholder": "숫자 입력",
-          "numberOfPatientsEmpty": "환자 수는 양의 정수여야 합니다",
+          "numberOfPatientsEmpty": "Number of patients must be a positive integer between 1 and 500",
           "selectAgeCriteria": "나이 기준 선택",
           "lessThan": "보다 작은",
           "lessOrEqualTo": "보다 작거나 같은",
@@ -2976,6 +2980,10 @@
         "desc_observation": "관찰이 발생한 방문을 기반으로 Observation을 필터링합니다.",
         "title_procedureoccurrence": "Visit 조건 추가",
         "desc_procedureoccurrence": "Procedure  발생 방문을 기반으로 Procedure Occurrence를 필터링합니다."
+      },
+      "addConditionStatus": {
+        "title_occurrence": "Add Condition Status",
+        "desc_occurrence": "Filter Condition Occurrences based on condition status."
       },
       "addFirstDiagnosis": {
         "title_era": "최초 진단 기준 추가",

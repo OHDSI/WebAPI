@@ -40,6 +40,8 @@ public interface Constants {
           "prediction_analysis_id"
   );
 
+  String SESSION_ID = "Session-ID";
+
   interface SqlSchemaPlaceholders {
     String CDM_DATABASE_SCHEMA_PLACEHOLDER = "@cdm_database_schema";
     String RESULTS_DATABASE_SCHEMA_PLACEHOLDER = "@results_database_schema";
@@ -54,6 +56,7 @@ public interface Constants {
     String COHORT_CHARACTERIZATION_ID = "cohort_characterization_id";
     String PATHWAY_ANALYSIS_ID = "pathway_analysis_id";
     String PREDICTION_ANALYSIS_ID = "prediction_analysis_id";
+    String PREDICTION_SKELETON_VERSION = "v0.0.6";
     String ESTIMATION_ANALYSIS_ID = "estimation_analysis_id";
     String UPDATE_PASSWORD = "update_password";
     String SOURCE_ID = "source_id";
@@ -88,6 +91,7 @@ public interface Constants {
   interface Headers {
     String AUTH_PROVIDER = "x-auth-provider";
     String USER_LANGAUGE = "User-Language";
+    String ACTION_LOCATION = "action-location";
   }
 
   interface SecurityProviders {

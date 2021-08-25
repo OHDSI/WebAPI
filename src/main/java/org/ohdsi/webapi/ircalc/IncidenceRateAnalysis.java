@@ -17,14 +17,12 @@ package org.ohdsi.webapi.ircalc;
 
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javax.persistence.*;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
-import org.ohdsi.webapi.model.CommonEntityExt;
-import org.ohdsi.webapi.tag.domain.Tag;
+import org.ohdsi.webapi.model.CommonEntity;
 
 /**
  *
@@ -70,7 +68,7 @@ public class IncidenceRateAnalysis extends CommonEntityExt<Integer> implements S
   private Set<ExecutionInfo> executionInfoList = new HashSet<>();
 
   @ManyToMany(targetEntity = Tag.class, fetch = FetchType.LAZY)
-  @JoinTable(name = "ir_tags",
+  @JoinTable(name = "ir_tag",
           joinColumns = @JoinColumn(name = "asset_id", referencedColumnName = "id"),
           inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
   private Set<Tag> tags;

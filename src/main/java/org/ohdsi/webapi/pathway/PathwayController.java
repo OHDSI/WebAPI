@@ -20,8 +20,6 @@ import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.ExceptionUtils;
-import org.ohdsi.webapi.versioning.dto.VersionDTO;
-import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
@@ -29,7 +27,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.Collections;
@@ -50,9 +47,10 @@ public class PathwayController {
     private final I18nService i18nService;
     private PathwayChecker checker;
     private PermissionService permissionService;
+    private final TagService tagService;
 
     @Autowired
-    public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService, PathwayChecker checker, PermissionService permissionService, I18nService i18nService) {
+    public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService, PathwayChecker checker, PermissionService permissionService, I18nService i18nService, TagService tagService) {
 
         this.conversionService = conversionService;
         this.converterUtils = converterUtils;
@@ -62,6 +60,7 @@ public class PathwayController {
         this.i18nService = i18nService;
         this.checker = checker;
         this.permissionService = permissionService;
+        this.tagService = tagService;
     }
 
     @POST
@@ -311,6 +310,12 @@ public class PathwayController {
         return new CheckResult(checker.check(pathwayAnalysisDTO));
     }
 
+    /**
+     * Assign tag to Pathway Analysis
+     *
+     * @param id
+     * @param tagId
+     */
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/")
@@ -318,6 +323,12 @@ public class PathwayController {
         pathwayService.assignTag(id, tagId, false);
     }
 
+    /**
+     * Unassign tag from Pathway Analysis
+     *
+     * @param id
+     * @param tagId
+     */
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/{tagId}")
@@ -325,6 +336,12 @@ public class PathwayController {
         pathwayService.unassignTag(id, tagId, false);
     }
 
+    /**
+     * Assign protected tag to Pathway Analysis
+     *
+     * @param id
+     * @param tagId
+     */
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/protectedtag/")
@@ -332,6 +349,12 @@ public class PathwayController {
         pathwayService.assignTag(id, tagId, true);
     }
 
+    /**
+     * Unassign protected tag from Pathway Analysis
+     *
+     * @param id
+     * @param tagId
+     */
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/protectedtag/{tagId}")
@@ -339,6 +362,12 @@ public class PathwayController {
         pathwayService.unassignTag(id, tagId, true);
     }
 
+    /**
+     * Get list of versions of Pathway Analysis
+     *
+     * @param id
+     * @return
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/")
@@ -346,6 +375,13 @@ public class PathwayController {
         return pathwayService.getVersions(id);
     }
 
+    /**
+     * Get version of Pathway Analysis
+     *
+     * @param id
+     * @param version
+     * @return
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{version}")
@@ -353,6 +389,14 @@ public class PathwayController {
         return pathwayService.getVersion(id, version);
     }
 
+    /**
+     * Update version of Pathway Analysis
+     *
+     * @param id
+     * @param version
+     * @param updateDTO
+     * @return
+     */
     @PUT
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{version}")
@@ -361,6 +405,12 @@ public class PathwayController {
         return pathwayService.updateVersion(id, version, updateDTO);
     }
 
+    /**
+     * Delete version of Pathway Analysis
+     *
+     * @param id
+     * @param version
+     */
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{version}")
@@ -368,6 +418,13 @@ public class PathwayController {
         pathwayService.deleteVersion(id, version);
     }
 
+    /**
+     * Create a new asset form version of Pathway Analysis
+     *
+     * @param id
+     * @param version
+     * @return
+     */
     @PUT
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{version}/createAsset")

@@ -20,6 +20,7 @@ import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
+import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.model.CommonEntityExt;
 import org.ohdsi.webapi.tag.domain.Tag;
 
@@ -73,7 +74,7 @@ public class CohortCharacterizationEntity extends CommonEntityExt<Long> implemen
     private Integer hashCode;
 
     @ManyToMany(targetEntity = Tag.class, fetch = FetchType.LAZY)
-    @JoinTable(name = "cohort_characterization_tags",
+    @JoinTable(name = "cohort_characterization_tag",
             joinColumns = @JoinColumn(name = "asset_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
     private Set<Tag> tags;

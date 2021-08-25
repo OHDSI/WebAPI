@@ -919,7 +919,9 @@
       "overwriteConfirm": "Вы действительно хотите перезаписать текущее выражение набора концепций?",
       "loadingIncludedConcepts": "Загрузка включенных концепций",
       "commonAncestors": "Общие предки",
-      "loadingIncludedSourcecodes": "Загрузка включенных исходных кодов"
+      "loadingIncludedSourcecodes": "Загрузка включенных исходных кодов",
+      "expressionResolveError": "Ошибка загрузки выражения набора концепций!",
+      "forbiddenError": "Недостаточно прав для работы с выражением набора концепций."
     },
     "conceptLegend": {
       "standard": "Стандартный",
@@ -1148,17 +1150,19 @@
         "studyAssetTags": "Теги",
         "reference": "Справка"
       },
+      "availableTags": "Доступные теги:",
       "assign": "Назначить",
       "unassign": "Отменить",
-      "notPermitted": "Нет прав",
+      "notPermitted": "Недостаточно прав",
       "assignExistingTag": "Создать пользовательский тег",
       "tagNamePlaceholder": "Имя тега",
+      "assignedTags": "Назначенные теги:",
       "tagGroups": "Группы тегов:",
-      "tagGroup": "Группа:",
+      "tagGroup:": "Группа:",
       "showTags": "Показать теги",
       "tagNameExistsWarning": "Тег <%=tagName%> уже существует.",
       "cannotUnassignProtectedTagWarning": "Невозможно отменить назначение защищенного тега: <%=tagName%>",
-      "reassignConfirm": "Максимальное количество назначенных тегов из группы \"<%=tagGroup%>\": <%=maxNumber%>. Назначение тега \"<%=tagName%>\" будет снято. Продолжить?",
+      "reassignConfirm": "Превышено максимальное количество назначенных тегов в группе \"<%=tagGroup%>\": не более <%=maxNumber%>. Тег \"<%=tagName%>\" будет снят. Продолжить?",
       "typeSystem": "Системные",
       "typeCustom": "Пользовательские",
       "createAndAssign": "Создать и назначить"
@@ -2693,9 +2697,9 @@
           "sampleName": "* Имя образца",
           "sampleNamePlaceholder": "Введите имя образца",
           "sampleNameEmpty": "Имя образца не может быть пустым",
-          "numberOfPatients": "* Количество пациентов",
+          "numberOfPatients": "* Количество пациентов (от 1 до 500)",
           "numberOfPatientsPlaceholder": "Введите число",
-          "numberOfPatientsEmpty": "Количество пациентов должно быть положительным числом",
+          "numberOfPatientsEmpty": "Количество пациентов должно быть положительным числом от 1 до 500",
           "selectAgeCriteria": "Выберите возрастной критерий",
           "lessThan": "Менее чем",
           "lessOrEqualTo": "Менее чем или равно",
@@ -3135,6 +3139,10 @@
         "desc_observation": "Фильтр наблюдений, основанный на посещении наблюдений.",
         "title_procedureoccurrence": "Добавить визит",
         "desc_procedureoccurrence": "Процедура фильтра Вхождения, основанные на посещении процедуры."
+      },
+      "addConditionStatus": {
+        "title_occurrence": "Добавить статус условия",
+        "desc_occurrence": "Фильтровать возникновение условия на основе статуса"
       },
       "addFirstDiagnosis": {
         "title_era": "Добавить первый диагноз",

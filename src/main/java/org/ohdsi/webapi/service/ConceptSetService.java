@@ -27,14 +27,11 @@ import javax.ws.rs.core.Response;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
-import org.ohdsi.webapi.check.CheckResult;
-import org.ohdsi.webapi.check.checker.conceptset.ConceptSetChecker;
 import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
-import org.ohdsi.webapi.conceptset.dto.ConceptSetVersionFullDTO;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
@@ -47,13 +44,6 @@ import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
-import org.ohdsi.webapi.versioning.domain.ConceptSetVersion;
-import org.ohdsi.webapi.versioning.domain.Version;
-import org.ohdsi.webapi.versioning.domain.VersionBase;
-import org.ohdsi.webapi.versioning.domain.VersionType;
-import org.ohdsi.webapi.versioning.dto.VersionDTO;
-import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
-import org.ohdsi.webapi.versioning.service.VersionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -91,6 +81,9 @@ public class ConceptSetService extends AbstractDaoService {
 
     @Autowired
     private PermissionService permissionService;
+
+    @Autowired
+    private TagService tagService;
 
     @Autowired
     private ConceptSetChecker checker;
@@ -205,9 +198,21 @@ public class ConceptSetService extends AbstractDaoService {
             identifierIndex++;
         }
 
-        // assume we want to resolve using the priority vocabulary provider
-        Source vocabSourceInfo = sourceService.getPriorityVocabularySource();
-        Collection<Concept> concepts = vocabService.executeIdentifierLookup(vocabSourceInfo.getSourceKey(), identifiers);
+        String sourceKey;
+        if (Objects.isNull(sourceInfo)) {
+            sourceKey = sourceService.getPriorityVocabularySource().getSourceKey();
+        } else {
+            sourceKey = sourceInfo.sourceKey;
+        }
+
+        Collection<Concept> concepts = vocabService.executeIdentifierLookup(sourceKey, identifiers);
+        if (concepts.size() != identifiers.length) {
+            String ids = Arrays.stream(identifiers).boxed()
+                    .filter(identifier -> concepts.stream().noneMatch(c -> c.conceptId.equals(identifier)))
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(",", "(", ")"));
+            throw new ConceptNotExistException("Current data source does not contain required concepts " + ids);
+        }
         for(Concept concept : concepts) {
           map.put(concept.conceptId, concept); // associate the concept object to the conceptID in the map
         }
@@ -434,6 +439,12 @@ public class ConceptSetService extends AbstractDaoService {
       }
   }
 
+    /**
+     * Assign tag to Concept Set
+     *
+     * @param id
+     * @param tagId
+     */
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/")
@@ -443,6 +454,12 @@ public class ConceptSetService extends AbstractDaoService {
         assignTag(entity, tagId, false);
     }
 
+    /**
+     * Unassign tag from Concept Set
+     *
+     * @param id
+     * @param tagId
+     */
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/{tagId}")
@@ -452,6 +469,12 @@ public class ConceptSetService extends AbstractDaoService {
         unassignTag(entity, tagId, false);
     }
 
+    /**
+     * Assign protected tag to Concept Set
+     *
+     * @param id
+     * @param tagId
+     */
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/protectedtag/")
@@ -461,6 +484,12 @@ public class ConceptSetService extends AbstractDaoService {
         assignTag(entity, tagId, true);
     }
 
+    /**
+     * Unassign protected tag from Concept Set
+     *
+     * @param id
+     * @param tagId
+     */
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/protectedtag/{tagId}")
@@ -479,6 +508,12 @@ public class ConceptSetService extends AbstractDaoService {
         return new CheckResult(checker.check(conceptSetDTO));
     }
 
+    /**
+     * Get list of versions of Concept Set
+     *
+     * @param id
+     * @return
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/")
@@ -490,6 +525,13 @@ public class ConceptSetService extends AbstractDaoService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Get version of Concept Set
+     *
+     * @param id
+     * @param version
+     * @return
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{version}")
@@ -501,6 +543,14 @@ public class ConceptSetService extends AbstractDaoService {
         return conversionService.convert(conceptSetVersion, ConceptSetVersionFullDTO.class);
     }
 
+    /**
+     * Update version of Concept Set
+     *
+     * @param id
+     * @param version
+     * @param updateDTO
+     * @return
+     */
     @PUT
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{version}")
@@ -515,6 +565,12 @@ public class ConceptSetService extends AbstractDaoService {
         return conversionService.convert(updated, VersionDTO.class);
     }
 
+    /**
+     * Delete version of Concept Set
+     *
+     * @param id
+     * @param version
+     */
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{version}")
@@ -524,6 +580,13 @@ public class ConceptSetService extends AbstractDaoService {
         versionService.delete(VersionType.CONCEPT_SET, id, version);
     }
 
+    /**
+     * Create a new asset form version of Concept Set
+     *
+     * @param id
+     * @param version
+     * @return
+     */
     @PUT
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{version}/createAsset")

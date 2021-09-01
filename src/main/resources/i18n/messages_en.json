@@ -1175,8 +1175,7 @@
           "groups": "Groups:"
         }
       }
-    }
-  },
+    },
     "versions": {
       "loading": "Loading versions...",
       "editComment": "Edit comment",

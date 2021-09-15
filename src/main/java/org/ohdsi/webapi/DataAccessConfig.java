@@ -79,7 +79,7 @@ public class DataAccessConfig {
         //note autocommit defaults vary across vendors. use provided @Autowired TransactionTemplate
 
         String[] supportedDrivers;
-        supportedDrivers = new String[]{"org.postgresql.Driver", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "oracle.jdbc.driver.OracleDriver", "com.amazon.redshift.jdbc42.Driver", "com.cloudera.impala.jdbc.Driver", "net.starschema.clouddb.jdbc.BQDriver", "org.netezza.Driver", "com.simba.googlebigquery.jdbc42.Driver", "org.apache.hive.jdbc.HiveDriver"};
+        supportedDrivers = new String[]{"org.postgresql.Driver", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "oracle.jdbc.driver.OracleDriver", "com.amazon.redshift.jdbc.Driver", "com.cloudera.impala.jdbc.Driver", "net.starschema.clouddb.jdbc.BQDriver", "org.netezza.Driver", "com.simba.googlebigquery.jdbc42.Driver", "org.apache.hive.jdbc.HiveDriver"};
         for (String driverName : supportedDrivers) {
             try {
                 Class.forName(driverName);
@@ -99,7 +99,7 @@ public class DataAccessConfig {
             if (d.getClass().getName().contains("com.amazon.redshift.jdbc")) {
                 try {
                     DriverManager.deregisterDriver(d);
-                    DriverManager.registerDriver(new com.amazon.redshift.jdbc42.Driver());
+                    DriverManager.registerDriver(d);
                 } catch (SQLException e) {
                     throw new RuntimeException("Could not deregister redshift driver", e);
                 }

@@ -44,10 +44,10 @@ public abstract class AbstractDatabaseTest {
             java.util.Enumeration<Driver> drivers =  DriverManager.getDrivers();
             while (drivers.hasMoreElements()) {
                 Driver driver = drivers.nextElement();
-                if (driver.getClass().getName().contains("com.amazon.redshift.jdbc42")) {
+                if (driver.getClass().getName().contains("com.amazon.redshift.jdbc")) {
                     try {
                         DriverManager.deregisterDriver(driver);
-                        DriverManager.registerDriver(driver);
+                        DriverManager.registerDriver(new com.amazon.redshift.jdbc42.Driver());
                     } catch (SQLException e) {
                         throw new RuntimeException("Could not deregister redshift driver", e);
                     }

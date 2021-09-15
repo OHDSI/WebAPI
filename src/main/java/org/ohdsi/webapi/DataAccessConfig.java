@@ -92,13 +92,14 @@ public class DataAccessConfig {
         // Redshift driver can be loaded first because it is mentioned in manifest file -
         // put the redshift driver at the end so that it doesn't
         // conflict with postgres queries
+        // Change redshift driver to aws sdk version
         java.util.Enumeration<Driver> drivers =  DriverManager.getDrivers();
         while (drivers.hasMoreElements()) {
             Driver d = drivers.nextElement();
-            if (d.getClass().getName().contains("com.amazon.redshift.jdbc42")) {
+            if (d.getClass().getName().contains("com.amazon.redshift.jdbc")) {
                 try {
                     DriverManager.deregisterDriver(d);
-                    DriverManager.registerDriver(d);
+                    DriverManager.registerDriver(new com.amazon.redshift.jdbc42.Driver());
                 } catch (SQLException e) {
                     throw new RuntimeException("Could not deregister redshift driver", e);
                 }

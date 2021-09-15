@@ -1667,7 +1667,7 @@
     <profile>
       <id>webapi-redshift</id>
       <properties>
-        <!-- BigQuery JDBC driver path -->
+        <!-- Redshift driver path -->
         <redshift.classpath>...path/to/redshift/jdbc/drivers...</redshift.classpath>
       </properties>
       <dependencies>

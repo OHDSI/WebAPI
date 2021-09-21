@@ -520,8 +520,8 @@
       </dependency>
       <dependency>
         <groupId>com.amazon.redshift</groupId>
-        <artifactId>redshift-jdbc42</artifactId>
-        <version>1.2.43.1067</version>
+        <artifactId>redshift-jdbc42-no-awssdk</artifactId>
+        <version>1.2.55.1083</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -901,10 +901,10 @@
         </exclusion>
       </exclusions>
     </dependency>
-<!--    <dependency>-->
-<!--      <groupId>com.amazon.redshift</groupId>-->
-<!--      <artifactId>redshift-jdbc42</artifactId>-->
-<!--    </dependency>-->
+    <dependency>
+      <groupId>com.amazon.redshift</groupId>
+      <artifactId>redshift-jdbc42-no-awssdk</artifactId>
+    </dependency>
 <!--    <dependency>-->
 <!--      <groupId>com.amazonaws</groupId>-->
 <!--      <artifactId>aws-java-sdk-core</artifactId>-->

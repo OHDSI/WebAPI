@@ -1,8 +1,8 @@
 package org.ohdsi.webapi.user.importer.converter;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.user.Role;
+import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.user.importer.model.*;
 
 import java.util.List;
@@ -57,6 +57,7 @@ public class RoleGroupMappingConverter {
     RoleEntity roleEntity = new RoleEntity();
     roleEntity.setName(role.role);
     roleEntity.setId(role.id);
+    roleEntity.setSystemRole(role.systemRole);
     return roleEntity;
   }
 }

@@ -3,7 +3,7 @@ package org.ohdsi.webapi.cohortcharacterization;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
 import org.ohdsi.webapi.util.SourceUtils;

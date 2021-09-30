@@ -4,7 +4,6 @@ import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.GetDbCohor
 import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.RemoveDuplicateSubjectsEnum;
 import org.ohdsi.webapi.RLangClassImpl;
 import org.ohdsi.webapi.featureextraction.specification.CovariateSettingsImpl;
-
 import java.util.Date;
 
 /**

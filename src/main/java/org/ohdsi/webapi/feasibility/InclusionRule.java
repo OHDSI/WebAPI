@@ -15,11 +15,11 @@
  */
 package org.ohdsi.webapi.feasibility;
 
-import org.hibernate.annotations.Type;
-
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.Lob;
+import javax.persistence.Table;
+import org.hibernate.annotations.Type;
 
 /**
  *

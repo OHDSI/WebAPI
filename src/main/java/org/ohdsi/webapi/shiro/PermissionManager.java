@@ -1,18 +1,29 @@
 package org.ohdsi.webapi.shiro;
 
 import com.odysseusinc.logging.event.AddUserEvent;
-import com.odysseusinc.logging.event.DeleteUserEvent;
+import com.odysseusinc.logging.event.DeleteRoleEvent;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.subject.Subject;
 import org.ohdsi.webapi.helper.Guard;
-import org.ohdsi.webapi.shiro.Entities.*;
+import org.ohdsi.webapi.security.model.UserSimpleAuthorizationInfo;
+import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
+import org.ohdsi.webapi.shiro.Entities.PermissionRepository;
+import org.ohdsi.webapi.shiro.Entities.RequestStatus;
+import org.ohdsi.webapi.shiro.Entities.RoleEntity;
+import org.ohdsi.webapi.shiro.Entities.RolePermissionEntity;
+import org.ohdsi.webapi.shiro.Entities.RolePermissionRepository;
+import org.ohdsi.webapi.shiro.Entities.RoleRepository;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.shiro.Entities.UserRepository;
+import org.ohdsi.webapi.shiro.Entities.UserRoleEntity;
+import org.ohdsi.webapi.shiro.Entities.UserRoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
@@ -28,69 +39,76 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Component
 @Transactional
-@ConditionalOnExpression("${datasource.honeur.enabled} and !${webapi.central}")
 public class PermissionManager {
-  
+
   @Autowired
-  private UserRepository userRepository;  
-  
+  private UserRepository userRepository;
+
   @Autowired
-  private RoleRepository roleRepository;  
-  
+  private RoleRepository roleRepository;
+
   @Autowired
   private PermissionRepository permissionRepository;
-  
+
   @Autowired
   private RolePermissionRepository rolePermissionRepository;
-  
+
   @Autowired
   private UserRoleRepository userRoleRepository;
 
   @Autowired
   private ApplicationEventPublisher eventPublisher;
 
-  private ThreadLocal<ConcurrentHashMap<String, AuthorizationInfo>> authorizationInfoCache = ThreadLocal.withInitial(ConcurrentHashMap::new);
+  private ThreadLocal<ConcurrentHashMap<String, UserSimpleAuthorizationInfo>> authorizationInfoCache = ThreadLocal.withInitial(ConcurrentHashMap::new);
 
-  public RoleEntity addRole(String roleName, boolean isSystem) throws Exception {
+  public RoleEntity addRole(String roleName, boolean isSystem) {
     Guard.checkNotEmpty(roleName);
-    
-    RoleEntity role = this.roleRepository.findByNameAndSystemRole(roleName, isSystem);
-    if (role != null) {
-      throw new Exception("Can't create role - it already exists");
-    }
-    
-    role = new RoleEntity();
+
+    checkRoleIsAbsent(roleName, isSystem, "Can't create role - it already exists");
+    RoleEntity role = new RoleEntity();
     role.setName(roleName);
     role.setSystemRole(isSystem);
     role = this.roleRepository.save(role);
-    
+
     return role;
   }
 
-  public String addUserToRole(String roleName, String login) throws Exception {
+  public String addUserToRole(String roleName, String login) {
     Guard.checkNotEmpty(roleName);
     Guard.checkNotEmpty(login);
-    
-    RoleEntity role = this.getRoleByName(roleName);
+
+    RoleEntity role = this.getSystemRoleByName(roleName);
     UserEntity user = this.getUserByLogin(login);
 
     UserRoleEntity userRole = this.addUser(user, role, null);
     return userRole.getStatus();
   }
 
-  public void removeUserFromRole(String roleName, String login) throws Exception {
+  public void removeUserFromRole(String roleName, String login) {
     Guard.checkNotEmpty(roleName);
     Guard.checkNotEmpty(login);
 
     if (roleName.equalsIgnoreCase(login))
-      throw new Exception("Can't remove user from personal role");
+      throw new RuntimeException("Can't remove user from personal role");
 
-    RoleEntity role = this.getRoleByName(roleName);
+    RoleEntity role = this.getSystemRoleByName(roleName);
     UserEntity user = this.getUserByLogin(login);
 
     UserRoleEntity userRole = this.userRoleRepository.findByUserAndRole(user, role);
     if (userRole != null)
       this.userRoleRepository.delete(userRole);
+  }
+
+  public void removeUserFromAllRole(String login) {
+    Guard.checkNotEmpty(login);
+
+    UserEntity user = this.getUserByLogin(login);
+
+    List<UserRoleEntity> userRoles = this.userRoleRepository.findByUser(user);
+    for (UserRoleEntity userRole : userRoles) {
+      if(!userRole.getRole().getName().equalsIgnoreCase(login))
+        this.userRoleRepository.delete(userRole);
+    }
   }
 
   public Iterable<RoleEntity> getRoles(boolean includePersonalRoles) {
@@ -102,16 +120,22 @@ public class PermissionManager {
     }
   }
 
-  public AuthorizationInfo getAuthorizationInfo(final String login) {
+  public UserSimpleAuthorizationInfo getAuthorizationInfo(final String login) {
 
     return authorizationInfoCache.get().computeIfAbsent(login, newLogin -> {
-      final SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
+      final UserSimpleAuthorizationInfo info = new UserSimpleAuthorizationInfo();
 
       final UserEntity userEntity = userRepository.findByLogin(newLogin);
       if(userEntity == null) {
         throw new UnknownAccountException("Account does not exist");
       }
 
+      info.setUserId(userEntity.getId());
+      info.setLogin(userEntity.getLogin());
+
+      for (UserRoleEntity userRole: userEntity.getUserRoles()) {
+        info.addRole(userRole.getRole().getName());
+      }
       final Set<String> permissionNames = new LinkedHashSet<>();
       final Set<PermissionEntity> permissions = this.getUserPermissions(userEntity);
 
@@ -129,16 +153,27 @@ public class PermissionManager {
   }
 
   @Transactional
-  public UserEntity registerUser(final String login, final Set<String> defaultRoles) throws Exception {
+  public UserEntity registerUser(final String login, final String name, final Set<String> defaultRoles) {
     Guard.checkNotEmpty(login);
     
     UserEntity user = userRepository.findByLogin(login);
     if (user != null) {
+      if (user.getName() == null) {
+        String nameToSet = name;
+        if (name == null) {
+          nameToSet = login;
+        }
+        user.setName(nameToSet);
+        user = userRepository.save(user);
+      }
       return user;
     }
-    
+
+    checkRoleIsAbsent(login, false, "User with such login has been improperly removed from the database. " +
+            "Please contact your system administrator");
     user = new UserEntity();
     user.setLogin(login);
+    user.setName(name);
     user = userRepository.save(user);
     eventPublisher.publishEvent(new AddUserEvent(this, user.getId(), login));
 
@@ -147,7 +182,7 @@ public class PermissionManager {
 
     if (defaultRoles != null) {
       for (String roleName: defaultRoles) {
-        RoleEntity defaultRole = this.roleRepository.findByName(roleName);
+        RoleEntity defaultRole = this.getSystemRoleByName(roleName);
         if (defaultRole != null) {
           this.addUser(user, defaultRole, null);
         }
@@ -158,110 +193,16 @@ public class PermissionManager {
     return user;
   }
 
-  @Transactional
-  public void removeUser(final String login) {
-    UserEntity user = userRepository.findByLogin(login);
-
-    if (user != null) {
-      this.deleteRole(login);   // delete individual role
-      userRepository.delete(user);
-      eventPublisher.publishEvent(new DeleteUserEvent(this, user.getId(), user.getLogin()));
-    }
-  }
-  
-  @Transactional
-  public String requestPermission(final String role, final String permission, final String description) throws Exception {
-    final RoleEntity roleEntity = this.getRoleByName(role);
-    final PermissionEntity permissionEntity = this.addPermission(permission, description);
-    final RolePermissionEntity request = this.addPermission(roleEntity, permissionEntity, RequestStatus.REQUESTED);
-    final String status = request.getStatus();
-    return status;
-  }
-
-  public void removePermission(final String role, final String permission) {
-    Guard.checkNotEmpty(role);
-    Guard.checkNotEmpty(permission);
-    
-    RoleEntity roleEntity = this.roleRepository.findByName(role);
-    if (roleEntity == null)
-      return;
-
-    PermissionEntity permissionEntity = this.permissionRepository.findByValueIgnoreCase(permission);
-    if (permissionEntity == null)
-      return;
-
-    RolePermissionEntity rolePermissionEntity = this.rolePermissionRepository.findByRoleAndPermission(roleEntity, permissionEntity);
-    if (rolePermissionEntity == null)
-      return;
-
-    this.rolePermissionRepository.delete(rolePermissionEntity);
-  }
-
-  public Set<PermissionRequest> getRequestedPermissions() {
-    List<RolePermissionEntity> requestedRolePermissions = this.rolePermissionRepository.findByStatusIgnoreCase(RequestStatus.REQUESTED);
-    Set<PermissionRequest> requests = new LinkedHashSet<>();
-    for (RolePermissionEntity rp: requestedRolePermissions) {
-      PermissionRequest request = new PermissionRequest();
-      request.setId(rp.getId());
-      request.setRole(rp.getRole().getName());
-      request.setPermission(rp.getPermission().getValue());
-      request.setDescription(rp.getPermission().getDescription());
-
-      requests.add(request);
-    }
-
-    return requests;
-  }
-
-  public String approvePermissionRequest(final Long requestId) throws Exception {
-    return this.changePermissionRequestStatus(requestId, RequestStatus.APPROVED);
-  }
-
-  public String refusePermissionRequest(final Long requestId) throws Exception {
-    return this.changePermissionRequestStatus(requestId, RequestStatus.REFUSED);
-  }
-
-  public String requestRole(final String role) throws Exception {
-    final RoleEntity roleEntity = this.getRoleByName(role);    
-    final UserEntity userEntity = this.getCurrentUser();
-    final UserRoleEntity request = this.addUser(userEntity, roleEntity, RequestStatus.REQUESTED);
-    final String status = request.getStatus();
-    return status;
-  }
-
-  public Set<RoleRequest> getRequestedRoles() {
-    List<UserRoleEntity> requestedUserRoles = this.userRoleRepository.findByStatusIgnoreCase(RequestStatus.REQUESTED);
-    Set<RoleRequest> requests = new LinkedHashSet<>();
-    for (UserRoleEntity userRole: requestedUserRoles) {
-      RoleRequest request = new RoleRequest();
-      request.setId(userRole.getId());
-      request.setRole(userRole.getRole().getName());
-      request.setUser(userRole.getUser().getLogin());
-
-      requests.add(request);
-    }
-
-    return requests;
-  }
-
-  public String approveRoleRequest(final Long requestId) throws Exception {
-    return this.changeRoleRequestStatus(requestId, RequestStatus.APPROVED);
-  }
-
-  public String refuseRoleRequest(final Long requestId) throws Exception {
-    return this.changeRoleRequestStatus(requestId, RequestStatus.REFUSED);
-  }
-
   public Iterable<UserEntity> getUsers() {
     return this.userRepository.findAll();
   }
 
-  public PermissionEntity addPermission(final String permissionName, final String permissionDescription) throws Exception {
+  public PermissionEntity getOrAddPermission(final String permissionName, final String permissionDescription) {
     Guard.checkNotEmpty(permissionName);
 
     PermissionEntity permission = this.permissionRepository.findByValueIgnoreCase(permissionName);
     if (permission != null) {
-      throw new Exception("Can't create permission - it already exists");
+      return permission;
     }
 
     permission = new PermissionEntity();
@@ -281,23 +222,24 @@ public class PermissionManager {
     return this.permissionRepository.findAll();
   }
 
-  public Set<PermissionEntity> getUserPermissions(Long userId) throws Exception {
+  public Set<PermissionEntity> getUserPermissions(Long userId) {
     UserEntity user = this.getUserById(userId);
     Set<PermissionEntity> permissions = this.getUserPermissions(user);
     return permissions;
   }
 
   public void removeRole(Long roleId) {
+    eventPublisher.publishEvent(new DeleteRoleEvent(this, roleId));
     this.roleRepository.delete(roleId);
   }
 
-  public Set<PermissionEntity> getRolePermissions(Long roleId) throws Exception {
+  public Set<PermissionEntity> getRolePermissions(Long roleId) {
     RoleEntity role = this.getRoleById(roleId);
     Set<PermissionEntity> permissions = this.getRolePermissions(role);
     return permissions;
   }
 
-  public void addPermission(Long roleId, Long permissionId) throws Exception {
+  public void addPermission(Long roleId, Long permissionId) {
     PermissionEntity permission = this.getPermissionById(permissionId);
     RoleEntity role = this.getRoleById(roleId);
 
@@ -314,13 +256,13 @@ public class PermissionManager {
       this.rolePermissionRepository.delete(rolePermission);
   }
 
-  public Set<UserEntity> getRoleUsers(Long roleId) throws Exception {
+  public Set<UserEntity> getRoleUsers(Long roleId) {
     RoleEntity role = this.getRoleById(roleId);
     Set<UserEntity> users = this.getRoleUsers(role);
     return users;
   }
 
-  public void addUser(Long userId, Long roleId) throws Exception {
+  public void addUser(Long userId, Long roleId) {
     UserEntity user = this.getUserById(userId);
     RoleEntity role = this.getRoleById(roleId);
 
@@ -333,27 +275,30 @@ public class PermissionManager {
       this.userRoleRepository.delete(userRole);
   }
 
-  public void removePermission(Long permissionId) {
-    this.permissionRepository.delete(permissionId);
-  }
-
   public void removePermission(String value) {
     PermissionEntity permission = this.permissionRepository.findByValueIgnoreCase(value);
     if (permission != null)
       this.permissionRepository.delete(permission);
   }
 
-  public RoleEntity getCurrentUserPersonalRole() throws Exception {
-    String roleName = this.getSubjectName();
-    RoleEntity role = this.roleRepository.findByName(roleName);
-    if (role == null)
-      throw new Exception(String.format("There is no personal role for user %s", roleName));
+  public RoleEntity getUserPersonalRole(String username) {
 
-    return role;
+    return this.getRoleByName(username, false);
+  }
+
+  public RoleEntity getCurrentUserPersonalRole() {
+    String username = this.getSubjectName();
+    return getUserPersonalRole(username);
+  }
+  private void checkRoleIsAbsent(String roleName, boolean isSystem, String message) {
+    RoleEntity role = this.roleRepository.findByNameAndSystemRole(roleName, isSystem);
+    if (role != null) {
+      throw new RuntimeException(message);
+    }
   }
 
 
-  private Set<PermissionEntity> getUserPermissions(UserEntity user) {
+  public Set<PermissionEntity> getUserPermissions(UserEntity user) {
     Set<RoleEntity> roles = this.getUserRoles(user);
     Set<PermissionEntity> permissions = new LinkedHashSet<>();
 
@@ -401,63 +346,54 @@ public class PermissionManager {
     return users;
   }
 
-  public UserEntity getCurrentUser() throws Exception {
+  public UserEntity getCurrentUser() {
     final String login = this.getSubjectName();
     final UserEntity currentUser = this.getUserByLogin(login);
     return currentUser;
   }
 
-  private UserEntity getUserById(Long userId) throws Exception {
+  public UserEntity getUserById(Long userId) {
     UserEntity user = this.userRepository.findOne(userId);
     if (user == null)
-      throw new Exception("User doesn't exist");
+      throw new RuntimeException("User doesn't exist");
 
     return user;
   }
 
-  private UserEntity getUserByLogin(final String login) throws Exception {
+  private UserEntity getUserByLogin(final String login) {
     final UserEntity user = this.userRepository.findByLogin(login);
     if (user == null)
-      throw new Exception("User doesn't exist");
+      throw new RuntimeException("User doesn't exist");
 
     return user;
   }
 
-  public RoleEntity getRoleByName(String roleName) throws Exception {
-    final RoleEntity roleEntity = this.roleRepository.findByName(roleName);
+  private RoleEntity getRoleByName(String roleName, Boolean isSystemRole) {
+    final RoleEntity roleEntity = this.roleRepository.findByNameAndSystemRole(roleName, isSystemRole);
     if (roleEntity == null)
-      throw new Exception("Role doesn't exist");
+      throw new RuntimeException("Role doesn't exist");
 
     return roleEntity;
   }
 
-  private RoleEntity getRoleById(Long roleId) throws Exception {
+  public RoleEntity getSystemRoleByName(String roleName) {
+    return getRoleByName(roleName, true);
+  }
+
+  private RoleEntity getRoleById(Long roleId) {
     final RoleEntity roleEntity = this.roleRepository.findById(roleId);
     if (roleEntity == null)
-      throw new Exception("Role doesn't exist");
+      throw new RuntimeException("Role doesn't exist");
 
     return roleEntity;
   }
 
-  private PermissionEntity getPermissionById(Long permissionId) throws Exception {
+  private PermissionEntity getPermissionById(Long permissionId) {
     final PermissionEntity permission = this.permissionRepository.findById(permissionId);
     if (permission == null )
-      throw new Exception("Permission doesn't exist");
+      throw new RuntimeException("Permission doesn't exist");
 
     return permission;
-  }
-
-  private String changePermissionRequestStatus(Long requestId, String status) throws Exception {
-    RolePermissionEntity rolePermission = this.rolePermissionRepository.findById(requestId);
-    if (rolePermission == null)
-      throw new Exception("Request doesn't exist");
-
-    if (RequestStatus.REQUESTED.equals(rolePermission.getStatus())) {
-      rolePermission.setStatus(status);
-      rolePermission = this.rolePermissionRepository.save(rolePermission);
-    }
-
-    return rolePermission.getStatus();
   }
 
   private RolePermissionEntity addPermission(final RoleEntity role, final PermissionEntity permission, final String status) {
@@ -505,27 +441,6 @@ public class PermissionManager {
     throw new UnsupportedOperationException();
   }
 
-  private void deleteRole(final String role) {
-    RoleEntity roleEntity = this.roleRepository.findByName(role);
-
-    if (roleEntity != null) {
-      this.roleRepository.delete(roleEntity);
-    }
-  }
-
-  private String changeRoleRequestStatus(Long requestId, String status) throws Exception {
-    UserRoleEntity userRole = this.userRoleRepository.findOne(requestId);
-    if (userRole == null)
-      throw new Exception("Request doesn't exist");
-
-    if (RequestStatus.REQUESTED.equals(userRole.getStatus())) {
-      userRole.setStatus(status);
-      userRole = this.userRoleRepository.save(userRole);
-    }
-
-    return userRole.getStatus();
-  }
-
   public RoleEntity getRole(Long id) {
     return this.roleRepository.findById(id);
   }
@@ -534,16 +449,16 @@ public class PermissionManager {
     return this.roleRepository.save(roleEntity);
   }
 
-  public void addPermissionsFromTemplate(RoleEntity roleEntity, Map<String, String> template, String value) throws Exception {
+  public void addPermissionsFromTemplate(RoleEntity roleEntity, Map<String, String> template, String value) {
     for (Map.Entry<String, String> entry : template.entrySet()) {
       String permission = String.format(entry.getKey(), value);
       String description = String.format(entry.getValue(), value);
-      PermissionEntity permissionEntity = this.addPermission(permission, description);
+      PermissionEntity permissionEntity = this.getOrAddPermission(permission, description);
       this.addPermission(roleEntity, permissionEntity);
     }
   }
 
-  public void addPermissionsFromTemplate(Map<String, String> template, String value) throws Exception {
+  public void addPermissionsFromTemplate(Map<String, String> template, String value) {
     RoleEntity currentUserPersonalRole = getCurrentUserPersonalRole();
     addPermissionsFromTemplate(currentUserPersonalRole, template, value);
   }
@@ -558,14 +473,4 @@ public class PermissionManager {
   public boolean roleExists(String roleName) {
     return this.roleRepository.existsByName(roleName);
   }
-
-  public Set<PermissionEntity> getUserPermissions(String userName) {
-    UserEntity user = userRepository.findByLogin(userName);
-    if (user == null) {
-      throw new UnknownAccountException(String.format("Account %s does not exist in user repository", userName));
-    }
-    Set<PermissionEntity> permissions = this.getUserPermissions(user);
-    return permissions;
-  }
-
 }

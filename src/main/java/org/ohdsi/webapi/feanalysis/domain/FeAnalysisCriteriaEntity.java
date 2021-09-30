@@ -1,18 +1,29 @@
 package org.ohdsi.webapi.feanalysis.domain;
 
+import javax.persistence.Column;
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import org.hibernate.annotations.DiscriminatorOptions;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
-
-import javax.persistence.*;
+import org.ohdsi.analysis.WithId;
 
 @Entity
 @Table(name = "fe_analysis_criteria")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "criteria_type")
 @DiscriminatorOptions(force = false)
-public abstract class FeAnalysisCriteriaEntity {
+public abstract class FeAnalysisCriteriaEntity implements WithId<Long> {
     
     @Id
     @GenericGenerator(
@@ -34,6 +45,10 @@ public abstract class FeAnalysisCriteriaEntity {
     @Type(type = "org.hibernate.type.TextType")
     private String expressionString;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "fe_aggregate_id")
+    private FeAnalysisAggregateEntity aggregate;
+
     @ManyToOne(optional = false, targetEntity = FeAnalysisWithCriteriaEntity.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "fe_analysis_id")
     private FeAnalysisWithCriteriaEntity featureAnalysis;
@@ -46,6 +61,7 @@ public abstract class FeAnalysisCriteriaEntity {
         this.name = name;
     }
 
+    @Override
     public Long getId() {
         return id;
     }
@@ -68,5 +84,13 @@ public abstract class FeAnalysisCriteriaEntity {
 
     public void setExpressionString(final String expressionString) {
         this.expressionString = expressionString;
+    }
+
+    public FeAnalysisAggregateEntity getAggregate() {
+        return aggregate;
+    }
+
+    public void setAggregate(FeAnalysisAggregateEntity aggregate) {
+        this.aggregate = aggregate;
     }
 }

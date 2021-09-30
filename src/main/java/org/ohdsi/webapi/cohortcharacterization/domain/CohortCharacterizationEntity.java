@@ -1,5 +1,19 @@
 package org.ohdsi.webapi.cohortcharacterization.domain;
 
+import java.util.*;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
@@ -8,12 +22,9 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.model.CommonEntity;
 
-import javax.persistence.*;
-import java.util.*;
-
 @Entity
 @Table(name = "cohort_characterization")
-public class CohortCharacterizationEntity extends CommonEntity implements CohortCharacterization {
+public class CohortCharacterizationEntity extends CommonEntity<Long> implements CohortCharacterization {
 
     @Id
     @GenericGenerator(
@@ -75,6 +86,7 @@ public class CohortCharacterizationEntity extends CommonEntity implements Cohort
         return parameters;
     }
 
+    @Override
     public Long getId() {
         return id;
     }
@@ -140,7 +152,8 @@ public class CohortCharacterizationEntity extends CommonEntity implements Cohort
         this.conceptSetEntity = conceptSetEntity;
     }
 
-    public List<ConceptSet> getConceptSets() {
+    @Override
+    public Collection<ConceptSet> getStrataConceptSets() {
         return Objects.nonNull(this.conceptSetEntity) ? this.conceptSetEntity.getConceptSets() : Collections.emptyList();
     }
 

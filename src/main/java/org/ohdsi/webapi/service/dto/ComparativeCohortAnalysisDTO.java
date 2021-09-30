@@ -259,7 +259,7 @@ public class ComparativeCohortAnalysisDTO extends CommonEntityDTO {
 
   private int negativeControlId;
 
-  public Integer getAnalysisId() {
+  public Integer getId() {
     return analysisId;
   }
 

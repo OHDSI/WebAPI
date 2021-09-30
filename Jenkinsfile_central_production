@@ -1,0 +1,15 @@
+pipeline {
+    agent {
+        label 'amzl-honeur'
+    }
+
+    stages {
+        stage("re-tag and upload image") {
+            steps {
+                dir('WebAPI') {
+                    sh './publish_central_production.sh'
+                }
+            }
+        }
+    }
+}

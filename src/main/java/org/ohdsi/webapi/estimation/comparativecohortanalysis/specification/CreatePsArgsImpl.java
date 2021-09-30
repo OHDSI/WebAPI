@@ -1,11 +1,10 @@
 package org.ohdsi.webapi.estimation.comparativecohortanalysis.specification;
 
-import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.CreatePsArgs;
 import org.ohdsi.webapi.RLangClassImpl;
+import java.util.List;
 import org.ohdsi.webapi.cyclops.specification.ControlImpl;
 import org.ohdsi.webapi.cyclops.specification.PriorImpl;
-
-import java.util.List;
+import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.CreatePsArgs;
 
 /**
  *

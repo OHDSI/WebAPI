@@ -15,9 +15,9 @@
  */
 package org.ohdsi.webapi.feasibility;
 
+import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
-import java.io.Serializable;
 
 /**
  *

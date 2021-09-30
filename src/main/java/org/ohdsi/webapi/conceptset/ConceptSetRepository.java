@@ -20,6 +20,8 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 /**
  *
@@ -27,6 +29,16 @@ import java.util.Collection;
  */
 public interface ConceptSetRepository extends CrudRepository<ConceptSet, Integer> {
   ConceptSet findById(Integer conceptSetId);
+  
+  @Deprecated
   @Query("SELECT cs FROM ConceptSet cs WHERE cs.name = :conceptSetName and cs.id <> :conceptSetId")
   Collection<ConceptSet> conceptSetExists(@Param("conceptSetId") Integer conceptSetId, @Param("conceptSetName") String conceptSetName);
+  
+  @Query("SELECT COUNT(cs) FROM ConceptSet cs WHERE cs.name = :conceptSetName and cs.id <> :conceptSetId")
+  int getCountCSetWithSameName(@Param("conceptSetId") Integer conceptSetId, @Param("conceptSetName") String conceptSetName);
+
+  @Query("SELECT cs FROM ConceptSet cs WHERE cs.name LIKE ?1 ESCAPE '\\'")
+  List<ConceptSet> findAllByNameStartsWith(String pattern);
+  
+  Optional<ConceptSet> findByName(String name);
 }

@@ -15,17 +15,18 @@
  */
 package org.ohdsi.webapi.feasibility;
 
+import static org.ohdsi.webapi.Constants.SqlSchemaPlaceholders.CDM_DATABASE_SCHEMA_PLACEHOLDER;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.circe.vocabulary.ConceptSetExpressionQueryBuilder;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -50,11 +51,17 @@ public class FeasibilityStudyQueryBuilder {
     
     @JsonProperty("cohortTable")  
     public String cohortTable;
-  } 
-  
+  }
+
+  private ObjectMapper objectMapper;
+
+  public FeasibilityStudyQueryBuilder(ObjectMapper objectMapper) {
+    this.objectMapper = objectMapper;
+  }
+
   private String getInclusionRuleInserts(FeasibilityStudy study)
   {
-    String insertTemplate = "insert into #inclusionRules vaues (%d, %d, %s)\n";
+    String insertTemplate = "insert into #inclusionRules values (%d, %d, %s)\n";
     StringBuilder insertStatements = new StringBuilder();
     
     List<InclusionRule> inclusionRules = study.getInclusionRules();
@@ -82,11 +89,10 @@ public class FeasibilityStudyQueryBuilder {
 
     try
     {
-      ObjectMapper mapper = new ObjectMapper();
-      indexRule = mapper.readValue(study.getIndexRule().getDetails().getExpression(), CohortExpression.class);
+      indexRule = objectMapper.readValue(study.getIndexRule().getDetails().getExpression(), CohortExpression.class);
       for (InclusionRule inclusionRule : study.getInclusionRules())
       {
-        inclusionRules.add(mapper.readValue(inclusionRule.getExpression(), CriteriaGroup.class));
+        inclusionRules.add(objectMapper.readValue(inclusionRule.getExpression(), CriteriaGroup.class));
       }
     }
     catch (Exception e)
@@ -117,7 +123,7 @@ public class FeasibilityStudyQueryBuilder {
     if (options != null)
     {
       // replace query parameters with tokens
-      resultSql = StringUtils.replace(resultSql, "@cdm_database_schema", options.cdmSchema);
+      resultSql = StringUtils.replace(resultSql, CDM_DATABASE_SCHEMA_PLACEHOLDER, options.cdmSchema);
       resultSql = StringUtils.replace(resultSql, "@ohdsi_database_schema", options.ohdsiSchema);
       resultSql = StringUtils.replace(resultSql, "@cohortTable", options.cohortTable);
     }
@@ -135,7 +141,7 @@ public class FeasibilityStudyQueryBuilder {
     if (options != null)
     {
       // replease query parameters with tokens
-      resultSql = StringUtils.replace(resultSql, "@cdm_database_schema", options.cdmSchema);
+      resultSql = StringUtils.replace(resultSql, CDM_DATABASE_SCHEMA_PLACEHOLDER, options.cdmSchema);
       resultSql = StringUtils.replace(resultSql, "@ohdsi_database_schema", options.ohdsiSchema);
       resultSql = StringUtils.replace(resultSql, "@cohortTable", options.cohortTable);
     }

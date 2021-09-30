@@ -1,9 +1,8 @@
 package org.ohdsi.webapi.shiro.Entities;
 
+import java.util.Set;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
-
-import java.util.Set;
 
 /**
  * Created by GMalikov on 24.08.2015.

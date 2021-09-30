@@ -9,20 +9,22 @@ public class StatementCancel {
   private Statement statement;
   private boolean canceled = false;
 
-  public void setStatement(Statement statement) {
-
+  public synchronized void setStatement(Statement statement) {
+    if (this.canceled) {
+        throw new StatementCancelException();
+    }
     this.statement = statement;
   }
 
-  public void cancel() throws SQLException {
+  public synchronized void cancel() throws SQLException {
+    this.canceled = true;
 
     if (Objects.nonNull(statement)) {
-      this.canceled = true;
       statement.cancel();
     }
   }
 
-  public boolean isCanceled() {
+  public synchronized boolean isCanceled() {
     return canceled;
   }
 }

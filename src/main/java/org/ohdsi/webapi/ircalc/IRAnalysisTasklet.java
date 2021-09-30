@@ -16,10 +16,12 @@
 package org.ohdsi.webapi.ircalc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
+import com.odysseusinc.arachne.commons.types.DBMSType;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.common.generation.CancelableTasklet;
-import org.ohdsi.webapi.service.SourceService;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
@@ -28,8 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.ohdsi.webapi.Constants.Params.*;
 
@@ -39,24 +40,28 @@ import static org.ohdsi.webapi.Constants.Params.*;
  */
 public class IRAnalysisTasklet extends CancelableTasklet {
   
-  private final static IRAnalysisQueryBuilder analysisQueryBuilder = new IRAnalysisQueryBuilder();
+  private final IRAnalysisQueryBuilder analysisQueryBuilder;
 
   private final IncidenceRateAnalysisRepository incidenceRateAnalysisRepository;
   private final SourceService sourceService;
+  private final ObjectMapper objectMapper;
 
   public IRAnalysisTasklet(
           final CancelableJdbcTemplate jdbcTemplate,
           final TransactionTemplate transactionTemplate,
           final IncidenceRateAnalysisRepository incidenceRateAnalysisRepository,
-          final SourceService sourceService) {
+          final SourceService sourceService,
+          final IRAnalysisQueryBuilder analysisQueryBuilder,
+          final ObjectMapper objectMapper) {
 
     super(LoggerFactory.getLogger(IRAnalysisTasklet.class), jdbcTemplate, transactionTemplate);
     this.incidenceRateAnalysisRepository = incidenceRateAnalysisRepository;
     this.sourceService = sourceService;
+    this.analysisQueryBuilder = analysisQueryBuilder;
+    this.objectMapper = objectMapper;
   }
   
   protected String[] prepareQueries(ChunkContext chunkContext, CancelableJdbcTemplate jdbcTemplate) {
-    ObjectMapper mapper = new ObjectMapper();
     
     Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
 
@@ -68,7 +73,7 @@ public class IRAnalysisTasklet extends CancelableTasklet {
     String sessionId = jobParams.get(SESSION_ID).toString();
     try {
       IncidenceRateAnalysis analysis = this.incidenceRateAnalysisRepository.findOne(analysisId);
-      IncidenceRateAnalysisExpression expression = mapper.readValue(analysis.getDetails().getExpression(), IncidenceRateAnalysisExpression.class);
+      IncidenceRateAnalysisExpression expression = objectMapper.readValue(analysis.getDetails().getExpression(), IncidenceRateAnalysisExpression.class);
       
       IRAnalysisQueryBuilder.BuildExpressionQueryOptions options = new IRAnalysisQueryBuilder.BuildExpressionQueryOptions();
       options.cdmSchema = SourceUtils.getCdmQualifier(source);
@@ -95,6 +100,8 @@ public class IRAnalysisTasklet extends CancelableTasklet {
       }
       
       String expressionSql = analysisQueryBuilder.buildAnalysisQuery(analysis, options);
+      
+
       String translatedSql = SqlTranslate.translateSql(expressionSql, source.getSourceDialect(), sessionId, oracleTempSchema);
       return SqlSplit.splitSql(translatedSql);
     } catch (Exception e) {

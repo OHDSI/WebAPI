@@ -23,6 +23,5 @@ public enum GenerationStatus {
   ERROR,
   PENDING,
   RUNNING,
-  COMPLETE,
-  IMPORTING
+  COMPLETE
 }  

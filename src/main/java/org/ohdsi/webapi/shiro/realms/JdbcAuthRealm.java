@@ -19,11 +19,14 @@
 package org.ohdsi.webapi.shiro.realms;
 
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.jdbc.JdbcRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.ohdsi.webapi.shiro.Entities.UserPrincipal;
+import org.ohdsi.webapi.shiro.tokens.ActiveDirectoryUsernamePasswordToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -41,10 +44,14 @@ public class JdbcAuthRealm extends JdbcRealm {
 
     public JdbcAuthRealm(DataSource dataSource, String authenticationQuery) {
 
-        setAuthenticationTokenClass(UsernamePasswordToken.class);
-
         this.setDataSource(dataSource);
         this.setAuthenticationQuery(authenticationQuery);
+    }
+
+    @Override
+    public boolean supports(AuthenticationToken token) {
+
+        return token != null && token.getClass() == UsernamePasswordToken.class;
     }
 
     @Override
@@ -58,13 +65,13 @@ public class JdbcAuthRealm extends JdbcRealm {
             throw new AccountException("Null usernames are not allowed by this realm.");
         } else {
 
-            String password = this.getPasswordForUser(username);
+            UserPrincipal userPrincipal = this.getUser(username);
 
-            if (password == null ||
-                    !bCryptPasswordEncoder.matches(new String(upToken.getPassword()), password)) {
+            if (userPrincipal == null || userPrincipal.getPassword() == null ||
+                    !bCryptPasswordEncoder.matches(new String(upToken.getPassword()), userPrincipal.getPassword())) {
                 throw new AuthenticationException("Incorrect username or password");
             } else {
-                info = new SimpleAuthenticationInfo(username, upToken.getPassword(), this.getName());
+                info = new SimpleAuthenticationInfo(userPrincipal, upToken.getPassword(), this.getName());
             }
         }
         return info;
@@ -77,8 +84,8 @@ public class JdbcAuthRealm extends JdbcRealm {
         return new SimpleAuthorizationInfo();
     }
 
-    private String getPasswordForUser(String username) {
-        String result = null;
+    private UserPrincipal getUser(String username) {
+        UserPrincipal result = null;
 
         try (
                 Connection conn = dataSource.getConnection();
@@ -89,7 +96,8 @@ public class JdbcAuthRealm extends JdbcRealm {
                 if (foundResult) {
                     throw new AuthenticationException("More than one user row found for user [" + username + "]. Usernames must be unique.");
                 }
-                result = rs.getString(1);
+                result = extractUserEntity(rs);
+                result.setUsername(username);
             }
         } catch (SQLException e) {
             String message = "There was a SQL error while authenticating user [" + username + "]";
@@ -107,4 +115,37 @@ public class JdbcAuthRealm extends JdbcRealm {
         return ps;
     }
 
+    private UserPrincipal extractUserEntity(ResultSet rs) throws SQLException {
+        UserPrincipal userEntity = new UserPrincipal();
+
+        // Old style query is used - only password is queried from database
+        if(rs.getMetaData().getColumnCount() == 1) {
+            userEntity.setPassword(rs.getString(1));
+        } else {
+            // New style query - user name is also queried from database
+            userEntity.setPassword(rs.getString("password"));
+            String firstName = trim(rs.getString("firstname"));
+            String midlleName = trim(rs.getString("middlename"));
+            String lastName = trim(rs.getString("lastname"));
+
+            StringBuilder name = new StringBuilder(firstName);
+            if (!midlleName.isEmpty()) {
+                name.append(' ').append(midlleName);
+            }
+            if (!lastName.isEmpty()) {
+                name.append(' ').append(lastName);
+            }
+
+            userEntity.setName(name.toString().trim());
+        }
+
+        return userEntity;
+    }
+
+    private String trim(String value) {
+        if(value != null) {
+            return value.trim();
+        }
+        return StringUtils.EMPTY;
+    }
 }

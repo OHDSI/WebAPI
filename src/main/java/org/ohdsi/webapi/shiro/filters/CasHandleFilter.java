@@ -18,8 +18,8 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpSession;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 
 /**
  * CAS authentication callback filter
@@ -81,9 +81,7 @@ public class CasHandleFilter extends AtlasAuthFilter {
                         casProfile.addAttributes(principal.getAttributes());
                         
                         Subject currentUser = SecurityUtils.getSubject();
-                        List<CommonProfile> profileList = new ArrayList<>();
-                        profileList.add(casProfile);
-                        ct = new Pac4jToken(profileList, currentUser.isRemembered());
+                        ct = new Pac4jToken(Collections.singletonList(casProfile), currentUser.isRemembered());
                         /*
                          * let AuthenticatingFilter.executeLogin login user
                          */

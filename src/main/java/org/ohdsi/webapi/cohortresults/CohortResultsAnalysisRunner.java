@@ -73,11 +73,10 @@ public class CohortResultsAnalysisRunner {
 	private String sourceDialect;
 	private VisualizationDataRepository visualizationDataRepository;
 
-	public CohortResultsAnalysisRunner(String sourceDialect, VisualizationDataRepository visualizationDataRepository) {
+	public CohortResultsAnalysisRunner(String sourceDialect, VisualizationDataRepository visualizationDataRepository, ObjectMapper objectMapper) {
 		this.sourceDialect = sourceDialect;
 		this.visualizationDataRepository = visualizationDataRepository;
-
-		mapper = new ObjectMapper();
+		mapper = objectMapper;
 	}
 
 	public List<TornadoRecord> getTornadoRecords(JdbcTemplate jdbcTemplate, final int id, Source source) {

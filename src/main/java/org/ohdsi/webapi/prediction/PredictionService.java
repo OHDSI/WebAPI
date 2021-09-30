@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.prediction;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.prediction.domain.PredictionGenerationEntity;
 import org.ohdsi.webapi.prediction.specification.PatientLevelPredictionAnalysisImpl;
 
@@ -22,6 +23,8 @@ public interface PredictionService {
 
   PredictionAnalysis getAnalysis(int id);
 
+  PatientLevelPredictionAnalysisImpl exportAnalysis(int id, String sourceKey);
+
   PatientLevelPredictionAnalysisImpl exportAnalysis(int id);
   
   PredictionAnalysis importAnalysis(PatientLevelPredictionAnalysisImpl analysis) throws Exception;
@@ -30,13 +33,13 @@ public interface PredictionService {
 
   void hydrateAnalysis(PatientLevelPredictionAnalysisImpl analysis, String packageName, OutputStream out) throws JsonProcessingException;
 
-  void runGeneration(PredictionAnalysis predictionAnalysis, String sourceKey) throws IOException;
+  JobExecutionResource runGeneration(PredictionAnalysis predictionAnalysis, String sourceKey) throws IOException;
 
   PredictionGenerationEntity getGeneration(Long generationId);
 
   List<PredictionGenerationEntity> getPredictionGenerations(Integer predictionAnalysisId);
   
-  int countLikeName(String copyName); 
-  
-  PredictionAnalysis getById(Integer id);  
+  PredictionAnalysis getById(Integer id);
+
+  int getCountPredictionWithSameName(Integer id, String name);
 }

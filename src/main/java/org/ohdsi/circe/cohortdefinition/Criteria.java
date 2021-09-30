@@ -2,10 +2,11 @@ package org.ohdsi.circe.cohortdefinition;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
+import org.ohdsi.circe.cohortdefinition.builders.BuilderOptions;
 
 @JsonTypeInfo(
         use = Id.NAME,
@@ -59,11 +60,12 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 )})
 public abstract class Criteria {
 
-    @JsonProperty("CorrelatedCriteria")
-    public CriteriaGroup CorrelatedCriteria;
-
-    public Criteria() {
+    public String accept(IGetCriteriaSqlDispatcher dispatcher) {
+        return this.accept(dispatcher, null);
     }
 
-    public abstract String accept(IGetCriteriaSqlDispatcher dispatcher);
+    public abstract String accept(IGetCriteriaSqlDispatcher dispatcher, BuilderOptions options);
+
+    @JsonProperty("CorrelatedCriteria")
+    public CriteriaGroup CorrelatedCriteria;
 }

@@ -9,22 +9,22 @@ SELECT hr1.cohort_definition_id,
          ELSE 0 
        END     AS pct_persons 
 FROM   (SELECT cohort_definition_id, 
-               Cast(stratum_1 AS INTEGER)      AS concept_id, 
-               Cast(stratum_2 AS INTEGER) * 30 AS duration, 
+               CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT)      AS concept_id,
+               CAST(CASE WHEN isNumeric(stratum_2) = 1 THEN stratum_2 ELSE null END AS INT) * 30 AS duration,
                count_value 
         FROM   @ohdsi_database_schema.heracles_results 
         WHERE  analysis_id IN ( 1820 ) 
                AND cohort_definition_id = @cohortDefinitionId
-               AND Cast(stratum_2 AS INTEGER) * 30 BETWEEN -1000 AND 1000
+               AND CAST(CASE WHEN isNumeric(stratum_2) = 1 THEN stratum_2 ELSE null END AS INT) * 30 BETWEEN -1000 AND 1000
                         ) hr1 
-       INNER JOIN (SELECT -1 * Cast(stratum_1 AS INTEGER) * 30                AS 
+       INNER JOIN (SELECT -1 * CAST(stratum_1 AS INT) * 30                AS
               duration, 
                           Sum(count_value) 
                             OVER ( 
-                              ORDER BY -1* Cast(stratum_1 AS INTEGER)*30 ASC) AS 
+                              ORDER BY -1* CAST(stratum_1 AS INT)*30 ASC) AS
               count_value 
                    FROM  (
-                                             select stratum_1, max(count_value) as count_value
+                                             select CAST(stratum_1 AS VARCHAR(11)) AS stratum_1, max(count_value) as count_value
                                                   from
                                                   (
                                                   select row_number() over (order by analysis_id) as stratum_1, 0 as count_value
@@ -34,7 +34,7 @@ FROM   (SELECT cohort_definition_id,
 
                                                   union
 
-                                                  select cast(stratum_1 as integer) as stratum_1, count_value
+                                                  select CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT) as stratum_1, count_value
                                                   from @ohdsi_database_schema.heracles_results
                                                   where analysis_id = 1805
                                                   and cohort_definition_id = @cohortDefinitionId
@@ -44,15 +44,15 @@ FROM   (SELECT cohort_definition_id,
                                              ) t0
                                              
                                              
-                                             WHERE Cast(stratum_1 AS INTEGER) > 0 
+                                             WHERE CAST(stratum_1 AS INT) > 0
                    UNION 
-                   SELECT Cast(hr1.stratum_1 AS INTEGER) * 30 
+                   SELECT CAST(CASE WHEN isNumeric(hr1.stratum_1) = 1 THEN hr1.stratum_1 ELSE null END AS INT) * 30
                           AS 
                           duration, 
                           t1.count_value - Sum(hr1.count_value) 
                           OVER ( 
                             partition BY hr1.cohort_definition_id 
-                            ORDER BY Cast(hr1.stratum_1 AS INTEGER)* 
+                            ORDER BY CAST(CASE WHEN isNumeric(hr1.stratum_1) = 1 THEN hr1.stratum_1 ELSE null END AS INT)*
                           30 ASC) AS 
                           count_value 
                    FROM   @ohdsi_database_schema.heracles_results hr1 
@@ -69,14 +69,14 @@ FROM   (SELECT cohort_definition_id,
                           AND hr1.cohort_definition_id = @cohortDefinitionId
                                                     ) t1 
                ON  hr1.duration = t1.duration 
-       INNER JOIN (SELECT Cast(stratum_1 AS INTEGER) AS concept_id, 
+       INNER JOIN (SELECT CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT) AS concept_id,
                           Sum(count_value)           AS count_value 
                    FROM   @ohdsi_database_schema.heracles_results 
                    WHERE  analysis_id IN ( 1820 ) 
-                           GROUP  BY Cast(stratum_1 AS INTEGER) 
+                           GROUP  BY CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT)
 										HAVING Sum(heracles_results.count_value) > @minCovariatePersonCount
                    ) ct1 
-               ON hr1.concept_id = ct1.concept_id 
+               ON hr1.concept_id = ct1.concept_id
        INNER JOIN @cdm_database_schema.concept c1 
                ON hr1.concept_id = c1.concept_id 
 WHERE  c1.concept_id = @conceptId and t1.count_value > @minIntervalPersonCount 
@@ -92,22 +92,22 @@ SELECT hr1.cohort_definition_id,
          ELSE 0 
        END   AS pct_persons 
 FROM   (SELECT cohort_definition_id, 
-               Cast(stratum_1 AS INTEGER)      AS concept_id, 
-               Cast(stratum_2 AS INTEGER) * 30 AS duration, 
+               CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT)      AS concept_id,
+               CAST(CASE WHEN isNumeric(stratum_2) = 1 THEN stratum_2 ELSE null END AS INT) * 30 AS duration,
                count_value 
         FROM   @ohdsi_database_schema.heracles_results  
         WHERE  analysis_id IN ( 1821 ) 
                AND cohort_definition_id = @cohortDefinitionId
-               AND Cast(stratum_2 AS INTEGER) * 30 BETWEEN -1000 AND 1000
+               AND CAST(CASE WHEN isNumeric(stratum_2) = 1 THEN stratum_2 ELSE null END AS INT) * 30 BETWEEN -1000 AND 1000
                ) hr1 
-       INNER JOIN (SELECT -1 * Cast(stratum_1 AS INTEGER) * 30                AS 
+       INNER JOIN (SELECT -1 * CAST(stratum_1 AS INT) * 30                AS
               duration, 
                           Sum(count_value) 
                             OVER ( 
-                              ORDER BY -1* Cast(stratum_1 AS INTEGER)*30 ASC) AS 
+                              ORDER BY -1* CAST(stratum_1 AS INT)*30 ASC) AS
               count_value 
                    FROM  (
-                                             select stratum_1, max(count_value) as count_value
+                                             select CAST(stratum_1 AS VARCHAR(11)) AS stratum_1, max(count_value) as count_value
                                                   from
                                                   (
                                                   select row_number() over (order by analysis_id) as stratum_1, 0 as count_value
@@ -117,7 +117,7 @@ FROM   (SELECT cohort_definition_id,
 
                                                   union
 
-                                                  select cast(stratum_1 as integer) as stratum_1, count_value
+                                                  select CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT) as stratum_1, count_value
                                                   from @ohdsi_database_schema.heracles_results
                                                   where analysis_id = 1805
                                                   and cohort_definition_id = @cohortDefinitionId
@@ -127,15 +127,15 @@ FROM   (SELECT cohort_definition_id,
                                              ) t0
                                              
                                              
-                                             WHERE Cast(stratum_1 AS INTEGER) > 0 
+                                             WHERE CAST(stratum_1 AS INT) > 0
                    UNION 
-                   SELECT Cast(hr1.stratum_1 AS INTEGER) * 30 
+                   SELECT CAST(CASE WHEN isNumeric(hr1.stratum_1) = 1 THEN hr1.stratum_1 ELSE null END AS INT) * 30
                           AS 
                           duration, 
                           t1.count_value - Sum(hr1.count_value) 
                           OVER ( 
                             partition BY hr1.cohort_definition_id 
-                            ORDER BY Cast(hr1.stratum_1 AS INTEGER)* 
+                            ORDER BY CAST(CASE WHEN isNumeric(hr1.stratum_1) = 1 THEN hr1.stratum_1 ELSE null END AS INT)*
                           30 ASC) AS 
                           count_value 
                    FROM   @ohdsi_database_schema.heracles_results hr1 
@@ -153,11 +153,11 @@ FROM   (SELECT cohort_definition_id,
                               ( @cohortDefinitionId )
                                                     ) t1 
                ON  hr1.duration = t1.duration 
-       INNER JOIN (SELECT Cast(stratum_1 AS INTEGER) AS concept_id, 
+       INNER JOIN (SELECT CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT) AS concept_id,
                           Sum(count_value)           AS count_value 
                    FROM   @ohdsi_database_schema.heracles_results 
                    WHERE  analysis_id IN ( 1820 ) 
-                           GROUP  BY Cast(stratum_1 AS INTEGER) 
+                           GROUP  BY CAST(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT)
 										HAVING Sum(heracles_results.count_value) > @minCovariatePersonCount
                    ) ct1 
                ON hr1.concept_id = ct1.concept_id 

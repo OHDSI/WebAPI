@@ -14,15 +14,15 @@
  */
 package org.ohdsi.webapi.cohortdefinition;
 
-import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
-
-import java.util.List;
-import java.util.UUID;
+import org.springframework.data.repository.query.Param;
 
 /**
  *
@@ -37,13 +37,14 @@ public interface CohortDefinitionRepository extends CrudRepository<CohortDefinit
   @Query("select cd from CohortDefinition cd LEFT JOIN FETCH cd.createdBy LEFT JOIN FETCH cd.modifiedBy where cd.id = ?1")
   CohortDefinition findOneWithDetail(Integer id);
   
-  @Query("select cd from CohortDefinition AS cd JOIN FETCH cd.details as d")          
+  @Query("select cd from CohortDefinition AS cd LEFT JOIN FETCH cd.createdBy LEFT JOIN FETCH cd.modifiedBy")          
   List<CohortDefinition> list();
 
-  List<CohortDefinition> findAllByCohortCharacterizations(CohortCharacterizationEntity mainEntity);
+  @Query("select count(cd) from CohortDefinition AS cd WHERE cd.name = :name and cd.id <> :id")
+  int getCountCDefWithSameName(@Param("id") Integer id, @Param("name") String name);
 
-  @Query("SELECT cd FROM CohortDefinition cd WHERE cd.id IN ?1")
-  List<CohortDefinition> findFromList(List<Integer> ids);
-
-  CohortDefinition findByUuid(UUID previousVersion);
+  @Query("SELECT cd FROM CohortDefinition cd WHERE cd.name LIKE ?1 ESCAPE '\\'")
+  List<CohortDefinition> findAllByNameStartsWith(String pattern);
+  
+  Optional<CohortDefinition> findByName(String name);
 }

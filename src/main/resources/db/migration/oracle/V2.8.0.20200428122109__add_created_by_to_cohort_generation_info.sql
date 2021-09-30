@@ -1,0 +1,1 @@
+ALTER TABLE ${ohdsiSchema}.cohort_generation_info ADD created_by_id NUMBER(10) NULL CONSTRAINT FK_cohort_def_su_cid REFERENCES ${ohdsiSchema}.sec_user(id);

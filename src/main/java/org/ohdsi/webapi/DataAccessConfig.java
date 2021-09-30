@@ -1,17 +1,14 @@
 package org.ohdsi.webapi;
 
 import com.cosium.spring.data.jpa.entity.graph.repository.support.EntityGraphJpaRepositoryFactoryBean;
-import org.apache.commons.lang3.StringUtils;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import com.odysseusinc.datasourcemanager.encryption.EncryptorUtils;
+import com.odysseusinc.datasourcemanager.encryption.NotEncrypted;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
-import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.jasypt.hibernate4.encryptor.HibernatePBEEncryptorRegistry;
-import org.ohdsi.webapi.source.NotEncrypted;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
@@ -29,6 +26,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Properties;
 
 /**
@@ -37,7 +37,6 @@ import java.util.Properties;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(repositoryFactoryBeanClass = EntityGraphJpaRepositoryFactoryBean.class)
-@ConditionalOnProperty(value = "datasource.honeur.enabled", havingValue = "false")
 public class DataAccessConfig {
 
     private final Logger logger = LoggerFactory.getLogger(DataAccessConfig.class);
@@ -59,6 +58,7 @@ public class DataAccessConfig {
 		@DependsOn("defaultStringEncryptor")
     @Primary    
     public DataSource primaryDataSource() {
+        logger.info("datasource.url is: " + this.env.getRequiredProperty("datasource.url"));
         String driver = this.env.getRequiredProperty("datasource.driverClassName");
         String url = this.env.getRequiredProperty("datasource.url");
         String user = this.env.getRequiredProperty("datasource.username");
@@ -79,7 +79,7 @@ public class DataAccessConfig {
         //note autocommit defaults vary across vendors. use provided @Autowired TransactionTemplate
 
         String[] supportedDrivers;
-        supportedDrivers = new String[]{"org.postgresql.Driver", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "oracle.jdbc.driver.OracleDriver", "com.amazon.redshift.jdbc.Driver", "com.cloudera.impala.jdbc41.Driver", "net.starschema.clouddb.jdbc.BQDriver", "org.netezza.Driver", "com.simba.googlebigquery.jdbc42.Driver"};
+        supportedDrivers = new String[]{"org.postgresql.Driver", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "oracle.jdbc.driver.OracleDriver", "com.amazon.redshift.jdbc.Driver", "com.cloudera.impala.jdbc.Driver", "net.starschema.clouddb.jdbc.BQDriver", "org.netezza.Driver", "com.simba.googlebigquery.jdbc42.Driver", "org.apache.hive.jdbc.HiveDriver"};
         for (String driverName : supportedDrivers) {
             try {
                 Class.forName(driverName);
@@ -88,6 +88,23 @@ public class DataAccessConfig {
                 logger.info("error loading {} driver. {}", driverName, ex.getMessage());
             }
         }
+
+        // Redshift driver can be loaded first because it is mentioned in manifest file -
+        // put the redshift driver at the end so that it doesn't
+        // conflict with postgres queries
+        java.util.Enumeration<Driver> drivers =  DriverManager.getDrivers();
+        while (drivers.hasMoreElements()) {
+            Driver d = drivers.nextElement();
+            if (d.getClass().getName().contains("com.amazon.redshift.jdbc")) {
+                try {
+                    DriverManager.deregisterDriver(d);
+                    DriverManager.registerDriver(d);
+                } catch (SQLException e) {
+                    throw new RuntimeException("Could not deregister redshift driver", e);
+                }
+            }
+        }
+
         return ds;
         //return new org.apache.tomcat.jdbc.pool.DataSource(pc);
     }
@@ -95,31 +112,19 @@ public class DataAccessConfig {
     @Bean
     public PBEStringEncryptor defaultStringEncryptor(){
 
-        PBEStringEncryptor stringEncryptor;
-        if (encryptorEnabled) {
-            StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
-            encryptor.setProvider(new BouncyCastleProvider());
-            encryptor.setProviderName("BC");
-            encryptor.setAlgorithm(env.getRequiredProperty("jasypt.encryptor.algorithm"));
-						if ("PBEWithMD5AndDES".equals(env.getRequiredProperty("jasypt.encryptor.algorithm"))) {
-							logger.warn("Warning:  encryption algorithm set to PBEWithMD5AndDES, which is not considered a strong encryption algorithm.  You may use PBEWITHSHA256AND128BITAES-CBC-BC, but will require special JVM configuration to support these stronger methods.");
-						}
-            encryptor.setKeyObtentionIterations(1000);
-            String password = env.getRequiredProperty("jasypt.encryptor.password");
-            if (StringUtils.isNotEmpty(password)) {
-                encryptor.setPassword(password);
-            }
-            stringEncryptor = encryptor;
-        } else {
-            stringEncryptor = new NotEncrypted();
-        }
-        HibernatePBEEncryptorRegistry.getInstance()
+        PBEStringEncryptor stringEncryptor = encryptorEnabled ?
+                EncryptorUtils.buildStringEncryptor(env) :
+                new NotEncrypted();
+
+        HibernatePBEEncryptorRegistry
+                .getInstance()
                 .registerPBEStringEncryptor("defaultStringEncryptor", stringEncryptor);
+
         return stringEncryptor;
     }
 
     @Bean
-    public EntityManagerFactory entityManagerFactory() {
+    public EntityManagerFactory entityManagerFactory(DataSource dataSource) {
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         vendorAdapter.setGenerateDdl(false);
@@ -131,7 +136,7 @@ public class DataAccessConfig {
         factory.setJpaVendorAdapter(vendorAdapter);
         factory.setJpaProperties(getJPAProperties());
         factory.setPackagesToScan("org.ohdsi.webapi");
-        factory.setDataSource(primaryDataSource());
+        factory.setDataSource(dataSource);
         factory.afterPropertiesSet();
 
         return factory.getObject();
@@ -140,10 +145,10 @@ public class DataAccessConfig {
     @Bean
     @Primary
     //This is needed so that JpaTransactionManager is used for autowiring, instead of DataSourceTransactionManager
-    public PlatformTransactionManager jpaTransactionManager() {//EntityManagerFactory entityManagerFactory) {
+    public PlatformTransactionManager jpaTransactionManager(EntityManagerFactory entityManagerFactory) {
 
         JpaTransactionManager txManager = new JpaTransactionManager();
-        txManager.setEntityManagerFactory(entityManagerFactory());
+        txManager.setEntityManagerFactory(entityManagerFactory);
         return txManager;
     }
 

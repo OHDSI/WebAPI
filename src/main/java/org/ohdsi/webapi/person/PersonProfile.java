@@ -16,7 +16,6 @@
 package org.ohdsi.webapi.person;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.ArrayList;
 
 /**

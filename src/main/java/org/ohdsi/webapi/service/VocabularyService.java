@@ -1,9 +1,31 @@
 package org.ohdsi.webapi.service;
 
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
@@ -13,47 +35,53 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.activity.Activity.ActivityType;
 import org.ohdsi.webapi.activity.Tracker;
 import org.ohdsi.webapi.conceptset.ConceptSetComparison;
+import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetOptimizationResult;
 import org.ohdsi.webapi.service.vocabulary.ConceptSetStrategy;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.PreparedSqlRender;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
-import org.ohdsi.webapi.vocabulary.*;
+import org.ohdsi.webapi.vocabulary.ConceptRelationship;
+import org.ohdsi.webapi.vocabulary.ConceptSearch;
+import org.ohdsi.webapi.vocabulary.DescendentOfAncestorSearch;
+import org.ohdsi.webapi.vocabulary.Domain;
+import org.ohdsi.webapi.vocabulary.RelatedConcept;
+import org.ohdsi.webapi.vocabulary.RelatedConceptSearch;
+import org.ohdsi.webapi.vocabulary.SearchProviderConfig;
+import org.ohdsi.webapi.vocabulary.Vocabulary;
+import org.ohdsi.webapi.vocabulary.VocabularyInfo;
+import org.ohdsi.webapi.vocabulary.VocabularySearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
-
-/**
- * @author fdefalco
- */
 @Path("vocabulary/")
 @Component
 public class VocabularyService extends AbstractDaoService {
 
   private static Hashtable<String, VocabularyInfo> vocabularyInfoCache = null;
+  public static final String DEFAULT_SEARCH_ROWS = "20000";
 
   @Autowired
   private SourceService sourceService;
+  
+  @Autowired
+  private VocabularySearchService vocabSearchService;
 
+  @Autowired
+  protected GenericConversionService conversionService;
+  
   @Value("${datasource.driverClassName}")
   private String driver;
-  
-  private final RowMapper<Concept> rowMapper = new RowMapper<Concept>() {
+
+  public final RowMapper<Concept> rowMapper = new RowMapper<Concept>() {
     @Override
     public Concept mapRow(final ResultSet resultSet, final int arg1) throws SQLException {
       final Concept concept = new Concept();
@@ -69,27 +97,30 @@ public class VocabularyService extends AbstractDaoService {
     }
   };
 
-  private String getDefaultVocabularySourceKey()
-  {
-    List<SourceInfo> vocabSources = sourceService.getSources().stream()
-           .filter(source -> source.daimons.stream()
-                   .filter(daimon -> daimon.getDaimonType() == SourceDaimon.DaimonType.Vocabulary)
-                   .collect(Collectors.toList()).size() > 0)
-            .collect(Collectors.toList());
-    
-    Integer vocabularyPriority = 0;
-    String sourceKey = null;
-    for(SourceInfo si : vocabSources) {
-        SourceDaimon sd = si.daimons.stream().filter(daimon -> daimon.getDaimonType() == SourceDaimon.DaimonType.Vocabulary).findFirst().orElse(null);
-        if (sd != null && sd.getPriority() >= vocabularyPriority) {
-            vocabularyPriority = sd.getPriority();
-            sourceKey = si.sourceKey;
-        }
-    }
-    
-    return sourceKey;
+  private String getDefaultVocabularySourceKey() {
+    Source vocabSource = sourceService.getPriorityVocabularySource();
+    return Objects.nonNull(vocabSource) ? vocabSource.getSourceKey() : null;
   }
 
+  public Source getPriorityVocabularySource() {
+
+    Source source = sourceService.getPriorityVocabularySource();
+    if (Objects.isNull(source)) {
+      throw new ForbiddenException();
+    }
+    return source;
+  }
+
+  public ConceptSetExport exportConceptSet(ConceptSet conceptSet, SourceInfo vocabSource) {
+
+    ConceptSetExport export = conversionService.convert(conceptSet, ConceptSetExport.class);
+    // Lookup the identifiers
+    export.identifierConcepts = executeIncludedConceptLookup(vocabSource.sourceKey, conceptSet.expression);
+    // Lookup the mapped items
+    export.mappedConcepts = executeMappedLookup(vocabSource.sourceKey, conceptSet.expression);
+    return export;
+  }
+  
   /**
    * @summary Calculates ancestors for the given descendants
    * 
@@ -369,8 +400,6 @@ public class VocabularyService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, ConceptSearch search) {
-    Tracker.trackActivity(ActivityType.Search, search.query);
-
     Source source = getSourceRepository().findBySourceKey(sourceKey);
 
     PreparedStatementRenderer psr = prepareExecuteSearch(search, source);
@@ -458,8 +487,8 @@ public class VocabularyService extends AbstractDaoService {
 
     return executeSearch(defaultSourceKey, search);    
   }
-  
   /**
+   * @param sourceKey
    * @param query
    * @return
    */
@@ -467,13 +496,42 @@ public class VocabularyService extends AbstractDaoService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, @PathParam("query") String query) {
-    Tracker.trackActivity(ActivityType.Search, query);
-    Source source = getSourceRepository().findBySourceKey(sourceKey);
-    PreparedStatementRenderer psr = prepareExecuteSearchWithQuery(query, source);
-    return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.rowMapper);
+    return this.executeSearch(sourceKey, query, DEFAULT_SEARCH_ROWS);
+  }
+  
+  /**
+   * @param sourceKey
+   * @param query
+   * @param rows
+   * @return
+   */
+  @Path("{sourceKey}/search")
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  public Collection<Concept> executeSearch(@PathParam("sourceKey") String sourceKey, @QueryParam("query") String query, @DefaultValue(DEFAULT_SEARCH_ROWS) @QueryParam("rows") String rows) {
+    // Verify that the rows parameter contains an integer and is > 0
+    try {
+        Integer r = Integer.parseInt(rows);
+        if (r <= 0) {
+            throw new NumberFormatException("The rows parameter must be greater than 0");
+        }
+    } catch (NumberFormatException nfe) {
+        throw nfe;
+    }
+    
+    Collection<Concept> concepts = new ArrayList<>();
+    try {
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        VocabularyInfo vocabularyInfo = getInfo(sourceKey);
+        SearchProviderConfig searchConfig = new SearchProviderConfig(source, vocabularyInfo);
+        concepts = vocabSearchService.getSearchProvider(searchConfig).executeSearch(searchConfig, query, rows);
+    } catch (Exception ex) {
+        log.error("An error occurred during the vocabulary search", ex);
+    }
+    return concepts;
   }
 
-  protected PreparedStatementRenderer prepareExecuteSearchWithQuery(String query, Source source) {
+  public PreparedStatementRenderer prepareExecuteSearchWithQuery(String query, Source source) {
 
     String resourcePath = "/resources/vocabulary/sql/search.sql";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
@@ -552,6 +610,24 @@ public class VocabularyService extends AbstractDaoService {
     final Map<Long, RelatedConcept> concepts = new HashMap<>();
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String sqlPath = "/resources/vocabulary/sql/getRelatedConcepts.sql";
+    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, "CDM_schema", tqValue, "id", whitelist(id));
+    getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), (RowMapper<Void>) (resultSet, arg1) -> {
+
+      addRelationships(concepts, resultSet);
+      return null;
+    });
+
+    return concepts.values();
+  }
+
+  @GET
+  @Path("{sourceKey}/concept/{id}/ancestorAndDescendant")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Collection<RelatedConcept> getConceptAncestorAndDescendant(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id) {
+    final Map<Long, RelatedConcept> concepts = new HashMap<>();
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String sqlPath = "/resources/vocabulary/sql/getConceptAncestorAndDescendant.sql";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
     PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, "CDM_schema", tqValue, "id", whitelist(id));
     getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), (RowMapper<Void>) (resultSet, arg1) -> {

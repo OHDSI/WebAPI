@@ -1,0 +1,34 @@
+-- 2001                Count and percentage of gender data completeness for age less than 10
+--insert into @results_schema.heracles_results (cohort_definition_id, analysis_id, stratum_1, stratum_2, stratum_3)
+select @cohort_definition_id as cohort_definition_id, 2001 as analysis_id, round(innerT.valid_percentage, 2) as stratum_1,
+       innerT.all_data_count as stratum_2, innerT.valid_data_count as stratum_3, cast( '' as varchar(1) ) as stratum_4, (@smallcellcount + 9) as count_value
+into #results_2001
+from
+(select valid_data.valid_data_count valid_data_count, all_data.all_data_count all_data_count,
+CASE
+WHEN all_data.all_data_count = 0 THEN -999
+ELSE valid_data.valid_data_count * 100/all_data.all_data_count
+END as valid_percentage
+from
+(SELECT count(distinct co.subject_id) as valid_data_count
+FROM #HERACLES_cohort co
+JOIN @CDM_schema.person p
+ON     co.SUBJECT_ID = p.PERSON_ID
+AND p.YEAR_OF_BIRTH >
+year(DATEADD(year, -10, getdate()))
+--EXTRACT (
+--   YEAR FROM TRUNC (SYSDATE, 'yyyy') - INTERVAL '10' YEAR)
+LEFT JOIN @CDM_schema.concept c ON p.GENDER_CONCEPT_ID = c.CONCEPT_ID
+WHERE
+p.gender_concept_id IS NOT NULL
+and (lower(c.CONCEPT_NAME) = 'female'
+or lower(c.CONCEPT_NAME) = 'male' )) valid_data,
+(SELECT count(distinct co.subject_id) as all_data_count
+FROM #HERACLES_cohort co
+JOIN @CDM_schema.person p
+ON     co.SUBJECT_ID = p.PERSON_ID
+AND p.YEAR_OF_BIRTH >
+year(DATEADD(year, -10, getdate()))
+--EXTRACT (
+--   YEAR FROM TRUNC (SYSDATE, 'yyyy') - INTERVAL '10' YEAR)
+) all_data) innerT;

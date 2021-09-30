@@ -1,38 +1,73 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
+import com.odysseusinc.arachne.commons.utils.CommonFilenameUtils;
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
+import com.opencsv.CSVWriter;
+import com.qmino.miredot.annotations.ReturnType;
+import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.Pagination;
+import org.ohdsi.webapi.check.CheckResult;
+import org.ohdsi.webapi.check.checker.characterization.CharacterizationChecker;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
-import org.ohdsi.webapi.cohortcharacterization.dto.*;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcShortDTO;
+import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
+import org.ohdsi.webapi.cohortcharacterization.dto.ExportExecutionResultRequest;
+import org.ohdsi.webapi.cohortcharacterization.dto.GenerationResults;
+import org.ohdsi.webapi.cohortcharacterization.report.Report;
 import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.CommonGenerationDTO;
 import org.ohdsi.webapi.common.sensitiveinfo.CommonGenerationSensitiveInfoService;
+import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.feanalysis.FeAnalysisService;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisWithStringEntity;
 import org.ohdsi.webapi.job.JobExecutionResource;
-import org.ohdsi.webapi.service.SourceService;
-import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.security.PermissionService;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.ExceptionUtils;
+import org.ohdsi.webapi.util.ExportUtil;
+import org.ohdsi.webapi.util.HttpUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestBody;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Path("/cohort-characterization")
 @Controller
@@ -45,20 +80,25 @@ public class CcController {
     private ConverterUtils converterUtils;
     private final CommonGenerationSensitiveInfoService<CommonGenerationDTO> sensitiveInfoService;
     private final SourceService sourceService;
+    private CharacterizationChecker checker;
+    private PermissionService permissionService;
 
-    CcController(
+    public CcController(
             final CcService service,
             final FeAnalysisService feAnalysisService,
             final ConversionService conversionService,
             final ConverterUtils converterUtils,
             CommonGenerationSensitiveInfoService sensitiveInfoService,
-            SourceService sourceService) {
+            SourceService sourceService, CharacterizationChecker checker,
+            PermissionService permissionService) {
         this.service = service;
         this.feAnalysisService = feAnalysisService;
         this.conversionService = conversionService;
         this.converterUtils = converterUtils;
         this.sensitiveInfoService = sensitiveInfoService;
         this.sourceService = sourceService;
+        this.checker = checker;
+        this.permissionService = permissionService;
         FeatureExtraction.init(null);
     }
 
@@ -88,7 +128,11 @@ public class CcController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Page<CcShortDTO> list(@Pagination Pageable pageable) {
-        return service.getPage(pageable).map(this::convertCcToShortDto);
+        return service.getPage(pageable).map(entity -> {
+            CcShortDTO dto = convertCcToShortDto(entity);
+            permissionService.fillWriteAccess(entity, dto);
+            return dto;
+        });
     }
 
     @GET
@@ -115,6 +159,14 @@ public class CcController {
         CohortCharacterization  cc = service.findByIdWithLinkedEntities(id);
         ExceptionUtils.throwNotFoundExceptionIfNull(cc, String.format("There is no cohort characterization with id = %d.", id));
         return convertCcToDto(service.findByIdWithLinkedEntities(id));
+    }
+
+    @GET
+    @Path("/{id}/exists")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public int getCountCcWithSameName(@PathParam("id") @DefaultValue("0") final long id, @QueryParam("name") String name) {
+        return service.getCountCcWithSameName(id, name);
     }
 
     @DELETE
@@ -149,7 +201,7 @@ public class CcController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public CohortCharacterizationDTO doImport(final CcExportDTO dto) {
-        dto.setName(service.getNameForCopy(dto.getName()));
+        dto.setName(service.getNameWithSuffix(dto.getName()));
         final CohortCharacterizationEntity entity = conversionService.convert(dto, CohortCharacterizationEntity.class);
         return conversionService.convert(service.importCc(entity), CohortCharacterizationDTO.class);
     }
@@ -161,12 +213,40 @@ public class CcController {
     public String export(@PathParam("id") final Long id) {
         return service.serializeCc(id);
     }
+
+    @GET
+    @Path("/{id}/export/conceptset")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response exportConceptSets(@PathParam("id") final Long id) {
+
+        CohortCharacterizationEntity cc = service.findById(id);
+        Optional.ofNullable(cc).orElseThrow(NotFoundException::new);
+        List<ConceptSetExport> exportList = service.exportConceptSets(cc);
+        ByteArrayOutputStream stream = ExportUtil.writeConceptSetExportToCSVAndZip(exportList);
+        return HttpUtils.respondBinary(stream, String.format("cc_%d_export.zip", id));
+    }
     
+
+    @POST
+    @Path("/check")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public CheckResult runDiagnostics(CohortCharacterizationDTO characterizationDTO){
+
+        return new CheckResult(checker.check(characterizationDTO));
+    }
+
     @POST
     @Path("/{id}/generation/{sourceKey}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public JobExecutionResource generate(@PathParam("id") final Long id, @PathParam("sourceKey") final String sourceKey) {
+        CohortCharacterizationEntity cc = service.findByIdWithLinkedEntities(id);
+        ExceptionUtils.throwNotFoundExceptionIfNull(cc, String.format("There is no cohort characterization with id = %d.", id));
+        CheckResult checkResult = runDiagnostics(convertCcToDto(cc));
+        if (checkResult.hasCriticalErrors()) {
+            throw new RuntimeException("Cannot be generated due to critical errors in design. Call 'check' service for further details");
+        }
         return service.generateCc(id, sourceKey);
     }
 
@@ -183,7 +263,7 @@ public class CcController {
     @Consumes(MediaType.APPLICATION_JSON)
     public List<CommonGenerationDTO> getGenerationList(@PathParam("id") final Long id) {
 
-        Map<String, SourceInfo> sourcesMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_KEY);
+        Map<String, Source> sourcesMap = sourceService.getSourcesMap(SourceMapKey.BY_SOURCE_KEY);
         return sensitiveInfoService.filterSensitiveInfo(converterUtils.convertList(service.findGenerationsByCcId(id), CommonGenerationDTO.class),
                 info -> Collections.singletonMap(Constants.Variables.SOURCE, sourcesMap.get(info.getSourceKey())));
     }
@@ -217,14 +297,85 @@ public class CcController {
     }
 
     @GET
+    @Path("/generation/{generationId}/result/count")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Long getGenerationsResultsCount( @PathParam("generationId") final Long generationId) {
+        return service.getCCResultsTotalCount(generationId);
+    }
+
+    @GET
     @Path("/generation/{generationId}/result")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public List<CcResult> getGenerationsResults(
             @PathParam("generationId") final Long generationId, @DefaultValue("0.01") @QueryParam("thresholdLevel") final float thresholdLevel) {
-        List<CcResult> ccResults = service.findResults(generationId, thresholdLevel);
-        convertPresetAnalysesToLocal(ccResults);
-        return ccResults;
+        return service.findResultAsList(generationId, thresholdLevel);
+    }
+    
+    @POST
+    @Path("/generation/{generationId}/result")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @ReturnType("java.lang.Object")
+    public GenerationResults getGenerationsResults(
+            @PathParam("generationId") final Long generationId, @RequestBody ExportExecutionResultRequest params) {
+        return service.findData(generationId, params);
+    }
+
+    @POST
+    @Path("/generation/{generationId}/result/export")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response exportGenerationsResults(
+            @PathParam("generationId") final Long generationId, ExportExecutionResultRequest params) {
+        GenerationResults res = service.exportExecutionResult(generationId, params);
+        return prepareExecutionResultResponse(res.getReports());
+    }
+
+    private Response prepareExecutionResultResponse(List<Report> reports) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+             ZipOutputStream zos = new ZipOutputStream(baos)) {
+
+            for (Report report : reports) {
+                createZipEntry(zos, report);
+            }
+
+            zos.closeEntry();
+            baos.flush();
+
+            return Response
+                    .ok(baos)
+                    .type(MediaType.APPLICATION_OCTET_STREAM)
+                    .header("Content-Disposition", String.format("attachment; filename=\"%s\"", "reports.zip"))
+                    .build();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private void createZipEntry(ZipOutputStream zos, Report report) throws IOException {
+        StringWriter sw = new StringWriter();
+        CSVWriter csvWriter = new CSVWriter(sw, ',', CSVWriter.DEFAULT_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER);
+        csvWriter.writeAll(report.header);
+        csvWriter.writeAll(report.getResultArray());
+        csvWriter.flush();
+
+        String filename = report.analysisName;
+        if (report.isComparative) {
+            filename = "Export comparison (" + filename + ")";
+        } else {
+            filename = "Export (" + filename + ")";
+        }
+        // trim the name so it can be opened by archiver,
+        // -1 is for dot character
+        if (filename.length() >= 64) {
+            filename = filename.substring(0, 63);
+        }
+        filename = CommonFilenameUtils.sanitizeFilename(filename);
+        ZipEntry resultsEntry = new ZipEntry(filename + ".csv");
+        zos.putNextEntry(resultsEntry);
+        zos.write(sw.getBuffer().toString().getBytes());
     }
 
     @GET
@@ -239,6 +390,30 @@ public class CcController {
         List<CcPrevalenceStat> stats = service.getPrevalenceStatsByGenerationId(generationId, Long.valueOf(presetId), cohortId, covariateId);
         convertPresetAnalysesToLocal(stats);
         return stats;
+    }
+
+    @GET
+    @Path("{id}/download")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response downloadPackage(@PathParam("id") Long analysisId, @QueryParam("packageName") String packageName) {
+
+        if (packageName == null) {
+            packageName = "CohortCharacterization" + String.valueOf(analysisId);
+        }
+        if (!Utils.isAlphaNumeric(packageName)) {
+            throw new IllegalArgumentException("The package name must be alphanumeric only.");
+        }
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        service.hydrateAnalysis(analysisId, packageName, baos);
+
+        return Response
+                .ok(baos)
+                .type(MediaType.APPLICATION_OCTET_STREAM)
+                .header("Content-Disposition", String.format("attachment; filename=\"cohort_characterization_study_%d_export.zip\"", analysisId))
+                .build();
     }
 
     private void convertPresetAnalysesToLocal(List<? extends CcResult> ccResults) {

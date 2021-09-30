@@ -1,20 +1,27 @@
 package org.ohdsi.webapi.job;
 
-import org.springframework.batch.core.*;
-import org.springframework.batch.core.JobParameter.ParameterType;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import org.ohdsi.webapi.Constants;
+import org.springframework.batch.core.BatchStatus;
+import org.springframework.batch.core.ExitStatus;
+import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.JobInstance;
+import org.springframework.batch.core.JobParameter;
+import org.springframework.batch.core.JobParameter.ParameterType;
+import org.springframework.batch.core.JobParameters;
 
 /**
  *
  */
 public final class JobUtils {
-    
+
+    // Arrays.asList was used to provide easy extending ability in future
+    private static List<String> PROTECTED_PARAMS = Arrays.asList(Constants.Params.UPDATE_PASSWORD);
+
     public static JobInstanceResource toJobInstanceResource(final JobInstance jobInstance) {
         final JobInstanceResource job = new JobInstanceResource(jobInstance.getId());
         job.setName(jobInstance.getJobName());
@@ -33,7 +40,10 @@ public final class JobUtils {
             Map<String, JobParameter> params = jobParams.getParameters();
             if (params != null && !params.isEmpty()) {
                 Map<String, Object> jobParametersResource = new HashMap<String, Object>();
-                for (String key : params.keySet()) {
+                Set<String> keys = params.keySet().stream()
+                        .filter(k -> !PROTECTED_PARAMS.contains(k))
+                        .collect(Collectors.toSet());
+                for (String key : keys) {
                     jobParametersResource.put(key, params.get(key).getValue());
                 }
                 execution.setJobParametersResource(jobParametersResource);
@@ -85,29 +95,33 @@ public final class JobUtils {
             }
             
             //parameters starts at 12
-            ParameterType type = ParameterType.valueOf(rs.getString(13));
-            JobParameter value = null;
-            switch (type) {
-                case STRING: {
-                    value = new JobParameter(rs.getString(14), rs.getString(18).equalsIgnoreCase("Y"));
-                    break;
+            String key = rs.getString(12);
+
+            if (!PROTECTED_PARAMS.contains(key)) {
+                ParameterType type = ParameterType.valueOf(rs.getString(13));
+                JobParameter value = null;
+                switch (type) {
+                    case STRING: {
+                        value = new JobParameter(rs.getString(14), rs.getString(18).equalsIgnoreCase("Y"));
+                        break;
+                    }
+                    case LONG: {
+                        value = new JobParameter(rs.getLong(16), rs.getString(18).equalsIgnoreCase("Y"));
+                        break;
+                    }
+                    case DOUBLE: {
+                        value = new JobParameter(rs.getDouble(17), rs.getString(18).equalsIgnoreCase("Y"));
+                        break;
+                    }
+                    case DATE: {
+                        value = new JobParameter(rs.getTimestamp(15), rs.getString(18).equalsIgnoreCase("Y"));
+                        break;
+                    }
                 }
-                case LONG: {
-                    value = new JobParameter(rs.getLong(16), rs.getString(18).equalsIgnoreCase("Y"));
-                    break;
-                }
-                case DOUBLE: {
-                    value = new JobParameter(rs.getDouble(17), rs.getString(18).equalsIgnoreCase("Y"));
-                    break;
-                }
-                case DATE: {
-                    value = new JobParameter(rs.getTimestamp(15), rs.getString(18).equalsIgnoreCase("Y"));
-                    break;
-                }
+
+                // No need to assert that value is not null because it's an enum
+                map.put(key, value.getValue());//value);
             }
-            
-            // No need to assert that value is not null because it's an enum
-            map.put(rs.getString(12), value.getValue());//value);
             
         }
         if (jobexec != null && jobexec.getExecutionId() != null) {

@@ -15,14 +15,14 @@
  */
 package org.ohdsi.webapi.ircalc;
 
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-import org.ohdsi.webapi.model.CommonEntity;
-
-import javax.persistence.*;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
+import javax.persistence.*;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.ohdsi.webapi.model.CommonEntity;
 
 /**
  *
@@ -37,7 +37,7 @@ import java.util.Set;
           attributeNodes = @NamedAttributeNode("executionInfoList")
   )
 })
-public class IncidenceRateAnalysis extends CommonEntity implements Serializable {
+public class IncidenceRateAnalysis extends CommonEntity<Integer> implements Serializable {
   private static final long serialVersionUID = 1L;
   
   @Id
@@ -60,13 +60,14 @@ public class IncidenceRateAnalysis extends CommonEntity implements Serializable 
   @Column(name="description")
   private String description;
 
-  @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional=true, orphanRemoval = true)
+  @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional=true, orphanRemoval = true, mappedBy="analysis")
   @JoinColumn(name="id")
   private IncidenceRateAnalysisDetails details;
   
   @OneToMany(fetch= FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "analysis", orphanRemoval=true)
   private Set<ExecutionInfo> executionInfoList = new HashSet<>();
 
+  @Override
   public Integer getId() {
     return id;
   }

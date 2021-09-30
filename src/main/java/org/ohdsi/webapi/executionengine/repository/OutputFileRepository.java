@@ -1,10 +1,9 @@
 package org.ohdsi.webapi.executionengine.repository;
 
+import java.util.List;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 @Repository
 public interface OutputFileRepository

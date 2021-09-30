@@ -1,13 +1,18 @@
 package org.ohdsi.webapi;
 
+import java.util.Collection;
+import java.util.Set;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.ohdsi.webapi.shiro.AtlasWebSecurityManager;
 import org.ohdsi.webapi.shiro.lockout.*;
 import org.ohdsi.webapi.shiro.management.DataSourceAccessBeanPostProcessor;
 import org.ohdsi.webapi.shiro.management.DisabledSecurity;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.shiro.management.datasource.DataSourceAccessParameterResolver;
+import org.ohdsi.webapi.shiro.realms.JwtAuthRealm;
+import org.ohdsi.webapi.shiro.subject.WebDelegatingRunAsSubjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -19,7 +24,6 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.servlet.Filter;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -29,67 +33,83 @@ import java.util.stream.Collectors;
 @Configuration
 public class ShiroConfiguration {
 
-  @Value("${security.maxLoginAttempts}")
-  private int maxLoginAttempts;
-  @Value("${security.duration.initial}")
-  private long initialDuration;
-  @Value("${security.duration.increment}")
-  private long increment;
-  @Autowired
-  protected ApplicationEventPublisher eventPublisher;
+    @Value("${security.maxLoginAttempts}")
+    private int maxLoginAttempts;
+    @Value("${security.duration.initial}")
+    private long initialDuration;
+    @Value("${security.duration.increment}")
+    private long increment;
+    @Value("${spring.aop.proxy-target-class:false}")
+    private Boolean proxyTargetClass;
+    @Autowired
+    protected ApplicationEventPublisher eventPublisher;
 
-  @Bean
-  public ShiroFilterFactoryBean shiroFilter(Security security, LockoutPolicy lockoutPolicy){
-    ShiroFilterFactoryBean shiroFilter = new ShiroFilterFactoryBean();
-    shiroFilter.setSecurityManager(securityManager(security, lockoutPolicy));
+    @Bean
+    public ShiroFilterFactoryBean shiroFilter(Security security, LockoutPolicy lockoutPolicy) {
 
-    Map<String, Filter> filters = security.getFilters().entrySet().stream()
-            .collect(Collectors.toMap(f -> f.getKey().getTemplateName(), Map.Entry::getValue));
-    shiroFilter.setFilters(filters);
-    shiroFilter.setFilterChainDefinitionMap(security.getFilterChain());
+        ShiroFilterFactoryBean shiroFilter = new ShiroFilterFactoryBean();
+        shiroFilter.setSecurityManager(securityManager(security, lockoutPolicy));
 
-    return shiroFilter;
-  }
+        Map<String, Filter> filters = security.getFilters().entrySet().stream()
+                .collect(Collectors.toMap(f -> f.getKey().getTemplateName(), Map.Entry::getValue));
+        shiroFilter.setFilters(filters);
+        shiroFilter.setFilterChainDefinitionMap(security.getFilterChain());
 
-  @Bean
-  public DefaultWebSecurityManager securityManager(Security security, LockoutPolicy lockoutPolicy){
-    final DefaultWebSecurityManager securityManager = new LockoutWebSecurityManager(lockoutPolicy);
+        return shiroFilter;
+    }
 
-    securityManager.setAuthenticator(security.getAuthenticator());
+    @Bean
+    public DefaultWebSecurityManager securityManager(Security security, LockoutPolicy lockoutPolicy) {
 
-    Set<Realm> realms = security.getRealms();
-    if (realms != null && !realms.isEmpty())
-      securityManager.setRealms(realms);
+        Set<Realm> realmsForAuthentication = security.getRealms();
+        Collection<Realm> realmsForAuthorization = getJwtAuthRealmForAuthorization(security);
 
-    return securityManager;
-  }
+        final DefaultWebSecurityManager securityManager = new AtlasWebSecurityManager(
+                lockoutPolicy,
+                security.getAuthenticator(),
+                realmsForAuthentication,
+                realmsForAuthorization
+        );
 
-  @Bean
-  @ConditionalOnExpression("#{!'${security.provider}'.equals('AtlasRegularSecurity')}")
-  public LockoutPolicy noLockoutPolicy(){
+        securityManager.setSubjectFactory(new WebDelegatingRunAsSubjectFactory());
 
-    return new NoLockoutPolicy();
-  }
+        return securityManager;
+    }
 
-  @Bean
-  @ConditionalOnProperty(name = "security.provider", havingValue = "AtlasRegularSecurity")
-  public LockoutPolicy lockoutPolicy(){
 
-    return new DefaultLockoutPolicy(lockoutStrategy(), maxLoginAttempts, eventPublisher);
-  }
+    @Bean
+    @ConditionalOnExpression("#{!'${security.provider}'.equals('AtlasRegularSecurity')}")
+    public LockoutPolicy noLockoutPolicy() {
 
-  @Bean
-  @ConditionalOnProperty(name = "security.provider", havingValue = "AtlasRegularSecurity")
-  public LockoutStrategy lockoutStrategy(){
+        return new NoLockoutPolicy();
+    }
 
-    return new ExponentLockoutStrategy(initialDuration, increment, maxLoginAttempts);
-  }
+    @Bean
+    @ConditionalOnProperty(name = "security.provider", havingValue = "AtlasRegularSecurity")
+    public LockoutPolicy lockoutPolicy() {
 
-  @Bean
-  @ConditionalOnMissingBean(value = DisabledSecurity.class)
-  public DataSourceAccessBeanPostProcessor dataSourceAccessBeanPostProcessor(DataSourceAccessParameterResolver parameterResolver) {
+        return new DefaultLockoutPolicy(lockoutStrategy(), maxLoginAttempts, eventPublisher);
+    }
 
-    return new DataSourceAccessBeanPostProcessor(parameterResolver);
-  }
+    @Bean
+    @ConditionalOnProperty(name = "security.provider", havingValue = "AtlasRegularSecurity")
+    public LockoutStrategy lockoutStrategy() {
+
+        return new ExponentLockoutStrategy(initialDuration, increment, maxLoginAttempts);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(value = DisabledSecurity.class)
+    public DataSourceAccessBeanPostProcessor dataSourceAccessBeanPostProcessor(DataSourceAccessParameterResolver parameterResolver) {
+
+        return new DataSourceAccessBeanPostProcessor(parameterResolver, proxyTargetClass);
+    }
+
+    private Collection<Realm> getJwtAuthRealmForAuthorization(Security security) {
+
+        return security.getRealms().stream()
+                .filter(JwtAuthRealm.class::isInstance)
+                .collect(Collectors.toList());
+    }
 
 }

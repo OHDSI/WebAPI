@@ -19,10 +19,15 @@ public class JwtAuthRealm extends AuthorizingRealm {
   private final PermissionManager authorizer;
 
   public JwtAuthRealm(PermissionManager authorizer) {
-    setAuthenticationTokenClass(JwtAuthToken.class);
     this.authorizer = authorizer;
   }
-   
+
+  @Override
+  public boolean supports(AuthenticationToken token) {
+
+    return token != null && token.getClass() == JwtAuthToken.class;
+  }
+
   @Override
   protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
     final String login = (String) principals.getPrimaryPrincipal();

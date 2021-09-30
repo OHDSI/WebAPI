@@ -1,12 +1,11 @@
 package org.ohdsi.webapi.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.io.IOException;
+import java.sql.SQLException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.transaction.TransactionException;
-
-import java.io.IOException;
-import java.sql.SQLException;
 
 public class SecurityUtils {
 

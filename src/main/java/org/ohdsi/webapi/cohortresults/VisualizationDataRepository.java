@@ -1,9 +1,9 @@
 package org.ohdsi.webapi.cohortresults;
 
+import java.util.List;
+
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 public interface VisualizationDataRepository extends CrudRepository<VisualizationData, Long> {
 

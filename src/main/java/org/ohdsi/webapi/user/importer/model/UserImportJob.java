@@ -4,7 +4,18 @@ import com.odysseusinc.scheduler.model.ArachneJob;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
-import javax.persistence.*;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 import java.time.DayOfWeek;
 import java.util.List;
 
@@ -37,6 +48,9 @@ public class UserImportJob extends ArachneJob {
 
   @Column(name = "preserve_roles")
   private Boolean preserveRoles;
+
+  @Column(name = "user_roles")
+  private String userRoles;
 
   @Override
   public List<DayOfWeek> getWeekDays() {
@@ -71,5 +85,13 @@ public class UserImportJob extends ArachneJob {
 
   public void setPreserveRoles(Boolean preserveRoles) {
     this.preserveRoles = preserveRoles;
+  }
+
+  public String getUserRoles() {
+    return userRoles;
+  }
+
+  public void setUserRoles(String userRoles) {
+    this.userRoles = userRoles;
   }
 }

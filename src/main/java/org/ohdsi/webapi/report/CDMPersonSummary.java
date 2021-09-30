@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.report;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by taa7016 on 8/12/2016.
@@ -92,4 +93,21 @@ public class CDMPersonSummary {
         this.ethnicity = ethnicity;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CDMPersonSummary that = (CDMPersonSummary) o;
+        return Objects.equals(summary, that.summary) &&
+                Objects.equals(gender, that.gender) &&
+                Objects.equals(race, that.race) &&
+                Objects.equals(ethnicity, that.ethnicity) &&
+                Objects.equals(yearOfBirth, that.yearOfBirth) &&
+                Objects.equals(yearOfBirthStats, that.yearOfBirthStats);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(summary, gender, race, ethnicity, yearOfBirth, yearOfBirthStats);
+    }
 }

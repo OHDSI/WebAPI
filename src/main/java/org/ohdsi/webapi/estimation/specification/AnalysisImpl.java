@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.estimation.specification;
 
-import org.ohdsi.analysis.estimation.design.Analysis;
 import org.ohdsi.webapi.RLangClassImpl;
+import org.ohdsi.analysis.estimation.design.Analysis;
 
 /**
  *

@@ -15,7 +15,7 @@ public class SourceDetails extends SourceInfo {
         setKeyfileName(s.getKeyfileName());
         setKrbAuthMethod(s.getKrbAuthMethod().toString().toLowerCase());
         setUsername(s.getUsername());
-        setPassword(s.getPassword());
+        setPassword(Source.MASQUERADED_PASSWORD);
         setKrbAdminServer(s.getKrbAdminServer());
     }
 

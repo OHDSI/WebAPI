@@ -1,9 +1,9 @@
 package org.ohdsi.webapi.job;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.Date;
 import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  *
@@ -27,9 +27,12 @@ public class JobExecutionResource {
     
     @JsonProperty("jobInstance")
     private JobInstanceResource jobInstanceResource;
-    
+
     @JsonProperty("jobParameters")
     private Map<String, Object> jobParametersResource;
+
+    @JsonProperty("ownerType")
+    private JobOwnerType ownerType;
     
     public JobExecutionResource() {
         //needed for json deserialization
@@ -118,5 +121,12 @@ public class JobExecutionResource {
     public void setJobParametersResource(Map<String, Object> map) {
         this.jobParametersResource = map;
     }
-    
+
+    public JobOwnerType getOwnerType() {
+        return ownerType;
+    }
+
+    public void setOwnerType(JobOwnerType ownerType) {
+        this.ownerType = ownerType;
+    }
 }

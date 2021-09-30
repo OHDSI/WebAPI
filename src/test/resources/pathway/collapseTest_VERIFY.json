@@ -1,0 +1,42 @@
+{
+  "results.pathway_analysis_codes": [
+    {
+      "code": 1,
+      "name": "[TxP] Cohort 1",
+      "is_combo": 0 
+    },
+    {
+      "code": 2,
+      "name": "[TxP] Cohort 2",
+      "is_combo": 0
+    },
+    {
+      "code": 3,
+      "name": "[TxP] Cohort 1,[TxP] Cohort 2",
+      "is_combo": 1 
+    }
+  ],
+  "results.pathway_analysis_paths": [
+    {
+      "target_cohort_id":1,
+      "step_1":3,
+      "step_2":2,
+      "step_3":null,
+      "step_4":null,
+      "step_5":null,
+      "step_6":null,
+      "step_7":null,
+      "step_8":null,
+      "step_9":null,
+      "step_10":null,
+      "count_value":1
+    }
+  ],
+  "results.pathway_analysis_stats": [
+    {
+      "target_cohort_id":1,
+      "target_cohort_count":1,
+      "pathways_count":1
+    }
+  ]
+}

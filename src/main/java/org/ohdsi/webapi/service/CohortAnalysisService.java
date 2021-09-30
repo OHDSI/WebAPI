@@ -1,11 +1,30 @@
 package org.ohdsi.webapi.service;
 
+import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jersey.repackaged.com.google.common.base.Joiner;
+
 import org.apache.commons.collections.CollectionUtils;
-import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.webapi.cohortanalysis.*;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
@@ -22,22 +41,10 @@ import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
  * Services related to running Heracles analyses
@@ -50,17 +57,17 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
 	@Value("${heracles.smallcellcount}")
 	private String smallCellCount;
 	
-	@Autowired
-	private JobTemplate jobTemplate;
+	private final JobTemplate jobTemplate;
 
-	@Autowired
-	private CohortDefinitionService definitionService;
+	private final CohortDefinitionService definitionService;
 	
-	@Autowired
-  private CohortDefinitionRepository cohortDefinitionRepository;
+  private final CohortDefinitionRepository cohortDefinitionRepository;
 	
-	@Autowired
-	private VisualizationDataRepository visualizationDataRepository;
+	private final VisualizationDataRepository visualizationDataRepository;
+
+	private final HeraclesQueryBuilder heraclesQueryBuilder;
+
+	private ObjectMapper objectMapper;
 
 	private final RowMapper<Analysis> analysisMapper = new RowMapper<Analysis>() {
 
@@ -85,7 +92,22 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
 		}
 	};
 
-	private void mapAnalysis(final Analysis analysis, final ResultSet rs, final int rowNum) throws SQLException {
+  public CohortAnalysisService(JobTemplate jobTemplate,
+                               CohortDefinitionService definitionService,
+                               CohortDefinitionRepository cohortDefinitionRepository,
+                               VisualizationDataRepository visualizationDataRepository,
+                               ObjectMapper objectMapper,
+                               HeraclesQueryBuilder heraclesQueryBuilder) {
+
+    this.jobTemplate = jobTemplate;
+    this.definitionService = definitionService;
+    this.cohortDefinitionRepository = cohortDefinitionRepository;
+    this.visualizationDataRepository = visualizationDataRepository;
+    this.objectMapper = objectMapper;
+    this.heraclesQueryBuilder = heraclesQueryBuilder;
+  }
+
+  private void mapAnalysis(final Analysis analysis, final ResultSet rs, final int rowNum) throws SQLException {
 		analysis.setAnalysisId(rs.getInt(Analysis.ANALYSIS_ID));
 		analysis.setAnalysisName(rs.getString(Analysis.ANALYSIS_NAME));
 		analysis.setStratum1Name(rs.getString(Analysis.STRATUM_1_NAME));
@@ -165,55 +187,7 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
 	@Consumes(MediaType.APPLICATION_JSON)
 	public String getRunCohortAnalysisSql(CohortAnalysisTask task) {
 		task.setSmallCellCount(Integer.parseInt(this.smallCellCount));
-		return getCohortAnalysisSql(task);
-	}
-
-	public static String getCohortAnalysisSql(CohortAnalysisTask task) {
-		String sql = ResourceHelper.GetResourceAsString("/resources/cohortanalysis/sql/runHeraclesAnalyses.sql");
-
-		String resultsTableQualifier = task.getSource().getTableQualifier(SourceDaimon.DaimonType.Results);
-		String cdmTableQualifier = task.getSource().getTableQualifier(SourceDaimon.DaimonType.CDM);
-
-		String cohortDefinitionIds = (task.getCohortDefinitionIds() == null ? "" : Joiner.on(",").join(
-				task.getCohortDefinitionIds()));
-		String analysisIds = (task.getAnalysisIds() == null ? "" : Joiner.on(",").join(task.getAnalysisIds()));
-		String conditionIds = (task.getConditionConceptIds() == null ? "" : Joiner.on(",").join(
-				task.getConditionConceptIds()));
-		String drugIds = (task.getDrugConceptIds() == null ? "" : Joiner.on(",").join(task.getDrugConceptIds()));
-		String procedureIds = (task.getProcedureConceptIds() == null ? "" : Joiner.on(",").join(
-				task.getProcedureConceptIds()));
-		String observationIds = (task.getObservationConceptIds() == null ? "" : Joiner.on(",").join(
-				task.getObservationConceptIds()));
-		String measurementIds = (task.getMeasurementConceptIds() == null ? "" : Joiner.on(",").join(
-				task.getMeasurementConceptIds()));
-
-		String concatenatedPeriods = "";
-		if (CollectionUtils.isEmpty(task.getPeriods())) {
-			// In this case summary stats will be calculated
-			concatenatedPeriods = "''";
-		} else {
-			List<PeriodType> periods = CollectionUtils.isEmpty(task.getPeriods()) ? Arrays.asList(PeriodType.values()) : task.getPeriods();
-			concatenatedPeriods = periods.stream()
-					.map(PeriodType::getValue)
-					.map(StringUtils::quote)
-					.collect(Collectors.joining(","));
-		}
-		String[] params = new String[]{"CDM_schema", "results_schema", "source_name",
-				"smallcellcount", "runHERACLESHeel", "CDM_version", "cohort_definition_id", "list_of_analysis_ids",
-				"condition_concept_ids", "drug_concept_ids", "procedure_concept_ids", "observation_concept_ids",
-				"measurement_concept_ids", "cohort_period_only", "source_id", "periods", "rollupUtilizationVisit", "rollupUtilizationDrug"};
-
-		String[] values = new String[]{cdmTableQualifier, resultsTableQualifier, task.getSource().getSourceName(),
-				String.valueOf(task.getSmallCellCount()), String.valueOf(task.runHeraclesHeel()).toUpperCase(), 
-				task.getCdmVersion(), cohortDefinitionIds, analysisIds, conditionIds, drugIds, procedureIds, 
-				observationIds, measurementIds,String.valueOf(task.isCohortPeriodOnly()), 
-				String.valueOf(task.getSource().getSourceId()), concatenatedPeriods,
-				String.valueOf(task.getRollupUtilizationVisit()).toUpperCase(), String.valueOf(task.getRollupUtilizationDrug()).toUpperCase()
-		};
-		sql = SqlRender.renderSql(sql, params, values);
-		sql = SqlTranslate.translateSql(sql, task.getSource().getSourceDialect(), SessionUtils.sessionId(), SourceUtils.getTempQualifier(task.getSource()));
-
-		return sql;
+		return heraclesQueryBuilder.buildHeraclesAnalysisQuery(task);
 	}
 
 	/**
@@ -319,7 +293,8 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
 		log.info("Beginning run for cohort analysis task: {}", taskString);
 
 		CohortAnalysisTasklet tasklet = new CohortAnalysisTasklet(task, getSourceJdbcTemplate(task.getSource()), 
-				getTransactionTemplate(), getTransactionTemplateRequiresNew(), this.getSourceDialect(), this.visualizationDataRepository, this.cohortDefinitionRepository);
+				getTransactionTemplate(), getTransactionTemplateRequiresNew(), this.getSourceDialect(), this.visualizationDataRepository,
+				this.cohortDefinitionRepository, objectMapper, heraclesQueryBuilder);
 
 		return this.jobTemplate.launchTasklet(NAME, "cohortAnalysisStep", tasklet, jobParameters);
 	}

@@ -1,11 +1,10 @@
 package org.ohdsi.webapi.shiro.management;
 
-import org.apache.shiro.authc.Authenticator;
-import org.apache.shiro.realm.Realm;
-
-import javax.servlet.Filter;
 import java.util.Map;
 import java.util.Set;
+import javax.servlet.Filter;
+import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
+import org.apache.shiro.realm.Realm;
 
 /**
  *
@@ -16,10 +15,6 @@ public abstract class Security {
   public static final String SOURCE_ACCESS_PERMISSION = "source:%s:access";
   public static String PROFILE_VIEW_DATES_PERMISSION = "*:person:*:get:dates";
 
-  public abstract void addSourceRole(String sourceKey) throws Exception;
-
-  public abstract void removeSourceRole(String sourceKey) throws Exception;
-
   public abstract String getSubject();
 
   public abstract Set<Realm> getRealms();
@@ -28,5 +23,5 @@ public abstract class Security {
   
   public abstract Map<String, String> getFilterChain();
   
-  public abstract Authenticator getAuthenticator();
+  public abstract ModularRealmAuthenticator getAuthenticator();
 }

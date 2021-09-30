@@ -1,9 +1,8 @@
 package org.ohdsi.webapi.estimation.specification;
 
-import org.ohdsi.analysis.estimation.design.NegativeControlOutcomeCohortExpression;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.ohdsi.analysis.estimation.design.NegativeControlOutcomeCohortExpression;
 
 /**
  *

@@ -1,10 +1,15 @@
 package org.ohdsi.webapi.shiro.Entities;
 
+import java.io.Serializable;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
-
-import javax.persistence.*;
-import java.io.Serializable;
 
 /**
  *
@@ -14,11 +19,6 @@ import java.io.Serializable;
 @Table(name = "SEC_ROLE_PERMISSION")
 public class RolePermissionEntity implements Serializable {
   private static final long serialVersionUID = 6257846375334314942L;
-  
-  private Long id;
-  private String status;
-  private RoleEntity role;
-  private PermissionEntity permission;
 
   @Id
   @Column(name = "ID")
@@ -32,6 +32,19 @@ public class RolePermissionEntity implements Serializable {
     }
   )
   @GeneratedValue(generator = "sec_role_permission_generator")
+  private Long id;
+
+  @Column(name = "STATUS")
+  private String status;
+
+  @ManyToOne
+  @JoinColumn(name="ROLE_ID", nullable=false)
+  private RoleEntity role;
+
+  @ManyToOne
+  @JoinColumn(name="PERMISSION_ID", nullable=false)
+  private PermissionEntity permission;
+
   public Long getId() {
     return id;
   }
@@ -40,7 +53,6 @@ public class RolePermissionEntity implements Serializable {
     this.id = id;
   }
 
-  @Column(name = "STATUS")
   public String getStatus() {
     return status;
   }
@@ -49,8 +61,6 @@ public class RolePermissionEntity implements Serializable {
     this.status = status;
   }
 
-  @ManyToOne
-  @JoinColumn(name="ROLE_ID", nullable=false)
   public RoleEntity getRole() {
     return role;
   }
@@ -59,8 +69,6 @@ public class RolePermissionEntity implements Serializable {
     this.role = role;
   }
 
-  @ManyToOne
-  @JoinColumn(name="PERMISSION_ID", nullable=false)
   public PermissionEntity getPermission() {
     return permission;
   }

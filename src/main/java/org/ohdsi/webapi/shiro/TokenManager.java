@@ -1,14 +1,23 @@
 package org.ohdsi.webapi.shiro;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.impl.crypto.MacProvider;
-import org.apache.shiro.web.util.WebUtils;
-import org.ohdsi.webapi.util.ExpiringMultimap;
-
+import java.security.Key;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
-import java.security.Key;
-import java.util.*;
+import org.apache.shiro.web.util.WebUtils;
+import org.ohdsi.webapi.util.ExpiringMultimap;
 
 /**
  *
@@ -39,11 +48,12 @@ public class TokenManager {
             .compact();
   }
 
+
   public static String getSubject(String jwt) throws JwtException {
     return getBody(jwt).getSubject();
   }
 
-  private static Claims getBody(String jwt) {
+  public static Claims getBody(String jwt) {
 
     // Get untrusted subject for secret key retrieval
     String untrustedSubject = getUntrustedSubject(jwt);

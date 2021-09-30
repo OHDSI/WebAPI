@@ -53,6 +53,10 @@ public class AnalysisResultFile {
         return id;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public ExecutionEngineAnalysisStatus getExecution() {
 
         return execution;

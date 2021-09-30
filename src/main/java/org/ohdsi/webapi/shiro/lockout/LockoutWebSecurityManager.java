@@ -1,14 +1,17 @@
 package org.ohdsi.webapi.shiro.lockout;
 
-import org.apache.shiro.authc.*;
+import java.util.Date;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.AuthenticationInfo;
+import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.LockedAccountException;
+import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Date;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 public class LockoutWebSecurityManager extends DefaultWebSecurityManager {
 
@@ -22,7 +25,7 @@ public class LockoutWebSecurityManager extends DefaultWebSecurityManager {
 
     @Override
     protected void onFailedLogin(AuthenticationToken token, AuthenticationException ae, Subject subject) {
-
+        log.debug("Failed to login: {}", ae.getMessage(), ae);
         super.onFailedLogin(token, ae, subject);
         if (token instanceof UsernamePasswordToken) {
             String username = ((UsernamePasswordToken) token).getUsername();
@@ -54,7 +57,7 @@ public class LockoutWebSecurityManager extends DefaultWebSecurityManager {
                 AuthenticationException ae = new LockedAccountException("Maximum login attempts is reached. Please, try again in " + tryInSeconds + " seconds.");
                 try {
                     onFailedLogin(token, ae, subject);
-                }catch (Exception e){
+                } catch (Exception e) {
                     log.info("onFailure method threw an exception.", e);
                 }
                 throw ae;

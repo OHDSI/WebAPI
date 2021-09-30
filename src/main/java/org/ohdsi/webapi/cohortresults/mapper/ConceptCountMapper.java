@@ -1,10 +1,10 @@
 package org.ohdsi.webapi.cohortresults.mapper;
 
-import org.ohdsi.webapi.cohortresults.ConceptCountRecord;
-import org.springframework.jdbc.core.RowMapper;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import org.ohdsi.webapi.cohortresults.ConceptCountRecord;
+import org.springframework.jdbc.core.RowMapper;
 
 public class ConceptCountMapper implements RowMapper<ConceptCountRecord> {
 

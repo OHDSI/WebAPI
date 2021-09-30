@@ -2,12 +2,14 @@ package org.ohdsi.webapi.feanalysis.converter;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysisAggregate;
 import org.ohdsi.webapi.feanalysis.domain.*;
 import org.ohdsi.webapi.feanalysis.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType.CRITERIA_SET;
@@ -43,28 +45,32 @@ public class FeAnalysisEntityToFeAnalysisDTOConverter extends BaseFeAnalysisEnti
     private Object convertDesignToJson(final FeAnalysisEntity source) {
         switch (source.getType()) {
             case CRITERIA_SET:
-              List<JsonNode> criteria = ((FeAnalysisWithCriteriaEntity<?>) source).getDesign()
-                        .stream()
-                        .map(this::convertCriteria)
-                        .map(c -> (JsonNode)objectMapper.valueToTree(c))
-                        .collect(Collectors.toList());
-              return criteria;
+                FeAnalysisWithCriteriaEntity<?> sourceWithCriteria = (FeAnalysisWithCriteriaEntity<?>) source;
+                return sourceWithCriteria.getDesign()
+                          .stream()
+                          .map(this::convertCriteria)
+                          .map(c -> (JsonNode)objectMapper.valueToTree(c))
+                          .collect(Collectors.toList());
             default:
                 return source.getDesign();
         }
     }
 
     private BaseFeAnalysisCriteriaDTO convertCriteria(FeAnalysisCriteriaEntity criteriaEntity){
+        BaseFeAnalysisCriteriaDTO criteriaDTO;
         if (criteriaEntity instanceof FeAnalysisCriteriaGroupEntity) {
             FeAnalysisCriteriaGroupEntity groupEntity = (FeAnalysisCriteriaGroupEntity) criteriaEntity;
-            return new FeAnalysisCriteriaDTO(groupEntity.getId(), groupEntity.getName(), groupEntity.getExpression());
+            criteriaDTO = new FeAnalysisCriteriaDTO(groupEntity.getId(), groupEntity.getName(), groupEntity.getExpression());
         } else if (criteriaEntity instanceof FeAnalysisWindowedCriteriaEntity) {
             FeAnalysisWindowedCriteriaEntity w = (FeAnalysisWindowedCriteriaEntity) criteriaEntity;
-            return new FeAnalysisWindowedCriteriaDTO(w.getId(), w.getName(), w.getExpression());
+            criteriaDTO = new FeAnalysisWindowedCriteriaDTO(w.getId(), w.getName(), w.getExpression());
         } else if (criteriaEntity instanceof FeAnalysisDemographicCriteriaEntity) {
             FeAnalysisDemographicCriteriaEntity d = (FeAnalysisDemographicCriteriaEntity) criteriaEntity;
-            return new FeAnalysisDemographicCriteriaDTO(d.getId(), d.getName(), d.getExpression());
+            criteriaDTO = new FeAnalysisDemographicCriteriaDTO(d.getId(), d.getName(), d.getExpression());
+        } else {
+            throw new IllegalArgumentException(String.format("Cannot convert criteria entity, %s is not supported", criteriaEntity));
         }
-        throw new IllegalArgumentException(String.format("Cannot convert criteria entity, %s is not supported", criteriaEntity));
+        criteriaDTO.setAggregate(conversionService.convert(criteriaEntity.getAggregate(), FeAnalysisAggregateDTO.class));
+        return criteriaDTO;
     }
 }

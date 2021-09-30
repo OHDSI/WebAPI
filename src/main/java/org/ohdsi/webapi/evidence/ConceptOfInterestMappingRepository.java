@@ -15,9 +15,9 @@
  */
 package org.ohdsi.webapi.evidence;
 
-import org.springframework.data.repository.CrudRepository;
-
 import java.util.Collection;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
 
 /**
  *

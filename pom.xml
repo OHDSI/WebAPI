@@ -520,8 +520,8 @@
       </dependency>
       <dependency>
         <groupId>com.amazon.redshift</groupId>
-        <artifactId>redshift-jdbc42</artifactId>
-        <version>2.0.0.7</version>
+        <artifactId>redshift-jdbc42-no-awssdk</artifactId>
+        <version>1.2.10.1009</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -903,48 +903,7 @@
     </dependency>
     <dependency>
       <groupId>com.amazon.redshift</groupId>
-      <artifactId>redshift-jdbc42</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-core</artifactId>
-      <version>1.12.48</version>
-      <exclusions>
-        <exclusion>
-          <groupId>software.amazon.ion</groupId>
-          <artifactId>ion-java</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.amazonaws</groupId>
-          <artifactId>jmespath-java</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-redshift</artifactId>
-      <version>1.12.48</version>
-      <exclusions>
-        <exclusion>
-          <groupId>software.amazon.ion</groupId>
-          <artifactId>ion-java</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.amazonaws</groupId>
-          <artifactId>jmespath-java</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-sts</artifactId>
-      <version>1.12.48</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.amazonaws</groupId>
-          <artifactId>jmespath-java</artifactId>
-        </exclusion>
-      </exclusions>
+      <artifactId>redshift-jdbc42-no-awssdk</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.security</groupId>
@@ -1661,6 +1620,38 @@
           <groupId>com.sun.jersey</groupId>
           <artifactId>jersey-json</artifactId>
           <version>1.19.4</version>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>webapi-redshift</id>
+      <properties>
+        <!-- Redshift driver path -->
+        <redshift.classpath>...path/to/redshift/jdbc/drivers...</redshift.classpath>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.amazonaws</groupId>
+          <artifactId>aws-java-sdk-core</artifactId>
+          <version>1.11.118</version>
+        </dependency>
+
+        <dependency>
+          <groupId>com.amazonaws</groupId>
+          <artifactId>aws-java-sdk-redshift</artifactId>
+          <version>1.11.118</version>
+        </dependency>
+
+        <dependency>
+          <groupId>com.amazonaws</groupId>
+          <artifactId>aws-java-sdk-sts</artifactId>
+          <version>1.11.118</version>
+        </dependency>
+
+        <dependency>
+          <groupId>org.antlr</groupId>
+          <artifactId>antlr4-runtime</artifactId>
+          <version>4.8-1</version>
         </dependency>
       </dependencies>
     </profile>

@@ -3493,7 +3493,7 @@
       "executionEditorText_3": "最小协变量出现：如果目标群体中的任何协变量发生率低于指定值，则将其删除：",
       "executionEditorText_4": "标准化协变量：",
       "populationEditorText_1": "根据目标队列设置 time-at-risk窗口的开始",
-      "populationEditorText_2": "应将后代概念添加到所包含概念的列表中吗？",
+      "populationEditorText_2": "定义风险暴露期的结束日期",
       "populationEditorText_3": "对目标队列应用的最短回溯期：",
       "populationEditorText_4": "是否应该删除没有 time at risk 的对象？",
       "populationEditorText_5": "最小风险暴露期",

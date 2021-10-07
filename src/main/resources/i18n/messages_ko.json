@@ -1137,7 +1137,8 @@
       "cohortPathway": "코호트 경로",
       "irAnalysis": "발생률 분석",
       "pleAnalysis": "인구 수준 효과 추정",
-      "plpAnalysis": "환자 수준 예측"
+      "plpAnalysis": "환자 수준 예측",
+      "reusable": "reusable"
     },
     "checks": {
       "runningDiagnostics": "진단 실행 중",
@@ -2326,6 +2327,29 @@
       "reviewFullSpec": "전체 연구 사양 검토"
     }
   },
+  "reusables": {
+    "title": "Reusables",
+    "loading": "Loading Reusables...",
+    "manager": {
+      "loading": "Loading Reusable...",
+      "caption": "Reusable #<%=id%>",
+      "captionVersion": "Reusable #<%=id%> - Version <%=number%> Preview",
+      "design": {
+        "description": "<b>Reusable</b> is ..."
+      },
+      "messages": {
+        "alreadyExists": "A reusable with this name already exists. Please choose a different name.",
+        "beforeClose": "Your changes are not saved. Would you like to continue?",
+        "deleteConfirmation": "Are you sure?",
+        "saveFailed": "An error occurred while attempting to save a reusable.",
+        "notfound": "There is no reusable with id = %d."
+      },
+      "tabs": {
+        "design": "Design",
+        "versions": "Versions"
+      }
+    }
+  },
   "jobs": {
     "refreshJobs": "작업 새로 고침"
   },
@@ -3423,7 +3447,8 @@
       "ple": "새 인구 수준 효과 추정",
       "plp": "새 환자 수준 예측",
       "role": "새로운 역할",
-      "source": "새로운 소스"
+      "source": "새로운 소스",
+      "reusable": "New Reusable"
     },
     "weekdays": {
       "friday": {

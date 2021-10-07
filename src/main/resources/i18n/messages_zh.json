@@ -1137,7 +1137,8 @@
       "cohortPathway": "队列路径",
       "irAnalysis": "发病率分析",
       "pleAnalysis": "建人口水平效应估计",
-      "plpAnalysis": "患者水平预测"
+      "plpAnalysis": "患者水平预测",
+      "reusable": "reusable"
     },
     "checks": {
       "runningDiagnostics": "正在运行诊断",
@@ -2326,6 +2327,29 @@
       "reviewFullSpec": "查看完整研究规范"
     }
   },
+  "reusables": {
+    "title": "Reusables",
+    "loading": "Loading Reusables...",
+    "manager": {
+      "loading": "Loading Reusable...",
+      "caption": "Reusable #<%=id%>",
+      "captionVersion": "Reusable #<%=id%> - Version <%=number%> Preview",
+      "design": {
+        "description": "<b>Reusable</b> is ..."
+      },
+      "messages": {
+        "alreadyExists": "A reusable with this name already exists. Please choose a different name.",
+        "beforeClose": "Your changes are not saved. Would you like to continue?",
+        "deleteConfirmation": "Are you sure?",
+        "saveFailed": "An error occurred while attempting to save a reusable.",
+        "notfound": "There is no reusable with id = %d."
+      },
+      "tabs": {
+        "design": "Design",
+        "versions": "Versions"
+      }
+    }
+  },
   "jobs": {
     "refreshJobs": "刷新工作"
   },
@@ -3423,7 +3447,8 @@
       "ple": "新建人口水平效应估计",
       "plp": "新患者水平预测",
       "role": "新角色",
-      "source": "新来源"
+      "source": "新来源",
+      "reusable": "New Reusable"
     },
     "weekdays": {
       "friday": {

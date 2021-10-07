@@ -1,12 +1,13 @@
 package org.ohdsi.webapi.reusable;
 
-import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.reusable.domain.Reusable;
 import org.ohdsi.webapi.reusable.dto.ReusableDTO;
 import org.ohdsi.webapi.reusable.repository.ReusableRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,6 +65,11 @@ public class ReusableService extends AbstractDaoService {
         return reusableRepository.findAll();
     }
 
+    public Page<ReusableDTO> page(final Pageable pageable) {
+        return reusableRepository.findAll(pageable)
+                .map(reusable -> conversionService.convert(reusable, ReusableDTO.class));
+    }
+
     public ReusableDTO update(Integer id, ReusableDTO entity) {
         Reusable existing = reusableRepository.findOne(id);
 
@@ -104,5 +110,9 @@ public class ReusableService extends AbstractDaoService {
         reusable = reusableRepository.saveAndFlush(reusable);
         entityManager.refresh(reusable);
         return reusableRepository.findOne(reusable.getId());
+    }
+
+    public boolean exists(final String name) {
+        return reusableRepository.findByName(name).isPresent();
     }
 }

@@ -1,19 +1,23 @@
 package org.ohdsi.webapi.reusable;
 
+import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.reusable.dto.ReusableDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import java.util.List;
 
 @Path("/reusable")
 @Controller
@@ -36,8 +40,8 @@ public class ReusableController {
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<ReusableDTO> list() {
-        return reusableService.listDTO();
+    public Page<ReusableDTO> page(@Pagination Pageable pageable) {
+        return reusableService.page(pageable);
     }
 
     @PUT
@@ -54,6 +58,14 @@ public class ReusableController {
     @Consumes(MediaType.APPLICATION_JSON)
     public ReusableDTO get(@PathParam("id") final Integer id) {
         return reusableService.getDTOById(id);
+    }
+
+    @GET
+    @Path("/{id}/exists")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public boolean exists(@PathParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
+        return reusableService.exists(name);
     }
 
     @DELETE

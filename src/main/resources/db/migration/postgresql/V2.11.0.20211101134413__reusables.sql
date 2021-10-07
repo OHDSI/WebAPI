@@ -1,6 +1,7 @@
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
 VALUES (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'reusable:get', 'List reusable'),
        (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'reusable:post', 'Create reusable'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'reusable:*:exists:get', 'Check name uniqueness of reusable'),
        (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'reusable:*:put', 'Update reusable'),
        (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'reusable:*:get', 'Get reusable'),
        (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'reusable:*:delete', 'Delete reusable');
@@ -12,6 +13,7 @@ FROM ${ohdsiSchema}.sec_permission SP,
 WHERE sp.value IN (
                    'reusable:get',
                    'reusable:post',
+                   'reusable:*:exists:get',
                    'reusable:*:put',
                    'reusable:*:get',
                    'reusable:*:delete')

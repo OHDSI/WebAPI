@@ -3517,7 +3517,7 @@
       "executionEditorText_3": "최소 공변량 발생 : 만약 어떤 공변량이 지정한 값보다 적은 비율로 표적 모집단에서 발생하면 제거됩니다.",
       "executionEditorText_4": "공변량 정규화:",
       "populationEditorText_1": "표적 코호트 진입을 기준으로 위험 노출 구간(time-at-risk)의 시작일을 설정합니다:",
-      "populationEditorText_2": "포함한 컨셉 목록에  하위 컨셉을 추가합니까?",
+      "populationEditorText_2": "위험 노출 기간의 종료일을 정의하십시오:",
       "populationEditorText_3": "표적 코호트에 적용되는 최소 선행 관찰 기간",
       "populationEditorText_4": "위험 노출 기간이 없는 대상자를 제거해야 합니까?",
       "populationEditorText_5": "[예] 최소 위험노출 기간",

@@ -77,3 +77,45 @@ CREATE TABLE ${ohdsiSchema}.reusable_tag
 
 CREATE INDEX reusable_tag_reusableidx ON ${ohdsiSchema}.reusable_tag USING btree (asset_id);
 CREATE INDEX reusable_tag_tag_id_idx ON ${ohdsiSchema}.reusable_tag USING btree (tag_id);
+
+INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description)
+VALUES (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'reusable:*:version:get',
+        'Get list of reusables versions'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'reusable:*:version:*:get',
+        'Get reusable version'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'reusable:*:version:*:put',
+        'Update reusable version info'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'reusable:*:version:*:delete',
+        'Delete reusable version info'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'reusable:*:version:*:createAsset:put',
+        'Copy reusable version as new reusable');
+
+INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
+SELECT sr.id, sp.id
+FROM ${ohdsiSchema}.sec_permission SP,
+     ${ohdsiSchema}.sec_role sr
+WHERE sp.value IN (
+                   'reusable:*:version:get',
+                   'reusable:*:version:*:get',
+                   'reusable:*:version:*:put',
+                   'reusable:*:version:*:delete',
+                   'reusable:*:version:*:createAsset:put')
+  AND sr.name IN ('Atlas users');
+
+-- Reusables
+CREATE TABLE ${ohdsiSchema}.reusable_version
+(
+    asset_id      int8                     NOT NULL,
+    comment       varchar                  NULL,
+    description   varchar                  NULL,
+    version       int4                     NOT NULL DEFAULT 1,
+    asset_json    varchar                  NOT NULL,
+    archived      bool                     NOT NULL DEFAULT FALSE,
+    created_by_id INTEGER,
+    created_date  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (now()),
+    CONSTRAINT pk_reusable_version_id PRIMARY KEY (asset_id, version),
+    CONSTRAINT fk_reusable_version_sec_user_creator FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user (id),
+    CONSTRAINT fk_reusable_version_asset_id FOREIGN KEY (asset_id) REFERENCES ${ohdsiSchema}.reusable (id) ON DELETE CASCADE
+);
+
+CREATE INDEX reusable_version_asset_idx ON ${ohdsiSchema}.reusable_version USING btree (asset_id);

@@ -2,6 +2,9 @@ package org.ohdsi.webapi.reusable;
 
 import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.reusable.dto.ReusableDTO;
+import org.ohdsi.webapi.reusable.dto.ReusableVersionFullDTO;
+import org.ohdsi.webapi.versioning.dto.VersionDTO;
+import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +21,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import java.util.List;
 
 @Path("/reusable")
 @Controller
@@ -126,5 +130,75 @@ public class ReusableController {
     @Path("/{id}/protectedtag/{tagId}")
     public void unassignPermissionProtectedTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
         reusableService.unassignTag(id, tagId, true);
+    }
+
+    /**
+     * Get list of versions of Reusable
+     *
+     * @param id
+     * @return
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/")
+    public List<VersionDTO> getVersions(@PathParam("id") final long id) {
+        return reusableService.getVersions(id);
+    }
+
+    /**
+     * Get version of Reusable
+     *
+     * @param id
+     * @param version
+     * @return
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/{version}")
+    public ReusableVersionFullDTO getVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
+        return reusableService.getVersion(id, version);
+    }
+
+    /**
+     * Update version of Reusable
+     *
+     * @param id
+     * @param version
+     * @param updateDTO
+     * @return
+     */
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/{version}")
+    public VersionDTO updateVersion(@PathParam("id") final int id, @PathParam("version") final int version,
+                                    VersionUpdateDTO updateDTO) {
+        return reusableService.updateVersion(id, version, updateDTO);
+    }
+
+    /**
+     * Delete version of Reusable
+     *
+     * @param id
+     * @param version
+     */
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/{version}")
+    public void deleteVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
+        reusableService.deleteVersion(id, version);
+    }
+
+    /**
+     * Create a new asset form version of Reusable
+     *
+     * @param id
+     * @param version
+     * @return
+     */
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/version/{version}/createAsset")
+    public ReusableDTO copyAssetFromVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
+        return reusableService.copyAssetFromVersion(id, version);
     }
 }

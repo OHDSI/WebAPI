@@ -9,9 +9,8 @@ import java.util.Map;
 public class ReusablePermissionSchema extends EntityPermissionSchema {
 
     private static Map<String, String> writePermissions = new HashMap<String, String>() {{
-        put("reusable:*:delete", "Delete reusable");
-        put("reusable:*:put", "Update reusable");
-        put("reusable:post", "Create reusable");
+        put("reusable:%s:delete", "Delete reusable");
+        put("reusable:%s:put", "Update reusable");
     }};
 
     public ReusablePermissionSchema() {

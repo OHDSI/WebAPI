@@ -3518,7 +3518,7 @@
       "executionEditorText_3": "Minimum covariate occurrence: If a covariate occurs in a fraction of the target population less than this value, it will be removed:",
       "executionEditorText_4": "Normalize covariates:",
       "populationEditorText_1": "Define the time-at-risk window start, relative to target cohort entry:",
-      "populationEditorText_2": "Should descendant concepts be added to the list of included concepts?",
+      "populationEditorText_2": "Define the time-at-risk window end:",
       "populationEditorText_3": "Minimum lookback period applied to target cohort:",
       "populationEditorText_4": "Should subjects without time at risk be removed?",
       "populationEditorText_5": "Minimum time at risk:",

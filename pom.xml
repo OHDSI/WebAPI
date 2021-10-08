@@ -1218,8 +1218,8 @@
         <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
         <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
         <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
-        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users_data where \
-          lower(email) = lower(?)</security.db.datasource.authenticationQuery>
+        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.sec_user where \
+          lower(login) = lower(?)</security.db.datasource.authenticationQuery>
       </properties>
       <repositories>
         <repository>

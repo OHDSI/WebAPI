@@ -69,7 +69,7 @@ public class ReusableController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public boolean exists(@PathParam("id") @DefaultValue("0") final int id, @QueryParam("name") String name) {
-        return reusableService.exists(name);
+        return reusableService.exists(id, name);
     }
 
     @DELETE

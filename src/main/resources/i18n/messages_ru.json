@@ -2335,7 +2335,8 @@
       "caption": "Сниппет #<%=id%>",
       "captionVersion": "Сниппет #<%=id%> - Предварительный просмотр версии <%=number%>",
       "design": {
-        "description": "<b>Сниппет</b> это ..."
+        "description": "<b>Сниппет</b> это ...",
+        "descriptionPlaceholder": "Онисание сниппета"
       },
       "messages": {
         "alreadyExists": "Сниппет с таким именем уже существует. Пожалуйста, выберите другое имя.",

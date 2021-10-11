@@ -2335,7 +2335,8 @@
       "caption": "Reusable #<%=id%>",
       "captionVersion": "Reusable #<%=id%> - Version <%=number%> Preview",
       "design": {
-        "description": "<b>Reusable</b> is ..."
+        "description": "<b>Reusable</b> is ...",
+        "descriptionPlaceholder": "Enter description here"
       },
       "messages": {
         "alreadyExists": "A reusable with this name already exists. Please choose a different name.",

@@ -186,8 +186,8 @@ public class ReusableService extends AbstractDaoService {
         return reusableRepository.findOne(reusable.getId());
     }
 
-    public boolean exists(final String name) {
-        return reusableRepository.findByName(name).isPresent();
+    public boolean exists(final int id, final String name) {
+        return reusableRepository.existsCount(id, name) > 0;
     }
 
     public List<String> getNamesLike(String copyName) {

@@ -83,8 +83,6 @@ public class ReusableService extends AbstractDaoService {
         saveVersion(id);
         Reusable existing = reusableRepository.findOne(id);
 
-        checkOwnerOrAdmin(existing.getCreatedBy());
-
         Reusable toUpdate = this.conversionService.convert(entity, Reusable.class);
 
         toUpdate.setCreatedBy(existing.getCreatedBy());

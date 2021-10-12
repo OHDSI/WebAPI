@@ -14,10 +14,16 @@ WHERE sp.value IN (
                    'reusable:get',
                    'reusable:post',
                    'reusable:*:exists:get',
-                   'reusable:*:put',
-                   'reusable:*:get',
-                   'reusable:*:delete')
+                   'reusable:*:get')
   AND sr.name IN ('Atlas users');
+
+INSERT INTO ${ohdsiSchema}.sec_role_permission(role_id, permission_id)
+SELECT sr.id, sp.id
+FROM ${ohdsiSchema}.sec_permission SP,
+     ${ohdsiSchema}.sec_role sr
+WHERE sp.value IN (
+                   'reusable:*:put', 'reusable:*:delete'
+    ) AND sr.name IN ('Moderator');
 
 CREATE SEQUENCE ${ohdsiSchema}.reusable_seq;
 

@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.reusable;
 
+import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.reusable.domain.Reusable;
 import org.ohdsi.webapi.reusable.dto.ReusableDTO;
 import org.ohdsi.webapi.reusable.dto.ReusableVersionFullDTO;
@@ -57,6 +58,8 @@ public class ReusableService extends AbstractDaoService {
     public Reusable create(Reusable reusable) {
         reusable.setCreatedBy(getCurrentUser());
         reusable.setCreatedDate(new Date());
+        reusable.setModifiedBy(null);
+        reusable.setModifiedDate(null);
 
         return save(reusable);
     }
@@ -92,6 +95,15 @@ public class ReusableService extends AbstractDaoService {
 
         Reusable saved = save(toUpdate);
         return conversionService.convert(saved, ReusableDTO.class);
+    }
+
+    public ReusableDTO copy(Integer id) {
+        ReusableDTO def = getDTOById(id);
+        def.setId(null);
+        def.setTags(null);
+        def.setName(NameUtils.getNameForCopy(def.getName(), this::getNamesLike, reusableRepository.findByName(def.getName())));
+        
+        return create(def);
     }
 
     public void assignTag(int id, int tagId, boolean isPermissionProtected) {

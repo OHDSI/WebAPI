@@ -1,8 +1,10 @@
 package org.ohdsi.webapi.reusable;
 
 import org.ohdsi.webapi.Pagination;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.reusable.dto.ReusableDTO;
 import org.ohdsi.webapi.reusable.dto.ReusableVersionFullDTO;
+import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 
+import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -54,6 +57,14 @@ public class ReusableController {
     @Consumes(MediaType.APPLICATION_JSON)
     public ReusableDTO update(@PathParam("id") final Integer id, final ReusableDTO dto) {
         return reusableService.update(id, dto);
+    }
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/{id}")
+    public ReusableDTO copy(@PathParam("id") final int id) {
+        return reusableService.copy(id);
     }
 
     @GET

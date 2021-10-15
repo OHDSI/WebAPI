@@ -3,6 +3,7 @@ VALUES (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'reusable:get', 'List r
        (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'reusable:post', 'Create reusable'),
        (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'reusable:*:exists:get', 'Check name uniqueness of reusable'),
        (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'reusable:*:put', 'Update reusable'),
+       (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'reusable:*:post', 'Copy reusable'),
        (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'reusable:*:get', 'Get reusable'),
        (NEXTVAL('${ohdsiSchema}.sec_permission_id_seq'), 'reusable:*:delete', 'Delete reusable');
 
@@ -13,6 +14,7 @@ FROM ${ohdsiSchema}.sec_permission SP,
 WHERE sp.value IN (
                    'reusable:get',
                    'reusable:post',
+                   'reusable:*:post',
                    'reusable:*:exists:get',
                    'reusable:*:get')
   AND sr.name IN ('Atlas users');

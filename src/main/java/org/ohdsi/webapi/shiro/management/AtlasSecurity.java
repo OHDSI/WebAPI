@@ -114,6 +114,9 @@ public abstract class AtlasSecurity extends Security {
             //i18n
             .addRestPath("/i18n")
             .addRestPath("/i18n/**")
+            
+            // TODO remove
+            .addRestPath("/cohort-characterization/byTags")
 
             .addProtectedRestPath("/**/*");
   }

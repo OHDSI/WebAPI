@@ -46,6 +46,7 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.tag.TagService;
+import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
@@ -617,6 +618,24 @@ public class ConceptSetService extends AbstractDaoService {
         saveConceptSetItems(createdDTO.getId(), fullDTO.getItems().toArray(new ConceptSetItem[0]));
 
         return createdDTO;
+    }
+
+    /**
+     * Get list of concept sets with assigned tags
+     *
+     * @param requestDTO
+     * @return
+     */
+    @POST
+    @Path("/byTags")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public List<ConceptSetDTO> listByTags(TagNameListRequestDTO requestDTO) {
+        List<String> names = requestDTO.getNames().stream()
+                .map(name -> name.toLowerCase(Locale.ROOT))
+                .collect(Collectors.toList());
+        List<ConceptSet> entities = getConceptSetRepository().findByTags(names);
+        return listByTags(entities, names, ConceptSetDTO.class);
     }
 
     private void checkVersion(int id, int version) {

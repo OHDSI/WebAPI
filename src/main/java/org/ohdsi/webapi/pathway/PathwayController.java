@@ -19,6 +19,7 @@ import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.tag.TagService;
+import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
@@ -434,5 +435,19 @@ public class PathwayController {
     @Path("/{id}/version/{version}/createAsset")
     public PathwayAnalysisDTO copyAssetFromVersion(@PathParam("id") final int id, @PathParam("version") final int version){
         return pathwayService.copyAssetFromVersion(id, version);
+    }
+
+    /**
+     * Get list of pathways with assigned tags
+     *
+     * @param requestDTO
+     * @return
+     */
+    @POST
+    @Path("/byTags")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public List<PathwayAnalysisDTO> listByTags(TagNameListRequestDTO requestDTO) {
+        return pathwayService.listByTags(requestDTO);
     }
 }

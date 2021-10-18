@@ -7,6 +7,7 @@ import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayVersionFullDTO;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
 import org.ohdsi.webapi.shiro.annotations.PathwayAnalysisGenerationId;
+import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.versioning.domain.PathwayVersion;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
@@ -69,4 +70,6 @@ public interface PathwayService {
     PathwayAnalysisDTO copyAssetFromVersion(int id, int version);
 
     PathwayVersion saveVersion(int id);
+
+    List<PathwayAnalysisDTO> listByTags(TagNameListRequestDTO requestDTO);
 }

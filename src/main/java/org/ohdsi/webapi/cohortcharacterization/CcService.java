@@ -5,6 +5,7 @@ import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcShortDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcVersionFullDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.ExecutionResultRequest;
@@ -14,6 +15,7 @@ import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.cohortdefinition.event.CohortDefinitionChangedEvent;
 import org.ohdsi.webapi.feanalysis.event.FeAnalysisChangedEvent;
 import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.versioning.domain.CharacterizationVersion;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
@@ -103,4 +105,6 @@ public interface CcService {
     CohortCharacterizationDTO copyAssetFromVersion(long id, int version);
 
     CharacterizationVersion saveVersion(long id);
+
+    List<CcShortDTO> listByTags(TagNameListRequestDTO requestDTO);
 }

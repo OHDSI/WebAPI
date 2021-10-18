@@ -2,15 +2,16 @@ package org.ohdsi.webapi.tagging;
 
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
 import org.ohdsi.webapi.pathway.PathwayController;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisExportDTO;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisEntityRepository;
+import org.ohdsi.webapi.tag.domain.Tag;
+import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
+import java.util.List;
 
 public class PathwayTaggingTest extends BaseTaggingTest<PathwayAnalysisDTO, Integer> {
     private static final String JSON_PATH = "/tagging/pathway.json";
@@ -31,6 +32,11 @@ public class PathwayTaggingTest extends BaseTaggingTest<PathwayAnalysisDTO, Inte
         dto.setName("test dto name");
 
         initialDTO = service.importAnalysis(dto);
+    }
+
+    @Override
+    protected PathwayAnalysisDTO doCopyData(PathwayAnalysisDTO def) {
+        return service.copy(def.getId());
     }
 
     @Override
@@ -72,5 +78,19 @@ public class PathwayTaggingTest extends BaseTaggingTest<PathwayAnalysisDTO, Inte
     @Override
     protected Integer getId(PathwayAnalysisDTO dto) {
         return dto.getId();
+    }
+
+    @Override
+    protected void assignTags(Integer id, Tag...tags) {
+        for (Tag tag : tags) {
+            service.assignTag(id, tag.getId());
+        }
+    }
+
+    @Override
+    protected List<PathwayAnalysisDTO> getDTOsByTag(List<String> tagNames) {
+        TagNameListRequestDTO requestDTO = new TagNameListRequestDTO();
+        requestDTO.setNames(tagNames);
+        return service.listByTags(requestDTO);
     }
 }

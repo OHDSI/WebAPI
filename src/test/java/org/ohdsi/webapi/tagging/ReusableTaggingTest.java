@@ -3,9 +3,12 @@ package org.ohdsi.webapi.tagging;
 import org.ohdsi.webapi.reusable.ReusableController;
 import org.ohdsi.webapi.reusable.dto.ReusableDTO;
 import org.ohdsi.webapi.reusable.repository.ReusableRepository;
+import org.ohdsi.webapi.tag.domain.Tag;
+import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
+import java.util.List;
 
 public class ReusableTaggingTest extends BaseTaggingTest<ReusableDTO, Integer> {
     @Autowired
@@ -22,6 +25,11 @@ public class ReusableTaggingTest extends BaseTaggingTest<ReusableDTO, Integer> {
         dto.setDescription("test description");
 
         initialDTO = controller.create(dto);
+    }
+
+    @Override
+    protected ReusableDTO doCopyData(ReusableDTO def) {
+        return controller.copy(def.getId());
     }
 
     @Override
@@ -62,5 +70,19 @@ public class ReusableTaggingTest extends BaseTaggingTest<ReusableDTO, Integer> {
     @Override
     protected Integer getId(ReusableDTO dto) {
         return dto.getId();
+    }
+
+    @Override
+    protected void assignTags(Integer id, Tag...tags) {
+        for (Tag tag : tags) {
+            controller.assignTag(id, tag.getId());
+        }
+    }
+
+    @Override
+    protected List<ReusableDTO> getDTOsByTag(List<String> tagNames) {
+        TagNameListRequestDTO requestDTO = new TagNameListRequestDTO();
+        requestDTO.setNames(tagNames);
+        return controller.listByTags(requestDTO);
     }
 }

@@ -1,12 +1,12 @@
 package org.ohdsi.webapi.reusable;
 
-import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.reusable.domain.Reusable;
 import org.ohdsi.webapi.reusable.dto.ReusableDTO;
 import org.ohdsi.webapi.reusable.dto.ReusableVersionFullDTO;
 import org.ohdsi.webapi.reusable.repository.ReusableRepository;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.versioning.domain.ReusableVersion;
@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -102,7 +103,7 @@ public class ReusableService extends AbstractDaoService {
         def.setId(null);
         def.setTags(null);
         def.setName(NameUtils.getNameForCopy(def.getName(), this::getNamesLike, reusableRepository.findByName(def.getName())));
-        
+
         return create(def);
     }
 
@@ -162,6 +163,14 @@ public class ReusableService extends AbstractDaoService {
         dto.setName(NameUtils.getNameForCopy(dto.getName(), this::getNamesLike,
                 reusableRepository.findByName(dto.getName())));
         return create(dto);
+    }
+
+    public List<ReusableDTO> listByTags(TagNameListRequestDTO requestDTO) {
+        List<String> names = requestDTO.getNames().stream()
+                .map(name -> name.toLowerCase(Locale.ROOT))
+                .collect(Collectors.toList());
+        List<Reusable> entities = reusableRepository.findByTags(names);
+        return listByTags(entities, names, ReusableDTO.class);
     }
 
     private void checkVersion(int id, int version) {

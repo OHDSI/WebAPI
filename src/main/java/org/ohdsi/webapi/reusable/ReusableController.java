@@ -1,10 +1,9 @@
 package org.ohdsi.webapi.reusable;
 
 import org.ohdsi.webapi.Pagination;
-import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.reusable.dto.ReusableDTO;
 import org.ohdsi.webapi.reusable.dto.ReusableVersionFullDTO;
-import org.ohdsi.webapi.util.NameUtils;
+import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +11,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 
-import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -211,5 +209,19 @@ public class ReusableController {
     @Path("/{id}/version/{version}/createAsset")
     public ReusableDTO copyAssetFromVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
         return reusableService.copyAssetFromVersion(id, version);
+    }
+
+    /**
+     * Get list of reusables with assigned tags
+     *
+     * @param requestDTO
+     * @return
+     */
+    @POST
+    @Path("/byTags")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public List<ReusableDTO> listByTags(TagNameListRequestDTO requestDTO) {
+        return reusableService.listByTags(requestDTO);
     }
 }

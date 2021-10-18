@@ -66,6 +66,7 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.tag.TagService;
+import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.NameUtils;
@@ -109,6 +110,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -873,6 +875,16 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     dto.setName(NameUtils.getNameForCopy(dto.getName(), this::getNamesLike,
             irAnalysisRepository.findByName(dto.getName())));
     return createAnalysis(dto);
+  }
+
+  @Override
+  @Transactional
+  public List<IRAnalysisDTO> listByTags(TagNameListRequestDTO requestDTO) {
+    List<String> names = requestDTO.getNames().stream()
+            .map(name -> name.toLowerCase(Locale.ROOT))
+            .collect(Collectors.toList());
+    List<IncidenceRateAnalysis> entities = irAnalysisRepository.findByTags(names);
+    return listByTags(entities, names, IRAnalysisDTO.class);
   }
 
   @PostConstruct

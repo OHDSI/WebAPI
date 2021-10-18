@@ -42,4 +42,7 @@ public interface IncidenceRateAnalysisRepository extends EntityGraphCrudReposito
   List<IncidenceRateAnalysis> findAllByNameStartsWith(String pattern);
   
   Optional<IncidenceRateAnalysis> findByName(String name);
+
+  @Query("SELECT DISTINCT ira FROM IncidenceRateAnalysis ira JOIN FETCH ira.tags t WHERE lower(t.name) in :tagNames")
+  List<IncidenceRateAnalysis> findByTags(@Param("tagNames") List<String> tagNames);
 }

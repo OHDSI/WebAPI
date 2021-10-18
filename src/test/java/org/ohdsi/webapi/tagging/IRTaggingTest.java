@@ -5,9 +5,12 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
 import org.ohdsi.webapi.service.IRAnalysisService;
 import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
+import org.ohdsi.webapi.tag.domain.Tag;
+import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
+import java.util.List;
 
 public class IRTaggingTest extends BaseTaggingTest<IRAnalysisDTO, Integer> {
     private static final String JSON_PATH = "/tagging/ir.json";
@@ -27,6 +30,11 @@ public class IRTaggingTest extends BaseTaggingTest<IRAnalysisDTO, Integer> {
         IRAnalysisDTO dto = deserializeExpression(expression);
 
         initialDTO = service.doImport(dto);
+    }
+
+    @Override
+    protected IRAnalysisDTO doCopyData(IRAnalysisDTO def) {
+        return service.copy(def.getId());
     }
 
     private IRAnalysisDTO deserializeExpression(String expression) {
@@ -77,5 +85,19 @@ public class IRTaggingTest extends BaseTaggingTest<IRAnalysisDTO, Integer> {
     @Override
     protected Integer getId(IRAnalysisDTO dto) {
         return dto.getId();
+    }
+
+    @Override
+    protected void assignTags(Integer id, Tag...tags) {
+        for (Tag tag : tags) {
+            service.assignTag(id, tag.getId());
+        }
+    }
+
+    @Override
+    protected List<IRAnalysisDTO> getDTOsByTag(List<String> tagNames) {
+        TagNameListRequestDTO requestDTO = new TagNameListRequestDTO();
+        requestDTO.setNames(tagNames);
+        return service.listByTags(requestDTO);
     }
 }

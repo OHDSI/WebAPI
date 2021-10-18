@@ -16,4 +16,7 @@ public interface ReusableRepository extends JpaRepository<Reusable, Integer> {
 
     @Query("SELECT COUNT(r) FROM Reusable r WHERE r.name = :name and r.id <> :id")
     int existsCount(@Param("id") Integer id, @Param("name") String name);
+
+    @Query("SELECT DISTINCT r FROM Reusable r JOIN FETCH r.tags t WHERE lower(t.name) in :tagNames")
+    List<Reusable> findByTags(@Param("tagNames") List<String> tagNames);
 }

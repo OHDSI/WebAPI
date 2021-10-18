@@ -42,6 +42,7 @@ import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceService;
+import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.NameUtils;
@@ -81,6 +82,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -568,6 +570,15 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 		PathwayAnalysisEntity pathwayAnalysis = genericConversionService.convert(dto, PathwayAnalysisEntity.class);
 		PathwayAnalysisEntity saved = create(pathwayAnalysis);
 		return genericConversionService.convert(saved, PathwayAnalysisDTO.class);
+	}
+
+	@Override
+	public List<PathwayAnalysisDTO> listByTags(TagNameListRequestDTO requestDTO) {
+		List<String> names = requestDTO.getNames().stream()
+				.map(name -> name.toLowerCase(Locale.ROOT))
+				.collect(Collectors.toList());
+		List<PathwayAnalysisEntity> entities = pathwayAnalysisRepository.findByTags(names);
+		return listByTags(entities, names, PathwayAnalysisDTO.class);
 	}
 
 	private void checkVersion(int id, int version) {

@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -84,17 +85,20 @@ public class ReusableService extends AbstractDaoService {
     }
 
     public ReusableDTO update(Integer id, ReusableDTO entity) {
+        Date currentTime = Calendar.getInstance().getTime();
+
         saveVersion(id);
+
         Reusable existing = reusableRepository.findOne(id);
+        UserEntity modifier = userRepository.findByLogin(security.getSubject());
 
-        Reusable toUpdate = this.conversionService.convert(entity, Reusable.class);
+        existing.setName(entity.getName())
+                .setDescription(entity.getDescription())
+                .setData(entity.getData());
+        existing.setModifiedBy(modifier);
+        existing.setModifiedDate(currentTime);
 
-        toUpdate.setCreatedBy(existing.getCreatedBy());
-        toUpdate.setCreatedDate(existing.getCreatedDate());
-        toUpdate.setModifiedBy(getCurrentUser());
-        toUpdate.setModifiedDate(new Date());
-
-        Reusable saved = save(toUpdate);
+        Reusable saved = save(existing);
         return conversionService.convert(saved, ReusableDTO.class);
     }
 

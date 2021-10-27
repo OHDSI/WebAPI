@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.audittrail;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.SignatureException;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -73,8 +74,8 @@ public class AuditTrailAspect {
 
                 entry.setCurrentUser(user);
                 entry.setSessionId(sessionId);
-            } catch (final ExpiredJwtException e) {
-                // ignore expired token. let the application create a new one
+            } catch (final ExpiredJwtException | SignatureException e ) {
+                // ignore expired or invalid token. let the application create a new one
             }
         }
 

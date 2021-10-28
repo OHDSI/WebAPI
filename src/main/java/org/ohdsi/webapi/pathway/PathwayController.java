@@ -448,6 +448,9 @@ public class PathwayController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public List<PathwayAnalysisDTO> listByTags(TagNameListRequestDTO requestDTO) {
+        if (requestDTO == null || requestDTO.getNames() == null || requestDTO.getNames().isEmpty()) {
+            return Collections.emptyList();
+        }
         return pathwayService.listByTags(requestDTO);
     }
 }

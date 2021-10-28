@@ -563,6 +563,9 @@ public class CcController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public List<CcShortDTO> listByTags(TagNameListRequestDTO requestDTO) {
+        if (requestDTO == null || requestDTO.getNames() == null || requestDTO.getNames().isEmpty()) {
+            return Collections.emptyList();
+        }
         return service.listByTags(requestDTO);
     }
 

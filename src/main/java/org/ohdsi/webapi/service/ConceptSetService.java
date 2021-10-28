@@ -631,6 +631,9 @@ public class ConceptSetService extends AbstractDaoService {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public List<ConceptSetDTO> listByTags(TagNameListRequestDTO requestDTO) {
+        if (requestDTO == null || requestDTO.getNames() == null || requestDTO.getNames().isEmpty()) {
+            return Collections.emptyList();
+        }
         List<String> names = requestDTO.getNames().stream()
                 .map(name -> name.toLowerCase(Locale.ROOT))
                 .collect(Collectors.toList());

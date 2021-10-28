@@ -183,7 +183,7 @@
     <spring.datasource.hikari.mbean-name>authDataSource</spring.datasource.hikari.mbean-name>
 
     <!-- EMBEDDED SERVER CONFIGURATION (ServerProperties) -->
-    <server.port>8070</server.port>
+    <server.port>8080</server.port>
     <server.ssl.key-store></server.ssl.key-store>
     <server.ssl.key-store-password></server.ssl.key-store-password>
     <server.ssl.key-password></server.ssl.key-password>

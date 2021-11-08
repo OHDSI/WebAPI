@@ -17,6 +17,7 @@ import org.ohdsi.webapi.model.CommonEntityExt;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
+import org.ohdsi.webapi.shiro.management.DisabledSecurity;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceHelper;
@@ -336,6 +337,10 @@ public abstract class AbstractDaoService extends AbstractAdminService {
   }
 
   protected void checkOwnerOrAdmin(UserEntity owner) {
+    if (security instanceof DisabledSecurity) {
+      return;
+    }
+
     UserEntity user = getCurrentUser();
     Long ownerId = Objects.nonNull(owner) ? owner.getId() : null;
 
@@ -345,6 +350,10 @@ public abstract class AbstractDaoService extends AbstractAdminService {
   }
 
   protected void checkOwnerOrAdminOrGranted(CommonEntity<?> entity) {
+    if (security instanceof DisabledSecurity) {
+      return;
+    }
+
     UserEntity user = getCurrentUser();
     Long ownerId = Objects.nonNull(entity.getCreatedBy()) ? entity.getCreatedBy().getId() : null;
 

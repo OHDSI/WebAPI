@@ -30,7 +30,7 @@ import org.ohdsi.webapi.annotation.set.QuestionSet;
 import org.springframework.web.bind.annotation.RequestBody;
 
 
-@Path("annotations")
+@Path("annotation")
 @Component
 public class AnnotationController {
 

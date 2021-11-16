@@ -40,6 +40,8 @@ tryCatch({
         connectionDetails$password <- function() Sys.getenv("DBMS_PASSWORD")
         connectionDetails$connectionString <- function() Sys.getenv("CONNECTION_STRING")
 
+        options(sqlRenderTempEmulationSchema = resultsDatabaseSchema)
+
         outputFolder <- file.path(getwd(), 'results')
         dir.create(outputFolder)
 

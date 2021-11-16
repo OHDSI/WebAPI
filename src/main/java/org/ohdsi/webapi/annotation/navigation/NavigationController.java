@@ -17,7 +17,7 @@ import javax.annotation.PostConstruct;
 import org.ohdsi.webapi.annotation.annotation.AnnotationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@Path("annotations/")
+@Path("annotation/")
 @Component
 public class NavigationController extends AbstractDaoService {
 

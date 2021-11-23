@@ -25,7 +25,7 @@
 
     <circe.version>1.9.4</circe.version>
     <jersey.version>2.14</jersey.version>
-    <SqlRender.version>1.7.0.102</SqlRender.version>
+    <SqlRender.version>1.8.1</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
     <pac4j.version>4.0.0</pac4j.version>
     <jackson.version>2.10.5</jackson.version>

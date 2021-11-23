@@ -1145,6 +1145,7 @@
       "fixIt": "修复它"
     },
     "tags": {
+      "loadingTags": "Loading tags list...",
       "title": "Assign Tags",
       "tabs": {
         "studyAssetTags": "Study Asset Tags",
@@ -1162,7 +1163,19 @@
       "showTags": "Show tags",
       "tagNameExistsWarning": "Tag <%=tagName%> already exists.",
       "cannotUnassignProtectedTagWarning": "Cannot unassign protected tag: <%=tagName%>",
-      "reassignConfirm": "The maximum number of assigned tags in the tag group \"<%=tagGroup%>\" is <%=maxNumber%>. The tag \"<%=tagName%>\" will be unassigned. Proceed?"
+      "reassignConfirm": "The maximum number of assigned tags in the tag group \"<%=tagGroup%>\" is <%=maxNumber%>. The tag \"<%=tagName%>\" will be unassigned. Proceed?",
+      "typeSystem": "System",
+      "typeCustom": "Free-form",
+      "createAndAssign": "Create and Assign"
+    },
+    "heading": {
+      "tag": {
+        "tooltip": {
+          "tag": "Tag:",
+          "group": "Group:",
+          "groups": "Groups:"
+        }
+      }
     },
     "versions": {
       "loading": "Loading versions...",

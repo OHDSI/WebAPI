@@ -20,7 +20,6 @@ import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.io.OutputStream;
 import java.util.List;

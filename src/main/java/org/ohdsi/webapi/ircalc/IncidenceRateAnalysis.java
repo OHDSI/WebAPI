@@ -22,7 +22,6 @@ import javax.persistence.*;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
-import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.model.CommonEntityExt;
 import org.ohdsi.webapi.tag.domain.Tag;
 

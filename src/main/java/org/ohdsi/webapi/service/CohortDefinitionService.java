@@ -53,7 +53,6 @@ import org.ohdsi.webapi.shiro.management.datasource.SourceIdAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
-import org.ohdsi.webapi.tag.TagService;
 import org.ohdsi.webapi.util.*;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.NameUtils;
@@ -182,9 +181,6 @@ public class CohortDefinitionService extends AbstractDaoService {
 
 	@PersistenceContext
 	protected EntityManager entityManager;
-
-	@Autowired
-	private TagService tagService;
 
 	@Autowired
 	private CohortChecker cohortChecker;

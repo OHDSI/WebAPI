@@ -45,7 +45,6 @@ import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.source.SourceService;
-import org.ohdsi.webapi.tag.TagService;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
@@ -93,9 +92,6 @@ public class ConceptSetService extends AbstractDaoService {
 
     @Autowired
     private PermissionService permissionService;
-
-    @Autowired
-    private TagService tagService;
 
     @Autowired
     private ConceptSetChecker checker;

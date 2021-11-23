@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 import com.odysseusinc.arachne.commons.types.DBMSType;
 import org.apache.commons.lang.ArrayUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
+import org.ohdsi.sql.BigQuerySparkTranslate;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.source.Source;
@@ -29,6 +30,7 @@ import org.springframework.jdbc.core.PreparedStatementSetter;
  */
 public class PreparedStatementRenderer implements ParameterizedSqlProvider {
 
+  private Source source;
   private String sql;
   private String sourceDialect = "sql server";
   private String tempSchema = null;
@@ -72,6 +74,8 @@ public class PreparedStatementRenderer implements ParameterizedSqlProvider {
   public PreparedStatementRenderer(Source source, String sqlResource, String[] searchRegexes, String[] replacementStrings, String[] sqlVariableNames, Object[] sqlVariableValues, String sessionId) {
 
     super();
+
+    this.source = source;
 
     validateArguments(source, sqlResource, searchRegexes, replacementStrings, sourceDialect, sqlVariableNames, sqlVariableValues);
     /// this part does the heavy lifting, the calling classes can get needed items through getters
@@ -283,6 +287,13 @@ public class PreparedStatementRenderer implements ParameterizedSqlProvider {
   }
 
   public String getSql() {
+    if (targetDialect.equals("spark")) {
+      try {
+        sql = BigQuerySparkTranslate.sparkHandleInsert(sql, source.getSourceConnection());
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
+    }
     return SqlTranslate.translateSingleStatementSql(sql, targetDialect, sessionId, tempSchema);
   }
 

@@ -65,7 +65,6 @@ import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceService;
-import org.ohdsi.webapi.tag.TagService;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.NameUtils;
@@ -86,7 +85,6 @@ import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -187,9 +185,6 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
 
   @Autowired
   private VersionService<IRVersion> versionService;
-
-  @Autowired
-  private TagService tagService;
 
   public IRAnalysisService(final ObjectMapper objectMapper) {
 

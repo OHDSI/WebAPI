@@ -1,9 +1,12 @@
 package org.ohdsi.webapi.pathway;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.ohdsi.analysis.Utils;
+import org.ohdsi.sql.BigQuerySparkTranslate;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayEventCohort;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisExportDTO;
@@ -157,7 +160,7 @@ public class PathwayStatisticsTasklet extends CancelableTasklet {
 		return jdbcTemplate.batchUpdate(stmtCancel, creators);
 	}
 
-	private int[] savePaths(Source source, Long generationId) {
+	private int[] savePaths(Source source, Long generationId) throws SQLException {
 
 		PreparedStatementRenderer pathwayEventsPsr = new PreparedStatementRenderer(
 						source,
@@ -168,6 +171,11 @@ public class PathwayStatisticsTasklet extends CancelableTasklet {
 						new Object[]{generationId}
 		);
 
-		return new int[]{jdbcTemplate.update(pathwayEventsPsr.getSql(), pathwayEventsPsr.getSetter())};
+		String sql = pathwayEventsPsr.getSql();
+		if (source.getSourceDialect().equals("spark")) {
+			sql = BigQuerySparkTranslate.sparkHandleInsert(sql, source.getSourceConnection());
+		}
+
+		return new int[]{jdbcTemplate.update(sql, pathwayEventsPsr.getSetter())};
 	}
 }

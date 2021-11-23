@@ -18,7 +18,6 @@ import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.tag.TagService;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
@@ -51,10 +50,9 @@ public class PathwayController {
     private final I18nService i18nService;
     private PathwayChecker checker;
     private PermissionService permissionService;
-    private final TagService tagService;
 
     @Autowired
-    public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService, PathwayChecker checker, PermissionService permissionService, I18nService i18nService, TagService tagService) {
+    public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService, PathwayChecker checker, PermissionService permissionService, I18nService i18nService) {
 
         this.conversionService = conversionService;
         this.converterUtils = converterUtils;
@@ -64,7 +62,6 @@ public class PathwayController {
         this.i18nService = i18nService;
         this.checker = checker;
         this.permissionService = permissionService;
-        this.tagService = tagService;
     }
 
     @POST

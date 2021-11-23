@@ -86,7 +86,6 @@ public class CcController {
     private final SourceService sourceService;
     private CharacterizationChecker checker;
     private PermissionService permissionService;
-    private final TagService tagService;
 
     public CcController(
             final CcService service,
@@ -95,8 +94,7 @@ public class CcController {
             final ConverterUtils converterUtils,
             CommonGenerationSensitiveInfoService sensitiveInfoService,
             SourceService sourceService, CharacterizationChecker checker,
-            PermissionService permissionService,
-            TagService tagService) {
+            PermissionService permissionService) {
         this.service = service;
         this.feAnalysisService = feAnalysisService;
         this.conversionService = conversionService;
@@ -105,7 +103,6 @@ public class CcController {
         this.sourceService = sourceService;
         this.checker = checker;
         this.permissionService = permissionService;
-        this.tagService = tagService;
         FeatureExtraction.init(null);
     }
 

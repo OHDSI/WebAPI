@@ -1145,6 +1145,7 @@
       "fixIt": "Исправить"
     },
     "tags": {
+      "loadingTags": "Загрузка списка тегов...",
       "title": "Назначение тегов",
       "tabs": {
         "studyAssetTags": "Теги",
@@ -1162,7 +1163,19 @@
       "showTags": "Показать теги",
       "tagNameExistsWarning": "Тег <%=tagName%> уже существует.",
       "cannotUnassignProtectedTagWarning": "Невозможно отменить назначение защищенного тега: <%=tagName%>",
-      "reassignConfirm": "Превышено максимальное количество назначенных тегов в группе \"<%=tagGroup%>\": не более <%=maxNumber%>. Тег \"<%=tagName%>\" будет снят. Продолжить?"
+      "reassignConfirm": "Превышено максимальное количество назначенных тегов в группе \"<%=tagGroup%>\": не более <%=maxNumber%>. Тег \"<%=tagName%>\" будет снят. Продолжить?",
+      "typeSystem": "Системные",
+      "typeCustom": "Пользовательские",
+      "createAndAssign": "Создать и назначить"
+    },
+    "heading": {
+      "tag": {
+        "tooltip": {
+          "tag": "Тег:",
+          "group": "Группа:",
+          "groups": "Группы:"
+        }
+      }
     },
     "versions": {
       "loading": "Загрузка версий...",

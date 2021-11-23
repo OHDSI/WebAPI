@@ -23,6 +23,8 @@ import java.util.Date;
 import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public abstract class BaseTaggingTest<T extends CommonEntityExtDTO, ID extends Number> extends AbstractDatabaseTest {
     protected T initialDTO;

@@ -62,6 +62,8 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
             ex = new RuntimeException(cause);
         } else if (ex instanceof UnauthorizedException || ex instanceof ForbiddenException) {
             responseStatus = Status.FORBIDDEN;
+        } else if (ex instanceof ForbiddenException) {
+            responseStatus = Status.FORBIDDEN;
         } else if (ex instanceof NotFoundException) {
             responseStatus = Status.NOT_FOUND;
         } else if (ex instanceof BadRequestException) {
@@ -89,21 +91,7 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
             // Create new message to prevent sending error information to client
             ex = new RuntimeException(ex.getMessage());
         } else if (ex instanceof ConceptNotExistException) {
-            responseStatus = Status.BAD_REQUEST;
-        } else if (ex instanceof UndeclaredThrowableException) {
-            Throwable throwable = getThrowable((UndeclaredThrowableException)ex);
-            if (Objects.nonNull(throwable)) {
-                if (throwable instanceof ConceptNotExistException) {
-                    responseStatus = Status.BAD_REQUEST;
-                    ex = throwable;
-                } else {
-                    responseStatus = Status.INTERNAL_SERVER_ERROR;
-                    ex = new RuntimeException("An exception occurred: " + ex.getClass().getName());
-                }
-            } else {
-                responseStatus = Status.INTERNAL_SERVER_ERROR;
-                ex = new RuntimeException("An exception occurred: " + ex.getClass().getName());
-            }
+            responseStatus = Status.BAD_REQUEST;            
         } else {
             responseStatus = Status.INTERNAL_SERVER_ERROR;
             // Create new message to prevent sending error information to client

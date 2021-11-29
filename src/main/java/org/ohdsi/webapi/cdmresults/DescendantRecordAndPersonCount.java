@@ -20,22 +20,22 @@ import java.util.Arrays;
 import java.util.List;
 
 public class DescendantRecordAndPersonCount extends DescendantRecordCount {
-    private long personCount;
-    private long descendantPersonCount;
+    private Long personCount;
+    private Long descendantPersonCount;
 
-    public long getPersonCount() {
+    public Long getPersonCount() {
         return personCount;
     }
 
-    public void setPersonCount(long personCount) {
+    public void setPersonCount(Long personCount) {
         this.personCount = personCount;
     }
 
-    public long getDescendantPersonCount() {
+    public Long getDescendantPersonCount() {
         return descendantPersonCount;
     }
 
-    public void setDescendantPersonCount(long descendantPersonCount) {
+    public void setDescendantPersonCount(Long descendantPersonCount) {
         this.descendantPersonCount = descendantPersonCount;
     }
 

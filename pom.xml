@@ -218,6 +218,9 @@
 
     <!-- Logging -->
     <spring.jpa.show-sql>false</spring.jpa.show-sql>
+    <spring.jpa.properties.hibernate.generate_statistics>false</spring.jpa.properties.hibernate.generate_statistics>
+    <spring.jpa.properties.hibernate.jdbc.batch_size>200</spring.jpa.properties.hibernate.jdbc.batch_size>
+    <spring.jpa.properties.hibernate.order_inserts>true</spring.jpa.properties.hibernate.order_inserts>    
     <logging.level.root>info</logging.level.root>
     <logging.level.org.ohdsi>info</logging.level.org.ohdsi>
     <logging.level.org.springframework.orm>info</logging.level.org.springframework.orm>
@@ -256,9 +259,10 @@
     <cache.generation.invalidAfterDays>30</cache.generation.invalidAfterDays>
     <cache.generation.cleanupInterval>3600000</cache.generation.cleanupInterval>
     <cache.generation.useAsync>false</cache.generation.useAsync>
+    <!-- Number of spring jobs that will be used for caching -->
+    <cache.jobs.count>3</cache.jobs.count>
     <!-- Achilles cache -->
     <cache.achilles.usePersonCount>true</cache.achilles.usePersonCount>
-    <cache.achilles.batchSize>50</cache.achilles.batchSize>
 
     <!-- Build info -->
     <buildinfo.atlas.milestone.id>41</buildinfo.atlas.milestone.id>

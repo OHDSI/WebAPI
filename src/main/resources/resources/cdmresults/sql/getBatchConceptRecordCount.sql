@@ -3,15 +3,17 @@ WITH concepts AS (
       CAST(ancestor_concept_id AS VARCHAR)   ancestor_id,
       CAST(descendant_concept_id AS VARCHAR) descendant_id
     FROM @vocabularyTableQualifier.concept_ancestor ca
+    WHERE ancestor_concept_id >= @conceptIdentifierMin and ancestor_concept_id <= @conceptIdentifierMax
     UNION
     SELECT
       CAST(concept_id AS VARCHAR) ancestor_id,
       CAST(concept_id AS VARCHAR) descendant_id
     FROM @vocabularyTableQualifier.concept c
+    WHERE concept_id >= @conceptIdentifierMin and concept_id <= @conceptIdentifierMax
 ), counts AS (
 SELECT stratum_1 concept_id, MAX (count_value) agg_count_value
 FROM @resultTableQualifier.achilles_results
-WHERE analysis_id IN (2, 4, 5, 201, 225, 301, 325, 401, 425, 501, 505, 525, 601, 625, 701, 725, 801, 825,
+WHERE analysis_id IN (2, 4, 5, 201, 225, 301, 325, 401, 425, 501, 505, 525, 601, 625, 701, 725, 801, 825, 
 826, 827, 901, 1001, 1201, 1203, 1425, 1801, 1825, 1826, 1827, 2101, 2125, 2301)
 		/* analyses:
  			 Number of persons by gender
@@ -77,4 +79,3 @@ FROM concepts
   LEFT JOIN counts c1 ON concepts.ancestor_id = c1.concept_id
   LEFT JOIN counts c2 ON concepts.descendant_id = c2.concept_id
 GROUP BY concepts.ancestor_id
-;

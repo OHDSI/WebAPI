@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.javafx.binding.StringFormatter;
 import org.ohdsi.webapi.achilles.domain.AchillesCacheEntity;
-import org.ohdsi.webapi.achilles.repository.AchillesCacheBatchRepository;
 import org.ohdsi.webapi.achilles.repository.AchillesCacheRepository;
 import org.ohdsi.webapi.source.Source;
 import org.slf4j.Logger;
@@ -26,18 +25,14 @@ import java.util.Optional;
 public class AchillesCacheService {
     private final AchillesCacheRepository cacheRepository;
 
-    private final AchillesCacheBatchRepository batchRepository;
-
     private final ObjectMapper objectMapper;
 
-    @Value("${cache.achilles.batchSize:100}")
-    private int cacheBatchSize;
+    @Value("${spring.jpa.properties.hibernate.jdbc.batch_size}")
+    private int batchSize;
 
     public AchillesCacheService(AchillesCacheRepository cacheRepository,
-                                AchillesCacheBatchRepository batchRepository,
                                 ObjectMapper objectMapper) {
         this.cacheRepository = cacheRepository;
-        this.batchRepository = batchRepository;
         this.objectMapper = objectMapper;
     }
 
@@ -69,13 +64,11 @@ public class AchillesCacheService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void saveDrilldownCacheMap(Source source, String domain, Map<Integer, ObjectNode> conceptNodes) {
-        int batchCount = 0;
-        Map<String, ObjectNode> nodes = new HashMap<>(cacheBatchSize);
+        Map<String, ObjectNode> nodes = new HashMap<>(batchSize);
         for (Map.Entry<Integer, ObjectNode> entry : conceptNodes.entrySet()) {
-            if (batchCount++ >= cacheBatchSize) {
+            if (nodes.size() >= batchSize) {
                 createCacheEntities(source, nodes);
                 nodes.clear();
-                batchCount = 0;
             }
             Integer key = entry.getKey();
             String cacheName = getCacheName(domain, key);
@@ -87,7 +80,7 @@ public class AchillesCacheService {
 
     private void createCacheEntities(Source source, Map<String, ObjectNode> nodes) {
         List<AchillesCacheEntity> cacheEntities = getEntities(source, nodes);
-        batchRepository.save(cacheEntities);
+        cacheRepository.save(cacheEntities);
     }
 
     private List<AchillesCacheEntity> getEntities(Source source, Map<String, ObjectNode> nodes) {

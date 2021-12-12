@@ -735,6 +735,14 @@
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-databind</artifactId>
         </exclusion>
+        <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+        </exclusion>        
       </exclusions>
     </dependency>
     <dependency>
@@ -1128,6 +1136,11 @@
         <artifactId>dbunit-plus</artifactId>
         <version>2.0.1</version>
         <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>2.15.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>

@@ -1,13 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="INFO">
     <Appenders>
-        <Console name="console" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{yyyy MM dd HH:mm:ss.SSS} %p %t %C - %x - %m%n" />
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %p %t %C - %x - %m%n" />
         </Console>
     </Appenders>
     <Loggers>
-        <Root level="INFO" additivity="false">
-            <AppenderRef ref="console" />
+        <Root level="${logging.level.root}">
+          <AppenderRef ref="Console" />
         </Root>
+        <logger name="org.ohdsi" level="${logging.level.org.ohdsi}">
+          <AppenderRef ref="Console" />
+        </logger>
+        <logger name="org.springframework.orm" level="${logging.level.org.springframework.orm}">
+          <AppenderRef ref="Console" />
+        </logger>
+        <logger name="org.springframework.jdbc" level="${logging.level.org.springframework.jdbc}">
+          <AppenderRef ref="Console" />
+        </logger>
+        <logger name="org.apache.shiro" level="${logging.level.org.apache.shiro}">
+          <AppenderRef ref="Console" />
+        </logger>
+        <logger name="org.pac4j" level="${logging.level.org.pac4j:INFO}">
+          <AppenderRef ref="Console" />
+        </logger>        
     </Loggers>
 </Configuration>

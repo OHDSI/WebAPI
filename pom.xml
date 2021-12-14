@@ -13,7 +13,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- Spring Boot manages spring.version as well -->
     <spring.boot.version>1.5.22.RELEASE</spring.boot.version>
-    <log4j2.version>2.15.0</log4j2.version>
+    <log4j2.version>2.16.0</log4j2.version>
     <flyway.version>4.2.0</flyway.version>
     <waffle.version>2.2.1</waffle.version>
     <jna.version>5.5.0</jna.version>

@@ -1808,6 +1808,7 @@
       "caption": "특성(Characterization) #<%=id%>",
       "captionPreview": "Characterization #<%=id%> - Version <%=number%> Preview",
       "loadingCohortCharacterization": "코호트 특성(Characterization) 로드중 ...",
+      "deleteConfirmation": "확실합니까?",
       "design": {
         "description": "코호트 특성 분석은 개별 환자 수준의 공변량 데이터로부터 코호트 단위의 요약 통계 생성해 줍니다. 환자 수준의 공변량에 대한 요약 통계는 수, 평균, 표준편차, 분산, 최소값, 최대값, 중앙값, 범위 및 사분위수가 포함됩니다. 또한 시간과 관련된 공변량은 코호트 시작일이나 시간 간격(예: 주, 월, 분기, 연도) 등을 이용하여 층화할 수 있습니다.",
         "fa": {

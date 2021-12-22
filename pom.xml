@@ -13,6 +13,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- Spring Boot manages spring.version as well -->
     <spring.boot.version>1.5.22.RELEASE</spring.boot.version>
+    <log4j2.version>2.17.0</log4j2.version>
     <flyway.version>4.2.0</flyway.version>
     <waffle.version>2.2.1</waffle.version>
     <jna.version>5.5.0</jna.version>
@@ -244,8 +245,8 @@
     <cache.inspection.period>3600000</cache.inspection.period>
 
     <!-- Build info -->
-    <buildinfo.atlas.milestone.id>40</buildinfo.atlas.milestone.id>
-    <buildinfo.webapi.milestone.id>41</buildinfo.webapi.milestone.id>
+    <buildinfo.atlas.milestone.id>39</buildinfo.atlas.milestone.id>
+    <buildinfo.webapi.milestone.id>39</buildinfo.webapi.milestone.id>
     <buildinfo.atlas.release.tag>*</buildinfo.atlas.release.tag>
     <buildinfo.webapi.release.tag>*</buildinfo.webapi.release.tag>
 
@@ -511,6 +512,26 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-api</artifactId>
+        <version>${log4j2.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-core</artifactId>
+        <version>${log4j2.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-web</artifactId>
+        <version>${log4j2.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-slf4j-impl</artifactId>
+        <version>${log4j2.version}</version>
+      </dependency>
+      <dependency>
         <!-- Import dependency management from Spring Boot -->
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
@@ -576,6 +597,10 @@
           <artifactId>jackson-databind</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-log4j2</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -731,6 +756,14 @@
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-databind</artifactId>
         </exclusion>
+        <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+        </exclusion>        
       </exclusions>
     </dependency>
     <dependency>
@@ -1124,11 +1157,6 @@
         <artifactId>dbunit-plus</artifactId>
         <version>2.0.1</version>
         <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.17</version>
     </dependency>
     <dependency>
       <groupId>org.dom4j</groupId>

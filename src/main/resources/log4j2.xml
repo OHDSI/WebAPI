@@ -23,7 +23,7 @@
         <Async name="audit-async">
           <AppenderRef ref="audit"/>
         </Async>        
-        <RollingFile name="audit-extra" fileName="${audit.trail.log.file}"
+        <RollingFile name="audit-extra" fileName="${audit.trail.log.extraFile}"
             filePattern="/tmp/atlas/audit/audit-extra-%d{yyyy-MM-dd}-%i.log">
           <PatternLayout>
             <Pattern>%m%n</Pattern>

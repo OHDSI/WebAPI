@@ -48,6 +48,13 @@ public interface TagRepository extends JpaRepository<Tag, Integer> {
             "GROUP BY t.id")
     List<TagInfo> findPathwayTagInfo();
 
+    @Query("SELECT t AS tag, " +
+            "COUNT(r.assetId.tagId) AS count " +
+            "FROM Tag t " +
+            "LEFT JOIN ReusableTag r ON r.tag = t " +
+            "GROUP BY t.id")
+    List<TagInfo> findReusableTagInfo();
+
     @Query("SELECT t FROM Tag t WHERE t.mandatory = 'TRUE'")
     List<Tag> findMandatoryTags();
 }

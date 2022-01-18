@@ -4,15 +4,19 @@ import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.cohortcharacterization.CcController;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcShortDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
 import org.ohdsi.webapi.cohortcharacterization.repository.CcRepository;
 import org.ohdsi.webapi.cohortcharacterization.specification.CohortCharacterizationImpl;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
+import org.ohdsi.webapi.tag.domain.Tag;
+import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
+import java.util.List;
 
-public class CcTaggingTest extends BaseTaggingTest<CohortCharacterizationDTO, Long> {
+public class CcTaggingTest extends BaseTaggingTest<CcShortDTO, Long> {
     private static final String JSON_PATH = "/tagging/characterization.json";
 
     @Autowired
@@ -35,6 +39,18 @@ public class CcTaggingTest extends BaseTaggingTest<CohortCharacterizationDTO, Lo
         exportDTO.setName("test dto name");
 
         initialDTO = service.doImport(exportDTO);
+    }
+
+    @Override
+    protected CcShortDTO doCopyData(CcShortDTO def) {
+        return service.copy(def.getId());
+    }
+
+    @Override
+    protected List<CcShortDTO> getDTOsByTag(List<String> tagNames) {
+        TagNameListRequestDTO requestDTO = new TagNameListRequestDTO();
+        requestDTO.setNames(tagNames);
+        return service.listByTags(requestDTO);
     }
 
     @Override
@@ -74,7 +90,14 @@ public class CcTaggingTest extends BaseTaggingTest<CohortCharacterizationDTO, Lo
     }
 
     @Override
-    protected Long getId(CohortCharacterizationDTO dto) {
+    protected Long getId(CcShortDTO dto) {
         return dto.getId();
+    }
+
+    @Override
+    protected void assignTags(Long id, Tag...tags) {
+        for (Tag tag : tags) {
+            service.assignTag(id, tag.getId());
+        }
     }
 }

@@ -1138,7 +1138,8 @@
       "cohortPathway": "cohort pathway",
       "irAnalysis": "IR analysis",
       "pleAnalysis": "PLE analysis",
-      "plpAnalysis": "PLP analysis"
+      "plpAnalysis": "PLP analysis",
+      "reusable": "reusable"
     },
     "checks": {
       "runningDiagnostics": "Running Diagnostics",
@@ -2327,6 +2328,30 @@
       "reviewFullSpec": "Review Full Study Specification"
     }
   },
+  "reusables": {
+    "title": "Reusables",
+    "loading": "Loading Reusables...",
+    "manager": {
+      "loading": "Loading Reusable...",
+      "caption": "Reusable #<%=id%>",
+      "captionVersion": "Reusable #<%=id%> - Version <%=number%> Preview",
+      "design": {
+        "description": "<b>Reusable</b> is ...",
+        "descriptionPlaceholder": "Enter description here"
+      },
+      "messages": {
+        "alreadyExists": "A reusable with this name already exists. Please choose a different name.",
+        "beforeClose": "Your changes are not saved. Would you like to continue?",
+        "deleteConfirmation": "Are you sure?",
+        "saveFailed": "An error occurred while attempting to save a reusable.",
+        "notfound": "There is no reusable with id = %d."
+      },
+      "tabs": {
+        "design": "Design",
+        "versions": "Versions"
+      }
+    }
+  },
   "jobs": {
     "refreshJobs": "Refresh Jobs"
   },
@@ -3424,7 +3449,8 @@
       "ple": "New Population Level Estimation Analysis",
       "plp": "New Patient Level Prediction Analysis",
       "role": "New Role",
-      "source": "New Source"
+      "source": "New Source",
+      "reusable": "New Reusable"
     },
     "weekdays": {
       "friday": {

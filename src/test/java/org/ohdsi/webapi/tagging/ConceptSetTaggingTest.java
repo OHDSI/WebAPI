@@ -7,10 +7,13 @@ import org.ohdsi.webapi.conceptset.ConceptSetItem;
 import org.ohdsi.webapi.conceptset.ConceptSetRepository;
 import org.ohdsi.webapi.service.ConceptSetService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
+import org.ohdsi.webapi.tag.domain.Tag;
+import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 public class ConceptSetTaggingTest extends BaseTaggingTest<ConceptSetDTO, Integer> {
     private static final String JSON_PATH = "/tagging/conceptset.json";
@@ -45,6 +48,13 @@ public class ConceptSetTaggingTest extends BaseTaggingTest<ConceptSetDTO, Intege
                 .toArray(ConceptSetItem[]::new);
 
         service.saveConceptSetItems(initialDTO.getId(), items);
+    }
+
+    @Override
+    protected ConceptSetDTO doCopyData(ConceptSetDTO def) {
+        ConceptSetDTO dto = new ConceptSetDTO();
+        dto.setName("test dto name 2");
+        return service.createConceptSet(dto);
     }
 
     @Override
@@ -85,5 +95,19 @@ public class ConceptSetTaggingTest extends BaseTaggingTest<ConceptSetDTO, Intege
     @Override
     protected Integer getId(ConceptSetDTO dto) {
         return dto.getId();
+    }
+
+    @Override
+    protected void assignTags(Integer id, Tag...tags) {
+        for (Tag tag : tags) {
+            service.assignTag(id, tag.getId());
+        }
+    }
+
+    @Override
+    protected List<ConceptSetDTO> getDTOsByTag(List<String> tagNames) {
+        TagNameListRequestDTO requestDTO = new TagNameListRequestDTO();
+        requestDTO.setNames(tagNames);
+        return service.listByTags(requestDTO);
     }
 }

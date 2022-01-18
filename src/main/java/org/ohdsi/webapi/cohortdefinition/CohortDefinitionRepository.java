@@ -47,4 +47,7 @@ public interface CohortDefinitionRepository extends CrudRepository<CohortDefinit
   List<CohortDefinition> findAllByNameStartsWith(String pattern);
   
   Optional<CohortDefinition> findByName(String name);
+
+  @Query("SELECT DISTINCT cd FROM CohortDefinition cd JOIN FETCH cd.tags t WHERE lower(t.name) in :tagNames")
+  List<CohortDefinition> findByTags(@Param("tagNames") List<String> tagNames);
 }

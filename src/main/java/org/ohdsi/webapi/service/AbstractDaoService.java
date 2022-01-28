@@ -15,6 +15,7 @@ import org.ohdsi.webapi.exception.BadRequestAtlasException;
 import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.model.CommonEntityExt;
 import org.ohdsi.webapi.security.PermissionService;
+import org.ohdsi.webapi.service.dto.CommonEntityDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.DisabledSecurity;
@@ -31,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -45,6 +47,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -123,6 +126,9 @@ public abstract class AbstractDaoService extends AbstractAdminService {
 
   @Autowired
   private PermissionService permissionService;
+  
+  @Autowired
+  private ConversionService conversionService;
 
   public SourceRepository getSourceRepository() {
     return sourceRepository;
@@ -360,5 +366,21 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     if (!(user.getId().equals(ownerId) || isAdmin() || permissionService.hasWriteAccess(entity))) {
       throw new ForbiddenException();
     }
+  }
+
+  protected <T extends CommonEntityDTO> List<T> listByTags(List<? extends CommonEntityExt<? extends Number>> entities,
+                                                           List<String> names,
+                                                           Class<T> clazz) {
+    return entities.stream()
+            .filter(e -> e.getTags().stream()
+                    .map(tag -> tag.getName().toLowerCase(Locale.ROOT))
+                    .collect(Collectors.toList())
+                    .containsAll(names))
+            .map(entity -> {
+              T dto = conversionService.convert(entity, clazz);
+              permissionService.fillWriteAccess(entity, dto);
+              return dto;
+            })
+            .collect(Collectors.toList());
   }
 }

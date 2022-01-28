@@ -53,6 +53,7 @@ public class TagService extends AbstractDaoService {
         this.infoProducers.add(tagRepository::findConceptSetTagInfo);
         this.infoProducers.add(tagRepository::findIrTagInfo);
         this.infoProducers.add(tagRepository::findPathwayTagInfo);
+        this.infoProducers.add(tagRepository::findReusableTagInfo);
     }
 
     public TagDTO create(TagDTO dto) {
@@ -179,12 +180,11 @@ public class TagService extends AbstractDaoService {
 
             List<Tag> tags = tagRepository.findAll();
             tags = tags.stream()
-                    .map(tag -> {
+                    .peek(tag -> {
                         TagDTO info = infoMap.get(tag.getId());
                         if (Objects.nonNull(info)) {
                             tag.setCount(info.getCount());
                         }
-                        return tag;
                     })
                     .collect(Collectors.toList());
             tagRepository.save(tags);

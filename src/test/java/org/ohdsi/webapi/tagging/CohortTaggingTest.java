@@ -4,9 +4,12 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
 import org.ohdsi.webapi.service.CohortDefinitionService;
+import org.ohdsi.webapi.tag.domain.Tag;
+import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
+import java.util.List;
 
 public class CohortTaggingTest extends BaseTaggingTest<CohortDTO, Integer> {
     private static final String JSON_PATH = "/tagging/cohort.json";
@@ -23,6 +26,11 @@ public class CohortTaggingTest extends BaseTaggingTest<CohortDTO, Integer> {
         CohortDTO dto = deserializeExpression(expression);
 
         initialDTO = service.createCohortDefinition(dto);
+    }
+
+    @Override
+    protected CohortDTO doCopyData(CohortDTO def) {
+        return service.copy(def.getId());
     }
 
     private CohortDTO deserializeExpression(String expression) {
@@ -74,5 +82,19 @@ public class CohortTaggingTest extends BaseTaggingTest<CohortDTO, Integer> {
     @Override
     protected Integer getId(CohortDTO dto) {
         return dto.getId();
+    }
+
+    @Override
+    protected void assignTags(Integer id, Tag...tags) {
+        for (Tag tag : tags) {
+            service.assignTag(id, tag.getId());
+        }
+    }
+
+    @Override
+    protected List<CohortDTO> getDTOsByTag(List<String> tagNames) {
+        TagNameListRequestDTO requestDTO = new TagNameListRequestDTO();
+        requestDTO.setNames(tagNames);
+        return service.listByTags(requestDTO);
     }
 }

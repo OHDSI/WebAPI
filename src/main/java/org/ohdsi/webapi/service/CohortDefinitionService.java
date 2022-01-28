@@ -54,6 +54,7 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.tag.TagService;
+import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.util.*;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.NameUtils;
@@ -112,6 +113,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -928,6 +930,28 @@ public class CohortDefinitionService extends AbstractDaoService {
 		dto.setName(NameUtils.getNameForCopy(dto.getName(), this::getNamesLike,
 				cohortDefinitionRepository.findByName(dto.getName())));
 		return createCohortDefinition(dto);
+	}
+
+	/**
+	 * Get list of cohort definitions with assigned tags
+	 *
+	 * @param requestDTO
+	 * @return
+	 */
+	@POST
+	@Path("/byTags")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Transactional
+	public List<CohortDTO> listByTags(TagNameListRequestDTO requestDTO) {
+		if (requestDTO == null || requestDTO.getNames() == null || requestDTO.getNames().isEmpty()) {
+			return Collections.emptyList();
+		}
+		List<String> names = requestDTO.getNames().stream()
+				.map(name -> name.toLowerCase(Locale.ROOT))
+				.collect(Collectors.toList());
+		List<CohortDefinition> entities = cohortDefinitionRepository.findByTags(names);
+		return listByTags(entities, names, CohortDTO.class);
 	}
 
 	private void checkVersion(int id, int version) {

@@ -26,4 +26,7 @@ public interface CcRepository extends EntityGraphJpaRepository<CohortCharacteriz
 
     @Query("SELECT cc FROM CohortCharacterizationEntity cc JOIN cc.featureAnalyses fa WHERE fa = ?1")
     List<CohortCharacterizationEntity> findByFeatureAnalysis(FeAnalysisEntity feAnalysis);
+
+    @Query("SELECT DISTINCT cc FROM CohortCharacterizationEntity cc JOIN FETCH cc.tags t WHERE lower(t.name) in :tagNames")
+    List<CohortCharacterizationEntity> findByTags(@Param("tagNames") List<String> tagNames);
 }

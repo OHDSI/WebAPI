@@ -5,7 +5,6 @@ import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import com.opencsv.CSVWriter;
 import com.qmino.miredot.annotations.ReturnType;
 import org.ohdsi.analysis.Utils;
-import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.webapi.Constants;
@@ -35,12 +34,12 @@ import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.tag.TagService;
+import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.HttpUtils;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -551,6 +550,23 @@ public class CcController {
     public CohortCharacterizationDTO copyAssetFromVersion(@PathParam("id") final long id,
                                                           @PathParam("version") final int version) {
         return service.copyAssetFromVersion(id, version);
+    }
+
+    /**
+     * Get list of cohort characterizations with assigned tags
+     *
+     * @param requestDTO
+     * @return
+     */
+    @POST
+    @Path("/byTags")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public List<CcShortDTO> listByTags(TagNameListRequestDTO requestDTO) {
+        if (requestDTO == null || requestDTO.getNames() == null || requestDTO.getNames().isEmpty()) {
+            return Collections.emptyList();
+        }
+        return service.listByTags(requestDTO);
     }
 
     private void convertPresetAnalysesToLocal(List<? extends CcResult> ccResults) {

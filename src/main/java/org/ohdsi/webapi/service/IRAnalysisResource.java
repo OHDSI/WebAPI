@@ -8,6 +8,7 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.service.dto.AnalysisInfoDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisShortDTO;
+import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 
@@ -261,4 +262,16 @@ public interface IRAnalysisResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{version}/createAsset")
     IRAnalysisDTO copyAssetFromVersion(@PathParam("id") final int id, @PathParam("version") final int version);
+
+    /**
+     * Get list of incidence rates with assigned tags
+     *
+     * @param requestDTO
+     * @return
+     */
+    @POST
+    @Path("/byTags")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    List<IRAnalysisDTO> listByTags(TagNameListRequestDTO requestDTO);
 }

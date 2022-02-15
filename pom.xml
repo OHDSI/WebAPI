@@ -1099,8 +1099,8 @@
           <artifactId>featureExtraction</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>org.ohdsi.sql</groupId>
-          <artifactId>SqlRender</artifactId>
+          <groupId>com.odysseusinc.arachne</groupId>
+          <artifactId>arachne-common-utils</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

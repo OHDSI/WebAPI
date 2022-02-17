@@ -116,7 +116,7 @@ public class DDLService {
 
 	private static final Collection<String> CEMRESULT_INDEX_FILE_PATHS = Arrays.asList();
 
-	private static final Collection<String> DBMS_NO_INDEXES = Arrays.asList("redshift", "impala", "netezza");
+	private static final Collection<String> DBMS_NO_INDEXES = Arrays.asList("redshift", "impala", "netezza", "spark");
 
 	@GET
 	@Path("results")

@@ -1109,10 +1109,6 @@
           <groupId>org.ohdsi</groupId>
           <artifactId>featureExtraction</artifactId>
         </exclusion>
-        <exclusion>
-          <groupId>org.ohdsi.sql</groupId>
-          <artifactId>SqlRender</artifactId>
-        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -1381,6 +1377,46 @@
                   <version>${impala.driver.version}</version>
                   <packaging>jar</packaging>
                   <file>${impala.classpath}/ImpalaJDBC42.jar</file>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>webapi-spark</id>
+      <properties>
+        <spark.enabled>true</spark.enabled>
+        <!-- Spark JDBC driver path -->
+        <spark.classpath>${basedir}/src/main/extras/spark</spark.classpath>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.simba</groupId>
+          <artifactId>spark</artifactId>
+          <version>2.6.3.1003</version>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-install-plugin</artifactId>
+            <version>2.5.2</version>
+            <executions>
+              <execution>
+                <id>spark-jdbc</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <groupId>com.simba</groupId>
+                  <artifactId>spark</artifactId>
+                  <version>2.6.3.1003</version>
+                  <packaging>jar</packaging>
+                  <file>${spark.classpath}/spark-2.6.3.1003.jar</file>
                 </configuration>
               </execution>
             </executions>

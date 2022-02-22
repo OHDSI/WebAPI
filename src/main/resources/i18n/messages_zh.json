@@ -395,7 +395,6 @@
       "appendConceptSetExpression": "追加概念集表达式",
       "overwriteConceptSetExpression": "覆盖概念集表达式",
       "enterConceptIdentifiers": "输入概念标识符",
-      "enterSourceCodes": "输入源代码",
       "name": "概念集名称",
       "addConcepts": "添加概念",
       "removeSelected": "删除选定的",
@@ -413,6 +412,12 @@
       "import": {
         "repository": {
           "overwriteCheckboxLabel": "Overwrite concept set items (append if not checked)"
+        },
+        "sourceCodes": {
+          "enterSourceCodes": "输入源代码",
+          "searchConcepts": "Search concepts",
+          "searchingConcepts": "Searching concepts...",
+          "notFound": "Not found:"
         }
       }
     },

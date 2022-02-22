@@ -395,7 +395,6 @@
       "appendConceptSetExpression": "Append Concept Set Expression",
       "overwriteConceptSetExpression": "Overwrite Concept Set Expression",
       "enterConceptIdentifiers": "Enter Concept Identifiers",
-      "enterSourceCodes": "Enter Source Codes",
       "name": "Name:",
       "addConcepts": "Add Concepts",
       "removeSelected": "Remove Selected",
@@ -413,6 +412,12 @@
       "import": {
         "repository": {
           "overwriteCheckboxLabel": "Overwrite concept set items (append if not checked)"
+        },
+        "sourceCodes": {
+          "enterSourceCodes": "Enter Source Codes",
+          "searchConcepts": "Search concepts",
+          "searchingConcepts": "Searching concepts...",
+          "notFound": "Not found:"
         }
       }
     },

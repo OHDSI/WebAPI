@@ -908,7 +908,6 @@
       "appendConceptSetExpression": "Добавить определение набора концепций",
       "overwriteConceptSetExpression": "Перезаписать определение набора концепций",
       "enterConceptIdentifiers": "Введите идентификаторы концепций",
-      "enterSourceCodes": "Введите исходные коды",
       "name": "Имя:",
       "addConcepts": "Добавить концепции",
       "removeSelected": "Удалить выбранные",
@@ -926,6 +925,12 @@
       "import": {
         "repository": {
           "overwriteCheckboxLabel": "Заменить концепции текущего набора (добавить, если не отмечено)"
+        },
+        "sourceCodes": {
+          "enterSourceCodes": "Введите коды коды концепций",
+          "searchConcepts": "Поиск концепций",
+          "searchingConcepts": "Поиск концепций...",
+          "notFound": "Не найдено:"
         }
       }
     },

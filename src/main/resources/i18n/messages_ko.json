@@ -346,7 +346,6 @@
       "appendConceptSetExpression": "컨셉 세트 표현 추가",
       "overwriteConceptSetExpression": "컨셉 세트 표현 덮어쓰기",
       "enterConceptIdentifiers": "컨셉 식별자를 입력합니다",
-      "enterSourceCodes": "소스 코드를 입력합니다",
       "name": "컨셉 세트 이름:",
       "addConcepts": "컨셉 추가",
       "removeSelected": "선택 항목 삭제",
@@ -364,6 +363,12 @@
       "import": {
         "repository": {
           "overwriteCheckboxLabel": "Overwrite concept set items (append if not checked)"
+        },
+        "sourceCodes": {
+          "enterSourceCodes": "소스 코드를 입력합니다",
+          "searchConcepts": "Search concepts",
+          "searchingConcepts": "Searching concepts...",
+          "notFound": "Not found:"
         }
       }
     },

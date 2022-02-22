@@ -923,6 +923,9 @@
       "expressionResolveError": "Ошибка загрузки выражения набора концепций!",
       "forbiddenError": "Недостаточно прав для работы с выражением набора концепций.",
       "import": {
+        "repository": {
+          "overwriteCheckboxLabel": "Заменить концепции текущего набора (добавить, если не отмечено)"
+        },
         "sourceCodes": {
           "enterSourceCodes": "Введите коды коды концепций",
           "searchConcepts": "Поиск концепций",

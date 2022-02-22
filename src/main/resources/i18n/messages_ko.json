@@ -361,6 +361,9 @@
       "expressionResolveError": "Error occurred during resolving expression!",
       "forbiddenError": "You are not authorized to view the concept set expression.",
       "import": {
+        "repository": {
+          "overwriteCheckboxLabel": "Overwrite concept set items (append if not checked)"
+        },
         "sourceCodes": {
           "enterSourceCodes": "소스 코드를 입력합니다",
           "searchConcepts": "Search concepts",

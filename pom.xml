@@ -247,6 +247,9 @@
     <!-- Period in milliseconds between running checks to detect freshness of cached data -->
     <cache.inspection.period>3600000</cache.inspection.period>
 
+    <!-- Achilles cache -->
+    <cache.achilles.usePersonCount>true</cache.achilles.usePersonCount>
+
     <!-- Build info -->
     <buildinfo.atlas.milestone.id>41</buildinfo.atlas.milestone.id>
     <buildinfo.webapi.milestone.id>42</buildinfo.webapi.milestone.id>

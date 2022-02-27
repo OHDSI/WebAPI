@@ -3,7 +3,6 @@ package org.ohdsi.webapi.achilles.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.sun.javafx.binding.StringFormatter;
 import org.ohdsi.webapi.achilles.domain.AchillesCacheEntity;
 import org.ohdsi.webapi.achilles.repository.AchillesCacheRepository;
 import org.ohdsi.webapi.source.Source;
@@ -112,6 +111,6 @@ public class AchillesCacheService {
     }
 
     private String getCacheName(String domain, int conceptId) {
-        return StringFormatter.format("drilldown_%s_%d", domain, conceptId).getValue();
+        return String.format("drilldown_%s_%d", domain, conceptId);
     }
 }

@@ -17,7 +17,7 @@
     <flyway.version>4.2.0</flyway.version>
     <waffle.version>2.2.1</waffle.version>
     <jna.version>5.5.0</jna.version>
-    <hibernate.version>5.4.2.Final</hibernate.version>
+    <hibernate.version>5.4.24.Final</hibernate.version>
     <postgresql.version>42.3.3</postgresql.version>
     <bouncycastle.version>1.68</bouncycastle.version>
     <shiro.version>1.8.0</shiro.version>
@@ -31,9 +31,9 @@
     <jersey.version>2.14</jersey.version>
     <SqlRender.version>1.9.0</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
-    <pac4j.version>4.0.0</pac4j.version>
+    <pac4j.version>5.2.0</pac4j.version>
     <jackson.version>2.10.5</jackson.version>
-    <jackson.databind.version>2.10.5.1</jackson.databind.version>
+    <jackson.databind.version>2.12.6</jackson.databind.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
     <skipUnitTests>false</skipUnitTests>
     <skipITtests>false</skipITtests>
@@ -67,7 +67,7 @@
     <!-- Person properties -->
     <person.viewDates>false</person.viewDates>
     <!-- Full Text Search With SOLR Settings -->
-    <solr.endpoint></solr.endpoint>
+    <solr.endpoint/>
     <solr.query.prefix>{!complexphrase inOrder=true}</solr.query.prefix>
     <solr.version>8.6.3</solr.version>
     <!-- Heracles properties -->
@@ -76,7 +76,7 @@
     <!-- Kerberos properties -->
     <kerberos.timeout>60</kerberos.timeout>
     <kerberos.configPath>/etc/krb5.conf</kerberos.configPath>
-    <kerberos.kinitPath></kerberos.kinitPath>
+    <kerberos.kinitPath/>
 
     <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
     <spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
@@ -90,24 +90,24 @@
     <security.oauth.callback.api>http://localhost:8080/WebAPI/user/oauth/callback</security.oauth.callback.api>
     <!-- Available options for callback urlResolver are: query and path -->
     <security.oauth.callback.urlResolver>query</security.oauth.callback.urlResolver>
-    <security.oauth.google.apiKey></security.oauth.google.apiKey>
-    <security.oauth.google.apiSecret></security.oauth.google.apiSecret>
-    <security.oauth.facebook.apiKey></security.oauth.facebook.apiKey>
-    <security.oauth.facebook.apiSecret></security.oauth.facebook.apiSecret>
-    <security.oauth.github.apiKey></security.oauth.github.apiKey>
-    <security.oauth.github.apiSecret></security.oauth.github.apiSecret>
-    <security.oid.clientId></security.oid.clientId>
-    <security.oid.apiSecret></security.oid.apiSecret>
-    <security.oid.url></security.oid.url>
-    <security.oid.logoutUrl></security.oid.logoutUrl>
+    <security.oauth.google.apiKey/>
+    <security.oauth.google.apiSecret/>
+    <security.oauth.facebook.apiKey/>
+    <security.oauth.facebook.apiSecret/>
+    <security.oauth.github.apiKey/>
+    <security.oauth.github.apiSecret/>
+    <security.oid.clientId/>
+    <security.oid.apiSecret/>
+    <security.oid.url/>
+    <security.oid.logoutUrl/>
     <security.oid.redirectUrl>http://localhost/index.html#/welcome/</security.oid.redirectUrl>
-    <security.kerberos.spn></security.kerberos.spn>
-    <security.kerberos.keytabPath></security.kerberos.keytabPath>
+    <security.kerberos.spn/>
+    <security.kerberos.keytabPath/>
     <security.ldap.dn>cn={0},dc=example,dc=org</security.ldap.dn>
     <security.ldap.url>ldap://localhost:389</security.ldap.url>
-    <security.ldap.baseDn></security.ldap.baseDn>
-    <security.ldap.system.username></security.ldap.system.username>
-    <security.ldap.system.password></security.ldap.system.password>
+    <security.ldap.baseDn/>
+    <security.ldap.system.username/>
+    <security.ldap.system.password/>
     <security.ldap.searchString>(&amp;(objectClass=person)(CN={0}))</security.ldap.searchString>
     <security.ldap.userMapping.displaynameAttr>displayName</security.ldap.userMapping.displaynameAttr>
     <security.ldap.userMapping.firstnameAttr>givenName</security.ldap.userMapping.firstnameAttr>
@@ -115,11 +115,11 @@
     <security.ldap.userMapping.lastnameAttr>sn</security.ldap.userMapping.lastnameAttr>
     <security.ldap.userMapping.usernameAttr>cn</security.ldap.userMapping.usernameAttr>
     <security.ldap.searchBase>CN=Users,DC=example,DC=org</security.ldap.searchBase>
-    <security.ad.url></security.ad.url>
+    <security.ad.url/>
     <security.ad.searchBase>CN=Users,DC=example,DC=org</security.ad.searchBase>
     <security.ad.principalSuffix>@example.org</security.ad.principalSuffix>
-    <security.ad.system.username></security.ad.system.username>
-    <security.ad.system.password></security.ad.system.password>
+    <security.ad.system.username/>
+    <security.ad.system.password/>
     <security.ad.searchFilter>(&amp;(objectClass=person)(cn=%s))</security.ad.searchFilter>
     <security.ad.ignore.partial.result.exception>true</security.ad.ignore.partial.result.exception>
     <security.ad.result.count.limit>30000</security.ad.result.count.limit> <!-- 0 means no limit -->
@@ -131,10 +131,10 @@
     <security.ad.userMapping.lastnameAttr>sn</security.ad.userMapping.lastnameAttr>
     <security.ad.userMapping.usernameAttr>cn</security.ad.userMapping.usernameAttr>
 
-    <security.cas.loginUrl></security.cas.loginUrl>
-    <security.cas.callbackUrl></security.cas.callbackUrl>
-    <security.cas.serverUrl></security.cas.serverUrl>
-    <security.cas.cassvcs></security.cas.cassvcs>
+    <security.cas.loginUrl/>
+    <security.cas.callbackUrl/>
+    <security.cas.serverUrl/>
+    <security.cas.cassvcs/>
     <security.cas.casticket>casticket</security.cas.casticket>
 
     <security.db.datasource.schema>${datasource.ohdsi.schema}</security.db.datasource.schema>
@@ -146,8 +146,8 @@
     <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users where lower(email) = lower(?)</security.db.datasource.authenticationQuery>
     <use.single.connect.datasource.for.testing>true</use.single.connect.datasource.for.testing>
 
-    <security.googleIap.cloudProjectId></security.googleIap.cloudProjectId>
-    <security.googleIap.backendServiceId></security.googleIap.backendServiceId>
+    <security.googleIap.cloudProjectId/>
+    <security.googleIap.backendServiceId/>
     <security.google.accessToken.enabled>false</security.google.accessToken.enabled>
 
     <security.cors.enabled>true</security.cors.enabled>
@@ -156,15 +156,15 @@
     <security.duration.increment>10</security.duration.increment>
 
     <security.saml.enabled>false</security.saml.enabled>
-    <security.saml.entityId></security.saml.entityId>
-    <security.saml.idpMetadataLocation></security.saml.idpMetadataLocation>
-    <security.saml.keyManager.keyStoreFile></security.saml.keyManager.keyStoreFile>
-    <security.saml.keyManager.storePassword></security.saml.keyManager.storePassword>
-    <security.saml.keyManager.defaultKey></security.saml.keyManager.defaultKey>
-    <security.saml.keyManager.passwords.arachnenetwork></security.saml.keyManager.passwords.arachnenetwork>
-    <security.saml.metadataLocation></security.saml.metadataLocation>
-    <security.saml.callbackUrl></security.saml.callbackUrl>
-    <security.saml.sloUrl></security.saml.sloUrl>
+    <security.saml.entityId/>
+    <security.saml.idpMetadataLocation/>
+    <security.saml.keyManager.keyStoreFile/>
+    <security.saml.keyManager.storePassword/>
+    <security.saml.keyManager.defaultKey/>
+    <security.saml.keyManager.passwords.arachnenetwork/>
+    <security.saml.metadataLocation/>
+    <security.saml.callbackUrl/>
+    <security.saml.sloUrl/>
     <security.saml.maximumAuthenticationLifetime>60</security.saml.maximumAuthenticationLifetime>
 
     <security.auth.windows.enabled>true</security.auth.windows.enabled>
@@ -188,9 +188,9 @@
 
     <!-- EMBEDDED SERVER CONFIGURATION (ServerProperties) -->
     <server.port>8080</server.port>
-    <server.ssl.key-store></server.ssl.key-store>
-    <server.ssl.key-store-password></server.ssl.key-store-password>
-    <server.ssl.key-password></server.ssl.key-password>
+    <server.ssl.key-store/>
+    <server.ssl.key-store-password/>
+    <server.ssl.key-password/>
     <server.servlet.context-path>/WebAPI</server.servlet.context-path>
 
     <arachne.version>1.17.2</arachne.version>
@@ -200,14 +200,14 @@
     <execution.status.period>10000</execution.status.period>
     <executionengine.url>https://localhost:8888/api/v1/analyze</executionengine.url>
     <executionengine.token>Basic YWRtaW5Ab2R5c3NldXNpbmMuY29tOnBhc3N3b3Jk</executionengine.token>
-    <executionengine.resultExclusions></executionengine.resultExclusions>
+    <executionengine.resultExclusions/>
     <executionengine.updateStatusCallback>http://localhost:8080/WebAPI/executionservice/callbacks/submission/{id}/status/update/{password}</executionengine.updateStatusCallback>
     <executionengine.resultCallback>http://localhost:8080/WebAPI/executionservice/callbacks/submission/{id}/result/{password}</executionengine.resultCallback>
     <analysis.result.zipVolumeSizeMb>100</analysis.result.zipVolumeSizeMb>
 
     <!-- PASSWORD ENCRYPTION -->
     <jasypt.encryptor.enabled>false</jasypt.encryptor.enabled>
-    <jasypt.encryptor.password></jasypt.encryptor.password>
+    <jasypt.encryptor.password/>
     <jasypt.encryptor.algorithm>PBEWithMD5AndDES</jasypt.encryptor.algorithm>
                 
     <!-- ORGANIZATION SETTINGS -->
@@ -232,8 +232,8 @@
     <spring.batch.taskExecutor.corePoolSize>10</spring.batch.taskExecutor.corePoolSize>
     <spring.batch.taskExecutor.maxPoolSize>20</spring.batch.taskExecutor.maxPoolSize>
     <spring.batch.taskExecutor.queueCapacity>2147483647</spring.batch.taskExecutor.queueCapacity>
-    <spring.batch.taskExecutor.threadGroupName></spring.batch.taskExecutor.threadGroupName>
-    <spring.batch.taskExecutor.threadNamePrefix></spring.batch.taskExecutor.threadNamePrefix>
+    <spring.batch.taskExecutor.threadGroupName/>
+    <spring.batch.taskExecutor.threadNamePrefix/>
 
     <!-- Sensitive Info settings -->
     <sensitiveinfo.admin.role>admin</sensitiveinfo.admin.role>
@@ -688,7 +688,7 @@
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-validator</artifactId>
-      <version>5.4.2.Final</version>
+      <version>6.0.23.Final</version>
     </dependency>
     <dependency>
       <groupId>org.hibernate</groupId>
@@ -808,7 +808,7 @@
     <dependency>
       <groupId>com.microsoft.azure</groupId>
       <artifactId>msal4j</artifactId>
-      <version>1.9.0</version>
+      <version>1.10.1</version>
     </dependency>
     <dependency>
       <groupId>com.opencsv</groupId>
@@ -969,7 +969,7 @@
     <dependency>
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-crypto</artifactId>
-      <version>4.2.3.RELEASE</version>
+      <version>4.2.16.RELEASE</version>
     </dependency>
     <dependency>
       <groupId>com.zaxxer</groupId>

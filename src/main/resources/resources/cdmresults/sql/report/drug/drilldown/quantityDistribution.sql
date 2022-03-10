@@ -14,3 +14,4 @@ INNER JOIN
 ON CAST(CASE WHEN isNumeric(ard1.stratum_1) = 1 THEN ard1.stratum_1 ELSE null END AS INT) = c1.concept_id
 WHERE ard1.analysis_id = 717
 AND ard1.count_value > 0
+AND c1.concept_id = @conceptId

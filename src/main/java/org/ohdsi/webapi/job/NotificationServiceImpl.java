@@ -20,6 +20,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 
+import static org.ohdsi.webapi.Constants.Params.SOURCE_KEY;
+
 @Service
 public class NotificationServiceImpl implements NotificationService {
     private static final int MAX_SIZE = 10;
@@ -42,6 +44,8 @@ public class NotificationServiceImpl implements NotificationService {
             WHITE_LIST.add(g.getJobName());
             FOLDING_KEYS.add(g.getExecutionFoldingKey());
         });
+        // Folding key for warming source key job
+        FOLDING_KEYS.add(SOURCE_KEY);
     }
 
     @Override

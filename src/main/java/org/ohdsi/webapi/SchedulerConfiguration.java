@@ -16,7 +16,7 @@ public class SchedulerConfiguration {
   public TaskScheduler taskScheduler() {
 
     final ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
-    taskScheduler.setPoolSize(10);
+    taskScheduler.setPoolSize(20);
     taskScheduler.initialize();
     return taskScheduler;
   }

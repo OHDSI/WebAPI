@@ -24,7 +24,7 @@
     <dom4j.version>2.1.3</dom4j.version>
     <hydra.version>0.2.0</hydra.version>
     <featureExtraction.version>3.1.0</featureExtraction.version>
-    
+
     <commons-fileupload.version>1.3.3</commons-fileupload.version>
 
     <circe.version>1.9.4</circe.version>
@@ -218,6 +218,9 @@
 
     <!-- Logging -->
     <spring.jpa.show-sql>false</spring.jpa.show-sql>
+    <spring.jpa.properties.hibernate.generate_statistics>false</spring.jpa.properties.hibernate.generate_statistics>
+    <spring.jpa.properties.hibernate.jdbc.batch_size>200</spring.jpa.properties.hibernate.jdbc.batch_size>
+    <spring.jpa.properties.hibernate.order_inserts>true</spring.jpa.properties.hibernate.order_inserts>    
     <logging.level.root>info</logging.level.root>
     <logging.level.org.ohdsi>info</logging.level.org.ohdsi>
     <logging.level.org.springframework.orm>info</logging.level.org.springframework.orm>
@@ -239,14 +242,25 @@
     <sensitiveinfo.analysis.extensions>txt</sensitiveinfo.analysis.extensions>
 
     <!-- Cache Config -->
-    <spring.cache.jcache.config>classpath:config/ehcache.xml</spring.cache.jcache.config>
     <cdm.result.cache.warming.enable>true</cdm.result.cache.warming.enable>
+    <!-- Enable or disable warming cdm cache by cron -->
+    <cdm.cache.cron.warming.enable>true</cdm.cache.cron.warming.enable>
+    <!-- cron expression to warm cdm cache -->
+    <!-- cron expression format (asterisk means 'every' - '*' in seconds means 'every second') -->
+    <!-- default value is '0 0 2 * * *' which means "at 2am every day" -->
+    <!-- ┌───────second (0-59)-->
+    <!-- │ ┌────── minute (0-59)-->
+    <!-- │ │ ┌────── hour (0-23)-->
+    <!-- │ │ │ ┌────── day of the month (1-31)-->
+    <!-- │ │ │ │ ┌────── month (1-12) -->
+    <!-- │ │ │ │ │ ┌────── day of the week (0-7)-->
+    <!-- * * * * * *-->
+    <cdm.cache.cron.expression>0 0 2 * * *</cdm.cache.cron.expression>
     <cache.generation.invalidAfterDays>30</cache.generation.invalidAfterDays>
     <cache.generation.cleanupInterval>3600000</cache.generation.cleanupInterval>
     <cache.generation.useAsync>false</cache.generation.useAsync>
-    <!-- Period in milliseconds between running checks to detect freshness of cached data -->
-    <cache.inspection.period>3600000</cache.inspection.period>
-
+    <!-- Number of spring jobs that will be used for caching -->
+    <cache.jobs.count>3</cache.jobs.count>
     <!-- Achilles cache -->
     <cache.achilles.usePersonCount>true</cache.achilles.usePersonCount>
 
@@ -769,17 +783,17 @@
         <exclusion>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
-        </exclusion>        
+        </exclusion>
       </exclusions>
     </dependency>
-    
+
     <!-- overriding commons-fileupload version from the plug-in above -->
     <dependency>
       <groupId>commons-fileupload</groupId>
       <artifactId>commons-fileupload</artifactId>
-      <version>${commons-fileupload.version}</version>    
-    </dependency>    
-    
+      <version>${commons-fileupload.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>

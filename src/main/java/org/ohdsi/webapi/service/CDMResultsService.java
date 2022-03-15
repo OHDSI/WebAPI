@@ -544,6 +544,6 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     }
 
     private String getWarmCacheJobName(String sourceKey) {
-        return "warming " + sourceKey + " cache";
+        return String.format("warming cache: %s", sourceKey).substring(0, 100); // job name in batch_job_instance is varchar(100)
     }
 }

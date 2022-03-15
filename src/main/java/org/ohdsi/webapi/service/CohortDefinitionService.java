@@ -186,9 +186,6 @@ public class CohortDefinitionService extends AbstractDaoService {
 	protected EntityManager entityManager;
 
 	@Autowired
-	private TagService tagService;
-
-	@Autowired
 	private CohortChecker cohortChecker;
 
 	@Autowired

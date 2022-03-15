@@ -1,10 +1,8 @@
 package org.ohdsi.webapi.cohortdefinition.converter;
 
 import org.apache.commons.lang3.StringUtils;
-import org.ohdsi.analysis.CohortMetadata;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
-import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
 import org.ohdsi.webapi.service.converters.BaseCommonDTOExtToEntityExtConverter;
 
 public abstract class BaseCohortDTOToCohortDefinitionConverter<V extends CohortMetadataDTO> extends BaseCommonDTOExtToEntityExtConverter<V, CohortDefinition> {

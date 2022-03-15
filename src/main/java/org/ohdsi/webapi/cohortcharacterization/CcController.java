@@ -5,6 +5,7 @@ import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import com.opencsv.CSVWriter;
 import com.qmino.miredot.annotations.ReturnType;
 import org.ohdsi.analysis.Utils;
+import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.webapi.Constants;
@@ -33,7 +34,6 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
-import org.ohdsi.webapi.tag.TagService;
 import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.ExportUtil;
@@ -85,7 +85,6 @@ public class CcController {
     private final SourceService sourceService;
     private CharacterizationChecker checker;
     private PermissionService permissionService;
-    private final TagService tagService;
 
     public CcController(
             final CcService service,
@@ -94,8 +93,7 @@ public class CcController {
             final ConverterUtils converterUtils,
             CommonGenerationSensitiveInfoService sensitiveInfoService,
             SourceService sourceService, CharacterizationChecker checker,
-            PermissionService permissionService,
-            TagService tagService) {
+            PermissionService permissionService) {
         this.service = service;
         this.feAnalysisService = feAnalysisService;
         this.conversionService = conversionService;
@@ -104,7 +102,6 @@ public class CcController {
         this.sourceService = sourceService;
         this.checker = checker;
         this.permissionService = permissionService;
-        this.tagService = tagService;
         FeatureExtraction.init(null);
     }
 

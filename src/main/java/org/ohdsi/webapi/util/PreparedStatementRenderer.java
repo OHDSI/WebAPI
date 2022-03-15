@@ -15,7 +15,7 @@ import com.google.common.collect.ImmutableList;
 import com.odysseusinc.arachne.commons.types.DBMSType;
 import org.apache.commons.lang.ArrayUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
-//import org.ohdsi.sql.BigQuerySparkTranslate;
+import org.ohdsi.sql.BigQuerySparkTranslate;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.source.Source;
@@ -287,13 +287,13 @@ public class PreparedStatementRenderer implements ParameterizedSqlProvider {
   }
 
   public String getSql() {
-//    if (targetDialect.equals("spark")) {
-//      try {
-//        sql = BigQuerySparkTranslate.sparkHandleInsert(sql, source.getSourceConnection());
-//      } catch (SQLException e) {
-//        e.printStackTrace();
-//      }
-//    }
+    if (targetDialect.equals("spark")) {
+      try {
+        sql = BigQuerySparkTranslate.sparkHandleInsert(sql, source.getSourceConnection());
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
+    }
     return SqlTranslate.translateSingleStatementSql(sql, targetDialect, sessionId, tempSchema);
   }
 

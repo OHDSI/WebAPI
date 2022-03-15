@@ -52,10 +52,9 @@ public class PathwayController {
     private final I18nService i18nService;
     private PathwayChecker checker;
     private PermissionService permissionService;
-    private final TagService tagService;
 
     @Autowired
-    public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService, PathwayChecker checker, PermissionService permissionService, I18nService i18nService, TagService tagService) {
+    public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService, PathwayChecker checker, PermissionService permissionService, I18nService i18nService) {
 
         this.conversionService = conversionService;
         this.converterUtils = converterUtils;
@@ -65,7 +64,6 @@ public class PathwayController {
         this.i18nService = i18nService;
         this.checker = checker;
         this.permissionService = permissionService;
-        this.tagService = tagService;
     }
 
     @POST

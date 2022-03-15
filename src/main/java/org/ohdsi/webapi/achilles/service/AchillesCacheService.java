@@ -6,8 +6,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.ohdsi.webapi.achilles.domain.AchillesCacheEntity;
 import org.ohdsi.webapi.achilles.repository.AchillesCacheRepository;
 import org.ohdsi.webapi.source.Source;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;

@@ -199,13 +199,11 @@ public class AchillesCacheTasklet implements Tasklet {
     private void cacheDomain(String domain, BiFunction<CDMResultsService, String, Object> function) {
         Object result = function.apply(service, source.getSourceKey());
         cache(domain, result);
-//        result = null;
     }
 
     private void cacheTreemap(String domain) {
         Object result = service.getRawTreeMap(domain, source.getSourceKey());
         cache(TREEMAP + "_" + domain, result);
-//        result = null;
     }
 
     private void cache(String cacheName, Object result) {

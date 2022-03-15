@@ -96,9 +96,6 @@ public class ConceptSetService extends AbstractDaoService {
     private PermissionService permissionService;
 
     @Autowired
-    private TagService tagService;
-
-    @Autowired
     private ConceptSetChecker checker;
 
     @Autowired

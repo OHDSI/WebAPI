@@ -423,9 +423,11 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
 
         long[] bucketSizes = getBucketSizes(vocabularySources);
         int bucketIndex = 0, counter = 0;
+        List<Integer> sourceIds = new ArrayList<>();
         List<String> sourceKeys = new ArrayList<>();
         List<Step> jobSteps = new ArrayList<>();
         for (Source source : vocabularySources) {
+            sourceIds.add(source.getSourceId());
             sourceKeys.add(source.getSourceKey());
             String jobStepName = getWarmCacheJobName(source.getSourceKey());
             // Check whether cache job for current source already exists
@@ -443,7 +445,9 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
             }
 
             if (counter++ >= bucketSizes[bucketIndex] - 1) {
-                createJob(String.join(", ", sourceKeys), jobSteps);
+                createJob(sourceIds.stream().map(String::valueOf).collect(Collectors.joining(", ")),
+                        String.join(", ", sourceKeys),
+                        jobSteps);
                 
                 bucketIndex++;
                 counter = 0;
@@ -472,8 +476,8 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
                 .build();
     }
 
-    private void createJob(String sourceKeys, List<Step> steps) {
-        String jobName = getWarmCacheJobName(sourceKeys);
+    private void createJob(String sourceIds, String sourceKeys, List<Step> steps) {
+        String jobName = getWarmCacheJobName(sourceIds, sourceKeys);
         if (jobService.findJobByName(jobName, jobName) == null && steps.size() > 0) {
             JobBuilder jobBuilder = jobBuilders.get(jobName);
 
@@ -544,6 +548,15 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     }
 
     private String getWarmCacheJobName(String sourceKey) {
-        return String.format("warming cache: %s", sourceKey).substring(0, 100); // job name in batch_job_instance is varchar(100)
+        return String.format("warming cache: %s", sourceKey);
+    }
+
+    private String getWarmCacheJobName(String sourceIds, String sourceKeys) {
+        // for multiple sources: try to compose a job name from source keys, and if it is too long - use source ids
+        String jobName = String.format("warming cache: %s", sourceKeys);
+        if (jobName.length() >= 100) { // job name in batch_job_instance is varchar(100)
+            jobName = String.format("warming cache: %s", sourceIds);
+        }
+        return jobName;
     }
 }

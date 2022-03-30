@@ -1,10 +1,10 @@
 package org.ohdsi.webapi.db.migartion;
 
-import com.odysseusinc.arachne.commons.config.flyway.ApplicationContextAwareSpringMigration;
 import org.apache.commons.collections.map.HashedMap;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.configuration.flyway.ApplicationContextAwareSpringMigration;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFileContent;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFileContentList;

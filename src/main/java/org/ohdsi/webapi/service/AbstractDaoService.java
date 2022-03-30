@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.service;
 
+import com.odysseusinc.arachne.commons.types.DBMSType;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
 import com.odysseusinc.datasourcemanager.krblogin.KerberosService;
 import com.odysseusinc.datasourcemanager.krblogin.KrbConfig;
@@ -44,13 +45,7 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class AbstractDaoService extends AbstractAdminService {
@@ -172,6 +167,12 @@ public abstract class AbstractDaoService extends AbstractAdminService {
       );
     } else {
       dataSource = new DriverManagerDataSource(connectionString);
+    }
+    if (DBMSType.SNOWFLAKE.getValue().equalsIgnoreCase(source.getSourceDialect())) {
+      if (dataSource.getConnectionProperties() == null) {
+        dataSource.setConnectionProperties(new Properties());
+      }
+      dataSource.getConnectionProperties().setProperty("CLIENT_RESULT_COLUMN_CASE_INSENSITIVE", "true");
     }
     CancelableJdbcTemplate jdbcTemplate = new CancelableJdbcTemplate(dataSource);
     jdbcTemplate.setSuppressApiException(suppressApiException);

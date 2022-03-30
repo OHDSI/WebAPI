@@ -29,14 +29,14 @@
 
     <circe.version>1.9.4</circe.version>
     <jersey.version>2.14</jersey.version>
-    <SqlRender.version>1.9.0</SqlRender.version>
+    <SqlRender.version>1.9.0-SNAPSHOT</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
     <pac4j.version>4.0.0</pac4j.version>
     <jackson.version>2.10.5</jackson.version>
     <jackson.databind.version>2.10.5.1</jackson.databind.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
-    <skipUnitTests>false</skipUnitTests>
-    <skipITtests>false</skipITtests>
+    <skipUnitTests>true</skipUnitTests>
+    <skipITtests>true</skipITtests>
     <miredot.phase>package</miredot.phase>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
@@ -193,7 +193,7 @@
     <server.ssl.key-password></server.ssl.key-password>
     <server.servlet.context-path>/WebAPI</server.servlet.context-path>
 
-    <arachne.version>1.17.2</arachne.version>
+    <arachne.version>1.19.1-SNAPSHOT</arachne.version>
     <jersey-media-multipart.version>2.25.1</jersey-media-multipart.version>
     <execution.invalidation.period>600000</execution.invalidation.period>
     <execution.invalidation.maxage.hours>12</execution.invalidation.maxage.hours>
@@ -220,7 +220,7 @@
     <spring.jpa.show-sql>false</spring.jpa.show-sql>
     <spring.jpa.properties.hibernate.generate_statistics>false</spring.jpa.properties.hibernate.generate_statistics>
     <spring.jpa.properties.hibernate.jdbc.batch_size>200</spring.jpa.properties.hibernate.jdbc.batch_size>
-    <spring.jpa.properties.hibernate.order_inserts>true</spring.jpa.properties.hibernate.order_inserts>    
+    <spring.jpa.properties.hibernate.order_inserts>true</spring.jpa.properties.hibernate.order_inserts>
     <logging.level.root>info</logging.level.root>
     <logging.level.org.ohdsi>info</logging.level.org.ohdsi>
     <logging.level.org.springframework.orm>info</logging.level.org.springframework.orm>
@@ -1744,6 +1744,20 @@
           <groupId>org.antlr</groupId>
           <artifactId>antlr4-runtime</artifactId>
           <version>4.8-1</version>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>webapi-snowflake</id>
+      <properties>
+        <snowflake.enabled>true</snowflake.enabled>
+        <snowflake.driver.version>3.13.14</snowflake.driver.version>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>net.snowflake</groupId>
+          <artifactId>snowflake-jdbc</artifactId>
+          <version>${snowflake.driver.version}</version>
         </dependency>
       </dependencies>
     </profile>

@@ -2,9 +2,10 @@ package org.ohdsi.webapi.db.migartion;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.List;
+
+import com.odysseusinc.arachne.commons.config.flyway.ApplicationContextAwareSpringMigration;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetailsRepository;
-import org.ohdsi.webapi.configuration.flyway.ApplicationContextAwareSpringMigration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

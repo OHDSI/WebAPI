@@ -1,9 +1,9 @@
 package org.ohdsi.webapi.db.migartion;
 
+import com.odysseusinc.arachne.commons.config.flyway.ApplicationContextAwareSpringMigration;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
-import org.ohdsi.webapi.configuration.flyway.ApplicationContextAwareSpringMigration;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;

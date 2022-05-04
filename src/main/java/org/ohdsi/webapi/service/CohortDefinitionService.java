@@ -359,6 +359,12 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Context
 	ServletContext context;
 
+        /**
+         * Returns OHDSI template SQL for a given cohort definition 
+         * 
+         * @param request A cohort definition JSON expression
+         * @return The OHDSI template SQL needed to generate the input cohort definition as a character string
+         */
 	@Path("sql")
 	@POST
 	@Produces(MediaType.APPLICATION_JSON)
@@ -376,9 +382,9 @@ public class CohortDefinitionService extends AbstractDaoService {
 	}
 
 	/**
-	 * Returns all cohort definitions in the WebAPI database
+	 * Returns metadata about all cohort definitions in the WebAPI database
 	 *
-	 * @return List of cohort definitions
+	 * @return List of metadata about all cohort definitions in WebAPI 
          * @see org.ohdsi.webapi.cohortdefinition.CohortMetadataDTO
 	 */
 	@GET
@@ -398,10 +404,10 @@ public class CohortDefinitionService extends AbstractDaoService {
 	}
 
 	/**
-	 * Creates the cohort definition
+	 * Creates a cohort definition in the WebAPI database
 	 *
 	 * @param dto The cohort definition to create.
-	 * @return The new CohortDefinition
+	 * @return The newly created cohort definition (identical to the input)
 	 */
 	@POST
 	@Path("/")
@@ -439,7 +445,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 	 * Returns the cohort definition for the given id
 	 *
 	 * @param id The cohort definition id
-	 * @return The CohortDefinition
+	 * @return The cohort definition JSON expression
 	 */
 	@GET
 	@Path("/{id}")
@@ -453,11 +459,10 @@ public class CohortDefinitionService extends AbstractDaoService {
 	}
 
 	/**
-	 * This method returns the cohort definition containg the circe cohort
-	 * expression
+	 * Returns the cohort definition containing the circe cohort expression
 	 *
-	 * @param id
-	 * @return
+	 * @param id The cohort definition id
+	 * @return The cohort definition JSON expression
 	 */
 	public CohortDTO getCohortDefinition(final int id) {
 		return getTransactionTemplate().execute(transactionStatus -> {
@@ -467,6 +472,13 @@ public class CohortDefinitionService extends AbstractDaoService {
 		});
 	}
 
+        /**
+         * Check that a cohort exists
+         * 
+         * @param id The cohort definition id
+         * @param name The cohort definition name
+         * @return 1 if the a cohort with the given name and id exist in WebAPI and 0 otherwise
+         */
 	@GET
 	@Path("/{id}/exists")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -524,7 +536,14 @@ public class CohortDefinitionService extends AbstractDaoService {
 		UserEntity user = userRepository.findByLogin(security.getSubject());
 		return cohortGenerationService.generateCohortViaJob(user, currentDefinition, source);
 	}
-
+        
+        /**
+         * Cancel a cohort generation task
+         * 
+         * @param id the id of the cohort definition being generated
+         * @param sourceKey the sourceKey for the target database for generation
+         * @return 
+         */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/cancel/{sourceKey}")
@@ -682,7 +701,13 @@ public class CohortDefinitionService extends AbstractDaoService {
 						.map(cs -> vocabularyService.exportConceptSet(cs, vocabSource))
 						.collect(Collectors.toList());
 	}
-
+        
+        /**
+         * Return concept sets used in a cohort definition
+         * 
+         * @param id a cohort definition id
+         * @return concept sets used in the cohort definition
+         */
 	@GET
 	@Path("/{id}/export/conceptset")
 	@Consumes(MediaType.APPLICATION_JSON)

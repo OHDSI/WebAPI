@@ -128,7 +128,9 @@ import org.ohdsi.webapi.source.SourceService;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
+ * Provides REST services for working with cohort definitions.
  *
+ * @summary Provides REST services for working with cohort definitions.
  * @author cknoll1
  */
 @Path("/cohortdefinition")
@@ -374,9 +376,10 @@ public class CohortDefinitionService extends AbstractDaoService {
 	}
 
 	/**
-	 * Returns all cohort definitions in the cohort schema
+	 * Returns all cohort definitions in the WebAPI database
 	 *
-	 * @return List of cohort_definition
+	 * @return List of cohort definitions
+         * @see org.ohdsi.webapi.cohortdefinition.CohortMetadataDTO
 	 */
 	@GET
 	@Path("/")
@@ -724,6 +727,12 @@ public class CohortDefinitionService extends AbstractDaoService {
 		return report;
 	}
 
+	/**
+	 * Checks the cohort definition for logic issues
+	 *
+	 * @param expression The cohort definition expression
+	 * @return The cohort check result
+	 */
 	@POST
 	@Path("/check")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -734,6 +743,15 @@ public class CohortDefinitionService extends AbstractDaoService {
 		return new CheckResultDTO(checker.check(expression));
 	}
 	
+	/**
+	 * Checks the cohort definition for logic issues with support
+         * for a cohortDTO input.
+         * 
+         * See https://github.com/OHDSI/WebAPI/issues/1971 for more information
+	 *
+	 * @param cohortDTO The cohort data transfer object
+	 * @return The cohort check result
+	 */
 	@POST
 	@Path("/checkV2")
 	@Produces(MediaType.APPLICATION_JSON)

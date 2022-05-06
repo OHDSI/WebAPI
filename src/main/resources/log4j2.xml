@@ -49,7 +49,7 @@
         <logger name="audit-extra">
             <AppenderRef ref="audit-extra-async" />
         </logger>
-        <logger name="org.ohdsi" level="${logging.level.org.ohdsi}">
+        <logger name="org.ohdsi" level="${logging.level.org.ohdsi}" additivity="false">
           <AppenderRef ref="Console" />
         </logger>
         <logger name="org.springframework.orm" level="${logging.level.org.springframework.orm}">

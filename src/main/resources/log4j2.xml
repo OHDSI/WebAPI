@@ -52,16 +52,16 @@
         <logger name="org.ohdsi" level="${logging.level.org.ohdsi}" additivity="false">
           <AppenderRef ref="Console" />
         </logger>
-        <logger name="org.springframework.orm" level="${logging.level.org.springframework.orm}">
+        <logger name="org.springframework.orm" level="${logging.level.org.springframework.orm}" additivity="false">
           <AppenderRef ref="Console" />
         </logger>
-        <logger name="org.springframework.jdbc" level="${logging.level.org.springframework.jdbc}">
+        <logger name="org.springframework.jdbc" level="${logging.level.org.springframework.jdbc}" additivity="false">
           <AppenderRef ref="Console" />
         </logger>
-        <logger name="org.apache.shiro" level="${logging.level.org.apache.shiro}">
+        <logger name="org.apache.shiro" level="${logging.level.org.apache.shiro}" additivity="false">
           <AppenderRef ref="Console" />
         </logger>
-        <logger name="org.pac4j" level="${logging.level.org.pac4j:level:-info}">
+        <logger name="org.pac4j" level="${logging.level.org.pac4j:level:-info}" additivity="false">
           <AppenderRef ref="Console" />
         </logger>
     </Loggers>

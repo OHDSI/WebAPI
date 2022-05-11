@@ -445,12 +445,13 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
             }
 
             if (counter++ >= bucketSizes[bucketIndex] - 1) {
-                createJob(sourceIds.stream().map(String::valueOf).collect(Collectors.joining(", ")),
+                createJob(sourceIds.stream().map(String::valueOf).collect(Collectors.joining(",")),
                         String.join(", ", sourceKeys),
                         jobSteps);
                 
                 bucketIndex++;
                 counter = 0;
+                sourceIds.clear();
                 sourceKeys.clear();
                 jobSteps.clear();
             }
@@ -554,8 +555,15 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     private String getWarmCacheJobName(String sourceIds, String sourceKeys) {
         // for multiple sources: try to compose a job name from source keys, and if it is too long - use source ids
         String jobName = String.format("warming cache: %s", sourceKeys);
+
         if (jobName.length() >= 100) { // job name in batch_job_instance is varchar(100)
             jobName = String.format("warming cache: %s", sourceIds);
+
+            if (jobName.length() >= 100) { // if we still have more than 100 symbols
+                jobName = jobName.substring(0, 88);
+                jobName = jobName.substring(0, jobName.lastIndexOf(','))
+                        .concat(" and more..."); // todo: this is quick fix. need better solution
+            }
         }
         return jobName;
     }

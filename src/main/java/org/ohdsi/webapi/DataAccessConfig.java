@@ -50,6 +50,9 @@ public class DataAccessConfig {
         Properties properties = new Properties();
         properties.setProperty("hibernate.default_schema", this.env.getProperty("spring.jpa.properties.hibernate.default_schema"));
         properties.setProperty("hibernate.dialect", this.env.getProperty("spring.jpa.properties.hibernate.dialect"));
+        properties.setProperty("hibernate.generate_statistics", this.env.getProperty("spring.jpa.properties.hibernate.generate_statistics"));
+        properties.setProperty("hibernate.jdbc.batch_size", this.env.getProperty("spring.jpa.properties.hibernate.jdbc.batch_size"));
+        properties.setProperty("hibernate.order_inserts", this.env.getProperty("spring.jpa.properties.hibernate.order_inserts"));         
         properties.setProperty("hibernate.id.new_generator_mappings", "false");
         return properties;
     }
@@ -79,7 +82,8 @@ public class DataAccessConfig {
         //note autocommit defaults vary across vendors. use provided @Autowired TransactionTemplate
 
         String[] supportedDrivers;
-        supportedDrivers = new String[]{"org.postgresql.Driver", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "oracle.jdbc.driver.OracleDriver", "com.amazon.redshift.jdbc.Driver", "com.cloudera.impala.jdbc.Driver", "net.starschema.clouddb.jdbc.BQDriver", "org.netezza.Driver", "com.simba.googlebigquery.jdbc42.Driver", "org.apache.hive.jdbc.HiveDriver"};
+        supportedDrivers = new String[]{"org.postgresql.Driver", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "oracle.jdbc.driver.OracleDriver", "com.amazon.redshift.jdbc.Driver", "com.cloudera.impala.jdbc.Driver", "net.starschema.clouddb.jdbc.BQDriver", "org.netezza.Driver", "com.simba.googlebigquery.jdbc42.Driver", "org.apache.hive.jdbc.HiveDriver", "com.simba.spark.jdbc.Driver"};
+
         for (String driverName : supportedDrivers) {
             try {
                 Class.forName(driverName);
@@ -92,7 +96,6 @@ public class DataAccessConfig {
         // Redshift driver can be loaded first because it is mentioned in manifest file -
         // put the redshift driver at the end so that it doesn't
         // conflict with postgres queries
-        // Change redshift driver to aws sdk version
         java.util.Enumeration<Driver> drivers =  DriverManager.getDrivers();
         while (drivers.hasMoreElements()) {
             Driver d = drivers.nextElement();

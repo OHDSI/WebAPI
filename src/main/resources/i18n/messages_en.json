@@ -395,7 +395,6 @@
       "appendConceptSetExpression": "Append Concept Set Expression",
       "overwriteConceptSetExpression": "Overwrite Concept Set Expression",
       "enterConceptIdentifiers": "Enter Concept Identifiers",
-      "enterSourceCodes": "Enter Source Codes",
       "name": "Name:",
       "addConcepts": "Add Concepts",
       "removeSelected": "Remove Selected",
@@ -409,7 +408,18 @@
       "commonAncestors": "Common Ancestors",
       "loadingIncludedSourcecodes": "Loading Included Sourcecodes",
       "expressionResolveError": "Error occurred during resolving expression!",
-      "forbiddenError": "You are not authorized to view the concept set expression."
+      "forbiddenError": "You are not authorized to view the concept set expression.",
+      "import": {
+        "repository": {
+          "overwriteCheckboxLabel": "Overwrite concept set items (append if not checked)"
+        },
+        "sourceCodes": {
+          "enterSourceCodes": "Enter Source Codes",
+          "searchConcepts": "Search concepts",
+          "searchingConcepts": "Searching concepts...",
+          "notFound": "Not found:"
+        }
+      }
     },
     "conceptLegend": {
       "standard": "Standard",
@@ -1798,6 +1808,7 @@
       "caption": "Characterization #<%=id%>",
       "captionPreview": "Characterization #<%=id%> - Version <%=number%> Preview",
       "loadingCohortCharacterization": "Loading Cohort Characterization...",
+      "deleteConfirmation": "Delete cohort characterization? Warning: deletion can not be undone!",
       "design": {
         "description": "<b>Cohort characterization</b> is defined as the process of generating cohort level descriptive summary statistics from person level covariate data. Summary statistics of these person level covariates may be count, mean, sd, var, min, max, median, range, and quantiles. In addition, covariates during a period may be stratified into temporal units of time for time-series analysis such as fixed intervals of time relative to cohort_start_date (e.g. every 7 days, every 30 days etc.), or in absolute calendar intervals such as calendar-week, calendar-month, calendar-quarter, calendar-year.",
         "fa": {
@@ -2135,7 +2146,7 @@
       "messages": {
         "alreadyExists": "A cohort pathway with this name already exists. Please choose a different name.",
         "beforeClose": "Your changes are not saved. Would you like to continue?",
-        "deleteConfirmation": "Are you sure?",
+        "deleteConfirmation": "Delete cohort pathway? Warning: deletion can not be undone!",
         "saveFailed": "An error occurred while attempting to save a cohort pathway.",
         "notfound": "There is no pathway analysis with id = %d."
       },
@@ -2342,7 +2353,7 @@
       "messages": {
         "alreadyExists": "A reusable with this name already exists. Please choose a different name.",
         "beforeClose": "Your changes are not saved. Would you like to continue?",
-        "deleteConfirmation": "Are you sure?",
+        "deleteConfirmation": "Delete Reusable? Warning: deletion can not be undone!",
         "saveFailed": "An error occurred while attempting to save a reusable.",
         "notfound": "There is no reusable with id = %d."
       },

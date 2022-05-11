@@ -59,24 +59,27 @@ public class Reusable extends CommonEntityExt<Integer> {
         return name;
     }
 
-    public void setName(String name) {
+    public Reusable setName(String name) {
         this.name = name;
+        return this;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
+    public Reusable setDescription(String description) {
         this.description = description;
+        return this;
     }
 
     public String getData() {
         return data;
     }
 
-    public void setData(String data) {
+    public Reusable setData(String data) {
         this.data = data;
+        return this;
     }
 
     @Override

@@ -24,6 +24,7 @@ import com.odysseusinc.arachne.commons.types.DBMSType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -116,7 +117,11 @@ public class DDLService {
 
 	private static final Collection<String> CEMRESULT_INDEX_FILE_PATHS = Arrays.asList();
 
-	private static final Collection<String> DBMS_NO_INDEXES = Arrays.asList("redshift", "impala", "netezza");
+	private static final Collection<String> ACHILLES_DDL_FILE_PATHS = Arrays.asList(
+			"/ddl/achilles/achilles_result_concept_count.sql"
+	);
+
+	private static final Collection<String> DBMS_NO_INDEXES = Arrays.asList("redshift", "impala", "netezza", "spark");
 
 	@GET
 	@Path("results")
@@ -161,6 +166,24 @@ public class DDLService {
 		}};
 
 		return generateSQL(dialect, params, CEMRESULT_DDL_FILE_PATHS, CEMRESULT_INIT_FILE_PATHS, CEMRESULT_INDEX_FILE_PATHS);
+	}
+
+	@GET
+	@Path("achilles")
+	@Produces("text/plain")
+	public String generateAchillesSQL(
+            @QueryParam("dialect") String dialect,
+			@DefaultValue("vocab") @QueryParam("vocabSchema") String vocabSchema,
+			@DefaultValue("results") @QueryParam("schema") String resultSchema) {
+
+		final Collection<String> achillesDDLFilePaths = new ArrayList<>(ACHILLES_DDL_FILE_PATHS);
+
+		Map<String, String> params = new HashMap<String, String>() {{
+			put(VOCAB_SCHEMA, vocabSchema);
+			put(RESULTS_SCHEMA, resultSchema);
+		}};
+
+		return generateSQL(dialect, params, achillesDDLFilePaths, Collections.emptyList(), Collections.emptyList());
 	}
 
 	private String generateSQL(String dialect, Map<String, String> params, Collection<String> filePaths, Collection<String> initFilePaths, Collection<String> indexFilePaths) {

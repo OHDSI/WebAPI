@@ -190,9 +190,6 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   @Autowired
   private VersionService<IRVersion> versionService;
 
-  @Autowired
-  private TagService tagService;
-
   public IRAnalysisService(final ObjectMapper objectMapper) {
 
      this.queryBuilder = new IRAnalysisQueryBuilder(objectMapper);

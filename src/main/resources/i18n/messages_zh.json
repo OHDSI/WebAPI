@@ -395,7 +395,6 @@
       "appendConceptSetExpression": "追加概念集表达式",
       "overwriteConceptSetExpression": "覆盖概念集表达式",
       "enterConceptIdentifiers": "输入概念标识符",
-      "enterSourceCodes": "输入源代码",
       "name": "概念集名称",
       "addConcepts": "添加概念",
       "removeSelected": "删除选定的",
@@ -409,7 +408,18 @@
       "commonAncestors": "共同祖先",
       "loadingIncludedSourcecodes": "加载包含的源代码",
       "expressionResolveError": "Error occurred during resolving expression!",
-      "forbiddenError": "You are not authorized to view the concept set expression."
+      "forbiddenError": "You are not authorized to view the concept set expression.",
+      "import": {
+        "repository": {
+          "overwriteCheckboxLabel": "Overwrite concept set items (append if not checked)"
+        },
+        "sourceCodes": {
+          "enterSourceCodes": "输入源代码",
+          "searchConcepts": "Search concepts",
+          "searchingConcepts": "Searching concepts...",
+          "notFound": "Not found:"
+        }
+      }
     },
     "conceptLegend": {
       "standard": "标准",
@@ -1798,6 +1808,7 @@
       "caption": "特征描述 #<%=id%>",
       "captionPreview": "Characterization #<%=id%> - Version <%=number%> Preview",
       "loadingCohortCharacterization": "正在载入队列表征...",
+      "deleteConfirmation": "您确定么？",
       "design": {
         "description": "队列表征被定义为一种从病人级别的协变量数据生成队列级别描述性摘要统计信息的过程。各个级别协变量的摘要统计信息可以是数字，均值，标准差，方差，最小值，最大值，中位数，范围和四分位数。 此外，可以将一段时间内的协变量分层为时间序列分析的时间单位，例如相对于cohort_start_date的固定时间间隔（例如，每7天，每30天等），或以绝对时间间隔（例如，日历中的周，月，季度，年）。",
         "fa": {

@@ -186,9 +186,6 @@ public class CohortDefinitionService extends AbstractDaoService {
 	protected EntityManager entityManager;
 
 	@Autowired
-	private TagService tagService;
-
-	@Autowired
 	private CohortChecker cohortChecker;
 
 	@Autowired
@@ -732,7 +729,17 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Transactional
-	public CheckResult runDiagnostics(CohortDTO cohortDTO) {
+	public CheckResultDTO runDiagnostics(CohortExpression expression) {
+		Checker checker = new Checker();
+		return new CheckResultDTO(checker.check(expression));
+	}
+	
+	@POST
+	@Path("/checkV2")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Transactional
+	public CheckResult runDiagnosticsWithTags(CohortDTO cohortDTO) {
 		Checker checker = new Checker();
 		CheckResultDTO checkResultDTO = new CheckResultDTO(checker.check(cohortDTO.getExpression()));
 		List<Warning> circeWarnings = checkResultDTO.getWarnings().stream()
@@ -742,6 +749,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 		checkResult.getWarnings().addAll(circeWarnings);
 		return checkResult;
 	}
+	
 
 	@POST
 	@Path("/printfriendly/cohort")

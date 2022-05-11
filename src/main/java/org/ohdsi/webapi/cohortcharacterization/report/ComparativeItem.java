@@ -43,7 +43,7 @@ public class ComparativeItem extends ExportItem<ComparativeItem> {
     this.diff = calcDiff(firstItem, secondItem);
   }
 
-  private double calcDiff(ExportItem first, ExportItem second) {
+  protected double calcDiff(ExportItem first, ExportItem second) {
     if (first == null) {
       first = new PrevalenceItem(EMPTY_ITEM, this.targetCohortName);
     }

@@ -102,6 +102,7 @@ public abstract class AtlasSecurity extends Security {
             // DDL service
             .addRestPath("/ddl/results")
             .addRestPath("/ddl/cemresults")
+            .addRestPath("/ddl/extra")
 
             .addRestPath("/saml/saml-metadata")
             .addRestPath("/saml/slo")

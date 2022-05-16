@@ -61,7 +61,13 @@ public class SourceController extends AbstractDaoService {
 
   @Value("#{!'${security.provider}'.equals('DisabledSecurity')}")
   private boolean securityEnabled;
-
+  
+/**
+ * CDM database metadata
+ * 
+ * @return A list of all CDM sources with the ID, name, SQL dialect, and key for each source.
+ * The {sourceKey} is used in other WebAPI endpoints to identify CDMs.
+ */
   @Path("sources")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
@@ -70,6 +76,12 @@ public class SourceController extends AbstractDaoService {
     return sourceService.getSources().stream().map(SourceInfo::new).collect(Collectors.toList());
   }
 
+  /**
+   * Refresh cached CDM database metadata
+   * 
+   * @return A list of all CDM sources with the ID, name, SQL dialect, and key 
+   * for each source (same as the 'sources' endpoint) after refreshing the cached sourced data.
+   */
   @Path("refresh")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
@@ -79,14 +91,23 @@ public class SourceController extends AbstractDaoService {
     sourceService.ensureSourceEncrypted();
     return getSources();
   }
-
+/**
+ * WebAPI designates one CDM vocabulary as the priority vocabulary to be used for vocabulary searches in Atlas.
+ * 
+ * @return The CDM metadata for the priority vocabulary.
+ */
   @Path("priorityVocabulary")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public SourceInfo getPriorityVocabularySourceInfo() {
     return sourceService.getPriorityVocabularySourceInfo();
   }
-
+  
+/**
+ * CDM source metadata
+ * @param sourceKey 
+ * @return  Metadata for a single CDM source that matches the <code>sourceKey</code>.
+ */
   @Path("{key}")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
@@ -155,7 +176,7 @@ public class SourceController extends AbstractDaoService {
       throw new SourceDuplicateKeyException("You cannot use this Source Key, please use different one");
     }
   }
-
+  
   @Path("{sourceId}")
   @PUT
   @Consumes(MediaType.MULTIPART_FORM_DATA)

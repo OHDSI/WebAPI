@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.ohdsi.webapi.achilles.domain.AchillesCacheEntity;
 import org.ohdsi.webapi.achilles.repository.AchillesCacheRepository;
 import org.ohdsi.webapi.source.Source;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -20,6 +22,8 @@ import java.util.Optional;
 
 @Service
 public class AchillesCacheService {
+    private static final Logger LOG = LoggerFactory.getLogger(AchillesCacheService.class);
+
     private final AchillesCacheRepository cacheRepository;
 
     private final ObjectMapper objectMapper;
@@ -61,6 +65,12 @@ public class AchillesCacheService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void saveDrilldownCacheMap(Source source, String domain, Map<Integer, ObjectNode> conceptNodes) {
+        if (conceptNodes.isEmpty()) { // nothing to cache
+            LOG.warn("Cannot cache drilldown reports for {}, domain {}. Check if result schema contains achilles results tables.",
+                    source.getSourceKey(), domain);
+            return;
+        }
+
         Map<String, ObjectNode> nodes = new HashMap<>(batchSize);
         for (Map.Entry<Integer, ObjectNode> entry : conceptNodes.entrySet()) {
             if (nodes.size() >= batchSize) {

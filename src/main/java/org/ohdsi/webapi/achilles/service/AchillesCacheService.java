@@ -61,18 +61,20 @@ public class AchillesCacheService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void saveDrilldownCacheMap(Source source, String domain, Map<Integer, ObjectNode> conceptNodes) {
-        Map<String, ObjectNode> nodes = new HashMap<>(batchSize);
-        for (Map.Entry<Integer, ObjectNode> entry : conceptNodes.entrySet()) {
-            if (nodes.size() >= batchSize) {
-                createCacheEntities(source, nodes);
-                nodes.clear();
+        if (conceptNodes.size() > 0) {
+            Map<String, ObjectNode> nodes = new HashMap<>(batchSize);
+            for (Map.Entry<Integer, ObjectNode> entry : conceptNodes.entrySet()) {
+                if (nodes.size() >= batchSize) {
+                    createCacheEntities(source, nodes);
+                    nodes.clear();
+                }
+                Integer key = entry.getKey();
+                String cacheName = getCacheName(domain, key);
+                nodes.put(cacheName, entry.getValue());
             }
-            Integer key = entry.getKey();
-            String cacheName = getCacheName(domain, key);
-            nodes.put(cacheName, entry.getValue());
+            createCacheEntities(source, nodes);
+            nodes.clear();
         }
-        createCacheEntities(source, nodes);
-        nodes.clear();
     }
 
     private void createCacheEntities(Source source, Map<String, ObjectNode> nodes) {

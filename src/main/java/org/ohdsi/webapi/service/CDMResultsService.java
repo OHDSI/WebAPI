@@ -381,12 +381,13 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     }
 
     private JobExecutionResource warmCacheByKey(String sourceKey) {
-        if (jobService.findJobByName(getWarmCacheJobName(sourceKey), getWarmCacheJobName(sourceKey)) == null) {
+        JobExecutionResource executionResource =
+                jobService.findJobByName(getWarmCacheJobName(sourceKey), getWarmCacheJobName(sourceKey));
+        if (executionResource == null) {
             Source source = getSourceRepository().findBySourceKey(sourceKey);
-            return warmCaches(source);
-        } else {
-            return new JobExecutionResource();
+            executionResource = warmCaches(source);
         }
+        return executionResource;
     }
 
     private JobExecutionResource warmCaches(Source source) {

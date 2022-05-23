@@ -2515,7 +2515,8 @@
           "pdw": "Microsoft PDW",
           "postgresql": "PostgreSQL",
           "redshift": "Amazon Redshift",
-          "sqlserver": "SQL server"
+          "sqlserver": "SQL server",
+          "synapse": "Azure Synapse"
         },
         "title": "Source dialect"
       },

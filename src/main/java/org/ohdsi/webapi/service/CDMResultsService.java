@@ -13,7 +13,6 @@ import org.ohdsi.webapi.cdmresults.DescendantRecordCount;
 import org.ohdsi.webapi.cdmresults.domain.CDMCacheEntity;
 import org.ohdsi.webapi.cdmresults.service.CDMCacheService;
 import org.ohdsi.webapi.job.JobExecutionResource;
-import org.ohdsi.webapi.report.CDMAchillesHeel;
 import org.ohdsi.webapi.report.CDMDashboard;
 import org.ohdsi.webapi.report.CDMDataDensity;
 import org.ohdsi.webapi.report.CDMDeath;
@@ -66,7 +65,6 @@ import static org.ohdsi.webapi.cdmresults.AchillesCacheTasklet.DASHBOARD;
 import static org.ohdsi.webapi.cdmresults.AchillesCacheTasklet.DATA_DENSITY;
 import static org.ohdsi.webapi.cdmresults.AchillesCacheTasklet.DEATH;
 import static org.ohdsi.webapi.cdmresults.AchillesCacheTasklet.DRILLDOWN;
-import static org.ohdsi.webapi.cdmresults.AchillesCacheTasklet.HEEL;
 import static org.ohdsi.webapi.cdmresults.AchillesCacheTasklet.OBSERVATION_PERIOD;
 import static org.ohdsi.webapi.cdmresults.AchillesCacheTasklet.PERSON;
 import static org.ohdsi.webapi.cdmresults.AchillesCacheTasklet.TREEMAP;
@@ -253,25 +251,6 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
             }
         }
         return new JobExecutionResource();
-    }
-
-    /**
-     * Queries for achilles heel report for the given sourceKey
-     *
-     * @return CDMAchillesHeel
-     */
-    @GET
-    @Path("{sourceKey}/achillesheel")
-    @Produces(MediaType.APPLICATION_JSON)
-    @AchillesCache(HEEL)
-    public CDMAchillesHeel getAchillesHeelReport(@PathParam("sourceKey")
-            final String sourceKey) {
-        return getRawAchillesHeelReport(sourceKey);
-    }
-
-    public CDMAchillesHeel getRawAchillesHeelReport(String sourceKey) {
-        Source source = getSourceRepository().findBySourceKey(sourceKey);
-        return this.queryRunner.getHeelResults(this.getSourceJdbcTemplate(source), source);
     }
 
     /**

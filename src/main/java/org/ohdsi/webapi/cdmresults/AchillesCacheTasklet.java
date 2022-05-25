@@ -36,7 +36,6 @@ public class AchillesCacheTasklet implements Tasklet {
 
     public static final String DASHBOARD = "dashboard";
     public static final String PERSON = "person";
-    public static final String HEEL = "achillesHeel";
     public static final String DATA_DENSITY = "datadensity";
     public static final String DEATH = "death";
     public static final String OBSERVATION_PERIOD = "observationperiod";
@@ -60,7 +59,6 @@ public class AchillesCacheTasklet implements Tasklet {
         // domains with concrete call endpoints
         simpleDomains.put(DASHBOARD, CDMResultsService::getRawDashboard);
         simpleDomains.put(PERSON, CDMResultsService::getRawPerson);
-        simpleDomains.put(HEEL, CDMResultsService::getRawAchillesHeelReport);
         simpleDomains.put(DATA_DENSITY, CDMResultsService::getRawDataDesity);
         simpleDomains.put(DEATH, CDMResultsService::getRawDeath);
         simpleDomains.put(OBSERVATION_PERIOD, CDMResultsService::getRawObservationPeriod);

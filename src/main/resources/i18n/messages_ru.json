@@ -1496,7 +1496,6 @@
       "measurement": "Измерения",
       "observation": "Наблюдения",
       "death": "Смерти",
-      "achillesHeel": "Ахиллесова пята",
       "observationPeriod": "Период наблюдений"
     },
     "const": {
@@ -1547,11 +1546,6 @@
       "deathByType": "Смерть по типу",
       "ageAtFirstOccurence": "Возраст при первом вхождении",
       "ageDecile": "Децильный коэффициент возраста"
-    },
-    "achillesHeelReport": {
-      "achillesHeelResults": "Ахиллесова пята - результаты",
-      "messageType": "Тип сообщения",
-      "message": "Сообщение"
     },
     "numberOfPeople": "Количество человек",
     "prevalence": "Распространенность",

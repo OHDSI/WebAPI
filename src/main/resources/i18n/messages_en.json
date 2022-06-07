@@ -1476,11 +1476,6 @@
     "dpcTooltip": "Descendant Person Count"
   },
   "dataSources": {
-    "achillesHeelReport": {
-      "achillesHeelResults": "Achilles Heel Results",
-      "message": "Message",
-      "messageType": "Message Type"
-    },
     "const": {
       "lengthOfEra": "Length of era",
       "recordsPerPerson": "Records per person"
@@ -1588,7 +1583,6 @@
     },
     "prevalence": "Prevalence",
     "reports": {
-      "achillesHeel": "Achilles Heel",
       "conditionEra": "Condition Era",
       "conditionOccurrence": "Condition Occurrence",
       "dashboard": "Dashboard",

@@ -509,7 +509,7 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
                 .addString(Constants.Params.JOB_NAME, jobName)
 
                 // batch_job_execution_params.string_val is varchar(250). too many source keys can exceed 250 symbols
-                .addString(Constants.Params.SOURCE_KEY, sourceKey.substring(0, 250))
+                .addString(Constants.Params.SOURCE_KEY, sourceKey.length() >= 250 ? sourceKey.substring(0, 250) : sourceKey)
 
                 .addString(Constants.Params.SOURCE_ID, String.valueOf(sourceId))
                 .toJobParameters());

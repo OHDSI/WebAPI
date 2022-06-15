@@ -3,6 +3,7 @@ package org.ohdsi.webapi.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.achilles.aspect.AchillesCache;
 import org.ohdsi.webapi.achilles.service.AchillesCacheService;
@@ -509,7 +510,7 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
                 .addString(Constants.Params.JOB_NAME, jobName)
 
                 // batch_job_execution_params.string_val is varchar(250). too many source keys can exceed 250 symbols
-                .addString(Constants.Params.SOURCE_KEY, sourceKey.length() >= 250 ? sourceKey.substring(0, 250) : sourceKey)
+                .addString(Constants.Params.SOURCE_KEY, StringUtils.substring(sourceKey, 0, 250))
 
                 .addString(Constants.Params.SOURCE_ID, String.valueOf(sourceId))
                 .toJobParameters());

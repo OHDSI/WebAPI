@@ -3,6 +3,7 @@ package org.ohdsi.webapi.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.achilles.aspect.AchillesCache;
 import org.ohdsi.webapi.achilles.service.AchillesCacheService;
@@ -117,13 +118,13 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
 
     @Value("${cache.jobs.count:3}")
     private int cacheJobsCount;
-    
+
     @Autowired
     private ApplicationContext applicationContext;
 
     @Autowired
     private AchillesCacheService cacheService;
-    
+
     @Autowired
     private CDMCacheService cdmCacheService;
 
@@ -432,7 +433,7 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
 
             if (counter++ >= bucketSizes[bucketIndex] - 1) {
                 createJob(sourceIds.stream().map(String::valueOf).collect(Collectors.joining(",")),
-                        String.join(", ", sourceKeys),
+                        String.join(",", sourceKeys),
                         jobSteps);
                 
                 bucketIndex++;
@@ -507,7 +508,10 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     private JobExecutionResource createJob(String sourceKey, int sourceId, String jobName, SimpleJobBuilder stepBuilder) {
         return jobService.runJob(stepBuilder.build(), new JobParametersBuilder()
                 .addString(Constants.Params.JOB_NAME, jobName)
-                .addString(Constants.Params.SOURCE_KEY, sourceKey)
+
+                // batch_job_execution_params.string_val is varchar(250). too many source keys can exceed 250 symbols
+                .addString(Constants.Params.SOURCE_KEY, StringUtils.substring(sourceKey, 0, 250))
+
                 .addString(Constants.Params.SOURCE_ID, String.valueOf(sourceId))
                 .toJobParameters());
     }

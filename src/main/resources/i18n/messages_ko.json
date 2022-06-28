@@ -1476,11 +1476,6 @@
     "dpcTooltip": "Descendant Person Count"
   },
   "dataSources": {
-    "achillesHeelReport": {
-      "achillesHeelResults": "Achilles Heel 결과",
-      "message": "메시지",
-      "messageType": "메시지 유형"
-    },
     "const": {
       "lengthOfEra": "기간의 길이",
       "recordsPerPerson": "사람 당 기록수"
@@ -1588,7 +1583,6 @@
     },
     "prevalence": "유병율",
     "reports": {
-      "achillesHeel": "아킬레스 힐(Achilles Heel)",
       "conditionEra": "진단 기간 (condition era)",
       "conditionOccurrence": "진단 발생(Condition occurrence)",
       "dashboard": "대시보드(Dashboard)",

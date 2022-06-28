@@ -1476,11 +1476,6 @@
     "dpcTooltip": "Descendant Person Count"
   },
   "dataSources": {
-    "achillesHeelReport": {
-      "achillesHeelResults": "Achilles Heel 结果",
-      "message": "讯息",
-      "messageType": "讯息类型"
-    },
     "const": {
       "lengthOfEra": "周期的长短",
       "recordsPerPerson": "每人记录"
@@ -1588,7 +1583,6 @@
     },
     "prevalence": "患病率",
     "reports": {
-      "achillesHeel": "Achilles Heel",
       "conditionEra": "疾病/症状持续时间",
       "conditionOccurrence": "疾病/症状",
       "dashboard": "仪表板",

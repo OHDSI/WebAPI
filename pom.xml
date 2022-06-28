@@ -24,6 +24,7 @@
     <dom4j.version>2.1.3</dom4j.version>
     <hydra.version>0.2.0</hydra.version>
     <featureExtraction.version>3.2.0</featureExtraction.version>
+    <tomcat.embed.version>8.5.81</tomcat.embed.version>
 
     <commons-fileupload.version>1.3.3</commons-fileupload.version>
 
@@ -638,6 +639,16 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-batch</artifactId>
     </dependency>
+
+    <!-- We are intentionally overriding the Tomcat version from Spring Boot 1.5.22.RELEASE -->
+    <!-- and assuming tomcat-jdbc.jar will be in the Tomcat installation folder (\apache-tomcat-8.5.xxx\lib). -->
+    <!-- WebAPI.war.original should not contain overridden libraries -->
+    <dependency>
+      <groupId>org.apache.tomcat.embed</groupId>
+      <artifactId>tomcat-embed-el</artifactId>
+      <version>${tomcat.embed.version}</version>
+    </dependency>
+
     <!-- It is overriding a transitive dependency from the dependency above -->
     <!-- After migrating to Spring Boot 2.x we should get rid of it -->
     <dependency>
@@ -648,6 +659,16 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-jdbc</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tomcat</groupId>
+      <artifactId>tomcat-jdbc</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tomcat</groupId>
+      <artifactId>tomcat-juli</artifactId>
+      <version>${tomcat.embed.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>

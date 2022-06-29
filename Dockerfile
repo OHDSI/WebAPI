@@ -4,6 +4,10 @@ WORKDIR /code
 
 ARG MAVEN_PROFILE=webapi-docker
 
+# Copy maven settings, containing repository configurations
+RUN mkdir -p /root/.m2
+COPY WebAPIConfig/settings.xml /root/.m2
+
 # Download dependencies
 COPY pom.xml /code/
 RUN mkdir .git \

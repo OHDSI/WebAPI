@@ -6,7 +6,7 @@
   <groupId>org.ohdsi</groupId>
   <artifactId>WebAPI</artifactId>
   <packaging>war</packaging>
-  <version>2.11.1-SNAPSHOT</version>
+  <version>2.11.1</version>
   <name>WebAPI</name>
   <properties>
     <build.number>${BUILD_NUMBER}</build.number>
@@ -266,8 +266,8 @@
     <cache.achilles.usePersonCount>true</cache.achilles.usePersonCount>
 
     <!-- Build info -->
-    <buildinfo.atlas.milestone.id>41</buildinfo.atlas.milestone.id>
-    <buildinfo.webapi.milestone.id>42</buildinfo.webapi.milestone.id>
+    <buildinfo.atlas.milestone.id>43</buildinfo.atlas.milestone.id>
+    <buildinfo.webapi.milestone.id>44</buildinfo.webapi.milestone.id>
     <buildinfo.atlas.release.tag>*</buildinfo.atlas.release.tag>
     <buildinfo.webapi.release.tag>*</buildinfo.webapi.release.tag>
 

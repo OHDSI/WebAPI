@@ -135,7 +135,7 @@ public class TagController {
      * @return
      */
     @POST
-    @Path("/assignGroup")
+    @Path("/unassignGroup")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public void unassignGroup(final TagGroupSubscriptionDTO dto) {

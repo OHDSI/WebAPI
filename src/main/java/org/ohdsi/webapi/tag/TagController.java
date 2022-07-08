@@ -2,6 +2,7 @@ package org.ohdsi.webapi.tag;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.tag.dto.TagDTO;
+import org.ohdsi.webapi.tag.dto.TagGroupSubscriptionDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -111,5 +112,33 @@ public class TagController {
     @Consumes(MediaType.APPLICATION_JSON)
     public void delete(@PathParam("id") final Integer id) {
         tagService.delete(id);
+    }
+
+    /**
+     * Assignes group of tags to groups of assets.
+     *
+     * @param dto
+     * @return
+     */
+    @POST
+    @Path("/assignGroup")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void assignGroup(final TagGroupSubscriptionDTO dto) {
+        tagService.assignGroup(dto);
+    }
+
+    /**
+     * Unassignes group of tags from groups of assets.
+     *
+     * @param dto
+     * @return
+     */
+    @POST
+    @Path("/assignGroup")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void unassignGroup(final TagGroupSubscriptionDTO dto) {
+        tagService.unassignGroup(dto);
     }
 }

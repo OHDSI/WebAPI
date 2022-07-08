@@ -65,7 +65,7 @@ import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceService;
-import org.ohdsi.webapi.tag.TagService;
+import org.ohdsi.webapi.tag.domain.HasTags;
 import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.ExceptionUtils;
@@ -87,7 +87,6 @@ import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -131,7 +130,8 @@ import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
  * @author Chris Knoll <cknoll@ohdsi.org>
  */
 @Component
-public class IRAnalysisService extends AbstractDaoService implements GeneratesNotification, IRAnalysisResource {
+public class IRAnalysisService extends AbstractDaoService implements
+        GeneratesNotification, IRAnalysisResource, HasTags<Integer> {
 
   private static final Logger log = LoggerFactory.getLogger(IRAnalysisService.class);
   private final static String STRATA_STATS_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/incidencerate/sql/strata_stats.sql");
@@ -203,7 +203,19 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
     }
     return null;
   }
-  
+
+  @Override
+  public void assignTag(Integer id, int tagId, boolean isPermissionProtected) {
+    IncidenceRateAnalysis entity = irAnalysisRepository.findOne(id);
+    assignTag(entity, tagId, isPermissionProtected);
+  }
+
+  @Override
+  public void unassignTag(Integer id, int tagId, boolean isPermissionProtected) {
+    IncidenceRateAnalysis entity = irAnalysisRepository.findOne(id);
+    unassignTag(entity, tagId, isPermissionProtected);
+  }
+
   public static class StratifyReportItem {
     public long bits;
     public long totalPersons;
@@ -800,29 +812,25 @@ public class IRAnalysisService extends AbstractDaoService implements GeneratesNo
   @Override
   @Transactional
   public void assignTag(final int id, final int tagId) {
-    IncidenceRateAnalysis entity = irAnalysisRepository.findOne(id);
-    assignTag(entity, tagId, false);
+    assignTag(id, tagId, false);
   }
 
   @Override
   @Transactional
   public void unassignTag(final int id, final int tagId) {
-    IncidenceRateAnalysis entity = irAnalysisRepository.findOne(id);
-    unassignTag(entity, tagId, false);
+    unassignTag(id, tagId, false);
   }
 
   @Override
   @Transactional
   public void assignPermissionProtectedTag(final int id, final int tagId) {
-    IncidenceRateAnalysis entity = irAnalysisRepository.findOne(id);
-    assignTag(entity, tagId, true);
+    assignTag(id, tagId, true);
   }
 
   @Override
   @Transactional
   public void unassignPermissionProtectedTag(final int id, final int tagId) {
-    IncidenceRateAnalysis entity = irAnalysisRepository.findOne(id);
-    unassignTag(entity, tagId, true);
+    unassignTag(id, tagId, true);
   }
 
   @Override

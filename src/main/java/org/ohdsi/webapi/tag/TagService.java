@@ -1,12 +1,19 @@
 package org.ohdsi.webapi.tag;
 
 import org.glassfish.jersey.internal.util.Producer;
+import org.ohdsi.webapi.cohortcharacterization.CcService;
+import org.ohdsi.webapi.pathway.PathwayService;
 import org.ohdsi.webapi.service.AbstractDaoService;
+import org.ohdsi.webapi.service.CohortDefinitionService;
+import org.ohdsi.webapi.service.ConceptSetService;
+import org.ohdsi.webapi.service.IRAnalysisService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.tag.domain.HasTags;
 import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.tag.domain.TagInfo;
 import org.ohdsi.webapi.tag.domain.TagType;
 import org.ohdsi.webapi.tag.dto.TagDTO;
+import org.ohdsi.webapi.tag.dto.TagGroupSubscriptionDTO;
 import org.ohdsi.webapi.tag.repository.TagRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,14 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.ws.rs.ForbiddenException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,6 +35,11 @@ public class TagService extends AbstractDaoService {
     private final TagRepository tagRepository;
     private final EntityManager entityManager;
     private final ConversionService conversionService;
+    private final PathwayService pathwayService;
+    private final CcService ccService;
+    private final CohortDefinitionService cohortDefinitionService;
+    private final ConceptSetService conceptSetService;
+    private final IRAnalysisService irAnalysisService;
 
     private final ArrayList<Producer<List<TagInfo>>> infoProducers;
 
@@ -42,10 +47,20 @@ public class TagService extends AbstractDaoService {
     public TagService(
             TagRepository tagRepository,
             EntityManager entityManager,
-            ConversionService conversionService) {
+            ConversionService conversionService,
+            PathwayService pathwayService,
+            CcService ccService,
+            CohortDefinitionService cohortDefinitionService,
+            ConceptSetService conceptSetService,
+            IRAnalysisService irAnalysisService) {
         this.tagRepository = tagRepository;
         this.entityManager = entityManager;
         this.conversionService = conversionService;
+        this.pathwayService = pathwayService;
+        this.ccService = ccService;
+        this.cohortDefinitionService = cohortDefinitionService;
+        this.conceptSetService = conceptSetService;
+        this.irAnalysisService = irAnalysisService;
 
         this.infoProducers = new ArrayList<>();
         this.infoProducers.add(tagRepository::findCohortTagInfo);
@@ -227,6 +242,44 @@ public class TagService extends AbstractDaoService {
         groups.forEach(g -> {
             groupIds.add(g.getId());
             findParentGroup(g.getGroups(), groupIds);
+        });
+    }
+
+    public void assignGroup(TagGroupSubscriptionDTO dto) {
+        if (isAdmin()) {
+            tagRepository.findByIdIn(new ArrayList<>(dto.getTags()))
+                    .forEach(tag -> {
+                        assignGroup(ccService, dto.getAssets().getCharacterizations(), tag.getId());
+                        assignGroup(pathwayService, dto.getAssets().getPathways(), tag.getId());
+                        assignGroup(cohortDefinitionService, dto.getAssets().getCohorts(), tag.getId());
+                        assignGroup(conceptSetService, dto.getAssets().getConceptSets(), tag.getId());
+                        assignGroup(irAnalysisService, dto.getAssets().getIncidenceRates(), tag.getId());
+                    });
+        }
+    }
+
+    public void unassignGroup(TagGroupSubscriptionDTO dto) {
+        if (isAdmin()) {
+            tagRepository.findByIdIn(new ArrayList<>(dto.getTags()))
+                    .forEach(tag -> {
+                        unassignGroup(ccService, dto.getAssets().getCharacterizations(), tag.getId());
+                        unassignGroup(pathwayService, dto.getAssets().getPathways(), tag.getId());
+                        unassignGroup(cohortDefinitionService, dto.getAssets().getCohorts(), tag.getId());
+                        unassignGroup(conceptSetService, dto.getAssets().getConceptSets(), tag.getId());
+                        unassignGroup(irAnalysisService, dto.getAssets().getIncidenceRates(), tag.getId());
+                    });
+        }
+    }
+
+    private <T extends Number> void assignGroup(HasTags<T> service, List<T> assetIds, Integer tagId) {
+        assetIds.forEach(id -> {
+            service.assignTag(id, tagId, true);
+        });
+    }
+
+    private <T extends Number> void unassignGroup(HasTags<T> service, List<T> assetIds, Integer tagId) {
+        assetIds.forEach(id -> {
+            service.unassignTag(id, tagId, true);
         });
     }
 }

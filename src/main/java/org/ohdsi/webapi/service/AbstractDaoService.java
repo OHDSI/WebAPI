@@ -319,7 +319,7 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     if (Objects.nonNull(entity)) {
       Tag tag = tagService.getById(tagId);
       if (Objects.nonNull(tag)) {
-        if (isPermissionProtected != tag.isPermissionProtected()) {
+        if (!isAdmin() && isPermissionProtected != tag.isPermissionProtected()) {
           throw new BadRequestAtlasException("Wrong endpoint is used for assigning tag");
         }
         entity.getTags().add(tag);
@@ -331,7 +331,7 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     if (Objects.nonNull(entity)) {
       Tag tag = tagService.getById(tagId);
       if (Objects.nonNull(tag)) {
-        if (isPermissionProtected != tag.isPermissionProtected()) {
+        if (!isAdmin() && isPermissionProtected != tag.isPermissionProtected()) {
           throw new BadRequestAtlasException("Wrong endpoint is used for unassigning tag");
         }
         Set<Tag> tags = entity.getTags().stream()

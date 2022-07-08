@@ -45,7 +45,7 @@ import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.source.SourceService;
-import org.ohdsi.webapi.tag.TagService;
+import org.ohdsi.webapi.tag.domain.HasTags;
 import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.NameUtils;
@@ -69,7 +69,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Transactional
 @Path("/conceptset/")
-public class ConceptSetService extends AbstractDaoService {
+public class ConceptSetService extends AbstractDaoService implements HasTags<Integer> {
 
     @Autowired
     private ConceptSetGenerationInfoRepository conceptSetGenerationInfoRepository;
@@ -460,8 +460,7 @@ public class ConceptSetService extends AbstractDaoService {
     @Path("/{id}/tag/")
     @Transactional
     public void assignTag(@PathParam("id") final int id, final int tagId) {
-        ConceptSet entity = getConceptSetRepository().findById(id);
-        assignTag(entity, tagId, false);
+        assignTag(id, tagId, false);
     }
 
     /**
@@ -475,8 +474,7 @@ public class ConceptSetService extends AbstractDaoService {
     @Path("/{id}/tag/{tagId}")
     @Transactional
     public void unassignTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
-        ConceptSet entity = getConceptSetRepository().findById(id);
-        unassignTag(entity, tagId, false);
+        unassignTag(id, tagId, false);
     }
 
     /**
@@ -490,8 +488,7 @@ public class ConceptSetService extends AbstractDaoService {
     @Path("/{id}/protectedtag/")
     @Transactional
     public void assignPermissionProtectedTag(@PathParam("id") final int id, final int tagId) {
-        ConceptSet entity = getConceptSetRepository().findById(id);
-        assignTag(entity, tagId, true);
+        assignTag(id, tagId, true);
     }
 
     /**
@@ -505,8 +502,7 @@ public class ConceptSetService extends AbstractDaoService {
     @Path("/{id}/protectedtag/{tagId}")
     @Transactional
     public void unassignPermissionProtectedTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
-        ConceptSet entity = getConceptSetRepository().findById(id);
-        unassignTag(entity, tagId, true);
+        unassignTag(id, tagId, true);
     }
 
     @POST
@@ -661,5 +657,17 @@ public class ConceptSetService extends AbstractDaoService {
         version.setCreatedBy(user);
         version.setCreatedDate(versionDate);
         return versionService.create(VersionType.CONCEPT_SET, version);
+    }
+
+    @Override
+    public void assignTag(Integer id, int tagId, boolean isPermissionProtected) {
+        ConceptSet entity = getConceptSetRepository().findById(id);
+        assignTag(entity, tagId, isPermissionProtected);
+    }
+
+    @Override
+    public void unassignTag(Integer id, int tagId, boolean isPermissionProtected) {
+        ConceptSet entity = getConceptSetRepository().findById(id);
+        unassignTag(entity, tagId, isPermissionProtected);
     }
 }

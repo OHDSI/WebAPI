@@ -131,7 +131,7 @@ import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
  */
 @Component
 public class IRAnalysisService extends AbstractDaoService implements
-        GeneratesNotification, IRAnalysisResource, HasTags<Integer> {
+        GeneratesNotification, IRAnalysisResource {
 
   private static final Logger log = LoggerFactory.getLogger(IRAnalysisService.class);
   private final static String STRATA_STATS_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/incidencerate/sql/strata_stats.sql");

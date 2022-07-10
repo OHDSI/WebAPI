@@ -8,6 +8,7 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.service.dto.AnalysisInfoDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisShortDTO;
+import org.ohdsi.webapi.tag.domain.HasTags;
 import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
@@ -27,7 +28,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 
 @Path("/ir/")
-public interface IRAnalysisResource {
+public interface IRAnalysisResource extends HasTags<Integer> {
 
     /**
      * Returns all IR Analysis in a list.

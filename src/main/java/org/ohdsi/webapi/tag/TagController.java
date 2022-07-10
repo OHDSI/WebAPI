@@ -23,10 +23,13 @@ import java.util.List;
 @Controller
 public class TagController {
     private final TagService tagService;
+    private final TagGroupService tagGroupService;
 
     @Autowired
-    public TagController(TagService pathwayService) {
+    public TagController(TagService pathwayService,
+                         TagGroupService tagGroupService) {
         this.tagService = pathwayService;
+        this.tagGroupService = tagGroupService;
     }
 
     /**
@@ -125,7 +128,7 @@ public class TagController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public void assignGroup(final TagGroupSubscriptionDTO dto) {
-        tagService.assignGroup(dto);
+        tagGroupService.assignGroup(dto);
     }
 
     /**
@@ -139,6 +142,6 @@ public class TagController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public void unassignGroup(final TagGroupSubscriptionDTO dto) {
-        tagService.unassignGroup(dto);
+        tagGroupService.unassignGroup(dto);
     }
 }

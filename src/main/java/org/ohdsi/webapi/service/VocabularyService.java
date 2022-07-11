@@ -91,6 +91,8 @@ public class VocabularyService extends AbstractDaoService {
     concept.conceptClassId = resultSet.getString("CONCEPT_CLASS_ID");
     concept.vocabularyId = resultSet.getString("VOCABULARY_ID");
     concept.domainId = resultSet.getString("DOMAIN_ID");
+    concept.validStartDate = resultSet.getDate("VALID_START_DATE");
+    concept.validEndDate = resultSet.getDate("VALID_END_DATE");
     return concept;
   };
 

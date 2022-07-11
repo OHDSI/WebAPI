@@ -124,7 +124,7 @@ public class TagController {
      * @return
      */
     @POST
-    @Path("/assignGroup")
+    @Path("/multiAssign")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public void assignGroup(final TagGroupSubscriptionDTO dto) {
@@ -138,7 +138,7 @@ public class TagController {
      * @return
      */
     @POST
-    @Path("/unassignGroup")
+    @Path("/multiUnassign")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public void unassignGroup(final TagGroupSubscriptionDTO dto) {

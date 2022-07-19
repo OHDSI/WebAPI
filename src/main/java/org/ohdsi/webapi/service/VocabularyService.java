@@ -879,6 +879,8 @@ public class VocabularyService extends AbstractDaoService {
       concept.standardConcept = resultSet.getString("STANDARD_CONCEPT");
       concept.invalidReason = resultSet.getString("INVALID_REASON");
       concept.vocabularyId = resultSet.getString("VOCABULARY_ID");
+      concept.validStartDate = resultSet.getDate("VALID_START_DATE");
+      concept.validEndDate = resultSet.getDate("VALID_END_DATE");
       concept.conceptClassId = resultSet.getString("CONCEPT_CLASS_ID");
       concept.domainId = resultSet.getString("DOMAIN_ID");
 
@@ -1093,6 +1095,8 @@ public class VocabularyService extends AbstractDaoService {
         csc.conceptCode = rs.getString("concept_code");
         csc.domainId = rs.getString("domain_id");
         csc.vocabularyId = rs.getString("vocabulary_id");
+        csc.validStartDate = rs.getDate("valid_start_date");
+        csc.validEndDate = rs.getDate("valid_end_date");
         csc.conceptClassId = rs.getString("concept_class_id");
         return csc;
       }

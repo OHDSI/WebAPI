@@ -21,6 +21,7 @@ public class ConceptSetDTOToConceptSetConverter implements Converter<ConceptSetD
     ConceptSet conceptSet = new ConceptSet();
     conceptSet.setId(dto.getId());
     conceptSet.setName(StringUtils.trim(dto.getName()));
+    conceptSet.setDescription(dto.getDescription());
     return conceptSet;
   }
 }

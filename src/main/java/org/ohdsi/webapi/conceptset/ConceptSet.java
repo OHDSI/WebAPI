@@ -56,6 +56,9 @@ public class ConceptSet extends CommonEntityExt<Integer> implements Serializable
   @Column(name="concept_set_name")
   private String name;
 
+  @Column(name="description")
+  private String description;
+
   @ManyToMany(targetEntity = Tag.class, fetch = FetchType.LAZY)
   @JoinTable(name = "concept_set_tag",
           joinColumns = @JoinColumn(name = "asset_id", referencedColumnName = "concept_set_id"),
@@ -85,5 +88,13 @@ public class ConceptSet extends CommonEntityExt<Integer> implements Serializable
 
   public void setTags(Set<Tag> tags) {
     this.tags = tags;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
   }
 }

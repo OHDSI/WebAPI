@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.ws.rs.ForbiddenException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,40 +41,45 @@ public class TagGroupService extends AbstractDaoService {
     }
 
     public void assignGroup(TagGroupSubscriptionDTO dto) {
-        if (isAdmin()) {
-            tagRepository.findByIdIn(new ArrayList<>(dto.getTags()))
-                    .forEach(tag -> {
-                        assignGroup(ccService, dto.getAssets().getCharacterizations(), tag.getId());
-                        assignGroup(pathwayService, dto.getAssets().getPathways(), tag.getId());
-                        assignGroup(cohortDefinitionService, dto.getAssets().getCohorts(), tag.getId());
-                        assignGroup(conceptSetService, dto.getAssets().getConceptSets(), tag.getId());
-                        assignGroup(irAnalysisService, dto.getAssets().getIncidenceRates(), tag.getId());
-                    });
-        }
+        tagRepository.findByIdIn(new ArrayList<>(dto.getTags()))
+                .forEach(tag -> {
+                    assignGroup(ccService, dto.getAssets().getCharacterizations(), tag.getId());
+                    assignGroup(pathwayService, dto.getAssets().getPathways(), tag.getId());
+                    assignGroup(cohortDefinitionService, dto.getAssets().getCohorts(), tag.getId());
+                    assignGroup(conceptSetService, dto.getAssets().getConceptSets(), tag.getId());
+                    assignGroup(irAnalysisService, dto.getAssets().getIncidenceRates(), tag.getId());
+                });
     }
 
     public void unassignGroup(TagGroupSubscriptionDTO dto) {
-        if (isAdmin()) {
-            tagRepository.findByIdIn(new ArrayList<>(dto.getTags()))
-                    .forEach(tag -> {
-                        unassignGroup(ccService, dto.getAssets().getCharacterizations(), tag.getId());
-                        unassignGroup(pathwayService, dto.getAssets().getPathways(), tag.getId());
-                        unassignGroup(cohortDefinitionService, dto.getAssets().getCohorts(), tag.getId());
-                        unassignGroup(conceptSetService, dto.getAssets().getConceptSets(), tag.getId());
-                        unassignGroup(irAnalysisService, dto.getAssets().getIncidenceRates(), tag.getId());
-                    });
-        }
+        tagRepository.findByIdIn(new ArrayList<>(dto.getTags()))
+                .forEach(tag -> {
+                    unassignGroup(ccService, dto.getAssets().getCharacterizations(), tag.getId());
+                    unassignGroup(pathwayService, dto.getAssets().getPathways(), tag.getId());
+                    unassignGroup(cohortDefinitionService, dto.getAssets().getCohorts(), tag.getId());
+                    unassignGroup(conceptSetService, dto.getAssets().getConceptSets(), tag.getId());
+                    unassignGroup(irAnalysisService, dto.getAssets().getIncidenceRates(), tag.getId());
+                });
+
     }
 
     private <T extends Number> void assignGroup(HasTags<T> service, List<T> assetIds, Integer tagId) {
         assetIds.forEach(id -> {
-            service.assignTag(id, tagId, true);
+            try {
+                service.assignTag(id, tagId, true);
+            } catch (final ForbiddenException e) {
+                log.warn("Tag {} cannot be assigned to entity {} in service {} - forbidden", tagId, id, service.getClass().getName());
+            }
         });
     }
 
     private <T extends Number> void unassignGroup(HasTags<T> service, List<T> assetIds, Integer tagId) {
         assetIds.forEach(id -> {
-            service.unassignTag(id, tagId, true);
+            try {
+                service.unassignTag(id, tagId, true);
+            } catch(final ForbiddenException e) {
+                log.warn("Tag {} cannot be unassigned from entity {} in service {} - forbidden", tagId, id, service.getClass().getName());
+            }
         });
     }
 }

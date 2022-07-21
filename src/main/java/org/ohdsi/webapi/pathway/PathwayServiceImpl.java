@@ -516,12 +516,14 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 	@Override
 	public void assignTag(Integer id, int tagId, boolean isPermissionProtected) {
 		PathwayAnalysisEntity entity = getById(id);
+		checkOwnerOrAdminOrGranted(entity);
 		assignTag(entity, tagId, isPermissionProtected);
 	}
 
 	@Override
 	public void unassignTag(Integer id, int tagId, boolean isPermissionProtected) {
 		PathwayAnalysisEntity entity = getById(id);
+		checkOwnerOrAdminOrGranted(entity);
 		unassignTag(entity, tagId, isPermissionProtected);
 	}
 

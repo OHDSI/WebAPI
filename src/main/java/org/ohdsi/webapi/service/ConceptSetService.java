@@ -662,12 +662,14 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Override
     public void assignTag(Integer id, int tagId, boolean isPermissionProtected) {
         ConceptSet entity = getConceptSetRepository().findById(id);
+        checkOwnerOrAdminOrGranted(entity);
         assignTag(entity, tagId, isPermissionProtected);
     }
 
     @Override
     public void unassignTag(Integer id, int tagId, boolean isPermissionProtected) {
         ConceptSet entity = getConceptSetRepository().findById(id);
+        checkOwnerOrAdminOrGranted(entity);
         unassignTag(entity, tagId, isPermissionProtected);
     }
 }

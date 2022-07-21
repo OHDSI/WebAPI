@@ -312,6 +312,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     @Transactional
     public void assignTag(Long id, int tagId, boolean isPermissionProtected) {
         CohortCharacterizationEntity entity = findById(id);
+        checkOwnerOrAdminOrGranted(entity);
         assignTag(entity, tagId, isPermissionProtected);
     }
 
@@ -319,6 +320,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     @Transactional
     public void unassignTag(Long id, int tagId, boolean isPermissionProtected) {
         CohortCharacterizationEntity entity = findById(id);
+        checkOwnerOrAdminOrGranted(entity);
         unassignTag(entity, tagId, isPermissionProtected);
     }
 

@@ -345,12 +345,14 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Override
 	public void assignTag(Integer id, int tagId, boolean isPermissionProtected) {
 		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
+		checkOwnerOrAdminOrGranted(entity);
 		assignTag(entity, tagId, isPermissionProtected);
 	}
 
 	@Override
 	public void unassignTag(Integer id, int tagId, boolean isPermissionProtected) {
 		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
+		checkOwnerOrAdminOrGranted(entity);
 		unassignTag(entity, tagId, isPermissionProtected);
 	}
 

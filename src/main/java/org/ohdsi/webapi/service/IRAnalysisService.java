@@ -207,12 +207,14 @@ public class IRAnalysisService extends AbstractDaoService implements
   @Override
   public void assignTag(Integer id, int tagId, boolean isPermissionProtected) {
     IncidenceRateAnalysis entity = irAnalysisRepository.findOne(id);
+    checkOwnerOrAdminOrGranted(entity);
     assignTag(entity, tagId, isPermissionProtected);
   }
 
   @Override
   public void unassignTag(Integer id, int tagId, boolean isPermissionProtected) {
     IncidenceRateAnalysis entity = irAnalysisRepository.findOne(id);
+    checkOwnerOrAdminOrGranted(entity);
     unassignTag(entity, tagId, isPermissionProtected);
   }
 

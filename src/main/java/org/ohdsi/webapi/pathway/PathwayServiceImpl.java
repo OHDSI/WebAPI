@@ -651,6 +651,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 	private void copyProps(PathwayAnalysisEntity from, PathwayAnalysisEntity to) {
 
 		to.setName(from.getName());
+		to.setDescription(from.getDescription());
 		to.setMaxDepth(from.getMaxDepth());
 		to.setMinCellCount(from.getMinCellCount());
 		to.setCombinationWindow(from.getCombinationWindow());

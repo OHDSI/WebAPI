@@ -2,6 +2,7 @@ package org.ohdsi.webapi.tag;
 
 import org.ohdsi.webapi.cohortcharacterization.CcService;
 import org.ohdsi.webapi.pathway.PathwayService;
+import org.ohdsi.webapi.reusable.ReusableService;
 import org.ohdsi.webapi.service.*;
 import org.ohdsi.webapi.tag.domain.HasTags;
 import org.ohdsi.webapi.tag.dto.TagGroupSubscriptionDTO;
@@ -23,6 +24,7 @@ public class TagGroupService extends AbstractDaoService {
     private final CohortDefinitionService cohortDefinitionService;
     private final ConceptSetService conceptSetService;
     private final IRAnalysisResource irAnalysisService;
+    private final ReusableService reusableService;
 
     @Autowired
     public TagGroupService(
@@ -31,13 +33,15 @@ public class TagGroupService extends AbstractDaoService {
             CcService ccService,
             CohortDefinitionService cohortDefinitionService,
             ConceptSetService conceptSetService,
-            IRAnalysisResource irAnalysisService) {
+            IRAnalysisResource irAnalysisService,
+            ReusableService reusableService) {
         this.tagRepository = tagRepository;
         this.pathwayService = pathwayService;
         this.ccService = ccService;
         this.cohortDefinitionService = cohortDefinitionService;
         this.conceptSetService = conceptSetService;
         this.irAnalysisService = irAnalysisService;
+        this.reusableService = reusableService;
     }
 
     public void assignGroup(TagGroupSubscriptionDTO dto) {
@@ -48,6 +52,7 @@ public class TagGroupService extends AbstractDaoService {
                     assignGroup(cohortDefinitionService, dto.getAssets().getCohorts(), tag.getId());
                     assignGroup(conceptSetService, dto.getAssets().getConceptSets(), tag.getId());
                     assignGroup(irAnalysisService, dto.getAssets().getIncidenceRates(), tag.getId());
+                    assignGroup(reusableService, dto.getAssets().getReusables(), tag.getId());
                 });
     }
 
@@ -59,6 +64,7 @@ public class TagGroupService extends AbstractDaoService {
                     unassignGroup(cohortDefinitionService, dto.getAssets().getCohorts(), tag.getId());
                     unassignGroup(conceptSetService, dto.getAssets().getConceptSets(), tag.getId());
                     unassignGroup(irAnalysisService, dto.getAssets().getIncidenceRates(), tag.getId());
+                    unassignGroup(reusableService, dto.getAssets().getReusables(), tag.getId());
                 });
 
     }

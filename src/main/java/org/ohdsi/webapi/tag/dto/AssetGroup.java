@@ -16,6 +16,8 @@ public class AssetGroup {
     private List<Integer> incidenceRates = new ArrayList<>();
     @JsonProperty
     private List<Integer> pathways = new ArrayList<>();
+    @JsonProperty
+    private List<Integer> reusables = new ArrayList<>();
 
     public List<Integer> getCohorts() {
         return cohorts;
@@ -55,5 +57,13 @@ public class AssetGroup {
 
     public void setPathways(List<Integer> pathways) {
         this.pathways = pathways;
+    }
+
+    public List<Integer> getReusables() {
+        return reusables;
+    }
+
+    public void setReusables(final List<Integer> reusables) {
+        this.reusables = reusables;
     }
 }

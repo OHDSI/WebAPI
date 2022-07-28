@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.Objects;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.ohdsi.circe.vocabulary.Concept;
 import org.springframework.stereotype.Component;
 
 import org.apache.solr.client.solrj.SolrClient;

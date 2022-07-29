@@ -1443,6 +1443,8 @@
     "updated": "Updated",
     "userExcluded": "User Excluded",
     "userIncluded": "User Included",
+    "validStartDate": "Valid Start Date",
+    "validEndDate": "Valid End Date",
     "value": "Value",
     "visitsCount": "Records",
     "visitsPer1000": "Records/1K",

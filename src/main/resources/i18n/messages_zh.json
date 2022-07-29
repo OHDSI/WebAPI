@@ -1443,6 +1443,8 @@
     "updated": "更新时间",
     "userExcluded": "被排除的用户",
     "userIncluded": "包括的用户",
+    "validStartDate": "Valid Start Date",
+    "validEndDate": "Valid End Date",
     "value": "值",
     "visitsCount": "记录",
     "visitsPer1000": "记录/1000",

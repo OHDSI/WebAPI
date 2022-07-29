@@ -1443,6 +1443,8 @@
     "updated": "수정일",
     "userExcluded": "사용자 제외",
     "userIncluded": "사용자 포함",
+    "validStartDate": "Valid Start Date",
+    "validEndDate": "Valid End Date",
     "value": "값",
     "visitsCount": "레코드",
     "visitsPer1000": "레코드 / 1K",

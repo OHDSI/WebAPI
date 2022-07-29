@@ -764,6 +764,28 @@
       "visitType": "就诊类别",
       "indexDataText": "索引日期是指对<%=conceptSetName%>的就诊。"
     },
+    "conditionVisitDetails": {
+      "addAttribute": "Add attribute...",
+      "anyLocation": "Any Location",
+      "anyVisitDetails": "Any Visit Details",
+      "conditionVisitDetailsText_1": "a visit details of",
+      "conditionVisitDetailsText_10": "with a Place of Service of:",
+      "conditionVisitDetailsText_11": "with a Place of Service located in:",
+      "conditionVisitDetailsText_12": "with distance from a Place of Service to Patient",
+      "conditionVisitDetailsText_13": "with visit length",
+      "conditionVisitDetailsText_14": "gender is any of:",
+      "conditionVisitDetailsText_15": "provider specialty is any of:",
+      "conditionVisitDetailsText_2": "for the first time in the person's history",
+      "conditionVisitDetailsText_3": "occurrence start is:",
+      "conditionVisitDetailsText_4": "occurrence end is:",
+      "conditionVisitDetailsText_5": "Visit details Source Concept is",
+      "conditionVisitDetailsText_6": "with visit duration",
+      "conditionVisitDetailsText_7": "with age",
+      "conditionVisitDetailsText_8": "with a gender of:",
+      "conditionVisitDetailsText_9": "with a Provider Specialty of:",
+      "visitType": "Visit Type",
+      "indexDataText": "The index date refers to the visit details of <%= conceptSetName %>."
+    },
     "criteriaGroup": {
       "addAdditionalConstraint": "添加其他约束",
       "addCriteria": "添加条件到组",
@@ -2999,6 +3021,24 @@
         "title_procedureoccurrence": "添加就诊",
         "desc_procedureoccurrence": "按照操作时的就诊筛选操作"
       },
+      "addVisitDetail": {
+        "title": "Add Visit details",
+        "desc_initial": "Find patients based on visit  details information.",
+        "desc_censoring": "Exit cohort based on visit details information.",
+        "desc_group": "Find patients based on visit details information.",
+        "title_visit_details": "Add Visit details",
+        "desc_occurrence": "Filter Condition Occurrences based on visit details of diagnosis.",
+        "title_deviceexposure": "Add Visit details Criteria",
+        "desc_deviceexposure": "Filter Device Exposures based on visit details of exposure.",
+        "title_drugexposure": "Add Visit details Criteria",
+        "desc_drugexposure": "Filter Drug Exposures based on visit details of drug exposure.",
+        "title_measurement": "Add Visit details Criteria",
+        "desc_measurement": "Filter Measurements based on visit details of measurement.",
+        "title_observation": "Add Visit details Criteria",
+        "desc_observation": "Filter Observations based on visit details of observation.",
+        "title_procedureoccurrence": "Add Visit  details Criteria",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences based on visit details of procedure."
+      },
       "addConditionStatus": {
         "title_occurrence": "Add Condition Status",
         "desc_occurrence": "Filter Condition Occurrences based on condition status."
@@ -3029,7 +3069,9 @@
         "title_specimen": "添加首次出现条件",
         "desc_specimen": "将标本限制于记录中第一次出现",
         "title_visit": "添加首次就诊条件",
-        "desc_visit": "将就诊限制于第一次就诊"
+        "desc_visit": "将就诊限制于第一次就诊",
+        "title_visitDetails": "Add First Visit Criteria",
+        "desc_visitDetails": "Limit Visit Occurrences to the first visit."
       },
       "addAgeAtStart": {
         "title_era": "按照周期开始标准添加年龄",
@@ -3082,6 +3124,8 @@
         "desc_specimen": "按照性别筛选标本",
         "title_visit": "添加性别条件",
         "desc_visit": "按照性别筛选就诊",
+        "title_visitDetails": "Add Gender Criteria",
+        "desc_visitDetails": "Filter Visit details based on Gender.",
         "title_demographic": "添加性别条件",
         "desc_demographic": "按照性别筛选事件"
       },
@@ -3104,6 +3148,8 @@
         "desc_payerplan": "按照开始日期筛选付费方计划周期",
         "title_visit": "添加开始日期条件",
         "desc_visit": "按照诊断开始日期筛选就诊",
+        "title_visitDetails": "Add Start Date Criteria",
+        "desc_visitDetails": "Filter Visit Details by the Condition Start Date.",
         "title_demographic": "添加事件开始日期条件",
         "desc_demographic": "按照开始日期筛选事件"
       },
@@ -3126,6 +3172,8 @@
         "desc_payerplan": "按照结束日期筛选付费方计划周期",
         "title_visit": "添加结束日期条件",
         "desc_visit": "按照诊断结束日期筛选就诊",
+        "title_visitDetails": "Add End Date Criteria",
+        "desc_visitDetails": "Filter Visit Details by the Condition End Date.",
         "title_demographic": "添加事件结束日期条件",
         "desc_demographic": "按照结束日期筛选事件"
       },
@@ -3155,7 +3203,9 @@
         "title_payerplan": "添加周期长度条件",
         "desc_payerplan": "按照周期时长筛选付费方计划周期",
         "title_visit": "添加就诊时长条件",
-        "desc_visit": "按照就诊时长筛选就诊"
+        "desc_visit": "按照就诊时长筛选就诊",
+        "title_visitDetails": "Add Visit details Length Criteria",
+        "desc_visitDetails": "Filter Visit Details by duration."
       },
       "addNested": {
         "title_era": "添加嵌套条件",
@@ -3185,7 +3235,9 @@
         "title_specimen": "添加嵌套条件",
         "desc_specimen": "应用诊断日期作为索引日期的条件",
         "title_visit": "添加嵌套条件",
-        "desc_visit": "应用诊断日期作为索引日期的条件"
+        "desc_visit": "应用诊断日期作为索引日期的条件",
+        "title_visitDetails": "Add Nested Criteria...",
+        "desc_visitDetails": "Apply criteria using the visit details as the index event."
       },
       "addAge": {
         "title_occurrence": "添加诊断时的年龄条件",
@@ -3206,6 +3258,8 @@
         "desc_specimen": "按照标本出现时的年龄筛选标本",
         "title_visit": "添加就诊时年龄条件",
         "desc_visit": "按照就诊时的年龄筛选就诊",
+        "title_visitDetails": "Add Age at Visit details Criteria",
+        "desc_visitDetails": "Filter Visit details by age at occurrence.",
         "title_demographic": "添加年龄条件",
         "desc_demographic": "按照年龄筛选事件"
       },
@@ -3229,7 +3283,9 @@
         "title_specimen": "添加标本条件",
         "desc_specimen": "按照标本类型筛选标本",
         "title_visit": "添加就诊类型条件",
-        "desc_visit": "按照诊断类型筛选就诊"
+        "desc_visit": "按照诊断类型筛选就诊",
+        "title_visitDetails": "Add Visit Type Criteria",
+        "desc_visitDetails": "Filter Visit details by the Condition Type."
       },
       "addStopReason": {
         "title_occurrence": "添加停止原因条件",
@@ -3283,7 +3339,9 @@
         "title_procedureoccurrence": "添加操作源概念条件",
         "desc_procedureoccurrence": "按照操作源概念筛选药物暴露",
         "title_visit": "添加就诊源概念条件",
-        "desc_visit": "按照就诊源概念筛选就诊"
+        "desc_visit": "按照就诊源概念筛选就诊",
+        "title_visitDetails": "Add Visit details Source Concept Criteria",
+        "desc_visitDetails": "Filter Visit details by the Visit details Source Concept."
       },
       "addProviderSpecialty": {
         "title_occurrence": "添加提供者领域条件",
@@ -3299,7 +3357,9 @@
         "title_procedureoccurrence": "添加提供者领域条件",
         "desc_procedureoccurrence": "按照医疗保健提供者领域筛选操作",
         "title_visit": "添加提供者领域条件",
-        "desc_visit": "按照医疗保健提供者领域筛选就诊"
+        "desc_visit": "按照医疗保健提供者领域筛选就诊",
+        "title_visitDetails": "Add Provider Specialty Criteria",
+        "desc_visitDetails": "Filter Visit details based on provider specialty."
       },
       "addDate": {
         "title_death": "添加死亡日期条件",
@@ -3433,15 +3493,21 @@
       },
       "addPlaceService": {
         "title_visit": "添加服务地点条件",
-        "desc_visit": "按照医疗保健服务地点筛选就诊"
+        "desc_visit": "按照医疗保健服务地点筛选就诊",
+        "title_visitDetails": "Add Place of Service Criteria",
+        "desc_visitDetails": "Filter Visit details based on Place of Service."
       },
       "addPlaceServiceLocation": {
         "title_visit": "添加服务位置条件",
-        "desc_visit": "按照医疗保健服务位置筛选就诊"
+        "desc_visit": "按照医疗保健服务位置筛选就诊",
+        "title_visitDetails": "Add Place of Service Location Criteria",
+        "desc_visitDetails": "Filter Visit details based on where Place of Service is located."
       },
       "addPlaceServiceDistance": {
         "title_visit": "添加服务地点距离标准",
-        "desc_visit": "根据从服务地点到患者的距离，筛选就诊。"
+        "desc_visit": "根据从服务地点到患者的距离，筛选就诊。",
+        "title_visitDetails": "Add Place of Service Distance Criteria",
+        "desc_visitDetails": "Filter Visit details based on distance from Place of Service to Patient."
       }
     },
     "newEntityNames": {

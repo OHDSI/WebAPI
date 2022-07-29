@@ -1,25 +1,21 @@
 package org.ohdsi.webapi.pathway.dto;
 
-import org.ohdsi.analysis.pathway.result.PathwayCode;
+public class PathwayCodeDTO  {
 
-public class PathwayCodeDTO implements PathwayCode {
-
-    private Integer code;
+    private Long code;
     private String name;
     private boolean isCombo = false;
 
-    @Override
-    public Integer getCode() {
+    public Long getCode() {
 
         return code;
     }
 
-    public void setCode(Integer code) {
+    public void setCode(Long code) {
 
         this.code = code;
     }
 
-    @Override
     public String getName() {
 
         return name;

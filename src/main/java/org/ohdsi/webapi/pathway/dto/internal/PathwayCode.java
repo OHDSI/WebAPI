@@ -4,23 +4,23 @@ import java.util.Objects;
 
 public class PathwayCode {
 
-    private Integer code;
+    private Long code;
     private String name;
     private boolean isCombo = false;
 
-    public PathwayCode(Integer code, String name, boolean isCombo) {
+    public PathwayCode(Long code, String name, boolean isCombo) {
 
         this.code = code;
         this.name = name;
         this.isCombo = isCombo;
     }
 
-    public Integer getCode() {
+    public Long getCode() {
 
         return code;
     }
 
-    public void setCode(Integer code) {
+    public void setCode(long code) {
 
         this.code = code;
     }

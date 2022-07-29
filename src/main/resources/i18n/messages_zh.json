@@ -1752,7 +1752,9 @@
             "conceptId": "概念集编号",
             "conceptCode": "概念集代码",
             "invalidReason": "失效原因",
-            "standardConcept": "标准概念"
+            "standardConcept": "标准概念",
+            "validStartDate": "Valid Start Date",
+            "validEndDate": "Valid End Date"
           },
           "relatedConcepts": {
             "loading": "正在加载相关概念…",

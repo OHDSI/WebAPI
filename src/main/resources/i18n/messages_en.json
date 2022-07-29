@@ -1752,7 +1752,9 @@
             "conceptId": "Concept Id",
             "conceptCode": "Concept Code",
             "invalidReason": "Invalid Reason",
-            "standardConcept": "Standard Concept"
+            "standardConcept": "Standard Concept",
+            "validStartDate": "Valid Start Date",
+            "validEndDate": "Valid End Date"
           },
           "relatedConcepts": {
             "loading": "Loading related concepts...",

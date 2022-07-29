@@ -1727,7 +1727,9 @@
             "conceptId": "Id концепции",
             "conceptCode": "Код концепции",
             "invalidReason": "Причина невалидности",
-            "standardConcept": "Стандартная концепция"
+            "standardConcept": "Стандартная концепция",
+            "validStartDate": "Действительная дата начала",
+            "validEndDate": "Действительная дата конца"
           },
           "relatedConcepts": {
             "loading": "Загрузка связанных концепций...",

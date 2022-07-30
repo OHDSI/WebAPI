@@ -1,4 +1,4 @@
-FROM maven:3.6-jdk-11 as builder
+FROM quay.io/cdis/maven:3.6-jdk-11 as builder
 
 WORKDIR /code
 
@@ -29,7 +29,7 @@ RUN mvn package \
     && rm WebAPI.war
 
 # OHDSI WebAPI and ATLAS web application running as a Spring Boot application with Java 11
-FROM openjdk:8-jre-slim
+FROM quay.io/cdis/openjdk:8-jre-slim
 
 MAINTAINER Lee Evans - www.ltscomputingllc.com
 

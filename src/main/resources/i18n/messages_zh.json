@@ -96,6 +96,7 @@
     "refresh": "刷新",
     "save": "保存",
     "search": "搜索",
+    "select": "Select",
     "selectAll": "全选",
     "set": "集合",
     "unsaved": "(未保存的)",
@@ -129,7 +130,8 @@
     "pathways": "队列路径",
     "prediction": "预测",
     "profiles": "数据概要",
-    "search": "搜索"
+    "search": "搜索",
+    "tagging": "Tagging"
   },
   "options": {
     "after": "在  之后",
@@ -1184,6 +1186,14 @@
       "viewing": "Viewing now",
       "createACopy": "Create a copy",
       "current": "Current"
+    },
+    "heading": {
+      "tag": {
+        "tooltip": {
+          "group": "Group:",
+          "tag": "Tag:"
+        }
+      }
     }
   },
   "facets": {
@@ -2359,6 +2369,21 @@
   },
   "jobs": {
     "refreshJobs": "刷新工作"
+  },
+  "tagging": {
+    "tabs": {
+      "multiAssign": "Multi-assign"
+    },
+    "multiAssign": {
+      "tabs": {
+        "conceptsets": "Consept Sets",
+        "cohorts": "Cohorts",
+        "characterizations": "Characterizations",
+        "incidenceRates": "Incidence Rates",
+        "cohortPathways": "Cohort Pathways",
+        "reusables": "Reusables"
+      }
+    }
   },
   "configuration": {
     "alerts": {

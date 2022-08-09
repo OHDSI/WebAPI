@@ -2372,6 +2372,14 @@
       "multiAssign": "Множественное назначие"
     },
     "multiAssign": {
+      "selectedTags": "Теги",
+      "selectedAssets": "Ассеты",
+      "chooseTags": "Выбор тегов",
+      "chooseAssets": "Выбор ассетов",
+      "assignTags": "Назначить теги",
+      "unassignTags": "Снять теги",
+      "success": "Успешно!",
+      "error": "Ошибка!",
       "tabs": {
         "conceptsets": "Наборы концептов",
         "cohorts": "Когорты",

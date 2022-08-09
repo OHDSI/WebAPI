@@ -2372,6 +2372,14 @@
       "multiAssign": "Multi-assign"
     },
     "multiAssign": {
+      "selectedTags": "Selected Tags",
+      "selectedAssets": "Selected Assets",
+      "chooseTags": "Choose Tags",
+      "chooseAssets": "Choose Assets",
+      "assignTags": "Assign tags",
+      "unassignTags": "Unassign tags",
+      "success": "Success!",
+      "error": "Error!",
       "tabs": {
         "conceptsets": "Consept Sets",
         "cohorts": "Cohorts",

@@ -108,7 +108,15 @@
     "backToCurrent": "Back to current version",
     "saveAsCurrentVersion": "Save as current version",
     "unsavedWarning": "Unsaved changes will be lost. Proceed?",
-    "savePreviewWarning": "Save as current version?"
+    "savePreviewWarning": "Save as current version?",
+    "conceptSet": "Concept Set",
+    "cohort": "Cohort",
+    "characterization": "Characterization",
+    "pathway": "Pathway Analysis",
+    "incidenceRate": "Incidence Rate",
+    "ple": "Population Level Effect Estimation",
+    "plp": "Patient Level Prediction",
+    "reusable": "Reusable"
   },
   "commonErrors": {
     "noSources": "현재 WebAPI에 정의된 소스가 없습니다. <br/> 해당 페이지에서 하나 이상을 추가하십시오 <a href=\"#/configure\">configuration</a> page.",

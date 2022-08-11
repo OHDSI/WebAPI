@@ -324,6 +324,14 @@ public abstract class AbstractDaoService extends AbstractAdminService {
         if (isPermissionProtected && tag.isPermissionProtected() && !isAdmin()) {
           throw new UnauthorizedException("Wrong endpoint is used for assigning tag");
         }
+        if (!tag.isMultiSelection()) { // unassign tags from the same group if group marked as multi_selection=false
+          final Tag group = tag.getGroups().stream().findFirst().get();
+          entity.getTags().forEach(t -> {
+            if (t.getGroups().stream().anyMatch(g -> g.getId().equals(group.getId()))) {
+              unassignTag(entity, t.getId(), isPermissionProtected);
+            }
+          });
+        }
         entity.getTags().add(tag);
       }
     }

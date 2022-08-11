@@ -6,6 +6,7 @@ import com.odysseusinc.datasourcemanager.krblogin.KrbConfig;
 import com.odysseusinc.datasourcemanager.krblogin.RuntimeServiceMode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.IExecutionInfo;
 import org.ohdsi.webapi.common.sensitiveinfo.AbstractAdminService;
@@ -38,6 +39,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import java.io.File;
 import java.io.IOException;
@@ -319,9 +321,9 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     if (Objects.nonNull(entity)) {
       Tag tag = tagService.getById(tagId);
       if (Objects.nonNull(tag)) {
-/*        if (isPermissionProtected != tag.isPermissionProtected()) {
-          throw new BadRequestAtlasException("Wrong endpoint is used for assigning tag");
-        }*/
+        if (isPermissionProtected && tag.isPermissionProtected() && !isAdmin()) {
+          throw new UnauthorizedException("Wrong endpoint is used for assigning tag");
+        }
         entity.getTags().add(tag);
       }
     }
@@ -331,9 +333,9 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     if (Objects.nonNull(entity)) {
       Tag tag = tagService.getById(tagId);
       if (Objects.nonNull(tag)) {
-        /*if (isPermissionProtected != tag.isPermissionProtected()) {
-          throw new BadRequestAtlasException("Wrong endpoint is used for unassigning tag");
-        }*/
+        if (isPermissionProtected && tag.isPermissionProtected() && !isAdmin()) {
+          throw new UnauthorizedException("Wrong endpoint is used for unassigning tag");
+        }
         Set<Tag> tags = entity.getTags().stream()
                 .filter(t -> t.getId() != tagId)
                 .collect(Collectors.toSet());

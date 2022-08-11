@@ -3,6 +3,7 @@ package org.ohdsi.webapi.tag;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.tag.dto.TagDTO;
 import org.ohdsi.webapi.tag.dto.TagGroupSubscriptionDTO;
+import org.ohdsi.webapi.tag.dto.AssignmentPermissionsDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -143,5 +144,18 @@ public class TagController {
     @Consumes(MediaType.APPLICATION_JSON)
     public void unassignGroup(final TagGroupSubscriptionDTO dto) {
         tagGroupService.unassignGroup(dto);
+    }
+
+    /**
+     * Tags assignment permissions for current user
+     *
+     * @return
+     */
+    @GET
+    @Path("/assignmentPermissions")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public AssignmentPermissionsDTO assignmentPermissions() {
+        return tagService.getAssignmentPermissions();
     }
 }

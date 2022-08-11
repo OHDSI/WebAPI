@@ -1,19 +1,14 @@
 package org.ohdsi.webapi.tag;
 
 import org.glassfish.jersey.internal.util.Producer;
-import org.ohdsi.webapi.cohortcharacterization.CcService;
-import org.ohdsi.webapi.pathway.PathwayService;
 import org.ohdsi.webapi.service.AbstractDaoService;
-import org.ohdsi.webapi.service.CohortDefinitionService;
-import org.ohdsi.webapi.service.ConceptSetService;
-import org.ohdsi.webapi.service.IRAnalysisService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.tag.domain.HasTags;
 import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.tag.domain.TagInfo;
 import org.ohdsi.webapi.tag.domain.TagType;
 import org.ohdsi.webapi.tag.dto.TagDTO;
-import org.ohdsi.webapi.tag.dto.TagGroupSubscriptionDTO;
+import org.ohdsi.webapi.tag.dto.AssignmentPermissionsDTO;
 import org.ohdsi.webapi.tag.repository.TagRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -240,5 +235,11 @@ public class TagService extends AbstractDaoService {
         assetIds.forEach(id -> {
             service.unassignTag(id, tagId, true);
         });
+    }
+
+    public AssignmentPermissionsDTO getAssignmentPermissions() {
+        final AssignmentPermissionsDTO tagPermission = new AssignmentPermissionsDTO();
+        tagPermission.setAnyAssetMultiAssignPermitted(isAdmin());
+        return tagPermission;
     }
 }

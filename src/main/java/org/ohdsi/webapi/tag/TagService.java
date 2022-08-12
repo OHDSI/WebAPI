@@ -226,22 +226,10 @@ public class TagService extends AbstractDaoService {
         });
     }
 
-    private <T extends Number> void assignGroup(HasTags<T> service, List<T> assetIds, Integer tagId) {
-        assetIds.forEach(id -> {
-            service.assignTag(id, tagId);
-        });
-    }
-
-    private <T extends Number> void unassignGroup(HasTags<T> service, List<T> assetIds, Integer tagId) {
-        assetIds.forEach(id -> {
-            service.unassignTag(id, tagId);
-        });
-    }
-
     public AssignmentPermissionsDTO getAssignmentPermissions() {
         final AssignmentPermissionsDTO tagPermission = new AssignmentPermissionsDTO();
         tagPermission.setAnyAssetMultiAssignPermitted(isAdmin());
-        tagPermission.setCanAssignProtectedTags(
+        tagPermission.setCanAssignProtectedTags(!isSecured() ||
                 SecurityUtils.getSubject().isPermitted("cohortdefinition:*:protectedtag:post") ||
                 SecurityUtils.getSubject().isPermitted("conceptset:*:protectedtag:post") ||
                 SecurityUtils.getSubject().isPermitted("cohort-characterization:*:protectedtag:post") ||
@@ -249,7 +237,7 @@ public class TagService extends AbstractDaoService {
                 SecurityUtils.getSubject().isPermitted("pathway-analysis:*:protectedtag:post") ||
                 SecurityUtils.getSubject().isPermitted("reusable:*:protectedtag:post")
         );
-        tagPermission.setCanUnassignProtectedTags(
+        tagPermission.setCanUnassignProtectedTags(!isSecured() ||
                 SecurityUtils.getSubject().isPermitted("cohortdefinition:*:protectedtag:*:delete") ||
                 SecurityUtils.getSubject().isPermitted("conceptset:*:protectedtag:*:delete") ||
                 SecurityUtils.getSubject().isPermitted("cohort-characterization:*:protectedtag:*:delete") ||

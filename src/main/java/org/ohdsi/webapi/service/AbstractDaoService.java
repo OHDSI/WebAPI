@@ -322,7 +322,7 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     if (Objects.nonNull(entity)) {
       Tag tag = tagService.getById(tagId);
       if (Objects.nonNull(tag)) {
-        if (tag.isPermissionProtected() && !isAdmin()) {
+        if (tag.isPermissionProtected() && !isAdmin()) { // todo - check actual permissions to assign protected tags, not just isAdmin()
           throw new UnauthorizedException("Protected tag assignment is forbidden");
         }
 

@@ -715,6 +715,28 @@
       "visitType": "방문 타입",
       "indexDataText": "인덱스 날짜(Index date)는 <%=conceptSetName%>의 방문일을 나타냅니다."
     },
+    "conditionVisitDetails": {
+      "addAttribute": "Add attribute...",
+      "anyLocation": "Any Location",
+      "anyVisitDetails": "Any Visit Details",
+      "conditionVisitDetailsText_1": "a visit details of",
+      "conditionVisitDetailsText_10": "with a Place of Service of:",
+      "conditionVisitDetailsText_11": "with a Place of Service located in:",
+      "conditionVisitDetailsText_12": "with distance from a Place of Service to Patient",
+      "conditionVisitDetailsText_13": "with visit length",
+      "conditionVisitDetailsText_14": "gender is any of:",
+      "conditionVisitDetailsText_15": "provider specialty is any of:",
+      "conditionVisitDetailsText_2": "for the first time in the person's history",
+      "conditionVisitDetailsText_3": "occurrence start is:",
+      "conditionVisitDetailsText_4": "occurrence end is:",
+      "conditionVisitDetailsText_5": "Visit details Source Concept is",
+      "conditionVisitDetailsText_6": "with visit duration",
+      "conditionVisitDetailsText_7": "with age",
+      "conditionVisitDetailsText_8": "with a gender of:",
+      "conditionVisitDetailsText_9": "with a Provider Specialty of:",
+      "visitType": "Visit Type",
+      "indexDataText": "The index date refers to the visit of <%= conceptSetName %>."
+    },
     "criteriaGroup": {
       "addAdditionalConstraint": "추가적인 제약 추가",
       "addCriteria": "그룹에 기준 추가...",
@@ -2999,6 +3021,24 @@
         "title_procedureoccurrence": "Visit 조건 추가",
         "desc_procedureoccurrence": "Procedure  발생 방문을 기반으로 Procedure Occurrence를 필터링합니다."
       },
+      "addVisitDetail": {
+        "title": "Add Visit details",
+        "desc_initial": "Find patients based on visit  details information.",
+        "desc_censoring": "Exit cohort based on visit details information.",
+        "desc_group": "Find patients based on visit details information.",
+        "title_visit_details": "Add Visit details",
+        "desc_occurrence": "Filter Condition Occurrences based on visit details of diagnosis.",
+        "title_deviceexposure": "Add Visit details Criteria",
+        "desc_deviceexposure": "Filter Device Exposures based on visit details of exposure.",
+        "title_drugexposure": "Add Visit details Criteria",
+        "desc_drugexposure": "Filter Drug Exposures based on visit details of drug exposure.",
+        "title_measurement": "Add Visit details Criteria",
+        "desc_measurement": "Filter Measurements based on visit details of measurement.",
+        "title_observation": "Add Visit details Criteria",
+        "desc_observation": "Filter Observations based on visit details of observation.",
+        "title_procedureoccurrence": "Add Visit  details Criteria",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences based on visit details of procedure."
+      },
       "addConditionStatus": {
         "title_occurrence": "Add Condition Status",
         "desc_occurrence": "Filter Condition Occurrences based on condition status."
@@ -3029,7 +3069,9 @@
         "title_specimen": "First Occurrence 기준 추가",
         "desc_specimen": "Specimen을 기록 내 첫 발생으로 제한합니다.",
         "title_visit": "First Visit 조건 추가",
-        "desc_visit": "Visit occurrence를 첫 방문으로 제한합니다."
+        "desc_visit": "Visit occurrence를 첫 방문으로 제한합니다.",
+        "title_visitDetails": "Add First Visit Criteria",
+        "desc_visitDetails": "Limit Visit Occurrences to the first visit."
       },
       "addAgeAtStart": {
         "title_era": "Era start 당시 Age 기준 추가",
@@ -3082,6 +3124,8 @@
         "desc_specimen": "Gender을 기반으로  Specimen을 필터링합니다.",
         "title_visit": "Gender 조건 추가",
         "desc_visit": "성별에 따라 Visit occurrence를 필터링합니다.",
+        "title_visitDetails": "Add Gender Criteria",
+        "desc_visitDetails": "Filter Visit details based on Gender.",
         "title_demographic": "Gender 기준 추가",
         "desc_demographic": "성별을 기반으로 이벤트를 필터링합니다."
       },
@@ -3104,6 +3148,8 @@
         "desc_payerplan": "시작일에 따라 Payer Plan Period를 필터링합니다.",
         "title_visit": "Start Date 기준 추가",
         "desc_visit": "진단받은 시작일에 따라 Visit occurrence를 필터링합니다.",
+        "title_visitDetails": "Add Start Date Criteria",
+        "desc_visitDetails": "Filter Visit Details by the Condition Start Date.",
         "title_demographic": "Event Start Date 기준 추가",
         "desc_demographic": "시작일에 따라 이벤트를 필터링합니다."
       },
@@ -3126,6 +3172,8 @@
         "desc_payerplan": "종료일에 따라 Payer Plan Period를 필터링합니다.",
         "title_visit": "End Date 기준 추가",
         "desc_visit": "진단받은 종료일에 따라 Visit occurrence를 필터링합니다.",
+        "title_visitDetails": "Add End Date Criteria",
+        "desc_visitDetails": "Filter Visit Details by the Condition End Date.",
         "title_demographic": "Event End 기준 추가",
         "desc_demographic": "종료일에 따라 이벤트를 필터링합니다."
       },
@@ -3155,7 +3203,9 @@
         "title_payerplan": "Period Length 조건 추가",
         "desc_payerplan": "지속된 기간에 따라 Payer Plan Period를 필터링합니다.",
         "title_visit": "Visit Length 기준 추가",
-        "desc_visit": "지속된 기간에 따라 Visit occurrence를 필터링합니다."
+        "desc_visit": "지속된 기간에 따라 Visit occurrence를 필터링합니다.",
+        "title_visitDetails": "Add Visit details Length Criteria",
+        "desc_visitDetails": "Filter Visit Details by duration."
       },
       "addNested": {
         "title_era": "Nested 기준 추가...",
@@ -3185,7 +3235,9 @@
         "title_specimen": "Nested 기준 추가...",
         "desc_specimen": "Specimens를 기준 시점으로 사용하여 기준을 적용합니다.",
         "title_visit": "Nested 기준 추가...",
-        "desc_visit": "Visit Occurrences를 기준 시점으로 사용하여 기준을 적용합니다."
+        "desc_visit": "Visit Occurrences를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_visitDetails": "Add Nested Criteria...",
+        "desc_visitDetails": "Apply criteria using the visit details as the index event."
       },
       "addAge": {
         "title_occurrence": "Age at Occurrence 추가",
@@ -3206,6 +3258,8 @@
         "desc_specimen": "발생 시작 연령에 따라 Specimen을 필터링합니다.",
         "title_visit": "Age at Occurrence 조건 추가",
         "desc_visit": "방문 발생 연령에 따라 Visit occurrence를 필터링합니다.",
+        "title_visitDetails": "Add Age at Visit details Criteria",
+        "desc_visitDetails": "Filter Visit details by age at occurrence.",
         "title_demographic": "Age 기준 추가",
         "desc_demographic": "연령을 기반으로 이벤트를 필터링합니다."
       },
@@ -3229,7 +3283,9 @@
         "title_specimen": "Specimen Type 조건 추가",
         "desc_specimen": "Type에 따라 Specimen을 필터링합니다.",
         "title_visit": "Visit Type 기준 추가",
-        "desc_visit": "Condition Type에 따라 Visit occurrence를 필터링합니다."
+        "desc_visit": "Condition Type에 따라 Visit occurrence를 필터링합니다.",
+        "title_visitDetails": "Add Visit Type Criteria",
+        "desc_visitDetails": "Filter Visit details by the Condition Type."
       },
       "addStopReason": {
         "title_occurrence": "Stop Reason 추가",
@@ -3283,7 +3339,9 @@
         "title_procedureoccurrence": "Procedure Source Concept 조건 추가",
         "desc_procedureoccurrence": "Procedure Source Concept에 따라 Procedure Occurrence를 필터링합니다.",
         "title_visit": "Visit Source Concept 조건 추가",
-        "desc_visit": "Visit Source Concept에 따라 Visit occurrence를 필터링합니다."
+        "desc_visit": "Visit Source Concept에 따라 Visit occurrence를 필터링합니다.",
+        "title_visitDetails": "Add Visit details Source Concept Criteria",
+        "desc_visitDetails": "Filter Visit details by the Visit details Source Concept."
       },
       "addProviderSpecialty": {
         "title_occurrence": "Provider Specialty 추가",
@@ -3299,7 +3357,9 @@
         "title_procedureoccurrence": "Provider Specialty 기준 추가",
         "desc_procedureoccurrence": "의료서비스 제공자의 전공을 기반으로 Procedure Occurrence를 필터링합니다.",
         "title_visit": "Provider Specialty 조건 추가",
-        "desc_visit": "의료서비스 제공자의 전공을 기반으로  Visit occurrence를 필터링합니다."
+        "desc_visit": "의료서비스 제공자의 전공을 기반으로  Visit occurrence를 필터링합니다.",
+        "title_visitDetails": "Add Provider Specialty Criteria",
+        "desc_visitDetails": "Filter Visit details based on provider specialty."
       },
       "addDate": {
         "title_death": "Death Date 기준 추가",
@@ -3433,15 +3493,21 @@
       },
       "addPlaceService": {
         "title_visit": "Place of Service 조건 추가",
-        "desc_visit": "의료서비스가 진행된 장소를 기반으로 Visit occurrence를 필터링합니다."
+        "desc_visit": "의료서비스가 진행된 장소를 기반으로 Visit occurrence를 필터링합니다.",
+        "title_visitDetails": "Add Place of Service Criteria",
+        "desc_visitDetails": "Filter Visit details based on Place of Service."
       },
       "addPlaceServiceLocation": {
         "title_visit": "Place of Service Location 조건 추가",
-        "desc_visit": "의료서비스가 위치한 장소를 기반으로 Visit occurrence를 필터링합니다"
+        "desc_visit": "의료서비스가 위치한 장소를 기반으로 Visit occurrence를 필터링합니다",
+        "title_visitDetails": "Add Place of Service Location Criteria",
+        "desc_visitDetails": "Filter Visit details based on where Place of Service is located."
       },
       "addPlaceServiceDistance": {
         "title_visit": "서비스 장소 거리 기준 추가",
-        "desc_visit": "서비스 장소에서 환자까지의 거리를 기준으로 방문 발생을 필터링합니다."
+        "desc_visit": "서비스 장소에서 환자까지의 거리를 기준으로 방문 발생을 필터링합니다.",
+        "title_visitDetails": "Add Place of Service Distance Criteria",
+        "desc_visitDetails": "Filter Visit details based on distance from Place of Service to Patient."
       }
     },
     "newEntityNames": {

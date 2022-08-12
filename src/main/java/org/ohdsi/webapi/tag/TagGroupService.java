@@ -72,7 +72,7 @@ public class TagGroupService extends AbstractDaoService {
     private <T extends Number> void assignGroup(HasTags<T> service, List<T> assetIds, Integer tagId) {
         assetIds.forEach(id -> {
             try {
-                service.assignTag(id, tagId, true);
+                service.assignTag(id, tagId);
             } catch (final ForbiddenException e) {
                 log.warn("Tag {} cannot be assigned to entity {} in service {} - forbidden", tagId, id, service.getClass().getName());
             }
@@ -82,7 +82,7 @@ public class TagGroupService extends AbstractDaoService {
     private <T extends Number> void unassignGroup(HasTags<T> service, List<T> assetIds, Integer tagId) {
         assetIds.forEach(id -> {
             try {
-                service.unassignTag(id, tagId, true);
+                service.unassignTag(id, tagId);
             } catch(final ForbiddenException e) {
                 log.warn("Tag {} cannot be unassigned from entity {} in service {} - forbidden", tagId, id, service.getClass().getName());
             }

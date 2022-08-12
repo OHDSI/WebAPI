@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -317,32 +318,37 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     return security.getSubject();
   }
 
-  protected void assignTag(CommonEntityExt<?> entity, int tagId, boolean isPermissionProtected) {
+  protected void assignTag(CommonEntityExt<?> entity, int tagId) {
     if (Objects.nonNull(entity)) {
       Tag tag = tagService.getById(tagId);
       if (Objects.nonNull(tag)) {
-        if (isPermissionProtected && tag.isPermissionProtected() && !isAdmin()) {
-          throw new UnauthorizedException("Wrong endpoint is used for assigning tag");
+        if (tag.isPermissionProtected() && !isAdmin()) {
+          throw new UnauthorizedException("Protected tag assignment is forbidden");
         }
-        if (!tag.isMultiSelection()) { // unassign tags from the same group if group marked as multi_selection=false
-          final Tag group = tag.getGroups().stream().findFirst().get();
-          entity.getTags().forEach(t -> {
-            if (t.getGroups().stream().anyMatch(g -> g.getId().equals(group.getId()))) {
-              unassignTag(entity, t.getId(), isPermissionProtected);
-            }
-          });
-        }
+
+        // unassign tags from the same group if group marked as multi_selection=false
+        tag.getGroups().stream().findFirst().ifPresent(group -> {
+          if (!group.isMultiSelection()) {
+            entity.getTags().forEach(t -> {
+              if (t.getGroups().stream().anyMatch(g -> g.getId().equals(group.getId()))) {
+                unassignTag(entity, t.getId());
+              }
+            });
+          }
+        });
+
+
         entity.getTags().add(tag);
       }
     }
   }
 
-  protected void unassignTag(CommonEntityExt<?> entity, int tagId, boolean isPermissionProtected) {
+  protected void unassignTag(CommonEntityExt<?> entity, int tagId) {
     if (Objects.nonNull(entity)) {
       Tag tag = tagService.getById(tagId);
       if (Objects.nonNull(tag)) {
-        if (isPermissionProtected && tag.isPermissionProtected() && !isAdmin()) {
-          throw new UnauthorizedException("Wrong endpoint is used for unassigning tag");
+        if (tag.isPermissionProtected() && !isAdmin()) {
+          throw new UnauthorizedException("Protected tag unassignment is forbidden");
         }
         Set<Tag> tags = entity.getTags().stream()
                 .filter(t -> t.getId() != tagId)

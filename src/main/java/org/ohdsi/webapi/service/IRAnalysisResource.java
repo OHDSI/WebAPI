@@ -169,7 +169,7 @@ public interface IRAnalysisResource extends HasTags<Integer> {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/")
-    void assignTag(@PathParam("id") final int id, final int tagId);
+    void assignTag(@PathParam("id") final Integer id, final int tagId);
 
     /**
      * Unassign tag from IR Analysis
@@ -180,7 +180,7 @@ public interface IRAnalysisResource extends HasTags<Integer> {
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/{tagId}")
-    void unassignTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId);
+    void unassignTag(@PathParam("id") final Integer id, @PathParam("tagId") final int tagId);
 
     /**
      * Assign protected tag to IR Analysis

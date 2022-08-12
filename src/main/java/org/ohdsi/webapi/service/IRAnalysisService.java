@@ -204,20 +204,6 @@ public class IRAnalysisService extends AbstractDaoService implements
     return null;
   }
 
-  @Override
-  public void assignTag(Integer id, int tagId, boolean isPermissionProtected) {
-    IncidenceRateAnalysis entity = irAnalysisRepository.findOne(id);
-    checkOwnerOrAdminOrGranted(entity);
-    assignTag(entity, tagId, isPermissionProtected);
-  }
-
-  @Override
-  public void unassignTag(Integer id, int tagId, boolean isPermissionProtected) {
-    IncidenceRateAnalysis entity = irAnalysisRepository.findOne(id);
-    checkOwnerOrAdminOrGranted(entity);
-    unassignTag(entity, tagId, isPermissionProtected);
-  }
-
   public static class StratifyReportItem {
     public long bits;
     public long totalPersons;
@@ -813,26 +799,30 @@ public class IRAnalysisService extends AbstractDaoService implements
 
   @Override
   @Transactional
-  public void assignTag(final int id, final int tagId) {
-    assignTag(id, tagId, false);
+  public void assignTag(final Integer id, final int tagId) {
+    IncidenceRateAnalysis entity = irAnalysisRepository.findOne(id);
+    checkOwnerOrAdminOrGranted(entity);
+    assignTag(entity, tagId);
   }
 
   @Override
   @Transactional
-  public void unassignTag(final int id, final int tagId) {
-    unassignTag(id, tagId, false);
+  public void unassignTag(final Integer id, final int tagId) {
+    IncidenceRateAnalysis entity = irAnalysisRepository.findOne(id);
+    checkOwnerOrAdminOrGranted(entity);
+    unassignTag(entity, tagId);
   }
 
   @Override
   @Transactional
   public void assignPermissionProtectedTag(final int id, final int tagId) {
-    assignTag(id, tagId, true);
+    assignTag(id, tagId);
   }
 
   @Override
   @Transactional
   public void unassignPermissionProtectedTag(final int id, final int tagId) {
-    unassignTag(id, tagId, true);
+    unassignTag(id, tagId);
   }
 
   @Override

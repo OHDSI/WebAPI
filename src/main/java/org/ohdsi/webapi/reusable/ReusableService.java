@@ -120,14 +120,14 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
         return create(def);
     }
 
-    public void assignTag(Integer id, int tagId, boolean isPermissionProtected) {
+    public void assignTag(Integer id, int tagId) {
         Reusable entity = getById(id);
-        assignTag(entity, tagId, isPermissionProtected);
+        assignTag(entity, tagId);
     }
 
-    public void unassignTag(Integer id, int tagId, boolean isPermissionProtected) {
+    public void unassignTag(Integer id, int tagId) {
         Reusable entity = getById(id);
-        unassignTag(entity, tagId, isPermissionProtected);
+        unassignTag(entity, tagId);
     }
 
     public void delete(Integer id) {

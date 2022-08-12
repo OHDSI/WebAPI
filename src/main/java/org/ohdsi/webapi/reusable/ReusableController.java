@@ -100,7 +100,7 @@ public class ReusableController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/")
     public void assignTag(@PathParam("id") final int id, final int tagId) {
-        reusableService.assignTag(id, tagId, false);
+        reusableService.assignTag(id, tagId);
     }
 
     /**
@@ -113,7 +113,7 @@ public class ReusableController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/{tagId}")
     public void unassignTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
-        reusableService.unassignTag(id, tagId, false);
+        reusableService.unassignTag(id, tagId);
     }
 
     /**
@@ -126,7 +126,7 @@ public class ReusableController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/protectedtag/")
     public void assignPermissionProtectedTag(@PathParam("id") int id, final int tagId) {
-        reusableService.assignTag(id, tagId, true);
+        reusableService.assignTag(id, tagId);
     }
 
     /**
@@ -139,7 +139,7 @@ public class ReusableController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/protectedtag/{tagId}")
     public void unassignPermissionProtectedTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
-        reusableService.unassignTag(id, tagId, true);
+        reusableService.unassignTag(id, tagId);
     }
 
     /**

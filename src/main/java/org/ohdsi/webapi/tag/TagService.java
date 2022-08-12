@@ -228,13 +228,13 @@ public class TagService extends AbstractDaoService {
 
     private <T extends Number> void assignGroup(HasTags<T> service, List<T> assetIds, Integer tagId) {
         assetIds.forEach(id -> {
-            service.assignTag(id, tagId, true);
+            service.assignTag(id, tagId);
         });
     }
 
     private <T extends Number> void unassignGroup(HasTags<T> service, List<T> assetIds, Integer tagId) {
         assetIds.forEach(id -> {
-            service.unassignTag(id, tagId, true);
+            service.unassignTag(id, tagId);
         });
     }
 

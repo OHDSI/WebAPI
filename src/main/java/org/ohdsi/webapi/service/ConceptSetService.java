@@ -459,8 +459,10 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/")
     @Transactional
-    public void assignTag(@PathParam("id") final int id, final int tagId) {
-        assignTag(id, tagId, false);
+    public void assignTag(@PathParam("id") final Integer id, final int tagId) {
+        ConceptSet entity = getConceptSetRepository().findById(id);
+        checkOwnerOrAdminOrGranted(entity);
+        assignTag(entity, tagId);
     }
 
     /**
@@ -473,8 +475,10 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/{tagId}")
     @Transactional
-    public void unassignTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
-        unassignTag(id, tagId, false);
+    public void unassignTag(@PathParam("id") final Integer id, @PathParam("tagId") final int tagId) {
+        ConceptSet entity = getConceptSetRepository().findById(id);
+        checkOwnerOrAdminOrGranted(entity);
+        unassignTag(entity, tagId);
     }
 
     /**
@@ -488,7 +492,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Path("/{id}/protectedtag/")
     @Transactional
     public void assignPermissionProtectedTag(@PathParam("id") final int id, final int tagId) {
-        assignTag(id, tagId, true);
+        assignTag(id, tagId);
     }
 
     /**
@@ -502,7 +506,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Path("/{id}/protectedtag/{tagId}")
     @Transactional
     public void unassignPermissionProtectedTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
-        unassignTag(id, tagId, true);
+        unassignTag(id, tagId);
     }
 
     @POST
@@ -657,19 +661,5 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         version.setCreatedBy(user);
         version.setCreatedDate(versionDate);
         return versionService.create(VersionType.CONCEPT_SET, version);
-    }
-
-    @Override
-    public void assignTag(Integer id, int tagId, boolean isPermissionProtected) {
-        ConceptSet entity = getConceptSetRepository().findById(id);
-        checkOwnerOrAdminOrGranted(entity);
-        assignTag(entity, tagId, isPermissionProtected);
-    }
-
-    @Override
-    public void unassignTag(Integer id, int tagId, boolean isPermissionProtected) {
-        ConceptSet entity = getConceptSetRepository().findById(id);
-        checkOwnerOrAdminOrGranted(entity);
-        unassignTag(entity, tagId, isPermissionProtected);
     }
 }

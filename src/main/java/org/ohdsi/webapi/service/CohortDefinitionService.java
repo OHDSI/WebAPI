@@ -342,20 +342,6 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 		return treemapData.toString();
 	}
 
-	@Override
-	public void assignTag(Integer id, int tagId, boolean isPermissionProtected) {
-		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
-		checkOwnerOrAdminOrGranted(entity);
-		assignTag(entity, tagId, isPermissionProtected);
-	}
-
-	@Override
-	public void unassignTag(Integer id, int tagId, boolean isPermissionProtected) {
-		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
-		checkOwnerOrAdminOrGranted(entity);
-		unassignTag(entity, tagId, isPermissionProtected);
-	}
-
 	public static class GenerateSqlRequest {
 
 		public GenerateSqlRequest() {
@@ -809,8 +795,10 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/tag/")
 	@Transactional
-	public void assignTag(@PathParam("id") final int id, final int tagId) {
-		assignTag(id, tagId, false);
+	public void assignTag(@PathParam("id") final Integer id, final int tagId) {
+		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
+		checkOwnerOrAdminOrGranted(entity);
+		assignTag(entity, tagId);
 	}
 
 	/**
@@ -823,8 +811,10 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/tag/{tagId}")
 	@Transactional
-	public void unassignTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
-		unassignTag(id, tagId, false);
+	public void unassignTag(@PathParam("id") final Integer id, @PathParam("tagId") final int tagId) {
+		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
+		checkOwnerOrAdminOrGranted(entity);
+		unassignTag(entity, tagId);
 	}
 
 	/**
@@ -838,7 +828,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Path("/{id}/protectedtag/")
 	@Transactional
 	public void assignPermissionProtectedTag(@PathParam("id") final int id, final int tagId) {
-		assignTag(id, tagId, true);
+		assignTag(id, tagId);
 	}
 
 	/**
@@ -852,7 +842,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Path("/{id}/protectedtag/{tagId}")
 	@Transactional
 	public void unassignPermissionProtectedTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
-		unassignTag(id, tagId, true);
+		unassignTag(id, tagId);
 	}
 
 	/**

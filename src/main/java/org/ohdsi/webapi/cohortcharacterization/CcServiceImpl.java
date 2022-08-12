@@ -310,18 +310,18 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     @Override
     @Transactional
-    public void assignTag(Long id, int tagId, boolean isPermissionProtected) {
+    public void assignTag(Long id, int tagId) {
         CohortCharacterizationEntity entity = findById(id);
         checkOwnerOrAdminOrGranted(entity);
-        assignTag(entity, tagId, isPermissionProtected);
+        assignTag(entity, tagId);
     }
 
     @Override
     @Transactional
-    public void unassignTag(Long id, int tagId, boolean isPermissionProtected) {
+    public void unassignTag(Long id, int tagId) {
         CohortCharacterizationEntity entity = findById(id);
         checkOwnerOrAdminOrGranted(entity);
-        unassignTag(entity, tagId, isPermissionProtected);
+        unassignTag(entity, tagId);
     }
 
     @Override

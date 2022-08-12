@@ -38,8 +38,8 @@ public class VisitDetailHelper {
     private static ValidatorGroupBuilder<VisitDetail, DateRange> prepareStartDateBuilder() {
         ValidatorGroupBuilder<VisitDetail, DateRange> builder =
                 new ValidatorGroupBuilder<VisitDetail, DateRange>()
-                        .attrName("occurrence start date")
-                        .valueGetter(t -> t.occurrenceStartDate)
+                        .attrName("visit detail start date")
+                        .valueGetter(t -> t.visitDetailStartDate)
                         .validators(
                                 new DateRangeValidatorBuilder<>()
                         );
@@ -49,8 +49,8 @@ public class VisitDetailHelper {
     private static ValidatorGroupBuilder<VisitDetail, DateRange> prepareEndDateBuilder() {
         ValidatorGroupBuilder<VisitDetail, DateRange> builder =
                 new ValidatorGroupBuilder<VisitDetail, DateRange>()
-                        .attrName("occurrence end date")
-                        .valueGetter(t -> t.occurrenceEndDate)
+                        .attrName("visit detail end date")
+                        .valueGetter(t -> t.visitDetailEndDate)
                         .validators(
                                 new DateRangeValidatorBuilder<>()
                         );
@@ -61,7 +61,7 @@ public class VisitDetailHelper {
         ValidatorGroupBuilder<VisitDetail, NumericRange> builder =
                 new ValidatorGroupBuilder<VisitDetail, NumericRange>()
                         .attrName("visit detail length")
-                        .valueGetter(t -> t.visitLength)
+                        .valueGetter(t -> t.visitDetailLength)
                         .validators(
                                 new NumericRangeValidatorBuilder<>()
                         );

@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.tag;
 
+import org.apache.shiro.SecurityUtils;
 import org.glassfish.jersey.internal.util.Producer;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
@@ -240,6 +241,22 @@ public class TagService extends AbstractDaoService {
     public AssignmentPermissionsDTO getAssignmentPermissions() {
         final AssignmentPermissionsDTO tagPermission = new AssignmentPermissionsDTO();
         tagPermission.setAnyAssetMultiAssignPermitted(isAdmin());
+        tagPermission.setCanAssignProtectedTags(
+                SecurityUtils.getSubject().isPermitted("cohortdefinition:*:protectedtag:post") ||
+                SecurityUtils.getSubject().isPermitted("conceptset:*:protectedtag:post") ||
+                SecurityUtils.getSubject().isPermitted("cohort-characterization:*:protectedtag:post") ||
+                SecurityUtils.getSubject().isPermitted("ir:*:protectedtag:post") ||
+                SecurityUtils.getSubject().isPermitted("pathway-analysis:*:protectedtag:post") ||
+                SecurityUtils.getSubject().isPermitted("reusable:*:protectedtag:post")
+        );
+        tagPermission.setCanUnassignProtectedTags(
+                SecurityUtils.getSubject().isPermitted("cohortdefinition:*:protectedtag:*:delete") ||
+                SecurityUtils.getSubject().isPermitted("conceptset:*:protectedtag:*:delete") ||
+                SecurityUtils.getSubject().isPermitted("cohort-characterization:*:protectedtag:*:delete") ||
+                SecurityUtils.getSubject().isPermitted("ir:*:protectedtag:*:delete") ||
+                SecurityUtils.getSubject().isPermitted("pathway-analysis:*:protectedtag:*:delete") ||
+                SecurityUtils.getSubject().isPermitted("reusable:*:protectedtag:*:delete")
+        );
         return tagPermission;
     }
 }

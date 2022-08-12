@@ -404,7 +404,8 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         }
         List<Source> vocabularySources = sources.stream()
                 .filter(s -> SourceUtils.hasSourceDaimon(s, SourceDaimon.DaimonType.Vocabulary) 
-                        && SourceUtils.hasSourceDaimon(s, SourceDaimon.DaimonType.Results))
+                        && SourceUtils.hasSourceDaimon(s, SourceDaimon.DaimonType.Results)
+                        && s.isIsCacheEnabled())
                 .collect(Collectors.toList());
 
         long[] bucketSizes = getBucketSizes(vocabularySources);

@@ -741,18 +741,20 @@
       "conditionVisitDetailsText_10": "с местом службы:",
       "conditionVisitDetailsText_11": "с местом обслуживания, расположенным в:",
       "conditionVisitDetailsText_12": "с расстоянием от места службы до пациента",
-      "conditionVisitDetailsText_13": "с продолжительностью посещения",
+      "conditionVisitDetailsText_13": "с длиной  деталей посещения",
       "conditionVisitDetailsText_14": "пол любой из:",
       "conditionVisitDetailsText_15": "Специализация провайдера:",
       "conditionVisitDetailsText_2": "впервые в истории человека",
-      "conditionVisitDetailsText_3": "Начало вхождения:",
-      "conditionVisitDetailsText_4": "Конец появления:",
+      "conditionVisitDetailsText_3": "Детали посещения от:",
+      "conditionVisitDetailsText_4": "Детали посещения до:",
       "conditionVisitDetailsText_5": "Детали визита Источника Концепции",
-      "conditionVisitDetailsText_6": "с продолжительностью посещения",
+      "conditionVisitDetailsText_6": "с продолжительностью деталей посещения",
       "conditionVisitDetailsText_7": "с возрастом",
       "conditionVisitDetailsText_8": "с полом:",
       "conditionVisitDetailsText_9": "со специальностью поставщика:",
-      "visitType": "Тип посещения",
+      "dischargedToConcept": "пациент был выписан в:",
+      "admittedFromConcept": "пациент был доставлен из:",
+      "visitType": "Тип  деталей посещения",
       "indexDataText": "Дата индекса относится к деталям посещения <%= conceptSetName %>."
     },
     "dateRange": {
@@ -3229,8 +3231,8 @@
         "desc_specimen": "Ограничить образец первым в истории.",
         "title_visit": "Добавить критерии первого посещения",
         "desc_visit": "Ограниченный визит Происходит до первого посещения.",
-        "title_visitDetails": "Добавить критерии первого посещения",
-        "desc_visitDetails": "Ограниченный визит Происходит до первого посещения."
+        "title_visitDetails": "Добавить критерии первой детали посещения",
+        "desc_visitDetails": "Ограничивает детали посещения первым посещением."
       },
       "addAgeAtStart": {
         "title_era": "Добавить Возраст в Эру Начальные Критерии",
@@ -3667,6 +3669,14 @@
         "desc_visit": "Фильтр посещений в зависимости от расстояния от места обслуживания до пациента.",
         "title_visitDetails": "Добавить критерий расстояния до места обслуживания",
         "desc_visitDetails": "Фильтр деталей посещения в зависимости от расстояния от места обслуживания до пациента."
+      },
+      "addDischargedToConcept": {
+        "title_visitDetails": "Добавить критерий куда выписан",
+        "desc_visitDetails": "Фильтр по месту куда был выписан пациент после посещения"
+      },
+      "addAdmittedFromConcept": {
+        "title_visitDetails": "Добавить критерий откуда доставлен",
+        "desc_visitDetails": "Фильтр по месту откуда был доставлен пациент"
       }
     },
     "newEntityNames": {

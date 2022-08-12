@@ -723,19 +723,21 @@
       "conditionVisitDetailsText_10": "with a Place of Service of:",
       "conditionVisitDetailsText_11": "with a Place of Service located in:",
       "conditionVisitDetailsText_12": "with distance from a Place of Service to Patient",
-      "conditionVisitDetailsText_13": "with visit length",
+      "conditionVisitDetailsText_13": "with visit detail length",
       "conditionVisitDetailsText_14": "gender is any of:",
       "conditionVisitDetailsText_15": "provider specialty is any of:",
       "conditionVisitDetailsText_2": "for the first time in the person's history",
-      "conditionVisitDetailsText_3": "occurrence start is:",
-      "conditionVisitDetailsText_4": "occurrence end is:",
+      "conditionVisitDetailsText_3": "visit detail start is:",
+      "conditionVisitDetailsText_4": "visit detail end is:",
       "conditionVisitDetailsText_5": "Visit details Source Concept is",
-      "conditionVisitDetailsText_6": "with visit duration",
+      "conditionVisitDetailsText_6": "with visit detail duration",
       "conditionVisitDetailsText_7": "with age",
       "conditionVisitDetailsText_8": "with a gender of:",
       "conditionVisitDetailsText_9": "with a Provider Specialty of:",
-      "visitType": "Visit Type",
-      "indexDataText": "The index date refers to the visit of <%= conceptSetName %>."
+      "dischargedToConcept": "the patient was discharged to:",
+      "admittedFromConcept": "the patient was admitted from:",
+      "visitType": "Visit detail Type",
+      "indexDataText": "The index date refers to the visit details of <%= conceptSetName %>."
     },
     "criteriaGroup": {
       "addAdditionalConstraint": "추가적인 제약 추가",
@@ -3070,8 +3072,8 @@
         "desc_specimen": "Specimen을 기록 내 첫 발생으로 제한합니다.",
         "title_visit": "First Visit 조건 추가",
         "desc_visit": "Visit occurrence를 첫 방문으로 제한합니다.",
-        "title_visitDetails": "Add First Visit Criteria",
-        "desc_visitDetails": "Limit Visit Occurrences to the first visit."
+        "title_visitDetails": "Add First Visit details Criteria",
+        "desc_visitDetails": "Limit Visit details to the first visit."
       },
       "addAgeAtStart": {
         "title_era": "Era start 당시 Age 기준 추가",
@@ -3508,6 +3510,14 @@
         "desc_visit": "서비스 장소에서 환자까지의 거리를 기준으로 방문 발생을 필터링합니다.",
         "title_visitDetails": "Add Place of Service Distance Criteria",
         "desc_visitDetails": "Filter Visit details based on distance from Place of Service to Patient."
+      },
+      "addDischargedToConcept": {
+        "title_visitDetails": "Add Discharged To Source Criteria",
+        "desc_visitDetails": "Filter the patient was discharged to source after a visit"
+      },
+      "addAdmittedFromConcept": {
+        "title_visitDetails": "Add Admitted From Source Criteria",
+        "desc_visitDetails": "Filter the patient was admitted from source"
       }
     },
     "newEntityNames": {

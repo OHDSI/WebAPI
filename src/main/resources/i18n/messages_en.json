@@ -2386,8 +2386,10 @@
       "chooseAssets": "Choose Assets",
       "assignTags": "Assign tags",
       "unassignTags": "Unassign tags",
+      "messageGroupNotMultiple": "Group '<%=group%>' does not allow multiple tags. Tag '<%=replacedName%>' replaced with tag '<%=replacedWithName%>'",
       "success": "Success!",
       "error": "Error!",
+      "forbiddenError": "Forbidden!",
       "tabs": {
         "conceptsets": "Consept Sets",
         "cohorts": "Cohorts",

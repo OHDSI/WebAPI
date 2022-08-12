@@ -2386,8 +2386,10 @@
       "chooseAssets": "Выбор ассетов",
       "assignTags": "Назначить теги",
       "unassignTags": "Снять теги",
+      "messageGroupNotMultiple": "Из группы '<%=group%>' можно назначить только один тег. Тег '<%=replacedName%>' заменен на '<%=replacedWithName%>'",
       "success": "Успешно!",
       "error": "Ошибка!",
+      "forbiddenError": "Действие запрещено!",
       "tabs": {
         "conceptsets": "Наборы концептов",
         "cohorts": "Когорты",

@@ -6,15 +6,24 @@ import com.odysseusinc.datasourcemanager.krblogin.KrbConfig;
 import com.odysseusinc.datasourcemanager.krblogin.RuntimeServiceMode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.UnauthorizedException;
+import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
+import org.ohdsi.analysis.pathway.design.PathwayAnalysis;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.IExecutionInfo;
+import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.common.sensitiveinfo.AbstractAdminService;
+import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetItemRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetRepository;
 import org.ohdsi.webapi.exception.BadRequestAtlasException;
+import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
 import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.model.CommonEntityExt;
+import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
+import org.ohdsi.webapi.reusable.domain.Reusable;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.dto.CommonEntityDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
@@ -322,8 +331,9 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     if (Objects.nonNull(entity)) {
       Tag tag = tagService.getById(tagId);
       if (Objects.nonNull(tag)) {
-        if (tag.isPermissionProtected() && !isAdmin()) { // todo - check actual permissions to assign protected tags, not just isAdmin()
-          throw new UnauthorizedException("Protected tag assignment is forbidden");
+        if (tag.isPermissionProtected() && !hasPermissionToAssignProtectedTags(entity)) {
+          throw new UnauthorizedException(String.format("No permission to assign protected tag '%s' to %s (id=%s).",
+                  tag.getName(), entity.getClass().getSimpleName(), entity.getId()));
         }
 
         // unassign tags from the same group if group marked as multi_selection=false
@@ -343,12 +353,35 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     }
   }
 
+  private boolean hasPermissionToAssignProtectedTags(final CommonEntityExt<?> entity) {
+    if (!isSecured()) {
+      return true;
+    }
+
+    if (entity instanceof ConceptSet) {
+      return SecurityUtils.getSubject().isPermitted("conceptset:*:protectedtag:post");
+    } else if (entity instanceof CohortDefinition) {
+      return SecurityUtils.getSubject().isPermitted("cohortdefinition:*:protectedtag:post");
+    } else if (entity instanceof CohortCharacterizationEntity) {
+      return SecurityUtils.getSubject().isPermitted("cohort-characterization:*:protectedtag:post");
+    } else if (entity instanceof IncidenceRateAnalysis) {
+      return SecurityUtils.getSubject().isPermitted("ir:*:protectedtag:post");
+    } else if (entity instanceof PathwayAnalysisEntity) {
+      return SecurityUtils.getSubject().isPermitted("pathway-analysis:*:protectedtag:post");
+    } else if (entity instanceof Reusable) {
+      return SecurityUtils.getSubject().isPermitted("reusable:*:protectedtag:post");
+    }
+
+    return false;
+  }
+
   protected void unassignTag(CommonEntityExt<?> entity, int tagId) {
     if (Objects.nonNull(entity)) {
       Tag tag = tagService.getById(tagId);
       if (Objects.nonNull(tag)) {
-        if (tag.isPermissionProtected() && !isAdmin()) {
-          throw new UnauthorizedException("Protected tag unassignment is forbidden");
+        if (tag.isPermissionProtected() && !hasPermissionToUnassignProtectedTags(entity)) {
+          throw new UnauthorizedException(String.format("No permission to unassign protected tag '%s' from %s (id=%s).",
+                  tag.getName(), entity.getClass().getSimpleName(), entity.getId()));
         }
         Set<Tag> tags = entity.getTags().stream()
                 .filter(t -> t.getId() != tagId)
@@ -356,6 +389,28 @@ public abstract class AbstractDaoService extends AbstractAdminService {
         entity.setTags(tags);
       }
     }
+  }
+
+  private boolean hasPermissionToUnassignProtectedTags(final CommonEntityExt<?> entity) {
+    if (!isSecured()) {
+      return true;
+    }
+
+    if (entity instanceof ConceptSet) {
+      return SecurityUtils.getSubject().isPermitted("conceptset:*:protectedtag:*:delete");
+    } else if (entity instanceof CohortDefinition) {
+      return SecurityUtils.getSubject().isPermitted("cohortdefinition:*:protectedtag:*:delete");
+    } else if (entity instanceof CohortCharacterizationEntity) {
+      return SecurityUtils.getSubject().isPermitted("cohort-characterization:*:protectedtag:*:delete");
+    } else if (entity instanceof IncidenceRateAnalysis) {
+      return SecurityUtils.getSubject().isPermitted("ir:*:protectedtag:*:delete");
+    } else if (entity instanceof PathwayAnalysisEntity) {
+      return SecurityUtils.getSubject().isPermitted("pathway-analysis:*:protectedtag:*:delete");
+    } else if (entity instanceof Reusable) {
+      return SecurityUtils.getSubject().isPermitted("reusable:*:protectedtag:*:delete");
+    }
+
+    return false;
   }
 
   protected void checkOwnerOrAdmin(UserEntity owner) {

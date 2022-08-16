@@ -4,9 +4,12 @@ import org.ohdsi.circe.cohortdefinition.Criteria;
 import org.ohdsi.circe.cohortdefinition.DateRange;
 import org.ohdsi.circe.cohortdefinition.NumericRange;
 import org.ohdsi.circe.cohortdefinition.VisitDetail;
+import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.webapi.check.builder.DateRangeValidatorBuilder;
 import org.ohdsi.webapi.check.builder.NumericRangeValidatorBuilder;
 import org.ohdsi.webapi.check.builder.ValidatorGroupBuilder;
+
+import static org.ohdsi.webapi.check.checker.concept.ConceptArrayHelper.prepareConceptBuilder;
 
 public class VisitDetailHelper {
     public static ValidatorGroupBuilder<Criteria, VisitDetail> prepareVisitDetailBuilder() {
@@ -19,7 +22,13 @@ public class VisitDetailHelper {
                                 prepareAgeBuilder(),
                                 prepareStartDateBuilder(),
                                 prepareEndDateBuilder(),
-                                prepareVisitDetailLengthBuilder()
+                                prepareVisitDetailLengthBuilder(),
+                                prepareVisitDetailAdmittedFromConceptBuilder(),
+                                prepareVisitDetailTypeBuilder(),
+                                prepareVisitDetailDischargedToConceptBuilder(),
+                                prepareVisitDetailGenderBuilder(),
+                                prepareVisitDetailPlaceOfServiceBuilder(),
+                                prepareVisitDetailProviderSpecialityBuilder()
                         );
         return builder;
     }
@@ -66,5 +75,29 @@ public class VisitDetailHelper {
                                 new NumericRangeValidatorBuilder<>()
                         );
         return builder;
+    }
+
+    private static ValidatorGroupBuilder<VisitDetail, Concept[]> prepareVisitDetailAdmittedFromConceptBuilder() {
+        return prepareConceptBuilder(t -> t.admittedFromConcept, "visit detail admitted from concept");
+    }
+
+    private static ValidatorGroupBuilder<VisitDetail, Concept[]> prepareVisitDetailTypeBuilder() {
+        return prepareConceptBuilder(t -> t.visitDetailType, "visit detail type");
+    }
+
+    private static ValidatorGroupBuilder<VisitDetail, Concept[]> prepareVisitDetailDischargedToConceptBuilder() {
+        return prepareConceptBuilder(t -> t.dischargedToConcept, "visit detail discharged to concept");
+    }
+
+    private static ValidatorGroupBuilder<VisitDetail, Concept[]> prepareVisitDetailGenderBuilder() {
+        return prepareConceptBuilder(t -> t.gender, "visit detail gender");
+    }
+
+    private static ValidatorGroupBuilder<VisitDetail, Concept[]> prepareVisitDetailPlaceOfServiceBuilder() {
+        return prepareConceptBuilder(t -> t.placeOfService, "visit detail place of service");
+    }
+
+    private static ValidatorGroupBuilder<VisitDetail, Concept[]> prepareVisitDetailProviderSpecialityBuilder() {
+        return prepareConceptBuilder(t -> t.providerSpecialty, "visit detail provider speciality");
     }
 }

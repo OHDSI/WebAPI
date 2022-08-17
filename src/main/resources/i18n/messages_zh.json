@@ -3286,7 +3286,7 @@
         "desc_specimen": "按照标本类型筛选标本",
         "title_visit": "添加就诊类型条件",
         "desc_visit": "按照诊断类型筛选就诊",
-        "title_visitDetails": "Add Visit Type Criteria",
+        "title_visitDetails": "Add Visit Details Type Criteria",
         "desc_visitDetails": "Filter Visit details by the Condition Type."
       },
       "addStopReason": {

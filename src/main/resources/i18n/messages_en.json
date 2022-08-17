@@ -3286,7 +3286,7 @@
         "desc_specimen": "Filter Specimen by the Type.",
         "title_visit": "Add Visit Type Criteria",
         "desc_visit": "Filter Visit Occurrences by the Condition Type.",
-        "title_visitDetails": "Add Visit Type Criteria",
+        "title_visitDetails": "Add Visit Details Type Criteria",
         "desc_visitDetails": "Filter Visit details by the Condition Type."
       },
       "addStopReason": {

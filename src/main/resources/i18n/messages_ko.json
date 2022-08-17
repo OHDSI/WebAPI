@@ -3286,7 +3286,7 @@
         "desc_specimen": "Type에 따라 Specimen을 필터링합니다.",
         "title_visit": "Visit Type 기준 추가",
         "desc_visit": "Condition Type에 따라 Visit occurrence를 필터링합니다.",
-        "title_visitDetails": "Add Visit Type Criteria",
+        "title_visitDetails": "Add Visit Detail Type Criteria",
         "desc_visitDetails": "Filter Visit details by the Condition Type."
       },
       "addStopReason": {

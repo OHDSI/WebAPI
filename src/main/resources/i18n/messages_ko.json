@@ -3151,7 +3151,7 @@
         "title_visit": "Start Date 기준 추가",
         "desc_visit": "진단받은 시작일에 따라 Visit occurrence를 필터링합니다.",
         "title_visitDetails": "Add Start Date Criteria",
-        "desc_visitDetails": "Filter Visit Details by the Condition Start Date.",
+        "desc_visitDetails": "Filter Visit details by the Condition Start Date.",
         "title_demographic": "Event Start Date 기준 추가",
         "desc_demographic": "시작일에 따라 이벤트를 필터링합니다."
       },
@@ -3175,7 +3175,7 @@
         "title_visit": "End Date 기준 추가",
         "desc_visit": "진단받은 종료일에 따라 Visit occurrence를 필터링합니다.",
         "title_visitDetails": "Add End Date Criteria",
-        "desc_visitDetails": "Filter Visit Details by the Condition End Date.",
+        "desc_visitDetails": "Filter Visit details by the Condition End Date.",
         "title_demographic": "Event End 기준 추가",
         "desc_demographic": "종료일에 따라 이벤트를 필터링합니다."
       },
@@ -3207,7 +3207,7 @@
         "title_visit": "Visit Length 기준 추가",
         "desc_visit": "지속된 기간에 따라 Visit occurrence를 필터링합니다.",
         "title_visitDetails": "Add Visit details Length Criteria",
-        "desc_visitDetails": "Filter Visit Details by duration."
+        "desc_visitDetails": "Filter Visit details by duration."
       },
       "addNested": {
         "title_era": "Nested 기준 추가...",
@@ -3286,7 +3286,7 @@
         "desc_specimen": "Type에 따라 Specimen을 필터링합니다.",
         "title_visit": "Visit Type 기준 추가",
         "desc_visit": "Condition Type에 따라 Visit occurrence를 필터링합니다.",
-        "title_visitDetails": "Add Visit Detail Type Criteria",
+        "title_visitDetails": "Add Visit details Type Criteria",
         "desc_visitDetails": "Filter Visit details by the Condition Type."
       },
       "addStopReason": {
@@ -3512,12 +3512,12 @@
         "desc_visitDetails": "Filter Visit details based on distance from Place of Service to Patient."
       },
       "addDischargedToConcept": {
-        "title_visitDetails": "Add Discharged To Source Criteria",
-        "desc_visitDetails": "Filter the patient was discharged to source after a visit"
+        "title_visitDetails": "Add Discharged To Concept Criteria",
+        "desc_visitDetails": "Filter the patient was discharged to concept after a visit."
       },
       "addAdmittedFromConcept": {
-        "title_visitDetails": "Add Admitted From Source Criteria",
-        "desc_visitDetails": "Filter the patient was admitted from source"
+        "title_visitDetails": "Add Admitted From Concept Criteria",
+        "desc_visitDetails": "Filter the patient was admitted from concept."
       }
     },
     "newEntityNames": {

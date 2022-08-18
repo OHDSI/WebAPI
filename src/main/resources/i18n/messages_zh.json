@@ -3151,7 +3151,7 @@
         "title_visit": "添加开始日期条件",
         "desc_visit": "按照诊断开始日期筛选就诊",
         "title_visitDetails": "Add Start Date Criteria",
-        "desc_visitDetails": "Filter Visit Details by the Condition Start Date.",
+        "desc_visitDetails": "Filter Visit details by the Condition Start Date.",
         "title_demographic": "添加事件开始日期条件",
         "desc_demographic": "按照开始日期筛选事件"
       },
@@ -3175,7 +3175,7 @@
         "title_visit": "添加结束日期条件",
         "desc_visit": "按照诊断结束日期筛选就诊",
         "title_visitDetails": "Add End Date Criteria",
-        "desc_visitDetails": "Filter Visit Details by the Condition End Date.",
+        "desc_visitDetails": "Filter Visit details by the Condition End Date.",
         "title_demographic": "添加事件结束日期条件",
         "desc_demographic": "按照结束日期筛选事件"
       },
@@ -3207,7 +3207,7 @@
         "title_visit": "添加就诊时长条件",
         "desc_visit": "按照就诊时长筛选就诊",
         "title_visitDetails": "Add Visit details Length Criteria",
-        "desc_visitDetails": "Filter Visit Details by duration."
+        "desc_visitDetails": "Filter Visit details by duration."
       },
       "addNested": {
         "title_era": "添加嵌套条件",
@@ -3286,7 +3286,7 @@
         "desc_specimen": "按照标本类型筛选标本",
         "title_visit": "添加就诊类型条件",
         "desc_visit": "按照诊断类型筛选就诊",
-        "title_visitDetails": "Add Visit Details Type Criteria",
+        "title_visitDetails": "Add Visit details Type Criteria",
         "desc_visitDetails": "Filter Visit details by the Condition Type."
       },
       "addStopReason": {
@@ -3512,12 +3512,12 @@
         "desc_visitDetails": "Filter Visit details based on distance from Place of Service to Patient."
       },
       "addDischargedToConcept": {
-        "title_visitDetails": "Add Discharged To Source Criteria",
-        "desc_visitDetails": "Filter the patient was discharged to source after a visit"
+        "title_visitDetails": "Add Discharged To Concept Criteria",
+        "desc_visitDetails": "Filter the patient was discharged to concept after a visit."
       },
       "addAdmittedFromConcept": {
-        "title_visitDetails": "Add Admitted From Source Criteria",
-        "desc_visitDetails": "Filter the patient was admitted from source"
+        "title_visitDetails": "Add Admitted From Concept Criteria",
+        "desc_visitDetails": "Filter the patient was admitted from concept."
       }
     },
     "newEntityNames": {

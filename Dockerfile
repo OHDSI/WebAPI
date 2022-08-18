@@ -4,6 +4,9 @@ WORKDIR /code
 
 ARG MAVEN_PROFILE=webapi-docker
 
+ARG OPENTELEMETRY_JAVA_AGENT_VERSION=1.16.0
+RUN curl -LSsO https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${OPENTELEMETRY_JAVA_AGENT_VERSION}/opentelemetry-javaagent.jar
+
 # Download dependencies
 COPY pom.xml /code/
 RUN mkdir .git \
@@ -41,6 +44,8 @@ ENV DEFAULT_JAVA_OPTS="-Djava.security.egd=file:///dev/./urandom"
 
 # set working directory to a fixed WebAPI directory
 WORKDIR /var/lib/ohdsi/webapi
+
+COPY --from=builder /code/opentelemetry-javaagent.jar .
 
 # deploy the just built OHDSI WebAPI war file
 # copy resources in order of fewest changes to most changes.

@@ -4,7 +4,7 @@ WORKDIR /code
 
 ARG MAVEN_PROFILE=webapi-docker
 
-ARG OPENTELEMETRY_JAVA_AGENT_VERSION=1.16.0
+ARG OPENTELEMETRY_JAVA_AGENT_VERSION=1.17.0
 RUN curl -LSsO https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${OPENTELEMETRY_JAVA_AGENT_VERSION}/opentelemetry-javaagent.jar
 
 # Download dependencies

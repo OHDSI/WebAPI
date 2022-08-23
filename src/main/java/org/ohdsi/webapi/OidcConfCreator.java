@@ -56,6 +56,7 @@ public class OidcConfCreator {
 
         String scopes = "openid";
         if (extraScopes != null && !extraScopes.isEmpty()){
+            scopes += " ";
             scopes += extraScopes;
         }
         conf.setScope(scopes);

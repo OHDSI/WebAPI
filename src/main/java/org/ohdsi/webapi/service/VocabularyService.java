@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -430,9 +431,28 @@ public class VocabularyService extends AbstractDaoService {
     
     String filters = "";
     if (search.domainId != null && search.domainId.length > 0) {
-      filters += " AND DOMAIN_ID IN (@domainId)";
-      variableNameList.add("domainId");
-      variableValueList.add(search.domainId);
+      // lexical search domain filters work slightly differeant than non-lexical
+      if (!search.isLexical) {
+        // use domain_ids as-is
+        filters += " AND DOMAIN_ID IN (@domainId)";
+        variableNameList.add("domainId");
+        variableValueList.add(search.domainId);
+      } else {
+        // MEASUREMENT domain is a special case where we want to ensure concept class is 'lab test' or 'procedure'
+        ArrayList<String> domainClauses = new ArrayList<>();
+        String[] nonMeasurementDomains = Stream.of(search.domainId).filter(s -> !"Measurement".equals(s)).collect(Collectors.toList()).toArray(new String[0]);
+        if (nonMeasurementDomains.length > 0) {
+          domainClauses.add("DOMAIN_ID IN (@domainId)");
+          variableNameList.add("domainId");
+          variableValueList.add(nonMeasurementDomains);
+        }
+        if (Arrays.asList(search.domainId).contains("Measurement")) {
+          domainClauses.add("(DOMAIN_ID = 'Measurement' and LOWER(concept_class_id) in ('lab test', 'procedure'))");
+        }
+        if (!domainClauses.isEmpty()) {
+          filters += String.format(" AND (%s)", StringUtils.join(domainClauses, " OR "));
+        }
+      }
     }
 
     if (search.vocabularyId != null && search.vocabularyId.length > 0) {
@@ -471,35 +491,46 @@ public class VocabularyService extends AbstractDaoService {
     
     searchSql = StringUtils.replace(searchSql, "@filters", filters);    
     if (search.isLexical) {
-      // 1. Create REPLACE expressions to caluclate the match ratio
-      List<String> terms = Arrays.asList(StringUtils.split(search.query.toLowerCase(), " "));
-      String replaceExpression = IntStream.range(1, terms.size()+1).boxed().map(String::valueOf)
+      // 1. Create term variables for the expressions including truncated terms (terms >=8 are truncated to 6 letters
+      List<String> searchTerms = Arrays.asList(StringUtils.split(search.query.toLowerCase(), " "));
+      List<String> allTerms = Stream.concat(
+          searchTerms.stream(), 
+          searchTerms.stream().filter(i -> i.length() >= 8).map(i -> StringUtils.left(i,6))
+      ).sorted((a,b) -> b.length() - a.length()).collect(Collectors.toList());
+      LinkedHashMap<String, String> termMap = new LinkedHashMap<>();
+      for (int i=0;i<allTerms.size();i++) {
+        termMap.put(String.format("term_%d",i+1), allTerms.get(i));
+      }
+      // 2. Create REPLACE expressions to caluclate the match ratio
+      String replaceExpression = termMap.keySet().stream()
           .reduce("", (acc, element) -> {
             return "".equals(acc) ? 
-                String.format("REPLACE(lower(concept_name), '@term_%s','')",element) 
-                : String.format("REPLACE(%s, '@term_%s','')", acc, element);
+                String.format("REPLACE(lower(concept_name), '@%s','')",element) // the first iteration
+                : String.format("REPLACE(%s, '@%s','')", acc, element); // the subsequent iterations
           });
       searchNamesList.add("replace_expression");
       replacementNamesList.add(replaceExpression);
       
-      // 2. Create the set of 'like' expressions for concept name
-      List<String> nameFilterList = IntStream.range(0, terms.size())
-          .mapToObj(i -> String.format("lower(concept_name) like '%%@term_%d%%'",i+1))
+      // 3. Create the set of 'like' expressions for concept name from the terms that are < 8 chars
+      List<String> nameFilterList = termMap.keySet().stream()
+          .filter(k -> termMap.get(k).length() < 8)
+          .map(k -> String.format("lower(concept_name) like '%%@%s%%'",k))
           .collect(Collectors.toList());
       searchNamesList.add("name_filters");
       replacementNamesList.add(StringUtils.join(nameFilterList, " AND "));
       
-      // 3. Create the set of 'like' expressions for concept synonyms
-      List<String> synonymFilterList = IntStream.range(0, terms.size())
-          .mapToObj(i -> String.format("lower(concept_synonym_name) like '%%@term_%d%%'",i+1))
+      // 4. Create the set of 'like' expressions for concept synonyms
+      List<String> synonymFilterList = termMap.keySet().stream()
+          .filter(k -> termMap.get(k).length() < 8)
+          .map(k -> String.format("lower(concept_synonym_name) like '%%@%s%%'",k))
           .collect(Collectors.toList());
       searchNamesList.add("synonym_filters");
       replacementNamesList.add(StringUtils.join(synonymFilterList, " AND "));
       
-     // 4. Create name-value pairs for each term paramater
-     for (int i=0;i<terms.size();i++) {
-       variableNameList.add(String.format("term_%d", i+1));
-       variableValueList.add(terms.get(i));
+     // 5. Create name-value pairs for each term paramater
+     for (Map.Entry<String,String> entry : termMap.entrySet()) {
+       variableNameList.add(entry.getKey());
+       variableValueList.add(entry.getValue());
      }
     } else {
       // only apply concept_id search if the query is numeric

@@ -2450,7 +2450,8 @@
       "clearConfigurationCache": "Clear Configuration Cache",
       "clearServerCache": "Clear Server Cache",
       "importUsers": "Import Users from LDAP/AD",
-      "managePermissions": "Manage Permissions"
+      "managePermissions": "Manage Permissions",
+      "tagManagement": "Tag Management"
     },
     "changeSourcePriorities": "Change source priorities in:",
     "confirms": {
@@ -2673,6 +2674,36 @@
           "empty": "&quot;Username&quot; is empty."
         }
       }
+    },
+    "tagManagement": {
+      "allowMultiple": "Multiple",
+      "allowCustom": "Free&#8209;form",
+      "allowCustomCheckbox": "Allow custom tags creation in this group",
+      "apply": "Submit",
+      "color": "Color",
+      "createGroup": "Create Group",
+      "createTag": "Create Tag",
+      "editTag": "Edit Tag",
+      "editTagGroup": "Edit Tag Group",
+      "exampleTagGroup": "Example",
+      "exampleTagGroupTag": "Example name",
+      "exampleTag": "Example",
+      "icon": "Icon",
+      "mandatory": "Mandatory",
+      "multiSelectionCheckbox": "Allow multiple tags from the group in a single asset",
+      "showGroupCheckbox": "Show Tag Group column in assets table",
+      "showInAssetsBrowser": "Show&nbsp;Column",
+      "tagsInGroup": "Tags in Group <%=group%>",
+      "tagGroups": "Tag Groups",
+      "tagGroupColor": "Tag group color",
+      "tagGroupColorPlaceholder": "Enter tag group color in #xxxxxx format",
+      "tagGroupDescription": "Tag group description",
+      "tagGroupDescriptionPlaceholder": "Enter tag group description",
+      "tagGroupIcon": "Tag group icon",
+      "tagGroupIconPlaceholder": "Enter tag group icon as font-awesome class",
+      "tagGroupName": "* Tag group name",
+      "tagGroupNamePlaceholder": "Enter tag group name",
+      "tagGroupNameEmpty": "Tag group name cannot be empty"
     }
   },
   "feedback": {

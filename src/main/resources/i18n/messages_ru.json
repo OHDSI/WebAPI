@@ -2449,7 +2449,8 @@
       "clearConfigurationCache": "Очистить кэш конфигурации",
       "managePermissions": "Управление разрешениями",
       "importUsers": "Импорт пользователей из LDAP/AD",
-      "clearServerCache": "Очистить серверный кэш"
+      "clearServerCache": "Очистить серверный кэш",
+      "tagManagement": "Управление тегами"
     },
     "priorityOptions": {
       "session": "В текущей сессии",
@@ -2673,6 +2674,36 @@
       "fixJson": "Исправить JSON",
       "alertWarning": "Некоторые из разрешений в списке содержат идентификаторы сущностей, которые не гарантируют совпадение между исходным и целевым экземплярами Atlas.",
       "removeThePermissions": "Удалить разрешения"
+    },
+    "tagManagement": {
+      "allowMultiple": "Несколько",
+      "allowCustom": "Free&#8209;form",
+      "allowCustomCheckbox": "Разрешить создание пользовательских тегов в этой группе",
+      "apply": "Подтвердить",
+      "color": "Цвет",
+      "createGroup": "Создать группу",
+      "createTag": "Создать тег",
+      "editTag": "Редактировать тег",
+      "editTagGroup": "Редактировать группу тегов",
+      "exampleTagGroup": "Пример",
+      "exampleTagGroupTag": "Имя примера",
+      "exampleTag": "Пример",
+      "icon": "Иконка",
+      "mandatory": "Обязательный",
+      "multiSelectionCheckbox": "Разрешить использование нескольких тегов из группы в одном активе",
+      "showGroupCheckbox": "Показывать колонку группы тегов в таблице активов",
+      "showInAssetsBrowser": "Показывать&nbsp;Колонку",
+      "tagsInGroup": "Теги в группе<%=group%>",
+      "tagGroups": "Группы тегов",
+      "tagGroupColor": "Цвет группы тегов",
+      "tagGroupColorPlaceholder": "Ввежите цвет группы тегов в #xxxxxx формате",
+      "tagGroupDescription": "Описание группы тегов",
+      "tagGroupDescriptionPlaceholder": "Введите описание группы тегов",
+      "tagGroupIcon": "Иконка группы тегов",
+      "tagGroupIconPlaceholder": "Введите иконку группы тегов как класс из библиотеки иконок font-awesome",
+      "tagGroupName": "* Имя группы тегов",
+      "tagGroupNamePlaceholder": "Введите имя группы тегов",
+      "tagGroupNameEmpty": "Поле с именем группы тегов не может быть пустым"
     }
   },
   "feedback": {

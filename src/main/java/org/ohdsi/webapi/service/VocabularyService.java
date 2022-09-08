@@ -1132,6 +1132,8 @@ public class VocabularyService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<RecommendedConcept> getRecommendedConceptsByList(@PathParam("sourceKey") String sourceKey, long[] conceptList) {
+    if (conceptList.length == 0) return new ArrayList<RecommendedConcept>(); // empty list of recommendations
+
     final Map<Long, RecommendedConcept> concepts = new HashMap<>();
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     PreparedStatementRenderer psr = prepareGetRecommendedConceptsByList(conceptList, source);

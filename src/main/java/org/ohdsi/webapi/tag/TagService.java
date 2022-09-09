@@ -115,8 +115,7 @@ public class TagService extends AbstractDaoService {
     public TagDTO update(Integer id, TagDTO entity) {
         Tag existing = tagRepository.findOne(id);
 
-        checkOwnerOrAdmin(existing.getCreatedBy().getId());
-        checkType(existing.getType());
+        checkOwnerOrAdmin(existing.getCreatedBy() != null ? existing.getCreatedBy().getId() : null);
 
         Tag toUpdate = this.conversionService.convert(entity, Tag.class);
 
@@ -138,8 +137,7 @@ public class TagService extends AbstractDaoService {
     public void delete(Integer id) {
         Tag existing = tagRepository.findOne(id);
 
-        checkOwnerOrAdmin(existing.getCreatedBy().getId());
-        checkType(existing.getType());
+        checkOwnerOrAdmin(existing.getCreatedBy() != null ? existing.getCreatedBy().getId() : null);
 
         tagRepository.delete(id);
     }
@@ -148,12 +146,6 @@ public class TagService extends AbstractDaoService {
         UserEntity user = getCurrentUser();
         if (!(user.getId().equals(tagOwnerId) || isAdmin())) {
             throw new ForbiddenException();
-        }
-    }
-
-    private void checkType(TagType type) {
-        if (!TagType.CUSTOM.equals(type)) {
-            throw new IllegalArgumentException("Only custom tags can be processed");
         }
     }
 

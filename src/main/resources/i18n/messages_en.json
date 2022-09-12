@@ -2714,7 +2714,8 @@
       "protected": "Protected",
       "nameExistsWarning": "Tag or Group name '<%=tagName%>' is already in use.",
       "errorGroupNotEmpty": "Cannot delete tag group: the group contains tags.",
-      "deleteConfirmation": "Deletion cannot be undone! Are you sure?"
+      "deleteGroupConfirmation": "Deletion cannot be undone! Are you sure?",
+      "deleteTagConfirmation": "If the tag is assigned to an asset, it will be unassigned. Deletion cannot be undone. Are you sure you want to delete the tag?"
     }
   },
   "feedback": {

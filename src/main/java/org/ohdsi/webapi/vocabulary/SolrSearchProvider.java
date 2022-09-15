@@ -1,11 +1,15 @@
 package org.ohdsi.webapi.vocabulary;
 
 import java.io.IOException;
+import java.util.Date;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.stereotype.Component;
 
 import org.apache.solr.client.solrj.SolrClient;
@@ -74,6 +78,8 @@ public class SolrSearchProvider implements SearchProvider {
             c.invalidReason = convertObjectToString(d.getFieldValue("invalid_reason"), "V");
             c.standardConcept = convertObjectToString(d.getFieldValue("standard_concept"), "N");
             c.vocabularyId = ConvertUtils.convert(d.getFieldValue("vocabulary_id"));
+            c.validStartDate = convertObjectToDate(d.getFieldValue("valid_start_date"));
+            c.validEndDate = convertObjectToDate(d.getFieldValue("valid_end_date"));
             concepts.add(c);
         }        
         
@@ -94,5 +100,13 @@ public class SolrSearchProvider implements SearchProvider {
     
     protected Long convertObjectToLong(Object obj) {
         return NumberUtils.createLong(ConvertUtils.convert(obj));
+    }
+
+    protected Date convertObjectToDate(Object obj) {
+        try {
+            return DateUtils.parseDate(ConvertUtils.convert(obj), DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.getPattern());
+        } catch (final Exception e) {
+            return null;
+        }
     }
 }

@@ -229,22 +229,8 @@ public class TagService extends AbstractDaoService {
     public AssignmentPermissionsDTO getAssignmentPermissions() {
         final AssignmentPermissionsDTO tagPermission = new AssignmentPermissionsDTO();
         tagPermission.setAnyAssetMultiAssignPermitted(isAdmin());
-        tagPermission.setCanAssignProtectedTags(!isSecured() ||
-                SecurityUtils.getSubject().isPermitted("cohortdefinition:*:protectedtag:post") ||
-                SecurityUtils.getSubject().isPermitted("conceptset:*:protectedtag:post") ||
-                SecurityUtils.getSubject().isPermitted("cohort-characterization:*:protectedtag:post") ||
-                SecurityUtils.getSubject().isPermitted("ir:*:protectedtag:post") ||
-                SecurityUtils.getSubject().isPermitted("pathway-analysis:*:protectedtag:post") ||
-                SecurityUtils.getSubject().isPermitted("reusable:*:protectedtag:post")
-        );
-        tagPermission.setCanUnassignProtectedTags(!isSecured() ||
-                SecurityUtils.getSubject().isPermitted("cohortdefinition:*:protectedtag:*:delete") ||
-                SecurityUtils.getSubject().isPermitted("conceptset:*:protectedtag:*:delete") ||
-                SecurityUtils.getSubject().isPermitted("cohort-characterization:*:protectedtag:*:delete") ||
-                SecurityUtils.getSubject().isPermitted("ir:*:protectedtag:*:delete") ||
-                SecurityUtils.getSubject().isPermitted("pathway-analysis:*:protectedtag:*:delete") ||
-                SecurityUtils.getSubject().isPermitted("reusable:*:protectedtag:*:delete")
-        );
+        tagPermission.setCanAssignProtectedTags(!isSecured() || TagSecurityUtils.canAssingProtectedTags());
+        tagPermission.setCanUnassignProtectedTags(!isSecured() || TagSecurityUtils.canUnassingProtectedTags());
         return tagPermission;
     }
 }

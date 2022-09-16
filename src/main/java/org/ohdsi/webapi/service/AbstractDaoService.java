@@ -33,6 +33,7 @@ import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceHelper;
 import org.ohdsi.webapi.source.SourceRepository;
+import org.ohdsi.webapi.tag.TagSecurityUtils;
 import org.ohdsi.webapi.tag.TagService;
 import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
@@ -331,7 +332,7 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     if (Objects.nonNull(entity)) {
       Tag tag = tagService.getById(tagId);
       if (Objects.nonNull(tag)) {
-        if (tag.isPermissionProtected() && !hasPermissionToAssignProtectedTags(entity)) {
+        if (tag.isPermissionProtected() && !hasPermissionToAssignProtectedTags(entity, "post")) {
           throw new UnauthorizedException(String.format("No permission to assign protected tag '%s' to %s (id=%s).",
                   tag.getName(), entity.getClass().getSimpleName(), entity.getId()));
         }
@@ -353,33 +354,11 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     }
   }
 
-  private boolean hasPermissionToAssignProtectedTags(final CommonEntityExt<?> entity) {
-    if (!isSecured()) {
-      return true;
-    }
-
-    if (entity instanceof ConceptSet) {
-      return SecurityUtils.getSubject().isPermitted("conceptset:*:protectedtag:post");
-    } else if (entity instanceof CohortDefinition) {
-      return SecurityUtils.getSubject().isPermitted("cohortdefinition:*:protectedtag:post");
-    } else if (entity instanceof CohortCharacterizationEntity) {
-      return SecurityUtils.getSubject().isPermitted("cohort-characterization:*:protectedtag:post");
-    } else if (entity instanceof IncidenceRateAnalysis) {
-      return SecurityUtils.getSubject().isPermitted("ir:*:protectedtag:post");
-    } else if (entity instanceof PathwayAnalysisEntity) {
-      return SecurityUtils.getSubject().isPermitted("pathway-analysis:*:protectedtag:post");
-    } else if (entity instanceof Reusable) {
-      return SecurityUtils.getSubject().isPermitted("reusable:*:protectedtag:post");
-    }
-
-    return false;
-  }
-
   protected void unassignTag(CommonEntityExt<?> entity, int tagId) {
     if (Objects.nonNull(entity)) {
       Tag tag = tagService.getById(tagId);
       if (Objects.nonNull(tag)) {
-        if (tag.isPermissionProtected() && !hasPermissionToUnassignProtectedTags(entity)) {
+        if (tag.isPermissionProtected() && !hasPermissionToAssignProtectedTags(entity, "delete")) {
           throw new UnauthorizedException(String.format("No permission to unassign protected tag '%s' from %s (id=%s).",
                   tag.getName(), entity.getClass().getSimpleName(), entity.getId()));
         }
@@ -391,26 +370,12 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     }
   }
 
-  private boolean hasPermissionToUnassignProtectedTags(final CommonEntityExt<?> entity) {
+  private boolean hasPermissionToAssignProtectedTags(final CommonEntityExt<?> entity, final String method) {
     if (!isSecured()) {
       return true;
     }
 
-    if (entity instanceof ConceptSet) {
-      return SecurityUtils.getSubject().isPermitted("conceptset:*:protectedtag:*:delete");
-    } else if (entity instanceof CohortDefinition) {
-      return SecurityUtils.getSubject().isPermitted("cohortdefinition:*:protectedtag:*:delete");
-    } else if (entity instanceof CohortCharacterizationEntity) {
-      return SecurityUtils.getSubject().isPermitted("cohort-characterization:*:protectedtag:*:delete");
-    } else if (entity instanceof IncidenceRateAnalysis) {
-      return SecurityUtils.getSubject().isPermitted("ir:*:protectedtag:*:delete");
-    } else if (entity instanceof PathwayAnalysisEntity) {
-      return SecurityUtils.getSubject().isPermitted("pathway-analysis:*:protectedtag:*:delete");
-    } else if (entity instanceof Reusable) {
-      return SecurityUtils.getSubject().isPermitted("reusable:*:protectedtag:*:delete");
-    }
-
-    return false;
+    return TagSecurityUtils.checkPermission(TagSecurityUtils.getAssetName(entity), method);
   }
 
   protected void checkOwnerOrAdmin(UserEntity owner) {

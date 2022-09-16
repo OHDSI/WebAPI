@@ -71,16 +71,13 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
             if (Objects.nonNull(throwable)) {
                 if (throwable instanceof UnauthorizedException || throwable instanceof ForbiddenException) {
                     responseStatus = Status.FORBIDDEN;
-                } else if (throwable instanceof BadRequestAtlasException) {
+                } else if (throwable instanceof BadRequestAtlasException || throwable instanceof ConceptNotExistException) {
                     responseStatus = Status.BAD_REQUEST;
                     ex = throwable;
                 } else if (throwable instanceof ConversionAtlasException) {
                     responseStatus = Status.BAD_REQUEST;
                     // New exception must be created or direct self-reference exception will be thrown
                     ex = new RuntimeException(throwable.getMessage());
-                } else if (throwable instanceof ConceptNotExistException) {
-                    responseStatus = Status.BAD_REQUEST;
-                    ex = throwable;
                 } else {
                     responseStatus = Status.INTERNAL_SERVER_ERROR;
                     ex = new RuntimeException("An exception occurred: " + ex.getClass().getName());

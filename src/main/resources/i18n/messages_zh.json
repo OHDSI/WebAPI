@@ -1184,6 +1184,11 @@
       "viewing": "Viewing now",
       "createACopy": "Create a copy",
       "current": "Current"
+    },
+    "reusablesModal": {
+      "title": "Insert from Reusable",
+      "loadingReusables": "Loading reusables list...",
+      "anyConceptSet": "Any Concept Set"
     }
   },
   "facets": {

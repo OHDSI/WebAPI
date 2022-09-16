@@ -420,7 +420,6 @@ public class VocabularyService extends AbstractDaoService {
     String searchSql = ResourceHelper.GetResourceAsString(resourcePath);
     String tqName = "CDM_schema";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
-
     List<String> searchNamesList = new ArrayList<>();
     List<Object> replacementNamesList = new ArrayList<>();
     List<String> variableNameList = new ArrayList<>();
@@ -487,9 +486,7 @@ public class VocabularyService extends AbstractDaoService {
         variableValueList.add(search.standardConcept.trim());
       }
     }
-
     
-    searchSql = StringUtils.replace(searchSql, "@filters", filters);    
     if (search.isLexical) {
       // 1. Create term variables for the expressions including truncated terms (terms >=8 are truncated to 6 letters
       List<String> searchTerms = Arrays.asList(StringUtils.split(search.query.toLowerCase(), " "));
@@ -533,11 +530,17 @@ public class VocabularyService extends AbstractDaoService {
        variableValueList.add(entry.getValue());
      }
     } else {
-      // only apply concept_id search if the query is numeric
-      searchSql = StringUtils.replace(searchSql, "@conceptIdSearch", StringUtils.isNumeric(search.query) ? "or CONCEPT_ID = @query" : "");
-      variableNameList.add("query");
-      variableValueList.add(search.query.toLowerCase());
+      if (!search.query.isEmpty()) {
+        String queryFilter = "LOWER(CONCEPT_NAME) LIKE '%@query%' or LOWER(CONCEPT_CODE) LIKE '%@query%'";
+        if (StringUtils.isNumeric(search.query)) {
+          queryFilter += "or CONCEPT_ID = @query";
+        }
+        filters += "AND (" + queryFilter + ")";
+        variableNameList.add("query");
+        variableValueList.add(search.query.toLowerCase());
+      }
     }
+    searchSql = StringUtils.replace(searchSql, "@filters", filters);
 
     String[] searchNames = searchNamesList.toArray(new String[0]);
     String[] replacementNames = replacementNamesList.toArray(new String[0]);

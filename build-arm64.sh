@@ -4,13 +4,29 @@ set -eux
 VERSION=2.0.2
 TAG=2.9.0-$VERSION-arm64
 
-export REGISTRY=harbor-uat.honeur.org
-export REPOSITORY=honeur
-#export REGISTRY=harbor-uat.athenafederation.org
-#export REPOSITORY=athena
-#export REGISTRY=harbor-uat.lupusnet.org
-#export REPOSITORY=lupus
 export REGISTRY_USERNAME=admin
-export REGISTRY_PASSWORD=harbor_password
 
+export REGISTRY_PASSWORD=
+export REGISTRY=harbor.honeur.org
+export REPOSITORY=honeur
+docker buildx build --rm --platform linux/arm64 --pull --push -f "Dockerfile" -t $REGISTRY/$REPOSITORY/webapi:$TAG .
+
+export REGISTRY_PASSWORD=
+export REGISTRY=harbor.athenafederation.org
+export REPOSITORY=athena
+docker buildx build --rm --platform linux/arm64 --pull --push -f "Dockerfile" -t $REGISTRY/$REPOSITORY/webapi:$TAG .
+
+export REGISTRY_PASSWORD=
+export REGISTRY=harbor.lupusnet.org
+export REPOSITORY=lupus
+docker buildx build --rm --platform linux/arm64 --pull --push -f "Dockerfile" -t $REGISTRY/$REPOSITORY/webapi:$TAG .
+
+export REGISTRY_PASSWORD=
+export REGISTRY=harbor.esfurn.org
+export REPOSITORY=esfurn
+docker buildx build --rm --platform linux/arm64 --pull --push -f "Dockerfile" -t $REGISTRY/$REPOSITORY/webapi:$TAG .
+
+export REGISTRY_PASSWORD=
+export REGISTRY=harbor.phederation.org
+export REPOSITORY=phederation
 docker buildx build --rm --platform linux/arm64 --pull --push -f "Dockerfile" -t $REGISTRY/$REPOSITORY/webapi:$TAG .

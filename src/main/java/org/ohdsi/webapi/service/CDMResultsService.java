@@ -254,6 +254,7 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         return new JobExecutionResource();
     }
     
+/*
     @GET
     @Path("{sourceKey}/refreshCacheUnsecured")
     @Produces(MediaType.APPLICATION_JSON)
@@ -267,7 +268,7 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
       }
       return new JobExecutionResource();
     }
-
+*/
     /**
      * Queries for data density report for the given sourceKey
      *

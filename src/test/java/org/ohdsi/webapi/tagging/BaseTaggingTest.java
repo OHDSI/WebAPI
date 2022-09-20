@@ -1,13 +1,10 @@
 package org.ohdsi.webapi.tagging;
 
-import com.google.common.collect.ImmutableSet;
 import org.apache.commons.io.FileUtils;
-import org.apache.shiro.authz.UnauthorizedException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.ohdsi.webapi.AbstractDatabaseTest;
-import org.ohdsi.webapi.exception.BadRequestAtlasException;
 import org.ohdsi.webapi.service.dto.CommonEntityExtDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;

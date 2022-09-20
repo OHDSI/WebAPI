@@ -8,6 +8,7 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.service.dto.AnalysisInfoDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisShortDTO;
+import org.ohdsi.webapi.tag.domain.HasTags;
 import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
@@ -27,7 +28,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 
 @Path("/ir/")
-public interface IRAnalysisResource {
+public interface IRAnalysisResource extends HasTags<Integer> {
 
     /**
      * Returns all IR Analysis in a list.
@@ -168,7 +169,7 @@ public interface IRAnalysisResource {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/")
-    void assignTag(@PathParam("id") final int id, final int tagId);
+    void assignTag(@PathParam("id") final Integer id, final int tagId);
 
     /**
      * Unassign tag from IR Analysis
@@ -179,7 +180,7 @@ public interface IRAnalysisResource {
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/{tagId}")
-    void unassignTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId);
+    void unassignTag(@PathParam("id") final Integer id, @PathParam("tagId") final int tagId);
 
     /**
      * Assign protected tag to IR Analysis

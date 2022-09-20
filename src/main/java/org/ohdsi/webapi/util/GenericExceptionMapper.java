@@ -38,6 +38,7 @@ import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Objects;
+import org.ohdsi.webapi.vocabulary.ConceptRecommendedNotInstalledException;
 
 /**
  *
@@ -104,6 +105,8 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
                 responseStatus = Status.INTERNAL_SERVER_ERROR;
                 ex = new RuntimeException("An exception occurred: " + ex.getClass().getName());
             }
+        } else if (ex instanceof ConceptRecommendedNotInstalledException) {
+          responseStatus = Status.NOT_IMPLEMENTED;
         } else {
             responseStatus = Status.INTERNAL_SERVER_ERROR;
             // Create new message to prevent sending error information to client

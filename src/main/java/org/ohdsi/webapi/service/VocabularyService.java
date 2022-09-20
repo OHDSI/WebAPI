@@ -48,6 +48,7 @@ import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.PreparedSqlRender;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.ohdsi.webapi.vocabulary.ConceptRecommendedNotInstalledException;
 import org.ohdsi.webapi.vocabulary.ConceptRelationship;
 import org.ohdsi.webapi.vocabulary.ConceptSearch;
 import org.ohdsi.webapi.vocabulary.DescendentOfAncestorSearch;
@@ -1135,20 +1136,29 @@ public class VocabularyService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<RecommendedConcept> getRecommendedConceptsByList(@PathParam("sourceKey") String sourceKey, long[] conceptList) {
-    if (conceptList.length == 0) return new ArrayList<RecommendedConcept>(); // empty list of recommendations
+    if (conceptList.length == 0) {
+      return new ArrayList<RecommendedConcept>(); // empty list of recommendations
+    }
+    try {
+      final Map<Long, RecommendedConcept> concepts = new HashMap<>();
+      Source source = getSourceRepository().findBySourceKey(sourceKey);
+      PreparedStatementRenderer psr = prepareGetRecommendedConceptsByList(conceptList, source);
+      getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), new RowMapper<Void>() {
+        @Override
+        public Void mapRow(ResultSet resultSet, int i) throws SQLException {
+          addRecommended(concepts, resultSet);
+          return null;
+        }
+      });
 
-    final Map<Long, RecommendedConcept> concepts = new HashMap<>();
-    Source source = getSourceRepository().findBySourceKey(sourceKey);
-    PreparedStatementRenderer psr = prepareGetRecommendedConceptsByList(conceptList, source);
-    getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), new RowMapper<Void>() {
-      @Override
-      public Void mapRow(ResultSet resultSet, int i) throws SQLException {
-        addRecommended(concepts, resultSet);
-        return null;
+      return concepts.values();
+
+    } catch (Exception e) {
+      if (e.getCause().getMessage().contains("concept_recommended") && e.getCause().getMessage().contains("does not exist")) {
+        throw new ConceptRecommendedNotInstalledException();
       }
-    });
-
-    return concepts.values();
+      throw e;
+    }
   }
 
   protected PreparedStatementRenderer prepareGetRecommendedConceptsByList(long[] conceptList, Source source) {

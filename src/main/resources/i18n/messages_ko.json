@@ -723,10 +723,7 @@
       "anyGender": "Any Gender",
       "anyProviderSpeciality": "Any Provider Speciality",
       "anyPlaceService": "Any Place of Service",
-      "anyAdmitted": "Any Place",
-      "anyDischarged": "Any Place",
       "anyLocation": "Any Location",
-      "admittedFromConcept": "the patient was admitted from:",
       "conditionVisitDetailText_1": "a visit detail of",
       "conditionVisitDetailText_10": "with a Place of Service of:",
       "conditionVisitDetailText_11": "with a Place of Service located in:",
@@ -739,7 +736,6 @@
       "conditionVisitDetailText_7": "with age",
       "conditionVisitDetailText_8": "with a gender of:",
       "conditionVisitDetailText_9": "with a Provider Specialty of:",
-      "dischargedToConcept": "the patient was discharged to:",
       "visitDetailType": "visit detail type",
       "indexDataText": "The index date refers to the visit detail of <%= conceptSetName %>."
     },
@@ -3514,14 +3510,6 @@
         "desc_visit": "서비스 장소에서 환자까지의 거리를 기준으로 방문 발생을 필터링합니다.",
         "title_visitDetail": "Add Place of Service Distance Criteria",
         "desc_visitDetail": "Filter Visit detail based on distance from Place of Service to Patient."
-      },
-      "addDischargedToConcept": {
-        "title_visitDetail": "Add Discharged To Concept Criteria",
-        "desc_visitDetail": "Filter the patient was discharged to concept after a visit."
-      },
-      "addAdmittedFromConcept": {
-        "title_visitDetail": "Add Admitted From Concept Criteria",
-        "desc_visitDetail": "Filter the patient was admitted from concept."
       }
     },
     "newEntityNames": {

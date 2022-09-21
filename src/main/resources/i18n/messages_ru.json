@@ -741,10 +741,7 @@
       "anyGender": "Любой пол",
       "anyProviderSpeciality": "Любая специальность провайдера",
       "anyPlaceService": "Любое место оказания услуг",
-      "anyAdmitted": "Любое место",
-      "anyDischarged": "Любое место",
       "anyLocation": "Любое местоположение",
-      "admittedFromConcept": "пациент был доставлен из:",
       "conditionVisitDetailText_1": "деталь посещения",
       "conditionVisitDetailText_10": "с местом оказания услуг:",
       "conditionVisitDetailText_11": "с местом оказания услуг расположенным в:",
@@ -757,7 +754,6 @@
       "conditionVisitDetailText_7": "с возрастом",
       "conditionVisitDetailText_8": "с полом:",
       "conditionVisitDetailText_9": "со специализацией провайдера:",
-      "dischargedToConcept": "пациент был выписан в:",
       "visitDetailType": "тип детали посещения",
       "indexDataText": "Дата индекса относится к детали посещения <%= conceptSetName %>."
     },
@@ -3673,14 +3669,6 @@
         "desc_visit": "Фильтр посещений в зависимости от расстояния от места обслуживания до пациента.",
         "title_visitDetail": "Добавить критерий расстояния до места обслуживания",
         "desc_visitDetail": "Фильтр деталей посещения в зависимости от расстояния от места обслуживания до пациента."
-      },
-      "addDischargedToConcept": {
-        "title_visitDetail": "Добавить критерий куда выписан",
-        "desc_visitDetail": "Фильтр по месту куда был выписан пациент после посещения"
-      },
-      "addAdmittedFromConcept": {
-        "title_visitDetail": "Добавить критерий откуда доставлен",
-        "desc_visitDetail": "Фильтр по месту откуда был доставлен пациент"
       }
     },
     "newEntityNames": {

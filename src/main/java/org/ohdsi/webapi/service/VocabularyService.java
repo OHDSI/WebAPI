@@ -1154,7 +1154,7 @@ public class VocabularyService extends AbstractDaoService {
       return concepts.values();
 
     } catch (Exception e) {
-      if (e.getCause().getMessage().contains("concept_recommended") && e.getCause().getMessage().contains("does not exist")) {
+      if (e.getCause().getMessage().contains("concept_recommended")) {
         throw new ConceptRecommendedNotInstalledException();
       }
       throw e;

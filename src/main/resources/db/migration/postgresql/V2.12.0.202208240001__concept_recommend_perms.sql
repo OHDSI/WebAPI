@@ -20,3 +20,5 @@ SELECT nextval('${ohdsiSchema}.sec_role_permission_sequence'),
 FROM temp_migration m
 JOIN ${ohdsiSchema}.sec_permission sp on m.new_value = sp.value
 JOIN ${ohdsiSchema}.sec_role_permission srp on m.from_perm_id = srp.permission_id;
+
+DROP TABLE temp_migration;

@@ -1,15 +1,14 @@
 package org.ohdsi.webapi.check.checker.criteria;
 
+import org.ohdsi.circe.cohortdefinition.ConceptSetSelection;
 import org.ohdsi.circe.cohortdefinition.Criteria;
 import org.ohdsi.circe.cohortdefinition.DateRange;
 import org.ohdsi.circe.cohortdefinition.NumericRange;
 import org.ohdsi.circe.cohortdefinition.VisitDetail;
-import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.webapi.check.builder.DateRangeValidatorBuilder;
 import org.ohdsi.webapi.check.builder.NumericRangeValidatorBuilder;
 import org.ohdsi.webapi.check.builder.ValidatorGroupBuilder;
-
-import static org.ohdsi.webapi.check.checker.concept.ConceptArrayHelper.prepareConceptBuilder;
+import org.ohdsi.webapi.check.builder.conceptset.ConceptSetSelectionValidatorBuilder;
 
 public class VisitDetailHelper {
     public static ValidatorGroupBuilder<Criteria, VisitDetail> prepareVisitDetailBuilder() {
@@ -22,7 +21,11 @@ public class VisitDetailHelper {
                                 prepareAgeBuilder(),
                                 prepareStartDateBuilder(),
                                 prepareEndDateBuilder(),
-                                prepareVisitDetailLengthBuilder()
+                                prepareVisitDetailLengthBuilder(),
+                                prepareVisitDetailTypeBuilder(),
+                                prepareGenderBuilder(),
+                                prepareProviderSpecialtyBuilder(),
+                                preparePlaceOfServiceCBuilder()
                         );
         return builder;
     }
@@ -68,6 +71,51 @@ public class VisitDetailHelper {
                         .validators(
                                 new NumericRangeValidatorBuilder<>()
                         );
+        return builder;
+    }
+
+    private static ValidatorGroupBuilder<VisitDetail, ConceptSetSelection> prepareVisitDetailTypeBuilder() {
+        ValidatorGroupBuilder<VisitDetail, ConceptSetSelection> builder =
+                new ValidatorGroupBuilder<VisitDetail, ConceptSetSelection>()
+                        .attrName("visit detail type")
+                        .valueGetter(t -> t.visitDetailTypeCS)
+                        .validators(
+                                new ConceptSetSelectionValidatorBuilder<>()
+                        );
+        return builder;
+    }
+
+    private static ValidatorGroupBuilder<VisitDetail, ConceptSetSelection> prepareGenderBuilder() {
+        ValidatorGroupBuilder<VisitDetail, ConceptSetSelection> builder =
+                new ValidatorGroupBuilder<VisitDetail, ConceptSetSelection>()
+                        .attrName("visit detail gender")
+                        .valueGetter(t -> t.genderCS)
+                        .validators(
+                                new ConceptSetSelectionValidatorBuilder<>()
+                        );
+        return builder;
+    }
+
+    private static ValidatorGroupBuilder<VisitDetail, ConceptSetSelection> prepareProviderSpecialtyBuilder() {
+        ValidatorGroupBuilder<VisitDetail, ConceptSetSelection> builder =
+            new ValidatorGroupBuilder<VisitDetail, ConceptSetSelection>()
+                    .attrName("visit detail provider speciality")
+                    .valueGetter(t -> t.providerSpecialtyCS)
+                    .validators(
+                            new ConceptSetSelectionValidatorBuilder<>()
+                    );
+        return builder;
+
+    }
+
+    private static ValidatorGroupBuilder<VisitDetail, ConceptSetSelection> preparePlaceOfServiceCBuilder() {
+        ValidatorGroupBuilder<VisitDetail, ConceptSetSelection> builder =
+            new ValidatorGroupBuilder<VisitDetail, ConceptSetSelection>()
+                    .attrName("visit detail place of service")
+                    .valueGetter(t -> t.placeOfServiceCS)
+                    .validators(
+                            new ConceptSetSelectionValidatorBuilder<>()
+                    );
         return builder;
     }
 }

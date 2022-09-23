@@ -764,29 +764,29 @@
       "visitType": "Visit Type",
       "indexDataText": "The index date refers to the visit of <%= conceptSetName %>."
     },
-    "conditionVisitDetails": {
+    "conditionVisitDetail": {
       "addAttribute": "Add attribute...",
+      "anyVisitDetail": "Any Visit Detail",
+      "anyType": "Any Visit Detail Type",
+      "anySourceConcept": "Any Visit Detail Source Concept",
+      "anyGender": "Any Gender",
+      "anyProviderSpeciality": "Any Provider Specialty",
+      "anyPlaceService": "Any Place of Service",
       "anyLocation": "Any Location",
-      "anyVisitDetails": "Any Visit Details",
-      "conditionVisitDetailsText_1": "a visit details of",
-      "conditionVisitDetailsText_10": "with a Place of Service of:",
-      "conditionVisitDetailsText_11": "with a Place of Service located in:",
-      "conditionVisitDetailsText_12": "with distance from a Place of Service to Patient",
-      "conditionVisitDetailsText_13": "with visit details length",
-      "conditionVisitDetailsText_14": "gender is any of:",
-      "conditionVisitDetailsText_15": "provider specialty is any of:",
-      "conditionVisitDetailsText_2": "for the first time in the person's history",
-      "conditionVisitDetailsText_3": "visit details start is:",
-      "conditionVisitDetailsText_4": "visit details end is:",
-      "conditionVisitDetailsText_5": "Visit details Source Concept is",
-      "conditionVisitDetailsText_6": "with visit details duration",
-      "conditionVisitDetailsText_7": "with age",
-      "conditionVisitDetailsText_8": "with a gender of:",
-      "conditionVisitDetailsText_9": "with a Provider Specialty of:",
-      "dischargedToConcept": "the patient was discharged to:",
-      "admittedFromConcept": "the patient was admitted from:",
-      "visitType": "Visit details Type",
-      "indexDataText": "The index date refers to the visit details of <%= conceptSetName %>."
+      "conditionVisitDetailText_1": "a visit detail of",
+      "conditionVisitDetailText_10": "with a Place of Service ",
+      "conditionVisitDetailText_11": "with a Place of Service located in:",
+      "conditionVisitDetailText_12": "with distance from a Place of Service to Patient:",
+      "conditionVisitDetailText_2": "for the first time in the person's history",
+      "conditionVisitDetailText_3": "visit detail start is:",
+      "conditionVisitDetailText_4": "visit detail end is:",
+      "conditionVisitDetailText_5": "visit detail Source Concept is",
+      "conditionVisitDetailText_6": "with visit detail duration",
+      "conditionVisitDetailText_7": "with age",
+      "conditionVisitDetailText_8": "with a gender ",
+      "conditionVisitDetailText_9": "with a Provider Specialty ",
+      "visitDetailType": "visit detail type",
+      "indexDataText": "The index date refers to the visit detail of <%= conceptSetName %>."
     },
     "criteriaGroup": {
       "addAdditionalConstraint": "add additional constraint",
@@ -3024,22 +3024,22 @@
         "desc_procedureoccurrence": "Filter Procedure Occurrences based on visit occurrence of procedure."
       },
       "addVisitDetail": {
-        "title": "Add Visit details",
-        "desc_initial": "Find patients based on visit  details information.",
-        "desc_censoring": "Exit cohort based on visit details information.",
-        "desc_group": "Find patients based on visit details information.",
-        "title_visit_details": "Add Visit details",
-        "desc_occurrence": "Filter Condition Occurrences based on visit details of diagnosis.",
-        "title_deviceexposure": "Add Visit details Criteria",
-        "desc_deviceexposure": "Filter Device Exposures based on visit details of exposure.",
-        "title_drugexposure": "Add Visit details Criteria",
-        "desc_drugexposure": "Filter Drug Exposures based on visit details of drug exposure.",
-        "title_measurement": "Add Visit details Criteria",
-        "desc_measurement": "Filter Measurements based on visit details of measurement.",
-        "title_observation": "Add Visit details Criteria",
-        "desc_observation": "Filter Observations based on visit details of observation.",
-        "title_procedureoccurrence": "Add Visit  details Criteria",
-        "desc_procedureoccurrence": "Filter Procedure Occurrences based on visit details of procedure."
+        "title": "Add Visit detail",
+        "desc_initial": "Find patients based on visit  detail information.",
+        "desc_censoring": "Exit cohort based on visit detail information.",
+        "desc_group": "Find patients based on visit detail information.",
+        "title_visit_detail": "Add Visit detail",
+        "desc_occurrence": "Filter Condition Occurrences based on visit detail of diagnosis.",
+        "title_deviceexposure": "Add Visit detail Criteria",
+        "desc_deviceexposure": "Filter Device Exposures based on visit detail of exposure.",
+        "title_drugexposure": "Add Visit detail Criteria",
+        "desc_drugexposure": "Filter Drug Exposures based on visit detail of drug exposure.",
+        "title_measurement": "Add Visit detail Criteria",
+        "desc_measurement": "Filter Measurements based on visit detail of measurement.",
+        "title_observation": "Add Visit detail Criteria",
+        "desc_observation": "Filter Observations based on visit detail of observation.",
+        "title_procedureoccurrence": "Add Visit  detail Criteria",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences based on visit detail of procedure."
       },
       "addConditionStatus": {
         "title_occurrence": "Add Condition Status",
@@ -3072,8 +3072,8 @@
         "desc_specimen": "Limit Specimen to the first occurrence in history.",
         "title_visit": "Add First Visit Criteria",
         "desc_visit": "Limit Visit Occurrences to the first visit.",
-        "title_visitDetails": "Add First Visit details Criteria",
-        "desc_visitDetails": "Limit Visit details to the first visit."
+        "title_visitDetail": "Add First Visit detail Criteria",
+        "desc_visitDetail": "Limit Visit detail to the first visit."
       },
       "addAgeAtStart": {
         "title_era": "Add Age at Era Start Criteria",
@@ -3126,8 +3126,8 @@
         "desc_specimen": "Filter specimens based on Gender.",
         "title_visit": "Add Gender Criteria",
         "desc_visit": "Filter Visit Occurrences based on Gender.",
-        "title_visitDetails": "Add Gender Criteria",
-        "desc_visitDetails": "Filter Visit details based on Gender.",
+        "title_visitDetail": "Add Gender Criteria",
+        "desc_visitDetail": "Filter Visit detail based on Gender.",
         "title_demographic": "Add Gender Criteria",
         "desc_demographic": "Filter events based on Gender."
       },
@@ -3150,8 +3150,8 @@
         "desc_payerplan": "Filter Payer Plan Periods by Start Date.",
         "title_visit": "Add Start Date Criteria",
         "desc_visit": "Filter Visit Occurrences by the Condition Start Date.",
-        "title_visitDetails": "Add Start Date Criteria",
-        "desc_visitDetails": "Filter Visit details by the Condition Start Date.",
+        "title_visitDetail": "Add Start Date Criteria",
+        "desc_visitDetail": "Filter Visit detail by the Start Date.",
         "title_demographic": "Add Start Date Criteria",
         "desc_demographic": "Filter events based by Start Date."
       },
@@ -3174,8 +3174,8 @@
         "desc_payerplan": "Filter Payer Plan Periods by End Date.",
         "title_visit": "Add End Date Criteria",
         "desc_visit": "Filter Visit Occurrences by the Condition End Date.",
-        "title_visitDetails": "Add End Date Criteria",
-        "desc_visitDetails": "Filter Visit details by the Condition End Date.",
+        "title_visitDetail": "Add End Date Criteria",
+        "desc_visitDetail": "Filter Visit detail by the End Date.",
         "title_demographic": "Add Event End Date Criteria",
         "desc_demographic": "Filter events based by End Date."
       },
@@ -3206,8 +3206,8 @@
         "desc_payerplan": "Filter Payer Plan Periods by duration.",
         "title_visit": "Add Visit Length Criteria",
         "desc_visit": "Filter Visit Occurrences by duration.",
-        "title_visitDetails": "Add Visit details Length Criteria",
-        "desc_visitDetails": "Filter Visit details by duration."
+        "title_visitDetail": "Add Visit detail Length Criteria",
+        "desc_visitDetail": "Filter Visit detail by duration."
       },
       "addNested": {
         "title_era": "Add Nested Criteria...",
@@ -3238,8 +3238,8 @@
         "desc_specimen": "Apply criteria using the specimen as the index event.",
         "title_visit": "Add Nested Criteria...",
         "desc_visit": "Apply criteria using the visit occurrence as the index event.",
-        "title_visitDetails": "Add Nested Criteria...",
-        "desc_visitDetails": "Apply criteria using the visit details as the index event."
+        "title_visitDetail": "Add Nested Criteria...",
+        "desc_visitDetail": "Apply criteria using the visit detail as the index event."
       },
       "addAge": {
         "title_occurrence": "Add Age at Occurrence",
@@ -3260,8 +3260,8 @@
         "desc_specimen": "Filter specimens by age at occurrence.",
         "title_visit": "Add Age at Occurrence Criteria",
         "desc_visit": "Filter Visit Occurrences by age at occurrence.",
-        "title_visitDetails": "Add Age at Visit details Criteria",
-        "desc_visitDetails": "Filter Visit details by age at occurrence.",
+        "title_visitDetail": "Add Age at Visit detail Criteria",
+        "desc_visitDetail": "Filter Visit detail by age at occurrence.",
         "title_demographic": "Add Age Criteria",
         "desc_demographic": "Filter events based on age."
       },
@@ -3286,8 +3286,8 @@
         "desc_specimen": "Filter Specimen by the Type.",
         "title_visit": "Add Visit Type Criteria",
         "desc_visit": "Filter Visit Occurrences by the Condition Type.",
-        "title_visitDetails": "Add Visit details Type Criteria",
-        "desc_visitDetails": "Filter Visit details by the Condition Type."
+        "title_visitDetail": "Add Visit detail Type Criteria",
+        "desc_visitDetail": "Filter Visit detail by the Type."
       },
       "addStopReason": {
         "title_occurrence": "Add Stop Reason",
@@ -3342,8 +3342,8 @@
         "desc_procedureoccurrence": "Filter Procedure Occurrences by the Procedure Source Concept.",
         "title_visit": "Add Visit Source Concept Criteria",
         "desc_visit": "Filter Visit Occurrences by the Visit Source Concept.",
-        "title_visitDetails": "Add Visit details Source Concept Criteria",
-        "desc_visitDetails": "Filter Visit details by the Visit details Source Concept."
+        "title_visitDetail": "Add Visit detail Source Concept Criteria",
+        "desc_visitDetail": "Filter Visit detail by the Visit detail Source Concept."
       },
       "addProviderSpecialty": {
         "title_occurrence": "Add Provider Specialty",
@@ -3360,8 +3360,8 @@
         "desc_procedureoccurrence": "Filter Procedure Occurrences based on provider specialty.",
         "title_visit": "Add Provider Specialty Criteria",
         "desc_visit": "Filter Visit Occurrences based on provider specialty.",
-        "title_visitDetails": "Add Provider Specialty Criteria",
-        "desc_visitDetails": "Filter Visit details based on provider specialty."
+        "title_visitDetail": "Add Provider Specialty Criteria",
+        "desc_visitDetail": "Filter Visit detail based on provider specialty."
       },
       "addDate": {
         "title_death": "Add Death Date Criteria",
@@ -3496,28 +3496,20 @@
       "addPlaceService": {
         "title_visit": "Add Place of Service Criteria",
         "desc_visit": "Filter Visit Occurrences based on Place of Service.",
-        "title_visitDetails": "Add Place of Service Criteria",
-        "desc_visitDetails": "Filter Visit details based on Place of Service."
+        "title_visitDetail": "Add Place of Service Criteria",
+        "desc_visitDetail": "Filter Visit detail based on Place of Service."
       },
       "addPlaceServiceLocation": {
         "title_visit": "Add Place of Service Location Criteria",
         "desc_visit": "Filter Visit Occurrences based on where Place of Service is located.",
-        "title_visitDetails": "Add Place of Service Location Criteria",
-        "desc_visitDetails": "Filter Visit details based on where Place of Service is located."
+        "title_visitDetail": "Add Place of Service Location Criteria",
+        "desc_visitDetail": "Filter Visit detail based on where Place of Service is located."
       },
       "addPlaceServiceDistance": {
         "title_visit": "Add Place of Service Distance Criteria",
         "desc_visit": "Filter Visit Occurrences based on distance from Place of Service to Patient.",
-        "title_visitDetails": "Add Place of Service Distance Criteria",
-        "desc_visitDetails": "Filter Visit details based on distance from Place of Service to Patient."
-      },
-      "addDischargedToConcept": {
-        "title_visitDetails": "Add Discharged To Concept Criteria",
-        "desc_visitDetails": "Filter the patient was discharged to concept after a visit."
-      },
-      "addAdmittedFromConcept": {
-        "title_visitDetails": "Add Admitted From Concept Criteria",
-        "desc_visitDetails": "Filter the patient was admitted from concept."
+        "title_visitDetail": "Add Place of Service Distance Criteria",
+        "desc_visitDetail": "Filter Visit detail based on distance from Place of Service to Patient."
       }
     },
     "newEntityNames": {

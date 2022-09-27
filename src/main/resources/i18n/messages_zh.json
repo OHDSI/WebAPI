@@ -96,6 +96,7 @@
     "refresh": "刷新",
     "save": "保存",
     "search": "搜索",
+    "select": "Select",
     "selectAll": "全选",
     "set": "集合",
     "unsaved": "(未保存的)",
@@ -107,7 +108,15 @@
     "backToCurrent": "Back to current version",
     "saveAsCurrentVersion": "Save as current version",
     "unsavedWarning": "Unsaved changes will be lost. Proceed?",
-    "savePreviewWarning": "Save as current version?"
+    "savePreviewWarning": "Save as current version?",
+    "conceptSet": "Concept Set",
+    "cohort": "Cohort",
+    "characterization": "Characterization",
+    "pathway": "Pathway Analysis",
+    "incidenceRate": "Incidence Rate",
+    "ple": "Population Level Effect Estimation",
+    "plp": "Patient Level Prediction",
+    "reusable": "Reusable"
   },
   "commonErrors": {
     "noSources": "当前的WebAPI尚未定义源。<br/>请在<a href=\"#/configure\">配置</a>页上添加一个或多个。",
@@ -129,7 +138,8 @@
     "pathways": "队列路径",
     "prediction": "预测",
     "profiles": "数据概要",
-    "search": "搜索"
+    "search": "搜索",
+    "tagging": "Tagging"
   },
   "options": {
     "after": "在  之后",
@@ -405,6 +415,7 @@
       "actionCreate": "创建",
       "overwriteConfirm": "您确定要覆盖当前的概念集表达式吗？",
       "loadingIncludedConcepts": "加载包含的概念",
+      "loadingRecommendedConcepts": "Loading Recommended Concepts",
       "commonAncestors": "共同祖先",
       "loadingIncludedSourcecodes": "加载包含的源代码",
       "expressionResolveError": "Error occurred during resolving expression!",
@@ -1184,6 +1195,19 @@
       "viewing": "Viewing now",
       "createACopy": "Create a copy",
       "current": "Current"
+    },
+    "reusablesModal": {
+      "title": "Insert from Reusable",
+      "loadingReusables": "Loading reusables list...",
+      "anyConceptSet": "Any Concept Set"
+    },
+    "heading": {
+      "tag": {
+        "tooltip": {
+          "group": "Group:",
+          "tag": "Tag:"
+        }
+      }
     }
   },
   "facets": {
@@ -1401,6 +1425,7 @@
     "quantityPer1000PerYear": "数量/ 1K /年",
     "quantityTotal": "总数量",
     "rc": "记录数RC",
+    "recommendedRelationshipCount": "Count",
     "recordCounts": "记录计数 (RC / DRC)",
     "refreshCache": "刷新缓存",
     "relationshipType": "关系类型",
@@ -1476,11 +1501,6 @@
     "dpcTooltip": "Descendant Person Count"
   },
   "dataSources": {
-    "achillesHeelReport": {
-      "achillesHeelResults": "Achilles Heel 结果",
-      "message": "讯息",
-      "messageType": "讯息类型"
-    },
     "const": {
       "lengthOfEra": "周期的长短",
       "recordsPerPerson": "每人记录"
@@ -1588,7 +1608,6 @@
     },
     "prevalence": "患病率",
     "reports": {
-      "achillesHeel": "Achilles Heel",
       "conditionEra": "疾病/症状持续时间",
       "conditionOccurrence": "疾病/症状",
       "dashboard": "仪表板",
@@ -2365,6 +2384,31 @@
   },
   "jobs": {
     "refreshJobs": "刷新工作"
+  },
+  "tagging": {
+    "tabs": {
+      "multiAssign": "Multi-assign"
+    },
+    "multiAssign": {
+      "selectedTags": "Selected Tags",
+      "selectedAssets": "Selected Assets",
+      "chooseTags": "Choose Tags",
+      "chooseAssets": "Choose Assets",
+      "assignTags": "Assign tags",
+      "unassignTags": "Unassign tags",
+      "messageGroupNotMultiple": "Group '<%=group%>' does not allow multiple tags. Tag '<%=replacedName%>' replaced with tag '<%=replacedWithName%>'",
+      "success": "Success!",
+      "error": "Error!",
+      "forbiddenError": "Forbidden!",
+      "tabs": {
+        "conceptsets": "Concept Sets",
+        "cohorts": "Cohorts",
+        "characterizations": "Characterizations",
+        "incidenceRates": "Incidence Rates",
+        "cohortPathways": "Cohort Pathways",
+        "reusables": "Reusables"
+      }
+    }
   },
   "configuration": {
     "alerts": {

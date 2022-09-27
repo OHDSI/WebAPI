@@ -96,6 +96,7 @@
     "refresh": "새로고침",
     "save": "저장",
     "search": "검색",
+    "select": "선택",
     "selectAll": "모두 선택",
     "set": "세트",
     "unsaved": "(저장되지 않음)",
@@ -107,7 +108,15 @@
     "backToCurrent": "Back to current version",
     "saveAsCurrentVersion": "Save as current version",
     "unsavedWarning": "Unsaved changes will be lost. Proceed?",
-    "savePreviewWarning": "Save as current version?"
+    "savePreviewWarning": "Save as current version?",
+    "conceptSet": "Concept Set",
+    "cohort": "Cohort",
+    "characterization": "Characterization",
+    "pathway": "Pathway Analysis",
+    "incidenceRate": "Incidence Rate",
+    "ple": "Population Level Effect Estimation",
+    "plp": "Patient Level Prediction",
+    "reusable": "Reusable"
   },
   "commonErrors": {
     "noSources": "현재 WebAPI에 정의된 소스가 없습니다. <br/> 해당 페이지에서 하나 이상을 추가하십시오 <a href=\"#/configure\">configuration</a> page.",
@@ -129,7 +138,8 @@
     "pathways": "코호트 경로",
     "prediction": "예측",
     "profiles": "프로필",
-    "search": "검색"
+    "search": "검색",
+    "tagging": "Tagging"
   },
   "options": {
     "after": "다음",
@@ -356,6 +366,7 @@
       "actionCreate": "생성",
       "overwriteConfirm": "현재의 컨셉 세트 표현을 정말 덮어씌우시겠습니까?",
       "loadingIncludedConcepts": "포함된 컨셉 로딩 중",
+      "loadingRecommendedConcepts": "Loading Recommended Concepts",
       "commonAncestors": "공통 상위 컨셉",
       "loadingIncludedSourcecodes": "포함된 소스 코드 로딩 중",
       "expressionResolveError": "Error occurred during resolving expression!",
@@ -1184,6 +1195,19 @@
       "viewing": "Viewing now",
       "createACopy": "Create a copy",
       "current": "Current"
+    },
+    "reusablesModal": {
+      "title": "Insert from Reusable",
+      "loadingReusables": "Loading reusables list...",
+      "anyConceptSet": "Any Concept Set"
+    },
+    "heading": {
+      "tag": {
+        "tooltip": {
+          "group": "Group:",
+          "tag": "Tag:"
+        }
+      }
     }
   },
   "facets": {
@@ -1401,6 +1425,7 @@
     "quantityPer1000PerYear": "수량 / 1K / 년",
     "quantityTotal": "총 수량",
     "rc": "기록 개수",
+    "recommendedRelationshipCount": "Count",
     "recordCounts": "기록 수 (RC / DRC)",
     "refreshCache": "캐시 새로 고침",
     "relationshipType": "관계 타입",
@@ -1476,11 +1501,6 @@
     "dpcTooltip": "Descendant Person Count"
   },
   "dataSources": {
-    "achillesHeelReport": {
-      "achillesHeelResults": "Achilles Heel 결과",
-      "message": "메시지",
-      "messageType": "메시지 유형"
-    },
     "const": {
       "lengthOfEra": "기간의 길이",
       "recordsPerPerson": "사람 당 기록수"
@@ -1588,7 +1608,6 @@
     },
     "prevalence": "유병율",
     "reports": {
-      "achillesHeel": "아킬레스 힐(Achilles Heel)",
       "conditionEra": "진단 기간 (condition era)",
       "conditionOccurrence": "진단 발생(Condition occurrence)",
       "dashboard": "대시보드(Dashboard)",
@@ -2360,6 +2379,31 @@
       "tabs": {
         "design": "Design",
         "versions": "Versions"
+      }
+    }
+  },
+  "tagging": {
+    "tabs": {
+      "multiAssign": "Multi-assign"
+    },
+    "multiAssign": {
+      "selectedTags": "Selected Tags",
+      "selectedAssets": "Selected Assets",
+      "chooseTags": "Choose Tags",
+      "chooseAssets": "Choose Assets",
+      "assignTags": "Assign tags",
+      "unassignTags": "Unassign tags",
+      "messageGroupNotMultiple": "Group '<%=group%>' does not allow multiple tags. Tag '<%=replacedName%>' replaced with tag '<%=replacedWithName%>'",
+      "success": "Success!",
+      "error": "Error!",
+      "forbiddenError": "Forbidden!",
+      "tabs": {
+        "conceptsets": "Concept Sets",
+        "cohorts": "Cohorts",
+        "characterizations": "Characterizations",
+        "incidenceRates": "Incidence Rates",
+        "cohortPathways": "Cohort Pathways",
+        "reusables": "Reusables"
       }
     }
   },

@@ -110,6 +110,9 @@ public class Source extends CommonEntity<Integer> implements Serializable {
   @Enumerated(EnumType.STRING)
   private KerberosAuthMechanism krbAuthMethod;
 
+  @Column(name = "is_cache_enabled")
+  private boolean isCacheEnabled;
+
   public String getTableQualifier(DaimonType daimonType) {
 		String result = getTableQualifierOrNull(daimonType);
 		if (result == null)
@@ -240,6 +243,14 @@ public class Source extends CommonEntity<Integer> implements Serializable {
     return DBMS_KEYTAB_SUPPORT.stream().anyMatch(t -> t.equalsIgnoreCase(getSourceDialect()));
   }
 
+  public boolean isIsCacheEnabled() {
+    return isCacheEnabled;
+  }
+
+  public void setIsCacheEnabled(boolean isCacheEnabled) {
+    this.isCacheEnabled = isCacheEnabled;
+  }
+
   @Override
   public boolean equals(Object o) {
 
@@ -261,7 +272,8 @@ public class Source extends CommonEntity<Integer> implements Serializable {
                     ", daimons=" + daimons +
                     ", sourceName='" + sourceName + '\'' +
                     ", sourceDialect='" + sourceDialect + '\'' +
-                    ", sourceKey='" + sourceKey;
+                    ", sourceKey='" + sourceKey + '\'' +
+                    ", isCacheEnabled='" + isCacheEnabled;
     if (IMPALA_DATASOURCE.equalsIgnoreCase(sourceDialect)){
       source += '\'' +
               ", krbAdminServer='" + krbAdminServer + '\'' +

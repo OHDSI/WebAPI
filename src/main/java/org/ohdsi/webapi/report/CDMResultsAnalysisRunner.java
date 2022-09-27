@@ -120,15 +120,6 @@ public class CDMResultsAnalysisRunner {
         return person;
     }
 
-    public CDMAchillesHeel getHeelResults(JdbcTemplate jdbcTemplate, Source source) {
-        CDMAchillesHeel heel = new CDMAchillesHeel();
-        PreparedStatementRenderer achillesSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/achillesheel/sqlAchillesHeel.sql", source);
-        if (achillesSql != null) {
-            heel.setMessages(jdbcTemplate.query(achillesSql.getSql(), achillesSql.getSetter(), new CDMAttributeMapper()));
-        }
-        return heel;
-    }
-
     public CDMDataDensity getDataDensityResults(JdbcTemplate jdbcTemplate, Source source) {
         CDMDataDensity cdmDataDensity = new CDMDataDensity();
         PreparedStatementRenderer conceptsPerPersonSql = this.renderTranslateSql(BASE_SQL_PATH + "/report/datadensity/conceptsperperson.sql", source);

@@ -15,6 +15,7 @@ import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.cohortdefinition.event.CohortDefinitionChangedEvent;
 import org.ohdsi.webapi.feanalysis.event.FeAnalysisChangedEvent;
 import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.tag.domain.HasTags;
 import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.versioning.domain.CharacterizationVersion;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
@@ -26,7 +27,7 @@ import org.springframework.data.domain.Pageable;
 import java.io.OutputStream;
 import java.util.List;
 
-public interface CcService {
+public interface CcService extends HasTags<Long> {
     CohortCharacterizationEntity createCc(CohortCharacterizationEntity entity);
 
     CohortCharacterizationEntity updateCc(CohortCharacterizationEntity entity);
@@ -88,10 +89,6 @@ public interface CcService {
 
     @EventListener
     void onFeAnalysisChanged(FeAnalysisChangedEvent event);
-
-    void assignTag(long id, int tagId, boolean isPermissionProtected);
-
-    void unassignTag(long id, int tagId, boolean isPermissionProtected);
 
     List<VersionDTO> getVersions(long id);
 

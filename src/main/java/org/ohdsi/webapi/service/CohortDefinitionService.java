@@ -53,7 +53,7 @@ import org.ohdsi.webapi.shiro.management.datasource.SourceIdAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
-import org.ohdsi.webapi.tag.TagService;
+import org.ohdsi.webapi.tag.domain.HasTags;
 import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.util.*;
 import org.ohdsi.webapi.util.ExceptionUtils;
@@ -135,7 +135,7 @@ import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
  */
 @Path("/cohortdefinition")
 @Component
-public class CohortDefinitionService extends AbstractDaoService {
+public class CohortDefinitionService extends AbstractDaoService implements HasTags<Integer> {
 
 	private static final CohortExpressionQueryBuilder queryBuilder = new CohortExpressionQueryBuilder();
 
@@ -838,9 +838,10 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/tag/")
 	@Transactional
-	public void assignTag(@PathParam("id") final int id, final int tagId) {
+	public void assignTag(@PathParam("id") final Integer id, final int tagId) {
 		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
-		assignTag(entity, tagId, false);
+		checkOwnerOrAdminOrGranted(entity);
+		assignTag(entity, tagId);
 	}
 
 	/**
@@ -853,9 +854,10 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/tag/{tagId}")
 	@Transactional
-	public void unassignTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
+	public void unassignTag(@PathParam("id") final Integer id, @PathParam("tagId") final int tagId) {
 		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
-		unassignTag(entity, tagId, false);
+		checkOwnerOrAdminOrGranted(entity);
+		unassignTag(entity, tagId);
 	}
 
 	/**
@@ -869,8 +871,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Path("/{id}/protectedtag/")
 	@Transactional
 	public void assignPermissionProtectedTag(@PathParam("id") final int id, final int tagId) {
-		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
-		assignTag(entity, tagId, true);
+		assignTag(id, tagId);
 	}
 
 	/**
@@ -884,8 +885,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Path("/{id}/protectedtag/{tagId}")
 	@Transactional
 	public void unassignPermissionProtectedTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
-		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
-		unassignTag(entity, tagId, true);
+		unassignTag(id, tagId);
 	}
 
 	/**

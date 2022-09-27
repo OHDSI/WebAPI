@@ -1468,6 +1468,8 @@
     "updated": "更新时间",
     "userExcluded": "被排除的用户",
     "userIncluded": "包括的用户",
+    "validStartDate": "Valid Start Date",
+    "validEndDate": "Valid End Date",
     "value": "值",
     "visitsCount": "记录",
     "visitsPer1000": "记录/1000",
@@ -1775,7 +1777,9 @@
             "conceptId": "概念集编号",
             "conceptCode": "概念集代码",
             "invalidReason": "失效原因",
-            "standardConcept": "标准概念"
+            "standardConcept": "标准概念",
+            "validStartDate": "Valid Start Date",
+            "validEndDate": "Valid End Date"
           },
           "relatedConcepts": {
             "loading": "正在加载相关概念…",

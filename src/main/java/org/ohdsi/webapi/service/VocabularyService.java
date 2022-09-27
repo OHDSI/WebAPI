@@ -31,7 +31,6 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.circe.vocabulary.ConceptSetExpressionQueryBuilder;
 import org.ohdsi.sql.SqlRender;
@@ -48,6 +47,7 @@ import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.PreparedSqlRender;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.ohdsi.webapi.vocabulary.Concept;
 import org.ohdsi.webapi.vocabulary.ConceptRecommendedNotInstalledException;
 import org.ohdsi.webapi.vocabulary.ConceptRelationship;
 import org.ohdsi.webapi.vocabulary.ConceptSearch;
@@ -97,6 +97,8 @@ public class VocabularyService extends AbstractDaoService {
     concept.conceptClassId = resultSet.getString("CONCEPT_CLASS_ID");
     concept.vocabularyId = resultSet.getString("VOCABULARY_ID");
     concept.domainId = resultSet.getString("DOMAIN_ID");
+    concept.validStartDate = resultSet.getDate("VALID_START_DATE");
+    concept.validEndDate = resultSet.getDate("VALID_END_DATE");
     return concept;
   };
 
@@ -957,6 +959,8 @@ public class VocabularyService extends AbstractDaoService {
       concept.standardConcept = resultSet.getString("STANDARD_CONCEPT");
       concept.invalidReason = resultSet.getString("INVALID_REASON");
       concept.vocabularyId = resultSet.getString("VOCABULARY_ID");
+      concept.validStartDate = resultSet.getDate("VALID_START_DATE");
+      concept.validEndDate = resultSet.getDate("VALID_END_DATE");
       concept.conceptClassId = resultSet.getString("CONCEPT_CLASS_ID");
       concept.domainId = resultSet.getString("DOMAIN_ID");
 
@@ -1221,6 +1225,8 @@ public class VocabularyService extends AbstractDaoService {
         csc.conceptCode = rs.getString("concept_code");
         csc.domainId = rs.getString("domain_id");
         csc.vocabularyId = rs.getString("vocabulary_id");
+        csc.validStartDate = rs.getDate("valid_start_date");
+        csc.validEndDate = rs.getDate("valid_end_date");
         csc.conceptClassId = rs.getString("concept_class_id");
         return csc;
       }

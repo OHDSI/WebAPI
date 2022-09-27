@@ -1468,6 +1468,8 @@
     "updated": "수정일",
     "userExcluded": "사용자 제외",
     "userIncluded": "사용자 포함",
+    "validStartDate": "Valid Start Date",
+    "validEndDate": "Valid End Date",
     "value": "값",
     "visitsCount": "레코드",
     "visitsPer1000": "레코드 / 1K",
@@ -1775,7 +1777,9 @@
             "conceptId": "컨셉 ID",
             "conceptCode": "컨셉 코드",
             "invalidReason": "무효한 근거",
-            "standardConcept": "표준 컨셉"
+            "standardConcept": "표준 컨셉",
+            "validStartDate": "Valid Start Date",
+            "validEndDate": "Valid End Date"
           },
           "relatedConcepts": {
             "loading": "관련 컨셉 로딩…",

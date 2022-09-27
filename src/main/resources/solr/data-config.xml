@@ -13,7 +13,9 @@
        c.standard_concept,
        c.invalid_reason,
        d.domain_name,
-       v.vocabulary_name
+       v.vocabulary_name,
+       c.valid_start_date,
+       c.valid_end_date
        from Vocabulary_20190123.dbo.concept as c
        join Vocabulary_20190123.dbo.domain as d on c.domain_id = d.domain_id
        join Vocabulary_20190123.dbo.vocabulary as v on c.vocabulary_id = v.vocabulary_id"
@@ -29,6 +31,8 @@
      <field column="invalid_reason" name="invalid_reason" />
      <field column="domain_name" name="domain_name" />
      <field column="vocabulary_name" name="vocabulary_name" />
+     <field column="valid_start_date" name="valid_start_date" />
+     <field column="valid_end_date" name="valid_end_date" />
    </entity>
  </document>
 </dataConfig>

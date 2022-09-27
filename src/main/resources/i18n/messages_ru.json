@@ -1498,7 +1498,9 @@
     "rcTooltip": "Количество записей",
     "drcTooltip": "Количество записей-потомков",
     "pcTooltip": "Количество пациентов",
-    "dpcTooltip": "Количество пациентов-потомков"
+    "dpcTooltip": "Количество пациентов-потомков",
+    "validStartDate": "Действительная дата начала",
+    "validEndDate": "Действительная дата конца"
   },
   "dataSources": {
     "headingTitle": "Источники данных",
@@ -1750,7 +1752,9 @@
             "conceptId": "Id концепции",
             "conceptCode": "Код концепции",
             "invalidReason": "Причина невалидности",
-            "standardConcept": "Стандартная концепция"
+            "standardConcept": "Стандартная концепция",
+            "validStartDate": "Действительная дата начала",
+            "validEndDate": "Действительная дата конца"
           },
           "relatedConcepts": {
             "loading": "Загрузка связанных концепций...",

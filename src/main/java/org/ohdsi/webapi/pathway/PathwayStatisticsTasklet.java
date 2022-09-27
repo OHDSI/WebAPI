@@ -113,7 +113,7 @@ public class PathwayStatisticsTasklet extends CancelableTasklet {
 		Map<Integer, Integer> eventCodes = pathwayService.getEventCohortCodes(design);
 
 		List<PathwayCode> codesFromDb = jdbcTemplate.query(pathwayStatsPsr.getSql(), pathwayStatsPsr.getSetter(), (rs, rowNum) -> {
-			int code = rs.getInt("combo_id");
+			long code = rs.getLong("combo_id");
 			List<PathwayEventCohort> eventCohorts = getEventCohortsByComboCode(design, eventCodes, code);
 			String names = eventCohorts.stream()
 							.map(PathwayEventCohort::getName)
@@ -124,10 +124,15 @@ public class PathwayStatisticsTasklet extends CancelableTasklet {
 		// need to add any event cohort code that wasn't found in the codes from DB
 		// so that, in the case that only a combo was identified in the pathway analysis,
 		// the event cohorts from the combo are included in the result.
-		List<PathwayCode> codesFromDesign = IntStream.range(0, design.getEventCohorts().size())
-						.map(idx -> ((int) Math.pow(2, Double.valueOf(idx))))
+		List<PathwayCode> codesFromDesign = eventCodes.entrySet()
+						.stream()
+						.mapToLong(ec -> ((long) Math.pow(2, Double.valueOf(ec.getValue()))))
 						.filter(code -> codesFromDb.stream().noneMatch(pc -> pc.getCode() == code))
 						.mapToObj(code -> {
+							// although we know that the codes we seek are non-combo codes,
+							// there isn't an easy way to get from a code back to the cohort for the code 
+							// (the eventCodes goes from cohort_id -> index).  Therefore, use getEventCohortsByComboCode
+							// even tho the combo will be for a single event cohort.
 							List<PathwayEventCohort> eventCohorts = getEventCohortsByComboCode(design, eventCodes, code);
 							String names = eventCohorts.stream()
 											.map(PathwayEventCohort::getName)
@@ -139,7 +144,7 @@ public class PathwayStatisticsTasklet extends CancelableTasklet {
 
 	}
 
-	private List<PathwayEventCohort> getEventCohortsByComboCode(PathwayAnalysisEntity pathwayAnalysis, Map<Integer, Integer> eventCodes, int comboCode) {
+	private List<PathwayEventCohort> getEventCohortsByComboCode(PathwayAnalysisEntity pathwayAnalysis, Map<Integer, Integer> eventCodes, long comboCode) {
 
 		return pathwayAnalysis.getEventCohorts()
 						.stream()

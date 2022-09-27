@@ -6,7 +6,9 @@ SELECT DISTINCT
     c2.CONCEPT_CODE, 
     c2.concept_class_id, 
     c2.domain_id, 
-    c2.vocabulary_id, 
+    c2.vocabulary_id,
+    c2.VALID_START_DATE,
+    c2.VALID_END_DATE,
     'Is descendent of ancestor of' relationship_name, 
     ca1.min_levels_of_separation + ca2.min_levels_of_separation relationship_distance
 FROM @CDM_schema.concept_ancestor ca1

@@ -433,7 +433,7 @@ public class CcController {
     @Path("/{id}/tag/")
     @javax.transaction.Transactional
     public void assignTag(@PathParam("id") final long id, final int tagId) {
-        service.assignTag(id, tagId, false);
+        service.assignTag(id, tagId);
     }
 
     /**
@@ -447,7 +447,7 @@ public class CcController {
     @Path("/{id}/tag/{tagId}")
     @javax.transaction.Transactional
     public void unassignTag(@PathParam("id") final long id, @PathParam("tagId") final int tagId) {
-        service.unassignTag(id, tagId, false);
+        service.unassignTag(id, tagId);
     }
 
     /**
@@ -461,7 +461,7 @@ public class CcController {
     @Path("/{id}/protectedtag/")
     @javax.transaction.Transactional
     public void assignPermissionProtectedTag(@PathParam("id") final long id, final int tagId) {
-        service.assignTag(id, tagId, true);
+        service.assignTag(id, tagId);
     }
 
     /**
@@ -475,7 +475,7 @@ public class CcController {
     @Path("/{id}/protectedtag/{tagId}")
     @javax.transaction.Transactional
     public void unassignPermissionProtectedTag(@PathParam("id") final long id, @PathParam("tagId") final int tagId) {
-        service.unassignTag(id, tagId, true);
+        service.unassignTag(id, tagId);
     }
 
     /**

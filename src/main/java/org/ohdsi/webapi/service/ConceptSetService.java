@@ -378,6 +378,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 
         UserEntity user = userRepository.findByLogin(security.getSubject());
         dst.setName(src.getName());
+        dst.setDescription(src.getDescription());
         dst.setModifiedDate(new Date());
         dst.setModifiedBy(user);
         

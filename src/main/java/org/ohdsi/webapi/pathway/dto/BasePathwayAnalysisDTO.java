@@ -9,6 +9,7 @@ public abstract class BasePathwayAnalysisDTO<T extends CohortMetadataExt> extend
 
     private Integer id;
     private String name;
+    private String description;
     private List<T> targetCohorts;
     private List<T> eventCohorts;
     private Integer combinationWindow;
@@ -36,6 +37,14 @@ public abstract class BasePathwayAnalysisDTO<T extends CohortMetadataExt> extend
     public void setName(String name) {
 
         this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public List<T> getTargetCohorts() {

@@ -4,8 +4,10 @@ import org.ohdsi.webapi.reusable.domain.Reusable;
 import org.ohdsi.webapi.reusable.dto.ReusableDTO;
 import org.ohdsi.webapi.reusable.dto.ReusableVersionFullDTO;
 import org.ohdsi.webapi.reusable.repository.ReusableRepository;
+import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.tag.domain.HasTags;
 import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.NameUtils;
@@ -33,10 +35,11 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-public class ReusableService extends AbstractDaoService {
+public class ReusableService extends AbstractDaoService implements HasTags<Integer> {
     private final ReusableRepository reusableRepository;
     private final EntityManager entityManager;
     private final ConversionService conversionService;
+    private final PermissionService permissionService;
     private final VersionService<ReusableVersion> versionService;
 
     @Autowired
@@ -44,10 +47,12 @@ public class ReusableService extends AbstractDaoService {
             ReusableRepository reusableRepository,
             EntityManager entityManager,
             ConversionService conversionService,
+            PermissionService permissionService,
             VersionService<ReusableVersion> versionService) {
         this.reusableRepository = reusableRepository;
         this.entityManager = entityManager;
         this.conversionService = conversionService;
+        this.permissionService = permissionService;
         this.versionService = versionService;
     }
 
@@ -81,7 +86,11 @@ public class ReusableService extends AbstractDaoService {
 
     public Page<ReusableDTO> page(final Pageable pageable) {
         return reusableRepository.findAll(pageable)
-                .map(reusable -> conversionService.convert(reusable, ReusableDTO.class));
+                .map(reusable -> {
+                    final ReusableDTO dto = conversionService.convert(reusable, ReusableDTO.class);
+                    permissionService.fillWriteAccess(reusable, dto);
+                    return dto;
+                });
     }
 
     public ReusableDTO update(Integer id, ReusableDTO entity) {
@@ -111,14 +120,14 @@ public class ReusableService extends AbstractDaoService {
         return create(def);
     }
 
-    public void assignTag(int id, int tagId, boolean isPermissionProtected) {
+    public void assignTag(Integer id, int tagId) {
         Reusable entity = getById(id);
-        assignTag(entity, tagId, isPermissionProtected);
+        assignTag(entity, tagId);
     }
 
-    public void unassignTag(int id, int tagId, boolean isPermissionProtected) {
+    public void unassignTag(Integer id, int tagId) {
         Reusable entity = getById(id);
-        unassignTag(entity, tagId, isPermissionProtected);
+        unassignTag(entity, tagId);
     }
 
     public void delete(Integer id) {

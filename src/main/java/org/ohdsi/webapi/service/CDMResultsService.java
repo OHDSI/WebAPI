@@ -253,7 +253,22 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         }
         return new JobExecutionResource();
     }
-
+    
+/*
+    @GET
+    @Path("{sourceKey}/refreshCacheUnsecured")
+    @Produces(MediaType.APPLICATION_JSON)
+    public JobExecutionResource refreshCacheUnsecured(@PathParam("sourceKey") final String sourceKey) {
+      Source source = getSourceRepository().findBySourceKey(sourceKey);
+      JobExecutionResource jobExecutionResource = jobService.findJobByName(Constants.WARM_CACHE, getWarmCacheJobName(String.valueOf(source.getSourceId()),sourceKey));
+      if (jobExecutionResource == null) {
+        if (source.getDaimons().stream().anyMatch(sd -> Objects.equals(sd.getDaimonType(), SourceDaimon.DaimonType.Results))) {
+          return warmCacheByKey(source.getSourceKey());
+        }
+      }
+      return new JobExecutionResource();
+    }
+*/
     /**
      * Queries for data density report for the given sourceKey
      *
@@ -404,7 +419,8 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         }
         List<Source> vocabularySources = sources.stream()
                 .filter(s -> SourceUtils.hasSourceDaimon(s, SourceDaimon.DaimonType.Vocabulary) 
-                        && SourceUtils.hasSourceDaimon(s, SourceDaimon.DaimonType.Results))
+                        && SourceUtils.hasSourceDaimon(s, SourceDaimon.DaimonType.Results)
+                        && s.isIsCacheEnabled())
                 .collect(Collectors.toList());
 
         long[] bucketSizes = getBucketSizes(vocabularySources);

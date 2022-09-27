@@ -1,7 +1,6 @@
 package org.ohdsi.webapi.vocabulary;
 
 import java.util.Collection;
-import org.ohdsi.circe.vocabulary.Concept;
 
 public interface SearchProvider {
     public abstract boolean supports(VocabularySearchProviderType type);

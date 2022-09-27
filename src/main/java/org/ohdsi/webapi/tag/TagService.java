@@ -1,12 +1,15 @@
 package org.ohdsi.webapi.tag;
 
+import org.apache.shiro.SecurityUtils;
 import org.glassfish.jersey.internal.util.Producer;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.tag.domain.HasTags;
 import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.tag.domain.TagInfo;
 import org.ohdsi.webapi.tag.domain.TagType;
 import org.ohdsi.webapi.tag.dto.TagDTO;
+import org.ohdsi.webapi.tag.dto.AssignmentPermissionsDTO;
 import org.ohdsi.webapi.tag.repository.TagRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,14 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.ws.rs.ForbiddenException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -228,5 +224,13 @@ public class TagService extends AbstractDaoService {
             groupIds.add(g.getId());
             findParentGroup(g.getGroups(), groupIds);
         });
+    }
+
+    public AssignmentPermissionsDTO getAssignmentPermissions() {
+        final AssignmentPermissionsDTO tagPermission = new AssignmentPermissionsDTO();
+        tagPermission.setAnyAssetMultiAssignPermitted(isAdmin());
+        tagPermission.setCanAssignProtectedTags(!isSecured() || TagSecurityUtils.canAssingProtectedTags());
+        tagPermission.setCanUnassignProtectedTags(!isSecured() || TagSecurityUtils.canUnassingProtectedTags());
+        return tagPermission;
     }
 }

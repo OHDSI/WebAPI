@@ -5,7 +5,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.ohdsi.webapi.AbstractDatabaseTest;
-import org.ohdsi.webapi.exception.BadRequestAtlasException;
 import org.ohdsi.webapi.service.dto.CommonEntityExtDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
@@ -99,22 +98,12 @@ public abstract class BaseTaggingTest<T extends CommonEntityExtDTO, ID extends N
         assertEquals(dto.getTags().size(), 1);
     }
 
-    @Test(expected = BadRequestAtlasException.class)
-    public void assignTagToWrongEndpoint() {
-        assignTag(getId(initialDTO), true);
-    }
-
     @Test
     public void assignProtectedTag() {
         assignProtectedTag(getId(initialDTO), true);
 
         T dto = getDTO(getId(initialDTO));
         assertEquals(dto.getTags().size(), 1);
-    }
-
-    @Test(expected = BadRequestAtlasException.class)
-    public void assignProtectedTagToWrongEndpoint() {
-        assignProtectedTag(getId(initialDTO), false);
     }
 
     @Test
@@ -127,13 +116,6 @@ public abstract class BaseTaggingTest<T extends CommonEntityExtDTO, ID extends N
 
         dto = getDTO(getId(initialDTO));
         assertEquals(dto.getTags().size(), 0);
-    }
-
-    @Test(expected = BadRequestAtlasException.class)
-    public void unassignTagToWrongEndpoint() {
-        assignTag();
-
-        unassignTag(getId(initialDTO), true);
     }
 
     @Test
@@ -189,12 +171,6 @@ public abstract class BaseTaggingTest<T extends CommonEntityExtDTO, ID extends N
 
         dtos = getDTOsByTag(Arrays.asList("tag name", "tag name 2", "tag name 3"));
         assertEquals(dtos.size(), 1);
-    }
-
-    @Test(expected = BadRequestAtlasException.class)
-    public void unassignProtectedTagToWrongEndpoint() {
-        assignProtectedTag();
-        unassignProtectedTag(getId(initialDTO), false);
     }
 
     protected Tag getTag(boolean isProtected) {

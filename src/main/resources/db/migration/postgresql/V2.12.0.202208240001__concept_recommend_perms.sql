@@ -5,7 +5,7 @@ CREATE TEMP TABLE temp_migration (
 
 INSERT INTO temp_migration (from_perm_id, new_value)
 SELECT sp.id as from_id,
-  REPLACE('vocabulary:%s:concept:*:ancestorAndDescendant:get', '%s', REPLACE(REPLACE(value, 'source:', ''), ':access', '')) as new_value
+  REPLACE('vocabulary:%s:lookup:recommended:post', '%s', REPLACE(REPLACE(value, 'source:', ''), ':access', '')) as new_value
 FROM ${ohdsiSchema}.sec_permission sp
 WHERE sp.value LIKE 'source:%:access';
 

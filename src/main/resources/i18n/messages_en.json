@@ -96,6 +96,7 @@
     "refresh": "Refresh",
     "save": "Save",
     "search": "Search",
+    "select": "Select",
     "selectAll": "Select All",
     "set": "Set",
     "unsaved": "(unsaved)",
@@ -107,7 +108,15 @@
     "backToCurrent": "Back to current version",
     "saveAsCurrentVersion": "Save as current version",
     "unsavedWarning": "Unsaved changes will be lost. Proceed?",
-    "savePreviewWarning": "Save as current version?"
+    "savePreviewWarning": "Save as current version?",
+    "conceptSet": "Concept Set",
+    "cohort": "Cohort",
+    "characterization": "Characterization",
+    "pathway": "Pathway Analysis",
+    "incidenceRate": "Incidence Rate",
+    "ple": "Population Level Effect Estimation",
+    "plp": "Patient Level Prediction",
+    "reusable": "Reusable"
   },
   "commonErrors": {
     "noSources": "The current WebAPI has no sources defined.<br/>Please add one or more on <a href=\"#/configure\">configuration</a> page.",
@@ -129,7 +138,8 @@
     "pathways": "Cohort Pathways",
     "prediction": "Prediction",
     "profiles": "Profiles",
-    "search": "Search"
+    "search": "Search",
+    "tagging": "Tagging"
   },
   "options": {
     "after": "After",
@@ -405,6 +415,7 @@
       "actionCreate": "create",
       "overwriteConfirm": "Are you sure you want to overwrite current Concept Set Expression?",
       "loadingIncludedConcepts": "Loading Included Concepts",
+      "loadingRecommendedConcepts": "Loading Recommended Concepts",
       "commonAncestors": "Common Ancestors",
       "loadingIncludedSourcecodes": "Loading Included Sourcecodes",
       "expressionResolveError": "Error occurred during resolving expression!",
@@ -1184,6 +1195,19 @@
       "viewing": "Viewing now",
       "createACopy": "Create a copy",
       "current": "Current"
+    },
+    "reusablesModal": {
+      "title": "Insert from Reusable",
+      "loadingReusables": "Loading reusables list...",
+      "anyConceptSet": "Any Concept Set"
+    },
+    "heading": {
+      "tag": {
+        "tooltip":  {
+          "group": "Group:",
+          "tag": "Tag:"
+        }
+      }
     }
   },
   "facets": {
@@ -1401,6 +1425,7 @@
     "quantityPer1000PerYear": "Quantity /1K /Year",
     "quantityTotal": "Total Quantity",
     "rc": "RC",
+    "recommendedRelationshipCount": "Count",
     "recordCounts": "Record Counts (RC / DRC)",
     "refreshCache": "Refresh cache",
     "relationshipType": "Relationship Type",
@@ -2358,6 +2383,31 @@
       "tabs": {
         "design": "Design",
         "versions": "Versions"
+      }
+    }
+  },
+  "tagging": {
+    "tabs": {
+      "multiAssign": "Multi-assign"
+    },
+    "multiAssign": {
+      "selectedTags": "Selected Tags",
+      "selectedAssets": "Selected Assets",
+      "chooseTags": "Choose Tags",
+      "chooseAssets": "Choose Assets",
+      "assignTags": "Assign tags",
+      "unassignTags": "Unassign tags",
+      "messageGroupNotMultiple": "Group '<%=group%>' does not allow multiple tags. Tag '<%=replacedName%>' replaced with tag '<%=replacedWithName%>'",
+      "success": "Success!",
+      "error": "Error!",
+      "forbiddenError": "Forbidden!",
+      "tabs": {
+        "conceptsets": "Concept Sets",
+        "cohorts": "Cohorts",
+        "characterizations": "Characterizations",
+        "incidenceRates": "Incidence Rates",
+        "cohortPathways": "Cohort Pathways",
+        "reusables": "Reusables"
       }
     }
   },

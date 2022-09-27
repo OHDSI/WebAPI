@@ -8,6 +8,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -24,7 +26,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
@@ -44,10 +48,12 @@ import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.PreparedSqlRender;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.vocabulary.Concept;
+import org.ohdsi.webapi.vocabulary.ConceptRecommendedNotInstalledException;
 import org.ohdsi.webapi.vocabulary.ConceptRelationship;
 import org.ohdsi.webapi.vocabulary.ConceptSearch;
 import org.ohdsi.webapi.vocabulary.DescendentOfAncestorSearch;
 import org.ohdsi.webapi.vocabulary.Domain;
+import org.ohdsi.webapi.vocabulary.RecommendedConcept;
 import org.ohdsi.webapi.vocabulary.RelatedConcept;
 import org.ohdsi.webapi.vocabulary.RelatedConceptSearch;
 import org.ohdsi.webapi.vocabulary.SearchProviderConfig;
@@ -208,28 +214,28 @@ public class VocabularyService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<Concept> executeIdentifierLookup(@PathParam("sourceKey") String sourceKey, long[] identifiers) {
-		Source source = getSourceRepository().findBySourceKey(sourceKey);
-		return executeIdentifierLookup(source, identifiers);
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    return executeIdentifierLookup(source, identifiers);
   }
-	
-	protected Collection<Concept> executeIdentifierLookup(Source source, long[] identifiers) {
-   Collection<Concept> concepts = new ArrayList<>();
+
+  protected Collection<Concept> executeIdentifierLookup(Source source, long[] identifiers) {
+    Collection<Concept> concepts = new ArrayList<>();
     if (identifiers.length == 0) {
       return concepts;
     } else {
-			// Determine if we need to chunk up ther request based on the parameter
-			// limit of the source RDBMS
-			int parameterLimit = PreparedSqlRender.getParameterLimit(source);
-			if (parameterLimit > 0 && identifiers.length > parameterLimit){
-				concepts = executeIdentifierLookup(source, Arrays.copyOfRange(identifiers, parameterLimit, identifiers.length));
-				identifiers = Arrays.copyOfRange(identifiers, 0, parameterLimit);
-			}
+      // Determine if we need to chunk up ther request based on the parameter
+      // limit of the source RDBMS
+      int parameterLimit = PreparedSqlRender.getParameterLimit(source);
+      if (parameterLimit > 0 && identifiers.length > parameterLimit) {
+        concepts = executeIdentifierLookup(source, Arrays.copyOfRange(identifiers, parameterLimit, identifiers.length));
+        identifiers = Arrays.copyOfRange(identifiers, 0, parameterLimit);
+      }
 
-			PreparedStatementRenderer psr = prepareExecuteIdentifierLookup(identifiers, source);
-			return concepts.addAll(getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.rowMapper))
-							? concepts : new ArrayList<>();
-		}
-	}
+      PreparedStatementRenderer psr = prepareExecuteIdentifierLookup(identifiers, source);
+      return concepts.addAll(getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.rowMapper))
+          ? concepts : new ArrayList<>();
+    }
+  }
 
   protected PreparedStatementRenderer prepareExecuteIdentifierLookup(long[] identifiers, Source source) {
 
@@ -334,29 +340,29 @@ public class VocabularyService extends AbstractDaoService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<Concept> executeMappedLookup(@PathParam("sourceKey") String sourceKey, long[] identifiers) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
-		return executeMappedLookup(source, identifiers);
+    return executeMappedLookup(source, identifiers);
   }
-	
+
 	protected Collection<Concept> executeMappedLookup(Source source, long[] identifiers) {
     Collection<Concept> concepts = new HashSet<>();
     if (identifiers.length == 0) {
       return concepts;
     } else {
-			// Determine if we need to chunk up the request based on the parameter
-			// limit of the source RDBMS
-			int parameterLimit = PreparedSqlRender.getParameterLimit(source);
-			// Next take into account the fact that the identifiers are used in 3
-			// places in the query so the parameter limit will need to be divided
-			parameterLimit = Math.floorDiv(parameterLimit, 3);
-			if (parameterLimit > 0 && identifiers.length > parameterLimit) {
-				concepts = executeMappedLookup(source, Arrays.copyOfRange(identifiers, parameterLimit, identifiers.length));
-				identifiers = Arrays.copyOfRange(identifiers, 0, parameterLimit);
-			}
-			PreparedStatementRenderer psr = prepareExecuteMappedLookup(identifiers, source);
-			return concepts.addAll(getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.rowMapper))
-							? concepts : new HashSet<>();
-		}
-	}
+      // Determine if we need to chunk up the request based on the parameter
+      // limit of the source RDBMS
+      int parameterLimit = PreparedSqlRender.getParameterLimit(source);
+      // Next take into account the fact that the identifiers are used in 3
+      // places in the query so the parameter limit will need to be divided
+      parameterLimit = Math.floorDiv(parameterLimit, 3);
+      if (parameterLimit > 0 && identifiers.length > parameterLimit) {
+        concepts = executeMappedLookup(source, Arrays.copyOfRange(identifiers, parameterLimit, identifiers.length));
+        identifiers = Arrays.copyOfRange(identifiers, 0, parameterLimit);
+      }
+      PreparedStatementRenderer psr = prepareExecuteMappedLookup(identifiers, source);
+      return concepts.addAll(getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), this.rowMapper))
+          ? concepts : new HashSet<>();
+    }
+  }
 
   protected PreparedStatementRenderer prepareExecuteMappedLookup(long[] identifiers, Source source) {
 
@@ -413,18 +419,42 @@ public class VocabularyService extends AbstractDaoService {
     // escape for bracket
     search.query = search.query.replace("[", "[[]");
 
-    String resourcePath = "/resources/vocabulary/sql/search.sql";
+    String resourcePath = search.isLexical ? "/resources/vocabulary/sql/searchLexical.sql" : "/resources/vocabulary/sql/search.sql";
+    String searchSql = ResourceHelper.GetResourceAsString(resourcePath);
     String tqName = "CDM_schema";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
-
+    List<String> searchNamesList = new ArrayList<>();
+    List<Object> replacementNamesList = new ArrayList<>();
     List<String> variableNameList = new ArrayList<>();
     List<Object> variableValueList = new ArrayList<>();
 
+    searchNamesList.add(tqName);
+    replacementNamesList.add(tqValue);
+    
     String filters = "";
     if (search.domainId != null && search.domainId.length > 0) {
-      filters += " AND DOMAIN_ID IN (@domainId)";
-      variableNameList.add("domainId");
-      variableValueList.add(search.domainId);
+      // lexical search domain filters work slightly differeant than non-lexical
+      if (!search.isLexical) {
+        // use domain_ids as-is
+        filters += " AND DOMAIN_ID IN (@domainId)";
+        variableNameList.add("domainId");
+        variableValueList.add(search.domainId);
+      } else {
+        // MEASUREMENT domain is a special case where we want to ensure concept class is 'lab test' or 'procedure'
+        ArrayList<String> domainClauses = new ArrayList<>();
+        String[] nonMeasurementDomains = Stream.of(search.domainId).filter(s -> !"Measurement".equals(s)).collect(Collectors.toList()).toArray(new String[0]);
+        if (nonMeasurementDomains.length > 0) {
+          domainClauses.add("DOMAIN_ID IN (@domainId)");
+          variableNameList.add("domainId");
+          variableValueList.add(nonMeasurementDomains);
+        }
+        if (Arrays.asList(search.domainId).contains("Measurement")) {
+          domainClauses.add("(DOMAIN_ID = 'Measurement' and LOWER(concept_class_id) in ('lab test', 'procedure'))");
+        }
+        if (!domainClauses.isEmpty()) {
+          filters += String.format(" AND (%s)", StringUtils.join(domainClauses, " OR "));
+        }
+      }
     }
 
     if (search.vocabularyId != null && search.vocabularyId.length > 0) {
@@ -459,20 +489,74 @@ public class VocabularyService extends AbstractDaoService {
         variableValueList.add(search.standardConcept.trim());
       }
     }
+    
+    if (search.isLexical) {
+      // 1. Create term variables for the expressions including truncated terms (terms >=8 are truncated to 6 letters
+      List<String> searchTerms = Arrays.asList(StringUtils.split(search.query.toLowerCase(), " "));
+      List<String> allTerms = Stream.concat(
+          searchTerms.stream(), 
+          searchTerms.stream().filter(i -> i.length() >= 8).map(i -> StringUtils.left(i,6))
+      ).sorted((a,b) -> b.length() - a.length()).collect(Collectors.toList());
+      LinkedHashMap<String, String> termMap = new LinkedHashMap<>();
+      for (int i=0;i<allTerms.size();i++) {
+        termMap.put(String.format("term_%d",i+1), allTerms.get(i));
+      }
+      // 2. Create REPLACE expressions to caluclate the match ratio
+      String replaceExpression = termMap.keySet().stream()
+          .reduce("", (acc, element) -> {
+            return "".equals(acc) ? 
+                String.format("REPLACE(lower(concept_name), '@%s','')",element) // the first iteration
+                : String.format("REPLACE(%s, '@%s','')", acc, element); // the subsequent iterations
+          });
+      searchNamesList.add("replace_expression");
+      replacementNamesList.add(replaceExpression);
+      
+      // 3. Create the set of 'like' expressions for concept name from the terms that are < 8 chars
+      List<String> nameFilterList = termMap.keySet().stream()
+          .filter(k -> termMap.get(k).length() < 8)
+          .map(k -> String.format("lower(concept_name) like '%%@%s%%'",k))
+          .collect(Collectors.toList());
+      searchNamesList.add("name_filters");
+      replacementNamesList.add(StringUtils.join(nameFilterList, " AND "));
+      
+      // 4. Create the set of 'like' expressions for concept synonyms
+      List<String> synonymFilterList = termMap.keySet().stream()
+          .filter(k -> termMap.get(k).length() < 8)
+          .map(k -> String.format("lower(concept_synonym_name) like '%%@%s%%'",k))
+          .collect(Collectors.toList());
+      searchNamesList.add("synonym_filters");
+      replacementNamesList.add(StringUtils.join(synonymFilterList, " AND "));
+      
+     // 5. Create name-value pairs for each term paramater
+     for (Map.Entry<String,String> entry : termMap.entrySet()) {
+       variableNameList.add(entry.getKey());
+       variableValueList.add(entry.getValue());
+     }
+    } else {
+      if (!search.query.isEmpty()) {
+        String queryFilter = "LOWER(CONCEPT_NAME) LIKE '%@query%' or LOWER(CONCEPT_CODE) LIKE '%@query%'";
+        if (StringUtils.isNumeric(search.query)) {
+          queryFilter += "or CONCEPT_ID = @query";
+        }
+        filters += "AND (" + queryFilter + ")";
+        variableNameList.add("query");
+        variableValueList.add(search.query.toLowerCase());
+      }
+    }
+    searchSql = StringUtils.replace(searchSql, "@filters", filters);
 
-    variableNameList.add("query");
-    variableValueList.add(search.query.toLowerCase());
-
-    String[] searchNames = {tqName, "filters"};
-    String[] replacementNames = {tqValue, filters};
+    String[] searchNames = searchNamesList.toArray(new String[0]);
+    String[] replacementNames = replacementNamesList.toArray(new String[0]);
 
     String[] variableNames = variableNameList.toArray(new String[variableNameList.size()]);
     Object[] variableValues = variableValueList.toArray(new Object[variableValueList.size()]);
 
-    return new PreparedStatementRenderer(source, resourcePath, searchNames, replacementNames, variableNames, variableValues);
+    PreparedStatementRenderer renderer = new PreparedStatementRenderer(source, searchSql, searchNames, replacementNames, variableNames, variableValues);
+    String debugSql = renderer.generateDebugSql(searchSql, searchNames, replacementNames, variableNames, variableValues);
+    return renderer;
 
   }
-  
+
   /**
    * Perform a search using the default vocabulary source.
    * @param search
@@ -536,13 +620,9 @@ public class VocabularyService extends AbstractDaoService {
 
   public PreparedStatementRenderer prepareExecuteSearchWithQuery(String query, Source source) {
 
-    String resourcePath = "/resources/vocabulary/sql/search.sql";
-    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
-    String[] searchStrings = {"CDM_schema", "filters"};
-    String[] replacementStrings = {tqValue, ""};
-
-    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, resourcePath, searchStrings, replacementStrings, "query", query.toLowerCase());
-    return psr;
+    ConceptSearch search = new ConceptSearch();
+    search.query = query;
+    return this.prepareExecuteSearch(search, source);
   }
 
   /**
@@ -1053,6 +1133,56 @@ public class VocabularyService extends AbstractDaoService {
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
     List<Integer> conceptArray = Arrays.stream(conceptList).map(NumberUtils::toInt).collect(Collectors.toList());
     return new PreparedStatementRenderer( source, sqlPath, tqName, tqValue, "id", conceptArray.toArray());
+  }
+
+  @Path("{sourceKey}/lookup/recommended")
+  @POST
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Collection<RecommendedConcept> getRecommendedConceptsByList(@PathParam("sourceKey") String sourceKey, long[] conceptList) {
+    if (conceptList.length == 0) {
+      return new ArrayList<RecommendedConcept>(); // empty list of recommendations
+    }
+    try {
+      final Map<Long, RecommendedConcept> concepts = new HashMap<>();
+      Source source = getSourceRepository().findBySourceKey(sourceKey);
+      PreparedStatementRenderer psr = prepareGetRecommendedConceptsByList(conceptList, source);
+      getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), new RowMapper<Void>() {
+        @Override
+        public Void mapRow(ResultSet resultSet, int i) throws SQLException {
+          addRecommended(concepts, resultSet);
+          return null;
+        }
+      });
+
+      return concepts.values();
+
+    } catch (Exception e) {
+      if (e.getCause().getMessage().contains("concept_recommended")) {
+        throw new ConceptRecommendedNotInstalledException();
+      }
+      throw e;
+    }
+  }
+
+  protected PreparedStatementRenderer prepareGetRecommendedConceptsByList(long[] conceptList, Source source) {
+    String sqlPath = "/resources/vocabulary/sql/getRecommendConcepts.sql";
+    String tqName = "CDM_schema";
+    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+    return new PreparedStatementRenderer( source, sqlPath, tqName, tqValue, "conceptList", conceptList);
+  }
+
+  private void addRecommended(Map<Long, RecommendedConcept> concepts, ResultSet resultSet) throws SQLException {
+    final Long concept_id = resultSet.getLong("CONCEPT_ID");
+
+    if (!concepts.containsKey(concept_id)) {
+      // use rowmaper to read the standard conncept columns and re-serialize into RecommendedConcept
+      final RecommendedConcept concept = Utils.deserialize(Utils.serialize(this.rowMapper.mapRow(resultSet, 0), Boolean.TRUE),RecommendedConcept.class) ;
+      concept.relationships = new ArrayList<>();
+      concepts.put(concept_id, concept);
+    }
+    RecommendedConcept concept = concepts.get(concept_id);
+    concept.relationships.add(resultSet.getString("RELATIONSHIP_ID"));
   }
 
   @Path("{sourceKey}/compare")

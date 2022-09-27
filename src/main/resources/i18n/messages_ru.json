@@ -86,6 +86,7 @@
     "refresh": "Обновить",
     "days": "дней",
     "add": "Добавить",
+    "select": "Выбрать",
     "selectAll": "Выбрать все",
     "deselectAll": "Отменить выбор",
     "notEnoughPermissions": "Недостаточно прав",
@@ -107,7 +108,15 @@
     "saveAsCurrentVersion": "Сохранить как текущую версию",
     "unsavedWarning": "Несохраненные изменения будут потеряны. Продолжить?",
     "savePreviewWarning": "Сохранить как текущую версию?",
-    "anonymous": "аноним"
+    "anonymous": "аноним",
+    "conceptSet": "Набор концепций",
+    "cohort": "Когорта",
+    "characterization": "Характеризация",
+    "pathway": "Анализ исходов",
+    "incidenceRate": "Инцидентность",
+    "ple": "Оценочный анализ",
+    "plp": "Прогнозирование",
+    "reusable": "Сниппет"
   },
   "commonErrors": {
     "browserWarning": "Пожалуйста, обратите внимание, что официально поддерживается только браузер Chrome версии не ниже v.63",
@@ -129,7 +138,8 @@
     "prediction": "Прогнозирование",
     "jobs": "Задания",
     "configuration": "Конфигурация",
-    "feedback": "Обратная связь"
+    "feedback": "Обратная связь",
+    "tagging": "Теггинг"
   },
   "options": {
     "atMost": "В большинстве",
@@ -918,6 +928,7 @@
       "actionCreate": "создания",
       "overwriteConfirm": "Вы действительно хотите перезаписать текущее выражение набора концепций?",
       "loadingIncludedConcepts": "Загрузка включенных концепций",
+      "loadingRecommendedConcepts": "Loading Recommended Concepts",
       "commonAncestors": "Общие предки",
       "loadingIncludedSourcecodes": "Загрузка включенных исходных кодов",
       "expressionResolveError": "Ошибка загрузки выражения набора концепций!",
@@ -1184,6 +1195,19 @@
       "viewing": "Просматривается сейчас",
       "createACopy": "Создать копию",
       "current": "Текущая"
+    },
+    "reusablesModal": {
+      "title": "Вставить из сниппета",
+      "loadingReusables": "Загрузка списка сниппетов...",
+      "anyConceptSet": "Любой набор концепций"
+    },
+    "heading": {
+      "tag": {
+        "tooltip": {
+          "group": "Группа:",
+          "tag": "Тег:"
+        }
+      }
     }
   },
   "facets": {
@@ -1272,6 +1296,7 @@
     "standardConceptCaption": "Стандартная концепция",
     "standardConceptCode": "Код стандартной концепции",
     "rc": "RC",
+    "recommendedRelationshipCount": "Count",
     "drc": "DRC",
     "domain": "Домен",
     "vocabulary": "Словарь",
@@ -2358,6 +2383,31 @@
       "tabs": {
         "design": "Дизайн",
         "versions": "Версии"
+      }
+    }
+  },
+  "tagging": {
+    "tabs": {
+      "multiAssign": "Множественное назначие"
+    },
+    "multiAssign": {
+      "selectedTags": "Теги",
+      "selectedAssets": "Ассеты",
+      "chooseTags": "Выбор тегов",
+      "chooseAssets": "Выбор ассетов",
+      "assignTags": "Назначить теги",
+      "unassignTags": "Снять теги",
+      "messageGroupNotMultiple": "Из группы '<%=group%>' можно назначить только один тег. Тег '<%=replacedName%>' заменен на '<%=replacedWithName%>'",
+      "success": "Успешно!",
+      "error": "Ошибка!",
+      "forbiddenError": "Действие запрещено!",
+      "tabs": {
+        "conceptsets": "Наборы концептов",
+        "cohorts": "Когорты",
+        "characterizations": "Характеризации",
+        "incidenceRates": "Инцидентность",
+        "cohortPathways": "Исходы Когорты",
+        "reusables": "Сниппеты"
       }
     }
   },

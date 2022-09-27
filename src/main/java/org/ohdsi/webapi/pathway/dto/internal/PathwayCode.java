@@ -4,18 +4,18 @@ import java.util.Objects;
 
 public class PathwayCode {
 
-    private Long code;
+    private long code;
     private String name;
     private boolean isCombo = false;
 
-    public PathwayCode(Long code, String name, boolean isCombo) {
+    public PathwayCode(long code, String name, boolean isCombo) {
 
         this.code = code;
         this.name = name;
         this.isCombo = isCombo;
     }
 
-    public Long getCode() {
+    public long getCode() {
 
         return code;
     }

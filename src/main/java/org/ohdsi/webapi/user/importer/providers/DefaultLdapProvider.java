@@ -17,14 +17,17 @@ import org.springframework.ldap.filter.OrFilter;
 import org.springframework.ldap.support.LdapUtils;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.naming.NameClassPair;
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.user.importer.providers.OhdsiLdapUtils.getCriteria;
 import static org.ohdsi.webapi.user.importer.providers.OhdsiLdapUtils.valueAsString;
@@ -54,9 +57,27 @@ public class DefaultLdapProvider extends AbstractLdapProvider {
   @Value("${security.ldap.ignore.partial.result.exception:false}")
   private Boolean ldapIgnorePartialResultException;
 
+  @Value("${security.ldap.userImport.loginAttr}")
+  private String loginAttr;
+
+  @Value("${security.ldap.userImport.usernameAttr}")
+  private String usernameAttr;
+
+  private String[] userAttributes;
+
   private static final Set<String> GROUP_CLASSES = ImmutableSet.of("groupOfUniqueNames", "groupOfNames", "posixGroup");
 
   private static final Set<String> USER_CLASSES = ImmutableSet.of("account", "person");
+
+  @PostConstruct
+  private void init() {
+    List<String> attrs = Arrays.stream(USER_ATTRIBUTES)
+            .collect(Collectors.toList());
+    attrs.add(usernameAttr);
+    attrs.add(loginAttr);
+    userAttributes = attrs.stream()
+            .distinct().toArray(String[]::new);
+  }
 
   @Override
   public LdapTemplate getLdapTemplate() {
@@ -110,7 +131,7 @@ public class DefaultLdapProvider extends AbstractLdapProvider {
   public SearchControls getUserSearchControls() {
     SearchControls searchControls = new SearchControls();
     searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-    searchControls.setReturningAttributes(USER_ATTRIBUTES);
+    searchControls.setReturningAttributes(userAttributes);
     return searchControls;
   }
 
@@ -139,7 +160,7 @@ public class DefaultLdapProvider extends AbstractLdapProvider {
 
   @Override
   public String getLoginAttributeName() {
-    return "uid";
+    return loginAttr;
   }
 
   @Override
@@ -149,7 +170,7 @@ public class DefaultLdapProvider extends AbstractLdapProvider {
 
   @Override
   public String getDisplayNameAttributeName() {
-    return "cn";
+    return usernameAttr;
   }
 
   @Override

@@ -115,6 +115,8 @@
     <security.ldap.userMapping.middlenameAttr>initials</security.ldap.userMapping.middlenameAttr>
     <security.ldap.userMapping.lastnameAttr>sn</security.ldap.userMapping.lastnameAttr>
     <security.ldap.userMapping.usernameAttr>cn</security.ldap.userMapping.usernameAttr>
+    <security.ldap.userImport.usernameAttr>cn</security.ldap.userImport.usernameAttr>
+    <security.ldap.userImport.loginAttr>uid</security.ldap.userImport.loginAttr>
     <security.ldap.searchBase>CN=Users,DC=example,DC=org</security.ldap.searchBase>
     <security.ad.url></security.ad.url>
     <security.ad.searchBase>CN=Users,DC=example,DC=org</security.ad.searchBase>
@@ -131,6 +133,8 @@
     <security.ad.userMapping.middlenameAttr>initials</security.ad.userMapping.middlenameAttr>
     <security.ad.userMapping.lastnameAttr>sn</security.ad.userMapping.lastnameAttr>
     <security.ad.userMapping.usernameAttr>cn</security.ad.userMapping.usernameAttr>
+    <security.ad.userImport.loginAttr>sAMAccountName</security.ad.userImport.loginAttr>
+    <security.ad.userImport.usernameAttr>cn</security.ad.userImport.usernameAttr>
 
     <security.cas.loginUrl></security.cas.loginUrl>
     <security.cas.callbackUrl></security.cas.callbackUrl>

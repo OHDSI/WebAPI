@@ -33,7 +33,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import org.junit.rules.ExternalResource;
 
-import com.opentable.db.postgres.embedded.EmbeddedPostgres;
+import io.zonky.test.db.postgres.embedded.EmbeddedPostgres;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

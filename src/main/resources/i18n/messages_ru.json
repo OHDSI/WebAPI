@@ -2501,7 +2501,8 @@
           "impala": "Impala",
           "pdw": "Microsoft PDW",
           "netezza": "IBM Netezza",
-          "hive": "Hive LLAP"
+          "hive": "Hive LLAP",
+          "synapse": "Azure Synapse"
         }
       },
       "connectionString": {

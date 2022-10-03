@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.db.migartion;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.odysseusinc.arachne.commons.config.flyway.ApplicationContextAwareSpringMigration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -8,8 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import com.odysseusinc.arachne.commons.config.flyway.ApplicationContextAwareSpringMigration;
 import org.json.JSONObject;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;

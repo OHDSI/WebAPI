@@ -2587,7 +2587,8 @@
           "pdw": "微软PDW",
           "postgresql": "PostgreSQL",
           "redshift": "Amazon Redshift",
-          "sqlserver": "SQL服务器"
+          "sqlserver": "SQL服务器",
+          "synapse": "Azure Synapse"
         },
         "title": "源语言"
       },

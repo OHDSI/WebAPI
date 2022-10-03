@@ -128,6 +128,11 @@ public class CcController {
         return create(dto);
     }
 
+    /**
+     * Get information about the cohort characterization analyses in WebAPI
+     *
+     * @return A json object with information about the characterization analyses in WebAPI.
+     */
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
@@ -140,6 +145,11 @@ public class CcController {
         });
     }
 
+    /**
+     * Get the design specification for every cohort-characterization analysis in WebAPI.
+     *
+     * @return A json object with all characterization design specifications.
+     */
     @GET
     @Path("/design")
     @Produces(MediaType.APPLICATION_JSON)
@@ -148,6 +158,12 @@ public class CcController {
         return service.getPageWithLinkedEntities(pageable).map(this::convertCcToDto);
     }
 
+    /**
+     * Get metadata about a cohort characterization.
+     *
+     * @param id The id for an existing cohort characterization
+     * @return name, createdDate, tags, etc for a single cohort characterization.
+     */
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -156,6 +172,12 @@ public class CcController {
         return convertCcToShortDto(service.findById(id));
     }
 
+    /**
+     * Get the complete design specification for a single cohort characterization.
+     *
+     * @param id The id for an existing cohort characterization
+     * @return JSON containing the cohort characterization specification
+     */
     @GET
     @Path("/{id}/design")
     @Produces(MediaType.APPLICATION_JSON)
@@ -166,6 +188,15 @@ public class CcController {
         return convertCcToDto(cc);
     }
 
+    /**
+     * Check if a cohort characterization with the same name exists
+     *
+     * <p>This endpoint is used to check that a desired name for a characterization does not already exist in WebAPI</p>
+     *
+     * @param id The id for a new characterization that does not currently exist in WebAPI
+     * @param name The desired name for the new cohort characterization
+     * @return The number of existing characterizations with the same name that was passed as a query parameter
+     */
     @GET
     @Path("/{id}/exists")
     @Produces(MediaType.APPLICATION_JSON)
@@ -174,6 +205,11 @@ public class CcController {
         return service.getCountCcWithSameName(id, name);
     }
 
+    /**
+     * Remove a characterization from WebAPI
+     *
+     * @param id The id for a characterization that currently exists in WebAPI
+     */
     @DELETE
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -189,7 +225,7 @@ public class CcController {
     private CcShortDTO convertCcToShortDto(final CohortCharacterizationEntity entity) {
         return conversionService.convert(entity, CcShortDTO.class);
     }
-    
+
     @PUT
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)

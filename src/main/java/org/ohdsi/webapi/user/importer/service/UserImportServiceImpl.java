@@ -125,33 +125,35 @@ public class UserImportServiceImpl implements UserImportService {
       Set<String> roles = user.getRoles().stream().map(role -> role.role).collect(Collectors.toSet());
       roles.addAll(defaultRoles);
       try {
-        UserEntity userEntity;
-        if (Objects.nonNull(userEntity = userRepository.findByLogin(login)) &&
-                LdapUserImportStatus.MODIFIED.equals(getStatus(userEntity, user.getRoles()))) {
-          Set<RoleEntity> userRoles = userManager.getUserRoles(userEntity.getId());
-          if (!preserveRoles) {
-            //Overrides assigned roles
-            userRoles.stream().filter(role -> !role.getName().equalsIgnoreCase(login)).forEach(r -> {
+        UserEntity userEntity = userRepository.findByLogin(login);
+        if (Objects.nonNull(userEntity)) {
+          userEntity.setName(user.getDisplayName());
+          if (LdapUserImportStatus.MODIFIED.equals(getStatus(userEntity, user.getRoles()))) {
+            Set<RoleEntity> userRoles = userManager.getUserRoles(userEntity.getId());
+            if (!preserveRoles) {
+              //Overrides assigned roles
+              userRoles.stream().filter(role -> !role.getName().equalsIgnoreCase(login)).forEach(r -> {
+                try {
+                  userManager.removeUserFromRole(r.getName(), userEntity.getLogin());
+                } catch (Exception e) {
+                  logger.warn("Failed to remove user {} from role {}", userEntity.getLogin(), r.getName(), e);
+                }
+              });
+            } else {
+              //Filter roles that is already assigned
+              roles = roles.stream()
+                      .filter(role -> userRoles.stream().noneMatch(ur -> Objects.equals(ur.getName(), role)))
+                      .collect(Collectors.toSet());
+            }
+            roles.forEach(r -> {
               try {
-                userManager.removeUserFromRole(r.getName(), userEntity.getLogin());
+                userManager.addUserToRole(r, userEntity.getLogin());
               } catch (Exception e) {
-                logger.warn("Failed to remove user {} from role {}", userEntity.getLogin(), r.getName(), e);
+                logger.error("Failed to add user {} to role {}", userEntity.getLogin(), r, e);
               }
             });
-          } else {
-            //Filter roles that is already assigned
-            roles = roles.stream()
-                    .filter(role -> userRoles.stream().noneMatch(ur -> Objects.equals(ur.getName(), role)))
-                    .collect(Collectors.toSet());
+            result.incUpdated();
           }
-          roles.forEach(r -> {
-            try {
-              userManager.addUserToRole(r, userEntity.getLogin());
-            } catch (Exception e) {
-              logger.error("Failed to add user {} to role {}", userEntity.getLogin(), r, e);
-            }
-          });
-          result.incUpdated();
         } else {
           userManager.registerUser(login, user.getDisplayName(), roles);
           result.incCreated();

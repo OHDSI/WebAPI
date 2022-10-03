@@ -42,6 +42,9 @@ public class CohortCharacterizationEntity extends CommonEntityExt<Long> implemen
     
     @Column
     private String name;
+
+    @Column
+    private String description;
     
     @ManyToMany(targetEntity = CohortDefinition.class, fetch = FetchType.LAZY)
     @JoinTable(name = "cc_cohort",
@@ -109,6 +112,14 @@ public class CohortCharacterizationEntity extends CommonEntityExt<Long> implemen
 
     public void setName(final String name) {
         this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public void setParameters(final Set<CcParamEntity> parameters) {

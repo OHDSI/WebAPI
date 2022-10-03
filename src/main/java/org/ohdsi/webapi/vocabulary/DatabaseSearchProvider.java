@@ -2,7 +2,6 @@ package org.ohdsi.webapi.vocabulary;
 
 import java.util.Collection;
 import java.util.Objects;
-import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.webapi.service.VocabularyService;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.beans.factory.annotation.Autowired;

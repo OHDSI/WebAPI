@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 import com.google.common.collect.ImmutableList;
 import com.odysseusinc.arachne.commons.types.DBMSType;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.BigQuerySparkTranslate;
 import org.ohdsi.sql.SqlRender;
@@ -319,10 +320,20 @@ public class PreparedStatementRenderer implements ParameterizedSqlProvider {
     return value;
   }
 
-	public String generateDebugSql(String sql, String[] searchRegexes, String[] replacementStrings, String[] sqlVariableNames, Object[]sqlVariableValues)
-	{
-		String[] vars = Stream.concat(Stream.of(searchRegexes), Stream.of(sqlVariableNames)).toArray(String[]::new);
-		String[] vals = Stream.concat(Stream.of(replacementStrings), Stream.of(sqlVariableValues)).map(Object::toString).toArray(size->new String[size]);
-		return SqlRender.renderSql(sql, vars, vals);
-	}
+  public String generateDebugSql(String sql, String[] searchRegexes, String[] replacementStrings, String[] sqlVariableNames, Object[] sqlVariableValues) {
+    String[] vars = Stream.concat(Stream.of(searchRegexes), Stream.of(sqlVariableNames)).toArray(String[]::new);
+    String[] vals = Stream.concat(Stream.of(replacementStrings), 
+        Stream.of(sqlVariableValues)).map((v) -> { 
+          Object obj = convertPrimitiveArraysToWrapperArrays(v);
+          String result = String.valueOf(obj);
+          if (obj instanceof String[]) {
+            result = "'" + StringUtils.join((Object[])v,"','") + "'";
+          } else if (obj instanceof Object[]) {
+            result = StringUtils.join((Object[])obj,",");
+          }
+          return result; 
+        })
+        .toArray(size -> new String[size]);
+    return SqlRender.renderSql(sql, vars, vals);
+  }
 }

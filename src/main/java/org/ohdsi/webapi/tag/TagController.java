@@ -2,6 +2,8 @@ package org.ohdsi.webapi.tag;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.tag.dto.TagDTO;
+import org.ohdsi.webapi.tag.dto.TagGroupSubscriptionDTO;
+import org.ohdsi.webapi.tag.dto.AssignmentPermissionsDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -22,10 +24,13 @@ import java.util.List;
 @Controller
 public class TagController {
     private final TagService tagService;
+    private final TagGroupService tagGroupService;
 
     @Autowired
-    public TagController(TagService pathwayService) {
+    public TagController(TagService pathwayService,
+                         TagGroupService tagGroupService) {
         this.tagService = pathwayService;
+        this.tagGroupService = tagGroupService;
     }
 
     /**
@@ -111,5 +116,46 @@ public class TagController {
     @Consumes(MediaType.APPLICATION_JSON)
     public void delete(@PathParam("id") final Integer id) {
         tagService.delete(id);
+    }
+
+    /**
+     * Assignes group of tags to groups of assets.
+     *
+     * @param dto
+     * @return
+     */
+    @POST
+    @Path("/multiAssign")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void assignGroup(final TagGroupSubscriptionDTO dto) {
+        tagGroupService.assignGroup(dto);
+    }
+
+    /**
+     * Unassignes group of tags from groups of assets.
+     *
+     * @param dto
+     * @return
+     */
+    @POST
+    @Path("/multiUnassign")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void unassignGroup(final TagGroupSubscriptionDTO dto) {
+        tagGroupService.unassignGroup(dto);
+    }
+
+    /**
+     * Tags assignment permissions for current user
+     *
+     * @return
+     */
+    @GET
+    @Path("/assignmentPermissions")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public AssignmentPermissionsDTO assignmentPermissions() {
+        return tagService.getAssignmentPermissions();
     }
 }

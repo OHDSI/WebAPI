@@ -2588,7 +2588,8 @@
           "postgresql": "PostgreSQL",
           "redshift": "Amazon Redshift",
           "sqlserver": "SQL server",
-          "synapse": "Azure Synapse"
+          "synapse": "Azure Synapse",
+          "snowflake": "Snowflake"
         },
         "title": "Source dialect"
       },

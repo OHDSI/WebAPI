@@ -2588,7 +2588,9 @@
           "postgresql": "PostgreSQL",
           "redshift": "Amazon Redshift",
           "sqlserver": "SQL server",
-          "synapse": "Azure Synapse"
+          "synapse": "Azure Synapse",
+          "snowflake": "Snowflake",
+          "spark": "Apache Spark"
         },
         "title": "소스 dialect"
       },

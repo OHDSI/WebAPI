@@ -2502,7 +2502,9 @@
           "pdw": "Microsoft PDW",
           "netezza": "IBM Netezza",
           "hive": "Hive LLAP",
-          "synapse": "Azure Synapse"
+          "synapse": "Azure Synapse",
+          "snowflake": "Snowflake",
+          "spark": "Apache Spark"
         }
       },
       "connectionString": {

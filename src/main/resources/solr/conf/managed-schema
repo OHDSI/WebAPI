@@ -126,6 +126,8 @@
     <field name="vocabulary_name" type="string" indexed="true" stored="true" omitNorms="true"/>
     <field name="standard_concept" type="string" indexed="true" stored="true" omitNorms="true"/>
     <field name="invalid_reason" type="string" indexed="true" stored="true" omitNorms="true"/>
+    <field name="valid_start_date" type="string" indexed="true" stored="true" omitNorms="true"/>
+    <field name="valid_end_date" type="string" indexed="true" stored="true" omitNorms="true"/>
 
     <copyField source="id" dest="query"/>
     <copyField source="concept_code" dest="query"/>
@@ -135,6 +137,8 @@
     <copyField source="vocabulary_id" dest="query"/>
     <copyField source="standard_concept" dest="query"/>
     <copyField source="invalid_reason" dest="query"/>
+    <copyField source="valid_start_date" dest="query"/>
+    <copyField source="valid_end_date" dest="query"/>
 
     <field name="query" type="text_general" multiValued="true" indexed="true" stored="true" />
     <!-- This can be enabled, in case the client does not know what fields may be searched. It isn't enabled by default

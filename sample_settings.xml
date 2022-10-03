@@ -8,6 +8,7 @@
    <profile>
     <id>webapi-postgresql</id>
     <properties>
+      <server.port>8080</server.port>
       <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
       <datasource.url>jdbc:postgresql://localhost:5432/OHDSI</datasource.url>
       <datasource.username>ohdsi_app_user</datasource.username>

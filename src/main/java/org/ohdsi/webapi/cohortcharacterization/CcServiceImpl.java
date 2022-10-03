@@ -310,16 +310,18 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     @Override
     @Transactional
-    public void assignTag(long id, int tagId, boolean isPermissionProtected) {
+    public void assignTag(Long id, int tagId) {
         CohortCharacterizationEntity entity = findById(id);
-        assignTag(entity, tagId, isPermissionProtected);
+        checkOwnerOrAdminOrGranted(entity);
+        assignTag(entity, tagId);
     }
 
     @Override
     @Transactional
-    public void unassignTag(long id, int tagId, boolean isPermissionProtected) {
+    public void unassignTag(Long id, int tagId) {
         CohortCharacterizationEntity entity = findById(id);
-        unassignTag(entity, tagId, isPermissionProtected);
+        checkOwnerOrAdminOrGranted(entity);
+        unassignTag(entity, tagId);
     }
 
     @Override
@@ -342,6 +344,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         if (StringUtils.isNotEmpty(entity.getName())) {
             foundEntity.setName(entity.getName());
         }
+        foundEntity.setDescription(entity.getDescription());
         foundEntity.setStratifiedBy(entity.getStratifiedBy());
         if (Objects.nonNull(entity.getStrataOnly())) {
           foundEntity.setStrataOnly(entity.getStrataOnly());

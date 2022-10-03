@@ -16,6 +16,7 @@ public abstract class BaseCcToCcShortDTOConverter<T extends CcShortDTO>
     @Override
     public void doConvert(final CohortCharacterizationEntity source, T target) {
         target.setName(StringUtils.trim(source.getName()));
+        target.setDescription(source.getDescription());
         target.setId(source.getId());
         target.setHashCode(source.getHashCode());
     }

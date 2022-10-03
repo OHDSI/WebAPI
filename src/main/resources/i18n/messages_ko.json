@@ -2587,7 +2587,10 @@
           "pdw": "Microsoft PDW",
           "postgresql": "PostgreSQL",
           "redshift": "Amazon Redshift",
-          "sqlserver": "SQL server"
+          "sqlserver": "SQL server",
+          "synapse": "Azure Synapse",
+          "snowflake": "Snowflake",
+          "spark": "Apache Spark"
         },
         "title": "소스 dialect"
       },

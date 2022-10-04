@@ -678,7 +678,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     /**
      * Checks a concept set for diagnostic problems. At this time, 
      * this appears to be an endpoint used to check to see which tags
-     * are applied to a concept set?
+     * are applied to a concept set.
      * 
      * @summary Concept set tag check
      * @since v2.10.0

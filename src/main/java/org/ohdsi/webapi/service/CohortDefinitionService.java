@@ -1,8 +1,19 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright 2015 Observational Health Data Sciences and Informatics [OHDSI.org].
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 package org.ohdsi.webapi.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -359,12 +370,13 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Context
 	ServletContext context;
 
-        /**
-         * Returns OHDSI template SQL for a given cohort definition 
-         * 
-         * @param request A cohort definition JSON expression
-         * @return The OHDSI template SQL needed to generate the input cohort definition as a character string
-         */
+	/**
+	 * Returns OHDSI template SQL for a given cohort definition 
+	 *
+	 * @summary Generate Sql
+	 * @param request A GenerateSqlRequest containing the cohort expression and options.
+	 * @return The OHDSI template SQL needed to generate the input cohort definition as a character string
+	 */
 	@Path("sql")
 	@POST
 	@Produces(MediaType.APPLICATION_JSON)
@@ -384,8 +396,9 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	/**
 	 * Returns metadata about all cohort definitions in the WebAPI database
 	 *
-	 * @return List of metadata about all cohort definitions in WebAPI 
-         * @see org.ohdsi.webapi.cohortdefinition.CohortMetadataDTO
+	 * @summary List Cohort Definitions
+	 * @return List of metadata about all cohort definitions in WebAPI
+	 * @see org.ohdsi.webapi.cohortdefinition.CohortMetadataDTO
 	 */
 	@GET
 	@Path("/")
@@ -404,10 +417,14 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	}
 
 	/**
-	 * Creates a cohort definition in the WebAPI database
+	 * Creates a cohort definition in the WebAPI database.
+	 * 
+	 * The values for createdBy and createdDate are automatically populated and
+	 * the function ignores parameter values for these fields.
 	 *
+	 * @summary Create Cohort Definition
 	 * @param dto The cohort definition to create.
-	 * @return The newly created cohort definition (identical to the input)
+	 * @return The newly created cohort definition
 	 */
 	@POST
 	@Path("/")
@@ -442,8 +459,14 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	}
 
 	/**
-	 * Returns the cohort definition for the given id
+	 * Returns the 'raw' cohort definition for the given id.
 	 *
+	 * 'Raw' means that the cohort expression is returned as a string, and not as
+	 * a concrete CohortExpression class. This method is maintained for legacy
+	 * comparability.
+	 *
+	 *
+	 * @summary Get Raw Cohort Definition
 	 * @param id The cohort definition id
 	 * @return The cohort definition JSON expression
 	 */
@@ -461,8 +484,9 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	/**
 	 * Returns the cohort definition containing the circe cohort expression
 	 *
+	 * @Summary Get Cohort Definition
 	 * @param id The cohort definition id
-	 * @return The cohort definition JSON expression
+	 * @return The cohort definition containing a Circe CohortExpression object.
 	 */
 	public CohortDTO getCohortDefinition(final int id) {
 		return getTransactionTemplate().execute(transactionStatus -> {
@@ -472,13 +496,20 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 		});
 	}
 
-        /**
-         * Check that a cohort exists
-         * 
-         * @param id The cohort definition id
-         * @param name The cohort definition name
-         * @return 1 if the a cohort with the given name and id exist in WebAPI and 0 otherwise
-         */
+	/**
+	 * Check that a cohort exists.
+	 *
+	 * This method checks to see if a cohort definition name exists. The id
+	 * parameter is used to 'ignore' a cohort definition from checking. This is
+	 * used when you have an existing cohort definition which should be ignored
+	 * when checking if the name already exists.
+	 *
+	 * @Summary Check Cohort Definition Name
+	 * @param id The cohort definition id
+	 * @param name The cohort definition name
+	 * @return 1 if the a cohort with the given name and id exist in WebAPI and 0
+	 * otherwise
+	 */
 	@GET
 	@Path("/{id}/exists")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -488,10 +519,14 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	}
 
 	/**
-	 * Saves the cohort definition for the given id
+	 * Saves the cohort definition for the given id.
 	 *
+	 * The modifiedBy and modifiedDate are set automatically, and those values
+	 * submitted in CohortDTO will be ignored. * @summary Save Cohort Definition
+	 *
+	 * @summary Save Cohort Definition
 	 * @param id The cohort definition id
-	 * @return The CohortDefinition
+	 * @return The updated CohortDefinition
 	 */
 	@PUT
 	@Path("/{id}")
@@ -522,8 +557,9 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	/**
 	 * Queues up a generate cohort task for the specified cohort definition id.
 	 *
-	 * @param id - the Cohort Definition ID to generate
-	 * @return information about the Cohort Analysis Job
+	 * @param id	the Cohort Definition ID to generate
+	 * @param sourceKey	The source to execute the cohort generation
+	 * @return	the job info for the cohort generation
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -536,14 +572,23 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 		UserEntity user = userRepository.findByLogin(security.getSubject());
 		return cohortGenerationService.generateCohortViaJob(user, currentDefinition, source);
 	}
-        
-        /**
-         * Cancel a cohort generation task
-         * 
-         * @param id the id of the cohort definition being generated
-         * @param sourceKey the sourceKey for the target database for generation
-         * @return 
-         */
+
+	/**
+	 * Cancel a cohort generation task
+	 *
+	 * This method updates the generation info to 'Canceled' and invalidates the
+	 * job execution on the server.
+	 *
+	 * Note: invalidating the job is performed by indicating that the job
+	 * execution should stop at the next SQL step in the analysis query. This
+	 * means that the execution will not physically cancel until the current step
+	 * in the SQL query completes.
+	 *
+	 * @summary Cancel Cohort Generation.
+	 * @param id the id of the cohort definition being generated
+	 * @param sourceKey the sourceKey for the target database for generation
+	 * @return
+	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/cancel/{sourceKey}")
@@ -574,11 +619,17 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	}
 
 	/**
-	 * Queues up a generate cohort task for the specified cohort definition id.
+	 * Returns a list of cohort generation info objects.
 	 *
+	 * Cohort generation info objects refers to the information related to the
+	 * generation on a source. This includes information about the starting time,
+	 * duration, and execution status. This method returns the generation
+	 * information for any source the user has access to.
+	 *
+	 * @summary Get cohort generation info
 	 * @param id - the Cohort Definition ID to generate
-	 * @return information about the Cohort Analysis Job
-	 * @throws Exception
+	 * @return information about the Cohort Analysis Job for each source
+	 * @throws NotFoundException
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -601,8 +652,12 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	}
 
 	/**
-	 * Copies the specified cohort definition
+	 * Copies the specified cohort definition.
 	 *
+	 * This method takes a cohort definition id, and creates a copy. This copy has
+	 * no tags and the owner is set to the user who made the copy.
+	 *
+	 * @summary Copy Cohort Definition
 	 * @param id - the Cohort Definition ID to copy
 	 * @return the copied cohort definition as a CohortDTO
 	 */
@@ -628,7 +683,11 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	/**
 	 * Deletes the specified cohort definition
 	 *
-	 * @param id - the Cohort Definition ID to copy
+	 * When a cohort definition is deleted, any generation job is canceled, and
+	 * any generated sample is removed from the sources.
+	 *
+	 * @summary Delete Cohort Definition
+	 * @param id - the Cohort Definition ID to delete
 	 */
 	@DELETE
 	@Produces(MediaType.APPLICATION_JSON)
@@ -701,13 +760,18 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 						.map(cs -> vocabularyService.exportConceptSet(cs, vocabSource))
 						.collect(Collectors.toList());
 	}
-        
-        /**
-         * Return concept sets used in a cohort definition
-         * 
-         * @param id a cohort definition id
-         * @return concept sets used in the cohort definition
-         */
+
+	/**
+	 * Return concept sets used in a cohort definition as a zip file.
+	 *
+	 * This method extracts the concept set from the specified cohort definition
+	 * and serializes the elements as a CSV and zips the results into a file with
+	 * from 'cohortdefinition_{id}_export.zip".
+	 *
+	 * @summary Export Concept Sets as ZIP
+	 * @param id a cohort definition id
+	 * @return a binary stream containing the zip file with concept sets.
+	 */
 	@GET
 	@Path("/{id}/export/conceptset")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -729,6 +793,20 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 		return HttpUtils.respondBinary(exportStream, String.format("cohortdefinition_%d_export.zip", def.getId()));
 	}
 
+	/**
+	 * Get the Inclusion Rule report for the specified source and mode
+	 *
+	 * The mode refers to the results for either 'all events' (0) or 'best event'
+	 * (1). The best event report limits the selected entry event to
+	 * one-per-person, and therefore this result can be considered a 'by person'
+	 * report.
+	 *
+	 * @summary Get Inclusion Rule Report
+	 * @param id a cohort definition id
+	 * @param sourceKey the source to fetch results from
+	 * @param modeId the mode of the report: 0 = all events, 1 = best event
+	 * @return a binary stream containing the zip file with concept sets.
+	 */
 	@GET
 	@Path("/{id}/report/{sourceKey}")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -754,7 +832,10 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 
 	/**
 	 * Checks the cohort definition for logic issues
+	 * 
+	 * This method runs a series of logical checks on a cohort definition and returns the set of warning, info and error messages.
 	 *
+	 * @summary Check Cohort Definition
 	 * @param expression The cohort definition expression
 	 * @return The cohort check result
 	 */
@@ -769,12 +850,14 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	}
 	
 	/**
-	 * Checks the cohort definition for logic issues with support
-         * for a cohortDTO input.
-         * 
-         * See https://github.com/OHDSI/WebAPI/issues/1971 for more information
+	 * Checks the cohort definition for logic issues
+	 * 
+	 * This method runs a series of logical checks on a cohort definition and returns the set of warning, info and error messages.
+	 * 
+	 * This method is similar to /check except this method accepts a ChortDTO which includes tags.
 	 *
-	 * @param cohortDTO The cohort data transfer object
+	 * @summary Check Cohort Definition
+	 * @param cohortDTO The cohort definition expression
 	 * @return The cohort check result
 	 */
 	@POST
@@ -794,6 +877,20 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	}
 	
 
+	/**
+	 * Render a cohort expression in html or markdown form.
+	 *
+	 * This method calls out to the markdown renderer for CIRCE cohort
+	 * expressions, and then converts to HTML if required. The response will
+	 * contain the media type as TEXT_PLAIN or markdown, or TEXT_HTML for html.
+	 * The body of the response is the print friendly content.
+	 *
+	 * @summary Cohort Print Friendly
+	 * @param expression The CIRCE cohort expression to render
+	 * @param format The format to render, can be either 'html' or 'markdown'.  Defaults to 'html'
+	 * @return an HTTP response with the content, with the appropriate MediaType
+	 * based on the format that was requested.
+	 */
 	@POST
 	@Path("/printfriendly/cohort")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -802,6 +899,20 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 		return printFrindly(markdown, format);
 	}
 
+	/**
+	 * Render a list of concept sets in html or markdown form.
+	 *
+	 * This method calls out to the markdown renderer concept set expressions, and
+	 * then converts to HTML if required. The response will contain the media type
+	 * as TEXT_PLAIN or markdown, or TEXT_HTML for html. The body of the response
+	 * is the print friendly content.
+	 *
+	 * @summary Concept Set Print Friendly
+	 * @param conceptSetList A List of concept set expressions
+	 * @param format The format to render, can be either 'html' or 'markdown'.  Defaults to 'html'
+	 * @return an HTTP response with the content, with the appropriate MediaType
+	 * based on the format that was requested.
+	 */
 	@POST
 	@Path("/printfriendly/conceptsets")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -831,8 +942,9 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	/**
 	 * Assign tag to Cohort Definition
 	 *
-	 * @param id
-	 * @param tagId
+	 * @summary Assign Tag
+	 * @param id the cohort definition id
+	 * @param tagId the tag id
 	 */
 	@POST
 	@Produces(MediaType.APPLICATION_JSON)
@@ -847,8 +959,9 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	/**
 	 * Unassign tag from Cohort Definition
 	 *
-	 * @param id
-	 * @param tagId
+	 * @summary Unassign Tag
+	 * @param id the cohort definition id
+	 * @param tagId the tag id
 	 */
 	@DELETE
 	@Produces(MediaType.APPLICATION_JSON)
@@ -861,8 +974,11 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	}
 
 	/**
-	 * Assign protected tag to Cohort Definition
+	 * Assign protected tag to Cohort Definition. This method passes through to
+	 * assignTag(), but permissions to access this endpoint is determined by the
+	 * path /{id}/protectedtag
 	 *
+	 * @summary Assign Protected Tag
 	 * @param id
 	 * @param tagId
 	 */
@@ -875,8 +991,9 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	}
 
 	/**
-	 * Un assign protected tag from Cohort Definition
+	 * Unassign protected tag from Cohort Definition
 	 *
+	 * @summary Unassign Protected Tag
 	 * @param id
 	 * @param tagId
 	 */
@@ -891,8 +1008,10 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	/**
 	 * Get list of versions of Cohort Definition
 	 *
-	 * @param id
-	 * @return
+	 * @summary Get Cohort Definition Versions
+	 * @param id the cohort definition id
+	 * @return the list of VersionDTO containing version info for the cohort
+	 * definition
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -908,8 +1027,9 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	/**
 	 * Get version of Cohort Definition
 	 *
-	 * @param id
-	 * @param version
+	 * @summary Get Cohort Definition Version
+	 * @param id The cohort definition id
+	 * @param version The version to fetch
 	 * @return
 	 */
 	@GET
@@ -924,12 +1044,16 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	}
 
 	/**
-	 * Update version of Cohort Definition
+	 * Updates version of Cohort Definition.
 	 *
-	 * @param id
-	 * @param version
-	 * @param updateDTO
-	 * @return
+	 * The specified version is checked for permission and if it exists, and if
+	 * this check passes, the version is updated.
+	 *
+	 * @summary Update Version
+	 * @param id The cohort definition id
+	 * @param version the id of the version
+	 * @param updateDTO the new version data
+	 * @return the updated version state as VersionDTO
 	 */
 	@PUT
 	@Produces(MediaType.APPLICATION_JSON)
@@ -948,8 +1072,9 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	/**
 	 * Delete version of Cohort Definition
 	 *
-	 * @param id
-	 * @param version
+	 * @summary Delete Cohort Definition Version
+	 * @param id the cohort definition id
+	 * @param version the version id
 	 */
 	@DELETE
 	@Produces(MediaType.APPLICATION_JSON)
@@ -961,10 +1086,15 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	}
 
 	/**
-	 * Create a new asset from version of Cohort Definition
+	 * Create a new asset from version of Cohort Definition.
 	 *
-	 * @param id
-	 * @param version
+	 * This method fetches the cohort definition version based on the id and
+	 * version parameter, and creates a new cohort definition (without tags) and
+	 * an automatically generated name.
+	 *
+	 * @summary Create Cohort from Version
+	 * @param id the cohort definition id
+	 * @param version the version id
 	 * @return
 	 */
 	@PUT
@@ -984,10 +1114,14 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	}
 
 	/**
-	 * Get list of cohort definitions with assigned tags
+	 * Get list of cohort definitions with assigned tags.
 	 *
-	 * @param requestDTO
-	 * @return
+   * This method accepts a TagNameListRequestDTO that contains the list of tag names
+   * to find cohort definitions with.
+	 *
+   * @summary List Cohorts By Tag
+	 * @param requestDTO contains a list of tag names
+	 * @return the set of cohort definitions that match one of the included tag names.
 	 */
 	@POST
 	@Path("/byTags")

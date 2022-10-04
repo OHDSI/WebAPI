@@ -9,6 +9,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.sql.Date;
+
 /**
  *
  * @author Anthony Sena <https://github.com/ohdsi>
@@ -45,6 +47,12 @@ public class ConceptSetComparison {
     
     @JsonProperty("vocabularyId")
     public String vocabularyId;
+
+    @JsonProperty("validStartDate")
+    public Date validStartDate;
+
+    @JsonProperty("validEndDate")
+    public Date validEndDate;
     
     @JsonProperty("conceptClassId")
     public String conceptClassId;

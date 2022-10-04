@@ -31,7 +31,6 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.circe.helper.ResourceHelper;
-import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.circe.vocabulary.ConceptSetExpressionQueryBuilder;
 import org.ohdsi.sql.SqlRender;
@@ -48,6 +47,7 @@ import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.PreparedSqlRender;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
+import org.ohdsi.webapi.vocabulary.Concept;
 import org.ohdsi.webapi.vocabulary.ConceptRecommendedNotInstalledException;
 import org.ohdsi.webapi.vocabulary.ConceptRelationship;
 import org.ohdsi.webapi.vocabulary.ConceptSearch;
@@ -68,6 +68,12 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
+ /**
+  * Provides REST services for working with
+  * the OMOP standardized vocabularies
+  * 
+  * @summary Vocabulary
+  */
 @Path("vocabulary/")
 @Component
 public class VocabularyService extends AbstractDaoService {
@@ -97,6 +103,8 @@ public class VocabularyService extends AbstractDaoService {
     concept.conceptClassId = resultSet.getString("CONCEPT_CLASS_ID");
     concept.vocabularyId = resultSet.getString("VOCABULARY_ID");
     concept.domainId = resultSet.getString("DOMAIN_ID");
+    concept.validStartDate = resultSet.getDate("VALID_START_DATE");
+    concept.validEndDate = resultSet.getDate("VALID_END_DATE");
     return concept;
   };
 
@@ -129,11 +137,16 @@ public class VocabularyService extends AbstractDaoService {
   }
   
   /**
-   * @summary Calculates ancestors for the given descendants
+   * Calculates the full set of ancestor and descendant concepts for a list of 
+   * ancestor and descendant concepts specified. This is used by ATLAS when
+   * navigating the list of included concepts in a concept set - the full list
+   * of ancestors (as defined in the concept set) and the descendants (those
+   * concepts included when resolving the concept set) are used to determine 
+   * which descendant concepts share one or more ancestors.
    * 
-   * @param ids concepts identifiers from concept set
-   *                            
-   * @return map {id -> ascendant id}
+   * @summary Calculates ancestors for a list of concepts
+   * @param ids Concepts identifiers from concept set
+   * @return A map of the form: {id -> List<ascendant id>}
    */
   @Path("{sourceKey}/lookup/identifiers/ancestors")
   @POST
@@ -200,12 +213,14 @@ public class VocabularyService extends AbstractDaoService {
   }
   
   /**
+   * Get concepts from concept identifiers (IDs) from a specific source
+   * 
    * @summary Perform a lookup of an array of concept identifiers returning the
    * matching concepts with their detailed properties.
    * @param sourceKey path parameter specifying the source key identifying the
    * source to use for access to the set of vocabulary tables
    * @param identifiers an array of concept identifiers
-   * @return collection of concepts
+   * @return A collection of concepts
    */
   @Path("{sourceKey}/lookup/identifiers")
   @POST
@@ -245,10 +260,13 @@ public class VocabularyService extends AbstractDaoService {
   }
   
   /**
+   * Get concepts from concept identifiers (IDs) from the default vocabulary 
+   * source
+   * 
    * @summary Perform a lookup of an array of concept identifiers returning the
    * matching concepts with their detailed properties, using the default source.
    * @param identifiers an array of concept identifiers
-   * @return collection of concepts
+   * @return A collection of concepts
    */
   @Path("lookup/identifiers")
   @POST
@@ -278,11 +296,14 @@ public class VocabularyService extends AbstractDaoService {
   
 
   /**
-   * @summary Lookup source codes in the specified vocabulary
+   * Get concepts from source codes from a specific source
+   * 
+   * @summary Lookup source codes from the concept CONCEPT_CODE field
+   * in the specified vocabulary
    * @param sourceKey path parameter specifying the source key identifying the
    * source to use for access to the set of vocabulary tables
    * @param sourcecodes array of source codes
-   * @return collection of concepts
+   * @return A collection of concepts
    */
   @Path("{sourceKey}/lookup/sourcecodes")
   @POST
@@ -308,9 +329,12 @@ public class VocabularyService extends AbstractDaoService {
   }
 
   /**
-   * @summary Lookup source codes in the specified vocabulary using the default source.
+   * Get concepts from source codes from the default vocabulary source
+   * 
+   * @summary Lookup source codes from the concept CONCEPT_CODE field
+   * in the specified vocabulary
    * @param sourcecodes array of source codes
-   * @return collection of concepts
+   * @return A collection of concepts
    */
   @Path("lookup/sourcecodes")
   @POST
@@ -326,11 +350,16 @@ public class VocabularyService extends AbstractDaoService {
   }
   
   /**
-   * @summary find all concepts mapped to the identifiers provided
+   * Get concepts mapped to the selected concept identifiers from a 
+   * specific source. Find all concepts mapped to the concept identifiers 
+   * provided. This end-point will check the CONCEPT, CONCEPT_RELATIONSHIP and
+   * SOURCE_TO_CONCEPT_MAP tables.
+   * 
+   * @summary Concepts mapped to other concepts
    * @param sourceKey path parameter specifying the source key identifying the
    * source to use for access to the set of vocabulary tables
    * @param identifiers an array of concept identifiers
-   * @return collection of concepts
+   * @return A collection of concepts
    */
   @Path("{sourceKey}/lookup/mapped")
   @POST
@@ -371,9 +400,14 @@ public class VocabularyService extends AbstractDaoService {
   }
 
   /**
-   * @summary find all concepts mapped to the identifiers provided using the default vocabulary source.
+   * Get concepts mapped to the selected concept identifiers from a 
+   * specific source. Find all concepts mapped to the concept identifiers 
+   * provided. This end-point will check the CONCEPT, CONCEPT_RELATIONSHIP and
+   * SOURCE_TO_CONCEPT_MAP tables.
+   * 
+   * @summary Concepts mapped to other concepts
    * @param identifiers an array of concept identifiers
-   * @return collection of concepts
+   * @return A collection of concepts
    */
   @Path("lookup/mapped")
   @POST
@@ -402,6 +436,14 @@ public class VocabularyService extends AbstractDaoService {
     return getSourceJdbcTemplate(source).query(psr.getSql(), this.rowMapper);
   }
 
+  /**
+   * Search for a concept on the selected source.
+   * 
+   * @summary Search for a concept on the selected source
+   * @param sourceKey The source key for the concept search
+   * @param search The ConceptSearch parameters
+   * @return A collection of concepts
+   */
   @Path("{sourceKey}/search")
   @POST
   @Produces(MediaType.APPLICATION_JSON)
@@ -556,9 +598,11 @@ public class VocabularyService extends AbstractDaoService {
   }
 
   /**
-   * Perform a search using the default vocabulary source.
-   * @param search
-   * @return 
+   * Search for a concept on the default vocabulary source.
+   * 
+   * @summary Search for a concept (default vocabulary source)
+   * @param search The ConceptSearch parameters
+   * @return A collection of concepts
    */
   @Path("search")
   @POST
@@ -572,10 +616,14 @@ public class VocabularyService extends AbstractDaoService {
 
     return executeSearch(defaultSourceKey, search);    
   }
+ 
   /**
-   * @param sourceKey
-   * @param query
-   * @return
+   * Search for a concept based on a query using the selected vocabulary source.
+   * 
+   * @summary Search for a concept using a query
+   * @param sourceKey The source key holding the OMOP vocabulary
+   * @param query The query to use to search for concepts
+   * @return A collection of concepts
    */
   @Path("{sourceKey}/search/{query}")
   @GET
@@ -585,10 +633,14 @@ public class VocabularyService extends AbstractDaoService {
   }
   
   /**
-   * @param sourceKey
-   * @param query
-   * @param rows
-   * @return
+   * Search for a concept based on a query using the default vocabulary source.
+   * NOTE: This method uses the query as part of the URL query string
+   * 
+   * @summary Search for a concept using a query (default vocabulary)
+   * @param sourceKey The source key holding the OMOP vocabulary
+   * @param query The query to use to search for concepts
+   * @param rows The number of rows to return.
+   * @return A collection of concepts
    */
   @Path("{sourceKey}/search")
   @GET
@@ -624,9 +676,13 @@ public class VocabularyService extends AbstractDaoService {
   }
 
   /**
-   * Executes a search on the highest priority source that is found first
-   * @param query
-   * @return
+   * Search for a concept based on a query using the default vocabulary source.
+   * NOTE: This method uses the query as part of the URL and not the 
+   * query string
+   * 
+   * @summary Search for a concept using a query (default vocabulary)
+   * @param query The query to use to search for concepts
+   * @return A collection of concepts
    */
   @Path("search/{query}")
   @GET
@@ -640,9 +696,15 @@ public class VocabularyService extends AbstractDaoService {
 
     return executeSearch(defaultSourceKey, query);
   }
+
   /**
-   * @param id
-   * @return
+   * Get a concept based on the concept identifier from the specified 
+   * source
+   * 
+   * @summary Get concept details
+   * @param sourceKey The source containing the vocabulary
+   * @param id The concept ID to find
+   * @return The concept details
    */
   @GET
   @Path("{sourceKey}/concept/{id}")
@@ -664,9 +726,12 @@ public class VocabularyService extends AbstractDaoService {
   }
   
   /**
-   * Returns concept details from the default vocabulary source.
-   * @param id
-   * @return
+   * Get a concept based on the concept identifier from the default
+   * vocabulary source
+   * 
+   * @summary Get concept details (default vocabulary source)
+   * @param id The concept ID to find
+   * @return The concept details
    */
   @GET
   @Path("concept/{id}")
@@ -680,9 +745,17 @@ public class VocabularyService extends AbstractDaoService {
     return getConcept(defaultSourceKey, id);
     
   }
+
   /**
-   * @param id
-   * @return
+   * Get related concepts for the selected concept identifier from a source. 
+   * Related concepts will include those concepts that have a relationship
+   * to the selected concept identifier in the CONCEPT_RELATIONSHIP and 
+   * CONCEPT_ANCESTOR tables.
+   * 
+   * @summary Get related concepts
+   * @param sourceKey The source containing the vocabulary
+   * @param id The concept ID to find
+   * @return A collection of related concepts
    */
   @GET
   @Path("{sourceKey}/concept/{id}/related")
@@ -702,6 +775,15 @@ public class VocabularyService extends AbstractDaoService {
     return concepts.values();
   }
 
+  /**
+   * Get ancestor and descendant concepts for the selected concept identifier 
+   * from a source. 
+   * 
+   * @summary Get ancestors and descendants for a concept
+   * @param sourceKey The source containing the vocabulary
+   * @param id The concept ID
+   * @return A collection of related concepts
+   */
   @GET
   @Path("{sourceKey}/concept/{id}/ancestorAndDescendant")
   @Produces(MediaType.APPLICATION_JSON)
@@ -721,9 +803,12 @@ public class VocabularyService extends AbstractDaoService {
   }
   
   /**
-   * Returns related concepts from the default vocabulary source.
-   * @param id
-   * @return
+   * Get related concepts for the selected concept identifier from the
+   * default vocabulary source. 
+   * 
+   * @summary Get related concepts (default vocabulary)
+   * @param id The concept identifier
+   * @return A collection of related concepts
    */
   @GET
   @Path("concept/{id}/related")
@@ -737,6 +822,15 @@ public class VocabularyService extends AbstractDaoService {
     return getRelatedConcepts(defaultSourceKey, id);
   }
  
+  /**
+   * Get a list of common ancestor concepts for a selected list of concept
+   * identifiers using the selected vocabulary source. 
+   * 
+   * @summary Get common ancestor concepts
+   * @param sourceKey The source containing the vocabulary
+   * @param identifiers An array of concept identifiers
+   * @return A collection of related concepts
+   */
   @POST
   @Path("{sourceKey}/commonAncestors")
   @Produces(MediaType.APPLICATION_JSON)
@@ -767,6 +861,14 @@ public class VocabularyService extends AbstractDaoService {
       new Object[]{identifiers, identifiers.length});
   }
 
+  /**
+   * Get a list of common ancestor concepts for a selected list of concept
+   * identifiers using the default vocabulary source. 
+   * 
+   * @summary Get common ancestor concepts (default vocabulary)
+   * @param identifiers An array of concept identifiers
+   * @return A collection of related concepts
+   */
   @POST
   @Path("/commonAncestors")
   @Produces(MediaType.APPLICATION_JSON)
@@ -780,6 +882,15 @@ public class VocabularyService extends AbstractDaoService {
     return getCommonAncestors(defaultSourceKey, identifiers);
   }
   
+  /**
+   * Resolve a concept set expression into a collection 
+   * of concept identifiers using the selected vocabulary source. 
+   * 
+   * @summary Resolve concept set expression
+   * @param sourceKey The source containing the vocabulary
+   * @param conceptSetExpression A concept set expression
+   * @return A collection of concept identifiers
+   */
   @POST
   @Path("{sourceKey}/resolveConceptSetExpression")
   @Produces(MediaType.APPLICATION_JSON)
@@ -798,6 +909,14 @@ public class VocabularyService extends AbstractDaoService {
     return identifiers;
   }
 
+  /**
+   * Resolve a concept set expression into a collection 
+   * of concept identifiers using the default vocabulary source. 
+   * 
+   * @summary Resolve concept set expression (default vocabulary)
+   * @param conceptSetExpression A concept set expression
+   * @return A collection of concept identifiers
+   */
   @POST
   @Path("resolveConceptSetExpression")
   @Produces(MediaType.APPLICATION_JSON)
@@ -811,6 +930,15 @@ public class VocabularyService extends AbstractDaoService {
     return resolveConceptSetExpression(defaultSourceKey, conceptSetExpression);
   }
 
+  /**
+   * Resolve a concept set expression to get the count
+   * of included concepts using the selected vocabulary source. 
+   * 
+   * @summary Get included concept counts for concept set expression
+   * @param sourceKey The source containing the vocabulary
+   * @param conceptSetExpression A concept set expression
+   * @return A count of included concepts
+   */
   @POST
   @Path("{sourceKey}/included-concepts/count")
   @Produces(MediaType.APPLICATION_JSON)
@@ -822,6 +950,14 @@ public class VocabularyService extends AbstractDaoService {
     return getSourceJdbcTemplate(source).query(query, rs -> rs.next() ? rs.getInt(1) : 0);
   }
 
+  /**
+   * Resolve a concept set expression to get the count
+   * of included concepts using the default vocabulary source. 
+   * 
+   * @summary Get included concept counts for concept set expression (default vocabulary)
+   * @param conceptSetExpression A concept set expression
+   * @return A count of included concepts
+   */
   @POST
   @Path("included-concepts/count")
   @Produces(MediaType.APPLICATION_JSON)
@@ -836,6 +972,14 @@ public class VocabularyService extends AbstractDaoService {
   }
 
 
+  /**
+   * Produces a SQL query to use against your OMOP CDM to create the
+   * resolved concept set
+   * 
+   * @summary Get SQL to resolve concept set expression
+   * @param conceptSetExpression A concept set expression
+   * @return SQL Statement as text
+   */
   @POST
   @Path("conceptSetExpressionSQL")
   @Produces(MediaType.TEXT_PLAIN)
@@ -847,6 +991,15 @@ public class VocabularyService extends AbstractDaoService {
     return query;
   }
   
+  /**
+   * Get a collection of descendant concepts for the selected concept
+   * identifier using the selected source key
+   * 
+   * @summary Get descendant concepts for the selected concept identifier
+   * @param sourceKey The source containing the vocabulary
+   * @param id The concept identifier
+   * @return A collection of concepts
+   */
   @GET
   @Path("{sourceKey}/concept/{id}/descendants")
   @Produces(MediaType.APPLICATION_JSON)
@@ -867,6 +1020,14 @@ public class VocabularyService extends AbstractDaoService {
     return concepts.values();
   }
 
+  /**
+   * Get a collection of descendant concepts for the selected concept
+   * identifier using the default vocabulary
+   * 
+   * @summary Get descendant concepts for the selected concept identifier (default vocabulary)
+   * @param id The concept identifier
+   * @return A collection of concepts
+   */
   @GET
   @Path("concept/{id}/descendants")
   @Produces(MediaType.APPLICATION_JSON)
@@ -879,6 +1040,14 @@ public class VocabularyService extends AbstractDaoService {
     return getDescendantConcepts(defaultSourceKey, id);
   }
   
+  /**
+   * Get a collection of domains from the domain table in the 
+   * vocabulary for the the selected source key.
+   * 
+   * @summary Get domains
+   * @param sourceKey The source containing the vocabulary
+   * @return A collection of domains
+   */
   @GET
   @Path("{sourceKey}/domains")
   @Produces(MediaType.APPLICATION_JSON)
@@ -900,6 +1069,13 @@ public class VocabularyService extends AbstractDaoService {
     });
   }
   
+  /**
+   * Get a collection of domains from the domain table in the 
+   * default vocabulary.
+   * 
+   * @summary Get domains (default vocabulary)
+   * @return A collection of domains
+   */
   @GET
   @Path("domains")
   @Produces(MediaType.APPLICATION_JSON)
@@ -912,6 +1088,14 @@ public class VocabularyService extends AbstractDaoService {
     return getDomains(defaultSourceKey);
   }
   
+  /**
+   * Get a collection of vocabularies from the vocabulary table in the 
+   * selected source key.
+   * 
+   * @summary Get vocabularies
+   * @param sourceKey The source containing the vocabulary
+   * @return A collection of vocabularies
+   */
   @GET
   @Path("{sourceKey}/vocabularies")
   @Produces(MediaType.APPLICATION_JSON)
@@ -935,6 +1119,14 @@ public class VocabularyService extends AbstractDaoService {
     });
   }
   
+  /**
+   * Get a collection of vocabularies from the vocabulary table in the 
+   * default vocabulary
+   * 
+   * @summary Get vocabularies (default vocabulary)
+   * @param sourceKey The source containing the vocabulary
+   * @return A collection of vocabularies
+   */
   @GET
   @Path("vocabularies")
   @Produces(MediaType.APPLICATION_JSON)
@@ -957,6 +1149,8 @@ public class VocabularyService extends AbstractDaoService {
       concept.standardConcept = resultSet.getString("STANDARD_CONCEPT");
       concept.invalidReason = resultSet.getString("INVALID_REASON");
       concept.vocabularyId = resultSet.getString("VOCABULARY_ID");
+      concept.validStartDate = resultSet.getDate("VALID_START_DATE");
+      concept.validEndDate = resultSet.getDate("VALID_END_DATE");
       concept.conceptClassId = resultSet.getString("CONCEPT_CLASS_ID");
       concept.domainId = resultSet.getString("DOMAIN_ID");
 
@@ -974,7 +1168,14 @@ public class VocabularyService extends AbstractDaoService {
     }
   }
 
-  //TODO
+  /**
+   * Get the vocabulary version from the vocabulary table using
+   * the selected source key
+   * 
+   * @summary Get vocabulary version info
+   * @param sourceKey The source containing the vocabulary
+   * @return The vocabulary info
+   */
   @GET
   @Path("{sourceKey}/info")
   @Produces(MediaType.APPLICATION_JSON)
@@ -1006,6 +1207,17 @@ public class VocabularyService extends AbstractDaoService {
     vocabularyInfoCache = null;
   }
   
+  /**
+   * Get the descendant concepts of the selected ancestor vocabulary and 
+   * concept class for the selected sibling vocabulary and concept class. 
+   * It is unclear how this endpoint is used so it may be a candidate to
+   * deprecate.
+   * 
+   * @summary Get descendant concepts by source
+   * @param sourceKey The source containing the vocabulary
+   * @param search The descendant of ancestor search object
+   * @return A collection of concepts
+   */
   @POST
   @Path("{sourceKey}/descendantofancestor")
   @Produces(MediaType.APPLICATION_JSON)
@@ -1029,6 +1241,16 @@ public class VocabularyService extends AbstractDaoService {
     return new PreparedStatementRenderer(source, sqlPath, tqName, tqValue, names, values);
   }
 
+  /**
+   * Get the descendant concepts of the selected ancestor vocabulary and 
+   * concept class for the selected sibling vocabulary and concept class. 
+   * It is unclear how this endpoint is used so it may be a candidate to
+   * deprecate.
+   * 
+   * @summary Get descendant concepts (default vocabulary)
+   * @param search The descendant of ancestor search object
+   * @return A collection of concepts
+   */
   @POST
   @Path("descendantofancestor")
   @Produces(MediaType.APPLICATION_JSON)
@@ -1042,6 +1264,15 @@ public class VocabularyService extends AbstractDaoService {
     return getDescendantOfAncestorConcepts(defaultSourceKey, search);
   }
   
+  /**
+   * Get the related concepts for a list of concept ids using the 
+   * concept_relationship table for the selected source key
+   * 
+   * @summary Get related concepts
+   * @param sourceKey The source containing the vocabulary
+   * @param search The concept identifiers of interest
+   * @return A collection of concepts
+   */
   @Path("{sourceKey}/relatedconcepts")
   @POST
   @Produces(MediaType.APPLICATION_JSON)
@@ -1078,6 +1309,14 @@ public class VocabularyService extends AbstractDaoService {
     return new PreparedStatementRenderer(source, resourcePath, searchStrings, replacementStrings, varNames, varValues);
   }
 
+  /**
+   * Get the related concepts for a list of concept ids using the 
+   * concept_relationship table
+   * 
+   * @summary Get related concepts (default vocabulary)
+   * @param search The concept identifiers of interest
+   * @return A collection of concepts
+   */
   @Path("relatedconcepts")
   @POST
   @Produces(MediaType.APPLICATION_JSON)
@@ -1091,6 +1330,15 @@ public class VocabularyService extends AbstractDaoService {
     return getRelatedConcepts(defaultSourceKey, search);
   }
   
+  /**
+   * Get the descendant concepts for a selected list of concept ids for a
+   * selected source key
+   * 
+   * @summary Get descendant concepts for selected concepts
+   * @param sourceKey The source containing the vocabulary
+   * @param conceptList The list of concept identifiers
+   * @return A collection of concepts
+   */
   @Path("{sourceKey}/conceptlist/descendants")
   @POST
   @Produces(MediaType.APPLICATION_JSON)
@@ -1110,6 +1358,13 @@ public class VocabularyService extends AbstractDaoService {
     return concepts.values();
   }
   
+  /**
+   * Get the descendant concepts for a selected list of concept ids 
+   * 
+   * @summary Get descendant concepts for selected concepts (default vocabulary)
+   * @param conceptList The list of concept identifiers
+   * @return A collection of concepts
+   */
   @Path("conceptlist/descendants")
   @POST
   @Produces(MediaType.APPLICATION_JSON)
@@ -1131,6 +1386,15 @@ public class VocabularyService extends AbstractDaoService {
     return new PreparedStatementRenderer( source, sqlPath, tqName, tqValue, "id", conceptArray.toArray());
   }
 
+  /**
+   * Get the recommended concepts for a selected list of concept ids for a
+   * selected source key
+   * 
+   * @summary Get recommended concepts for selected concepts
+   * @param sourceKey The source containing the vocabulary
+   * @param conceptList The list of concept identifiers
+   * @return A collection of recommended concepts
+   */
   @Path("{sourceKey}/lookup/recommended")
   @POST
   @Produces(MediaType.APPLICATION_JSON)
@@ -1181,6 +1445,15 @@ public class VocabularyService extends AbstractDaoService {
     concept.relationships.add(resultSet.getString("RELATIONSHIP_ID"));
   }
 
+  /**
+   * Compares two concept set expressions to find which concepts are
+   * shared or unique to each concept set for the selected vocabulary source.
+   * 
+   * @summary Compare concept sets
+   * @param sourceKey The source containing the vocabulary
+   * @param conceptSetExpressionList Expects a list of exactly 2 concept set expressions
+   * @return A collection of concept set comparisons
+   */
   @Path("{sourceKey}/compare")
   @POST
   @Produces(MediaType.APPLICATION_JSON)
@@ -1221,6 +1494,8 @@ public class VocabularyService extends AbstractDaoService {
         csc.conceptCode = rs.getString("concept_code");
         csc.domainId = rs.getString("domain_id");
         csc.vocabularyId = rs.getString("vocabulary_id");
+        csc.validStartDate = rs.getDate("valid_start_date");
+        csc.validEndDate = rs.getDate("valid_end_date");
         csc.conceptClassId = rs.getString("concept_class_id");
         return csc;
       }
@@ -1229,6 +1504,14 @@ public class VocabularyService extends AbstractDaoService {
     return returnVal;
   }
 
+  /**
+   * Compares two concept set expressions to find which concepts are
+   * shared or unique to each concept set.
+   * 
+   * @summary Compare concept sets (default vocabulary)
+   * @param conceptSetExpressionList Expects a list of exactly 2 concept set expressions
+   * @return A collection of concept set comparisons
+   */
   @Path("compare")
   @POST
   @Produces(MediaType.APPLICATION_JSON)
@@ -1242,6 +1525,15 @@ public class VocabularyService extends AbstractDaoService {
     return compareConceptSets(defaultSourceKey, conceptSetExpressionList);
   }
   
+  /**
+   * Optimizes a concept set expressions to find redundant concepts specified
+   * in a concept set expression for the selected source key.
+   * 
+   * @summary Optimize concept set
+   * @param sourceKey The source containing the vocabulary
+   * @param conceptSetExpression The concept set expression to optimize
+   * @return A concept set optimization
+   */
   @Path("{sourceKey}/optimize")
   @POST
   @Produces(MediaType.APPLICATION_JSON)
@@ -1312,6 +1604,15 @@ public class VocabularyService extends AbstractDaoService {
     return returnVal;
   }
   
+  /**
+   * Optimizes a concept set expressions to find redundant concepts specified
+   * in a concept set expression.
+   * 
+   * @summary Optimize concept set (default vocabulary)
+   * @param sourceKey The source containing the vocabulary
+   * @param conceptSetExpression The concept set expression to optimize
+   * @return A concept set optimization
+   */
   @Path("optimize")
   @POST
   @Produces(MediaType.APPLICATION_JSON)

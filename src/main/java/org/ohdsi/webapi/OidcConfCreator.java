@@ -38,6 +38,9 @@ public class OidcConfCreator {
     
     @Value("${security.oid.logoutUrl}")
     private String logoutUrl;
+
+    @Value("${security.oid.extraScopes}")
+    private String extraScopes;
     
     @Value("${security.oauth.callback.api}")
     private String oauthApiCallback;
@@ -50,6 +53,13 @@ public class OidcConfCreator {
         conf.setLogoutUrl(logoutUrl);
         conf.setWithState(true);
         conf.setUseNonce(true);
+
+        String scopes = "openid";
+        if (extraScopes != null && !extraScopes.isEmpty()){
+            scopes += " ";
+            scopes += extraScopes;
+        }
+        conf.setScope(scopes);
         conf.setPreferredJwsAlgorithm(JWSAlgorithm.RS256);
         return conf;
     }

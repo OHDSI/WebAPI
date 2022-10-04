@@ -470,7 +470,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 	}
 
 	private final RowMapper<PathwayCode> codeRowMapper = (final ResultSet resultSet, final int arg1) -> {
-		return new PathwayCode(resultSet.getInt("code"), resultSet.getString("name"), resultSet.getInt("is_combo") != 0);
+		return new PathwayCode(resultSet.getLong("code"), resultSet.getString("name"), resultSet.getInt("is_combo") != 0);
 	};
 
 	private final RowMapper<CohortPathways> pathwayStatsRowMapper = (final ResultSet rs, final int arg1) -> {
@@ -653,6 +653,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 	private void copyProps(PathwayAnalysisEntity from, PathwayAnalysisEntity to) {
 
 		to.setName(from.getName());
+		to.setDescription(from.getDescription());
 		to.setMaxDepth(from.getMaxDepth());
 		to.setMinCellCount(from.getMinCellCount());
 		to.setCombinationWindow(from.getCombinationWindow());

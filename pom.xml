@@ -1549,8 +1549,8 @@
         </dependency>
         <dependency>
           <groupId>io.opencensus</groupId>
-          <artifactId>opencensus-api</artifactId>
-          <version>0.21.0</version>
+          <artifactId>opencensus-contrib-http-util</artifactId>
+          <version>0.18.0</version>
         </dependency>
       </dependencies>
       <build>

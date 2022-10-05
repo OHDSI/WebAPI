@@ -1548,6 +1548,11 @@
           <version>1.47.0</version>
         </dependency>
         <dependency>
+          <groupId>com.google.api</groupId>
+          <artifactId>gax-rpc</artifactId>
+          <version>1.47.0</version>
+        </dependency>
+        <dependency>
           <groupId>io.opencensus</groupId>
           <artifactId>opencensus-contrib-http-util</artifactId>
           <version>0.18.0</version>

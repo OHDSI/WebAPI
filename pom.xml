@@ -1547,6 +1547,11 @@
           <artifactId>gax</artifactId>
           <version>1.47.0</version>
         </dependency>
+        <dependency>
+          <groupId>io.opencensus</groupId>
+          <artifactId>opencensus-api</artifactId>
+          <version>0.21.0</version>
+        </dependency>
       </dependencies>
       <build>
         <plugins>

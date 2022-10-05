@@ -1549,7 +1549,7 @@
         </dependency>
         <dependency>
           <groupId>com.google.api</groupId>
-          <artifactId>gax-rpc</artifactId>
+          <artifactId>gax-grpc</artifactId>
           <version>1.47.0</version>
         </dependency>
         <dependency>

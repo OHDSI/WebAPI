@@ -21,6 +21,11 @@ import org.ohdsi.featureExtraction.FeatureExtraction;
 @Path("/featureextraction/")
 @Component
 public class FeatureExtractionService extends AbstractDaoService {
+	/**
+	 * Get default feature extraction settings
+	 * @param temporal Use temporal covariate settings? true or false (default)
+	 * @return JSON with default covariate settings object
+	 */
 	@GET
 	@Path("defaultcovariatesettings")
 	@Produces(MediaType.APPLICATION_JSON)

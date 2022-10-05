@@ -1553,6 +1553,11 @@
           <version>1.47.0</version>
         </dependency>
         <dependency>
+          <groupId>com.google.api.grpc</groupId>
+          <artifactId>proto-google-cloud-bigquerystorage-v1beta1</artifactId>
+          <version>0.66.0</version>
+        </dependency>
+        <dependency>
           <groupId>io.opencensus</groupId>
           <artifactId>opencensus-contrib-http-util</artifactId>
           <version>0.18.0</version>

@@ -1806,7 +1806,7 @@ public class CohortResultsService extends AbstractDaoService {
    * Provides a time to event calculation but it is unclear how this works.
    * 
    * @summary DO NOT USE
-   * @depreciated
+   * @deprecated
    * @param sourceKey The source key
    * @param search The exposure cohort search
    * @return List<TimeToEventResult>

@@ -18,13 +18,13 @@
     <waffle.version>2.2.1</waffle.version>
     <jna.version>5.5.0</jna.version>
     <hibernate.version>5.4.2.Final</hibernate.version>
-    <postgresql.version>42.3.3</postgresql.version>
-    <bouncycastle.version>1.68</bouncycastle.version>
-    <shiro.version>1.8.0</shiro.version>
+    <postgresql.version>42.3.7</postgresql.version>
+    <bouncycastle.version>1.69</bouncycastle.version>
+    <shiro.version>1.9.1</shiro.version>
     <dom4j.version>2.1.3</dom4j.version>
-    <hydra.version>0.2.0</hydra.version>
+    <hydra.version>0.3.0</hydra.version>
     <featureExtraction.version>3.2.0</featureExtraction.version>
-    <tomcat.embed.version>8.5.81</tomcat.embed.version>
+    <tomcat.embed.version>8.5.82</tomcat.embed.version>
 
     <commons-fileupload.version>1.3.3</commons-fileupload.version>
 
@@ -33,8 +33,7 @@
     <SqlRender.version>1.10.0</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
     <pac4j.version>4.0.0</pac4j.version>
-    <jackson.version>2.10.5</jackson.version>
-    <jackson.databind.version>2.10.5.1</jackson.databind.version>
+    <jackson.version>2.12.7</jackson.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
     <skipUnitTests>false</skipUnitTests>
     <skipITtests>false</skipITtests>
@@ -70,7 +69,7 @@
     <!-- Full Text Search With SOLR Settings -->
     <solr.endpoint></solr.endpoint>
     <solr.query.prefix>{!complexphrase inOrder=true}</solr.query.prefix>
-    <solr.version>8.6.3</solr.version>
+    <solr.version>8.11.2</solr.version>
     <!-- Heracles properties -->
     <heracles.smallcellcount>5</heracles.smallcellcount>
 
@@ -576,7 +575,7 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>${jackson.databind.version}</version>
+      <version>${jackson.version}</version>
       <exclusions>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
@@ -615,15 +614,15 @@
     <dependency>
       <groupId>org.yaml</groupId>
       <artifactId>snakeyaml</artifactId>
-      <version>1.26</version>
+      <version>1.32</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
       <exclusions>
         <exclusion>
-          <artifactId>org.hibernate</artifactId>
-          <groupId>hibernate-validator</groupId>
+          <groupId>org.hibernate</groupId>
+          <artifactId>hibernate-validator</artifactId>
         </exclusion>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
@@ -680,8 +679,8 @@
       <artifactId>spring-boot-starter-jersey</artifactId>
       <exclusions>
         <exclusion>
-          <artifactId>org.hibernate</artifactId>
-          <groupId>hibernate-validator</groupId>
+          <groupId>org.hibernate</groupId>
+          <artifactId>hibernate-validator</artifactId>
         </exclusion>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
@@ -701,19 +700,19 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-jpa</artifactId>
     </dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-cache</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>javax.cache</groupId>
-			<artifactId>cache-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.ehcache</groupId>
-			<artifactId>ehcache</artifactId>
-            <version>3.8.1</version>
-		</dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-cache</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.cache</groupId>
+      <artifactId>cache-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ehcache</groupId>
+      <artifactId>ehcache</artifactId>
+      <version>3.8.1</version>
+    </dependency>
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-core</artifactId>
@@ -776,6 +775,12 @@
             <exclusion>
                 <groupId>com.vaadin.external.google</groupId>
                 <artifactId>android-json</artifactId>
+            </exclusion>
+            <!-- To have an explicit json-smart dependency in the dependencies block effective -->
+            <!-- For some reason it is not overriden as the other dependencies like jackson-databind -->
+            <exclusion>
+              <groupId>net.minidev</groupId>
+              <artifactId>json-smart</artifactId>
             </exclusion>
         </exclusions>
     </dependency>
@@ -856,6 +861,14 @@
       <groupId>com.microsoft.azure</groupId>
       <artifactId>msal4j</artifactId>
       <version>1.9.0</version>
+      <!-- To have an explicit json-smart dependency in the dependencies block effective -->
+      <!-- For some reason it is not overriden as the other dependencies like jackson-databind -->
+      <exclusions>
+        <exclusion>
+          <groupId>net.minidev</groupId>
+          <artifactId>json-smart</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.opencsv</groupId>
@@ -960,6 +973,12 @@
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-databind</artifactId>
         </exclusion>
+        <!-- To have an explicit json-smart dependency in the dependencies block effective -->
+        <!-- For some reason it is not overriden as the other dependencies like jackson-databind -->
+        <exclusion>
+          <groupId>net.minidev</groupId>
+          <artifactId>json-smart</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -996,7 +1015,7 @@
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
-      <version>20170516</version>
+      <version>20180130</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>

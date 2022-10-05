@@ -43,9 +43,15 @@ import javax.ws.rs.core.Response;
 import org.ohdsi.webapi.person.CohortPerson;
 
 /**
- *
- * Services related to cohort level analysis results
- *
+ * REST Services related to retrieving
+ * cohort analysis (a.k.a Heracles Results) analyses results. 
+ * More information on the Heracles project
+ * can be found at {@link https://www.ohdsi.org/web/wiki/doku.php?id=documentation:software:heracles}.
+ * The implementation found in WebAPI represents a migration of the functionality
+ * from the stand-alone HERACLES application to integrate it into WebAPI and
+ * ATLAS.
+ * 
+ * @summary Cohort Analysis Results (a.k.a Heracles Results)
  */
 @Path("/cohortresults")
 @Component
@@ -78,6 +84,7 @@ public class CohortResultsService extends AbstractDaoService {
   /**
    * Queries for cohort analysis results for the given cohort definition id
    *
+   * @summary Get results for analysis group
    * @param id cohort_defintion id
    * @param analysisGroup Name of the analysisGrouping under the
    * /resources/cohortresults/sql/ directory
@@ -130,6 +137,14 @@ public class CohortResultsService extends AbstractDaoService {
     return new PreparedStatementRenderer(source, resourcePath, searchStringNames, replacementNames, variableNames, variableValues);
   }
 
+  /**
+   * Export the cohort analysis results to a ZIP file
+   * 
+   * @summary Export cohort analysis results
+   * @param id The cohort ID
+   * @param sourceKey The source Key
+   * @return A response containing the .ZIP file of results
+   */
   @GET
   @Path("{sourceKey}/{id}/export.zip")
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
@@ -221,6 +236,15 @@ public class CohortResultsService extends AbstractDaoService {
     return response;
   }
 
+  /**
+   * Provides a warmup mechanism for the data visualization cache. This
+   * endpoint does not appear to be used and may be a hold over from the 
+   * original HERACLES implementation
+   * 
+   * @summary Warmup data visualizations
+   * @param task The cohort analysis task
+   * @return The number of report visualizations warmed
+   */
   @POST
   @Path("/warmup")
   @Produces(MediaType.APPLICATION_JSON)
@@ -230,6 +254,14 @@ public class CohortResultsService extends AbstractDaoService {
 
   }
 
+  /**
+   * Provides a list of cohort analysis visualizations that are completed
+   * 
+   * @summary Get completed cohort analysis visualizations
+   * @param id The cohort ID
+   * @param sourceKey The source key
+   * @return A list of visualization keys that are complete
+   */
   @GET
   @Path("{sourceKey}/{id}/completed")
   @Produces(MediaType.APPLICATION_JSON)
@@ -247,28 +279,33 @@ public class CohortResultsService extends AbstractDaoService {
     return completed;
   }
 
+
   /**
-   * Tornado Plot Report
-	 * @param id cohortDefinitionId
-	 *
+   * Retrieves the tornado plot
+   * 
+   * @summary Get the tornado plot
+   * @param sourceKey The source key
+   * @param cohortDefinitionId The cohort definition id
+   * @return The tornado plot data
    */
   @GET
-	@Path("{sourceKey}/{id}/tornado")
-	@Produces(MediaType.APPLICATION_JSON)
-	public TornadoReport getTornadoReport(@PathParam("sourceKey") final String sourceKey, @PathParam("id") final int cohortDefinitionId) {
-		Source source = getSourceRepository().findBySourceKey(sourceKey);
-		TornadoReport tornadoReport = new TornadoReport();
-		tornadoReport.tornadoRecords = queryRunner.getTornadoRecords(getSourceJdbcTemplate(source), cohortDefinitionId, source);
-		tornadoReport.profileSamples = queryRunner.getProfileSampleRecords(getSourceJdbcTemplate(source), cohortDefinitionId, source);
-		return tornadoReport;
-	}
+  @Path("{sourceKey}/{id}/tornado")
+  @Produces(MediaType.APPLICATION_JSON)
+  public TornadoReport getTornadoReport(@PathParam("sourceKey") final String sourceKey, @PathParam("id") final int cohortDefinitionId) {
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        TornadoReport tornadoReport = new TornadoReport();
+        tornadoReport.tornadoRecords = queryRunner.getTornadoRecords(getSourceJdbcTemplate(source), cohortDefinitionId, source);
+        tornadoReport.profileSamples = queryRunner.getProfileSampleRecords(getSourceJdbcTemplate(source), cohortDefinitionId, source);
+        return tornadoReport;
+  }
 
   /**
    * Queries for cohort analysis dashboard for the given cohort definition id
    *
-   * @param id cohort_defintion id
-   * @param minCovariatePersonCountParam
-   * @param minIntervalPersonCountParam
+   * @summary Get the dashboard
+   * @param id The cohort definition id
+   * @param minCovariatePersonCountParam The minimum number of covariates per person
+   * @param minIntervalPersonCountParam The minimum interval person count
    * @param demographicsOnly only render gender and age
    * @return CohortDashboard
    */
@@ -307,8 +344,13 @@ public class CohortResultsService extends AbstractDaoService {
   /**
    * Queries for cohort analysis condition treemap results for the given cohort
    * definition id
-   *
-   * @param id cohort_defintion id
+   * 
+   * @summary Get condition treemap
+   * @param sourceKey The source key
+   * @param id The cohort ID
+   * @param minCovariatePersonCountParam The minimum number of covariates per person
+   * @param minIntervalPersonCountParam The minimum interval person count
+   * @param refresh Boolean - refresh visualization data
    * @return List<HierarchicalConceptRecord>
    */
   @GET
@@ -338,6 +380,15 @@ public class CohortResultsService extends AbstractDaoService {
     return res;
   }
 
+  /**
+   * Get the distinct person count for a cohort
+   * 
+   * @summary Get distinct person count
+   * @param sourceKey The source key
+   * @param id The cohort ID
+   * @param refresh Boolean - refresh visualization data
+   * @return Distinct person count as integer
+   */
   @GET
   @Path("{sourceKey}/{id}/distinctPersonCount/")
   @Produces(MediaType.APPLICATION_JSON)
@@ -370,10 +421,14 @@ public class CohortResultsService extends AbstractDaoService {
   /**
    * Queries for cohort analysis condition drilldown results for the given
    * cohort definition id and condition id
-   *
-   * @param id cohort_defintion id
-   * @param conditionId condition_id (from concept)
-   * @return CohortConditionDrilldown
+   * 
+   * @param sourceKey The source key
+   * @param id The cohort ID
+   * @param conditionId The condition concept ID
+   * @param minCovariatePersonCountParam The minimum number of covariates per person
+   * @param minIntervalPersonCountParam The minimum interval person count
+   * @param refresh Boolean - refresh visualization data
+   * @return The CohortConditionDrilldown detail object
    */
   @GET
   @Path("{sourceKey}/{id}/condition/{conditionId}")
@@ -406,8 +461,12 @@ public class CohortResultsService extends AbstractDaoService {
   /**
    * Queries for cohort analysis condition era treemap results for the given
    * cohort definition id
-   *
-   * @param id cohort_defintion id
+   * 
+   * @param sourceKey The source key
+   * @param id The cohort ID
+   * @param minCovariatePersonCountParam The minimum number of covariates per person
+   * @param minIntervalPersonCountParam The minimum interval person count
+   * @param refresh Boolean - refresh visualization data
    * @return List<HierarchicalConceptRecord>
    */
   @GET
@@ -439,6 +498,14 @@ public class CohortResultsService extends AbstractDaoService {
     return res;
   }
 
+  /**
+   * Get the completed analyses IDs for the selected cohort and source key
+   * 
+   * @summary Get completed analyses IDs
+   * @param sourceKey The source key
+   * @param id The cohort ID
+   * @return A list of completed analysis IDs
+   */
   @GET
   @Path("{sourceKey}/{id}/analyses")
   @Produces(MediaType.APPLICATION_JSON)
@@ -497,6 +564,14 @@ public class CohortResultsService extends AbstractDaoService {
     }
   }
 
+  /**
+   * Get the analysis generation progress
+   * 
+   * @summary Get analysis progress
+   * @param sourceKey The source key
+   * @param id The cohort ID
+   * @return The generation progress information
+   */
   @GET
   @Path("{sourceKey}/{id}/info")
   @Produces(MediaType.APPLICATION_JSON)
@@ -525,10 +600,15 @@ public class CohortResultsService extends AbstractDaoService {
   /**
    * Queries for cohort analysis condition era drilldown results for the given
    * cohort definition id and condition id
-   *
-   * @param id cohort_defintion id
-   * @param conditionId condition_id (from concept)
-   * @return CohortConditionEraDrilldown
+   * 
+   * @summary Get condition era drilldown report
+   * @param id The cohort ID
+   * @param conditionId The condition ID
+   * @param minCovariatePersonCountParam The minimum number of covariates per person
+   * @param minIntervalPersonCountParam The minimum interval person count
+   * @param sourceKey The source key
+   * @param refresh Boolean - refresh visualization data
+   * @return The CohortConditionEraDrilldown object
    */
   @GET
   @Path("{sourceKey}/{id}/conditionera/{conditionId}")
@@ -561,10 +641,15 @@ public class CohortResultsService extends AbstractDaoService {
   }
 
   /**
-   * Queries for drug analysis condition treemap results for the given cohort
+   * Queries for drug analysis treemap results for the given cohort
    * definition id
-   *
-   * @param id cohort_defintion id
+   * 
+   * @summary Get drug treemap
+   * @param id The cohort ID
+   * @param minCovariatePersonCountParam The minimum number of covariates per person
+   * @param minIntervalPersonCountParam The minimum interval person count
+   * @param sourceKey The source key
+   * @param refresh Boolean - refresh visualization data
    * @return List<HierarchicalConceptRecord>
    */
   @GET
@@ -596,12 +681,23 @@ public class CohortResultsService extends AbstractDaoService {
   }
 
   /**
-   * Queries for cohort analysis drug drilldown results for the given cohort
-   * definition id and condition id
    *
    * @param id cohort_defintion id
    * @param drugId drug_id (from concept)
    * @return CohortDrugDrilldown
+   */
+  /**
+   * Queries for cohort analysis drug drilldown results for the given cohort
+   * definition id and drug id
+   * 
+   * @summary Get drug drilldown report
+   * @param id The cohort ID
+   * @param drugId The drug concept ID
+   * @param minCovariatePersonCountParam The minimum number of covariates per person
+   * @param minIntervalPersonCountParam The minimum interval person count
+   * @param sourceKey The source key
+   * @param refresh Boolean - refresh visualization data
+   * @return 
    */
   @GET
   @Path("{sourceKey}/{id}/drug/{drugId}")
@@ -633,8 +729,13 @@ public class CohortResultsService extends AbstractDaoService {
   /**
    * Queries for cohort analysis drug era treemap results for the given cohort
    * definition id
-   *
-   * @param id cohort_defintion id
+   * 
+   * @summary Get drug era treemap report
+   * @param id The cohort ID
+   * @param minCovariatePersonCountParam The minimum number of covariates per person
+   * @param minIntervalPersonCountParam The minimum interval person count
+   * @param sourceKey The source key
+   * @param refresh Boolean - refresh visualization data
    * @return List<HierarchicalConceptRecord>
    */
   @GET
@@ -666,11 +767,22 @@ public class CohortResultsService extends AbstractDaoService {
   }
 
   /**
-   * Queries for cohort analysis drug era drilldown results for the given cohort
-   * definition id and condition id
    *
    * @param id cohort_defintion id
    * @param drugId drug_id (from concept)
+   * @return CohortDrugEraDrilldown
+   */
+  /**
+   * Queries for cohort analysis drug era drilldown results for the given cohort
+   * definition id and drug id
+   * 
+   * @summary Get drug era drilldown report
+   * @param id The cohort ID
+   * @param drugId The drug concept ID
+   * @param minCovariatePersonCountParam The minimum number of covariates per person
+   * @param minIntervalPersonCountParam The minimum interval person count
+   * @param sourceKey The source key
+   * @param refresh Boolean - refresh visualization data
    * @return CohortDrugEraDrilldown
    */
   @GET
@@ -703,9 +815,14 @@ public class CohortResultsService extends AbstractDaoService {
   /**
    * Queries for cohort analysis person results for the given cohort definition
    * id
-   *
-   * @param id cohort_defintion id
-   * @return CohortPersonSummary
+   * 
+   * @summary Get the person report
+   * @param id The cohort ID
+   * @param minCovariatePersonCountParam The minimum number of covariates per person
+   * @param minIntervalPersonCountParam The minimum interval person count
+   * @param sourceKey The source key
+   * @param refresh Boolean - refresh visualization data
+   * @return 
    */
   @GET
   @Path("{sourceKey}/{id}/person")
@@ -736,8 +853,13 @@ public class CohortResultsService extends AbstractDaoService {
   /**
    * Queries for cohort analysis cohort specific results for the given cohort
    * definition id
-   *
-   * @param id cohort_defintion id
+   * 
+   * @summary Get cohort specific results
+   * @param id The cohort ID
+   * @param minCovariatePersonCountParam The minimum number of covariates per person
+   * @param minIntervalPersonCountParam The minimum interval person count
+   * @param sourceKey The source key
+   * @param refresh Boolean - refresh visualization data
    * @return CohortSpecificSummary
    */
   @GET
@@ -769,9 +891,14 @@ public class CohortResultsService extends AbstractDaoService {
   /**
    * Queries for cohort analysis cohort specific treemap results for the given
    * cohort definition id
-   *
-   * @param id cohort_definition id
-   * @return CohortSpecificSummary
+   * 
+   * @summary Get cohort specific treemap
+   * @param id The cohort ID
+   * @param minCovariatePersonCountParam The minimum number of covariates per person
+   * @param minIntervalPersonCountParam The minimum interval person count
+   * @param sourceKey The source key
+   * @param refresh Boolean - refresh visualization data
+   * @return CohortSpecificTreemap
    */
   @GET
   @Path("{sourceKey}/{id}/cohortspecifictreemap")
@@ -803,9 +930,14 @@ public class CohortResultsService extends AbstractDaoService {
   /**
    * Queries for cohort analysis procedure drilldown results for the given
    * cohort definition id and concept id
-   *
-   * @param id cohort_definition id
-   * @param conceptId conceptId (from concept)
+   * 
+   * @summary Get procedure drilldown report
+   * @param id The cohort ID
+   * @param conceptId The procedure concept ID
+   * @param minCovariatePersonCountParam The minimum number of covariates per person
+   * @param minIntervalPersonCountParam The minimum interval person count
+   * @param sourceKey The source key
+   * @param refresh Boolean - refresh visualization data
    * @return List<ScatterplotRecord>
    */
   @GET
@@ -839,11 +971,22 @@ public class CohortResultsService extends AbstractDaoService {
   }
 
   /**
-   * Queries for cohort analysis drug drilldown results for the given cohort
-   * definition id and concept id
    *
    * @param id cohort_definition id
    * @param conceptId conceptId (from concept)
+   * @return List<ScatterplotRecord>
+   */
+  /**
+   * Queries for cohort analysis drug drilldown results for the given cohort
+   * definition id and concept id
+   * 
+   * @summary Get drug drilldown report for specific concept
+   * @param id The cohort ID
+   * @param conceptId The drug concept ID
+   * @param minCovariatePersonCountParam The minimum number of covariates per person
+   * @param minIntervalPersonCountParam The minimum interval person count
+   * @param sourceKey The source key
+   * @param refresh Boolean - refresh visualization data
    * @return List<ScatterplotRecord>
    */
   @GET
@@ -877,9 +1020,13 @@ public class CohortResultsService extends AbstractDaoService {
   /**
    * Queries for cohort analysis condition drilldown results for the given
    * cohort definition id and concept id
-   *
-   * @param id cohort_defintion id
-   * @param conceptId conceptId (from concept)
+   * 
+   * @param id The cohort ID
+   * @param conceptId The condition concept ID
+   * @param minCovariatePersonCountParam The minimum number of covariates per person
+   * @param minIntervalPersonCountParam The minimum interval person count
+   * @param sourceKey The source key
+   * @param refresh Boolean - refresh visualization data
    * @return List<ScatterplotRecord>
    */
   @GET
@@ -915,8 +1062,13 @@ public class CohortResultsService extends AbstractDaoService {
 
   /**
    * Queries for cohort analysis for observation treemap
-   *
-   * @param id cohort_defintion id
+   * 
+   * @summary Get observation treemap report
+   * @param id The cohort ID
+   * @param minCovariatePersonCountParam The minimum number of covariates per person
+   * @param minIntervalPersonCountParam The minimum interval person count
+   * @param sourceKey The source key
+   * @param refresh Boolean - refresh visualization data
    * @return List<HierarchicalConceptRecord>
    */
   @GET
@@ -949,10 +1101,15 @@ public class CohortResultsService extends AbstractDaoService {
 
   /**
    * Queries for cohort analysis observation drilldown results for the given
-   * cohort definition id and condition id
-   *
-   * @param id cohort_defintion id
-   * @param conceptId conceptId (from concept)
+   * cohort definition id and observation concept id
+   * 
+   * @summary Get observation drilldown report for a concept ID
+   * @param id The cohort ID
+   * @param conceptId The observation concept ID
+   * @param minCovariatePersonCountParam The minimum number of covariates per person
+   * @param minIntervalPersonCountParam The minimum interval person count
+   * @param sourceKey The source key
+   * @param refresh Boolean - refresh visualization data
    * @return CohortObservationDrilldown
    */
   @GET
@@ -985,8 +1142,13 @@ public class CohortResultsService extends AbstractDaoService {
 
   /**
    * Queries for cohort analysis for measurement treemap
-   *
-   * @param id cohort_defintion id
+   * 
+   * @summary Get measurement treemap report
+   * @param id The cohort ID
+   * @param minCovariatePersonCountParam The minimum number of covariates per person
+   * @param minIntervalPersonCountParam The minimum interval person count
+   * @param sourceKey The source key
+   * @param refresh Boolean - refresh visualization data
    * @return List<HierarchicalConceptRecord>
    */
   @GET
@@ -1017,11 +1179,22 @@ public class CohortResultsService extends AbstractDaoService {
   }
 
   /**
-   * Queries for cohort analysis measurement drilldown results for the given
-   * cohort definition id and condition id
    *
    * @param id cohort_defintion id
    * @param conceptId conceptId (from concept)
+   * @return CohortMeasurementDrilldown
+   */
+  /**
+   * Queries for cohort analysis measurement drilldown results for the given
+   * cohort definition id and measurement concept id
+   * 
+   * @summary Get measurement drilldown report for concept ID
+   * @param id The cohort ID
+   * @param conceptId The measurement concept ID
+   * @param minCovariatePersonCountParam The minimum number of covariates per person
+   * @param minIntervalPersonCountParam The minimum interval person count
+   * @param sourceKey The source key
+   * @param refresh Boolean - refresh visualization data
    * @return CohortMeasurementDrilldown
    */
   @GET
@@ -1053,10 +1226,13 @@ public class CohortResultsService extends AbstractDaoService {
   /**
    * Queries for cohort analysis observation period for the given cohort
    * definition id
-   *
-   * @param id cohort_defintion id
-   * @param minCovariatePersonCountParam
-   * @param minIntervalPersonCountParam
+   * 
+   * @summary Get observation period report
+   * @param id The cohort ID
+   * @param minCovariatePersonCountParam The minimum number of covariates per person
+   * @param minIntervalPersonCountParam The minimum interval person count
+   * @param sourceKey The source key
+   * @param refresh Boolean - refresh visualization data
    * @return CohortObservationPeriod
    */
   @GET
@@ -1087,10 +1263,13 @@ public class CohortResultsService extends AbstractDaoService {
 
   /**
    * Queries for cohort analysis data density for the given cohort definition id
-   *
-   * @param id cohort_defintion id
-   * @param minCovariatePersonCountParam
-   * @param minIntervalPersonCountParam
+   * 
+   * @summary Get data density report
+   * @param id The cohort ID
+   * @param minCovariatePersonCountParam The minimum number of covariates per person
+   * @param minIntervalPersonCountParam The minimum interval person count
+   * @param sourceKey The source key
+   * @param refresh Boolean - refresh visualization data
    * @return CohortDataDensity
    */
   @GET
@@ -1123,8 +1302,13 @@ public class CohortResultsService extends AbstractDaoService {
   /**
    * Queries for cohort analysis procedure treemap results for the given cohort
    * definition id
-   *
-   * @param id cohort_defintion id
+   * 
+   * @summary Get procedure treemap report
+   * @param id The cohort ID
+   * @param minCovariatePersonCountParam The minimum number of covariates per person
+   * @param minIntervalPersonCountParam The minimum interval person count
+   * @param sourceKey The source key
+   * @param refresh Boolean - refresh visualization data
    * @return List<HierarchicalConceptRecord>
    */
   @GET
@@ -1158,10 +1342,14 @@ public class CohortResultsService extends AbstractDaoService {
   /**
    * Queries for cohort analysis procedures for the given cohort definition id
    * and concept id
-   *
-   * @param id cohort_defintion id
-   * @param minCovariatePersonCountParam
-   * @param minIntervalPersonCountParam
+   * 
+   * @summary Get procedure drilldown report by concept ID
+   * @param id The cohort ID
+   * @param conceptId The procedure concept ID
+   * @param minCovariatePersonCountParam The minimum number of covariates per person
+   * @param minIntervalPersonCountParam The minimum interval person count
+   * @param sourceKey The source key
+   * @param refresh Boolean - refresh visualization data
    * @return CohortProceduresDrillDown
    */
   @GET
@@ -1194,8 +1382,13 @@ public class CohortResultsService extends AbstractDaoService {
   /**
    * Queries for cohort analysis visit treemap results for the given cohort
    * definition id
-   *
-   * @param id cohort_defintion id
+   * 
+   * @summary Get visit treemap report
+   * @param id The cohort ID
+   * @param minCovariatePersonCountParam The minimum number of covariates per person
+   * @param minIntervalPersonCountParam The minimum interval person count
+   * @param sourceKey The source key
+   * @param refresh Boolean - refresh visualization data
    * @return List<HierarchicalConceptRecord>
    */
   @GET
@@ -1229,11 +1422,15 @@ public class CohortResultsService extends AbstractDaoService {
   /**
    * Queries for cohort analysis visits for the given cohort definition id and
    * concept id
-   *
-   * @param id cohort_defintion id
-   * @param minCovariatePersonCountParam
-   * @param minIntervalPersonCountParam
-   * @return CohortVisitsDrilldown
+   * 
+   * @summary Get visit drilldown for a visit concept ID
+   * @param id The cohort ID
+   * @param conceptId The visit concept iD
+   * @param minCovariatePersonCountParam The minimum number of covariates per person
+   * @param minIntervalPersonCountParam The minimum interval person count
+   * @param sourceKey The source key
+   * @param refresh Boolean - refresh visualization data
+   * @return 
    */
   @GET
   @Path("{sourceKey}/{id}/visit/{conceptId}")
@@ -1263,10 +1460,11 @@ public class CohortResultsService extends AbstractDaoService {
 
   /**
    * Returns the summary for the cohort
-   *
-   * @param id - the cohort_defintion id
-   * @return Summary data including top summary visualization data this cohort
-   *
+   * 
+   * @summary Get cohort summary
+   * @param id The cohort ID
+   * @param sourceKey The source key
+   * @return CohortSummary
    */
   @GET
   @Path("{sourceKey}/{id}/summarydata")
@@ -1302,10 +1500,13 @@ public class CohortResultsService extends AbstractDaoService {
 
   /**
    * Queries for cohort analysis death data for the given cohort definition id
-   *
-   * @param id cohort_defintion id
-   * @param minCovariatePersonCountParam
-   * @param minIntervalPersonCountParam
+   * 
+   * @summary Get death report
+   * @param id The cohort ID
+   * @param minCovariatePersonCountParam The minimum number of covariates per person
+   * @param minIntervalPersonCountParam The minimum interval person count
+   * @param sourceKey The source key
+   * @param refresh Boolean - refresh visualization data
    * @return CohortDeathData
    */
   @GET
@@ -1336,9 +1537,10 @@ public class CohortResultsService extends AbstractDaoService {
 
   /**
    * Returns the summary for the cohort
-   *
-   * @param id - the cohort_defintion id
-   * @return Summary which includes analyses with complete time
+   * 
+   * @param id The cohort ID
+   * @param sourceKey The source key
+   * @return CohortSummary
    */
   @GET
   @Path("{sourceKey}/{id}/summaryanalyses")
@@ -1358,12 +1560,13 @@ public class CohortResultsService extends AbstractDaoService {
   /**
    * Returns the person identifiers of all members of a generated cohort
    * definition identifier
-   *
-   * @param id
-   * @param sourceKey
-   * @param min
-   * @param max
-   * @return List of all members of a generated cohort definition identifier
+   * 
+   * @summary Get persons in cohort
+   * @param id The cohort ID
+   * @param sourceKey The source key
+   * @param min The minimum number of persons to return
+   * @param max The maximum number of persons to return
+   * @return Collection<CohortPerson>
    */
   @GET
   @Path("{sourceKey}/{id}/members/{min}-{max}")
@@ -1381,10 +1584,11 @@ public class CohortResultsService extends AbstractDaoService {
 
   /**
    * Returns breakdown with counts about people in cohort
-   *
-   * @param id
-   * @param sourceKey
-   * @return List of all members of a generated cohort definition identifier
+   * 
+   * @summary Get cohort breakdown report
+   * @param id The cohort ID
+   * @param sourceKey The source key
+   * @return Collection<CohortBreakdown>
    */
   @GET
   @Path("{sourceKey}/{id}/breakdown")
@@ -1401,16 +1605,18 @@ public class CohortResultsService extends AbstractDaoService {
     PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, tqNames, tqValues, "cohortDefinitionId", id);
     return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), cohortBreakdownMapper);
   }
+
   /**
    * Returns the person identifiers of all members of a cohort breakdown from above
-   *
-   * @param id
-   * @param sourceKey
-   * @param gender
-   * @param age
-   * @param conditions
-   * @param drugs
-   * @param rows
+   * 
+   * @summary Get cohort person breakdown
+   * @param id The cohort ID
+   * @param sourceKey The source key
+   * @param gender The string for gender (male/female)
+   * @param age The numeric age
+   * @param conditions The condition concept IDs
+   * @param drugs The drug concept ids
+   * @param rows The row limit
    * @return List of all members of a generated cohort definition identifier
    */
   @GET
@@ -1496,12 +1702,13 @@ public class CohortResultsService extends AbstractDaoService {
   }
   
   /**
-   * Returns the person identifiers of all members of a generated cohort
+   * Returns the count of all members of a generated cohort
    * definition identifier
-   *
-   * @param id
-   * @param sourceKey
-   * @return List of all members of a generated cohort definition identifier
+   * 
+   * @summary Get cohort member count
+   * @param id The cohort ID
+   * @param sourceKey The source key
+   * @return The cohort count
    */
   @GET
   @Path("{sourceKey}/{id}/members/count")
@@ -1518,8 +1725,11 @@ public class CohortResultsService extends AbstractDaoService {
   /**
    * Returns all cohort analyses in the results/OHDSI schema for the given
    * cohort_definition_id
-   *
-   * @param sourceKey
+   * 
+   * @summary Get the cohort analysis list for a cohort
+   * @param id The cohort ID
+   * @param sourceKey The source key
+   * @param retrieveFullDetail Boolean - when TRUE, the full analysis details are returned
    * @return List of all cohort analyses and their statuses for the given
    * cohort_defintion_id
    */
@@ -1545,6 +1755,17 @@ public class CohortResultsService extends AbstractDaoService {
     return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), cohortAnalysisMapper);
   }
 
+  /**
+   * Get the exposure cohort incidence rates. This function is not using a 
+   * proper incidence rate so this should be viewed as informational only
+   * and not as a report
+   * 
+   * @summary DO NOT USE
+   * @deprecated
+   * @param sourceKey The source key
+   * @param search The exposure cohort search
+   * @return List<ExposureCohortResult>
+   */
   @POST
   @Path("{sourceKey}/exposurecohortrates")
   @Produces(MediaType.APPLICATION_JSON)
@@ -1581,6 +1802,15 @@ public class CohortResultsService extends AbstractDaoService {
     return psr;
   }
  
+  /**
+   * Provides a time to event calculation but it is unclear how this works.
+   * 
+   * @summary DO NOT USE
+   * @depreciated
+   * @param sourceKey The source key
+   * @param search The exposure cohort search
+   * @return List<TimeToEventResult>
+   */
   @POST
   @Path("{sourceKey}/timetoevent")
   @Produces(MediaType.APPLICATION_JSON)
@@ -1615,6 +1845,15 @@ public class CohortResultsService extends AbstractDaoService {
     return new PreparedStatementRenderer(source, path, tqName, tqValue, names, values);
   }
 
+  /**
+   * Provides a predictor calculation but it is unclear how this works.
+   * 
+   * @summary DO NOT USE
+   * @deprecated
+   * @param sourceKey The source key
+   * @param search The exposure cohort search
+   * @return List<PredictorResult>
+   */
   @POST
   @Path("{sourceKey}/predictors")
   @Produces(MediaType.APPLICATION_JSON)
@@ -1641,10 +1880,18 @@ public class CohortResultsService extends AbstractDaoService {
   }
 
   /**
-   * Returns heracles heel results (data quality issues) for the given cohort
-   * definition id
    *
    * @param id cohort definition id
+   * @return List<CohortAttribute>
+   */
+  /**
+   * Returns heracles heel results (data quality issues) for the given cohort
+   * definition id
+   * 
+   * @summary Get HERACLES heel report
+   * @param id The cohort iD
+   * @param sourceKey The source key
+   * @param refresh Boolean - refresh visualization data
    * @return List<CohortAttribute>
    */
   @GET
@@ -1683,6 +1930,14 @@ public class CohortResultsService extends AbstractDaoService {
     return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), new AnalysisResultsMapper());
   }
 
+  /**
+   * Provides a data completeness report for a cohort
+   * 
+   * @summary Get data completeness report
+   * @param id The cohort ID
+   * @param sourceKey The source key
+   * @return List<DataCompletenessAttr>
+   */
   @GET
   @Path("{sourceKey}/{id}/datacompleteness")
   @Produces(MediaType.APPLICATION_JSON)
@@ -1767,6 +2022,14 @@ public class CohortResultsService extends AbstractDaoService {
         return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), new AnalysisResultsMapper());
     }
     
+    /**
+     * Provide an entropy report for a cohort
+     * 
+     * @summary Get entropy report
+     * @param id The cohort ID
+     * @param sourceKey The source key
+     * @return List<EntropyAttr>
+     */
     @GET
     @Path("{sourceKey}/{id}/entropy")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1785,6 +2048,14 @@ public class CohortResultsService extends AbstractDaoService {
         return el;
     }
     
+    /**
+     * Provide a full entropy report for a cohort
+     * 
+     * @summary Get full entropy report
+     * @param id The cohort ID
+     * @param sourceKey The source key
+     * @return List<EntropyAttr>
+     */
     @GET
     @Path("{sourceKey}/{id}/allentropy")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1815,34 +2086,68 @@ public class CohortResultsService extends AbstractDaoService {
         
         return el;
     }
-		
-	@GET
-	@Path("{sourceKey}/{id}/healthcareutilization/exposure/{window}")
-	@Produces(MediaType.APPLICATION_JSON)
-  public HealthcareExposureReport getHealthcareUtilizationExposureReport(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey
-		, @PathParam("window") final WindowType window
-		, @DefaultValue("ww") @QueryParam("periodType") final PeriodType periodType) {
-		Source source = getSourceRepository().findBySourceKey(sourceKey);
-		HealthcareExposureReport exposureReport = queryRunner.getHealthcareExposureReport(getSourceJdbcTemplate(source), id, window, periodType, source);
-		return exposureReport;
-	}
 
-	@GET
-	@Path("{sourceKey}/{id}/healthcareutilization/periods/{window}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public List<String> getHealthcareUtilizationPeriods(
-						@PathParam("id") final int id
-					, @PathParam("sourceKey") final String sourceKey
-					, @PathParam("window") final WindowType window) {
-		final Source source = getSourceRepository().findBySourceKey(sourceKey);
-		final List<String> periodTypes = queryRunner.getHealthcarePeriodTypes(getSourceJdbcTemplate(source), id, window, source);
-		return periodTypes;
-	}
-	
-	@GET
-	@Path("{sourceKey}/{id}/healthcareutilization/visit/{window}/{visitStat}")
-	@Produces(MediaType.APPLICATION_JSON)
-  public HealthcareVisitUtilizationReport getHealthcareUtilizationVisitReport(@PathParam("id") final int id
+    /**
+     * Get the healthcare utilization exposure report for a specific window
+     * 
+     * @summary Get healthcare utilization report for selected time window
+     * @param id The cohort ID
+     * @param sourceKey The source key
+     * @param window The time window
+     * @param periodType The period type
+     * @return HealthcareExposureReport
+     */
+    @GET
+    @Path("{sourceKey}/{id}/healthcareutilization/exposure/{window}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public HealthcareExposureReport getHealthcareUtilizationExposureReport(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey
+            , @PathParam("window") final WindowType window
+            , @DefaultValue("ww") @QueryParam("periodType") final PeriodType periodType) {
+            Source source = getSourceRepository().findBySourceKey(sourceKey);
+            HealthcareExposureReport exposureReport = queryRunner.getHealthcareExposureReport(getSourceJdbcTemplate(source), id, window, periodType, source);
+            return exposureReport;
+    }
+
+    /**
+     * Get the healthcare utilization periods
+     * 
+     * @summary Get healthcare utilization periods
+     * @param id The cohort ID
+     * @param sourceKey The source key
+     * @param window The time window
+     * @return A list of the periods
+     */
+    @GET
+    @Path("{sourceKey}/{id}/healthcareutilization/periods/{window}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<String> getHealthcareUtilizationPeriods(
+                                    @PathParam("id") final int id
+                                    , @PathParam("sourceKey") final String sourceKey
+                                    , @PathParam("window") final WindowType window) {
+            final Source source = getSourceRepository().findBySourceKey(sourceKey);
+            final List<String> periodTypes = queryRunner.getHealthcarePeriodTypes(getSourceJdbcTemplate(source), id, window, source);
+            return periodTypes;
+    }
+
+    /**
+     * Get the healthcare utilization report by window, visit status,
+     * period type, visit concept, visit type concept and cost type concept.
+     * 
+     * @summary Get healthcare utilization visit report
+     * @param id The cohort ID
+     * @param sourceKey The source key
+     * @param window The time window
+     * @param visitStat The visit status
+     * @param periodType The period type
+     * @param visitConcept The visit concept ID
+     * @param visitTypeConcept The visit type concept ID
+     * @param costTypeConcept The cost type concept ID
+     * @return HealthcareVisitUtilizationReport
+     */
+    @GET
+    @Path("{sourceKey}/{id}/healthcareutilization/visit/{window}/{visitStat}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public HealthcareVisitUtilizationReport getHealthcareUtilizationVisitReport(@PathParam("id") final int id
 		, @PathParam("sourceKey") String sourceKey
 		, @PathParam("window") final WindowType window
 		, @PathParam("visitStat") final VisitStatType visitStat
@@ -1854,11 +2159,23 @@ public class CohortResultsService extends AbstractDaoService {
 		HealthcareVisitUtilizationReport visitUtilizationReport = queryRunner.getHealthcareVisitReport(getSourceJdbcTemplate(source), id, window, visitStat, periodType, visitConcept, visitTypeConcept, costTypeConcept, source);
 		return visitUtilizationReport;
 	}	
-	
-	@GET
-	@Path("{sourceKey}/{id}/healthcareutilization/drug/{window}")
-	@Produces(MediaType.APPLICATION_JSON)
-  public HealthcareDrugUtilizationSummary getHealthcareUtilizationDrugSummaryReport(@PathParam("id") final int id
+
+    /**
+     * Get the healthcare utilization summary report by drug and 
+     * cost type concept
+     * 
+     * @summary Get healthcare utilization drug summary report
+     * @param id The cohort ID
+     * @param sourceKey The source key
+     * @param window The time window
+     * @param drugTypeConceptId The drug type concept ID
+     * @param costTypeConceptId The cost type concept ID
+     * @return HealthcareDrugUtilizationSummary
+     */
+    @GET
+    @Path("{sourceKey}/{id}/healthcareutilization/drug/{window}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public HealthcareDrugUtilizationSummary getHealthcareUtilizationDrugSummaryReport(@PathParam("id") final int id
 		, @PathParam("sourceKey") String sourceKey
 		, @PathParam("window") final WindowType window 
 		, @QueryParam("drugType") final Long drugTypeConceptId
@@ -1869,11 +2186,25 @@ public class CohortResultsService extends AbstractDaoService {
 		HealthcareDrugUtilizationSummary report = queryRunner.getHealthcareDrugUtilizationSummary(getSourceJdbcTemplate(source), id, window, drugTypeConceptId, costTypeConceptId, source);
 		return report;
 	}	
-	
-	@GET
-	@Path("{sourceKey}/{id}/healthcareutilization/drug/{window}/{drugConceptId}")
-	@Produces(MediaType.APPLICATION_JSON)
-  public HealthcareDrugUtilizationDetail getHealthcareUtilizationDrugDetailReport(@PathParam("id") final int id
+
+    /**
+     * Get the healthcare utilization detail report by drug and 
+     * cost type concept
+     * 
+     * @summary Get healthcare utilization drug detail report
+     * @param id The cohort ID
+     * @param sourceKey The source key
+     * @param window The time window
+     * @param drugConceptId The drug concept ID
+     * @param periodType The period type
+     * @param drugTypeConceptId The drug type concept ID
+     * @param costTypeConceptId The cost type concept ID
+     * @return HealthcareDrugUtilizationDetail
+     */
+    @GET
+    @Path("{sourceKey}/{id}/healthcareutilization/drug/{window}/{drugConceptId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public HealthcareDrugUtilizationDetail getHealthcareUtilizationDrugDetailReport(@PathParam("id") final int id
 		, @PathParam("sourceKey") String sourceKey
 		, @PathParam("window") final WindowType window
 		, @PathParam("drugConceptId") final Long drugConceptId
@@ -1885,11 +2216,20 @@ public class CohortResultsService extends AbstractDaoService {
 		HealthcareDrugUtilizationDetail report = queryRunner.getHealthcareDrugUtilizationReport(getSourceJdbcTemplate(source), id, window, drugConceptId, drugTypeConceptId, periodType, costTypeConceptId, source);
 		return report;
 	}
-	
-	@GET
-	@Path("{sourceKey}/{id}/healthcareutilization/drugtypes")
-	@Produces(MediaType.APPLICATION_JSON)
-  public List<Concept> getDrugTypes(@PathParam("id") final int id
+
+    /**
+     * Get the drug type concepts for the selected drug concept ID
+     * 
+     * @summary Get drug types for healthcare utilization report
+     * @param id The cohort ID
+     * @param sourceKey The source key
+     * @param drugConceptId The drug concept ID
+     * @return A list of concepts of drug types
+     */
+    @GET
+    @Path("{sourceKey}/{id}/healthcareutilization/drugtypes")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Concept> getDrugTypes(@PathParam("id") final int id
 		, @PathParam("sourceKey") String sourceKey
 		, @QueryParam("drugConceptId") final Long drugConceptId) 
 	{	

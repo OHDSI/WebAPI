@@ -38,6 +38,12 @@ import static org.ohdsi.webapi.Constants.Variables.SOURCE;
 import static org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus.Status.RUNNING;
 import static org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus.Status.STARTED;
 
+/**
+ * REST Services related to working with Arachne Execution Engine
+ * Callbacks
+ * 
+ * @summary Arachne Execution Engine Callbacks
+ */
 @Controller
 @Path("/executionservice/callbacks")
 public class ScriptExecutionCallbackController {
@@ -72,6 +78,14 @@ public class ScriptExecutionCallbackController {
         this.analysisZipRepackService = analysisZipRepackService;
     }
 
+    /**
+     * Update an execution submission
+     * 
+     * @summary Update execution submission
+     * @param id The execution ID
+     * @param password The password
+     * @param status The updated status
+     */
     @Path(value = "submission/{id}/status/update/{password}")
     @Consumes(MediaType.APPLICATION_JSON)
     @POST
@@ -96,6 +110,14 @@ public class ScriptExecutionCallbackController {
         }
     }
 
+    /**
+     * Update the execution multipart information
+     * 
+     * @summary Update execution information
+     * @param id The execution ID
+     * @param password The password
+     * @param multiPart The multipart form data
+     */
     @Path(value = "submission/{id}/result/{password}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @POST

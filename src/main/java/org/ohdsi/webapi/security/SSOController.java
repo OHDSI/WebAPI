@@ -40,6 +40,12 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+/**
+ * REST Services related to working with Single Sign-On and SAML-based
+ * Services
+ * 
+ * @summary Single Sign On
+ */
 @Controller
 @Path("/saml/")
 public class SSOController {
@@ -50,6 +56,13 @@ public class SSOController {
     @Value("${security.origin}")
     private String origin;
 
+    /**
+     * Get the SAML metadata
+     * 
+     * @summary Get metadata
+     * @param response The response context
+     * @throws IOException 
+     */
     @GET
     @Path("/saml-metadata")
     public void samlMetadata(@Context HttpServletResponse response) throws IOException {
@@ -65,6 +78,13 @@ public class SSOController {
         response.flushBuffer();
     }
 
+    /**
+     * Log out of the service
+     * 
+     * @summary Log out
+     * @return Response
+     * @throws URISyntaxException 
+     */
     @GET
     @Path("/slo")
     public Response logout() throws URISyntaxException {

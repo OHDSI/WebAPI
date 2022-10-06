@@ -17,8 +17,8 @@
     <flyway.version>4.2.0</flyway.version>
     <waffle.version>2.2.1</waffle.version>
     <jna.version>5.5.0</jna.version>
-    <hibernate.version>5.5.9.Final</hibernate.version>
-    <hibernate.validtor.version>6.2.3.Final</hibernate.validtor.version>
+    <hibernate.version>5.4.2.Final</hibernate.version>
+    <hibernate.validtor.version>5.4.2.Final</hibernate.validtor.version>
     <postgresql.version>42.3.6</postgresql.version>
     <bouncycastle.version>1.68</bouncycastle.version>
     <shiro.version>1.8.0</shiro.version>

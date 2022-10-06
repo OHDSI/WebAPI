@@ -23,6 +23,7 @@ public class SourcePermissionSchema extends EntityPermissionSchema {
         put("vocabulary:%s:lookup:identifiers:post", "Lookup identifiers on Source with SourceKey = %s");
         put("vocabulary:%s:lookup:identifiers:ancestors:post", "Lookup identifiers ancestors on Source with SourceKey = %s");
         put("vocabulary:%s:lookup:mapped:post", "Lookup mapped identifiers on Source with SourceKey = %s");
+        put("vocabulary:%s:lookup:recommended:post", "Lookup recommendations on Source with SourceKey = %s");
         put("vocabulary:%s:compare:post", "Compare concept sets on Source with SourceKey = %s");
         put("vocabulary:%s:optimize:post", "Optimize concept sets on Source with SourceKey = %s");
         put("vocabulary:%s:concept:*:get", "Get concept on Source with SourceKey = %s");

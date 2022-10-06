@@ -36,6 +36,9 @@ public class PathwayAnalysisEntity extends CommonEntityExt<Integer> {
     @Column
     private String name;
 
+    @Column
+    private String description;
+
     @OneToMany(mappedBy = "pathwayAnalysis", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<PathwayTargetCohort> targetCohorts = new HashSet<>();
 
@@ -85,6 +88,14 @@ public class PathwayAnalysisEntity extends CommonEntityExt<Integer> {
     public void setName(String name) {
 
         this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Set<PathwayTargetCohort> getTargetCohorts() {

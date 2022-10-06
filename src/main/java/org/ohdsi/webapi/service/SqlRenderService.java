@@ -23,7 +23,11 @@ import org.ohdsi.webapi.util.SessionUtils;
  */
 @Path("/sqlrender/")
 public class SqlRenderService {
-
+    /**
+     * Translate an OHDSI SQL to a supported target SQL dialect
+     * @param sourceStatement JSON with parameters, source SQL, and target dialect
+     * @return rendered and translated SQL
+     */
     @Path("translate")
     @POST
     @Produces(MediaType.APPLICATION_JSON)

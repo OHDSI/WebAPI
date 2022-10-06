@@ -14,7 +14,11 @@ OHDSI WebAPI contains all OHDSI RESTful services that can be called from OHDSI a
 
 ## Technology
 
-OHDSI WebAPI is a Java 8 web application that utilizes a database (PostgreSQL, SQL Server or Oracle) for storage.
+OHDSI WebAPI is a Java 8 web application that utilizes a PostgreSQL database for storage.
+
+## API Documentation
+
+The API Documentation is found at [http://webapidoc.ohdsi.org/](http://webapidoc.ohdsi.org/)
 
 ## System Requirements & Installation
 

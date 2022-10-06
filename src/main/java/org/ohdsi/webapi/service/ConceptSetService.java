@@ -25,7 +25,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.shiro.authz.UnauthorizedException;
-import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.webapi.check.CheckResult;
 import org.ohdsi.webapi.check.checker.conceptset.ConceptSetChecker;
@@ -57,15 +56,18 @@ import org.ohdsi.webapi.versioning.domain.VersionType;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.ohdsi.webapi.versioning.service.VersionService;
+import org.ohdsi.webapi.vocabulary.Concept;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
 
-/**
- *
- * @author fdefalco
- */
+ /**
+  * Provides REST services for working with
+  * concept sets.
+  * 
+  * @summary Concept Set
+  */
 @Component
 @Transactional
 @Path("/conceptset/")
@@ -103,6 +105,13 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 
     public static final String COPY_NAME = "copyName";
 
+    /**
+     * Get the concept set based in the identifier
+     * 
+     * @summary Get concept set by ID
+     * @param id The concept set ID
+     * @return The concept set definition
+     */
     @Path("{id}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -112,6 +121,12 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         return conversionService.convert(conceptSet, ConceptSetDTO.class);
     }
 
+    /**
+     * Get the full list of concept sets in the WebAPI database
+     * 
+     * @summary Get all concept sets
+     * @return A list of all concept sets in the WebAPI database
+     */
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
@@ -127,6 +142,13 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         );
     }
 
+    /**
+     * Get the concept set items for a selected concept set ID.
+     * 
+     * @summary Get the concept set items
+     * @param id The concept set identifier
+     * @return A list of concept set items
+     */
     @GET
     @Path("{id}/items")
     @Produces(MediaType.APPLICATION_JSON)
@@ -134,6 +156,14 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         return getConceptSetItemRepository().findAllByConceptSetId(id);
     }
 
+    /**
+     * Get the concept set expression for a selected version of the expression
+     * 
+     * @summary Get concept set expression by version
+     * @param id The concept set ID
+     * @param version The version identifier
+     * @return The concept set expression
+     */
     @GET
     @Path("{id}/version/{version}/expression")
     @Produces(MediaType.APPLICATION_JSON)
@@ -146,6 +176,18 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         return getConceptSetExpression(id, version, sourceInfo);
     }
 
+    /**
+     * Get the concept set expression by version for the selected
+     * source key. NOTE: This method requires the specification
+     * of a source key but it does not appear to be used by the underlying
+     * code.
+     * 
+     * @summary Get concept set expression by version and source.
+     * @param id The concept set identifier
+     * @param version The version of the concept set
+     * @param sourceKey The source key
+     * @return The concept set expression for the selected version
+     */
     @GET
     @Path("{id}/version/{version}/expression/{sourceKey}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -159,6 +201,13 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         return getConceptSetExpression(id, version, sourceInfo);
     }
 
+    /**
+     * Get the concept set expression by identifier
+     * 
+     * @summary Get concept set by ID
+     * @param id The concept set identifier
+     * @return The concept set expression
+     */
     @GET
     @Path("{id}/expression")
     @Produces(MediaType.APPLICATION_JSON)
@@ -170,6 +219,14 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         return getConceptSetExpression(id, null, sourceInfo);
     }
 
+    /**
+     * Get the concept set expression by identifier and source key
+     * 
+     * @summary Get concept set by ID and source
+     * @param id The concept set ID
+     * @param sourceKey The source key
+     * @return The concept set expression
+     */
     @GET
     @Path("{id}/expression/{sourceKey}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -241,6 +298,15 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         return expression;
     }
 
+    /**
+     * Check if the concept set name exists (DEPRECATED)
+     * 
+     * @summary DO NOT USE
+     * @deprecated
+     * @param id The concept set ID
+     * @param sourceKey The source key
+     * @return The concept set expression
+     */
     @Deprecated
     @GET
     @Path("{id}/{name}/exists")
@@ -250,7 +316,18 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         Collection<ConceptSet> cs = getConceptSetRepository().conceptSetExists(id, name);
         return Response.ok(cs).header("Warning: 299", warningMessage).build();
     }
-		
+
+    /**
+     * Check if a concept set with the same name exists in the WebAPI
+     * database. The name is checked against the selected concept set ID
+     * to ensure that only the selected concept set ID has the name specified.
+     * 
+     * @summary Concept set with same name exists
+     * @param id The concept set ID
+     * @param name The name of the concept set
+     * @return The count of concept sets with the name, excluding the 
+     * specified concept set ID.
+     */
     @GET
     @Path("/{id}/exists")
     @Produces(MediaType.APPLICATION_JSON)
@@ -258,6 +335,19 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         return getConceptSetRepository().getCountCSetWithSameName(id, name);
     }
 
+    /**
+     * Update the concept set items for the selected concept set ID in the
+     * WebAPI database.
+     * 
+     * The concept set has two parts: 1) the elements of the ConceptSetDTO that
+     * consist of the identifier, name, etc. 2) the concept set items which 
+     * contain the concepts and their mapping (i.e. include descendants).
+     * 
+     * @summary Update concept set items
+     * @param id The concept set ID
+     * @param items An array of ConceptSetItems
+     * @return Boolean: true if the save is successful
+     */
     @PUT
     @Path("{id}/items")
     @Produces(MediaType.APPLICATION_JSON)
@@ -275,6 +365,17 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         return true;
     }
 
+    /**
+     * Exports a list of concept sets, based on the conceptSetList argument,
+     * to one or more comma separated value (CSV) file(s), compresses the files
+     * into a ZIP file and sends the ZIP file to the client.
+     * 
+     * @summary Export concept set list to CSV files
+     * @param conceptSetList A list of concept set identifiers in the format
+     * conceptset=<concept_set_id_1>+<concept_set_id_2>+<concept_set_id_n>
+     * @return
+     * @throws Exception 
+     */
     @GET
     @Path("/exportlist")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -318,6 +419,14 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         return response;
     }
 
+    /**
+     * Exports a single concept set to a comma separated value (CSV) 
+     * file, compresses to a ZIP file and sends to the client.
+
+     * @param id The concept set ID
+     * @return A zip file containing the exported concept set
+     * @throws Exception 
+     */
     @GET
     @Path("{id}/export")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -326,6 +435,13 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         return this.exportConceptSetList(id);
     }
 
+    /**
+     * Save a new concept set to the WebAPI database
+     * 
+     * @summary Create a new concept set
+     * @param conceptSetDTO The concept set to save
+     * @return The concept set saved with the concept set identifier
+     */
     @Path("/")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -342,6 +458,17 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         return conversionService.convert(updated, ConceptSetDTO.class);
     }
 
+    /**
+     * Creates a concept set name, based on the selected concept set ID,
+     * that is used when generating a copy of an existing concept set. This
+     * function is generally used in conjunction with the copy endpoint to
+     * create a unique name and then save a copy of an existing concept set.
+     * 
+     * @sumamry Get concept set name suggestion for copying
+     * @param id The concept set ID
+     * @return A map of the new concept set name and the existing concept set
+     * name
+     */
     @GET
     @Path("/{id}/copy-name")
     @Produces(MediaType.APPLICATION_JSON)
@@ -355,7 +482,20 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 
         return getConceptSetRepository().findAllByNameStartsWith(copyName).stream().map(ConceptSet::getName).collect(Collectors.toList());
     }
-    
+
+    /**
+     * Updates the concept set for the selected concept set.
+     * 
+     * The concept set has two parts: 1) the elements of the ConceptSetDTO that
+     * consist of the identifier, name, etc. 2) the concept set items which 
+     * contain the concepts and their mapping (i.e. include descendants).
+     * 
+     * @summary Update concept set
+     * @param id The concept set identifier
+     * @param conceptSetDTO The concept set header
+     * @return The
+     * @throws Exception 
+     */    
     @Path("/{id}")
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
@@ -378,6 +518,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 
         UserEntity user = userRepository.findByLogin(security.getSubject());
         dst.setName(src.getName());
+        dst.setDescription(src.getDescription());
         dst.setModifiedDate(new Date());
         dst.setModifiedBy(user);
         
@@ -403,7 +544,18 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         return cs;
     }
 
-  
+
+    /**
+     * Get the concept set generation information for the selected concept
+     * set ID. This function only works with the configuration of the CEM
+     * data source.
+     * 
+     * @link https://github.com/OHDSI/CommonEvidenceModel/wiki
+     * 
+     * @summary Get concept set generation info
+     * @param id The concept set identifier.
+     * @return A collection of concept set generation info objects
+     */
   @GET
   @Path("{id}/generationinfo")
   @Produces(MediaType.APPLICATION_JSON)
@@ -411,6 +563,12 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
       return this.conceptSetGenerationInfoRepository.findAllByConceptSetId(id);
   }
   
+  /**
+   * Delete the selected concept set by concept set identifier
+   * 
+   * @summary Delete concept set
+   * @param id The concept set ID
+   */
   @DELETE
   @Transactional(rollbackOn = Exception.class, dontRollbackOn = EmptyResultDataAccessException.class)
   @Path("{id}")
@@ -452,8 +610,10 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     /**
      * Assign tag to Concept Set
      *
-     * @param id
-     * @param tagId
+     * @summary Assign concept set tag
+     * @since v2.10.0
+     * @param id The concept set ID
+     * @param tagId The tag ID
      */
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -468,8 +628,10 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     /**
      * Unassign tag from Concept Set
      *
-     * @param id
-     * @param tagId
+     * @summary Remove tag from concept set
+     * @since v2.10.0
+     * @param id The concept set ID
+     * @param tagId The tag ID
      */
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
@@ -484,8 +646,10 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     /**
      * Assign protected tag to Concept Set
      *
-     * @param id
-     * @param tagId
+     * @summary Assign protected concept set tag
+     * @since v2.10.0
+     * @param id The concept set ID
+     * @param tagId The tag ID
      */
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -498,8 +662,10 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     /**
      * Unassign protected tag from Concept Set
      *
-     * @param id
-     * @param tagId
+     * @summary Remove protected concept set tag
+     * @since v2.10.0
+     * @param id The concept set ID
+     * @param tagId The tag ID
      */
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
@@ -509,6 +675,16 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         unassignTag(id, tagId);
     }
 
+    /**
+     * Checks a concept set for diagnostic problems. At this time, 
+     * this appears to be an endpoint used to check to see which tags
+     * are applied to a concept set.
+     * 
+     * @summary Concept set tag check
+     * @since v2.10.0
+     * @param conceptSetDTO The concept set
+     * @return A check result
+     */
     @POST
     @Path("/check")
     @Produces(MediaType.APPLICATION_JSON)
@@ -519,10 +695,12 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     }
 
     /**
-     * Get list of versions of Concept Set
+     * Get a list of versions of the selected concept set
      *
-     * @param id
-     * @return
+     * @summary Get concept set version list
+     * @since v2.10.0
+     * @param id The concept set ID
+     * @return A list of version information
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -536,11 +714,13 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     }
 
     /**
-     * Get version of Concept Set
+     * Get a specific version of a concept set
      *
-     * @param id
-     * @param version
-     * @return
+     * @summary Get concept set by version
+     * @since v2.10.0
+     * @param id The concept set ID
+     * @param version The version ID
+     * @return The concept set for the selected version
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -554,12 +734,14 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     }
 
     /**
-     * Update version of Concept Set
+     * Update a specific version of a selected concept set
      *
-     * @param id
-     * @param version
-     * @param updateDTO
-     * @return
+     * @summary Update a concept set version
+     * @since v2.10.0
+     * @param id The concept set ID
+     * @param version The version ID
+     * @param updateDTO The version update
+     * @return The version information
      */
     @PUT
     @Produces(MediaType.APPLICATION_JSON)
@@ -576,10 +758,12 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     }
 
     /**
-     * Delete version of Concept Set
+     * Delete a version of a concept set
      *
-     * @param id
-     * @param version
+     * @summary Delete a concept set version
+     * @since v2.10.0
+     * @param id The concept ID
+     * @param version THe version ID
      */
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
@@ -591,11 +775,14 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     }
 
     /**
-     * Create a new asset form version of Concept Set
+     * Create a new asset from a specific version of the selected
+     * concept set
      *
-     * @param id
-     * @param version
-     * @return
+     * @summary Create a concept set copy from a specific concept set version
+     * @since v2.10.0
+     * @param id The concept set ID
+     * @param version The version ID
+     * @return The concept set copy
      */
     @PUT
     @Produces(MediaType.APPLICATION_JSON)
@@ -618,10 +805,11 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     }
 
     /**
-     * Get list of concept sets with assigned tags
+     * Get list of concept sets with their assigned tags
      *
-     * @param requestDTO
-     * @return
+     * @summary Get concept sets and tag information
+     * @param requestDTO The tagNameListRequest
+     * @return A list of concept sets with their assigned tags
      */
     @POST
     @Path("/byTags")

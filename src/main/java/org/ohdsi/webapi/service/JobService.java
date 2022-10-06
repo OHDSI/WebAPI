@@ -47,7 +47,9 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 /**
- *
+ * REST Services related to working with the Spring Batch jobs
+ * 
+ * @summary Jobs
  */
 @Path("/job/")
 @Component
@@ -71,6 +73,13 @@ public class JobService extends AbstractDaoService {
     this.jobTemplate = jobTemplate;
   }
 
+  /**
+   * Get the job information by job ID
+   * 
+   * @summary Get job by ID
+   * @param jobId The job ID
+   * @return The job information
+   */
   @GET
   @Path("{jobId}")
   @Produces(MediaType.APPLICATION_JSON)
@@ -82,6 +91,14 @@ public class JobService extends AbstractDaoService {
     return JobUtils.toJobInstanceResource(job);
   }
 
+  /**
+   * Get the job execution information by job type and name
+   * 
+   * @summary Get job by name and type
+   * @param jobName The job name
+   * @param jobType The job type
+   * @return JobExecutionResource
+   */
     @GET
     @Path("/type/{jobType}/name/{jobName}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -92,6 +109,14 @@ public class JobService extends AbstractDaoService {
             return jobExecution.isPresent() ? JobUtils.toJobExecutionResource(jobExecution.get()) : null;
     }
 
+    /**
+     * Get the job execution information by execution ID and job ID
+     * 
+     * @summary Get job by job ID and execution ID
+     * @param jobId The job ID
+     * @param executionId The execution ID
+     * @return JobExecutionResource
+     */
   @GET
   @Path("{jobId}/execution/{executionId}")
   @Produces(MediaType.APPLICATION_JSON)
@@ -101,10 +126,11 @@ public class JobService extends AbstractDaoService {
   }
 
   /**
-   * Overloaded findJobExecution method.
+   * Find job execution by execution ID
    *
-   * @param executionId
-   * @return
+   * @summary Get job by execution ID
+   * @param executionId The job execution ID
+   * @return JobExecutionResource
    */
   @GET
   @Path("/execution/{executionId}")
@@ -127,7 +153,8 @@ public class JobService extends AbstractDaoService {
    * arise. See {@link JobService#list(String, Integer, Integer)} to obtain
    * executions and filter by job name.
    *
-   * @return
+   * @summary Get list of jobs
+   * @return A list of jobs
    */
   @GET
   @Produces(MediaType.APPLICATION_JSON)
@@ -142,6 +169,7 @@ public class JobService extends AbstractDaoService {
    * Return a paged collection of job executions. Filter for a given job.
    * Returned in pages.
    *
+   * @summary Get job executions with filters
    * @param jobName name of the job
    * @param pageIndex start index for the job execution list
    * @param pageSize page size for the list

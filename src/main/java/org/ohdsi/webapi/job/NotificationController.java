@@ -20,6 +20,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * REST Services related to working with the system notifications
+ * 
+ * @summary Notifications
+ */
 @Path("/notifications")
 @Controller
 @Transactional
@@ -34,6 +39,16 @@ public class NotificationController {
         this.conversionService = conversionService;
     }
 
+    /**
+     * Get the list of notifications
+     * 
+     * @summary Get all notifications
+     * @param hideStatuses Used to filter statuses - passes as a comma-delimited
+     * list
+     * @param refreshJobs Boolean - when true, it will refresh the cache
+     * of notifications
+     * @return 
+     */
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
@@ -60,6 +75,12 @@ public class NotificationController {
         return executionInfos.stream().map(this::toDTO).collect(Collectors.toList());
     }
 
+    /**
+     * Gets the date when notifications were last viewed
+     * 
+     * @summary Get notification last viewed date
+     * @return The date when notifications were last viewed
+     */
     @GET
     @Path("/viewed")
     @Produces(MediaType.APPLICATION_JSON)
@@ -72,6 +93,12 @@ public class NotificationController {
         }
     }
 
+    /**
+     * Sets the date when notifications were last viewed
+     * 
+     * @summary Set notification last viewed date
+     * @param stamp 
+     */
     @POST
     @Path("/viewed")
     @Produces(MediaType.APPLICATION_JSON)

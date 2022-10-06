@@ -536,9 +536,9 @@ public class VocabularyService extends AbstractDaoService {
       if (!search.query.isEmpty()) {
         String queryFilter = "LOWER(CONCEPT_NAME) LIKE '%@query%' or LOWER(CONCEPT_CODE) LIKE '%@query%'";
         if (StringUtils.isNumeric(search.query)) {
-          queryFilter += "or CONCEPT_ID = @query";
+          queryFilter += " or CONCEPT_ID = CAST(@query as int)";
         }
-        filters += "AND (" + queryFilter + ")";
+        filters += " AND (" + queryFilter + ")";
         variableNameList.add("query");
         variableValueList.add(search.query.toLowerCase());
       }

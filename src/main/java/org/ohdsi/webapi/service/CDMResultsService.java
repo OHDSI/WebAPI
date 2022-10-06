@@ -257,6 +257,13 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         return this.queryRunner.getPersonResults(this.getSourceJdbcTemplate(source), source);
     }
 
+    /**
+     * Warm the results cache for a selected source
+     * 
+     * @summary Warm cache for source key
+     * @param sourceKey The source key
+     * @return The job execution information
+     */
     @GET
     @Path("{sourceKey}/warmCache")
     @Produces(MediaType.APPLICATION_JSON)
@@ -264,6 +271,13 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         return this.warmCacheByKey(sourceKey);
     }
 
+    /**
+     * Refresh the results cache for a selected source
+     * 
+     * @summary Refresh results cache
+     * @param sourceKey The source key
+     * @return The job execution resource
+     */
     @GET
     @Path("{sourceKey}/refreshCache")
     @Produces(MediaType.APPLICATION_JSON)
@@ -301,7 +315,8 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
 */
     /**
      * Queries for data density report for the given sourceKey
-     *
+     * 
+     * @param sourceKey The source key
      * @return CDMDataDensity
      */
     @GET
@@ -380,8 +395,11 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
 
     /**
      * Queries for drilldown results
-     *
-     * @return List<ArrayNode>
+     * 
+     * @param domain The domain for the drilldown
+     * @param conceptId The concept ID
+     * @param sourceKey The source key
+     * @return The JSON results
      */
     @GET
     @Path("{sourceKey}/{domain}/{conceptId}")

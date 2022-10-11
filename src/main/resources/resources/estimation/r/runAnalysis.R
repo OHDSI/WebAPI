@@ -57,7 +57,7 @@ tryCatch({
                 packageResults = TRUE,
                 maxCores = maxCores,
                 minCellCount = 5,
-                # We can't verify dependencies because r-env.lock file if absent after installation of package into R repository
+                # a workaround as renv.lock file is unreachable after the analysis package has been installed
                 verifyDependencies = FALSE)
 }, finally = {
         remove.packages('@packageName')

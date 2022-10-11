@@ -56,7 +56,8 @@ tryCatch({
                 runAnalyses = TRUE,
                 packageResults = TRUE,
                 maxCores = maxCores,
-                minCellCount = 5)
+                minCellCount = 5,
+                verifyDependencies = FALSE)
 }, finally = {
         remove.packages('@packageName')
 })

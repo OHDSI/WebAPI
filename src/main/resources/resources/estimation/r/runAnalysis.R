@@ -57,6 +57,7 @@ tryCatch({
                 packageResults = TRUE,
                 maxCores = maxCores,
                 minCellCount = 5,
+                # We can't verify dependencies because r-env.lock file if absent after installation of package into R repository
                 verifyDependencies = FALSE)
 }, finally = {
         remove.packages('@packageName')

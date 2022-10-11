@@ -20,9 +20,9 @@ tryCatch({
         connectionString <- Sys.getenv("CONNECTION_STRING")
         user <- Sys.getenv("DBMS_USERNAME")
         pwd <- Sys.getenv("DBMS_PASSWORD")
-        cdmDatabaseSchema <- Sys.getenv("DBMS_SCHEMA")
+        cdmDatabaseName <- Sys.getenv("DBMS_SCHEMA")
         resultsDatabaseSchema <- Sys.getenv("RESULT_SCHEMA")
-        cohortsDatabaseSchema <- Sys.getenv("TARGET_SCHEMA")
+        cohortDatabaseSchema <- Sys.getenv("TARGET_SCHEMA")
         cohortTable <- Sys.getenv("COHORT_TARGET_TABLE")
         driversPath <- (function(path) if (path == "") NULL else path)( Sys.getenv("JDBC_DRIVER_PATH") )
 
@@ -31,6 +31,19 @@ tryCatch({
                                                                         user = user,
                                                                         password = pwd,
                                                                         pathToDriver = driversPath)
+
+        databaseDetails <- PatientLevelPrediction::createDatabaseDetails(connectionDetails = connectionDetails,
+                                                                         cdmDatabaseSchema = cdmDatabaseSchema,
+                                                                         cdmDatabaseName = cdmDatabaseName,
+                                                                         cohortDatabaseSchema = cohortDatabaseSchema,
+                                                                         cohortTable = cohortTable,
+                                                                         outcomeDatabaseSchema = cohortDatabaseSchema,
+                                                                         outcomeTable = cohortTable,
+                                                                         cdmVersion = 5)
+
+        logSettings <- PatientLevelPrediction::createLogSettings(verbosity = "INFO",
+                                                                 timeStamp = T,
+                                                                 logName = 'skeletonPlp')
 
         # Evaluating can't use global environment in child threads
         connectionDetails$user <- function() Sys.getenv("DBMS_USERNAME")
@@ -41,18 +54,15 @@ tryCatch({
         dir.create(outputFolder)
 
         PatientLevelPrediction::setPythonEnvironment(envname = 'PLP', envtype = 'conda')
-        execute(connectionDetails = connectionDetails,
-                cdmDatabaseSchema = cdmDatabaseSchema,
-                cohortDatabaseSchema = cohortsDatabaseSchema,
-                cohortTable = cohortTable,
+        execute(databaseDetails = databaseDetails,
                 outputFolder = outputFolder,
                 createCohorts = T,
                 runAnalyses = T,
                 createValidationPackage = F,
                 packageResults = T,
                 minCellCount = 5,
-                cdmVersion = 5,
-                createShiny = T)
+                viewShiny = T,
+                logSettings = logSettings)
         # To run PLP Viewer shiny app call:
         # PatientLevelPrediction::viewMultiplePlp(outputFolder)
 }, finally = {

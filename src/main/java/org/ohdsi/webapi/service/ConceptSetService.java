@@ -25,7 +25,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.shiro.authz.UnauthorizedException;
-import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.webapi.check.CheckResult;
 import org.ohdsi.webapi.check.checker.conceptset.ConceptSetChecker;
@@ -45,7 +44,7 @@ import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.source.SourceService;
-import org.ohdsi.webapi.tag.TagService;
+import org.ohdsi.webapi.tag.domain.HasTags;
 import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.NameUtils;
@@ -57,6 +56,7 @@ import org.ohdsi.webapi.versioning.domain.VersionType;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.ohdsi.webapi.versioning.service.VersionService;
+import org.ohdsi.webapi.vocabulary.Concept;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -69,7 +69,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Transactional
 @Path("/conceptset/")
-public class ConceptSetService extends AbstractDaoService {
+public class ConceptSetService extends AbstractDaoService implements HasTags<Integer> {
 
     @Autowired
     private ConceptSetGenerationInfoRepository conceptSetGenerationInfoRepository;
@@ -378,6 +378,7 @@ public class ConceptSetService extends AbstractDaoService {
 
         UserEntity user = userRepository.findByLogin(security.getSubject());
         dst.setName(src.getName());
+        dst.setDescription(src.getDescription());
         dst.setModifiedDate(new Date());
         dst.setModifiedBy(user);
         
@@ -459,9 +460,10 @@ public class ConceptSetService extends AbstractDaoService {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/")
     @Transactional
-    public void assignTag(@PathParam("id") final int id, final int tagId) {
+    public void assignTag(@PathParam("id") final Integer id, final int tagId) {
         ConceptSet entity = getConceptSetRepository().findById(id);
-        assignTag(entity, tagId, false);
+        checkOwnerOrAdminOrGranted(entity);
+        assignTag(entity, tagId);
     }
 
     /**
@@ -474,9 +476,10 @@ public class ConceptSetService extends AbstractDaoService {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/{tagId}")
     @Transactional
-    public void unassignTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
+    public void unassignTag(@PathParam("id") final Integer id, @PathParam("tagId") final int tagId) {
         ConceptSet entity = getConceptSetRepository().findById(id);
-        unassignTag(entity, tagId, false);
+        checkOwnerOrAdminOrGranted(entity);
+        unassignTag(entity, tagId);
     }
 
     /**
@@ -490,8 +493,7 @@ public class ConceptSetService extends AbstractDaoService {
     @Path("/{id}/protectedtag/")
     @Transactional
     public void assignPermissionProtectedTag(@PathParam("id") final int id, final int tagId) {
-        ConceptSet entity = getConceptSetRepository().findById(id);
-        assignTag(entity, tagId, true);
+        assignTag(id, tagId);
     }
 
     /**
@@ -505,8 +507,7 @@ public class ConceptSetService extends AbstractDaoService {
     @Path("/{id}/protectedtag/{tagId}")
     @Transactional
     public void unassignPermissionProtectedTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
-        ConceptSet entity = getConceptSetRepository().findById(id);
-        unassignTag(entity, tagId, true);
+        unassignTag(id, tagId);
     }
 
     @POST

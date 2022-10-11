@@ -13,9 +13,11 @@ import org.springframework.ldap.core.support.SimpleDirContextAuthenticationStrat
 import org.springframework.ldap.support.LdapUtils;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -53,6 +55,14 @@ public class ActiveDirectoryProvider extends AbstractLdapProvider {
 
   @Value("${security.ad.searchFilter}")
   private String adSearchFilter;
+
+  @Value("${security.ad.userImport.loginAttr}")
+  private String loginAttr;
+
+  @Value("${security.ad.userImport.usernameAttr}")
+  private String usernameAttr;
+
+  private String[] userAttributes;
 
   private static final Set<String> GROUP_CLASSES = ImmutableSet.of("group");
 
@@ -133,7 +143,7 @@ public class ActiveDirectoryProvider extends AbstractLdapProvider {
 
   @Override
   public String getLoginAttributeName() {
-    return "sAMAccountName";
+    return loginAttr;
   }
 
   @Override
@@ -143,7 +153,7 @@ public class ActiveDirectoryProvider extends AbstractLdapProvider {
 
   @Override
   public String getDisplayNameAttributeName() {
-    return "cn";
+    return usernameAttr;
   }
 
   @Override

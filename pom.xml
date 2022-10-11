@@ -18,23 +18,22 @@
     <waffle.version>2.2.1</waffle.version>
     <jna.version>5.5.0</jna.version>
     <hibernate.version>5.4.2.Final</hibernate.version>
-    <postgresql.version>42.3.3</postgresql.version>
-    <bouncycastle.version>1.68</bouncycastle.version>
-    <shiro.version>1.8.0</shiro.version>
+    <postgresql.version>42.3.7</postgresql.version>
+    <bouncycastle.version>1.69</bouncycastle.version>
+    <shiro.version>1.9.1</shiro.version>
     <dom4j.version>2.1.3</dom4j.version>
-    <hydra.version>0.2.0</hydra.version>
+    <hydra.version>0.3.0</hydra.version>
     <featureExtraction.version>3.2.0</featureExtraction.version>
-    <tomcat.embed.version>8.5.81</tomcat.embed.version>
+    <tomcat.embed.version>8.5.82</tomcat.embed.version>
 
     <commons-fileupload.version>1.3.3</commons-fileupload.version>
 
-    <circe.version>1.9.4</circe.version>
+    <circe.version>1.10.0</circe.version>
     <jersey.version>2.14</jersey.version>
-    <SqlRender.version>1.9.0</SqlRender.version>
+    <SqlRender.version>1.10.0</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
     <pac4j.version>4.0.0</pac4j.version>
-    <jackson.version>2.10.5</jackson.version>
-    <jackson.databind.version>2.10.5.1</jackson.databind.version>
+    <jackson.version>2.12.7</jackson.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
     <skipUnitTests>false</skipUnitTests>
     <skipITtests>false</skipITtests>
@@ -70,7 +69,7 @@
     <!-- Full Text Search With SOLR Settings -->
     <solr.endpoint></solr.endpoint>
     <solr.query.prefix>{!complexphrase inOrder=true}</solr.query.prefix>
-    <solr.version>8.6.3</solr.version>
+    <solr.version>8.11.2</solr.version>
     <!-- Heracles properties -->
     <heracles.smallcellcount>5</heracles.smallcellcount>
 
@@ -101,6 +100,7 @@
     <security.oid.apiSecret></security.oid.apiSecret>
     <security.oid.url></security.oid.url>
     <security.oid.logoutUrl></security.oid.logoutUrl>
+    <security.oid.extraScopes></security.oid.extraScopes>
     <security.oid.redirectUrl>http://localhost/index.html#/welcome/</security.oid.redirectUrl>
     <security.kerberos.spn></security.kerberos.spn>
     <security.kerberos.keytabPath></security.kerberos.keytabPath>
@@ -115,6 +115,8 @@
     <security.ldap.userMapping.middlenameAttr>initials</security.ldap.userMapping.middlenameAttr>
     <security.ldap.userMapping.lastnameAttr>sn</security.ldap.userMapping.lastnameAttr>
     <security.ldap.userMapping.usernameAttr>cn</security.ldap.userMapping.usernameAttr>
+    <security.ldap.userImport.usernameAttr>cn</security.ldap.userImport.usernameAttr>
+    <security.ldap.userImport.loginAttr>uid</security.ldap.userImport.loginAttr>
     <security.ldap.searchBase>CN=Users,DC=example,DC=org</security.ldap.searchBase>
     <security.ad.url></security.ad.url>
     <security.ad.searchBase>CN=Users,DC=example,DC=org</security.ad.searchBase>
@@ -131,6 +133,8 @@
     <security.ad.userMapping.middlenameAttr>initials</security.ad.userMapping.middlenameAttr>
     <security.ad.userMapping.lastnameAttr>sn</security.ad.userMapping.lastnameAttr>
     <security.ad.userMapping.usernameAttr>cn</security.ad.userMapping.usernameAttr>
+    <security.ad.userImport.loginAttr>sAMAccountName</security.ad.userImport.loginAttr>
+    <security.ad.userImport.usernameAttr>cn</security.ad.userImport.usernameAttr>
 
     <security.cas.loginUrl></security.cas.loginUrl>
     <security.cas.callbackUrl></security.cas.callbackUrl>
@@ -194,7 +198,7 @@
     <server.ssl.key-password></server.ssl.key-password>
     <server.servlet.context-path>/WebAPI</server.servlet.context-path>
 
-    <arachne.version>1.17.2</arachne.version>
+    <arachne.version>1.17.3</arachne.version>
     <jersey-media-multipart.version>2.25.1</jersey-media-multipart.version>
     <execution.invalidation.period>600000</execution.invalidation.period>
     <execution.invalidation.maxage.hours>12</execution.invalidation.maxage.hours>
@@ -221,7 +225,7 @@
     <spring.jpa.show-sql>false</spring.jpa.show-sql>
     <spring.jpa.properties.hibernate.generate_statistics>false</spring.jpa.properties.hibernate.generate_statistics>
     <spring.jpa.properties.hibernate.jdbc.batch_size>200</spring.jpa.properties.hibernate.jdbc.batch_size>
-    <spring.jpa.properties.hibernate.order_inserts>true</spring.jpa.properties.hibernate.order_inserts>    
+    <spring.jpa.properties.hibernate.order_inserts>true</spring.jpa.properties.hibernate.order_inserts>
     <logging.level.root>info</logging.level.root>
     <logging.level.org.ohdsi>info</logging.level.org.ohdsi>
     <logging.level.org.springframework.orm>info</logging.level.org.springframework.orm>
@@ -571,7 +575,7 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>${jackson.databind.version}</version>
+      <version>${jackson.version}</version>
       <exclusions>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
@@ -610,15 +614,15 @@
     <dependency>
       <groupId>org.yaml</groupId>
       <artifactId>snakeyaml</artifactId>
-      <version>1.26</version>
+      <version>1.32</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
       <exclusions>
         <exclusion>
-          <artifactId>org.hibernate</artifactId>
-          <groupId>hibernate-validator</groupId>
+          <groupId>org.hibernate</groupId>
+          <artifactId>hibernate-validator</artifactId>
         </exclusion>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
@@ -675,8 +679,8 @@
       <artifactId>spring-boot-starter-jersey</artifactId>
       <exclusions>
         <exclusion>
-          <artifactId>org.hibernate</artifactId>
-          <groupId>hibernate-validator</groupId>
+          <groupId>org.hibernate</groupId>
+          <artifactId>hibernate-validator</artifactId>
         </exclusion>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
@@ -696,19 +700,19 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-jpa</artifactId>
     </dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-cache</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>javax.cache</groupId>
-			<artifactId>cache-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.ehcache</groupId>
-			<artifactId>ehcache</artifactId>
-            <version>3.8.1</version>
-		</dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-cache</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.cache</groupId>
+      <artifactId>cache-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ehcache</groupId>
+      <artifactId>ehcache</artifactId>
+      <version>3.8.1</version>
+    </dependency>
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-core</artifactId>
@@ -776,6 +780,7 @@
     </dependency>
     <!-- It is overriding a transitive dependency from the dependency above -->
     <!-- After migrating to Spring Boot 2.x we should get rid of it -->
+    <!-- It is currently inefficient as com.nimbusds:nimbus-jose-jwt has hard bounds [1.3.1,2.3] -->
     <dependency>
       <groupId>net.minidev</groupId>
       <artifactId>json-smart</artifactId>
@@ -991,7 +996,7 @@
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
-      <version>20170516</version>
+      <version>20180130</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
@@ -1537,6 +1542,26 @@
           <artifactId>google-auth-library-credentials</artifactId>
           <version>0.16.2</version>
         </dependency>
+        <dependency>
+          <groupId>com.google.api</groupId>
+          <artifactId>gax</artifactId>
+          <version>1.47.0</version>
+        </dependency>
+        <dependency>
+          <groupId>com.google.api</groupId>
+          <artifactId>gax-grpc</artifactId>
+          <version>1.47.0</version>
+        </dependency>
+        <dependency>
+          <groupId>com.google.api.grpc</groupId>
+          <artifactId>proto-google-cloud-bigquerystorage-v1beta1</artifactId>
+          <version>0.66.0</version>
+        </dependency>
+        <dependency>
+          <groupId>io.opencensus</groupId>
+          <artifactId>opencensus-contrib-http-util</artifactId>
+          <version>0.18.0</version>
+        </dependency>
       </dependencies>
       <build>
         <plugins>
@@ -1787,6 +1812,20 @@
           <groupId>org.antlr</groupId>
           <artifactId>antlr4-runtime</artifactId>
           <version>4.8-1</version>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>webapi-snowflake</id>
+      <properties>
+        <snowflake.enabled>true</snowflake.enabled>
+        <snowflake.driver.version>3.13.22</snowflake.driver.version>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>net.snowflake</groupId>
+          <artifactId>snowflake-jdbc</artifactId>
+          <version>${snowflake.driver.version}</version>
         </dependency>
       </dependencies>
     </profile>

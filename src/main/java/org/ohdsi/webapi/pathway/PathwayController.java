@@ -323,7 +323,7 @@ public class PathwayController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/")
     public void assignTag(@PathParam("id") final int id, final int tagId) {
-        pathwayService.assignTag(id, tagId, false);
+        pathwayService.assignTag(id, tagId);
     }
 
     /**
@@ -336,7 +336,7 @@ public class PathwayController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/{tagId}")
     public void unassignTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
-        pathwayService.unassignTag(id, tagId, false);
+        pathwayService.unassignTag(id, tagId);
     }
 
     /**
@@ -349,7 +349,7 @@ public class PathwayController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/protectedtag/")
     public void assignPermissionProtectedTag(@PathParam("id") final int id, final int tagId) {
-        pathwayService.assignTag(id, tagId, true);
+        pathwayService.assignTag(id, tagId);
     }
 
     /**
@@ -362,7 +362,7 @@ public class PathwayController {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/protectedtag/{tagId}")
     public void unassignPermissionProtectedTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
-        pathwayService.unassignTag(id, tagId, true);
+        pathwayService.unassignTag(id, tagId);
     }
 
     /**

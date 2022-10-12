@@ -123,6 +123,15 @@ public class DDLService {
 
 	private static final Collection<String> DBMS_NO_INDEXES = Arrays.asList("redshift", "impala", "netezza", "spark");
 
+	/**
+	 * Get DDL for results schema
+	 * @param dialect SQL dialect (e.g. sql server)
+	 * @param vocabSchema
+	 * @param resultSchema
+	 * @param initConceptHierarchy
+	 * @param tempSchema
+	 * @return SQL to create tables in results schema
+	 */
 	@GET
 	@Path("results")
 	@Produces("text/plain")
@@ -156,6 +165,12 @@ public class DDLService {
 		}
 	}
 
+	/**
+	 * Get DDL for Common Evidence Model results schema
+	 * @param dialect SQL dialect
+	 * @param schema schema name
+	 * @return SQL
+	 */
 	@GET
 	@Path("cemresults")
 	@Produces("text/plain")
@@ -168,6 +183,13 @@ public class DDLService {
 		return generateSQL(dialect, params, CEMRESULT_DDL_FILE_PATHS, CEMRESULT_INIT_FILE_PATHS, CEMRESULT_INDEX_FILE_PATHS);
 	}
 
+	/**
+	 * Get DDL for Achilles results tables
+	 * @param dialect SQL dialect
+	 * @param vocabSchema OMOP vocabulary schema
+	 * @param resultSchema results schema
+	 * @return SQL
+	 */
 	@GET
 	@Path("achilles")
 	@Produces("text/plain")

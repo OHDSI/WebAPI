@@ -9,6 +9,8 @@ import org.ohdsi.webapi.model.CommonEntityExt;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.reusable.domain.Reusable;
 
+import javax.ws.rs.BadRequestException;
+
 public class TagSecurityUtils {
     public static String COHORT_DEFINITION = "cohortdefinition";
     public static String CONCEPT_SET = "conceptset";
@@ -40,7 +42,19 @@ public class TagSecurityUtils {
             return false;
         }
 
-        final String permission = String.format("%s:*:protectedtag:*:%s", asset, method);
+        final String template;
+        switch (method) {
+            case "post":
+                template = "%s:*:protectedtag:post";
+                break;
+            case "delete":
+                template = "%s:*:protectedtag:*:delete";
+                break;
+            default:
+                throw new BadRequestException(String.format("Unsupported method: %s", method));
+
+        }
+        final String permission = String.format(template, asset);
         return SecurityUtils.getSubject().isPermitted(permission);
     }
 

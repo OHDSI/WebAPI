@@ -22,6 +22,12 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * REST Services related to working with Arachne Execution Engine
+ * Services
+ * 
+ * @summary Arachne Execution Engine
+ */
 @Component
 @Path("/executionservice")
 public class ScriptExecutionController implements GeneratesNotification {
@@ -67,6 +73,13 @@ public class ScriptExecutionController implements GeneratesNotification {
         this.sourceRepository = sourceRepository;
     }
 
+    /**
+     * Get the execution status by execution ID
+     * 
+     * @summary Get an execution status by ID
+     * @param executionId The execution ID
+     * @return The status
+     */
     @Path("execution/status/{executionId}")
     @GET
     public String getStatus(@PathParam("executionId") Long executionId) {
@@ -74,6 +87,12 @@ public class ScriptExecutionController implements GeneratesNotification {
         return scriptExecutionService.getExecutionStatus(executionId);
     }
 
+    /**
+     * Get the execution status of the Arachne Execution Engine
+     * 
+     * @summary Get Arachne Execution Engine status
+     * @return The StatusResponse
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("status")

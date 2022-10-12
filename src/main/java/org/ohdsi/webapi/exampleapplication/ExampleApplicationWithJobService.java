@@ -31,9 +31,13 @@ import java.util.List;
 
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
-/**
- *
- */
+ /**
+  * Example REST service - will be depreciated
+  * in a future release
+  * 
+  * @deprecated
+  * @summary Example
+  */
 @Path("/example")
 public class ExampleApplicationWithJobService extends AbstractDaoService {
     
@@ -74,6 +78,13 @@ public class ExampleApplicationWithJobService extends AbstractDaoService {
         }
     }
     
+    /**
+     * Example REST service - will be depreciated
+     * in a future release
+     * 
+     * @deprecated
+     * @summary DO NOT USE
+     */
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public JobExecutionResource queueJob() throws Exception {
@@ -91,6 +102,13 @@ public class ExampleApplicationWithJobService extends AbstractDaoService {
             jobParameters);
     }
     
+    /**
+     * Example REST service - will be depreciated
+     * in a future release
+     * 
+     * @deprecated
+     * @summary DO NOT USE
+     */
     @GET
     @Path("widget")
     @Produces(MediaType.APPLICATION_JSON)
@@ -99,6 +117,13 @@ public class ExampleApplicationWithJobService extends AbstractDaoService {
         return page.getContent();
     }
     
+    /**
+     * Example REST service - will be depreciated
+     * in a future release
+     * 
+     * @deprecated
+     * @summary DO NOT USE
+     */
     @POST
     @Path("widget")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -118,6 +143,13 @@ public class ExampleApplicationWithJobService extends AbstractDaoService {
         return widgets;
     }
     
+    /**
+     * Example REST service - will be depreciated
+     * in a future release
+     * 
+     * @deprecated
+     * @summary DO NOT USE
+     */
     @POST
     @Path("widgets/batch")
     public void batchWriteWidgets() {
@@ -142,6 +174,13 @@ public class ExampleApplicationWithJobService extends AbstractDaoService {
         log.info("Persisted {} widgets", widgets.size());
     }
     
+    /**
+     * Example REST service - will be depreciated
+     * in a future release
+     * 
+     * @deprecated
+     * @summary DO NOT USE
+     */
     @POST
     @Path("widgets")
     public void writeWidgets() {
@@ -150,6 +189,14 @@ public class ExampleApplicationWithJobService extends AbstractDaoService {
         log.info("Persisted {} widgets", widgets.size());
     }
     
+    /**
+     * Example REST service - will be depreciated
+     * in a future release
+     * 
+     * @deprecated
+     * @param w DO NOT USE
+     * @summary DO NOT USE
+     */
     @POST
     @Path("widget2")
     @Consumes(MediaType.APPLICATION_JSON)

@@ -27,6 +27,12 @@ import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.JOB_IS_ALREADY_SCHEDULED;
 
+/**
+ * REST Services related to importing user information
+ * from an external source (i.e. Active Directory)
+ * 
+ * @summary User Import
+ */
 @RestController
 @Path("/user/import/job")
 @Transactional
@@ -40,6 +46,13 @@ public class UserImportJobController {
     this.conversionService = conversionService;
   }
 
+  /**
+   * Create a user import job
+   * 
+   * @summary Create user import job
+   * @param jobDTO The user import information
+   * @return The job information
+   */
   @POST
   @Path("/")
   @Consumes(MediaType.APPLICATION_JSON)
@@ -55,6 +68,14 @@ public class UserImportJobController {
     }
   }
 
+  /**
+   * Update a user import job
+   * 
+   * @summary Update user import job
+   * @param jobId The job ID
+   * @param jobDTO The user import information
+   * @return The job information
+   */
   @PUT
   @Path("/{id}")
   @Consumes(MediaType.APPLICATION_JSON)
@@ -71,6 +92,12 @@ public class UserImportJobController {
     }
   }
 
+  /**
+   * Get the user import job list
+   * 
+   * @summary Get user import jobs
+   * @return The list of user import jobs
+   */
   @GET
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
@@ -84,6 +111,13 @@ public class UserImportJobController {
             .collect(Collectors.toList());
   }
 
+  /**
+   * Get user import job by ID
+   * 
+   * @summary Get user import job by ID
+   * @param id The job ID
+   * @return The user import job
+   */
   @GET
   @Path("/{id}")
   @Produces(MediaType.APPLICATION_JSON)
@@ -93,6 +127,13 @@ public class UserImportJobController {
             .orElseThrow(NotFoundException::new);
   }
 
+  /**
+   * Delete user import job by ID
+   * 
+   * @summary Delete user import job by ID
+   * @param id The job ID
+   * @return The user import job
+   */
   @DELETE
   @Path("/{id}")
   public Response deleteJob(@PathParam("id") Long id) {
@@ -101,6 +142,13 @@ public class UserImportJobController {
     return Response.ok().build();
   }
 
+  /**
+   * Get the user import job history
+   * 
+   * @summary Get import history
+   * @param id The job ID
+   * @return The job history
+   */
   @GET
   @Path("/{id}/history")
   @Produces(MediaType.APPLICATION_JSON)

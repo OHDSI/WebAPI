@@ -18,3 +18,4 @@ sandbox/
 **/resources/config/application*-dev-*.yaml
 **/resources/config/application*-dev-*.yml
 /.vscode
+/.run

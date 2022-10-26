@@ -162,6 +162,36 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
             }
     }
 
+    /**
+     * Get the record count and descendant record count for one or more concepts in a single CDM database
+     *
+     * <p>
+     *     This POST request accepts a json array containing one or more concept IDs. (e.g. [201826, 437827])
+     * </p>
+     *
+     * @param sourceKey The unique identifier for a CDM source (e.g. SYNPUF5PCT)
+     *
+     * @return A javascript object with one element per concept. Each element is an array of lenth two containing the
+     * record count and descendent record count for the concept.
+     *
+     * <p>
+     *     [
+     *     {
+     *         "201826": [
+     *             612861,
+     *             653173
+     *         ]
+     *     },
+     *     {
+     *         "437827": [
+     *             224421,
+     *             224421
+     *         ]
+     *     }
+     * ]
+     * </p>
+     * For concept id "201826" in the SYNPUF5PCT data source the record count is 612861 and the descendant record count is 653173.
+     */
     @Path("{sourceKey}/conceptRecordCount")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -227,6 +257,13 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         return this.queryRunner.getPersonResults(this.getSourceJdbcTemplate(source), source);
     }
 
+    /**
+     * Warm the results cache for a selected source
+     * 
+     * @summary Warm cache for source key
+     * @param sourceKey The source key
+     * @return The job execution information
+     */
     @GET
     @Path("{sourceKey}/warmCache")
     @Produces(MediaType.APPLICATION_JSON)
@@ -234,6 +271,13 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         return this.warmCacheByKey(sourceKey);
     }
 
+    /**
+     * Refresh the results cache for a selected source
+     * 
+     * @summary Refresh results cache
+     * @param sourceKey The source key
+     * @return The job execution resource
+     */
     @GET
     @Path("{sourceKey}/refreshCache")
     @Produces(MediaType.APPLICATION_JSON)
@@ -253,10 +297,26 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         }
         return new JobExecutionResource();
     }
-
+    
+/*
+    @GET
+    @Path("{sourceKey}/refreshCacheUnsecured")
+    @Produces(MediaType.APPLICATION_JSON)
+    public JobExecutionResource refreshCacheUnsecured(@PathParam("sourceKey") final String sourceKey) {
+      Source source = getSourceRepository().findBySourceKey(sourceKey);
+      JobExecutionResource jobExecutionResource = jobService.findJobByName(Constants.WARM_CACHE, getWarmCacheJobName(String.valueOf(source.getSourceId()),sourceKey));
+      if (jobExecutionResource == null) {
+        if (source.getDaimons().stream().anyMatch(sd -> Objects.equals(sd.getDaimonType(), SourceDaimon.DaimonType.Results))) {
+          return warmCacheByKey(source.getSourceKey());
+        }
+      }
+      return new JobExecutionResource();
+    }
+*/
     /**
      * Queries for data density report for the given sourceKey
-     *
+     * 
+     * @param sourceKey The source key
      * @return CDMDataDensity
      */
     @GET
@@ -335,8 +395,11 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
 
     /**
      * Queries for drilldown results
-     *
-     * @return List<ArrayNode>
+     * 
+     * @param domain The domain for the drilldown
+     * @param conceptId The concept ID
+     * @param sourceKey The source key
+     * @return The JSON results
      */
     @GET
     @Path("{sourceKey}/{domain}/{conceptId}")
@@ -404,7 +467,8 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         }
         List<Source> vocabularySources = sources.stream()
                 .filter(s -> SourceUtils.hasSourceDaimon(s, SourceDaimon.DaimonType.Vocabulary) 
-                        && SourceUtils.hasSourceDaimon(s, SourceDaimon.DaimonType.Results))
+                        && SourceUtils.hasSourceDaimon(s, SourceDaimon.DaimonType.Results)
+                        && s.isIsCacheEnabled())
                 .collect(Collectors.toList());
 
         long[] bucketSizes = getBucketSizes(vocabularySources);

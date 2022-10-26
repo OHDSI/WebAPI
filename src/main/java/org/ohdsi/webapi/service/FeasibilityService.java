@@ -91,8 +91,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 /**
- *
- * @author Chris Knoll <cknoll@ohdsi.org>
+ * REST Services related to performing a feasibility analysis but 
+ * the implementation appears to be subsumed by the cohort definition
+ * services. Marking the REST methods of this
+ * class as deprecated.
+ * 
+ * @summary Feasibility analysis (DO NOT USE)
  */
 @Path("/feasibility/")
 @Component
@@ -371,9 +375,11 @@ public class FeasibilityService extends AbstractDaoService {
   }
 
   /**
-   * Returns all cohort definitions in the cohort schema
-   *
-   * @return List of cohort_definition
+   * DO NOT USE
+   * 
+   * @summary DO NOT USE
+   * @deprecated
+   * @return List<FeasibilityService.FeasibilityStudyListItem>
    */
   @GET
   @Path("/")
@@ -400,9 +406,11 @@ public class FeasibilityService extends AbstractDaoService {
 
   /**
    * Creates the feasibility study
-   *
-   * @param study The study to create.
-   * @return The new FeasibilityStudy
+   * 
+   * @summary DO NOT USE
+   * @deprecated
+   * @param study The feasibility study
+   * @return Feasibility study
    */
   @PUT
   @Path("/")
@@ -460,6 +468,14 @@ public class FeasibilityService extends AbstractDaoService {
     });
   }
 
+  /**
+   * Get the feasibility study by ID
+   * 
+   * @summary DO NOT USE
+   * @deprecated
+   * @param id The study ID
+   * @return Feasibility study
+   */
   @GET
   @Path("/{id}")
   @Produces(MediaType.APPLICATION_JSON)
@@ -473,6 +489,15 @@ public class FeasibilityService extends AbstractDaoService {
     });
   }
 
+  /**
+   * Update the feasibility study
+   * 
+   * @summary DO NOT USE
+   * @deprecated
+   * @param id The study ID
+   * @param study The study information
+   * @return The updated study information
+   */
   @PUT
   @Path("/{id}")
   @Produces(MediaType.APPLICATION_JSON)
@@ -527,6 +552,15 @@ public class FeasibilityService extends AbstractDaoService {
     return getStudy(id);
   }
 
+  /**
+   * Generate the feasibility study
+   * 
+   * @summary DO NOT USE
+   * @deprecated
+   * @param study_id The study ID
+   * @param sourceKey The source key
+   * @return JobExecutionResource
+   */
   @GET
   @Path("/{study_id}/generate/{sourceKey}")
   @Produces(MediaType.APPLICATION_JSON)
@@ -626,6 +660,14 @@ public class FeasibilityService extends AbstractDaoService {
     return jobExec;
   }
 
+  /**
+   * Get simulation information
+   * 
+   * @summary DO NOT USE
+   * @deprecated
+   * @param id The study ID
+   * @return List<StudyInfoDTO>
+   */
   @GET
   @Path("/{id}/info")
   @Produces(MediaType.APPLICATION_JSON)
@@ -643,6 +685,15 @@ public class FeasibilityService extends AbstractDaoService {
     return result;
   }
 
+  /**
+   * Get simulation report
+   * 
+   * @summary DO NOT USE
+   * @deprecated
+   * @param id The study ID
+   * @param sourceKey The source key
+   * @return FeasibilityReport
+   */
   @GET
   @Path("/{id}/report/{sourceKey}")
   @Produces(MediaType.APPLICATION_JSON)
@@ -666,8 +717,10 @@ public class FeasibilityService extends AbstractDaoService {
   /**
    * Copies the specified cohort definition
    *
+   * @summary DO NOT USE
+   * @deprecated
    * @param id - the Cohort Definition ID to copy
-   * @return the copied cohort definition as a CohortDefinitionDTO
+   * @return the copied feasibility study as a FeasibilityStudyDTO
    */
   @GET
   @Produces(MediaType.APPLICATION_JSON)
@@ -682,9 +735,11 @@ public class FeasibilityService extends AbstractDaoService {
   }
 
   /**
-   * Deletes the specified cohort definition
-   *
-   * @param id - the Cohort Definition ID to copy
+   * Deletes the specified feasibility study
+   * 
+   * @summary DO NOT USE
+   * @deprecated
+   * @param id The study ID
    */
   @DELETE
   @Produces(MediaType.APPLICATION_JSON)
@@ -694,9 +749,12 @@ public class FeasibilityService extends AbstractDaoService {
   }
   
   /**
-   * Deletes the specified cohort definition
-   *
-   * @param id - the Cohort Definition ID to copy
+   * Deletes the specified study for the selected source
+   * 
+   * @summary DO NOT USE
+   * @deprecated
+   * @param id The study ID
+   * @param sourceKey The source key
    */
   @DELETE
   @Produces(MediaType.APPLICATION_JSON)

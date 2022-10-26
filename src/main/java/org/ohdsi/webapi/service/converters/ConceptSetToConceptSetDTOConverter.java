@@ -15,6 +15,7 @@ public class ConceptSetToConceptSetDTOConverter extends BaseCommonEntityExtToDTO
   protected void doConvert(ConceptSet source, ConceptSetDTO target) {
     target.setId(source.getId());
     target.setName(source.getName());
+    target.setDescription(source.getDescription());
   }
 
 }

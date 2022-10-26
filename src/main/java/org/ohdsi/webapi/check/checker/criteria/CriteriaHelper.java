@@ -20,6 +20,7 @@ import static org.ohdsi.webapi.check.checker.criteria.ObservationPeriodHelper.pr
 import static org.ohdsi.webapi.check.checker.criteria.PayerPlanPeriodHelper.preparePayerPlanPeriodBuilder;
 import static org.ohdsi.webapi.check.checker.criteria.ProcedureOccurrenceHelper.prepareProcedureOccurrenceBuilder;
 import static org.ohdsi.webapi.check.checker.criteria.SpecimenHelper.prepareSpecimenBuilder;
+import static org.ohdsi.webapi.check.checker.criteria.VisitDetailHelper.prepareVisitDetailBuilder;
 import static org.ohdsi.webapi.check.checker.criteria.VisitOccurrenceHelper.prepareVisitOccurrenceBuilder;
 
 public class CriteriaHelper {
@@ -46,7 +47,8 @@ public class CriteriaHelper {
                                 preparePayerPlanPeriodBuilder(),
                                 prepareProcedureOccurrenceBuilder(),
                                 prepareSpecimenBuilder(),
-                                prepareVisitOccurrenceBuilder()
+                                prepareVisitOccurrenceBuilder(),
+                                prepareVisitDetailBuilder()
                         );
         return builder;
     }

@@ -23,9 +23,23 @@ import javax.ws.rs.core.MediaType;
 import org.ohdsi.webapi.activity.Tracker;
 import org.springframework.stereotype.Component;
 
+ /**
+  * Example REST service - will be depreciated
+  * in a future release
+  * 
+  * @deprecated
+  * @summary Activity
+  */
 @Path("/activity/")
 @Component
 public class ActivityService {
+ /**
+  * Example REST service - will be depreciated
+  * in a future release
+  * 
+  * @deprecated
+  * @summary DO NOT USE
+  */
   @Path("latest")
   @GET
   @Produces(MediaType.APPLICATION_JSON)

@@ -56,7 +56,9 @@ tryCatch({
                 runAnalyses = TRUE,
                 packageResults = TRUE,
                 maxCores = maxCores,
-                minCellCount = 5)
+                minCellCount = 5,
+                # a workaround as renv.lock file is unreachable after the analysis package has been installed
+                verifyDependencies = FALSE)
 }, finally = {
         remove.packages('@packageName')
 })

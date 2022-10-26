@@ -76,9 +76,24 @@ public class VocabularyServiceTest extends AbstractServiceTest {
     assertSqlEquals("/vocabulary/sql/search-expected.sql", psr);
     assertEquals("%" + query.toLowerCase() + "%", psr.getOrderedParamsList().get(0));
     assertEquals("%" + query.toLowerCase() + "%", psr.getOrderedParamsList().get(1));
-    assertEquals(query.toLowerCase(), psr.getOrderedParamsList().get(2));
   }
 
+  @Test
+  public void prepareExecuteSearchWithQueryOptionalConceptId() throws IOException {
+
+    String query = "12345"; // this looks like a conceptID so add it to the query
+    Source mockSource = mock(Source.class);
+    when(mockSource.getTableQualifier(SourceDaimon.DaimonType.Vocabulary)).thenReturn("omop_v5");
+    when(mockSource.getSourceDialect()).thenReturn("sql server");
+
+    PreparedStatementRenderer psr = vocabularyService.prepareExecuteSearchWithQuery(query, mockSource);
+
+    assertSqlEquals("/vocabulary/sql/search-expected-3.sql", psr);
+    assertEquals("%" + query.toLowerCase() + "%", psr.getOrderedParamsList().get(0));
+    assertEquals("%" + query.toLowerCase() + "%", psr.getOrderedParamsList().get(1));
+    assertEquals(query, psr.getOrderedParamsList().get(2));
+  }
+  
   @Test
   public void prepareGetRelatedConcepts2() throws IOException {
 

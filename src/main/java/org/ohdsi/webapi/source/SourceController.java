@@ -61,7 +61,16 @@ public class SourceController extends AbstractDaoService {
 
   @Value("#{!'${security.provider}'.equals('DisabledSecurity')}")
   private boolean securityEnabled;
-
+  
+	/**
+	 * Gets the list of all Sources in WebAPI database. Sources with a non-null
+	 * deleted_date are not returned (ie: these are soft deleted)
+	 *
+	 * @summary Get Sources
+	 * @return A list of all CDM sources with the ID, name, SQL dialect, and key
+	 * for each source. The {sourceKey} is used in other WebAPI endpoints to
+	 * identify CDMs.
+	 */
   @Path("sources")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
@@ -70,6 +79,13 @@ public class SourceController extends AbstractDaoService {
     return sourceService.getSources().stream().map(SourceInfo::new).collect(Collectors.toList());
   }
 
+  /**
+   * Refresh cached CDM database metadata
+   * 
+	 * @summary Refresh Sources
+   * @return A list of all CDM sources with the ID, name, SQL dialect, and key 
+   * for each source (same as the 'sources' endpoint) after refreshing the cached sourced data.
+   */
   @Path("refresh")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
@@ -79,14 +95,27 @@ public class SourceController extends AbstractDaoService {
     sourceService.ensureSourceEncrypted();
     return getSources();
   }
-
+/**
+ * Get the priority vocabulary source.
+ * 
+ * WebAPI designates one CDM vocabulary as the priority vocabulary to be used for vocabulary searches in Atlas.
+ * 
+ * @summary Get Priority Vocabulary Source
+ * @return The CDM metadata for the priority vocabulary.
+ */
   @Path("priorityVocabulary")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public SourceInfo getPriorityVocabularySourceInfo() {
     return sourceService.getPriorityVocabularySourceInfo();
   }
-
+  
+/**
+ * Get source by key
+ * @summary Get Source By Key
+ * @param sourceKey 
+ * @return  Metadata for a single Source that matches the <code>sourceKey</code>.
+ */
   @Path("{key}")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
@@ -94,7 +123,16 @@ public class SourceController extends AbstractDaoService {
     return sourceRepository.findBySourceKey(sourceKey).getSourceInfo();
   }
 
-  @Path("details/{sourceId}")
+	/**
+	 * Get Source Details
+	 * 
+	 * Source Details contains connection-specific information like JDBC url and authentication information.
+	 
+	 * @summary Get Source Details
+	 * @param sourceId
+	 * @return
+	 */
+	@Path("details/{sourceId}")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public SourceDetails getSourceDetails(@PathParam("sourceId") Integer sourceId) {
@@ -105,7 +143,17 @@ public class SourceController extends AbstractDaoService {
     return new SourceDetails(source);
   }
 
-  @Path("")
+	/**
+	 * Create a Source
+	 * 
+	 * @summary Create Source
+	 * @param file the keyfile
+	 * @param fileDetail the keyfile details
+	 * @param request contains the source information (name, key, etc) 
+	 * @return a new SourceInfo for the created source
+	 * @throws Exception
+	 */
+	@Path("")
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
@@ -155,8 +203,18 @@ public class SourceController extends AbstractDaoService {
       throw new SourceDuplicateKeyException("You cannot use this Source Key, please use different one");
     }
   }
-
-  @Path("{sourceId}")
+  
+	/**
+	 * Updates a Source with the provided details from multiple files
+	 * 
+	 * @summary Update Source
+	 * @param file the keyfile
+	 * @param fileDetail the keyfile details
+	 * @param request contains the source information (name, key, etc) 
+	 * @return the updated SourceInfo for the source
+	 * @throws Exception
+	 */
+	@Path("{sourceId}")
   @PUT
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
@@ -246,7 +304,15 @@ public class SourceController extends AbstractDaoService {
      updated.setKeyfileName(null);
    }
 
-  @Path("{sourceId}")
+	/**
+	 * Delete a source.
+	 * 
+	 * @summary Delete Source
+	 * @param sourceId
+	 * @return
+	 * @throws Exception
+	 */
+	@Path("{sourceId}")
   @DELETE
   @Transactional
   public Response delete(@PathParam("sourceId") Integer sourceId) throws Exception {
@@ -264,7 +330,15 @@ public class SourceController extends AbstractDaoService {
     }
   }
 
-  @Path("connection/{key}")
+	/**
+	 * Check source connection.
+	 * 
+	 * This method attempts to connect to the source by calling 'select 1' on the source connection.
+	 * @summary Check connection
+	 * @param sourceKey
+	 * @return
+	 */
+	@Path("connection/{key}")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @Transactional(noRollbackFor = CannotGetJdbcConnectionException.class)
@@ -275,7 +349,14 @@ public class SourceController extends AbstractDaoService {
     return source.getSourceInfo();
   }
 
-  @Path("daimon/priority")
+	/**
+	 * Get the first daimon (ad associated source) that has priority. In the event
+	 * of a tie, the first source searched wins.
+	 *
+	 * @summary Get Priority Daimons
+	 * @return
+	 */
+	@Path("daimon/priority")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Map<SourceDaimon.DaimonType, SourceInfo> getPriorityDaimons() {
@@ -288,7 +369,16 @@ public class SourceController extends AbstractDaoService {
             ));
   }
 
-  @Path("{sourceKey}/daimons/{daimonType}/set-priority")
+	/**
+	 * Set priority of daimon
+	 * 
+	 * Set the priority of the specified daimon of the specified source, and set the other daimons to 0. 
+	 * @summary Set Priority
+	 * @param sourceKey
+	 * @param daimonTypeName
+	 * @return
+	 */
+	@Path("{sourceKey}/daimons/{daimonType}/set-priority")
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   public Response updateSourcePriority(

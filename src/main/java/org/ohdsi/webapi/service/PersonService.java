@@ -53,6 +53,16 @@ public class PersonService extends AbstractDaoService {
   @Value("#{!'${security.provider}'.equals('DisabledSecurity')}")
   private boolean securityEnabled;
 
+  /**
+   * Get the complete medical history for a single person in a single database
+   * @summary Get complete patient profile
+   * @param sourceKey Data source to extract from
+   * @param personId Person whose profile to extract
+   * @param cohortId (optional) Cohort used to adjust start and end dates. If the person is a member of the cohort then
+   *                 start and end dates will be adjusted so they are relative to the cohort start date.
+   * @return All records in a patient profile with start and end days relative to cohort start date or initial date of
+   * observation
+   */
   @Path("{personId}")
   @GET
   @Produces(MediaType.APPLICATION_JSON)

@@ -51,6 +51,13 @@ public class CohortSampleService {
 		this.generationInfoRepository = generationInfoRepository;
 	}
 
+	/**
+	 * Get information about cohort samples for a data source
+	 *
+	 * @param cohortDefinitionId The id for an existing cohort definition
+	 * @param sourceKey
+	 * @return JSON containing information about cohort samples
+	 */
 	@Path("/{cohortDefinitionId}/{sourceKey}")
 	@GET
 	public CohortSampleListDTO listCohortSamples(
@@ -73,6 +80,14 @@ public class CohortSampleService {
 		return result;
 	}
 
+	/**
+	 * Get an existing cohort sample
+	 * @param cohortDefinitionId
+	 * @param sourceKey
+	 * @param sampleId
+	 * @param fields
+	 * @return personId, gender, age of each person in the cohort sample
+	 */
 	@Path("/{cohortDefinitionId}/{sourceKey}/{sampleId}")
 	@GET
 	public CohortSampleDTO getCohortSample(
@@ -86,6 +101,15 @@ public class CohortSampleService {
 		return this.samplingService.getSample(sampleId, withRecordCounts);
 	}
 
+	/**
+	 * @summary Refresh a cohort sample
+	 * Refresh a cohort sample for a given source key. This will re-sample persons from the cohort.
+	 * @param cohortDefinitionId
+	 * @param sourceKey
+	 * @param sampleId
+	 * @param fields
+	 * @return A sample of persons from a cohort
+	 */
 	@Path("/{cohortDefinitionId}/{sourceKey}/{sampleId}/refresh")
 	@POST
 	public CohortSampleDTO refreshCohortSample(
@@ -100,6 +124,11 @@ public class CohortSampleService {
 		return this.samplingService.getSample(sampleId, withRecordCounts);
 	}
 
+	/**
+	 * Does an existing cohort have samples?
+	 * @param cohortDefinitionId
+	 * @return true or false
+	 */
 	@Path("/has-samples/{cohortDefinitionId}")
 	@GET
 	public Map<String, Boolean> hasSamples(
@@ -109,6 +138,12 @@ public class CohortSampleService {
 		return Collections.singletonMap("hasSamples", nSamples > 0);
 	}
 
+	/**
+	 * Does an existing cohort have samples from a particular source?
+	 * @param sourceKey
+	 * @param cohortDefinitionId
+	 * @return true or false
+	 */
 	@Path("/has-samples/{cohortDefinitionId}/{sourceKey}")
 	@GET
 	public Map<String, Boolean> hasSamples(
@@ -120,6 +155,13 @@ public class CohortSampleService {
 		return Collections.singletonMap("hasSamples", nSamples > 0);
 	}
 
+	/**
+	 * Create a new cohort sample
+	 * @param sourceKey
+	 * @param cohortDefinitionId
+	 * @param sampleParameters
+	 * @return
+	 */
 	@Path("/{cohortDefinitionId}/{sourceKey}")
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -141,6 +183,13 @@ public class CohortSampleService {
 		return samplingService.createSample(source, cohortDefinitionId, sampleParameters);
 	}
 
+	/**
+	 * Delete a cohort sample
+	 * @param sourceKey
+	 * @param cohortDefinitionId
+	 * @param sampleId
+	 * @return
+	 */
 	@Path("/{cohortDefinitionId}/{sourceKey}/{sampleId}")
 	@DELETE
 	public Response deleteCohortSample(
@@ -156,6 +205,12 @@ public class CohortSampleService {
 		return Response.status(Response.Status.NO_CONTENT).build();
 	}
 
+	/**
+	 * Delete all samples for a cohort on a data source
+	 * @param sourceKey
+	 * @param cohortDefinitionId
+	 * @return
+	 */
 	@Path("/{cohortDefinitionId}/{sourceKey}")
 	@DELETE
 	public Response deleteCohortSamples(

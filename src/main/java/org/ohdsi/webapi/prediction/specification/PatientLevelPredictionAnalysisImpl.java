@@ -19,7 +19,7 @@ import static org.ohdsi.webapi.Constants.Params.PREDICTION_SKELETON_VERSION;
  *
  * @author asena5
  */
-@JsonIgnoreProperties(ignoreUnknown=true)
+@JsonIgnoreProperties(ignoreUnknown=true, value = {"createdBy", "createdDate", "modifiedBy", "modifiedDate"})
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictionAnalysis, CommonDTO {
   private Integer id = null;
@@ -182,7 +182,7 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
   }
 
   /**
-   * The person who created the analysis 
+   * The person who created the analysis
    * @return createdBy
    **/
   @Override
@@ -199,7 +199,7 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
   }
 
   /**
-   * The date and time the estimation was first saved 
+   * The date and time the estimation was first saved
    * @return createdDate
    **/
   @Override
@@ -216,7 +216,7 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
   }
 
   /**
-   * The last person to modify the analysis 
+   * The last person to modify the analysis
    * @return modifiedBy
    **/
   @Override
@@ -233,7 +233,7 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
   }
 
   /**
-   * The date and time the estimation was last saved 
+   * The date and time the estimation was last saved
    * @return modifiedDate
    **/
   @Override
@@ -248,7 +248,7 @@ public class PatientLevelPredictionAnalysisImpl implements PatientLevelPredictio
     public void setModifiedDate(String modifiedDate) {
     this.modifiedDate = modifiedDate;
   }
-  
+
     /**
      *
      * @param cohortDefinitionsItem

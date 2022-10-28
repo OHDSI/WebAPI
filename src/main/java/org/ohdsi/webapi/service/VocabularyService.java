@@ -1509,7 +1509,8 @@ public class VocabularyService extends AbstractDaoService {
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public Collection<ConceptSetComparison> compareConceptSetsCsv(@PathParam("sourceKey") String sourceKey, CompareArbitraryDto data) throws Exception {
+  public Collection<ConceptSetComparison> compareConceptSetsCsv(final @PathParam("sourceKey") String sourceKey,
+                                                                final CompareArbitraryDto data) throws Exception {
     final ConceptSetExpression[] conceptSetExpressionList = data.compareTargets;
     if (conceptSetExpressionList.length != 2) {
       throw new Exception("You must specify two concept set expressions in order to use this method.");
@@ -1521,7 +1522,7 @@ public class VocabularyService extends AbstractDaoService {
     String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/compareConceptSets.sql");
 
     final ExpressionType[] types = data.types;
-    final CsvExpressionQueryBuilder builder = new CsvExpressionQueryBuilder();
+    final ConceptSetExpressionQueryBuilder builder = new ConceptSetExpressionQueryBuilder();
     final CsvExpressionQueryBuilder builderCsv = new CsvExpressionQueryBuilder();
     final String cs1Query = types[0] == ExpressionType.BRIEF ? builderCsv.buildExpressionQuery(conceptSetExpressionList[0]) : builder.buildExpressionQuery(conceptSetExpressionList[0]);
     final String cs2Query = types[1] == ExpressionType.BRIEF ? builderCsv.buildExpressionQuery(conceptSetExpressionList[1]) : builder.buildExpressionQuery(conceptSetExpressionList[1]);

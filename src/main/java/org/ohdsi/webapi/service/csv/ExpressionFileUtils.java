@@ -9,7 +9,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class ExpressionFileUtils {
-    private static Collector<ConceptSetExpression.ConceptSetItem, ?, Map<String, Concept>> CONCEPT_COLLECTOR =
+    private static final Collector<ConceptSetExpression.ConceptSetItem, ?, Map<String, Concept>> CONCEPT_MAP_COLLECTOR =
             Collectors.toMap(item -> item.concept.conceptName + ":" + item.concept.conceptCode + ":" + item.concept.vocabularyId, item -> item.concept);
 
     public static Collection<ConceptSetComparison> inExCombined(final Map<String, Concept> in1ex, final Map<String, Concept> in2ex, final Map<String, Concept> inIntersection) {
@@ -39,13 +39,13 @@ public class ExpressionFileUtils {
     public static Map<String, Concept> toExclusionMap(final ConceptSetExpression.ConceptSetItem[] in1, final Collection<ConceptSetComparison> fromDb) {
         return Arrays.stream(in1).filter(item ->
                 fromDb.stream().noneMatch(out -> out.conceptCode.equals(item.concept.conceptCode) && out.vocabularyId.equals(item.concept.vocabularyId) && out.conceptName.equals(item.concept.conceptName))
-        ).collect(CONCEPT_COLLECTOR);
+        ).collect(CONCEPT_MAP_COLLECTOR);
     }
 
     public static Map<String, Concept> toIntersectionMap(final ConceptSetExpression.ConceptSetItem[] in1, final ConceptSetExpression.ConceptSetItem[] in2) {
         return Arrays.stream(in1).filter(in1Item ->
                 Arrays.stream(in2).anyMatch(in2Item -> in1Item.concept.conceptCode.equals(in2Item.concept.conceptCode) && in1Item.concept.vocabularyId.equals(in2Item.concept.vocabularyId))
-        ).collect(CONCEPT_COLLECTOR);
+        ).collect(CONCEPT_MAP_COLLECTOR);
     }
 
 }

@@ -6,49 +6,36 @@ import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class CsvExpressionQueryBuilder {
+    private final String CONCEPT_COLUMN_TEMPLATE = "('%s','%s')";
 
-    final String conceptSetIncludeTemplate = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/conceptSetInclude.sql");
-    final String conceptSetQueryTemplate = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getConceptByCodeAndVocabulary.sql");
+    private final String conceptSetIncludeTemplate = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/conceptSetInclude.sql");
+    private final String conceptSetQueryTemplate = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/getConceptByCodeAndVocabulary.sql");
 
-    private ArrayList<String> getConceptColumns(ArrayList<Concept> concepts) {
-        ArrayList<String> conceptColumnsList = new ArrayList();
-        Iterator iter = concepts.iterator();
+    public String buildExpressionQuery(final ConceptSetExpression expression) {
+        final List<Concept> includeConcepts = Arrays.stream(expression.items)
+                .map(item -> item.concept)
+                .collect(Collectors.toList());
 
-        while (iter.hasNext()) {
-            Concept concept = (Concept) iter.next();
-            String conceptColumns = "(" + String.join(", ", "'" + concept.conceptCode + "'", "'" + concept.vocabularyId + "'") + ")";
-            conceptColumnsList.add(conceptColumns);
-        }
-
-        return conceptColumnsList;
+        return StringUtils.replace(conceptSetIncludeTemplate, "@includeQuery", this.buildConceptSetQuery(includeConcepts));
     }
 
-    private String buildConceptSetQuery(ArrayList<Concept> concepts) {
+    private String buildConceptSetQuery(final List<Concept> concepts) {
         if (concepts.size() == 0) {
             return "select concept_id from @vocabulary_database_schema.CONCEPT where 0=1";
         } else {
-            final ArrayList<String> queries = new ArrayList();
-            if (concepts.size() > 0) {
-                queries.add(StringUtils.replace(conceptSetQueryTemplate, "@conceptColumns", StringUtils.join(this.getConceptColumns(concepts), ", ")));
-            }
-
-            return StringUtils.join(queries, "UNION");
+            return StringUtils.replace(conceptSetQueryTemplate, "@conceptColumns", StringUtils.join(this.getConceptColumns(concepts), ","));
         }
     }
 
-    public String buildExpressionQuery(ConceptSetExpression expression) {
-        final ArrayList<Concept> includeConcepts = new ArrayList();
-        final ConceptSetExpression.ConceptSetItem[] concepts = expression.items;
-
-        for (int i = 0; i < concepts.length; ++i) {
-            includeConcepts.add(concepts[i].concept);
-        }
-
-        String conceptSetQuery = StringUtils.replace(conceptSetIncludeTemplate, "@includeQuery", this.buildConceptSetQuery(includeConcepts));
-
-        return conceptSetQuery;
+    private List<String> getConceptColumns(final List<Concept> concepts) {
+        return concepts.stream()
+                .map(concept -> String.format(CONCEPT_COLUMN_TEMPLATE, concept.conceptCode, concept.vocabularyId))
+                .collect(Collectors.toList());
     }
 }

@@ -4,20 +4,30 @@ delete from ${ohdsiSchema}.sec_role_permission
 delete from ${ohdsiSchema}.sec_permission
   where value = 'vocabulary:*:search:*:get';
 
-ALTER TABLE ${ohdsiSchema}.sec_permission ADD for_role_id INTEGER;
+CREATE TEMP TABLE temp_migration (
+  from_perm_id int,
+  new_value character varying(255)
+);
 
-insert into ${ohdsiSchema}.sec_permission(id, value, for_role_id)
-SELECT nextval('${ohdsiSchema}.sec_permission_id_seq'), REPLACE(CAST(new_perms.val AS VARCHAR(255)), '%s', REPLACE(REPLACE(value, 'cohortdefinition:*:generate:', ''), ':get', '')), role_id
+INSERT INTO temp_migration (from_perm_id, new_value)
+SELECT sp.id as from_id,
+  REPLACE(CAST(new_perms.val AS VARCHAR(255)), '%s', REPLACE(REPLACE(value, 'source:', ''), ':access', '')) as new_value
 FROM ${ohdsiSchema}.sec_permission sp
-JOIN ${ohdsiSchema}.sec_role_permission srp on sp.id = srp.permission_id
 CROSS JOIN (
-SELECT 'vocabulary:%s:search:*:get' val
+  SELECT 'vocabulary:%s:search:*:get' val
 ) new_perms
-WHERE sp.value LIKE 'cohortdefinition:*:generate:%:get';
+WHERE sp.value LIKE 'source:%:access';
 
-INSERT INTO ${ohdsiSchema}.sec_role_permission (id, role_id, permission_id)
-  SELECT nextval('${ohdsiSchema}.sec_role_permission_sequence'), sp.for_role_id, sp.id
-FROM ${ohdsiSchema}.sec_permission sp
-WHERE sp.for_role_id IS NOT NULL;
+INSERT INTO ${ohdsiSchema}.sec_permission (id, value)
+SELECT nextval('${ohdsiSchema}.sec_permission_id_seq'), new_value
+FROM temp_migration;
 
-ALTER TABLE ${ohdsiSchema}.sec_permission DROP COLUMN for_role_id;
+INSERT INTO ${ohdsiSchema}.sec_role_permission (id,role_id, permission_id)
+SELECT nextval('${ohdsiSchema}.sec_role_permission_sequence'),
+  srp.role_id,
+  sp.id as permission_id
+FROM temp_migration m
+JOIN ${ohdsiSchema}.sec_permission sp on m.new_value = sp.value
+JOIN ${ohdsiSchema}.sec_role_permission srp on m.from_perm_id = srp.permission_id;
+
+drop table temp_migration;

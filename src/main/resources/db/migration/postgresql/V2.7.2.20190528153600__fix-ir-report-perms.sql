@@ -1,5 +1,3 @@
---alter table ${ohdsiSchema}.sec_permission add for_role_id int;
-
 CREATE TEMP TABLE temp_migration (
   from_perm_id int,
   new_value character varying(255)
@@ -7,10 +5,10 @@ CREATE TEMP TABLE temp_migration (
 
 INSERT INTO temp_migration (from_perm_id, new_value)
 SELECT sp.id as from_id,
-	REPLACE(CAST(new_perms.val AS VARCHAR(255)), '%s', REPLACE(REPLACE(value, 'source:', ''), ':access', '')) as new_value
+  REPLACE(CAST(new_perms.val AS VARCHAR(255)), '%s', REPLACE(REPLACE(value, 'source:', ''), ':access', '')) as new_value
 FROM ${ohdsiSchema}.sec_permission sp
 CROSS JOIN (
-	SELECT 'ir:%s:info:*:delete' val
+  SELECT 'ir:%s:info:*:delete' val
 ) new_perms
 WHERE sp.value LIKE 'source:%:access';
 

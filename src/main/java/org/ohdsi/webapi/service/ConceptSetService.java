@@ -37,6 +37,7 @@ import org.ohdsi.webapi.conceptset.dto.ConceptSetVersionFullDTO;
 import org.ohdsi.webapi.exception.ConceptNotExistException;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
+import org.ohdsi.webapi.service.dto.ConceptSetSearchDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
@@ -49,6 +50,7 @@ import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
+import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.versioning.domain.ConceptSetVersion;
 import org.ohdsi.webapi.versioning.domain.Version;
 import org.ohdsi.webapi.versioning.domain.VersionBase;
@@ -825,6 +827,24 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         List<ConceptSet> entities = getConceptSetRepository().findByTags(names);
         return listByTags(entities, names, ConceptSetDTO.class);
     }
+
+
+     /**
+      * Search for concept sets.
+      *
+      * @summary Search for a concept bt search string and domains (search among containing concepts)
+      * @param sourceKey The source key
+      * @param search The ConceptSetSearchDTO
+      * @return A collection of concept sets
+      */
+     @Path("{sourceKey}/search")
+     @POST
+     @Produces(MediaType.APPLICATION_JSON)
+     @Consumes(MediaType.APPLICATION_JSON)
+     public Collection<ConceptSetDTO> executeSearch(@PathParam("sourceKey") String sourceKey, ConceptSetSearchDTO search) {
+         /* todo implement search */
+         return getConceptSets();
+     }
 
     private void checkVersion(int id, int version) {
         checkVersion(id, version, true);

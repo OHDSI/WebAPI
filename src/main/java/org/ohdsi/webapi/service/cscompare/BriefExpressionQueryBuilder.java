@@ -1,17 +1,15 @@
-package org.ohdsi.webapi.service.csv;
+package org.ohdsi.webapi.service.cscompare;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class CsvExpressionQueryBuilder {
+public class BriefExpressionQueryBuilder {
     private final String CONCEPT_COLUMN_TEMPLATE = "('%s','%s')";
 
     private final String conceptSetIncludeTemplate = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/conceptSetInclude.sql");
@@ -25,7 +23,7 @@ public class CsvExpressionQueryBuilder {
         return StringUtils.replace(conceptSetIncludeTemplate, "@includeQuery", this.buildConceptSetQuery(includeConcepts));
     }
 
-    private String buildConceptSetQuery(final List<Concept> concepts) {
+    public String buildConceptSetQuery(final List<Concept> concepts) {
         if (concepts.size() == 0) {
             return "select concept_id from @vocabulary_database_schema.CONCEPT where 0=1";
         } else {

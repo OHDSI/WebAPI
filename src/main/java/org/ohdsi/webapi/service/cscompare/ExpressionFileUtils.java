@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.service.csv;
+package org.ohdsi.webapi.service.cscompare;
 
 import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;

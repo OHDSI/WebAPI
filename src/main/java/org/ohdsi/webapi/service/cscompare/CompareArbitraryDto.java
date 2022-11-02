@@ -1,7 +1,7 @@
-package org.ohdsi.webapi.service.csv;
+package org.ohdsi.webapi.service.cscompare;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 
 public class CompareArbitraryDto {
-    public ConceptSetExpression[] compareTargets;
     public ExpressionType[] types;
+    public ConceptSetExpression[] compareTargets;
 }

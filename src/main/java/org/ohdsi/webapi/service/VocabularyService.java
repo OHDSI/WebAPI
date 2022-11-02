@@ -38,10 +38,10 @@ import org.ohdsi.webapi.activity.Tracker;
 import org.ohdsi.webapi.conceptset.ConceptSetComparison;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetOptimizationResult;
-import org.ohdsi.webapi.service.csv.CompareArbitraryDto;
-import org.ohdsi.webapi.service.csv.ExpressionFileUtils;
-import org.ohdsi.webapi.service.csv.ExpressionType;
-import org.ohdsi.webapi.service.csv.CsvExpressionQueryBuilder;
+import org.ohdsi.webapi.service.cscompare.CompareArbitraryDto;
+import org.ohdsi.webapi.service.cscompare.ExpressionFileUtils;
+import org.ohdsi.webapi.service.cscompare.ExpressionType;
+import org.ohdsi.webapi.service.cscompare.BriefExpressionQueryBuilder;
 import org.ohdsi.webapi.service.vocabulary.ConceptSetStrategy;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
@@ -1510,8 +1510,8 @@ public class VocabularyService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<ConceptSetComparison> compareConceptSetsCsv(final @PathParam("sourceKey") String sourceKey,
-                                                                final CompareArbitraryDto data) throws Exception {
-    final ConceptSetExpression[] conceptSetExpressionList = data.compareTargets;
+                                                                final CompareArbitraryDto dto) throws Exception {
+    final ConceptSetExpression[] conceptSetExpressionList = dto.compareTargets;
     if (conceptSetExpressionList.length != 2) {
       throw new Exception("You must specify two concept set expressions in order to use this method.");
     }
@@ -1521,11 +1521,14 @@ public class VocabularyService extends AbstractDaoService {
     // Get the comparison script
     String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/compareConceptSets.sql");
 
-    final ExpressionType[] types = data.types;
+    final ExpressionType[] types = dto.types;
     final ConceptSetExpressionQueryBuilder builder = new ConceptSetExpressionQueryBuilder();
-    final CsvExpressionQueryBuilder builderCsv = new CsvExpressionQueryBuilder();
-    final String cs1Query = types[0] == ExpressionType.BRIEF ? builderCsv.buildExpressionQuery(conceptSetExpressionList[0]) : builder.buildExpressionQuery(conceptSetExpressionList[0]);
-    final String cs2Query = types[1] == ExpressionType.BRIEF ? builderCsv.buildExpressionQuery(conceptSetExpressionList[1]) : builder.buildExpressionQuery(conceptSetExpressionList[1]);
+    final BriefExpressionQueryBuilder builderBrief = new BriefExpressionQueryBuilder();
+
+    final String cs1Query = types[0] == ExpressionType.CONCEPT_NAME_CODE_AND_VOCABULARY_ID_ONLY ?
+            builderBrief.buildExpressionQuery(conceptSetExpressionList[0]) : builder.buildExpressionQuery(conceptSetExpressionList[0]);
+    final String cs2Query = types[1] == ExpressionType.CONCEPT_NAME_CODE_AND_VOCABULARY_ID_ONLY ?
+            builderBrief.buildExpressionQuery(conceptSetExpressionList[1]) : builder.buildExpressionQuery(conceptSetExpressionList[1]);
 
     // Insert the queries into the overall comparison script
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"cs1_expression", "cs2_expression"}, new String[]{cs1Query, cs2Query});

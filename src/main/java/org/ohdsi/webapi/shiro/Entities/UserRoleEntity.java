@@ -3,6 +3,8 @@ package org.ohdsi.webapi.shiro.Entities;
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -25,6 +27,7 @@ public class UserRoleEntity implements Serializable {
   private String status;
   private UserEntity user;
   private RoleEntity role;
+  private UserOrigin origin = UserOrigin.SYSTEM;
 
   @Id
   @Column(name = "ID")
@@ -73,5 +76,15 @@ public class UserRoleEntity implements Serializable {
 
   public void setRole(RoleEntity role) {
     this.role = role;
+  }
+
+  @Column(name = "origin", nullable = false)
+  @Enumerated(EnumType.STRING)
+  public UserOrigin getOrigin() {
+    return origin;
+  }
+
+  public void setOrigin(UserOrigin origin) {
+    this.origin = origin;
   }
 }

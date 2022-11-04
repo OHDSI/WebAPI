@@ -25,7 +25,7 @@ RUN mvn package \
     && jar -xf WebAPI.war \
     && rm WebAPI.war
 
-# OHDSI WebAPI and ATLAS web application running as a Spring Boot application with Java 11
+# OHDSI WebAPI and ATLAS web application running as a Spring Boot application with Java 8
 FROM openjdk:8-jre-slim
 
 MAINTAINER Lee Evans - www.ltscomputingllc.com

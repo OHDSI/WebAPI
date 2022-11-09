@@ -17,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.sql.SQLException;
 import java.util.Objects;
 
 import static org.ohdsi.webapi.Constants.Params.DESIGN_HASH;

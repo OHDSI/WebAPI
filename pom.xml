@@ -242,6 +242,7 @@
 
     <!-- Sensitive Info settings -->
     <sensitiveinfo.admin.role>admin</sensitiveinfo.admin.role>
+    <sensitiveinfo.moderator.role>Moderator</sensitiveinfo.moderator.role>
     <!-- Use "-" for files without extension, "*" for all files, extension must not include a leading dot. Use comma to separate values.
      In case of "*" other values will be ignored -->
     <sensitiveinfo.analysis.extensions>txt</sensitiveinfo.analysis.extensions>

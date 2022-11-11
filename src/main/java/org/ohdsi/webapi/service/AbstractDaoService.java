@@ -399,6 +399,19 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     }
   }
 
+  protected void checkOwnerOrAdminOrModerator(UserEntity owner) {
+    if (security instanceof DisabledSecurity) {
+      return;
+    }
+
+    UserEntity user = getCurrentUser();
+    Long ownerId = Objects.nonNull(owner) ? owner.getId() : null;
+
+    if (!(user.getId().equals(ownerId) || isAdmin() || isModerator())) {
+      throw new ForbiddenException();
+    }
+  }
+
   protected void checkOwnerOrAdminOrGranted(CommonEntity<?> entity) {
     if (security instanceof DisabledSecurity) {
       return;

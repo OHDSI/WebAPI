@@ -22,6 +22,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  *
@@ -29,6 +30,9 @@ import java.util.Optional;
  */
 public interface ConceptSetRepository extends CrudRepository<ConceptSet, Integer> {
   ConceptSet findById(Integer conceptSetId);
+
+  @Query("select cs from ConceptSet cs where cs.id in (:conceptSetIds)")
+  List<ConceptSet> findAllById(@Param("conceptSetIds")final Set<Integer> conceptSetIds);
   
   @Deprecated
   @Query("SELECT cs FROM ConceptSet cs WHERE cs.name = :conceptSetName and cs.id <> :conceptSetId")

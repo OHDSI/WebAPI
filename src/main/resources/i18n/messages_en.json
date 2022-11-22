@@ -1713,7 +1713,10 @@
       "tabs": {
         "export": "Export",
         "list": "List"
-      }
+      },
+      "searchCS": "Search Concept Sets",
+      "closeSearchCS":"Close Search Concept Sets",
+      "clearSearch": "Clear search concept sets"
     },
     "manager": {
       "attemptingToFindMessage": "Attempting to find an optimal definition for this concept set...",

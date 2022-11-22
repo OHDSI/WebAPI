@@ -1713,7 +1713,10 @@
       "tabs": {
         "export": "내보내기",
         "list": "리스트"
-      }
+      },
+      "searchCS": "Search Concept Sets",
+      "closeSearchCS":"Close Search Concept Sets",
+      "clearSearch": "Clear search concept sets"
     },
     "manager": {
       "attemptingToFindMessage": "이 컨셉 세트에 대한 최적의 정의를 찾는 중...",

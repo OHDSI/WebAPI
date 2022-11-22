@@ -1713,7 +1713,10 @@
       "tabs": {
         "export": "导出",
         "list": "列表"
-      }
+      },
+      "searchCS": "Search Concept Sets",
+      "closeSearchCS":"Close Search Concept Sets",
+      "clearSearch": "Clear search concept sets"
     },
     "manager": {
       "attemptingToFindMessage": "正在尝试为此概念集找到最佳定义...",

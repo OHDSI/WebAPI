@@ -29,6 +29,10 @@ public class ConceptSetSearchService {
     @Autowired
     private SolrSearchClient solrSearchClient;
 
+    public boolean isSearchAvailable() throws Exception {
+        return solrSearchClient.enabled() && solrSearchClient.getCores().contains(conceptSetsCore);
+    }
+
     public Set<Integer> searchConceptSets(final ConceptSetSearchDTO dto) {
         final SolrClient solrClient = solrSearchClient.getSolrClient(conceptSetsCore);
 

@@ -854,6 +854,19 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     }
 
     /**
+     * Checks, if concept sets search is available.
+     *
+     * @summary Is concept sets search available.
+     */
+    @Path("/searchAvailable")
+    @GET
+    public Response isSearchAvailable() throws Exception {
+        return conceptSetSearchService.isSearchAvailable()
+                ? Response.ok().build()
+                : Response.status(Response.Status.NOT_IMPLEMENTED).build();
+    }
+
+    /**
      * Search for concept sets.
      *
      * @summary Search for a concept bt search string and domains (search among containing concepts)

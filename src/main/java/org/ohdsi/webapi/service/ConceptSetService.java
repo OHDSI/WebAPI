@@ -863,10 +863,8 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      */
     @Path("/searchAvailable")
     @GET
-    public Response isSearchAvailable() {
-        return conceptSetSearchService.isSearchAvailable()
-                ? Response.ok().build()
-                : Response.status(Response.Status.NOT_IMPLEMENTED).build();
+    public boolean isSearchAvailable() {
+        return conceptSetSearchService.isSearchAvailable();
     }
 
     /**

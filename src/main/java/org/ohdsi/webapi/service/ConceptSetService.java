@@ -370,21 +370,24 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
             getConceptSetItemRepository().save(csi);
         }
 
-        // Index concept set for search
-        final ConceptSetExport csExport = getConceptSetForExport(id, new SourceInfo(sourceService.getPriorityVocabularySource()));
+        if (conceptSetSearchService.isSearchAvailable()) {
 
-        final Collection<ConceptSetSearchDocument> concepts = csExport.mappedConcepts.stream()
-                .map(item -> {
-                    final ConceptSetSearchDocument concept = new ConceptSetSearchDocument();
-                    concept.setConceptSetId(id);
-                    concept.setConceptId(item.conceptId);
-                    concept.setConceptName(item.conceptName);
-                    concept.setConceptCode(item.conceptCode);
-                    concept.setDomainName(item.domainId);
-                    return concept;
-                }).collect(Collectors.toList());
+            // Index concept set for search
+            final ConceptSetExport csExport = getConceptSetForExport(id, new SourceInfo(sourceService.getPriorityVocabularySource()));
 
-        conceptSetSearchService.reindexConceptSet(id, concepts);
+            final Collection<ConceptSetSearchDocument> concepts = csExport.mappedConcepts.stream()
+                    .map(item -> {
+                        final ConceptSetSearchDocument concept = new ConceptSetSearchDocument();
+                        concept.setConceptSetId(id);
+                        concept.setConceptId(item.conceptId);
+                        concept.setConceptName(item.conceptName);
+                        concept.setConceptCode(item.conceptCode);
+                        concept.setDomainName(item.domainId);
+                        return concept;
+                    }).collect(Collectors.toList());
+
+            conceptSetSearchService.reindexConceptSet(id, concepts);
+        }
 
         return true;
     }
@@ -860,7 +863,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      */
     @Path("/searchAvailable")
     @GET
-    public Response isSearchAvailable() throws Exception {
+    public Response isSearchAvailable() {
         return conceptSetSearchService.isSearchAvailable()
                 ? Response.ok().build()
                 : Response.status(Response.Status.NOT_IMPLEMENTED).build();
@@ -905,7 +908,11 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public void fullIndex(@PathParam("sourceKey") String sourceKey) {
+    public Response fullIndex(@PathParam("sourceKey") String sourceKey) {
+        if (!conceptSetSearchService.isSearchAvailable()) {
+            return Response.status(Response.Status.NOT_IMPLEMENTED).build();
+        }
+
         final Collection<ConceptSetSearchDocument> documents = new ArrayList<>();
 
         getConceptSetRepository().findAll().forEach(cs -> {
@@ -928,6 +935,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         log.info("Full reindex start");
         conceptSetSearchService.indexConceptSetsFull(documents);
         log.info("Full reindex finish");
+        return Response.ok().build();
     }
 
     private void checkVersion(int id, int version) {

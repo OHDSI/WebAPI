@@ -29,8 +29,13 @@ public class ConceptSetSearchService {
     @Autowired
     private SolrSearchClient solrSearchClient;
 
-    public boolean isSearchAvailable() throws Exception {
-        return solrSearchClient.enabled() && solrSearchClient.getCores().contains(conceptSetsCore);
+    public boolean isSearchAvailable() {
+        try {
+            return solrSearchClient.enabled() && solrSearchClient.getCores().contains(conceptSetsCore);
+        } catch (final Exception e) {
+            log.error("SOLR error: Concept sets search availability check failed", e);
+            return false;
+        }
     }
 
     public Set<Integer> searchConceptSets(final ConceptSetSearchDTO dto) {

@@ -2445,7 +2445,8 @@
     "alerts": {
       "clearLocalCache": "로컬 저장소가 지워졌습니다. 구성 정보를 다시 로드하려면 페이지를 새로 고침하세요.",
       "clearServerCache": "서버 캐시가 지워졌습니다.",
-      "failUpdatePrioritySourceDaimon": "우선순위 소스(priority source) daimon을 업데이트하지 못했습니다."
+      "failUpdatePrioritySourceDaimon": "우선순위 소스(priority source) daimon을 업데이트하지 못했습니다.",
+      "changeSource": "You are changing current source, we recommend you to do reindexing concept sets"
     },
     "buttons": {
       "check": "확인",
@@ -2453,11 +2454,13 @@
       "clearConfigurationCache": "구성 캐시 지우기",
       "clearServerCache": "서버 캐시 지우기",
       "importUsers": "LDAP/AD에서 사용자 가져오기",
-      "managePermissions": "사용 권한 관리"
+      "managePermissions": "사용 권한 관리",
+      "reindexCS": "Concept Sets Reindex"
     },
     "changeSourcePriorities": "다음에서 소스 우선 순위 변경:",
     "confirms": {
-      "clearServerCache": "서버 캐시를 지우시겠습니까?"
+      "clearServerCache": "서버 캐시를 지우시겠습니까?",
+      "reindexSource": "Reindexing may take a long time. It depends on amount and complexity of concept sets"
     },
     "executionEngine": "실행 엔진",
     "newSource": "새로운 소스",
@@ -2487,6 +2490,7 @@
       "rolesDefinitionJson": "역할 정의(Roles definition) JSON",
       "title": "역할 가져오기"
     },
+    "searchCS":"Search Concept Sets",
     "title": "환경설정",
     "userImport": {
       "findGroup": "그룹 찾기",

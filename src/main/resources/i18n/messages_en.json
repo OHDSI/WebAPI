@@ -2445,7 +2445,8 @@
     "alerts": {
       "clearLocalCache": "Local Storage has been cleared. Please refresh the page to reload configuration information.",
       "clearServerCache": "Server cache has been cleared.",
-      "failUpdatePrioritySourceDaimon": "Failed to update priority source daimon"
+      "failUpdatePrioritySourceDaimon": "Failed to update priority source daimon",
+      "changeSource": "You are changing current source, we recommend you to do reindexing concept sets"
     },
     "buttons": {
       "check": "check",
@@ -2453,11 +2454,13 @@
       "clearConfigurationCache": "Clear Configuration Cache",
       "clearServerCache": "Clear Server Cache",
       "importUsers": "Import Users from LDAP/AD",
-      "managePermissions": "Manage Permissions"
+      "managePermissions": "Manage Permissions",
+      "reindexCS": "Concept Sets Reindex"
     },
     "changeSourcePriorities": "Change source priorities in:",
     "confirms": {
-      "clearServerCache": "Are you sure you want to clear the server cache?"
+      "clearServerCache": "Are you sure you want to clear the server cache?",
+      "reindexSource": "Reindexing may take a long time. It depends on amount and complexity of concept sets"
     },
     "executionEngine": "Execution engine",
     "newSource": "New Source",
@@ -2487,6 +2490,7 @@
       "rolesDefinitionJson": "Roles definition JSON",
       "title": "Import roles"
     },
+    "searchCS":"Search Concept Sets",
     "title": "Configuration",
     "userImport": {
       "findGroup": "Find Group",

@@ -2445,7 +2445,8 @@
     "alerts": {
       "clearLocalCache": "本地存储已清除。 请刷新页面以重新加载配置信息。",
       "clearServerCache": "服务器缓存已清除。",
-      "failUpdatePrioritySourceDaimon": "无法更新优先级源守护程序"
+      "failUpdatePrioritySourceDaimon": "无法更新优先级源守护程序",
+      "changeSource": "You are changing current source, we recommend you to do reindexing concept sets"
     },
     "buttons": {
       "check": "检查",
@@ -2453,11 +2454,13 @@
       "clearConfigurationCache": "清除配置缓存",
       "clearServerCache": "清除服务器缓存",
       "importUsers": "从LDAP / AD导入用户",
-      "managePermissions": "管理权限"
+      "managePermissions": "管理权限",
+      "reindexCS": "Concept Sets Reindex"
     },
     "changeSourcePriorities": "更改源优先级：",
     "confirms": {
-      "clearServerCache": "您确定要清除服务器缓存吗？"
+      "clearServerCache": "您确定要清除服务器缓存吗？",
+      "reindexSource": "Reindexing may take a long time. It depends on amount and complexity of concept sets"
     },
     "executionEngine": "执行引擎",
     "newSource": "新来源",
@@ -2487,6 +2490,7 @@
       "rolesDefinitionJson": "角色定义JSON",
       "title": "导入角色"
     },
+    "searchCS":"Search Concept Sets",
     "title": "配置",
     "userImport": {
       "findGroup": "查找组",

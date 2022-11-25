@@ -5,7 +5,6 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
-import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.service.dto.ConceptSetSearchDTO;
 import org.ohdsi.webapi.vocabulary.SolrSearchClient;
 import org.slf4j.Logger;
@@ -14,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -103,13 +101,13 @@ public class ConceptSetSearchService {
     }
 
     private String composeSearchQuery(final ConceptSetSearchDTO dto) {
-        String searchQuery = solrSearchClient.formatSearchQuery(dto.getQuery().trim());
+        final String searchQuery = solrSearchClient.escapeNonWildcardQuery(dto.getQuery().trim());
 
         if (dto.getDomainId() != null && dto.getDomainId().length > 0) {
-            searchQuery += " AND domain_name:(" + String.join(" OR ", dto.getDomainId()) + ")";
+            return String.format("query:%s AND domain_name:(%s)", searchQuery, String.join(" OR ", dto.getDomainId()));
+        } else {
+            return String.format("query:%s", searchQuery);
         }
-
-        return searchQuery;
     }
 
     private void addDocumentToIndex(final SolrClient solrClient, final ConceptSetSearchDocument searchDocument) {

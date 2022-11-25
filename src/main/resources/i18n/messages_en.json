@@ -2446,7 +2446,7 @@
       "clearLocalCache": "Local Storage has been cleared. Please refresh the page to reload configuration information.",
       "clearServerCache": "Server cache has been cleared.",
       "failUpdatePrioritySourceDaimon": "Failed to update priority source daimon",
-      "changeSource": "You are changing current source, we recommend you to do reindexing concept sets"
+      "changeSource": "You are changing current source, we recommend you to reindex concept sets"
     },
     "buttons": {
       "check": "check",
@@ -2490,7 +2490,7 @@
       "rolesDefinitionJson": "Roles definition JSON",
       "title": "Import roles"
     },
-    "searchCS":"Search Concept Sets",
+    "searchCS": "Concept Sets Search",
     "title": "Configuration",
     "userImport": {
       "findGroup": "Find Group",

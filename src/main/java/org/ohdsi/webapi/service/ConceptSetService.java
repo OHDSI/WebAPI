@@ -17,7 +17,6 @@ package org.ohdsi.webapi.service;
 
 import java.io.ByteArrayOutputStream;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import javax.transaction.Transactional;
@@ -40,6 +39,7 @@ import org.ohdsi.webapi.conceptset.search.ConceptSetSearchService;
 import org.ohdsi.webapi.exception.ConceptNotExistException;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
+import org.ohdsi.webapi.service.dto.ConceptSetReindexDTO;
 import org.ohdsi.webapi.service.dto.ConceptSetSearchDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
@@ -64,7 +64,6 @@ import org.ohdsi.webapi.vocabulary.Concept;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
  /**
@@ -906,14 +905,16 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response fullIndex(@PathParam("sourceKey") String sourceKey) {
+    public ConceptSetReindexDTO fullIndex(@PathParam("sourceKey") String sourceKey) {
         if (!conceptSetSearchService.isSearchAvailable()) {
-            return Response.status(Response.Status.NOT_IMPLEMENTED).build();
+            return new ConceptSetReindexDTO("UNAVAILABLE", 0 , 0);
         }
 
         final Collection<ConceptSetSearchDocument> documents = new ArrayList<>();
 
-        getConceptSetRepository().findAll().forEach(cs -> {
+        final Iterable<ConceptSet> conceptSets = getConceptSetRepository().findAll();
+
+        conceptSets.forEach(cs -> {
             final ConceptSetExpression csExpression = this.getConceptSetExpression(cs.getId());
             final Collection<Concept> concepts = vocabService.executeMappedLookup(sourceKey, csExpression);
 
@@ -930,10 +931,11 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
             log.info("Concept set {} added to reindex", cs.getId());
         });
 
-        log.info("Full reindex start");
+        log.info("Full concept sets reindex start");
         conceptSetSearchService.indexConceptSetsFull(documents);
-        log.info("Full reindex finish");
-        return Response.ok().build();
+        log.info("Full concept sets reindex finish");
+
+        return new ConceptSetReindexDTO("COMPLETED", 0, 0);
     }
 
     private void checkVersion(int id, int version) {

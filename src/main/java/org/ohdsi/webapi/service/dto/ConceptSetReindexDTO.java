@@ -1,40 +1,19 @@
 package org.ohdsi.webapi.service.dto;
 
+import org.ohdsi.webapi.conceptset.search.ConceptSetReindexStatus;
+
 public class ConceptSetReindexDTO {
-    private String status;
-    private int maxCount;
-    private int doneCount;
+    private ConceptSetReindexStatus status;
 
-    public ConceptSetReindexDTO() {
-    }
-
-    public ConceptSetReindexDTO(final String status, final int maxCount, final int doneCount) {
+    public ConceptSetReindexDTO(final ConceptSetReindexStatus status) {
         this.status = status;
-        this.maxCount = maxCount;
-        this.doneCount = doneCount;
     }
 
-    public String getStatus() {
+    public ConceptSetReindexStatus getStatus() {
         return status;
     }
 
-    public void setStatus(final String status) {
+    public void setStatus(final ConceptSetReindexStatus status) {
         this.status = status;
-    }
-
-    public int getMaxCount() {
-        return maxCount;
-    }
-
-    public void setMaxCount(final int maxCount) {
-        this.maxCount = maxCount;
-    }
-
-    public int getDoneCount() {
-        return doneCount;
-    }
-
-    public void setDoneCount(final int doneCount) {
-        this.doneCount = doneCount;
     }
 }

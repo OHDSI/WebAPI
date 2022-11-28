@@ -15,17 +15,9 @@
  */
 package org.ohdsi.webapi.service;
 
-import java.io.ByteArrayOutputStream;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-import javax.transaction.Transactional;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.check.CheckResult;
 import org.ohdsi.webapi.check.checker.conceptset.ConceptSetChecker;
 import org.ohdsi.webapi.conceptset.ConceptSet;
@@ -34,9 +26,13 @@ import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
 import org.ohdsi.webapi.conceptset.dto.ConceptSetVersionFullDTO;
+import org.ohdsi.webapi.conceptset.search.ConceptSetReindexStatus;
+import org.ohdsi.webapi.conceptset.search.ConceptSetReindexTasklet;
 import org.ohdsi.webapi.conceptset.search.ConceptSetSearchDocument;
 import org.ohdsi.webapi.conceptset.search.ConceptSetSearchService;
 import org.ohdsi.webapi.exception.ConceptNotExistException;
+import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.service.dto.ConceptSetReindexDTO;
@@ -50,9 +46,9 @@ import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.tag.domain.HasTags;
 import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
+import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.NameUtils;
-import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.versioning.domain.ConceptSetVersion;
 import org.ohdsi.webapi.versioning.domain.Version;
 import org.ohdsi.webapi.versioning.domain.VersionBase;
@@ -61,12 +57,47 @@ import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.ohdsi.webapi.versioning.service.VersionService;
 import org.ohdsi.webapi.vocabulary.Concept;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
 
- /**
+import javax.transaction.Transactional;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
+
+/**
   * Provides REST services for working with
   * concept sets.
   * 
@@ -110,7 +141,21 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Autowired
     private VersionService<ConceptSetVersion> versionService;
 
+    @Autowired
+    private StepBuilderFactory stepBuilderFactory;
+
+    @Autowired
+    private JobTemplate jobTemplate;
+
+    @Autowired
+    private JobBuilderFactory jobBuilders;
+
+    @Autowired
+    private JobService jobService;
+
     public static final String COPY_NAME = "copyName";
+
+    private static final String REINDEX_JOB_NAME = "reindexJob_%sourceKey%";
 
     /**
      * Get the concept set based in the identifier
@@ -863,7 +908,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Path("/searchAvailable")
     @GET
     public boolean isSearchAvailable() {
-        return conceptSetSearchService.isSearchAvailable();
+        return true;//conceptSetSearchService.isSearchAvailable();
     }
 
     /**
@@ -907,35 +952,20 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Consumes(MediaType.APPLICATION_JSON)
     public ConceptSetReindexDTO fullIndex(@PathParam("sourceKey") String sourceKey) {
         if (!conceptSetSearchService.isSearchAvailable()) {
-            return new ConceptSetReindexDTO("UNAVAILABLE", 0 , 0);
+            return new ConceptSetReindexDTO(ConceptSetReindexStatus.UNAVAILABLE);
         }
-
-        final Collection<ConceptSetSearchDocument> documents = new ArrayList<>();
-
-        final Iterable<ConceptSet> conceptSets = getConceptSetRepository().findAll();
-
-        conceptSets.forEach(cs -> {
-            final ConceptSetExpression csExpression = this.getConceptSetExpression(cs.getId());
-            final Collection<Concept> concepts = vocabService.executeMappedLookup(sourceKey, csExpression);
-
-            documents.addAll(concepts.stream().map(item -> {
-                final ConceptSetSearchDocument concept = new ConceptSetSearchDocument();
-                concept.setConceptSetId(cs.getId());
-                concept.setConceptId(item.conceptId);
-                concept.setConceptName(item.conceptName);
-                concept.setConceptCode(item.conceptCode);
-                concept.setDomainName(item.domainId);
-                return concept;
-            }).collect(Collectors.toList()));
-
-            log.info("Concept set {} added to reindex", cs.getId());
-        });
-
-        log.info("Full concept sets reindex start");
-        conceptSetSearchService.indexConceptSetsFull(documents);
-        log.info("Full concept sets reindex finish");
-
-        return new ConceptSetReindexDTO("COMPLETED", 0, 0);
+        String jobName = REINDEX_JOB_NAME.replaceAll("sourceKey", sourceKey);
+        JobExecutionResource jobExecutionResource = jobService.findJobByName(jobName, jobName);
+        if (jobExecutionResource == null) {
+            startReindexJob(sourceKey);
+            return new ConceptSetReindexDTO(ConceptSetReindexStatus.CREATED);
+        } else if ("COMPLETED".equals(jobExecutionResource.getStatus())) {
+            return new ConceptSetReindexDTO(ConceptSetReindexStatus.COMPLETED);
+        } else if ("FAILED".equals(jobExecutionResource.getStatus())) {
+            return new ConceptSetReindexDTO(ConceptSetReindexStatus.FAILED);
+        } else {
+            return new ConceptSetReindexDTO(ConceptSetReindexStatus.STARTED);
+        }
     }
 
     private void checkVersion(int id, int version) {
@@ -961,5 +991,25 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         version.setCreatedBy(user);
         version.setCreatedDate(versionDate);
         return versionService.create(VersionType.CONCEPT_SET, version);
+    }
+
+    private JobExecutionResource startReindexJob(String sourceKey) {
+        String jobName = REINDEX_JOB_NAME.replaceAll("sourceKey", sourceKey);
+        JobParametersBuilder parametersBuilder = new JobParametersBuilder();
+        parametersBuilder.addString(JOB_NAME, jobName);
+        parametersBuilder.addString(Constants.Params.SOURCE_KEY, sourceKey);
+
+        Job reindexJob = jobBuilders.get(jobName)
+                .start(getConceptSetReindexStep(jobName))
+                .build();
+
+        return jobTemplate.launch(reindexJob, parametersBuilder.toJobParameters());
+    }
+
+    private Step getConceptSetReindexStep(String stepName) {
+        ConceptSetReindexTasklet tasklet = new ConceptSetReindexTasklet(conceptSetSearchService, this, vocabService);
+        return stepBuilderFactory.get(stepName)
+                .tasklet(tasklet)
+                .build();
     }
 }

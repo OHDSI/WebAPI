@@ -75,6 +75,15 @@ public class ConceptSetSearchService {
         }
     }
 
+    public void clearConceptSetIndex() {
+        try {
+            final SolrClient solrClient = solrSearchClient.getSolrClient(conceptSetsCore);
+            solrClient.deleteByQuery("*:*");
+        } catch (final Exception e) {
+            log.error("SOLR error: concept set removing failed with message: {}", e.getMessage());
+        }
+    }
+
     public void reindexConceptSet(final Integer conceptSetId, final Collection<ConceptSetSearchDocument> documents) {
         try {
             final SolrClient solrClient = solrSearchClient.getSolrClient(conceptSetsCore);

@@ -2446,7 +2446,8 @@
       "clearLocalCache": "本地存储已清除。 请刷新页面以重新加载配置信息。",
       "clearServerCache": "服务器缓存已清除。",
       "failUpdatePrioritySourceDaimon": "无法更新优先级源守护程序",
-      "changeSource": "You are changing current source, we recommend you to do reindexing concept sets"
+      "changeSource": "You are changing current source, we recommend you to do reindexing concept sets",
+      "reindexRunning": "Reindexing of concept sets is currently in progress"
     },
     "buttons": {
       "check": "检查",
@@ -2455,7 +2456,8 @@
       "clearServerCache": "清除服务器缓存",
       "importUsers": "从LDAP / AD导入用户",
       "managePermissions": "管理权限",
-      "reindexCS": "Concept Sets Reindex"
+      "reindexCS": "Concept Sets Reindex",
+      "reindexCSStatus": "Concept Sets Reindex (<%=doneCount%> of <%=maxCount%>)"
     },
     "changeSourcePriorities": "更改源优先级：",
     "confirms": {

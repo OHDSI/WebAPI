@@ -48,4 +48,6 @@ public interface ConceptSetRepository extends CrudRepository<ConceptSet, Integer
   
   @Query("SELECT DISTINCT cs FROM ConceptSet cs JOIN FETCH cs.tags t WHERE lower(t.name) in :tagNames")
   List<ConceptSet> findByTags(@Param("tagNames") List<String> tagNames);
+
+  List<ConceptSet> findAll();
 }

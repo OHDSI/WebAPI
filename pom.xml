@@ -249,6 +249,7 @@
 
     <!-- Cache Config -->
     <cdm.result.cache.warming.enable>true</cdm.result.cache.warming.enable>
+    <cdm.cache.achilles.warming.enable>false</cdm.cache.achilles.warming.enable>
     <!-- Enable or disable warming cdm cache by cron -->
     <cdm.cache.cron.warming.enable>true</cdm.cache.cron.warming.enable>
     <!-- cron expression to warm cdm cache -->

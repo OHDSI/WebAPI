@@ -116,7 +116,7 @@ public class ConceptSetReindexJobService {
                 .<ConceptDocuments, ConceptDocuments>chunk(1)
                 .reader(new DocumentReader(sourceKey, conceptSets))
                 .writer(new DocumentWriter())
-                .listener(new JobStepExecutionListener())
+                //.listener(new JobStepExecutionListener())
                 .listener(new JobChunkListener())
                 .build();
 
@@ -190,36 +190,31 @@ public class ConceptSetReindexJobService {
 
         @Override
         public ConceptDocuments read() throws Exception {
-            try {
-                if (iterator.hasNext()) {
-                    ConceptSet conceptSet = iterator.next();
-                    final ConceptSetExpression csExpression;
+            if (iterator.hasNext()) {
+                ConceptSet conceptSet = iterator.next();
+                final ConceptSetExpression csExpression;
 
-                    try {
-                        csExpression = conceptSetService.getConceptSetExpression(conceptSet.getId());
-                    } catch (final ConceptNotExistException e) {
-                        // data source does not contain required concepts, skip CS
-                        return new ConceptDocuments();
-                    }
-
-                    final Collection<Concept> concepts = vocabService.executeMappedLookup(sourceKey, csExpression);
-
-                    final List<ConceptSetSearchDocument> documents = concepts.stream().map(item -> {
-                        final ConceptSetSearchDocument concept = new ConceptSetSearchDocument();
-                        concept.setConceptSetId(conceptSet.getId());
-                        concept.setConceptId(item.conceptId);
-                        concept.setConceptName(item.conceptName);
-                        concept.setConceptCode(item.conceptCode);
-                        concept.setDomainName(item.domainId);
-                        return concept;
-                    }).collect(Collectors.toList());
-                    return new ConceptDocuments(conceptSet.getId(), documents);
-                } else {
-                    return null;
+                try {
+                    csExpression = conceptSetService.getConceptSetExpression(conceptSet.getId());
+                } catch (final ConceptNotExistException e) {
+                    // data source does not contain required concepts, skip CS
+                    return new ConceptDocuments();
                 }
-            } catch (Exception e) {
-                log.error("Failed to get data for processing", e);
-                return new ConceptDocuments();
+
+                final Collection<Concept> concepts = vocabService.executeMappedLookup(sourceKey, csExpression);
+
+                final List<ConceptSetSearchDocument> documents = concepts.stream().map(item -> {
+                    final ConceptSetSearchDocument concept = new ConceptSetSearchDocument();
+                    concept.setConceptSetId(conceptSet.getId());
+                    concept.setConceptId(item.conceptId);
+                    concept.setConceptName(item.conceptName);
+                    concept.setConceptCode(item.conceptCode);
+                    concept.setDomainName(item.domainId);
+                    return concept;
+                }).collect(Collectors.toList());
+                return new ConceptDocuments(conceptSet.getId(), documents);
+            } else {
+                return null;
             }
         }
     }
@@ -233,25 +228,25 @@ public class ConceptSetReindexJobService {
         }
     }
 
-    public class JobStepExecutionListener implements StepExecutionListener {
-        @Override
-        public void beforeStep(StepExecution stepExecution) {
-        }
-
-        @Override
-        public ExitStatus afterStep(StepExecution stepExecution) {
-            Object processedCount = stepExecution.getExecutionContext().get(REINDEX_PROCESSED_DOCUMENTS);
-            if (processedCount != null) {
-                if ((Integer) processedCount != 0) {
-                    // Subtract 1 if the value is not equal to zero because "beforeChunk" method is called
-                    // even if there's no element to process, so we get total number of processed documents plus one
-                    stepExecution.getJobExecution().getExecutionContext()
-                            .put(REINDEX_PROCESSED_DOCUMENTS, ((Integer) processedCount) - 1);
-                }
-            }
-            return stepExecution.getExitStatus();
-        }
-    }
+//    public class JobStepExecutionListener implements StepExecutionListener {
+//        @Override
+//        public void beforeStep(StepExecution stepExecution) {
+//        }
+//
+//        @Override
+//        public ExitStatus afterStep(StepExecution stepExecution) {
+//            Object processedCount = stepExecution.getExecutionContext().get(REINDEX_PROCESSED_DOCUMENTS);
+//            if (processedCount != null) {
+//                if ((Integer) processedCount != 0) {
+//                    // Subtract 1 if the value is not equal to zero because "beforeChunk" method is called
+//                    // even if there's no element to process, so we get total number of processed documents plus one
+//                    stepExecution.getJobExecution().getExecutionContext()
+//                            .put(REINDEX_PROCESSED_DOCUMENTS, ((Integer) processedCount) - 1);
+//                }
+//            }
+//            return stepExecution.getExitStatus();
+//        }
+//    }
 
     public class JobChunkListener implements ChunkListener {
         private int counter = 0;

@@ -159,13 +159,22 @@ public class ConceptSetReindexJobService {
     }
 
     private static class ConceptDocuments {
-        final int conceptSetId;
+        final Integer conceptSetId;
 
         final List<ConceptSetSearchDocument> documents;
 
-        private ConceptDocuments(int conceptSetId, List<ConceptSetSearchDocument> documents) {
+        private ConceptDocuments() {
+            this.conceptSetId = null;
+            this.documents = Collections.emptyList();
+        }
+
+        private ConceptDocuments(Integer conceptSetId, List<ConceptSetSearchDocument> documents) {
             this.conceptSetId = conceptSetId;
             this.documents = documents;
+        }
+
+        public boolean hasDataToProcess() {
+            return conceptSetId != null && documents != null && !documents.isEmpty();
         }
     }
 
@@ -181,31 +190,36 @@ public class ConceptSetReindexJobService {
 
         @Override
         public ConceptDocuments read() throws Exception {
-            if (iterator.hasNext()) {
-                ConceptSet conceptSet = iterator.next();
-                final ConceptSetExpression csExpression;
+            try {
+                if (iterator.hasNext()) {
+                    ConceptSet conceptSet = iterator.next();
+                    final ConceptSetExpression csExpression;
 
-                try {
-                    csExpression = conceptSetService.getConceptSetExpression(conceptSet.getId());
-                } catch (final ConceptNotExistException e) {
-                    // data source does not contain required concepts, skip CS
-                    return new ConceptDocuments(conceptSet.getId(), Collections.emptyList());
+                    try {
+                        csExpression = conceptSetService.getConceptSetExpression(conceptSet.getId());
+                    } catch (final ConceptNotExistException e) {
+                        // data source does not contain required concepts, skip CS
+                        return new ConceptDocuments();
+                    }
+
+                    final Collection<Concept> concepts = vocabService.executeMappedLookup(sourceKey, csExpression);
+
+                    final List<ConceptSetSearchDocument> documents = concepts.stream().map(item -> {
+                        final ConceptSetSearchDocument concept = new ConceptSetSearchDocument();
+                        concept.setConceptSetId(conceptSet.getId());
+                        concept.setConceptId(item.conceptId);
+                        concept.setConceptName(item.conceptName);
+                        concept.setConceptCode(item.conceptCode);
+                        concept.setDomainName(item.domainId);
+                        return concept;
+                    }).collect(Collectors.toList());
+                    return new ConceptDocuments(conceptSet.getId(), documents);
+                } else {
+                    return null;
                 }
-
-                final Collection<Concept> concepts = vocabService.executeMappedLookup(sourceKey, csExpression);
-
-                final List<ConceptSetSearchDocument> documents = concepts.stream().map(item -> {
-                    final ConceptSetSearchDocument concept = new ConceptSetSearchDocument();
-                    concept.setConceptSetId(conceptSet.getId());
-                    concept.setConceptId(item.conceptId);
-                    concept.setConceptName(item.conceptName);
-                    concept.setConceptCode(item.conceptCode);
-                    concept.setDomainName(item.domainId);
-                    return concept;
-                }).collect(Collectors.toList());
-                return new ConceptDocuments(conceptSet.getId(), documents);
-            } else {
-                return null;
+            } catch (Exception e) {
+                log.error("Failed to get data for processing, {}", e);
+                return new ConceptDocuments();
             }
         }
     }
@@ -213,7 +227,9 @@ public class ConceptSetReindexJobService {
     private class DocumentWriter implements ItemWriter<ConceptDocuments> {
         @Override
         public void write(List<? extends ConceptDocuments> list) throws Exception {
-            list.forEach(cd -> conceptSetSearchService.reindexConceptSet(cd.conceptSetId, cd.documents));
+            list.stream()
+                    .filter(ConceptDocuments::hasDataToProcess)
+                    .forEach(cd -> conceptSetSearchService.reindexConceptSet(cd.conceptSetId, cd.documents));
         }
     }
 

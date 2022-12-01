@@ -267,6 +267,16 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         return getConceptSetExpression(id, null, source.getSourceInfo());
     }
 
+    @Transactional(dontRollbackOn = ConceptNotExistException.class)
+    public ConceptSetExpression getConceptSetExpressionOrNull(final int id) {
+        SourceInfo sourceInfo = sourceService.getPriorityVocabularySourceInfo();
+        try {
+            return getConceptSetExpression(id, null, sourceInfo);
+        } catch (ConceptNotExistException e) {
+            return null;
+        }
+    }
+
     private ConceptSetExpression getConceptSetExpression(int id, Integer version, SourceInfo sourceInfo) {
         HashMap<Long, Concept> map = new HashMap<>();
 

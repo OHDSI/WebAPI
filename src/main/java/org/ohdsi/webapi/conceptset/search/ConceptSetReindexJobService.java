@@ -218,7 +218,7 @@ public class ConceptSetReindexJobService {
                     return null;
                 }
             } catch (Exception e) {
-                log.error("Failed to get data for processing, {}", e);
+                log.error("Failed to get data for processing", e);
                 return new ConceptDocuments();
             }
         }

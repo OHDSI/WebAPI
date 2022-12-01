@@ -116,7 +116,7 @@ public class ConceptSetReindexJobService {
                 .<ConceptDocuments, ConceptDocuments>chunk(1)
                 .reader(new DocumentReader(sourceKey, conceptSets))
                 .writer(new DocumentWriter())
-                //.listener(new JobStepExecutionListener())
+                .listener(new JobStepExecutionListener())
                 .listener(new JobChunkListener())
                 .build();
 
@@ -228,25 +228,25 @@ public class ConceptSetReindexJobService {
         }
     }
 
-//    public class JobStepExecutionListener implements StepExecutionListener {
-//        @Override
-//        public void beforeStep(StepExecution stepExecution) {
-//        }
-//
-//        @Override
-//        public ExitStatus afterStep(StepExecution stepExecution) {
-//            Object processedCount = stepExecution.getExecutionContext().get(REINDEX_PROCESSED_DOCUMENTS);
-//            if (processedCount != null) {
-//                if ((Integer) processedCount != 0) {
-//                    // Subtract 1 if the value is not equal to zero because "beforeChunk" method is called
-//                    // even if there's no element to process, so we get total number of processed documents plus one
-//                    stepExecution.getJobExecution().getExecutionContext()
-//                            .put(REINDEX_PROCESSED_DOCUMENTS, ((Integer) processedCount) - 1);
-//                }
-//            }
-//            return stepExecution.getExitStatus();
-//        }
-//    }
+    public class JobStepExecutionListener implements StepExecutionListener {
+        @Override
+        public void beforeStep(StepExecution stepExecution) {
+        }
+
+        @Override
+        public ExitStatus afterStep(StepExecution stepExecution) {
+            Object processedCount = stepExecution.getExecutionContext().get(REINDEX_PROCESSED_DOCUMENTS);
+            if (processedCount != null) {
+                if ((Integer) processedCount != 0) {
+                    // Subtract 1 if the value is not equal to zero because "beforeChunk" method is called
+                    // even if there's no element to process, so we get total number of processed documents plus one
+                    stepExecution.getJobExecution().getExecutionContext()
+                            .put(REINDEX_PROCESSED_DOCUMENTS, ((Integer) processedCount) - 1);
+                }
+            }
+            return stepExecution.getExitStatus();
+        }
+    }
 
     public class JobChunkListener implements ChunkListener {
         private int counter = 0;

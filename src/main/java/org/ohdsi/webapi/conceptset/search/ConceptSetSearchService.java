@@ -79,6 +79,7 @@ public class ConceptSetSearchService {
         try {
             final SolrClient solrClient = solrSearchClient.getSolrClient(conceptSetsCore);
             solrClient.deleteByQuery("*:*");
+            solrClient.commit();
         } catch (final Exception e) {
             log.error("SOLR error: concept set removing failed with message: {}", e.getMessage());
         }

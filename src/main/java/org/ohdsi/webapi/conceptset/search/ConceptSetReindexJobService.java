@@ -3,6 +3,7 @@ package org.ohdsi.webapi.conceptset.search;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.conceptset.ConceptSet;
+import org.ohdsi.webapi.exception.ConceptNotExistException;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.service.ConceptSetService;
@@ -181,7 +182,15 @@ public class ConceptSetReindexJobService {
         public ConceptDocuments read() throws Exception {
             if (iterator.hasNext()) {
                 ConceptSet conceptSet = iterator.next();
-                final ConceptSetExpression csExpression = conceptSetService.getConceptSetExpression(conceptSet.getId());
+                final ConceptSetExpression csExpression;
+
+                try {
+                    csExpression = conceptSetService.getConceptSetExpression(conceptSet.getId());
+                } catch (final ConceptNotExistException e) {
+                    // data source does not contain required concepts, skip CS
+                    return null;
+                }
+
                 final Collection<Concept> concepts = vocabService.executeMappedLookup(sourceKey, csExpression);
 
                 final List<ConceptSetSearchDocument> documents = concepts.stream().map(item -> {

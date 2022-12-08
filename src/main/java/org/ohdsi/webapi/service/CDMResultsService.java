@@ -13,6 +13,7 @@ import org.ohdsi.webapi.cdmresults.DescendantRecordAndPersonCount;
 import org.ohdsi.webapi.cdmresults.DescendantRecordCount;
 import org.ohdsi.webapi.cdmresults.domain.CDMCacheEntity;
 import org.ohdsi.webapi.cdmresults.service.CDMCacheService;
+import org.ohdsi.webapi.cohortcharacterization.dto.ExportExecutionResultRequest;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.report.CDMDashboard;
 import org.ohdsi.webapi.report.CDMDataDensity;
@@ -20,6 +21,7 @@ import org.ohdsi.webapi.report.CDMDeath;
 import org.ohdsi.webapi.report.CDMObservationPeriod;
 import org.ohdsi.webapi.report.CDMPersonSummary;
 import org.ohdsi.webapi.report.CDMResultsAnalysisRunner;
+import org.ohdsi.webapi.service.dto.MultipleConceptDrilldownRequestDTO;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -44,6 +46,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -54,6 +57,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -412,14 +416,29 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
             @PathParam("sourceKey")
             final String sourceKey) {
 
-        return getRawDrilldown(domain, conceptId, sourceKey);
+        return getRawDrilldown(domain, Collections.singletonList(conceptId), sourceKey);
     }
 
-    public JsonNode getRawDrilldown(String domain, int conceptId, String sourceKey) {
+    /**
+     * Queries for drilldown results for multiple ceoncepts
+     *
+     * @return List<ArrayNode>
+     */
+    @POST
+    @Path("{sourceKey}/{domain}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public JsonNode getMultipleDrilldown(@PathParam("domain") final String domain,
+                                         @PathParam("sourceKey") final String sourceKey,
+                                         @RequestBody MultipleConceptDrilldownRequestDTO requestDTO) {
+        return getRawDrilldown(domain, requestDTO.getConceptIds(), sourceKey);
+    }
+
+    public JsonNode getRawDrilldown(String domain, List<Integer> conceptIds, String sourceKey) {
 
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         JdbcTemplate jdbcTemplate = this.getSourceJdbcTemplate(source);
-        return queryRunner.getDrilldown(jdbcTemplate, domain, conceptId, source);
+        return queryRunner.getDrilldown(jdbcTemplate, domain, conceptIds, source);
     }
 
     private JobExecutionResource warmCacheByKey(String sourceKey) {

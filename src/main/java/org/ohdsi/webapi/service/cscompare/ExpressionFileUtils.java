@@ -9,20 +9,33 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class ExpressionFileUtils {
+    private static final String CODE_AND_VOCABID_KEY = "%s:%s";
     private static final Collector<ConceptSetExpression.ConceptSetItem, ?, Map<String, Concept>> CONCEPT_MAP_COLLECTOR =
-            Collectors.toMap(item -> item.concept.conceptName + ":" + item.concept.conceptCode + ":" + item.concept.vocabularyId, item -> item.concept);
+            Collectors.toMap(ExpressionFileUtils::getKey, item -> item.concept);
+    private static final Collector<ConceptSetExpression.ConceptSetItem, ?, Map<String, String>> NAMES_MAP_COLLECTOR =
+            Collectors.toMap(ExpressionFileUtils::getKey, item -> item.concept.conceptName);
 
-    public static Collection<ConceptSetComparison> inExCombined(final Map<String, Concept> in1ex, final Map<String, Concept> in2ex, final Map<String, Concept> inIntersection) {
+    public static String getKey(final ConceptSetExpression.ConceptSetItem item) {
+        return String.format(CODE_AND_VOCABID_KEY, item.concept.conceptCode, item.concept.vocabularyId);
+    }
+
+    public static String getKey(final ConceptSetComparison item) {
+        return String.format(CODE_AND_VOCABID_KEY, item.conceptCode, item.vocabularyId);
+    }
+
+    public static Collection<ConceptSetComparison> combine(final Map<String, Concept> input1ex,
+                                                           final Map<String, Concept> input2ex) {
         final Collection<ConceptSetComparison> outValues = new ArrayList<>();
-        // combine "only in 1" and "only in 2" in one map (to deal with doubles)
-        final Map<String, Concept> inExCombinedMap = new HashMap<>(in1ex);
-        inExCombinedMap.putAll(in2ex);
 
-        inExCombinedMap.forEach((key, value) -> {
+        // combine "not found in DB from input1" and "not found in DB from input2" in one map (to deal with doubles)
+        final Map<String, Concept> combinedMap = new HashMap<>(input1ex);
+        combinedMap.putAll(input2ex);
+
+        combinedMap.forEach((key, value) -> {
             final ConceptSetComparison out = new ConceptSetComparison();
-            final boolean isInIntersection = inIntersection.containsKey(key);
-            final boolean isIn1Only = !isInIntersection && in1ex.containsKey(key);
-            final boolean isIn2Only = !isInIntersection && in2ex.containsKey(key);
+            final boolean isInIntersection = input1ex.containsKey(key) && input2ex.containsKey(key);
+            final boolean isIn1Only = !isInIntersection && input1ex.containsKey(key);
+            final boolean isIn2Only = !isInIntersection && input2ex.containsKey(key);
             out.conceptIn1Only = isIn1Only ? 1L : 0;
             out.conceptIn2Only = isIn2Only ? 1L : 0;
             out.conceptIn1And2 = isInIntersection ? 1L : 0;
@@ -38,14 +51,16 @@ public class ExpressionFileUtils {
 
     public static Map<String, Concept> toExclusionMap(final ConceptSetExpression.ConceptSetItem[] in1, final Collection<ConceptSetComparison> fromDb) {
         return Arrays.stream(in1).filter(item ->
-                fromDb.stream().noneMatch(out -> out.conceptCode.equals(item.concept.conceptCode) && out.vocabularyId.equals(item.concept.vocabularyId) && out.conceptName.equals(item.concept.conceptName))
+                fromDb.stream().noneMatch(out -> out.conceptCode.equals(item.concept.conceptCode) && out.vocabularyId.equals(item.concept.vocabularyId))
         ).collect(CONCEPT_MAP_COLLECTOR);
     }
 
-    public static Map<String, Concept> toIntersectionMap(final ConceptSetExpression.ConceptSetItem[] in1, final ConceptSetExpression.ConceptSetItem[] in2) {
-        return Arrays.stream(in1).filter(in1Item ->
-                Arrays.stream(in2).anyMatch(in2Item -> in1Item.concept.conceptCode.equals(in2Item.concept.conceptCode) && in1Item.concept.vocabularyId.equals(in2Item.concept.vocabularyId))
-        ).collect(CONCEPT_MAP_COLLECTOR);
+    public static Map<String, String> toNamesMap(final ConceptSetExpression.ConceptSetItem[] in1,
+                                                 final ConceptSetExpression.ConceptSetItem[] in2) {
+        final Map<String, String> names1 = Arrays.stream(in1).collect(NAMES_MAP_COLLECTOR);
+        final Map<String, String> names2 = Arrays.stream(in2).collect(NAMES_MAP_COLLECTOR);
+        final Map<String, String> namesCombined = new HashMap<>(names1);
+        namesCombined.putAll(names2);
+        return namesCombined;
     }
-
 }

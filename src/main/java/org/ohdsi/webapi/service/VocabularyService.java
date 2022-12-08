@@ -1511,8 +1511,8 @@ public class VocabularyService extends AbstractDaoService {
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<ConceptSetComparison> compareConceptSetsCsv(final @PathParam("sourceKey") String sourceKey,
                                                                 final CompareArbitraryDto dto) throws Exception {
-    final ConceptSetExpression[] conceptSetExpressionList = dto.compareTargets;
-    if (conceptSetExpressionList.length != 2) {
+    final ConceptSetExpression[] csExpressionList = dto.compareTargets;
+    if (csExpressionList.length != 2) {
       throw new Exception("You must specify two concept set expressions in order to use this method.");
     }
     final Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -1526,9 +1526,9 @@ public class VocabularyService extends AbstractDaoService {
     final BriefExpressionQueryBuilder builderBrief = new BriefExpressionQueryBuilder();
 
     final String cs1Query = types[0] == ExpressionType.CONCEPT_NAME_CODE_AND_VOCABULARY_ID_ONLY ?
-            builderBrief.buildExpressionQuery(conceptSetExpressionList[0]) : builder.buildExpressionQuery(conceptSetExpressionList[0]);
+            builderBrief.buildExpressionQuery(csExpressionList[0]) : builder.buildExpressionQuery(csExpressionList[0]);
     final String cs2Query = types[1] == ExpressionType.CONCEPT_NAME_CODE_AND_VOCABULARY_ID_ONLY ?
-            builderBrief.buildExpressionQuery(conceptSetExpressionList[1]) : builder.buildExpressionQuery(conceptSetExpressionList[1]);
+            builderBrief.buildExpressionQuery(csExpressionList[1]) : builder.buildExpressionQuery(csExpressionList[1]);
 
     // Insert the queries into the overall comparison script
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"cs1_expression", "cs2_expression"}, new String[]{cs1Query, cs2Query});
@@ -1538,13 +1538,19 @@ public class VocabularyService extends AbstractDaoService {
     // Execute the query
     final Collection<ConceptSetComparison> returnVal = getSourceJdbcTemplate(source).query(sql_statement, conceptSetComparisonRowMapper);
 
-    // maps for items "not found in DB from in1ex", "not found in DB from in2ex" and "intersection between 1 and 2"
-    final Map<String, org.ohdsi.circe.vocabulary.Concept> in1ex = ExpressionFileUtils.toExclusionMap(conceptSetExpressionList[0].items, returnVal);
-    final Map<String, org.ohdsi.circe.vocabulary.Concept> in2ex = ExpressionFileUtils.toExclusionMap(conceptSetExpressionList[1].items, returnVal);
-    final Map<String, org.ohdsi.circe.vocabulary.Concept> inIntersection = ExpressionFileUtils.toIntersectionMap(conceptSetExpressionList[0].items, conceptSetExpressionList[1].items);
-    final Collection<ConceptSetComparison> out = ExpressionFileUtils.inExCombined(in1ex, in2ex, inIntersection);
+    // maps for items "not found in DB from input1", "not found in DB from input2"
+    final Map<String, org.ohdsi.circe.vocabulary.Concept> input1Ex = ExpressionFileUtils.toExclusionMap(csExpressionList[0].items, returnVal);
+    final Map<String, org.ohdsi.circe.vocabulary.Concept> input2ex = ExpressionFileUtils.toExclusionMap(csExpressionList[1].items, returnVal);
 
-    returnVal.addAll(out);
+    // compare/combine exclusion maps and add the result to the output
+    returnVal.addAll(ExpressionFileUtils.combine(input1Ex, input2ex));
+
+    // concept names to display mismatches
+    final Map<String, String> names = ExpressionFileUtils.toNamesMap(csExpressionList[0].items, csExpressionList[1].items);
+    returnVal.forEach(item -> {
+      final String name = names.get(ExpressionFileUtils.getKey(item));
+      item.nameMismatch = name != null && !name.equals(item.conceptName);
+    });
 
     return returnVal;
   }

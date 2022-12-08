@@ -56,4 +56,7 @@ public class ConceptSetComparison {
     
     @JsonProperty("conceptClassId")
     public String conceptClassId;
+
+    @JsonProperty("nameMismatch")
+    public boolean nameMismatch;
 }

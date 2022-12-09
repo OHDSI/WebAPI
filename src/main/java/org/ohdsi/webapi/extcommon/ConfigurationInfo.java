@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.info;
+package org.ohdsi.webapi.extcommon;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -60,6 +60,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -432,15 +433,15 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     @Path("{sourceKey}/multidrilldown")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public List<JsonNode> getMultipleDrilldown(@PathParam("sourceKey") final String sourceKey,
+    public Map<String, JsonNode> getMultipleDrilldown(@PathParam("sourceKey") final String sourceKey,
                                                @RequestBody MultipleConceptDrilldownRequestDTO requestDTO) {
         return getMultipleRawDrilldown(requestDTO, sourceKey);
     }
 
-    private List<JsonNode> getMultipleRawDrilldown(MultipleConceptDrilldownRequestDTO requestDTO, String sourceKey) {
-        List<JsonNode> jsonNodes = new ArrayList<>();
+    private Map<String, JsonNode> getMultipleRawDrilldown(MultipleConceptDrilldownRequestDTO requestDTO, String sourceKey) {
+        Map<String, JsonNode> jsonNodes = new HashMap<>();
         for (Map.Entry<String, List<Integer>> entry: requestDTO.getDomainConceptMap().entrySet()) {
-            jsonNodes.add(getRawDrilldown(entry.getKey(), entry.getValue(), sourceKey));
+            jsonNodes.put(entry.getKey(), getRawDrilldown(entry.getKey(), entry.getValue(), sourceKey));
         }
         return jsonNodes;
     }

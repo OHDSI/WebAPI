@@ -421,9 +421,12 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     }
 
     /**
-     * Queries for drilldown results for multiple ceoncepts
+     * Queries for drilldown results for multiple concepts
      *
-     * @return List<ArrayNode>
+     * @param sourceKey The source key
+     * @param requestDTO The map of domains and corresponding concept identifiers
+     *
+     * @return List of JSON results. Each node contains JSON results for single domain
      */
     @POST
     @Path("{sourceKey}/multidrilldown")

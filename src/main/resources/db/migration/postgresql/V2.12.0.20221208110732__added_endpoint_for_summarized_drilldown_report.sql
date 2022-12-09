@@ -9,7 +9,7 @@ select sp.id                                                          as from_id
                replace(replace(value, 'source:', ''), ':access', '')) as new_value
 from ${ohdsiSchema}.sec_permission sp
          cross join (
-    select 'cdmresults:%s:*:post' val
+    select 'cdmresults:%s:multidrilldown:post' val
 ) new_perms
 where sp.value like 'source:%:access';
 

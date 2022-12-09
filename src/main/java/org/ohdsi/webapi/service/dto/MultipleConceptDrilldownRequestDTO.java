@@ -1,15 +1,17 @@
 package org.ohdsi.webapi.service.dto;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MultipleConceptDrilldownRequestDTO {
-    private List<Integer> conceptIds;
+    private Map<String, List<Integer>> domainConceptMap = new HashMap<>();
 
-    public List<Integer> getConceptIds() {
-        return conceptIds;
+    public Map<String, List<Integer>> getDomainConceptMap() {
+        return domainConceptMap;
     }
 
-    public void setConceptIds(List<Integer> conceptIds) {
-        this.conceptIds = conceptIds;
+    public void setDomainConceptMap(Map<String, List<Integer>> domainConceptMap) {
+        this.domainConceptMap = domainConceptMap;
     }
 }

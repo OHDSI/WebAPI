@@ -48,6 +48,9 @@ import java.util.stream.Collectors;
 @Service
 public class PermissionService {
     private final Logger logger = LoggerFactory.getLogger(PermissionService.class);
+    // Endpoint for getting detail report for domain in source
+    private final static String CONCRETE_DOMAIN_ENDPOINT_PERMISSION = "cdmresults:%s:%s:*:get";
+    private final static String ALL_DOMAIN_ENDPOINT_PERMISSION = "cdmresults:%s:*:*:get";
 
     private final WebApplicationContext appContext;
     private final PermissionManager permissionManager;
@@ -253,6 +256,24 @@ public class PermissionService {
             }
         }
         return hasAccess;
+    }
+
+    public boolean hasDomainAccess(String sourceKey, String domain) {
+        if (securityEnabled) {
+            try {
+                String login = this.permissionManager.getSubjectName();
+                UserSimpleAuthorizationInfo authorizationInfo = this.permissionManager.getAuthorizationInfo(login);
+                String concreteDomainPermission = String.format(CONCRETE_DOMAIN_ENDPOINT_PERMISSION, sourceKey, domain);
+                String allDomainPermission = String.format(ALL_DOMAIN_ENDPOINT_PERMISSION, sourceKey);
+                return authorizationInfo.getStringPermissions().stream()
+                        .anyMatch(p -> p.equals(concreteDomainPermission) || p.equals(allDomainPermission));
+            } catch (Exception e) {
+                logger.error("Error getting user roles and permissions", e);
+                throw new RuntimeException(e);
+            }
+        } else {
+            return true;
+        }
     }
 
     public void fillWriteAccess(CommonEntity entity, CommonEntityDTO entityDTO) {

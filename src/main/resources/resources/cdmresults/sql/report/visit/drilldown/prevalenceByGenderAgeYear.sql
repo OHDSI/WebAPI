@@ -39,6 +39,6 @@ FROM (
 ON CAST(CASE WHEN isNumeric(num_stratum_1) = 1 THEN num_stratum_1 ELSE null END AS INT) = c1.concept_id
 INNER JOIN @vocab_database_schema.concept c2
 ON CAST(CASE WHEN isNumeric(num_stratum_3) = 1 THEN num_stratum_3 ELSE null END AS INT) = c2.concept_id
-WHERE c1.concept_id = @conceptId
+WHERE c1.concept_id in (@conceptId)
 
 

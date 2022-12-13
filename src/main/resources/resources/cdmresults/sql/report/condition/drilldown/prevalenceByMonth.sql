@@ -1,7 +1,7 @@
 SELECT
   c1.concept_id                                                AS concept_id,
   c1.concept_name                                              AS concept_name,
-  num.stratum_2                                                AS x_calendar_month,
+  CAST(num.stratum_2 AS INT)                                   AS x_calendar_month,
   -- calendar year, note, there could be blanks
   round(1000 * (1.0 * num.count_value / denom.count_value), 5) AS y_prevalence_1000_pp --prevalence, per 1000 persons
 FROM
@@ -22,5 +22,5 @@ FROM
   INNER JOIN
   @vocab_database_schema.concept c1
 ON num.stratum_1 = c1.concept_id
-WHERE c1.concept_id = @conceptId
+WHERE c1.concept_id in (@conceptId)
 ORDER BY CAST(num.stratum_2 AS INT)

@@ -418,7 +418,7 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
             @PathParam("sourceKey")
             final String sourceKey) {
 
-        return getRawDrilldown(domain, Collections.singletonList(conceptId), sourceKey);
+        return getRawDrilldown(domain, conceptId, sourceKey);
     }
 
     /**
@@ -433,24 +433,18 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     @Path("{sourceKey}/multidrilldown")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Map<String, JsonNode> getMultipleDrilldown(@PathParam("sourceKey") final String sourceKey,
+    public JsonNode getMultipleDrilldown(@PathParam("sourceKey") final String sourceKey,
                                                @RequestBody MultipleConceptDrilldownRequestDTO requestDTO) {
-        return getMultipleRawDrilldown(requestDTO, sourceKey);
+        Source source = getSourceRepository().findBySourceKey(sourceKey);
+        JdbcTemplate jdbcTemplate = this.getSourceJdbcTemplate(source);
+        return queryRunner.getMultipleDrilldown(jdbcTemplate, requestDTO, source);
     }
 
-    private Map<String, JsonNode> getMultipleRawDrilldown(MultipleConceptDrilldownRequestDTO requestDTO, String sourceKey) {
-        Map<String, JsonNode> jsonNodes = new HashMap<>();
-        for (Map.Entry<String, List<Integer>> entry: requestDTO.getDomainConceptMap().entrySet()) {
-            jsonNodes.put(entry.getKey(), getRawDrilldown(entry.getKey(), entry.getValue(), sourceKey));
-        }
-        return jsonNodes;
-    }
-
-    public JsonNode getRawDrilldown(String domain, List<Integer> conceptIds, String sourceKey) {
+    public JsonNode getRawDrilldown(String domain, int conceptId, String sourceKey) {
 
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         JdbcTemplate jdbcTemplate = this.getSourceJdbcTemplate(source);
-        return queryRunner.getDrilldown(jdbcTemplate, domain, conceptIds, source);
+        return queryRunner.getDrilldown(jdbcTemplate, domain, conceptId, source);
     }
 
     private JobExecutionResource warmCacheByKey(String sourceKey) {

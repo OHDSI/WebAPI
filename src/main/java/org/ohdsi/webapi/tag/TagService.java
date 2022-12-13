@@ -3,8 +3,6 @@ package org.ohdsi.webapi.tag;
 import org.apache.shiro.SecurityUtils;
 import org.glassfish.jersey.internal.util.Producer;
 import org.ohdsi.webapi.service.AbstractDaoService;
-import org.ohdsi.webapi.shiro.Entities.UserEntity;
-import org.ohdsi.webapi.tag.domain.HasTags;
 import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.tag.domain.TagInfo;
 import org.ohdsi.webapi.tag.domain.TagType;
@@ -20,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import javax.ws.rs.ForbiddenException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -68,7 +65,7 @@ public class TagService extends AbstractDaoService {
                 .filter(Tag::isAllowCustom)
                 .count() == groups.size();
 
-        if (!SecurityUtils.getSubject().isPermitted("tag:management") && !allowCustom) {
+        if (!this.getPermissionService().isSecurityEnabled() && !SecurityUtils.getSubject().isPermitted("tag:management") && !allowCustom) {
             throw new IllegalArgumentException("Tag can be added only to groups that allows to do it");
         }
 
@@ -115,7 +112,7 @@ public class TagService extends AbstractDaoService {
     public TagDTO update(Integer id, TagDTO entity) {
         Tag existing = tagRepository.findOne(id);
 
-        checkOwnerOrAdmin(existing.getCreatedBy() != null ? existing.getCreatedBy().getId() : null);
+        checkOwnerOrAdmin(existing.getCreatedBy());
 
         Tag toUpdate = this.conversionService.convert(entity, Tag.class);
 
@@ -137,16 +134,9 @@ public class TagService extends AbstractDaoService {
     public void delete(Integer id) {
         Tag existing = tagRepository.findOne(id);
 
-        checkOwnerOrAdmin(existing.getCreatedBy() != null ? existing.getCreatedBy().getId() : null);
+        checkOwnerOrAdmin(existing.getCreatedBy());
 
         tagRepository.delete(id);
-    }
-
-    private void checkOwnerOrAdmin(Long tagOwnerId) {
-        UserEntity user = getCurrentUser();
-        if (!(user.getId().equals(tagOwnerId) || isAdmin())) {
-            throw new ForbiddenException();
-        }
     }
 
     private Tag save(Tag tag) {

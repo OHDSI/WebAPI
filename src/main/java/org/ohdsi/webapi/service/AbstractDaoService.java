@@ -335,6 +335,10 @@ public abstract class AbstractDaoService extends AbstractAdminService {
   protected String getCurrentUserLogin() {
     return security.getSubject();
   }
+  
+  protected PermissionService getPermissionService() {
+    return this.permissionService;
+  }
 
   protected void assignTag(CommonEntityExt<?> entity, int tagId) {
     if (Objects.nonNull(entity)) {

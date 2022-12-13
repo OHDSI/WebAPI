@@ -1774,6 +1774,8 @@
       "saveButton": "저장",
       "saveOptions": "저장 옵션",
       "showAllColumnsButton": "모든 열 표시",
+      "allDomainReport": "All Domain Drilldown Report",
+      "loadingDrilldownReport": "Loading report, it may take some time",
       "tabs": {
         "compare": "비교",
         "conceptSetExpression": "컨셉 세트 표현식",
@@ -1781,6 +1783,7 @@
         "export": "내보내기",
         "includedConcepts": "포함된 컨셉",
         "includedSourceCodes": "포함된 소스 코드",
+        "timeSeries": "Explore Time Series",
         "versions": "Versions",
         "messages": "메시지"
       },

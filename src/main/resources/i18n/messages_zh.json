@@ -1774,6 +1774,8 @@
       "saveButton": "保存",
       "saveOptions": "保存选项",
       "showAllColumnsButton": "显示所有列",
+      "allDomainReport": "All Domain Drilldown Report",
+      "loadingDrilldownReport": "Loading report, it may take some time",
       "tabs": {
         "compare": "比较",
         "conceptSetExpression": "概念集表达",
@@ -1781,6 +1783,7 @@
         "export": "导出",
         "includedConcepts": "包含的概念",
         "includedSourceCodes": "包含的源代码",
+        "timeSeries": "Explore Time Series",
         "versions": "Versions",
         "messages": "提示信息"
       },

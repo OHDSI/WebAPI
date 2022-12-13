@@ -1774,6 +1774,8 @@
       "saveButton": "Save",
       "saveOptions": "Save Options",
       "showAllColumnsButton": "Show All Columns",
+      "allDomainReport": "All Domain Drilldown Report",
+      "loadingDrilldownReport": "Loading report, it may take some time",
       "tabs": {
         "compare": "Compare",
         "conceptSetExpression": "Concept Set Expression",
@@ -1781,6 +1783,7 @@
         "export": "Export",
         "includedConcepts": "Included Concepts",
         "includedSourceCodes": "Included Source Codes",
+        "timeSeries": "Explore Time Series",
         "versions": "Versions",
         "messages": "Messages"
       },

@@ -71,6 +71,7 @@
     <solr.query.prefix>{!complexphrase inOrder=true}</solr.query.prefix>
     <solr.version>8.11.2</solr.version>
     <solr.conceptsets.core>webapi-conceptsets</solr.conceptsets.core>
+    <solr.conceptsets.maxResults>1000</solr.conceptsets.maxResults>
     <!-- Heracles properties -->
     <heracles.smallcellcount>5</heracles.smallcellcount>
 

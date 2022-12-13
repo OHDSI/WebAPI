@@ -6,7 +6,7 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
 import org.ohdsi.webapi.service.dto.ConceptSetSearchDTO;
-import org.ohdsi.webapi.vocabulary.SolrSearchClient;
+import org.ohdsi.webapi.vocabulary.solr.SolrSearchClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +23,9 @@ public class ConceptSetSearchService {
 
     @Value("${solr.conceptsets.core}")
     private String conceptSetsCore;
+
+    @Value("${solr.conceptsets.maxResults}")
+    private Integer maxResults;
 
     @Autowired
     private SolrSearchClient solrSearchClient;
@@ -44,6 +47,7 @@ public class ConceptSetSearchService {
         try {
             final SolrQuery q = new SolrQuery();
             q.setQuery(composeSearchQuery(dto));
+            q.setRows(maxResults);
             q.add("group", "true");
             q.add("group.field", "concept_set_id");
 

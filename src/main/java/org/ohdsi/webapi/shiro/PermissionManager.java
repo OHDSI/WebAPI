@@ -70,6 +70,10 @@ public class PermissionManager {
     return role;
   }
 
+  public String addUserToRole(String roleName, String login) {
+    return addUserToRole(roleName, login, UserOrigin.SYSTEM);
+  }
+
   public String addUserToRole(String roleName, String login, UserOrigin userOrigin) {
     Guard.checkNotEmpty(roleName);
     Guard.checkNotEmpty(login);

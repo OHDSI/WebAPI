@@ -1229,6 +1229,7 @@
       "tag": {
         "tooltip": {
           "group": "Группа:",
+          "groups": "Группы:",
           "tag": "Тег:"
         }
       }
@@ -2449,7 +2450,8 @@
       "clearConfigurationCache": "Очистить кэш конфигурации",
       "managePermissions": "Управление разрешениями",
       "importUsers": "Импорт пользователей из LDAP/AD",
-      "clearServerCache": "Очистить серверный кэш"
+      "clearServerCache": "Очистить серверный кэш",
+      "tagManagement": "Управление тегами"
     },
     "priorityOptions": {
       "session": "В текущей сессии",
@@ -2673,6 +2675,47 @@
       "fixJson": "Исправить JSON",
       "alertWarning": "Некоторые из разрешений в списке содержат идентификаторы сущностей, которые не гарантируют совпадение между исходным и целевым экземплярами Atlas.",
       "removeThePermissions": "Удалить разрешения"
+    },
+    "tagManagement": {
+      "allowMultiple": "Несколько",
+      "allowCustom": "Пользовательские",
+      "allowCustomCheckbox": "Разрешить создание пользовательских тегов в этой группе",
+      "apply": "Подтвердить",
+      "color": "Цвет",
+      "createGroup": "Создать группу",
+      "createTag": "Создать тег",
+      "editTag": "Редактировать тег",
+      "editTagGroup": "Редактировать группу тегов",
+      "exampleTagGroup": "Пример",
+      "exampleTagGroupTag": "Имя тега",
+      "exampleTag": "Пример",
+      "icon": "Иконка",
+      "mandatory": "Обязательный",
+      "multiSelectionCheckbox": "Разрешить использование нескольких тегов из группы в одном объекте",
+      "showGroupCheckbox": "Показывать колонку группы тегов в таблице объектов",
+      "showInAssetsBrowser": "Показывать&nbsp;колонку",
+      "tagsInGroup": "Теги в группе '<%=group%>'",
+      "tagGroups": "Группы тегов",
+      "tagGroupColor": "Цвет группы тегов",
+      "tagGroupColorPlaceholder": "Введите цвет группы тегов в #xxxxxx формате",
+      "tagGroupDescription": "Описание группы тегов",
+      "tagGroupDescriptionPlaceholder": "Введите описание группы тегов",
+      "tagGroupIcon": "Иконка группы тегов",
+      "tagGroupIconPlaceholder": "Введите иконку группы тегов как класс из библиотеки иконок font-awesome",
+      "tagGroupName": "* Имя группы тегов",
+      "tagGroupNamePlaceholder": "Введите имя группы тегов",
+      "tagGroupNameEmpty": "Поле с именем группы тегов не может быть пустым",
+      "hideTags": "Скрыть теги",
+      "showTags": "Показать теги",
+      "edit": "Редактировать",
+      "remove": "Удалить",
+      "overrideTagColor": "Заместить цвет группы",
+      "overrideTagIcon": "Заместить иконку группы",
+      "protected": "Защищенный",
+      "nameExistsWarning": "Имя тега или группы '<%=tagName%>' уже используется.",
+      "errorGroupNotEmpty": "Невозможно удалить группу: группа содержит теги",
+      "deleteGroupConfirmation": "Удаление необратимо! Вы уверены?",
+      "deleteTagConfirmation": "Если удаляемый тег назначен на какой-либо объект, он будет снят. Удаление необратимо. Вы уверены, что хотите удалить тег?"
     }
   },
   "feedback": {

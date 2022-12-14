@@ -1229,6 +1229,7 @@
       "tag": {
         "tooltip": {
           "group": "Group:",
+          "groups": "Groups:",
           "tag": "Tag:"
         }
       }
@@ -2453,7 +2454,8 @@
       "clearConfigurationCache": "구성 캐시 지우기",
       "clearServerCache": "서버 캐시 지우기",
       "importUsers": "LDAP/AD에서 사용자 가져오기",
-      "managePermissions": "사용 권한 관리"
+      "managePermissions": "사용 권한 관리",
+      "tagManagement": "Tag Management"
     },
     "changeSourcePriorities": "다음에서 소스 우선 순위 변경:",
     "confirms": {
@@ -2676,6 +2678,47 @@
           "empty": "&quot;Username&quot;이 비어 있습니다."
         }
       }
+    },
+    "tagManagement": {
+      "allowMultiple": "Multiple",
+      "allowCustom": "Free&#8209;form",
+      "allowCustomCheckbox": "Allow custom tags creation in this group",
+      "apply": "Submit",
+      "color": "Color",
+      "createGroup": "Create Group",
+      "createTag": "Create Tag",
+      "editTag": "Edit Tag",
+      "editTagGroup": "Edit Tag Group",
+      "exampleTagGroup": "Example",
+      "exampleTagGroupTag": "Example name",
+      "exampleTag": "Example",
+      "icon": "Icon",
+      "mandatory": "Mandatory",
+      "multiSelectionCheckbox": "Allow multiple tags from the group in a single asset",
+      "showGroupCheckbox": "Show Tag Group column in assets table",
+      "showInAssetsBrowser": "Show&nbsp;Column",
+      "tagsInGroup": "Tags in Group '<%=group%>'",
+      "tagGroups": "Tag Groups",
+      "tagGroupColor": "Tag group color",
+      "tagGroupColorPlaceholder": "Enter tag group color in #xxxxxx format",
+      "tagGroupDescription": "Tag group description",
+      "tagGroupDescriptionPlaceholder": "Enter tag group description",
+      "tagGroupIcon": "Tag group icon",
+      "tagGroupIconPlaceholder": "Enter tag group icon as font-awesome class",
+      "tagGroupName": "* Tag group name",
+      "tagGroupNamePlaceholder": "Enter tag group name",
+      "tagGroupNameEmpty": "Tag group name cannot be empty",
+      "hideTags": "Hide tags",
+      "showTags": "Show tags",
+      "edit": "Edit",
+      "remove": "Remove",
+      "overrideTagColor": "Override tag group color",
+      "overrideTagIcon": "Override tag group icon",
+      "protected": "Protected",
+      "nameExistsWarning": "Tag or Group name '<%=tagName%>' is already in use.",
+      "errorGroupNotEmpty": "Cannot delete tag group: the group contains tags",
+      "deleteGroupConfirmation": "Deletion cannot be undone! Are you sure?",
+      "deleteTagConfirmation": "If the tag is assigned to an asset, it will be unassigned. Deletion cannot be undone. Are you sure you want to delete the tag?"
     }
   },
   "feedback": {

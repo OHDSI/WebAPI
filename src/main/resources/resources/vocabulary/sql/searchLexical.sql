@@ -1,7 +1,7 @@
 select top 100 CONCEPT_ID, CONCEPT_NAME, ISNULL(STANDARD_CONCEPT,'N') STANDARD_CONCEPT, ISNULL(INVALID_REASON,'V') INVALID_REASON, CONCEPT_CODE, CONCEPT_CLASS_ID, DOMAIN_ID, VOCABULARY_ID, VALID_START_DATE, VALID_END_DATE,
-LENGTH(REPLACE(REPLACE(CONCEPT_NAME, ' ',''), '-', '')) as c_length,
-LENGTH(REPLACE(REPLACE(@replace_expression,' ',''),'-','')) as r_length,
-1.0 - (1.0 * LENGTH(REPLACE(REPLACE(@replace_expression,' ',''),'-','')) / LENGTH(REPLACE(REPLACE(CONCEPT_NAME, ' ',''), '-', ''))) as ratio_score
+LEN(REPLACE(REPLACE(CONCEPT_NAME, ' ',''), '-', '')) as c_length,
+LEN(REPLACE(REPLACE(@replace_expression,' ',''),'-','')) as r_length,
+1.0 - (1.0 * LEN(REPLACE(REPLACE(@replace_expression,' ',''),'-','')) / LEN(REPLACE(REPLACE(CONCEPT_NAME, ' ',''), '-', ''))) as ratio_score
 from (
   select c1.concept_id as matched_concept
   from @CDM_schema.concept c1

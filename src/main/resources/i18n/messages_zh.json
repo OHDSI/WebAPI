@@ -1704,6 +1704,7 @@
         "saveFromComparisonNameTail": " - 来自对照",
         "saveMessage": "从下面的选择中保存新概念集",
         "saveWarning": "您必须保存当前概念集，然后才能执行此比较。",
+        "vennDiagram": "Venn Diagram",
         "viewCountMessage": "查看以下数据库的数据库记录计数（RC）和后代记录计数（DRC）："
       },
       "exportConceptSetsButton": "导出概念集",

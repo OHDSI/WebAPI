@@ -1704,7 +1704,9 @@
         "saveFromComparisonNameTail": " - From Comparison",
         "saveMessage": "Save New Concept Set From Selection Below",
         "saveWarning": "You must save the current concept set before you can perform this comparison.",
-        "viewCountMessage": "View database record counts (RC) and descendant record counts (DRC) for:"
+        "vennDiagram": "Venn Diagram",
+        "viewCountMessage": "View database record counts (RC) and descendant record counts (DRC) for:",
+
       },
       "exportConceptSetsButton": "Export Concept Sets",
       "exportConceptSetsNumber": "<b><%=num%></b> concept sets selected for export.",

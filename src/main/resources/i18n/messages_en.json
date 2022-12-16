@@ -1700,13 +1700,13 @@
         "heading": "Concept Set Comparison",
         "headingMessage": "Use this utility to compare the contents of two concept sets to see which concepts they may share",
         "modalTitle": "Choose a concept set",
+        "sameConcepts": "Compared Concept Sets contain Concepts which are identical",
         "sameWarning": "You cannot compare the same concept sets.",
         "saveFromComparisonNameTail": " - From Comparison",
         "saveMessage": "Save New Concept Set From Selection Below",
         "saveWarning": "You must save the current concept set before you can perform this comparison.",
         "vennDiagram": "Venn Diagram",
         "viewCountMessage": "View database record counts (RC) and descendant record counts (DRC) for:"
-
       },
       "exportConceptSetsButton": "Export Concept Sets",
       "exportConceptSetsNumber": "<b><%=num%></b> concept sets selected for export.",

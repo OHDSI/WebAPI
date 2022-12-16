@@ -1700,6 +1700,7 @@
         "heading": "컨셉 세트 비교",
         "headingMessage": "이 유틸리티를 사용하여 두 컨셉 세트가 공유하고 있는 컨셉을 확인하세요",
         "modalTitle": "컨셉 세트 선택",
+        "sameConcepts": "Compared Concept Sets contain Concepts which are identical",
         "sameWarning": "동일한 컨셉 세트를 비교할 수 없습니다.",
         "saveFromComparisonNameTail": "- 비교",
         "saveMessage": "아래 선택에서 새 컨셉 세트 저장",

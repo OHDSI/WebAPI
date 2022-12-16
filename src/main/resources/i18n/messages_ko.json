@@ -1286,8 +1286,8 @@
     },
     "match": {
       "both": "둘다",
-      "only1": "오직 1",
-      "only2": "오직 2"
+      "only1": "오직 CS1",
+      "only2": "오직 CS2"
     },
     "type": {
       "preset": "사전 설정",
@@ -1701,10 +1701,17 @@
         "heading": "컨셉 세트 비교",
         "headingMessage": "이 유틸리티를 사용하여 두 컨셉 세트가 공유하고 있는 컨셉을 확인하세요",
         "modalTitle": "컨셉 세트 선택",
+        "sameConcepts": "Compared Concept Sets contain Concepts which are identical",
         "sameWarning": "동일한 컨셉 세트를 비교할 수 없습니다.",
         "saveFromComparisonNameTail": "- 비교",
         "saveMessage": "아래 선택에서 새 컨셉 세트 저장",
         "saveWarning": "이 비교 기능을 수행하기 전에 현재의 컨셉 세트를 저장해야합니다.",
+        "vennDiagram": "Venn Diagram",
+        "vennDiagramAmountConcepts": "The amount: <%=count%>",
+        "vennDiagramAmountOnly": "The concepts are only in this concept set: <%=amountOnly%>",
+        "vennDiagramCommonConcepts": "Common Concepts",
+        "vennDiagramNameConceptSet": "<%=name%> concept set",
+        "vennDiagramTotalAmountConcepts": "The total amount of concepts: <%=count%>",
         "viewCountMessage": "다음에 대한 데이터베이스 레코드 수 (RC) 및 하위 레코드 수 (DRC)보기 :"
       },
       "exportConceptSetsButton": "컨셉 세트 내보내기",

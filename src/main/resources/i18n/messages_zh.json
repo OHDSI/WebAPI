@@ -1706,6 +1706,11 @@
         "saveMessage": "从下面的选择中保存新概念集",
         "saveWarning": "您必须保存当前概念集，然后才能执行此比较。",
         "vennDiagram": "Venn Diagram",
+        "vennDiagramAmountConcepts": "The amount: <%=count%>",
+        "vennDiagramAmountOnly": "The concepts are only in this concept set: <%=amountOnly%>",
+        "vennDiagramCommonConcepts": "Common Concepts",
+        "vennDiagramNameConceptSet": "<%=name%> concept set",
+        "vennDiagramTotalAmountConcepts": "The total amount of concepts: <%=count%>",
         "viewCountMessage": "查看以下数据库的数据库记录计数（RC）和后代记录计数（DRC）："
       },
       "exportConceptSetsButton": "导出概念集",

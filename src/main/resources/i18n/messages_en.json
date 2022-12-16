@@ -1706,6 +1706,11 @@
         "saveMessage": "Save New Concept Set From Selection Below",
         "saveWarning": "You must save the current concept set before you can perform this comparison.",
         "vennDiagram": "Venn Diagram",
+        "vennDiagramAmountConcepts": "The amount: <%=count%>",
+        "vennDiagramAmountOnly": "The concepts are only in this concept set: <%=amountOnly%>",
+        "vennDiagramCommonConcepts": "Common Concepts",
+        "vennDiagramNameConceptSet": "<%=name%> concept set",
+        "vennDiagramTotalAmountConcepts": "The total amount of concepts: <%=count%>",
         "viewCountMessage": "View database record counts (RC) and descendant record counts (DRC) for:"
       },
       "exportConceptSetsButton": "Export Concept Sets",

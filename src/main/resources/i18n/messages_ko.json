@@ -1706,6 +1706,11 @@
         "saveMessage": "아래 선택에서 새 컨셉 세트 저장",
         "saveWarning": "이 비교 기능을 수행하기 전에 현재의 컨셉 세트를 저장해야합니다.",
         "vennDiagram": "Venn Diagram",
+        "vennDiagramAmountConcepts": "The amount: <%=count%>",
+        "vennDiagramAmountOnly": "The concepts are only in this concept set: <%=amountOnly%>",
+        "vennDiagramCommonConcepts": "Common Concepts",
+        "vennDiagramNameConceptSet": "<%=name%> concept set",
+        "vennDiagramTotalAmountConcepts": "The total amount of concepts: <%=count%>",
         "viewCountMessage": "다음에 대한 데이터베이스 레코드 수 (RC) 및 하위 레코드 수 (DRC)보기 :"
       },
       "exportConceptSetsButton": "컨셉 세트 내보내기",

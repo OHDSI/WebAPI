@@ -17,7 +17,7 @@ from #cteCohortCombos combos
 join (
   select cohort_definition_id, subject_id, cohort_start_date, cohort_end_date, @adjustedStart as adjusted_start_date, @adjustedEnd as adjusted_end_date
   FROM (
-    select cohort_definition_id, subject_id, cohort_start_date, cohort_end_date, row_number() over (partition by subject_id, cohort_definition_id order by cohort_start_date) as ordinal
+    select cohort_definition_id, subject_id, cohort_start_date, cohort_end_date, row_number() over (partition by subject_id, cohort_definition_id order by cohort_start_date ASC) as ordinal
     FROM @temp_database_schema.@cohort_table
     where cohort_definition_id in (select cohort_id from #cohorts where is_outcome = 0)
   ) d

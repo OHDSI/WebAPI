@@ -260,4 +260,8 @@ public class PermissionService {
             entityDTO.setHasWriteAccess(hasWriteAccess(entity));
         }
     }
+    
+    public boolean isSecurityEnabled() {
+      return this.securityEnabled;
+    }
 }

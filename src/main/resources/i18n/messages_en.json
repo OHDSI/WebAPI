@@ -1227,8 +1227,9 @@
     },
     "heading": {
       "tag": {
-        "tooltip":  {
+        "tooltip": {
           "group": "Group:",
+          "groups": "Groups:",
           "tag": "Tag:"
         }
       }
@@ -1285,8 +1286,8 @@
     },
     "match": {
       "both": "Both",
-      "only1": "1 Only",
-      "only2": "2 Only"
+      "only1": "CS1 Only",
+      "only2": "CS2 Only"
     },
     "type": {
       "preset": "Preset",
@@ -1700,10 +1701,17 @@
         "heading": "Concept Set Comparison",
         "headingMessage": "Use this utility to compare the contents of two concept sets to see which concepts they may share",
         "modalTitle": "Choose a concept set",
+        "sameConcepts": "Compared Concept Sets contain Concepts which are identical",
         "sameWarning": "You cannot compare the same concept sets.",
         "saveFromComparisonNameTail": " - From Comparison",
         "saveMessage": "Save New Concept Set From Selection Below",
         "saveWarning": "You must save the current concept set before you can perform this comparison.",
+        "vennDiagram": "Venn Diagram",
+        "vennDiagramAmountConcepts": "The amount: <%=count%>",
+        "vennDiagramAmountOnly": "The concepts are only in this concept set: <%=amountOnly%>",
+        "vennDiagramCommonConcepts": "Common Concepts",
+        "vennDiagramNameConceptSet": "<%=name%> concept set",
+        "vennDiagramTotalAmountConcepts": "The total amount of concepts: <%=count%>",
         "viewCountMessage": "View database record counts (RC) and descendant record counts (DRC) for:"
       },
       "exportConceptSetsButton": "Export Concept Sets",
@@ -2450,7 +2458,8 @@
       "clearConfigurationCache": "Clear Configuration Cache",
       "clearServerCache": "Clear Server Cache",
       "importUsers": "Import Users from LDAP/AD",
-      "managePermissions": "Manage Permissions"
+      "managePermissions": "Manage Permissions",
+      "tagManagement": "Tag Management"
     },
     "changeSourcePriorities": "Change source priorities in:",
     "confirms": {
@@ -2673,6 +2682,47 @@
           "empty": "&quot;Username&quot; is empty."
         }
       }
+    },
+    "tagManagement": {
+      "allowMultiple": "Multiple",
+      "allowCustom": "Free&#8209;form",
+      "allowCustomCheckbox": "Allow custom tags creation in this group",
+      "apply": "Submit",
+      "color": "Color",
+      "createGroup": "Create Group",
+      "createTag": "Create Tag",
+      "editTag": "Edit Tag",
+      "editTagGroup": "Edit Tag Group",
+      "exampleTagGroup": "Example",
+      "exampleTagGroupTag": "Example name",
+      "exampleTag": "Example",
+      "icon": "Icon",
+      "mandatory": "Mandatory",
+      "multiSelectionCheckbox": "Allow multiple tags from the group in a single asset",
+      "showGroupCheckbox": "Show Tag Group column in assets table",
+      "showInAssetsBrowser": "Show&nbsp;Column",
+      "tagsInGroup": "Tags in Group '<%=group%>'",
+      "tagGroups": "Tag Groups",
+      "tagGroupColor": "Tag group color",
+      "tagGroupColorPlaceholder": "Enter tag group color in #xxxxxx format",
+      "tagGroupDescription": "Tag group description",
+      "tagGroupDescriptionPlaceholder": "Enter tag group description",
+      "tagGroupIcon": "Tag group icon",
+      "tagGroupIconPlaceholder": "Enter tag group icon as font-awesome class",
+      "tagGroupName": "* Tag group name",
+      "tagGroupNamePlaceholder": "Enter tag group name",
+      "tagGroupNameEmpty": "Tag group name cannot be empty",
+      "hideTags": "Hide tags",
+      "showTags": "Show tags",
+      "edit": "Edit",
+      "remove": "Remove",
+      "overrideTagColor": "Override tag group color",
+      "overrideTagIcon": "Override tag group icon",
+      "protected": "Protected",
+      "nameExistsWarning": "Tag or Group name '<%=tagName%>' is already in use.",
+      "errorGroupNotEmpty": "Cannot delete tag group: the group contains tags.",
+      "deleteGroupConfirmation": "Deletion cannot be undone! Are you sure?",
+      "deleteTagConfirmation": "If the tag is assigned to an asset, it will be unassigned. Deletion cannot be undone. Are you sure you want to delete the tag?"
     }
   },
   "feedback": {

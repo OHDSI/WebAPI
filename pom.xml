@@ -251,7 +251,7 @@
     <cdm.result.cache.warming.enable>true</cdm.result.cache.warming.enable>
     <cdm.cache.achilles.warming.enable>false</cdm.cache.achilles.warming.enable>
     <!-- Enable or disable warming cdm cache by cron -->
-    <cdm.cache.cron.warming.enable>true</cdm.cache.cron.warming.enable>
+    <cdm.cache.cron.warming.enable>false</cdm.cache.cron.warming.enable>
     <!-- cron expression to warm cdm cache -->
     <!-- cron expression format (asterisk means 'every' - '*' in seconds means 'every second') -->
     <!-- default value is '0 0 2 * * *' which means "at 2am every day" -->

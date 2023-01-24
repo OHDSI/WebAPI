@@ -335,6 +335,10 @@ public abstract class AbstractDaoService extends AbstractAdminService {
   protected String getCurrentUserLogin() {
     return security.getSubject();
   }
+  
+  protected PermissionService getPermissionService() {
+    return this.permissionService;
+  }
 
   protected void assignTag(CommonEntityExt<?> entity, int tagId) {
     if (Objects.nonNull(entity)) {
@@ -395,6 +399,19 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     Long ownerId = Objects.nonNull(owner) ? owner.getId() : null;
 
     if (!(user.getId().equals(ownerId) || isAdmin())) {
+      throw new ForbiddenException();
+    }
+  }
+
+  protected void checkOwnerOrAdminOrModerator(UserEntity owner) {
+    if (security instanceof DisabledSecurity) {
+      return;
+    }
+
+    UserEntity user = getCurrentUser();
+    Long ownerId = Objects.nonNull(owner) ? owner.getId() : null;
+
+    if (!(user.getId().equals(ownerId) || isAdmin() || isModerator())) {
       throw new ForbiddenException();
     }
   }

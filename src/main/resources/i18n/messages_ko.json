@@ -1229,6 +1229,7 @@
       "tag": {
         "tooltip": {
           "group": "Group:",
+          "groups": "Groups:",
           "tag": "Tag:"
         }
       }
@@ -1285,8 +1286,8 @@
     },
     "match": {
       "both": "둘다",
-      "only1": "오직 1",
-      "only2": "오직 2"
+      "only1": "오직 CS1",
+      "only2": "오직 CS2"
     },
     "type": {
       "preset": "사전 설정",
@@ -1700,10 +1701,17 @@
         "heading": "컨셉 세트 비교",
         "headingMessage": "이 유틸리티를 사용하여 두 컨셉 세트가 공유하고 있는 컨셉을 확인하세요",
         "modalTitle": "컨셉 세트 선택",
+        "sameConcepts": "Compared Concept Sets contain Concepts which are identical",
         "sameWarning": "동일한 컨셉 세트를 비교할 수 없습니다.",
         "saveFromComparisonNameTail": "- 비교",
         "saveMessage": "아래 선택에서 새 컨셉 세트 저장",
         "saveWarning": "이 비교 기능을 수행하기 전에 현재의 컨셉 세트를 저장해야합니다.",
+        "vennDiagram": "Venn Diagram",
+        "vennDiagramAmountConcepts": "The amount: <%=count%>",
+        "vennDiagramAmountOnly": "The concepts are only in this concept set: <%=amountOnly%>",
+        "vennDiagramCommonConcepts": "Common Concepts",
+        "vennDiagramNameConceptSet": "<%=name%> concept set",
+        "vennDiagramTotalAmountConcepts": "The total amount of concepts: <%=count%>",
         "viewCountMessage": "다음에 대한 데이터베이스 레코드 수 (RC) 및 하위 레코드 수 (DRC)보기 :"
       },
       "exportConceptSetsButton": "컨셉 세트 내보내기",
@@ -2450,7 +2458,8 @@
       "clearConfigurationCache": "구성 캐시 지우기",
       "clearServerCache": "서버 캐시 지우기",
       "importUsers": "LDAP/AD에서 사용자 가져오기",
-      "managePermissions": "사용 권한 관리"
+      "managePermissions": "사용 권한 관리",
+      "tagManagement": "Tag Management"
     },
     "changeSourcePriorities": "다음에서 소스 우선 순위 변경:",
     "confirms": {
@@ -2673,6 +2682,47 @@
           "empty": "&quot;Username&quot;이 비어 있습니다."
         }
       }
+    },
+    "tagManagement": {
+      "allowMultiple": "Multiple",
+      "allowCustom": "Free&#8209;form",
+      "allowCustomCheckbox": "Allow custom tags creation in this group",
+      "apply": "Submit",
+      "color": "Color",
+      "createGroup": "Create Group",
+      "createTag": "Create Tag",
+      "editTag": "Edit Tag",
+      "editTagGroup": "Edit Tag Group",
+      "exampleTagGroup": "Example",
+      "exampleTagGroupTag": "Example name",
+      "exampleTag": "Example",
+      "icon": "Icon",
+      "mandatory": "Mandatory",
+      "multiSelectionCheckbox": "Allow multiple tags from the group in a single asset",
+      "showGroupCheckbox": "Show Tag Group column in assets table",
+      "showInAssetsBrowser": "Show&nbsp;Column",
+      "tagsInGroup": "Tags in Group '<%=group%>'",
+      "tagGroups": "Tag Groups",
+      "tagGroupColor": "Tag group color",
+      "tagGroupColorPlaceholder": "Enter tag group color in #xxxxxx format",
+      "tagGroupDescription": "Tag group description",
+      "tagGroupDescriptionPlaceholder": "Enter tag group description",
+      "tagGroupIcon": "Tag group icon",
+      "tagGroupIconPlaceholder": "Enter tag group icon as font-awesome class",
+      "tagGroupName": "* Tag group name",
+      "tagGroupNamePlaceholder": "Enter tag group name",
+      "tagGroupNameEmpty": "Tag group name cannot be empty",
+      "hideTags": "Hide tags",
+      "showTags": "Show tags",
+      "edit": "Edit",
+      "remove": "Remove",
+      "overrideTagColor": "Override tag group color",
+      "overrideTagIcon": "Override tag group icon",
+      "protected": "Protected",
+      "nameExistsWarning": "Tag or Group name '<%=tagName%>' is already in use.",
+      "errorGroupNotEmpty": "Cannot delete tag group: the group contains tags",
+      "deleteGroupConfirmation": "Deletion cannot be undone! Are you sure?",
+      "deleteTagConfirmation": "If the tag is assigned to an asset, it will be unassigned. Deletion cannot be undone. Are you sure you want to delete the tag?"
     }
   },
   "feedback": {

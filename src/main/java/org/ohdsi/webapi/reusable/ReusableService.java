@@ -133,7 +133,7 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
     public void delete(Integer id) {
         Reusable existing = reusableRepository.findOne(id);
 
-        checkOwnerOrAdmin(existing.getCreatedBy());
+        checkOwnerOrAdminOrModerator(existing.getCreatedBy());
 
         reusableRepository.delete(id);
     }

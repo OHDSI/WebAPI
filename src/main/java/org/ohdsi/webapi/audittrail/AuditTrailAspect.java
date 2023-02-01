@@ -49,13 +49,17 @@ public class AuditTrailAspect {
     @Pointcut("execution(public * org.ohdsi.webapi.service.VocabularyService.getInfo(..))")
     public void vocabularyServiceGetInfoPointcut() {
     }
+    @Pointcut("execution(public * org.ohdsi.webapi.info.InfoService.getInfo(..))")
+    public void webapiGetInfoPointcut() {
+    }
 
     @Around("(restGetPointcut() || restPostPointcut() || restPutPointcut() || restDeletePointcut() || irResource())" +
             " && " +
             // exclude system calls
             "!notificationsPointcut() && " +
             "!executionenginePointcut() && " +
-            "!vocabularyServiceGetInfoPointcut()")
+            "!vocabularyServiceGetInfoPointcut() && " +
+            "!webapiGetInfoPointcut()")
     public Object auditLog(final ProceedingJoinPoint joinPoint) throws Throwable {
         final HttpServletRequest request = getHttpServletRequest();
 

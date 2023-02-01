@@ -36,6 +36,7 @@ public class SecurityIT extends WebApiIT {
             .put("/i18n/locales", HttpStatus.OK)
             .put("/ddl/results", HttpStatus.OK)
             .put("/ddl/cemresults", HttpStatus.OK)
+            .put("/ddl/achilles", HttpStatus.OK)
             .put("/saml/saml-metadata", HttpStatus.OK)
             .put("/saml/slo", HttpStatus.TEMPORARY_REDIRECT)
             .build();

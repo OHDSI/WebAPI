@@ -271,8 +271,8 @@
     <cache.achilles.usePersonCount>true</cache.achilles.usePersonCount>
 
     <!-- Build info -->
-    <buildinfo.atlas.milestone.id>42</buildinfo.atlas.milestone.id>
-    <buildinfo.webapi.milestone.id>43</buildinfo.webapi.milestone.id>
+    <buildinfo.atlas.milestone.id>45</buildinfo.atlas.milestone.id>
+    <buildinfo.webapi.milestone.id>46</buildinfo.webapi.milestone.id>
     <buildinfo.atlas.release.tag>*</buildinfo.atlas.release.tag>
     <buildinfo.webapi.release.tag>*</buildinfo.webapi.release.tag>
 

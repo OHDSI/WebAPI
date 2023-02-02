@@ -84,12 +84,12 @@ public class ConceptSetCompareService extends AbstractDaoService {
 
     private String getQuery(final ConceptSetExpression csExpression, final ExpressionType type,
                             final Source source, final JdbcTemplate jdbcTemplate) {
-        final ConceptSetExpressionQueryBuilder builder = new ConceptSetExpressionQueryBuilder();
         if (type == ExpressionType.CONCEPT_NAME_CODE_AND_VOCABULARY_ID_ONLY) {
             final String tempTableName = createTempTable(source, jdbcTemplate);
             fillTable(tempTableName, csExpression, jdbcTemplate);
             return StringUtils.replace(CONCEPT_SET_QUERY_TEMPLATE, "@temp_table", tempTableName);
         } else {
+            final ConceptSetExpressionQueryBuilder builder = new ConceptSetExpressionQueryBuilder();
             return builder.buildExpressionQuery(csExpression);
         }
     }

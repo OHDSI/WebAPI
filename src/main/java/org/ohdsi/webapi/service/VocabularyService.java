@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.service;
 
+import static org.ohdsi.webapi.service.cscompare.ConceptSetCompareService.CONCEPT_SET_COMPARISON_ROW_MAPPER;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -39,9 +40,8 @@ import org.ohdsi.webapi.conceptset.ConceptSetComparison;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetOptimizationResult;
 import org.ohdsi.webapi.service.cscompare.CompareArbitraryDto;
+import org.ohdsi.webapi.service.cscompare.ConceptSetCompareService;
 import org.ohdsi.webapi.service.cscompare.ExpressionFileUtils;
-import org.ohdsi.webapi.service.cscompare.ExpressionType;
-import org.ohdsi.webapi.service.cscompare.BriefExpressionQueryBuilder;
 import org.ohdsi.webapi.service.vocabulary.ConceptSetStrategy;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
@@ -91,6 +91,9 @@ public class VocabularyService extends AbstractDaoService {
 
   @Autowired
   protected GenericConversionService conversionService;
+
+  @Autowired
+  private ConceptSetCompareService conceptSetCompareService;
   
   @Value("${datasource.driverClassName}")
   private String driver;
@@ -108,24 +111,6 @@ public class VocabularyService extends AbstractDaoService {
     concept.validStartDate = resultSet.getDate("VALID_START_DATE");
     concept.validEndDate = resultSet.getDate("VALID_END_DATE");
     return concept;
-  };
-
-  private final RowMapper<ConceptSetComparison> conceptSetComparisonRowMapper = (rs, rowNum) -> {
-    ConceptSetComparison csc = new ConceptSetComparison();
-    csc.conceptId = rs.getLong("concept_id");
-    csc.conceptIn1Only = rs.getLong("concept_in_1_only");
-    csc.conceptIn2Only = rs.getLong("concept_in_2_only");
-    csc.conceptIn1And2 = rs.getLong("concept_in_both_1_and_2");
-    csc.conceptName = rs.getString("concept_name");
-    csc.standardConcept = rs.getString("standard_concept");
-    csc.invalidReason = rs.getString("invalid_reason");
-    csc.conceptCode = rs.getString("concept_code");
-    csc.domainId = rs.getString("domain_id");
-    csc.vocabularyId = rs.getString("vocabulary_id");
-    csc.validStartDate = rs.getDate("valid_start_date");
-    csc.validEndDate = rs.getDate("valid_end_date");
-    csc.conceptClassId = rs.getString("concept_class_id");
-    return csc;
   };
 
   public RowMapper<Concept> getRowMapper() {
@@ -1500,7 +1485,7 @@ public class VocabularyService extends AbstractDaoService {
     sql_statement = SqlTranslate.translateSql(sql_statement, source.getSourceDialect());
 
     // Execute the query
-    Collection<ConceptSetComparison> returnVal = getSourceJdbcTemplate(source).query(sql_statement, conceptSetComparisonRowMapper);
+    Collection<ConceptSetComparison> returnVal = getSourceJdbcTemplate(source).query(sql_statement, CONCEPT_SET_COMPARISON_ROW_MAPPER);
 
     return returnVal;
   }
@@ -1515,28 +1500,8 @@ public class VocabularyService extends AbstractDaoService {
     if (csExpressionList.length != 2) {
       throw new Exception("You must specify two concept set expressions in order to use this method.");
     }
-    final Source source = getSourceRepository().findBySourceKey(sourceKey);
-    final String vocabSchema = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
 
-    // Get the comparison script
-    String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/compareConceptSets.sql");
-
-    final ExpressionType[] types = dto.types;
-    final ConceptSetExpressionQueryBuilder builder = new ConceptSetExpressionQueryBuilder();
-    final BriefExpressionQueryBuilder builderBrief = new BriefExpressionQueryBuilder();
-
-    final String cs1Query = types[0] == ExpressionType.CONCEPT_NAME_CODE_AND_VOCABULARY_ID_ONLY ?
-            builderBrief.buildExpressionQuery(csExpressionList[0]) : builder.buildExpressionQuery(csExpressionList[0]);
-    final String cs2Query = types[1] == ExpressionType.CONCEPT_NAME_CODE_AND_VOCABULARY_ID_ONLY ?
-            builderBrief.buildExpressionQuery(csExpressionList[1]) : builder.buildExpressionQuery(csExpressionList[1]);
-
-    // Insert the queries into the overall comparison script
-    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"cs1_expression", "cs2_expression"}, new String[]{cs1Query, cs2Query});
-    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"vocabulary_database_schema"}, new String[]{vocabSchema});
-    sql_statement = SqlTranslate.translateSql(sql_statement, source.getSourceDialect());
-
-    // Execute the query
-    final Collection<ConceptSetComparison> returnVal = getSourceJdbcTemplate(source).query(sql_statement, conceptSetComparisonRowMapper);
+    final Collection<ConceptSetComparison> returnVal = conceptSetCompareService.compareConceptSets(sourceKey, dto);
 
     // maps for items "not found in DB from input1", "not found in DB from input2"
     final Map<String, org.ohdsi.circe.vocabulary.Concept> input1Ex = ExpressionFileUtils.toExclusionMap(csExpressionList[0].items, returnVal);

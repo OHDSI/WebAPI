@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.vocabulary.solr;
 
-import org.ohdsi.webapi.extcommon.ConfigurationInfo;
+import org.ohdsi.webapi.info.ConfigurationInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

@@ -13,7 +13,7 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.ohdsi.webapi.vocabulary.Concept;
 import org.ohdsi.webapi.vocabulary.SearchProviderConfig;
-import org.ohdsi.webapi.extcommon.vocabulary.SearchProvider;
+import org.ohdsi.webapi.vocabulary.SearchProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,7 @@ import java.util.Date;
 import java.util.HashSet;
 
 @Component
-public class SolrSearchProvider implements SearchProvider {
+public class SolrSearchProvider implements SearchProvider<SearchProviderConfig> {
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     private static final int SOLR_PRIORITY = 1000;

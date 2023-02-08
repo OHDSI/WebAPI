@@ -2,7 +2,7 @@ package org.ohdsi.webapi.vocabulary;
 
 import java.util.Arrays;
 import java.util.Comparator;
-import org.ohdsi.webapi.extcommon.vocabulary.SearchProvider;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -25,6 +25,6 @@ public class VocabularySearchServiceImpl implements VocabularySearchService {
                 .sorted(Comparator.comparingInt(SearchProvider::getPriority))
                 .filter(p -> p.supports(config.getVersionKey()))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException(String.format(NO_PROVIDER_ERROR, config.getSource().getSourceKey())));
+                .orElseThrow(() -> new RuntimeException(String.format(NO_PROVIDER_ERROR, config.getSourceKey())));
     }
 }

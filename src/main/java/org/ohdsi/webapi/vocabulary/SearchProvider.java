@@ -5,8 +5,8 @@ import org.ohdsi.webapi.vocabulary.SearchProviderConfig;
 
 import java.util.Collection;
 
-public interface SearchProvider<T extends SearchProviderConfig> {
+public interface SearchProvider {
     boolean supports(String vocabularyVersionKey);
     int getPriority();
-    Collection<Concept> executeSearch(T config, String query, String rows) throws Exception;
+    Collection<Concept> executeSearch(SearchProviderConfig config, String query, String rows) throws Exception;
 }

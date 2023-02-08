@@ -27,7 +27,7 @@ import java.util.Date;
 import java.util.HashSet;
 
 @Component
-public class SolrSearchProvider implements SearchProvider<SearchProviderConfig> {
+public class SolrSearchProvider implements SearchProvider {
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     private static final int SOLR_PRIORITY = 1000;

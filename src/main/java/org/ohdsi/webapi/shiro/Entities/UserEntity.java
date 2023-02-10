@@ -24,6 +24,7 @@ public class UserEntity implements Serializable{
   private String password;
   private String salt;
   private String name;
+  private UserOrigin origin = UserOrigin.SYSTEM;
   private Set<UserRoleEntity> userRoles = new LinkedHashSet<>();
   private Date lastViewedNotificationsTime;
 
@@ -81,5 +82,15 @@ public class UserEntity implements Serializable{
 
   public void setLastViewedNotificationsTime(Date lastViewedNotificationsTime) {
     this.lastViewedNotificationsTime = lastViewedNotificationsTime;
+  }
+
+  @Column(name = "origin", nullable = false)
+  @Enumerated(EnumType.STRING)
+  public UserOrigin getOrigin() {
+    return origin;
+  }
+
+  public void setOrigin(UserOrigin origin) {
+    this.origin = origin;
   }
 }

@@ -16,7 +16,12 @@ into #cteCohortData
 from #cteCohortCombos combos
 join (
   select cohort_definition_id, subject_id, cohort_start_date, cohort_end_date, @adjustedStart as adjusted_start_date, @adjustedEnd as adjusted_end_date
-  FROM @temp_database_schema.@cohort_table
+  FROM (
+    select cohort_definition_id, subject_id, cohort_start_date, cohort_end_date, row_number() over (partition by subject_id, cohort_definition_id order by cohort_start_date ASC) as ordinal
+    FROM @temp_database_schema.@cohort_table
+    where cohort_definition_id in (select cohort_id from #cohorts where is_outcome = 0)
+  ) d
+  where d.ordinal = 1
 ) t on t.cohort_definition_id = combos.target_id
 join @cdm_database_schema.observation_period op on t.subject_id = op.person_id and t.cohort_start_date between op.observation_period_start_date and op.observation_period_end_date
 left join (

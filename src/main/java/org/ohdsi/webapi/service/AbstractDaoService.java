@@ -17,6 +17,7 @@ import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEnti
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.common.sensitiveinfo.AbstractAdminService;
 import org.ohdsi.webapi.conceptset.ConceptSet;
+import org.ohdsi.webapi.conceptset.ConceptSetComparison;
 import org.ohdsi.webapi.conceptset.ConceptSetItemRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetRepository;
 import org.ohdsi.webapi.exception.BadRequestAtlasException;
@@ -47,7 +48,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.ws.rs.BadRequestException;
@@ -58,6 +62,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -66,6 +71,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public abstract class AbstractDaoService extends AbstractAdminService {
@@ -88,7 +95,7 @@ public abstract class AbstractDaoService extends AbstractAdminService {
   private String cdmVersion;
 
   @Value("${jdbc.suppressInvalidApiException}")
-  private boolean suppressApiException;
+  protected boolean suppressApiException;
 
   @Autowired
   private JdbcTemplate jdbcTemplate;
@@ -172,6 +179,24 @@ public abstract class AbstractDaoService extends AbstractAdminService {
 
   public CancelableJdbcTemplate getSourceJdbcTemplate(Source source) {
 
+    DriverManagerDataSource dataSource = getDriverManagerDataSource(source);
+    CancelableJdbcTemplate jdbcTemplate = new CancelableJdbcTemplate(dataSource);
+    jdbcTemplate.setSuppressApiException(suppressApiException);
+    return jdbcTemplate;
+  }
+
+  public <T> T executeInTransaction(Source source, Function<JdbcTemplate, TransactionCallback<T>> callbackFunction) {
+    DriverManagerDataSource dataSource = getDriverManagerDataSource(source);
+    CancelableJdbcTemplate jdbcTemplate = new CancelableJdbcTemplate(dataSource);
+    jdbcTemplate.setSuppressApiException(suppressApiException);
+    DataSourceTransactionManager transactionManager = new DataSourceTransactionManager(dataSource);
+    TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
+    transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+
+    return transactionTemplate.execute(callbackFunction.apply(jdbcTemplate));
+  }
+
+  private DriverManagerDataSource getDriverManagerDataSource(Source source) {
     DataSourceUnsecuredDTO dataSourceData = DataSourceDTOParser.parseDTO(source);
     if (dataSourceData.getUseKerberos()) {
       loginToKerberos(dataSourceData);
@@ -194,9 +219,7 @@ public abstract class AbstractDaoService extends AbstractAdminService {
       }
       dataSource.getConnectionProperties().setProperty("CLIENT_RESULT_COLUMN_CASE_INSENSITIVE", "true");
     }
-    CancelableJdbcTemplate jdbcTemplate = new CancelableJdbcTemplate(dataSource);
-    jdbcTemplate.setSuppressApiException(suppressApiException);
-    return jdbcTemplate;
+    return dataSource;
   }
 
   private void loginToKerberos(DataSourceUnsecuredDTO dataSourceData) {
@@ -334,6 +357,10 @@ public abstract class AbstractDaoService extends AbstractAdminService {
 
   protected String getCurrentUserLogin() {
     return security.getSubject();
+  }
+  
+  protected PermissionService getPermissionService() {
+    return this.permissionService;
   }
 
   protected void assignTag(CommonEntityExt<?> entity, int tagId) {

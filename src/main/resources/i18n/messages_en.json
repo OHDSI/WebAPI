@@ -2465,7 +2465,7 @@
       "importUsers": "Import Users from LDAP/AD",
       "managePermissions": "Manage Permissions",
       "reindexCS": "Concept Sets Reindex",
-      "reindexCSStatus": "Concept Sets Reindex (<%=doneCount%> of <%=maxCount%>)"
+      "reindexCSStatus": "Concept Sets Reindex (<%=doneCount%> of <%=maxCount%>)",
       "tagManagement": "Tag Management"
     },
     "changeSourcePriorities": "Change source priorities in:",

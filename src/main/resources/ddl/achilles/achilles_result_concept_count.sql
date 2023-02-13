@@ -7,7 +7,7 @@ DROP TABLE @results_schema.achilles_result_concept_count;
 
 CREATE TABLE @results_schema.achilles_result_concept_count
 (
-  concept_id                INT,
+  concept_id                int,
   record_count              bigint,
   descendant_record_count   bigint,
   person_count              bigint,
@@ -17,21 +17,10 @@ CREATE TABLE @results_schema.achilles_result_concept_count
 /**********************************************/
 /***** Populate record/person count table *****/
 /**********************************************/
-
-WITH concepts AS (
-    SELECT
-        CAST(ancestor_concept_id AS VARCHAR)   ancestor_id,
-        CAST(descendant_concept_id AS VARCHAR) descendant_id
-    FROM @vocab_schema.concept_ancestor ca
-UNION
-SELECT
-    CAST(concept_id AS VARCHAR) ancestor_id,
-    CAST(concept_id AS VARCHAR) descendant_id
-FROM @vocab_schema.concept c
-), counts AS (
-SELECT stratum_1 concept_id, MAX (count_value) agg_count_value
-FROM @results_schema.achilles_results
-WHERE analysis_id IN (2, 4, 5, 201, 225, 301, 325, 401, 425, 501, 505, 525, 601, 625, 701, 725, 801, 825,
+WITH counts AS (
+  SELECT stratum_1 concept_id, MAX (count_value) agg_count_value
+  FROM @results_schema.achilles_results
+  WHERE analysis_id IN (2, 4, 5, 201, 225, 301, 325, 401, 425, 501, 505, 525, 601, 625, 701, 725, 801, 825,
     826, 827, 901, 1001, 1201, 1203, 1425, 1801, 1825, 1826, 1827, 2101, 2125, 2301)
     /* analyses:
           Number of persons by gender
@@ -67,11 +56,11 @@ WHERE analysis_id IN (2, 4, 5, 201, 225, 301, 325, 401, 425, 501, 505, 525, 601,
          Number of device_exposure records, by device_source_concept_id
          Number of location records, by region_concept_id
     */
-GROUP BY stratum_1
-UNION
-SELECT stratum_2 AS concept_id, SUM (count_value) AS agg_count_value
-FROM @results_schema.achilles_results
-WHERE analysis_id IN (405, 605, 705, 805, 807, 1805, 1807, 2105)
+  GROUP BY stratum_1
+  UNION ALL
+  SELECT stratum_2 concept_id, SUM (count_value) AS agg_count_value
+  FROM @results_schema.achilles_results
+  WHERE analysis_id IN (405, 605, 705, 805, 807, 1805, 1807, 2105)
     /* analyses:
          Number of condition occurrence records, by condition_concept_id by condition_type_concept_id
          Number of procedure occurrence records, by procedure_concept_id by procedure_type_concept_id
@@ -83,11 +72,11 @@ WHERE analysis_id IN (405, 605, 705, 805, 807, 1805, 1807, 2105)
          Number of device exposure records, by device_concept_id by device_type_concept_id
         but this subquery only gets the type or unit concept_ids, i.e., stratum_2
     */
-GROUP BY stratum_2
-    ), counts_person AS (
-SELECT stratum_1 concept_id, MAX (count_value) agg_count_value
-FROM @results_schema.achilles_results
-WHERE analysis_id IN (200, 400, 600, 700, 800, 900, 1000, 1300, 1800, 2100, 2200)
+  GROUP BY stratum_2
+), counts_person AS (
+  SELECT stratum_1 as concept_id, MAX (count_value) agg_count_value
+  FROM @results_schema.achilles_results
+  WHERE analysis_id IN (200, 400, 600, 700, 800, 900, 1000, 1300, 1800, 2100, 2200)
     /* analyses:
         Number of persons with at least one visit occurrence, by visit_concept_id
         Number of persons with at least one condition occurrence, by condition_concept_id
@@ -101,15 +90,26 @@ WHERE analysis_id IN (200, 400, 600, 700, 800, 900, 1000, 1300, 1800, 2100, 2200
         Number of persons with at least one device exposure, by device_concept_id
         Number of persons with at least one note by  note_type_concept_id
     */
-GROUP BY stratum_1)
-
+  GROUP BY stratum_1
+), concepts AS (
+  select concept_id as ancestor_id, coalesce(cast(ca.descendant_concept_id as varchar(50)), concept_id) as descendant_id
+  from (
+    select concept_id from counts
+    UNION
+    -- include any ancestor concept that has a descendant in counts
+    select distinct cast(ancestor_concept_id as varchar(50)) concept_id
+    from counts c
+    join @vocab_schema.concept_ancestor ca on cast(ca.descendant_concept_id as varchar(50)) = c.concept_id
+  ) c
+  left join @vocab_schema.concept_ancestor ca on c.concept_id = cast(ca.ancestor_concept_id as varchar(50))
+)
 INSERT INTO @results_schema.achilles_result_concept_count (concept_id, record_count, descendant_record_count, person_count, descendant_person_count)
 SELECT
-    concepts.ancestor_id               concept_id,
-    isnull(max(c1.agg_count_value), 0) record_count,
-    isnull(sum(c2.agg_count_value), 0) descendant_record_count,
-    isnull(max(c3.agg_count_value), 0) person_count,
-    isnull(sum(c4.agg_count_value), 0) descendant_person_count
+    cast(concepts.ancestor_id as int) concept_id,
+    coalesce(max(c1.agg_count_value), 0) record_count,
+    coalesce(sum(c2.agg_count_value), 0) descendant_record_count,
+    coalesce(max(c3.agg_count_value), 0) person_count,
+    coalesce(sum(c4.agg_count_value), 0) descendant_person_count
 FROM concepts
          LEFT JOIN counts c1 ON concepts.ancestor_id = c1.concept_id
          LEFT JOIN counts c2 ON concepts.descendant_id = c2.concept_id

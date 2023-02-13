@@ -1229,6 +1229,7 @@
       "tag": {
         "tooltip": {
           "group": "Group:",
+          "groups": "Groups:",
           "tag": "Tag:"
         }
       }
@@ -1700,10 +1701,17 @@
         "heading": "概念集比较",
         "headingMessage": "使用此实用程序可以比较两个概念集的内容，以查看它们可以共享哪些概念。",
         "modalTitle": "选择一个概念集",
+        "sameConcepts": "Compared Concept Sets contain Concepts which are identical",
         "sameWarning": "您无法比较相同的概念集。",
         "saveFromComparisonNameTail": " - 来自对照",
         "saveMessage": "从下面的选择中保存新概念集",
         "saveWarning": "您必须保存当前概念集，然后才能执行此比较。",
+        "vennDiagram": "Venn Diagram",
+        "vennDiagramAmountConcepts": "The amount: <%=count%>",
+        "vennDiagramAmountOnly": "The concepts are only in this concept set: <%=amountOnly%>",
+        "vennDiagramCommonConcepts": "Common Concepts",
+        "vennDiagramNameConceptSet": "<%=name%> concept set",
+        "vennDiagramTotalAmountConcepts": "The total amount of concepts: <%=count%>",
         "viewCountMessage": "查看以下数据库的数据库记录计数（RC）和后代记录计数（DRC）："
       },
       "exportConceptSetsButton": "导出概念集",
@@ -2456,6 +2464,7 @@
       "clearServerCache": "清除服务器缓存",
       "importUsers": "从LDAP / AD导入用户",
       "managePermissions": "管理权限",
+      "tagManagement": "Tag Management",
       "reindexCS": "Concept Sets Reindex",
       "reindexCSStatus": "Concept Sets Reindex (<%=doneCount%> of <%=maxCount%>)"
     },
@@ -2682,6 +2691,47 @@
           "empty": "&quot;Username&quot; 是空的/没有的。"
         }
       }
+    },
+    "tagManagement": {
+      "allowMultiple": "Multiple",
+      "allowCustom": "Free&#8209;form",
+      "allowCustomCheckbox": "Allow custom tags creation in this group",
+      "apply": "Submit",
+      "color": "Color",
+      "createGroup": "Create Group",
+      "createTag": "Create Tag",
+      "editTag": "Edit Tag",
+      "editTagGroup": "Edit Tag Group",
+      "exampleTagGroup": "Example",
+      "exampleTagGroupTag": "Example name",
+      "exampleTag": "Example",
+      "icon": "Icon",
+      "mandatory": "Mandatory",
+      "multiSelectionCheckbox": "Allow multiple tags from the group in a single asset",
+      "showGroupCheckbox": "Show Tag Group column in assets table",
+      "showInAssetsBrowser": "Show&nbsp;Column",
+      "tagsInGroup": "Tags in Group '<%=group%>'",
+      "tagGroups": "Tag Groups",
+      "tagGroupColor": "Tag group color",
+      "tagGroupColorPlaceholder": "Enter tag group color in #xxxxxx format",
+      "tagGroupDescription": "Tag group description",
+      "tagGroupDescriptionPlaceholder": "Enter tag group description",
+      "tagGroupIcon": "Tag group icon",
+      "tagGroupIconPlaceholder": "Enter tag group icon as font-awesome class",
+      "tagGroupName": "* Tag group name",
+      "tagGroupNamePlaceholder": "Enter tag group name",
+      "tagGroupNameEmpty": "Tag group name cannot be empty",
+      "hideTags": "Hide tags",
+      "showTags": "Show tags",
+      "edit": "Edit",
+      "remove": "Remove",
+      "overrideTagColor": "Override tag group color",
+      "overrideTagIcon": "Override tag group icon",
+      "protected": "Protected",
+      "nameExistsWarning": "Tag or Group name '<%=tagName%>' is already in use.",
+      "errorGroupNotEmpty": "Cannot delete tag group: the group contains tags",
+      "deleteGroupConfirmation": "Deletion cannot be undone! Are you sure?",
+      "deleteTagConfirmation": "If the tag is assigned to an asset, it will be unassigned. Deletion cannot be undone. Are you sure you want to delete the tag?"
     }
   },
   "feedback": {

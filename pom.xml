@@ -705,14 +705,6 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-cache</artifactId>
     </dependency>
-<!--    <dependency>-->
-<!--      <groupId>javax.cache</groupId>-->
-<!--      <artifactId>cache-api</artifactId>-->
-<!--    </dependency>-->
-<!--    <dependency>-->
-<!--      <groupId>org.ehcache</groupId>-->
-<!--      <artifactId>ehcache</artifactId>-->
-<!--    </dependency>-->
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-core</artifactId>

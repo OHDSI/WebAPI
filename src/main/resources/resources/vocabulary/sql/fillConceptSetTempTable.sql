@@ -1,0 +1,1 @@
+INSERT INTO @temp_table (concept_code, vocabulary_id) VALUES (?, ?)

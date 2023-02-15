@@ -1,5 +1,5 @@
 SELECT
-  cast(CASE WHEN isNumeric(ar1.stratum_1) = 1 THEN ar1.stratum_1 ELSE null END AS INT)                          AS intervalIndex,
+  cast(CASE WHEN ar1.analysis_id = 101 THEN ar1.stratum_1 ELSE null END AS INT)                          AS intervalIndex,
   ar1.count_value                                     AS countValue,
   round(1.0 * ar1.count_value / denom.count_value, 5) AS percentValue
 FROM

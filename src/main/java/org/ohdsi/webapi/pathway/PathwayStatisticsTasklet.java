@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.ohdsi.analysis.Utils;
+import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.BigQuerySparkTranslate;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayEventCohort;
@@ -37,6 +38,7 @@ import org.springframework.jdbc.core.PreparedStatementCreator;
 import static org.ohdsi.webapi.Constants.Params.GENERATION_ID;
 
 public class PathwayStatisticsTasklet extends CancelableTasklet {
+	private static final String SAVE_PATHS_SQL = ResourceHelper.GetResourceAsString("/resources/pathway/savePaths.sql");
 
 	private final CancelableJdbcTemplate jdbcTemplate;
 	private final Source source;
@@ -166,21 +168,20 @@ public class PathwayStatisticsTasklet extends CancelableTasklet {
 	}
 
 	private int[] savePaths(Source source, Long generationId) throws SQLException {
-
-		PreparedStatementRenderer pathwayEventsPsr = new PreparedStatementRenderer(
-						source,
-						"/resources/pathway/savePaths.sql",
-						new String[]{"target_database_schema"},
-						new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results)},
-						new String[]{GENERATION_ID},
-						new Object[]{generationId}
-		);
-
-		String sql = pathwayEventsPsr.getSql();
+		String sql = SAVE_PATHS_SQL;
 		if (source.getSourceDialect().equals("spark")) {
 			sql = BigQuerySparkTranslate.sparkHandleInsert(sql, source.getSourceConnection());
 		}
 
-		return new int[]{jdbcTemplate.update(sql, pathwayEventsPsr.getSetter())};
+		PreparedStatementRenderer pathwayEventsPsr = new PreparedStatementRenderer(
+				source,
+				sql,
+				new String[]{"target_database_schema"},
+				new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results)},
+				new String[]{GENERATION_ID},
+				new Object[]{generationId}
+		);
+
+		return jdbcTemplate.batchUpdate(stmtCancel, Arrays.asList(new PreparedStatementRendererCreator(pathwayEventsPsr)));
 	}
 }

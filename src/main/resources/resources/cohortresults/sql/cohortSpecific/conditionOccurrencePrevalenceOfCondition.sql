@@ -23,10 +23,10 @@ select   concept_hierarchy.concept_id,
 from
 (select stratum_1 as concept_id,
 	sum(count_value) as num_persons,
-	sum(case when CAST(CASE WHEN isNumeric(stratum_2) = 1 THEN stratum_2 ELSE null END AS INT) < 0 then count_value else 0 end) as num_persons_before,
-	sum(case when CAST(CASE WHEN isNumeric(stratum_2) = 1 THEN stratum_2 ELSE null END AS INT) > 0 then count_value else 0 end) as num_persons_after
+	sum(case when CAST(CASE WHEN analysis_id = 1820 THEN stratum_2 ELSE null END AS INT) < 0 then count_value else 0 end) as num_persons_before,
+	sum(case when CAST(CASE WHEN analysis_id = 1820 THEN stratum_2 ELSE null END AS INT) > 0 then count_value else 0 end) as num_persons_after
 from @ohdsi_database_schema.heracles_results
-where analysis_id in (1820) --first occurrence of condition
+where analysis_id = 1820 --first occurrence of condition
 and cohort_definition_id = @cohortDefinitionId
 group by stratum_1
 ) hr1

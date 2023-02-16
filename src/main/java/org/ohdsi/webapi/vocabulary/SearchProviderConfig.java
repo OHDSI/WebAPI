@@ -1,23 +1,19 @@
 package org.ohdsi.webapi.vocabulary;
 
-import org.ohdsi.webapi.source.Source;
-
 public class SearchProviderConfig {
-    protected Source source;
-    protected VocabularyInfo vocabularyInfo;
-    protected String versionKey;
+    private String sourceKey;
+    private String versionKey;
     
-    public SearchProviderConfig(Source source, VocabularyInfo vocabularyInfo) {
-        this.source = source;
-        this.vocabularyInfo = vocabularyInfo;
-        this.versionKey = vocabularyInfo.version.replace(' ', '_');
+    public SearchProviderConfig(String sourceKey, String versionKey) {
+        this.sourceKey = sourceKey;
+        this.versionKey = versionKey;
     }
     
     public String getVersionKey() {
         return versionKey;
     }
     
-    public Source getSource() {
-        return source;
+    public String getSourceKey() {
+        return sourceKey;
     }
 }

@@ -1,22 +1,22 @@
-package org.ohdsi.webapi.vocabulary;
+package org.ohdsi.webapi.vocabulary.solr;
 
-import java.util.List;
-import java.util.stream.Collectors;
 import org.ohdsi.webapi.info.ConfigurationInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-@Component
-public class VocabularyConfigurationInfo extends ConfigurationInfo {
+import java.util.ArrayList;
+import java.util.List;
 
+@Component
+public class SolrConfigurationInfo extends ConfigurationInfo {
     private static final String KEY = "vocabulary";
     
     @Autowired
-    public VocabularyConfigurationInfo(SolrSearchClient solrSearchClient) {
-        properties.put("solrEnabled", solrSearchClient.enabled());
+    public SolrConfigurationInfo(SolrSearchClient solrSearchClient) {
+        properties.put("solrEnabled", true);
         if (solrSearchClient.enabled()) {
             try {
-                List<String> cores = solrSearchClient.getCores().stream().collect(Collectors.toList());
+                List<String> cores = new ArrayList<>(solrSearchClient.getCores());
                 properties.put("cores", cores);
             } catch (Exception e) {
                 properties.put("cores", "unable to retrieve from endpoint.");
@@ -26,7 +26,6 @@ public class VocabularyConfigurationInfo extends ConfigurationInfo {
 
     @Override
     public String getKey() {
-
         return KEY;
     }
 }

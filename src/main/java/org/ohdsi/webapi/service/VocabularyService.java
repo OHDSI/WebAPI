@@ -1,14 +1,13 @@
 package org.ohdsi.webapi.service;
 
+import static org.ohdsi.webapi.service.cscompare.ConceptSetCompareService.CONCEPT_SET_COMPARISON_ROW_MAPPER;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import javax.ws.rs.Consumes;
@@ -40,6 +39,9 @@ import org.ohdsi.webapi.activity.Tracker;
 import org.ohdsi.webapi.conceptset.ConceptSetComparison;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetOptimizationResult;
+import org.ohdsi.webapi.service.cscompare.CompareArbitraryDto;
+import org.ohdsi.webapi.service.cscompare.ConceptSetCompareService;
+import org.ohdsi.webapi.service.cscompare.ExpressionFileUtils;
 import org.ohdsi.webapi.service.vocabulary.ConceptSetStrategy;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
@@ -89,6 +91,9 @@ public class VocabularyService extends AbstractDaoService {
 
   @Autowired
   protected GenericConversionService conversionService;
+
+  @Autowired
+  private ConceptSetCompareService conceptSetCompareService;
   
   @Value("${datasource.driverClassName}")
   private String driver;
@@ -660,7 +665,8 @@ public class VocabularyService extends AbstractDaoService {
     try {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         VocabularyInfo vocabularyInfo = getInfo(sourceKey);
-        SearchProviderConfig searchConfig = new SearchProviderConfig(source, vocabularyInfo);
+        String versionKey = vocabularyInfo.version.replace(' ', '_');
+        SearchProviderConfig searchConfig = new SearchProviderConfig(source.getSourceKey(), versionKey);
         concepts = vocabSearchService.getSearchProvider(searchConfig).executeSearch(searchConfig, query, rows);
     } catch (Exception ex) {
         log.error("An error occurred during the vocabulary search", ex);
@@ -1459,9 +1465,9 @@ public class VocabularyService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Collection<ConceptSetComparison> compareConceptSets(@PathParam("sourceKey") String sourceKey, ConceptSetExpression[] conceptSetExpressionList) throws Exception {
-      if (conceptSetExpressionList.length != 2) {
-          throw new Exception("You must specify two concept set expressions in order to use this method.");
-      }
+    if (conceptSetExpressionList.length != 2) {
+      throw new Exception("You must specify two concept set expressions in order to use this method.");
+    }
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String vocabSchema = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
     
@@ -1478,29 +1484,40 @@ public class VocabularyService extends AbstractDaoService {
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"cs1_expression", "cs2_expression"}, new String[]{cs1Query, cs2Query});
     sql_statement = SqlRender.renderSql(sql_statement, new String[]{"vocabulary_database_schema"}, new String[]{vocabSchema});
     sql_statement = SqlTranslate.translateSql(sql_statement, source.getSourceDialect());
-    
+
     // Execute the query
-    Collection<ConceptSetComparison> returnVal = getSourceJdbcTemplate(source).query(sql_statement, new RowMapper<ConceptSetComparison>() {
-      @Override
-      public ConceptSetComparison mapRow(ResultSet rs, int rowNum) throws SQLException {
-        ConceptSetComparison csc = new ConceptSetComparison();
-        csc.conceptId = rs.getLong("concept_id");
-        csc.conceptIn1Only = rs.getLong("concept_in_1_only");
-        csc.conceptIn2Only = rs.getLong("concept_in_2_only");
-        csc.conceptIn1And2 = rs.getLong("concept_in_both_1_and_2");
-        csc.conceptName = rs.getString("concept_name");
-        csc.standardConcept = rs.getString("standard_concept");
-        csc.invalidReason = rs.getString("invalid_reason");
-        csc.conceptCode = rs.getString("concept_code");
-        csc.domainId = rs.getString("domain_id");
-        csc.vocabularyId = rs.getString("vocabulary_id");
-        csc.validStartDate = rs.getDate("valid_start_date");
-        csc.validEndDate = rs.getDate("valid_end_date");
-        csc.conceptClassId = rs.getString("concept_class_id");
-        return csc;
-      }
+    Collection<ConceptSetComparison> returnVal = getSourceJdbcTemplate(source).query(sql_statement, CONCEPT_SET_COMPARISON_ROW_MAPPER);
+
+    return returnVal;
+  }
+
+  @Path("{sourceKey}/compare-arbitrary")
+  @POST
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Collection<ConceptSetComparison> compareConceptSetsCsv(final @PathParam("sourceKey") String sourceKey,
+                                                                final CompareArbitraryDto dto) throws Exception {
+    final ConceptSetExpression[] csExpressionList = dto.compareTargets;
+    if (csExpressionList.length != 2) {
+      throw new Exception("You must specify two concept set expressions in order to use this method.");
+    }
+
+    final Collection<ConceptSetComparison> returnVal = conceptSetCompareService.compareConceptSets(sourceKey, dto);
+
+    // maps for items "not found in DB from input1", "not found in DB from input2"
+    final Map<String, org.ohdsi.circe.vocabulary.Concept> input1Ex = ExpressionFileUtils.toExclusionMap(csExpressionList[0].items, returnVal);
+    final Map<String, org.ohdsi.circe.vocabulary.Concept> input2ex = ExpressionFileUtils.toExclusionMap(csExpressionList[1].items, returnVal);
+
+    // compare/combine exclusion maps and add the result to the output
+    returnVal.addAll(ExpressionFileUtils.combine(input1Ex, input2ex));
+
+    // concept names to display mismatches
+    final Map<String, String> names = ExpressionFileUtils.toNamesMap(csExpressionList[0].items, csExpressionList[1].items);
+    returnVal.forEach(item -> {
+      final String name = names.get(ExpressionFileUtils.getKey(item));
+      item.nameMismatch = name != null && !name.equals(item.conceptName);
     });
-    
+
     return returnVal;
   }
 

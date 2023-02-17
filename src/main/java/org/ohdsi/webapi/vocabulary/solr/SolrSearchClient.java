@@ -1,9 +1,8 @@
-package org.ohdsi.webapi.vocabulary;
+package org.ohdsi.webapi.vocabulary.solr;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;

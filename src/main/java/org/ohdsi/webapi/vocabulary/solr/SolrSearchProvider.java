@@ -38,10 +38,12 @@ public class SolrSearchProvider implements SearchProvider {
 
     @PostConstruct
     protected void init() {
-        try {
-            solrCores = solrSearchClient.getCores();
-        } catch (Exception ex) {
-            log.error("SOLR Core Initialization Error:  WebAPI was unable to obtain the list of available cores.", ex);
+        if (solrSearchClient.enabled()) {
+            try {
+                solrCores = solrSearchClient.getCores();
+            } catch (Exception ex) {
+                log.error("SOLR Core Initialization Error:  WebAPI was unable to obtain the list of available cores.", ex);
+            }
         }
     }
 

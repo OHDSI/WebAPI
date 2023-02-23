@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.check.checker.ir.helper;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.check.builder.IterableForEachValidatorBuilder;
 import org.ohdsi.webapi.check.builder.NotNullNotEmptyValidatorBuilder;
 import org.ohdsi.webapi.check.builder.PredicateValidatorBuilder;

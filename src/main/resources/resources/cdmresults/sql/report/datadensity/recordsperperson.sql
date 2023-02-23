@@ -67,4 +67,4 @@ FROM
 INNER JOIN
 ( SELECT * FROM @results_database_schema.achilles_results WHERE analysis_id = 117) denom
 ON t1.stratum_1 = denom.stratum_1
-ORDER BY series_Name, CAST(CASE WHEN isNumeric(t1.stratum_1) = 1 THEN t1.stratum_1 ELSE null END AS INT)
+ORDER BY series_Name, CAST(t1.stratum_1 AS INT)

@@ -70,7 +70,7 @@ public class CohortCharacterizationEntity extends CommonEntityExt<Long> implemen
     @Column(name = "strata_only")
     private Boolean strataOnly;
 
-    @OneToOne(mappedBy = "cohortCharacterization", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "cohortCharacterization", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private CcStrataConceptSetEntity conceptSetEntity;
     
     @Column(name = "hash_code")

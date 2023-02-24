@@ -45,7 +45,7 @@ public abstract class FeAnalysisCriteriaEntity implements WithId<Long> {
     @Type(type = "org.hibernate.type.TextType")
     private String expressionString;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "fe_aggregate_id")
     private FeAnalysisAggregateEntity aggregate;
 

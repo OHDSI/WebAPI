@@ -32,7 +32,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import jersey.repackaged.com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.SQLDelete;

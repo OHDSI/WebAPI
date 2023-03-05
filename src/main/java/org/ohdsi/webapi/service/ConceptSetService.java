@@ -58,6 +58,7 @@ import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.ohdsi.webapi.versioning.service.VersionService;
 import org.ohdsi.webapi.vocabulary.Concept;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
@@ -103,6 +104,9 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Autowired
     private VersionService<ConceptSetVersion> versionService;
 
+    @Value("#{'${security.conceptsetsauthview}'.equals('True')}")
+    private boolean conceptsetsauthview;
+    
     public static final String COPY_NAME = "copyName";
 
     /**
@@ -131,15 +135,28 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<ConceptSetDTO> getConceptSets() {
-        return getTransactionTemplate().execute(transactionStatus ->
-                StreamSupport.stream(getConceptSetRepository().findAll().spliterator(), false)
-                        .map(conceptSet -> {
-                            ConceptSetDTO dto = conversionService.convert(conceptSet, ConceptSetDTO.class);
-                            permissionService.fillWriteAccess(conceptSet, dto);
-                            return dto;
-                        })
-                        .collect(Collectors.toList())
-        );
+   	       if (conceptsetsauthview == false) { // don't filter based on read permissions 
+			return getTransactionTemplate().execute(
+					transactionStatus -> StreamSupport.stream(getConceptSetRepository().findAll().spliterator(), false)
+							.map(conceptSet -> {
+								ConceptSetDTO dto = conversionService.convert(conceptSet, ConceptSetDTO.class);
+								permissionService.fillWriteAccess(conceptSet, dto);
+								permissionService.fillReadAccess(conceptSet, dto);
+								return dto;
+							})
+							.collect(Collectors.toList()));
+		} else { // filter out conceptsets that the user does not have read access to 
+		    return getTransactionTemplate().execute(
+					transactionStatus -> StreamSupport.stream(getConceptSetRepository().findAll().spliterator(), false)
+					                .filter(candidateConceptSet -> permissionService.hasReadAccess(candidateConceptSet))
+							.map(conceptSet -> {
+								ConceptSetDTO dto = conversionService.convert(conceptSet, ConceptSetDTO.class);
+								permissionService.fillWriteAccess(conceptSet, dto);
+								permissionService.fillReadAccess(conceptSet, dto);
+								return dto;
+							})
+					                .collect(Collectors.toList()));
+		}
     }
 
     /**

@@ -1,15 +1,15 @@
 compile:
-	mvn clean build -DskipUnitTests -DskipITtests -s WebAPIConfig/settings.xml -P webapi-postgresql
+	mvn clean compile -DskipUnitTests -DskipITtests -s WebAPIConfig/settings.xml -P webapi-postgresql
 
 package: compile
-	mvn clean package -DskipUnitTests -DskipITtests -s WebAPIConfig/settings.xml -P webapi-postgresql
+	mvn package -DskipUnitTests -DskipITtests -s WebAPIConfig/settings.xml -P webapi-postgresql
 
 deploy: package
-	sudo /home/ubuntu/Downloads/apache-tomcat-8.5.84/bin/shutdown.sh 
-	sudo mv /home/ubuntu/Downloads/apache-tomcat-8.5.84/webapps/WebAPI /tmp/WebAPI-FOLDER-`date +%m%d%H%S`
-	sudo mv /home/ubuntu/Downloads/apache-tomcat-8.5.84/webapps/WebAPI.war /tmp/WebAPI.war-`date +%m%d%H%S`
-	mv target/WebAPI.war /home/ubuntu/Downloads/apache-tomcat-8.5.84/webapps/
-	sudo /home/ubuntu/Downloads/apache-tomcat-8.5.84/bin/startup.sh
+	/home/ubuntu/Downloads/apache-tomcat-8.5.84-DEV/bin/shutdown.sh 
+	mv /home/ubuntu/Downloads/apache-tomcat-8.5.84-DEV/webapps/WebAPI /tmp/WebAPI-FOLDER-`date +%m%d%H%S`
+	mv /home/ubuntu/Downloads/apache-tomcat-8.5.84-DEV/webapps/WebAPI.war /tmp/WebAPI.war-`date +%m%d%H%S`
+	mv target/WebAPI.war /home/ubuntu/Downloads/apache-tomcat-8.5.84-DEV/webapps/
+	/home/ubuntu/Downloads/apache-tomcat-8.5.84-DEV/bin/startup.sh
 
 git-push:
 	git push

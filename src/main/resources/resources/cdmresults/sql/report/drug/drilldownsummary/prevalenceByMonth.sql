@@ -13,4 +13,4 @@ FROM
   --calendar year
   INNER JOIN
   @vocab_database_schema.concept c1
-ON CAST(CASE WHEN isNumeric(num.stratum_1) = 1 THEN num.stratum_1 ELSE null END AS INT) = c1.concept_id
+ON CAST(CASE WHEN num.analysis_id = 702 THEN num.stratum_1 ELSE null END AS INT) = c1.concept_id

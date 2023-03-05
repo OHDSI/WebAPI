@@ -665,7 +665,8 @@ public class VocabularyService extends AbstractDaoService {
     try {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         VocabularyInfo vocabularyInfo = getInfo(sourceKey);
-        SearchProviderConfig searchConfig = new SearchProviderConfig(source, vocabularyInfo);
+        String versionKey = vocabularyInfo.version.replace(' ', '_');
+        SearchProviderConfig searchConfig = new SearchProviderConfig(source.getSourceKey(), versionKey);
         concepts = vocabSearchService.getSearchProvider(searchConfig).executeSearch(searchConfig, query, rows);
     } catch (Exception ex) {
         log.error("An error occurred during the vocabulary search", ex);

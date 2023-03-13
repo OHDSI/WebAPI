@@ -381,6 +381,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
             }
 
             CallbackFilter callbackFilter = new CallbackFilter();
+            callbackFilter.setCallbackLogic(new Feder8CallbackLogic());
             callbackFilter.setConfig(cfg);
             filters.put(OAUTH_CALLBACK, callbackFilter);
             filters.put(HANDLE_UNSUCCESSFUL_OAUTH, new RedirectOnFailedOAuthFilter(this.oauthUiCallback));

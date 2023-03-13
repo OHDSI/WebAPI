@@ -46,20 +46,20 @@ public class UpdateAtlasRoleFromTokenFilter extends AdviceFilter {
             Set<String> principalRoles = ((Pac4jPrincipal) principal).getProfile().getRoles();
 
             login = UserUtils.toLowerCase(login);
-            try {
-                this.authorizer.removeUserFromAllRole(login);
-                List<String> allRoleNames = StreamSupport.stream(this.authorizer.getRoles(false).spliterator(), false)
-                        .map(roleEntity -> roleEntity.getName())
-                        .collect(Collectors.toList());
-                for (String role : principalRoles) {
-                    if(!allRoleNames.contains(role))
-                        this.authorizer.addRole(role, true);
-                    this.authorizer.addUserToRole(role, login);
-                }
-            } catch (Exception e) {
-                WebUtils.toHttp(response).setHeader("x-auth-error", e.getMessage());
-                throw new Exception(e);
-            }
+//            try {
+//                this.authorizer.removeUserFromAllRole(login);
+//                List<String> allRoleNames = StreamSupport.stream(this.authorizer.getRoles(false).spliterator(), false)
+//                        .map(roleEntity -> roleEntity.getName())
+//                        .collect(Collectors.toList());
+//                for (String role : principalRoles) {
+//                    if(!allRoleNames.contains(role))
+//                        this.authorizer.addRole(role, true);
+//                    this.authorizer.addUserToRole(role, login);
+//                }
+//            } catch (Exception e) {
+//                WebUtils.toHttp(response).setHeader("x-auth-error", e.getMessage());
+//                throw new Exception(e);
+//            }
         } else {
             throw new Exception("Not principal of Pac4jPrincipal type");
         }

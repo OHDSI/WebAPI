@@ -330,6 +330,9 @@ public class AtlasRegularSecurity extends AtlasSecurity {
             oidcClient.setCallbackUrlResolver(urlResolver);
             AuthorizationGenerator authGen = (ctx, profile) -> {
                 JSONArray roles = (JSONArray)profile.getAttribute("groups");
+                if (roles == null) {
+                    return Optional.of(profile);
+                }
                 roles.forEach(role -> {
                     if(role.toString().toLowerCase().startsWith("atlas"))
                         profile.addRole(role.toString().substring(5).trim());

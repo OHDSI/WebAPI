@@ -42,7 +42,7 @@ public class UpdateAtlasRoleFromTokenFilter extends AdviceFilter {
         Object principal = principals.getPrimaryPrincipal();
 
         if (principal instanceof Pac4jPrincipal) {
-            login = ((Pac4jPrincipal) principal).getProfile().getEmail();
+            login = ((Pac4jPrincipal) principal).getProfile().getUsername();
             Set<String> principalRoles = ((Pac4jPrincipal) principal).getProfile().getRoles();
 
             login = UserUtils.toLowerCase(login);

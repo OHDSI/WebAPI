@@ -1229,7 +1229,7 @@
         <repository>
           <id>ohdsi</id>
           <name>repo.ohdsi.org</name>
-          <url>http://repo.ohdsi.org:8085/nexus/content/groups/public</url>
+          <url>http://repo.ohdsi.org:8085/nexus/content/groups/public/</url>
         </repository>
       </repositories>
     </profile>

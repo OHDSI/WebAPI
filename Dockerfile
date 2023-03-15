@@ -3,6 +3,7 @@ FROM maven:3.6-jdk-11 as builder
 WORKDIR /code
 
 ARG MAVEN_PROFILE=webapi-docker
+ARG MAVEN_PARAMS="" # can use maven options, e.g. -DskipTests=true -DskipUnitTests=true
 
 ARG OPENTELEMETRY_JAVA_AGENT_VERSION=1.17.0
 RUN curl -LSsO https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${OPENTELEMETRY_JAVA_AGENT_VERSION}/opentelemetry-javaagent.jar
@@ -18,7 +19,7 @@ ARG GIT_COMMIT_ID_ABBREV=unknown
 
 # Compile code and repackage it
 COPY src /code/src
-RUN mvn package \
+RUN mvn package ${MAVEN_PARAMS} \
     -Dgit.branch=${GIT_BRANCH} \
     -Dgit.commit.id.abbrev=${GIT_COMMIT_ID_ABBREV} \
     -P${MAVEN_PROFILE} \

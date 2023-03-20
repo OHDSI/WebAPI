@@ -8,7 +8,9 @@ pipeline {
             steps {
                 script {
                     forAllFeder8DockerRegistries {
-                        sh "./build-multi-arch.sh"
+                        withBuildxBuilder {
+                            sh "./build-multi-arch.sh"
+                        }
                     }
                 }
             }

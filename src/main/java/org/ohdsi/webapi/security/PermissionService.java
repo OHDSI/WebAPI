@@ -258,7 +258,9 @@ public class PermissionService {
             try {
                 String login = this.permissionManager.getSubjectName();
                 UserSimpleAuthorizationInfo authorizationInfo = this.permissionManager.getAuthorizationInfo(login);
-                if (!Objects.equals(authorizationInfo.getUserId(), entity.getCreatedBy().getId())) {
+                if (Objects.equals(authorizationInfo.getUserId(), entity.getCreatedBy().getId())) {
+		    hasAccess = true; // the role is the one that created the artifact
+		} else {
                     EntityType entityType = entityPermissionSchemaResolver.getEntityType(entity.getClass());
 
                     List<RoleDTO> roles = getRolesHavingPermissions(entityType, entity.getId());
@@ -283,7 +285,9 @@ public class PermissionService {
             try {
                 String login = this.permissionManager.getSubjectName();
                 UserSimpleAuthorizationInfo authorizationInfo = this.permissionManager.getAuthorizationInfo(login);
-                if (!Objects.equals(authorizationInfo.getUserId(), entity.getCreatedBy().getId())) {
+                if (Objects.equals(authorizationInfo.getUserId(), entity.getCreatedBy().getId())){
+		    hasAccess = true; // the role is the one that created the artifact
+		} else {
                     EntityType entityType = entityPermissionSchemaResolver.getEntityType(entity.getClass());
 
                     List<RoleDTO> roles = getRolesHavingReadPermissions(entityType, entity.getId());

@@ -6,8 +6,8 @@ package: compile
 
 deploy: package
 	/home/ubuntu/Downloads/apache-tomcat-8.5.84-DEV/bin/shutdown.sh 
-	mv /home/ubuntu/Downloads/apache-tomcat-8.5.84-DEV/webapps/WebAPI /tmp/WebAPI-FOLDER-`date +%m%d%H%S`
-	mv /home/ubuntu/Downloads/apache-tomcat-8.5.84-DEV/webapps/WebAPI.war /tmp/WebAPI.war-`date +%m%d%H%S`
+	mv /home/ubuntu/Downloads/apache-tomcat-8.5.84-DEV/webapps/WebAPI /mnt/disk1/webapi-dev-tmp/WebAPI-FOLDER-`date +%m%d%H%S`
+	mv /home/ubuntu/Downloads/apache-tomcat-8.5.84-DEV/webapps/WebAPI.war /mnt/disk1/webapi-dev-tmp/WebAPI.war-`date +%m%d%H%S`
 	mv target/WebAPI.war /home/ubuntu/Downloads/apache-tomcat-8.5.84-DEV/webapps/
 	/home/ubuntu/Downloads/apache-tomcat-8.5.84-DEV/bin/startup.sh
 

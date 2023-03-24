@@ -92,17 +92,22 @@ public class PermissionController {
      * @throws Exception 
      */
     @GET
-    @Path("/access/{entityType}/{entityId}")
+    @Path("/access/{entityType}/{entityId}/{role}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public List<RoleDTO> listAccessesForEntity(
             @PathParam("entityType") EntityType entityType,
-            @PathParam("entityId") Integer entityId
+            @PathParam("entityId") Integer entityId,
+	    @PathParam("role") String role
     ) throws Exception {
 
         permissionService.checkCommonEntityOwnership(entityType, entityId);
-
-        Set<String> permissionTemplates = permissionService.getTemplatesForType(entityType, AccessType.WRITE).keySet();
+	Set<String> permissionTemplates = null;
+	if (role == "WRITE") {
+	  permissionTemplates = permissionService.getTemplatesForType(entityType, AccessType.WRITE).keySet();
+	} else {
+	  permissionTemplates = permissionService.getTemplatesForType(entityType, AccessType.READ).keySet();
+	}
 
         List<String> permissions = permissionTemplates
                 .stream()

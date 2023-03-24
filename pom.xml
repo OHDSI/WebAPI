@@ -162,16 +162,16 @@
     <security.saml.sloUrl></security.saml.sloUrl>
     <security.saml.maximumAuthenticationLifetime>60</security.saml.maximumAuthenticationLifetime>
 
-    <security.auth.windows.enabled>true</security.auth.windows.enabled>
-    <security.auth.kerberos.enabled>true</security.auth.kerberos.enabled>
+    <security.auth.windows.enabled>false</security.auth.windows.enabled>
+    <security.auth.kerberos.enabled>false</security.auth.kerberos.enabled>
     <security.auth.openid.enabled>true</security.auth.openid.enabled>
-    <security.auth.facebook.enabled>true</security.auth.facebook.enabled>
-    <security.auth.github.enabled>true</security.auth.github.enabled>
-    <security.auth.google.enabled>true</security.auth.google.enabled>
+    <security.auth.facebook.enabled>false</security.auth.facebook.enabled>
+    <security.auth.github.enabled>false</security.auth.github.enabled>
+    <security.auth.google.enabled>false</security.auth.google.enabled>
     <security.auth.jdbc.enabled>true</security.auth.jdbc.enabled>
-    <security.auth.ldap.enabled>true</security.auth.ldap.enabled>
-    <security.auth.ad.enabled>true</security.auth.ad.enabled>
-    <security.auth.cas.enabled>true</security.auth.cas.enabled>
+    <security.auth.ldap.enabled>false</security.auth.ldap.enabled>
+    <security.auth.ad.enabled>false</security.auth.ad.enabled>
+    <security.auth.cas.enabled>false</security.auth.cas.enabled>
 
     <spring.datasource.hikari.connection-test-query>SELECT 1</spring.datasource.hikari.connection-test-query>
     <spring.datasource.hikari.connection-test-query-timeout>2000</spring.datasource.hikari.connection-test-query-timeout>

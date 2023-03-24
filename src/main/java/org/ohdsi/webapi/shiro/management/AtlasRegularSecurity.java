@@ -330,6 +330,9 @@ public class AtlasRegularSecurity extends AtlasSecurity {
             oidcClient.setCallbackUrlResolver(urlResolver);
             AuthorizationGenerator authGen = (ctx, profile) -> {
                 JSONArray roles = (JSONArray)profile.getAttribute("groups");
+                if (roles == null) {
+                    return Optional.of(profile);
+                }
                 roles.forEach(role -> {
                     if(role.toString().toLowerCase().startsWith("atlas"))
                         profile.addRole(role.toString().substring(5).trim());
@@ -381,6 +384,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
             }
 
             CallbackFilter callbackFilter = new CallbackFilter();
+            callbackFilter.setCallbackLogic(new Feder8CallbackLogic());
             callbackFilter.setConfig(cfg);
             filters.put(OAUTH_CALLBACK, callbackFilter);
             filters.put(HANDLE_UNSUCCESSFUL_OAUTH, new RedirectOnFailedOAuthFilter(this.oauthUiCallback));

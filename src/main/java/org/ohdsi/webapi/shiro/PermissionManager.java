@@ -41,6 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Transactional
 public class PermissionManager {
 
+  private static final String ADMIN_LOGIN = "admin";
   @Autowired
   private UserRepository userRepository;
 
@@ -187,6 +188,12 @@ public class PermissionManager {
           this.addUser(user, defaultRole, null);
         }
       }
+    }
+
+    if (login.equals(ADMIN_LOGIN)) {
+      RoleEntity role = this.getSystemRoleByName("admin");
+      if (role != null)
+        this.addUser(user, role, null);
     }
 
     user = userRepository.findOne(user.getId());

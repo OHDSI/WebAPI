@@ -94,8 +94,8 @@ CREATE TABLE ${ohdsiSchema}.tags
     description          VARCHAR(MAX)                  NULL,
     created_by_id        INTEGER,
     created_date         DATETIME NOT NULL DEFAULT SYSDATETIMEOFFSET(),
-    modified_by_id       INTEGER,
-    modified_date        TIMESTAMP,
+    modified_by_id       DATETIME,
+    modified_date        DATETIME,
     CONSTRAINT pk_tags_id PRIMARY KEY (id),
     CONSTRAINT fk_tags_sec_user_creator FOREIGN KEY (created_by_id) REFERENCES ${ohdsiSchema}.sec_user (id),
     CONSTRAINT fk_tags_sec_user_updater FOREIGN KEY (modified_by_id) REFERENCES ${ohdsiSchema}.sec_user (id)

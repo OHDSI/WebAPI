@@ -66,10 +66,10 @@ WHERE sp.value IN (
 CREATE TABLE ${ohdsiSchema}.cohort_version
 (
     asset_id      INT                     NOT NULL,
-    comment       varchar                  NULL,
-    description   varchar                  NULL,
+    comment       VARCHAR(MAX)                  NULL,
+    description   VARCHAR(MAX)                  NULL,
     version       INT                     NOT NULL DEFAULT 1,
-    asset_json    varchar                  NOT NULL,
+    asset_json    VARCHAR(MAX)                  NOT NULL,
     archived      BIT                     NOT NULL DEFAULT 0,
     created_by_id INTEGER,
     created_date  DATETIME  NOT NULL DEFAULT (SYSDATETIMEOFFSET()),
@@ -84,9 +84,9 @@ CREATE INDEX cohort_version_asset_idx ON ${ohdsiSchema}.cohort_version (asset_id
 CREATE TABLE ${ohdsiSchema}.cohort_characterization_version
 (
     asset_id      bigint                     NOT NULL,
-    comment       varchar                  NULL,
+    comment       VARCHAR(MAX)                  NULL,
     version       INT                     NOT NULL DEFAULT 1,
-    asset_json    varchar                  NOT NULL,
+    asset_json    VARCHAR(MAX)                  NOT NULL,
     archived      BIT                     NOT NULL DEFAULT 0,
     created_by_id INTEGER,
     created_date  DATETIME NOT NULL DEFAULT (SYSDATETIMEOFFSET()),
@@ -101,9 +101,9 @@ CREATE INDEX cc_version_asset_idx ON ${ohdsiSchema}.cohort_characterization_vers
 CREATE TABLE ${ohdsiSchema}.concept_set_version
 (
     asset_id      INT                     NOT NULL,
-    comment       varchar                  NULL,
+    comment       VARCHAR(MAX)                  NULL,
     version       INT                     NOT NULL DEFAULT 1,
-    asset_json    varchar                  NOT NULL,
+    asset_json    VARCHAR(MAX)                  NOT NULL,
     archived      BIT                     NOT NULL DEFAULT 0,
     created_by_id INTEGER,
     created_date  DATETIME NOT NULL DEFAULT (SYSDATETIMEOFFSET()),
@@ -118,10 +118,10 @@ CREATE INDEX concept_set_version_asset_idx ON ${ohdsiSchema}.concept_set_version
 CREATE TABLE ${ohdsiSchema}.ir_version
 (
     asset_id      INT                     NOT NULL,
-    comment       varchar                  NULL,
-    description   varchar                  NULL,
+    comment       VARCHAR(MAX)                  NULL,
+    description   VARCHAR(MAX)                  NULL,
     version       INT                     NOT NULL DEFAULT 1,
-    asset_json    varchar                  NOT NULL,
+    asset_json    VARCHAR(MAX)                  NOT NULL,
     archived      BIT                     NOT NULL DEFAULT 0,
     created_by_id INTEGER,
     created_date  DATETIME NOT NULL DEFAULT (SYSDATETIMEOFFSET()),
@@ -136,9 +136,9 @@ CREATE INDEX ir_version_asset_idx ON ${ohdsiSchema}.ir_version (asset_id);
 CREATE TABLE ${ohdsiSchema}.pathway_version
 (
     asset_id      INT                     NOT NULL,
-    comment       varchar                  NULL,
+    comment       VARCHAR(MAX)                  NULL,
     version       INT                     NOT NULL DEFAULT 1,
-    asset_json    varchar                  NOT NULL,
+    asset_json    VARCHAR(MAX)                  NOT NULL,
     archived      BIT                     NOT NULL DEFAULT 0,
     created_by_id INTEGER,
     created_date  DATETIME NOT NULL DEFAULT (SYSDATETIMEOFFSET()),

@@ -40,7 +40,7 @@ ENV CLASSPATH=""
 # Default Java options. The first entry is a fix for when java reads secure random numbers:
 # in a containerized system using /dev/random may reduce entropy too much, causing slowdowns.
 # https://ruleoftech.com/2016/avoiding-jvm-delays-caused-by-random-number-generation
-ENV DEFAULT_JAVA_OPTS="-Djava.security.egd=file:///dev/./urandom"
+ENV DEFAULT_JAVA_OPTS="-Djava.security.egd=file:///dev/./urandom -Djdk.tls.allowUnsafeServerCertChange=true -Dsun.security.ssl.allowUnsafeRenegotiation=true"
 
 # set working directory to a fixed WebAPI directory
 WORKDIR /var/lib/ohdsi/webapi

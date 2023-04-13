@@ -1322,15 +1322,17 @@
           lower(email) = lower(?)</security.db.datasource.authenticationQuery>
       </properties>
       <repositories>
-        <repository>
-          <id>central</id>
-          <url>https://repo.maven.apache.org/maven2</url>
-        </repository>
-        <repository>
-          <id>ohdsi</id>
-          <name>repo.ohdsi.org</name>
-          <url>http://repo.ohdsi.org:8085/nexus/content/groups/public</url>
-        </repository>
+	<repository>
+          <id>ohdsi.snapshots</id>
+          <name>repo.ohdsi.org-snapshots</name>
+          <url>https://repo.ohdsi.org/nexus/content/repositories/snapshots</url>
+          <releases>
+            <enabled>false</enabled>
+          </releases>
+      	  <snapshots>
+            <enabled>true</enabled>
+      	  </snapshots>
+    	</repository>
       </repositories>
     </profile>
     <profile>

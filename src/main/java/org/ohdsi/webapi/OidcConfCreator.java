@@ -59,6 +59,10 @@ public class OidcConfCreator {
         conf.setLogoutUrl(logoutUrl);
         conf.setWithState(true);
         conf.setUseNonce(true);
+        
+        if (customParams != null) {
+            customParams.forEach(conf::addCustomParam);
+        }
 
         String scopes = "openid";
         if (extraScopes != null && !extraScopes.isEmpty()){

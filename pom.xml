@@ -101,6 +101,7 @@
     <security.oid.url></security.oid.url>
     <security.oid.logoutUrl></security.oid.logoutUrl>
     <security.oid.extraScopes></security.oid.extraScopes>
+    <security.oid.customParams>{:}</security.oid.customParams>
     <security.oid.redirectUrl>http://localhost/index.html#/welcome/</security.oid.redirectUrl>
     <security.kerberos.spn></security.kerberos.spn>
     <security.kerberos.keytabPath></security.kerberos.keytabPath>

@@ -8,7 +8,7 @@ FROM (
 	SELECT analysis_id, stratum_1, stratum_2, count_value
 	FROM @results_database_schema.achilles_results
 	WHERE analysis_id = 602
-	GROUP BY stratum_1, stratum_2, count_value
+	GROUP BY analysis_id, stratum_1, stratum_2, count_value
 ) num
 INNER JOIN (
 	SELECT stratum_1, count_value

@@ -13,7 +13,7 @@ SELECT
         5)                                                               AS y_prevalence_1000_pp --prevalence, per 1000 persons
 FROM (
        SELECT
-         num.analysis_id   AS num_analysis_id
+         num.analysis_id   AS num_analysis_id,
          num.stratum_1     AS num_stratum_1,
          num.stratum_2     AS num_stratum_2,
          num.stratum_3     AS num_stratum_3,

@@ -76,9 +76,8 @@ WITH counts AS (
 ), counts_person AS (
   SELECT stratum_1 as concept_id, MAX (count_value) agg_count_value
   FROM @results_schema.achilles_results
-  WHERE analysis_id IN (40, 200, 240, 400, 440, 540, 600, 640, 700, 740, 800, 840, 900, 1000, 1300, 1340, 1800, 1840, 2100, 2140, 2200)
+  WHERE analysis_id IN (200, 240, 400, 440, 540, 600, 640, 700, 740, 800, 840, 900, 1000, 1300, 1340, 1800, 1840, 2100, 2140, 2200)
     /* analyses:
-        Number of all persons by year of birth by gender, by gender_source_concept_id
         Number of persons with at least one visit occurrence, by visit_concept_id
         Number of persons with at least one visit occurrence, by visit_source_concept_id
         Number of persons with at least one condition occurrence, by condition_concept_id

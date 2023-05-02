@@ -76,18 +76,27 @@ WITH counts AS (
 ), counts_person AS (
   SELECT stratum_1 as concept_id, MAX (count_value) agg_count_value
   FROM @results_schema.achilles_results
-  WHERE analysis_id IN (200, 400, 600, 700, 800, 900, 1000, 1300, 1800, 2100, 2200)
+  WHERE analysis_id IN (200, 240, 400, 440, 540, 600, 640, 700, 740, 800, 840, 900, 1000, 1300, 1340, 1800, 1840, 2100, 2140, 2200)
     /* analyses:
         Number of persons with at least one visit occurrence, by visit_concept_id
+        Number of persons with at least one visit occurrence, by visit_source_concept_id
         Number of persons with at least one condition occurrence, by condition_concept_id
+        Number of persons with at least one condition occurrence, by condition_source_concept_id
+        Number of persons with death, by cause_source_concept_id
         Number of persons with at least one procedure occurrence, by procedure_concept_id
+        Number of persons with at least one procedure occurrence, by procedure_source_concept_id
         Number of persons with at least one drug exposure, by drug_concept_id
+        Number of persons with at least one drug exposure, by drug_source_concept_id
         Number of persons with at least one observation occurrence, by observation_concept_id
+        Number of persons with at least one observation occurrence, by observation_source_concept_id
         Number of persons with at least one drug era, by drug_concept_id
         Number of persons with at least one condition era, by condition_concept_id
         Number of persons with at least one visit detail, by visit_detail_concept_id
+        Number of persons with at least one visit detail, by visit_detail_source_concept_id
         Number of persons with at least one measurement occurrence, by measurement_concept_id
+        Number of persons with at least one measurement occurrence, by measurement_source_concept_id
         Number of persons with at least one device exposure, by device_concept_id
+        Number of persons with at least one device exposure, by device_source_concept_id
         Number of persons with at least one note by  note_type_concept_id
     */
   GROUP BY stratum_1

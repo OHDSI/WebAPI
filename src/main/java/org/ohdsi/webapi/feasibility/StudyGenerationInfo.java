@@ -139,4 +139,8 @@ public class StudyGenerationInfo implements Serializable {
   public Source getSource() {
     return source;
   }
+
+  public void setFeasibilityStudy(FeasibilityStudy feasibilityStudy) {
+      this.study = feasibilityStudy;
+  }
 }

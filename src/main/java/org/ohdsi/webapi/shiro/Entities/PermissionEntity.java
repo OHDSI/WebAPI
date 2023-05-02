@@ -78,4 +78,15 @@ public class PermissionEntity implements Serializable {
   public void setRolePermissions(Set<RolePermissionEntity> rolePermissions) {
     this.rolePermissions = rolePermissions;
   }
+
+  public void addRolePermissionEntity(RolePermissionEntity rolePermissionEntity) {
+    this.rolePermissions.add(rolePermissionEntity);
+    rolePermissionEntity.setPermission(this);
+  }
+
+  public void removeRolePermissionEntity(RolePermissionEntity rolePermissionEntity) {
+    this.rolePermissions.remove(rolePermissionEntity);
+    rolePermissionEntity.setPermission(null);
+  }
+
 }

@@ -19,8 +19,10 @@ WHERE vo1.visit_start_date>=c1.cohort_start_date and vo1.visit_end_date<=c1.coho
 --}
 group by c1.cohort_definition_id,
 --{@CDM_version == '4'}?{
-vo1.place_of_service_CONCEPT_ID;
+vo1.place_of_service_CONCEPT_ID
 --}
 --{@CDM_version == '5'}?{
-vo1.visit_CONCEPT_ID;
+vo1.visit_CONCEPT_ID
 --}
+/* This comment needed to bypass bug in Spark rendering */
+;

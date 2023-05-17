@@ -79,7 +79,7 @@ jobs:
       - name: Set build parameters
         id: build_params
         run: |
-          echo "::set-output name=sha8::${GITHUB_SHA::8}"
+          echo "sha8=${GITHUB_SHA::8}" >> $GITHUB_OUTPUT
 
       - name: Build and push
         id: docker_build

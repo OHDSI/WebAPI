@@ -17,8 +17,9 @@ CREATE TABLE @results_schema.achilles_result_concept_count
 /**********************************************/
 /***** Populate record/person count table *****/
 /**********************************************/
+IF OBJECT_ID('tempdb.#tmp_counts', 'U') IS NOT NULL DROP TABLE #tmp_counts;
 WITH counts AS (
-  SELECT stratum_1 concept_id, MAX (count_value) agg_count_value
+  SELECT stratum_1 AS concept_id, MAX (count_value) AS agg_count_value
   FROM @results_schema.achilles_results
   WHERE analysis_id IN (2, 4, 5, 201, 225, 301, 325, 401, 425, 501, 505, 525, 601, 625, 701, 725, 801, 825,
     826, 827, 901, 1001, 1201, 1203, 1425, 1801, 1825, 1826, 1827, 2101, 2125, 2301)
@@ -58,7 +59,7 @@ WITH counts AS (
     */
   GROUP BY stratum_1
   UNION ALL
-  SELECT stratum_2 concept_id, SUM (count_value) AS agg_count_value
+  SELECT stratum_2 AS concept_id, SUM (count_value) AS agg_count_value
   FROM @results_schema.achilles_results
   WHERE analysis_id IN (405, 605, 705, 805, 807, 1805, 1807, 2105)
     /* analyses:
@@ -73,8 +74,15 @@ WITH counts AS (
         but this subquery only gets the type or unit concept_ids, i.e., stratum_2
     */
   GROUP BY stratum_2
-), counts_person AS (
-  SELECT stratum_1 as concept_id, MAX (count_value) agg_count_value
+)
+SELECT concept_id,
+  agg_count_value
+INTO #tmp_counts
+FROM counts;
+
+IF OBJECT_ID('tempdb.#tmp_counts_person', 'U') IS NOT NULL DROP TABLE #tmp_counts_person;
+WITH counts_person AS (
+  SELECT stratum_1 AS concept_id, MAX (count_value) AS agg_count_value
   FROM @results_schema.achilles_results
   WHERE analysis_id IN (200, 240, 400, 440, 540, 600, 640, 700, 740, 800, 840, 900, 1000, 1300, 1340, 1800, 1840, 2100, 2140, 2200)
     /* analyses:
@@ -100,28 +108,44 @@ WITH counts AS (
         Number of persons with at least one note by  note_type_concept_id
     */
   GROUP BY stratum_1
-), concepts AS (
+)
+SELECT concept_id,
+  agg_count_value
+INTO #tmp_counts_person
+FROM counts_person;
+
+IF OBJECT_ID('tempdb.#tmp_concepts', 'U') IS NOT NULL DROP TABLE #tmp_concepts;
+WITH concepts AS (
   select concept_id as ancestor_id, coalesce(cast(ca.descendant_concept_id as varchar(50)), concept_id) as descendant_id
   from (
-    select concept_id from counts
+    select concept_id from #tmp_counts
     UNION
     -- include any ancestor concept that has a descendant in counts
     select distinct cast(ancestor_concept_id as varchar(50)) concept_id
-    from counts c
+    from #tmp_counts c
     join @vocab_schema.concept_ancestor ca on cast(ca.descendant_concept_id as varchar(50)) = c.concept_id
   ) c
   left join @vocab_schema.concept_ancestor ca on c.concept_id = cast(ca.ancestor_concept_id as varchar(50))
 )
+SELECT ancestor_id,
+  descendant_id
+INTO #tmp_concepts
+FROM concepts;
+
 INSERT INTO @results_schema.achilles_result_concept_count (concept_id, record_count, descendant_record_count, person_count, descendant_person_count)
-SELECT
-    cast(concepts.ancestor_id as int) concept_id,
-    coalesce(max(c1.agg_count_value), 0) record_count,
-    coalesce(sum(c2.agg_count_value), 0) descendant_record_count,
-    coalesce(max(c3.agg_count_value), 0) person_count,
-    coalesce(sum(c4.agg_count_value), 0) descendant_person_count
-FROM concepts
-         LEFT JOIN counts c1 ON concepts.ancestor_id = c1.concept_id
-         LEFT JOIN counts c2 ON concepts.descendant_id = c2.concept_id
-         LEFT JOIN counts_person c3 ON concepts.ancestor_id = c3.concept_id
-         LEFT JOIN counts_person c4 ON concepts.descendant_id = c4.concept_id
+SELECT DISTINCT
+    cast(concepts.ancestor_id as int) AS concept_id,
+    coalesce(max(c1.agg_count_value), 0) AS record_count,
+    coalesce(sum(c2.agg_count_value), 0) AS descendant_record_count,
+    coalesce(max(c3.agg_count_value), 0) AS person_count,
+    coalesce(sum(c4.agg_count_value), 0) AS descendant_person_count
+FROM #tmp_concepts concepts
+         LEFT JOIN #tmp_counts c1 ON concepts.ancestor_id = c1.concept_id
+         LEFT JOIN #tmp_counts c2 ON concepts.descendant_id = c2.concept_id
+         LEFT JOIN #tmp_counts_person c3 ON concepts.ancestor_id = c3.concept_id
+         LEFT JOIN #tmp_counts_person c4 ON concepts.descendant_id = c4.concept_id
 GROUP BY concepts.ancestor_id;
+
+IF OBJECT_ID('tempdb.#tmp_counts', 'U') IS NOT NULL DROP TABLE #tmp_counts;
+IF OBJECT_ID('tempdb.#tmp_counts_person', 'U') IS NOT NULL DROP TABLE #tmp_counts_person;
+IF OBJECT_ID('tempdb.#tmp_concepts', 'U') IS NOT NULL DROP TABLE #tmp_concepts;

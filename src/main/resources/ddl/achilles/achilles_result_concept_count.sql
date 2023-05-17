@@ -17,7 +17,7 @@ CREATE TABLE @results_schema.achilles_result_concept_count
 /**********************************************/
 /***** Populate record/person count table *****/
 /**********************************************/
-DROP TABLE IF EXISTS #tmp_counts;
+IF OBJECT_ID('tempdb.#tmp_counts', 'U') IS NOT NULL DROP TABLE #tmp_counts;
 WITH counts AS (
   SELECT stratum_1 AS concept_id, MAX (count_value) AS agg_count_value
   FROM @results_schema.achilles_results
@@ -80,7 +80,7 @@ SELECT concept_id,
 INTO #tmp_counts
 FROM counts;
 
-DROP TABLE IF EXISTS #tmp_counts_person;
+IF OBJECT_ID('tempdb.#tmp_counts_person', 'U') IS NOT NULL DROP TABLE #tmp_counts_person;
 WITH counts_person AS (
   SELECT stratum_1 AS concept_id, MAX (count_value) AS agg_count_value
   FROM @results_schema.achilles_results
@@ -114,7 +114,7 @@ SELECT concept_id,
 INTO #tmp_counts_person
 FROM counts_person;
 
-DROP TABLE IF EXISTS #tmp_concepts;
+IF OBJECT_ID('tempdb.#tmp_concepts', 'U') IS NOT NULL DROP TABLE #tmp_concepts;
 WITH concepts AS (
   select concept_id as ancestor_id, coalesce(cast(ca.descendant_concept_id as varchar(50)), concept_id) as descendant_id
   from (
@@ -146,6 +146,6 @@ FROM #tmp_concepts concepts
          LEFT JOIN #tmp_counts_person c4 ON concepts.descendant_id = c4.concept_id
 GROUP BY concepts.ancestor_id;
 
-DROP TABLE IF EXISTS #tmp_counts;
-DROP TABLE IF EXISTS #tmp_counts_person;
-DROP TABLE IF EXISTS #tmp_concepts;
+IF OBJECT_ID('tempdb.#tmp_counts', 'U') IS NOT NULL DROP TABLE #tmp_counts;
+IF OBJECT_ID('tempdb.#tmp_counts_person', 'U') IS NOT NULL DROP TABLE #tmp_counts_person;
+IF OBJECT_ID('tempdb.#tmp_concepts', 'U') IS NOT NULL DROP TABLE #tmp_concepts;

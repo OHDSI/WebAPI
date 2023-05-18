@@ -85,8 +85,8 @@ public class PreparedSqlRender {
 		} else if (sourceDialect.equals(DBMSType.MS_SQL_SERVER.getOhdsiDB()) || sourceDialect.equals(DBMSType.PDW.getOhdsiDB())) {
 			returnVal = 2000;
 		} else if (sourceDialect.equals(DBMSType.BIGQUERY.getOhdsiDB())) {
-            returnVal = 10000;
-        }
+			returnVal = 10000;
+		}
 		return returnVal;
 	}
 }

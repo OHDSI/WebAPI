@@ -12,6 +12,7 @@ import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.ldap.support.LdapEncoder;
 import org.springframework.ldap.support.LdapUtils;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -40,36 +41,16 @@ public abstract class AbstractLdapProvider implements LdapProvider {
   }
 
   private String encodeSearchString(String searchString) {
-    // encode search string without encoding wildcards
-    if (searchString == null) {
-      return null;
-    }
-    char wildcard = '*';
-    List<Integer> wildcardIndexes = IntStream.range(0, searchString.length())
-            .filter(i -> searchString.charAt(i) == wildcard).boxed()
-            .collect(Collectors.toList());
-    StringBuffer buff = new StringBuffer();
-    if (wildcardIndexes.isEmpty()) {
-      buff.append(LdapEncoder.filterEncode(searchString));
-    } else {
-      int previousWildcardIndex = -1;
-      for (int i = 0; i <= wildcardIndexes.size() - 1; i++) {
-        int wildcardIndex = wildcardIndexes.get(i);
-        if (wildcardIndex > previousWildcardIndex + 1 ) {
-          String substring = searchString.substring(previousWildcardIndex + 1, wildcardIndex);
-          buff.append(LdapEncoder.filterEncode(substring));
-        }
-        buff.append(wildcard);
-        // last wildcard in the string but not trailing
-        if (i == wildcardIndexes.size() - 1 && wildcardIndex < searchString.length() - 1) {
-          String substring = searchString.substring(wildcardIndex + 1, searchString.length());
-          buff.append(LdapEncoder.filterEncode(substring));
-        }
-        previousWildcardIndex = wildcardIndex;
-      }
-    }
+    String wildCard = "*";
 
-    return buff.toString();
+    if (searchString.isEmpty() || wildCard.equals(searchString)) return searchString; // nothing to encode
+
+    List<String> tokens = Arrays.asList(StringUtils.split(searchString, wildCard));
+    tokens.replaceAll(LdapEncoder::filterEncode);
+    String encodedSearchString = (searchString.startsWith(wildCard) ? wildCard : "") +
+            StringUtils.join(tokens, wildCard) +
+            (searchString.endsWith(wildCard) ? wildCard : "");
+    return encodedSearchString;
   }
 
   @Override

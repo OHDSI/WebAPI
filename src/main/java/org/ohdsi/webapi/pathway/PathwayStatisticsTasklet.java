@@ -31,6 +31,7 @@ import java.util.concurrent.FutureTask;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import org.ohdsi.sql.SqlRender;
 import org.ohdsi.webapi.common.generation.CancelableTasklet;
 import org.ohdsi.webapi.util.PreparedStatementRendererCreator;
 import org.springframework.jdbc.core.PreparedStatementCreator;
@@ -170,6 +171,10 @@ public class PathwayStatisticsTasklet extends CancelableTasklet {
 	private int[] savePaths(Source source, Long generationId) throws SQLException {
 		String sql = SAVE_PATHS_SQL;
 		if (source.getSourceDialect().equals("spark")) {
+			sql = SqlRender.renderSql(sql, 
+							new String[]{"target_database_schema", GENERATION_ID}, 
+							new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results), generationId.toString()}
+			);
 			sql = BigQuerySparkTranslate.sparkHandleInsert(sql, source.getSourceConnection());
 		}
 

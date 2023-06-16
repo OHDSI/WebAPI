@@ -953,6 +953,17 @@
     </dependency>
     <dependency>
       <groupId>org.pac4j</groupId>
+      <artifactId>pac4j-http</artifactId>
+      <version>${pac4j.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.pac4j</groupId>
       <artifactId>pac4j-saml-opensamlv3</artifactId>
       <version>${pac4j.version}</version>
     </dependency>

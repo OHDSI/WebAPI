@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.odysseusinc.arachne.commons.types.DBMSType;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.source.Source;
 
@@ -77,11 +79,13 @@ public class PreparedSqlRender {
 	public static int getParameterLimit(Source source) {
 		int returnVal = 30000;
 		String sourceDialect = source.getSourceDialect().toLowerCase();
-		
-		if (sourceDialect.equals("oracle")) {
+
+		if (sourceDialect.equals(DBMSType.ORACLE.getOhdsiDB())) {
 			returnVal = 990;
-		} else if (sourceDialect.equals("sql server") || sourceDialect.equals("pdw")) {
+		} else if (sourceDialect.equals(DBMSType.MS_SQL_SERVER.getOhdsiDB()) || sourceDialect.equals(DBMSType.PDW.getOhdsiDB())) {
 			returnVal = 2000;
+		} else if (sourceDialect.equals(DBMSType.BIGQUERY.getOhdsiDB())) {
+			returnVal = 10000;
 		}
 		return returnVal;
 	}

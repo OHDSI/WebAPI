@@ -53,7 +53,7 @@ public class DataAccessConfig {
         properties.setProperty("hibernate.generate_statistics", this.env.getProperty("spring.jpa.properties.hibernate.generate_statistics"));
         properties.setProperty("hibernate.jdbc.batch_size", this.env.getProperty("spring.jpa.properties.hibernate.jdbc.batch_size"));
         properties.setProperty("hibernate.order_inserts", this.env.getProperty("spring.jpa.properties.hibernate.order_inserts"));
-        properties.setProperty("hibernate.id.new_generator_mappings", "false");
+        properties.setProperty("hibernate.id.new_generator_mappings", "true");
         return properties;
     }
       

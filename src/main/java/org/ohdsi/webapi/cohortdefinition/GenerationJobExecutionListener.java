@@ -40,98 +40,117 @@ import java.util.Map;
 import java.util.Objects;
 
 import static org.ohdsi.webapi.Constants.Params.TARGET_DATABASE_SCHEMA;
+import org.springframework.batch.core.ExitStatus;
 
 /**
  * @author cknoll1
  */
 public class GenerationJobExecutionListener implements JobExecutionListener {
-    private static final Logger log = LoggerFactory.getLogger(GenerationJobExecutionListener.class);
-    private final SourceService sourceService;
-    private final CohortDefinitionRepository cohortDefinitionRepository;
-    private final TransactionTemplate transactionTemplate;
-    private final JdbcTemplate sourceTemplate;
 
-    public GenerationJobExecutionListener(SourceService sourceService,
-                                          CohortDefinitionRepository cohortDefinitionRepository,
-                                          TransactionTemplate transactionTemplate,
-                                          JdbcTemplate sourceTemplate) {
-        this.sourceService = sourceService;
-        this.cohortDefinitionRepository = cohortDefinitionRepository;
-        this.transactionTemplate = transactionTemplate;
-        this.sourceTemplate = sourceTemplate;
-    }
+	private static final Logger log = LoggerFactory.getLogger(GenerationJobExecutionListener.class);
+	private final SourceService sourceService;
+	private final CohortDefinitionRepository cohortDefinitionRepository;
+	private final TransactionTemplate transactionTemplate;
+	private final JdbcTemplate sourceTemplate;
 
-    private CohortGenerationInfo findBySourceId(CohortDefinition df, Integer sourceId) {
-        return df.getGenerationInfoList().stream()
-                .filter(info -> info.getId().getSourceId().equals(sourceId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException(String.format("Cannot find cohortGenerationInfo for cohortDefinition[{}] sourceId[%s]", df.getId(), sourceId)));
-    }
+	public GenerationJobExecutionListener(SourceService sourceService,
+					CohortDefinitionRepository cohortDefinitionRepository,
+					TransactionTemplate transactionTemplate,
+					JdbcTemplate sourceTemplate) {
+		this.sourceService = sourceService;
+		this.cohortDefinitionRepository = cohortDefinitionRepository;
+		this.transactionTemplate = transactionTemplate;
+		this.sourceTemplate = sourceTemplate;
+	}
 
-    @Override
-    public void afterJob(JobExecution je) {
+	private CohortGenerationInfo findBySourceId(CohortDefinition df, Integer sourceId) {
+		return df.getGenerationInfoList().stream()
+						.filter(info -> info.getId().getSourceId().equals(sourceId))
+						.findFirst()
+						.orElseThrow(() -> new IllegalStateException(String.format("Cannot find cohortGenerationInfo for cohortDefinition[{}] sourceId[%s]", df.getId(), sourceId)));
+	}
 
-        JobParameters jobParams = je.getJobParameters();
-        Integer defId = Integer.valueOf(jobParams.getString("cohort_definition_id"));
-        Integer sourceId = Integer.valueOf(jobParams.getString("source_id"));
-        Source source = sourceService.findBySourceId(sourceId);
-        String cohortTable = jobParams.getString(TARGET_DATABASE_SCHEMA) + ".cohort";
+	@Override
+	public void afterJob(JobExecution je) {
 
-        DefaultTransactionDefinition completeTx = new DefaultTransactionDefinition();
-        completeTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-        TransactionStatus completeStatus = this.transactionTemplate.getTransactionManager().getTransaction(completeTx);
-        CohortDefinition df = this.cohortDefinitionRepository.findOne(defId);
-        CohortGenerationInfo info = findBySourceId(df, sourceId);
-        setExecutionDurationIfPossible(je, info);
-        info.setStatus(GenerationStatus.COMPLETE);
+		JobParameters jobParams = je.getJobParameters();
+		Integer defId = Integer.valueOf(jobParams.getString("cohort_definition_id"));
+		Integer sourceId = Integer.valueOf(jobParams.getString("source_id"));
+		String cohortTable = jobParams.getString(TARGET_DATABASE_SCHEMA) + ".cohort";
 
-        if (je.getStatus() == BatchStatus.FAILED || je.getStatus() == BatchStatus.STOPPED) {
-            info.setIsValid(false);
-            info.setRecordCount(null);
-            info.setPersonCount(null);
-            info.setCanceled(je.getStepExecutions().stream().anyMatch(se -> Objects.equals(Constants.CANCELED, se.getExitStatus().getExitCode())));
-            info.setFailMessage(StringUtils.abbreviateMiddle(je.getAllFailureExceptions().get(0).getMessage(), "... [truncated] ...", 2000));
-        } else {
-            info.setIsValid(true);
-            info.setFailMessage(null);
+		DefaultTransactionDefinition completeTx = new DefaultTransactionDefinition();
+		completeTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+		TransactionStatus completeStatus = this.transactionTemplate.getTransactionManager().getTransaction(completeTx);
 
-            // query summary results from source
-            String statsQuery = "SELECT count(distinct subject_id) as person_count, count(*) as record_count from @cohort_table where cohort_definition_id = @cohort_definition_id";
-            String statsSql = SqlTranslate.translateSql(statsQuery, source.getSourceDialect(), null, null);
-            String renderedSql = SqlRender.renderSql(statsSql, new String[]{"cohort_table", "cohort_definition_id"}, new String[]{cohortTable, defId.toString()});
-            Map<String, Object> stats = this.sourceTemplate.queryForMap(renderedSql);
-            info.setPersonCount(Long.parseLong(stats.get("person_count").toString()));
-            info.setRecordCount(Long.parseLong(stats.get("record_count").toString()));
-        }
+		try {
+			Source source = sourceService.findBySourceId(sourceId);
+			CohortDefinition df = this.cohortDefinitionRepository.findOne(defId);
+			CohortGenerationInfo info = findBySourceId(df, sourceId);
+			setExecutionDurationIfPossible(je, info);
+			info.setStatus(GenerationStatus.COMPLETE);
 
-        this.cohortDefinitionRepository.save(df);
-        this.transactionTemplate.getTransactionManager().commit(completeStatus);
-    }
+			if (je.getStatus() == BatchStatus.FAILED || je.getStatus() == BatchStatus.STOPPED) {
+				info.setIsValid(false);
+				info.setRecordCount(null);
+				info.setPersonCount(null);
+				info.setCanceled(je.getStepExecutions().stream().anyMatch(se -> Objects.equals(Constants.CANCELED, se.getExitStatus().getExitCode())));
+				info.setFailMessage(StringUtils.abbreviateMiddle(je.getAllFailureExceptions().get(0).getMessage(), "... [truncated] ...", 2000));
+			} else {
+				info.setIsValid(true);
+				info.setFailMessage(null);
 
-    private void setExecutionDurationIfPossible(JobExecution je, CohortGenerationInfo info) {
-        if (Objects.isNull(je.getEndTime()) || Objects.isNull(je.getStartTime())) {
-            log.error("Cannot set duration time for cohortGenerationInfo[{}]. startData[{}] and endData[{}] cannot be empty.", info.getId(), je.getStartTime(), je.getEndTime());
-            return;
-        }
-        info.setExecutionDuration((int) (je.getEndTime().getTime() - je.getStartTime().getTime()));
-    }
+				// query summary results from source
+				String statsQuery = "SELECT count(distinct subject_id) as person_count, count(*) as record_count from @cohort_table where cohort_definition_id = @cohort_definition_id";
+				String statsSql = SqlTranslate.translateSql(statsQuery, source.getSourceDialect(), null, null);
+				String renderedSql = SqlRender.renderSql(statsSql, new String[]{"cohort_table", "cohort_definition_id"}, new String[]{cohortTable, defId.toString()});
+				Map<String, Object> stats = this.sourceTemplate.queryForMap(renderedSql);
+				info.setPersonCount(Long.parseLong(stats.get("person_count").toString()));
+				info.setRecordCount(Long.parseLong(stats.get("record_count").toString()));
+			}
 
-    @Override
-    public void beforeJob(JobExecution je) {
-        Date startTime = Calendar.getInstance().getTime();
-        JobParameters jobParams = je.getJobParameters();
-        Integer defId = Integer.valueOf(jobParams.getString("cohort_definition_id"));
-        Integer sourceId = Integer.valueOf(jobParams.getString("source_id"));
+			this.cohortDefinitionRepository.save(df);
+			this.transactionTemplate.getTransactionManager().commit(completeStatus);
+		} catch (Exception e) {
+			this.transactionTemplate.getTransactionManager().rollback(completeStatus);
+			log.error(e.getMessage());
+			je.addFailureException(e);
+			je.setExitStatus(new ExitStatus("FAILED", "Could not complete cohort generation job"));
+			je.setStatus(BatchStatus.FAILED);
+		}
+	}
 
-        DefaultTransactionDefinition initTx = new DefaultTransactionDefinition();
-        initTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-        TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(initTx);
-        CohortDefinition df = this.cohortDefinitionRepository.findOne(defId);
-        CohortGenerationInfo info = findBySourceId(df, sourceId);
-        info.setIsValid(false);
-        info.setStartTime(startTime);
-        info.setStatus(GenerationStatus.RUNNING);
-        this.cohortDefinitionRepository.save(df);
-        this.transactionTemplate.getTransactionManager().commit(initStatus);
-    }
+	private void setExecutionDurationIfPossible(JobExecution je, CohortGenerationInfo info) {
+		if (Objects.isNull(je.getEndTime()) || Objects.isNull(je.getStartTime())) {
+			log.error("Cannot set duration time for cohortGenerationInfo[{}]. startData[{}] and endData[{}] cannot be empty.", info.getId(), je.getStartTime(), je.getEndTime());
+			return;
+		}
+		info.setExecutionDuration((int) (je.getEndTime().getTime() - je.getStartTime().getTime()));
+	}
+
+	@Override
+	public void beforeJob(JobExecution je) {
+		Date startTime = Calendar.getInstance().getTime();
+		JobParameters jobParams = je.getJobParameters();
+		Integer defId = Integer.valueOf(jobParams.getString("cohort_definition_id"));
+		Integer sourceId = Integer.valueOf(jobParams.getString("source_id"));
+
+		DefaultTransactionDefinition initTx = new DefaultTransactionDefinition();
+		initTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+		TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(initTx);
+		try {
+			CohortDefinition df = this.cohortDefinitionRepository.findOne(defId);
+			CohortGenerationInfo info = findBySourceId(df, sourceId);
+			info.setIsValid(false);
+			info.setStartTime(startTime);
+			info.setStatus(GenerationStatus.RUNNING);
+			this.cohortDefinitionRepository.save(df);
+			this.transactionTemplate.getTransactionManager().commit(initStatus);
+		} catch (Exception e) {
+			this.transactionTemplate.getTransactionManager().rollback(initStatus);
+			log.error(e.getMessage());
+			je.addFailureException(e);
+			je.setExitStatus(new ExitStatus("FAILED", "Could not start cohort generation job"));
+			je.setStatus(BatchStatus.FAILED);
+		}
+	}
 }

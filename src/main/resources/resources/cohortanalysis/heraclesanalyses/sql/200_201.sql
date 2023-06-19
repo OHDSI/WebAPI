@@ -24,4 +24,5 @@ vo1.place_of_service_CONCEPT_ID
 --{@CDM_version == '5'}?{
 vo1.visit_CONCEPT_ID
 --}
+/* This comment needed to bypass bug in Spark rendering */
 ;

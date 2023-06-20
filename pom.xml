@@ -195,7 +195,6 @@
     <!-- If defaultGlobalReadPermissions is set to true (default), then all users can see every artifact.  -->
     <!-- If it is set to false, WebAPI will filter out the artifacts that a user does not explicitly have -->
     <!-- read permissions to -->
-    <!-- <security.conceptSetsAuthView>true</security.conceptSetsAuthView> -->
     <security.defaultGlobalReadPermissions>false</security.defaultGlobalReadPermissions>	
     
     <!-- EMBEDDED SERVER CONFIGURATION (ServerProperties) -->

@@ -86,6 +86,7 @@ import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.jdbc.core.RowMapper;
@@ -203,6 +204,9 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 
 	@Autowired
 	private VersionService<CohortVersion> versionService;
+
+        @Value("#{'${security.defaultglobalreadpermissions}'.equals(false)}")
+	private boolean defaultglobalreadpermissions;
 
 	private final MarkdownRender markdownPF = new MarkdownRender();
 
@@ -406,14 +410,26 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Transactional
 	public List<CohortMetadataDTO> getCohortDefinitionList() {
 		List<CohortDefinition> definitions = cohortDefinitionRepository.list();
-
-		return definitions.stream()
-						.map(def -> {
-							CohortMetadataDTO dto = conversionService.convert(def, CohortMetadataImplDTO.class);
-							permissionService.fillWriteAccess(def, dto);
-							return dto;
-						})
-						.collect(Collectors.toList());
+		if (defaultglobalreadpermissions == true) { // don't filter based on read permissions 
+			return definitions.stream()
+					.map(def -> {
+						CohortMetadataDTO dto = conversionService.convert(def, CohortMetadataImplDTO.class);
+						permissionService.fillWriteAccess(def, dto);
+						permissionService.fillReadAccess(def, dto);
+						return dto;
+					})
+					.collect(Collectors.toList());
+		} else { // filter out cohortdefinitions that the user does not have read access to
+			return definitions.stream()
+					.filter(candidateCohortDef -> permissionService.hasReadAccess(candidateCohortDef))
+					.map(def -> {
+						CohortMetadataDTO dto = conversionService.convert(def, CohortMetadataImplDTO.class);
+						permissionService.fillWriteAccess(def, dto);
+						permissionService.fillReadAccess(def, dto);
+						return dto;
+					})
+					.collect(Collectors.toList());
+		}
 	}
 
 	/**

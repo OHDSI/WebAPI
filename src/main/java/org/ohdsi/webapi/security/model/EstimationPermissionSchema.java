@@ -13,6 +13,12 @@ public class EstimationPermissionSchema extends EntityPermissionSchema {
         put("estimation:%s:delete", "Delete Estimation with ID=%s");
     }};
 
+    private static Map<String, String> readPermissions = new HashMap<String, String>() {{                                     
+        put("estimation:get", "get list of estimations");
+	put("estimation:%s:get", "get estimation with id %s");	
+      }
+      };
+  
     public EstimationPermissionSchema() {
 
         super(EntityType.ESTIMATION, new HashMap<>(), writePermissions);

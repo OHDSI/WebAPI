@@ -15,6 +15,14 @@ public class IncidenceRatePermissionSchema extends EntityPermissionSchema {
         put("ir:%s:delete", "Delete Incidence Rate with ID=%s");
     }};
 
+  private static Map<String, String> readPermissions = new HashMap<String, String>() {{                                     
+        put("ir:*:get", "view list of incident rates");
+	put("ir:get", "view list of incident rates");                                                      
+        put("ir:*:version:get", "Get list of IR analsis versions");
+	put("ir:*:version:*:get", "Get IR analysis version");
+    }
+    };
+  
     public IncidenceRatePermissionSchema() {
 
         super(EntityType.INCIDENCE_RATE, new HashMap<>(), writePermissions);

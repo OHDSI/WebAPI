@@ -13,6 +13,13 @@ public class ReusablePermissionSchema extends EntityPermissionSchema {
         put("reusable:%s:put", "Update reusable");
     }};
 
+  private static Map<String, String> readPermissions = new HashMap<String, String>() {{                                     
+        put("reusable:%s:get", "view reusable with id %s");                                                      
+        put("reusable:%s:expression:get", "Resolve reusable %s expression");                                            
+        put("reusable:%s:version:*:get", "Get expression for reusable %s items for default source");
+		}
+	};
+  
     public ReusablePermissionSchema() {
 
         super(EntityType.REUSABLE, new HashMap<>(), writePermissions);

@@ -13,6 +13,12 @@ public class PredictionPermissionSchema extends EntityPermissionSchema {
         put("prediction:%s:delete", "Delete Estimation with ID=%s");
     }};
 
+  private static Map<String, String> readPermissions = new HashMap<String, String>() {{                                     
+        put("prediction:get", "view prediction");                                                      
+        put("prediction:prediction:generation:*:result:get", "Resolve prediction %s expression");
+    }
+    };
+  
     public PredictionPermissionSchema() {
 
         super(EntityType.PREDICTION, new HashMap<>(), writePermissions);

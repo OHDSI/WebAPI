@@ -14,16 +14,18 @@ public class CohortCharacterizationPermissionSchema extends EntityPermissionSche
     }};
 
    private static Map<String, String> readPermissions = new HashMap<String, String>() {{                                     
-       put("cohort-characterization:get", "view cohort characterization list");                         
-       put("cohort-characterization:%s:get", "view cohort characterization with id %s");
-       put("cohort-characterization:generation:get", "view cohort characterization generation list");                         
-       put("cohort-characterization:generation:%s:get", "view cohort characterization geneartion with id %s");
-       put("cohort-characterization:design:get", "view cohort characterization design");                         
+       put("cohort-characterization:get", "Get cohort characterizations list");
+       put("cohort-characterization:*:get", "Get cohort characterization");                         
+       put("cohort-characterization:*:generation:get", "Get cohort characterization generations");
+       put("cohort-characterization:generation:*:get", "Get cohort characterization generation");                         
+       put("cohort-characterization:*design:get", "Get cohort characterization design");                         
        put("cohort-characterization:design:%s:get", "view cohort characterization with id %s");
+       put("cohort-characterization:*:version:get", "Get list of characterization versions");                         
+       put("cohort-characterization:*:version:*:get", "Get list of characterization version");
     }};
   
     public CohortCharacterizationPermissionSchema() {
 
-        super(EntityType.COHORT_CHARACTERIZATION, new HashMap<>(), writePermissions);
+        super(EntityType.COHORT_CHARACTERIZATION, readPermissions, writePermissions);
     }
 }

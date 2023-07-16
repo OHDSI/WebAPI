@@ -15,8 +15,8 @@ public class EstimationPermissionSchema extends EntityPermissionSchema {
 
     private static Map<String, String> readPermissions = new HashMap<String, String>() {{ 
         put("estimation:get", "Get Estimation list");
-	put("estimation:*:get", "Get Estimation instance");
-	put("estimation:*:generation:get", "View Estimation Generations");
+	put("estimation:%s:get", "Get Estimation instance");
+	put("estimation:%s:generation:get", "View Estimation Generations");
 	put("estimation:generation:*:result:get", "View Estimation Generation Results");
       }
       };

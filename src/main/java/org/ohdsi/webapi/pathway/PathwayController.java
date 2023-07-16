@@ -169,7 +169,7 @@ public class PathwayController {
 				permissionService.fillReadAccess(pa, dto);
 				return dto;
 			});
-		} else { // filter out entities the the user does not have read permissions to view
+		} else { // filter out entities that the user does not have read permissions to view
 			List<PathwayAnalysisDTO> dtolist = new ArrayList<PathwayAnalysisDTO>();
 
 			Page<PathwayAnalysisEntity> newpage = pathwayService.getPage(pageable);

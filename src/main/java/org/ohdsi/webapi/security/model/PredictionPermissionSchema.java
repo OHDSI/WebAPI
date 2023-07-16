@@ -21,6 +21,6 @@ public class PredictionPermissionSchema extends EntityPermissionSchema {
   
     public PredictionPermissionSchema() {
 
-        super(EntityType.PREDICTION, new HashMap<>(), writePermissions);
+        super(EntityType.PREDICTION, readPermissions, writePermissions);
     }
 }

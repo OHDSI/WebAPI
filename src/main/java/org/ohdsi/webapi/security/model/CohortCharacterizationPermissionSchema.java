@@ -14,7 +14,6 @@ public class CohortCharacterizationPermissionSchema extends EntityPermissionSche
     }};
 
    private static Map<String, String> readPermissions = new HashMap<String, String>() {{                                     
-       put("cohort-characterization:get", "Get cohort characterizations list");
        put("cohort-characterization:%s:get", "Get cohort characterization");                         
        put("cohort-characterization:%s:generation:get", "Get cohort characterization generations");
        put("cohort-characterization:generation:*:get", "Get cohort characterization generation");

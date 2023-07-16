@@ -16,7 +16,6 @@ public class IncidenceRatePermissionSchema extends EntityPermissionSchema {
     }};
 
   private static Map<String, String> readPermissions = new HashMap<String, String>() {{                                     
-	put("ir:get", "view list of incident rates");                                                      
         put("ir:%s:get", "view list of incident rates");
         put("ir:%s:version:get", "Get list of IR analsis versions");
 	put("ir:%s:version:*:get", "Get IR analysis version");

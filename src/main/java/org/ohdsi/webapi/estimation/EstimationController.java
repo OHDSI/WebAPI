@@ -22,6 +22,7 @@ import org.ohdsi.webapi.util.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
 
@@ -70,7 +71,10 @@ public class EstimationController {
   private final ScriptExecutionService executionService;
   private EstimationChecker checker;
   private PermissionService permissionService;
-
+  
+  @Value("#{'${security.defaultglobalreadpermissions}'.equals(false)}")
+  private boolean defaultglobalreadpermissions;
+  
   public EstimationController(EstimationService service,
                               GenericConversionService conversionService,
                               CommonGenerationSensitiveInfoService sensitiveInfoService,
@@ -97,14 +101,26 @@ public class EstimationController {
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
   public List<EstimationShortDTO> getAnalysisList() {
-
-    return StreamSupport.stream(service.getAnalysisList().spliterator(), false)
-            .map(analysis -> {
-              EstimationShortDTO dto = conversionService.convert(analysis, EstimationShortDTO.class);
-              permissionService.fillWriteAccess(analysis, dto);
-              return dto;
-            })
-            .collect(Collectors.toList());
+    if (defaultglobalreadpermissions == true) { // don't filter based on read permissions 
+      return StreamSupport.stream(service.getAnalysisList().spliterator(), false)
+	.map(analysis -> {
+	    EstimationShortDTO dto = conversionService.convert(analysis, EstimationShortDTO.class);
+	    permissionService.fillWriteAccess(analysis, dto);
+	    permissionService.fillReadAccess(analysis, dto);
+	    return dto;
+	  })
+	.collect(Collectors.toList());
+    } else {
+      return StreamSupport.stream(service.getAnalysisList().spliterator(), false)
+	.filter(candidateEstimation -> permissionService.hasReadAccess(candidateEstimation))
+	.map(analysis -> {
+	    EstimationShortDTO dto = conversionService.convert(analysis, EstimationShortDTO.class);
+	    permissionService.fillWriteAccess(analysis, dto);
+	    permissionService.fillReadAccess(analysis, dto);
+	    return dto;
+	  })
+	.collect(Collectors.toList());
+    }
   }
 
   /**

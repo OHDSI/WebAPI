@@ -14,12 +14,15 @@ public class EstimationPermissionSchema extends EntityPermissionSchema {
     }};
 
     private static Map<String, String> readPermissions = new HashMap<String, String>() {{ 
-        put("estimation:get", "Get Estimation list");
 	put("estimation:%s:get", "Get Estimation instance");
 	put("estimation:%s:generation:get", "View Estimation Generations");
-	put("estimation:generation:*:result:get", "View Estimation Generation Results");
+	put("estimation:%s:copy:get", "Copy Estimation instance");
+	put("estimation:%s:download:get", "Download Estimation package");
+	put("estimation:%s:export:get", "Export Estimation");
+	put("estimation:%s:generation:get", "View Estimation Generations");
       }
       };
+
   
     public EstimationPermissionSchema() {
         super(EntityType.ESTIMATION, readPermissions, writePermissions);

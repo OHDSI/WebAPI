@@ -15,7 +15,6 @@ public class CohortDefinitionPermissionSchema extends EntityPermissionSchema {
     }};
 
   private static Map<String, String> readPermissions = new HashMap<String, String>() {{                                     
-        put("cohortdefinition:get", "Get list of Cohort Definitions");
 	put("cohortdefinition:%s:get", "Get Cohort Definition by ID");
 	put("cohortdefinition:%s:info:get","");
 

@@ -21,6 +21,7 @@ import org.ohdsi.webapi.util.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
 
@@ -67,6 +68,9 @@ public class PredictionController {
 
   private PermissionService permissionService;
 
+  @Value("#{'${security.defaultglobalreadpermissions}'.equals(false)}")
+  private boolean defaultglobalreadpermissions;
+  
   @Autowired
   public PredictionController(PredictionService service,
                               GenericConversionService conversionService,
@@ -93,26 +97,40 @@ public class PredictionController {
   @GET
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
-  public List<CommonAnalysisDTO> getAnalysisList() {
+	public List<CommonAnalysisDTO> getAnalysisList() {
+		if (defaultglobalreadpermissions == true) { // don't filter based on read permissions 
+			return StreamSupport
+					.stream(service.getAnalysisList().spliterator(), false)
+					.map(analysis -> {
+						CommonAnalysisDTO dto = conversionService.convert(analysis, CommonAnalysisDTO.class);
+						permissionService.fillWriteAccess(analysis, dto);
+						permissionService.fillReadAccess(analysis, dto);
+						return dto;
+					})
+					.collect(Collectors.toList());
+		} else {
+			return StreamSupport
+					.stream(service.getAnalysisList().spliterator(), false)
+					.filter(candidateAnalysis -> permissionService.hasReadAccess(candidateAnalysis))
+					.map(analysis -> {
+						CommonAnalysisDTO dto = conversionService.convert(analysis, CommonAnalysisDTO.class);
+						permissionService.fillWriteAccess(analysis, dto);
+						permissionService.fillReadAccess(analysis, dto);
+						return dto;
+					})
+					.collect(Collectors.toList());
+		}
+	}
+	
 
-    return StreamSupport
-            .stream(service.getAnalysisList().spliterator(), false)
-            .map(analysis -> {
-              CommonAnalysisDTO dto = conversionService.convert(analysis, CommonAnalysisDTO.class);
-              permissionService.fillWriteAccess(analysis, dto);
-              return dto;
-            })
-            .collect(Collectors.toList());
-  }
-
-  /**
-   * Check to see if a prediction design exists by name
-   * 
-   * @summary Prediction design exists by name
-   * @param id The prediction design id
-   * @param name The prediction design name
-   * @return 1 if a prediction design with the given name and id exist in WebAPI and 0 otherwise
-   */
+	/**
+	 * Check to see if a prediction design exists by name
+	 * 
+	 * @summary Prediction design exists by name
+	 * @param id The prediction design id
+	 * @param name The prediction design name
+	 * @return 1 if a prediction design with the given name and id exist in WebAPI and 0 otherwise
+	 */
   @GET
   @Path("/{id}/exists")
   @Produces(MediaType.APPLICATION_JSON)

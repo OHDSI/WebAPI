@@ -20,6 +20,7 @@ public class EstimationPermissionSchema extends EntityPermissionSchema {
 	put("estimation:%s:download:get", "Download Estimation package");
 	put("estimation:%s:export:get", "Export Estimation");
 	put("estimation:%s:generation:get", "View Estimation Generations");
+	put("comparativecohortanalysis:%s:get","Get estimation");
       }
       };
 

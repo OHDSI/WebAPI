@@ -95,7 +95,7 @@ public class PermissionController {
     @Path("/access/{entityType}/{entityId}/{permType}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public List<RoleDTO> listAccessesForEntity(
+    public List<RoleDTO> listAccessesForEntityByPermType(
             @PathParam("entityType") EntityType entityType,
             @PathParam("entityId") Integer entityId,
 	    @PathParam("permType") String permType

@@ -83,27 +83,27 @@ public class PermissionController {
     }
 
     /**
-     * Get entity role access information
+     * Get roles that have a permission type (READ/WRITE) to entity
      * 
-     * @summary Get entity role information
+     * @summary Get roles that have a specific permission (READ/WRITE) for the entity
      * @param entityType The entity type
      * @param entityId The entity ID
-     * @return The list of roles
+     * @return The list of permissions for the permission type
      * @throws Exception 
      */
     @GET
-    @Path("/access/{entityType}/{entityId}/{role}")
+    @Path("/access/{entityType}/{entityId}/{permType}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public List<RoleDTO> listAccessesForEntity(
             @PathParam("entityType") EntityType entityType,
             @PathParam("entityId") Integer entityId,
-	    @PathParam("role") String role
+	    @PathParam("permType") String permType
     ) throws Exception {
 
         permissionService.checkCommonEntityOwnership(entityType, entityId);
 	Set<String> permissionTemplates = null;
-	if (role == "WRITE") {
+	if (permType == "WRITE") {
 	  permissionTemplates = permissionService.getTemplatesForType(entityType, AccessType.WRITE).keySet();
 	} else {
 	  permissionTemplates = permissionService.getTemplatesForType(entityType, AccessType.READ).keySet();

@@ -104,8 +104,8 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Autowired
     private VersionService<ConceptSetVersion> versionService;
 
-    @Value("#{'${security.defaultglobalreadpermissions}'.equals(false)}")
-    private boolean defaultglobalreadpermissions;
+    @Value("#{'${security.defaultGlobalReadPermissions}'.equals(false)}")
+    private boolean defaultGlobalReadPermissions;
     
     public static final String COPY_NAME = "copyName";
 
@@ -135,7 +135,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<ConceptSetDTO> getConceptSets() {
-   	       if (defaultglobalreadpermissions == true) { // don't filter based on read permissions 
+   	       if (defaultGlobalReadPermissions == true) { // don't filter based on read permissions 
 			return getTransactionTemplate().execute(
 					transactionStatus -> StreamSupport.stream(getConceptSetRepository().findAll().spliterator(), false)
 							.map(conceptSet -> {

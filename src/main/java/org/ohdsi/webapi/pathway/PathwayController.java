@@ -56,8 +56,8 @@ public class PathwayController {
 	private PathwayChecker checker;
 	private PermissionService permissionService;
 
-        @Value("#{'${security.defaultglobalreadpermissions}'.equals(false)}")
-        private boolean defaultglobalreadpermissions;
+        @Value("#{'${security.defaultGlobalReadPermissions}'.equals(false)}")
+        private boolean defaultGlobalReadPermissions;
 
 	@Autowired
 	public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService, PathwayChecker checker, PermissionService permissionService, I18nService i18nService) {
@@ -162,7 +162,7 @@ public class PathwayController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Transactional
 	public Page<PathwayAnalysisDTO> list(@Pagination Pageable pageable) {
-		if (defaultglobalreadpermissions == true) { // don't filter based on read permissions 
+		if (defaultGlobalReadPermissions == true) { // don't filter based on read permissions 
 			return pathwayService.getPage(pageable).map(pa -> {
 				PathwayAnalysisDTO dto = conversionService.convert(pa, PathwayAnalysisDTO.class);
 				permissionService.fillWriteAccess(pa, dto);

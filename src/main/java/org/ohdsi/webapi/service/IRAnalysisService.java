@@ -142,8 +142,8 @@ public class IRAnalysisService extends AbstractDaoService implements
 
   private final IRAnalysisQueryBuilder queryBuilder;
 
-  @Value("#{'${security.defaultglobalreadpermissions}'.equals(false)}")
-  private boolean defaultglobalreadpermissions;
+  @Value("#{'${security.defaultGlobalReadPermissions}'.equals(false)}")
+  private boolean defaultGlobalReadPermissions;
   
   @Autowired
   private IncidenceRateAnalysisRepository irAnalysisRepository;
@@ -345,7 +345,7 @@ public class IRAnalysisService extends AbstractDaoService implements
 
   @Override
   public List<IRAnalysisShortDTO> getIRAnalysisList() {
-    if (defaultglobalreadpermissions == true) { // don't filter based on read permissions 
+    if (defaultGlobalReadPermissions == true) { // don't filter based on read permissions 
       return getTransactionTemplate().execute(transactionStatus -> {
 	  Iterable<IncidenceRateAnalysis> analysisList = this.irAnalysisRepository.findAll();
 	  return StreamSupport.stream(analysisList.spliterator(), false)

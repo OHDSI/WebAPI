@@ -205,8 +205,8 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Autowired
 	private VersionService<CohortVersion> versionService;
 
-        @Value("#{'${security.defaultglobalreadpermissions}'.equals(false)}")
-	private boolean defaultglobalreadpermissions;
+        @Value("#{'${security.defaultGlobalReadPermissions}'.equals(false)}")
+	private boolean defaultGlobalReadPermissions;
 
 	private final MarkdownRender markdownPF = new MarkdownRender();
 
@@ -410,7 +410,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Transactional
 	public List<CohortMetadataDTO> getCohortDefinitionList() {
 		List<CohortDefinition> definitions = cohortDefinitionRepository.list();
-		if (defaultglobalreadpermissions == true) { // don't filter based on read permissions 
+		if (defaultGlobalReadPermissions == true) { // don't filter based on read permissions 
 			return definitions.stream()
 					.map(def -> {
 						CohortMetadataDTO dto = conversionService.convert(def, CohortMetadataImplDTO.class);

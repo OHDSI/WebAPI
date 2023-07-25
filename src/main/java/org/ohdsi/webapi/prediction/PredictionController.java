@@ -68,8 +68,8 @@ public class PredictionController {
 
   private PermissionService permissionService;
 
-  @Value("#{'${security.defaultglobalreadpermissions}'.equals(false)}")
-  private boolean defaultglobalreadpermissions;
+  @Value("#{'${security.defaultGlobalReadPermissions}'.equals(false)}")
+  private boolean defaultGlobalReadPermissions;
   
   @Autowired
   public PredictionController(PredictionService service,
@@ -98,7 +98,7 @@ public class PredictionController {
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
 	public List<CommonAnalysisDTO> getAnalysisList() {
-		if (defaultglobalreadpermissions == true) { // don't filter based on read permissions 
+		if (defaultGlobalReadPermissions == true) { // don't filter based on read permissions 
 			return StreamSupport
 					.stream(service.getAnalysisList().spliterator(), false)
 					.map(analysis -> {

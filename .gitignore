@@ -1,3 +1,4 @@
+Makefile
 WebAPIConfig/
 *application.properties
 .idea/

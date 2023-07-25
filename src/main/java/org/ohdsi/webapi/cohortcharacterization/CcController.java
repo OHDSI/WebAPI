@@ -89,8 +89,8 @@ public class CcController {
     private CharacterizationChecker checker;
     private PermissionService permissionService;
 
-    @Value("#{'${security.defaultglobalreadpermissions}'.equals(false)}")
-    private boolean defaultglobalreadpermissions;
+    @Value("#{'${security.defaultGlobalReadPermissions}'.equals(false)}")
+    private boolean defaultGlobalReadPermissions;
   
     public CcController(
             final CcService service,
@@ -157,7 +157,7 @@ public class CcController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Page<CcShortDTO> list(@Pagination Pageable pageable) {
-			if (defaultglobalreadpermissions == true) { // don't filter based on read permissions 
+			if (defaultGlobalReadPermissions == true) { // don't filter based on read permissions 
 				return service.getPage(pageable).map(entity -> {
 					CcShortDTO dto = convertCcToShortDto(entity);
 					permissionService.fillWriteAccess(entity, dto);

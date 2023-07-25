@@ -72,8 +72,8 @@ public class EstimationController {
   private EstimationChecker checker;
   private PermissionService permissionService;
   
-  @Value("#{'${security.defaultglobalreadpermissions}'.equals(false)}")
-  private boolean defaultglobalreadpermissions;
+  @Value("#{'${security.defaultGlobalReadPermissions}'.equals(false)}")
+  private boolean defaultGlobalReadPermissions;
   
   public EstimationController(EstimationService service,
                               GenericConversionService conversionService,
@@ -101,7 +101,7 @@ public class EstimationController {
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
   public List<EstimationShortDTO> getAnalysisList() {
-    if (defaultglobalreadpermissions == true) { // don't filter based on read permissions 
+    if (defaultGlobalReadPermissions == true) { // don't filter based on read permissions 
       return StreamSupport.stream(service.getAnalysisList().spliterator(), false)
 	.map(analysis -> {
 	    EstimationShortDTO dto = conversionService.convert(analysis, EstimationShortDTO.class);

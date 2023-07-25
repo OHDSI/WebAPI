@@ -9,7 +9,7 @@ deploy: package
 	mv /home/ubuntu/Downloads/apache-tomcat-8.5.84-DEV/webapps/WebAPI /mnt/disk1/webapi-dev-tmp/WebAPI-FOLDER-`date +%m%d%H%S`
 	mv /home/ubuntu/Downloads/apache-tomcat-8.5.84-DEV/webapps/WebAPI.war /mnt/disk1/webapi-dev-tmp/WebAPI.war-`date +%m%d%H%S`
 	mv target/WebAPI.war /home/ubuntu/Downloads/apache-tomcat-8.5.84-DEV/webapps/
-	/home/ubuntu/Downloads/apache-tomcat-8.5.84-DEV/bin/startup.sh
+	echo "Now run /home/ubuntu/Downloads/apache-tomcat-8.5.84-DEV/bin/startup.sh"
 
 git-push:
 	git push

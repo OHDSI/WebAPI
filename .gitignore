@@ -1,3 +1,4 @@
+Makefile
 WebAPIConfig/
 *application.properties
 .idea/
@@ -12,6 +13,7 @@ sandbox/
 /nbactions*.xml
 *~
 .DS_Store
+.factorypath
 
 ### Developer's personal properties ###
 **/resources/config/application*-dev-*.properties

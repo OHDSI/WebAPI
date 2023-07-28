@@ -42,9 +42,11 @@ import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.ws.rs.Consumes;
@@ -63,6 +65,7 @@ import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -86,6 +89,9 @@ public class CcController {
     private CharacterizationChecker checker;
     private PermissionService permissionService;
 
+    @Value("#{'${security.defaultGlobalReadPermissions}'.equals(false)}")
+    private boolean defaultGlobalReadPermissions;
+  
     public CcController(
             final CcService service,
             final FeAnalysisService feAnalysisService,
@@ -151,11 +157,28 @@ public class CcController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Page<CcShortDTO> list(@Pagination Pageable pageable) {
-        return service.getPage(pageable).map(entity -> {
-            CcShortDTO dto = convertCcToShortDto(entity);
-            permissionService.fillWriteAccess(entity, dto);
-            return dto;
-        });
+			if (defaultGlobalReadPermissions == true) { // don't filter based on read permissions 
+				return service.getPage(pageable).map(entity -> {
+					CcShortDTO dto = convertCcToShortDto(entity);
+					permissionService.fillWriteAccess(entity, dto);
+					permissionService.fillReadAccess(entity, dto);
+					return dto;
+				});
+			} else { // filter out what the user does not have read access to
+			  List<CcShortDTO> dtolist = new ArrayList<CcShortDTO>();
+
+			  Page<CohortCharacterizationEntity> newpage = service.getPage(pageable);
+			  
+			  for (CohortCharacterizationEntity entity : newpage) {			    
+			    if(permissionService.hasReadAccess(entity)){
+			      CcShortDTO dto = convertCcToShortDto(entity);
+			      permissionService.fillWriteAccess(entity, dto);
+			      permissionService.fillReadAccess(entity, dto);
+			      dtolist.add(dto);
+			    } 
+			  }
+			  return new PageImpl<CcShortDTO>(dtolist, pageable, dtolist.size());
+			}
     }
 
     /**

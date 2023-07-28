@@ -25,8 +25,10 @@ import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,6 +36,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +55,9 @@ public class PathwayController {
 	private final I18nService i18nService;
 	private PathwayChecker checker;
 	private PermissionService permissionService;
+
+        @Value("#{'${security.defaultGlobalReadPermissions}'.equals(false)}")
+        private boolean defaultGlobalReadPermissions;
 
 	@Autowired
 	public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService, PathwayChecker checker, PermissionService permissionService, I18nService i18nService) {
@@ -156,13 +162,29 @@ public class PathwayController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Transactional
 	public Page<PathwayAnalysisDTO> list(@Pagination Pageable pageable) {
+		if (defaultGlobalReadPermissions == true) { // don't filter based on read permissions 
+			return pathwayService.getPage(pageable).map(pa -> {
+				PathwayAnalysisDTO dto = conversionService.convert(pa, PathwayAnalysisDTO.class);
+				permissionService.fillWriteAccess(pa, dto);
+				permissionService.fillReadAccess(pa, dto);
+				return dto;
+			});
+		} else { // filter out entities that the user does not have read permissions to view
+			List<PathwayAnalysisDTO> dtolist = new ArrayList<PathwayAnalysisDTO>();
 
-		return pathwayService.getPage(pageable).map(pa -> {
-			PathwayAnalysisDTO dto = conversionService.convert(pa, PathwayAnalysisDTO.class);
-			permissionService.fillWriteAccess(pa, dto);
-			return dto;
-		});
+			Page<PathwayAnalysisEntity> newpage = pathwayService.getPage(pageable);
+			for (PathwayAnalysisEntity pa : newpage) {
+				if (permissionService.hasReadAccess(pa)) {
+					PathwayAnalysisDTO dto = conversionService.convert(pa, PathwayAnalysisDTO.class);
+					permissionService.fillWriteAccess(pa, dto);
+					permissionService.fillReadAccess(pa, dto);
+					dtolist.add(dto);
+				}
+			}
+			return new PageImpl<PathwayAnalysisDTO>(dtolist, pageable, dtolist.size());
+		}
 	}
+  
 
 	/**
 	 * Check that a pathway analysis name exists.

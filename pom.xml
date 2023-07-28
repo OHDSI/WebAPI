@@ -192,6 +192,11 @@
     <spring.datasource.hikari.register-mbeans>true</spring.datasource.hikari.register-mbeans>
     <spring.datasource.hikari.mbean-name>authDataSource</spring.datasource.hikari.mbean-name>
 
+    <!-- If defaultGlobalReadPermissions is set to true (default), then all users can see every artifact.  -->
+    <!-- If it is set to false, WebAPI will filter out the artifacts that a user does not explicitly have -->
+    <!-- read permissions to -->
+    <security.defaultGlobalReadPermissions>true</security.defaultGlobalReadPermissions>	
+    
     <!-- EMBEDDED SERVER CONFIGURATION (ServerProperties) -->
     <server.port>8080</server.port>
     <server.ssl.key-store></server.ssl.key-store>

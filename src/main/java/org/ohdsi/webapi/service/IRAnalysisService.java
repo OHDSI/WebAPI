@@ -345,32 +345,18 @@ public class IRAnalysisService extends AbstractDaoService implements
 
   @Override
   public List<IRAnalysisShortDTO> getIRAnalysisList() {
-    if (defaultGlobalReadPermissions == true) { // don't filter based on read permissions 
-      return getTransactionTemplate().execute(transactionStatus -> {
-	  Iterable<IncidenceRateAnalysis> analysisList = this.irAnalysisRepository.findAll();
-	  return StreamSupport.stream(analysisList.spliterator(), false)
-	    .map(analysis -> {
+    return getTransactionTemplate().execute(transactionStatus -> {
+      Iterable<IncidenceRateAnalysis> analysisList = this.irAnalysisRepository.findAll();
+      return StreamSupport.stream(analysisList.spliterator(), false)
+              .filter(!defaultGlobalReadPermissions ? entity -> permissionService.hasReadAccess(entity) : entity -> true)
+              .map(analysis -> {
                 IRAnalysisShortDTO dto = conversionService.convert(analysis, IRAnalysisShortDTO.class);
                 permissionService.fillWriteAccess(analysis, dto);
-		permissionService.fillReadAccess(analysis, dto);
+                permissionService.fillReadAccess(analysis, dto);
                 return dto;
               })
-	    .collect(Collectors.toList());
-	});
-    } else { // filter out entities that the user does not have read permissions to view
-      return getTransactionTemplate().execute(transactionStatus -> {
-	  Iterable<IncidenceRateAnalysis> analysisList = this.irAnalysisRepository.findAll();
-	  return StreamSupport.stream(analysisList.spliterator(), false)
-	    .filter(candidateIRAnalysis -> permissionService.hasReadAccess(candidateIRAnalysis))
-	    .map(analysis -> {
-                IRAnalysisShortDTO dto = conversionService.convert(analysis, IRAnalysisShortDTO.class);
-                permissionService.fillWriteAccess(analysis, dto);
-		permissionService.fillReadAccess(analysis, dto);
-                return dto;
-              })
-	    .collect(Collectors.toList());
-	});
-    }
+              .collect(Collectors.toList());
+    });
   }
 
   @Override

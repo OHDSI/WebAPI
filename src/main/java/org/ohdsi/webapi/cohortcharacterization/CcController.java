@@ -89,9 +89,6 @@ public class CcController {
     private CharacterizationChecker checker;
     private PermissionService permissionService;
 
-    @Value("#{'${security.defaultGlobalReadPermissions}'.equals(false)}")
-    private boolean defaultGlobalReadPermissions;
-  
     public CcController(
             final CcService service,
             final FeAnalysisService feAnalysisService,
@@ -157,28 +154,12 @@ public class CcController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Page<CcShortDTO> list(@Pagination Pageable pageable) {
-			if (defaultGlobalReadPermissions == true) { // don't filter based on read permissions 
-				return service.getPage(pageable).map(entity -> {
-					CcShortDTO dto = convertCcToShortDto(entity);
-					permissionService.fillWriteAccess(entity, dto);
-					permissionService.fillReadAccess(entity, dto);
-					return dto;
-				});
-			} else { // filter out what the user does not have read access to
-			  List<CcShortDTO> dtolist = new ArrayList<CcShortDTO>();
-
-			  Page<CohortCharacterizationEntity> newpage = service.getPage(pageable);
-			  
-			  for (CohortCharacterizationEntity entity : newpage) {			    
-			    if(permissionService.hasReadAccess(entity)){
-			      CcShortDTO dto = convertCcToShortDto(entity);
-			      permissionService.fillWriteAccess(entity, dto);
-			      permissionService.fillReadAccess(entity, dto);
-			      dtolist.add(dto);
-			    } 
-			  }
-			  return new PageImpl<CcShortDTO>(dtolist, pageable, dtolist.size());
-			}
+      return service.getPage(pageable).map(entity -> {
+          CcShortDTO dto = convertCcToShortDto(entity);
+          permissionService.fillWriteAccess(entity, dto);
+          permissionService.fillReadAccess(entity, dto);
+          return dto;
+      });
     }
 
     /**
@@ -191,7 +172,12 @@ public class CcController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Page<CohortCharacterizationDTO> listDesign(@Pagination Pageable pageable) {
-        return service.getPageWithLinkedEntities(pageable).map(this::convertCcToDto);
+        return service.getPageWithLinkedEntities(pageable).map(entity -> {
+          CohortCharacterizationDTO dto = convertCcToDto(entity);
+          permissionService.fillWriteAccess(entity, dto);
+          permissionService.fillReadAccess(entity, dto);
+          return dto;
+      });
     }
 
     /**

@@ -410,26 +410,15 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Transactional
 	public List<CohortMetadataDTO> getCohortDefinitionList() {
 		List<CohortDefinition> definitions = cohortDefinitionRepository.list();
-		if (defaultGlobalReadPermissions == true) { // don't filter based on read permissions 
-			return definitions.stream()
-					.map(def -> {
-						CohortMetadataDTO dto = conversionService.convert(def, CohortMetadataImplDTO.class);
-						permissionService.fillWriteAccess(def, dto);
-						permissionService.fillReadAccess(def, dto);
-						return dto;
-					})
-					.collect(Collectors.toList());
-		} else { // filter out cohortdefinitions that the user does not have read access to
-			return definitions.stream()
-					.filter(candidateCohortDef -> permissionService.hasReadAccess(candidateCohortDef))
-					.map(def -> {
-						CohortMetadataDTO dto = conversionService.convert(def, CohortMetadataImplDTO.class);
-						permissionService.fillWriteAccess(def, dto);
-						permissionService.fillReadAccess(def, dto);
-						return dto;
-					})
-					.collect(Collectors.toList());
-		}
+		return definitions.stream()
+						.filter(!defaultGlobalReadPermissions ? entity -> permissionService.hasReadAccess(entity) : entity -> true)
+						.map(def -> {
+							CohortMetadataDTO dto = conversionService.convert(def, CohortMetadataImplDTO.class);
+							permissionService.fillWriteAccess(def, dto);
+							permissionService.fillReadAccess(def, dto);
+							return dto;
+						})
+						.collect(Collectors.toList());
 	}
 
 	/**

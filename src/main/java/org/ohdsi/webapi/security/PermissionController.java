@@ -84,12 +84,13 @@ public class PermissionController {
 
     /**
      * Get roles that have a permission type (READ/WRITE) to entity
-     * 
-     * @summary Get roles that have a specific permission (READ/WRITE) for the entity
+     *
+     * @summary Get roles that have a specific permission (READ/WRITE) for the
+     * entity
      * @param entityType The entity type
      * @param entityId The entity ID
      * @return The list of permissions for the permission type
-     * @throws Exception 
+     * @throws Exception
      */
     @GET
     @Path("/access/{entityType}/{entityId}/{permType}")
@@ -98,16 +99,12 @@ public class PermissionController {
     public List<RoleDTO> listAccessesForEntityByPermType(
             @PathParam("entityType") EntityType entityType,
             @PathParam("entityId") Integer entityId,
-	    @PathParam("permType") String permType
+            @PathParam("permType") AccessType permType
     ) throws Exception {
 
         permissionService.checkCommonEntityOwnership(entityType, entityId);
-	Set<String> permissionTemplates = null;
-	if (permType == "WRITE") {
-	  permissionTemplates = permissionService.getTemplatesForType(entityType, AccessType.WRITE).keySet();
-	} else {
-	  permissionTemplates = permissionService.getTemplatesForType(entityType, AccessType.READ).keySet();
-	}
+        Set<String> permissionTemplates = null;
+        permissionTemplates = permissionService.getTemplatesForType(entityType, permType).keySet();
 
         List<String> permissions = permissionTemplates
                 .stream()
@@ -119,6 +116,26 @@ public class PermissionController {
         return roles.stream().map(re -> conversionService.convert(re, RoleDTO.class)).collect(Collectors.toList());
     }
 
+    /**
+     * Get roles that have a permission type (READ/WRITE) to entity
+     *
+     * @summary Get roles that have a specific permission (READ/WRITE) for the
+     * entity
+     * @param entityType The entity type
+     * @param entityId The entity ID
+     * @return The list of permissions for the permission type
+     * @throws Exception
+     */
+    @GET
+    @Path("/access/{entityType}/{entityId}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<RoleDTO> listAccessesForEntity(
+            @PathParam("entityType") EntityType entityType,
+            @PathParam("entityId") Integer entityId
+    ) throws Exception {
+        return listAccessesForEntityByPermType(entityType, entityId, AccessType.WRITE);
+    }
 
     /**
      * Grant group of permissions (READ / WRITE / ...) for the specified entity to the given role.

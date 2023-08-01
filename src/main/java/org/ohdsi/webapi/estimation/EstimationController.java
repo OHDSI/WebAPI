@@ -101,26 +101,15 @@ public class EstimationController {
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
   public List<EstimationShortDTO> getAnalysisList() {
-    if (defaultGlobalReadPermissions == true) { // don't filter based on read permissions 
-      return StreamSupport.stream(service.getAnalysisList().spliterator(), false)
-	.map(analysis -> {
-	    EstimationShortDTO dto = conversionService.convert(analysis, EstimationShortDTO.class);
-	    permissionService.fillWriteAccess(analysis, dto);
-	    permissionService.fillReadAccess(analysis, dto);
-	    return dto;
-	  })
-	.collect(Collectors.toList());
-    } else {
-      return StreamSupport.stream(service.getAnalysisList().spliterator(), false)
-	.filter(candidateEstimation -> permissionService.hasReadAccess(candidateEstimation))
-	.map(analysis -> {
-	    EstimationShortDTO dto = conversionService.convert(analysis, EstimationShortDTO.class);
-	    permissionService.fillWriteAccess(analysis, dto);
-	    permissionService.fillReadAccess(analysis, dto);
-	    return dto;
-	  })
-	.collect(Collectors.toList());
-    }
+    return StreamSupport.stream(service.getAnalysisList().spliterator(), false)
+            .filter(!defaultGlobalReadPermissions ? entity -> permissionService.hasReadAccess(entity) : entity -> true)
+            .map(analysis -> {
+              EstimationShortDTO dto = conversionService.convert(analysis, EstimationShortDTO.class);
+              permissionService.fillWriteAccess(analysis, dto);
+              permissionService.fillReadAccess(analysis, dto);
+              return dto;
+            })
+            .collect(Collectors.toList());
   }
 
   /**

@@ -135,28 +135,17 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<ConceptSetDTO> getConceptSets() {
-   	       if (defaultGlobalReadPermissions == true) { // don't filter based on read permissions 
-			return getTransactionTemplate().execute(
-					transactionStatus -> StreamSupport.stream(getConceptSetRepository().findAll().spliterator(), false)
-							.map(conceptSet -> {
-								ConceptSetDTO dto = conversionService.convert(conceptSet, ConceptSetDTO.class);
-								permissionService.fillWriteAccess(conceptSet, dto);
-								permissionService.fillReadAccess(conceptSet, dto);
-								return dto;
-							})
-							.collect(Collectors.toList()));
-		} else { // filter out conceptsets that the user does not have read access to 
-		    return getTransactionTemplate().execute(
-					transactionStatus -> StreamSupport.stream(getConceptSetRepository().findAll().spliterator(), false)
-					                .filter(candidateConceptSet -> permissionService.hasReadAccess(candidateConceptSet))
-							.map(conceptSet -> {
-								ConceptSetDTO dto = conversionService.convert(conceptSet, ConceptSetDTO.class);
-								permissionService.fillWriteAccess(conceptSet, dto);
-								permissionService.fillReadAccess(conceptSet, dto);
-								return dto;
-							})
-					                .collect(Collectors.toList()));
-		}
+        return getTransactionTemplate().execute(
+                transactionStatus -> StreamSupport.stream(getConceptSetRepository().findAll().spliterator(), false)
+                        .filter(!defaultGlobalReadPermissions ? entity -> permissionService.hasReadAccess(entity) : entity -> true)
+                        .map(conceptSet -> {
+                            ConceptSetDTO dto = conversionService.convert(conceptSet, ConceptSetDTO.class);
+                            permissionService.fillWriteAccess(conceptSet, dto);
+                            permissionService.fillReadAccess(conceptSet, dto);
+                            return dto;
+                        })
+                        .collect(Collectors.toList()));
+
     }
 
     /**

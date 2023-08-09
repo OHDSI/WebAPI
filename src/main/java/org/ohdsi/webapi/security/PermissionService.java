@@ -259,8 +259,8 @@ public class PermissionService {
                 String login = this.permissionManager.getSubjectName();
                 UserSimpleAuthorizationInfo authorizationInfo = this.permissionManager.getAuthorizationInfo(login);
                 if (Objects.equals(authorizationInfo.getUserId(), entity.getCreatedBy().getId())) {
-		    hasAccess = true; // the role is the one that created the artifact
-		} else {
+                    hasAccess = true; // the role is the one that created the artifact
+                } else {
                     EntityType entityType = entityPermissionSchemaResolver.getEntityType(entity.getClass());
 
                     List<RoleDTO> roles = getRolesHavingPermissions(entityType, entity.getId());
@@ -268,7 +268,7 @@ public class PermissionService {
                     Collection<String> userRoles = authorizationInfo.getRoles();
                     hasAccess = roles.stream()
                             .anyMatch(r -> userRoles.stream()
-                                    .anyMatch(re -> re.equals(r.getName())));
+                            .anyMatch(re -> re.equals(r.getName())));
                 }
             } catch (Exception e) {
                 logger.error("Error getting user roles and permissions", e);

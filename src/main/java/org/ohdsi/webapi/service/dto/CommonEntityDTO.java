@@ -17,7 +17,9 @@ public abstract class CommonEntityDTO implements CommonDTO {
   private Date createdDate;
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   private Date modifiedDate;
+
   private boolean hasWriteAccess;
+  private boolean hasReadAccess;
 
   public UserDTO getCreatedBy() {
     return createdBy;
@@ -57,5 +59,13 @@ public abstract class CommonEntityDTO implements CommonDTO {
 
   public void setHasWriteAccess(boolean hasWriteAccess) {
     this.hasWriteAccess = hasWriteAccess;
+  }
+
+  public boolean isHasReadAccess() {
+    return hasReadAccess;
+  }
+
+  public void setHasReadAccess(boolean hasReadAccess) {
+    this.hasReadAccess = hasReadAccess;
   }
 }

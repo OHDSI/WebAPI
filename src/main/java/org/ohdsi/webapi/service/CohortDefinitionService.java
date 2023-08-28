@@ -205,7 +205,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Autowired
 	private VersionService<CohortVersion> versionService;
 
-        @Value("#{'${security.defaultGlobalReadPermissions}'.equals(false)}")
+        @Value("${security.defaultGlobalReadPermissions}")
 	private boolean defaultGlobalReadPermissions;
 
 	private final MarkdownRender markdownPF = new MarkdownRender();

@@ -142,7 +142,7 @@ public class IRAnalysisService extends AbstractDaoService implements
 
   private final IRAnalysisQueryBuilder queryBuilder;
 
-  @Value("#{'${security.defaultGlobalReadPermissions}'.equals(false)}")
+  @Value("${security.defaultGlobalReadPermissions}")
   private boolean defaultGlobalReadPermissions;
   
   @Autowired

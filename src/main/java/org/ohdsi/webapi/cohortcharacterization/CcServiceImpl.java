@@ -213,7 +213,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     
     private PermissionService permissionService;
 
-    @Value("#{'${security.defaultGlobalReadPermissions}'.equals(false)}")
+    @Value("${security.defaultGlobalReadPermissions}")
     private boolean defaultGlobalReadPermissions;
     
     private final Environment env;

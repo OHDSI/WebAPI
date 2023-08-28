@@ -68,7 +68,7 @@ public class PredictionController {
 
   private PermissionService permissionService;
 
-  @Value("#{'${security.defaultGlobalReadPermissions}'.equals(false)}")
+  @Value("${security.defaultGlobalReadPermissions}")
   private boolean defaultGlobalReadPermissions;
   
   @Autowired

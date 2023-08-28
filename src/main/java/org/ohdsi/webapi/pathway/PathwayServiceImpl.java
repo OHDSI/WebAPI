@@ -122,7 +122,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
 	private PermissionService permissionService;
 
-	@Value("#{'${security.defaultGlobalReadPermissions}'.equals(false)}")
+	@Value("${security.defaultGlobalReadPermissions}")
 	private boolean defaultGlobalReadPermissions;
 
 	private final List<String> STEP_COLUMNS = Arrays.asList(new String[]{"step_1", "step_2", "step_3", "step_4", "step_5", "step_6", "step_7", "step_8", "step_9", "step_10"});

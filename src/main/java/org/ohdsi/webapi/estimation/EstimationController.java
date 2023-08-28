@@ -72,7 +72,7 @@ public class EstimationController {
   private EstimationChecker checker;
   private PermissionService permissionService;
   
-  @Value("#{'${security.defaultGlobalReadPermissions}'.equals(false)}")
+  @Value("${security.defaultGlobalReadPermissions}")
   private boolean defaultGlobalReadPermissions;
   
   public EstimationController(EstimationService service,

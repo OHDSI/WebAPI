@@ -104,7 +104,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Autowired
     private VersionService<ConceptSetVersion> versionService;
 
-    @Value("#{'${security.defaultGlobalReadPermissions}'.equals(false)}")
+    @Value("${security.defaultGlobalReadPermissions}")
     private boolean defaultGlobalReadPermissions;
     
     public static final String COPY_NAME = "copyName";

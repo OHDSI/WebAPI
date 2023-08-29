@@ -33,7 +33,7 @@
     <SqlRender.version>1.13.1</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
     <pac4j.version>4.0.0</pac4j.version>
-    <jackson.version>2.12.7</jackson.version>
+    <jackson.version>2.12.7.1</jackson.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
     <skipUnitTests>false</skipUnitTests>
     <skipITtests>false</skipITtests>

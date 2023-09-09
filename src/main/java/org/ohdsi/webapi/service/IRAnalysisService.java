@@ -85,6 +85,7 @@ import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -141,6 +142,9 @@ public class IRAnalysisService extends AbstractDaoService implements
 
   private final IRAnalysisQueryBuilder queryBuilder;
 
+  @Value("${security.defaultGlobalReadPermissions}")
+  private boolean defaultGlobalReadPermissions;
+  
   @Autowired
   private IncidenceRateAnalysisRepository irAnalysisRepository;
 
@@ -341,13 +345,14 @@ public class IRAnalysisService extends AbstractDaoService implements
 
   @Override
   public List<IRAnalysisShortDTO> getIRAnalysisList() {
-
     return getTransactionTemplate().execute(transactionStatus -> {
       Iterable<IncidenceRateAnalysis> analysisList = this.irAnalysisRepository.findAll();
       return StreamSupport.stream(analysisList.spliterator(), false)
+              .filter(!defaultGlobalReadPermissions ? entity -> permissionService.hasReadAccess(entity) : entity -> true)
               .map(analysis -> {
                 IRAnalysisShortDTO dto = conversionService.convert(analysis, IRAnalysisShortDTO.class);
                 permissionService.fillWriteAccess(analysis, dto);
+                permissionService.fillReadAccess(analysis, dto);
                 return dto;
               })
               .collect(Collectors.toList());

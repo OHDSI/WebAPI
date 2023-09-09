@@ -25,8 +25,10 @@ import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,6 +36,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -156,13 +159,14 @@ public class PathwayController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Transactional
 	public Page<PathwayAnalysisDTO> list(@Pagination Pageable pageable) {
-
 		return pathwayService.getPage(pageable).map(pa -> {
 			PathwayAnalysisDTO dto = conversionService.convert(pa, PathwayAnalysisDTO.class);
 			permissionService.fillWriteAccess(pa, dto);
+			permissionService.fillReadAccess(pa, dto);
 			return dto;
 		});
 	}
+  
 
 	/**
 	 * Check that a pathway analysis name exists.

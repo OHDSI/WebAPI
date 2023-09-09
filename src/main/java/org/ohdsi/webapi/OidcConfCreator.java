@@ -23,6 +23,9 @@ import org.pac4j.oidc.config.OidcConfiguration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 @Component
 public class OidcConfCreator {
@@ -41,6 +44,9 @@ public class OidcConfCreator {
 
     @Value("${security.oid.extraScopes}")
     private String extraScopes;
+
+    @Value("#{${security.oid.customParams:{T(java.util.Collections).emptyMap()}}}")
+    private Map<String, String> customParams = new HashMap<>();
     
     @Value("${security.oauth.callback.api}")
     private String oauthApiCallback;
@@ -53,6 +59,10 @@ public class OidcConfCreator {
         conf.setLogoutUrl(logoutUrl);
         conf.setWithState(true);
         conf.setUseNonce(true);
+        
+        if (customParams != null) {
+            customParams.forEach(conf::addCustomParam);
+        }
 
         String scopes = "openid";
         if (extraScopes != null && !extraScopes.isEmpty()){

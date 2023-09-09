@@ -13,46 +13,40 @@ public interface TagRepository extends JpaRepository<Tag, Integer> {
 
     List<Tag> findByIdIn(List<Integer> ids);
 
-    @Query("SELECT t AS tag, " +
+    @Query("SELECT ct.assetId.tagId as id, " +
             "COUNT(ct.assetId.tagId) AS count " +
-            "FROM Tag t " +
-            "LEFT JOIN CohortTag ct ON ct.tag = t " +
-            "GROUP BY t.id")
+            "FROM CohortTag ct " +
+            "GROUP BY ct.assetId.tagId")
     List<TagInfo> findCohortTagInfo();
 
-    @Query("SELECT t AS tag, " +
+    @Query("SELECT cct.assetId.tagId as id, " +
             "COUNT(cct.assetId.tagId) AS count " +
-            "FROM Tag t " +
-            "LEFT JOIN CohortCharacterizationTag cct ON cct.tag = t " +
-            "GROUP BY t.id")
+            "FROM CohortCharacterizationTag cct " +
+            "GROUP BY cct.assetId.tagId")
     List<TagInfo> findCcTagInfo();
 
-    @Query("SELECT t AS tag, " +
+    @Query("SELECT cst.assetId.tagId as id, " +
             "COUNT(cst.assetId.tagId) AS count " +
-            "FROM Tag t " +
-            "LEFT JOIN ConceptSetTag cst ON cst.tag = t " +
-            "GROUP BY t.id")
+            "FROM ConceptSetTag cst " +
+            "GROUP BY cst.assetId.tagId")
     List<TagInfo> findConceptSetTagInfo();
 
-    @Query("SELECT t AS tag, " +
+    @Query("SELECT it.assetId.tagId as id, " +
             "COUNT(it.assetId.tagId) AS count " +
-            "FROM Tag t " +
-            "LEFT JOIN IrTag it ON it.tag = t " +
-            "GROUP BY t.id")
+            "FROM IrTag it " +
+            "GROUP BY it.assetId.tagId")
     List<TagInfo> findIrTagInfo();
 
-    @Query("SELECT t AS tag, " +
+    @Query("SELECT pt.assetId.tagId as id, " +
             "COUNT(pt.assetId.tagId) AS count " +
-            "FROM Tag t " +
-            "LEFT JOIN PathwayTag pt ON pt.tag = t " +
-            "GROUP BY t.id")
+            "FROM PathwayTag pt " +
+            "GROUP BY pt.assetId.tagId")
     List<TagInfo> findPathwayTagInfo();
 
-    @Query("SELECT t AS tag, " +
-            "COUNT(r.assetId.tagId) AS count " +
-            "FROM Tag t " +
-            "LEFT JOIN ReusableTag r ON r.tag = t " +
-            "GROUP BY t.id")
+    @Query("SELECT rt.assetId.tagId as id, " +
+            "COUNT(rt.assetId.tagId) AS count " +
+            "FROM ReusableTag rt " +
+            "GROUP BY rt.assetId.tagId")
     List<TagInfo> findReusableTagInfo();
 
     @Query("SELECT t FROM Tag t WHERE t.mandatory = 'TRUE'")

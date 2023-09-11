@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
 
+import org.ohdsi.vocabulary.Concept;
+
 /**
  *
  * @author fdefalco

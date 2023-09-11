@@ -2,8 +2,10 @@ package org.ohdsi.webapi.service;
 
 import static org.ohdsi.webapi.service.cscompare.ConceptSetCompareService.CONCEPT_SET_COMPARISON_ROW_MAPPER;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -34,6 +36,8 @@ import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.circe.vocabulary.ConceptSetExpressionQueryBuilder;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.vocabulary.Concept;
+import org.ohdsi.vocabulary.SearchProviderConfig;
 import org.ohdsi.webapi.activity.Activity.ActivityType;
 import org.ohdsi.webapi.activity.Tracker;
 import org.ohdsi.webapi.conceptset.ConceptSetComparison;
@@ -49,7 +53,6 @@ import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.util.PreparedSqlRender;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
-import org.ohdsi.webapi.vocabulary.Concept;
 import org.ohdsi.webapi.vocabulary.ConceptRecommendedNotInstalledException;
 import org.ohdsi.webapi.vocabulary.ConceptRelationship;
 import org.ohdsi.webapi.vocabulary.ConceptSearch;
@@ -58,7 +61,6 @@ import org.ohdsi.webapi.vocabulary.Domain;
 import org.ohdsi.webapi.vocabulary.RecommendedConcept;
 import org.ohdsi.webapi.vocabulary.RelatedConcept;
 import org.ohdsi.webapi.vocabulary.RelatedConceptSearch;
-import org.ohdsi.webapi.vocabulary.SearchProviderConfig;
 import org.ohdsi.webapi.vocabulary.Vocabulary;
 import org.ohdsi.webapi.vocabulary.VocabularyInfo;
 import org.ohdsi.webapi.vocabulary.VocabularySearchService;

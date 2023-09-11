@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.cohortanalysis;
 
-import org.ohdsi.webapi.info.ConfigurationInfo;
+import org.ohdsi.info.ConfigurationInfo;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 

@@ -3,6 +3,8 @@ package org.ohdsi.webapi.vocabulary;
 import java.util.Arrays;
 import java.util.Comparator;
 
+import org.ohdsi.vocabulary.SearchProvider;
+import org.ohdsi.vocabulary.SearchProviderConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

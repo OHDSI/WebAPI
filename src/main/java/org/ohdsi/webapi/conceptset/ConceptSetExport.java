@@ -6,9 +6,11 @@
 package org.ohdsi.webapi.conceptset;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Collection;
+
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
-import org.ohdsi.webapi.vocabulary.Concept;
+import org.ohdsi.vocabulary.Concept;
 
 /**
  *

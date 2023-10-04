@@ -176,7 +176,7 @@ public class TagService extends AbstractDaoService {
                                 Map<Integer, TagDTO> infoMap) {
         List<TagInfo> tagInfos = infoProducer.call();
         tagInfos.forEach(info -> {
-            int id = info.getTag().getId();
+            int id = info.getId();
             TagDTO dto = infoMap.get(id);
             if (Objects.isNull(dto)) {
                 infoMap.put(id, new TagDTO());

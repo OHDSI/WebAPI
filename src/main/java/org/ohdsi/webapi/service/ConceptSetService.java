@@ -17,6 +17,8 @@ package org.ohdsi.webapi.service;
 
 import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
+import org.ohdsi.conceptset.ConceptSetSearchDocument;
+import org.ohdsi.vocabulary.Concept;
 import org.ohdsi.webapi.check.CheckResult;
 import org.ohdsi.webapi.check.checker.conceptset.ConceptSetChecker;
 import org.ohdsi.webapi.conceptset.ConceptSet;
@@ -24,10 +26,9 @@ import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
+import org.ohdsi.webapi.conceptset.ConceptSetSearchService;
 import org.ohdsi.webapi.conceptset.dto.ConceptSetVersionFullDTO;
 import org.ohdsi.webapi.conceptset.search.ConceptSetReindexJobService;
-import org.ohdsi.webapi.conceptset.search.ConceptSetSearchDocument;
-import org.ohdsi.webapi.conceptset.search.ConceptSetSearchService;
 import org.ohdsi.webapi.exception.ConceptNotExistException;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
@@ -52,8 +53,8 @@ import org.ohdsi.webapi.versioning.domain.VersionType;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.ohdsi.webapi.versioning.service.VersionService;
-import org.ohdsi.webapi.vocabulary.Concept;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
@@ -71,6 +72,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -133,6 +135,9 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Autowired
     private ConceptSetReindexJobService conceptSetReindexJobService;
 
+    @Value("${security.defaultGlobalReadPermissions}")
+    private boolean defaultGlobalReadPermissions;
+
     public static final String COPY_NAME = "copyName";
 
     /**
@@ -161,15 +166,17 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<ConceptSetDTO> getConceptSets() {
-        return getTransactionTemplate().execute(transactionStatus ->
-                StreamSupport.stream(getConceptSetRepository().findAll().spliterator(), false)
+        return getTransactionTemplate().execute(
+                transactionStatus -> StreamSupport.stream(getConceptSetRepository().findAll().spliterator(), false)
+                        .filter(!defaultGlobalReadPermissions ? entity -> permissionService.hasReadAccess(entity) : entity -> true)
                         .map(conceptSet -> {
                             ConceptSetDTO dto = conversionService.convert(conceptSet, ConceptSetDTO.class);
                             permissionService.fillWriteAccess(conceptSet, dto);
+                            permissionService.fillReadAccess(conceptSet, dto);
                             return dto;
                         })
-                        .collect(Collectors.toList())
-        );
+                        .collect(Collectors.toList()));
+
     }
 
     /**
@@ -402,7 +409,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
             getConceptSetItemRepository().save(csi);
         }
 
-        if (conceptSetSearchService.isSearchAvailable()) {
+        if (conceptSetSearchService.getConceptSearchProvider().isSearchAvailable()) {
 
             // Index concept set for search
             final ConceptSetExport csExport = getConceptSetForExport(id, new SourceInfo(sourceService.getPriorityVocabularySource()));

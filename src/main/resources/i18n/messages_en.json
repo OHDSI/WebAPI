@@ -859,7 +859,7 @@
         "resetAllCoefficients": "Reset all coefficients to 0 between model fits under cross-validation:",
         "sizeMultiplier": "Size multiplier for active set:",
         "startingVariance": "Starting variance for auto-search cross-validation; -1 = use estimate based on data:",
-        "umberOfRepetitionsOfData": "Number of repetitions of data for cross validation:",
+        "minDataCrossValidation": "Minimum amount of data required for cross-validation:",
         "upperPrior": "Upper prior variance limit:",
         "useTheKarush": "Use the Karush-Kuhn-Tucker conditions to limit search:"
       },

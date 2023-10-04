@@ -16,7 +16,7 @@ FROM (SELECT *
     ON ar1.stratum_1 = ar2.stratum_1
   INNER JOIN
   @results_database_schema.concept_hierarchy concept_hierarchy
-ON CAST(CASE WHEN isNumeric(ar1.stratum_1) = 1 THEN ar1.stratum_1 ELSE null END AS INT) = concept_hierarchy.concept_id
+ON CAST(CASE WHEN ar1.analysis_id = 1800 THEN ar1.stratum_1 ELSE null END AS INT) = concept_hierarchy.concept_id
    AND concept_hierarchy.treemap='Measurement'
  ,
   (SELECT count_value

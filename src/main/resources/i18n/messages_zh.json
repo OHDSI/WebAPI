@@ -859,7 +859,7 @@
         "resetAllCoefficients": "在交叉验证下，将模型拟合之间的所有系数重置为0：",
         "sizeMultiplier": "活动集合的大小乘数：",
         "startingVariance": "自动搜索交叉验证的起始差异； -1 =使用基于数据的估算值：",
-        "umberOfRepetitionsOfData": "交叉验证的数据重复次数：",
+        "minDataCrossValidation": "Minimum amount of data required for cross-validation:",
         "upperPrior": "先验差异上限：",
         "useTheKarush": "使用Karush-Kuhn-Tucker条件限制搜索范围："
       },

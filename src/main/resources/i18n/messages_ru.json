@@ -1022,7 +1022,7 @@
         "numberOfSteps": "Количество шагов:",
         "numberOfRandomFolds": "Количество случайных сгибов для перекрестной проверки:",
         "numberOfRepetitions": "Количество повторений <%=num%>-кратной перекрестной проверки:",
-        "umberOfRepetitionsOfData": "Количество повторений данных для перекрестной проверки:",
+        "minDataCrossValidation": "Minimum amount of data required for cross-validation:",
         "noiseLevel": "Уровень шума при выводе экрана Cyclops:",
         "resetAllCoefficients": "Сброс всех коэффициентов до 0 между подгонками модели при перекрестной проверке:",
         "startingVariance": "Начальная дисперсия для автоматического поиска перекрестной проверки; -1 = использовать оценку на основе данных:",

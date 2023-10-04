@@ -6,7 +6,7 @@
   <groupId>org.ohdsi</groupId>
   <artifactId>WebAPI</artifactId>
   <packaging>war</packaging>
-  <version>2.13.0-SNAPSHOT</version>
+  <version>2.14.0-SNAPSHOT</version>
   <name>WebAPI</name>
   <properties>
     <build.number>${BUILD_NUMBER}</build.number>
@@ -20,17 +20,17 @@
     <hibernate.version>5.4.2.Final</hibernate.version>
     <postgresql.version>42.3.7</postgresql.version>
     <bouncycastle.version>1.69</bouncycastle.version>
-    <shiro.version>1.10.1</shiro.version>
+    <shiro.version>1.12.0</shiro.version>
     <dom4j.version>2.1.3</dom4j.version>
     <hydra.version>0.4.0</hydra.version>
     <featureExtraction.version>3.2.0</featureExtraction.version>
-    <tomcat.embed.version>8.5.85</tomcat.embed.version>
+    <tomcat.embed.version>8.5.87</tomcat.embed.version>
 
-    <commons-fileupload.version>1.3.3</commons-fileupload.version>
+    <commons-fileupload.version>1.5</commons-fileupload.version>
 
-    <circe.version>1.10.1</circe.version>
+    <circe.version>1.11.1</circe.version>
     <jersey.version>2.14</jersey.version>
-    <SqlRender.version>1.10.0</SqlRender.version>
+    <SqlRender.version>1.13.1</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
     <pac4j.version>4.0.0</pac4j.version>
     <jackson.version>2.12.7</jackson.version>
@@ -103,6 +103,7 @@
     <security.oid.url></security.oid.url>
     <security.oid.logoutUrl></security.oid.logoutUrl>
     <security.oid.extraScopes></security.oid.extraScopes>
+    <security.oid.customParams>{:}</security.oid.customParams>
     <security.oid.redirectUrl>http://localhost/index.html#/welcome/</security.oid.redirectUrl>
     <security.kerberos.spn></security.kerberos.spn>
     <security.kerberos.keytabPath></security.kerberos.keytabPath>
@@ -193,6 +194,11 @@
     <spring.datasource.hikari.register-mbeans>true</spring.datasource.hikari.register-mbeans>
     <spring.datasource.hikari.mbean-name>authDataSource</spring.datasource.hikari.mbean-name>
 
+    <!-- If defaultGlobalReadPermissions is set to true (default), then all users can see every artifact.  -->
+    <!-- If it is set to false, WebAPI will filter out the artifacts that a user does not explicitly have -->
+    <!-- read permissions to -->
+    <security.defaultGlobalReadPermissions>true</security.defaultGlobalReadPermissions>	
+    
     <!-- EMBEDDED SERVER CONFIGURATION (ServerProperties) -->
     <server.port>8080</server.port>
     <server.ssl.key-store></server.ssl.key-store>
@@ -348,7 +354,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.0.1</version>
+        <version>3.5.0</version>
       </plugin>
       <plugin>
         <groupId>pl.project13.maven</groupId>
@@ -423,7 +429,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.18.1</version>
+        <version>2.22.2</version>
         <configuration>
           <skipTests>${skipUnitTests}</skipTests>
         </configuration>
@@ -431,7 +437,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
+        <version>3.10.1</version>
         <inherited>true</inherited>
         <configuration>
           <compilerArgs>
@@ -452,7 +458,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>2.18.1</version>
+        <version>2.22.2</version>
         <configuration>
           <skipITs>${skipITtests}</skipITs>
         </configuration>
@@ -464,7 +470,7 @@
             </goals>
             <configuration>
               <includes>
-                <include>**/IT*.java</include>
+                <include>**/*IT.java</include>
               </includes>
             </configuration>
           </execution>
@@ -473,7 +479,7 @@
       <plugin>
         <groupId>com.qmino</groupId>
         <artifactId>miredot-plugin</artifactId>
-        <version>2.2</version>
+        <version>2.4.0</version>
         <executions>
           <execution>
             <phase>${miredot.phase}</phase>
@@ -618,7 +624,7 @@
     <dependency>
       <groupId>org.yaml</groupId>
       <artifactId>snakeyaml</artifactId>
-      <version>1.32</version>
+      <version>2.0</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -709,15 +715,6 @@
       <artifactId>spring-boot-starter-cache</artifactId>
     </dependency>
     <dependency>
-      <groupId>javax.cache</groupId>
-      <artifactId>cache-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.ehcache</groupId>
-      <artifactId>ehcache</artifactId>
-      <version>3.8.1</version>
-    </dependency>
-    <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-core</artifactId>
       <version>${hibernate.version}</version>
@@ -788,12 +785,12 @@
     <dependency>
       <groupId>net.minidev</groupId>
       <artifactId>json-smart</artifactId>
-      <version>2.4.8</version>
+      <version>2.4.9</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.9</version>
+      <version>3.12.0</version>
     </dependency>
     <dependency>
       <groupId>org.flywaydb</groupId>
@@ -804,11 +801,6 @@
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
       <version>4.5.13</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-httpclient</groupId>
-      <artifactId>commons-httpclient</artifactId>
-      <version>3.1</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.batch</groupId>
@@ -854,7 +846,7 @@
     <dependency>
       <groupId>com.microsoft.sqlserver</groupId>
       <artifactId>mssql-jdbc</artifactId>
-      <version>9.2.1.jre8</version>
+      <version>10.2.1.jre8</version>
     </dependency>
     <dependency>
       <groupId>com.microsoft.azure</groupId>
@@ -968,6 +960,17 @@
     </dependency>
     <dependency>
       <groupId>org.pac4j</groupId>
+      <artifactId>pac4j-http</artifactId>
+      <version>${pac4j.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.pac4j</groupId>
       <artifactId>pac4j-saml-opensamlv3</artifactId>
       <version>${pac4j.version}</version>
     </dependency>
@@ -1000,7 +1003,7 @@
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
-      <version>20180130</version>
+      <version>20230227</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
@@ -1025,12 +1028,12 @@
     <dependency>
       <groupId>com.zaxxer</groupId>
       <artifactId>HikariCP</artifactId>
-      <version>3.3.1</version>
+      <version>4.0.3</version>
     </dependency>
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-      <version>2.8.9</version>
+      <version>2.9.0</version>
     </dependency>
     <dependency>
       <groupId>org.jasypt</groupId>
@@ -1130,7 +1133,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>standardized-analysis-specs</artifactId>
-      <version>1.4.0</version>
+      <version>1.6.0-SNAPSHOT</version>
       <exclusions>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
@@ -1141,7 +1144,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>standardized-analysis-utils</artifactId>
-      <version>1.3.2</version>
+      <version>1.4.0</version>
       <exclusions>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
@@ -1246,6 +1249,7 @@
     </dependency>
   </dependencies>
   <profiles>
+
     <profile>
       <id>webapi-oracle</id>
       <properties>
@@ -1337,15 +1341,17 @@
           lower(email) = lower(?)</security.db.datasource.authenticationQuery>
       </properties>
       <repositories>
-        <repository>
-          <id>central</id>
-          <url>https://repo.maven.apache.org/maven2</url>
-        </repository>
-        <repository>
-          <id>ohdsi</id>
-          <name>repo.ohdsi.org</name>
-          <url>http://repo.ohdsi.org:8085/nexus/content/groups/public</url>
-        </repository>
+	<repository>
+          <id>ohdsi.snapshots</id>
+          <name>repo.ohdsi.org-snapshots</name>
+          <url>https://repo.ohdsi.org/nexus/content/repositories/snapshots</url>
+          <releases>
+            <enabled>false</enabled>
+          </releases>
+      	  <snapshots>
+            <enabled>true</enabled>
+      	  </snapshots>
+    	</repository>
       </repositories>
     </profile>
     <profile>
@@ -1391,7 +1397,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-install-plugin</artifactId>
-            <version>2.5.2</version>
+            <version>3.1.0</version>
             <executions>
               <execution>
                 <id>netezza-jdbc</id>
@@ -1432,7 +1438,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-install-plugin</artifactId>
-            <version>2.5.2</version>
+            <version>3.1.0</version>
             <executions>
               <execution>
                 <id>impala-jdbc</id>
@@ -1472,7 +1478,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-install-plugin</artifactId>
-            <version>2.5.2</version>
+            <version>3.1.0</version>
             <executions>
               <execution>
                 <id>spark-jdbc</id>
@@ -1504,67 +1510,67 @@
         <dependency>
           <groupId>com.google.api-client</groupId>
           <artifactId>google-api-client</artifactId>
-          <version>1.28.0</version>
+          <version>1.33.4</version>
         </dependency>
         <dependency>
           <groupId>com.google.apis</groupId>
           <artifactId>google-api-services-bigquery</artifactId>
-          <version>v2-rev20200415-1.30.9</version>
+          <version>v2-rev20220326-1.32.1</version>
         </dependency>
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-bigquery</artifactId>
-            <version>1.2.11</version>
+            <version>1.2.15</version>
         </dependency>
         <dependency>
           <groupId>com.google.http-client</groupId>
           <artifactId>google-http-client</artifactId>
-          <version>1.28.0</version>
+          <version>1.41.5</version>
         </dependency>
         <dependency>
           <groupId>com.google.http-client</groupId>
-          <artifactId>google-http-client-jackson2</artifactId>
-          <version>1.28.0</version>
+          <artifactId>google-http-client-gson</artifactId>
+          <version>1.41.5</version>
         </dependency>
         <dependency>
           <groupId>com.google.oauth-client</groupId>
           <artifactId>google-oauth-client</artifactId>
-          <version>1.28.0</version>
+          <version>1.33.3</version>
         </dependency>
         <dependency>
           <groupId>com.google.cloud</groupId>
           <artifactId>google-cloud-bigquerystorage</artifactId>
-          <version>0.101.0-beta</version>
+          <version>2.12.0</version>
         </dependency>
         <dependency>
           <groupId>com.google.auth</groupId>
           <artifactId>google-auth-library-oauth2-http</artifactId>
-          <version>0.16.2</version>
+          <version>1.6.0</version>
         </dependency>
         <dependency>
           <groupId>com.google.auth</groupId>
           <artifactId>google-auth-library-credentials</artifactId>
-          <version>0.16.2</version>
+          <version>1.6.0</version>
         </dependency>
         <dependency>
           <groupId>com.google.api</groupId>
           <artifactId>gax</artifactId>
-          <version>1.47.0</version>
+          <version>2.13.0</version>
         </dependency>
         <dependency>
           <groupId>com.google.api</groupId>
           <artifactId>gax-grpc</artifactId>
-          <version>1.47.0</version>
+          <version>2.13.0</version>
         </dependency>
         <dependency>
           <groupId>com.google.api.grpc</groupId>
-          <artifactId>proto-google-cloud-bigquerystorage-v1beta1</artifactId>
-          <version>0.66.0</version>
+          <artifactId>proto-google-cloud-bigquerystorage-v1</artifactId>
+          <version>2.12.0</version>
         </dependency>
         <dependency>
           <groupId>io.opencensus</groupId>
           <artifactId>opencensus-contrib-http-util</artifactId>
-          <version>0.18.0</version>
+          <version>0.31.0</version>
         </dependency>
       </dependencies>
       <build>
@@ -1583,9 +1589,9 @@
                 <configuration>
                   <groupId>com.google.api-client</groupId>
                   <artifactId>google-api-client</artifactId>
-                  <version>1.28.0</version>
+                  <version>1.33.4</version>
                   <packaging>jar</packaging>
-                  <file>${bigquery.classpath}/google-api-client-1.28.0.jar</file>
+                  <file>${bigquery.classpath}/google-api-client-1.33.4.jar</file>
                 </configuration>
               </execution>
               <execution>
@@ -1597,9 +1603,9 @@
                 <configuration>
                   <groupId>com.google.apis</groupId>
                   <artifactId>google-api-services-bigquery</artifactId>
-                  <version>v2-rev20200415-1.30.9</version>
+                  <version>v2-rev20220326-1.32.1</version>
                   <packaging>jar</packaging>
-                  <file>${bigquery.classpath}/google-api-services-bigquery-v2-rev20200415-1.30.9.jar</file>
+                  <file>${bigquery.classpath}/google-api-services-bigquery-v2-rev20220326-1.32.1.jar</file>
                 </configuration>
               </execution>
               <execution>
@@ -1611,7 +1617,7 @@
                 <configuration>
                   <groupId>com.google.cloud</groupId>
                   <artifactId>google-cloud-bigquery</artifactId>
-                  <version>1.2.11</version>
+                  <version>1.2.15</version>
                   <packaging>jar</packaging>
                   <file>${bigquery.classpath}/GoogleBigQueryJDBC42.jar</file>
                 </configuration>
@@ -1625,23 +1631,23 @@
                 <configuration>
                   <groupId>com.google.http-client</groupId>
                   <artifactId>google-http-client</artifactId>
-                  <version>1.28.0</version>
+                  <version>1.41.5</version>
                   <packaging>jar</packaging>
-                  <file>${bigquery.classpath}/google-http-client-1.28.0.jar</file>
+                  <file>${bigquery.classpath}/google-http-client-1.41.5.jar</file>
                 </configuration>
               </execution>
               <execution>
-                <id>google-http-client-jackson2</id>
+                <id>google-http-client-gson</id>
                 <phase>initialize</phase>
                 <goals>
                   <goal>install-file</goal>
                 </goals>
                 <configuration>
                   <groupId>com.google.http-client</groupId>
-                  <artifactId>google-http-client-jackson2</artifactId>
-                  <version>1.28.0</version>
+                  <artifactId>google-http-client-gson</artifactId>
+                  <version>1.41.5</version>
                   <packaging>jar</packaging>
-                  <file>${bigquery.classpath}/google-http-client-jackson2-1.28.0.jar</file>
+                  <file>${bigquery.classpath}/google-http-client-gson-1.41.5.jar</file>
                 </configuration>
               </execution>
               <execution>
@@ -1653,9 +1659,9 @@
                 <configuration>
                   <groupId>com.google.oauth-client</groupId>
                   <artifactId>google-oauth-client</artifactId>
-                  <version>1.28.0</version>
+                  <version>1.33.1</version>
                   <packaging>jar</packaging>
-                  <file>${bigquery.classpath}/google-oauth-client-1.28.0.jar</file>
+                  <file>${bigquery.classpath}/google-oauth-client-1.33.1.jar</file>
                 </configuration>
               </execution>
               <execution>
@@ -1667,9 +1673,9 @@
                 <configuration>
                   <groupId>com.google.cloud</groupId>
                   <artifactId>google-cloud-bigquerystorage</artifactId>
-                  <version>0.101.0-beta</version>
+                  <version>2.12.0</version>
                   <packaging>jar</packaging>
-                  <file>${bigquery.classpath}/google-cloud-bigquerystorage-0.101.0-beta.jar</file>
+                  <file>${bigquery.classpath}/google-cloud-bigquerystorage-2.12.0.jar</file>
                 </configuration>
               </execution>
             </executions>

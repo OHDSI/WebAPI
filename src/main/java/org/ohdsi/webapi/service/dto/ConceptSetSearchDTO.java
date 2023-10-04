@@ -2,7 +2,7 @@ package org.ohdsi.webapi.service.dto;
 
 public class ConceptSetSearchDTO {
     private String query;
-    private String[] domainId;
+    private String[] domainIds;
 
     public String getQuery() {
         return query;
@@ -12,11 +12,11 @@ public class ConceptSetSearchDTO {
         this.query = query;
     }
 
-    public String[] getDomainId() {
-        return domainId;
+    public String[] getDomainIds() {
+        return domainIds;
     }
 
-    public void setDomainId(final String[] domainId) {
-        this.domainId = domainId;
+    public void setDomainIds(final String[] domainIds) {
+        this.domainIds = domainIds;
     }
 }

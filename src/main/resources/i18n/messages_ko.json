@@ -810,7 +810,7 @@
         "resetAllCoefficients": "교차 검증 시 모델 적합 간에 모든 계수를 0으로 재설정합니다.",
         "sizeMultiplier": "엑티브 세트(active set)의 사이즈 배율(Size multiplier) :",
         "startingVariance": "자동 검색 교차 검증을 위한 시작 분산; -1 = 데이터 기반의 추정치를 사용합니다:",
-        "umberOfRepetitionsOfData": "교차 검증을 위한 데이터의 반복 횟수:",
+        "minDataCrossValidation": "Minimum amount of data required for cross-validation:",
         "upperPrior": "이전 분산 상한치(Upper prior variance limit) :",
         "useTheKarush": "Karush-Kuhn-Tucker conditions 을 사용하여 검색을 제한합니다:"
       },

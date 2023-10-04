@@ -2,6 +2,9 @@ package org.ohdsi.webapi.vocabulary;
 
 import java.util.Collection;
 
+import org.ohdsi.vocabulary.Concept;
+import org.ohdsi.vocabulary.VocabularySearchProvider;
+import org.ohdsi.vocabulary.VocabularySearchProviderConfig;
 import org.ohdsi.webapi.service.VocabularyService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
@@ -10,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DatabaseSearchProvider implements SearchProvider {
+public class DatabaseSearchProvider implements VocabularySearchProvider {
     @Autowired
     private SourceRepository sourceRepository;
 
@@ -30,7 +33,7 @@ public class DatabaseSearchProvider implements SearchProvider {
     }
 
     @Override
-    public Collection<Concept> executeSearch(SearchProviderConfig config, String query, String rows) throws Exception {
+    public Collection<Concept> executeSearch(VocabularySearchProviderConfig config, String query, String rows) throws Exception {
         Source source = sourceRepository.findBySourceKey(config.getSourceKey());
 
         PreparedStatementRenderer psr = vocabService.prepareExecuteSearchWithQuery(query, source);

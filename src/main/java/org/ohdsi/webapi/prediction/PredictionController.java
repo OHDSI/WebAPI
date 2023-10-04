@@ -21,6 +21,7 @@ import org.ohdsi.webapi.util.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
 
@@ -67,6 +68,9 @@ public class PredictionController {
 
   private PermissionService permissionService;
 
+  @Value("${security.defaultGlobalReadPermissions}")
+  private boolean defaultGlobalReadPermissions;
+  
   @Autowired
   public PredictionController(PredictionService service,
                               GenericConversionService conversionService,
@@ -94,12 +98,13 @@ public class PredictionController {
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
   public List<CommonAnalysisDTO> getAnalysisList() {
-
     return StreamSupport
             .stream(service.getAnalysisList().spliterator(), false)
+            .filter(!defaultGlobalReadPermissions ? entity -> permissionService.hasReadAccess(entity) : entity -> true)
             .map(analysis -> {
               CommonAnalysisDTO dto = conversionService.convert(analysis, CommonAnalysisDTO.class);
               permissionService.fillWriteAccess(analysis, dto);
+              permissionService.fillReadAccess(analysis, dto);
               return dto;
             })
             .collect(Collectors.toList());
@@ -107,11 +112,12 @@ public class PredictionController {
 
   /**
    * Check to see if a prediction design exists by name
-   * 
+   *
    * @summary Prediction design exists by name
    * @param id The prediction design id
    * @param name The prediction design name
-   * @return 1 if a prediction design with the given name and id exist in WebAPI and 0 otherwise
+   * @return 1 if a prediction design with the given name and id exist in WebAPI
+   * and 0 otherwise
    */
   @GET
   @Path("/{id}/exists")

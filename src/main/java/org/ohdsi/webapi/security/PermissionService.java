@@ -136,6 +136,8 @@ public class PermissionService {
         switch (accessType) {
             case WRITE:
                 return permissionSchema.getWritePermissions();
+ 	    case READ:
+	        return permissionSchema.getReadPermissions();
             default:
                 throw new UnsupportedOperationException();
         }
@@ -227,6 +229,25 @@ public class PermissionService {
         return roles;
     }
 
+    public List<RoleDTO> getRolesHavingReadPermissions(EntityType entityType, Number id) {
+        Set<String> permissionTemplates = getTemplatesForType(entityType, AccessType.READ).keySet();
+        preparePermissionCache(entityType, permissionTemplates);
+
+        List<String> permissions = permissionTemplates.stream()
+                .map(pt -> getPermission(pt, id))
+                .collect(Collectors.toList());
+        int fitCount = permissions.size();
+        Map<RoleDTO, Long> roleMap = permissions.stream()
+                .filter(p -> permissionCache.get().get(entityType).get(p) != null)
+                .flatMap(p -> permissionCache.get().get(entityType).get(p).stream())
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+        List<RoleDTO> roles = roleMap.entrySet().stream()
+                .filter(es -> es.getValue() == fitCount)
+                .map(es -> es.getKey())
+                .collect(Collectors.toList());
+        return roles;
+    }
+
     public void clearPermissionCache() {
         this.permissionCache.set(new ConcurrentHashMap<>());
     }
@@ -237,10 +258,39 @@ public class PermissionService {
             try {
                 String login = this.permissionManager.getSubjectName();
                 UserSimpleAuthorizationInfo authorizationInfo = this.permissionManager.getAuthorizationInfo(login);
-                if (!Objects.equals(authorizationInfo.getUserId(), entity.getCreatedBy().getId())) {
+                if (Objects.equals(authorizationInfo.getUserId(), entity.getCreatedBy().getId())) {
+                    hasAccess = true; // the role is the one that created the artifact
+                } else {
                     EntityType entityType = entityPermissionSchemaResolver.getEntityType(entity.getClass());
 
                     List<RoleDTO> roles = getRolesHavingPermissions(entityType, entity.getId());
+
+                    Collection<String> userRoles = authorizationInfo.getRoles();
+                    hasAccess = roles.stream()
+                            .anyMatch(r -> userRoles.stream()
+                            .anyMatch(re -> re.equals(r.getName())));
+                }
+            } catch (Exception e) {
+                logger.error("Error getting user roles and permissions", e);
+                throw new RuntimeException(e);
+            }
+        }
+        return hasAccess;
+    }
+
+
+    public boolean hasReadAccess(CommonEntity entity) {
+        boolean hasAccess = false;
+        if (securityEnabled && entity.getCreatedBy() != null) {
+            try {
+                String login = this.permissionManager.getSubjectName();
+                UserSimpleAuthorizationInfo authorizationInfo = this.permissionManager.getAuthorizationInfo(login);
+                if (Objects.equals(authorizationInfo.getUserId(), entity.getCreatedBy().getId())){
+		    hasAccess = true; // the role is the one that created the artifact
+		} else {
+                    EntityType entityType = entityPermissionSchemaResolver.getEntityType(entity.getClass());
+
+                    List<RoleDTO> roles = getRolesHavingReadPermissions(entityType, entity.getId());
 
                     Collection<String> userRoles = authorizationInfo.getRoles();
                     hasAccess = roles.stream()
@@ -258,6 +308,12 @@ public class PermissionService {
     public void fillWriteAccess(CommonEntity entity, CommonEntityDTO entityDTO) {
         if (securityEnabled && entity.getCreatedBy() != null) {
             entityDTO.setHasWriteAccess(hasWriteAccess(entity));
+        }
+    }
+
+    public void fillReadAccess(CommonEntity entity, CommonEntityDTO entityDTO) {
+        if (securityEnabled && entity.getCreatedBy() != null) {
+            entityDTO.setHasReadAccess(hasReadAccess(entity));
         }
     }
     

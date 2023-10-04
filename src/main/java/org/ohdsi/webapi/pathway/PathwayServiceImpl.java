@@ -96,6 +96,10 @@ import static org.ohdsi.webapi.Constants.Params.JOB_AUTHOR;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Params.PATHWAY_ANALYSIS_ID;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
+import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import org.ohdsi.webapi.security.PermissionService;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageImpl;
 
 @Service
 @Transactional
@@ -115,6 +119,11 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 	private final StepBuilderFactory stepBuilderFactory;
 	private final CohortDefinitionService cohortDefinitionService;
 	private final VersionService<PathwayVersion> versionService;
+
+	private PermissionService permissionService;
+
+	@Value("${security.defaultGlobalReadPermissions}")
+	private boolean defaultGlobalReadPermissions;
 
 	private final List<String> STEP_COLUMNS = Arrays.asList(new String[]{"step_1", "step_2", "step_3", "step_4", "step_5", "step_6", "step_7", "step_8", "step_9", "step_10"});
 
@@ -142,7 +151,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 					@Qualifier("conversionService") GenericConversionService genericConversionService,
 					StepBuilderFactory stepBuilderFactory,
 					CohortDefinitionService cohortDefinitionService,
-					VersionService<PathwayVersion> versionService) {
+					VersionService<PathwayVersion> versionService,
+					PermissionService permissionService) {
 
 		this.pathwayAnalysisRepository = pathwayAnalysisRepository;
 		this.pathwayAnalysisGenerationRepository = pathwayAnalysisGenerationRepository;
@@ -159,6 +169,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 		this.stepBuilderFactory = stepBuilderFactory;
 		this.cohortDefinitionService = cohortDefinitionService;
 		this.versionService = versionService;
+		this.permissionService = permissionService;
 
 		SerializedPathwayAnalysisToPathwayAnalysisConverter.setConversionService(conversionService);
 	}
@@ -218,8 +229,18 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
 	@Override
 	public Page<PathwayAnalysisEntity> getPage(final Pageable pageable) {
+		List<PathwayAnalysisEntity> pathwayList = pathwayAnalysisRepository.findAll(defaultEntityGraph)
+						.stream().filter(!defaultGlobalReadPermissions ? entity -> permissionService.hasReadAccess(entity) : entity -> true)
+						.collect(Collectors.toList());
+		return getPageFromResults(pageable, pathwayList);
+	}
 
-		return pathwayAnalysisRepository.findAll(pageable, defaultEntityGraph);
+	private Page<PathwayAnalysisEntity> getPageFromResults(Pageable pageable, List<PathwayAnalysisEntity> results) {
+		// Calculate the start and end indices for the current page
+		int startIndex = pageable.getPageNumber() * pageable.getPageSize();
+		int endIndex = Math.min(startIndex + pageable.getPageSize(), results.size());
+
+		return new PageImpl<>(results.subList(startIndex, endIndex), pageable, results.size());
 	}
 
 	@Override

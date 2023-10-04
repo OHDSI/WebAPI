@@ -133,6 +133,9 @@ import static org.ohdsi.webapi.Constants.Params.COHORT_CHARACTERIZATION_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_AUTHOR;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
+import org.ohdsi.webapi.security.PermissionService;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageImpl;
 
 @Service
 @Transactional
@@ -207,7 +210,12 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     private final GenericConversionService genericConversionService;
     private final VocabularyService vocabularyService;
     private VersionService<CharacterizationVersion> versionService;
+    
+    private PermissionService permissionService;
 
+    @Value("${security.defaultGlobalReadPermissions}")
+    private boolean defaultGlobalReadPermissions;
+    
     private final Environment env;
 
     public CcServiceImpl(
@@ -231,6 +239,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             final JobInvalidator jobInvalidator,
             final VocabularyService vocabularyService,
             final VersionService<CharacterizationVersion> versionService,
+            final PermissionService permissionService,
             @Qualifier("conversionService") final GenericConversionService genericConversionService,
             Environment env) {
         this.repository = ccRepository;
@@ -251,6 +260,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         this.eventPublisher = eventPublisher;
         this.jobInvalidator = jobInvalidator;
         this.vocabularyService = vocabularyService;
+        this.permissionService = permissionService;
         this.genericConversionService = genericConversionService;
         this.versionService = versionService;
         this.env = env;
@@ -531,12 +541,24 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     @Override
     public Page<CohortCharacterizationEntity> getPageWithLinkedEntities(final Pageable pageable) {
-        return repository.findAll(pageable, defaultEntityGraph);
+      return repository.findAll(pageable, defaultEntityGraph);
+      
     }
 
     @Override
     public Page<CohortCharacterizationEntity> getPage(final Pageable pageable) {
-        return repository.findAll(pageable);
+      List<CohortCharacterizationEntity> ccList = repository.findAll()
+              .stream().filter(!defaultGlobalReadPermissions ? entity -> permissionService.hasReadAccess(entity) : entity -> true)
+              .collect(Collectors.toList());
+      return getPageFromResults(pageable, ccList);
+    }
+    
+    private Page<CohortCharacterizationEntity> getPageFromResults(Pageable pageable, List<CohortCharacterizationEntity> results) {
+      // Calculate the start and end indices for the current page
+      int startIndex = pageable.getPageNumber() * pageable.getPageSize();
+      int endIndex = Math.min(startIndex + pageable.getPageSize(), results.size());      
+      
+      return new PageImpl<>(results.subList(startIndex, endIndex), pageable, results.size());
     }
 
     @Override

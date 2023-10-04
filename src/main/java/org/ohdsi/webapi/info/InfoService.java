@@ -24,7 +24,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.lang3.StringUtils;
-import org.ohdsi.webapi.info.ConfigurationInfo;
+import org.ohdsi.info.ConfigurationInfo;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.stereotype.Controller;
 

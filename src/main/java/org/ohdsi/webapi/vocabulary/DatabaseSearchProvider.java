@@ -2,6 +2,9 @@ package org.ohdsi.webapi.vocabulary;
 
 import java.util.Collection;
 
+import org.ohdsi.vocabulary.Concept;
+import org.ohdsi.vocabulary.SearchProvider;
+import org.ohdsi.vocabulary.SearchProviderConfig;
 import org.ohdsi.webapi.service.VocabularyService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;

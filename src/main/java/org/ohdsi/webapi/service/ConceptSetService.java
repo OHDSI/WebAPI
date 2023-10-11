@@ -409,7 +409,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
             getConceptSetItemRepository().save(csi);
         }
 
-        if (conceptSetSearchService.getConceptSearchProvider().isSearchAvailable()) {
+        if (conceptSetSearchService.getConceptSetSearchProvider().isSearchAvailable()) {
 
             // Index concept set for search
             final ConceptSetExport csExport = getConceptSetForExport(id, new SourceInfo(sourceService.getPriorityVocabularySource()));
@@ -425,7 +425,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
                         return concept;
                     }).collect(Collectors.toList());
 
-            conceptSetSearchService.reindexConceptSet(id, concepts);
+            conceptSetSearchService.getConceptSetSearchProvider().reindexConceptSet(id, concepts);
         }
 
         return true;
@@ -673,7 +673,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
       }
 
       // Delete CS index
-      conceptSetSearchService.deleteConceptSetIndex(id);
+      conceptSetSearchService.getConceptSetSearchProvider().deleteConceptSetIndex(id);
   }
 
     /**
@@ -903,13 +903,13 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Path("/searchAvailable")
     @GET
     public boolean isSearchAvailable() {
-        return conceptSetSearchService.isSearchAvailable();
+        return conceptSetSearchService.getConceptSetSearchProvider().isSearchAvailable();
     }
 
     /**
      * Search for concept sets.
      *
-     * @summary Search for a concept bt search string and domains (search among containing concepts)
+     * @summary Search for concept sets by search string and domains (search among containing concepts)
      * @param sourceKey The source key
      * @param search The ConceptSetSearchDTO
      * @return A collection of concept sets
@@ -920,7 +920,11 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
     public Collection<ConceptSetDTO> executeSearch(@PathParam("sourceKey") String sourceKey, ConceptSetSearchDTO search) {
-        final Set<Integer> ids = conceptSetSearchService.searchConceptSets(search);
+        if (search == null) {
+        	return Collections.emptyList();
+        }
+
+        final Set<Integer> ids = conceptSetSearchService.getConceptSetSearchProvider().executeSearch(search.getQuery(), search.getDomainIds());
 
         if (ids.isEmpty()) {
             return Collections.emptyList();

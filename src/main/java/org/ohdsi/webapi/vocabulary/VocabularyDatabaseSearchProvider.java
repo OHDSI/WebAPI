@@ -4,8 +4,7 @@ import java.util.Collection;
 
 import org.ohdsi.vocabulary.Concept;
 import org.ohdsi.vocabulary.VocabularySearchProvider;
-import org.ohdsi.vocabulary.VocabularySearchProviderConfig;
-import org.ohdsi.webapi.service.VocabularyService;
+import org.ohdsi.vocabulary.VocabularySearchProviderConfig;import org.ohdsi.webapi.service.VocabularyService;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
@@ -13,11 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DatabaseSearchProvider implements VocabularySearchProvider {
+public class VocabularyDatabaseSearchProvider implements VocabularySearchProvider {
     @Autowired
     private SourceRepository sourceRepository;
 
-    private final static int VOCABULARY_PRIORITY = Integer.MAX_VALUE;
+    private final static int DATABASE_SEARCH_PRIORITY = Integer.MAX_VALUE;
 
     @Autowired
     VocabularyService vocabService;
@@ -29,7 +28,7 @@ public class DatabaseSearchProvider implements VocabularySearchProvider {
 
     @Override
     public int getPriority() {
-        return VOCABULARY_PRIORITY;
+        return DATABASE_SEARCH_PRIORITY;
     }
 
     @Override

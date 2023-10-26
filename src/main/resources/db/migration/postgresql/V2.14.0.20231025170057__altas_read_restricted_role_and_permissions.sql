@@ -3,7 +3,7 @@ values (15, 'read restricted Atlas Users', true)
 ;
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission (role_id, permission_id)
-SELECT 15 role_id, permission_id 
+SELECT DISTINCT 15 role_id, permission_id 
     FROM ${ohdsiSchema}.sec_role_permission srp  
        INNER JOIN ${ohdsiSchema}.sec_permission sp ON srp.permission_id = sp.id
     WHERE sp.value IN 

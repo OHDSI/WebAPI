@@ -4,6 +4,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ohdsi.webapi.statistic.dto.AccessTrendDto;
 import org.ohdsi.webapi.statistic.dto.AccessTrendsDto;
+import org.ohdsi.webapi.statistic.dto.EndpointDto;
 import org.ohdsi.webapi.statistic.dto.SourceExecutionDto;
 import org.ohdsi.webapi.statistic.dto.SourceExecutionsDto;
 import org.slf4j.Logger;
@@ -124,7 +125,7 @@ public class StatisticService {
         return new SourceExecutionsDto(executions);
     }
 
-    public AccessTrendsDto getAccessTrends(LocalDate startDate, LocalDate endDate, List<Pair<String, String>> endpoints) {
+    public AccessTrendsDto getAccessTrends(LocalDate startDate, LocalDate endDate, List<EndpointDto> endpoints) {
         Set<Path> paths = getLogPaths(startDate, endDate);
         List<AccessTrendDto> trends = paths.stream()
                 .flatMap(path -> extractAccessTrends(path, endpoints).stream())
@@ -145,11 +146,11 @@ public class StatisticService {
         }
     }
 
-    private List<AccessTrendDto> extractAccessTrends(Path path, List<Pair<String, String>> endpoints) {
+    private List<AccessTrendDto> extractAccessTrends(Path path, List<EndpointDto> endpoints) {
         List<Pattern> patterns = endpoints.stream()
                 .map(endpointPair -> {
-                    String method = endpointPair.getKey();
-                    String endpoint = endpointPair.getValue().replaceAll("\\{\\}", ".*");
+                    String method = endpointPair.getMethod();
+                    String endpoint = endpointPair.getUrlPattern().replaceAll("\\{\\}", ".*");
                     String regexpStr = ENDPOINT_REGEXP.replace("{METHOD_PLACEHOLDER}", method);
                     regexpStr = regexpStr.replace("{ENDPOINT_PLACEHOLDER}", endpoint);
 

@@ -116,7 +116,40 @@
     "incidenceRate": "Incidence Rate",
     "ple": "Population Level Effect Estimation",
     "plp": "Patient Level Prediction",
-    "reusable": "Reusable"
+    "reusable": "Reusable",
+    "addTools": "Add Tool",
+    "loadingTools": "Loading tools",
+    "url": "URL",
+    "apply": "Apply",
+    "tools": "Tools",
+    "added": "Added <%=createdDate%>",
+    "monthsName": {
+      "january": "January",
+      "february": "February",
+      "march": "March",
+      "april": "April",
+      "may": "May",
+      "june": "June",
+      "july": "July",
+      "august": "August",
+      "september": "September",
+      "october": "October",
+      "november": "November",
+      "december": "December"
+    }
+  },
+  "tool":{
+    "name": "* Name",
+    "url": "* URL",
+    "nameValidMess": "Tool name cannot be empty.",
+    "urlValidMess": "Tool url cannot be empty.",
+    "loading": "Loading tools",
+    "error": {
+      "list": "Unable to retrieve the list data at this time; please try again later.",
+      "create": "Failed to create Tool.",
+      "update": "Failed to update Tool.",
+      "delete": "Failed to delete Tool."
+    }
   },
   "commonErrors": {
     "noSources": "The current WebAPI has no sources defined.<br/>Please add one or more on <a href=\"#/configure\">configuration</a> page.",
@@ -139,7 +172,8 @@
     "prediction": "Prediction",
     "profiles": "Profiles",
     "search": "Search",
-    "tagging": "Tagging"
+    "tagging": "Tagging",
+    "tools": "Tools"
   },
   "options": {
     "after": "After",

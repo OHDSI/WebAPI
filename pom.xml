@@ -302,6 +302,9 @@
     <audit.trail.enabled>false</audit.trail.enabled>
     <audit.trail.log.file>/tmp/atlas/audit/audit.log</audit.trail.log.file>
     <audit.trail.log.extraFile>/tmp/atlas/audit/audit-extra.log</audit.trail.log.extraFile>
+
+    <!-- Shiny -->
+    <shiny.enabled>false</shiny.enabled>
   </properties>
 
   <build>
@@ -1908,6 +1911,82 @@
           <type>jar</type>
         </dependency>
       </dependencies>
+    </profile>
+    <profile>
+      <id>webapi-shiny</id>
+      <properties>
+        <shiny.enabled>true</shiny.enabled>
+        <shiny.atlas.url>http://localhost/Atlas</shiny.atlas.url>
+        <shiny.directory>src/main/resources/shiny</shiny.directory>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.squareup.okhttp3</groupId>
+          <artifactId>okhttp</artifactId>
+          <version>4.12.0</version>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-clean-plugin</artifactId>
+            <version>3.3.2</version>
+            <configuration>
+              <filesets>
+                <fileset>
+                  <directory>${shiny.directory}</directory>
+                  <includes>
+                    <include>shiny-cohortCounts.zip</include>
+                  </includes>
+                </fileset>
+              </filesets>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-scm-plugin</artifactId>
+            <version>2.0.1</version>
+            <configuration>
+              <connectionUrl>scm:git:git@github.com:OdyOSG/AtlasShinyExport.git</connectionUrl>
+              <scmVersion>main</scmVersion>
+              <scmVersionType>branch</scmVersionType>
+            </configuration>
+            <executions>
+              <execution>
+                <id>checkout-rshiny</id>
+                <phase>generate-resources</phase>
+                <goals>
+                  <goal>checkout</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>3.6.0</version>
+            <executions>
+              <execution>
+                <id>build-cohortCounts-archive</id>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+                <phase>generate-resources</phase>
+                <configuration>
+                  <appendAssemblyId>false</appendAssemblyId>
+                  <archiveBaseDirectory>${project.build.directory}/checkout</archiveBaseDirectory>
+                  <outputDirectory>${shiny.directory}</outputDirectory>
+                  <descriptors>
+                    <descriptor>src/main/assembly/shiny-cohortCounts.xml</descriptor>
+                  </descriptors>
+                  <finalName>shiny-cohortCounts</finalName>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>

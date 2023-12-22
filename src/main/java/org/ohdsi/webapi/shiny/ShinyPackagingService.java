@@ -6,6 +6,6 @@ import java.nio.file.Path;
 
 public interface ShinyPackagingService {
     CommonAnalysisType getType();
-    TemporaryFile packageApp(Integer analysisId, String sourceKey, PackagingStrategy packaging);
+    TemporaryFile packageApp(Integer analysisId, String sourceKey);
     ApplicationBrief getBrief(Integer analysisId, String sourceKey);
 }

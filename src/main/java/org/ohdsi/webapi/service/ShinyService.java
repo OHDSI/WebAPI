@@ -3,6 +3,8 @@ package org.ohdsi.webapi.service;
 import com.odysseusinc.arachne.commons.api.v1.dto.CommonAnalysisType;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.ohdsi.webapi.shiny.ApplicationBrief;
+import org.ohdsi.webapi.shiny.PackagingStrategies;
+import org.ohdsi.webapi.shiny.PackagingStrategy;
 import org.ohdsi.webapi.shiny.PositConnectClient;
 import org.ohdsi.webapi.shiny.ShinyPackagingService;
 import org.ohdsi.webapi.shiny.ShinyPublishedEntity;
@@ -16,6 +18,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
@@ -39,7 +42,6 @@ import java.util.stream.Collectors;
 
 @Component
 @ConditionalOnProperty(name = "shiny.enabled", havingValue = "true")
-@Path("/shiny")
 public class ShinyService {
     private final Map<CommonAnalysisType, ShinyPackagingService> servicesMap;
     @Autowired
@@ -48,63 +50,24 @@ public class ShinyService {
     private PermissionManager permissionManager;
     @Autowired
     private PositConnectClient connectClient;
+
+    @Inject
     public ShinyService(List<ShinyPackagingService> services) {
         servicesMap = services.stream().collect(Collectors.toMap(ShinyPackagingService::getType, Function.identity()));
     }
 
-    @GET
-    @Path("/download/{type}/{id}/{sourceKey}")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    @DataSourceAccess
-    public Response downloadShinyApp(
-            @PathParam("type") String type,
-            @PathParam("id") final int id,
-            @PathParam("sourceKey") @SourceKey String sourceKey
-    ) throws IOException {
-        TemporaryFile data = packageShinyApp(type, id, sourceKey);
-        ContentDisposition contentDisposition = ContentDisposition.type("attachment")
-                .fileName(data.getFilename())
-                .build();
-        return Response
-                .ok(Files.newInputStream(data.getFile()))
-                .header(HttpHeaders.CONTENT_TYPE, "application/zip")
-                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
-                .build();
-    }
-
-    @GET
-    @Path("/publish/{type}/{id}/{sourceKey}")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    @DataSourceAccess
-    @Transactional
-    public Response publishShinyApp(
-            @PathParam("type") String type,
-            @PathParam("id") final int id,
-            @PathParam("sourceKey") @SourceKey String sourceKey
-    ) {
-        publishApp(type, id, sourceKey);
-        return Response.ok().build();
-    }
-
-    private void publishApp(String type, int id, String sourceKey) {
-        TemporaryFile data = packageShinyApp(type, id, sourceKey);
+    public void publishApp(String type, int id, String sourceKey) {
+        TemporaryFile data = packageShinyApp(type, id, sourceKey, PackagingStrategies.targz());
         ShinyPublishedEntity publication = getPublication(id, sourceKey);
         ShinyPackagingService service = findShinyService(CommonAnalysisType.valueOf(type.toUpperCase()));
         UUID contentId = Optional.ofNullable(publication.getContentId())
                 .orElseGet(() -> connectClient.createContentItem(service.getBrief(id, sourceKey)));
-        TemporaryFile bundle = prepareBundle(data);
-        Integer bundleId = connectClient.uploadBundle(contentId, bundle);
+        Integer bundleId = connectClient.uploadBundle(contentId, data);
         connectClient.deployBundle(contentId, bundleId);
     }
 
-    private TemporaryFile prepareBundle(TemporaryFile data) {
-        return null;
-    }
-
     private ShinyPublishedEntity getPublication(int id, String sourceKey) {
-        return shinyPublishedRepository.findByAnalysisIdAAndSourceKey(Integer.toUnsignedLong(id), sourceKey).orElseGet(() -> {
+        return shinyPublishedRepository.findByAnalysisIdAndSourceKey(Integer.toUnsignedLong(id), sourceKey).orElseGet(() -> {
             ShinyPublishedEntity entity = new ShinyPublishedEntity();
             entity.setAnalysisId(Integer.toUnsignedLong(id));
             entity.setSourceKey(sourceKey);
@@ -114,10 +77,10 @@ public class ShinyService {
         });
     }
 
-    private TemporaryFile packageShinyApp(String type, int id, String sourceKey) {
+    public TemporaryFile packageShinyApp(String type, int id, String sourceKey, PackagingStrategy packaging) {
         CommonAnalysisType analysisType = CommonAnalysisType.valueOf(type.toUpperCase());
         ShinyPackagingService service = findShinyService(analysisType);
-        return service.packageApp(id, sourceKey);
+        return service.packageApp(id, sourceKey, packaging);
     }
 
     private ShinyPackagingService findShinyService(CommonAnalysisType type) {

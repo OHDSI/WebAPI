@@ -49,7 +49,7 @@ public class CohortCountsShinyPackagingService implements ShinyPackagingService 
     }
 
     @Override
-    public TemporaryFile packageApp(Integer cohortId, String sourceKey) {
+    public TemporaryFile packageApp(Integer cohortId, String sourceKey, PackagingStrategy packaging) {
         return TempFileUtils.doInDirectory(path -> {
             CohortDefinition cohort = cohortDefinitionRepository.findOne(cohortId);
             ExceptionUtils.throwNotFoundExceptionIfNull(cohort, String.format("There is no cohort definition with id = %d.", cohortId));
@@ -64,8 +64,7 @@ public class CohortCountsShinyPackagingService implements ShinyPackagingService 
                 writeInclusionRuleReport(dataDir, byPersonReport, sourceKey + "_by_person.json");
                 writeTextFile(dataDir.resolve("cohort_link.txt"), pw -> pw.printf("%s/#/cohortdefinition/%s", atlasUrl, cohortId));
                 writeTextFile(dataDir.resolve("cohort_name.txt"), pw -> pw.print(cohort.getName()));
-                Path appArchive = Files.createTempFile("shinyapp_", ".zip");
-                ZipUtils.zipDirectory(appArchive, path);
+                Path appArchive = packaging.apply(path);
                 return new TemporaryFile(String.format("%s_cohortCounts_shinyApp.zip", CommonFilenameUtils.sanitizeFilename(cohort.getName())), appArchive);
             } catch (IOException e) {
                 log.error("Failed to prepare Shiny application", e);

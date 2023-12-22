@@ -34,6 +34,7 @@ public class ShinyPublishedEntity extends CommonEntity<Long> {
     private String sourceKey;
     @Column(name = "execution_id")
     private Long executionId;
+    @Column(name = "content_id")
     private UUID contentId;
 
     public Long getId() {

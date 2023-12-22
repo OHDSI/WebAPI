@@ -7,5 +7,5 @@ import java.util.Optional;
 
 @Repository
 public interface ShinyPublishedRepository extends JpaRepository<ShinyPublishedEntity, Long> {
-    Optional<ShinyPublishedEntity> findByAnalysisIdAAndSourceKey(Long id, String sourceKey);
+    Optional<ShinyPublishedEntity> findByAnalysisIdAndSourceKey(Long id, String sourceKey);
 }

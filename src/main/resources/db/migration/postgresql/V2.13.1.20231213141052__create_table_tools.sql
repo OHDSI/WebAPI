@@ -6,8 +6,8 @@ CREATE TABLE IF NOT EXISTS ${ohdsiSchema}.tool (
   is_enabled BOOLEAN,
   created_by_id INTEGER,
   modified_by_id INTEGER,
-  created_date DATE,
-  modified_date DATE
+  created_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (now()),
+  modified_date TIMESTAMP WITH TIME ZONE
 );
 
 ALTER TABLE ${ohdsiSchema}.tool ADD CONSTRAINT PK_tool PRIMARY KEY (id);

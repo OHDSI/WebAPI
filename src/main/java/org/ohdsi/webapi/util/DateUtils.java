@@ -10,7 +10,7 @@ public class DateUtils {
 
     public static String dateToString(Date date) {
         if (date == null) return null;
-        DateFormat df = new SimpleDateFormat(DATE_FORMAT);
+        DateFormat df = new SimpleDateFormat(DATE_TIME_FORMAT);
         return df.format(date);
     }
 }

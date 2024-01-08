@@ -4,7 +4,13 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.webapi.model.CommonEntity;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Id;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Column;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.Objects;
 
 @Entity
@@ -21,8 +27,16 @@ public class Tool extends CommonEntity<Integer> {
     )
     @GeneratedValue(generator = "tool_generator")
     private Integer id;
+    @Size(max = 255)
+    @NotNull
+    @Column(name = "name", nullable = false)
     private String name;
+    @Size(max = 1000)
+    @NotNull
+    @Column(name = "url", nullable = false, length = 1000)
     private String url;
+    @Size(max = 1000)
+    @Column(name = "description", length = 1000)
     private String description;
     @Column(name = "is_enabled")
     private Boolean isEnabled;

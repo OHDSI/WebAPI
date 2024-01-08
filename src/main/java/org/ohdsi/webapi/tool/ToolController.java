@@ -10,9 +10,9 @@ import java.util.List;
 @Controller
 @Path("/tool")
 public class ToolController {
-    private final ToolService service;
+    private final ToolServiceImpl service;
 
-    public ToolController(ToolService service) {
+    public ToolController(ToolServiceImpl service) {
         this.service = service;
     }
 

@@ -40,11 +40,11 @@ public class ToolServiceImpl extends AbstractDaoService implements ToolService {
             throw new ForbiddenException();
         }
         UserEntity currentUser = permissionManager.getCurrentUser();
-        Tool tool = updateToolFromDTO(toolDTO, currentUser);
+        Tool tool = saveToolFromDTO(toolDTO, currentUser);
         return toolConvertor.toDTO(toolRepository.saveAndFlush(tool));
     }
 
-    private Tool updateToolFromDTO(ToolDTO toolDTO, UserEntity currentUser) {
+    private Tool saveToolFromDTO(ToolDTO toolDTO, UserEntity currentUser) {
         Tool tool = toolConvertor.toEntity(toolDTO);
         if (toolDTO.getId() == null) {
             tool.setCreatedBy(currentUser);

@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.shiny;
 
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -11,6 +12,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.cert.ocsp.Req;
 import org.ohdsi.webapi.service.ShinyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +25,8 @@ import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.text.MessageFormat;
+import java.time.Instant;
 import java.util.UUID;
 
 @Service
@@ -32,6 +36,7 @@ public class PositConnectClient implements InitializingBean {
 
     private static final Logger log = LoggerFactory.getLogger(PositConnectClient.class);
     private static final MediaType JSON_TYPE = MediaType.parse(org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE);
+    private static final MediaType OCTET_STREAM_TYPE = MediaType.parse(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE);
     private static final String HEADER_AUTH = "Authorization";
     private static final String AUTH_PREFIX = "Key";
 
@@ -50,31 +55,44 @@ public class PositConnectClient implements InitializingBean {
         contentItem.description = brief.getDescription();
         RequestBody body = RequestBody.create(toJson(contentItem), JSON_TYPE);
         String url = connect("/v1/content");
+        ContentItemResponse response = doCall(ContentItemResponse.class, url, body);
+        return response.guid;
+    }
+
+    public String uploadBundle(UUID contentId, TemporaryFile bundle) {
+        String url = connect(MessageFormat.format("/v1/content/{0}/bundles", contentId));
+        BundleResponse response = doCall(BundleResponse.class, url, RequestBody.create(bundle.getFile().toFile(), OCTET_STREAM_TYPE));
+        return response.id;
+    }
+
+    public String deployBundle(UUID contentId, String bundleId) {
+        String url = connect(MessageFormat.format("/v1/content/{0}/deploy", contentId));
+        BundleRequest request = new BundleRequest();
+        request.bundleId = bundleId;
+        RequestBody requestBody = RequestBody.create(toJson(request), JSON_TYPE);
+        BundleDeploymentResponse response = doCall(BundleDeploymentResponse.class, url, requestBody);
+        return response.taskId;
+    }
+
+    private <T> T doCall(Class<T> responseClass, String url, RequestBody requestBody) {
         Request.Builder request = new Request.Builder()
                 .url(url)
-                .post(body);
+                .post(requestBody);
         Call call = call(request, apiKey);
         try(Response response = call.execute()) {
-            log.debug("Call [{}] returned [{}]", url, response.code());
+            if (!response.isSuccessful()) {
+                log.error("Request [{}] returned code: [{}], message: [{}]", url, response.code(), response.message());
+                throw new PositConnectClientException(MessageFormat.format("Request [{0}] returned code: [{1}], message: [{2}]", url, response.code(), response.message()));
+            }
             if (response.body() == null) {
                 log.error("Failed to create a content, an empty result returned [{}]", url);
                 throw new PositConnectClientException("Failed to create a content, an empty result returned");
             }
-            ContentItemResponse contentItemResponse = objectMapper.readValue(response.body().charStream(),
-                    ContentItemResponse.class);
-            return contentItemResponse.guid;
+            return objectMapper.readValue(response.body().charStream(), responseClass);
         } catch (IOException e) {
             log.error("Failed to execute call [{}]", url, e);
-            throw new PositConnectClientException("Failed to execute call: " + e.getMessage());
+            throw new PositConnectClientException(MessageFormat.format("Failed to execute call [{0}]: {1}", url, e.getMessage()));
         }
-    }
-
-    public Integer uploadBundle(UUID contentId, TemporaryFile bundle) {
-        return null;
-    }
-
-    public String deployBundle(UUID contentId, Integer bundleId) {
-        return null;
     }
 
     private <T> String toJson(T value) {
@@ -123,5 +141,40 @@ public class PositConnectClient implements InitializingBean {
         @JsonProperty("owner_guid")
         public UUID ownerGuid;
         public String id;
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    static class BundleResponse {
+        public String id;
+        @JsonProperty("content_guid")
+        public String contentGuid;
+        @JsonProperty("created_time")
+        public Instant createdTime;
+        @JsonProperty("cluster_name")
+        public String clusterName;
+        @JsonProperty("image_name")
+        public String imageName;
+        @JsonProperty("r_version")
+        public String rVersion;
+        @JsonProperty("r_environment_management")
+        public Boolean rEnvironmentManagement;
+        @JsonProperty("py_version")
+        public String pyVersion;
+        @JsonProperty("py_environment_management")
+        public Boolean pyEnvironmentManagement;
+        @JsonProperty("quarto_version")
+        public String quartoVersion;
+        public Boolean active;
+        public Integer size;
+    }
+
+    static class BundleRequest {
+        @JsonProperty("bundle_id")
+        public String bundleId;
+    }
+
+    static class BundleDeploymentResponse {
+        @JsonProperty("task_id")
+        public String taskId;
     }
 }

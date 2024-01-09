@@ -13,6 +13,8 @@ import org.ohdsi.webapi.shiny.TemporaryFile;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -43,6 +45,7 @@ import java.util.stream.Collectors;
 @Component
 @ConditionalOnProperty(name = "shiny.enabled", havingValue = "true")
 public class ShinyService {
+    private static final Logger log = LoggerFactory.getLogger(ShinyService.class);
     private final Map<CommonAnalysisType, ShinyPackagingService> servicesMap;
     @Autowired
     private ShinyPublishedRepository shinyPublishedRepository;
@@ -62,8 +65,9 @@ public class ShinyService {
         ShinyPackagingService service = findShinyService(CommonAnalysisType.valueOf(type.toUpperCase()));
         UUID contentId = Optional.ofNullable(publication.getContentId())
                 .orElseGet(() -> connectClient.createContentItem(service.getBrief(id, sourceKey)));
-        Integer bundleId = connectClient.uploadBundle(contentId, data);
-        connectClient.deployBundle(contentId, bundleId);
+        String bundleId = connectClient.uploadBundle(contentId, data);
+        String taskId = connectClient.deployBundle(contentId, bundleId);
+        log.debug("Bundle [{}] is deployed to Shiny server, task id: [{}]", id, taskId);
     }
 
     private ShinyPublishedEntity getPublication(int id, String sourceKey) {

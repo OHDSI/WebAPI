@@ -185,4 +185,25 @@ public class PathwayAnalysisEntity extends CommonEntityExt<Integer> {
     public void setTags(Set<Tag> tags) {
         this.tags = tags;
     }
+
+    public void addPathwayEventCohort(PathwayEventCohort pathwayEventCohort) {
+        this.eventCohorts.add(pathwayEventCohort);
+        pathwayEventCohort.setPathwayAnalysis(this);
+    }
+
+    public void removePathwayEventCohort(PathwayEventCohort pathwayEventCohort) {
+        this.eventCohorts.remove(pathwayEventCohort);
+        pathwayEventCohort.setPathwayAnalysis(null);
+    }
+
+    public void addPathwayTargetCohort(PathwayTargetCohort pathwayTargetCohort) {
+        this.targetCohorts.add(pathwayTargetCohort);
+        pathwayTargetCohort.setPathwayAnalysis(this);
+    }
+
+    public void removePathwayTargetCohort(PathwayTargetCohort pathwayTargetCohort) {
+        this.targetCohorts.remove(pathwayTargetCohort);
+        pathwayTargetCohort.setPathwayAnalysis(null);
+    }
+
 }

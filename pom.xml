@@ -1480,7 +1480,7 @@
                   <artifactId>databricks-jdbc</artifactId>
                   <version>2.6.36</version>
                   <packaging>jar</packaging>
-                  <file>${spark.classpath}/spark-2.6.36.jar</file>
+                  <file>${spark.classpath}/DatabricksJDBC42.jar</file>
                 </configuration>
               </execution>
             </executions>

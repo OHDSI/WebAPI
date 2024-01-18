@@ -1,8 +1,9 @@
-FROM quay.io/cdis/maven:3.6-jdk-11 as builder
+FROM maven:3.6-jdk-11 as builder
 
 WORKDIR /code
 
 ARG MAVEN_PROFILE=webapi-docker
+ARG MAVEN_PARAMS="" # can use maven options, e.g. -DskipTests=true -DskipUnitTests=true
 
 ARG OPENTELEMETRY_JAVA_AGENT_VERSION=1.17.0
 RUN curl -LSsO https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${OPENTELEMETRY_JAVA_AGENT_VERSION}/opentelemetry-javaagent.jar
@@ -11,14 +12,14 @@ RUN curl -LSsO https://github.com/open-telemetry/opentelemetry-java-instrumentat
 COPY pom.xml /code/
 RUN mkdir .git \
     && mvn package \
-     -P${MAVEN_PROFILE}
+    -P${MAVEN_PROFILE}
 
 ARG GIT_BRANCH=unknown
 ARG GIT_COMMIT_ID_ABBREV=unknown
 
 # Compile code and repackage it
 COPY src /code/src
-RUN mvn package \
+RUN mvn package ${MAVEN_PARAMS} \
     -Dgit.branch=${GIT_BRANCH} \
     -Dgit.commit.id.abbrev=${GIT_COMMIT_ID_ABBREV} \
     -P${MAVEN_PROFILE} \
@@ -28,10 +29,8 @@ RUN mvn package \
     && jar -xf WebAPI.war \
     && rm WebAPI.war
 
-# OHDSI WebAPI and ATLAS web application running as a Spring Boot application with Java 11
-FROM quay.io/cdis/eclipse-temurin:8-jre-focal
-
-MAINTAINER Lee Evans - www.ltscomputingllc.com
+# OHDSI WebAPI and ATLAS web application running as a Spring Boot application with Java 8
+FROM amazoncorretto:8u402-al2023
 
 # Any Java options to pass along, e.g. memory, garbage collection, etc.
 ENV JAVA_OPTS=""
@@ -57,6 +56,13 @@ COPY --from=builder /code/war/WEB-INF/classes WEB-INF/classes
 COPY --from=builder /code/war/META-INF META-INF
 
 EXPOSE 8080
+
+USER 0
+
+RUN mkdir /usr/local/share/aws-certs \
+    && curl https://truststore.pki.rds.amazonaws.com/us-east-1/us-east-1-bundle.pem -o /usr/local/share/aws-certs/us-east-1-bundle.pem \
+    && cd $JAVA_HOME/jre/lib/security \
+    && keytool -import -trustcacerts -storepass changeit -noprompt -alias aws -file /usr/local/share/aws-certs/us-east-1-bundle.pem 
 
 USER 101
 

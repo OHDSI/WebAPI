@@ -296,6 +296,7 @@
 
     <audit.trail.enabled>false</audit.trail.enabled>
     <audit.trail.log.file>/tmp/atlas/audit/audit.log</audit.trail.log.file>
+    <audit.trail.log.file.pattern>/tmp/atlas/audit/audit-%d{yyyy-MM-dd}-%i.log</audit.trail.log.file.pattern>
     <audit.trail.log.extraFile>/tmp/atlas/audit/audit-extra.log</audit.trail.log.extraFile>
   </properties>
   <build>

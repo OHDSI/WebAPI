@@ -116,7 +116,40 @@
     "incidenceRate": "Incidence Rate",
     "ple": "Population Level Effect Estimation",
     "plp": "Patient Level Prediction",
-    "reusable": "Reusable"
+    "reusable": "Reusable",
+    "addTools": "도구 추가",
+    "loadingTools": "도구 로딩",
+    "url": "URL",
+    "apply": "적용하다",
+    "tools": "도구",
+    "added": "추가됨 <%=createdDate%>",
+    "monthsName": {
+      "january": "일월",
+      "february": "이월",
+      "march": "삼월",
+      "april": "사월",
+      "may": "오월",
+      "june": "유월",
+      "july": "칠월",
+      "august": "팔월",
+      "september": "구월",
+      "october": "시월",
+      "november": "십일월",
+      "december": "십이월"
+    }
+  },
+  "tool":{
+    "name": "* 이름",
+    "url": "* URL",
+    "nameValidMess": "도구 이름은 비워둘 수 없습니다.",
+    "urlValidMess": "도구 URL은 비워둘 수 없습니다.",
+    "loading": "도구 로딩",
+    "error": {
+      "list": "현재 목록 데이터를 가져올 수 없습니다. 나중에 다시 시도해주세요.",
+      "create": "도구를 만들지 못했습니다.",
+      "update": "도구 업데이트에 실패했습니다.",
+      "delete": "도구 삭제에 실패했습니다."
+    }
   },
   "commonErrors": {
     "noSources": "현재 WebAPI에 정의된 소스가 없습니다. <br/> 해당 페이지에서 하나 이상을 추가하십시오 <a href=\"#/configure\">configuration</a> page.",
@@ -139,7 +172,8 @@
     "prediction": "예측",
     "profiles": "프로필",
     "search": "검색",
-    "tagging": "Tagging"
+    "tagging": "Tagging",
+    "tools": "도구"
   },
   "options": {
     "after": "다음",

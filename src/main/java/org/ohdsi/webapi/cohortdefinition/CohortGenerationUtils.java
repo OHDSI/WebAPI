@@ -2,6 +2,7 @@ package org.ohdsi.webapi.cohortdefinition;
 
 import org.apache.commons.lang3.StringUtils;
 
+import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.InclusionRule;
 import org.ohdsi.sql.SqlRender;
@@ -10,6 +11,7 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.util.ObjectUtils;
 
 
 import java.util.Arrays;
@@ -46,6 +48,7 @@ public class CohortGenerationUtils {
   public static String[] buildGenerationSql(CohortGenerationRequest request) {
 
     Source source = request.getSource();
+    CohortExpression expression = request.getExpression();
 
     String cdmSchema = SourceUtils.getCdmQualifier(source);
     String vocabSchema = SourceUtils.getVocabQualifierOrNull(source);
@@ -59,10 +62,12 @@ public class CohortGenerationUtils {
     options.cdmSchema = cdmSchema;
     options.vocabularySchema = vocabSchema;
     options.generateStats = true; // always generate with stats
+    options.retainCohortCovariates = !ObjectUtils.isEmpty(request.getRetainCohortCovariates()) && request.getRetainCohortCovariates(); // this field decides whether to retain cohort covariates
+    options.sourceKey = String.format("'%s'", request.getSource().getSourceKey()); // source key is a string literal
 
     final String oracleTempSchema = SourceUtils.getTempQualifier(source);
 
-    String expressionSql = expressionQueryBuilder.buildExpressionQuery(request.getExpression(), options);
+    String expressionSql = expressionQueryBuilder.buildExpressionQuery(expression, options);
     expressionSql = SqlRender.renderSql(
       expressionSql,
       new String[] {"target_cohort_table", 
@@ -81,6 +86,7 @@ public class CohortGenerationUtils {
         "@target_database_schema.cohort_inclusion"
       }
     );
+    expressionSql = expressionSql.replaceAll("@results_database_schema", request.getTargetSchema());
     sqlBuilder.append(expressionSql);
 
     String renderedSql = SqlRender.renderSql(

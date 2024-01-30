@@ -41,6 +41,7 @@ import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Params.SESSION_ID;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
 import static org.ohdsi.webapi.Constants.Params.TARGET_DATABASE_SCHEMA;
+import static org.ohdsi.webapi.Constants.Params.RETAIN_COHORT_COVARIATES;
 
 @Component
 @DependsOn("flyway")
@@ -71,7 +72,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     this.generationCacheHelper = generationCacheHelper;
   }
 
-  public JobExecutionResource generateCohortViaJob(UserEntity userEntity, CohortDefinition cohortDefinition, Source source) {
+  public JobExecutionResource generateCohortViaJob(UserEntity userEntity, CohortDefinition cohortDefinition, Source source, Boolean retainCohortCovariates) {
 
     CohortGenerationInfo info = cohortDefinition.getGenerationInfoList().stream()
             .filter(val -> Objects.equals(val.getId().getSourceId(), source.getSourceId())).findFirst()
@@ -86,7 +87,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
 
     cohortDefinitionRepository.save(cohortDefinition);
 
-    return runGenerateCohortJob(cohortDefinition, source);
+    return runGenerateCohortJob(cohortDefinition, source, retainCohortCovariates);
   }
 
   private Job buildGenerateCohortJob(CohortDefinition cohortDefinition, Source source, JobParameters jobParameters) {
@@ -121,13 +122,13 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     return generateJobBuilder.build();
   }
 
-  private JobExecutionResource runGenerateCohortJob(CohortDefinition cohortDefinition, Source source) {
-    final JobParametersBuilder jobParametersBuilder = getJobParametersBuilder(source, cohortDefinition);
+  private JobExecutionResource runGenerateCohortJob(CohortDefinition cohortDefinition, Source source, Boolean retainCohortCovariates) {
+    final JobParametersBuilder jobParametersBuilder = getJobParametersBuilder(source, cohortDefinition, retainCohortCovariates);
     Job job = buildGenerateCohortJob(cohortDefinition, source, jobParametersBuilder.toJobParameters());
     return jobService.runJob(job, jobParametersBuilder.toJobParameters());
   }
 
-  private JobParametersBuilder getJobParametersBuilder(Source source, CohortDefinition cohortDefinition) {
+  private JobParametersBuilder getJobParametersBuilder(Source source, CohortDefinition cohortDefinition, Boolean retainCohortCovariates) {
 
     JobParametersBuilder builder = new JobParametersBuilder();
     builder.addString(JOB_NAME, String.format("Generating cohort %d : %s (%s)", cohortDefinition.getId(), source.getSourceName(), source.getSourceKey()));
@@ -136,6 +137,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     builder.addString(COHORT_DEFINITION_ID, String.valueOf(cohortDefinition.getId()));
     builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
     builder.addString(GENERATE_STATS, Boolean.TRUE.toString());
+    builder.addString(RETAIN_COHORT_COVARIATES, String.valueOf(retainCohortCovariates));
     return builder;
   }
 

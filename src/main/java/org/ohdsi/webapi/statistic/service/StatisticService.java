@@ -117,26 +117,26 @@ public class StatisticService {
         logFileDateFormat = new SimpleDateFormat(dateString);
     }
 
-    public SourceExecutionsDto getSourceExecutions(LocalDate startDate, LocalDate endDate, String sourceKey) {
+    public SourceExecutionsDto getSourceExecutions(LocalDate startDate, LocalDate endDate, String sourceKey, String userID) {
         Set<Path> paths = getLogPaths(startDate, endDate);
         List<SourceExecutionDto> executions = paths.stream()
-                .flatMap(path -> extractSourceExecutions(path, sourceKey).stream())
+                .flatMap(path -> extractSourceExecutions(path, sourceKey, userID).stream())
                 .collect(Collectors.toList());
         return new SourceExecutionsDto(executions);
     }
 
-    public AccessTrendsDto getAccessTrends(LocalDate startDate, LocalDate endDate, List<EndpointDto> endpoints) {
+    public AccessTrendsDto getAccessTrends(LocalDate startDate, LocalDate endDate, List<EndpointDto> endpoints, String userID) {
         Set<Path> paths = getLogPaths(startDate, endDate);
         List<AccessTrendDto> trends = paths.stream()
-                .flatMap(path -> extractAccessTrends(path, endpoints).stream())
+                .flatMap(path -> extractAccessTrends(path, endpoints, userID).stream())
                 .collect(Collectors.toList());
         return new AccessTrendsDto(trends);
     }
 
-    private List<SourceExecutionDto> extractSourceExecutions(Path path, String sourceKey) {
+    private List<SourceExecutionDto> extractSourceExecutions(Path path, String sourceKey, String userID) {
         try (Stream<String> stream = Files.lines(path)) {
             return stream
-                    .map(str -> getMatchedExecution(str, sourceKey))
+                    .map(str -> getMatchedExecution(str, sourceKey, userID))
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .collect(Collectors.toList());
@@ -146,13 +146,14 @@ public class StatisticService {
         }
     }
 
-    private List<AccessTrendDto> extractAccessTrends(Path path, List<EndpointDto> endpoints) {
+    private List<AccessTrendDto> extractAccessTrends(Path path, List<EndpointDto> endpoints, String userID) {
         List<Pattern> patterns = endpoints.stream()
                 .map(endpointPair -> {
                     String method = endpointPair.getMethod();
                     String endpoint = endpointPair.getUrlPattern().replaceAll("\\{\\}", ".*");
                     String regexpStr = ENDPOINT_REGEXP.replace("{METHOD_PLACEHOLDER}", method);
                     regexpStr = regexpStr.replace("{ENDPOINT_PLACEHOLDER}", endpoint);
+                    regexpStr = regexpStr.replace("{USERID_PLACEHOLDER}", userID);
 
                     return Pattern.compile(regexpStr);
                 })
@@ -163,7 +164,7 @@ public class StatisticService {
                             patterns.stream()
                                     .map(pattern -> pattern.matcher(str))
                                     .filter(matcher -> matcher.matches())
-                                    .map(matcher -> new AccessTrendDto(matcher.group(2), LocalDate.parse(matcher.group(1))))
+                                    .map(matcher -> new AccessTrendDto(matcher.group(2), LocalDate.parse(matcher.group(1)), matcher.group(3)))
                                     .findFirst()
                     )
                     .filter(Optional::isPresent)
@@ -175,12 +176,12 @@ public class StatisticService {
         }
     }
 
-    private Optional<SourceExecutionDto> getMatchedExecution(String str, String sourceKey) {
+    private Optional<SourceExecutionDto> getMatchedExecution(String str, String sourceKey, String userID) {
         return patternMap.entrySet().stream()
                 .map(entry -> new ImmutablePair<>(entry.getKey(), entry.getValue().matcher(str)))
                 .filter(pair -> pair.getValue().matches())
                 .filter(pair -> sourceKey == null || (sourceKey != null && sourceKey.equals(pair.getValue().group(2))))
-                .map(pair -> new SourceExecutionDto(pair.getValue().group(2), pair.getKey(), LocalDate.parse(pair.getValue().group(1))))
+                .map(pair -> new SourceExecutionDto(pair.getValue().group(2), pair.getKey(), LocalDate.parse(pair.getValue().group(1)), userID))
                 .findFirst();
     }
 

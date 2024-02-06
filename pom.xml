@@ -1483,6 +1483,17 @@
       </build>
     </profile>
     <profile>
+      <id>webapi-databricks</id>
+      <dependencies>
+        <dependency>
+          <groupId>com.databricks</groupId>
+          <artifactId>databricks-jdbc</artifactId>
+          <version>2.6.34</version>
+          <scope>runtime</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
       <id>webapi-bigquery</id>
       <properties>
         <bigquery.enabled>true</bigquery.enabled>

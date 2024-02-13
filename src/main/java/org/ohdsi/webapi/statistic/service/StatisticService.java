@@ -1,7 +1,6 @@
 package org.ohdsi.webapi.statistic.service;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.ohdsi.webapi.statistic.dto.AccessTrendDto;
 import org.ohdsi.webapi.statistic.dto.AccessTrendsDto;
 import org.ohdsi.webapi.statistic.dto.EndpointDto;
@@ -22,14 +21,11 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -117,26 +113,26 @@ public class StatisticService {
         logFileDateFormat = new SimpleDateFormat(dateString);
     }
 
-    public SourceExecutionsDto getSourceExecutions(LocalDate startDate, LocalDate endDate, String sourceKey, String userID) {
+    public SourceExecutionsDto getSourceExecutions(LocalDate startDate, LocalDate endDate, String sourceKey, boolean showUserInformation) {
         Set<Path> paths = getLogPaths(startDate, endDate);
         List<SourceExecutionDto> executions = paths.stream()
-                .flatMap(path -> extractSourceExecutions(path, sourceKey, userID).stream())
+                .flatMap(path -> extractSourceExecutions(path, sourceKey, showUserInformation).stream())
                 .collect(Collectors.toList());
         return new SourceExecutionsDto(executions);
     }
 
-    public AccessTrendsDto getAccessTrends(LocalDate startDate, LocalDate endDate, List<EndpointDto> endpoints, String userID) {
+    public AccessTrendsDto getAccessTrends(LocalDate startDate, LocalDate endDate, List<EndpointDto> endpoints, boolean showUserInformation) {
         Set<Path> paths = getLogPaths(startDate, endDate);
         List<AccessTrendDto> trends = paths.stream()
-                .flatMap(path -> extractAccessTrends(path, endpoints, userID).stream())
+                .flatMap(path -> extractAccessTrends(path, endpoints, showUserInformation).stream())
                 .collect(Collectors.toList());
         return new AccessTrendsDto(trends);
     }
 
-    private List<SourceExecutionDto> extractSourceExecutions(Path path, String sourceKey, String userID) {
+    private List<SourceExecutionDto> extractSourceExecutions(Path path, String sourceKey, boolean showUserInformation) {
         try (Stream<String> stream = Files.lines(path)) {
             return stream
-                    .map(str -> getMatchedExecution(str, sourceKey, userID))
+                    .map(str -> getMatchedExecution(str, sourceKey, showUserInformation))
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .collect(Collectors.toList());
@@ -146,14 +142,15 @@ public class StatisticService {
         }
     }
 
-    private List<AccessTrendDto> extractAccessTrends(Path path, List<EndpointDto> endpoints, String userID) {
+    private List<AccessTrendDto> extractAccessTrends(Path path, List<EndpointDto> endpoints, boolean showUserInformation) {
         List<Pattern> patterns = endpoints.stream()
                 .map(endpointPair -> {
                     String method = endpointPair.getMethod();
                     String endpoint = endpointPair.getUrlPattern().replaceAll("\\{\\}", ".*");
+                    String userId = endpointPair.getUserId();
                     String regexpStr = ENDPOINT_REGEXP.replace("{METHOD_PLACEHOLDER}", method);
                     regexpStr = regexpStr.replace("{ENDPOINT_PLACEHOLDER}", endpoint);
-                    regexpStr = regexpStr.replace("{USERID_PLACEHOLDER}", userID);
+                    regexpStr = regexpStr.replace("{USERID_PLACEHOLDER}", userId);
 
                     return Pattern.compile(regexpStr);
                 })
@@ -176,12 +173,12 @@ public class StatisticService {
         }
     }
 
-    private Optional<SourceExecutionDto> getMatchedExecution(String str, String sourceKey, String userID) {
+    private Optional<SourceExecutionDto> getMatchedExecution(String str, String sourceKey, boolean showUserInformation) {
         return patternMap.entrySet().stream()
                 .map(entry -> new ImmutablePair<>(entry.getKey(), entry.getValue().matcher(str)))
                 .filter(pair -> pair.getValue().matches())
                 .filter(pair -> sourceKey == null || (sourceKey != null && sourceKey.equals(pair.getValue().group(2))))
-                .map(pair -> new SourceExecutionDto(pair.getValue().group(2), pair.getKey(), LocalDate.parse(pair.getValue().group(1)), userID))
+                .map(pair -> new SourceExecutionDto(pair.getValue().group(2), pair.getKey(), LocalDate.parse(pair.getValue().group(1)), pair.getValue().group(3)))
                 .findFirst();
     }
 

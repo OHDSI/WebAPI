@@ -2,7 +2,6 @@ package org.ohdsi.webapi.statistic.controller;
 
 import com.opencsv.CSVWriter;
 
-import org.ohdsi.webapi.shiro.TokenManager;
 import org.ohdsi.webapi.statistic.dto.AccessTrendDto;
 import org.ohdsi.webapi.statistic.dto.AccessTrendsDto;
 import org.ohdsi.webapi.statistic.dto.EndpointDto;
@@ -11,8 +10,6 @@ import org.ohdsi.webapi.statistic.dto.SourceExecutionsDto;
 import org.ohdsi.webapi.statistic.service.StatisticService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -27,8 +24,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Controller
@@ -63,10 +58,10 @@ public class StatisticController {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response executionStatistics(ExecutionStatisticsRequest executionStatisticsRequest) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        String userID = executionStatisticsRequest.isShowUserInformation() ? extractUserID() : null;
+        boolean showUserInformation = executionStatisticsRequest.isShowUserInformation();
         
         SourceExecutionsDto sourceExecutions = service.getSourceExecutions(LocalDate.parse(executionStatisticsRequest.getStartDate(), formatter),
-                LocalDate.parse(executionStatisticsRequest.getEndDate(), formatter), executionStatisticsRequest.getSourceKey(), userID);
+                LocalDate.parse(executionStatisticsRequest.getEndDate(), formatter), executionStatisticsRequest.getSourceKey(), showUserInformation);
 
         if (ResponseFormat.CSV.equals(executionStatisticsRequest.getResponseFormat())) {
             return prepareExecutionResultResponse(sourceExecutions.getExecutions(), "execution_statistics.zip");
@@ -85,10 +80,10 @@ public class StatisticController {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response accessStatistics(AccessTrendsStatisticsRequest accessTrendsStatisticsRequest) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        String userID = accessTrendsStatisticsRequest.isShowUserInformation() ? extractUserID() : null;
+        boolean showUserInformation = accessTrendsStatisticsRequest.isShowUserInformation();
 
         AccessTrendsDto trends = service.getAccessTrends(LocalDate.parse(accessTrendsStatisticsRequest.getStartDate(), formatter),
-                LocalDate.parse(accessTrendsStatisticsRequest.getEndDate(), formatter), accessTrendsStatisticsRequest.getEndpoints(), userID);
+                LocalDate.parse(accessTrendsStatisticsRequest.getEndDate(), formatter), accessTrendsStatisticsRequest.getEndpoints(), showUserInformation);
 
         if (ResponseFormat.CSV.equals(accessTrendsStatisticsRequest.getResponseFormat())) {
             return prepareAccessTrendsResponse(trends.getTrends(), "execution_trends.zip");
@@ -136,15 +131,6 @@ public class StatisticController {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
-    }
-
-    private String extractUserID() {
-        return Optional.ofNullable(RequestContextHolder.getRequestAttributes())
-                .map(ServletRequestAttributes.class::cast)
-                .map(ServletRequestAttributes::getRequest)
-                .map(TokenManager::extractToken)
-                .map(TokenManager::getSubject)
-                .orElse(null);
     }
 
     public static final class ExecutionStatisticsRequest {

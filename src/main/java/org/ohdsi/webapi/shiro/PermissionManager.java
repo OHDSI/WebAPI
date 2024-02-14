@@ -1,11 +1,8 @@
 package org.ohdsi.webapi.shiro;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import com.odysseusinc.logging.event.AddUserEvent;
 import com.odysseusinc.logging.event.DeleteRoleEvent;
 import org.apache.shiro.SecurityUtils;

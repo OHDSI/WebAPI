@@ -145,8 +145,8 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
     }
 
     request.setAttribute(TOKEN_ATTRIBUTE, jwt);
-    Collection<String> permissions = this.authorizer.getAuthorizationInfo(login).getStringPermissions();
-    request.setAttribute(PERMISSIONS_ATTRIBUTE, StringUtils.join(permissions, "|"));
+    PermissionManager.PermissionsDTO permissions = this.authorizer.queryUserPermissions(login);
+    request.setAttribute(PERMISSIONS_ATTRIBUTE, permissions);
     return true;
   }
 

@@ -1,5 +1,8 @@
 package org.ohdsi.webapi.shiro;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.odysseusinc.logging.event.AddUserEvent;
 import com.odysseusinc.logging.event.DeleteRoleEvent;
 import org.apache.shiro.SecurityUtils;
@@ -25,10 +28,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.commons.lang3.StringUtils;
+import org.ohdsi.circe.helper.ResourceHelper;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  *
@@ -37,6 +46,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @Transactional
 public class PermissionManager {
+
+  @Value("${datasource.ohdsi.schema}")
+  private String ohdsiSchema;
 
   @Autowired
   private UserRepository userRepository;
@@ -55,9 +67,20 @@ public class PermissionManager {
 
   @Autowired
   private ApplicationEventPublisher eventPublisher;
-
+  
+  @Autowired
+  private JdbcTemplate jdbcTemplate;
+  
+  @Autowired
+  private ObjectMapper objectMapper;
+  
   private ThreadLocal<ConcurrentHashMap<String, UserSimpleAuthorizationInfo>> authorizationInfoCache = ThreadLocal.withInitial(ConcurrentHashMap::new);
 
+  public static class PermissionsDTO {
+
+    public JsonNode permissions = null;
+  }
+  
   public RoleEntity addRole(String roleName, boolean isSystem) {
     Guard.checkNotEmpty(roleName);
 
@@ -305,7 +328,51 @@ public class PermissionManager {
 
     return permissions;
   }
+  
+  public PermissionsDTO queryUserPermissions(final String login) {
+    String permQuery = StringUtils.replace(
+            ResourceHelper.GetResourceAsString("/resources/security/getPermissionsForUser.sql"),
+            "@ohdsi_schema",
+            this.ohdsiSchema);
+    final UserEntity user = userRepository.findByLogin(login);
 
+    List<String> permissions = this.jdbcTemplate.query(
+            permQuery, 
+            (ps) -> {
+              ps.setLong(1, user.getId());
+            },
+            (rs, rowNum) -> {
+              return rs.getString("value");
+            });
+    PermissionsDTO permDto = new PermissionsDTO();
+    permDto.permissions = permsToJsonNode(permissions);
+    return permDto;
+  }
+
+  /**
+   * This method takes a list of strings and returns a JSObject representing 
+   * the first element of each permission as a key, and the List<String> of 
+   * permissions that start with the key as the value
+  */
+  private JsonNode permsToJsonNode(List<String> permissions) {
+
+    Map<String, ArrayNode> resultMap = new HashMap<>();
+
+    // Process each input string
+    for (String inputString : permissions) {
+      String[] parts = inputString.split(":");
+      String key = parts[0];
+      // Create a new JsonArray for the key if it doesn't exist
+      resultMap.putIfAbsent(key, objectMapper.createArrayNode());
+      // Add the value to the JsonArray
+      resultMap.get(key).add(inputString);
+    }
+
+    // Convert the resultMap to a JsonNode
+
+    return objectMapper.valueToTree(resultMap);
+  }
+  
   private Set<PermissionEntity> getRolePermissions(RoleEntity role) {
     Set<PermissionEntity> permissions = new LinkedHashSet<>();
 

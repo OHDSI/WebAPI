@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.shiro.management;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.buji.pac4j.filter.CallbackFilter;
 import io.buji.pac4j.filter.SecurityFilter;
 import io.buji.pac4j.realm.Pac4jRealm;
@@ -259,6 +260,9 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
     @Autowired
     private PermissionManager permissionManager;
+    
+    @Autowired
+    private ObjectMapper objectMapper;    
 
     public AtlasRegularSecurity(EntityPermissionSchemaResolver permissionSchemaResolver) {
 
@@ -293,7 +297,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         }
 
         filters.put(SEND_TOKEN_IN_URL, new SendTokenInUrlFilter(this.oauthUiCallback));
-        filters.put(SEND_TOKEN_IN_HEADER, new SendTokenInHeaderFilter());
+        filters.put(SEND_TOKEN_IN_HEADER, new SendTokenInHeaderFilter(this.objectMapper));
 
         filters.put(RUN_AS, new RunAsFilter(userRepository));
 

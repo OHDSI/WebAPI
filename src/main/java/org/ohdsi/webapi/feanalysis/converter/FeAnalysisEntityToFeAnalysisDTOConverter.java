@@ -24,6 +24,8 @@ public class FeAnalysisEntityToFeAnalysisDTOConverter extends BaseFeAnalysisEnti
     public FeAnalysisDTO convert(final FeAnalysisEntity source) {
         final FeAnalysisDTO dto = super.convert(source);
         dto.setDesign(convertDesignToJson(source));
+        dto.setSupportsAnnual(source.getSupportsAnnual());
+        dto.setSupportsTemporal(source.getSupportsTemporal());
         if (CRITERIA_SET.equals(source.getType())){
             FeAnalysisWithConceptSetDTO dtoWithConceptSet = (FeAnalysisWithConceptSetDTO) dto;
             FeAnalysisWithCriteriaEntity<?> sourceWithCriteria = (FeAnalysisWithCriteriaEntity) source;

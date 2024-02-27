@@ -51,7 +51,7 @@ public class UserService {
     public String login;
     public String name;
     public List<Permission> permissions;
-    public JsonNode permissionIdx;
+    public Map<String, List<String>> permissionIdx;
 
     public User() {}
 

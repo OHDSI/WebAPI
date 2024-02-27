@@ -1,8 +1,6 @@
 package org.ohdsi.webapi.shiro;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.odysseusinc.logging.event.AddUserEvent;
 import com.odysseusinc.logging.event.DeleteRoleEvent;
 import org.apache.shiro.SecurityUtils;
@@ -28,13 +26,18 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.authz.Permission;
+import org.apache.shiro.authz.permission.WildcardPermission;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -71,14 +74,11 @@ public class PermissionManager {
   @Autowired
   private JdbcTemplate jdbcTemplate;
   
-  @Autowired
-  private ObjectMapper objectMapper;
-  
   private ThreadLocal<ConcurrentHashMap<String, UserSimpleAuthorizationInfo>> authorizationInfoCache = ThreadLocal.withInitial(ConcurrentHashMap::new);
 
   public static class PermissionsDTO {
 
-    public JsonNode permissions = null;
+    public Map<String, List<String>> permissions = null;
   }
   
   public RoleEntity addRole(String roleName, boolean isSystem) {
@@ -132,6 +132,12 @@ public class PermissionManager {
     }
   }
 
+  /**
+   * Return the UserSimpleAuthorizastionInfo which contains the login, roles and permissions for the specified login
+   * 
+   * @param   login   The login to fetch the authorization info
+   * @return          A UserSimpleAuthorizationInfo containing roles and permissions.
+  */
   public UserSimpleAuthorizationInfo getAuthorizationInfo(final String login) {
 
     return authorizationInfoCache.get().computeIfAbsent(login, newLogin -> {
@@ -148,14 +154,21 @@ public class PermissionManager {
       for (UserRoleEntity userRole: userEntity.getUserRoles()) {
         info.addRole(userRole.getRole().getName());
       }
-      final Set<String> permissionNames = new LinkedHashSet<>();
-      final Set<PermissionEntity> permissions = this.getUserPermissions(userEntity);
 
-      for (PermissionEntity permission : permissions) {
-        permissionNames.add(permission.getValue());
+      // convert permission index from queryUserPermissions() into a map of WildcardPermissions
+      Map<String, List<String>> permsIdx = this.queryUserPermissions(newLogin).permissions;
+      Map permissionMap = new HashMap<String, List<Permission>>();
+      Set<String> permissionNames = new HashSet<>();
+      
+      for(String permIdxKey : permsIdx.keySet()) {
+        List<String> perms = permsIdx.get(permIdxKey);
+        permissionNames.addAll(perms);
+        // convert raw string permission into Wildcard perm for each element in this key's array.
+        permissionMap.put(permIdxKey, perms.stream().map(perm -> new WildcardPermission(perm)).collect(Collectors.toList()));
       }
 
       info.setStringPermissions(permissionNames);
+      info.setPermissionIdx(permissionMap);
       return info;
     });
   }
@@ -345,7 +358,7 @@ public class PermissionManager {
               return rs.getString("value");
             });
     PermissionsDTO permDto = new PermissionsDTO();
-    permDto.permissions = permsToJsonNode(permissions);
+    permDto.permissions = permsToMap(permissions);
     return permDto;
   }
 
@@ -354,23 +367,23 @@ public class PermissionManager {
    * the first element of each permission as a key, and the List<String> of 
    * permissions that start with the key as the value
   */
-  private JsonNode permsToJsonNode(List<String> permissions) {
+  private Map<String, List<String>> permsToMap(List<String> permissions) {
 
-    Map<String, ArrayNode> resultMap = new HashMap<>();
+    Map<String, List<String>> resultMap = new HashMap<>();
 
     // Process each input string
     for (String inputString : permissions) {
       String[] parts = inputString.split(":");
       String key = parts[0];
       // Create a new JsonArray for the key if it doesn't exist
-      resultMap.putIfAbsent(key, objectMapper.createArrayNode());
+      resultMap.putIfAbsent(key, new ArrayList<>());
       // Add the value to the JsonArray
       resultMap.get(key).add(inputString);
     }
 
     // Convert the resultMap to a JsonNode
 
-    return objectMapper.valueToTree(resultMap);
+    return resultMap;
   }
   
   private Set<PermissionEntity> getRolePermissions(RoleEntity role) {
@@ -474,7 +487,7 @@ public class PermissionManager {
   }
 
   private boolean isRelationAllowed(final String relationStatus) {
-    return relationStatus == null || relationStatus == RequestStatus.APPROVED;
+    return relationStatus == null || relationStatus.equals(RequestStatus.APPROVED);
   }
 
   private UserRoleEntity addUser(final UserEntity user, final RoleEntity role,

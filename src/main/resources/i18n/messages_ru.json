@@ -2513,7 +2513,8 @@
           "hive": "Hive LLAP",
           "synapse": "Azure Synapse",
           "snowflake": "Snowflake",
-          "spark": "Apache Spark"
+          "spark": "Apache Spark",
+          "iris": "InterSystems IRIS"
         }
       },
       "connectionString": {

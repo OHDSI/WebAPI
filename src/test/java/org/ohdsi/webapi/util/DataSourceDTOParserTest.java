@@ -29,6 +29,7 @@ public class DataSourceDTOParserTest {
     public static final String ORACLE_WO_PWD_CONN_STR = "jdbc:oracle:thin:@myhost:1521:orcl";
     public static final String ORACLE_WITH_PWD_CONN_STR = "jdbc:oracle:thin:scott/tiger@myhost:1521:orcl";
     public static final String HIVE_CONN_STR = "jdbc:hive2://sandbox-hdp.hortonworks.com:2181/synpuf_531_orc;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2";
+    public static final String IRIS_CONN_STR = "jdbc:iris://localhost:1921/USER";
 
     @Test
     public void parseDTO() {
@@ -108,6 +109,12 @@ public class DataSourceDTOParserTest {
         dto = DataSourceDTOParser.parseDTO(getHiveSource());
         assertThat(dto.getType(), is(DBMSType.HIVE));
         assertThat(dto.getConnectionString(), is(HIVE_CONN_STR));
+        assertThat(dto.getUsername(), is(nullValue()));
+        assertThat(dto.getPassword(), is(nullValue()));
+
+        dto = DataSourceDTOParser.parseDTO(getIRISSource());
+        assertThat(dto.getType(), is(DBMSType.IRIS));
+        assertThat(dto.getConnectionString(), is(IRIS_CONN_STR));
         assertThat(dto.getUsername(), is(nullValue()));
         assertThat(dto.getPassword(), is(nullValue()));
     }
@@ -202,6 +209,13 @@ public class DataSourceDTOParserTest {
         Source source = new Source();
         source.setSourceDialect("hive");
         source.setSourceConnection(HIVE_CONN_STR);
+        return source;
+    }
+
+    private Source getIRISSource() {
+        Source source = new Source();
+        source.setSourceDialect("iris");
+        source.setSourceConnection(IRIS_CONN_STR);
         return source;
     }
 }

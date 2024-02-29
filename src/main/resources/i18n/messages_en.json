@@ -2599,7 +2599,8 @@
           "sqlserver": "SQL server",
           "synapse": "Azure Synapse",
           "snowflake": "Snowflake",
-          "spark": "Apache Spark"
+          "spark": "Apache Spark",
+          "iris": "InterSystems IRIS"
         },
         "title": "Source dialect"
       },

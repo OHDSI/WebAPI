@@ -29,7 +29,7 @@ public class DataSourceDTOParserTest {
     public static final String ORACLE_WO_PWD_CONN_STR = "jdbc:oracle:thin:@myhost:1521:orcl";
     public static final String ORACLE_WITH_PWD_CONN_STR = "jdbc:oracle:thin:scott/tiger@myhost:1521:orcl";
     public static final String HIVE_CONN_STR = "jdbc:hive2://sandbox-hdp.hortonworks.com:2181/synpuf_531_orc;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2";
-    public static final String IRIS_CONN_STR = "jdbc:iris://localhost:1921/USER";
+    public static final String IRIS_CONN_STR = "jdbc:IRIS://localhost:1972/USER";
 
     @Test
     public void parseDTO() {

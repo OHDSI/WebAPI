@@ -1,10 +1,11 @@
 package org.ohdsi.webapi.shiny;
 
-import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import okhttp3.Call;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -12,7 +13,6 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
-import org.bouncycastle.cert.ocsp.Req;
 import org.ohdsi.webapi.service.ShinyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +25,11 @@ import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -40,7 +43,7 @@ public class PositConnectClient implements InitializingBean {
     private static final String HEADER_AUTH = "Authorization";
     private static final String AUTH_PREFIX = "Key";
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     @Value("${shiny.connect.api_key}")
     private String apiKey;
@@ -55,13 +58,20 @@ public class PositConnectClient implements InitializingBean {
         contentItem.description = brief.getDescription();
         RequestBody body = RequestBody.create(toJson(contentItem), JSON_TYPE);
         String url = connect("/v1/content");
-        ContentItemResponse response = doCall(ContentItemResponse.class, url, body);
+        ContentItemResponse response = doPost(ContentItemResponse.class, url, body);
         return response.guid;
+    }
+
+    public List<ContentItemResponse> listContentItems() {
+        String url = connect("/v1/content");
+        Request.Builder request = new Request.Builder()
+                .url(url);
+        return doCall(new TypeReference<List<ContentItemResponse>>() {}, request, url);
     }
 
     public String uploadBundle(UUID contentId, TemporaryFile bundle) {
         String url = connect(MessageFormat.format("/v1/content/{0}/bundles", contentId));
-        BundleResponse response = doCall(BundleResponse.class, url, RequestBody.create(bundle.getFile().toFile(), OCTET_STREAM_TYPE));
+        BundleResponse response = doPost(BundleResponse.class, url, RequestBody.create(bundle.getFile().toFile(), OCTET_STREAM_TYPE));
         return response.id;
     }
 
@@ -70,19 +80,36 @@ public class PositConnectClient implements InitializingBean {
         BundleRequest request = new BundleRequest();
         request.bundleId = bundleId;
         RequestBody requestBody = RequestBody.create(toJson(request), JSON_TYPE);
-        BundleDeploymentResponse response = doCall(BundleDeploymentResponse.class, url, requestBody);
+        BundleDeploymentResponse response = doPost(BundleDeploymentResponse.class, url, requestBody);
         return response.taskId;
     }
 
-    private <T> T doCall(Class<T> responseClass, String url, RequestBody requestBody) {
+    private <T> T doPost(Class<T> responseClass, String url, RequestBody requestBody) {
         Request.Builder request = new Request.Builder()
                 .url(url)
                 .post(requestBody);
+        return doCall(responseClass, request, url);
+    }
+
+    private <T> T doCall(Class<T> responseClass, Request.Builder request, String url) {
+        return doCall(new TypeReference<T>() {
+            @Override
+            public Type getType() {
+                return responseClass;
+            }
+        }, request, url);
+    }
+
+    private <T> T doCall(TypeReference<T> responseClass, Request.Builder request, String url) {
         Call call = call(request, apiKey);
         try(Response response = call.execute()) {
             if (!response.isSuccessful()) {
                 log.error("Request [{}] returned code: [{}], message: [{}]", url, response.code(), response.message());
-                throw new PositConnectClientException(MessageFormat.format("Request [{0}] returned code: [{1}], message: [{2}]", url, response.code(), response.message()));
+                String message = MessageFormat.format("Request [{0}] returned code: [{1}], message: [{2}]", url, response.code(), response.message());
+                if (response.code() == 409) {
+                    throw new ConflictPositConnectException(message);
+                }
+                throw new PositConnectClientException(message);
             }
             if (response.body() == null) {
                 log.error("Failed to create a content, an empty result returned [{}]", url);
@@ -124,10 +151,10 @@ public class PositConnectClient implements InitializingBean {
     }
 
     private String connect(String path) {
-        return StringUtils.removeEnd(connectUrl, "/") + "/" + StringUtils.removeStart(path, "/");
+        return StringUtils.removeEnd(connectUrl, "/") + "/__api__/" + StringUtils.removeStart(path, "/");
     }
 
-    static class ContentItem {
+    public static class ContentItem {
         public String name;
         public String title;
         public String description;
@@ -136,7 +163,7 @@ public class PositConnectClient implements InitializingBean {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    static class ContentItemResponse extends ContentItem {
+    public static class ContentItemResponse extends ContentItem {
         public UUID guid;
         @JsonProperty("owner_guid")
         public UUID ownerGuid;
@@ -144,7 +171,7 @@ public class PositConnectClient implements InitializingBean {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    static class BundleResponse {
+    public static class BundleResponse {
         public String id;
         @JsonProperty("content_guid")
         public String contentGuid;

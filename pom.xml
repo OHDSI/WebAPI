@@ -1883,13 +1883,6 @@
         <shiny.atlas.url>http://localhost/Atlas</shiny.atlas.url>
         <shiny.directory>src/main/resources/shiny</shiny.directory>
       </properties>
-      <dependencies>
-        <dependency>
-          <groupId>com.squareup.okhttp3</groupId>
-          <artifactId>okhttp</artifactId>
-          <version>4.12.0</version>
-        </dependency>
-      </dependencies>
       <build>
         <plugins>
           <plugin>

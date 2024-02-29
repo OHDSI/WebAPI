@@ -3,9 +3,11 @@ package org.ohdsi.webapi.service;
 import com.odysseusinc.arachne.commons.api.v1.dto.CommonAnalysisType;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.ohdsi.webapi.shiny.ApplicationBrief;
+import org.ohdsi.webapi.shiny.ConflictPositConnectException;
 import org.ohdsi.webapi.shiny.PackagingStrategies;
 import org.ohdsi.webapi.shiny.PackagingStrategy;
 import org.ohdsi.webapi.shiny.PositConnectClient;
+import org.ohdsi.webapi.shiny.PositConnectClientException;
 import org.ohdsi.webapi.shiny.ShinyPackagingService;
 import org.ohdsi.webapi.shiny.ShinyPublishedEntity;
 import org.ohdsi.webapi.shiny.ShinyPublishedRepository;
@@ -37,6 +39,7 @@ import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
@@ -64,10 +67,23 @@ public class ShinyService {
         ShinyPublishedEntity publication = getPublication(id, sourceKey);
         ShinyPackagingService service = findShinyService(CommonAnalysisType.valueOf(type.toUpperCase()));
         UUID contentId = Optional.ofNullable(publication.getContentId())
-                .orElseGet(() -> connectClient.createContentItem(service.getBrief(id, sourceKey)));
+                .orElseGet(() -> createOrFindItem(service.getBrief(id, sourceKey)));
         String bundleId = connectClient.uploadBundle(contentId, data);
         String taskId = connectClient.deployBundle(contentId, bundleId);
         log.debug("Bundle [{}] is deployed to Shiny server, task id: [{}]", id, taskId);
+    }
+
+    private UUID createOrFindItem(ApplicationBrief brief) {
+        try {
+            return connectClient.createContentItem(brief);
+        } catch (ConflictPositConnectException e) {
+            log.warn("Content item [{}] already exist, will update", brief.getName());
+            return connectClient.listContentItems().stream()
+                    .filter(i -> Objects.equals(i.name, brief.getName()))
+                    .findFirst()
+                    .map(i -> i.guid)
+                    .orElseThrow(NotFoundException::new);
+        }
     }
 
     private ShinyPublishedEntity getPublication(int id, String sourceKey) {

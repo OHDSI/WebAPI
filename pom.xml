@@ -1259,6 +1259,15 @@
       <version>2.0.1</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>okhttp</artifactId>
+      <version>4.12.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+    </dependency>
   </dependencies>
 
   <profiles>
@@ -1919,13 +1928,6 @@
         <shiny.atlas.url>http://localhost/Atlas</shiny.atlas.url>
         <shiny.directory>src/main/resources/shiny</shiny.directory>
       </properties>
-      <dependencies>
-        <dependency>
-          <groupId>com.squareup.okhttp3</groupId>
-          <artifactId>okhttp</artifactId>
-          <version>4.12.0</version>
-        </dependency>
-      </dependencies>
       <build>
         <plugins>
           <plugin>

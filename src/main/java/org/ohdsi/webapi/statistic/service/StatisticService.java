@@ -21,11 +21,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -77,6 +74,7 @@ public class StatisticService {
     private static final String ENDPOINT_REGEXP =
             "^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*-\\s({METHOD_PLACEHOLDER}\\s.*{ENDPOINT_PLACEHOLDER})\\s-.*$";
 
+    private static final Pattern PLP_USER_REGEXP = Pattern.compile("- ([a-zA-Z0-9_]+) \\d+:\\d+:\\d+:\\d+:\\d+:\\d+:\\d+:\\d+");
     private static final String COHORT_GENERATION_NAME = "Cohort Generation";
 
     private static final String CHARACTERIZATION_GENERATION_NAME = "Characterization Generation";
@@ -89,6 +87,8 @@ public class StatisticService {
 
     private static final String PLP_GENERATION_NAME = "Prediction Generation";
 
+    private static final String PLP_USERNAME = "Username";
+
     private static final Map<String, Pattern> patternMap = new HashMap<>();
 
     static {
@@ -98,6 +98,7 @@ public class StatisticService {
         patternMap.put(IR_GENERATION_NAME, IR_GENERATION_REGEXP);
         patternMap.put(PLE_GENERATION_NAME, PLE_GENERATION_REGEXP);
         patternMap.put(PLP_GENERATION_NAME, PLP_GENERATION_REGEXP);
+        patternMap.put(PLP_USERNAME, PLP_USER_REGEXP);
     }
 
     public StatisticService() {
@@ -147,23 +148,22 @@ public class StatisticService {
                 .map(endpointPair -> {
                     String method = endpointPair.getMethod();
                     String endpoint = endpointPair.getUrlPattern().replaceAll("\\{\\}", ".*");
-                    String userId = endpointPair.getUserId();
                     String regexpStr = ENDPOINT_REGEXP.replace("{METHOD_PLACEHOLDER}", method);
                     regexpStr = regexpStr.replace("{ENDPOINT_PLACEHOLDER}", endpoint);
-                    regexpStr = regexpStr.replace("{USERID_PLACEHOLDER}", userId);
 
                     return Pattern.compile(regexpStr);
                 })
                 .collect(Collectors.toList());
         try (Stream<String> stream = Files.lines(path)) {
             return stream
-                    .map(str ->
-                            patterns.stream()
+                    .map(str -> {
+                            Matcher userMatcher = PLP_USER_REGEXP.matcher(str);
+                            return patterns.stream()
                                     .map(pattern -> pattern.matcher(str))
-                                    .filter(matcher -> matcher.matches())
-                                    .map(matcher -> new AccessTrendDto(matcher.group(2), LocalDate.parse(matcher.group(1)), matcher.group(3)))
-                                    .findFirst()
-                    )
+                                    .filter(Matcher::matches)
+                                    .map(matcher -> new AccessTrendDto(matcher.group(2), LocalDate.parse(matcher.group(1)), showUserInformation && userMatcher.find() ? userMatcher.group(1) : null))
+                                    .findFirst();
+                        })
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .collect(Collectors.toList());
@@ -178,7 +178,7 @@ public class StatisticService {
                 .map(entry -> new ImmutablePair<>(entry.getKey(), entry.getValue().matcher(str)))
                 .filter(pair -> pair.getValue().matches())
                 .filter(pair -> sourceKey == null || (sourceKey != null && sourceKey.equals(pair.getValue().group(2))))
-                .map(pair -> new SourceExecutionDto(pair.getValue().group(2), pair.getKey(), LocalDate.parse(pair.getValue().group(1)), pair.getValue().group(3)))
+                .map(pair -> new SourceExecutionDto(pair.getValue().group(2), pair.getKey(), LocalDate.parse(pair.getValue().group(1)), showUserInformation ? pair.getValue().group(1) : null))
                 .findFirst();
     }
 

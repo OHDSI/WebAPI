@@ -2,6 +2,7 @@ package org.ohdsi.webapi.tool.converter;
 
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.tool.Tool;
 import org.ohdsi.webapi.tool.ToolRepository;
@@ -16,11 +17,11 @@ import java.util.Optional;
 @Component
 public class ToolConvertor extends AbstractDaoService {
     private final ToolRepository toolRepository;
-    private final PermissionManager permissionManager;
+    private final UserRepository userRepository;
 
-    public ToolConvertor(ToolRepository toolRepository, PermissionManager permissionManager) {
+    public ToolConvertor(ToolRepository toolRepository, UserRepository userRepository) {
         this.toolRepository = toolRepository;
-        this.permissionManager = permissionManager;
+        this.userRepository = userRepository;
     }
 
     public Tool toEntity(ToolDTO toolDTO) {
@@ -63,12 +64,12 @@ public class ToolConvertor extends AbstractDaoService {
                     toolDTO.setDescription(t.getDescription());
                     Optional.ofNullable(tool.getCreatedBy())
                             .map(UserEntity::getId)
-                            .map(permissionManager::getUserById)
+                            .map(userRepository::findOne)
                             .map(UserEntity::getName)
                             .ifPresent(toolDTO::setCreatedByName);
                     Optional.ofNullable(tool.getModifiedBy())
                             .map(UserEntity::getId)
-                            .map(permissionManager::getUserById)
+                            .map(userRepository::findOne)
                             .map(UserEntity::getName)
                             .ifPresent(toolDTO::setModifiedByName);
                     toolDTO.setCreatedDate(DateUtils.dateToString(t.getCreatedDate()));

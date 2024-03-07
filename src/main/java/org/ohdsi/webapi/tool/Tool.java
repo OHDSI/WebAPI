@@ -27,16 +27,14 @@ public class Tool extends CommonEntity<Integer> {
     )
     @GeneratedValue(generator = "tool_generator")
     private Integer id;
-    @Size(max = 255)
-    @NotNull
-    @Column(name = "name", nullable = false)
+
+    @Column(name = "name")
     private String name;
-    @Size(max = 1000)
-    @NotNull
-    @Column(name = "url", nullable = false, length = 1000)
+
+    @Column(name = "url")
     private String url;
-    @Size(max = 1000)
-    @Column(name = "description", length = 1000)
+
+    @Column(name = "description")
     private String description;
     @Column(name = "is_enabled")
     private Boolean isEnabled;

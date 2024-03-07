@@ -41,7 +41,7 @@ public class StatisticController {
     }};
     
     private static final List<String[]> ACCESS_TRENDS_CSV_RESULT_HEADER = new ArrayList<String[]>() {{
-        add(new String[]{"Date", "Endpoint"});
+        add(new String[]{"Date", "Endpoint", "UserID"});
     }};        
 
     public StatisticController(StatisticService service) {
@@ -107,7 +107,7 @@ public class StatisticController {
         List<String[]> data = trends.stream()
                 .flatMap(trend ->
                         new ArrayList<String[]>() {{
-                            add(new String[]{trend.getExecutionDate().toString(), trend.getEndpointName()});
+                            add(new String[]{trend.getExecutionDate().toString(), trend.getEndpointName(), trend.getUserID()});
                         }}.stream()
                 )
                 .collect(Collectors.toList());

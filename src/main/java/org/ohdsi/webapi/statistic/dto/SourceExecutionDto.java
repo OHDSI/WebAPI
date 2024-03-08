@@ -6,10 +6,10 @@ import java.time.LocalDate;
 public class SourceExecutionDto {
     private String sourceName;
     private String executionName;
-    private LocalDate executionDate;
+    private String executionDate;
     private String userID;
 
-    public SourceExecutionDto(String sourceName, String executionName, LocalDate executionDate, String userID) {
+    public SourceExecutionDto(String sourceName, String executionName, String executionDate, String userID) {
         this.sourceName = sourceName;
         this.executionName = executionName;
         this.executionDate = executionDate;
@@ -32,11 +32,11 @@ public class SourceExecutionDto {
         this.executionName = executionName;
     }
 
-    public LocalDate getExecutionDate() {
+    public String getExecutionDate() {
         return executionDate;
     }
 
-    public void setExecutionDate(LocalDate executionDate) {
+    public void setExecutionDate(String executionDate) {
         this.executionDate = executionDate;
     }
 

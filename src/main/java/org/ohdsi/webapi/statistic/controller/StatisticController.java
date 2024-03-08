@@ -42,7 +42,7 @@ public class StatisticController {
     
     private static final List<String[]> ACCESS_TRENDS_CSV_RESULT_HEADER = new ArrayList<String[]>() {{
         add(new String[]{"Date", "Endpoint", "UserID"});
-    }};        
+    }};
 
     public StatisticController(StatisticService service) {
         this.service = service;
@@ -64,7 +64,7 @@ public class StatisticController {
                 LocalDate.parse(executionStatisticsRequest.getEndDate(), formatter), executionStatisticsRequest.getSourceKey(), showUserInformation);
 
         if (ResponseFormat.CSV.equals(executionStatisticsRequest.getResponseFormat())) {
-            return prepareExecutionResultResponse(sourceExecutions.getExecutions(), "execution_statistics.zip");
+            return prepareExecutionResultResponse(sourceExecutions.getExecutions(), "execution_statistics.zip", showUserInformation);
         } else {
             return Response.ok(sourceExecutions).build();
         }
@@ -86,29 +86,29 @@ public class StatisticController {
                 LocalDate.parse(accessTrendsStatisticsRequest.getEndDate(), formatter), accessTrendsStatisticsRequest.getEndpoints(), showUserInformation);
 
         if (ResponseFormat.CSV.equals(accessTrendsStatisticsRequest.getResponseFormat())) {
-            return prepareAccessTrendsResponse(trends.getTrends(), "execution_trends.zip");
+            return prepareAccessTrendsResponse(trends.getTrends(), "execution_trends.zip", showUserInformation);
         } else {
             return Response.ok(trends).build();
         }
     }
 
-    private Response prepareExecutionResultResponse(List<SourceExecutionDto> executions, String filename) {
+    private Response prepareExecutionResultResponse(List<SourceExecutionDto> executions, String filename, boolean showUserInformation) {
+        updateExecutionStatisticsHeader(showUserInformation);
         List<String[]> data = executions.stream()
-                .flatMap(execution ->
-                        new ArrayList<String[]>() {{
-                            add(new String[]{execution.getExecutionDate().toString(), execution.getSourceName(), execution.getExecutionName()});
-                        }}.stream()
+                .map(execution -> showUserInformation
+                        ? new String[]{execution.getExecutionDate(), execution.getSourceName(), execution.getExecutionName(), execution.getUserID()}
+                        : new String[]{execution.getExecutionDate(), execution.getSourceName(), execution.getExecutionName()}
                 )
                 .collect(Collectors.toList());
         return prepareResponse(data, filename, EXECUTION_STATISTICS_CSV_RESULT_HEADER);
     }
 
-    private Response prepareAccessTrendsResponse(List<AccessTrendDto> trends, String filename) {
+    private Response prepareAccessTrendsResponse(List<AccessTrendDto> trends, String filename, boolean showUserInformation) {
+        updateAccessTrendsHeader(showUserInformation);
         List<String[]> data = trends.stream()
-                .flatMap(trend ->
-                        new ArrayList<String[]>() {{
-                            add(new String[]{trend.getExecutionDate().toString(), trend.getEndpointName(), trend.getUserID()});
-                        }}.stream()
+                .map(trend -> showUserInformation
+                        ? new String[]{trend.getExecutionDate().toString(), trend.getEndpointName(), trend.getUserID()}
+                        : new String[]{trend.getExecutionDate().toString(), trend.getEndpointName()}
                 )
                 .collect(Collectors.toList());
         return prepareResponse(data, filename, ACCESS_TRENDS_CSV_RESULT_HEADER);
@@ -130,6 +130,24 @@ public class StatisticController {
                     .build();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
+        }
+    }
+
+    private void updateExecutionStatisticsHeader(boolean showUserInformation) {
+        EXECUTION_STATISTICS_CSV_RESULT_HEADER.clear();
+        if (showUserInformation) {
+            EXECUTION_STATISTICS_CSV_RESULT_HEADER.add(new String[]{"Date", "Source", "Execution Type", "User ID"});
+        } else {
+            EXECUTION_STATISTICS_CSV_RESULT_HEADER.add(new String[]{"Date", "Source", "Execution Type"});
+        }
+    }
+
+    private void updateAccessTrendsHeader(boolean showUserInformation) {
+        ACCESS_TRENDS_CSV_RESULT_HEADER.clear();
+        if (showUserInformation) {
+            ACCESS_TRENDS_CSV_RESULT_HEADER.add(new String[]{"Date", "Endpoint", "UserID"});
+        } else {
+            ACCESS_TRENDS_CSV_RESULT_HEADER.add(new String[]{"Date", "Endpoint"});
         }
     }
 

@@ -58,25 +58,25 @@ public class StatisticService {
     // Duplicate log entries can exist because sometimes ccontroller methods are called from other controller methods
     // These regular expressions let us to choose only needed log entries
     private static final Pattern COHORT_GENERATION_REGEXP =
-            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*GET\\s/WebAPI/cohortdefinition/\\d+/generate/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
+            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*-\\s-\\s-\\s([\\w-]+)\\s.*GET\\s/WebAPI/cohortdefinition/\\d+/generate/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
 
     private static final Pattern CHARACTERIZATION_GENERATION_REGEXP =
-            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*POST\\s/WebAPI/cohort-characterization/\\d+/generation/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
+            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*-\\s-\\s-\\s([\\w-]+)\\s.*POST\\s/WebAPI/cohort-characterization/\\d+/generation/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
 
     private static final Pattern PATHWAY_GENERATION_REGEXP =
-            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*POST\\s/WebAPI/pathway-analysis/\\d+/generation/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
+            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*-\\s-\\s-\\s([\\w-]+)\\s.*POST\\s/WebAPI/pathway-analysis/\\d+/generation/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
 
     private static final Pattern IR_GENERATION_REGEXP =
-            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*GET\\s/WebAPI/ir/\\d+/execute/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
+            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*-\\s-\\s-\\s([\\w-]+)\\s.*GET\\s/WebAPI/ir/\\d+/execute/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
 
     private static final Pattern PLE_GENERATION_REGEXP =
-            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*POST\\s/WebAPI/estimation/\\d+/generation/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
+            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*-\\s-\\s-\\s([\\w-]+)\\s.*POST\\s/WebAPI/estimation/\\d+/generation/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
 
     private static final Pattern PLP_GENERATION_REGEXP =
-            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*POST\\s/WebAPI/prediction/\\d+/generation/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
+            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*-\\s-\\s-\\s([\\w-]+)\\s.*POST\\s/WebAPI/prediction/\\d+/generation/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
 
     private static final String ENDPOINT_REGEXP =
-            "^.*(\\d{4}-\\d{2}-\\d{2})T(\\d{2}:\\d{2}:\\d{2}).*-\\s([\\w.-]+)\\s.*-\\s({METHOD_PLACEHOLDER}\\s.*{ENDPOINT_PLACEHOLDER})\\s-.*$";
+            "^.*(\\d{4}-\\d{2}-\\d{2})T(\\d{2}:\\d{2}:\\d{2}).*-\\s-\\s-\\s([\\w-]+)\\s.*-\\s({METHOD_PLACEHOLDER}\\s.*{ENDPOINT_PLACEHOLDER})\\s-.*$";
 
     private static final String COHORT_GENERATION_NAME = "Cohort Generation";
 
@@ -162,7 +162,7 @@ public class StatisticService {
                             return patterns.stream()
                                     .map(pattern -> pattern.matcher(str))
                                     .filter(Matcher::matches)
-                                    .map(matcher -> new AccessTrendDto(matcher.group(4), LocalDate.parse(matcher.group(1)), showUserInformation ? matcher.group(3) : null))
+                                    .map(matcher -> new AccessTrendDto(matcher.group(4), matcher.group(1), showUserInformation ? matcher.group(3) : null))
                                     .findFirst();
                         })
                     .filter(Optional::isPresent)
@@ -178,8 +178,8 @@ public class StatisticService {
         return patternMap.entrySet().stream()
                 .map(entry -> new ImmutablePair<>(entry.getKey(), entry.getValue().matcher(str)))
                 .filter(pair -> pair.getValue().matches())
-                .filter(pair -> sourceKey == null || (sourceKey != null && sourceKey.equals(pair.getValue().group(2))))
-                .map(pair -> new SourceExecutionDto(pair.getValue().group(2), pair.getKey(), LocalDate.parse(pair.getValue().group(1)), showUserInformation ? pair.getValue().group(1) : null))
+                .filter(pair -> sourceKey == null || (sourceKey != null && sourceKey.equals(pair.getValue().group(3))))
+                .map(pair -> new SourceExecutionDto(pair.getValue().group(3), pair.getKey(), pair.getValue().group(1), showUserInformation ? pair.getValue().group(2) : null))
                 .findFirst();
     }
 

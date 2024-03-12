@@ -1,10 +1,8 @@
 package org.ohdsi.webapi.statistic.dto;
 
-import java.time.LocalDate;
-
 public class AccessTrendDto {
     private String endpointName;
-    private String  executionDate;
+    private String executionDate;
     private String userID;
 
     public AccessTrendDto(String endpointName, String  executionDate, String userID) {

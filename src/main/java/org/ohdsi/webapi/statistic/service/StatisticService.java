@@ -1,7 +1,6 @@
 package org.ohdsi.webapi.statistic.service;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.ohdsi.webapi.statistic.dto.AccessTrendDto;
 import org.ohdsi.webapi.statistic.dto.AccessTrendsDto;
 import org.ohdsi.webapi.statistic.dto.EndpointDto;
@@ -22,11 +21,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -61,25 +58,25 @@ public class StatisticService {
     // Duplicate log entries can exist because sometimes ccontroller methods are called from other controller methods
     // These regular expressions let us to choose only needed log entries
     private static final Pattern COHORT_GENERATION_REGEXP =
-            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*GET\\s/WebAPI/cohortdefinition/\\d+/generate/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
+            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*-\\s-\\s-\\s([\\w-]+)\\s.*GET\\s/WebAPI/cohortdefinition/\\d+/generate/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
 
     private static final Pattern CHARACTERIZATION_GENERATION_REGEXP =
-            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*POST\\s/WebAPI/cohort-characterization/\\d+/generation/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
+            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*-\\s-\\s-\\s([\\w-]+)\\s.*POST\\s/WebAPI/cohort-characterization/\\d+/generation/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
 
     private static final Pattern PATHWAY_GENERATION_REGEXP =
-            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*POST\\s/WebAPI/pathway-analysis/\\d+/generation/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
+            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*-\\s-\\s-\\s([\\w-]+)\\s.*POST\\s/WebAPI/pathway-analysis/\\d+/generation/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
 
     private static final Pattern IR_GENERATION_REGEXP =
-            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*GET\\s/WebAPI/ir/\\d+/execute/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
+            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*-\\s-\\s-\\s([\\w-]+)\\s.*GET\\s/WebAPI/ir/\\d+/execute/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
 
     private static final Pattern PLE_GENERATION_REGEXP =
-            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*POST\\s/WebAPI/estimation/\\d+/generation/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
+            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*-\\s-\\s-\\s([\\w-]+)\\s.*POST\\s/WebAPI/estimation/\\d+/generation/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
 
     private static final Pattern PLP_GENERATION_REGEXP =
-            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*POST\\s/WebAPI/prediction/\\d+/generation/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
+            Pattern.compile("^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*-\\s-\\s-\\s([\\w-]+)\\s.*POST\\s/WebAPI/prediction/\\d+/generation/(.+)\\s-\\s.*status::String,startDate::Date,endDate::Date.*$");
 
     private static final String ENDPOINT_REGEXP =
-            "^.*(\\d{4}-\\d{2}-\\d{2})T\\d{2}:\\d{2}:\\d{2}.*-\\s({METHOD_PLACEHOLDER}\\s.*{ENDPOINT_PLACEHOLDER})\\s-.*$";
+            "^.*(\\d{4}-\\d{2}-\\d{2})T(\\d{2}:\\d{2}:\\d{2}).*-\\s-\\s-\\s([\\w-]+)\\s.*-\\s({METHOD_PLACEHOLDER}\\s.*{ENDPOINT_PLACEHOLDER})\\s-.*$";
 
     private static final String COHORT_GENERATION_NAME = "Cohort Generation";
 
@@ -117,26 +114,26 @@ public class StatisticService {
         logFileDateFormat = new SimpleDateFormat(dateString);
     }
 
-    public SourceExecutionsDto getSourceExecutions(LocalDate startDate, LocalDate endDate, String sourceKey) {
+    public SourceExecutionsDto getSourceExecutions(LocalDate startDate, LocalDate endDate, String sourceKey, boolean showUserInformation) {
         Set<Path> paths = getLogPaths(startDate, endDate);
         List<SourceExecutionDto> executions = paths.stream()
-                .flatMap(path -> extractSourceExecutions(path, sourceKey).stream())
+                .flatMap(path -> extractSourceExecutions(path, sourceKey, showUserInformation).stream())
                 .collect(Collectors.toList());
         return new SourceExecutionsDto(executions);
     }
 
-    public AccessTrendsDto getAccessTrends(LocalDate startDate, LocalDate endDate, List<EndpointDto> endpoints) {
+    public AccessTrendsDto getAccessTrends(LocalDate startDate, LocalDate endDate, List<EndpointDto> endpoints, boolean showUserInformation) {
         Set<Path> paths = getLogPaths(startDate, endDate);
         List<AccessTrendDto> trends = paths.stream()
-                .flatMap(path -> extractAccessTrends(path, endpoints).stream())
+                .flatMap(path -> extractAccessTrends(path, endpoints, showUserInformation).stream())
                 .collect(Collectors.toList());
         return new AccessTrendsDto(trends);
     }
 
-    private List<SourceExecutionDto> extractSourceExecutions(Path path, String sourceKey) {
+    private List<SourceExecutionDto> extractSourceExecutions(Path path, String sourceKey, boolean showUserInformation) {
         try (Stream<String> stream = Files.lines(path)) {
             return stream
-                    .map(str -> getMatchedExecution(str, sourceKey))
+                    .map(str -> getMatchedExecution(str, sourceKey, showUserInformation))
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .collect(Collectors.toList());
@@ -146,26 +143,28 @@ public class StatisticService {
         }
     }
 
-    private List<AccessTrendDto> extractAccessTrends(Path path, List<EndpointDto> endpoints) {
+    private List<AccessTrendDto> extractAccessTrends(Path path, List<EndpointDto> endpoints, boolean showUserInformation) {
         List<Pattern> patterns = endpoints.stream()
                 .map(endpointPair -> {
                     String method = endpointPair.getMethod();
+
                     String endpoint = endpointPair.getUrlPattern().replaceAll("\\{\\}", ".*");
                     String regexpStr = ENDPOINT_REGEXP.replace("{METHOD_PLACEHOLDER}", method);
                     regexpStr = regexpStr.replace("{ENDPOINT_PLACEHOLDER}", endpoint);
 
                     return Pattern.compile(regexpStr);
                 })
+
                 .collect(Collectors.toList());
         try (Stream<String> stream = Files.lines(path)) {
             return stream
-                    .map(str ->
-                            patterns.stream()
+                    .map(str -> {
+                            return patterns.stream()
                                     .map(pattern -> pattern.matcher(str))
-                                    .filter(matcher -> matcher.matches())
-                                    .map(matcher -> new AccessTrendDto(matcher.group(2), LocalDate.parse(matcher.group(1))))
-                                    .findFirst()
-                    )
+                                    .filter(Matcher::matches)
+                                    .map(matcher -> new AccessTrendDto(matcher.group(4), matcher.group(1), showUserInformation ? matcher.group(3) : null))
+                                    .findFirst();
+                        })
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .collect(Collectors.toList());
@@ -175,12 +174,12 @@ public class StatisticService {
         }
     }
 
-    private Optional<SourceExecutionDto> getMatchedExecution(String str, String sourceKey) {
+    private Optional<SourceExecutionDto> getMatchedExecution(String str, String sourceKey, boolean showUserInformation) {
         return patternMap.entrySet().stream()
                 .map(entry -> new ImmutablePair<>(entry.getKey(), entry.getValue().matcher(str)))
                 .filter(pair -> pair.getValue().matches())
-                .filter(pair -> sourceKey == null || (sourceKey != null && sourceKey.equals(pair.getValue().group(2))))
-                .map(pair -> new SourceExecutionDto(pair.getValue().group(2), pair.getKey(), LocalDate.parse(pair.getValue().group(1))))
+                .filter(pair -> sourceKey == null || (sourceKey != null && sourceKey.equals(pair.getValue().group(3))))
+                .map(pair -> new SourceExecutionDto(pair.getValue().group(3), pair.getKey(), pair.getValue().group(1), showUserInformation ? pair.getValue().group(2) : null))
                 .findFirst();
     }
 

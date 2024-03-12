@@ -1,14 +1,14 @@
 package org.ohdsi.webapi.statistic.dto;
 
-import java.time.LocalDate;
-
 public class AccessTrendDto {
     private String endpointName;
-    private LocalDate executionDate;
+    private String executionDate;
+    private String userID;
 
-    public AccessTrendDto(String endpointName, LocalDate executionDate) {
+    public AccessTrendDto(String endpointName, String  executionDate, String userID) {
         this.endpointName = endpointName;
         this.executionDate = executionDate;
+        this.userID = userID;
     }
 
     public String getEndpointName() {
@@ -19,11 +19,19 @@ public class AccessTrendDto {
         this.endpointName = endpointName;
     }
 
-    public LocalDate getExecutionDate() {
+    public String  getExecutionDate() {
         return executionDate;
     }
 
-    public void setExecutionDate(LocalDate executionDate) {
+    public void setExecutionDate(String  executionDate) {
         this.executionDate = executionDate;
+    }
+
+    public String getUserID() {
+        return userID;
+    }
+
+    public void setUserID(String userID) {
+        this.userID = userID;
     }
 }

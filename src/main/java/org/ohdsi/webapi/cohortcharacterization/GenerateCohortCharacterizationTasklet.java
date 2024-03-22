@@ -22,6 +22,7 @@ import org.ohdsi.sql.BigQuerySparkTranslate;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
+import org.ohdsi.webapi.cohortcharacterization.domain.CcFeAnalysisEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
 import org.ohdsi.webapi.common.generation.AnalysisTasklet;
@@ -75,9 +76,11 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
         final String cohortTable = jobParams.get(TARGET_TABLE).toString();
         final String sessionId = jobParams.get(SESSION_ID).toString();
         final String tempSchema = SourceUtils.getTempQualifier(source);
+        boolean includeAnnual = cohortCharacterization.getCcFeatureAnalyses().stream().anyMatch(CcFeAnalysisEntity::getIncludeAnnual);
+        boolean includeTemporal = cohortCharacterization.getCcFeatureAnalyses().stream().anyMatch(CcFeAnalysisEntity::getIncludeTemporal);
         CCQueryBuilder ccQueryBuilder = new CCQueryBuilder(cohortCharacterization, cohortTable, sessionId,
                 SourceUtils.getCdmQualifier(source), SourceUtils.getResultsQualifier(source),
-                SourceUtils.getVocabularyQualifier(source), tempSchema, jobId);
+                SourceUtils.getVocabularyQualifier(source), tempSchema, jobId, includeAnnual, includeTemporal);
         String sql = ccQueryBuilder.build();
 
         /*

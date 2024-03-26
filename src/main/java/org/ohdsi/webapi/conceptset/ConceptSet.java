@@ -26,8 +26,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
+import javax.persistence.OneToOne;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.ohdsi.webapi.conceptset.criteria.ConceptSetCriterion;
 import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.model.CommonEntityExt;
 import org.ohdsi.webapi.tag.domain.Tag;
@@ -64,6 +66,16 @@ public class ConceptSet extends CommonEntityExt<Integer> implements Serializable
           joinColumns = @JoinColumn(name = "asset_id", referencedColumnName = "concept_set_id"),
           inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
   private Set<Tag> tags;
+
+  @OneToOne(mappedBy = "conceptSet")
+  private ConceptSetCriterion conceptSetCriterion;
+
+  public void setConceptSetCriterion(ConceptSetCriterion conceptSetCriterion) {
+    this.conceptSetCriterion = conceptSetCriterion;
+  }
+  public ConceptSetCriterion getConceptSetCriterion() {
+    return conceptSetCriterion;
+  }
 
   @Override
   public Integer getId() {

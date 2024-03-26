@@ -35,6 +35,8 @@ import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
+import org.ohdsi.webapi.conceptset.criteria.ConceptSetCriterion;
+import org.ohdsi.webapi.conceptset.criteria.ConceptSetCriterionRepository;
 import org.ohdsi.webapi.conceptset.dto.ConceptSetVersionFullDTO;
 import org.ohdsi.webapi.exception.ConceptNotExistException;
 import org.ohdsi.webapi.security.PermissionService;
@@ -74,6 +76,8 @@ import org.springframework.stereotype.Component;
 @Transactional
 @Path("/conceptset/")
 public class ConceptSetService extends AbstractDaoService implements HasTags<Integer> {
+    @Autowired
+    private ConceptSetCriterionRepository criteriaRepository;
 
     @Autowired
     private ConceptSetGenerationInfoRepository conceptSetGenerationInfoRepository;
@@ -461,8 +465,15 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         updated.setCreatedBy(user);
         updated.setCreatedDate(new Date());
         updated.setTags(null);
-        updateConceptSet(updated, conceptSet);
-        return conversionService.convert(updated, ConceptSetDTO.class);
+
+        // save criteria
+        ConceptSetCriterion criteria = new ConceptSetCriterion();
+        criteria.setConceptSet(updated);
+        criteria.setId(updated.getId());
+        criteria.setCriteria(conceptSetDTO.getCriteria());
+        updated.setConceptSetCriterion(criteria);
+        ConceptSet conceptSetUpdate = updateConceptSet(updated, conceptSet);
+        return conversionService.convert(conceptSetUpdate, ConceptSetDTO.class);
     }
 
     /**
@@ -528,6 +539,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         dst.setDescription(src.getDescription());
         dst.setModifiedDate(new Date());
         dst.setModifiedBy(user);
+        dst.setConceptSetCriterion(dst.getConceptSetCriterion());
         
         dst = this.getConceptSetRepository().save(dst);
         return dst;

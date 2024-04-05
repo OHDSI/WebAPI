@@ -13,6 +13,7 @@ import org.ohdsi.webapi.prediction.PredictionAnalysis;
 import org.ohdsi.webapi.reusable.domain.Reusable;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.tag.domain.Tag;
+import org.ohdsi.webapi.tool.Tool;
 
 public enum EntityType {
     COHORT_DEFINITION(CohortDefinition.class),
@@ -26,6 +27,7 @@ public enum EntityType {
     PREDICTION(PredictionAnalysis.class),
     COHORT_SAMPLE(CohortSample.class),
     TAG(Tag.class),
+    TOOL(Tool.class),
     REUSABLE(Reusable.class);
 
     private final Class<? extends CommonEntity> entityClass;

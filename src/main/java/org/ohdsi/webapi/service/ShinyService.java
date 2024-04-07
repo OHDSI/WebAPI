@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.service;
 
 import com.odysseusinc.arachne.commons.api.v1.dto.CommonAnalysisType;
+
 import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.ohdsi.webapi.shiny.ApplicationBrief;
 import org.ohdsi.webapi.shiny.ConflictPositConnectException;
@@ -13,11 +14,14 @@ import org.ohdsi.webapi.shiny.ShinyPublishedEntity;
 import org.ohdsi.webapi.shiny.ShinyPublishedRepository;
 import org.ohdsi.webapi.shiny.TemporaryFile;
 import org.ohdsi.webapi.shiro.PermissionManager;
+import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.SourceKey;
+import org.ohdsi.webapi.shiro.management.Security;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +36,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.Date;
@@ -56,6 +61,13 @@ public class ShinyService {
     private PermissionManager permissionManager;
     @Autowired
     private PositConnectClient connectClient;
+    @Autowired
+    protected Security security;
+    @Autowired
+    protected UserRepository userRepository;
+    
+    @Value("#{!'${security.provider}'.equals('DisabledSecurity')}")
+    private boolean securityEnabled;    
 
     @Inject
     public ShinyService(List<ShinyPackagingService> services) {
@@ -91,7 +103,7 @@ public class ShinyService {
             ShinyPublishedEntity entity = new ShinyPublishedEntity();
             entity.setAnalysisId(Integer.toUnsignedLong(id));
             entity.setSourceKey(sourceKey);
-            entity.setCreatedBy(permissionManager.getCurrentUser());
+            entity.setCreatedBy(securityEnabled ? permissionManager.getCurrentUser() : userRepository.findByLogin(security.getSubject()));
             entity.setCreatedDate(Date.from(Instant.now()));
             return entity;
         });

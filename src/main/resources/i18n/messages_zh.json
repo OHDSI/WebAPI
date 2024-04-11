@@ -149,7 +149,9 @@
       "create": "创建工具失败。",
       "update": "更新工具失败。",
       "delete": "删除工具失败。"
-    }
+    },
+    "toolDisabled":"工具已禁用",
+    "toolEnabled": "工具已启用"
   },
   "commonErrors": {
     "noSources": "当前的WebAPI尚未定义源。<br/>请在<a href=\"#/configure\">配置</a>页上添加一个或多个。",

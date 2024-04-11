@@ -149,7 +149,9 @@
       "create": "도구를 만들지 못했습니다.",
       "update": "도구 업데이트에 실패했습니다.",
       "delete": "도구 삭제에 실패했습니다."
-    }
+    },
+    "toolDisabled": "도구 비활성화됨",
+    "toolEnabled": "도구 활성화됨"
   },
   "commonErrors": {
     "noSources": "현재 WebAPI에 정의된 소스가 없습니다. <br/> 해당 페이지에서 하나 이상을 추가하십시오 <a href=\"#/configure\">configuration</a> page.",

@@ -364,6 +364,7 @@ public class PathwayController {
 	@Path("/{id}/generation")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
+	@Transactional
 	public List<CommonGenerationDTO> getPathwayGenerations(
 					@PathParam("id") final Integer pathwayAnalysisId
 	) {

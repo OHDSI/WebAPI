@@ -45,7 +45,7 @@ public class PositConnectClient implements InitializingBean {
 
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
-    @Value("${shiny.connect.api_key}")
+    @Value("${shiny.connect.api.key}")
     private String apiKey;
     @Value("${shiny.connect.url}")
     private String connectUrl;

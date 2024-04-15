@@ -82,6 +82,7 @@ public interface Constants {
     String EXECUTABLE_FILE_NAME = "executableFilename";
     String GENERATION_ID = "generation_id";
     String DESIGN_HASH = "design_hash";
+    String DEMOGRAPHIC_STATS = "demographic_stats";
   }
 
   interface Variables {

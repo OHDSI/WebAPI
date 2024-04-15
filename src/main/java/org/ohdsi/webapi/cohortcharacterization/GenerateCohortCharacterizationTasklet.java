@@ -77,10 +77,10 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
         final String sessionId = jobParams.get(SESSION_ID).toString();
         final String tempSchema = SourceUtils.getTempQualifier(source);
         boolean includeAnnual = cohortCharacterization.getCcFeatureAnalyses().stream().anyMatch(CcFeAnalysisEntity::getIncludeAnnual);
-        boolean includeTemporal = cohortCharacterization.getCcFeatureAnalyses().stream().anyMatch(CcFeAnalysisEntity::getIncludeTemporal);
+        // boolean includeTemporal = cohortCharacterization.getCcFeatureAnalyses().stream().anyMatch(CcFeAnalysisEntity::getIncludeTemporal);
         CCQueryBuilder ccQueryBuilder = new CCQueryBuilder(cohortCharacterization, cohortTable, sessionId,
                 SourceUtils.getCdmQualifier(source), SourceUtils.getResultsQualifier(source),
-                SourceUtils.getVocabularyQualifier(source), tempSchema, jobId, includeAnnual, includeTemporal);
+                SourceUtils.getVocabularyQualifier(source), tempSchema, jobId, includeAnnual, false);
         String sql = ccQueryBuilder.build();
 
         /*

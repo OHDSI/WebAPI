@@ -66,8 +66,10 @@ public class CohortCountsShinyPackagingService implements ShinyPackagingService 
                 }
                 JsonNode manifest = parseManifest(manifestPath);
 
-                InclusionRuleReport byEventReport = cohortDefinitionService.getInclusionRuleReport(cohortId, sourceKey, 0); //by event
-                InclusionRuleReport byPersonReport = cohortDefinitionService.getInclusionRuleReport(cohortId, sourceKey, 1); //by person
+                InclusionRuleReport byEventReport = cohortDefinitionService.getInclusionRuleReport(cohortId, sourceKey,
+                        0, null); // by event
+                InclusionRuleReport byPersonReport = cohortDefinitionService.getInclusionRuleReport(cohortId, sourceKey,
+                        1, null); // by person
                 Path dataDir = path.resolve("data");
                 Files.createDirectory(dataDir);
                 Stream.of(

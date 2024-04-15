@@ -59,7 +59,7 @@ public class GenerationCacheHelper {
                             .withExpression(cohortDefinition.getDetails().getExpressionObject())
                             .withSource(source)
                             .withTargetId(designHash)
-                            .buildWithRetainCohortCovariates();
+                            .build();
                     String[] sqls = CohortGenerationUtils.buildGenerationSql(cohortGenerationRequest);
                     sqlExecutor.accept(designHash, sqls);
                     cache = generationCacheService.cacheResults(CacheableGenerationType.COHORT, designHash, source.getSourceId());

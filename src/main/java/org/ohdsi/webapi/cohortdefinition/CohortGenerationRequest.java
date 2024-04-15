@@ -10,7 +10,6 @@ public class CohortGenerationRequest {
     private String sessionId;
     private String targetSchema;
     private Integer targetId;
-    private Boolean retainCohortCovariates;
 
     public CohortGenerationRequest(CohortExpression expression, Source source, String sessionId, Integer targetId, String targetSchema) {
 
@@ -21,15 +20,6 @@ public class CohortGenerationRequest {
         this.targetSchema = targetSchema;
     }
 
-    public CohortGenerationRequest(CohortExpression expression, Source source, String sessionId, Integer targetId, String targetSchema, Boolean retainCohortCovariates) {
-
-        this.expression = expression;
-        this.source = source;
-        this.sessionId = sessionId;
-        this.targetId = targetId;
-        this.targetSchema = targetSchema;
-        this.retainCohortCovariates = retainCohortCovariates;
-    }
     public CohortExpression getExpression() {
 
         return expression;
@@ -53,9 +43,5 @@ public class CohortGenerationRequest {
     public Integer getTargetId() {
 
         return targetId;
-    }
-
-    public Boolean getRetainCohortCovariates() {
-        return retainCohortCovariates;
     }
 }

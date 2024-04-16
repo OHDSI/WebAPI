@@ -24,16 +24,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import org.dbunit.Assertion;
 import org.dbunit.DatabaseUnitException;
-import org.dbunit.database.DatabaseConfig;
-import org.dbunit.database.DatabaseDataSourceConnection;
 import org.dbunit.database.IDatabaseConnection;
 import org.dbunit.dataset.CompositeDataSet;
 import org.dbunit.dataset.IDataSet;
 import org.dbunit.dataset.ITable;
-import org.dbunit.ext.postgresql.PostgresqlDataTypeFactory;
 import org.dbunit.operation.DatabaseOperation;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertEquals;
 
@@ -96,12 +92,6 @@ public class PathwayAnalysisTest extends AbstractDatabaseTest {
 
   private static SerializedPathwayAnalysisToPathwayAnalysisConverter converter =  new SerializedPathwayAnalysisToPathwayAnalysisConverter();
 
-  private static IDatabaseConnection getConnection() throws SQLException {
-    final IDatabaseConnection con = new DatabaseDataSourceConnection(getDataSource());
-    con.getConfig().setProperty(DatabaseConfig.FEATURE_QUALIFIED_TABLE_NAMES, true);
-    con.getConfig().setProperty(DatabaseConfig.PROPERTY_DATATYPE_FACTORY, new PostgresqlDataTypeFactory());
-    return con;
-  }
   
   @Before
   public void setUp() throws Exception {
@@ -181,21 +171,6 @@ public class PathwayAnalysisTest extends AbstractDatabaseTest {
     source.setDaimons(Arrays.asList(cdmDaimon, vocabDaimon, resultsDaimon));
 
     return source;
-  }
-  
-  private void loadPrepData(String[] datasetPaths) throws Exception {
-    final IDatabaseConnection dbUnitCon = getConnection();
-    final IDataSet ds = DataSetFactory.createDataSet(datasetPaths);
-
-    assertNotNull("No dataset found", ds);
-
-    try {
-      DatabaseOperation.CLEAN_INSERT.execute(dbUnitCon, ds); // clean load of the DB. Careful, clean means "delete the old stuff"
-    } catch (final DatabaseUnitException e) {
-      fail(e.getMessage());
-    } finally {
-      dbUnitCon.close();
-    }
   }
   
   private void generateAnalysis(PathwayAnalysisEntity entity) throws Exception {

@@ -66,13 +66,12 @@ public class PermissionTest extends AbstractDatabaseTest {
 
   @Test
   public void permsTest() throws Exception {
-    // Set up the mock Subject as the currently authenticated user
     Subject s = SecurityUtils.getSubject();
     String subjetName = permissionManager.getSubjectName();
 
     final String[] testDataSetsPaths = new String[] {"/permission/permsTest_PREP.json" };
      
-    loadPrepData(testDataSetsPaths);
+    loadPrepData(testDataSetsPaths, DatabaseOperation.REFRESH);
 
     // subject can manage printer1 and printer2, can do print and query on any printer.
     assertTrue(s.isPermitted("printer:manage:printer1"));
@@ -85,4 +84,21 @@ public class PermissionTest extends AbstractDatabaseTest {
     
   }
   
+  @Test
+  public void wildcardTest() throws Exception {
+    Subject s = SecurityUtils.getSubject();
+    String subjetName = permissionManager.getSubjectName();
+
+    final String[] testDataSetsPaths = new String[] {"/permission/wildcardTest_PREP.json" };
+     
+    loadPrepData(testDataSetsPaths, DatabaseOperation.REFRESH);
+
+    // subject has * permisison, so any permisison test is true
+    assertTrue(s.isPermitted("printer:manage:printer1"));
+    assertTrue(s.isPermitted("printer"));
+    
+    loadPrepData(testDataSetsPaths, DatabaseOperation.DELETE);
+    
+  }
+
 }

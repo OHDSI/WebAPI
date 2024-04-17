@@ -66,6 +66,8 @@ public class PermissionTest extends AbstractDatabaseTest {
 
   @Test
   public void permsTest() throws Exception {
+    // need to clear authorization cache before each test
+    permissionManager.clearAuthorizationInfoCache();
     Subject s = SecurityUtils.getSubject();
     String subjetName = permissionManager.getSubjectName();
 
@@ -86,11 +88,10 @@ public class PermissionTest extends AbstractDatabaseTest {
   
   @Test
   public void wildcardTest() throws Exception {
+    // need to clear authorization cache before each test
+    permissionManager.clearAuthorizationInfoCache();
     Subject s = SecurityUtils.getSubject();
-    String subjetName = permissionManager.getSubjectName();
-
     final String[] testDataSetsPaths = new String[] {"/permission/wildcardTest_PREP.json" };
-     
     loadPrepData(testDataSetsPaths, DatabaseOperation.REFRESH);
 
     // subject has * permisison, so any permisison test is true

@@ -497,9 +497,9 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         updateConceptSet(entity, persistedCohortCharacterization);
         
         importCohorts(entity, persistedCohortCharacterization);
-        List<Integer> savedAnalysesIds = importAnalyses(entity, persistedCohortCharacterization);
 
         final CohortCharacterizationEntity savedEntity = saveCc(persistedCohortCharacterization);
+        List<Integer> savedAnalysesIds = importAnalyses(entity, savedEntity);
 
         eventPublisher.publishEvent(new CcImportEvent(savedAnalysesIds));
 
@@ -1350,12 +1350,16 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             }
         }
 
-        persistedEntity.setFeatureAnalyses(analysesSet.stream().map(a -> {
+        persistedEntity.getCcFeatureAnalyses().clear();
+        Set<CcFeAnalysisEntity> featureAnalyses = analysesSet.stream().map(a -> {
             CcFeAnalysisEntity feAnalysisEntity = new CcFeAnalysisEntity();
             feAnalysisEntity.setFeatureAnalysis(a);
-            feAnalysisEntity.setCohortCharacterization(entity);
+            feAnalysisEntity.setCohortCharacterization(persistedEntity);
             return feAnalysisEntity;
-        }).collect(Collectors.toSet()));
+        }).collect(Collectors.toSet());
+        ccFeAnalysisRepository.save(featureAnalyses);
+
+        persistedEntity.getCcFeatureAnalyses().addAll(featureAnalyses);
         return savedAnalysesIds;
     }
 

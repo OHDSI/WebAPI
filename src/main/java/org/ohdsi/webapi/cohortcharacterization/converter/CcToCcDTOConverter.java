@@ -15,7 +15,7 @@ public class CcToCcDTOConverter extends BaseCcToCcDTOConverter<CohortCharacteriz
         final CohortCharacterizationDTO cohortCharacterizationDTO = super.convert(source);
 
         cohortCharacterizationDTO.setCohorts(converterUtils.convertSet(source.getCohortDefinitions(), CohortMetadataImplDTO.class));
-        cohortCharacterizationDTO.setFeatureAnalyses(converterUtils.convertSet(source.getFeatureAnalyses(), FeAnalysisShortDTO.class));
+        cohortCharacterizationDTO.setFeatureAnalyses(converterUtils.convertSet(source.getCcFeatureAnalyses(), FeAnalysisShortDTO.class));
         return cohortCharacterizationDTO;
     }
 

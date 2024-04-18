@@ -638,6 +638,10 @@
       "conditionMeasurementText_26": "пол любой из:",
       "conditionMeasurementText_27": "Специализация провайдера:",
       "conditionMeasurementText_28": "Событием посещения является любое из:",
+      "conditionMeasurementText_29": "с вычисляемым значением как",
+      "conditionMeasurementText_30": "в течение одного визита",
+      "conditionMeasurementText_31": "в течение одного визита",
+      "conditionMeasurementText_32": "из",
       "indexDataText": "Дата индекса относится к измерению <%= conceptSetName %>."
     },
     "conditionObservation": {

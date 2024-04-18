@@ -644,7 +644,11 @@
       "conditionMeasurementText_26": "gender is any of:",
       "conditionMeasurementText_27": "provider specialty is any of:",
       "conditionMeasurementText_28": "visit occurrence is any of:",
+      "conditionMeasurementText_29": "with calculated value as number",
       "conditionMeasurementText_3": "occurrence start is:",
+      "conditionMeasurementText_30": "at the same visit",
+      "conditionMeasurementText_31": "restricted to the same visit",
+      "conditionMeasurementText_32": "of",
       "conditionMeasurementText_5": "Measurement Value Operator is:",
       "conditionMeasurementText_6": "with value as number",
       "conditionMeasurementText_7": "Value as Concept is:",
@@ -1267,6 +1271,15 @@
           "group": "Group:",
           "groups": "Groups:",
           "tag": "Tag:"
+        }
+      }
+    },
+    "shiny": {
+      "button": {
+        "title": "Shiny App",
+        "menu": {
+          "download": "Download",
+          "publish": "Publish"
         }
       }
     }
@@ -3111,6 +3124,11 @@
         "desc_censoring": "Exit cohort based on Measurement.",
         "desc_group": "Find patients based on measurements."
       },
+      "addCombinedMeasurement": {
+        "title": "Add Combined Measurement",
+        "desc_initial": "Find patients based on combination of two Measurements.",
+        "desc_group": "Find patients based on combination of two measurements."
+      },
       "addObservation": {
         "title": "Add Observation",
         "desc_initial": "Find patients based on observations.",
@@ -3550,7 +3568,9 @@
         "title_measurement": "Add Value as Number Criteria",
         "desc_measurement": "Filter Measurements by Value as Number.",
         "title_observation": "Add Value As Number Criteria",
-        "desc_observation": "Filter Observations by the Value As Number."
+        "desc_observation": "Filter Observations by the Value As Number.",
+        "title_combined_measurement": "Add Value as Number Criteria",
+        "desc_combined_measurement": "Filter Combined Measurements Result by Value as Number"
       },
       "addRefills": {
         "title_drugexposure": "Add Refills Criteria",
@@ -3653,6 +3673,10 @@
         "desc_visit": "Filter Visit Occurrences based on distance from Place of Service to Patient.",
         "title_visitDetail": "Add Place of Service Distance Criteria",
         "desc_visitDetail": "Filter Visit detail based on distance from Place of Service to Patient."
+      },
+      "addMeasurementOperand": {
+        "title_measurement": "Add Calculation",
+        "desc_measurement": "Add calculated value based on a Measurement"
       }
     },
     "newEntityNames": {

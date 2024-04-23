@@ -63,7 +63,6 @@ public class CohortGenerationUtils {
     options.vocabularySchema = vocabSchema;
     options.generateStats = true; // always generate with stats
     options.retainCohortCovariates = !ObjectUtils.isEmpty(request.getRetainCohortCovariates()) && request.getRetainCohortCovariates(); // this field decides whether to retain cohort covariates
-    options.sourceKey = String.format("'%s'", request.getSource().getSourceKey()); // source key is a string literal
 
     final String oracleTempSchema = SourceUtils.getTempQualifier(source);
 

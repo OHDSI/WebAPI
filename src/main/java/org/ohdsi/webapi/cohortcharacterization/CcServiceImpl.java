@@ -304,6 +304,11 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
           paramRepository.save(param);
         }
 
+        for(CcFeAnalysisEntity analysis : entity.getCcFeatureAnalyses()) {
+            analysis.setCohortCharacterization(savedEntity);
+            ccFeAnalysisRepository.save(analysis);
+        }
+
         entityManager.flush();
         entityManager.refresh(savedEntity);
 

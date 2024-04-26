@@ -59,6 +59,7 @@ public class CohortGenerationUtils {
     CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
     options.cohortIdFieldName = DESIGN_HASH;
     options.cohortId = request.getTargetId();
+    options.resultCohortId = request.getCohortId();
     options.cdmSchema = cdmSchema;
     options.vocabularySchema = vocabSchema;
     options.generateStats = true; // always generate with stats

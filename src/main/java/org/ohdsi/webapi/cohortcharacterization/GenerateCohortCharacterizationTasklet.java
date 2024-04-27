@@ -38,6 +38,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.ohdsi.webapi.Constants.Params.*;
 
@@ -76,7 +77,8 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
         final String cohortTable = jobParams.get(TARGET_TABLE).toString();
         final String sessionId = jobParams.get(SESSION_ID).toString();
         final String tempSchema = SourceUtils.getTempQualifier(source);
-        boolean includeAnnual = cohortCharacterization.getCcFeatureAnalyses().stream().anyMatch(CcFeAnalysisEntity::getIncludeAnnual);
+        boolean includeAnnual = cohortCharacterization.getCcFeatureAnalyses().stream()
+                .anyMatch(fe -> Optional.ofNullable(fe.getIncludeAnnual()).orElse(false));
         // boolean includeTemporal = cohortCharacterization.getCcFeatureAnalyses().stream().anyMatch(CcFeAnalysisEntity::getIncludeTemporal);
         CCQueryBuilder ccQueryBuilder = new CCQueryBuilder(cohortCharacterization, cohortTable, sessionId,
                 SourceUtils.getCdmQualifier(source), SourceUtils.getResultsQualifier(source),

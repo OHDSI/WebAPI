@@ -66,7 +66,9 @@ public class IRAnalysisQueryBuilder {
   private String getStrataQuery(CriteriaGroup strataCriteria)
   {
     String resultSql = STRATA_QUERY_TEMPLATE;
-    String additionalCriteriaQuery = "\nJOIN (\n" + cohortExpressionQueryBuilder.getCriteriaGroupQuery(strataCriteria, "#analysis_events") + ") AC on AC.person_id = pe.person_id AND AC.event_id = pe.event_id";
+    String additionalCriteriaQuery = "\nJOIN (\n"
+            + cohortExpressionQueryBuilder.getCriteriaGroupQuery(strataCriteria, "#analysis_events", null)
+            + ") AC on AC.person_id = pe.person_id AND AC.event_id = pe.event_id";
     additionalCriteriaQuery = StringUtils.replace(additionalCriteriaQuery,"@indexId", "" + 0);
     resultSql = StringUtils.replace(resultSql, "@additionalCriteriaQuery", additionalCriteriaQuery);
     return resultSql;

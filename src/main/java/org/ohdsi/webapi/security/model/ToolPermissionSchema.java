@@ -1,20 +1,25 @@
 package org.ohdsi.webapi.security.model;
+
 import org.springframework.stereotype.Component;
+
 import java.util.HashMap;
 import java.util.Map;
+
 @Component
 public class ToolPermissionSchema extends EntityPermissionSchema {
     private static Map<String, String> writePermissions = new HashMap<String, String>() {{
-        put("tool:*:delete", "Delete tool");
-        put("tool:*:put", "Update tool");
-        put("tool:*:post", "Edit tool");
+        put("tool:%s:delete", "Delete Tool with id = %s");
+        put("tool:%s:put", "Update Tool with id = %s");
+        put("tool:%s:post", "Create Tool with id = %s");
     }};
-    private static Map<String, String> readPermissions = new HashMap<String, String>() {{
-        put("tool:get", "view tool with id %s");
-        put("tool:*:get", "Resolve tool %s expression");
-    }
+    private static Map<String, String> readPermissions = new HashMap<String, String>() {
+        {
+            put("tool:%s:get", "View Tool with id = %s");
+        }
     };
+
     public ToolPermissionSchema() {
-        super(EntityType.TOOL, new HashMap<>(), writePermissions);
+        super(EntityType.TOOL, readPermissions, writePermissions);
     }
+
 }

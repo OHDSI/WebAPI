@@ -7,7 +7,7 @@ INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description) VALUES
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description) VALUES
     (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'tool:*:get', 'View Tool');
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description) VALUES
-    (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'tool:*:delete', 'View Tool');
+    (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'tool:*:delete', 'Delete Tool');
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission(id, role_id, permission_id)
 SELECT nextval('${ohdsiSchema}.sec_role_permission_sequence'), sr.id, sp.id

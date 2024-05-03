@@ -16,6 +16,7 @@
 package org.ohdsi.webapi.service;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -25,6 +26,8 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.vocabulary.Concept;
@@ -35,12 +38,13 @@ import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
-import org.ohdsi.webapi.conceptset.criteria.ConceptSetCriterion;
-import org.ohdsi.webapi.conceptset.criteria.ConceptSetCriterionRepository;
 import org.ohdsi.webapi.conceptset.dto.ConceptSetVersionFullDTO;
+import org.ohdsi.webapi.conceptset.metadata.ConceptSetMetaData;
 import org.ohdsi.webapi.exception.ConceptNotExistException;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
+import org.ohdsi.webapi.service.dto.ConceptSetMetaDataDTO;
+import org.ohdsi.webapi.service.dto.MetaDataDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
@@ -76,8 +80,6 @@ import org.springframework.stereotype.Component;
 @Transactional
 @Path("/conceptset/")
 public class ConceptSetService extends AbstractDaoService implements HasTags<Integer> {
-    @Autowired
-    private ConceptSetCriterionRepository criteriaRepository;
 
     @Autowired
     private ConceptSetGenerationInfoRepository conceptSetGenerationInfoRepository;
@@ -109,12 +111,13 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Autowired
     private VersionService<ConceptSetVersion> versionService;
 
-    @Value("${security.defaultGlobalReadPermissions}")
+
+     @Value("${security.defaultGlobalReadPermissions}")
     private boolean defaultGlobalReadPermissions;
     
     public static final String COPY_NAME = "copyName";
 
-    /**
+     /**
      * Get the concept set based in the identifier
      * 
      * @summary Get concept set by ID
@@ -465,15 +468,8 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         updated.setCreatedBy(user);
         updated.setCreatedDate(new Date());
         updated.setTags(null);
-
-        // save criteria
-        ConceptSetCriterion criteria = new ConceptSetCriterion();
-        criteria.setConceptSet(updated);
-        criteria.setId(updated.getId());
-        criteria.setCriteria(conceptSetDTO.getCriteria());
-        updated.setConceptSetCriterion(criteria);
-        ConceptSet conceptSetUpdate = updateConceptSet(updated, conceptSet);
-        return conversionService.convert(conceptSetUpdate, ConceptSetDTO.class);
+        updateConceptSet(updated, conceptSet);
+        return conversionService.convert(updated, ConceptSetDTO.class);
     }
 
     /**
@@ -539,8 +535,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         dst.setDescription(src.getDescription());
         dst.setModifiedDate(new Date());
         dst.setModifiedBy(user);
-        dst.setConceptSetCriterion(dst.getConceptSetCriterion());
-        
+
         dst = this.getConceptSetRepository().save(dst);
         return dst;
     }
@@ -581,10 +576,10 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
   public Collection<ConceptSetGenerationInfo> getConceptSetGenerationInfo(@PathParam("id") final int id) {
       return this.conceptSetGenerationInfoRepository.findAllByConceptSetId(id);
   }
-  
+
   /**
    * Delete the selected concept set by concept set identifier
-   * 
+   *
    * @summary Delete concept set
    * @param id The concept set ID
    */
@@ -602,7 +597,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
       catch (Exception e) {
           throw e;
       }
-      
+
       // Remove the concept set items
       try {
         getConceptSetItemRepository().deleteByConceptSetId(id);
@@ -695,10 +690,10 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     }
 
     /**
-     * Checks a concept set for diagnostic problems. At this time, 
+     * Checks a concept set for diagnostic problems. At this time,
      * this appears to be an endpoint used to check to see which tags
      * are applied to a concept set.
-     * 
+     *
      * @summary Concept set tag check
      * @since v2.10.0
      * @param conceptSetDTO The concept set
@@ -868,5 +863,96 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         version.setCreatedBy(user);
         version.setCreatedDate(versionDate);
         return versionService.create(VersionType.CONCEPT_SET, version);
+    }
+
+    /**
+     * Update the concept set metadata for each concept in concept set ID in the
+     * WebAPI database.
+     *
+     * The body has two parts: 1) the elements new concept which added to the
+     * concept set. 2) the elements concept which remove from concept set.
+     *
+     * @summary Create new or delete concept set metadata items
+     * @param id
+     *            The concept set ID
+     * @param dto
+     *            An object of 2 Array new metadata and remove metadata
+     * @return Boolean: true if the save is successful
+     */
+    @PUT
+    @Path("/{id}/metadata")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public boolean saveConceptSetMetaData(@PathParam("id") final int id, ConceptSetMetaDataDTO dto) {
+        UserEntity user = userRepository.findByLogin(security.getSubject());
+        if (dto.getRemoveMetadata() != null && !dto.getRemoveMetadata().isEmpty()) {
+            for (MetaDataDTO metaDataDTO : dto.getRemoveMetadata()) {
+                this.getConceptSetMetaDataRepository().deleteMetadataByConceptSetIdAndConceptId(id, metaDataDTO.getConceptId());
+            }
+//            getConceptSetMetaDataRepository().deleteMetadataByConceptSetIdAndInConceptId(id,
+//                    dto.getRemoveMetadata().stream().map(MetaDataDTO::getConceptId).collect(Collectors.toList()));
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        if(dto.getNewMetadata() != null && !dto.getNewMetadata().isEmpty()) {
+            List<ConceptSetMetaData> metadataList = dto.getNewMetadata().stream().map(m -> {
+                ConceptSetMetaData metaData = new ConceptSetMetaData();
+                metaData.setConceptSetId(id);
+                try {
+                    metaData.setMetadata(mapper.writeValueAsString(m));
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+                metaData.setConceptId(m.getConceptId());
+                metaData.setCreatedBy(user);
+                return metaData;
+            }).collect(Collectors.toList());
+
+            this.getConceptSetMetaDataRepository().save(metadataList);
+        }
+
+        return true;
+    }
+
+     @GET
+    @Path("/{id}/metadata")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<MetaDataDTO> getConceptSetMetaData(@PathParam("id") final int id) {
+        ObjectMapper mapper = new ObjectMapper();
+        List<ConceptSetMetaData> metadataList = getConceptSetMetaDataRepository().findByConceptSetId(id);
+        List<MetaDataDTO> metadataDTOList = new ArrayList<>();
+        for (ConceptSetMetaData metaData : metadataList) {
+            MetaDataDTO metaDataDTO = null;
+            try {
+                metaDataDTO = mapper.readValue(metaData.getMetadata(), MetaDataDTO.class);
+                metaDataDTO.setId(metaData.getId());
+                metadataDTOList.add(metaDataDTO);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return metadataDTOList;
+    }
+    @DELETE
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteConceptSetMetaData(@PathParam("id") final int id) {
+        ConceptSetMetaData conceptSetMetaData = getConceptSetMetaDataRepository().findById(id);
+        if(conceptSetMetaData != null){
+            getConceptSetMetaDataRepository().deleteById(id);
+            return Response.ok().build();
+        }else throw new NotFoundException("Concept set metadata not found");
+    }
+
+    @PUT
+    @Path("/update/{id}/metadata")
+    @Produces(MediaType.APPLICATION_JSON)
+    public MetaDataDTO updateConceptSetMetaData(@PathParam("id") final int id, MetaDataDTO metaDataDTO) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        ConceptSetMetaData metaData = getConceptSetMetaDataRepository()
+                .findConceptSetMetaDataByConceptIdAndConceptId(id, metaDataDTO.getConceptId())
+                .orElseThrow(() -> new RuntimeException("Concept set metadata not found"));
+        metaData.setMetadata(mapper.writeValueAsString(metaDataDTO));
+        getConceptSetMetaDataRepository().save(metaData);
+        return metaDataDTO;
     }
 }

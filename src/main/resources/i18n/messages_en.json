@@ -1521,7 +1521,13 @@
     "rcTooltip": "Record Count",
     "drcTooltip": "Descendant Record Count",
     "pcTooltip": "Person Count",
-    "dpcTooltip": "Descendant Person Count"
+    "dpcTooltip": "Descendant Person Count",
+    "conceptID": "Concept Id",
+    "searchData": "Search Data",
+    "relatedConcepts": "Related Concept",
+    "conceptHierarchy": "Concept Hierarchy",
+    "conceptSetData": "ConceptSet Data",
+    "conceptData": "Concept Data"
   },
   "dataSources": {
     "const": {
@@ -1786,7 +1792,8 @@
         "includedConcepts": "Included Concepts",
         "includedSourceCodes": "Included Source Codes",
         "versions": "Versions",
-        "messages": "Messages"
+        "messages": "Messages",
+        "metadata": "Metadata"
       },
       "concept": {
         "title": "Vocabulary > Concept",

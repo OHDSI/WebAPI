@@ -1521,7 +1521,13 @@
     "rcTooltip": "Record Count",
     "drcTooltip": "Descendant Record Count",
     "pcTooltip": "Person Count",
-    "dpcTooltip": "Descendant Person Count"
+    "dpcTooltip": "Descendant Person Count",
+    "conceptID": "개념 ID",
+    "searchData": "데이터 검색",
+    "relatedConcepts": "관련 개념",
+    "conceptHierarchy": "개념 계층 구조",
+    "conceptSetData": "ConceptSet 데이터",
+    "conceptData": "개념 데이터"
   },
   "dataSources": {
     "const": {
@@ -1786,7 +1792,8 @@
         "includedConcepts": "포함된 컨셉",
         "includedSourceCodes": "포함된 소스 코드",
         "versions": "Versions",
-        "messages": "메시지"
+        "messages": "메시지",
+        "metadata": "Metadata"
       },
       "concept": {
         "title": "어휘(Vocabulary) > 컨셉",

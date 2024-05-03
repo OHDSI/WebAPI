@@ -5,7 +5,6 @@ public class ConceptSetDTO extends CommonEntityExtDTO {
   private Integer id;
   private String name;
   private String description;
-  private String criteria;
 
   public Integer getId() {
     return id;
@@ -31,10 +30,4 @@ public class ConceptSetDTO extends CommonEntityExtDTO {
     this.description = description;
   }
 
-  public void setCriteria(String criteria) {
-    this.criteria = criteria;
-  }
-  public String getCriteria() {
-    return criteria;
-  }
 }

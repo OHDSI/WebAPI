@@ -1525,7 +1525,13 @@
     "pcTooltip": "Количество пациентов",
     "dpcTooltip": "Количество пациентов-потомков",
     "validStartDate": "Действительная дата начала",
-    "validEndDate": "Действительная дата конца"
+    "validEndDate": "Действительная дата конца",
+    "conceptID": "Идентификатор концепции",
+    "searchData": "Данные поиска",
+    "relatedConcepts": "Родственное понятие",
+    "conceptHierarchy": "Иерархия понятий",
+    "conceptSetData": "Данные ConceptSet",
+    "conceptData": "Концептуальные данные"
   },
   "dataSources": {
     "headingTitle": "Источники данных",
@@ -1700,7 +1706,8 @@
         "includedConcepts": "Включенные концепции",
         "exploreEvidence": "Исследовать Свидетельство",
         "versions": "История версий",
-        "messages": "Сообщения"
+        "messages": "Сообщения",
+        "metadata": "Metadata"
       },
       "exploreEvidence": {
         "title": "Исследование Свидетельства:",

@@ -1525,7 +1525,13 @@
     "rcTooltip": "Record Count",
     "drcTooltip": "Descendant Record Count",
     "pcTooltip": "Person Count",
-    "dpcTooltip": "Descendant Person Count"
+    "dpcTooltip": "Descendant Person Count",
+    "conceptID": "概念 ID",
+    "searchData": "搜索数据",
+    "relatedConcepts":"相关概念",
+    "conceptHierarchy": "概念层次结构",
+    "conceptSetData": "概念集数据",
+    "conceptData": "概念数据"
   },
   "dataSources": {
     "const": {
@@ -1790,7 +1796,8 @@
         "includedConcepts": "包含的概念",
         "includedSourceCodes": "包含的源代码",
         "versions": "Versions",
-        "messages": "提示信息"
+        "messages": "提示信息",
+        "metadata": "Metadata"
       },
       "concept": {
         "title": "术语集 > 概念",

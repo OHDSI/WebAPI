@@ -258,7 +258,7 @@ public class CcController {
         final CohortCharacterizationEntity entity = conversionService.convert(dto, CohortCharacterizationEntity.class);
         entity.setId(id);
         final CohortCharacterizationEntity updatedEntity = service.updateCc(entity);
-        return conversionService.convert(updatedEntity, CohortCharacterizationDTO.class);
+        return convertCcToDto(updatedEntity);
     }
 
     /**

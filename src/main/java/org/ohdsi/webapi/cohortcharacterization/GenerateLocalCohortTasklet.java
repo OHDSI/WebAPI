@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
 import static org.ohdsi.webapi.Constants.Params.TARGET_TABLE;
-import static org.ohdsi.webapi.Constants.Params.DEMOGRAPHIC_STATS;
+import static org.ohdsi.webapi.Constants.Params.RETAIN_COHORT_COVARIATES;
 
 public class GenerateLocalCohortTasklet implements StoppableTasklet {
 
@@ -85,20 +85,19 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
         Source source = sourceService.findBySourceId(Integer.valueOf(jobParameters.get(SOURCE_ID).toString()));
         String resultSchema = SourceUtils.getResultsQualifier(source);
         String targetTable = jobParameters.get(TARGET_TABLE).toString();
-
         Collection<CohortDefinition> cohortDefinitions = cohortGetter.apply(chunkContext);
 
         if (useAsyncCohortGeneration) {
             List<CompletableFuture> executions = cohortDefinitions.stream()
                     .map(cd ->
-                    CompletableFuture.supplyAsync(() -> generateCohort(cd, source, resultSchema, targetTable),
+                    CompletableFuture.supplyAsync(() -> generateCohort(cd, source, resultSchema, targetTable, jobParameters),
                                     Executors.newSingleThreadExecutor()
                             )
                     ).collect(Collectors.toList());
             CompletableFuture.allOf(executions.toArray(new CompletableFuture[]{})).join();
         } else {
             CompletableFuture.runAsync(() ->
-            cohortDefinitions.stream().forEach(cd -> generateCohort(cd, source, resultSchema, targetTable)),
+            cohortDefinitions.stream().forEach(cd -> generateCohort(cd, source, resultSchema, targetTable, jobParameters)),
                     Executors.newSingleThreadExecutor()
             ).join();
         }
@@ -106,14 +105,16 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
         return RepeatStatus.FINISHED;
     }
 
-    private Object generateCohort(CohortDefinition cd, Source source, String resultSchema, String targetTable) {
+    private Object generateCohort(CohortDefinition cd, Source source, String resultSchema, String targetTable, Map<String, Object> jobParameters) {
         if (stopped) {
             return null;
         }
+        Boolean retainCohortCovariates = Boolean.valueOf(jobParameters.get(RETAIN_COHORT_COVARIATES).toString());
         String sessionId = SessionUtils.sessionId();
         CohortGenerationRequestBuilder generationRequestBuilder = new CohortGenerationRequestBuilder(
                 sessionId,
-                resultSchema
+                resultSchema,
+                retainCohortCovariates
         );
         CohortDefinitionDetails details = cd.getDetails();
         int designHash = this.generationCacheHelper.computeHash(details.getExpression());

@@ -98,7 +98,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
   }
 
   public JobExecutionResource generateCohortViaJob(UserEntity userEntity, CohortDefinition cohortDefinition,
-          Source source, Boolean demographicStat) {
+          Source source, Boolean demographicStat, Boolean retainCohortCovariates) {
 
       CohortGenerationInfo info = cohortDefinition.getGenerationInfoList().stream()
               .filter(val -> Objects.equals(val.getId().getSourceId(), source.getSourceId())).findFirst()
@@ -114,8 +114,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
       cohortDefinitionRepository.save(cohortDefinition);
 
       cohortDefinition.getDetails().getExpression();
-
-      return runGenerateCohortJob(cohortDefinition, source, demographicStat);
+      return runGenerateCohortJobDemoGraphic(cohortDefinition, source, demographicStat, retainCohortCovariates);
   }
 
   private Job buildGenerateCohortJob(CohortDefinition cohortDefinition, Source source, JobParameters jobParameters) {
@@ -205,36 +204,23 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
       return generateJobBuilder.build();
   }
 
-  private JobExecutionResource runGenerateCohortJob(CohortDefinition cohortDefinition, Source source, Boolean retainCohortCovariates) {
-    final JobParametersBuilder jobParametersBuilder = getJobParametersBuilder(source, cohortDefinition, retainCohortCovariates);
-    Job job = buildGenerateCohortJob(cohortDefinition, source, jobParametersBuilder.toJobParameters());
-    return jobService.runJob(job, jobParametersBuilder.toJobParameters());
-
   protected void addSessionParams(JobParametersBuilder builder, String sessionId) {
       builder.addString(TARGET_TABLE, GenerationUtils.getTempCohortTableName(sessionId));
   }
-
-  private JobExecutionResource runGenerateCohortJob(CohortDefinition cohortDefinition, Source source) {
-      return runGenerateCohortJob(cohortDefinition, source, null);
-  }
-
-  private JobExecutionResource runGenerateCohortJob(CohortDefinition cohortDefinition, Source source,
-          Boolean demographic) {
-      final JobParametersBuilder jobParametersBuilder = getJobParametersBuilder(source, cohortDefinition);
-
+  private JobExecutionResource runGenerateCohortJobDemoGraphic(CohortDefinition cohortDefinition, Source source, Boolean demographic, Boolean retainCohortCovariates) {
+      final JobParametersBuilder jobParametersBuilder = getJobParametersBuilder(source, cohortDefinition, retainCohortCovariates);
       if (demographic != null && demographic.booleanValue()) {
-          jobParametersBuilder.addString(DEMOGRAPHIC_STATS, Boolean.TRUE.toString());
-          Job job = buildJobForCohortGenerationWithDemographic(cohortDefinition, source, jobParametersBuilder,
-                  getJdbcTemplate());
-          return jobService.runJob(job, jobParametersBuilder.toJobParameters());
+         jobParametersBuilder.addString(DEMOGRAPHIC_STATS, Boolean.TRUE.toString());
+         Job job = buildJobForCohortGenerationWithDemographic(cohortDefinition, source, jobParametersBuilder,
+                 getJdbcTemplate());
+         return jobService.runJob(job, jobParametersBuilder.toJobParameters());
       } else {
-          Job job = buildGenerateCohortJob(cohortDefinition, source, jobParametersBuilder.toJobParameters());
-          return jobService.runJob(job, jobParametersBuilder.toJobParameters());
+         Job job = buildGenerateCohortJob(cohortDefinition, source, jobParametersBuilder.toJobParameters());
+         return jobService.runJob(job, jobParametersBuilder.toJobParameters());
       }
-
   }
 
-  private JobParametersBuilder getJobParametersBuilder(Source source, CohortDefinition cohortDefinition) {
+  private JobParametersBuilder getJobParametersBuilder(Source source, CohortDefinition cohortDefinition, Boolean retainCohortCovariates) {
 
     JobParametersBuilder builder = new JobParametersBuilder();
     builder.addString(JOB_NAME, String.format("Generating cohort %d : %s (%s)", cohortDefinition.getId(), source.getSourceName(), source.getSourceKey()));

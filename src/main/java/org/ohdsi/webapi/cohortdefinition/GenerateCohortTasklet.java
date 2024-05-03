@@ -186,12 +186,12 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
       Integer sourceId = Integer.parseInt(jobParams.get(SOURCE_ID).toString());
       String targetSchema = jobParams.get(TARGET_DATABASE_SCHEMA).toString();
       String sessionId = jobParams.getOrDefault(SESSION_ID, SessionUtils.sessionId()).toString();
-
+      Boolean retainCohortCovariates = Boolean.valueOf(jobParams.get(RETAIN_COHORT_COVARIATES).toString());
       CohortDefinition cohortDefinition = cohortDefinitionRepository.findOneWithDetail(cohortDefinitionId);
       Source source = sourceService.findBySourceId(sourceId);
 
       CohortGenerationRequestBuilder generationRequestBuilder = new CohortGenerationRequestBuilder(sessionId,
-              targetSchema);
+              targetSchema, retainCohortCovariates);
 
       int designHash = this.generationCacheHelper.computeHash(cohortDefinition.getDetails().getExpression());
       CohortGenerationUtils.insertInclusionRules(cohortDefinition, source, designHash, targetSchema, sessionId,

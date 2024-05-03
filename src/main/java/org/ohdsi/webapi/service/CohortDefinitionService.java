@@ -844,10 +844,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOne(id);
 		UserEntity user = userRepository.findByLogin(security.getSubject());
-
-        return cohortGenerationService.generateCohortViaJob(user, currentDefinition, source, demographicStat);
-		//TODO
-        return cohortGenerationService.generateCohortViaJob(user, currentDefinition, source, Boolean.parseBoolean(retainCohortCovariates));
+        return cohortGenerationService.generateCohortViaJob(user, currentDefinition, source, demographicStat, Boolean.parseBoolean(retainCohortCovariates));
 	}
 
 	/**

@@ -89,6 +89,7 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 			setExecutionDurationIfPossible(je, info);
 			info.setStatus(GenerationStatus.COMPLETE);
             info.setCcGenerateId(je.getId());
+			info.setIsChooseDemographic(info.getCcGenerateId() != null);
 
 			if (je.getStatus() == BatchStatus.FAILED || je.getStatus() == BatchStatus.STOPPED) {
 				info.setIsValid(false);

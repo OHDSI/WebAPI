@@ -88,6 +88,18 @@ public class CohortGenerationInfo implements Serializable, IExecutionInfo {
   @Column(name = "cc_generate_id")
   private Long ccGenerateId;
 
+  // If true, then demographic has been selected.
+  @Column(name = "is_choose_demographic")
+  private boolean isChooseDemographic;
+
+  public boolean isChooseDemographic() {
+    return isChooseDemographic;
+  }
+
+  public void setIsChooseDemographic(boolean isChooseDemographic) {
+    this.isChooseDemographic = isChooseDemographic;
+  }
+
   public CohortGenerationInfoId getId() {
     return id;
   }

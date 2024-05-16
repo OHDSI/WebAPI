@@ -50,7 +50,6 @@ public class CohortGenerationUtils {
 
     String cdmSchema = SourceUtils.getCdmQualifier(source);
     String vocabSchema = SourceUtils.getVocabQualifierOrNull(source);
-    String resultSchema = SourceUtils.getResultsQualifier(source);
 
     CohortExpressionQueryBuilder expressionQueryBuilder = new CohortExpressionQueryBuilder();
     StringBuilder sqlBuilder = new StringBuilder();
@@ -62,7 +61,6 @@ public class CohortGenerationUtils {
     options.cdmSchema = cdmSchema;
     options.vocabularySchema = vocabSchema;
     options.generateStats = true; // always generate with stats
-//    options.resultSchema = resultSchema;
     options.retainCohortCovariates = !ObjectUtils.isEmpty(request.getRetainCohortCovariates()) && request.getRetainCohortCovariates(); // this field decides whether to retain cohort covariates
 
     final String oracleTempSchema = SourceUtils.getTempQualifier(source);
@@ -86,12 +84,13 @@ public class CohortGenerationUtils {
         "@target_database_schema.cohort_inclusion"
       }
     );
+    expressionSql = expressionSql.replaceAll("@results_database_schema", request.getTargetSchema());
     sqlBuilder.append(expressionSql);
 
     String renderedSql = SqlRender.renderSql(
       sqlBuilder.toString(),
-      new String[] {TARGET_DATABASE_SCHEMA, RESULTS_DATABASE_SCHEMA},
-      new String[]{request.getTargetSchema(), resultSchema}
+      new String[] {TARGET_DATABASE_SCHEMA},
+      new String[]{request.getTargetSchema()}
     );
     String translatedSql = SqlTranslate.translateSql(renderedSql, source.getSourceDialect(), request.getSessionId(), oracleTempSchema);
     return SqlSplit.splitSql(translatedSql);

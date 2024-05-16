@@ -13,7 +13,8 @@ public class CohortGenerationRequest {
     private Boolean retainCohortCovariates;
     private Integer cohortId;
 
-    public CohortGenerationRequest(CohortExpression expression, Source source, String sessionId, Integer targetId, String targetSchema) {
+    public CohortGenerationRequest(CohortExpression expression, Source source, String sessionId, Integer targetId, 
+            String targetSchema) {
 
         this.expression = expression;
         this.source = source;

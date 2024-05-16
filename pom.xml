@@ -6,13 +6,13 @@
   <groupId>org.ohdsi</groupId>
   <artifactId>WebAPI</artifactId>
   <packaging>war</packaging>
-  <version>2.15.0-SNAPSHOT</version>
+  <version>3.0.0</version>
   <name>WebAPI</name>
   <properties>
     <build.number>${BUILD_NUMBER}</build.number>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <!-- Spring Boot manages spring.version as well -->
-    <spring.boot.version>1.5.22.RELEASE</spring.boot.version>
+    <!-- MDACA Spring Boot manages spring.version as well -->
+    <spring.boot.version>3.0.13</spring.boot.version>
     <log4j2.version>2.17.1</log4j2.version>
     <flyway.version>4.2.0</flyway.version>
     <waffle.version>2.2.1</waffle.version>
@@ -20,11 +20,11 @@
     <hibernate.version>5.4.2.Final</hibernate.version>
     <postgresql.version>42.3.7</postgresql.version>
     <bouncycastle.version>1.69</bouncycastle.version>
-    <shiro.version>1.12.0</shiro.version>
+    <shiro.version>2.0.0</shiro.version>   <!-- MDACA Spring Boot 3 migration shiro.version>1.12.0</shiro.version -->
     <dom4j.version>2.1.3</dom4j.version>
     <hydra.version>0.4.0</hydra.version>
     <featureExtraction.version>3.2.0</featureExtraction.version>
-    <tomcat.embed.version>8.5.87</tomcat.embed.version>
+    <!-- MDACA Spring Boot 3 migration tomcatembed.version>8.5.87</tomcat.embed.version -->
 
     <commons-fileupload.version>1.5</commons-fileupload.version>
 
@@ -32,14 +32,14 @@
     <jersey.version>2.14</jersey.version>
     <SqlRender.version>1.16.1</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
-    <pac4j.version>4.0.0</pac4j.version>
-    <jackson.version>2.12.7</jackson.version>
+    <pac4j.version>6.0.2</pac4j.version>  <!-- pac4j.version>4.0.0</pac4j.version  MDACA Spring Boot 3 migration -->
+    <jackson.version>2.14.3</jackson.version>  <!--  jackson.version>2.12.7</jackson.version  MDACA Spring Boot 3 migration -->
     <start-class>org.ohdsi.webapi.WebApi</start-class>
     <skipUnitTests>false</skipUnitTests>
     <skipITtests>false</skipITtests>
     <miredot.phase>package</miredot.phase>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
 
     <!-- Primary DataSource -->
     <!-- default sql server - TODO How about making postgres the default (e.g. in line with open source tech)? -alexfranken -->
@@ -201,7 +201,7 @@
     <server.servlet.context-path>/WebAPI</server.servlet.context-path>
 
     <arachne.version>1.17.3</arachne.version>
-    <jersey-media-multipart.version>2.25.1</jersey-media-multipart.version>
+    <jersey-media-multipart.version>2.29.1</jersey-media-multipart.version>   <!-- MDACA Spring Boot 3 migration jersey-media-multipart.version>2.25.1</jersey-media-multipart.version -->
     <execution.invalidation.period>600000</execution.invalidation.period>
     <execution.invalidation.maxage.hours>12</execution.invalidation.maxage.hours>
     <execution.status.period>10000</execution.status.period>
@@ -274,8 +274,8 @@
     <cache.achilles.usePersonCount>true</cache.achilles.usePersonCount>
 
     <!-- Build info -->
-    <buildinfo.atlas.milestone.id>47</buildinfo.atlas.milestone.id>
-    <buildinfo.webapi.milestone.id>49</buildinfo.webapi.milestone.id>
+    <buildinfo.atlas.milestone.id>42</buildinfo.atlas.milestone.id>
+    <buildinfo.webapi.milestone.id>43</buildinfo.webapi.milestone.id>
     <buildinfo.atlas.release.tag>*</buildinfo.atlas.release.tag>
     <buildinfo.webapi.release.tag>*</buildinfo.webapi.release.tag>
 
@@ -348,7 +348,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.5.0</version>
+        <version>3.6.1</version>   <!-- MDACA Spring Boot 3 migration version>3.5.0</version -->
       </plugin>
       <plugin>
         <groupId>pl.project13.maven</groupId>
@@ -375,8 +375,8 @@
       </plugin>
       <plugin>
         <groupId>org.codehaus.gmaven</groupId>
-        <artifactId>gmaven-plugin</artifactId>
-        <version>1.5</version>
+        <artifactId>groovy-maven-plugin</artifactId>   <!-- MDACA Spring Boot 3 migration artifactId>gmaven-plugin</artifactId -->
+        <version>2.1.1</version>   <!-- MDACA Spring Boot 3 migration version>1.5</version -->
         <executions>
           <execution>
             <id>add-git-branch-info</id>
@@ -423,7 +423,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.22.2</version>
+        <version>3.1.2</version>
         <configuration>
           <skipTests>${skipUnitTests}</skipTests>
         </configuration>
@@ -452,7 +452,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>2.22.2</version>
+        <version>3.1.2</version>
         <configuration>
           <skipITs>${skipITtests}</skipITs>
         </configuration>
@@ -515,6 +515,25 @@
           </output>
         </configuration>
       </plugin>
+	  
+      <!-- plugin>
+        <groupId>org.openrewrite.maven</groupId>
+        <artifactId>rewrite-maven-plugin</artifactId>
+        <version>5.30.0</version>
+        <configuration>
+          <activeRecipes>
+            <recipe>org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_2</recipe>
+          </activeRecipes>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.openrewrite.recipe</groupId>
+            <artifactId>rewrite-spring</artifactId>
+            <version>5.9.0</version>
+          </dependency>
+        </dependencies>
+      </plugin -->
+	  
     </plugins>
   </build>
 
@@ -573,363 +592,409 @@
         <artifactId>redshift-jdbc42-no-awssdk</artifactId>
         <version>1.2.10.1009</version>
       </dependency>
+		<!-- MDACA Spring Boot 3 migration added for new shiro dependencies -->
+        <!-- dependency>
+            <groupId>org.apache.shiro</groupId>
+            <artifactId>shiro-bom</artifactId>
+            <version>${spring.boot.version}</version>
+            <scope>import</scope>
+            <type>pom</type>
+        </dependency -->
     </dependencies>
   </dependencyManagement>
-  <dependencies>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>${jackson.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-annotations</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-core</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-      <version>${jackson.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-      <version>${jackson.version}</version>
-    </dependency>
-    <!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-actuator</artifactId>
+ <dependencies>
+  <dependency>
+   <groupId>com.fasterxml.jackson.core</groupId>
+   <artifactId>jackson-databind</artifactId>
+   <!-- MDACA Spring Boot 3 migration version>${jackson.version}</version -->
+   <exclusions>
+    <exclusion>
+     <groupId>com.fasterxml.jackson.core</groupId>
+     <artifactId>jackson-annotations</artifactId>
+    </exclusion>
+    <exclusion>
+     <groupId>com.fasterxml.jackson.core</groupId>
+     <artifactId>jackson-core</artifactId>
+    </exclusion>
+   </exclusions>
+  </dependency>
+  <dependency>
+   <groupId>com.fasterxml.jackson.core</groupId>
+   <artifactId>jackson-core</artifactId>
+   <!-- MDACA Spring Boot 3 migration version>${jackson.version}</version -->
+  </dependency>
+  <dependency>
+   <groupId>com.fasterxml.jackson.core</groupId>
+   <artifactId>jackson-annotations</artifactId>
+   <!-- MDACA Spring Boot 3 migration version>${jackson.version}</version -->
+  </dependency>
+  <!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-actuator</artifactId>
     <version>${spring.boot.version}</version> </dependency> -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-starter-logging</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <!-- It is overriding a transitive dependency from the dependency above -->
-    <!-- After migrating to Spring Boot 2.x we should get rid of it -->
-    <dependency>
-      <groupId>org.yaml</groupId>
-      <artifactId>snakeyaml</artifactId>
-      <version>2.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.hibernate</groupId>
-          <artifactId>hibernate-validator</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-log4j2</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-tomcat</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-batch</artifactId>
-    </dependency>
+  <dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter</artifactId>
+   <exclusions>
+    <exclusion>
+     <groupId>org.springframework.boot</groupId>
+     <artifactId>spring-boot-starter-logging</artifactId>
+    </exclusion>
+   </exclusions>
+  </dependency>
+  <!-- It is overriding a transitive dependency from the dependency above -->
+  <!-- After migrating to Spring Boot 2.x we should get rid of it -->
+  <dependency>
+   <groupId>org.yaml</groupId>
+   <artifactId>snakeyaml</artifactId>
+   <!-- MDACA Spring Boot 3 migration version>2.0</version -->
+  </dependency>
+  <dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter-web</artifactId>
+   <exclusions>
+    <exclusion>
+     <groupId>org.hibernate</groupId>
+     <artifactId>hibernate-validator</artifactId>
+    </exclusion>
+    <exclusion>
+     <groupId>com.fasterxml.jackson.core</groupId>
+     <artifactId>jackson-databind</artifactId>
+    </exclusion>
+   </exclusions>
+  </dependency>
+  <dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter-log4j2</artifactId>
+  </dependency>
+  <dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter-tomcat</artifactId>
+   <scope>provided</scope>
+  </dependency>
+  <dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter-batch</artifactId>
+  </dependency>
 
-    <!-- We are intentionally overriding the Tomcat version from Spring Boot 1.5.22.RELEASE -->
-    <!-- and assuming tomcat-jdbc.jar will be in the Tomcat installation folder (\apache-tomcat-8.5.xxx\lib). -->
-    <!-- WebAPI.war.original should not contain overridden libraries -->
-    <dependency>
-      <groupId>org.apache.tomcat.embed</groupId>
-      <artifactId>tomcat-embed-el</artifactId>
-      <version>${tomcat.embed.version}</version>
-    </dependency>
+  <!-- We are intentionally overriding the Tomcat version from Spring Boot 1.5.22.RELEASE -->
+  <!-- and assuming tomcat-jdbc.jar will be in the Tomcat installation folder (\apache-tomcat-8.5.xxx\lib). -->
+  <!-- WebAPI.war.original should not contain overridden libraries -->
+  <!-- MDACA Spring Boot 3 migration dependency>
+   <groupId>org.apache.tomcat.embed</groupId>
+   <artifactId>tomcat-embed-el</artifactId>
+   <version>${tomcat.embed.version}</version>
+  </dependency -->
 
-    <!-- It is overriding a transitive dependency from the dependency above -->
-    <!-- After migrating to Spring Boot 2.x we should get rid of it -->
-    <dependency>
-      <groupId>com.thoughtworks.xstream</groupId>
-      <artifactId>xstream</artifactId>
-      <version>1.4.19</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-jdbc</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.tomcat</groupId>
-      <artifactId>tomcat-jdbc</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.tomcat</groupId>
-      <artifactId>tomcat-juli</artifactId>
-      <version>${tomcat.embed.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-jersey</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.hibernate</groupId>
-          <artifactId>hibernate-validator</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-annotations</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-core</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-data-jpa</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-cache</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-core</artifactId>
-      <version>${hibernate.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.dom4j</groupId>
-          <artifactId>dom4j</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-validator</artifactId>
-      <version>5.4.2.Final</version>
-    </dependency>
-    <dependency>
-      <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-entitymanager</artifactId>
-      <version>${hibernate.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.dom4j</groupId>
-          <artifactId>dom4j</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <version>3.1.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.ohdsi.sql</groupId>
-      <artifactId>SqlRender</artifactId>
-      <version>${SqlRender.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-dbutils</groupId>
-      <artifactId>commons-dbutils</artifactId>
-      <version>1.6</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>2.7</version>
-    </dependency>
-    <dependency>
-      <groupId>com.sun.xml.security</groupId>
-      <artifactId>xml-security-impl</artifactId>
-      <version>1.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-test</artifactId>
-      <version>${spring.boot.version}</version>
-      <scope>test</scope>
-        <exclusions>
-            <exclusion>
-                <groupId>com.vaadin.external.google</groupId>
-                <artifactId>android-json</artifactId>
-            </exclusion>
-        </exclusions>
-    </dependency>
-    <!-- It is overriding a transitive dependency from the dependency above -->
-    <!-- After migrating to Spring Boot 2.x we should get rid of it -->
-    <!-- It is currently inefficient as com.nimbusds:nimbus-jose-jwt has hard bounds [1.3.1,2.3] -->
-    <dependency>
-      <groupId>net.minidev</groupId>
-      <artifactId>json-smart</artifactId>
-      <version>2.4.9</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <version>3.12.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.flywaydb</groupId>
-      <artifactId>flyway-core</artifactId>
-      <version>${flyway.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>4.5.13</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.batch</groupId>
-      <artifactId>spring-batch-admin-manager</artifactId>
-      <version>2.0.0.M1</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>freemarker</artifactId>
-          <groupId>org.freemarker</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>commons-dbcp</artifactId>
-          <groupId>commons-dbcp</groupId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-        <exclusion>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-        </exclusion>
-        <exclusion>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
+  <!-- It is overriding a transitive dependency from the dependency above -->
+  <!-- After migrating to Spring Boot 2.x we should get rid of it -->
+  <dependency>
+   <groupId>com.thoughtworks.xstream</groupId>
+   <artifactId>xstream</artifactId>
+   <version>1.4.19</version>
+  </dependency>
+  <dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter-jdbc</artifactId>
+  </dependency>
+  <dependency>
+   <groupId>org.apache.tomcat</groupId>
+   <artifactId>tomcat-jdbc</artifactId>
+   <scope>provided</scope>
+  </dependency>
+  <!-- dependency Spring Boot 3 migration>
+   <groupId>org.apache.tomcat</groupId>
+   <artifactId>tomcat-juli</artifactId>
+   < Spring Boot 3 migration version>${tomcat.embed.version}</version -->
+  <!-- /dependency -->
+  <dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter-jersey</artifactId>
+   <exclusions>
+    <exclusion>
+     <groupId>org.hibernate</groupId>
+     <artifactId>hibernate-validator</artifactId>
+    </exclusion>
+    <exclusion>
+     <groupId>com.fasterxml.jackson.core</groupId>
+     <artifactId>jackson-databind</artifactId>
+    </exclusion>
+    <exclusion>
+     <groupId>com.fasterxml.jackson.core</groupId>
+     <artifactId>jackson-annotations</artifactId>
+    </exclusion>
+    <exclusion>
+     <groupId>com.fasterxml.jackson.core</groupId>
+     <artifactId>jackson-core</artifactId>
+    </exclusion>
+   </exclusions>
+  </dependency>
+  <dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter-data-jpa</artifactId>
+  </dependency>
+  <dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter-cache</artifactId>
+  </dependency>
+  <dependency>
+   <groupId>org.hibernate.orm</groupId>
+   <artifactId>hibernate-core</artifactId>
+   <exclusions>
+    <exclusion>
+     <groupId>org.dom4j</groupId>
+     <artifactId>dom4j</artifactId>
+    </exclusion>
+   </exclusions>
+  </dependency>
+  <dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-validator</artifactId>
+   <version>5.4.2.Final</version>
+  </dependency>
+  <dependency>
+   <groupId>jakarta.servlet</groupId>
+   <artifactId>jakarta.servlet-api</artifactId>
+   <scope>provided</scope>
+  </dependency>
+  <dependency>
+   <groupId>org.ohdsi.sql</groupId>
+   <artifactId>SqlRender</artifactId>
+   <version>${SqlRender.version}</version>
+  </dependency>
+  <dependency>
+   <groupId>commons-dbutils</groupId>
+   <artifactId>commons-dbutils</artifactId>
+   <version>1.6</version>
+  </dependency>
+  <dependency>
+   <groupId>commons-io</groupId>
+   <artifactId>commons-io</artifactId>
+   <version>2.7</version>
+  </dependency>
+  <dependency>
+   <groupId>com.sun.xml.security</groupId>
+   <artifactId>xml-security-impl</artifactId>
+   <version>1.0</version>
+  </dependency>
+  <dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter-test</artifactId>
+   <!-- MDACA Spring Boot 3 migration version>${spring.boot.version}</version -->
+   <scope>test</scope>
+   <exclusions>
+    <exclusion>
+     <groupId>com.vaadin.external.google</groupId>
+     <artifactId>android-json</artifactId>
+    </exclusion>
+   </exclusions>
+  </dependency>
+  <!-- It is overriding a transitive dependency from the dependency above -->
+  <!-- After migrating to Spring Boot 2.x we should get rid of it -->
+  <!-- It is currently inefficient as com.nimbusds:nimbus-jose-jwt has hard bounds [1.3.1,2.3] -->
+  <dependency>
+   <groupId>net.minidev</groupId>
+   <artifactId>json-smart</artifactId>
+   <!-- MDACA Spring Boot 3 migration version>2.4.9</version -->
+  </dependency>
+  <dependency>
+   <groupId>org.apache.commons</groupId>
+   <artifactId>commons-lang3</artifactId>
+  </dependency>
+  <dependency>
+   <groupId>org.flywaydb</groupId>
+   <artifactId>flyway-core</artifactId>
+   <!-- MDACA Spring Boot 3 migration version>${flyway.version}</version -->
+  </dependency>
+  <dependency>
+   <groupId>org.apache.httpcomponents</groupId>
+   <artifactId>httpclient</artifactId>
+  </dependency>
+  <dependency>
+   <groupId>org.springframework.batch</groupId>
+   <artifactId>spring-batch-admin-manager</artifactId>
+   <version>2.0.0.M1</version>
+   <exclusions>
+    <exclusion>
+     <artifactId>freemarker</artifactId>
+     <groupId>org.freemarker</groupId>
+    </exclusion>
+    <exclusion>
+     <artifactId>commons-dbcp</artifactId>
+     <groupId>commons-dbcp</groupId>
+    </exclusion>
+    <exclusion>
+     <groupId>com.fasterxml.jackson.core</groupId>
+     <artifactId>jackson-databind</artifactId>
+    </exclusion>
+    <exclusion>
+     <groupId>org.slf4j</groupId>
+     <artifactId>slf4j-log4j12</artifactId>
+    </exclusion>
+    <exclusion>
+     <groupId>log4j</groupId>
+     <artifactId>log4j</artifactId>
+    </exclusion>
+   </exclusions>
+  </dependency>
 
-    <!-- overriding commons-fileupload version from the plug-in above -->
-    <dependency>
-      <groupId>commons-fileupload</groupId>
-      <artifactId>commons-fileupload</artifactId>
-      <version>${commons-fileupload.version}</version>
-    </dependency>
+  <!-- overriding commons-fileupload version from the plug-in above -->
+  <dependency>
+   <groupId>commons-fileupload</groupId>
+   <artifactId>commons-fileupload</artifactId>
+   <version>${commons-fileupload.version}</version>
+  </dependency>
 
-    <dependency>
-      <groupId>org.postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <version>${postgresql.version}</version>
-      <type>jar</type>
-    </dependency>
-    <dependency>
-      <groupId>com.microsoft.sqlserver</groupId>
-      <artifactId>mssql-jdbc</artifactId>
-      <version>10.2.1.jre8</version>
-    </dependency>
-    <dependency>
-      <groupId>com.microsoft.azure</groupId>
-      <artifactId>msal4j</artifactId>
-      <version>1.9.0</version>
-    </dependency>
-    <dependency>
-      <groupId>com.opencsv</groupId>
-      <artifactId>opencsv</artifactId>
-      <version>3.7</version>
-      <type>jar</type>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.collections</groupId>
-      <artifactId>eclipse-collections-api</artifactId>
-      <version>8.0.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.collections</groupId>
-      <artifactId>eclipse-collections</artifactId>
-      <version>8.0.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-collections4</artifactId>
-      <version>4.1</version>
-      <type>jar</type>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.shiro</groupId>
-      <artifactId>shiro-core</artifactId>
-      <version>${shiro.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.shiro</groupId>
-      <artifactId>shiro-web</artifactId>
-      <version>${shiro.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.shiro</groupId>
-      <artifactId>shiro-spring</artifactId>
-      <version>${shiro.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.waffle</groupId>
-      <artifactId>waffle-shiro</artifactId>
-      <version>2.2.1</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.waffle</groupId>
-      <artifactId>waffle-jna</artifactId>
-      <version>${waffle.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>net.java.dev.jna</groupId>
-          <artifactId>jna</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>net.java.dev.jna</groupId>
-          <artifactId>jna-platform</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>net.java.dev.jna</groupId>
-      <artifactId>jna</artifactId>
-      <version>${jna.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>net.java.dev.jna</groupId>
-      <artifactId>jna-platform</artifactId>
-      <version>${jna.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt</artifactId>
-      <version>0.9.1</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
+  <dependency>
+   <groupId>org.postgresql</groupId>
+   <artifactId>postgresql</artifactId>
+   <!-- MDACA Spring Boot 3 migration version>${postgresql.version}</version -->
+   <type>jar</type>
+  </dependency>
+  <dependency>
+   <groupId>com.microsoft.sqlserver</groupId>
+   <artifactId>mssql-jdbc</artifactId>
+   <!-- MDACA Spring Boot 3 migration version>10.2.1.jre8</version -->
+  </dependency>
+  <dependency>
+   <groupId>com.microsoft.azure</groupId>
+   <artifactId>msal4j</artifactId>
+   <version>1.9.0</version>
+  </dependency>
+  <dependency>
+   <groupId>com.opencsv</groupId>
+   <artifactId>opencsv</artifactId>
+   <version>3.7</version>
+   <type>jar</type>
+  </dependency>
+  <dependency>
+   <groupId>org.eclipse.collections</groupId>
+   <artifactId>eclipse-collections-api</artifactId>
+   <version>8.0.0</version>
+  </dependency>
+  <dependency>
+   <groupId>org.eclipse.collections</groupId>
+   <artifactId>eclipse-collections</artifactId>
+   <version>8.0.0</version>
+  </dependency>
+  <dependency>
+   <groupId>org.apache.commons</groupId>
+   <artifactId>commons-collections4</artifactId>
+   <version>4.1</version>
+   <type>jar</type>
+  </dependency>
+<!--  MDACA Spring Boot 3 migration 
+  <dependency>
+   <groupId>org.apache.shiro</groupId>
+   <artifactId>shiro-core</artifactId>
+   <version>${shiro.version}</version>
+  </dependency>
+  <dependency>
+   <groupId>org.apache.shiro</groupId>
+   <artifactId>shiro-web</artifactId>
+   <version>${shiro.version}</version>
+  </dependency>
+  <dependency>
+   <groupId>org.apache.shiro</groupId>
+   <artifactId>shiro-spring</artifactId>
+   <version>${shiro.version}</version>
+  </dependency>
+-->
+
+<!-- MDACA Spring Boot 3 migration. Five dep below added to replace 3 legacy shiro dependecies above -->
+	<dependency>
+	    <groupId>org.apache.shiro</groupId>
+	    <artifactId>shiro-core</artifactId>
+	    <version>${shiro.version}</version>
+	    <classifier>jakarta</classifier>
+	</dependency>
+	<dependency>
+	    <groupId>org.apache.shiro</groupId>
+	    <artifactId>shiro-web</artifactId>
+	    <version>${shiro.version}</version>
+	    <classifier>jakarta</classifier>
+	</dependency>
+	
+	<dependency>
+	    <groupId>org.apache.shiro</groupId>
+	    <artifactId>shiro-spring-boot-web-starter</artifactId>
+	    <version>${shiro.version}</version>
+	    <classifier>jakarta</classifier>
+	</dependency>
+	<dependency>
+	    <groupId>org.apache.shiro</groupId>
+	    <artifactId>shiro-spring-boot-starter</artifactId>
+	    <version>${shiro.version}</version>
+	    <classifier>jakarta</classifier>
+	</dependency>
+	<dependency>
+	    <groupId>org.apache.shiro</groupId>
+	    <artifactId>shiro-spring</artifactId>
+	    <version>${shiro.version}</version>
+	    <classifier>jakarta</classifier>
+	</dependency>
+  
+  <dependency>
+   <groupId>com.github.waffle</groupId>
+   <artifactId>waffle-shiro</artifactId>
+   <version>2.2.1</version>
+  </dependency>
+  <dependency>
+   <groupId>com.github.waffle</groupId>
+   <artifactId>waffle-jna</artifactId>
+   <version>${waffle.version}</version>
+   <exclusions>
+    <exclusion>
+     <groupId>net.java.dev.jna</groupId>
+     <artifactId>jna</artifactId>
+    </exclusion>
+    <exclusion>
+     <groupId>net.java.dev.jna</groupId>
+     <artifactId>jna-platform</artifactId>
+    </exclusion>
+   </exclusions>
+  </dependency>
+  <dependency>
+   <groupId>net.java.dev.jna</groupId>
+   <artifactId>jna</artifactId>
+   <version>${jna.version}</version>
+  </dependency>
+  <dependency>
+   <groupId>net.java.dev.jna</groupId>
+   <artifactId>jna-platform</artifactId>
+   <version>${jna.version}</version>
+  </dependency>
+  <dependency>
+   <groupId>io.jsonwebtoken</groupId>
+   <artifactId>jjwt</artifactId>
+   <version>0.9.1</version>
+   <exclusions>
+    <exclusion>
+     <groupId>com.fasterxml.jackson.core</groupId>
+     <artifactId>jackson-databind</artifactId>
+    </exclusion>
+   </exclusions>
+  </dependency>
+  <dependency>
+   <groupId>jakarta.inject</groupId>
+   <artifactId>jakarta.inject-api</artifactId>
+   <version>2.0.1</version>
+  </dependency>
+  <dependency>
+   <groupId>jakarta.validation</groupId>
+   <artifactId>jakarta.validation-api</artifactId>
+  </dependency>
     <dependency>
       <groupId>io.buji</groupId>
       <artifactId>buji-pac4j</artifactId>
       <version>5.0.1</version>
     </dependency>
+
+	<!-- MDACA Spring Boot 3 migration add -->
+    <dependency>
+        <groupId>org.pac4j</groupId>
+        <artifactId>pac4j-jakartaee</artifactId>
+        <version>${pac4j.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-oauth</artifactId>
@@ -965,8 +1030,10 @@
     </dependency>
     <dependency>
       <groupId>org.pac4j</groupId>
-      <artifactId>pac4j-saml-opensamlv3</artifactId>
-      <version>${pac4j.version}</version>
+      <!-- artifactId>pac4j-saml-opensamlv5</artifactId MDACA Sping Boot 3 migration -->
+      <artifactId>pac4j-saml-opensamlv5</artifactId>  
+      <!-- version>${pac4j.version}</version MDACA Spi=ring Boot 3 migration  -->
+      <version>5.7.4</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
@@ -1017,23 +1084,32 @@
     <dependency>
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-crypto</artifactId>
-      <version>4.2.3.RELEASE</version>
     </dependency>
     <dependency>
       <groupId>com.zaxxer</groupId>
       <artifactId>HikariCP</artifactId>
-      <version>4.0.3</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <!-- MDACA Spring Boot 3 migration version>2.9.0</version -->
     </dependency>
     <dependency>
       <groupId>org.jasypt</groupId>
       <artifactId>jasypt-hibernate4</artifactId>
       <version>1.9.2</version>
     </dependency>
-    <dependency>
-      <groupId>org.dbunit</groupId>
-      <artifactId>dbunit</artifactId>
-      <version>2.7.0</version>
-      <scope>test</scope>
+  <dependency>
+   <groupId>org.dbunit</groupId>
+   <artifactId>dbunit</artifactId>
+   <version>2.7.0</version>
+   <scope>test</scope>
+   <exclusions>
+    <exclusion>
+     <groupId>junit</groupId>
+     <artifactId>junit</artifactId>
+    </exclusion>
+   </exclusions>
     </dependency>
     <dependency>
       <groupId>com.github.springtestdbunit</groupId>
@@ -1101,12 +1177,11 @@
     <dependency>
       <groupId>org.glassfish.jersey.media</groupId>
       <artifactId>jersey-media-multipart</artifactId>
-      <version>${jersey-media-multipart.version}</version>
+      <!-- MDACA Spring Boot 3 migration version>${jersey-media-multipart.version}</version -->
     </dependency>
     <dependency>
       <groupId>org.springframework.ldap</groupId>
       <artifactId>spring-ldap-core</artifactId>
-      <version>2.3.2.RELEASE</version>
     </dependency>
     <dependency>
       <groupId>com.odysseusinc</groupId>
@@ -1201,7 +1276,6 @@
     <dependency>
       <groupId>org.freemarker</groupId>
       <artifactId>freemarker</artifactId>
-      <version>2.3.30</version>
     </dependency>
     <dependency>
       <groupId>com.atlassian.commonmark</groupId>
@@ -1230,10 +1304,15 @@
       <artifactId>syslog-java-client</artifactId>
       <version>1.1.7</version>
     </dependency>
-  </dependencies>
+    <dependency> <!-- added for MDACA Spring Boot 3 migration -->
+    	<groupId>org.springframework.boot</groupId>
+    	<artifactId>spring-boot-configuration-processor</artifactId>
+    	<optional>true</optional>
+    </dependency>
+ </dependencies>
   <profiles>
 
-    <profile>
+<!--    <profile>   MDACA Spring Boot 3 migration
       <id>webapi-oracle</id>
       <properties>
         <datasource.driverClassName>oracle.jdbc.OracleDriver</datasource.driverClassName>
@@ -1249,7 +1328,7 @@
         <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
         <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
         <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
-        <!--<datasource.validationQuery>SELECT 1 FROM DUAL</datasource.validationQuery>-->
+        <datasource.validationQuery>SELECT 1 FROM DUAL</datasource.validationQuery>
         <flyway.locations>classpath:db/migration/oracle</flyway.locations>
         <hibernate.dialect>org.hibernate.dialect.Oracle10gDialect</hibernate.dialect>
         <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
@@ -1266,7 +1345,7 @@
           <version>19.8.0.0</version>
         </dependency>
       </dependencies>
-    </profile>
+    </profile>-->
     <profile>
       <id>webapi-postgresql</id>
       <properties>
@@ -1337,7 +1416,7 @@
     	</repository>
       </repositories>
     </profile>
-    <profile>
+<!--    <profile>   MDACA Spring Boot 3 migration
       <id>webapi-mssql</id>
       <properties>
         <datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
@@ -1362,8 +1441,8 @@
         <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \
           lower(email) = lower(?)</security.db.datasource.authenticationQuery>
       </properties>
-    </profile>
-    <profile>
+    </profile>-->
+<!--    <profile>   MDACA Spring Boot 3 migration
       <id>webapi-netezza</id>
       <properties>
         <netezza.enabled>true</netezza.enabled>
@@ -1400,13 +1479,13 @@
           </plugin>
         </plugins>
       </build>
-    </profile>
-    <profile>
+    </profile>-->
+<!--    <profile>   MDACA Spring Boot 3 migration
       <id>webapi-impala</id>
       <properties>
         <impala.enabled>true</impala.enabled>
         <impala.driver.version>2.6.15</impala.driver.version>
-        <!-- Impala JDBC driver path -->
+         Impala JDBC driver path 
 		<impala.classpath>...path/to/impala/jdbc/drivers...</impala.classpath>
       </properties>
       <dependencies>
@@ -1441,12 +1520,12 @@
           </plugin>
         </plugins>
       </build>
-    </profile>
-    <profile>
+    </profile>-->
+<!--    <profile>   MDACA Spring Boot 3 migration
       <id>webapi-spark</id>
       <properties>
         <spark.enabled>true</spark.enabled>
-        <!-- Spark JDBC driver path -->
+         Spark JDBC driver path 
         <spark.classpath>${basedir}/src/main/extras/spark</spark.classpath>
       </properties>
       <dependencies>
@@ -1481,23 +1560,12 @@
           </plugin>
         </plugins>
       </build>
-    </profile>
-    <profile>
-      <id>webapi-databricks</id>
-      <dependencies>
-        <dependency>
-          <groupId>com.databricks</groupId>
-          <artifactId>databricks-jdbc</artifactId>
-          <version>2.6.34</version>
-          <scope>runtime</scope>
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
+    </profile>-->
+<!--    <profile>   MDACA Spring Boot 3 migration
       <id>webapi-bigquery</id>
       <properties>
         <bigquery.enabled>true</bigquery.enabled>
-        <!-- BigQuery JDBC driver path -->
+         BigQuery JDBC driver path 
         <bigquery.classpath>${basedir}/src/main/extras/bigquery</bigquery.classpath>
       </properties>
       <dependencies>
@@ -1676,8 +1744,8 @@
           </plugin>
         </plugins>
       </build>
-    </profile>
-    <profile>
+    </profile>-->
+<!--    <profile>   MDACA Spring Boot 3 migration
       <id>webapi-hive</id>
       <dependencies>
         <dependency>
@@ -1711,7 +1779,7 @@
             </exclusion>
             <exclusion>
               <artifactId>servlet-api</artifactId>
-              <groupId>javax.servlet</groupId>
+              <groupId>jakarta.servlet-api</groupId>    Spring Boot 3 migration groupId>jakarta.servlet-api</groupId 
             </exclusion>
             <exclusion>
               <groupId>com.zaxxer</groupId>
@@ -1786,7 +1854,7 @@
           <version>1.19.4</version>
         </dependency>
       </dependencies>
-    </profile>
+    </profile>-->
     <profile>
       <id>webapi-redshift</id>
       <properties>
@@ -1819,7 +1887,7 @@
         </dependency>
       </dependencies>
     </profile>
-    <profile>
+<!--    <profile>   MDACA Spring Boot 3 migration
       <id>webapi-snowflake</id>
       <properties>
         <snowflake.enabled>true</snowflake.enabled>
@@ -1832,8 +1900,8 @@
           <version>${snowflake.driver.version}</version>
         </dependency>
       </dependencies>
-    </profile>
-    <profile>
+    </profile>-->
+<!--    <profile>   MDACA Spring Boot 3 migration
       <id>webapi-gis</id>
       <properties>
         <atlasgis.version>1.0.1</atlasgis.version>
@@ -1846,11 +1914,11 @@
           <version>${atlasgis.version}</version>
         </dependency>
       </dependencies>
-    </profile>
-    <profile>
+    </profile>-->
+<!--    <profile>   MDACA Spring Boot 3 migration
       <id>webapi-solr</id>
       <properties>
-        <!-- Full Text Search With SOLR Settings -->
+         Full Text Search With SOLR Settings 
         <solr.endpoint></solr.endpoint>
         <solr.query.prefix>{!complexphrase inOrder=true}</solr.query.prefix>
         <solr.version>8.11.2</solr.version>
@@ -1868,6 +1936,6 @@
           <type>jar</type>
         </dependency>
       </dependencies>
-    </profile>
+    </profile>-->
   </profiles>
 </project>

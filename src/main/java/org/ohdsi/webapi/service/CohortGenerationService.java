@@ -152,12 +152,11 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
   public Job buildJobForCohortGenerationWithDemographic(
           CohortDefinition cohortDefinition,
           Source source,
-          JobParametersBuilder builder,
-          JdbcTemplate jdbcTemplate) {
+          JobParametersBuilder builder) {
       JobParameters jobParameters = builder.toJobParameters();
       addSessionParams(builder, jobParameters.getString(SESSION_ID));
 
-      CreateCohortTableTasklet createCohortTableTasklet = new CreateCohortTableTasklet(jdbcTemplate, transactionTemplate, sourceService, sourceAwareSqlRender);
+      CreateCohortTableTasklet createCohortTableTasklet = new CreateCohortTableTasklet(getSourceJdbcTemplate(source), transactionTemplate, sourceService, sourceAwareSqlRender);
       Step createCohortTableStep = stepBuilderFactory.get(GENERATE_COHORT + ".createCohortTable")
               .tasklet(createCohortTableTasklet)
               .build();
@@ -190,7 +189,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
       Step generateCohortStep = stepBuilders.get("cohortDefinition.generateCohort").tasklet(generateTasklet)
               .exceptionHandler(exceptionHandler).build();
 
-      DropCohortTableListener dropCohortTableListener = new DropCohortTableListener(jdbcTemplate, transactionTemplate, sourceService, sourceAwareSqlRender);
+      DropCohortTableListener dropCohortTableListener = new DropCohortTableListener(getSourceJdbcTemplate(source), transactionTemplate, sourceService, sourceAwareSqlRender);
 
       SimpleJobBuilder generateJobBuilder = jobBuilders.get(GENERATE_COHORT)
               .start(createCohortTableStep)
@@ -211,8 +210,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
       final JobParametersBuilder jobParametersBuilder = getJobParametersBuilder(source, cohortDefinition, retainCohortCovariates);
       if (demographic != null && demographic.booleanValue()) {
          jobParametersBuilder.addString(DEMOGRAPHIC_STATS, Boolean.TRUE.toString());
-         Job job = buildJobForCohortGenerationWithDemographic(cohortDefinition, source, jobParametersBuilder,
-                 getJdbcTemplate());
+         Job job = buildJobForCohortGenerationWithDemographic(cohortDefinition, source, jobParametersBuilder);
          return jobService.runJob(job, jobParametersBuilder.toJobParameters());
       } else {
          Job job = buildGenerateCohortJob(cohortDefinition, source, jobParametersBuilder.toJobParameters());

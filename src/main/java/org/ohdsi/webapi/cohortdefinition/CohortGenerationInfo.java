@@ -84,21 +84,6 @@ public class CohortGenerationInfo implements Serializable, IExecutionInfo {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_id")
   private UserEntity createdBy;
-  
-  @Column(name = "cc_generate_id")
-  private Long ccGenerateId;
-
-  // If true, then demographic has been selected.
-  @Column(name = "is_choose_demographic")
-  private boolean isChooseDemographic;
-
-  public boolean isChooseDemographic() {
-    return isChooseDemographic;
-  }
-
-  public void setIsChooseDemographic(boolean isChooseDemographic) {
-    this.isChooseDemographic = isChooseDemographic;
-  }
 
   public CohortGenerationInfoId getId() {
     return id;
@@ -202,13 +187,4 @@ public class CohortGenerationInfo implements Serializable, IExecutionInfo {
   public UserEntity getCreatedBy() {
     return createdBy;
   }
-  
-  public Long getCcGenerateId() {
-      return ccGenerateId;
-  }
-  
-  public void setCcGenerateId(Long ccGenerateId) {
-      this.ccGenerateId = ccGenerateId;
-  }
-  
 }

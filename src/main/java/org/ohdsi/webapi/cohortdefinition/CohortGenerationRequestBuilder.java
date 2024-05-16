@@ -18,7 +18,7 @@ public class CohortGenerationRequestBuilder {
         this.sessionId = sessionId;
         this.targetSchema = targetSchema;
     }
-
+    
     public CohortGenerationRequestBuilder(String sessionId, String targetSchema, Boolean retainCohortCovariates) {
 
         this.sessionId = sessionId;
@@ -43,7 +43,7 @@ public class CohortGenerationRequestBuilder {
         this.targetId = targetId;
         return this;
     }
-
+    
     public CohortGenerationRequestBuilder withCohortId(Integer cohortId) {
         this.cohortId = cohortId;
         return this;

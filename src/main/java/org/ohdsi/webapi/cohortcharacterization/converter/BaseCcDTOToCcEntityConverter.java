@@ -2,6 +2,7 @@ package org.ohdsi.webapi.cohortcharacterization.converter;
 
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.ohdsi.analysis.CohortMetadata;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcFeAnalysisEntity;
@@ -18,6 +19,7 @@ import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
 import org.ohdsi.webapi.tag.domain.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;

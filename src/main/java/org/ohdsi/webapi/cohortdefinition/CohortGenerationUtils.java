@@ -61,6 +61,7 @@ public class CohortGenerationUtils {
     options.cdmSchema = cdmSchema;
     options.vocabularySchema = vocabSchema;
     options.generateStats = true; // always generate with stats
+//    options.resultSchema = resultSchema;
     options.retainCohortCovariates = !ObjectUtils.isEmpty(request.getRetainCohortCovariates()) && request.getRetainCohortCovariates(); // this field decides whether to retain cohort covariates
 
     final String oracleTempSchema = SourceUtils.getTempQualifier(source);
@@ -73,7 +74,7 @@ public class CohortGenerationUtils {
         "results_database_schema.cohort_inclusion_stats", 
         "results_database_schema.cohort_summary_stats", 
         "results_database_schema.cohort_censor_stats",
-        "results_database_schema.cohort_inclusion"
+        "results_database_schema.cohort_inclusion" 
       },
       new String[] {
         COHORT_CACHE, 

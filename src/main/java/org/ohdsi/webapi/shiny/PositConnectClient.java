@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -29,7 +29,6 @@ import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -45,10 +44,8 @@ public class PositConnectClient implements InitializingBean {
 
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
-    @Value("${shiny.connect.api_key}")
-    private String apiKey;
-    @Value("${shiny.connect.url}")
-    private String connectUrl;
+    @Autowired(required = false)
+    private PositConnectProperties properties;
 
     public UUID createContentItem(ApplicationBrief brief) {
         ContentItem contentItem = new ContentItem();
@@ -101,7 +98,7 @@ public class PositConnectClient implements InitializingBean {
     }
 
     private <T> T doCall(TypeReference<T> responseClass, Request.Builder request, String url) {
-        Call call = call(request, apiKey);
+        Call call = call(request, properties.getApiKey());
         try(Response response = call.execute()) {
             if (!response.isSuccessful()) {
                 log.error("Request [{}] returned code: [{}], message: [{}]", url, response.code(), response.message());
@@ -140,18 +137,20 @@ public class PositConnectClient implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        if (StringUtils.isBlank(apiKey)) {
-            log.error("Set Posit Connect API Key to property \"shiny.connect.api_key\"");
-            throw new BeanInitializationException("Set Posit Connect API Key to property \"shiny.connect.api_key\"");
-        }
-        if (StringUtils.isBlank(connectUrl)) {
-            log.error("Set Posit Connect URL to property \"shiny.connect.url\"");
-            throw new BeanInitializationException("Set Posit Connect URL to property \"shiny.connect.url\"");
+        if (properties != null) {
+            if (StringUtils.isBlank(properties.getApiKey())) {
+                log.error("Set Posit Connect API Key to property \"shiny.connect.api_key\"");
+                throw new BeanInitializationException("Set Posit Connect API Key to property \"shiny.connect.api_key\"");
+            }
+            if (StringUtils.isBlank(properties.getUrl())) {
+                log.error("Set Posit Connect URL to property \"shiny.connect.url\"");
+                throw new BeanInitializationException("Set Posit Connect URL to property \"shiny.connect.url\"");
+            }
         }
     }
 
     private String connect(String path) {
-        return StringUtils.removeEnd(connectUrl, "/") + "/__api__/" + StringUtils.removeStart(path, "/");
+        return StringUtils.removeEnd(properties.getUrl(), "/") + "/__api__/" + StringUtils.removeStart(path, "/");
     }
 
     public static class ContentItem {

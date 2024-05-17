@@ -128,7 +128,8 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
 
     @Override
     public void delete(final int id) {
-        this.predictionAnalysisRepository.delete(id);
+        /* this.predictionAnalysisRepository.delete(id); MDACA Spring Boot 3 migration  */
+        this.predictionAnalysisRepository.deleteById(id);
     }
 
     @Override
@@ -188,7 +189,12 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
 
     @Override
     public PatientLevelPredictionAnalysisImpl exportAnalysis(int id, String sourceKey) {
-        PredictionAnalysis pred = predictionAnalysisRepository.findOne(id);
+        /* PredictionAnalysis pred = predictionAnalysisRepository.findOne(id); MDACA Spring Boot 3 migration   */
+        Optional<PredictionAnalysis> optionalPred = predictionAnalysisRepository.findById(id);
+        PredictionAnalysis pred = null;
+        if (optionalPred.isPresent()) {
+            pred = optionalPred.get();
+        }
         PatientLevelPredictionAnalysisImpl expression;
         try {
             expression = Utils.deserialize(pred.getSpecification(), PatientLevelPredictionAnalysisImpl.class);

@@ -2,6 +2,9 @@ package org.ohdsi.webapi.ircalc.converter;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.Optional;
+
 import org.ohdsi.webapi.converter.BaseConversionServiceAwareConverter;
 import org.ohdsi.webapi.exception.ConversionAtlasException;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
@@ -37,7 +40,12 @@ public class IRVersionToIRAnalysisVersionFullDTOConverter
 
     @Override
     public IRVersionFullDTO convert(IRVersion source) {
-        IncidenceRateAnalysis def = this.analysisRepository.findOne(source.getAssetId().intValue());
+        /* IncidenceRateAnalysis def = this.analysisRepository.findOne(source.getAssetId().intValue()); MDACA Spring Boot 3 migration  */
+    	IncidenceRateAnalysis def = null;
+    	Optional<IncidenceRateAnalysis> optionalDef = this.analysisRepository.findById(source.getAssetId().intValue());
+    	if (optionalDef.isPresent()) {
+    		def = optionalDef.get();
+    	}
         ExceptionUtils.throwNotFoundExceptionIfNull(def,
                 "There is no incidence rate analysis with id = %d.".formatted(source.getAssetId()));
 

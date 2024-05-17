@@ -69,6 +69,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.GENERATE_ESTIMATION_ANALYSIS;
@@ -197,7 +198,12 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     @Override
     public Estimation copy(final int id) throws Exception {
 
-        Estimation est = estimationRepository.findOne(id);
+        /* Estimation est = estimationRepository.findOne(id);   */
+    	Estimation est = null;
+    	Optional<Estimation> optionalEst = estimationRepository.findById(id);
+    	if (optionalEst.isPresent()) {
+    	    est = optionalEst.get();
+    	}
         entityManager.detach(est); // Detach from the persistence context in order to save a copy
         est.setId(null);
         est.setName(getNameForCopy(est.getName()));

@@ -21,14 +21,15 @@ import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.QueryParam;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.jersey.server.internal.inject.AbstractContainerRequestValueFactory;
+// import org.glassfish.jersey.server.internal.inject.AbstractContainerRequestValueFactory;   MDACA Spring Boot 3 migration compilation issue
 import org.glassfish.jersey.server.model.Parameter;
-import org.glassfish.jersey.server.spi.internal.ValueFactoryProvider;
+// import org.glassfish.jersey.server.spi.internal.ValueFactoryProvider;   MDACA Spring Boot 3 migration compilation issue
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-public class PageableValueFactoryProvider implements ValueFactoryProvider {
+public class PageableValueFactoryProvider /* implements ValueFactoryProvider MDACA Spring Boot 3 migration compilation issue */ {
+/*   MDACA Spring Boot 3 migration compilation issue
 
     private final ServiceLocator locator;
 
@@ -86,4 +87,5 @@ public class PageableValueFactoryProvider implements ValueFactoryProvider {
                     orders.isEmpty() ? null : new Sort(orders));
         }
     }
+*/
 }

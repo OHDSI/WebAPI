@@ -5,7 +5,7 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.EncodingFilter;
-import org.glassfish.jersey.server.spi.internal.ValueFactoryProvider;
+// import org.glassfish.jersey.server.spi.internal.ValueFactoryProvider;   MDACA Spring Boot 3 migration compilation issue
 import org.ohdsi.webapi.cohortcharacterization.CcController;
 import org.ohdsi.webapi.executionengine.controller.ScriptExecutionCallbackController;
 import org.ohdsi.webapi.executionengine.controller.ScriptExecutionController;
@@ -84,6 +84,7 @@ public class JerseyConfig extends ResourceConfig implements InitializingBean {
         register(CcController.class);
         register(SSOController.class);
         register(PermissionController.class);
+/*  	MDACA Spring Boot 3 migration compilation issue 
         register(new AbstractBinder() {
             @Override
             protected void configure() {
@@ -92,5 +93,6 @@ public class JerseyConfig extends ResourceConfig implements InitializingBean {
                         .in(Singleton.class);
             }
         });
+*/
     }
 }

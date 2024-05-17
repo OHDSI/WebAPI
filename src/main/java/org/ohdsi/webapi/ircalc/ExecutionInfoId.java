@@ -16,8 +16,8 @@
 package org.ohdsi.webapi.ircalc;
 
 import java.io.Serializable;
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 
 /**
  *
@@ -58,9 +58,9 @@ public class ExecutionInfoId  implements Serializable {
   }
   
   public boolean equals(Object o) {
-    return ((o instanceof ExecutionInfoId) 
-            && analysisId.equals(((ExecutionInfoId) o).getAnalysisId()) 
-            && sourceId.equals(((ExecutionInfoId) o).getSourceId()) );
+    return ((o instanceof ExecutionInfoId eii) 
+            && analysisId.equals(eii.getAnalysisId()) 
+            && sourceId.equals(eii.getSourceId()) );
   }
   
   public int hashCode() {

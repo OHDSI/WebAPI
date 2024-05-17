@@ -9,12 +9,12 @@ import org.springframework.context.annotation.Configuration;
 public class LogConfiguration {
 
     @Bean
-    public LoggingEventMessageFactory loggingEventMessageFactory(){
+    LoggingEventMessageFactory loggingEventMessageFactory(){
         return new LoggingEventMessageFactory();
     }
 
     @Bean
-    public LoggingService loggingService(LoggingEventMessageFactory factory){
+    LoggingService loggingService(LoggingEventMessageFactory factory){
         return new LoggingService(factory);
     }
 }

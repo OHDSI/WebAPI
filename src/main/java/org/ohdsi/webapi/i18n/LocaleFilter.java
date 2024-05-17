@@ -4,9 +4,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.Constants;
 import org.springframework.context.i18n.LocaleContextHolder;
 
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.ext.Provider;
 import java.util.Locale;
 
 @Provider

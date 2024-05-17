@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.InternalServerErrorException;
 
 @Component
 public class IRVersionToIRAnalysisVersionFullDTOConverter
@@ -39,7 +39,7 @@ public class IRVersionToIRAnalysisVersionFullDTOConverter
     public IRVersionFullDTO convert(IRVersion source) {
         IncidenceRateAnalysis def = this.analysisRepository.findOne(source.getAssetId().intValue());
         ExceptionUtils.throwNotFoundExceptionIfNull(def,
-                String.format("There is no incidence rate analysis with id = %d.", source.getAssetId()));
+                "There is no incidence rate analysis with id = %d.".formatted(source.getAssetId()));
 
         IncidenceRateAnalysis entity = new IncidenceRateAnalysis();
         entity.setId(def.getId());

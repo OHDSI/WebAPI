@@ -41,7 +41,7 @@ public abstract class BaseChecker<T> implements Checker<T> {
         return context.getWarnings().stream()
                 .map(warning -> new DefaultWarning(
                         warning.getSeverity(),
-                        String.format("%s - %s", warning.getPath().getPath(), warning.getMessage()))
+                        "%s - %s".formatted(warning.getPath().getPath(), warning.getMessage()))
                 )
                 .collect(Collectors.toList());
     }

@@ -15,10 +15,9 @@
 package org.ohdsi.webapi.cohortdefinition;
 
 import java.io.Serializable;
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.hibernate.annotations.Type;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 
@@ -41,7 +40,6 @@ public class CohortDefinitionDetails implements Serializable {
   private CohortDefinition definition;
 
   @Lob
-  @Type(type = "org.hibernate.type.TextType")
   private String expression;
 
   @Column(name = "hash_code")

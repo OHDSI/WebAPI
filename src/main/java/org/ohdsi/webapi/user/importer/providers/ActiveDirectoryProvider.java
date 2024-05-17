@@ -13,7 +13,6 @@ import org.springframework.ldap.core.support.SimpleDirContextAuthenticationStrat
 import org.springframework.ldap.support.LdapUtils;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;

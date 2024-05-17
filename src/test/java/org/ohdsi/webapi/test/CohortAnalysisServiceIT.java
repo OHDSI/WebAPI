@@ -17,8 +17,8 @@ import com.github.springtestdbunit.annotation.DatabaseSetup;
 import com.github.springtestdbunit.annotation.DatabaseTearDown;
 import java.util.Collections;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisTask;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.source.SourceRepository;
@@ -36,10 +36,10 @@ public class CohortAnalysisServiceIT extends WebApiIT {
     @Autowired
     private SourceRepository sourceRepository;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
-        truncateTable(String.format("%s.%s", "public", "source"));
-        resetSequence(String.format("%s.%s", "public", "source_sequence"));
+        truncateTable("%s.%s".formatted("public", "source"));
+        resetSequence("%s.%s".formatted("public", "source_sequence"));
         sourceRepository.saveAndFlush(getCdmSource());
         prepareCdmSchema();
         prepareResultSchema();

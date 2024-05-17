@@ -79,13 +79,13 @@ public class ADRealm extends ActiveDirectoryRealm {
             UsernamePasswordToken upToken = (UsernamePasswordToken) token;
             String userPrincipalName = getUserPrincipalName(upToken.getUsername());
 
-            String userSearch = String.format(searchString, userPrincipalName);
+            String userSearch = searchString.formatted(userPrincipalName);
             List<UserPrincipal> result = ldapTemplate.search("", userSearch, SearchControls.SUBTREE_SCOPE,
                     userMapper);
 
             if (result.size() == 1) {
                 UserPrincipal userPrincipal = result.iterator().next();
-                List<String> filterResult = ldapTemplate.search("", String.format(searchFilter, userPrincipal.getUsername()),
+                List<String> filterResult = ldapTemplate.search("", searchFilter.formatted(userPrincipal.getUsername()),
                         SearchControls.SUBTREE_SCOPE, dnAttributesMapper);
                 if (!filterResult.isEmpty()) {
                     LdapContext ctx = null;

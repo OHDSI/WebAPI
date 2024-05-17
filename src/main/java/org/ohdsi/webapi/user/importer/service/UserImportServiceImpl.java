@@ -208,7 +208,7 @@ public class UserImportServiceImpl implements UserImportService {
 
     @Override
     public UserImportJob getImportUserJob(Long userImportId) {
-      return userImportJobRepository.getOne(userImportId);
+      return userImportJobRepository.getById(userImportId);
     }
 
     private LdapUserImportStatus getStatus(AtlasUserRoles atlasUser) {

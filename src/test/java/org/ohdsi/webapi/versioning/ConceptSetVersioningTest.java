@@ -17,9 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.StreamSupport;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ConceptSetVersioningTest extends BaseVersioningTest<ConceptSetDTO, ConceptSetVersionFullDTO, Integer> {
     private static final String JSON_PATH = "/versioning/conceptset.json";

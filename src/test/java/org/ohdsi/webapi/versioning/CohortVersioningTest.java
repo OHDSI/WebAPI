@@ -14,9 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.io.IOException;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CohortVersioningTest extends BaseVersioningTest<CohortDTO, CohortVersionFullDTO, Integer> {
     private static final String JSON_PATH = "/versioning/cohort.json";

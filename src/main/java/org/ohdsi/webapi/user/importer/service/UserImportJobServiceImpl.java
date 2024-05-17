@@ -5,6 +5,7 @@ import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.cronutils.model.definition.CronDefinition;
 import com.odysseusinc.scheduler.model.ScheduledTask;
 import com.odysseusinc.scheduler.service.BaseJobServiceImpl;
+import jakarta.annotation.PostConstruct;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.user.importer.model.LdapProviderType;
@@ -27,7 +28,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -180,7 +180,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
     @Override
     public void run() {
       JobParameters jobParameters = new JobParametersBuilder()
-              .addString(Constants.Params.JOB_NAME, String.format("Users import for %s", getProviderName(job.getProviderType())))
+              .addString(Constants.Params.JOB_NAME, "Users import for %s".formatted(getProviderName(job.getProviderType())))
               .addString(Constants.Params.JOB_AUTHOR, SYSTEM_USER)
               .addString(Constants.Params.USER_IMPORT_ID, String.valueOf(job.getId()))
               .toJobParameters();

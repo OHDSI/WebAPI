@@ -1,11 +1,12 @@
 package org.ohdsi.webapi.service;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import org.junit.Before;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
@@ -16,7 +17,7 @@ public abstract class AbstractServiceTest {
 
   private Source source;
 
-  @Before
+  @BeforeEach
   public void setupMockedSource() {
 
     source = mock(Source.class);

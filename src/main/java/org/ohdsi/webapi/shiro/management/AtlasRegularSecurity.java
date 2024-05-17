@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.shiro.management;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.buji.pac4j.filter.CallbackFilter;
 import io.buji.pac4j.filter.SecurityFilter;
 import io.buji.pac4j.realm.Pac4jRealm;
@@ -54,6 +53,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.ldap.core.LdapTemplate;
@@ -63,7 +63,7 @@ import waffle.shiro.negotiate.NegotiateAuthenticationFilter;
 import waffle.shiro.negotiate.NegotiateAuthenticationRealm;
 
 import javax.naming.Context;
-import javax.servlet.Filter;
+import jakarta.servlet.Filter;
 import javax.sql.DataSource;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -76,6 +76,7 @@ import static org.ohdsi.webapi.shiro.management.FilterTemplates.*;
 @Component
 @ConditionalOnProperty(name = "security.provider", havingValue = Constants.SecurityProviders.REGULAR)
 @DependsOn("flyway")
+@DependsOnDatabaseInitialization
 public class AtlasRegularSecurity extends AtlasSecurity {
 
     private final Logger logger = LoggerFactory.getLogger(AtlasRegularSecurity.class);
@@ -260,9 +261,6 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
     @Autowired
     private PermissionManager permissionManager;
-    
-    @Autowired
-    private ObjectMapper objectMapper;    
 
     public AtlasRegularSecurity(EntityPermissionSchemaResolver permissionSchemaResolver) {
 
@@ -297,7 +295,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         }
 
         filters.put(SEND_TOKEN_IN_URL, new SendTokenInUrlFilter(this.oauthUiCallback));
-        filters.put(SEND_TOKEN_IN_HEADER, new SendTokenInHeaderFilter(this.objectMapper));
+        filters.put(SEND_TOKEN_IN_HEADER, new SendTokenInHeaderFilter());
 
         filters.put(RUN_AS, new RunAsFilter(userRepository));
 

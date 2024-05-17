@@ -14,12 +14,14 @@ public interface VersionRepository<T extends Version> extends JpaRepository<T, V
     @Query("SELECT max(v.pk.version) from #{#entityName} v WHERE v.pk.assetId = ?1")
     Integer getLatestVersion(long assetId);
 
-    @Query("SELECT new org.ohdsi.webapi.versioning.domain.VersionBase(v.pk.assetId, v.comment, " +
-            "v.pk.version, uc, v.createdDate, v.archived) " +
-            "FROM #{#entityName} v " +
-            "LEFT JOIN UserEntity uc " +
-            "ON uc = v.createdBy " +
-            "WHERE v.pk.assetId = ?1")
+    @Query("""
+            SELECT new org.ohdsi.webapi.versioning.domain.VersionBase(v.pk.assetId, v.comment, \
+            v.pk.version, uc, v.createdDate, v.archived) \
+            FROM #{#entityName} v \
+            LEFT JOIN UserEntity uc \
+            ON uc = v.createdBy \
+            WHERE v.pk.assetId = ?1\
+            """)
     List<VersionBase> findAllVersions(long assetId);
 
     @Query("SELECT v from #{#entityName} v WHERE v.pk.assetId = ?1")

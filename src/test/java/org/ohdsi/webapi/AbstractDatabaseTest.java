@@ -1,15 +1,12 @@
 package org.ohdsi.webapi;
 
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
-import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
@@ -18,7 +15,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 @SpringBootTest
-@RunWith(SpringRunner.class)
 @TestPropertySource(locations = "/application-test.properties")
 public abstract class AbstractDatabaseTest {
     static class JdbcTemplateTestWrapper extends ExternalResource {
@@ -70,9 +66,9 @@ public abstract class AbstractDatabaseTest {
     }
    
     protected void truncateTable (String tableName) {
-      jdbcTemplate.execute(String.format("TRUNCATE %s CASCADE",tableName));
+      jdbcTemplate.execute("TRUNCATE %s CASCADE".formatted(tableName));
     }
     protected void resetSequence(String sequenceName) {
-      jdbcTemplate.execute(String.format("ALTER SEQUENCE %s RESTART WITH 1", sequenceName));
+      jdbcTemplate.execute("ALTER SEQUENCE %s RESTART WITH 1".formatted(sequenceName));
     }
 }

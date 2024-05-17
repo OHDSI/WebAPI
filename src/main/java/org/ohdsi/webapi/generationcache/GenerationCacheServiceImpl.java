@@ -100,7 +100,7 @@ public class GenerationCacheServiceImpl implements GenerationCacheService {
         return generationCacheProviderList.stream()
                 .filter(p -> p.supports(type))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException(String.format(NO_PROVIDER_ERROR, type)));
+                .orElseThrow(() -> new RuntimeException(NO_PROVIDER_ERROR.formatted(type)));
     }
 
     private class CacheableTypeSource {

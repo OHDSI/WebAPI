@@ -113,7 +113,7 @@ public class CleanupCohortSamplesTasklet implements Tasklet {
 
 	public JobExecutionResource launch(JobBuilderFactory jobBuilders, StepBuilderFactory stepBuilders, JobTemplate jobTemplate, int cohortDefinitionId) {
 		JobParametersBuilder builder = new JobParametersBuilder();
-		builder.addString(JOB_NAME, String.format("Cleanup cohort samples of cohort definition %d.", cohortDefinitionId));
+		builder.addString(JOB_NAME, "Cleanup cohort samples of cohort definition %d.".formatted(cohortDefinitionId));
 		builder.addString(COHORT_DEFINITION_ID, String.valueOf(cohortDefinitionId));
 
 		log.info("Beginning cohort cleanup for cohort definition id: {}", cohortDefinitionId);
@@ -122,7 +122,7 @@ public class CleanupCohortSamplesTasklet implements Tasklet {
 
 	public JobExecutionResource launch(JobBuilderFactory jobBuilders, StepBuilderFactory stepBuilders, JobTemplate jobTemplate, int cohortDefinitionId, int sourceId) {
 		JobParametersBuilder builder = new JobParametersBuilder();
-		builder.addString(JOB_NAME, String.format("Cleanup cohort samples of cohort definition %d.", cohortDefinitionId));
+		builder.addString(JOB_NAME, "Cleanup cohort samples of cohort definition %d.".formatted(cohortDefinitionId));
 		builder.addString(COHORT_DEFINITION_ID, String.valueOf(cohortDefinitionId));
 		builder.addString(SOURCE_ID, String.valueOf(sourceId));
 

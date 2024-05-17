@@ -67,7 +67,7 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 		return df.getGenerationInfoList().stream()
 						.filter(info -> info.getId().getSourceId().equals(sourceId))
 						.findFirst()
-						.orElseThrow(() -> new IllegalStateException(String.format("Cannot find cohortGenerationInfo for cohortDefinition[{}] sourceId[%s]", df.getId(), sourceId)));
+						.orElseThrow(() -> new IllegalStateException("Cannot find cohortGenerationInfo for cohortDefinition[{}] sourceId[%s]".formatted(df.getId(), sourceId)));
 	}
 
 	@Override

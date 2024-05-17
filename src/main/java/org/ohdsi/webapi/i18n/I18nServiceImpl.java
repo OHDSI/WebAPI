@@ -3,12 +3,12 @@ package org.ohdsi.webapi.i18n;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import javax.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.InternalServerErrorException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
@@ -60,7 +60,7 @@ public class I18nServiceImpl implements I18nService {
   @Override
   public String getLocaleResource(Locale locale) {
 
-    String resourcePath = String.format("/i18n/messages_%s.json", locale.getLanguage());
+    String resourcePath = "/i18n/messages_%s.json".formatted(locale.getLanguage());
     URL resourceURL = this.getClass().getResource(resourcePath);
     String messages = "";
     if (resourceURL != null) {

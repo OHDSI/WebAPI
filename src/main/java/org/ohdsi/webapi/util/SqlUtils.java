@@ -31,8 +31,8 @@ public final class SqlUtils {
 	*/
   public static String dateStringToSql(String date) {
 		if (!date.matches("^\\d{4}-\\d{2}-\\d{2}"))
-			throw new IllegalArgumentException(String.format("%s is not in valid YYYY-MM-DD format.", date));
+			throw new IllegalArgumentException("%s is not in valid YYYY-MM-DD format.".formatted(date));
     String[] dateParts = StringUtils.split(date, '-');
-    return String.format("DATEFROMPARTS(%s, %s, %s)", Integer.valueOf(dateParts[0]), Integer.valueOf(dateParts[1]), Integer.valueOf(dateParts[2]));
+    return "DATEFROMPARTS(%s, %s, %s)".formatted(Integer.valueOf(dateParts[0]), Integer.valueOf(dateParts[1]), Integer.valueOf(dateParts[2]));
   }  
 }

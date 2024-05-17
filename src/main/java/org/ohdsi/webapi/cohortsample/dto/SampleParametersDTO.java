@@ -3,7 +3,7 @@ package org.ohdsi.webapi.cohortsample.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-import javax.ws.rs.BadRequestException;
+import jakarta.ws.rs.BadRequestException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

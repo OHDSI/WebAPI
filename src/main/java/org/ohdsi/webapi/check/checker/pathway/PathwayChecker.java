@@ -2,14 +2,14 @@ package org.ohdsi.webapi.check.checker.pathway;
 
 import java.util.Arrays;
 import java.util.List;
-import javax.annotation.PostConstruct;
+
+import jakarta.annotation.PostConstruct;
 import org.ohdsi.webapi.check.builder.ValidatorGroupBuilder;
 import org.ohdsi.webapi.check.checker.BaseChecker;
 import org.ohdsi.webapi.check.checker.pathway.helper.PathwayHelper;
 import org.ohdsi.webapi.check.checker.tag.helper.TagHelper;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -11,13 +11,12 @@ import org.ohdsi.webapi.tag.dto.AssignmentPermissionsDTO;
 import org.ohdsi.webapi.tag.repository.TagRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,7 +30,6 @@ public class TagService extends AbstractDaoService {
 
     private final ArrayList<Producer<List<TagInfo>>> infoProducers;
 
-    @Autowired
     public TagService(
             TagRepository tagRepository,
             EntityManager entityManager,

@@ -37,7 +37,7 @@ public class PathwayVersionToPathwayVersionFullDTOConverter
     public PathwayVersionFullDTO convert(PathwayVersion source) {
         PathwayAnalysisEntity def = this.analysisRepository.findOne(source.getAssetId().intValue());
         ExceptionUtils.throwNotFoundExceptionIfNull(def,
-                String.format("There is no pathway analysis with id = %d.", source.getAssetId()));
+                "There is no pathway analysis with id = %d.".formatted(source.getAssetId()));
 
         PathwayAnalysisExportDTO exportDTO = Utils.deserialize(source.getAssetJson(), PathwayAnalysisExportDTO.class);
 

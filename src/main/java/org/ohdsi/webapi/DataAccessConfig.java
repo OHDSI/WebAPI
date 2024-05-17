@@ -24,7 +24,7 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -56,11 +56,11 @@ public class DataAccessConfig {
         properties.setProperty("hibernate.id.new_generator_mappings", "true");
         return properties;
     }
-      
+
     @Bean
-		@DependsOn("defaultStringEncryptor")
-    @Primary    
-    public DataSource primaryDataSource() {
+    @DependsOn("defaultStringEncryptor")
+    @Primary
+    DataSource primaryDataSource() {
         logger.info("datasource.url is: " + this.env.getRequiredProperty("datasource.url"));
         String driver = this.env.getRequiredProperty("datasource.driverClassName");
         String url = this.env.getRequiredProperty("datasource.url");
@@ -82,7 +82,7 @@ public class DataAccessConfig {
         //note autocommit defaults vary across vendors. use provided @Autowired TransactionTemplate
 
         String[] supportedDrivers;
-        supportedDrivers = new String[]{"org.postgresql.Driver", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "oracle.jdbc.driver.OracleDriver", "com.amazon.redshift.jdbc.Driver", "com.cloudera.impala.jdbc.Driver", "net.starschema.clouddb.jdbc.BQDriver", "org.netezza.Driver", "com.simba.googlebigquery.jdbc42.Driver", "org.apache.hive.jdbc.HiveDriver", "com.simba.spark.jdbc.Driver", "net.snowflake.client.jdbc.SnowflakeDriver", "com.databricks.client.jdbc.Driver"};
+        supportedDrivers = new String[]{"org.postgresql.Driver", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "oracle.jdbc.driver.OracleDriver", "com.amazon.redshift.jdbc.Driver", "com.cloudera.impala.jdbc.Driver", "net.starschema.clouddb.jdbc.BQDriver", "org.netezza.Driver", "com.simba.googlebigquery.jdbc42.Driver", "org.apache.hive.jdbc.HiveDriver", "com.simba.spark.jdbc.Driver", "net.snowflake.client.jdbc.SnowflakeDriver"};
         for (String driverName : supportedDrivers) {
             try {
                 Class.forName(driverName);
@@ -113,7 +113,7 @@ public class DataAccessConfig {
     }
 
     @Bean
-    public PBEStringEncryptor defaultStringEncryptor(){
+    PBEStringEncryptor defaultStringEncryptor(){
 
         PBEStringEncryptor stringEncryptor = encryptorEnabled ?
                 EncryptorUtils.buildStringEncryptor(env) :
@@ -127,7 +127,7 @@ public class DataAccessConfig {
     }
 
     @Bean
-    public EntityManagerFactory entityManagerFactory(DataSource dataSource) {
+    EntityManagerFactory entityManagerFactory(DataSource dataSource) {
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         vendorAdapter.setGenerateDdl(false);
@@ -145,10 +145,10 @@ public class DataAccessConfig {
         return factory.getObject();
     }
 
+    //This is needed so that JpaTransactionManager is used for autowiring, instead of DataSourceTransactionManager
     @Bean
     @Primary
-    //This is needed so that JpaTransactionManager is used for autowiring, instead of DataSourceTransactionManager
-    public PlatformTransactionManager jpaTransactionManager(EntityManagerFactory entityManagerFactory) {
+    PlatformTransactionManager jpaTransactionManager(EntityManagerFactory entityManagerFactory) {
 
         JpaTransactionManager txManager = new JpaTransactionManager();
         txManager.setEntityManagerFactory(entityManagerFactory);
@@ -156,22 +156,22 @@ public class DataAccessConfig {
     }
 
     @Bean
-    public TransactionTemplate transactionTemplate(PlatformTransactionManager transactionManager) {
+    TransactionTemplate transactionTemplate(PlatformTransactionManager transactionManager) {
         TransactionTemplate transactionTemplate = new TransactionTemplate();
         transactionTemplate.setTransactionManager(transactionManager);
         return transactionTemplate;
     }
 
     @Bean
-    public TransactionTemplate transactionTemplateRequiresNew(PlatformTransactionManager transactionManager) {
+    TransactionTemplate transactionTemplateRequiresNew(PlatformTransactionManager transactionManager) {
         TransactionTemplate transactionTemplate = new TransactionTemplate();
         transactionTemplate.setTransactionManager(transactionManager);
         transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         return transactionTemplate;
     }
-		
+
     @Bean
-    public TransactionTemplate transactionTemplateNoTransaction(PlatformTransactionManager transactionManager) {
+    TransactionTemplate transactionTemplateNoTransaction(PlatformTransactionManager transactionManager) {
         TransactionTemplate transactionTemplate = new TransactionTemplate();
         transactionTemplate.setTransactionManager(transactionManager);
         transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_NOT_SUPPORTED);

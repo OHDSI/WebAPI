@@ -43,10 +43,10 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
-import javax.ws.rs.InternalServerErrorException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.InternalServerErrorException;
 import java.io.*;
 import java.math.BigDecimal;
 import java.util.*;
@@ -331,8 +331,8 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
         final Source source = sourceService.findBySourceKey(sourceKey);
         final Integer predictionAnalysisId = predictionAnalysis.getId();
 
-        String packageName = String.format("PredictionAnalysis.%s", SessionUtils.sessionId());
-        String packageFilename = String.format("prediction_study_%d.zip", predictionAnalysisId);
+        String packageName = "PredictionAnalysis.%s".formatted(SessionUtils.sessionId());
+        String packageFilename = "prediction_study_%d.zip".formatted(predictionAnalysisId);
         List<AnalysisFile> analysisFiles = new ArrayList<>();
         AnalysisFile analysisFile = new AnalysisFile();
         analysisFile.setFileName(packageFilename);
@@ -346,7 +346,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
 
         JobParametersBuilder builder = prepareJobParametersBuilder(source, predictionAnalysisId, packageName, packageFilename)
                 .addString(PREDICTION_ANALYSIS_ID, predictionAnalysisId.toString())
-                .addString(JOB_NAME, String.format("Generating Prediction Analysis %d using %s (%s)", predictionAnalysisId, source.getSourceName(), source.getSourceKey()));
+                .addString(JOB_NAME, "Generating Prediction Analysis %d using %s (%s)".formatted(predictionAnalysisId, source.getSourceName(), source.getSourceKey()));
 
 
         Job generateAnalysisJob = generationUtils.buildJobForExecutionEngineBasedAnalysisTasklet(

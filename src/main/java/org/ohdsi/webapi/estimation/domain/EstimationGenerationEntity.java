@@ -3,7 +3,7 @@ package org.ohdsi.webapi.estimation.domain;
 import org.ohdsi.webapi.estimation.Estimation;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineGenerationEntity;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "estimation_analysis_generation")

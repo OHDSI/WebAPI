@@ -13,10 +13,10 @@
  */
 package org.ohdsi.webapi.vocabulary.test;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.Assert;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.circe.vocabulary.ConceptSetExpressionQueryBuilder;
@@ -98,11 +98,11 @@ public class ConceptSetExpressionTests {
     return exp;
   }
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpClass() throws Exception {
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDownClass() throws Exception {
   }
 
@@ -114,28 +114,28 @@ public class ConceptSetExpressionTests {
     String conceptSetExpressionSql = builder.buildExpressionQuery(testExpression);
     
     // included concepts should have (1,2,3,8)
-    Assert.assertTrue(conceptSetExpressionSql.indexOf("(1,2,3,8)") > 0);
+    Assertions.assertTrue(conceptSetExpressionSql.indexOf("(1,2,3,8)") > 0);
     
     // included descendants should have (2,3)
-    Assert.assertTrue(conceptSetExpressionSql.indexOf("(2,3)") > 0);
+    Assertions.assertTrue(conceptSetExpressionSql.indexOf("(2,3)") > 0);
     
     // excluded concepts should have (4,5,6,7)
-    Assert.assertTrue(conceptSetExpressionSql.indexOf("(4,5,6,7)") > 0);
+    Assertions.assertTrue(conceptSetExpressionSql.indexOf("(4,5,6,7)") > 0);
     
     // excluded descendants should have (5,7)
-    Assert.assertTrue(conceptSetExpressionSql.indexOf("(5,7)") > 0);
+    Assertions.assertTrue(conceptSetExpressionSql.indexOf("(5,7)") > 0);
     
     // mapped concepts should have (3,8)
-    Assert.assertTrue(conceptSetExpressionSql.indexOf("(3,8)") > 0);
+    Assertions.assertTrue(conceptSetExpressionSql.indexOf("(3,8)") > 0);
     
     // mapped descendants should have 3
-    Assert.assertTrue(conceptSetExpressionSql.indexOf("(3)") > 0);
+    Assertions.assertTrue(conceptSetExpressionSql.indexOf("(3)") > 0);
     
     // mapped excludes should have (6,7)
-    Assert.assertTrue(conceptSetExpressionSql.indexOf("(6,7)") > 0);
+    Assertions.assertTrue(conceptSetExpressionSql.indexOf("(6,7)") > 0);
     
     // mapped exclude descendants should have (7)
-    Assert.assertTrue(conceptSetExpressionSql.indexOf("(7)") > 0);
+    Assertions.assertTrue(conceptSetExpressionSql.indexOf("(7)") > 0);
     
   }
 

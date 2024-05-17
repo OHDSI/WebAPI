@@ -14,8 +14,8 @@ public abstract class UserMapper implements AttributesMapper<UserPrincipal> {
         Attribute attribute = attrList.get(key);
         if (attribute != null) {
             Object value = attribute.get();
-            if(value instanceof String) {
-                result = (String) value;
+            if(value instanceof String string) {
+                result = string;
             }
         }
         return result;

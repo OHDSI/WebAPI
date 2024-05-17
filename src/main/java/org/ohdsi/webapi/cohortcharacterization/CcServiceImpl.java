@@ -3,6 +3,7 @@ package org.ohdsi.webapi.cohortcharacterization;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableList;
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.Utils;
@@ -102,10 +103,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
+import jakarta.persistence.EntityManager;
+import jakarta.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.NotFoundException;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -593,7 +593,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
         JobParametersBuilder builder = new JobParametersBuilder();
 
-        builder.addString(JOB_NAME, String.format("Generating cohort characterization %d : %s (%s)", id, source.getSourceName(), source.getSourceKey()));
+        builder.addString(JOB_NAME, "Generating cohort characterization %d : %s (%s)".formatted(id, source.getSourceName(), source.getSourceKey()));
         builder.addString(COHORT_CHARACTERIZATION_ID, String.valueOf(id));
         builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
         builder.addString(JOB_AUTHOR, getCurrentUserLogin());
@@ -645,7 +645,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     protected List<CcResult> findResults(final Long generationId, ExecutionResultRequest params) {
         final CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
-                .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
+                .orElseThrow(() -> new IllegalArgumentException(GENERATION_NOT_FOUND_ERROR.formatted(generationId)));
         final Source source = generationEntity.getSource();
         String analysis = params.getAnalysisIds().stream().map(String::valueOf).collect(Collectors.joining(","));
         String cohorts = params.getCohortIds().stream().map(String::valueOf).collect(Collectors.joining(","));
@@ -661,7 +661,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     @DataSourceAccess
     public Long getCCResultsTotalCount(@CcGenerationId final Long generationId) {
         final CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
-                .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
+                .orElseThrow(() -> new IllegalArgumentException(GENERATION_NOT_FOUND_ERROR.formatted(generationId)));
         final Source source = generationEntity.getSource();
         String countReq = sourceAwareSqlRender.renderSql(source.getSourceId(), QUERY_COUNT, PARAMETERS_COUNT,
                 new String[]{String.valueOf(generationId), SourceUtils.getVocabularyQualifier(source)});
@@ -709,7 +709,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     public List<CcResult> findResultAsList(@CcGenerationId final Long generationId, float thresholdLevel) {
         ExecutionResultRequest params = new ExecutionResultRequest();
         CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
-                .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
+                .orElseThrow(() -> new IllegalArgumentException(GENERATION_NOT_FOUND_ERROR.formatted(generationId)));
         CohortCharacterizationEntity characterization = generationEntity.getCohortCharacterization();
         params.setThresholdValuePct(thresholdLevel);
         params.setCohortIds(characterization.getCohortDefinitions().stream()
@@ -725,7 +725,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     @DataSourceAccess
     public GenerationResults findResult(@CcGenerationId final Long generationId, ExecutionResultRequest params) {
         CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
-                .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
+                .orElseThrow(() -> new IllegalArgumentException(GENERATION_NOT_FOUND_ERROR.formatted(generationId)));
 
         CohortCharacterizationEntity characterization = generationEntity.getCohortCharacterization();
         Set<CohortDefinition> cohortDefs = characterization.getCohorts();
@@ -743,7 +743,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
               FeAnalysisEntity fe = featureAnalyses.stream()
                     .filter(fa -> Objects.equals(fa.getId(), analysisId))
                     .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException(String.format("Feature with id=%s not found in analysis", analysisId)));
+                    .orElseThrow(() -> new IllegalArgumentException("Feature with id=%s not found in analysis".formatted(analysisId)));
               return mapFeatureAnalysisId(fe);
             }).collect(Collectors.toList());
             params.setAnalysisIds(analysisIds);
@@ -772,14 +772,14 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                   }
                 })
                 .forEach(ccResult -> {
-                    if (ccResult instanceof CcPrevalenceStat) {
+                    if (ccResult instanceof CcPrevalenceStat stat) {
                         analysisMap.putIfAbsent(ccResult.getAnalysisId(), new AnalysisItem());
                         AnalysisItem analysisItem = analysisMap.get(ccResult.getAnalysisId());
                         analysisItem.setType(ccResult.getResultType());
                         analysisItem.setName(ccResult.getAnalysisName());
                         analysisItem.setFaType(ccResult.getFaType());
                         List<CcResult> results = analysisItem.getOrCreateCovariateItem(
-                                ((CcPrevalenceStat) ccResult).getCovariateId(), ccResult.getStrataId());
+                                stat.getCovariateId(), ccResult.getStrataId());
                         results.add(ccResult);
                     }
                 });
@@ -802,7 +802,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
       if (feAnalysis.isPreset()) {
          return prespecAnalysisMap.values().stream().filter(p -> Objects.equals(p.analysisName, feAnalysis.getDesign()))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(String.format("Preset analysis with id=%s does not exist", feAnalysis.getId())))
+                .orElseThrow(() -> new IllegalArgumentException("Preset analysis with id=%s does not exist".formatted(feAnalysis.getId())))
                 .analysisId;
       } else {
         return feAnalysis.getId();
@@ -904,7 +904,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     @Override
     public List<CcPrevalenceStat> getPrevalenceStatsByGenerationId(Long id, Long analysisId, Long cohortId, Long covariateId) {
         final CcGenerationEntity generationEntity = ccGenerationRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, id)));
+                .orElseThrow(() -> new IllegalArgumentException(GENERATION_NOT_FOUND_ERROR.formatted(id)));
         final Source source = generationEntity.getSource();
         final String cdmSchema = SourceUtils.getCdmQualifier(source);
         final String resultSchema = SourceUtils.getResultsQualifier(source);
@@ -939,7 +939,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     @DataSourceAccess
     public void deleteCcGeneration(@CcGenerationId Long generationId) {
         final CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
-                .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
+                .orElseThrow(() -> new IllegalArgumentException(GENERATION_NOT_FOUND_ERROR.formatted(generationId)));
         final Source source = generationEntity.getSource();
         final String sql = sourceAwareSqlRender.renderSql(source.getSourceId(), DELETE_RESULTS, PARAMETERS_RESULTS, new String[]{ String.valueOf(generationId) });
         final String tempSchema = SourceUtils.getTempQualifier(source);
@@ -1022,7 +1022,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     private void checkVersion(long id, int version, boolean checkOwnerShip) {
         Version characterizationVersion = versionService.getById(VersionType.CHARACTERIZATION, id, version);
         ExceptionUtils.throwNotFoundExceptionIfNull(characterizationVersion,
-                String.format("There is no cohort characterization version with id = %d.", version));
+                "There is no cohort characterization version with id = %d.".formatted(version));
 
         CohortCharacterizationEntity entity = findById(id);
         if (checkOwnerShip) {

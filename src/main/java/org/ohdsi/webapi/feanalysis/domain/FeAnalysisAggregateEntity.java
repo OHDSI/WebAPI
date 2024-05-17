@@ -13,12 +13,12 @@ import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisD
 import org.ohdsi.circe.cohortdefinition.builders.CriteriaColumn;
 import org.ohdsi.webapi.common.orm.EnumListType;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
 @Table(name = "fe_analysis_aggregate")
-@TypeDef(typeClass = EnumListType.class, name = "enum-list")
+@TypeDef(typeClass = EnumListType.class, name = "enumm-list")
 public class FeAnalysisAggregateEntity implements FeatureAnalysisAggregate, WithId<Integer> {
 
   @Id
@@ -64,7 +64,7 @@ public class FeAnalysisAggregateEntity implements FeatureAnalysisAggregate, With
   private boolean isMissingMeansZero;
 
 	@Column(name = "criteria_columns")
-  @Type(type = "enum-list", parameters = {
+  @Type(value = enumm-list.class, parameters = {
           @Parameter(name = "enumClass", value = "org.ohdsi.circe.cohortdefinition.builders.CriteriaColumn")
   })
   private List<CriteriaColumn> columns;

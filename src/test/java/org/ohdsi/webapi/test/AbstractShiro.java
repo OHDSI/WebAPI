@@ -6,8 +6,8 @@ import org.apache.shiro.subject.Subject;
 import org.apache.shiro.subject.support.SubjectThreadState;
 import org.apache.shiro.util.LifecycleUtils;
 import org.apache.shiro.util.ThreadState;
+import org.junit.jupiter.api.AfterAll;
 import org.apache.shiro.mgt.SecurityManager;
-import org.junit.AfterClass;
 
 
 /**
@@ -61,7 +61,7 @@ public abstract class AbstractShiro {
         return SecurityUtils.getSecurityManager();
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownShiro() {
         doClearSubject();
         try {

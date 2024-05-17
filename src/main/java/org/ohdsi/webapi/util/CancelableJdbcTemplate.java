@@ -6,6 +6,7 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.jdbc.core.*;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import javax.sql.DataSource;
@@ -78,8 +79,7 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
         }
         else {
           for (int i = 0; i < sql.length; i++) {
-            String connectionString = stmt.getConnection().getMetaData().getURL();
-            if (connectionString.startsWith("jdbc:spark") || connectionString.startsWith("jdbc:databricks")) {
+            if (stmt.getConnection().getMetaData().getURL().startsWith("jdbc:spark")) {
               this.currSql = BigQuerySparkTranslate.sparkHandleInsert(sql[i], stmt.getConnection());
               if (this.currSql == "" || this.currSql.isEmpty() || this.currSql == null) {
                 rowsAffected[i] = -1;
@@ -100,7 +100,7 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
       }
 
       private String appendSql(String sql, String statement) {
-        return (StringUtils.isEmpty(sql) ? statement : sql + "; " + statement);
+        return (ObjectUtils.isEmpty(sql) ? statement : sql + "; " + statement);
       }
 
       @Override
@@ -142,8 +142,8 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
       }
 
       private String getSql(PreparedStatementCreator statement) {
-        if (statement instanceof SqlProvider) {
-          return ((SqlProvider)statement).getSql();
+        if (statement instanceof SqlProvider provider) {
+          return provider.getSql();
         }
         return "";
       }

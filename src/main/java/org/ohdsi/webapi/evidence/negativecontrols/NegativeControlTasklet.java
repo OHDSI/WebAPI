@@ -111,7 +111,7 @@ public class NegativeControlTasklet implements Tasklet {
             TransactionStatus completeStatus = this.transactionTemplate.getTransactionManager().getTransaction(completeTx);
             info = findBySourceId(this.conceptSetGenerationInfoRepository.findAllByConceptSetId(conceptSetId), sourceId);
             Date endTime = Calendar.getInstance().getTime();
-            info.setExecutionDuration(new Integer((int) (endTime.getTime() - startTime.getTime())));
+            info.setExecutionDuration(Integer.valueOf((int) (endTime.getTime() - startTime.getTime())));
             info.setIsValid(isValid);
             GenerationStatus status = isValid ? GenerationStatus.COMPLETE : GenerationStatus.ERROR;
             info.setStatus(status);

@@ -2,9 +2,9 @@ package org.ohdsi.webapi.shiro.filters.auth;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.shiro.filters.AtlasAuthFilter;

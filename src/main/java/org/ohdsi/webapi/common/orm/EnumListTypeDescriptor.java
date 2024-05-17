@@ -64,11 +64,11 @@ public class EnumListTypeDescriptor extends AbstractTypeDescriptor<List> {
         if (Objects.isNull(value)) {
             return null;
         }
-        if (value instanceof List) {
-            return (List)value;
+        if (value instanceof List list) {
+            return list;
         }
-        if (value instanceof String) {
-            return fromString((String) value);
+        if (value instanceof String string) {
+            return fromString(string);
         }
         throw unknownWrap(value.getClass());
     }

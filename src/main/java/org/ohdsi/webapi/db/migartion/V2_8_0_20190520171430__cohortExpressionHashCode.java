@@ -5,7 +5,6 @@ import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetailsRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -15,7 +14,6 @@ public class V2_8_0_20190520171430__cohortExpressionHashCode implements Applicat
 
     private CohortDefinitionDetailsRepository detailsRepository;
 
-    @Autowired
     public V2_8_0_20190520171430__cohortExpressionHashCode(CohortDefinitionDetailsRepository detailsRepository){
         this.detailsRepository = detailsRepository;
     }

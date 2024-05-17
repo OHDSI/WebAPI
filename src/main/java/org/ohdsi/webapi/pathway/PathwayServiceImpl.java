@@ -61,7 +61,6 @@ import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
@@ -73,7 +72,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -134,7 +133,6 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 					"modifiedBy"
 	);
 
-	@Autowired
 	public PathwayServiceImpl(
 					PathwayAnalysisEntityRepository pathwayAnalysisRepository,
 					PathwayAnalysisGenerationRepository pathwayAnalysisGenerationRepository,
@@ -214,8 +212,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 			pc.setName(cohortDefinition.getName());
 			pc.setCohortDefinition(cohortDefinition);
 			pc.setPathwayAnalysis(newAnalysis);
-			if (pc instanceof PathwayTargetCohort) {
-				newAnalysis.getTargetCohorts().add((PathwayTargetCohort) pc);
+			if (pc instanceof PathwayTargetCohort cohort) {
+				newAnalysis.getTargetCohorts().add(cohort);
 			} else {
 				newAnalysis.getEventCohorts().add((PathwayEventCohort) pc);
 			}
@@ -412,7 +410,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 		Source source = getSourceRepository().findBySourceId(sourceId);
 
 		JobParametersBuilder builder = new JobParametersBuilder();
-		builder.addString(JOB_NAME, String.format("Generating Pathway Analysis %d using %s (%s)", pathwayAnalysisId, source.getSourceName(), source.getSourceKey()));
+		builder.addString(JOB_NAME, "Generating Pathway Analysis %d using %s (%s)".formatted(pathwayAnalysisId, source.getSourceName(), source.getSourceKey()));
 		builder.addString(SOURCE_ID, String.valueOf(source.getSourceId()));
 		builder.addString(PATHWAY_ANALYSIS_ID, pathwayAnalysis.getId().toString());
 		builder.addString(JOB_AUTHOR, getCurrentUserLogin());
@@ -611,7 +609,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 	private void checkVersion(int id, int version, boolean checkOwnerShip) {
 		Version pathwayVersion = versionService.getById(VersionType.PATHWAY, id, version);
 		ExceptionUtils.throwNotFoundExceptionIfNull(pathwayVersion,
-				String.format("There is no pathway analysis version with id = %d.", version));
+                "There is no pathway analysis version with id = %d.".formatted(version));
 
 		PathwayAnalysisEntity entity = this.pathwayAnalysisRepository.findOne(id);
 		if (checkOwnerShip) {
@@ -639,7 +637,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 						new String[]{GENERATION_ID},
 						new Object[]{generationId}
 		);
-		List<PathwayCode> pathwayCodes = getSourceJdbcTemplate(source).query(pathwayCodesPsr.getSql(), pathwayCodesPsr.getOrderedParams(), codeRowMapper);
+		List<PathwayCode> pathwayCodes = getSourceJdbcTemplate(source).query(pathwayCodesPsr.getSql(), codeRowMapper, pathwayCodesPsr.getOrderedParams());
 
 		// fetch cohort stats, paths will be populated after
 		PreparedStatementRenderer pathwayStatsPsr = new PreparedStatementRenderer(
@@ -648,7 +646,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 						new String[]{GENERATION_ID},
 						new Object[]{generationId}
 		);
-		List<CohortPathways> cohortStats = getSourceJdbcTemplate(source).query(pathwayStatsPsr.getSql(), pathwayStatsPsr.getOrderedParams(), pathwayStatsRowMapper);
+		List<CohortPathways> cohortStats = getSourceJdbcTemplate(source).query(pathwayStatsPsr.getSql(), pathwayStatsRowMapper, pathwayStatsPsr.getOrderedParams());
 
 		// load cohort paths, and assign back to cohortStats
 		PreparedStatementRenderer pathwayResultsPsr = new PreparedStatementRenderer(
@@ -658,7 +656,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 						new Object[]{generationId}
 		);
 		Map<Integer, Map<String, Integer>> pathwayResults = 
-						getSourceJdbcTemplate(source).query(pathwayResultsPsr.getSql(), pathwayResultsPsr.getOrderedParams(), pathwayExtractor);
+						getSourceJdbcTemplate(source).query(pathwayResultsPsr.getSql(), pathwayExtractor, pathwayResultsPsr.getOrderedParams());
 
 		cohortStats.stream().forEach((cp) -> {
 			cp.setPathwaysCounts(pathwayResults.get(cp.getCohortId()));

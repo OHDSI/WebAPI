@@ -4,6 +4,8 @@ import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisReques
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.AnalysisRequestStatusDTO;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
 import com.odysseusinc.arachne.execution_engine_common.util.CommonFileUtils;
+import jakarta.annotation.PostConstruct;
+
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -43,14 +45,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import javax.net.ssl.HttpsURLConnection;
-import javax.transaction.Transactional;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.MediaType;
 import java.io.*;
 import java.nio.file.Files;
 import java.security.KeyManagementException;
@@ -237,7 +238,7 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
 
             ExecutionEngineAnalysisStatus analysisExecution = analysisExecutionRepository.findOne(execId.intValue());
             if (analysisExecution == null) {
-                throw new NotFoundException(String.format("Execution with id=%d was not found", executionId));
+                throw new NotFoundException("Execution with id=%d was not found".formatted(executionId));
             }
             status = analysisExecution.getExecutionStatus().name();
         } else {

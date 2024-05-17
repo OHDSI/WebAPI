@@ -43,7 +43,7 @@ public class UserImportTasklet extends BaseUserImportTasklet<UserImportResult> i
   protected void doAfter(StepContribution stepContribution, ChunkContext chunkContext) {
     if (Objects.nonNull(result)) {
       stepContribution.setExitStatus(new ExitStatus(ExitStatus.COMPLETED.getExitCode(),
-              String.format("Created %d new users, updated %d users", result.getCreated(), result.getUpdated())));
+              "Created %d new users, updated %d users".formatted(result.getCreated(), result.getUpdated())));
     }
   }
 

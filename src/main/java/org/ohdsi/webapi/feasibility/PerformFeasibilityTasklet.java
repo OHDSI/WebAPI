@@ -194,13 +194,13 @@ public class PerformFeasibilityTasklet implements Tasklet {
       {
         CohortGenerationInfo resultInfo = findCohortGenerationInfoBySourceId(resultDef.getGenerationInfoList(), sourceId);
         resultInfo.setIsValid(isValid);
-        resultInfo.setExecutionDuration(new Integer((int)(endTime.getTime() - startTime.getTime())));
+        resultInfo.setExecutionDuration(Integer.valueOf((int) (endTime.getTime() - startTime.getTime())));
         resultInfo.setStatus(GenerationStatus.COMPLETE);
       }
       
       studyInfo = findStudyGenerationInfoBySourceId(study.getStudyGenerationInfoList(), sourceId);
       studyInfo.setIsValid(isValid);
-      studyInfo.setExecutionDuration(new Integer((int)(endTime.getTime() - startTime.getTime())));
+      studyInfo.setExecutionDuration(Integer.valueOf((int) (endTime.getTime() - startTime.getTime())));
       studyInfo.setStatus(GenerationStatus.COMPLETE);
       
       this.feasibilityStudyRepository.save(study);

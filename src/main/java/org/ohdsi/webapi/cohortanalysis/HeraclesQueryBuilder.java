@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.cohortanalysis;
 
 import com.odysseusinc.arachne.commons.types.DBMSType;
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -19,7 +20,6 @@ import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;

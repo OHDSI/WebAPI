@@ -21,16 +21,15 @@ import org.ohdsi.webapi.executionengine.service.AnalysisResultFileContentSensiti
 import org.ohdsi.webapi.executionengine.service.AnalysisZipRepackService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.*;
 
@@ -64,7 +63,6 @@ public class ScriptExecutionCallbackController {
     @Value("${analysis.result.zipVolumeSizeMb}")
     private int zipVolumeSizeMb;
 
-    @Autowired
     public ScriptExecutionCallbackController(ExecutionEngineGenerationRepository executionEngineGenerationRepository,
                                              AnalysisExecutionRepository analysisExecutionRepository,
                                              AnalysisResultFileContentRepository analysisResultFileContentRepository,
@@ -97,7 +95,7 @@ public class ScriptExecutionCallbackController {
         log.info("Accepted an updateSubmission request. ID:{}, Update date:{} Log: {}",
                         status.getId(), status.getStdoutDate(), status.getStdout());
         ExecutionEngineGenerationEntity executionEngineGeneration = executionEngineGenerationRepository.findById(id)
-                .orElseThrow(() -> new ScriptCallbackException(String.format(EXECUTION_NOT_FOUND, id)));
+                .orElseThrow(() -> new ScriptCallbackException(EXECUTION_NOT_FOUND.formatted(id)));
         ExecutionEngineAnalysisStatus analysisExecution = executionEngineGeneration.getAnalysisExecution();
         Hibernate.initialize(analysisExecution);
         if (Objects.equals(password, analysisExecution.getExecutionEngineGeneration().getUpdatePassword())
@@ -128,7 +126,7 @@ public class ScriptExecutionCallbackController {
 
         log.info("Accepted an analysisResult request. ID:{}", id);
         ExecutionEngineGenerationEntity executionEngineGeneration = executionEngineGenerationRepository.findById(id)
-                .orElseThrow(() -> new ScriptCallbackException(String.format(EXECUTION_NOT_FOUND, id)));
+                .orElseThrow(() -> new ScriptCallbackException(EXECUTION_NOT_FOUND.formatted(id)));
         ExecutionEngineAnalysisStatus analysisExecution = executionEngineGeneration.getAnalysisExecution();
 
         if (Objects.equals(password, analysisExecution.getExecutionEngineGeneration().getUpdatePassword())) {

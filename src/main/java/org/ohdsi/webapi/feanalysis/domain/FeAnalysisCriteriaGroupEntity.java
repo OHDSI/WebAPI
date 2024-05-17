@@ -4,8 +4,8 @@ import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.cohortcharacterization.design.CriteriaFeature;
 import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
 
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
 
 @Entity
 @DiscriminatorValue("CRITERIA_GROUP")

@@ -13,8 +13,8 @@ import java.util.Locale;
 @Configuration
 public class I18nConfig {
 
-  @Bean
-  public LocaleResolver localeResolver() {
+    @Bean
+    LocaleResolver localeResolver() {
 
     AcceptHeaderLocaleResolver localeResolver = new AcceptHeaderLocaleResolver();
     localeResolver.setDefaultLocale(new Locale("en"));

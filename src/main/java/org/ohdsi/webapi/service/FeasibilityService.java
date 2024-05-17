@@ -35,16 +35,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import javax.servlet.ServletContext;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
+import jakarta.servlet.ServletContext;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
@@ -199,7 +199,7 @@ public class FeasibilityService extends AbstractDaoService {
     String tqName = "tableQualifier";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
     PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, "id", whitelist(id), SessionUtils.sessionId());
-    return getSourceJdbcTemplate(source).queryForObject(psr.getSql(), psr.getOrderedParams(), summaryMapper);
+    return getSourceJdbcTemplate(source).queryForObject(psr.getSql(), summaryMapper, psr.getOrderedParams());
   }
 
   private final RowMapper<FeasibilityReport.InclusionRuleStatistic> inclusionRuleStatisticMapper = new RowMapper<FeasibilityReport.InclusionRuleStatistic>() {
@@ -336,7 +336,7 @@ public class FeasibilityService extends AbstractDaoService {
         treemapData.append(",");
       }
 
-      treemapData.append(String.format("{\"name\" : \"Group %d\", \"children\" : [", groupKey));
+      treemapData.append("{\"name\" : \"Group %d\", \"children\" : [".formatted(groupKey));
 
       int groupItemCount = 0;
       for (Long[] groupItem : groups.get(groupKey)) {
@@ -345,7 +345,7 @@ public class FeasibilityService extends AbstractDaoService {
         }
 
         //sb_treemap.Append("{\"name\": \"" + cohort_identifer + "\", \"size\": " + cohorts[cohort_identifer].ToString() + "}");
-        treemapData.append(String.format("{\"name\": \"%s\", \"size\": %d}", formatBitMask(groupItem[0], inclusionRuleCount), groupItem[1]));
+        treemapData.append("{\"name\": \"%s\", \"size\": %d}".formatted(formatBitMask(groupItem[0], inclusionRuleCount), groupItem[1]));
         groupItemCount++;
       }
       groupCount++;
@@ -725,11 +725,11 @@ public class FeasibilityService extends AbstractDaoService {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}/copy")
-  @javax.transaction.Transactional
+  @jakarta.transaction.Transactional
   public FeasibilityStudyDTO copy(@PathParam("id") final int id) {
     FeasibilityStudyDTO sourceStudy = getStudy(id);
     sourceStudy.id = null; // clear the ID
-    sourceStudy.name = String.format(Constants.Templates.ENTITY_COPY_PREFIX, sourceStudy.name);
+    sourceStudy.name = Constants.Templates.ENTITY_COPY_PREFIX.formatted(sourceStudy.name);
 
     return createStudy(sourceStudy);
   }

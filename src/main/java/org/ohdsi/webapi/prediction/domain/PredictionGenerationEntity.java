@@ -3,7 +3,7 @@ package org.ohdsi.webapi.prediction.domain;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineGenerationEntity;
 import org.ohdsi.webapi.prediction.PredictionAnalysis;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "prediction_analysis_generation")

@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.user.importer.providers;
 
 import com.google.common.collect.ImmutableSet;
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.user.importer.model.LdapGroup;
 import org.ohdsi.webapi.user.importer.model.LdapUser;
@@ -17,7 +18,6 @@ import org.springframework.ldap.filter.OrFilter;
 import org.springframework.ldap.support.LdapUtils;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.naming.NameClassPair;
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;

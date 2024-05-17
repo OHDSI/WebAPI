@@ -14,27 +14,26 @@ import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.HttpUtils;
 import org.ohdsi.webapi.util.NameUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -166,11 +165,11 @@ public class FeAnalysisController {
     public Response exportConceptSets(@PathParam("id") final Integer feAnalysisId) {
 
       final FeAnalysisEntity feAnalysis = service.findById(feAnalysisId).orElseThrow(NotFoundException::new);
-      if (feAnalysis instanceof FeAnalysisWithCriteriaEntity) {
-        List<ConceptSetExport> exportList = service.exportConceptSets((FeAnalysisWithCriteriaEntity<?>) feAnalysis);
+      if (feAnalysis instanceof FeAnalysisWithCriteriaEntity entity) {
+        List<ConceptSetExport> exportList = service.exportConceptSets(entity);
 
         ByteArrayOutputStream stream = ExportUtil.writeConceptSetExportToCSVAndZip(exportList);
-        return HttpUtils.respondBinary(stream, String.format("featureAnalysis_%d_export.zip", feAnalysisId));
+        return HttpUtils.respondBinary(stream, "featureAnalysis_%d_export.zip".formatted(feAnalysisId));
       } else {
         throw new BadRequestException();
       }

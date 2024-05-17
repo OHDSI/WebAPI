@@ -119,6 +119,6 @@ public class AchillesCacheService {
     }
 
     private String getCacheName(String domain, int conceptId) {
-        return String.format("drilldown_%s_%d", domain, conceptId);
+        return "drilldown_%s_%d".formatted(domain, conceptId);
     }
 }

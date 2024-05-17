@@ -13,11 +13,11 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Set;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.ws.rs.core.UriBuilder;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import jakarta.ws.rs.core.UriBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.session.Session;
@@ -67,9 +67,9 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
     final PrincipalCollection principals = SecurityUtils.getSubject().getPrincipals();
     Object principal = principals.getPrimaryPrincipal();
     
-    if (principal instanceof Pac4jPrincipal) {
-      login = ((Pac4jPrincipal)principal).getProfile().getEmail();
-      name = ((Pac4jPrincipal)principal).getProfile().getDisplayName();
+    if (principal instanceof Pac4jPrincipal pac4jPrincipal) {
+      login = pac4jPrincipal.getProfile().getEmail();
+      name = pac4jPrincipal.getProfile().getDisplayName();
       
       /**
       * for CAS login
@@ -78,7 +78,7 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
       HttpSession shiroSession = requestShiro.getSession();
       if (login == null && shiroSession.getAttribute(CasHandleFilter.CONST_CAS_AUTHN) != null
               && ((String) shiroSession.getAttribute(CasHandleFilter.CONST_CAS_AUTHN)).equalsIgnoreCase("true")) {
-              login = ((Pac4jPrincipal) principal).getProfile().getId();
+              login = pac4jPrincipal.getProfile().getId();
       }
             
       if (login == null) {
@@ -97,18 +97,18 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
         return false;
       }
 
-      CommonProfile profile = (((Pac4jPrincipal) principal).getProfile());
+      CommonProfile profile = (pac4jPrincipal.getProfile());
       if (Objects.nonNull(profile)) {
         String clientName = profile.getClientName();
         request.setAttribute(AUTH_CLIENT_ATTRIBUTE, clientName);
       }
-    } else     if (principal instanceof Principal) {
-      login = ((Principal) principal).getName();
-    } else if (principal instanceof UserPrincipal){
-      login = ((UserPrincipal) principal).getUsername();
-      name = ((UserPrincipal) principal).getName();
-    } else if (principal instanceof String) {
-      login = (String)principal;
+    } else     if (principal instanceof Principal principal1) {
+      login = principal1.getName();
+    } else if (principal instanceof UserPrincipal userPrincipal){
+      login = userPrincipal.getUsername();
+      name = userPrincipal.getName();
+    } else if (principal instanceof String string) {
+      login = string;
     } else {
       throw new Exception("Unknown type of principal");
     }
@@ -145,8 +145,8 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
     }
 
     request.setAttribute(TOKEN_ATTRIBUTE, jwt);
-    PermissionManager.PermissionsDTO permissions = this.authorizer.queryUserPermissions(login);
-    request.setAttribute(PERMISSIONS_ATTRIBUTE, permissions);
+    Collection<String> permissions = this.authorizer.getAuthorizationInfo(login).getStringPermissions();
+    request.setAttribute(PERMISSIONS_ATTRIBUTE, StringUtils.join(permissions, "|"));
     return true;
   }
 

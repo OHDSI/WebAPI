@@ -54,8 +54,8 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.ForbiddenException;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.ForbiddenException;
 import java.io.File;
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -368,7 +368,7 @@ public abstract class AbstractDaoService extends AbstractAdminService {
       Tag tag = tagService.getById(tagId);
       if (Objects.nonNull(tag)) {
         if (tag.isPermissionProtected() && !hasPermissionToAssignProtectedTags(entity, "post")) {
-          throw new UnauthorizedException(String.format("No permission to assign protected tag '%s' to %s (id=%s).",
+          throw new UnauthorizedException("No permission to assign protected tag '%s' to %s (id=%s).".formatted(
                   tag.getName(), entity.getClass().getSimpleName(), entity.getId()));
         }
 
@@ -394,7 +394,7 @@ public abstract class AbstractDaoService extends AbstractAdminService {
       Tag tag = tagService.getById(tagId);
       if (Objects.nonNull(tag)) {
         if (tag.isPermissionProtected() && !hasPermissionToAssignProtectedTags(entity, "delete")) {
-          throw new UnauthorizedException(String.format("No permission to unassign protected tag '%s' from %s (id=%s).",
+          throw new UnauthorizedException("No permission to unassign protected tag '%s' from %s (id=%s).".formatted(
                   tag.getName(), entity.getClass().getSimpleName(), entity.getId()));
         }
         Set<Tag> tags = entity.getTags().stream()

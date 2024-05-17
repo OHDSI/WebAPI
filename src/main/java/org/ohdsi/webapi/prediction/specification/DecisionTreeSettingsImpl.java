@@ -39,8 +39,8 @@ public class DecisionTreeSettingsImpl extends SeedSettingsImpl implements Decisi
         if (maxDepth != null) {
             if (maxDepth instanceof ArrayList) {
                 this.maxDepth = (ArrayList<Integer>) maxDepth;
-            } else if (maxDepth instanceof Integer) {
-                this.maxDepth = new ArrayList<>(Arrays.asList((Integer) maxDepth));
+            } else if (maxDepth instanceof Integer integer) {
+                this.maxDepth = new ArrayList<>(Arrays.asList(integer));
             } else {
                 throw new InputMismatchException("Expected ArrayList<Integer> or Integer");
             }
@@ -68,8 +68,8 @@ public class DecisionTreeSettingsImpl extends SeedSettingsImpl implements Decisi
         if (minSamplesSplit != null) {
             if (minSamplesSplit instanceof ArrayList) {
                 this.minSamplesSplit = (ArrayList<Integer>) minSamplesSplit;
-            } else if (minSamplesSplit instanceof Integer) {
-                this.minSamplesSplit = new ArrayList<>(Arrays.asList((Integer) minSamplesSplit));
+            } else if (minSamplesSplit instanceof Integer integer) {
+                this.minSamplesSplit = new ArrayList<>(Arrays.asList(integer));
             } else {
                 throw new InputMismatchException("Expected ArrayList<Integer> or Integer");
             }
@@ -97,8 +97,8 @@ public class DecisionTreeSettingsImpl extends SeedSettingsImpl implements Decisi
         if (minSamplesLeaf != null) {
             if (minSamplesLeaf instanceof ArrayList) {
                 this.minSamplesLeaf = (ArrayList<Integer>) minSamplesLeaf;
-            } else if (minSamplesLeaf instanceof Integer) {
-                this.minSamplesLeaf = new ArrayList<>(Arrays.asList((Integer) minSamplesLeaf));
+            } else if (minSamplesLeaf instanceof Integer integer) {
+                this.minSamplesLeaf = new ArrayList<>(Arrays.asList(integer));
             } else {
                 throw new InputMismatchException("Expected ArrayList<Integer> or Integer");
             }
@@ -127,8 +127,8 @@ public class DecisionTreeSettingsImpl extends SeedSettingsImpl implements Decisi
         if (minImpurityDecrease != null) {
             if (minImpurityDecrease instanceof ArrayList) {
                 this.minImpurityDecrease = (List<BigDecimal>) minImpurityDecrease;
-            } else if (minImpurityDecrease instanceof Float) {
-                this.minImpurityDecrease = new ArrayList<>(Arrays.asList(new BigDecimal((Float) minImpurityDecrease)));
+            } else if (minImpurityDecrease instanceof Float float1) {
+                this.minImpurityDecrease = new ArrayList<>(Arrays.asList(new BigDecimal(float1)));
             } else {
                 throw new InputMismatchException("Expected ArrayList<BigDecimal> or Float");
             }

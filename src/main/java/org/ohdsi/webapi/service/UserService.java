@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.odysseusinc.logging.event.*;
 import org.eclipse.collections.impl.block.factory.Comparators;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
@@ -13,8 +12,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -51,7 +50,6 @@ public class UserService {
     public String login;
     public String name;
     public List<Permission> permissions;
-    public JsonNode permissionIdx;
 
     public User() {}
 
@@ -116,8 +114,6 @@ public class UserService {
     user.login = currentUser.getLogin();
     user.name = currentUser.getName();
     user.permissions = convertPermissions(permissions);
-    user.permissionIdx = authorizer.queryUserPermissions(currentUser.getLogin()).permissions;
-    
 
     return user;
   }

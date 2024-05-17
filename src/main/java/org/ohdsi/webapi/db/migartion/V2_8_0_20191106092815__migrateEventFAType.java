@@ -11,7 +11,6 @@ import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +27,6 @@ public class V2_8_0_20191106092815__migrateEventFAType implements ApplicationCon
     private final SourceRepository sourceRepository;
     private final V2_8_0_20191106092815__migrateEventFAType.MigrationDAO migrationDAO;
 
-    @Autowired
     public V2_8_0_20191106092815__migrateEventFAType(final SourceRepository sourceRepository,
                                                         final V2_8_0_20191106092815__migrateEventFAType.MigrationDAO migrationDAO) {
         this.sourceRepository = sourceRepository;
@@ -46,7 +44,7 @@ public class V2_8_0_20191106092815__migrateEventFAType implements ApplicationCon
 
                         this.migrationDAO.updateColumnValue(source, jdbcTemplate);
                     } catch (Exception e) {
-                        log.error(String.format("Failed to update fa type value for source: %s (%s)", source.getSourceName(), source.getSourceKey()));
+                        log.error("Failed to update fa type value for source: %s (%s)".formatted(source.getSourceName(), source.getSourceKey()));
                         throw e;
                     }
                 });

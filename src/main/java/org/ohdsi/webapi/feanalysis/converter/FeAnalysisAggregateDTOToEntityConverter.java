@@ -25,7 +25,7 @@ public class FeAnalysisAggregateDTOToEntityConverter extends BaseConvertionServi
   public FeAnalysisAggregateEntity convert(FeAnalysisAggregateDTO dto) {
 
     if (Objects.nonNull(dto.getId())) {
-      return aggregateRepository.getOne(dto.getId());
+      return aggregateRepository.getById(dto.getId());
     } else {
       return aggregateRepository.findDefault().orElse(null);
     }

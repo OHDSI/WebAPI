@@ -49,19 +49,19 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -206,7 +206,7 @@ public class CcController {
     @Consumes(MediaType.APPLICATION_JSON)
     public CohortCharacterizationDTO getDesign(@PathParam("id") final Long id) {
         CohortCharacterizationEntity cc = service.findByIdWithLinkedEntities(id);
-        ExceptionUtils.throwNotFoundExceptionIfNull(cc, String.format("There is no cohort characterization with id = %d.", id));
+        ExceptionUtils.throwNotFoundExceptionIfNull(cc, "There is no cohort characterization with id = %d.".formatted(id));
         return convertCcToDto(cc);
     }
 
@@ -307,7 +307,7 @@ public class CcController {
         Optional.ofNullable(cc).orElseThrow(NotFoundException::new);
         List<ConceptSetExport> exportList = service.exportConceptSets(cc);
         ByteArrayOutputStream stream = ExportUtil.writeConceptSetExportToCSVAndZip(exportList);
-        return HttpUtils.respondBinary(stream, String.format("cc_%d_export.zip", id));
+        return HttpUtils.respondBinary(stream, "cc_%d_export.zip".formatted(id));
     }
 
     /**
@@ -336,7 +336,7 @@ public class CcController {
     @Consumes(MediaType.APPLICATION_JSON)
     public JobExecutionResource generate(@PathParam("id") final Long id, @PathParam("sourceKey") final String sourceKey) {
         CohortCharacterizationEntity cc = service.findByIdWithLinkedEntities(id);
-        ExceptionUtils.throwNotFoundExceptionIfNull(cc, String.format("There is no cohort characterization with id = %d.", id));
+        ExceptionUtils.throwNotFoundExceptionIfNull(cc, "There is no cohort characterization with id = %d.".formatted(id));
         CheckResult checkResult = runDiagnostics(convertCcToDto(cc));
         if (checkResult.hasCriticalErrors()) {
             throw new RuntimeException("Cannot be generated due to critical errors in design. Call 'check' service for further details");
@@ -479,7 +479,7 @@ public class CcController {
             return Response
                     .ok(baos)
                     .type(MediaType.APPLICATION_OCTET_STREAM)
-                    .header("Content-Disposition", String.format("attachment; filename=\"%s\"", "reports.zip"))
+                    .header("Content-Disposition", "attachment; filename=\"%s\"".formatted("reports.zip"))
                     .build();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
@@ -551,7 +551,7 @@ public class CcController {
         return Response
                 .ok(baos)
                 .type(MediaType.APPLICATION_OCTET_STREAM)
-                .header("Content-Disposition", String.format("attachment; filename=\"cohort_characterization_study_%d_export.zip\"", analysisId))
+                .header("Content-Disposition", "attachment; filename=\"cohort_characterization_study_%d_export.zip\"".formatted(analysisId))
                 .build();
     }
 
@@ -564,7 +564,7 @@ public class CcController {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/")
-    @javax.transaction.Transactional
+    @jakarta.transaction.Transactional
     public void assignTag(@PathParam("id") final long id, final int tagId) {
         service.assignTag(id, tagId);
     }
@@ -578,7 +578,7 @@ public class CcController {
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/{tagId}")
-    @javax.transaction.Transactional
+    @jakarta.transaction.Transactional
     public void unassignTag(@PathParam("id") final long id, @PathParam("tagId") final int tagId) {
         service.unassignTag(id, tagId);
     }
@@ -592,7 +592,7 @@ public class CcController {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/protectedtag/")
-    @javax.transaction.Transactional
+    @jakarta.transaction.Transactional
     public void assignPermissionProtectedTag(@PathParam("id") final long id, final int tagId) {
         service.assignTag(id, tagId);
     }
@@ -606,7 +606,7 @@ public class CcController {
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/protectedtag/{tagId}")
-    @javax.transaction.Transactional
+    @jakarta.transaction.Transactional
     public void unassignPermissionProtectedTag(@PathParam("id") final long id, @PathParam("tagId") final int tagId) {
         service.unassignTag(id, tagId);
     }
@@ -714,8 +714,8 @@ public class CcController {
     private Integer convertPresetAnalysisIdToSystem(Integer analysisId) {
 
         FeAnalysisEntity fe = feAnalysisService.findById(analysisId).orElse(null);
-        if (fe instanceof FeAnalysisWithStringEntity && fe.isPreset()) {
-            FeatureExtraction.PrespecAnalysis prespecAnalysis = FeatureExtraction.getNameToPrespecAnalysis().get(((FeAnalysisWithStringEntity) fe).getDesign());
+        if (fe instanceof FeAnalysisWithStringEntity entity && fe.isPreset()) {
+            FeatureExtraction.PrespecAnalysis prespecAnalysis = FeatureExtraction.getNameToPrespecAnalysis().get(entity.getDesign());
             return prespecAnalysis.analysisId;
         }
         return analysisId;

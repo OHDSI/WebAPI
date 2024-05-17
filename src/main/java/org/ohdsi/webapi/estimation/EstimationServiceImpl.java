@@ -54,10 +54,10 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
-import javax.ws.rs.InternalServerErrorException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.InternalServerErrorException;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -429,8 +429,8 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         final Source source = sourceService.findBySourceKey(sourceKey);
         final Integer analysisId = estimation.getId();
 
-        String packageName = String.format("EstimationAnalysis.%s", SessionUtils.sessionId());
-        String packageFilename = String.format("estimation_study_%d.zip", analysisId);
+        String packageName = "EstimationAnalysis.%s".formatted(SessionUtils.sessionId());
+        String packageFilename = "estimation_study_%d.zip".formatted(analysisId);
         List<AnalysisFile> analysisFiles = new ArrayList<>();
         AnalysisFile analysisFile = new AnalysisFile();
         analysisFile.setFileName(packageFilename);
@@ -444,7 +444,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
 
         JobParametersBuilder builder = prepareJobParametersBuilder(source, analysisId, packageName, packageFilename)
                 .addString(ESTIMATION_ANALYSIS_ID, analysisId.toString())
-                .addString(JOB_NAME, String.format("Generating Estimation Analysis %d using %s (%s)", analysisId, source.getSourceName(), source.getSourceKey()));
+                .addString(JOB_NAME, "Generating Estimation Analysis %d using %s (%s)".formatted(analysisId, source.getSourceName(), source.getSourceKey()));
 
         Job generateAnalysisJob = generationUtils.buildJobForExecutionEngineBasedAnalysisTasklet(
                 GENERATE_ESTIMATION_ANALYSIS,

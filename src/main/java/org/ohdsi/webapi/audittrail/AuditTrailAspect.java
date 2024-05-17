@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Component
 @Aspect
@@ -53,13 +53,14 @@ public class AuditTrailAspect {
     public void webapiGetInfoPointcut() {
     }
 
-    @Around("(restGetPointcut() || restPostPointcut() || restPutPointcut() || restDeletePointcut() || irResource())" +
-            " && " +
-            // exclude system calls
-            "!notificationsPointcut() && " +
-            "!executionenginePointcut() && " +
-            "!vocabularyServiceGetInfoPointcut() && " +
-            "!webapiGetInfoPointcut()")
+    @Around("""
+            (restGetPointcut() || restPostPointcut() || restPutPointcut() || restDeletePointcut() || irResource())\
+             && \
+            !notificationsPointcut() && \
+            !executionenginePointcut() && \
+            !vocabularyServiceGetInfoPointcut() && \
+            !webapiGetInfoPointcut()\
+            """)
     public Object auditLog(final ProceedingJoinPoint joinPoint) throws Throwable {
         final HttpServletRequest request = getHttpServletRequest();
 

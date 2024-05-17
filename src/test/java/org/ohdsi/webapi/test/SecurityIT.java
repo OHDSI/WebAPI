@@ -7,10 +7,10 @@ import com.google.common.collect.ImmutableMap;
 import org.glassfish.jersey.server.model.Parameter;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.ErrorCollector;
 import org.ohdsi.webapi.JerseyConfig;
 import org.slf4j.Logger;
@@ -21,7 +21,7 @@ import org.springframework.http.*;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 import java.net.URI;
 import java.util.*;
 
@@ -52,13 +52,13 @@ public class SecurityIT extends WebApiIT {
 
     private final Logger LOG = LoggerFactory.getLogger(SecurityIT.class);
 
-    @BeforeClass
+    @BeforeAll
     public static void prepare() {
         
         System.setProperty("security.provider", "AtlasRegularSecurity");
     }
 
-    @AfterClass
+    @AfterAll
     public static void disableSecurity() {
 
         System.setProperty("security.provider", "DisabledSecurity");

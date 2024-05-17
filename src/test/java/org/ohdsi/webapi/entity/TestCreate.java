@@ -2,8 +2,8 @@ package org.ohdsi.webapi.entity;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
 
 public interface TestCreate extends EntityMethods {

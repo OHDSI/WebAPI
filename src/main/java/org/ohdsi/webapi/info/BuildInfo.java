@@ -20,7 +20,7 @@ public class BuildInfo {
 
     public BuildInfo(BuildProperties buildProperties, @Value("${build.number}") final String buildNumber) {
 
-        this.artifactVersion = String.format("%s %s", buildProperties.getArtifact(), buildProperties.getVersion());
+        this.artifactVersion = "%s %s".formatted(buildProperties.getArtifact(), buildProperties.getVersion());
         this.build = buildNumber;
         this.timestamp = buildProperties.getTime().toString();
         this.branch = buildProperties.get("git.branch");

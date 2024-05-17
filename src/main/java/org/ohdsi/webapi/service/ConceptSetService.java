@@ -20,10 +20,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import javax.transaction.Transactional;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
@@ -122,7 +122,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Produces(MediaType.APPLICATION_JSON)
     public ConceptSetDTO getConceptSet(@PathParam("id") final int id) {
         ConceptSet conceptSet = getConceptSetRepository().findById(id);
-        ExceptionUtils.throwNotFoundExceptionIfNull(conceptSet, String.format("There is no concept set with id = %d.", id));
+        ExceptionUtils.throwNotFoundExceptionIfNull(conceptSet, "There is no concept set with id = %d.".formatted(id));
         return conversionService.convert(conceptSet, ConceptSetDTO.class);
     }
 
@@ -839,7 +839,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 
     private void checkVersion(int id, int version, boolean checkOwnerShip) {
         Version conceptSetVersion = versionService.getById(VersionType.CONCEPT_SET, id, version);
-        ExceptionUtils.throwNotFoundExceptionIfNull(conceptSetVersion, String.format("There is no concept set version with id = %d.", version));
+        ExceptionUtils.throwNotFoundExceptionIfNull(conceptSetVersion, "There is no concept set version with id = %d.".formatted(version));
 
         ConceptSet entity = getConceptSetRepository().findOne(id);
         if (checkOwnerShip) {

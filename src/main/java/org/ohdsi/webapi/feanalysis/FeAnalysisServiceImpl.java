@@ -22,7 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.ws.rs.NotFoundException;
+import jakarta.ws.rs.NotFoundException;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -163,12 +163,10 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
 
         checkEntityLocked(savedEntity);
         savedEntity.setDescr(updatedEntity.getDescr());
-        if (savedEntity instanceof FeAnalysisWithCriteriaEntity && updatedEntity instanceof FeAnalysisWithCriteriaEntity) {
-          FeAnalysisWithCriteriaEntity<?> updatedWithCriteriaEntity = (FeAnalysisWithCriteriaEntity) updatedEntity,
-                  savedWithCriteria = (FeAnalysisWithCriteriaEntity) savedEntity;
+        if (savedEntity instanceof FeAnalysisWithCriteriaEntity savedWithCriteria && updatedEntity instanceof FeAnalysisWithCriteriaEntity updatedWithCriteriaEntity) {
           removeFeAnalysisCriteriaEntities(savedWithCriteria, updatedWithCriteriaEntity);
           updatedWithCriteriaEntity.getDesign().forEach(criteria -> criteria.setFeatureAnalysis(savedWithCriteria));
-          createOrUpdateConceptSetEntity((FeAnalysisWithCriteriaEntity) savedEntity, updatedWithCriteriaEntity.getConceptSetEntity());
+          createOrUpdateConceptSetEntity(savedWithCriteria, updatedWithCriteriaEntity.getConceptSetEntity());
         }
         savedEntity.setDesign(updatedEntity.getDesign());
         if (Objects.nonNull(updatedEntity.getDomain())) {
@@ -263,7 +261,7 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
 
     private void checkEntityLocked(FeAnalysisEntity entity) {
         if (entity.getLocked() == Boolean.TRUE) {
-            throw new IllegalArgumentException(String.format("Feature analysis %s is locked.", entity.getName()));
+            throw new IllegalArgumentException("Feature analysis %s is locked.".formatted(entity.getName()));
         }
     }
 

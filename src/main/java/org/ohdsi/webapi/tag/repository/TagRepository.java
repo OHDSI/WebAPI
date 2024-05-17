@@ -13,40 +13,52 @@ public interface TagRepository extends JpaRepository<Tag, Integer> {
 
     List<Tag> findByIdIn(List<Integer> ids);
 
-    @Query("SELECT ct.assetId.tagId as id, " +
-            "COUNT(ct.assetId.tagId) AS count " +
-            "FROM CohortTag ct " +
-            "GROUP BY ct.assetId.tagId")
+    @Query("""
+            SELECT ct.assetId.tagId as id, \
+            COUNT(ct.assetId.tagId) AS count \
+            FROM CohortTag ct \
+            GROUP BY ct.assetId.tagId\
+            """)
     List<TagInfo> findCohortTagInfo();
 
-    @Query("SELECT cct.assetId.tagId as id, " +
-            "COUNT(cct.assetId.tagId) AS count " +
-            "FROM CohortCharacterizationTag cct " +
-            "GROUP BY cct.assetId.tagId")
+    @Query("""
+            SELECT cct.assetId.tagId as id, \
+            COUNT(cct.assetId.tagId) AS count \
+            FROM CohortCharacterizationTag cct \
+            GROUP BY cct.assetId.tagId\
+            """)
     List<TagInfo> findCcTagInfo();
 
-    @Query("SELECT cst.assetId.tagId as id, " +
-            "COUNT(cst.assetId.tagId) AS count " +
-            "FROM ConceptSetTag cst " +
-            "GROUP BY cst.assetId.tagId")
+    @Query("""
+            SELECT cst.assetId.tagId as id, \
+            COUNT(cst.assetId.tagId) AS count \
+            FROM ConceptSetTag cst \
+            GROUP BY cst.assetId.tagId\
+            """)
     List<TagInfo> findConceptSetTagInfo();
 
-    @Query("SELECT it.assetId.tagId as id, " +
-            "COUNT(it.assetId.tagId) AS count " +
-            "FROM IrTag it " +
-            "GROUP BY it.assetId.tagId")
+    @Query("""
+            SELECT it.assetId.tagId as id, \
+            COUNT(it.assetId.tagId) AS count \
+            FROM IrTag it \
+            GROUP BY it.assetId.tagId\
+            """)
     List<TagInfo> findIrTagInfo();
 
-    @Query("SELECT pt.assetId.tagId as id, " +
-            "COUNT(pt.assetId.tagId) AS count " +
-            "FROM PathwayTag pt " +
-            "GROUP BY pt.assetId.tagId")
+    @Query("""
+            SELECT pt.assetId.tagId as id, \
+            COUNT(pt.assetId.tagId) AS count \
+            FROM PathwayTag pt \
+            GROUP BY pt.assetId.tagId\
+            """)
     List<TagInfo> findPathwayTagInfo();
 
-    @Query("SELECT rt.assetId.tagId as id, " +
-            "COUNT(rt.assetId.tagId) AS count " +
-            "FROM ReusableTag rt " +
-            "GROUP BY rt.assetId.tagId")
+    @Query("""
+            SELECT rt.assetId.tagId as id, \
+            COUNT(rt.assetId.tagId) AS count \
+            FROM ReusableTag rt \
+            GROUP BY rt.assetId.tagId\
+            """)
     List<TagInfo> findReusableTagInfo();
 
     @Query("SELECT t FROM Tag t WHERE t.mandatory = 'TRUE'")

@@ -32,14 +32,12 @@ import org.dbunit.dataset.IDataSet;
 import org.dbunit.dataset.ITable;
 import org.dbunit.ext.postgresql.PostgresqlDataTypeFactory;
 import org.dbunit.operation.DatabaseOperation;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertEquals;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
@@ -103,32 +101,32 @@ public class PathwayAnalysisTest extends AbstractDatabaseTest {
     return con;
   }
   
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     if (!isSourceInitialized) {
       // one-time setup of CDM source
-      truncateTable(String.format("%s.%s", ohdsiSchema, "source"));
-      resetSequence(String.format("%s.%s", ohdsiSchema, "source_sequence"));
+      truncateTable("%s.%s".formatted(ohdsiSchema, "source"));
+      resetSequence("%s.%s".formatted(ohdsiSchema, "source_sequence"));
       Source s = sourceRepository.saveAndFlush(getCdmSource());
       SOURCE_ID = s.getSourceId();
       isSourceInitialized = true;
     }
     // perform the following before each test
-    truncateTable(String.format("%s.%s", ohdsiSchema, "cohort_definition"));
-    resetSequence(String.format("%s.%s", ohdsiSchema, "cohort_definition_sequence"));
-    truncateTable(String.format("%s.%s", ohdsiSchema, "pathway_analysis"));
-    resetSequence(String.format("%s.%s", ohdsiSchema, "pathway_analysis_sequence"));
-    truncateTable(String.format("%s.%s", ohdsiSchema, "generation_cache"));
+    truncateTable("%s.%s".formatted(ohdsiSchema, "cohort_definition"));
+    resetSequence("%s.%s".formatted(ohdsiSchema, "cohort_definition_sequence"));
+    truncateTable("%s.%s".formatted(ohdsiSchema, "pathway_analysis"));
+    resetSequence("%s.%s".formatted(ohdsiSchema, "pathway_analysis_sequence"));
+    truncateTable("%s.%s".formatted(ohdsiSchema, "generation_cache"));
     prepareCdmSchema();
     prepareResultSchema();    
   }
 
-  @After
+  @AfterEach
   public void tearDownDB() {
-    truncateTable(String.format("%s.%s", ohdsiSchema, "cohort_definition"));
-    resetSequence(String.format("%s.%s", ohdsiSchema, "cohort_definition_sequence"));
-    truncateTable(String.format("%s.%s", ohdsiSchema, "pathway_analysis"));
-    resetSequence(String.format("%s.%s", ohdsiSchema, "pathway_analysis_sequence"));
+    truncateTable("%s.%s".formatted(ohdsiSchema, "cohort_definition"));
+    resetSequence("%s.%s".formatted(ohdsiSchema, "cohort_definition_sequence"));
+    truncateTable("%s.%s".formatted(ohdsiSchema, "pathway_analysis"));
+    resetSequence("%s.%s".formatted(ohdsiSchema, "pathway_analysis_sequence"));
   }
 
   private static void prepareResultSchema() {
@@ -142,8 +140,8 @@ public class PathwayAnalysisTest extends AbstractDatabaseTest {
   private static void prepareSchema(final String schemaName, final String schemaToken, final Collection<String> schemaPaths) {
     StringBuilder ddl = new StringBuilder();
     
-    ddl.append(String.format("DROP SCHEMA IF EXISTS %s CASCADE;", schemaName));
-    ddl.append(String.format("CREATE SCHEMA %s;", schemaName));
+    ddl.append("DROP SCHEMA IF EXISTS %s CASCADE;".formatted(schemaName));
+    ddl.append("CREATE SCHEMA %s;".formatted(schemaName));
     schemaPaths.forEach(sqlPath -> ddl.append(ResourceHelper.GetResourceAsString(sqlPath)).append("\n"));
     String resultSql = SqlRender.renderSql(ddl.toString(), new String[]{schemaToken}, new String[]{schemaName});
     String ddlSql = SqlTranslate.translateSql(resultSql, DBMSType.POSTGRESQL.getOhdsiDB());    
@@ -187,7 +185,7 @@ public class PathwayAnalysisTest extends AbstractDatabaseTest {
     final IDatabaseConnection dbUnitCon = getConnection();
     final IDataSet ds = DataSetFactory.createDataSet(datasetPaths);
 
-    assertNotNull("No dataset found", ds);
+    assertNotNull(ds, "No dataset found");
 
     try {
       DatabaseOperation.CLEAN_INSERT.execute(dbUnitCon, ds); // clean load of the DB. Careful, clean means "delete the old stuff"
@@ -246,12 +244,12 @@ public class PathwayAnalysisTest extends AbstractDatabaseTest {
     // Validate results
     // Load actual records from cohort table
     final IDatabaseConnection dbUnitCon = getConnection();
-    final ITable pathwayCodes = dbUnitCon.createQueryTable(RESULT_SCHEMA_NAME + ".pathway_analysis_codes", 
-            String.format("SELECT code, name, is_combo from %s ORDER BY code, name, is_combo", RESULT_SCHEMA_NAME + ".pathway_analysis_codes"));
-    final ITable pathwayPaths = dbUnitCon.createQueryTable(RESULT_SCHEMA_NAME + ".pathway_analysis_paths", 
-            String.format("SELECT target_cohort_id, step_1, step_2, step_3, step_4, step_5, step_6, step_7, step_8, step_9, step_10, count_value from %s ORDER BY target_cohort_id, step_1, step_2, step_3, step_4, step_5", RESULT_SCHEMA_NAME + ".pathway_analysis_paths"));
-    final ITable pathwayStats = dbUnitCon.createQueryTable(RESULT_SCHEMA_NAME + ".pathway_analysis_stats", 
-            String.format("SELECT target_cohort_id, target_cohort_count, pathways_count from %s ORDER BY target_cohort_id", RESULT_SCHEMA_NAME + ".pathway_analysis_stats"));
+    final ITable pathwayCodes = dbUnitCon.createQueryTable(RESULT_SCHEMA_NAME + ".pathway_analysis_codes",
+            "SELECT code, name, is_combo from %s ORDER BY code, name, is_combo".formatted(RESULT_SCHEMA_NAME + ".pathway_analysis_codes"));
+    final ITable pathwayPaths = dbUnitCon.createQueryTable(RESULT_SCHEMA_NAME + ".pathway_analysis_paths",
+            "SELECT target_cohort_id, step_1, step_2, step_3, step_4, step_5, step_6, step_7, step_8, step_9, step_10, count_value from %s ORDER BY target_cohort_id, step_1, step_2, step_3, step_4, step_5".formatted(RESULT_SCHEMA_NAME + ".pathway_analysis_paths"));
+    final ITable pathwayStats = dbUnitCon.createQueryTable(RESULT_SCHEMA_NAME + ".pathway_analysis_stats",
+            "SELECT target_cohort_id, target_cohort_count, pathways_count from %s ORDER BY target_cohort_id".formatted(RESULT_SCHEMA_NAME + ".pathway_analysis_stats"));
     
     final IDataSet actualDataSet = new CompositeDataSet(new ITable[] {pathwayCodes, pathwayPaths, pathwayStats});
 
@@ -308,12 +306,12 @@ public class PathwayAnalysisTest extends AbstractDatabaseTest {
     // Validate results
     // Load actual records from cohort table
     final IDatabaseConnection dbUnitCon = getConnection();
-    final ITable pathwayCodes = dbUnitCon.createQueryTable(RESULT_SCHEMA_NAME + ".pathway_analysis_codes", 
-            String.format("SELECT code, name, is_combo from %s ORDER BY code, name, is_combo", RESULT_SCHEMA_NAME + ".pathway_analysis_codes"));
-    final ITable pathwayPaths = dbUnitCon.createQueryTable(RESULT_SCHEMA_NAME + ".pathway_analysis_paths", 
-            String.format("SELECT target_cohort_id, step_1, step_2, step_3, step_4, step_5, step_6, step_7, step_8, step_9, step_10, count_value from %s ORDER BY target_cohort_id, step_1, step_2, step_3, step_4, step_5", RESULT_SCHEMA_NAME + ".pathway_analysis_paths"));
-    final ITable pathwayStats = dbUnitCon.createQueryTable(RESULT_SCHEMA_NAME + ".pathway_analysis_stats", 
-            String.format("SELECT target_cohort_id, target_cohort_count, pathways_count from %s ORDER BY target_cohort_id", RESULT_SCHEMA_NAME + ".pathway_analysis_stats"));
+    final ITable pathwayCodes = dbUnitCon.createQueryTable(RESULT_SCHEMA_NAME + ".pathway_analysis_codes",
+            "SELECT code, name, is_combo from %s ORDER BY code, name, is_combo".formatted(RESULT_SCHEMA_NAME + ".pathway_analysis_codes"));
+    final ITable pathwayPaths = dbUnitCon.createQueryTable(RESULT_SCHEMA_NAME + ".pathway_analysis_paths",
+            "SELECT target_cohort_id, step_1, step_2, step_3, step_4, step_5, step_6, step_7, step_8, step_9, step_10, count_value from %s ORDER BY target_cohort_id, step_1, step_2, step_3, step_4, step_5".formatted(RESULT_SCHEMA_NAME + ".pathway_analysis_paths"));
+    final ITable pathwayStats = dbUnitCon.createQueryTable(RESULT_SCHEMA_NAME + ".pathway_analysis_stats",
+            "SELECT target_cohort_id, target_cohort_count, pathways_count from %s ORDER BY target_cohort_id".formatted(RESULT_SCHEMA_NAME + ".pathway_analysis_stats"));
     
     final IDataSet actualDataSet = new CompositeDataSet(new ITable[] {pathwayCodes, pathwayPaths, pathwayStats});
 

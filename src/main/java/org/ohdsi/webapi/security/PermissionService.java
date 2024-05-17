@@ -2,6 +2,7 @@ package org.ohdsi.webapi.security;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
+import jakarta.annotation.PostConstruct;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.security.dto.RoleDTO;
@@ -31,7 +32,6 @@ import org.springframework.data.repository.support.Repositories;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.annotation.PostConstruct;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
@@ -124,7 +124,7 @@ public class PermissionService {
             .findFirst()
             .orElseThrow(() -> new RuntimeException("Cannot retrieve common entity"))
             .getReturnType();
-        CommonEntity entity = (CommonEntity) entityRepository.getOne((Serializable) conversionService.convert(entityId, idClazz));
+        CommonEntity entity = (CommonEntity) entityRepository.getById((Serializable) conversionService.convert(entityId, idClazz));
 
         if (!isCurrentUserOwnerOf(entity)) {
             throw new UnauthorizedException();
@@ -164,11 +164,11 @@ public class PermissionService {
 
     public String getPermission(String template, Object entityId) {
 
-        return String.format(template, entityId);
+        return template.formatted(entityId);
     }
 
     public String getPermissionSqlTemplate(String template) {
-        return String.format(template, "%%");
+        return template.formatted("%%");
     }
 
     private boolean isCurrentUserOwnerOf(CommonEntity entity) {

@@ -29,13 +29,13 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -221,11 +221,11 @@ public class JobService extends AbstractDaoService {
           .filter(step -> step.getStatus().isRunning())
           .forEach(stepExec -> {
             Step step = ((StepLocator) job).getStep(stepExec.getStepName());
-            if (step instanceof TaskletStep) {
-              Tasklet tasklet = ((TaskletStep) step).getTasklet();
-              if (tasklet instanceof StoppableTasklet) {
+            if (step instanceof TaskletStep taskletStep) {
+              Tasklet tasklet = taskletStep.getTasklet();
+              if (tasklet instanceof StoppableTasklet stoppableTasklet) {
                 StepSynchronizationManager.register(stepExec);
-                ((StoppableTasklet) tasklet).stop();
+                stoppableTasklet.stop();
                 StepSynchronizationManager.release();
               }
             }

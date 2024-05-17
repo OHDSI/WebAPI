@@ -39,7 +39,7 @@ public class ConceptSetVersionToConceptSetVersionFullDTOConverter
 
         ConceptSet conceptSet = conceptSetRepository.findById(source.getAssetId().intValue());
         ExceptionUtils.throwNotFoundExceptionIfNull(conceptSet,
-                String.format("There is no concept set with id = %d.", source.getAssetId()));
+                "There is no concept set with id = %d.".formatted(source.getAssetId()));
 
         ConceptSetVersionFullDTO target = new ConceptSetVersionFullDTO();
         target.setItems(items);

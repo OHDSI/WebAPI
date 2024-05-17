@@ -12,8 +12,8 @@ import static com.cronutils.model.CronType.QUARTZ;
 @Configuration
 public class SchedulerConfiguration {
 
-  @Bean
-  public TaskScheduler taskScheduler() {
+    @Bean
+    TaskScheduler taskScheduler() {
 
     final ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
     taskScheduler.setPoolSize(20);
@@ -21,8 +21,8 @@ public class SchedulerConfiguration {
     return taskScheduler;
   }
 
-  @Bean
-  public CronDefinition cronDefinition() {
+    @Bean
+    CronDefinition cronDefinition() {
 
     return CronDefinitionBuilder.instanceDefinitionFor(QUARTZ);
   }

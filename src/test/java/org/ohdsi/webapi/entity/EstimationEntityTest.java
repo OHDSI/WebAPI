@@ -3,10 +3,10 @@ package org.ohdsi.webapi.entity;
 import com.odysseusinc.arachne.commons.types.DBMSType;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.analysis.AnalysisCohortDefinition;
@@ -31,7 +31,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.ohdsi.analysis.estimation.design.EstimationTypeEnum.COMPARATIVE_COHORT_ANALYSIS;
 import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
 
@@ -52,7 +52,7 @@ public class EstimationEntityTest extends AbstractDatabaseTest implements TestCr
     private EstimationDTO firstSavedDTO;
     private static String PLE_SPECIFICATION;
 
-    @BeforeClass
+    @BeforeAll
     public static void setPleSpecification() throws IOException {
 
         File ple_spec = new File("src/test/resources/ple-specification.json");
@@ -61,19 +61,19 @@ public class EstimationEntityTest extends AbstractDatabaseTest implements TestCr
 
     // in JUnit 4 it's impossible to mark methods inside interface with annotations, it was implemented in JUnit 5. After upgrade it's needed
     // to mark interface methods with @Test, @Before, @After and to remove them from this class
-    @After
+    @AfterEach
     @Override
     public void tearDownDB() {
 
         pleRepository.deleteAll();
     }
 
-    @Before
+    @BeforeEach
     @Override
     public void init() throws Exception {
         TestCreate.super.init();
-        truncateTable(String.format("%s.%s", "public", "source"));
-        resetSequence(String.format("%s.%s", "public", "source_sequence"));
+        truncateTable("%s.%s".formatted("public", "source"));
+        resetSequence("%s.%s".formatted("public", "source_sequence"));
         sourceRepository.saveAndFlush(getCdmSource());
     }
 

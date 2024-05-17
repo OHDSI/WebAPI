@@ -1,8 +1,8 @@
 package org.ohdsi.webapi;
 
-import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.audittrail.listeners.AuditTrailJobListener;
 import org.ohdsi.webapi.common.generation.AutoremoveJobListener;
@@ -76,14 +76,14 @@ public class JobConfig {
     private DataSource dataSource;
     @Autowired
     private AuditTrailJobListener auditTrailJobListener;
-    
+
     @Bean
-    public String batchTablePrefix() {
+    String batchTablePrefix() {
         return this.tablePrefix;
     }
-    
+
     @Bean
-    public TaskExecutor taskExecutor() {
+    TaskExecutor taskExecutor() {
         final ThreadPoolTaskExecutor taskExecutor = new ManagedThreadPoolTaskExecutor();
         taskExecutor.setCorePoolSize(corePoolSize);
         taskExecutor.setMaxPoolSize(maxPoolSize);
@@ -97,28 +97,28 @@ public class JobConfig {
         taskExecutor.afterPropertiesSet();
         return taskExecutor;
     }
-    
+
     @Bean
-    public BatchConfigurer batchConfigurer() {
+    BatchConfigurer batchConfigurer() {
         return new CustomBatchConfigurer(this.dataSource);
     }
-    
+
     @Bean
-    public JobTemplate jobTemplate(final JobLauncher jobLauncher, final JobBuilderFactory jobBuilders,
-                                   final StepBuilderFactory stepBuilders, final Security security) {
+    JobTemplate jobTemplate(final JobLauncher jobLauncher, final JobBuilderFactory jobBuilders,
+                         final StepBuilderFactory stepBuilders, final Security security) {
         return new JobTemplate(jobLauncher, jobBuilders, stepBuilders, security);
     }
-    
+
     @Bean
-    public SearchableJobExecutionDao searchableJobExecutionDao(DataSource dataSource) {
+    SearchableJobExecutionDao searchableJobExecutionDao(DataSource dataSource) {
         JdbcSearchableJobExecutionDao dao = new JdbcSearchableJobExecutionDao();
         dao.setDataSource(dataSource);
         dao.setTablePrefix(JobConfig.this.tablePrefix); 
         return dao;
     }
-    
+
     @Bean
-    public SearchableJobInstanceDao searchableJobInstanceDao(JdbcTemplate jdbcTemplate) {
+    SearchableJobInstanceDao searchableJobInstanceDao(JdbcTemplate jdbcTemplate) {
         JdbcSearchableJobInstanceDao dao = new JdbcSearchableJobInstanceDao();
         dao.setJdbcTemplate(jdbcTemplate);//no setDataSource as in SearchableJobExecutionDao
         dao.setTablePrefix(JobConfig.this.tablePrefix); 
@@ -127,7 +127,7 @@ public class JobConfig {
 
     @Primary
     @Bean
-    public JobBuilderFactory jobBuilders(JobRepository jobRepository) {
+    JobBuilderFactory jobBuilders(JobRepository jobRepository) {
 
         return new JobBuilderFactory(jobRepository) {
             @Override

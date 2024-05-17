@@ -18,14 +18,13 @@ import org.ohdsi.webapi.versioning.domain.VersionType;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.ohdsi.webapi.versioning.service.VersionService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -42,7 +41,6 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
     private final PermissionService permissionService;
     private final VersionService<ReusableVersion> versionService;
 
-    @Autowired
     public ReusableService(
             ReusableRepository reusableRepository,
             EntityManager entityManager,
@@ -193,7 +191,7 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
     private void checkVersion(int id, int version, boolean checkOwnerShip) {
         Version reusableVersion = versionService.getById(VersionType.REUSABLE, id, version);
         ExceptionUtils.throwNotFoundExceptionIfNull(reusableVersion,
-                String.format("There is no reusable version with id = %d.", version));
+                "There is no reusable version with id = %d.".formatted(version));
 
         Reusable entity = this.reusableRepository.findOne(id);
         if (checkOwnerShip) {

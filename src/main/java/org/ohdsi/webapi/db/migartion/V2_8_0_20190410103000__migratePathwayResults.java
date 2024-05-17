@@ -21,7 +21,6 @@ import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.CancelableJdbcTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.stereotype.Component;
@@ -70,7 +69,6 @@ public class V2_8_0_20190410103000__migratePathwayResults implements Application
 		public String name;
 	}
 
-	@Autowired
 	public V2_8_0_20190410103000__migratePathwayResults(final SourceRepository sourceRepository,
 					final MigrationDAO migrationDAO,
 					final Environment env) {
@@ -177,7 +175,7 @@ public class V2_8_0_20190410103000__migratePathwayResults implements Application
 
 			}
 			catch(Exception e) {
-				log.error(String.format("Failed to migration pathways for source: %s (%s)", source.getSourceName(), source.getSourceKey()));
+				log.error("Failed to migration pathways for source: %s (%s)".formatted(source.getSourceName(), source.getSourceKey()));
 			}
 		});
 	}

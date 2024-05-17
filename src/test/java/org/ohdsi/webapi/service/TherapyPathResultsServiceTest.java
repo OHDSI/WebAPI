@@ -1,11 +1,11 @@
 package org.ohdsi.webapi.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -14,7 +14,7 @@ public class TherapyPathResultsServiceTest extends AbstractServiceTest {
   @Autowired
   private TherapyPathResultsService therapyPathResultsService;
 
-  @Before
+  @BeforeEach
   public void before() {
 
     if (therapyPathResultsService == null) {

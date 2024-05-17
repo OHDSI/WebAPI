@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.service;
 
+import jakarta.annotation.PostConstruct;
 import org.ohdsi.webapi.GenerationStatus;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
@@ -25,11 +26,9 @@ import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.batch.repeat.exception.ExceptionHandler;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Objects;
@@ -54,7 +53,6 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
   private final SourceService sourceService;
   private final GenerationCacheHelper generationCacheHelper;
 
-  @Autowired
   public CohortGenerationService(CohortDefinitionRepository cohortDefinitionRepository,
                                  CohortGenerationInfoRepository cohortGenerationInfoRepository,
                                  JobBuilderFactory jobBuilders,
@@ -130,7 +128,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
   private JobParametersBuilder getJobParametersBuilder(Source source, CohortDefinition cohortDefinition) {
 
     JobParametersBuilder builder = new JobParametersBuilder();
-    builder.addString(JOB_NAME, String.format("Generating cohort %d : %s (%s)", cohortDefinition.getId(), source.getSourceName(), source.getSourceKey()));
+    builder.addString(JOB_NAME, "Generating cohort %d : %s (%s)".formatted(cohortDefinition.getId(), source.getSourceName(), source.getSourceKey()));
     builder.addString(TARGET_DATABASE_SCHEMA, SourceUtils.getResultsQualifier(source));
     builder.addString(SESSION_ID, SessionUtils.sessionId());
     builder.addString(COHORT_DEFINITION_ID, String.valueOf(cohortDefinition.getId()));

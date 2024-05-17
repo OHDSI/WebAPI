@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.executionengine.service;
 
 import com.odysseusinc.arachne.execution_engine_common.util.CommonFileUtils;
+import jakarta.annotation.PostConstruct;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.collections.map.HashedMap;
@@ -13,7 +14,6 @@ import org.ohdsi.webapi.executionengine.entity.AnalysisResultFileContentList;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;

@@ -1,8 +1,6 @@
 package org.ohdsi.webapi.common.orm;
 
 import org.hibernate.type.AbstractSingleColumnStandardBasicType;
-import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
-import org.hibernate.type.descriptor.sql.SqlTypeDescriptor;
 import org.hibernate.type.descriptor.sql.VarcharTypeDescriptor;
 import org.hibernate.usertype.DynamicParameterizedType;
 import org.slf4j.Logger;

@@ -138,7 +138,7 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
                     cleanupManager.cleanupTempTables();
                 }
             });
-            String sql = String.format(COPY_CACHED_RESULTS, SourceUtils.getTempQualifier(source), targetTable, cd.getId(), res.getSql());
+            String sql = COPY_CACHED_RESULTS.formatted(SourceUtils.getTempQualifier(source), targetTable, cd.getId(), res.getSql());
             cancelableJdbcTemplate.batchUpdate(stmtCancel, sql);
             statementCancels.remove(stmtCancel);
         } catch (StatementCancelException ignored) {

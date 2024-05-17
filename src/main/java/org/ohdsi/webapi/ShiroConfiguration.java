@@ -22,7 +22,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.servlet.Filter;
+import jakarta.servlet.Filter;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -45,7 +45,7 @@ public class ShiroConfiguration {
     protected ApplicationEventPublisher eventPublisher;
 
     @Bean
-    public ShiroFilterFactoryBean shiroFilter(Security security, LockoutPolicy lockoutPolicy) {
+    ShiroFilterFactoryBean shiroFilter(Security security, LockoutPolicy lockoutPolicy) {
 
         ShiroFilterFactoryBean shiroFilter = new ShiroFilterFactoryBean();
         shiroFilter.setSecurityManager(securityManager(security, lockoutPolicy));
@@ -59,7 +59,7 @@ public class ShiroConfiguration {
     }
 
     @Bean
-    public DefaultWebSecurityManager securityManager(Security security, LockoutPolicy lockoutPolicy) {
+    DefaultWebSecurityManager securityManager(Security security, LockoutPolicy lockoutPolicy) {
 
         Set<Realm> realmsForAuthentication = security.getRealms();
         Collection<Realm> realmsForAuthorization = getJwtAuthRealmForAuthorization(security);
@@ -79,28 +79,28 @@ public class ShiroConfiguration {
 
     @Bean
     @ConditionalOnExpression("#{!'${security.provider}'.equals('AtlasRegularSecurity')}")
-    public LockoutPolicy noLockoutPolicy() {
+    LockoutPolicy noLockoutPolicy() {
 
         return new NoLockoutPolicy();
     }
 
     @Bean
     @ConditionalOnProperty(name = "security.provider", havingValue = "AtlasRegularSecurity")
-    public LockoutPolicy lockoutPolicy() {
+    LockoutPolicy lockoutPolicy() {
 
         return new DefaultLockoutPolicy(lockoutStrategy(), maxLoginAttempts, eventPublisher);
     }
 
     @Bean
     @ConditionalOnProperty(name = "security.provider", havingValue = "AtlasRegularSecurity")
-    public LockoutStrategy lockoutStrategy() {
+    LockoutStrategy lockoutStrategy() {
 
         return new ExponentLockoutStrategy(initialDuration, increment, maxLoginAttempts);
     }
 
     @Bean
     @ConditionalOnMissingBean(value = DisabledSecurity.class)
-    public DataSourceAccessBeanPostProcessor dataSourceAccessBeanPostProcessor(DataSourceAccessParameterResolver parameterResolver) {
+    DataSourceAccessBeanPostProcessor dataSourceAccessBeanPostProcessor(DataSourceAccessParameterResolver parameterResolver) {
 
         return new DataSourceAccessBeanPostProcessor(parameterResolver, proxyTargetClass);
     }

@@ -132,10 +132,10 @@ public class ControlImpl extends RLangClassImpl implements Control {
      */
     public void setFold(Object fold) {
         if (fold != null) {
-            if (fold instanceof Integer) {
-                this.fold = (Integer) fold;
-            } else if (fold instanceof BigDecimal) {
-                this.fold = ((BigDecimal) fold).intValue();
+            if (fold instanceof Integer integer) {
+                this.fold = integer;
+            } else if (fold instanceof BigDecimal decimal) {
+                this.fold = decimal.intValue();
             } else {
                 throw new InputMismatchException("Expected Integer or BigDecimal");
             }
@@ -199,10 +199,10 @@ public class ControlImpl extends RLangClassImpl implements Control {
      */
     public void setGridSteps(Object gridSteps) {
         if (gridSteps != null) {
-            if (gridSteps instanceof Integer) {
-                this.gridSteps = (Integer) gridSteps;
-            } else if (gridSteps instanceof BigDecimal) {
-                this.gridSteps = ((BigDecimal) gridSteps).intValue();
+            if (gridSteps instanceof Integer integer) {
+                this.gridSteps = integer;
+            } else if (gridSteps instanceof BigDecimal decimal) {
+                this.gridSteps = decimal.intValue();
             } else {
                 throw new InputMismatchException("Expected Integer or BigDecimal");
             }
@@ -233,10 +233,10 @@ public class ControlImpl extends RLangClassImpl implements Control {
      */
     public void setCvRepetitions(Object cvRepetitions) {
         if (cvRepetitions != null) {
-            if (cvRepetitions instanceof Integer) {
-                this.cvRepetitions = (Integer) cvRepetitions;
-            } else if (cvRepetitions instanceof BigDecimal) {
-                this.cvRepetitions = ((BigDecimal) cvRepetitions).intValue();
+            if (cvRepetitions instanceof Integer integer) {
+                this.cvRepetitions = integer;
+            } else if (cvRepetitions instanceof BigDecimal decimal) {
+                this.cvRepetitions = decimal.intValue();
             } else {
                 throw new InputMismatchException("Expected Integer or BigDecimal");
             }
@@ -262,10 +262,10 @@ public class ControlImpl extends RLangClassImpl implements Control {
      */
     public void setMinCVData(Object minCVData) {
         if (minCVData != null) {
-            if (minCVData instanceof Integer) {
-                this.minCVData = (Integer) minCVData;
-            } else if (minCVData instanceof BigDecimal) {
-                this.minCVData = ((BigDecimal) minCVData).intValue();
+            if (minCVData instanceof Integer integer) {
+                this.minCVData = integer;
+            } else if (minCVData instanceof BigDecimal decimal) {
+                this.minCVData = decimal.intValue();
             } else {
                 throw new InputMismatchException("Expected Integer or BigDecimal");
             }
@@ -312,10 +312,10 @@ public class ControlImpl extends RLangClassImpl implements Control {
      */
     public void setThreads(Object threads) {
         if (threads != null) {
-            if (threads instanceof Integer) {
-                this.threads = (Integer) threads;
-            } else if (threads instanceof BigDecimal) {
-                this.threads = ((BigDecimal) threads).intValue();
+            if (threads instanceof Integer integer) {
+                this.threads = integer;
+            } else if (threads instanceof BigDecimal decimal) {
+                this.threads = decimal.intValue();
             } else {
                 throw new InputMismatchException("Expected Integer or BigDecimal");
             }
@@ -342,10 +342,10 @@ public class ControlImpl extends RLangClassImpl implements Control {
      */
     public void setSeed(Object seed) {
         if (seed != null) {
-            if (seed instanceof Integer) {
-                this.seed = (Integer) seed;
-            } else if (seed instanceof BigDecimal) {
-                this.seed = ((BigDecimal) seed).intValue();
+            if (seed instanceof Integer integer) {
+                this.seed = integer;
+            } else if (seed instanceof BigDecimal decimal) {
+                this.seed = decimal.intValue();
             } else {
                 throw new InputMismatchException("Expected Integer or BigDecimal");
             }
@@ -498,10 +498,10 @@ public class ControlImpl extends RLangClassImpl implements Control {
      */
     public void setMaxBoundCount(Object maxBoundCount) {
         if (maxBoundCount != null) {
-            if (maxBoundCount instanceof Integer) {
-                this.maxBoundCount = (Integer) maxBoundCount;
-            } else if (maxBoundCount instanceof BigDecimal) {
-                this.maxBoundCount = ((BigDecimal) maxBoundCount).intValue();
+            if (maxBoundCount instanceof Integer integer) {
+                this.maxBoundCount = integer;
+            } else if (maxBoundCount instanceof BigDecimal decimal) {
+                this.maxBoundCount = decimal.intValue();
             } else {
                 throw new InputMismatchException("Expected Integer or BigDecimal");
             }

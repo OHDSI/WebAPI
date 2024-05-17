@@ -1,12 +1,11 @@
 package org.ohdsi.webapi.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.util.regex.Pattern;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.ohdsi.webapi.cohortresults.ExposureCohortSearch;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +15,7 @@ public class CohortResultsServiceTest extends AbstractSpringBootServiceTest {
   @Autowired
   private CohortResultsService cohortResultsService;
 
-  @Before
+  @BeforeEach
   public void before() {
 
     if (cohortResultsService == null) {
@@ -24,28 +23,36 @@ public class CohortResultsServiceTest extends AbstractSpringBootServiceTest {
     }
   }
 
-  @Test(expected = Exception.class)
+  @Test
   public void getCohortSpecificResultsRefreshIsTrue() {
+      assertThrows(Exception.class, () -> {
 
-    cohortResultsService.getCohortSpecificResults(-1, null, null, null, true);
+          cohortResultsService.getCohortSpecificResults(-1, null, null, null, true);
+      });
   }
 
-  @Test(expected = Exception.class)
+  @Test
   public void getCohortSpecificResultsRefreshIsFalse() {
+      assertThrows(Exception.class, () -> {
 
-    cohortResultsService.getCohortSpecificResults(-1, null, null, null, false);
+          cohortResultsService.getCohortSpecificResults(-1, null, null, null, false);
+      });
   }
 
-  @Test(expected = Exception.class)
+  @Test
   public void getDashboardRefreshIsTrue() {
+      assertThrows(Exception.class, () -> {
 
-    cohortResultsService.getDashboard(-1, null, null, true, null, true);
+          cohortResultsService.getDashboard(-1, null, null, true, null, true);
+      });
   }
 
-  @Test(expected = Exception.class)
+  @Test
   public void getDashboardRefreshIsFalse() {
+      assertThrows(Exception.class, () -> {
 
-    cohortResultsService.getDashboard(-1, null, null, true, null, false);
+          cohortResultsService.getDashboard(-1, null, null, true, null, false);
+      });
   }
 
   @Test

@@ -1,8 +1,10 @@
 package org.ohdsi.webapi.util;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.ohdsi.webapi.source.Source;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class PreparedStatementRendererTest {
 
@@ -14,7 +16,7 @@ public class PreparedStatementRendererTest {
   private String[] sqlVariableNames;
   private Object[] sqlVariableValues;
 
-  @org.junit.Before
+  @org.junit.jupiter.api.BeforeEach
   public void before() {
 
     sourceDialect = "sql server";
@@ -26,49 +28,57 @@ public class PreparedStatementRendererTest {
     sqlVariableValues = new Object[]{"1230"};
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void validateArgumentsWithNullVariableValues() {
+      assertThrows(IllegalArgumentException.class, () -> {
 
-    this.sqlVariableValues = null;
-    new PreparedStatementRenderer(source, resourcePath, tableQualifierName, tableQualifierValue, sqlVariableNames, sqlVariableValues);
+          this.sqlVariableValues = null;
+          new PreparedStatementRenderer(source, resourcePath, tableQualifierName, tableQualifierValue, sqlVariableNames, sqlVariableValues);
+      });
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void validateArgumentsWithNullVariableNames() {
+      assertThrows(IllegalArgumentException.class, () -> {
 
-    this.sqlVariableNames = null;
-    new PreparedStatementRenderer(source, resourcePath, tableQualifierName, tableQualifierValue, sqlVariableNames, sqlVariableValues);
+          this.sqlVariableNames = null;
+          new PreparedStatementRenderer(source, resourcePath, tableQualifierName, tableQualifierValue, sqlVariableNames, sqlVariableValues);
+      });
   }
 
-  @Test()
+  @Test
   public void validateArgumentsWithNullSourceDialect() {
 
     sourceDialect = null;
     new PreparedStatementRenderer(source, resourcePath, tableQualifierName, tableQualifierValue, sqlVariableNames, sqlVariableValues);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void validateArgumentsWithNullTableQualifierValue() {
+      assertThrows(IllegalArgumentException.class, () -> {
 
-    tableQualifierValue = null;
-    new PreparedStatementRenderer(source, resourcePath, tableQualifierName, tableQualifierValue, sqlVariableNames, sqlVariableValues);
+          tableQualifierValue = null;
+          new PreparedStatementRenderer(source, resourcePath, tableQualifierName, tableQualifierValue, sqlVariableNames, sqlVariableValues);
+      });
   }
 
   @Test
   public void validateArguments() {
 
     PreparedStatementRenderer u = new PreparedStatementRenderer(source, resourcePath, tableQualifierName, tableQualifierValue, sqlVariableNames, sqlVariableValues);
-    Assert.assertNotNull(u);
-    Assert.assertNotNull(u.getSql());
-    Assert.assertNotNull(u.getSetter());
-    Assert.assertNotNull(u.getOrderedParamsList());
+    Assertions.assertNotNull(u);
+    Assertions.assertNotNull(u.getSql());
+    Assertions.assertNotNull(u.getSetter());
+    Assertions.assertNotNull(u.getOrderedParamsList());
   }
 
-  @Test(expected = RuntimeException.class)
+  @Test
   public void validateArgumentsWithInvalidResourcePath() {
+      assertThrows(RuntimeException.class, () -> {
 
-    resourcePath += "res.sql";
-    new PreparedStatementRenderer(source, resourcePath, tableQualifierName, tableQualifierValue, sqlVariableNames, sqlVariableValues);
+          resourcePath += "res.sql";
+          new PreparedStatementRenderer(source, resourcePath, tableQualifierName, tableQualifierValue, sqlVariableNames, sqlVariableValues);
+      });
   }
 
 }

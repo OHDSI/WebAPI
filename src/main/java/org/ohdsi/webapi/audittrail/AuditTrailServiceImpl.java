@@ -13,7 +13,7 @@ import org.springframework.batch.core.JobParameters;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 import java.io.File;
 import java.util.Collection;
 import java.util.Map;
@@ -55,22 +55,22 @@ class AuditTrailServiceImpl implements AuditTrailService {
 
     @Override
     public void logSuccessfulLogin(final String login, final String sessionId, final String remoteHost) {
-        log(String.format(USER_LOGIN_SUCCESS_TEMPLATE, login, sessionId, remoteHost));
+        log(USER_LOGIN_SUCCESS_TEMPLATE.formatted(login, sessionId, remoteHost));
     }
 
     @Override
     public void logFailedLogin(final String login, final String remoteHost) {
-        log(String.format(USER_LOGIN_FAILURE_TEMPLATE, login, remoteHost));
+        log(USER_LOGIN_FAILURE_TEMPLATE.formatted(login, remoteHost));
     }
 
     @Override
     public void logSuccessfulLogout(final String login) {
-        log(String.format(USER_LOGOUT_SUCCESS_TEMPLATE, login));
+        log(USER_LOGOUT_SUCCESS_TEMPLATE.formatted(login));
     }
 
     @Override
     public void logFailedLogout(final String login) {
-        log(String.format(USER_LOGOUT_FAILURE_TEMPLATE, login));
+        log(USER_LOGOUT_FAILURE_TEMPLATE.formatted(login));
     }
 
     @Override
@@ -123,11 +123,11 @@ class AuditTrailServiceImpl implements AuditTrailService {
         final StringBuilder logEntry = new StringBuilder(syslogMessage.toRfc5424SyslogMessage());
 
         if (logEntry.length() >= MAX_ENTRY_LENGTH) {
-            final String currentExtraSuffix = String.format("%02d", this.extraLogIdSuffix.getAndIncrement());
+            final String currentExtraSuffix = "%02d".formatted(this.extraLogIdSuffix.getAndIncrement());
             final String entryId = System.currentTimeMillis() + "_" + currentExtraSuffix;
             AUDIT_EXTRA_LOGGER.info(entryId + FIELD_DIVIDER + message);
 
-            final String extraLogReferenceMessage = String.format(EXTRA_LOG_REFERENCE_MESSAGE, entryId);
+            final String extraLogReferenceMessage = EXTRA_LOG_REFERENCE_MESSAGE.formatted(entryId);
             logEntry.setLength(MAX_ENTRY_LENGTH - extraLogReferenceMessage.length() - 1);
             logEntry.append(extraLogReferenceMessage);
             AUDIT_LOGGER.info(logEntry.toString());
@@ -176,9 +176,8 @@ class AuditTrailServiceImpl implements AuditTrailService {
         if (entry.getReturnedObject() instanceof Response) {
             try {
                 final Object entity = ((Response) entry.getReturnedObject()).getEntity();
-                if (entity instanceof File) {
-                    final File file = (File) entity;
-                    return String.format(FILE_TEMPLATE, file.getName(), file.length());
+                if (entity instanceof File file) {
+                    return FILE_TEMPLATE.formatted(file.getName(), file.length());
                 }
                 return null;
             } catch (final Exception e) {
@@ -190,9 +189,9 @@ class AuditTrailServiceImpl implements AuditTrailService {
         if (entry.getReturnedObject() instanceof CohortSampleDTO) {
             final CohortSampleDTO sampleDto = (CohortSampleDTO) entry.getReturnedObject();
             if (sampleDto.getElements().isEmpty()) {
-                additionalInfo.append(String.format(PATIENT_IDS_TEMPLATE, 0)).append("none");
+                additionalInfo.append(PATIENT_IDS_TEMPLATE.formatted(0)).append("none");
             } else {
-                additionalInfo.append(String.format(PATIENT_IDS_TEMPLATE, sampleDto.getElements().size()));
+                additionalInfo.append(PATIENT_IDS_TEMPLATE.formatted(sampleDto.getElements().size()));
                 sampleDto.getElements().forEach((e) -> {
                     additionalInfo.append(e.getPersonId()).append(" ");
                 });
@@ -207,22 +206,20 @@ class AuditTrailServiceImpl implements AuditTrailService {
             return null;
         }
 
-        if (returnedObject instanceof Collection) {
-            final Collection<?> c = (Collection<?>) returnedObject;
+        if (returnedObject instanceof Collection c) {
             if (!c.isEmpty()) {
                 final String fields = collectClassFieldNames(c.iterator().next().getClass());
-                return fields != null ? String.format(LIST_OF_TEMPLATE, c.size(), fields) : null;
+                return fields != null ? LIST_OF_TEMPLATE.formatted(c.size(), fields) : null;
             }
             return EMPTY_LIST;
-        } if (returnedObject instanceof Map) {
-            final Map<?, ?> map = (Map<?, ?>) returnedObject;
+        } if (returnedObject instanceof Map map) {
             if (!map.isEmpty()) {
                 final Map.Entry<?, ?> entry = map.entrySet().iterator().next();
                 final Class<?> keyClass = entry.getKey().getClass();
                 final Class<?> valueClass = entry.getValue().getClass();
                 final String valueFields = collectClassFieldNames(valueClass);
                 return valueFields != null ?
-                        String.format(MAP_OF_TEMPLATE, keyClass.getSimpleName(), map.size(), valueFields) : null;
+                        MAP_OF_TEMPLATE.formatted(keyClass.getSimpleName(), map.size(), valueFields) : null;
             }
             return EMPTY_MAP;
         } else {
@@ -255,6 +252,6 @@ class AuditTrailServiceImpl implements AuditTrailService {
         }
 
         final String jobName = jobParameters.getString(Constants.Params.JOB_NAME);
-        log(String.format(template, author, jobExecution.getJobId(), jobName));
+        log(template.formatted(author, jobExecution.getJobId(), jobName));
     }
 }

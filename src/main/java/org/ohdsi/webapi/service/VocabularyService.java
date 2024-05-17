@@ -12,19 +12,19 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -499,7 +499,7 @@ public class VocabularyService extends AbstractDaoService {
           domainClauses.add("(DOMAIN_ID = 'Measurement' and LOWER(concept_class_id) in ('lab test', 'procedure'))");
         }
         if (!domainClauses.isEmpty()) {
-          filters += String.format(" AND (%s)", StringUtils.join(domainClauses, " OR "));
+          filters += " AND (%s)".formatted(StringUtils.join(domainClauses, " OR "));
         }
       }
     }
@@ -546,14 +546,14 @@ public class VocabularyService extends AbstractDaoService {
       ).sorted((a,b) -> b.length() - a.length()).collect(Collectors.toList());
       LinkedHashMap<String, String> termMap = new LinkedHashMap<>();
       for (int i=0;i<allTerms.size();i++) {
-        termMap.put(String.format("term_%d",i+1), allTerms.get(i));
+        termMap.put("term_%d".formatted(i + 1), allTerms.get(i));
       }
       // 2. Create REPLACE expressions to caluclate the match ratio
       String replaceExpression = termMap.keySet().stream()
           .reduce("", (acc, element) -> {
-            return "".equals(acc) ? 
-                String.format("REPLACE(lower(concept_name), '@%s','')",element) // the first iteration
-                : String.format("REPLACE(%s, '@%s','')", acc, element); // the subsequent iterations
+            return "".equals(acc) ?
+                    "REPLACE(lower(concept_name), '@%s','')".formatted(element) // the first iteration
+                : "REPLACE(%s, '@%s','')".formatted(acc, element); // the subsequent iterations
           });
       searchNamesList.add("replace_expression");
       replacementNamesList.add(replaceExpression);
@@ -561,7 +561,7 @@ public class VocabularyService extends AbstractDaoService {
       // 3. Create the set of 'like' expressions for concept name from the terms that are < 8 chars
       List<String> nameFilterList = termMap.keySet().stream()
           .filter(k -> termMap.get(k).length() < 8)
-          .map(k -> String.format("lower(concept_name) like '%%@%s%%'",k))
+          .map(k -> "lower(concept_name) like '%%@%s%%'".formatted(k))
           .collect(Collectors.toList());
       searchNamesList.add("name_filters");
       replacementNamesList.add(StringUtils.join(nameFilterList, " AND "));
@@ -569,7 +569,7 @@ public class VocabularyService extends AbstractDaoService {
       // 4. Create the set of 'like' expressions for concept synonyms
       List<String> synonymFilterList = termMap.keySet().stream()
           .filter(k -> termMap.get(k).length() < 8)
-          .map(k -> String.format("lower(concept_synonym_name) like '%%@%s%%'",k))
+          .map(k -> "lower(concept_synonym_name) like '%%@%s%%'".formatted(k))
           .collect(Collectors.toList());
       searchNamesList.add("synonym_filters");
       replacementNamesList.add(StringUtils.join(synonymFilterList, " AND "));
@@ -725,10 +725,10 @@ public class VocabularyService extends AbstractDaoService {
 
     Concept concept;
     try {
-      concept = getSourceJdbcTemplate(source).queryForObject(psr.getSql(), psr.getOrderedParams(), this.rowMapper);
+      concept = getSourceJdbcTemplate(source).queryForObject(psr.getSql(), this.rowMapper, psr.getOrderedParams());
     } catch (EmptyResultDataAccessException e) {
       log.error("Request for conceptId={} resulted in 0 results", id);
-      throw new NotFoundException(String.format("There is no concept with id = %d.", id));
+      throw new NotFoundException("There is no concept with id = %d.".formatted(id));
     }
     return concept;
   }

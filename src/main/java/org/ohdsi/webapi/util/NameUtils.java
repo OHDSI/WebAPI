@@ -17,7 +17,7 @@ public final class NameUtils {
 
     public static String getNameForCopy(String dtoName, Function<String, List<String>> getNamesLike, Optional<?> existingObject) {
         String name = dtoName != null ? dtoName : DEFAULT_DESIGN_NAME;
-        String nameWithPrefix = String.format(ENTITY_COPY_PREFIX, name);
+        String nameWithPrefix = ENTITY_COPY_PREFIX.formatted(name);
         return existingObject.map(o -> getNameWithSuffix(nameWithPrefix, getNamesLike)).orElse(name);
     }
 

@@ -22,7 +22,7 @@ public class CohortVersionToCohortVersionFullDTOConverter
     public CohortVersionFullDTO convert(CohortVersion source) {
         CohortDefinition def = this.cohortDefinitionRepository.findOneWithDetail(source.getAssetId().intValue());
         ExceptionUtils.throwNotFoundExceptionIfNull(def,
-                String.format("There is no cohort definition with id = %d.", source.getAssetId()));
+                "There is no cohort definition with id = %d.".formatted(source.getAssetId()));
 
         CohortDefinitionDetails details = new CohortDefinitionDetails();
         details.setExpression(source.getAssetJson());

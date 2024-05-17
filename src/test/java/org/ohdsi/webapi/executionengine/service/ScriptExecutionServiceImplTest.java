@@ -1,6 +1,8 @@
 package org.ohdsi.webapi.executionengine.service;
 
-import static org.mockito.Matchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
@@ -15,22 +17,21 @@ import java.util.stream.Collectors;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.FileHeader;
 import org.apache.commons.compress.utils.IOUtils;
-import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFile;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineGenerationEntity;
 import org.ohdsi.webapi.executionengine.repository.ExecutionEngineGenerationRepository;
 import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ScriptExecutionServiceImplTest {
 
     public static final long EXECUTION_ID = 1L;
@@ -51,7 +52,7 @@ public class ScriptExecutionServiceImplTest {
     private ExecutionEngineGenerationEntity executionEngineGenerationEntity = new DummyExecutionEngineGenerationEntity();
 
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
 
         doReturn(executionEngineAnalysisStatus)
@@ -83,7 +84,7 @@ public class ScriptExecutionServiceImplTest {
 
         List<String> fileNamesInZip = ((List<FileHeader>) zipFile.getFileHeaders()).stream().map(FileHeader::getFileName).collect(Collectors.toList());
 
-        MatcherAssert.assertThat(fileNamesInZip, Matchers.containsInAnyOrder(
+        assertThat(fileNamesInZip, Matchers.containsInAnyOrder(
                 "stdout.txt", "file1.txt",
                 "analysis/CohortCharacterization.zip", "analysis/runAnalysis.R", "analysis/.Rhistory"));
 
@@ -103,7 +104,7 @@ public class ScriptExecutionServiceImplTest {
 
         List<String> fileNamesInZip = ((List<FileHeader>) zipFile.getFileHeaders()).stream().map(FileHeader::getFileName).collect(Collectors.toList());
 
-        MatcherAssert.assertThat(fileNamesInZip, Matchers.containsInAnyOrder(
+        assertThat(fileNamesInZip, Matchers.containsInAnyOrder(
                 "stdout.txt", "file1.txt",
                 "analysis/", //for some reason getFileHeaders returns directories for a normal zip, and dont for multivalue zip
                 "analysis/CohortCharacterization.zip", "analysis/runAnalysis.R", "analysis/.Rhistory"));
@@ -124,7 +125,7 @@ public class ScriptExecutionServiceImplTest {
 
         List<String> fileNamesInZip = ((List<FileHeader>) zipFile.getFileHeaders()).stream().map(FileHeader::getFileName).collect(Collectors.toList());
 
-        MatcherAssert.assertThat(fileNamesInZip, Matchers.containsInAnyOrder("stdout.txt", "file1.txt", "file2.txt"));
+        assertThat(fileNamesInZip, Matchers.containsInAnyOrder("stdout.txt", "file1.txt", "file2.txt"));
 
     }
 

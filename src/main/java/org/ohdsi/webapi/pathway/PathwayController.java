@@ -24,7 +24,6 @@ import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
@@ -33,9 +32,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import javax.transaction.Transactional;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -56,7 +55,6 @@ public class PathwayController {
 	private PathwayChecker checker;
 	private PermissionService permissionService;
 
-	@Autowired
 	public PathwayController(ConversionService conversionService, ConverterUtils converterUtils, PathwayService pathwayService, SourceService sourceService, CommonGenerationSensitiveInfoService sensitiveInfoService, PathwayChecker checker, PermissionService permissionService, I18nService i18nService) {
 
 		this.conversionService = conversionService;
@@ -228,7 +226,7 @@ public class PathwayController {
 	@Transactional
 	public PathwayAnalysisDTO get(@PathParam("id") final Integer id) {
 		PathwayAnalysisEntity pathwayAnalysis = pathwayService.getById(id);
-		ExceptionUtils.throwNotFoundExceptionIfNull(pathwayAnalysis, String.format(i18nService.translate("pathways.manager.messages.notfound", "There is no pathway analysis with id = %d."), id));
+		ExceptionUtils.throwNotFoundExceptionIfNull(pathwayAnalysis, i18nService.translate("pathways.manager.messages.notfound", "There is no pathway analysis with id = %d.").formatted(id));
 		Map<Integer, Integer> eventCodes = pathwayService.getEventCohortCodes(pathwayAnalysis);
 
 		PathwayAnalysisDTO dto = conversionService.convert(pathwayAnalysis, PathwayAnalysisDTO.class);
@@ -316,7 +314,7 @@ public class PathwayController {
 	) {
 
 		PathwayAnalysisEntity pathwayAnalysis = pathwayService.getById(pathwayAnalysisId);
-		ExceptionUtils.throwNotFoundExceptionIfNull(pathwayAnalysis, String.format("There is no pathway analysis with id = %d.", pathwayAnalysisId));
+		ExceptionUtils.throwNotFoundExceptionIfNull(pathwayAnalysis, "There is no pathway analysis with id = %d.".formatted(pathwayAnalysisId));
 		PathwayAnalysisDTO pathwayAnalysisDTO = conversionService.convert(pathwayAnalysis, PathwayAnalysisDTO.class);
 		CheckResult checkResult = runDiagnostics(pathwayAnalysisDTO);
 		if (checkResult.hasCriticalErrors()) {

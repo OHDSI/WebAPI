@@ -216,14 +216,14 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
     @Override
     public ExecutionEngineAnalysisStatus createAnalysisExecution(Long jobId, Source source, String password, List<AnalysisFile> analysisFiles) {
 
-        ExecutionEngineGenerationEntity executionEngineGenerationEntity = executionEngineGenerationRepository.findOne(jobId);
+        ExecutionEngineGenerationEntity executionEngineGenerationEntity = executionEngineGenerationRepository.findById(jobId).get();
         ExecutionEngineAnalysisStatus execution = new ExecutionEngineAnalysisStatus();
         execution.setExecutionStatus(ExecutionEngineAnalysisStatus.Status.STARTED);
         execution.setExecutionEngineGeneration(executionEngineGenerationEntity);
         ExecutionEngineAnalysisStatus saved = analysisExecutionRepository.saveAndFlush(execution);
         if (Objects.nonNull(analysisFiles)) {
             analysisFiles.forEach(file -> file.setAnalysisExecution(saved));
-            inputFileRepository.save(analysisFiles);
+            inputFileRepository.saveAll(analysisFiles);
         }
         return saved;
     }
@@ -236,7 +236,7 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
         if (execution.getExecutionContext().containsKey("engineExecutionId")) {
             Long execId = execution.getExecutionContext().getLong("engineExecutionId");
 
-            ExecutionEngineAnalysisStatus analysisExecution = analysisExecutionRepository.findOne(execId.intValue());
+            ExecutionEngineAnalysisStatus analysisExecution = analysisExecutionRepository.findById(execId.intValue()).get();
             if (analysisExecution == null) {
                 throw new NotFoundException("Execution with id=%d was not found".formatted(executionId));
             }
@@ -258,7 +258,7 @@ class ScriptExecutionServiceImpl extends AbstractDaoService implements ScriptExe
                 exec.setExecutionStatus(ExecutionEngineAnalysisStatus.Status.FAILED);
                 jobInvalidator.invalidateJobExecutionById(exec);
             });
-            analysisExecutionRepository.save(executions);
+            analysisExecutionRepository.saveAll(executions);
             return null;
         });
     }

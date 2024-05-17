@@ -981,11 +981,16 @@
     </dependency>
     
 	<!-- MDACA Spring Boot 3 migration add -->
-    <dependency>
+    <!-- dependency>
         <groupId>org.pac4j</groupId>
         <artifactId>pac4j-jakartaee</artifactId>
         <version>${pac4j.version}</version>
-    </dependency>
+    </dependency -->
+	<dependency>
+	    <groupId>org.pac4j</groupId>
+	    <artifactId>jakartaee-pac4j</artifactId>
+	    <version>8.0.1</version>
+	</dependency>
     
     <dependency>
       <groupId>org.pac4j</groupId>
@@ -1299,7 +1304,12 @@
       <artifactId>syslog-java-client</artifactId>
       <version>1.1.7</version>
     </dependency>
-  </dependencies>
+    <dependency>
+    	<groupId>org.springframework.boot</groupId>
+    	<artifactId>spring-boot-configuration-processor</artifactId>
+    	<optional>true</optional>
+    </dependency>
+ </dependencies>
   <profiles>
 
 <!--    <profile>   MDACA Spring Boot 3 migration

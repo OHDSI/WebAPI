@@ -194,7 +194,7 @@ public class CohortSamplingService extends AbstractDaoService {
 	 */
 	public void refreshSample(Integer sampleId) {
 		
-				CohortSample sample = sampleRepository.findById(sampleId);
+				CohortSample sample = sampleRepository.findById(sampleId).get();
 		if (sample == null) {
 			throw new NotFoundException("Cohort sample with ID " + sampleId + " not found");
 		}
@@ -462,7 +462,7 @@ public class CohortSamplingService extends AbstractDaoService {
 		}
 
 		getTransactionTemplate().execute((TransactionCallback<Void>) transactionStatus -> {
-			sampleRepository.delete(sampleId);
+			sampleRepository.deleteById(sampleId);
 			jdbcTemplate.update(sql, sampleId);
 			return null;
 		});

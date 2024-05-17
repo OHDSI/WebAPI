@@ -61,6 +61,7 @@ public class SamlHandleFilter extends AtlasAuthFilter {
                 HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
                 JEEContext context = new JEEContext(httpRequest, httpResponse);
                 SessionStore store = (SessionStore) new JEESessionStore();
+                
                 SAML2Client client;
                 if (isForceAuth(request)) {
                     client = saml2ForceClient;

@@ -2,12 +2,12 @@ package org.ohdsi.webapi.common.orm;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.type.descriptor.WrapperOptions;
-import org.hibernate.type.descriptor.java.AbstractTypeDescriptor;
+import org.hibernate.type.descriptor.java.AbstractClassJavaType;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class EnumListTypeDescriptor extends AbstractTypeDescriptor<List> {
+public class EnumListTypeDescriptor extends AbstractClassJavaType<List> {
 
     public static final String DELIMITER = ",";
     private Class<Enum> enumClass;
@@ -21,8 +21,20 @@ public class EnumListTypeDescriptor extends AbstractTypeDescriptor<List> {
             enumConstantMap.put(value.name(), value);
         }
     }
+    
+    protected EnumListTypeDescriptor() {
+        super(List.class);
+    }
+    
+    public void setEnumClass(Class<Enum> enumClass) {
+        this.enumClass = enumClass;
+        Enum[] enumConst = enumClass.getEnumConstants();
+        for(Enum value : enumConst) {
+            enumConstantMap.put(value.name(), value);
+        }
+    }
 
-    @Override
+    //@Override
     public List fromString(String s) {
 
         List result = new ArrayList();

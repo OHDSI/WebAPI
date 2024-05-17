@@ -229,7 +229,7 @@ public class PermissionManager {
 
   public void removeRole(Long roleId) {
     eventPublisher.publishEvent(new DeleteRoleEvent(this, roleId));
-    this.roleRepository.delete(roleId);
+    this.roleRepository.deleteById(roleId);
   }
 
   public Set<PermissionEntity> getRolePermissions(Long roleId) {

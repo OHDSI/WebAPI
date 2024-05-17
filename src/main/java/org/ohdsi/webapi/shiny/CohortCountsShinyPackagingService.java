@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.odysseusinc.arachne.commons.api.v1.dto.CommonAnalysisType;
 import com.odysseusinc.arachne.commons.utils.CommonFilenameUtils;
 import com.odysseusinc.arachne.execution_engine_common.util.CommonFileUtils;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.util.Date;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
@@ -78,7 +81,8 @@ public class CohortCountsShinyPackagingService implements ShinyPackagingService 
                 ).forEach(addDataToManifest(manifest, path));
                 writeManifest(manifest, manifestPath);
                 Path appArchive = packaging.apply(path);
-                return new TemporaryFile(String.format("%s_cohortCounts_shinyApp.zip", CommonFilenameUtils.sanitizeFilename(cohort.getName())), appArchive);
+                return new TemporaryFile(String.format("%s_%s_%s.zip", sourceKey, new SimpleDateFormat("yyyy_MM_dd").format(Date.from(Instant.now())),
+                        CommonFilenameUtils.sanitizeFilename(cohort.getName())), appArchive);
             } catch (IOException e) {
                 log.error("Failed to prepare Shiny application", e);
                 throw new InternalServerErrorException();

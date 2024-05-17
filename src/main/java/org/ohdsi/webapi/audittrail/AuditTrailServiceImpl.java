@@ -214,7 +214,7 @@ class AuditTrailServiceImpl implements AuditTrailService {
             return EMPTY_LIST;
         } if (returnedObject instanceof Map map) {
             if (!map.isEmpty()) {
-                final Map.Entry<?, ?> entry = map.entrySet().iterator().next();
+                final Map.Entry<?, ?> entry = (Map.Entry<?, ?>)map.entrySet().iterator().next();
                 final Class<?> keyClass = entry.getKey().getClass();
                 final Class<?> valueClass = entry.getValue().getClass();
                 final String valueFields = collectClassFieldNames(valueClass);

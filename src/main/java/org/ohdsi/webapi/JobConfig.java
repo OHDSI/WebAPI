@@ -15,19 +15,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.admin.service.*;
 import org.springframework.batch.core.configuration.BatchConfigurationException;
-import org.springframework.batch.core.configuration.annotation.BatchConfigurer;
+// import org.springframework.batch.core.configuration.annotation.BatchConfigurer;  MDACA Spring Boot 3 migration compilation issue
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.explore.support.JobExplorerFactoryBean;
-import org.springframework.batch.core.explore.support.MapJobExplorerFactoryBean;
+// import org.springframework.batch.core.explore.support.MapJobExplorerFactoryBean;  MDACA Spring Boot 3 migration compilation issue
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.SimpleJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean;
-import org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean;
+// import org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean;  MDACA Spring Boot 3 migration compilation issue
 import org.springframework.batch.support.transaction.ResourcelessTransactionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -97,12 +97,12 @@ public class JobConfig {
         taskExecutor.afterPropertiesSet();
         return taskExecutor;
     }
-
+/*   MDACA Spring Boot 3 migration compilation issue
     @Bean
     BatchConfigurer batchConfigurer() {
         return new CustomBatchConfigurer(this.dataSource);
     }
-
+*/
     @Bean
     JobTemplate jobTemplate(final JobLauncher jobLauncher, final JobBuilderFactory jobBuilders,
                          final StepBuilderFactory stepBuilders, final Security security) {
@@ -139,7 +139,7 @@ public class JobConfig {
         };
     }
 
-    class CustomBatchConfigurer implements BatchConfigurer {
+    class CustomBatchConfigurer /* implements BatchConfigurer   MDACA Spring Boot 3 migration compilation issue  */ {
         
         private DataSource dataSource;
         
@@ -168,7 +168,7 @@ public class JobConfig {
         public CustomBatchConfigurer(final DataSource dataSource) {
             setDataSource(dataSource);
         }
-        
+/*        
         @Override
         public JobRepository getJobRepository() {
             return this.jobRepository;
@@ -222,7 +222,7 @@ public class JobConfig {
                 throw new BatchConfigurationException(e);
             }
         }
-        
+*/
         private JobLauncher createJobLauncher() throws Exception {
             final SimpleJobLauncher jobLauncher = new SimpleJobLauncher();
             //async TODO
@@ -239,7 +239,7 @@ public class JobConfig {
             //ISOLATION_REPEATABLE_READ throws READ_COMMITTED and SERIALIZABLE are the only valid transaction levels
             factory.setIsolationLevelForCreate(JobConfig.this.isolationLevelForCreate);
             factory.setTablePrefix(JobConfig.this.tablePrefix);
-            factory.setTransactionManager(getTransactionManager());
+            /* factory.setTransactionManager(getTransactionManager());     MDACA Spring Boot 3 migration compilation issue  */
             factory.setValidateTransactionState(false);
             factory.afterPropertiesSet();
             return factory.getObject();

@@ -34,6 +34,7 @@ import jakarta.persistence.Table;
 
 import com.google.common.collect.ImmutableList;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Type;
@@ -87,11 +88,11 @@ public class Source extends CommonEntity<Integer> implements Serializable {
   private String sourceKey;
 
   @Column
-  @Type(encryptedString.class)
+  /*  @Type(encryptedString.class) MDACA Spring Boot 3 migration compilation issue   */
   private String username;
 
   @Column
-  @Type(encryptedString.class)
+  /*  @Type(encryptedString.class) MDACA Spring Boot 3 migration compilation issue   */
   private String password;
 
   @Column(name = "deleted_date")

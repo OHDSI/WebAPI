@@ -12,6 +12,7 @@ import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysisAggregate
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.ohdsi.circe.cohortdefinition.builders.CriteriaColumn;
 import org.ohdsi.webapi.common.orm.EnumListType;
+import org.ohdsi.webapi.source.CheckedEncryptedStringType;
 
 import jakarta.persistence.*;
 import java.util.List;
@@ -65,9 +66,11 @@ public class FeAnalysisAggregateEntity implements FeatureAnalysisAggregate, With
   private boolean isMissingMeansZero;
 
 	@Column(name = "criteria_columns")
+/*   MDACA Spring Boot 3 migration compilation issue, see package-info.java	
   @Type(value = enumm-list.class, parameters = {
           @Parameter(name = "enumClass", value = "org.ohdsi.circe.cohortdefinition.builders.CriteriaColumn")
   })
+*/
   private List<CriteriaColumn> columns;
 
   @Override

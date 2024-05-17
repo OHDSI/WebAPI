@@ -32,7 +32,7 @@
     <jersey.version>2.14</jersey.version>
     <SqlRender.version>1.16.1</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
-    <pac4j.version>4.0.0</pac4j.version>
+    <pac4j.version>6.0.2</pac4j.version>  <!-- pac4j.version>4.0.0</pac4j.version  MDACA Spring Boot 3 migration -->
     <jackson.version>2.14.3</jackson.version>  <!-- MDACA Spring Boot 3 migration jackson.version>2.12.7</jackson.version -->
     <start-class>org.ohdsi.webapi.WebApi</start-class>
     <skipUnitTests>false</skipUnitTests>
@@ -377,7 +377,7 @@
         <groupId>org.codehaus.gmaven</groupId>
         <artifactId>groovy-maven-plugin</artifactId>   <!-- MDACA Spring Boot 3 migration artifactId>gmaven-plugin</artifactId -->
         <version>2.1.1</version>   <!-- MDACA Spring Boot 3 migration version>1.5</version -->
-        <executions>
+        <!-- executions  MDACA Spring Boot 3 migration compilation issue  >
           <execution>
             <id>add-git-branch-info</id>
             <phase>generate-resources</phase>
@@ -391,7 +391,7 @@
               </source>
             </configuration>
           </execution>
-        </executions>
+        </executions -->
       </plugin>
       <plugin>
         <groupId>org.springframework.boot</groupId>
@@ -475,12 +475,12 @@
         <artifactId>miredot-plugin</artifactId>
         <version>2.4.0</version>
         <executions>
-          <execution>
+          <!-- execution MDACA Spring Boot 3 migration compilation issue>
             <phase>${miredot.phase}</phase>
             <goals>
               <goal>restdoc</goal>
             </goals>
-          </execution>
+          </execution -->
         </executions>
         <configuration>
           <licence>cHJvamVjdHxvcmcub2hkc2kuV2ViQVBJfDIwMjUtMDEtMDF8ZmFsc2V8LTEjTUN3Q0ZDZkowMkZrVmVSeVlBazZVbTBmNThIbE15SjRBaFEwcVZyRUZuamZMTzJ0KzFtR3E3U3lMMkFESHc9PQ==</licence>
@@ -516,13 +516,13 @@
         </configuration>
       </plugin>
 	  
-      <!-- plugin>
+      <plugin>
         <groupId>org.openrewrite.maven</groupId>
         <artifactId>rewrite-maven-plugin</artifactId>
         <version>5.30.0</version>
         <configuration>
           <activeRecipes>
-            <recipe>org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_2</recipe>
+            <recipe>org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_1</recipe>
           </activeRecipes>
         </configuration>
         <dependencies>
@@ -532,7 +532,7 @@
             <version>5.9.0</version>
           </dependency>
         </dependencies>
-      </plugin -->
+      </plugin>
 	  
     </plugins>
   </build>
@@ -873,6 +873,7 @@
    <version>4.1</version>
    <type>jar</type>
   </dependency>
+<!--  MDACA Spring Boot 3 migration 
   <dependency>
    <groupId>org.apache.shiro</groupId>
    <artifactId>shiro-core</artifactId>
@@ -888,6 +889,41 @@
    <artifactId>shiro-spring</artifactId>
    <version>${shiro.version}</version>
   </dependency>
+-->
+
+<!-- MDACA Spring Boot 3 migration. Five dep below added to replace 3 legacy shiro dependecies above -->
+	<dependency>
+	    <groupId>org.apache.shiro</groupId>
+	    <artifactId>shiro-core</artifactId>
+	    <version>${shiro.version}</version>
+	    <classifier>jakarta</classifier>
+	</dependency>
+	<dependency>
+	    <groupId>org.apache.shiro</groupId>
+	    <artifactId>shiro-web</artifactId>
+	    <version>${shiro.version}</version>
+	    <classifier>jakarta</classifier>
+	</dependency>
+	
+	<dependency>
+	    <groupId>org.apache.shiro</groupId>
+	    <artifactId>shiro-spring-boot-web-starter</artifactId>
+	    <version>${shiro.version}</version>
+	    <classifier>jakarta</classifier>
+	</dependency>
+	<dependency>
+	    <groupId>org.apache.shiro</groupId>
+	    <artifactId>shiro-spring-boot-starter</artifactId>
+	    <version>${shiro.version}</version>
+	    <classifier>jakarta</classifier>
+	</dependency>
+	<dependency>
+	    <groupId>org.apache.shiro</groupId>
+	    <artifactId>shiro-spring</artifactId>
+	    <version>${shiro.version}</version>
+	    <classifier>jakarta</classifier>
+	</dependency>
+  
   <dependency>
    <groupId>com.github.waffle</groupId>
    <artifactId>waffle-shiro</artifactId>
@@ -943,6 +979,14 @@
       <artifactId>buji-pac4j</artifactId>
       <version>5.0.1</version>
     </dependency>
+    
+	<!-- MDACA Spring Boot 3 migration add -->
+    <dependency>
+        <groupId>org.pac4j</groupId>
+        <artifactId>pac4j-jakartaee</artifactId>
+        <version>${pac4j.version}</version>
+    </dependency>
+    
     <dependency>
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-oauth</artifactId>
@@ -976,11 +1020,16 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <dependency>
+    <!-- dependency MDACA Spring Boot 3 migration >
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-saml-opensamlv3</artifactId>
       <version>${pac4j.version}</version>
-    </dependency>
+    </dependency -->
+	<dependency>
+	    <groupId>org.pac4j</groupId>
+	    <artifactId>pac4j-saml-opensamlv5</artifactId>
+	    <version>5.7.4</version>
+	</dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>

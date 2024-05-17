@@ -52,7 +52,7 @@ public class ShiroConfiguration {
 
         Map<String, Filter> filters = security.getFilters().entrySet().stream()
                 .collect(Collectors.toMap(f -> f.getKey().getTemplateName(), Map.Entry::getValue));
-        shiroFilter.setFilters(filters);
+        /* shiroFilter.setFilters(filters);  Spring Boot 3 migration compilation issue */
         shiroFilter.setFilterChainDefinitionMap(security.getFilterChain());
 
         return shiroFilter;

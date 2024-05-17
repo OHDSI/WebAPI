@@ -10,12 +10,12 @@ import org.springframework.core.convert.support.GenericConversionService;
 public class ConverterConfiguration {
 
     @Bean
-    public GenericConversionService conversionService(){
+    GenericConversionService conversionService(){
         return new DefaultConversionService();
     }
     
     @Bean
-    public ConverterUtils converterUtils(final GenericConversionService conversionService) {
+    ConverterUtils converterUtils(final GenericConversionService conversionService) {
         return new ConverterUtils(conversionService);
     }
 }

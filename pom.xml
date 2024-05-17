@@ -17,7 +17,7 @@
     <flyway.version>4.2.0</flyway.version>
     <waffle.version>2.2.1</waffle.version>
     <jna.version>5.5.0</jna.version>
-    <hibernate.version>5.4.2.Final</hibernate.version>
+    <hibernate.version>6.0.0.Final</hibernate.version>
     <postgresql.version>42.3.7</postgresql.version>
     <bouncycastle.version>1.69</bouncycastle.version>
     <shiro.version>2.0.0</shiro.version>   <!-- MDACA Spring Boot 3 migration shiro.version>1.12.0</shiro.version -->
@@ -974,10 +974,18 @@
    <groupId>jakarta.validation</groupId>
    <artifactId>jakarta.validation-api</artifactId>
   </dependency>
+  
+  
+  <dependency>
+    <groupId>org.jasig.cas.client</groupId>
+    <artifactId>cas-client-core</artifactId>
+    <version>3.6.1</version>
+</dependency>
+  
     <dependency>
       <groupId>io.buji</groupId>
       <artifactId>buji-pac4j</artifactId>
-      <version>5.0.1</version>
+      <version>8.1.0</version>
     </dependency>
     
 	<!-- MDACA Spring Boot 3 migration add -->

@@ -577,7 +577,7 @@ public class CohortResultsService extends AbstractDaoService {
   public GenerationInfoDTO getAnalysisProgress(@PathParam("sourceKey") String sourceKey, @PathParam("id") Integer id) {
 
     return getTransactionTemplateRequiresNew().execute(status -> {
-      org.ohdsi.webapi.cohortdefinition.CohortDefinition def = cohortDefinitionRepository.findOne(id);
+      org.ohdsi.webapi.cohortdefinition.CohortDefinition def = cohortDefinitionRepository.findById(id).get();
       Source source = getSourceRepository().findBySourceKey(sourceKey);
       return def.getCohortAnalysisGenerationInfoList().stream()
               .filter(cd -> Objects.equals(cd.getSourceId(), source.getSourceId()))

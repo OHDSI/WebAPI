@@ -68,8 +68,8 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
     Object principal = principals.getPrimaryPrincipal();
     
     if (principal instanceof Pac4jPrincipal pac4jPrincipal) {
-      login = pac4jPrincipal.getProfile().getEmail();
-      name = pac4jPrincipal.getProfile().getDisplayName();
+      login = (String) pac4jPrincipal.getProfile().getAttribute("email");
+      name = (String) pac4jPrincipal.getProfile().getAttribute("display_name");
       
       /**
       * for CAS login
@@ -97,7 +97,7 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
         return false;
       }
 
-      CommonProfile profile = (pac4jPrincipal.getProfile());
+      CommonProfile profile = (CommonProfile)(pac4jPrincipal.getProfile());
       if (Objects.nonNull(profile)) {
         String clientName = profile.getClientName();
         request.setAttribute(AUTH_CLIENT_ATTRIBUTE, clientName);

@@ -84,7 +84,7 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 
 		try {
 			Source source = sourceService.findBySourceId(sourceId);
-			CohortDefinition df = this.cohortDefinitionRepository.findOne(defId);
+			CohortDefinition df = this.cohortDefinitionRepository.findById(defId).get();
 			CohortGenerationInfo info = findBySourceId(df, sourceId);
 			setExecutionDurationIfPossible(je, info);
 			info.setStatus(GenerationStatus.COMPLETE);
@@ -138,7 +138,7 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 		initTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 		TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(initTx);
 		try {
-			CohortDefinition df = this.cohortDefinitionRepository.findOne(defId);
+			CohortDefinition df = this.cohortDefinitionRepository.findById(defId).get();
 			CohortGenerationInfo info = findBySourceId(df, sourceId);
 			info.setIsValid(false);
 			info.setStartTime(startTime);

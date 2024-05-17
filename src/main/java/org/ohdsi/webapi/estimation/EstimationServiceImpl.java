@@ -156,7 +156,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     @Override
     public void delete(final int id) {
 
-        this.estimationRepository.delete(id);
+        this.estimationRepository.deleteById(id);
     }
 
     @Override

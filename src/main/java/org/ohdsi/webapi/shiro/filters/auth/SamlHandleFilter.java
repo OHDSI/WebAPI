@@ -7,7 +7,10 @@ import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.helper.Guard;
 import org.ohdsi.webapi.shiro.filters.AtlasAuthFilter;
 import org.ohdsi.webapi.shiro.tokens.JwtAuthToken;
-import org.pac4j.core.context.JEEContext;
+import org.pac4j.core.context.session.SessionStore;
+import org.pac4j.jee.context.JEEContext;
+import org.pac4j.jee.context.session.JEESessionStoreFactory;
+import org.pac4j.jee.context.session.JEESessionStore;
 import org.pac4j.saml.client.SAML2Client;
 import org.pac4j.saml.credentials.SAML2Credentials;
 import org.pac4j.saml.exceptions.SAMLAuthnInstantException;
@@ -57,15 +60,15 @@ public class SamlHandleFilter extends AtlasAuthFilter {
                 HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
                 HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
                 JEEContext context = new JEEContext(httpRequest, httpResponse);
-
+                SessionStore store = (SessionStore) new JEESessionStore();
                 SAML2Client client;
                 if (isForceAuth(request)) {
                     client = saml2ForceClient;
                 } else {
                     client = saml2Client;
                 }
-                SAML2Credentials credentials = client.getCredentials(context).get();
-                SAML2Profile samlProfile = (SAML2Profile)client.getUserProfile(credentials, context).get();
+                SAML2Credentials credentials = (SAML2Credentials)client.getCredentials(context, store).get();
+                SAML2Profile samlProfile = (SAML2Profile)client.getUserProfile(credentials, context, store).get();
 
                 token = new JwtAuthToken(samlProfile.getId());
             }

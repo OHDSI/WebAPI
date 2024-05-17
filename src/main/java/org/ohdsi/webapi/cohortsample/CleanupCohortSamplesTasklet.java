@@ -55,7 +55,7 @@ public class CleanupCohortSamplesTasklet implements Tasklet {
 
 		if (jobParams.containsKey(SOURCE_ID)) {
 			int sourceId = Integer.parseInt(jobParams.get(SOURCE_ID).toString());
-			Source source = this.sourceRepository.findOne(sourceId);
+			Source source = this.sourceRepository.findById(sourceId).get();
 			if (source != null) {
 				return mapSource(source, cohortDefinitionId);
 			} else {

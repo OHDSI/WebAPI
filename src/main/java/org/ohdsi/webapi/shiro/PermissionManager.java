@@ -188,7 +188,7 @@ public class PermissionManager {
       }
     }
 
-    user = userRepository.findOne(user.getId());
+    user = userRepository.findById(user.getId()).get();
     return user;
   }
 
@@ -352,7 +352,7 @@ public class PermissionManager {
   }
 
   public UserEntity getUserById(Long userId) {
-    UserEntity user = this.userRepository.findOne(userId);
+    UserEntity user = this.userRepository.findById(userId).get();
     if (user == null)
       throw new RuntimeException("User doesn't exist");
 

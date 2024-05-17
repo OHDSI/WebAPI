@@ -35,7 +35,7 @@ public class PathwayVersionToPathwayVersionFullDTOConverter
 
     @Override
     public PathwayVersionFullDTO convert(PathwayVersion source) {
-        PathwayAnalysisEntity def = this.analysisRepository.findOne(source.getAssetId().intValue());
+        PathwayAnalysisEntity def = this.analysisRepository.findById(source.getAssetId().intValue()).get();
         ExceptionUtils.throwNotFoundExceptionIfNull(def,
                 "There is no pathway analysis with id = %d.".formatted(source.getAssetId()));
 

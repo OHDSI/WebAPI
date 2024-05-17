@@ -611,14 +611,14 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 		ExceptionUtils.throwNotFoundExceptionIfNull(pathwayVersion,
                 "There is no pathway analysis version with id = %d.".formatted(version));
 
-		PathwayAnalysisEntity entity = this.pathwayAnalysisRepository.findOne(id);
+		PathwayAnalysisEntity entity = this.pathwayAnalysisRepository.findById(id).get();
 		if (checkOwnerShip) {
 			checkOwnerOrAdminOrGranted(entity);
 		}
 	}
 
 	public PathwayVersion saveVersion(int id) {
-		PathwayAnalysisEntity def = this.pathwayAnalysisRepository.findOne(id);
+		PathwayAnalysisEntity def = this.pathwayAnalysisRepository.findById(id).get();
 		PathwayVersion version = genericConversionService.convert(def, PathwayVersion.class);
 
 		UserEntity user = Objects.nonNull(def.getModifiedBy()) ? def.getModifiedBy() : def.getCreatedBy();

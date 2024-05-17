@@ -278,7 +278,7 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
 
 		// clear analysis IDs from the generated set
 		this.getTransactionTemplateRequiresNew().execute(status -> { 
-			CohortDefinition cohortDef = this.cohortDefinitionRepository.findOne(Integer.parseInt(task.getCohortDefinitionIds().get(0)));
+			CohortDefinition cohortDef = this.cohortDefinitionRepository.findById(Integer.parseInt(task.getCohortDefinitionIds().get(0))).get();
 			CohortAnalysisGenerationInfo info = cohortDef.getCohortAnalysisGenerationInfoList().stream()
 				.filter(a -> a.getSourceId() == task.getSource().getSourceId())
 				.findFirst()

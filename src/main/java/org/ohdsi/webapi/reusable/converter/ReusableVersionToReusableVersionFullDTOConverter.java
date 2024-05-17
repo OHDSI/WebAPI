@@ -19,7 +19,7 @@ public class ReusableVersionToReusableVersionFullDTOConverter
 
     @Override
     public ReusableVersionFullDTO convert(ReusableVersion source) {
-        Reusable def = this.repository.findOne(source.getAssetId().intValue());
+        Reusable def = this.repository.findById(source.getAssetId().intValue()).get();
         ExceptionUtils.throwNotFoundExceptionIfNull(def,
                 "There is no reusable with id = %d.".formatted(source.getAssetId()));
 

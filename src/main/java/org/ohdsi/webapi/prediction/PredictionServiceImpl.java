@@ -167,7 +167,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
 
     @Override
     public PredictionAnalysis copy(final int id) {
-        PredictionAnalysis analysis = this.predictionAnalysisRepository.findOne(id);
+        PredictionAnalysis analysis = this.predictionAnalysisRepository.findById(id).get();
         entityManager.detach(analysis); // Detach from the persistence context in order to save a copy
         analysis.setId(null);
         analysis.setName(getNameForCopy(analysis.getName()));

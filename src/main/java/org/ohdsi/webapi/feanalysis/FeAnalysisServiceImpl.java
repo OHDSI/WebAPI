@@ -165,7 +165,7 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
         savedEntity.setDescr(updatedEntity.getDescr());
         if (savedEntity instanceof FeAnalysisWithCriteriaEntity savedWithCriteria && updatedEntity instanceof FeAnalysisWithCriteriaEntity updatedWithCriteriaEntity) {
           removeFeAnalysisCriteriaEntities(savedWithCriteria, updatedWithCriteriaEntity);
-          updatedWithCriteriaEntity.getDesign().forEach(criteria -> criteria.setFeatureAnalysis(savedWithCriteria));
+          updatedWithCriteriaEntity.getDesign().forEach(criteria -> ((FeAnalysisConcepsetEntity) criteria).setFeatureAnalysis(savedWithCriteria));
           createOrUpdateConceptSetEntity(savedWithCriteria, updatedWithCriteriaEntity.getConceptSetEntity());
         }
         savedEntity.setDesign(updatedEntity.getDesign());
@@ -194,7 +194,7 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
       List<FeAnalysisCriteriaEntity> removed = original.getDesign().stream()
               .filter(c -> updated.getDesign().stream().noneMatch(u -> Objects.equals(c.getId(), u.getId())))
               .collect(Collectors.toList());
-      criteriaRepository.delete(removed);
+      criteriaRepository.deleteAll(removed);
     }
 
     @Override

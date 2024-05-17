@@ -10,6 +10,9 @@ import org.springframework.batch.core.JobInstance;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.stereotype.Component;
 
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.Date;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -44,8 +47,8 @@ public class JobExecutionToDTOConverter extends BaseConversionServiceAwareConver
             result.setStatus(execution.getStatus().name());
         }
         result.setExitStatus(execution.getExitStatus().getExitCode());
-        result.setStartDate(execution.getStartTime());
-        result.setEndDate(execution.getEndTime());
+        result.setStartDate(Date.from(execution.getStartTime().atZone(ZoneId.systemDefault()).toInstant()));
+        result.setEndDate(Date.from(execution.getEndTime().atZone(ZoneId.systemDefault()).toInstant()));
         result.setJobParametersResource(
                 execution.getJobParameters().getParameters().entrySet()
                 .stream()

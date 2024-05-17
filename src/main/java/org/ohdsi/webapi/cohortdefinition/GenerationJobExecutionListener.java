@@ -34,6 +34,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
@@ -124,7 +125,7 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 			log.error("Cannot set duration time for cohortGenerationInfo[{}]. startData[{}] and endData[{}] cannot be empty.", info.getId(), je.getStartTime(), je.getEndTime());
 			return;
 		}
-		info.setExecutionDuration((int) (je.getEndTime().getTime() - je.getStartTime().getTime()));
+		info.setExecutionDuration((int) (Date.from(je.getEndTime().atZone(ZoneId.systemDefault()).toInstant()).getTime() - Date.from(je.getStartTime().atZone(ZoneId.systemDefault()).toInstant()).getTime()));
 	}
 
 	@Override

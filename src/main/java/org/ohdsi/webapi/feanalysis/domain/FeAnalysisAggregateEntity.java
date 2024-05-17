@@ -4,7 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
+// import org.hibernate.annotations.TypeDef; MDACA Spring Boot 3 migration compilation issue 
 import org.ohdsi.analysis.TableJoin;
 import org.ohdsi.analysis.WithId;
 import org.ohdsi.analysis.cohortcharacterization.design.AggregateFunction;
@@ -18,7 +18,8 @@ import java.util.List;
 
 @Entity
 @Table(name = "fe_analysis_aggregate")
-@TypeDef(typeClass = EnumListType.class, name = "enumm-list")
+// @TypeDef(typeClass = EnumListType.class, name = "enumm-list")   MDACA Spring Boot 3 migration compilation issue 
+@Convert(attributeName = "enumm-list", converter = EnumListType.class)
 public class FeAnalysisAggregateEntity implements FeatureAnalysisAggregate, WithId<Integer> {
 
   @Id

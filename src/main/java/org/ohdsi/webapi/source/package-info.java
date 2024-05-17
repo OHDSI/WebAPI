@@ -20,6 +20,7 @@
  *
  */
 
+/*  MDACA Spring Boot 3 migration compilation issue, deprecated hibernate annotations: typedefs & typedef
 @TypeDefs({
         @TypeDef(
                 name = "encryptedString",
@@ -35,3 +36,4 @@ import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
+*/

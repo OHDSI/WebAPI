@@ -398,7 +398,7 @@ public class PermissionManager {
     if (permission.isEmpty())
       throw new RuntimeException("Permission doesn't exist");
 
-    return permission;
+    return permission.get();
   }
 
   private RolePermissionEntity addPermission(final RoleEntity role, final PermissionEntity permission, final String status) {

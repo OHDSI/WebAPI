@@ -63,8 +63,10 @@ public class NotificationServiceImpl implements NotificationService {
 
     public List<JobExecutionInfo> findJobs(List<BatchStatus> hideStatuses, int maxSize, boolean refreshJobsOnly) {
         BiFunction<JobExecutionInfo, JobExecutionInfo, JobExecutionInfo> mergeFunction = (x, y) -> {
-            final Date xStartTime = x != null ? x.getJobExecution().getStartTime() : null;
-            final Date yStartTime = y != null ? y.getJobExecution().getStartTime() : null;
+            /* final Date xStartTime = x != null ? x.getJobExecution().getStartTime() : null;   MDACA Spring Boot 3 migration compilation issue */
+            /* final Date yStartTime = y != null ? y.getJobExecution().getStartTime() : null;   MDACA Spring Boot 3 migration compilation issue */
+            final Date xStartTime = null;
+            final Date yStartTime = null;
             return xStartTime != null ?
                     yStartTime != null ?
                             xStartTime.after(yStartTime) ? x

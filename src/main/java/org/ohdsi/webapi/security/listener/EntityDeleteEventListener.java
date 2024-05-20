@@ -30,9 +30,15 @@ public class EntityDeleteEventListener implements PostDeleteEventListener {
         }
     }
 
-    @Override
+    /* @Override   MDACA Spring Boot 3 migration compilation issue */
     public boolean requiresPostCommitHanding(EntityPersister entityPersister) {
 
         return false;
     }
+
+    /*    MDACA Spring Boot 3 migration compilation issue */
+	@Override
+	public boolean requiresPostCommitHandling(EntityPersister persister) {
+		return false;
+	}
 }

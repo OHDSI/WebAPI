@@ -448,8 +448,6 @@ public class PermissionManager {
   }
 
   public RoleEntity getRole(Long id) {
-    return this.roleRepository.findById(id).get();
-  public RoleEntity getRole(Long id) {
     /* return this.roleRepository.findById(id);   MDACA Spring Boot 3 migration compilation issue */
 	if (this.roleRepository.findById(id).isPresent()) {
 		return this.roleRepository.findById(id).get();

@@ -5,13 +5,15 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by GMalikov on 24.08.2015.
  */
 public interface RoleRepository extends CrudRepository<RoleEntity, Long> {
 
-  RoleEntity findById(Long id);
+  /* RoleEntity findById(Long id);  MDACA Spring Boot 3 migration compilation issue */
+  Optional<RoleEntity> findById(Long id);
 
   RoleEntity findByNameAndSystemRole(String name, Boolean isSystem);
 

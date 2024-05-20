@@ -33,8 +33,8 @@ public class FlywayConfig {
     @ConfigurationProperties(prefix = "flyway")
     @DependsOnDatabaseInitialization
     Flyway flyway() {
-      Flyway flyway = new Flyway();
-      flyway.setDataSource(secondaryDataSource());
+      Flyway flyway = null;/* new Flyway();  MDACA Spring Boot 3 migration compilation issue  */
+      /*  flyway.setDataSource(secondaryDataSource()); MDACA Spring Boot 3 migration compilation issue  */
       return flyway;
     }
 
@@ -42,7 +42,7 @@ public class FlywayConfig {
     FlywayMigrationInitializer flywayInitializer(ApplicationContext context, Flyway flyway) {
 
         ApplicationContextAwareSpringJdbcMigrationResolver contextAwareResolver = new ApplicationContextAwareSpringJdbcMigrationResolver(context);
-        flyway.setResolvers(contextAwareResolver);
+        /* flyway.setResolvers(contextAwareResolver);  MDACA Spring Boot 3 migration compilation issue  */
 
         return new FlywayMigrationInitializer(flyway, null);
     }

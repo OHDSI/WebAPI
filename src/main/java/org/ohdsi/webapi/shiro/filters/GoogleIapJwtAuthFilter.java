@@ -20,6 +20,7 @@ import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.tokens.JwtAuthToken;
 import org.pac4j.core.profile.CommonProfile;
+import org.pac4j.core.profile.UserProfile;
 
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
@@ -87,9 +88,9 @@ public class GoogleIapJwtAuthFilter extends AtlasAuthFilter {
             final PrincipalCollection principals = SecurityUtils.getSubject().getPrincipals();
             final Pac4jPrincipal pac4jPrincipal = principals.oneByType(Pac4jPrincipal.class);
             if (Objects.nonNull(pac4jPrincipal)) {
-                CommonProfile profile = pac4jPrincipal.getProfile();
-                login = profile.getEmail();
-                name = Optional.ofNullable(profile.getDisplayName()).orElse(login);
+                UserProfile profile = pac4jPrincipal.getProfile();
+                login = profile.getAttribute("email").toString();
+                name = Optional.ofNullable(profile.getAttribute("display_name").toString()).orElse(login);
             } else {
                 name = (String) principals.getPrimaryPrincipal();
                 login = name;

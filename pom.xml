@@ -1004,6 +1004,18 @@
 	    <artifactId>jakartaee-pac4j</artifactId>
 	    <version>8.0.1</version>
 	</dependency>
+	
+    <dependency>
+      <groupId>org.pac4j</groupId>
+      <artifactId>pac4j-core</artifactId>
+      <version>${pac4j.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
     
     <dependency>
       <groupId>org.pac4j</groupId>

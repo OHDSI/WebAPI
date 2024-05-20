@@ -313,7 +313,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 	@Override
 	public void delete(Integer id) {
 
-		pathwayAnalysisRepository.delete(id);
+		pathwayAnalysisRepository.deleteById(id);
 	}
 
 	@Override

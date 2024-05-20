@@ -7,6 +7,7 @@ import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.helper.Guard;
 import org.ohdsi.webapi.shiro.filters.AtlasAuthFilter;
 import org.ohdsi.webapi.shiro.tokens.JwtAuthToken;
+import org.pac4j.core.context.CallContext;
 import org.pac4j.core.context.session.SessionStore;
 import org.pac4j.jee.context.JEEContext;
 import org.pac4j.jee.context.session.JEESessionStoreFactory;
@@ -68,8 +69,8 @@ public class SamlHandleFilter extends AtlasAuthFilter {
                 } else {
                     client = saml2Client;
                 }
-                SAML2Credentials credentials = (SAML2Credentials)client.getCredentials(context, store).get();
-                SAML2Profile samlProfile = (SAML2Profile)client.getUserProfile(credentials, context, store).get();
+                SAML2Credentials credentials = (SAML2Credentials)client.getCredentials(new CallContext(context, store)).get();
+                SAML2Profile samlProfile = (SAML2Profile)client.getUserProfile(new CallContext(context, store), credentials).get();
 
                 token = new JwtAuthToken(samlProfile.getId());
             }

@@ -448,9 +448,12 @@ public class PermissionManager {
     throw new UnsupportedOperationException();
   }
 
-  public Optional<RoleEntity> getRole(Long id) {
+  public RoleEntity getRole(Long id) {
     /* return this.roleRepository.findById(id);   MDACA Spring Boot 3 migration compilation issue */
-    return this.roleRepository.findById(id);
+	if (this.roleRepository.findById(id).isPresent()) {
+		return this.roleRepository.findById(id).get();
+	}
+    return null;
   }
 
   public RoleEntity updateRole(RoleEntity roleEntity) {

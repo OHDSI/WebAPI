@@ -159,11 +159,14 @@ public class UserService {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Role updateRole(@PathParam("roleId") Long id, Role role) throws Exception {
+    /* RoleEntity roleEntity = this.authorizer.getRole(id);   MDACA Spring Boot 3 migration compilation issue */
     RoleEntity roleEntity = this.authorizer.getRole(id);
+    /* if (roleEntity == null) {   MDACA Spring Boot 3 migration compilation issue */
     if (roleEntity == null) {
       throw new Exception("Role doesn't exist");
     }
     roleEntity.setName(role.role);
+    /* roleEntity = this.authorizer.updateRole(roleEntity);   MDACA Spring Boot 3 migration compilation issue */
     roleEntity = this.authorizer.updateRole(roleEntity);
     eventPublisher.publishEvent(new ChangeRoleEvent(this, id, role.role));
     return new Role(roleEntity);

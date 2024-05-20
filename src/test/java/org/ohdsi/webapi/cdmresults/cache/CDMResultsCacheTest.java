@@ -81,7 +81,8 @@ public class CDMResultsCacheTest {
         List<Integer> ids2 = Arrays.asList(1, 2, 3, 4);
 
         when(function.apply(any())).then(invocation -> {
-                    List<Integer> ids = invocation.getArgumentAt(0, List.class);
+                    /* List<Integer> ids = invocation.getArgumentAt(0, List.class);    MDACA Spring Boot 3 migration compilation issue */
+                    List<Integer> ids = invocation.getArgument(0, List.class);
                     return ids.stream().map(CDMResultsCacheTest.this::createDescendantRecordCount).collect(Collectors.toList());
                 }
 
@@ -102,7 +103,7 @@ public class CDMResultsCacheTest {
         List<Integer> ids2 = Arrays.asList(1, 2);
 
         when(function.apply(any())).then(invocation -> {
-                    List<Integer> ids = invocation.getArgumentAt(0, List.class);
+                    List<Integer> ids = invocation.getArgument(0, List.class);
                     return ids2.stream().map(CDMResultsCacheTest.this::createDescendantRecordCount).collect(Collectors.toList());
                 }
 

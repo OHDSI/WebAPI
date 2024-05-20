@@ -12,8 +12,8 @@
     <build.number>${BUILD_NUMBER}</build.number>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- MDACA Spring Boot manages spring.version as well -->
-    <spring.boot.version>3.0.13</spring.boot.version>
-    <log4j2.version>2.17.1</log4j2.version>
+    <spring.boot.version>3.1.11</spring.boot.version>
+    <log4j2.version>2.23.0</log4j2.version>   <!-- log4j2.version>2.17.1</log4j2.version MDACA Spring Boot 3 migration  -->
     <flyway.version>4.2.0</flyway.version>
     <waffle.version>2.2.1</waffle.version>
     <jna.version>5.5.0</jna.version>
@@ -522,7 +522,7 @@
         <version>5.30.0</version>
         <configuration>
           <activeRecipes>
-            <recipe>org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_1</recipe>
+            <recipe>org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_2</recipe>
           </activeRecipes>
         </configuration>
         <dependencies>
@@ -801,9 +801,14 @@
    <artifactId>flyway-core</artifactId>
    <!-- MDACA Spring Boot 3 migration version>${flyway.version}</version -->
   </dependency>
-  <dependency>
+  <!-- DACA Spring Boot 3 migration  dependency>
    <groupId>org.apache.httpcomponents</groupId>
    <artifactId>httpclient</artifactId>
+  </dependency -->
+  <dependency>
+	<groupId>org.apache.httpcomponents.client5</groupId>
+	<artifactId>httpclient5</artifactId>
+	<version>5.2</version>
   </dependency>
   <dependency>
    <groupId>org.springframework.batch</groupId>
@@ -1142,11 +1147,17 @@
       <version>1.3.0</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>pl.pragmatists</groupId>
-      <artifactId>JUnitParams</artifactId>
-      <version>1.1.0</version>
-      <scope>test</scope>
+  <dependency>
+   <groupId>pl.pragmatists</groupId>
+   <artifactId>JUnitParams</artifactId>
+   <version>1.1.0</version>
+   <scope>test</scope>
+   <exclusions>
+    <exclusion>
+     <groupId>junit</groupId>
+     <artifactId>junit</artifactId>
+    </exclusion>
+   </exclusions>
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>

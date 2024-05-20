@@ -63,6 +63,7 @@ public class ValidatorGroupBuilder<T, V> extends ValidatorBaseBuilder<T, Validat
 
     public ValidatorGroup<T, V> build() {
 
+        /* List<ValidatorGroup<V, ?>> groups = initAndBuildList(this.validatorGroupBuilders);    MDACA Spring Boot 3 migration compilation issue */
         List<ValidatorGroup<V, ?>> groups = initAndBuildList(this.validatorGroupBuilders);
         List<Validator<V>> validators = initAndBuildList(this.validatorBuilders);
 

@@ -1,3 +1,4 @@
+package org.ohdsi.webapi.source;
 /*
  *
  * Copyright 2017 Observational Health Data Sciences and Informatics
@@ -30,7 +31,6 @@
                 }
         )
 })
-package org.ohdsi.webapi.source;
 
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.TypeDef;

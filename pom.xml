@@ -579,7 +579,7 @@
   <dependency>
     <groupId>org.codehaus.jettison</groupId>
     <artifactId>jettison</artifactId>
-    <version>1.4.1</version>
+    <version>1.5.4</version>   <!-- version>1.4.1</version MDACA Spring Boot 3 migration -->
   </dependency>
   <dependency>
    <groupId>com.fasterxml.jackson.core</groupId>

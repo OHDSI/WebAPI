@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.Principal;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -380,16 +381,21 @@ public class PermissionManager {
   }
 
   private RoleEntity getRoleById(Long roleId) {
-    final RoleEntity roleEntity = this.roleRepository.findById(roleId).get();
-    if (roleEntity == null)
+    /* final RoleEntity roleEntity = this.roleRepository.findById(roleId);   MDACA Spring Boot 3 migration compilation issue */
+    final Optional<RoleEntity> roleEntity = this.roleRepository.findById(roleId);
+    /* if (roleEntity == null)   MDACA Spring Boot 3 migration compilation issue */
+    if (roleEntity.isEmpty())
       throw new RuntimeException("Role doesn't exist");
 
-    return roleEntity;
+    /* return roleEntity;   MDACA Spring Boot 3 migration compilation issue */
+    return roleEntity.get();
   }
 
   private PermissionEntity getPermissionById(Long permissionId) {
-    final PermissionEntity permission = this.permissionRepository.findById(permissionId).get();
-    if (permission == null )
+    /* final PermissionEntity permission = this.permissionRepository.findById(permissionId);   MDACA Spring Boot 3 migration compilation issue */
+    final Optional<PermissionEntity> permission = this.permissionRepository.findById(permissionId);
+    /* if (permission == null )   MDACA Spring Boot 3 migration compilation issue */
+    if (permission.isEmpty())
       throw new RuntimeException("Permission doesn't exist");
 
     return permission;
@@ -443,6 +449,12 @@ public class PermissionManager {
 
   public RoleEntity getRole(Long id) {
     return this.roleRepository.findById(id).get();
+  public RoleEntity getRole(Long id) {
+    /* return this.roleRepository.findById(id);   MDACA Spring Boot 3 migration compilation issue */
+	if (this.roleRepository.findById(id).isPresent()) {
+		return this.roleRepository.findById(id).get();
+	}
+    return null;
   }
 
   public RoleEntity updateRole(RoleEntity roleEntity) {

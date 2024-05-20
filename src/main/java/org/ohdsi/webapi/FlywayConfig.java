@@ -1,9 +1,12 @@
 package org.ohdsi.webapi;
 
 import com.odysseusinc.arachne.commons.config.flyway.ApplicationContextAwareSpringJdbcMigrationResolver;
+
+import java.util.Map;
+
 import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
-
+import org.flywaydb.core.api.configuration.FluentConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.flyway.FlywayDataSource;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationInitializer;
@@ -31,20 +34,23 @@ public class FlywayConfig {
 
     @Bean(initMethod = "migrate", name = "flyway")
     @ConfigurationProperties(prefix = "flyway")
-    @DependsOnDatabaseInitialization
+   //@DependsOnDatabaseInitialization
     Flyway flyway() {
-      Flyway flyway = null;/* new Flyway();  MDACA Spring Boot 3 migration compilation issue  */
-      /*  flyway.setDataSource(secondaryDataSource()); MDACA Spring Boot 3 migration compilation issue  */
-      return flyway;
+        Flyway fw = Flyway.configure().dataSource(secondaryDataSource())
+        		.locations("classpath:db/migration/postgresql")
+        		.placeholders(Map.of("ohdsiSchema", "webapi")).load();
+        return fw;
     }
 
     @Bean
     FlywayMigrationInitializer flywayInitializer(ApplicationContext context, Flyway flyway) {
+    	return new FlywayMigrationInitializer(flyway, (f) -> {
+    		//ApplicationContextAwareSpringJdbcMigrationResolver contextAwareResolver = new ApplicationContextAwareSpringJdbcMigrationResolver(context);
+        });
+        //
+        //flyway.setResolvers(contextAwareResolver);
 
-        ApplicationContextAwareSpringJdbcMigrationResolver contextAwareResolver = new ApplicationContextAwareSpringJdbcMigrationResolver(context);
-        /* flyway.setResolvers(contextAwareResolver);  MDACA Spring Boot 3 migration compilation issue  */
-
-        return new FlywayMigrationInitializer(flyway, null);
+        //return new FlywayMigrationInitializer(flyway, null);
     }
 
 }

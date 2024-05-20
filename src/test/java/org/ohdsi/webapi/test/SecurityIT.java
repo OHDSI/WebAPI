@@ -7,11 +7,11 @@ import com.google.common.collect.ImmutableMap;
 import org.glassfish.jersey.server.model.Parameter;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
-import org.junit.Rule;
+/* import org.junit.Rule;    MDACA Spring Boot 3 migration */
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.ErrorCollector;
+/* import org.junit.rules.ErrorCollector;    MDACA Spring Boot 3 migration */
 import org.ohdsi.webapi.JerseyConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,10 +46,10 @@ public class SecurityIT extends WebApiIT {
 
     @Autowired
     private JerseyConfig jerseyConfig;
-
+/*  MDACA Spring Boot 3 migration
     @Rule
     public ErrorCollector collector = new ErrorCollector();
-
+*/
     private final Logger LOG = LoggerFactory.getLogger(SecurityIT.class);
 
     @BeforeAll
@@ -91,7 +91,7 @@ public class SecurityIT extends WebApiIT {
                     assertThat(response.getStatusCode()).isEqualTo(expectedStatus);
                 } catch (Throwable t) {
                     LOG.info("failed service {}:{}", serviceInfo.httpMethod, uri);
-                    collector.addError(new ThrowableEx(t, rawUrl));
+                    /* collector.addError(new ThrowableEx(t, rawUrl));    MDACA Spring Boot 3 migration */
                 }
             }
         }

@@ -11,8 +11,6 @@ import java.util.List;
  */
 public interface PermissionRepository extends CrudRepository<PermissionEntity, Long> {
 
-  public PermissionEntity findById(Long id);
-
   public PermissionEntity findByValueIgnoreCase(String permission);
 
   List<PermissionEntity> findByValueLike(String permissionTemplate, EntityGraph entityGraph);

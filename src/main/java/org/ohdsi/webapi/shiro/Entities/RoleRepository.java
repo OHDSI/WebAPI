@@ -11,8 +11,6 @@ import java.util.List;
  */
 public interface RoleRepository extends CrudRepository<RoleEntity, Long> {
 
-  RoleEntity findById(Long id);
-
   RoleEntity findByNameAndSystemRole(String name, Boolean isSystem);
 
   List<RoleEntity> findByNameIgnoreCaseContaining(String roleSearch);

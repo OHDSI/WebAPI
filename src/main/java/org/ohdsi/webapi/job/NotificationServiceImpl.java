@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.chrono.ChronoLocalDateTime;
 import java.util.ArrayList;
@@ -63,11 +64,11 @@ public class NotificationServiceImpl implements NotificationService {
 
     public List<JobExecutionInfo> findJobs(List<BatchStatus> hideStatuses, int maxSize, boolean refreshJobsOnly) {
         BiFunction<JobExecutionInfo, JobExecutionInfo, JobExecutionInfo> mergeFunction = (x, y) -> {
-            final Date xStartTime = x != null ? x.getJobExecution().getStartTime() : null;
-            final Date yStartTime = y != null ? y.getJobExecution().getStartTime() : null;
+            final LocalDateTime xStartTime = x != null ? x.getJobExecution().getStartTime() : null;
+            final LocalDateTime yStartTime = y != null ? y.getJobExecution().getStartTime() : null;
             return xStartTime != null ?
                     yStartTime != null ?
-                            xStartTime.after(yStartTime) ? x
+                            xStartTime.isAfter(yStartTime) ? x
                                     : y
                             : x
                     : y;

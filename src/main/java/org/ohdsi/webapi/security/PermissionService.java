@@ -150,7 +150,7 @@ public class PermissionService {
 
     public void removePermissionsFromRole(Map<String, String> permissionTemplates, Integer entityId, Long roleId) {
 
-        RoleEntity role = roleRepository.findById(roleId);
+        RoleEntity role = roleRepository.findById(roleId).get();
         permissionTemplates.keySet()
                 .forEach(pt -> {
                     String permission = getPermission(pt, entityId);

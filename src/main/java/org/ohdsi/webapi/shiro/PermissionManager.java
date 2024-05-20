@@ -380,7 +380,7 @@ public class PermissionManager {
   }
 
   private RoleEntity getRoleById(Long roleId) {
-    final RoleEntity roleEntity = this.roleRepository.findById(roleId);
+    final RoleEntity roleEntity = this.roleRepository.findById(roleId).get();
     if (roleEntity == null)
       throw new RuntimeException("Role doesn't exist");
 
@@ -388,7 +388,7 @@ public class PermissionManager {
   }
 
   private PermissionEntity getPermissionById(Long permissionId) {
-    final PermissionEntity permission = this.permissionRepository.findById(permissionId);
+    final PermissionEntity permission = this.permissionRepository.findById(permissionId).get();
     if (permission == null )
       throw new RuntimeException("Permission doesn't exist");
 
@@ -442,7 +442,7 @@ public class PermissionManager {
   }
 
   public RoleEntity getRole(Long id) {
-    return this.roleRepository.findById(id);
+    return this.roleRepository.findById(id).get();
   }
 
   public RoleEntity updateRole(RoleEntity roleEntity) {

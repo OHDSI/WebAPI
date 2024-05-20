@@ -96,15 +96,15 @@ public class ActiveDirectoryProvider extends AbstractLdapProvider {
   }
 
   @Override
-  public List<LdapGroup> getLdapGroups(Attributes attributes) throws NamingException {
+  public List<LdapGroup> getLdapGroups(/*~~>*/Attributes attributes) throws /*~~>*/NamingException {
     return valueAsList(attributes.get("memberOf")).stream()
             .map(v -> new LdapGroup("", v))
             .collect(Collectors.toList());
   }
 
   @Override
-  public SearchControls getUserSearchControls() {
-    SearchControls searchControls = new SearchControls();
+  public /*~~>*/SearchControls getUserSearchControls() {
+    /*~~>*/SearchControls searchControls = new /*~~>*/SearchControls();
     searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
     searchControls.setCountLimit(countLimit);
     return searchControls;

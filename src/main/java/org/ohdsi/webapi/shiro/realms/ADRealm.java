@@ -73,7 +73,7 @@ public class ADRealm extends ActiveDirectoryRealm {
     }
 
     @Override
-    protected AuthenticationInfo queryForAuthenticationInfo(AuthenticationToken token, LdapContextFactory ldapContextFactory) throws NamingException {
+    protected AuthenticationInfo queryForAuthenticationInfo(AuthenticationToken token, LdapContextFactory ldapContextFactory) throws /*~~>*/NamingException {
 
         if (Objects.nonNull(ldapTemplate) && StringUtils.isNotBlank(searchFilter) && StringUtils.isNotBlank(searchString)) {
             UsernamePasswordToken upToken = (UsernamePasswordToken) token;
@@ -88,7 +88,7 @@ public class ADRealm extends ActiveDirectoryRealm {
                 List<String> filterResult = ldapTemplate.search("", searchFilter.formatted(userPrincipal.getUsername()),
                         SearchControls.SUBTREE_SCOPE, dnAttributesMapper);
                 if (!filterResult.isEmpty()) {
-                    LdapContext ctx = null;
+                    /*~~>*/LdapContext ctx = null;
                     try {
                         ctx = ldapContextFactory.getLdapContext(upToken.getUsername(), String.valueOf(upToken.getPassword()));
                     } finally {

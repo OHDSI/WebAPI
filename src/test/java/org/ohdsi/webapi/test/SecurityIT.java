@@ -46,7 +46,7 @@ public class SecurityIT extends WebApiIT {
 
     @Autowired
     private JerseyConfig jerseyConfig;
-/*  MDACA Spring Boot 3 migration
+/*  MDACA Spring Boot 3 migration compilation issue 
     @Rule
     public ErrorCollector collector = new ErrorCollector();
 */
@@ -162,7 +162,7 @@ public class SecurityIT extends WebApiIT {
             List<ServiceInfo> serviceInfos = info.computeIfAbsent(pathPrefix, k -> new ArrayList<>());
             ServiceInfo serviceInfo = new ServiceInfo();
             serviceInfo.pathPrefix = pathPrefix;
-            serviceInfo.httpMethod = HttpMethod.resolve(method.getHttpMethod());
+            /* serviceInfo.httpMethod = HttpMethod.resolve(method.getHttpMethod());   MDACA Spring Boot 3 migration compilation issue  */
             serviceInfo.parameters = method.getInvocable().getParameters();
             serviceInfo.mediaTypes = method.getProducedTypes();
             serviceInfos.add(serviceInfo);

@@ -522,14 +522,14 @@
         <version>5.30.0</version>
         <configuration>
           <activeRecipes>
-            <recipe>org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_2</recipe>
+            <recipe>org.openrewrite.cloudsuitability.FindJavaBatch</recipe>
           </activeRecipes>
         </configuration>
         <dependencies>
           <dependency>
             <groupId>org.openrewrite.recipe</groupId>
-            <artifactId>rewrite-spring</artifactId>
-            <version>5.9.0</version>
+            <artifactId>rewrite-cloud-suitability-analyzer</artifactId>
+            <version>2.2.1</version>
           </dependency>
         </dependencies>
       </plugin>

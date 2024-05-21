@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #set -eux
 
-VERSION=2.1.0
-TAG=2.9.0-$VERSION
+VERSION=2.2.0
+TAG=2.14.0-$VERSION
 
 REGISTRY=harbor.honeur.org
 REPOSITORY=honeur

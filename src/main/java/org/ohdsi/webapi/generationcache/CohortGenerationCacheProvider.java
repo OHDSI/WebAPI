@@ -13,6 +13,8 @@ import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.SourceUtils;
 import org.ohdsi.webapi.util.StatementCancel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -22,6 +24,7 @@ import static org.ohdsi.webapi.Constants.Params.RESULTS_DATABASE_SCHEMA;
 
 @Component
 public class CohortGenerationCacheProvider extends AbstractDaoService implements GenerationCacheProvider {
+    private static final Logger log = LoggerFactory.getLogger(CohortGenerationCacheProvider.class);
 
     private static final String CACHE_VALIDATION_TIME = "Checksum of Generation cache for designHash = {} has been calculated in {} milliseconds";
 
@@ -88,9 +91,16 @@ public class CohortGenerationCacheProvider extends AbstractDaoService implements
                 new String[]{SourceUtils.getResultsQualifier(source), designHash.toString()}
         );
         sql = SqlTranslate.translateSql(sql, source.getSourceDialect());
-        // StatementCancel parameter is needed for calling batchUpdate of CancelableJdbcTemplate class
-        // Without StatementCancel parameter JdbcTemplate.batchUpdate will be used.
-        // JdbcTemplate incorrectly determines the support of batch update for impala datasource
-        getSourceJdbcTemplate(source).batchUpdate(new StatementCancel(), SqlSplit.splitSql(sql));
+
+        try {
+            // StatementCancel parameter is needed for calling batchUpdate of CancelableJdbcTemplate class
+            // Without StatementCancel parameter JdbcTemplate.batchUpdate will be used.
+            // JdbcTemplate incorrectly determines the support of batch update for impala datasource
+            getSourceJdbcTemplate(source).batchUpdate(new StatementCancel(), SqlSplit.splitSql(sql));
+        } catch (final Exception e) {
+            // if source is unavailable it throws exception that prevents source from being deleted.
+            // ignore exception and proceed with deletion.
+            log.warn("Cannot remove generation caches from source {}", source.getSourceId());
+        }
     }
 }

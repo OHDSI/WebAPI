@@ -5,15 +5,21 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.webapi.model.CommonEntity;
+import org.ohdsi.webapi.model.CommonEntityExt;
+import org.ohdsi.webapi.tag.domain.Tag;
 
 @Entity(name = "pathway_analysis")
-public class PathwayAnalysisEntity extends CommonEntity<Integer> {
+public class PathwayAnalysisEntity extends CommonEntityExt<Integer> {
 
     @Id
     @GenericGenerator(
@@ -29,6 +35,9 @@ public class PathwayAnalysisEntity extends CommonEntity<Integer> {
 
     @Column
     private String name;
+
+    @Column
+    private String description;
 
     @OneToMany(mappedBy = "pathwayAnalysis", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<PathwayTargetCohort> targetCohorts = new HashSet<>();
@@ -54,6 +63,12 @@ public class PathwayAnalysisEntity extends CommonEntity<Integer> {
     @Column(name = "hash_code")
     private Integer hashCode;
 
+    @ManyToMany(targetEntity = Tag.class, fetch = FetchType.LAZY)
+    @JoinTable(name = "pathway_tag",
+            joinColumns = @JoinColumn(name = "asset_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
+    private Set<Tag> tags;
+
     @Override
     public Integer getId() {
 
@@ -73,6 +88,14 @@ public class PathwayAnalysisEntity extends CommonEntity<Integer> {
     public void setName(String name) {
 
         this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Set<PathwayTargetCohort> getTargetCohorts() {
@@ -151,5 +174,15 @@ public class PathwayAnalysisEntity extends CommonEntity<Integer> {
     public void setHashCode(Integer hashCode) {
 
         this.hashCode = hashCode;
+    }
+
+    @Override
+    public Set<Tag> getTags() {
+        return tags;
+    }
+
+    @Override
+    public void setTags(Set<Tag> tags) {
+        this.tags = tags;
     }
 }

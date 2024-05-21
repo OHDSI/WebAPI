@@ -16,4 +16,7 @@ public interface PathwayAnalysisEntityRepository extends EntityGraphJpaRepositor
 
   @Query("SELECT COUNT(pa) FROM pathway_analysis pa WHERE pa.name = :name and pa.id <> :id")
   int getCountPAWithSameName(@Param("id") Integer id, @Param("name") String name);
+
+  @Query("SELECT DISTINCT pa FROM pathway_analysis pa JOIN FETCH pa.tags t WHERE lower(t.name) in :tagNames")
+  List<PathwayAnalysisEntity> findByTags(@Param("tagNames") List<String> tagNames);
 }

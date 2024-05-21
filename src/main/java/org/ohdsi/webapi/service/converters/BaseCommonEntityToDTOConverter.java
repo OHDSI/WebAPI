@@ -6,7 +6,7 @@ import org.ohdsi.webapi.service.dto.CommonEntityDTO;
 
 import static org.ohdsi.webapi.util.ConversionUtils.convertMetadata;
 
-public abstract class BaseCommonEntityToDTOConverter<S extends CommonEntity, T extends CommonEntityDTO>
+public abstract class BaseCommonEntityToDTOConverter<S extends CommonEntity<? extends Number>, T extends CommonEntityDTO>
         extends BaseConversionServiceAwareConverter<S, T> {
     protected abstract void doConvert(S source, T target);
 

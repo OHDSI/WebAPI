@@ -14,8 +14,17 @@ public class CohortDefinitionPermissionSchema extends EntityPermissionSchema {
         put("cohortdefinition:%s:check:post", "Fix Cohort Definition with ID = %s");
     }};
 
+  private static Map<String, String> readPermissions = new HashMap<String, String>() {{                                     
+	put("cohortdefinition:%s:get", "Get Cohort Definition by ID");
+	put("cohortdefinition:%s:info:get","");
+
+	put("cohortdefinition:%s:version:get", "Get list of cohort versions");
+	put("cohortdefinition:%s:version:*:get", "Get cohort version");		       
+      }
+    };
+  
     public CohortDefinitionPermissionSchema() {
 
-        super(EntityType.COHORT_DEFINITION, new HashMap<>(), writePermissions);
+        super(EntityType.COHORT_DEFINITION, readPermissions, writePermissions);
     }
 }

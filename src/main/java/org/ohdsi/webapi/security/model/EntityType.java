@@ -10,7 +10,9 @@ import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
 import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.prediction.PredictionAnalysis;
+import org.ohdsi.webapi.reusable.domain.Reusable;
 import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.tag.domain.Tag;
 
 public enum EntityType {
     COHORT_DEFINITION(CohortDefinition.class),
@@ -22,7 +24,9 @@ public enum EntityType {
     SOURCE(Source.class),
     ESTIMATION(Estimation.class),
     PREDICTION(PredictionAnalysis.class),
-    COHORT_SAMPLE(CohortSample.class);
+    COHORT_SAMPLE(CohortSample.class),
+    TAG(Tag.class),
+    REUSABLE(Reusable.class);
 
     private final Class<? extends CommonEntity> entityClass;
 

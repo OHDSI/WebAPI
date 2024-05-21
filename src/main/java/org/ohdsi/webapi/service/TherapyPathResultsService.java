@@ -39,16 +39,24 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
 /**
- *
- * @author fdefalco
- *
- * I envision this eventually being subsumed within the cohortresults service
- *
+ * REST Services related to an initial implementation of treatment
+ * pathways but should not be used as it is old and should be deprecated
+ * in a future release of the code base.
+ * 
+ * @summary Treatment pathways results (DO NOT USE)
  */
 @Path("{sourceKey}/txpathresults/")
 @Component
 public class TherapyPathResultsService extends AbstractDaoService {
 
+    /**
+     * Get reports
+     * 
+     * @summary DO NOT USE
+     * @deprecated
+     * @param sourceKey The source key
+     * @return The report info
+     */
   @Path("reports")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
@@ -87,6 +95,15 @@ public class TherapyPathResultsService extends AbstractDaoService {
     return new PreparedStatementRenderer(source, resourcePath, tqName, tqValue);
   }
 
+  /**
+   * Get the report by ID
+   * 
+   * @summary DO NOT USE
+   * @deprecated
+   * @param id The report ID
+   * @param sourceKey The source key
+   * @return Therapy path vector
+   */
   @Path("report/{id}")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
@@ -114,6 +131,15 @@ public class TherapyPathResultsService extends AbstractDaoService {
     return new PreparedStatementRenderer(source, sqlPath, null, (String) null, "id", Integer.valueOf(id));
   }
 
+  /**
+   * Get the report summary
+   * 
+   * @summary DO NOT USE
+   * @deprecated
+   * @param sourceKey The source key
+   * @param identifiers The report identifiers
+   * @return List<TherapySummary>
+   */
   @Path("summary")
   @POST
   @Produces(MediaType.APPLICATION_JSON)

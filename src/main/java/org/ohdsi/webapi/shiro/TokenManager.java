@@ -17,6 +17,7 @@ import java.util.Objects;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.shiro.web.util.WebUtils;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.util.ExpiringMultimap;
 
 /**
@@ -30,7 +31,7 @@ public class TokenManager {
   private static final Map<String, Key> userToKeyMap = new HashMap<>();
   private static final ExpiringMultimap<String, Key> gracePeriodInvalidTokens = new ExpiringMultimap<>(30000);
 
-  public static String createJsonWebToken(String subject, Date expiration) {
+  public static String createJsonWebToken(String subject, String sessionId, Date expiration) {
     Key key = MacProvider.generateKey();
 
     Key oldKey;
@@ -40,6 +41,7 @@ public class TokenManager {
     userToKeyMap.put(subject, key);
 
     Map<String, Object> claims = new HashMap<>();
+    claims.put(Constants.SESSION_ID, sessionId);
     return Jwts.builder()
             .setClaims(claims)
             .setSubject(subject)

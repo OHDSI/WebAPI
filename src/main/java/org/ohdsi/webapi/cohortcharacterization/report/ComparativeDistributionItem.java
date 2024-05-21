@@ -3,6 +3,7 @@ package org.ohdsi.webapi.cohortcharacterization.report;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 
 import java.util.Objects;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcDistributionStat;
 
 public class ComparativeDistributionItem extends ComparativeItem {
     private final Double targetStdDev;
@@ -29,6 +30,8 @@ public class ComparativeDistributionItem extends ComparativeItem {
     private final String aggregateName;
     private final Boolean missingMeansZero;
 
+		private static final CcDistributionStat EMPTY_ITEM;
+		
     public ComparativeDistributionItem(DistributionItem firstItem, DistributionItem secondItem, CohortDefinition firstCohortDef,
                                        CohortDefinition secondCohortDef) {
         super(firstItem, secondItem, firstCohortDef, secondCohortDef);
@@ -58,7 +61,24 @@ public class ComparativeDistributionItem extends ComparativeItem {
         this.comparatorMax = secondItem != null ? secondItem.getMax() : null;
         this.comparatorAvg = secondItem != null ? secondItem.avg : null;
     }
+		static {
+			EMPTY_ITEM = new CcDistributionStat();
+			EMPTY_ITEM.setAvg(0.0d);
+			EMPTY_ITEM.setStdDev(0.0d);
+		}
+		
+		@Override
+		protected double calcDiff(ExportItem first, ExportItem second) {
+			if (first == null) {
+				first = new DistributionItem(EMPTY_ITEM, this.getTargetCohortName());
+			}
 
+			if (second == null) {
+				second = new DistributionItem(EMPTY_ITEM, this.getComparatorCohortName());
+			}
+			return first.calcDiff(second);
+		}
+		
     public Double getTargetStdDev() {
         return targetStdDev;
     }

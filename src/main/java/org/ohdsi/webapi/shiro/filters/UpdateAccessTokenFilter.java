@@ -25,6 +25,7 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.servlet.ShiroHttpServletRequest;
 import org.apache.shiro.web.util.WebUtils;
+import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.shiro.Entities.UserPrincipal;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.TokenManager;
@@ -67,7 +68,7 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
     Object principal = principals.getPrimaryPrincipal();
     
     if (principal instanceof Pac4jPrincipal) {
-      login = ((Pac4jPrincipal)principal).getProfile().getUsername();
+      login = ((Pac4jPrincipal)principal).getProfile().getEmail();
       name = ((Pac4jPrincipal)principal).getProfile().getDisplayName();
       
       /**
@@ -131,8 +132,16 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
         throw new Exception(e);
       }
 
+      String sessionId = (String) request.getAttribute(Constants.SESSION_ID);
+      if (sessionId == null) {
+        final String token = TokenManager.extractToken(request);
+        if (token != null) {
+          sessionId = (String) TokenManager.getBody(token).get(Constants.SESSION_ID);
+        }
+      }
+
       Date expiration = this.getExpirationDate(this.tokenExpirationIntervalInSeconds);
-      jwt = TokenManager.createJsonWebToken(login, expiration);
+      jwt = TokenManager.createJsonWebToken(login, sessionId, expiration);
     }
 
     request.setAttribute(TOKEN_ATTRIBUTE, jwt);

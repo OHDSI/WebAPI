@@ -4,6 +4,7 @@ import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
+import org.ohdsi.webapi.audittrail.listeners.AuditTrailJobListener;
 import org.ohdsi.webapi.common.generation.AutoremoveJobListener;
 import org.ohdsi.webapi.common.generation.CancelJobListener;
 import org.ohdsi.webapi.job.JobTemplate;
@@ -73,6 +74,8 @@ public class JobConfig {
     
     @Autowired
     private DataSource dataSource;
+    @Autowired
+    private AuditTrailJobListener auditTrailJobListener;
     
     @Bean
     public String batchTablePrefix() {
@@ -130,7 +133,8 @@ public class JobConfig {
             @Override
             public JobBuilder get(String name) {
                 return super.get(name)
-                        .listener(new CancelJobListener());
+                        .listener(new CancelJobListener())
+                        .listener(auditTrailJobListener);
             }
         };
     }

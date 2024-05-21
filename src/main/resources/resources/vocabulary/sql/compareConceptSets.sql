@@ -20,6 +20,8 @@ SELECT
     , c.concept_code
     , c.domain_id
     , c.vocabulary_id
+    , c.valid_start_date
+    , c.valid_end_date
     , c.concept_class_id
 FROM conceptSetAnalysis a 
 INNER JOIN @vocabulary_database_schema.concept c ON a.concept_id = c.concept_id

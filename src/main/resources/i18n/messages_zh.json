@@ -41,6 +41,7 @@
       "shortdate": "MM/dd",
       "mediumdate": "MM/dd/YYYY",
       "datetime": "MM/DD/YYYY h:mm A",
+      "datetimeWithSeconds": "MM/DD/YYYY h:mm:ss A",
       "minutes": "分",
       "seconds": "秒"
     }
@@ -60,6 +61,7 @@
     "accessDenied": "拒绝访问",
     "add": "添加",
     "and": "以及",
+    "anonymous": "anonymous",
     "cancel": "取消",
     "close": "关闭",
     "configureAccess": "配合访问",
@@ -74,6 +76,7 @@
     "copyOf": "<%=name%>的副本",
     "copyToClipboard": "复制到剪贴版",
     "createACopy": "建立副本",
+    "create": "Create",
     "days": "天",
     "daysAbbr": "天",
     "delete": "删除",
@@ -93,13 +96,27 @@
     "refresh": "刷新",
     "save": "保存",
     "search": "搜索",
+    "select": "Select",
     "selectAll": "全选",
     "set": "集合",
     "unsaved": "(未保存的)",
     "unspecified": "未完成！",
     "menu": "菜单",
     "noData": "没有数据",
-    "readOnly": "（只读）"
+    "readOnly": "（只读）",
+    "tags": "Tags",
+    "backToCurrent": "Back to current version",
+    "saveAsCurrentVersion": "Save as current version",
+    "unsavedWarning": "Unsaved changes will be lost. Proceed?",
+    "savePreviewWarning": "Save as current version?",
+    "conceptSet": "Concept Set",
+    "cohort": "Cohort",
+    "characterization": "Characterization",
+    "pathway": "Pathway Analysis",
+    "incidenceRate": "Incidence Rate",
+    "ple": "Population Level Effect Estimation",
+    "plp": "Patient Level Prediction",
+    "reusable": "Reusable"
   },
   "commonErrors": {
     "noSources": "当前的WebAPI尚未定义源。<br/>请在<a href=\"#/configure\">配置</a>页上添加一个或多个。",
@@ -121,7 +138,8 @@
     "pathways": "队列路径",
     "prediction": "预测",
     "profiles": "数据概要",
-    "search": "搜索"
+    "search": "搜索",
+    "tagging": "Tagging"
   },
   "options": {
     "after": "在  之后",
@@ -196,6 +214,7 @@
   "components": {
     "authorship": {
       "created": "被创造",
+      "versionCreated": "version created",
       "modified": "修改的",
       "on": "基于/在",
       "byCreated": "由 <%=createdBy%>创建",
@@ -386,7 +405,6 @@
       "appendConceptSetExpression": "追加概念集表达式",
       "overwriteConceptSetExpression": "覆盖概念集表达式",
       "enterConceptIdentifiers": "输入概念标识符",
-      "enterSourceCodes": "输入源代码",
       "name": "概念集名称",
       "addConcepts": "添加概念",
       "removeSelected": "删除选定的",
@@ -397,8 +415,22 @@
       "actionCreate": "创建",
       "overwriteConfirm": "您确定要覆盖当前的概念集表达式吗？",
       "loadingIncludedConcepts": "加载包含的概念",
+      "loadingRecommendedConcepts": "Loading Recommended Concepts",
       "commonAncestors": "共同祖先",
-      "loadingIncludedSourcecodes": "加载包含的源代码"
+      "loadingIncludedSourcecodes": "加载包含的源代码",
+      "expressionResolveError": "Error occurred during resolving expression!",
+      "forbiddenError": "You are not authorized to view the concept set expression.",
+      "import": {
+        "repository": {
+          "overwriteCheckboxLabel": "Overwrite concept set items (append if not checked)"
+        },
+        "sourceCodes": {
+          "enterSourceCodes": "输入源代码",
+          "searchConcepts": "Search concepts",
+          "searchingConcepts": "Searching concepts...",
+          "notFound": "Not found:"
+        }
+      }
     },
     "conceptLegend": {
       "standard": "标准",
@@ -743,6 +775,30 @@
       "visitType": "就诊类别",
       "indexDataText": "索引日期是指对<%=conceptSetName%>的就诊。"
     },
+    "conditionVisitDetail": {
+      "addAttribute": "Add attribute...",
+      "anyVisitDetail": "Any Visit Detail",
+      "anyType": "Any Visit Detail Type",
+      "anySourceConcept": "Any Visit Detail Source Concept",
+      "anyGender": "Any Gender",
+      "anyProviderSpeciality": "Any Provider Specialty",
+      "anyPlaceService": "Any Place of Service",
+      "anyLocation": "Any Location",
+      "conditionVisitDetailText_1": "a visit detail of",
+      "conditionVisitDetailText_10": "with a Place of Service ",
+      "conditionVisitDetailText_11": "with a Place of Service located in:",
+      "conditionVisitDetailText_12": "with distance from a Place of Service to Patient:",
+      "conditionVisitDetailText_2": "for the first time in the person's history",
+      "conditionVisitDetailText_3": "visit detail start is:",
+      "conditionVisitDetailText_4": "visit detail end is:",
+      "conditionVisitDetailText_5": "visit detail Source Concept is",
+      "conditionVisitDetailText_6": "with visit detail duration",
+      "conditionVisitDetailText_7": "with age",
+      "conditionVisitDetailText_8": "with a gender ",
+      "conditionVisitDetailText_9": "with a Provider Specialty ",
+      "visitDetailType": "visit detail type",
+      "indexDataText": "The index date refers to the visit detail of <%= conceptSetName %>."
+    },
     "criteriaGroup": {
       "addAdditionalConstraint": "添加其他约束",
       "addCriteria": "添加条件到组",
@@ -803,7 +859,7 @@
         "resetAllCoefficients": "在交叉验证下，将模型拟合之间的所有系数重置为0：",
         "sizeMultiplier": "活动集合的大小乘数：",
         "startingVariance": "自动搜索交叉验证的起始差异； -1 =使用基于数据的估算值：",
-        "umberOfRepetitionsOfData": "交叉验证的数据重复次数：",
+        "minDataCrossValidation": "Minimum amount of data required for cross-validation:",
         "upperPrior": "先验差异上限：",
         "useTheKarush": "使用Karush-Kuhn-Tucker条件限制搜索范围："
       },
@@ -1127,11 +1183,56 @@
       "cohortPathway": "队列路径",
       "irAnalysis": "发病率分析",
       "pleAnalysis": "建人口水平效应估计",
-      "plpAnalysis": "患者水平预测"
+      "plpAnalysis": "患者水平预测",
+      "reusable": "reusable"
     },
     "checks": {
       "runningDiagnostics": "正在运行诊断",
       "fixIt": "修复它"
+    },
+    "tags": {
+      "title": "Assign Tags",
+      "tabs": {
+        "studyAssetTags": "Study Asset Tags",
+        "reference": "Reference"
+      },
+      "availableTags": "Available tags:",
+      "assign": "Assign",
+      "unassign": "Unassign",
+      "notPermitted": "Not permitted",
+      "assignExistingTag": "Create custom tag",
+      "tagNamePlaceholder": "Tag name",
+      "assignedTags": "Assigned tags:",
+      "tagGroups": "Tag groups:",
+      "tagGroup:": "Tag group:",
+      "showTags": "Show tags",
+      "tagNameExistsWarning": "Tag <%=tagName%> already exists.",
+      "cannotUnassignProtectedTagWarning": "Cannot unassign protected tag: <%=tagName%>",
+      "reassignConfirm": "The maximum number of assigned tags in the tag group \"<%=tagGroup%>\" is <%=maxNumber%>. The tag \"<%=tagName%>\" will be unassigned. Proceed?"
+    },
+    "versions": {
+      "loading": "Loading versions...",
+      "editComment": "Edit comment",
+      "addComment": "Add comment",
+      "commentPlaceholder": "Comment",
+      "preview": "Preview",
+      "viewing": "Viewing now",
+      "createACopy": "Create a copy",
+      "current": "Current"
+    },
+    "reusablesModal": {
+      "title": "Insert from Reusable",
+      "loadingReusables": "Loading reusables list...",
+      "anyConceptSet": "Any Concept Set"
+    },
+    "heading": {
+      "tag": {
+        "tooltip": {
+          "group": "Group:",
+          "groups": "Groups:",
+          "tag": "Tag:"
+        }
+      }
     }
   },
   "facets": {
@@ -1196,6 +1297,9 @@
     "designs": {
       "myDesigns": "我的设计",
       "otherDesigns": "其他设计"
+    },
+    "tags": {
+      "untagged": "Untagged"
     }
   },
   "columns": {
@@ -1346,6 +1450,7 @@
     "quantityPer1000PerYear": "数量/ 1K /年",
     "quantityTotal": "总数量",
     "rc": "记录数RC",
+    "recommendedRelationshipCount": "Count",
     "recordCounts": "记录计数 (RC / DRC)",
     "refreshCache": "刷新缓存",
     "relationshipType": "关系类型",
@@ -1388,6 +1493,8 @@
     "updated": "更新时间",
     "userExcluded": "被排除的用户",
     "userIncluded": "包括的用户",
+    "validStartDate": "Valid Start Date",
+    "validEndDate": "Valid End Date",
     "value": "值",
     "visitsCount": "记录",
     "visitsPer1000": "记录/1000",
@@ -1407,14 +1514,20 @@
     "selectionCriteria": "选择标准",
     "personId": "患者编号",
     "gender": "性别",
-    "ageAtIndex": "索引日期时的年龄"
+    "ageAtIndex": "索引日期时的年龄",
+    "usageCount": "Usage count",
+    "group": "Group",
+    "version": "Version",
+    "comment": "Comment",
+    "preview": "Preview",
+    "pc": "PC",
+    "dpc": "DPC",
+    "rcTooltip": "Record Count",
+    "drcTooltip": "Descendant Record Count",
+    "pcTooltip": "Person Count",
+    "dpcTooltip": "Descendant Person Count"
   },
   "dataSources": {
-    "achillesHeelReport": {
-      "achillesHeelResults": "Achilles Heel 结果",
-      "message": "讯息",
-      "messageType": "讯息类型"
-    },
     "const": {
       "lengthOfEra": "周期的长短",
       "recordsPerPerson": "每人记录"
@@ -1522,7 +1635,6 @@
     },
     "prevalence": "患病率",
     "reports": {
-      "achillesHeel": "Achilles Heel",
       "conditionEra": "疾病/症状持续时间",
       "conditionOccurrence": "疾病/症状",
       "dashboard": "仪表板",
@@ -1575,7 +1687,8 @@
       "import": "导入",
       "search": "搜索"
     },
-    "vocabularies": "术语集"
+    "vocabularies": "术语集",
+    "viewCountMessage":  "View record count for:"
   },
   "cs": {
     "browser": {
@@ -1588,10 +1701,17 @@
         "heading": "概念集比较",
         "headingMessage": "使用此实用程序可以比较两个概念集的内容，以查看它们可以共享哪些概念。",
         "modalTitle": "选择一个概念集",
+        "sameConcepts": "Compared Concept Sets contain Concepts which are identical",
         "sameWarning": "您无法比较相同的概念集。",
         "saveFromComparisonNameTail": " - 来自对照",
         "saveMessage": "从下面的选择中保存新概念集",
         "saveWarning": "您必须保存当前概念集，然后才能执行此比较。",
+        "vennDiagram": "Venn Diagram",
+        "vennDiagramAmountConcepts": "The amount: <%=count%>",
+        "vennDiagramAmountOnly": "The concepts are only in this concept set: <%=amountOnly%>",
+        "vennDiagramCommonConcepts": "Common Concepts",
+        "vennDiagramNameConceptSet": "<%=name%> concept set",
+        "vennDiagramTotalAmountConcepts": "The total amount of concepts: <%=count%>",
         "viewCountMessage": "查看以下数据库的数据库记录计数（RC）和后代记录计数（DRC）："
       },
       "exportConceptSetsButton": "导出概念集",
@@ -1607,6 +1727,7 @@
       "attemptingToFindMessage": "正在尝试为此概念集找到最佳定义...",
       "cancelButton": "取消",
       "caption": "概念集 #<%=id%>",
+      "captionVersion": "Concept Set #<%=id%> - Version <%=number%> Preview",
       "changeColumnsButton": "修改列",
       "conceptsRemovedHeading": "概念移除",
       "conceptsRemovedMessage": "由于优化版本已包含以下概念，因此删除了以下概念。",
@@ -1667,7 +1788,9 @@
         "exploreEvidence": "探索证据",
         "export": "导出",
         "includedConcepts": "包含的概念",
-        "includedSourceCodes": "包含的源代码"
+        "includedSourceCodes": "包含的源代码",
+        "versions": "Versions",
+        "messages": "提示信息"
       },
       "concept": {
         "title": "术语集 > 概念",
@@ -1686,7 +1809,9 @@
             "conceptId": "概念集编号",
             "conceptCode": "概念集代码",
             "invalidReason": "失效原因",
-            "standardConcept": "标准概念"
+            "standardConcept": "标准概念",
+            "validStartDate": "Valid Start Date",
+            "validEndDate": "Valid End Date"
           },
           "relatedConcepts": {
             "loading": "正在加载相关概念…",
@@ -1736,7 +1861,9 @@
     },
     "viewEdit": {
       "caption": "特征描述 #<%=id%>",
+      "captionPreview": "Characterization #<%=id%> - Version <%=number%> Preview",
       "loadingCohortCharacterization": "正在载入队列表征...",
+      "deleteConfirmation": "您确定么？",
       "design": {
         "description": "队列表征被定义为一种从病人级别的协变量数据生成队列级别描述性摘要统计信息的过程。各个级别协变量的摘要统计信息可以是数字，均值，标准差，方差，最小值，最大值，中位数，范围和四分位数。 此外，可以将一段时间内的协变量分层为时间序列分析的时间单位，例如相对于cohort_start_date的固定时间间隔（例如，每7天，每30天等），或以绝对时间间隔（例如，日历中的周，月，季度，年）。",
         "fa": {
@@ -1821,6 +1948,7 @@
         "design": "设计",
         "executions": "执行",
         "utilities": "程序",
+        "versions": "Versions",
         "messages": "提示信息"
       },
       "utilities": {
@@ -1887,6 +2015,7 @@
   },
   "ir": {
     "caption": "发病率分析 #<%=id%>",
+    "captionVersion": "Incidence Rate Analysis #<%=id%> - Version <%=number%> Preview",
     "cs": {
       "modalTitle": "选择概念集..."
     },
@@ -1958,6 +2087,7 @@
       "definition": "定义",
       "generation": "生成",
       "utilities": "程序",
+      "versions": "Versions",
       "messages": "提示信息"
     },
     "title": "发病率分析"
@@ -1990,6 +2120,7 @@
     "loading": "正在加载路径分析列表...",
     "manager": {
       "caption": "队列路径 #<%=id%>",
+      "captionVersion": "Cohort Pathway #<%=id%> - Version <%=number%> Preview",
       "design": {
         "analysisSettings": {
           "combinationWindow": {
@@ -2078,6 +2209,7 @@
         "design": "设计",
         "executions": "执行",
         "utilities": "程序",
+        "versions": "Versions",
         "messages": "提示信息"
       },
       "utilities": {
@@ -2262,8 +2394,57 @@
       "reviewFullSpec": "查看完整研究规范"
     }
   },
+  "reusables": {
+    "title": "Reusables",
+    "loading": "Loading Reusables...",
+    "manager": {
+      "loading": "Loading Reusable...",
+      "caption": "Reusable #<%=id%>",
+      "captionVersion": "Reusable #<%=id%> - Version <%=number%> Preview",
+      "design": {
+        "description": "<b>Reusable</b> is ...",
+        "descriptionPlaceholder": "Enter description here"
+      },
+      "messages": {
+        "alreadyExists": "A reusable with this name already exists. Please choose a different name.",
+        "beforeClose": "Your changes are not saved. Would you like to continue?",
+        "deleteConfirmation": "Are you sure?",
+        "saveFailed": "An error occurred while attempting to save a reusable.",
+        "notfound": "There is no reusable with id = %d."
+      },
+      "tabs": {
+        "design": "Design",
+        "versions": "Versions"
+      }
+    }
+  },
   "jobs": {
     "refreshJobs": "刷新工作"
+  },
+  "tagging": {
+    "tabs": {
+      "multiAssign": "Multi-assign"
+    },
+    "multiAssign": {
+      "selectedTags": "Selected Tags",
+      "selectedAssets": "Selected Assets",
+      "chooseTags": "Choose Tags",
+      "chooseAssets": "Choose Assets",
+      "assignTags": "Assign tags",
+      "unassignTags": "Unassign tags",
+      "messageGroupNotMultiple": "Group '<%=group%>' does not allow multiple tags. Tag '<%=replacedName%>' replaced with tag '<%=replacedWithName%>'",
+      "success": "Success!",
+      "error": "Error!",
+      "forbiddenError": "Forbidden!",
+      "tabs": {
+        "conceptsets": "Concept Sets",
+        "cohorts": "Cohorts",
+        "characterizations": "Characterizations",
+        "incidenceRates": "Incidence Rates",
+        "cohortPathways": "Cohort Pathways",
+        "reusables": "Reusables"
+      }
+    }
   },
   "configuration": {
     "alerts": {
@@ -2277,7 +2458,8 @@
       "clearConfigurationCache": "清除配置缓存",
       "clearServerCache": "清除服务器缓存",
       "importUsers": "从LDAP / AD导入用户",
-      "managePermissions": "管理权限"
+      "managePermissions": "管理权限",
+      "tagManagement": "Tag Management"
     },
     "changeSourcePriorities": "更改源优先级：",
     "confirms": {
@@ -2414,7 +2596,10 @@
           "pdw": "微软PDW",
           "postgresql": "PostgreSQL",
           "redshift": "Amazon Redshift",
-          "sqlserver": "SQL服务器"
+          "sqlserver": "SQL服务器",
+          "synapse": "Azure Synapse",
+          "snowflake": "Snowflake",
+          "spark": "Apache Spark"
         },
         "title": "源语言"
       },
@@ -2497,6 +2682,47 @@
           "empty": "&quot;Username&quot; 是空的/没有的。"
         }
       }
+    },
+    "tagManagement": {
+      "allowMultiple": "Multiple",
+      "allowCustom": "Free&#8209;form",
+      "allowCustomCheckbox": "Allow custom tags creation in this group",
+      "apply": "Submit",
+      "color": "Color",
+      "createGroup": "Create Group",
+      "createTag": "Create Tag",
+      "editTag": "Edit Tag",
+      "editTagGroup": "Edit Tag Group",
+      "exampleTagGroup": "Example",
+      "exampleTagGroupTag": "Example name",
+      "exampleTag": "Example",
+      "icon": "Icon",
+      "mandatory": "Mandatory",
+      "multiSelectionCheckbox": "Allow multiple tags from the group in a single asset",
+      "showGroupCheckbox": "Show Tag Group column in assets table",
+      "showInAssetsBrowser": "Show&nbsp;Column",
+      "tagsInGroup": "Tags in Group '<%=group%>'",
+      "tagGroups": "Tag Groups",
+      "tagGroupColor": "Tag group color",
+      "tagGroupColorPlaceholder": "Enter tag group color in #xxxxxx format",
+      "tagGroupDescription": "Tag group description",
+      "tagGroupDescriptionPlaceholder": "Enter tag group description",
+      "tagGroupIcon": "Tag group icon",
+      "tagGroupIconPlaceholder": "Enter tag group icon as font-awesome class",
+      "tagGroupName": "* Tag group name",
+      "tagGroupNamePlaceholder": "Enter tag group name",
+      "tagGroupNameEmpty": "Tag group name cannot be empty",
+      "hideTags": "Hide tags",
+      "showTags": "Show tags",
+      "edit": "Edit",
+      "remove": "Remove",
+      "overrideTagColor": "Override tag group color",
+      "overrideTagIcon": "Override tag group icon",
+      "protected": "Protected",
+      "nameExistsWarning": "Tag or Group name '<%=tagName%>' is already in use.",
+      "errorGroupNotEmpty": "Cannot delete tag group: the group contains tags",
+      "deleteGroupConfirmation": "Deletion cannot be undone! Are you sure?",
+      "deleteTagConfirmation": "If the tag is assigned to an asset, it will be unassigned. Deletion cannot be undone. Are you sure you want to delete the tag?"
     }
   },
   "feedback": {
@@ -2558,9 +2784,10 @@
       "confirms": {
         "close": "您的队列更改未保存。  您想继续吗？",
         "delete": "删除队列定义？ 警告：删除无法撤销！",
+        "deleteConflict": "无法删除队列定义，因为在某些分析中已引用该定义。",
         "generateAnalyses": "这将运行<%=descr%>，可能需要大约<%=duration%>。你确定吗？",
-        "save": "无法删除队列定义，因为在某些分析中已引用该定义。",
-        "saveAlert": "具有该名称的队列定义已存在。 请选择其他名称。"
+        "saveAlert": "具有该名称的队列定义已存在。 请选择其他名称。",
+        "saveError": "An error occurred while attempting to save a cohort definition."
       },
       "createCopyCohortTitle": "创建此队列定义的副本",
       "failedWithoutAnyMessage": "失败，没有任何消息",
@@ -2619,9 +2846,9 @@
           "sampleName": "*样本名称",
           "sampleNamePlaceholder": "输入样本名称",
           "sampleNameEmpty": "样本名称不能为空",
-          "numberOfPatients": "*患者数量",
+          "numberOfPatients": "* Number of patients (from 1 to 500)",
           "numberOfPatientsPlaceholder": "输入一个数字",
-          "numberOfPatientsEmpty": "患者数量必须正整数",
+          "numberOfPatientsEmpty": "Number of patients must be a positive integer between 1 and 500",
           "selectAgeCriteria": "选择年龄标准",
           "lessThan": "小于",
           "lessOrEqualTo": "小于等于",
@@ -2651,10 +2878,12 @@
         "generation": "生成",
         "samples": "样本",
         "messages": "提示信息",
+        "versions": "Versions",
         "reporting": "报告"
       }
     },
-    "cohortId": "队列 #<%=id%>",
+    "cohortCaption": "队列 #<%=id%>",
+    "cohortCaptionPreview": "Cohort #<%=id%> - Version <%=number%> Preview",
     "cohortreports": {
       "inclusionReport": "纳入条件报告",
       "inclusionReportFor": " ",
@@ -2901,6 +3130,28 @@
         "title_procedureoccurrence": "添加就诊",
         "desc_procedureoccurrence": "按照操作时的就诊筛选操作"
       },
+      "addVisitDetail": {
+        "title": "Add Visit detail",
+        "desc_initial": "Find patients based on visit  detail information.",
+        "desc_censoring": "Exit cohort based on visit detail information.",
+        "desc_group": "Find patients based on visit detail information.",
+        "title_visit_detail": "Add Visit detail",
+        "desc_occurrence": "Filter Condition Occurrences based on visit detail of diagnosis.",
+        "title_deviceexposure": "Add Visit detail Criteria",
+        "desc_deviceexposure": "Filter Device Exposures based on visit detail of exposure.",
+        "title_drugexposure": "Add Visit detail Criteria",
+        "desc_drugexposure": "Filter Drug Exposures based on visit detail of drug exposure.",
+        "title_measurement": "Add Visit detail Criteria",
+        "desc_measurement": "Filter Measurements based on visit detail of measurement.",
+        "title_observation": "Add Visit detail Criteria",
+        "desc_observation": "Filter Observations based on visit detail of observation.",
+        "title_procedureoccurrence": "Add Visit  detail Criteria",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences based on visit detail of procedure."
+      },
+      "addConditionStatus": {
+        "title_occurrence": "Add Condition Status",
+        "desc_occurrence": "Filter Condition Occurrences based on condition status."
+      },
       "addFirstDiagnosis": {
         "title_era": "添加初始诊断",
         "desc_era": "将诊断周期限制在患者整个记录的最早诊断",
@@ -2927,7 +3178,9 @@
         "title_specimen": "添加首次出现条件",
         "desc_specimen": "将标本限制于记录中第一次出现",
         "title_visit": "添加首次就诊条件",
-        "desc_visit": "将就诊限制于第一次就诊"
+        "desc_visit": "将就诊限制于第一次就诊",
+        "title_visitDetail": "Add First Visit detail Criteria",
+        "desc_visitDetail": "Limit Visit detail to the first visit."
       },
       "addAgeAtStart": {
         "title_era": "按照周期开始标准添加年龄",
@@ -2980,6 +3233,8 @@
         "desc_specimen": "按照性别筛选标本",
         "title_visit": "添加性别条件",
         "desc_visit": "按照性别筛选就诊",
+        "title_visitDetail": "Add Gender Criteria",
+        "desc_visitDetail": "Filter Visit detail based on Gender.",
         "title_demographic": "添加性别条件",
         "desc_demographic": "按照性别筛选事件"
       },
@@ -3002,6 +3257,8 @@
         "desc_payerplan": "按照开始日期筛选付费方计划周期",
         "title_visit": "添加开始日期条件",
         "desc_visit": "按照诊断开始日期筛选就诊",
+        "title_visitDetail": "Add Start Date Criteria",
+        "desc_visitDetail": "Filter Visit detail by the Start Date.",
         "title_demographic": "添加事件开始日期条件",
         "desc_demographic": "按照开始日期筛选事件"
       },
@@ -3024,6 +3281,8 @@
         "desc_payerplan": "按照结束日期筛选付费方计划周期",
         "title_visit": "添加结束日期条件",
         "desc_visit": "按照诊断结束日期筛选就诊",
+        "title_visitDetail": "Add End Date Criteria",
+        "desc_visitDetail": "Filter Visit detail by the End Date.",
         "title_demographic": "添加事件结束日期条件",
         "desc_demographic": "按照结束日期筛选事件"
       },
@@ -3053,7 +3312,9 @@
         "title_payerplan": "添加周期长度条件",
         "desc_payerplan": "按照周期时长筛选付费方计划周期",
         "title_visit": "添加就诊时长条件",
-        "desc_visit": "按照就诊时长筛选就诊"
+        "desc_visit": "按照就诊时长筛选就诊",
+        "title_visitDetail": "Add Visit detail Length Criteria",
+        "desc_visitDetail": "Filter Visit detail by duration."
       },
       "addNested": {
         "title_era": "添加嵌套条件",
@@ -3083,7 +3344,9 @@
         "title_specimen": "添加嵌套条件",
         "desc_specimen": "应用诊断日期作为索引日期的条件",
         "title_visit": "添加嵌套条件",
-        "desc_visit": "应用诊断日期作为索引日期的条件"
+        "desc_visit": "应用诊断日期作为索引日期的条件",
+        "title_visitDetail": "Add Nested Criteria...",
+        "desc_visitDetail": "Apply criteria using the visit detail as the index event."
       },
       "addAge": {
         "title_occurrence": "添加诊断时的年龄条件",
@@ -3104,6 +3367,8 @@
         "desc_specimen": "按照标本出现时的年龄筛选标本",
         "title_visit": "添加就诊时年龄条件",
         "desc_visit": "按照就诊时的年龄筛选就诊",
+        "title_visitDetail": "Add Age at Visit detail Criteria",
+        "desc_visitDetail": "Filter Visit detail by age at occurrence.",
         "title_demographic": "添加年龄条件",
         "desc_demographic": "按照年龄筛选事件"
       },
@@ -3127,7 +3392,9 @@
         "title_specimen": "添加标本条件",
         "desc_specimen": "按照标本类型筛选标本",
         "title_visit": "添加就诊类型条件",
-        "desc_visit": "按照诊断类型筛选就诊"
+        "desc_visit": "按照诊断类型筛选就诊",
+        "title_visitDetail": "Add Visit detail Type Criteria",
+        "desc_visitDetail": "Filter Visit detail by the Type."
       },
       "addStopReason": {
         "title_occurrence": "添加停止原因条件",
@@ -3181,7 +3448,9 @@
         "title_procedureoccurrence": "添加操作源概念条件",
         "desc_procedureoccurrence": "按照操作源概念筛选药物暴露",
         "title_visit": "添加就诊源概念条件",
-        "desc_visit": "按照就诊源概念筛选就诊"
+        "desc_visit": "按照就诊源概念筛选就诊",
+        "title_visitDetail": "Add Visit detail Source Concept Criteria",
+        "desc_visitDetail": "Filter Visit detail by the Visit detail Source Concept."
       },
       "addProviderSpecialty": {
         "title_occurrence": "添加提供者领域条件",
@@ -3197,7 +3466,9 @@
         "title_procedureoccurrence": "添加提供者领域条件",
         "desc_procedureoccurrence": "按照医疗保健提供者领域筛选操作",
         "title_visit": "添加提供者领域条件",
-        "desc_visit": "按照医疗保健提供者领域筛选就诊"
+        "desc_visit": "按照医疗保健提供者领域筛选就诊",
+        "title_visitDetail": "Add Provider Specialty Criteria",
+        "desc_visitDetail": "Filter Visit detail based on provider specialty."
       },
       "addDate": {
         "title_death": "添加死亡日期条件",
@@ -3331,15 +3602,21 @@
       },
       "addPlaceService": {
         "title_visit": "添加服务地点条件",
-        "desc_visit": "按照医疗保健服务地点筛选就诊"
+        "desc_visit": "按照医疗保健服务地点筛选就诊",
+        "title_visitDetail": "Add Place of Service Criteria",
+        "desc_visitDetail": "Filter Visit detail based on Place of Service."
       },
       "addPlaceServiceLocation": {
         "title_visit": "添加服务位置条件",
-        "desc_visit": "按照医疗保健服务位置筛选就诊"
+        "desc_visit": "按照医疗保健服务位置筛选就诊",
+        "title_visitDetail": "Add Place of Service Location Criteria",
+        "desc_visitDetail": "Filter Visit detail based on where Place of Service is located."
       },
       "addPlaceServiceDistance": {
         "title_visit": "添加服务地点距离标准",
-        "desc_visit": "根据从服务地点到患者的距离，筛选就诊。"
+        "desc_visit": "根据从服务地点到患者的距离，筛选就诊。",
+        "title_visitDetail": "Add Place of Service Distance Criteria",
+        "desc_visitDetail": "Filter Visit detail based on distance from Place of Service to Patient."
       }
     },
     "newEntityNames": {
@@ -3352,7 +3629,8 @@
       "ple": "新建人口水平效应估计",
       "plp": "新患者水平预测",
       "role": "新角色",
-      "source": "新来源"
+      "source": "新来源",
+      "reusable": "New Reusable"
     },
     "weekdays": {
       "friday": {
@@ -3422,7 +3700,7 @@
       "executionEditorText_3": "最小协变量出现：如果目标群体中的任何协变量发生率低于指定值，则将其删除：",
       "executionEditorText_4": "标准化协变量：",
       "populationEditorText_1": "根据目标队列设置 time-at-risk窗口的开始",
-      "populationEditorText_2": "应将后代概念添加到所包含概念的列表中吗？",
+      "populationEditorText_2": "定义风险暴露期的结束日期",
       "populationEditorText_3": "对目标队列应用的最短回溯期：",
       "populationEditorText_4": "是否应该删除没有 time at risk 的对象？",
       "populationEditorText_5": "最小风险暴露期",

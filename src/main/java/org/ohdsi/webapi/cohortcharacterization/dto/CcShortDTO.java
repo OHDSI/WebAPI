@@ -1,16 +1,13 @@
 package org.ohdsi.webapi.cohortcharacterization.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import java.util.Date;
-import org.ohdsi.webapi.cohortcharacterization.CcConst;
-import org.ohdsi.webapi.service.dto.CommonEntityDTO;
-import org.ohdsi.webapi.user.dto.UserDTO;
+import org.ohdsi.webapi.service.dto.CommonEntityExtDTO;
 
-public class CcShortDTO extends CommonEntityDTO {
-    
+public class CcShortDTO extends CommonEntityExtDTO {
+
     private Long id;
     private Integer hashCode;
     private String name;
+    private String description;
 
     public Long getId() {
         return id;
@@ -34,5 +31,13 @@ public class CcShortDTO extends CommonEntityDTO {
 
     public void setName(final String name) {
         this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

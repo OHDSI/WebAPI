@@ -1,5 +1,5 @@
 SELECT
-  cast(CASE WHEN isNumeric(ar1.stratum_1) = 1 THEN ar1.stratum_1 ELSE null END AS INT) - MinValue.MinValue      AS intervalIndex,
+  cast(CASE WHEN ar1.analysis_id = 109 THEN ar1.stratum_1 ELSE null END AS INT) - MinValue.MinValue      AS intervalIndex,
   ar1.count_value                                     AS countValue,
   round(1.0 * ar1.count_value / denom.count_value, 5) AS percentValue
 FROM
@@ -8,7 +8,7 @@ FROM
     FROM @results_database_schema.achilles_results WHERE analysis_id = 109
   ) ar1,
   (
-    SELECT min(cast(CASE WHEN isNumeric(stratum_1) = 1 THEN stratum_1 ELSE null END AS INT)) AS MinValue
+    SELECT min(cast(CASE WHEN analysis_id = 109 THEN stratum_1 ELSE null END AS INT)) AS MinValue
     FROM @results_database_schema.achilles_results WHERE analysis_id = 109
   ) MinValue,
   (

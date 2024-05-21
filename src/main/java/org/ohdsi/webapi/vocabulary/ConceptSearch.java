@@ -28,4 +28,8 @@ public class ConceptSearch {
     
     @JsonProperty("CONCEPT_CLASS_ID")
     public String[] conceptClassId;
+    
+    @JsonProperty("IS_LEXICAL")
+    public boolean isLexical;
+
 }

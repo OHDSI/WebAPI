@@ -129,10 +129,10 @@ public class CDMResultsCacheTest {
         cache.cacheValue(createDescendantRecordCount(1));
         cache.cacheValue(createDescendantRecordCount(2));
 
-        assertEquals(1_001L, cache.get(1).getRecordCount());
-        assertEquals(1_000_001L, cache.get(1).getDescendantRecordCount());
-        assertEquals(1_002L, cache.get(2).getRecordCount());
-        assertEquals(1_000_002L, cache.get(2).getDescendantRecordCount());
+        assertEquals(new Long(1_001L), cache.get(1).getRecordCount());
+        assertEquals(new Long(1_000_001L), cache.get(1).getDescendantRecordCount());
+        assertEquals(new Long(1_002L), cache.get(2).getRecordCount());
+        assertEquals(new Long(1_000_002L), cache.get(2).getDescendantRecordCount());
 
     }
 
@@ -153,8 +153,8 @@ public class CDMResultsCacheTest {
     public void get() {
 
         cache.cacheValue(createDescendantRecordCount(1));
-        assertEquals(1_001L, cache.get(1).getRecordCount());
-        assertEquals(1_000_001L, cache.get(1).getDescendantRecordCount());
+        assertEquals(new Long(1_001L), cache.get(1).getRecordCount());
+        assertEquals(new Long(1_000_001L), cache.get(1).getDescendantRecordCount());
     }
 
     @Test

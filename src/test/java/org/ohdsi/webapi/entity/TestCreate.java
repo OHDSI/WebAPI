@@ -1,12 +1,12 @@
 package org.ohdsi.webapi.entity;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
-
-public interface TestCreate extends EntityMethods{
+public interface TestCreate extends EntityMethods {
 
     String getConstraintName();
 

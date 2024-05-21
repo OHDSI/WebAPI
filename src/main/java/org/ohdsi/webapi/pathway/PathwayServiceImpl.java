@@ -23,6 +23,8 @@ import org.ohdsi.webapi.pathway.domain.PathwayAnalysisGenerationEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayCohort;
 import org.ohdsi.webapi.pathway.domain.PathwayEventCohort;
 import org.ohdsi.webapi.pathway.domain.PathwayTargetCohort;
+import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
+import org.ohdsi.webapi.pathway.dto.PathwayVersionFullDTO;
 import org.ohdsi.webapi.pathway.dto.internal.CohortPathways;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayCode;
@@ -31,6 +33,7 @@ import org.ohdsi.webapi.pathway.repository.PathwayAnalysisGenerationRepository;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.CohortDefinitionService;
 import org.ohdsi.webapi.service.JobService;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.shiro.annotations.PathwayAnalysisGenerationId;
@@ -39,11 +42,20 @@ import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceService;
+import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.util.EntityUtils;
+import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.util.SourceUtils;
+import org.ohdsi.webapi.versioning.domain.PathwayVersion;
+import org.ohdsi.webapi.versioning.domain.Version;
+import org.ohdsi.webapi.versioning.domain.VersionBase;
+import org.ohdsi.webapi.versioning.domain.VersionType;
+import org.ohdsi.webapi.versioning.dto.VersionDTO;
+import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
+import org.ohdsi.webapi.versioning.service.VersionService;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.Step;
@@ -70,6 +82,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -83,6 +96,10 @@ import static org.ohdsi.webapi.Constants.Params.JOB_AUTHOR;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Params.PATHWAY_ANALYSIS_ID;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
+import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import org.ohdsi.webapi.security.PermissionService;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageImpl;
 
 @Service
 @Transactional
@@ -101,6 +118,12 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 	private final GenericConversionService genericConversionService;
 	private final StepBuilderFactory stepBuilderFactory;
 	private final CohortDefinitionService cohortDefinitionService;
+	private final VersionService<PathwayVersion> versionService;
+
+	private PermissionService permissionService;
+
+	@Value("${security.defaultGlobalReadPermissions}")
+	private boolean defaultGlobalReadPermissions;
 
 	private final List<String> STEP_COLUMNS = Arrays.asList(new String[]{"step_1", "step_2", "step_3", "step_4", "step_5", "step_6", "step_7", "step_8", "step_9", "step_10"});
 
@@ -127,7 +150,9 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 					JobService jobService,
 					@Qualifier("conversionService") GenericConversionService genericConversionService,
 					StepBuilderFactory stepBuilderFactory,
-					CohortDefinitionService cohortDefinitionService) {
+					CohortDefinitionService cohortDefinitionService,
+					VersionService<PathwayVersion> versionService,
+					PermissionService permissionService) {
 
 		this.pathwayAnalysisRepository = pathwayAnalysisRepository;
 		this.pathwayAnalysisGenerationRepository = pathwayAnalysisGenerationRepository;
@@ -143,6 +168,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 		this.generationUtils = generationUtils;
 		this.stepBuilderFactory = stepBuilderFactory;
 		this.cohortDefinitionService = cohortDefinitionService;
+		this.versionService = versionService;
+		this.permissionService = permissionService;
 
 		SerializedPathwayAnalysisToPathwayAnalysisConverter.setConversionService(conversionService);
 	}
@@ -202,8 +229,18 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
 	@Override
 	public Page<PathwayAnalysisEntity> getPage(final Pageable pageable) {
+		List<PathwayAnalysisEntity> pathwayList = pathwayAnalysisRepository.findAll(defaultEntityGraph)
+						.stream().filter(!defaultGlobalReadPermissions ? entity -> permissionService.hasReadAccess(entity) : entity -> true)
+						.collect(Collectors.toList());
+		return getPageFromResults(pageable, pathwayList);
+	}
 
-		return pathwayAnalysisRepository.findAll(pageable, defaultEntityGraph);
+	private Page<PathwayAnalysisEntity> getPageFromResults(Pageable pageable, List<PathwayAnalysisEntity> results) {
+		// Calculate the start and end indices for the current page
+		int startIndex = pageable.getPageNumber() * pageable.getPageSize();
+		int endIndex = Math.min(startIndex + pageable.getPageSize(), results.size());
+
+		return new PageImpl<>(results.subList(startIndex, endIndex), pageable, results.size());
 	}
 
 	@Override
@@ -454,7 +491,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 	}
 
 	private final RowMapper<PathwayCode> codeRowMapper = (final ResultSet resultSet, final int arg1) -> {
-		return new PathwayCode(resultSet.getInt("code"), resultSet.getString("name"), resultSet.getInt("is_combo") != 0);
+		return new PathwayCode(resultSet.getLong("code"), resultSet.getString("name"), resultSet.getInt("is_combo") != 0);
 	};
 
 	private final RowMapper<CohortPathways> pathwayStatsRowMapper = (final ResultSet rs, final int arg1) -> {
@@ -495,6 +532,102 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 		final AnalysisGenerationInfoEntity entity = analysisGenerationInfoEntityRepository.findById(id)
 						.orElseThrow(() -> new IllegalArgumentException("Analysis with id: " + id + " cannot be found"));
 		return entity.getDesign();
+	}
+
+	@Override
+	public void assignTag(Integer id, int tagId) {
+		PathwayAnalysisEntity entity = getById(id);
+		checkOwnerOrAdminOrGranted(entity);
+		assignTag(entity, tagId);
+	}
+
+	@Override
+	public void unassignTag(Integer id, int tagId) {
+		PathwayAnalysisEntity entity = getById(id);
+		checkOwnerOrAdminOrGranted(entity);
+		unassignTag(entity, tagId);
+	}
+
+	@Override
+	public List<VersionDTO> getVersions(long id) {
+		List<VersionBase> versions = versionService.getVersions(VersionType.PATHWAY, id);
+		return versions.stream()
+				.map(v -> genericConversionService.convert(v, VersionDTO.class))
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public PathwayVersionFullDTO getVersion(int id, int version) {
+		checkVersion(id, version, false);
+		PathwayVersion pathwayVersion = versionService.getById(VersionType.PATHWAY, id, version);
+		return genericConversionService.convert(pathwayVersion, PathwayVersionFullDTO.class);
+	}
+
+	@Override
+	public VersionDTO updateVersion(int id, int version, VersionUpdateDTO updateDTO) {
+		checkVersion(id, version);
+		updateDTO.setAssetId(id);
+		updateDTO.setVersion(version);
+		PathwayVersion updated = versionService.update(VersionType.PATHWAY, updateDTO);
+
+		return genericConversionService.convert(updated, VersionDTO.class);
+	}
+
+	@Override
+	public void deleteVersion(int id, int version) {
+		checkVersion(id, version);
+		versionService.delete(VersionType.PATHWAY, id, version);
+	}
+
+	@Override
+	public PathwayAnalysisDTO copyAssetFromVersion(int id, int version) {
+		checkVersion(id, version, false);
+		PathwayVersion pathwayVersion = versionService.getById(VersionType.PATHWAY, id, version);
+		PathwayVersionFullDTO fullDTO = genericConversionService.convert(pathwayVersion, PathwayVersionFullDTO.class);
+
+		PathwayAnalysisDTO dto = fullDTO.getEntityDTO();
+		dto.setId(null);
+		dto.setTags(null);
+		dto.setName(NameUtils.getNameForCopy(dto.getName(), this::getNamesLike,
+				pathwayAnalysisRepository.findByName(dto.getName())));
+		PathwayAnalysisEntity pathwayAnalysis = genericConversionService.convert(dto, PathwayAnalysisEntity.class);
+		PathwayAnalysisEntity saved = create(pathwayAnalysis);
+		return genericConversionService.convert(saved, PathwayAnalysisDTO.class);
+	}
+
+	@Override
+	public List<PathwayAnalysisDTO> listByTags(TagNameListRequestDTO requestDTO) {
+		List<String> names = requestDTO.getNames().stream()
+				.map(name -> name.toLowerCase(Locale.ROOT))
+				.collect(Collectors.toList());
+		List<PathwayAnalysisEntity> entities = pathwayAnalysisRepository.findByTags(names);
+		return listByTags(entities, names, PathwayAnalysisDTO.class);
+	}
+
+	private void checkVersion(int id, int version) {
+		checkVersion(id, version, true);
+	}
+
+	private void checkVersion(int id, int version, boolean checkOwnerShip) {
+		Version pathwayVersion = versionService.getById(VersionType.PATHWAY, id, version);
+		ExceptionUtils.throwNotFoundExceptionIfNull(pathwayVersion,
+				String.format("There is no pathway analysis version with id = %d.", version));
+
+		PathwayAnalysisEntity entity = this.pathwayAnalysisRepository.findOne(id);
+		if (checkOwnerShip) {
+			checkOwnerOrAdminOrGranted(entity);
+		}
+	}
+
+	public PathwayVersion saveVersion(int id) {
+		PathwayAnalysisEntity def = this.pathwayAnalysisRepository.findOne(id);
+		PathwayVersion version = genericConversionService.convert(def, PathwayVersion.class);
+
+		UserEntity user = Objects.nonNull(def.getModifiedBy()) ? def.getModifiedBy() : def.getCreatedBy();
+		Date versionDate = Objects.nonNull(def.getModifiedDate()) ? def.getModifiedDate() : def.getCreatedDate();
+		version.setCreatedBy(user);
+		version.setCreatedDate(versionDate);
+		return versionService.create(VersionType.PATHWAY, version);
 	}
 
 	private PathwayAnalysisResult queryGenerationResults(Source source, Long generationId) {
@@ -541,6 +674,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 	private void copyProps(PathwayAnalysisEntity from, PathwayAnalysisEntity to) {
 
 		to.setName(from.getName());
+		to.setDescription(from.getDescription());
 		to.setMaxDepth(from.getMaxDepth());
 		to.setMinCellCount(from.getMinCellCount());
 		to.setCombinationWindow(from.getCombinationWindow());

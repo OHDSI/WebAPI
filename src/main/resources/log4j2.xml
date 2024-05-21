@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Properties>
+        <property name="audit.trail.log.extraFile">${bundle:application:audit.trail.log.extraFile}</property>  
+        <property name="audit.trail.log.file">${bundle:application:audit.trail.log.file}</property>  
+        <property name="logging.level.org.apache.shiro">${bundle:application:logging.level.org.apache.shiro}</property>  
+        <property name="logging.level.org.ohdsi">${bundle:application:logging.level.org.ohdsi}</property>  
+        <property name="logging.level.org.pac4j">${bundle:application:logging.level.org.pac4j}</property>  
+        <property name="logging.level.org.springframework.orm">${bundle:application:logging.level.org.springframework.orm}</property>  
+        <property name="logging.level.org.springframework.jdbc">${bundle:application:logging.level.org.springframework.jdbc}</property>  
+        <property name="logging.level.root">${bundle:application:logging.level.root}</property>  
+    </Properties>
+    <Appenders>
+        <RollingFile name="audit" fileName="${audit.trail.log.file}"
+            filePattern="/tmp/atlas/audit/audit-%d{yyyy-MM-dd}-%i.log">
+          <PatternLayout>
+            <Pattern>%m%n</Pattern>
+          </PatternLayout>
+          <Policies>
+            <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+          </Policies>
+        </RollingFile>
+        <Async name="audit-async">
+          <AppenderRef ref="audit"/>
+        </Async>        
+        <RollingFile name="audit-extra" fileName="${audit.trail.log.extraFile}"
+            filePattern="/tmp/atlas/audit/audit-extra-%d{yyyy-MM-dd}-%i.log">
+          <PatternLayout>
+            <Pattern>%m%n</Pattern>
+          </PatternLayout>
+          <Policies>
+            <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+          </Policies>
+        </RollingFile>
+        <Async name="audit-extra-async">
+          <AppenderRef ref="audit-extra"/>
+        </Async>        
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %p %t %C - %x - %m%n" />
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="${logging.level.root}">
+          <AppenderRef ref="Console" />
+        </Root>
+        <logger name="audit">
+            <AppenderRef ref="audit-async" />
+        </logger>
+        <logger name="audit-extra">
+            <AppenderRef ref="audit-extra-async" />
+        </logger>
+        <logger name="org.ohdsi" level="${logging.level.org.ohdsi}" additivity="false">
+          <AppenderRef ref="Console" />
+        </logger>
+        <logger name="org.springframework.orm" level="${logging.level.org.springframework.orm}" additivity="false">
+          <AppenderRef ref="Console" />
+        </logger>
+        <logger name="org.springframework.jdbc" level="${logging.level.org.springframework.jdbc}" additivity="false">
+          <AppenderRef ref="Console" />
+        </logger>
+        <logger name="org.apache.shiro" level="${logging.level.org.apache.shiro}" additivity="false">
+          <AppenderRef ref="Console" />
+        </logger>
+        <logger name="org.pac4j" level="${logging.level.org.pac4j:level:-info}" additivity="false">
+          <AppenderRef ref="Console" />
+        </logger>
+    </Loggers>
+</Configuration>

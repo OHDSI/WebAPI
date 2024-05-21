@@ -1,9 +1,13 @@
 package org.ohdsi.webapi.pathway;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.ohdsi.analysis.Utils;
+import org.ohdsi.circe.helper.ResourceHelper;
+import org.ohdsi.sql.BigQuerySparkTranslate;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayEventCohort;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisExportDTO;
@@ -27,6 +31,7 @@ import java.util.concurrent.FutureTask;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import org.ohdsi.sql.SqlRender;
 import org.ohdsi.webapi.common.generation.CancelableTasklet;
 import org.ohdsi.webapi.util.PreparedStatementRendererCreator;
 import org.springframework.jdbc.core.PreparedStatementCreator;
@@ -34,6 +39,7 @@ import org.springframework.jdbc.core.PreparedStatementCreator;
 import static org.ohdsi.webapi.Constants.Params.GENERATION_ID;
 
 public class PathwayStatisticsTasklet extends CancelableTasklet {
+	private static final String SAVE_PATHS_SQL = ResourceHelper.GetResourceAsString("/resources/pathway/savePaths.sql");
 
 	private final CancelableJdbcTemplate jdbcTemplate;
 	private final Source source;
@@ -110,7 +116,7 @@ public class PathwayStatisticsTasklet extends CancelableTasklet {
 		Map<Integer, Integer> eventCodes = pathwayService.getEventCohortCodes(design);
 
 		List<PathwayCode> codesFromDb = jdbcTemplate.query(pathwayStatsPsr.getSql(), pathwayStatsPsr.getSetter(), (rs, rowNum) -> {
-			int code = rs.getInt("combo_id");
+			long code = rs.getLong("combo_id");
 			List<PathwayEventCohort> eventCohorts = getEventCohortsByComboCode(design, eventCodes, code);
 			String names = eventCohorts.stream()
 							.map(PathwayEventCohort::getName)
@@ -121,10 +127,15 @@ public class PathwayStatisticsTasklet extends CancelableTasklet {
 		// need to add any event cohort code that wasn't found in the codes from DB
 		// so that, in the case that only a combo was identified in the pathway analysis,
 		// the event cohorts from the combo are included in the result.
-		List<PathwayCode> codesFromDesign = IntStream.range(0, design.getEventCohorts().size())
-						.map(idx -> ((int) Math.pow(2, Double.valueOf(idx))))
+		List<PathwayCode> codesFromDesign = eventCodes.entrySet()
+						.stream()
+						.mapToLong(ec -> ((long) Math.pow(2, Double.valueOf(ec.getValue()))))
 						.filter(code -> codesFromDb.stream().noneMatch(pc -> pc.getCode() == code))
 						.mapToObj(code -> {
+							// although we know that the codes we seek are non-combo codes,
+							// there isn't an easy way to get from a code back to the cohort for the code 
+							// (the eventCodes goes from cohort_id -> index).  Therefore, use getEventCohortsByComboCode
+							// even tho the combo will be for a single event cohort.
 							List<PathwayEventCohort> eventCohorts = getEventCohortsByComboCode(design, eventCodes, code);
 							String names = eventCohorts.stream()
 											.map(PathwayEventCohort::getName)
@@ -136,7 +147,7 @@ public class PathwayStatisticsTasklet extends CancelableTasklet {
 
 	}
 
-	private List<PathwayEventCohort> getEventCohortsByComboCode(PathwayAnalysisEntity pathwayAnalysis, Map<Integer, Integer> eventCodes, int comboCode) {
+	private List<PathwayEventCohort> getEventCohortsByComboCode(PathwayAnalysisEntity pathwayAnalysis, Map<Integer, Integer> eventCodes, long comboCode) {
 
 		return pathwayAnalysis.getEventCohorts()
 						.stream()
@@ -157,17 +168,25 @@ public class PathwayStatisticsTasklet extends CancelableTasklet {
 		return jdbcTemplate.batchUpdate(stmtCancel, creators);
 	}
 
-	private int[] savePaths(Source source, Long generationId) {
+	private int[] savePaths(Source source, Long generationId) throws SQLException {
+		String sql = SAVE_PATHS_SQL;
+		if (source.getSourceDialect().equals("spark")) {
+			sql = SqlRender.renderSql(sql, 
+							new String[]{"target_database_schema", GENERATION_ID}, 
+							new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results), generationId.toString()}
+			);
+			sql = BigQuerySparkTranslate.sparkHandleInsert(sql, source.getSourceConnection());
+		}
 
 		PreparedStatementRenderer pathwayEventsPsr = new PreparedStatementRenderer(
-						source,
-						"/resources/pathway/savePaths.sql",
-						new String[]{"target_database_schema"},
-						new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results)},
-						new String[]{GENERATION_ID},
-						new Object[]{generationId}
+				source,
+				sql,
+				new String[]{"target_database_schema"},
+				new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results)},
+				new String[]{GENERATION_ID},
+				new Object[]{generationId}
 		);
 
-		return new int[]{jdbcTemplate.update(pathwayEventsPsr.getSql(), pathwayEventsPsr.getSetter())};
+		return jdbcTemplate.batchUpdate(stmtCancel, Arrays.asList(new PreparedStatementRendererCreator(pathwayEventsPsr)));
 	}
 }

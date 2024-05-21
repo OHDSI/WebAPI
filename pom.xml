@@ -1399,7 +1399,7 @@
         <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
         <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
         <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
-        <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
+        <hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</hibernate.dialect>
         <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
         <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
         <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
@@ -1430,7 +1430,7 @@
         <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
         <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
         <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
-        <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
+        <hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</hibernate.dialect>
         <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
         <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
         <security.db.datasource.username>${datasource.username}</security.db.datasource.username>

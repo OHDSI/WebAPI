@@ -14,8 +14,14 @@ public class ConceptSetPermissionSchema extends EntityPermissionSchema {
         put("conceptset:%s:delete", "Delete Concept Set with ID = %s");
     }};
 
+    private static Map<String, String> readPermissions = new HashMap<String, String>() {{
+        put("conceptset:%s:get", "view conceptset  definition with id %s");
+        put("conceptset:%s:expression:get", "Resolve concept set %s expression");
+        put("conceptset:%s:version:*:expression:get", "Get expression for concept set %s items for default source");
+    }};
+
     public ConceptSetPermissionSchema() {
 
-        super(EntityType.CONCEPT_SET, new HashMap<>(), writePermissions);
+        super(EntityType.CONCEPT_SET, readPermissions, writePermissions);
     }
 }

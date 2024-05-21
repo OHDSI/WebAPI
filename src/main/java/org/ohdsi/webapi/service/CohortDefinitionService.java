@@ -1,8 +1,19 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright 2015 Observational Health Data Sciences and Informatics [OHDSI.org].
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 package org.ohdsi.webapi.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -21,6 +32,10 @@ import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.circe.cohortdefinition.printfriendly.MarkdownRender;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.webapi.Constants;
+import org.ohdsi.webapi.check.CheckResult;
+import org.ohdsi.webapi.check.checker.cohort.CohortChecker;
+import org.ohdsi.webapi.check.warning.Warning;
+import org.ohdsi.webapi.check.warning.WarningUtils;
 import org.ohdsi.webapi.cohortdefinition.CleanupCohortTasklet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
@@ -30,6 +45,8 @@ import org.ohdsi.webapi.cohortdefinition.InclusionRuleReport;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortGenerationInfoDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataImplDTO;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortVersionFullDTO;
 import org.ohdsi.webapi.cohortsample.CleanupCohortSamplesTasklet;
 import org.ohdsi.webapi.cohortsample.CohortSamplingService;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortRawDTO;
@@ -47,11 +64,20 @@ import org.ohdsi.webapi.shiro.management.datasource.SourceIdAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.tag.domain.HasTags;
+import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.util.*;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.ohdsi.webapi.versioning.domain.CohortVersion;
+import org.ohdsi.webapi.versioning.domain.Version;
+import org.ohdsi.webapi.versioning.domain.VersionBase;
+import org.ohdsi.webapi.versioning.domain.VersionType;
+import org.ohdsi.webapi.versioning.dto.VersionDTO;
+import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
+import org.ohdsi.webapi.versioning.service.VersionService;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -60,6 +86,7 @@ import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.jdbc.core.RowMapper;
@@ -98,6 +125,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -112,12 +140,14 @@ import org.ohdsi.webapi.source.SourceService;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
+ * Provides REST services for working with cohort definitions.
  *
+ * @summary Provides REST services for working with cohort definitions.
  * @author cknoll1
  */
 @Path("/cohortdefinition")
 @Component
-public class CohortDefinitionService extends AbstractDaoService {
+public class CohortDefinitionService extends AbstractDaoService implements HasTags<Integer> {
 
 	private static final CohortExpressionQueryBuilder queryBuilder = new CohortExpressionQueryBuilder();
 
@@ -168,6 +198,15 @@ public class CohortDefinitionService extends AbstractDaoService {
 
 	@PersistenceContext
 	protected EntityManager entityManager;
+
+	@Autowired
+	private CohortChecker cohortChecker;
+
+	@Autowired
+	private VersionService<CohortVersion> versionService;
+
+        @Value("${security.defaultGlobalReadPermissions}")
+	private boolean defaultGlobalReadPermissions;
 
 	private final MarkdownRender markdownPF = new MarkdownRender();
 
@@ -335,6 +374,13 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Context
 	ServletContext context;
 
+	/**
+	 * Returns OHDSI template SQL for a given cohort definition 
+	 *
+	 * @summary Generate Sql
+	 * @param request A GenerateSqlRequest containing the cohort expression and options.
+	 * @return The OHDSI template SQL needed to generate the input cohort definition as a character string
+	 */
 	@Path("sql")
 	@POST
 	@Produces(MediaType.APPLICATION_JSON)
@@ -352,32 +398,38 @@ public class CohortDefinitionService extends AbstractDaoService {
 	}
 
 	/**
-	 * Returns all cohort definitions in the cohort schema
+	 * Returns metadata about all cohort definitions in the WebAPI database
 	 *
-	 * @return List of cohort_definition
+	 * @summary List Cohort Definitions
+	 * @return List of metadata about all cohort definitions in WebAPI
+	 * @see org.ohdsi.webapi.cohortdefinition.CohortMetadataDTO
 	 */
 	@GET
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Transactional
 	public List<CohortMetadataDTO> getCohortDefinitionList() {
-
 		List<CohortDefinition> definitions = cohortDefinitionRepository.list();
-
 		return definitions.stream()
+						.filter(!defaultGlobalReadPermissions ? entity -> permissionService.hasReadAccess(entity) : entity -> true)
 						.map(def -> {
-							CohortMetadataDTO dto = conversionService.convert(def, CohortMetadataDTO.class);
+							CohortMetadataDTO dto = conversionService.convert(def, CohortMetadataImplDTO.class);
 							permissionService.fillWriteAccess(def, dto);
+							permissionService.fillReadAccess(def, dto);
 							return dto;
 						})
 						.collect(Collectors.toList());
 	}
 
 	/**
-	 * Creates the cohort definition
+	 * Creates a cohort definition in the WebAPI database.
+	 * 
+	 * The values for createdBy and createdDate are automatically populated and
+	 * the function ignores parameter values for these fields.
 	 *
+	 * @summary Create Cohort Definition
 	 * @param dto The cohort definition to create.
-	 * @return The new CohortDefinition
+	 * @return The newly created cohort definition
 	 */
 	@POST
 	@Path("/")
@@ -412,16 +464,21 @@ public class CohortDefinitionService extends AbstractDaoService {
 	}
 
 	/**
-	 * Returns the cohort definition for the given id
+	 * Returns the 'raw' cohort definition for the given id.
 	 *
+	 * 'Raw' means that the cohort expression is returned as a string, and not as
+	 * a concrete CohortExpression class. This method is maintained for legacy
+	 * comparability.
+	 *
+	 *
+	 * @summary Get Raw Cohort Definition
 	 * @param id The cohort definition id
-	 * @return The CohortDefinition
+	 * @return The cohort definition JSON expression
 	 */
 	@GET
 	@Path("/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public CohortRawDTO getCohortDefinitionRaw(@PathParam("id") final int id) {
-
 		return getTransactionTemplate().execute(transactionStatus -> {
 			CohortDefinition d = this.cohortDefinitionRepository.findOneWithDetail(id);
 			ExceptionUtils.throwNotFoundExceptionIfNull(d, String.format("There is no cohort definition with id = %d.", id));
@@ -430,14 +487,13 @@ public class CohortDefinitionService extends AbstractDaoService {
 	}
 
 	/**
-	 * This method returns the cohort definition containg the circe cohort
-	 * expression
+	 * Returns the cohort definition containing the circe cohort expression
 	 *
-	 * @param id
-	 * @return
+	 * @Summary Get Cohort Definition
+	 * @param id The cohort definition id
+	 * @return The cohort definition containing a Circe CohortExpression object.
 	 */
 	public CohortDTO getCohortDefinition(final int id) {
-
 		return getTransactionTemplate().execute(transactionStatus -> {
 			CohortDefinition d = this.cohortDefinitionRepository.findOneWithDetail(id);
 			ExceptionUtils.throwNotFoundExceptionIfNull(d, String.format("There is no cohort definition with id = %d.", id));
@@ -445,6 +501,20 @@ public class CohortDefinitionService extends AbstractDaoService {
 		});
 	}
 
+	/**
+	 * Check that a cohort exists.
+	 *
+	 * This method checks to see if a cohort definition name exists. The id
+	 * parameter is used to 'ignore' a cohort definition from checking. This is
+	 * used when you have an existing cohort definition which should be ignored
+	 * when checking if the name already exists.
+	 *
+	 * @Summary Check Cohort Definition Name
+	 * @param id The cohort definition id
+	 * @param name The cohort definition name
+	 * @return 1 if the a cohort with the given name and id exist in WebAPI and 0
+	 * otherwise
+	 */
 	@GET
 	@Path("/{id}/exists")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -454,38 +524,47 @@ public class CohortDefinitionService extends AbstractDaoService {
 	}
 
 	/**
-	 * Saves the cohort definition for the given id
+	 * Saves the cohort definition for the given id.
 	 *
+	 * The modifiedBy and modifiedDate are set automatically, and those values
+	 * submitted in CohortDTO will be ignored. * @summary Save Cohort Definition
+	 *
+	 * @summary Save Cohort Definition
 	 * @param id The cohort definition id
-	 * @return The CohortDefinition
+	 * @return The updated CohortDefinition
 	 */
 	@PUT
 	@Path("/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
+	@Transactional
 	public CohortDTO saveCohortDefinition(@PathParam("id") final int id, CohortDTO def) {
 		Date currentTime = Calendar.getInstance().getTime();
+
+		saveVersion(id);
 
 		CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOneWithDetail(id);
 		UserEntity modifier = userRepository.findByLogin(security.getSubject());
 
 		currentDefinition.setName(def.getName())
-						.setDescription(def.getDescription())
-						.setExpressionType(def.getExpressionType())
-						.getDetails().setExpression(Utils.serialize(def.getExpression()));
+				.setDescription(def.getDescription())
+				.setExpressionType(def.getExpressionType())
+				.getDetails().setExpression(Utils.serialize(def.getExpression()));
 		currentDefinition.setModifiedBy(modifier);
 		currentDefinition.setModifiedDate(currentTime);
 
 		currentDefinition = this.cohortDefinitionRepository.save(currentDefinition);
 		eventPublisher.publishEvent(new CohortDefinitionChangedEvent(currentDefinition));
+
 		return getCohortDefinition(id);
 	}
 
 	/**
 	 * Queues up a generate cohort task for the specified cohort definition id.
 	 *
-	 * @param id - the Cohort Definition ID to generate
-	 * @return information about the Cohort Analysis Job
+	 * @param id	the Cohort Definition ID to generate
+	 * @param sourceKey	The source to execute the cohort generation
+	 * @return	the job info for the cohort generation
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -499,6 +578,22 @@ public class CohortDefinitionService extends AbstractDaoService {
 		return cohortGenerationService.generateCohortViaJob(user, currentDefinition, source);
 	}
 
+	/**
+	 * Cancel a cohort generation task
+	 *
+	 * This method updates the generation info to 'Canceled' and invalidates the
+	 * job execution on the server.
+	 *
+	 * Note: invalidating the job is performed by indicating that the job
+	 * execution should stop at the next SQL step in the analysis query. This
+	 * means that the execution will not physically cancel until the current step
+	 * in the SQL query completes.
+	 *
+	 * @summary Cancel Cohort Generation.
+	 * @param id the id of the cohort definition being generated
+	 * @param sourceKey the sourceKey for the target database for generation
+	 * @return
+	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/cancel/{sourceKey}")
@@ -529,11 +624,17 @@ public class CohortDefinitionService extends AbstractDaoService {
 	}
 
 	/**
-	 * Queues up a generate cohort task for the specified cohort definition id.
+	 * Returns a list of cohort generation info objects.
 	 *
+	 * Cohort generation info objects refers to the information related to the
+	 * generation on a source. This includes information about the starting time,
+	 * duration, and execution status. This method returns the generation
+	 * information for any source the user has access to.
+	 *
+	 * @summary Get cohort generation info
 	 * @param id - the Cohort Definition ID to generate
-	 * @return information about the Cohort Analysis Job
-	 * @throws Exception
+	 * @return information about the Cohort Analysis Job for each source
+	 * @throws NotFoundException
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -541,9 +642,8 @@ public class CohortDefinitionService extends AbstractDaoService {
 	@Transactional
 	public List<CohortGenerationInfoDTO> getInfo(@PathParam("id") final int id) {
 		CohortDefinition def = this.cohortDefinitionRepository.findOne(id);
-		if (Objects.isNull(def)) {
-			throw new IllegalArgumentException(String.format("There is no cohort definition with id = %d.", id));
-		}
+		ExceptionUtils.throwNotFoundExceptionIfNull(def, String.format("There is no cohort definition with id = %d.", id));
+
 		Set<CohortGenerationInfo> infoList = def.getGenerationInfoList();
 
 		List<CohortGenerationInfo> result = infoList.stream().filter(genInfo -> sourceIdAccessor.hasAccess(genInfo.getId().getSourceId())).collect(Collectors.toList());
@@ -557,8 +657,12 @@ public class CohortDefinitionService extends AbstractDaoService {
 	}
 
 	/**
-	 * Copies the specified cohort definition
+	 * Copies the specified cohort definition.
 	 *
+	 * This method takes a cohort definition id, and creates a copy. This copy has
+	 * no tags and the owner is set to the user who made the copy.
+	 *
+	 * @summary Copy Cohort Definition
 	 * @param id - the Cohort Definition ID to copy
 	 * @return the copied cohort definition as a CohortDTO
 	 */
@@ -569,6 +673,7 @@ public class CohortDefinitionService extends AbstractDaoService {
 	public CohortDTO copy(@PathParam("id") final int id) {
 		CohortDTO sourceDef = getCohortDefinition(id);
 		sourceDef.setId(null); // clear the ID
+		sourceDef.setTags(null);
 		sourceDef.setName(NameUtils.getNameForCopy(sourceDef.getName(), this::getNamesLike, cohortDefinitionRepository.findByName(sourceDef.getName())));
 		CohortDTO copyDef = createCohortDefinition(sourceDef);
 
@@ -583,7 +688,11 @@ public class CohortDefinitionService extends AbstractDaoService {
 	/**
 	 * Deletes the specified cohort definition
 	 *
-	 * @param id - the Cohort Definition ID to copy
+	 * When a cohort definition is deleted, any generation job is canceled, and
+	 * any generated sample is removed from the sources.
+	 *
+	 * @summary Delete Cohort Definition
+	 * @param id - the Cohort Definition ID to delete
 	 */
 	@DELETE
 	@Produces(MediaType.APPLICATION_JSON)
@@ -657,6 +766,17 @@ public class CohortDefinitionService extends AbstractDaoService {
 						.collect(Collectors.toList());
 	}
 
+	/**
+	 * Return concept sets used in a cohort definition as a zip file.
+	 *
+	 * This method extracts the concept set from the specified cohort definition
+	 * and serializes the elements as a CSV and zips the results into a file with
+	 * from 'cohortdefinition_{id}_export.zip".
+	 *
+	 * @summary Export Concept Sets as ZIP
+	 * @param id a cohort definition id
+	 * @return a binary stream containing the zip file with concept sets.
+	 */
 	@GET
 	@Path("/{id}/export/conceptset")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -678,6 +798,20 @@ public class CohortDefinitionService extends AbstractDaoService {
 		return HttpUtils.respondBinary(exportStream, String.format("cohortdefinition_%d_export.zip", def.getId()));
 	}
 
+	/**
+	 * Get the Inclusion Rule report for the specified source and mode
+	 *
+	 * The mode refers to the results for either 'all events' (0) or 'best event'
+	 * (1). The best event report limits the selected entry event to
+	 * one-per-person, and therefore this result can be considered a 'by person'
+	 * report.
+	 *
+	 * @summary Get Inclusion Rule Report
+	 * @param id a cohort definition id
+	 * @param sourceKey the source to fetch results from
+	 * @param modeId the mode of the report: 0 = all events, 1 = best event
+	 * @return a binary stream containing the zip file with concept sets.
+	 */
 	@GET
 	@Path("/{id}/report/{sourceKey}")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -701,6 +835,15 @@ public class CohortDefinitionService extends AbstractDaoService {
 		return report;
 	}
 
+	/**
+	 * Checks the cohort definition for logic issues
+	 * 
+	 * This method runs a series of logical checks on a cohort definition and returns the set of warning, info and error messages.
+	 *
+	 * @summary Check Cohort Definition
+	 * @param expression The cohort definition expression
+	 * @return The cohort check result
+	 */
 	@POST
 	@Path("/check")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -710,7 +853,49 @@ public class CohortDefinitionService extends AbstractDaoService {
 		Checker checker = new Checker();
 		return new CheckResultDTO(checker.check(expression));
 	}
+	
+	/**
+	 * Checks the cohort definition for logic issues
+	 * 
+	 * This method runs a series of logical checks on a cohort definition and returns the set of warning, info and error messages.
+	 * 
+	 * This method is similar to /check except this method accepts a ChortDTO which includes tags.
+	 *
+	 * @summary Check Cohort Definition
+	 * @param cohortDTO The cohort definition expression
+	 * @return The cohort check result
+	 */
+	@POST
+	@Path("/checkV2")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Transactional
+	public CheckResult runDiagnosticsWithTags(CohortDTO cohortDTO) {
+		Checker checker = new Checker();
+		CheckResultDTO checkResultDTO = new CheckResultDTO(checker.check(cohortDTO.getExpression()));
+		List<Warning> circeWarnings = checkResultDTO.getWarnings().stream()
+				.map(WarningUtils::convertCirceWarning)
+				.collect(Collectors.toList());
+		CheckResult checkResult = new CheckResult(cohortChecker.check(cohortDTO));
+		checkResult.getWarnings().addAll(circeWarnings);
+		return checkResult;
+	}
+	
 
+	/**
+	 * Render a cohort expression in html or markdown form.
+	 *
+	 * This method calls out to the markdown renderer for CIRCE cohort
+	 * expressions, and then converts to HTML if required. The response will
+	 * contain the media type as TEXT_PLAIN or markdown, or TEXT_HTML for html.
+	 * The body of the response is the print friendly content.
+	 *
+	 * @summary Cohort Print Friendly
+	 * @param expression The CIRCE cohort expression to render
+	 * @param format The format to render, can be either 'html' or 'markdown'.  Defaults to 'html'
+	 * @return an HTTP response with the content, with the appropriate MediaType
+	 * based on the format that was requested.
+	 */
 	@POST
 	@Path("/printfriendly/cohort")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -719,6 +904,20 @@ public class CohortDefinitionService extends AbstractDaoService {
 		return printFrindly(markdown, format);
 	}
 
+	/**
+	 * Render a list of concept sets in html or markdown form.
+	 *
+	 * This method calls out to the markdown renderer concept set expressions, and
+	 * then converts to HTML if required. The response will contain the media type
+	 * as TEXT_PLAIN or markdown, or TEXT_HTML for html. The body of the response
+	 * is the print friendly content.
+	 *
+	 * @summary Concept Set Print Friendly
+	 * @param conceptSetList A List of concept set expressions
+	 * @param format The format to render, can be either 'html' or 'markdown'.  Defaults to 'html'
+	 * @return an HTTP response with the content, with the appropriate MediaType
+	 * based on the format that was requested.
+	 */
 	@POST
 	@Path("/printfriendly/conceptsets")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -743,5 +942,245 @@ public class CohortDefinitionService extends AbstractDaoService {
 			res = Response.status(Response.Status.UNSUPPORTED_MEDIA_TYPE);
 		}
 		return res.build();
+	}
+
+	/**
+	 * Assign tag to Cohort Definition
+	 *
+	 * @summary Assign Tag
+	 * @param id the cohort definition id
+	 * @param tagId the tag id
+	 */
+	@POST
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/{id}/tag/")
+	@Transactional
+	public void assignTag(@PathParam("id") final Integer id, final int tagId) {
+		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
+		checkOwnerOrAdminOrGranted(entity);
+		assignTag(entity, tagId);
+	}
+
+	/**
+	 * Unassign tag from Cohort Definition
+	 *
+	 * @summary Unassign Tag
+	 * @param id the cohort definition id
+	 * @param tagId the tag id
+	 */
+	@DELETE
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/{id}/tag/{tagId}")
+	@Transactional
+	public void unassignTag(@PathParam("id") final Integer id, @PathParam("tagId") final int tagId) {
+		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
+		checkOwnerOrAdminOrGranted(entity);
+		unassignTag(entity, tagId);
+	}
+
+	/**
+	 * Assign protected tag to Cohort Definition. This method passes through to
+	 * assignTag(), but permissions to access this endpoint is determined by the
+	 * path /{id}/protectedtag
+	 *
+	 * @summary Assign Protected Tag
+	 * @param id
+	 * @param tagId
+	 */
+	@POST
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/{id}/protectedtag/")
+	@Transactional
+	public void assignPermissionProtectedTag(@PathParam("id") final int id, final int tagId) {
+		assignTag(id, tagId);
+	}
+
+	/**
+	 * Unassign protected tag from Cohort Definition
+	 *
+	 * @summary Unassign Protected Tag
+	 * @param id
+	 * @param tagId
+	 */
+	@DELETE
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/{id}/protectedtag/{tagId}")
+	@Transactional
+	public void unassignPermissionProtectedTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
+		unassignTag(id, tagId);
+	}
+
+	/**
+	 * Get list of versions of Cohort Definition
+	 *
+	 * @summary Get Cohort Definition Versions
+	 * @param id the cohort definition id
+	 * @return the list of VersionDTO containing version info for the cohort
+	 * definition
+	 */
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/{id}/version/")
+	@Transactional
+	public List<VersionDTO> getVersions(@PathParam("id") final long id) {
+		List<VersionBase> versions = versionService.getVersions(VersionType.COHORT, id);
+		return versions.stream()
+				.map(v -> conversionService.convert(v, VersionDTO.class))
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Get version of Cohort Definition
+	 *
+	 * @summary Get Cohort Definition Version
+	 * @param id The cohort definition id
+	 * @param version The version to fetch
+	 * @return
+	 */
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/{id}/version/{version}")
+	@Transactional
+	public CohortVersionFullDTO getVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
+		checkVersion(id, version, false);
+		CohortVersion cohortVersion = versionService.getById(VersionType.COHORT, id, version);
+
+		return conversionService.convert(cohortVersion, CohortVersionFullDTO.class);
+	}
+
+	/**
+	 * Updates version of Cohort Definition.
+	 *
+	 * The specified version is checked for permission and if it exists, and if
+	 * this check passes, the version is updated.
+	 *
+	 * @summary Update Version
+	 * @param id The cohort definition id
+	 * @param version the id of the version
+	 * @param updateDTO the new version data
+	 * @return the updated version state as VersionDTO
+	 */
+	@PUT
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/{id}/version/{version}")
+	@Transactional
+	public VersionDTO updateVersion(@PathParam("id") final int id, @PathParam("version") final int version,
+									VersionUpdateDTO updateDTO) {
+		checkVersion(id, version);
+		updateDTO.setAssetId(id);
+		updateDTO.setVersion(version);
+		CohortVersion updated = versionService.update(VersionType.COHORT, updateDTO);
+
+		return conversionService.convert(updated, VersionDTO.class);
+	}
+
+	/**
+	 * Delete version of Cohort Definition
+	 *
+	 * @summary Delete Cohort Definition Version
+	 * @param id the cohort definition id
+	 * @param version the version id
+	 */
+	@DELETE
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/{id}/version/{version}")
+	@Transactional
+	public void deleteVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
+		checkVersion(id, version);
+		versionService.delete(VersionType.COHORT, id, version);
+	}
+
+	/**
+	 * Create a new asset from version of Cohort Definition.
+	 *
+	 * This method fetches the cohort definition version based on the id and
+	 * version parameter, and creates a new cohort definition (without tags) and
+	 * an automatically generated name.
+	 *
+	 * @summary Create Cohort from Version
+	 * @param id the cohort definition id
+	 * @param version the version id
+	 * @return
+	 */
+	@PUT
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/{id}/version/{version}/createAsset")
+	@Transactional
+	public CohortDTO copyAssetFromVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
+		checkVersion(id, version, false);
+		CohortVersion cohortVersion = versionService.getById(VersionType.COHORT, id, version);
+		CohortVersionFullDTO fullDTO = conversionService.convert(cohortVersion, CohortVersionFullDTO.class);
+		CohortDTO dto = conversionService.convert(fullDTO.getEntityDTO(), CohortDTO.class);
+		dto.setId(null);
+		dto.setTags(null);
+		dto.setName(NameUtils.getNameForCopy(dto.getName(), this::getNamesLike,
+				cohortDefinitionRepository.findByName(dto.getName())));
+		return createCohortDefinition(dto);
+	}
+
+	/**
+	 * Get list of cohort definitions with assigned tags.
+	 *
+   * This method accepts a TagNameListRequestDTO that contains the list of tag names
+   * to find cohort definitions with.
+	 *
+   * @summary List Cohorts By Tag
+	 * @param requestDTO contains a list of tag names
+	 * @return the set of cohort definitions that match one of the included tag names.
+	 */
+	@POST
+	@Path("/byTags")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Transactional
+	public List<CohortDTO> listByTags(TagNameListRequestDTO requestDTO) {
+		if (requestDTO == null || requestDTO.getNames() == null || requestDTO.getNames().isEmpty()) {
+			return Collections.emptyList();
+		}
+		List<String> names = requestDTO.getNames().stream()
+				.map(name -> name.toLowerCase(Locale.ROOT))
+				.collect(Collectors.toList());
+		List<CohortDefinition> entities = cohortDefinitionRepository.findByTags(names);
+		return listByTags(entities, names, CohortDTO.class);
+	}
+
+	private void checkVersion(int id, int version) {
+		checkVersion(id, version, true);
+	}
+
+	private void checkVersion(int id, int version, boolean checkOwnerShip) {
+		Version cohortVersion = versionService.getById(VersionType.COHORT, id, version);
+		ExceptionUtils.throwNotFoundExceptionIfNull(cohortVersion,
+				String.format("There is no cohort version with id = %d.", version));
+
+		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
+		if (checkOwnerShip) {
+			checkOwnerOrAdminOrGranted(entity);
+		}
+	}
+
+	private CohortVersion saveVersion(int id) {
+		CohortDefinition def = this.cohortDefinitionRepository.findOneWithDetail(id);
+		CohortVersion version = conversionService.convert(def, CohortVersion.class);
+
+		UserEntity user = Objects.nonNull(def.getModifiedBy()) ? def.getModifiedBy() : def.getCreatedBy();
+		Date versionDate = Objects.nonNull(def.getModifiedDate()) ? def.getModifiedDate() : def.getCreatedDate();
+		version.setCreatedBy(user);
+		version.setCreatedDate(versionDate);
+		return versionService.create(VersionType.COHORT, version);
+	}
+
+	public List<CohortDTO> getCohortDTOs(List<Integer> ids) {
+		return getCohorts(ids).stream()
+				.map(def -> conversionService.convert(def, CohortDTO.class))
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+	}
+
+	public List<CohortDefinition> getCohorts(List<Integer> ids) {
+		return ids.stream()
+				.map(id -> cohortDefinitionRepository.findOne(id))
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
 	}
 }

@@ -21,6 +21,7 @@ import org.ohdsi.webapi.util.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
 
@@ -37,6 +38,12 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+/**
+ * Provides REST services for working with
+ * patient-level prediction designs.
+ * 
+ * @summary Prediction
+ */
 @Controller
 @Path("/prediction/")
 public class PredictionController {
@@ -61,6 +68,9 @@ public class PredictionController {
 
   private PermissionService permissionService;
 
+  @Value("${security.defaultGlobalReadPermissions}")
+  private boolean defaultGlobalReadPermissions;
+  
   @Autowired
   public PredictionController(PredictionService service,
                               GenericConversionService conversionService,
@@ -79,21 +89,36 @@ public class PredictionController {
     this.permissionService = permissionService;
   }
 
+  /**
+   * Used to retrieve all prediction designs in the WebAPI database.
+   * @summary Get all prediction designs
+   * @return A list of all prediction design names and identifiers
+   */
   @GET
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
   public List<CommonAnalysisDTO> getAnalysisList() {
-
     return StreamSupport
             .stream(service.getAnalysisList().spliterator(), false)
+            .filter(!defaultGlobalReadPermissions ? entity -> permissionService.hasReadAccess(entity) : entity -> true)
             .map(analysis -> {
               CommonAnalysisDTO dto = conversionService.convert(analysis, CommonAnalysisDTO.class);
               permissionService.fillWriteAccess(analysis, dto);
+              permissionService.fillReadAccess(analysis, dto);
               return dto;
             })
             .collect(Collectors.toList());
   }
 
+  /**
+   * Check to see if a prediction design exists by name
+   *
+   * @summary Prediction design exists by name
+   * @param id The prediction design id
+   * @param name The prediction design name
+   * @return 1 if a prediction design with the given name and id exist in WebAPI
+   * and 0 otherwise
+   */
   @GET
   @Path("/{id}/exists")
   @Produces(MediaType.APPLICATION_JSON)
@@ -102,6 +127,13 @@ public class PredictionController {
     return service.getCountPredictionWithSameName(id, name);
   }
 
+  /**
+   * Used to delete a selected prediction design by ID.
+   * 
+   * @summary Delete a prediction designs
+   * @param id The identifier of the prediction design
+   * @return None
+   */
   @DELETE
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}")
@@ -109,6 +141,13 @@ public class PredictionController {
     service.delete(id);
   }
 
+  /**
+   * Used to add a new prediction design to the database
+   * 
+   * @summary Save a new prediction design
+   * @param est The prediction design object
+   * @return An PredictionAnalysisDTO which contains the identifier assigned to the prediction design.
+   */
   @POST
   @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
@@ -118,7 +157,15 @@ public class PredictionController {
     return reloadAndConvert(analysis.getId());
   }
 
-  @PUT
+ /**
+  * Used to save changes to an existing prediction design by ID.
+  * 
+  * @summary Update a prediction design
+  * @param id The ID of the prediction design
+  * @param est The prediction design object
+  * @return An PredictionAnalysisDTO which contains the updated prediction design.
+  */
+@PUT
   @Path("{id}")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
@@ -127,6 +174,13 @@ public class PredictionController {
     return reloadAndConvert(id);
   }
 
+ /**
+   * Used to create a copy of an existing existing prediction design by ID.
+   * 
+   * @summary Copy a prediction design
+   * @param id The ID of the prediction design
+   * @return An PredictionAnalysisDTO which contains the newly copied prediction design.
+   */
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}/copy")
@@ -135,6 +189,13 @@ public class PredictionController {
     return reloadAndConvert(analysis.getId());
   }
 
+ /**
+   * Used to retrieve an existing existing prediction design by ID.
+   * 
+   * @summary Get a prediction design by ID
+   * @param id The ID of the prediction design
+   * @return An EstimationDTO which contains the prediction design.
+   */
   @GET
   @Path("{id}")
   @Produces(MediaType.APPLICATION_JSON)
@@ -145,6 +206,15 @@ public class PredictionController {
     return conversionService.convert(analysis, PredictionAnalysisDTO.class);
   }
 
+ /**
+   * Used to export an existing existing prediction design by ID. This is used
+   * when transferring the object outside of WebAPI.
+   * 
+   * @summary Export a prediction design
+   * @param id The ID of the prediction design
+   * @return An EstimationAnalysisImpl which resolves all references to cohorts, concept sets, etc
+   * and contains the full prediction design for export.
+   */
   @GET
   @Path("{id}/export")
   @Produces(MediaType.APPLICATION_JSON)
@@ -153,6 +223,13 @@ public class PredictionController {
     return service.exportAnalysis(id);
   }
   
+  /**
+   * Import a full prediction design
+   * 
+   * @summary Import a prediction design
+   * @param analysis The full prediction design
+   * @return The newly imported prediction
+   */
   @POST
   @Path("import")
   @Consumes(MediaType.APPLICATION_JSON)
@@ -167,6 +244,15 @@ public class PredictionController {
     return reloadAndConvert(importedAnalysis.getId());
   }  
 
+  /**
+   * Download an R package to execute the prediction study
+   * 
+   * @summary Download a prediction R package
+   * @param id The id for the prediction study
+   * @param packageName The R package name for the study
+   * @return Binary zip file containing the full R package
+   * @throws IOException
+   */
   @GET
   @Path("{id}/download")
   @Consumes(MediaType.APPLICATION_JSON)
@@ -193,6 +279,16 @@ public class PredictionController {
     return response;
   }
 
+  /**
+   * Generate a prediction design by ID on a specific sourceKey. Please note 
+   * this requires configuration of the Arachne Execution Engine.
+   * 
+   * @summary Generate a prediction on a selected source
+   * @param id The id for the prediction study
+   * @param sourceKey The CDM source key
+   * @return JobExecutionResource The job information
+   * @throws IOException
+   */
   @POST
   @Path("{id}/generation/{sourceKey}")
   @Produces(MediaType.APPLICATION_JSON)
@@ -210,6 +306,13 @@ public class PredictionController {
     return service.runGeneration(predictionAnalysis, sourceKey);
   }
 
+  /**
+   * Get a list of generations for the selected prediction design. 
+   * 
+   * @summary Get generations for a prediction design
+   * @param id The id for the prediction design
+   * @return List<ExecutionBasedGenerationDTO> The list of generations
+   */
   @GET
   @Path("{id}/generation")
   @Produces(MediaType.APPLICATION_JSON)
@@ -221,6 +324,13 @@ public class PredictionController {
     return sensitiveInfoService.filterSensitiveInfo(dtos, info -> Collections.singletonMap(Constants.Variables.SOURCE, sourcesMap.get(info.getSourceKey())));
   }
 
+  /**
+   * Get a prediction design generation info.
+   * 
+   * @summary Get prediction design generation info
+   * @param generationId The id for the prediction generation
+   * @return ExecutionBasedGenerationDTO The generation information
+   */
   @GET
   @Path("/generation/{generationId}")
   @Produces(MediaType.APPLICATION_JSON)
@@ -232,6 +342,13 @@ public class PredictionController {
             Collections.singletonMap(Constants.Variables.SOURCE, generationEntity.getSource()));
   }
 
+  /**
+   * Get a prediction design generation result.
+   * 
+   * @summary Get prediction design generation result
+   * @param generationId The id for the prediction generation
+   * @return Response Streams a binary ZIP file with the results
+   */
   @GET
   @Path("/generation/{generationId}/result")
   @Produces("application/zip")
@@ -250,6 +367,14 @@ public class PredictionController {
         return conversionService.convert(analysis, PredictionAnalysisDTO.class);
     }
 
+  /**
+   * Performs a series of checks of the prediction design to ensure it will
+   * properly execute.
+   * 
+   * @summary Check a prediction design for logic flaws
+   * @param PredictionAnalysisDTO The prediction design
+   * @return CheckResult The results of performing all checks
+   */
     @POST
     @Path("/check")
     @Produces(MediaType.APPLICATION_JSON)

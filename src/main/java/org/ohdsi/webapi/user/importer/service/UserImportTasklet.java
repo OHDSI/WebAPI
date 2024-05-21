@@ -36,7 +36,7 @@ public class UserImportTasklet extends BaseUserImportTasklet<UserImportResult> i
       }
       users = Utils.deserialize(userImportJob.getUserRoles(), factory -> factory.constructCollectionType(List.class, AtlasUserRoles.class));
     }
-    return result = userImportService.importUsers(users, userImportJob.getPreserveRoles());
+    return result = userImportService.importUsers(users, userImportJob.getProviderType(), userImportJob.getPreserveRoles());
   }
 
   @Override

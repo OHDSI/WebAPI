@@ -32,6 +32,7 @@ public enum FilterTemplates {
     LDAP_FILTER("ldapFilter"),
     AD_FILTER("adFilter"),
     OIDC_AUTH("oidcAuth"),
+    OIDC_DIRECT_AUTH("oidcDirectAuth"),
     OAUTH_CALLBACK("oauthCallback"),
     HANDLE_UNSUCCESSFUL_OAUTH("handleUnsuccessfullOAuth"),
     HANDLE_CAS("handleCas"),

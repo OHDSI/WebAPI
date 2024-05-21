@@ -4,7 +4,6 @@ import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,27 +17,20 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jersey.repackaged.com.google.common.base.Joiner;
+import com.google.common.base.Joiner;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
-import org.ohdsi.sql.SqlTranslate;
-import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.webapi.cohortanalysis.*;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
-import org.ohdsi.webapi.cohortresults.PeriodType;
 import org.ohdsi.webapi.cohortresults.VisualizationDataRepository;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.model.results.Analysis;
 import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
-import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,7 +39,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 /**
- * Services related to running Heracles analyses
+ * REST Services related to running 
+ * cohort analysis (a.k.a Heracles) analyses. 
+ * More information on the Heracles project
+ * can be found at {@link https://www.ohdsi.org/web/wiki/doku.php?id=documentation:software:heracles}.
+ * The implementation found in WebAPI represents a migration of the functionality
+ * from the stand-alone HERACLES application to integrate it into WebAPI and
+ * ATLAS.
+ * 
+ * @summary Cohort Analysis (a.k.a Heracles)
  */
 @Path("/cohortanalysis/")
 @Component
@@ -119,8 +119,9 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
 	}
 
 	/**
-	 * Returns all cohort analyses in the results/OHDSI schema
-	 *
+	 * Returns all cohort analyses in the WebAPI database
+         * 
+	 * @summary Get all cohort analyses
 	 * @return List of all cohort analyses
 	 */
 	@GET
@@ -133,11 +134,15 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
 		return getJdbcTemplate().query(psr.getSql(), psr.getSetter(), this.analysisMapper);
 	}
 
-    /**
-     * Returns all cohort analyses in the results/OHDSI schema for the given cohort_definition_id
-     * 
-     * @return List of all cohort analyses and their statuses for the given cohort_defintion_id
-     */
+        /**
+         * Returns all cohort analyses in the WebAPI database
+         * for the given cohort_definition_id
+         * 
+         * @summary Get cohort analyses by cohort ID
+         * @param id The cohort definition identifier
+         * @return List of all cohort analyses and their statuses 
+         * for the given cohort_definition_id
+         */
 	@GET
 	@Path("/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -152,7 +157,8 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
     /**
      * Returns the summary for the cohort
      * 
-     * @param id - the cohort_defintion id
+     * @summary Cohort analysis summary
+     * @param id - the cohort_definition id
      * @return Summary which includes the base cohort_definition, the cohort analyses list and their
      *         statuses for this cohort, and a base set of common cohort results that may or may not
      *         yet have been ran
@@ -172,10 +178,12 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
 
         return summary;
     }
-	/**
-	 * Generates a preview of the cohort analysis SQL to be ran for the Cohort
-	 * Analysis Job
+
+        /**
+	 * Generates a preview of the cohort analysis SQL used to run 
+         * the Cohort Analysis Job
 	 *
+         * @summary Cohort analysis SQL preview
 	 * @param task - the CohortAnalysisTask, be sure to have a least one
 	 * analysis_id and one cohort_definition id
 	 * @return - SQL for the given CohortAnalysisTask translated and rendered to
@@ -194,8 +202,9 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
 	 * Generates a preview of the cohort analysis SQL to be ran for the Cohort
 	 * Analysis Job to an array of strings, so that it can be used in batch mode.
 	 *
-	 * @param task
-	 * @return
+         * @summary Run cohort analysis SQL batch
+	 * @param task The CohortAnalysisTask object
+	 * @return The SQL statements or NULL if there is no task specified
 	 */
 	public String[] getRunCohortAnalysisSqlBatch(CohortAnalysisTask task) {
 		if (task != null) {
@@ -218,7 +227,8 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
 	 * Queues up a cohort analysis task, that generates and translates SQL for the
 	 * given cohort definitions, analysis ids and concept ids
 	 *
-	 * @param task - the Cohort Analysis task to be ran
+         * @summary Queue cohort analysis job
+	 * @param task The cohort analysis task to be ran
 	 * @return information about the Cohort Analysis Job
 	 * @throws Exception
 	 */

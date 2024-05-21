@@ -11,7 +11,7 @@ WITH main_table AS (
       fr.strata_name,
       fr.fa_type
     from @cdm_results_schema.cc_results fr
-    where fr.cc_generation_id = @cc_generation_id and fr.analysis_id = @analysis_id and fr.cohort_definition_id = @cohort_id --and fr.covariate_id = @covariate_id
+    where fr.cc_generation_id = @cc_generation_id and fr.analysis_id = @analysis_id and fr.cohort_definition_id = @cohort_id
 ),
     ancestry_ref AS (
     SELECT

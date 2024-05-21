@@ -12,6 +12,6 @@ FROM
   (SELECT *
    FROM @results_database_schema.achilles_results WHERE analysis_id = 117) denom ON num.stratum_2 = denom.stratum_1
   --calendar year
-  INNER JOIN @vocab_database_schema.concept c1 ON CAST(CASE WHEN isNumeric(num.stratum_1) = 1 THEN num.stratum_1 ELSE null END AS INT) = c1.concept_id
+  INNER JOIN @vocab_database_schema.concept c1 ON CAST(CASE WHEN num.analysis_id = 1802 THEN num.stratum_1 ELSE null END AS INT) = c1.concept_id
 WHERE c1.concept_id = @conceptId
 

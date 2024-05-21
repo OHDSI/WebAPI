@@ -11,6 +11,7 @@ import org.ohdsi.webapi.check.checker.estimation.EstimationChecker;
 import org.ohdsi.webapi.check.warning.Warning;
 import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
 import org.ohdsi.webapi.estimation.dto.EstimationDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -21,15 +22,8 @@ public class EstimationCheckerTest extends BaseCheckerTest {
     private static final String JSON_VALID = "/check/checker/estimation-valid.json";
     private static final String JSON_NO_ANALYSIS_SETTINGS = "/check/checker/estimation-no-analysis-settings.json";
     private static final String JSON_POSITIVE_CONTROL_INVALID_VALUES = "/check/checker/estimation-positive-control-invalid-values.json";
+    @Autowired
     private EstimationChecker checker;
-
-
-    @Before
-    public void setUp() {
-
-        checker = new EstimationChecker();
-        checker.init();
-    }
 
     @Test
     public void checkValid() throws IOException {

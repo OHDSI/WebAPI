@@ -41,6 +41,7 @@
       "shortdate": "MM/dd",
       "mediumdate": "MM/dd/YYYY",
       "datetime": "MM/DD/YYYY h:mm A",
+      "datetimeWithSeconds": "MM/DD/YYYY h:mm:ss A",
       "minutes": "분",
       "seconds": "초"
     }
@@ -60,6 +61,7 @@
     "accessDenied": "접근 불가",
     "add": "더하기",
     "and": "그리고",
+    "anonymous": "anonymous",
     "cancel": "취소",
     "close": "닫기",
     "configureAccess": "액세스 구성",
@@ -74,6 +76,7 @@
     "copyToClipboard": "클립 보드에 복사",
     "copiedToClipboard": "클립 보드에 복사되었습니다!",
     "createACopy": "사본 만들기",
+    "create": "Create",
     "days": "일",
     "daysAbbr": "일",
     "delete": "삭제",
@@ -93,13 +96,27 @@
     "refresh": "새로고침",
     "save": "저장",
     "search": "검색",
+    "select": "선택",
     "selectAll": "모두 선택",
     "set": "세트",
     "unsaved": "(저장되지 않음)",
     "unspecified": "미지정!",
     "menu": "메뉴",
     "noData": "데이터 없음",
-    "readOnly": "(읽기 전용)"
+    "readOnly": "(읽기 전용)",
+    "tags": "Tags",
+    "backToCurrent": "Back to current version",
+    "saveAsCurrentVersion": "Save as current version",
+    "unsavedWarning": "Unsaved changes will be lost. Proceed?",
+    "savePreviewWarning": "Save as current version?",
+    "conceptSet": "Concept Set",
+    "cohort": "Cohort",
+    "characterization": "Characterization",
+    "pathway": "Pathway Analysis",
+    "incidenceRate": "Incidence Rate",
+    "ple": "Population Level Effect Estimation",
+    "plp": "Patient Level Prediction",
+    "reusable": "Reusable"
   },
   "commonErrors": {
     "noSources": "현재 WebAPI에 정의된 소스가 없습니다. <br/> 해당 페이지에서 하나 이상을 추가하십시오 <a href=\"#/configure\">configuration</a> page.",
@@ -121,7 +138,8 @@
     "pathways": "코호트 경로",
     "prediction": "예측",
     "profiles": "프로필",
-    "search": "검색"
+    "search": "검색",
+    "tagging": "Tagging"
   },
   "options": {
     "after": "다음",
@@ -196,6 +214,7 @@
   "components": {
     "authorship": {
       "created": "만들어진",
+      "versionCreated": "version created",
       "modified": "수정된",
       "on": "~에",
       "byCreated": "by <%=createdBy%>",
@@ -337,7 +356,6 @@
       "appendConceptSetExpression": "컨셉 세트 표현 추가",
       "overwriteConceptSetExpression": "컨셉 세트 표현 덮어쓰기",
       "enterConceptIdentifiers": "컨셉 식별자를 입력합니다",
-      "enterSourceCodes": "소스 코드를 입력합니다",
       "name": "컨셉 세트 이름:",
       "addConcepts": "컨셉 추가",
       "removeSelected": "선택 항목 삭제",
@@ -348,8 +366,22 @@
       "actionCreate": "생성",
       "overwriteConfirm": "현재의 컨셉 세트 표현을 정말 덮어씌우시겠습니까?",
       "loadingIncludedConcepts": "포함된 컨셉 로딩 중",
+      "loadingRecommendedConcepts": "Loading Recommended Concepts",
       "commonAncestors": "공통 상위 컨셉",
-      "loadingIncludedSourcecodes": "포함된 소스 코드 로딩 중"
+      "loadingIncludedSourcecodes": "포함된 소스 코드 로딩 중",
+      "expressionResolveError": "Error occurred during resolving expression!",
+      "forbiddenError": "You are not authorized to view the concept set expression.",
+      "import": {
+        "repository": {
+          "overwriteCheckboxLabel": "Overwrite concept set items (append if not checked)"
+        },
+        "sourceCodes": {
+          "enterSourceCodes": "소스 코드를 입력합니다",
+          "searchConcepts": "Search concepts",
+          "searchingConcepts": "Searching concepts...",
+          "notFound": "Not found:"
+        }
+      }
     },
     "conceptLegend": {
       "standard": "표준",
@@ -694,6 +726,30 @@
       "visitType": "방문 타입",
       "indexDataText": "인덱스 날짜(Index date)는 <%=conceptSetName%>의 방문일을 나타냅니다."
     },
+    "conditionVisitDetail": {
+      "addAttribute": "Add attribute...",
+      "anyVisitDetail": "Any Visit Detail",
+      "anyType": "Any Visit Detail Type",
+      "anySourceConcept": "Any Visit Detail Source Concept",
+      "anyGender": "Any Gender",
+      "anyProviderSpeciality": "Any Provider Specialty",
+      "anyPlaceService": "Any Place of Service",
+      "anyLocation": "Any Location",
+      "conditionVisitDetailText_1": "a visit detail of",
+      "conditionVisitDetailText_10": "with a Place of Service ",
+      "conditionVisitDetailText_11": "with a Place of Service located in:",
+      "conditionVisitDetailText_12": "with distance from a Place of Service to Patient:",
+      "conditionVisitDetailText_2": "for the first time in the person's history",
+      "conditionVisitDetailText_3": "visit detail start is:",
+      "conditionVisitDetailText_4": "visit detail end is:",
+      "conditionVisitDetailText_5": "visit detail Source Concept is",
+      "conditionVisitDetailText_6": "with visit detail duration",
+      "conditionVisitDetailText_7": "with age",
+      "conditionVisitDetailText_8": "with a gender ",
+      "conditionVisitDetailText_9": "with a Provider Specialty ",
+      "visitDetailType": "visit detail type",
+      "indexDataText": "The index date refers to the visit detail of <%= conceptSetName %>."
+    },
     "criteriaGroup": {
       "addAdditionalConstraint": "추가적인 제약 추가",
       "addCriteria": "그룹에 기준 추가...",
@@ -754,7 +810,7 @@
         "resetAllCoefficients": "교차 검증 시 모델 적합 간에 모든 계수를 0으로 재설정합니다.",
         "sizeMultiplier": "엑티브 세트(active set)의 사이즈 배율(Size multiplier) :",
         "startingVariance": "자동 검색 교차 검증을 위한 시작 분산; -1 = 데이터 기반의 추정치를 사용합니다:",
-        "umberOfRepetitionsOfData": "교차 검증을 위한 데이터의 반복 횟수:",
+        "minDataCrossValidation": "Minimum amount of data required for cross-validation:",
         "upperPrior": "이전 분산 상한치(Upper prior variance limit) :",
         "useTheKarush": "Karush-Kuhn-Tucker conditions 을 사용하여 검색을 제한합니다:"
       },
@@ -1127,11 +1183,56 @@
       "cohortPathway": "코호트 경로",
       "irAnalysis": "발생률 분석",
       "pleAnalysis": "인구 수준 효과 추정",
-      "plpAnalysis": "환자 수준 예측"
+      "plpAnalysis": "환자 수준 예측",
+      "reusable": "reusable"
     },
     "checks": {
       "runningDiagnostics": "진단 실행 중",
       "fixIt": "수정"
+    },
+    "tags": {
+      "title": "Assign Tags",
+      "tabs": {
+        "studyAssetTags": "Study Asset Tags",
+        "reference": "Reference"
+      },
+      "availableTags": "Available tags:",
+      "assign": "Assign",
+      "unassign": "Unassign",
+      "notPermitted": "Not permitted",
+      "assignExistingTag": "Create custom tag",
+      "tagNamePlaceholder": "Tag name",
+      "assignedTags": "Assigned tags:",
+      "tagGroups": "Tag groups:",
+      "tagGroup:": "Tag group:",
+      "showTags": "Show tags",
+      "tagNameExistsWarning": "Tag <%=tagName%> already exists.",
+      "cannotUnassignProtectedTagWarning": "Cannot unassign protected tag: <%=tagName%>",
+      "reassignConfirm": "The maximum number of assigned tags in the tag group \"<%=tagGroup%>\" is <%=maxNumber%>. The tag \"<%=tagName%>\" will be unassigned. Proceed?"
+    },
+    "versions": {
+      "loading": "Loading versions...",
+      "editComment": "Edit comment",
+      "addComment": "Add comment",
+      "commentPlaceholder": "Comment",
+      "preview": "Preview",
+      "viewing": "Viewing now",
+      "createACopy": "Create a copy",
+      "current": "Current"
+    },
+    "reusablesModal": {
+      "title": "Insert from Reusable",
+      "loadingReusables": "Loading reusables list...",
+      "anyConceptSet": "Any Concept Set"
+    },
+    "heading": {
+      "tag": {
+        "tooltip": {
+          "group": "Group:",
+          "groups": "Groups:",
+          "tag": "Tag:"
+        }
+      }
     }
   },
   "facets": {
@@ -1185,8 +1286,8 @@
     },
     "match": {
       "both": "둘다",
-      "only1": "오직 1",
-      "only2": "오직 2"
+      "only1": "오직 CS1",
+      "only2": "오직 CS2"
     },
     "type": {
       "preset": "사전 설정",
@@ -1196,6 +1297,9 @@
     "designs": {
       "myDesigns": "나의 설계",
       "otherDesigns": "다른 설계"
+    },
+    "tags": {
+      "untagged": "Untagged"
     }
   },
   "columns": {
@@ -1346,6 +1450,7 @@
     "quantityPer1000PerYear": "수량 / 1K / 년",
     "quantityTotal": "총 수량",
     "rc": "기록 개수",
+    "recommendedRelationshipCount": "Count",
     "recordCounts": "기록 수 (RC / DRC)",
     "refreshCache": "캐시 새로 고침",
     "relationshipType": "관계 타입",
@@ -1388,6 +1493,8 @@
     "updated": "수정일",
     "userExcluded": "사용자 제외",
     "userIncluded": "사용자 포함",
+    "validStartDate": "Valid Start Date",
+    "validEndDate": "Valid End Date",
     "value": "값",
     "visitsCount": "레코드",
     "visitsPer1000": "레코드 / 1K",
@@ -1407,14 +1514,20 @@
     "selectionCriteria": "선택 기준",
     "personId": "환자 아이디",
     "gender": "성별",
-    "ageAtIndex": "기준 시점 나이"
+    "ageAtIndex": "기준 시점 나이",
+    "usageCount": "Usage count",
+    "group": "Group",
+    "version": "Version",
+    "comment": "Comment",
+    "preview": "Preview",
+    "pc": "PC",
+    "dpc": "DPC",
+    "rcTooltip": "Record Count",
+    "drcTooltip": "Descendant Record Count",
+    "pcTooltip": "Person Count",
+    "dpcTooltip": "Descendant Person Count"
   },
   "dataSources": {
-    "achillesHeelReport": {
-      "achillesHeelResults": "Achilles Heel 결과",
-      "message": "메시지",
-      "messageType": "메시지 유형"
-    },
     "const": {
       "lengthOfEra": "기간의 길이",
       "recordsPerPerson": "사람 당 기록수"
@@ -1522,7 +1635,6 @@
     },
     "prevalence": "유병율",
     "reports": {
-      "achillesHeel": "아킬레스 힐(Achilles Heel)",
       "conditionEra": "진단 기간 (condition era)",
       "conditionOccurrence": "진단 발생(Condition occurrence)",
       "dashboard": "대시보드(Dashboard)",
@@ -1575,7 +1687,8 @@
       "import": "불러오기",
       "search": "검색"
     },
-    "vocabularies": "용어(vocabularies)"
+    "vocabularies": "용어(vocabularies)",
+    "viewCountMessage":  "View record count for:"
   },
   "cs": {
     "browser": {
@@ -1588,10 +1701,17 @@
         "heading": "컨셉 세트 비교",
         "headingMessage": "이 유틸리티를 사용하여 두 컨셉 세트가 공유하고 있는 컨셉을 확인하세요",
         "modalTitle": "컨셉 세트 선택",
+        "sameConcepts": "Compared Concept Sets contain Concepts which are identical",
         "sameWarning": "동일한 컨셉 세트를 비교할 수 없습니다.",
         "saveFromComparisonNameTail": "- 비교",
         "saveMessage": "아래 선택에서 새 컨셉 세트 저장",
         "saveWarning": "이 비교 기능을 수행하기 전에 현재의 컨셉 세트를 저장해야합니다.",
+        "vennDiagram": "Venn Diagram",
+        "vennDiagramAmountConcepts": "The amount: <%=count%>",
+        "vennDiagramAmountOnly": "The concepts are only in this concept set: <%=amountOnly%>",
+        "vennDiagramCommonConcepts": "Common Concepts",
+        "vennDiagramNameConceptSet": "<%=name%> concept set",
+        "vennDiagramTotalAmountConcepts": "The total amount of concepts: <%=count%>",
         "viewCountMessage": "다음에 대한 데이터베이스 레코드 수 (RC) 및 하위 레코드 수 (DRC)보기 :"
       },
       "exportConceptSetsButton": "컨셉 세트 내보내기",
@@ -1607,6 +1727,7 @@
       "attemptingToFindMessage": "이 컨셉 세트에 대한 최적의 정의를 찾는 중...",
       "cancelButton": "취소",
       "caption": "컨셉 세트 # <%=id%>",
+      "captionVersion": "Concept Set #<%=id%> - Version <%=number%> Preview",
       "changeColumnsButton": "열(Columns) 변경",
       "conceptsRemovedHeading": "삭제된 컨셉",
       "conceptsRemovedMessage": "다음 컨셉들은 최적화된 버전에 이미 포함되어 있으므로 제거되었습니다.",
@@ -1667,7 +1788,9 @@
         "exploreEvidence": "Evidence 탐색",
         "export": "내보내기",
         "includedConcepts": "포함된 컨셉",
-        "includedSourceCodes": "포함된 소스 코드"
+        "includedSourceCodes": "포함된 소스 코드",
+        "versions": "Versions",
+        "messages": "메시지"
       },
       "concept": {
         "title": "어휘(Vocabulary) > 컨셉",
@@ -1686,7 +1809,9 @@
             "conceptId": "컨셉 ID",
             "conceptCode": "컨셉 코드",
             "invalidReason": "무효한 근거",
-            "standardConcept": "표준 컨셉"
+            "standardConcept": "표준 컨셉",
+            "validStartDate": "Valid Start Date",
+            "validEndDate": "Valid End Date"
           },
           "relatedConcepts": {
             "loading": "관련 컨셉 로딩…",
@@ -1736,7 +1861,9 @@
     },
     "viewEdit": {
       "caption": "특성(Characterization) #<%=id%>",
+      "captionPreview": "Characterization #<%=id%> - Version <%=number%> Preview",
       "loadingCohortCharacterization": "코호트 특성(Characterization) 로드중 ...",
+      "deleteConfirmation": "확실합니까?",
       "design": {
         "description": "코호트 특성 분석은 개별 환자 수준의 공변량 데이터로부터 코호트 단위의 요약 통계 생성해 줍니다. 환자 수준의 공변량에 대한 요약 통계는 수, 평균, 표준편차, 분산, 최소값, 최대값, 중앙값, 범위 및 사분위수가 포함됩니다. 또한 시간과 관련된 공변량은 코호트 시작일이나 시간 간격(예: 주, 월, 분기, 연도) 등을 이용하여 층화할 수 있습니다.",
         "fa": {
@@ -1821,6 +1948,7 @@
         "design": "설계",
         "executions": "실행",
         "utilities": "유틸리티",
+        "versions": "Versions",
         "messages": "메시지"
       },
       "utilities": {
@@ -1887,6 +2015,7 @@
   },
   "ir": {
     "caption": "발생률 분석 #<%=id%>",
+    "captionVersion": "Incidence Rate Analysis #<%=id%> - Version <%=number%> Preview",
     "cs": {
       "modalTitle": "컨셉 세트 선택하기"
     },
@@ -1958,6 +2087,7 @@
       "definition": "정의",
       "generation": "생성",
       "utilities": "유틸리티",
+      "versions": "Versions",
       "messages": "메시지"
     },
     "title": "발생률 분석"
@@ -1990,6 +2120,7 @@
     "loading": "경로 분석 목록 로드중...",
     "manager": {
       "caption": "코호트 경로 #<%=id%>",
+      "captionVersion": "Cohort Pathway #<%=id%> - Version <%=number%> Preview",
       "design": {
         "analysisSettings": {
           "combinationWindow": {
@@ -2078,6 +2209,7 @@
         "design": "설계",
         "executions": "실행",
         "utilities": "유틸리티",
+        "versions": "Versions",
         "messages": "메시지"
       },
       "utilities": {
@@ -2262,6 +2394,55 @@
       "reviewFullSpec": "전체 연구 사양 검토"
     }
   },
+  "reusables": {
+    "title": "Reusables",
+    "loading": "Loading Reusables...",
+    "manager": {
+      "loading": "Loading Reusable...",
+      "caption": "Reusable #<%=id%>",
+      "captionVersion": "Reusable #<%=id%> - Version <%=number%> Preview",
+      "design": {
+        "description": "<b>Reusable</b> is ...",
+        "descriptionPlaceholder": "Enter description here"
+      },
+      "messages": {
+        "alreadyExists": "A reusable with this name already exists. Please choose a different name.",
+        "beforeClose": "Your changes are not saved. Would you like to continue?",
+        "deleteConfirmation": "Are you sure?",
+        "saveFailed": "An error occurred while attempting to save a reusable.",
+        "notfound": "There is no reusable with id = %d."
+      },
+      "tabs": {
+        "design": "Design",
+        "versions": "Versions"
+      }
+    }
+  },
+  "tagging": {
+    "tabs": {
+      "multiAssign": "Multi-assign"
+    },
+    "multiAssign": {
+      "selectedTags": "Selected Tags",
+      "selectedAssets": "Selected Assets",
+      "chooseTags": "Choose Tags",
+      "chooseAssets": "Choose Assets",
+      "assignTags": "Assign tags",
+      "unassignTags": "Unassign tags",
+      "messageGroupNotMultiple": "Group '<%=group%>' does not allow multiple tags. Tag '<%=replacedName%>' replaced with tag '<%=replacedWithName%>'",
+      "success": "Success!",
+      "error": "Error!",
+      "forbiddenError": "Forbidden!",
+      "tabs": {
+        "conceptsets": "Concept Sets",
+        "cohorts": "Cohorts",
+        "characterizations": "Characterizations",
+        "incidenceRates": "Incidence Rates",
+        "cohortPathways": "Cohort Pathways",
+        "reusables": "Reusables"
+      }
+    }
+  },
   "jobs": {
     "refreshJobs": "작업 새로 고침"
   },
@@ -2277,7 +2458,8 @@
       "clearConfigurationCache": "구성 캐시 지우기",
       "clearServerCache": "서버 캐시 지우기",
       "importUsers": "LDAP/AD에서 사용자 가져오기",
-      "managePermissions": "사용 권한 관리"
+      "managePermissions": "사용 권한 관리",
+      "tagManagement": "Tag Management"
     },
     "changeSourcePriorities": "다음에서 소스 우선 순위 변경:",
     "confirms": {
@@ -2414,7 +2596,10 @@
           "pdw": "Microsoft PDW",
           "postgresql": "PostgreSQL",
           "redshift": "Amazon Redshift",
-          "sqlserver": "SQL server"
+          "sqlserver": "SQL server",
+          "synapse": "Azure Synapse",
+          "snowflake": "Snowflake",
+          "spark": "Apache Spark"
         },
         "title": "소스 dialect"
       },
@@ -2497,6 +2682,47 @@
           "empty": "&quot;Username&quot;이 비어 있습니다."
         }
       }
+    },
+    "tagManagement": {
+      "allowMultiple": "Multiple",
+      "allowCustom": "Free&#8209;form",
+      "allowCustomCheckbox": "Allow custom tags creation in this group",
+      "apply": "Submit",
+      "color": "Color",
+      "createGroup": "Create Group",
+      "createTag": "Create Tag",
+      "editTag": "Edit Tag",
+      "editTagGroup": "Edit Tag Group",
+      "exampleTagGroup": "Example",
+      "exampleTagGroupTag": "Example name",
+      "exampleTag": "Example",
+      "icon": "Icon",
+      "mandatory": "Mandatory",
+      "multiSelectionCheckbox": "Allow multiple tags from the group in a single asset",
+      "showGroupCheckbox": "Show Tag Group column in assets table",
+      "showInAssetsBrowser": "Show&nbsp;Column",
+      "tagsInGroup": "Tags in Group '<%=group%>'",
+      "tagGroups": "Tag Groups",
+      "tagGroupColor": "Tag group color",
+      "tagGroupColorPlaceholder": "Enter tag group color in #xxxxxx format",
+      "tagGroupDescription": "Tag group description",
+      "tagGroupDescriptionPlaceholder": "Enter tag group description",
+      "tagGroupIcon": "Tag group icon",
+      "tagGroupIconPlaceholder": "Enter tag group icon as font-awesome class",
+      "tagGroupName": "* Tag group name",
+      "tagGroupNamePlaceholder": "Enter tag group name",
+      "tagGroupNameEmpty": "Tag group name cannot be empty",
+      "hideTags": "Hide tags",
+      "showTags": "Show tags",
+      "edit": "Edit",
+      "remove": "Remove",
+      "overrideTagColor": "Override tag group color",
+      "overrideTagIcon": "Override tag group icon",
+      "protected": "Protected",
+      "nameExistsWarning": "Tag or Group name '<%=tagName%>' is already in use.",
+      "errorGroupNotEmpty": "Cannot delete tag group: the group contains tags",
+      "deleteGroupConfirmation": "Deletion cannot be undone! Are you sure?",
+      "deleteTagConfirmation": "If the tag is assigned to an asset, it will be unassigned. Deletion cannot be undone. Are you sure you want to delete the tag?"
     }
   },
   "feedback": {
@@ -2558,9 +2784,10 @@
       "confirms": {
         "close": "코호트 변경 사항은 저장되지 않습니다. 계속 하시겠습니까?",
         "delete": "코호트 정의를 삭제 하시겠습니까? 경고 : 삭제시 다시 되돌릴 수 없습니다!",
+        "deleteConflict": "코호트 정의는 일부 분석에서 참조되기 때문에 삭제할 수 없습니다.",
         "generateAnalyses": "이 작업은 <%=descr%>을 실행하며 약 <%=duration%>이 소요될 수 있습니다. 확실하십니까?",
-        "save": "코호트 정의는 일부 분석에서 참조되기 때문에 삭제할 수 없습니다.",
-        "saveAlert": "이 이름을 가진 코호트 정의가 이미 존재합니다. 다른 이름을 선택하십시오."
+        "saveAlert": "이 이름을 가진 코호트 정의가 이미 존재합니다. 다른 이름을 선택하십시오.",
+        "saveError": "An error occurred while attempting to save a cohort definition."
       },
       "createCopyCohortTitle": "이 코호트 정의의 사본 만들기",
       "failedWithoutAnyMessage": "메시지없이 실패",
@@ -2619,9 +2846,9 @@
           "sampleName": "* 샘플 이름",
           "sampleNamePlaceholder": "샘플 이름 입력",
           "sampleNameEmpty": "샘플 이름은 비워 둘 수 없습니다",
-          "numberOfPatients": "* 환자 수",
+          "numberOfPatients": "* Number of patients (from 1 to 500)",
           "numberOfPatientsPlaceholder": "숫자 입력",
-          "numberOfPatientsEmpty": "환자 수는 양의 정수여야 합니다",
+          "numberOfPatientsEmpty": "Number of patients must be a positive integer between 1 and 500",
           "selectAgeCriteria": "나이 기준 선택",
           "lessThan": "보다 작은",
           "lessOrEqualTo": "보다 작거나 같은",
@@ -2651,10 +2878,12 @@
         "generation": "생성",
         "samples": "샘플",
         "messages": "메시지",
+        "versions": "Versions",
         "reporting": "레포팅"
       }
     },
-    "cohortId": "코호트 번호 #<%=id%>",
+    "cohortCaption": "코호트 번호 #<%=id%>",
+    "cohortCaptionPreview": "Cohort #<%=id%> - Version <%=number%> Preview",
     "cohortreports": {
       "inclusionReport": "포함 보고서",
       "inclusionReportFor": " ",
@@ -2901,6 +3130,28 @@
         "title_procedureoccurrence": "Visit 조건 추가",
         "desc_procedureoccurrence": "Procedure  발생 방문을 기반으로 Procedure Occurrence를 필터링합니다."
       },
+      "addVisitDetail": {
+        "title": "Add Visit detail",
+        "desc_initial": "Find patients based on visit  detail information.",
+        "desc_censoring": "Exit cohort based on visit detail information.",
+        "desc_group": "Find patients based on visit detail information.",
+        "title_visit_detail": "Add Visit detail",
+        "desc_occurrence": "Filter Condition Occurrences based on visit detail of diagnosis.",
+        "title_deviceexposure": "Add Visit detail Criteria",
+        "desc_deviceexposure": "Filter Device Exposures based on visit detail of exposure.",
+        "title_drugexposure": "Add Visit detail Criteria",
+        "desc_drugexposure": "Filter Drug Exposures based on visit detail of drug exposure.",
+        "title_measurement": "Add Visit detail Criteria",
+        "desc_measurement": "Filter Measurements based on visit detail of measurement.",
+        "title_observation": "Add Visit detail Criteria",
+        "desc_observation": "Filter Observations based on visit detail of observation.",
+        "title_procedureoccurrence": "Add Visit  detail Criteria",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences based on visit detail of procedure."
+      },
+      "addConditionStatus": {
+        "title_occurrence": "Add Condition Status",
+        "desc_occurrence": "Filter Condition Occurrences based on condition status."
+      },
       "addFirstDiagnosis": {
         "title_era": "최초 진단 기준 추가",
         "desc_era": "Condition Era를 환자의 전체 기록중 가장 처음 받은 진단으로 제한합니다.",
@@ -2927,7 +3178,9 @@
         "title_specimen": "First Occurrence 기준 추가",
         "desc_specimen": "Specimen을 기록 내 첫 발생으로 제한합니다.",
         "title_visit": "First Visit 조건 추가",
-        "desc_visit": "Visit occurrence를 첫 방문으로 제한합니다."
+        "desc_visit": "Visit occurrence를 첫 방문으로 제한합니다.",
+        "title_visitDetail": "Add First Visit detail Criteria",
+        "desc_visitDetail": "Limit Visit detail to the first visit."
       },
       "addAgeAtStart": {
         "title_era": "Era start 당시 Age 기준 추가",
@@ -2980,6 +3233,8 @@
         "desc_specimen": "Gender을 기반으로  Specimen을 필터링합니다.",
         "title_visit": "Gender 조건 추가",
         "desc_visit": "성별에 따라 Visit occurrence를 필터링합니다.",
+        "title_visitDetail": "Add Gender Criteria",
+        "desc_visitDetail": "Filter Visit detail based on Gender.",
         "title_demographic": "Gender 기준 추가",
         "desc_demographic": "성별을 기반으로 이벤트를 필터링합니다."
       },
@@ -3002,6 +3257,8 @@
         "desc_payerplan": "시작일에 따라 Payer Plan Period를 필터링합니다.",
         "title_visit": "Start Date 기준 추가",
         "desc_visit": "진단받은 시작일에 따라 Visit occurrence를 필터링합니다.",
+        "title_visitDetail": "Add Start Date Criteria",
+        "desc_visitDetail": "Filter Visit detail by the Start Date.",
         "title_demographic": "Event Start Date 기준 추가",
         "desc_demographic": "시작일에 따라 이벤트를 필터링합니다."
       },
@@ -3024,6 +3281,8 @@
         "desc_payerplan": "종료일에 따라 Payer Plan Period를 필터링합니다.",
         "title_visit": "End Date 기준 추가",
         "desc_visit": "진단받은 종료일에 따라 Visit occurrence를 필터링합니다.",
+        "title_visitDetail": "Add End Date Criteria",
+        "desc_visitDetail": "Filter Visit detail by the End Date.",
         "title_demographic": "Event End 기준 추가",
         "desc_demographic": "종료일에 따라 이벤트를 필터링합니다."
       },
@@ -3053,7 +3312,9 @@
         "title_payerplan": "Period Length 조건 추가",
         "desc_payerplan": "지속된 기간에 따라 Payer Plan Period를 필터링합니다.",
         "title_visit": "Visit Length 기준 추가",
-        "desc_visit": "지속된 기간에 따라 Visit occurrence를 필터링합니다."
+        "desc_visit": "지속된 기간에 따라 Visit occurrence를 필터링합니다.",
+        "title_visitDetail": "Add Visit detail Length Criteria",
+        "desc_visitDetail": "Filter Visit detail by duration."
       },
       "addNested": {
         "title_era": "Nested 기준 추가...",
@@ -3083,7 +3344,9 @@
         "title_specimen": "Nested 기준 추가...",
         "desc_specimen": "Specimens를 기준 시점으로 사용하여 기준을 적용합니다.",
         "title_visit": "Nested 기준 추가...",
-        "desc_visit": "Visit Occurrences를 기준 시점으로 사용하여 기준을 적용합니다."
+        "desc_visit": "Visit Occurrences를 기준 시점으로 사용하여 기준을 적용합니다.",
+        "title_visitDetail": "Add Nested Criteria...",
+        "desc_visitDetail": "Apply criteria using the visit detail as the index event."
       },
       "addAge": {
         "title_occurrence": "Age at Occurrence 추가",
@@ -3104,6 +3367,8 @@
         "desc_specimen": "발생 시작 연령에 따라 Specimen을 필터링합니다.",
         "title_visit": "Age at Occurrence 조건 추가",
         "desc_visit": "방문 발생 연령에 따라 Visit occurrence를 필터링합니다.",
+        "title_visitDetail": "Add Age at Visit detail Criteria",
+        "desc_visitDetail": "Filter Visit detail by age at occurrence.",
         "title_demographic": "Age 기준 추가",
         "desc_demographic": "연령을 기반으로 이벤트를 필터링합니다."
       },
@@ -3127,7 +3392,9 @@
         "title_specimen": "Specimen Type 조건 추가",
         "desc_specimen": "Type에 따라 Specimen을 필터링합니다.",
         "title_visit": "Visit Type 기준 추가",
-        "desc_visit": "Condition Type에 따라 Visit occurrence를 필터링합니다."
+        "desc_visit": "Condition Type에 따라 Visit occurrence를 필터링합니다.",
+        "title_visitDetail": "Add Visit detail Type Criteria",
+        "desc_visitDetail": "Filter Visit detail by the Type."
       },
       "addStopReason": {
         "title_occurrence": "Stop Reason 추가",
@@ -3181,7 +3448,9 @@
         "title_procedureoccurrence": "Procedure Source Concept 조건 추가",
         "desc_procedureoccurrence": "Procedure Source Concept에 따라 Procedure Occurrence를 필터링합니다.",
         "title_visit": "Visit Source Concept 조건 추가",
-        "desc_visit": "Visit Source Concept에 따라 Visit occurrence를 필터링합니다."
+        "desc_visit": "Visit Source Concept에 따라 Visit occurrence를 필터링합니다.",
+        "title_visitDetail": "Add Visit detail Source Concept Criteria",
+        "desc_visitDetail": "Filter Visit detail by the Visit detail Source Concept."
       },
       "addProviderSpecialty": {
         "title_occurrence": "Provider Specialty 추가",
@@ -3197,7 +3466,9 @@
         "title_procedureoccurrence": "Provider Specialty 기준 추가",
         "desc_procedureoccurrence": "의료서비스 제공자의 전공을 기반으로 Procedure Occurrence를 필터링합니다.",
         "title_visit": "Provider Specialty 조건 추가",
-        "desc_visit": "의료서비스 제공자의 전공을 기반으로  Visit occurrence를 필터링합니다."
+        "desc_visit": "의료서비스 제공자의 전공을 기반으로  Visit occurrence를 필터링합니다.",
+        "title_visitDetail": "Add Provider Specialty Criteria",
+        "desc_visitDetail": "Filter Visit detail based on provider specialty."
       },
       "addDate": {
         "title_death": "Death Date 기준 추가",
@@ -3331,15 +3602,21 @@
       },
       "addPlaceService": {
         "title_visit": "Place of Service 조건 추가",
-        "desc_visit": "의료서비스가 진행된 장소를 기반으로 Visit occurrence를 필터링합니다."
+        "desc_visit": "의료서비스가 진행된 장소를 기반으로 Visit occurrence를 필터링합니다.",
+        "title_visitDetail": "Add Place of Service Criteria",
+        "desc_visitDetail": "Filter Visit detail based on Place of Service."
       },
       "addPlaceServiceLocation": {
         "title_visit": "Place of Service Location 조건 추가",
-        "desc_visit": "의료서비스가 위치한 장소를 기반으로 Visit occurrence를 필터링합니다"
+        "desc_visit": "의료서비스가 위치한 장소를 기반으로 Visit occurrence를 필터링합니다",
+        "title_visitDetail": "Add Place of Service Location Criteria",
+        "desc_visitDetail": "Filter Visit detail based on where Place of Service is located."
       },
       "addPlaceServiceDistance": {
         "title_visit": "서비스 장소 거리 기준 추가",
-        "desc_visit": "서비스 장소에서 환자까지의 거리를 기준으로 방문 발생을 필터링합니다."
+        "desc_visit": "서비스 장소에서 환자까지의 거리를 기준으로 방문 발생을 필터링합니다.",
+        "title_visitDetail": "Add Place of Service Distance Criteria",
+        "desc_visitDetail": "Filter Visit detail based on distance from Place of Service to Patient."
       }
     },
     "newEntityNames": {
@@ -3352,7 +3629,8 @@
       "ple": "새 인구 수준 효과 추정",
       "plp": "새 환자 수준 예측",
       "role": "새로운 역할",
-      "source": "새로운 소스"
+      "source": "새로운 소스",
+      "reusable": "New Reusable"
     },
     "weekdays": {
       "friday": {
@@ -3421,7 +3699,7 @@
       "executionEditorText_3": "최소 공변량 발생 : 만약 어떤 공변량이 지정한 값보다 적은 비율로 표적 모집단에서 발생하면 제거됩니다.",
       "executionEditorText_4": "공변량 정규화:",
       "populationEditorText_1": "표적 코호트 진입을 기준으로 위험 노출 구간(time-at-risk)의 시작일을 설정합니다:",
-      "populationEditorText_2": "포함한 컨셉 목록에  하위 컨셉을 추가합니까?",
+      "populationEditorText_2": "위험 노출 기간의 종료일을 정의하십시오:",
       "populationEditorText_3": "표적 코호트에 적용되는 최소 선행 관찰 기간",
       "populationEditorText_4": "위험 노출 기간이 없는 대상자를 제거해야 합니까?",
       "populationEditorText_5": "[예] 최소 위험노출 기간",

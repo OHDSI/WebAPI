@@ -41,13 +41,10 @@ public abstract class AnalysisExecutionSupport extends AbstractDaoService {
       return builder;
   }
 
-    protected void hydrateAnalysis(Object analysis, String externalPackagePath, OutputStream out) throws JsonProcessingException {
+    protected void hydrateAnalysis(Object analysis, OutputStream out) throws JsonProcessingException {
 
         String studySpecs = Utils.serialize(analysis, true);
         Hydra h = new Hydra(studySpecs);
-        if (StringUtils.isNotEmpty(externalPackagePath)) {
-            h.setExternalSkeletonFileName(externalPackagePath);
-        }
         h.hydrate(out);
     }
 

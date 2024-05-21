@@ -1,6 +1,8 @@
 package org.ohdsi.webapi.service.dto;
 
-public class IRAnalysisShortDTO extends CommonEntityDTO {
+import org.ohdsi.webapi.model.CommonEntityExt;
+
+public class IRAnalysisShortDTO extends CommonEntityExtDTO {
 
     private Integer id;
     private String name;

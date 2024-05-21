@@ -1,16 +1,12 @@
-FROM golang:1.16-buster as golang-build
-
-WORKDIR /go/src/app
-COPY cmd cmd
-
-RUN go env -w GO111MODULE=auto; \
-    go install -v ./...
-
-FROM maven:3.6.0-jdk-11 as builder
+FROM maven:3.6-jdk-11 as builder
 
 WORKDIR /code
 
 ARG MAVEN_PROFILE=webapi-docker
+ARG MAVEN_PARAMS="" # can use maven options, e.g. -DskipTests=true -DskipUnitTests=true
+
+ARG OPENTELEMETRY_JAVA_AGENT_VERSION=1.17.0
+RUN curl -LSsO https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${OPENTELEMETRY_JAVA_AGENT_VERSION}/opentelemetry-javaagent.jar
 
 # Download dependencies
 COPY pom.xml /code/
@@ -23,7 +19,7 @@ ARG GIT_COMMIT_ID_ABBREV=unknown
 
 # Compile code and repackage it
 COPY src /code/src
-RUN mvn package \
+RUN mvn package ${MAVEN_PARAMS} \
     -Dgit.branch=${GIT_BRANCH} \
     -Dgit.commit.id.abbrev=${GIT_COMMIT_ID_ABBREV} \
     -P${MAVEN_PROFILE} \
@@ -34,12 +30,9 @@ RUN mvn package \
     && rm WebAPI.war
 
 # OHDSI WebAPI and ATLAS web application running as a Spring Boot application with Java 11
-FROM openjdk:11-jre-slim
+FROM openjdk:8-jre-slim
 
 MAINTAINER Lee Evans - www.ltscomputingllc.com
-
-COPY --from=golang-build /go/bin/healthcheck /app/healthcheck
-HEALTHCHECK --start-period=1m --interval=1m --timeout=10s --retries=10 CMD ["/app/healthcheck"]
 
 # Any Java options to pass along, e.g. memory, garbage collection, etc.
 ENV JAVA_OPTS=""
@@ -53,7 +46,7 @@ ENV DEFAULT_JAVA_OPTS="-Djava.security.egd=file:///dev/./urandom"
 # set working directory to a fixed WebAPI directory
 WORKDIR /var/lib/ohdsi/webapi
 
-COPY docker-entrypoint.sh .
+COPY --from=builder /code/opentelemetry-javaagent.jar .
 
 # deploy the just built OHDSI WebAPI war file
 # copy resources in order of fewest changes to most changes.
@@ -69,5 +62,6 @@ EXPOSE 8080
 USER 101
 
 # Directly run the code as a WAR.
-ENTRYPOINT ["./docker-entrypoint.sh"]
-CMD ["run-webapi"]
+CMD exec java ${DEFAULT_JAVA_OPTS} ${JAVA_OPTS} \
+    -cp ".:WebAPI.jar:WEB-INF/lib/*.jar${CLASSPATH}" \
+    org.springframework.boot.loader.WarLauncher

@@ -31,6 +31,7 @@ public class TempTableCleanupManager {
     DBMSType.ORACLE.getOhdsiDB(),
     DBMSType.IMPALA.getOhdsiDB(),
     DBMSType.BIGQUERY.getOhdsiDB(),
+    DBMSType.SPARK.getOhdsiDB(),
     // For Cohort Characterization which uses 'permanent temp tables'
     DBMSType.MS_SQL_SERVER.getOhdsiDB(),
     DBMSType.PDW.getOhdsiDB()

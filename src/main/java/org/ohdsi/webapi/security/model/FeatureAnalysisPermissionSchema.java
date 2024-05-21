@@ -13,8 +13,14 @@ public class FeatureAnalysisPermissionSchema extends EntityPermissionSchema {
         put("feature-analysis:%s:delete", "Delete Feature Analysis with ID = %s");
     }};
 
+    private static Map<String, String> readPermissions = new HashMap<String, String>() {{                                     
+	put("feature-analysis:%s:get", "get feature analysis");
+        put("feature-analysis:aggregates:get", "feature-analysis:aggregates:get");                                                   
+      }
+      };
+  
     public FeatureAnalysisPermissionSchema() {
 
-        super(EntityType.FE_ANALYSIS, new HashMap<>(), writePermissions);
+        super(EntityType.FE_ANALYSIS, readPermissions, writePermissions);
     }
 }

@@ -41,6 +41,7 @@
       "shortdate": "MM/dd",
       "mediumdate": "MM/dd/YYYY",
       "datetime": "MM/DD/YYYY h:mm A",
+      "datetimeWithSeconds": "MM/DD/YYYY h:mm:ss A",
       "minutes": "min",
       "seconds": "sec"
     }
@@ -60,6 +61,7 @@
     "accessDenied": "Access denied",
     "add": "Add",
     "and": "and",
+    "anonymous": "anonymous",
     "cancel": "Cancel",
     "close": "Close",
     "configureAccess": "Configure access",
@@ -74,6 +76,7 @@
     "copyOf": "Copy of <%=name%>",
     "copyToClipboard": "Copy to clipboard",
     "createACopy": "Create a copy",
+    "create": "Create",
     "days": "days",
     "daysAbbr": "d",
     "delete": "Delete",
@@ -93,13 +96,27 @@
     "refresh": "Refresh",
     "save": "Save",
     "search": "Search",
+    "select": "Select",
     "selectAll": "Select All",
     "set": "Set",
     "unsaved": "(unsaved)",
     "unspecified": "UNSPECIFIED!",
     "menu": "Menu",
     "noData": "No data",
-    "readOnly": "(Read only)"
+    "readOnly": "(Read only)",
+    "tags": "Tags",
+    "backToCurrent": "Back to current version",
+    "saveAsCurrentVersion": "Save as current version",
+    "unsavedWarning": "Unsaved changes will be lost. Proceed?",
+    "savePreviewWarning": "Save as current version?",
+    "conceptSet": "Concept Set",
+    "cohort": "Cohort",
+    "characterization": "Characterization",
+    "pathway": "Pathway Analysis",
+    "incidenceRate": "Incidence Rate",
+    "ple": "Population Level Effect Estimation",
+    "plp": "Patient Level Prediction",
+    "reusable": "Reusable"
   },
   "commonErrors": {
     "noSources": "The current WebAPI has no sources defined.<br/>Please add one or more on <a href=\"#/configure\">configuration</a> page.",
@@ -121,7 +138,8 @@
     "pathways": "Cohort Pathways",
     "prediction": "Prediction",
     "profiles": "Profiles",
-    "search": "Search"
+    "search": "Search",
+    "tagging": "Tagging"
   },
   "options": {
     "after": "After",
@@ -196,6 +214,7 @@
   "components": {
     "authorship": {
       "created": "created",
+      "versionCreated": "version created",
       "modified": "modified",
       "on": "on",
       "byCreated": "by <%=createdBy%>",
@@ -386,7 +405,6 @@
       "appendConceptSetExpression": "Append Concept Set Expression",
       "overwriteConceptSetExpression": "Overwrite Concept Set Expression",
       "enterConceptIdentifiers": "Enter Concept Identifiers",
-      "enterSourceCodes": "Enter Source Codes",
       "name": "Name:",
       "addConcepts": "Add Concepts",
       "removeSelected": "Remove Selected",
@@ -397,8 +415,22 @@
       "actionCreate": "create",
       "overwriteConfirm": "Are you sure you want to overwrite current Concept Set Expression?",
       "loadingIncludedConcepts": "Loading Included Concepts",
+      "loadingRecommendedConcepts": "Loading Recommended Concepts",
       "commonAncestors": "Common Ancestors",
-      "loadingIncludedSourcecodes": "Loading Included Sourcecodes"
+      "loadingIncludedSourcecodes": "Loading Included Sourcecodes",
+      "expressionResolveError": "Error occurred during resolving expression!",
+      "forbiddenError": "You are not authorized to view the concept set expression.",
+      "import": {
+        "repository": {
+          "overwriteCheckboxLabel": "Overwrite concept set items (append if not checked)"
+        },
+        "sourceCodes": {
+          "enterSourceCodes": "Enter Source Codes",
+          "searchConcepts": "Search concepts",
+          "searchingConcepts": "Searching concepts...",
+          "notFound": "Not found:"
+        }
+      }
     },
     "conceptLegend": {
       "standard": "Standard",
@@ -743,6 +775,30 @@
       "visitType": "Visit Type",
       "indexDataText": "The index date refers to the visit of <%= conceptSetName %>."
     },
+    "conditionVisitDetail": {
+      "addAttribute": "Add attribute...",
+      "anyVisitDetail": "Any Visit Detail",
+      "anyType": "Any Visit Detail Type",
+      "anySourceConcept": "Any Visit Detail Source Concept",
+      "anyGender": "Any Gender",
+      "anyProviderSpeciality": "Any Provider Specialty",
+      "anyPlaceService": "Any Place of Service",
+      "anyLocation": "Any Location",
+      "conditionVisitDetailText_1": "a visit detail of",
+      "conditionVisitDetailText_10": "with a Place of Service ",
+      "conditionVisitDetailText_11": "with a Place of Service located in:",
+      "conditionVisitDetailText_12": "with distance from a Place of Service to Patient:",
+      "conditionVisitDetailText_2": "for the first time in the person's history",
+      "conditionVisitDetailText_3": "visit detail start is:",
+      "conditionVisitDetailText_4": "visit detail end is:",
+      "conditionVisitDetailText_5": "visit detail Source Concept is",
+      "conditionVisitDetailText_6": "with visit detail duration",
+      "conditionVisitDetailText_7": "with age",
+      "conditionVisitDetailText_8": "with a gender ",
+      "conditionVisitDetailText_9": "with a Provider Specialty ",
+      "visitDetailType": "visit detail type",
+      "indexDataText": "The index date refers to the visit detail of <%= conceptSetName %>."
+    },
     "criteriaGroup": {
       "addAdditionalConstraint": "add additional constraint",
       "addCriteria": "Add criteria to group...",
@@ -803,7 +859,7 @@
         "resetAllCoefficients": "Reset all coefficients to 0 between model fits under cross-validation:",
         "sizeMultiplier": "Size multiplier for active set:",
         "startingVariance": "Starting variance for auto-search cross-validation; -1 = use estimate based on data:",
-        "umberOfRepetitionsOfData": "Number of repetitions of data for cross validation:",
+        "minDataCrossValidation": "Minimum amount of data required for cross-validation:",
         "upperPrior": "Upper prior variance limit:",
         "useTheKarush": "Use the Karush-Kuhn-Tucker conditions to limit search:"
       },
@@ -1127,11 +1183,56 @@
       "cohortPathway": "cohort pathway",
       "irAnalysis": "IR analysis",
       "pleAnalysis": "PLE analysis",
-      "plpAnalysis": "PLP analysis"
+      "plpAnalysis": "PLP analysis",
+      "reusable": "reusable"
     },
     "checks": {
       "runningDiagnostics": "Running Diagnostics",
       "fixIt": "Fix It"
+    },
+    "tags": {
+      "title": "Assign Tags",
+      "tabs": {
+        "studyAssetTags": "Study Asset Tags",
+        "reference": "Reference"
+      },
+      "availableTags": "Available tags:",
+      "assign": "Assign",
+      "unassign": "Unassign",
+      "notPermitted": "Not permitted",
+      "assignExistingTag": "Create custom tag",
+      "tagNamePlaceholder": "Tag name",
+      "assignedTags": "Assigned tags:",
+      "tagGroups": "Tag groups:",
+      "tagGroup:": "Tag group:",
+      "showTags": "Show tags",
+      "tagNameExistsWarning": "Tag <%=tagName%> already exists.",
+      "cannotUnassignProtectedTagWarning": "Cannot unassign protected tag: <%=tagName%>",
+      "reassignConfirm": "The maximum number of assigned tags in the tag group \"<%=tagGroup%>\" is <%=maxNumber%>. The tag \"<%=tagName%>\" will be unassigned. Proceed?"
+    },
+    "versions": {
+      "loading": "Loading versions...",
+      "editComment": "Edit comment",
+      "addComment": "Add comment",
+      "commentPlaceholder": "Comment",
+      "preview": "Preview",
+      "viewing": "Viewing now",
+      "createACopy": "Create a copy",
+      "current": "Current"
+    },
+    "reusablesModal": {
+      "title": "Insert from Reusable",
+      "loadingReusables": "Loading reusables list...",
+      "anyConceptSet": "Any Concept Set"
+    },
+    "heading": {
+      "tag": {
+        "tooltip": {
+          "group": "Group:",
+          "groups": "Groups:",
+          "tag": "Tag:"
+        }
+      }
     }
   },
   "facets": {
@@ -1185,8 +1286,8 @@
     },
     "match": {
       "both": "Both",
-      "only1": "1 Only",
-      "only2": "2 Only"
+      "only1": "CS1 Only",
+      "only2": "CS2 Only"
     },
     "type": {
       "preset": "Preset",
@@ -1196,6 +1297,9 @@
     "designs": {
       "myDesigns": "My designs",
       "otherDesigns": "Other designs"
+    },
+    "tags": {
+      "untagged": "Untagged"
     }
   },
   "columns": {
@@ -1346,6 +1450,7 @@
     "quantityPer1000PerYear": "Quantity /1K /Year",
     "quantityTotal": "Total Quantity",
     "rc": "RC",
+    "recommendedRelationshipCount": "Count",
     "recordCounts": "Record Counts (RC / DRC)",
     "refreshCache": "Refresh cache",
     "relationshipType": "Relationship Type",
@@ -1388,6 +1493,8 @@
     "updated": "Updated",
     "userExcluded": "User Excluded",
     "userIncluded": "User Included",
+    "validStartDate": "Valid Start Date",
+    "validEndDate": "Valid End Date",
     "value": "Value",
     "visitsCount": "Records",
     "visitsPer1000": "Records/1K",
@@ -1407,14 +1514,20 @@
     "selectionCriteria": "Selection criteria",
     "personId": "Person ID",
     "gender": "Gender",
-    "ageAtIndex": "Age at index"
+    "ageAtIndex": "Age at index",
+    "usageCount": "Usage count",
+    "group": "Group",
+    "version": "Version",
+    "comment": "Comment",
+    "preview": "Preview",
+    "pc": "PC",
+    "dpc": "DPC",
+    "rcTooltip": "Record Count",
+    "drcTooltip": "Descendant Record Count",
+    "pcTooltip": "Person Count",
+    "dpcTooltip": "Descendant Person Count"
   },
   "dataSources": {
-    "achillesHeelReport": {
-      "achillesHeelResults": "Achilles Heel Results",
-      "message": "Message",
-      "messageType": "Message Type"
-    },
     "const": {
       "lengthOfEra": "Length of era",
       "recordsPerPerson": "Records per person"
@@ -1522,7 +1635,6 @@
     },
     "prevalence": "Prevalence",
     "reports": {
-      "achillesHeel": "Achilles Heel",
       "conditionEra": "Condition Era",
       "conditionOccurrence": "Condition Occurrence",
       "dashboard": "Dashboard",
@@ -1575,7 +1687,8 @@
       "import": "Import",
       "search": "Search"
     },
-    "vocabularies": "Vocabularies"
+    "vocabularies": "Vocabularies",
+    "viewCountMessage":  "View record count for:"
   },
   "cs": {
     "browser": {
@@ -1588,10 +1701,17 @@
         "heading": "Concept Set Comparison",
         "headingMessage": "Use this utility to compare the contents of two concept sets to see which concepts they may share",
         "modalTitle": "Choose a concept set",
+        "sameConcepts": "Compared Concept Sets contain Concepts which are identical",
         "sameWarning": "You cannot compare the same concept sets.",
         "saveFromComparisonNameTail": " - From Comparison",
         "saveMessage": "Save New Concept Set From Selection Below",
         "saveWarning": "You must save the current concept set before you can perform this comparison.",
+        "vennDiagram": "Venn Diagram",
+        "vennDiagramAmountConcepts": "The amount: <%=count%>",
+        "vennDiagramAmountOnly": "The concepts are only in this concept set: <%=amountOnly%>",
+        "vennDiagramCommonConcepts": "Common Concepts",
+        "vennDiagramNameConceptSet": "<%=name%> concept set",
+        "vennDiagramTotalAmountConcepts": "The total amount of concepts: <%=count%>",
         "viewCountMessage": "View database record counts (RC) and descendant record counts (DRC) for:"
       },
       "exportConceptSetsButton": "Export Concept Sets",
@@ -1607,6 +1727,7 @@
       "attemptingToFindMessage": "Attempting to find an optimal definition for this concept set...",
       "cancelButton": "Cancel",
       "caption": "Concept Set #<%=id%>",
+      "captionVersion": "Concept Set #<%=id%> - Version <%=number%> Preview",
       "changeColumnsButton": "Change Columns",
       "conceptsRemovedHeading": "Concepts Removed",
       "conceptsRemovedMessage": "The following concepts were removed since the optimized version already includes them.",
@@ -1667,7 +1788,9 @@
         "exploreEvidence": "Explore Evidence",
         "export": "Export",
         "includedConcepts": "Included Concepts",
-        "includedSourceCodes": "Included Source Codes"
+        "includedSourceCodes": "Included Source Codes",
+        "versions": "Versions",
+        "messages": "Messages"
       },
       "concept": {
         "title": "Vocabulary > Concept",
@@ -1686,7 +1809,9 @@
             "conceptId": "Concept Id",
             "conceptCode": "Concept Code",
             "invalidReason": "Invalid Reason",
-            "standardConcept": "Standard Concept"
+            "standardConcept": "Standard Concept",
+            "validStartDate": "Valid Start Date",
+            "validEndDate": "Valid End Date"
           },
           "relatedConcepts": {
             "loading": "Loading related concepts...",
@@ -1736,7 +1861,9 @@
     },
     "viewEdit": {
       "caption": "Characterization #<%=id%>",
+      "captionPreview": "Characterization #<%=id%> - Version <%=number%> Preview",
       "loadingCohortCharacterization": "Loading Cohort Characterization...",
+      "deleteConfirmation": "Delete cohort characterization? Warning: deletion can not be undone!",
       "design": {
         "description": "<b>Cohort characterization</b> is defined as the process of generating cohort level descriptive summary statistics from person level covariate data. Summary statistics of these person level covariates may be count, mean, sd, var, min, max, median, range, and quantiles. In addition, covariates during a period may be stratified into temporal units of time for time-series analysis such as fixed intervals of time relative to cohort_start_date (e.g. every 7 days, every 30 days etc.), or in absolute calendar intervals such as calendar-week, calendar-month, calendar-quarter, calendar-year.",
         "fa": {
@@ -1821,6 +1948,7 @@
         "design": "Design",
         "executions": "Executions",
         "utilities": "Utilities",
+        "versions": "Versions",
         "messages": "Messages"
       },
       "utilities": {
@@ -1887,6 +2015,7 @@
   },
   "ir": {
     "caption": "Incidence Rate Analysis #<%=id%>",
+    "captionVersion": "Incidence Rate Analysis #<%=id%> - Version <%=number%> Preview",
     "cs": {
       "modalTitle": "Select Concept Set..."
     },
@@ -1958,6 +2087,7 @@
       "definition": "Definition",
       "generation": "Generation",
       "utilities": "Utilities",
+      "versions": "Versions",
       "messages": "Messages"
     },
     "title": "Incidence Rate Analysis"
@@ -1990,6 +2120,7 @@
     "loading": "Loading Pathway Analysis list...",
     "manager": {
       "caption": "Cohort Pathway #<%=id%>",
+      "captionVersion": "Cohort Pathway #<%=id%> - Version <%=number%> Preview",
       "design": {
         "analysisSettings": {
           "combinationWindow": {
@@ -2070,7 +2201,7 @@
       "messages": {
         "alreadyExists": "A cohort pathway with this name already exists. Please choose a different name.",
         "beforeClose": "Your changes are not saved. Would you like to continue?",
-        "deleteConfirmation": "Are you sure?",
+        "deleteConfirmation": "Delete cohort pathway? Warning: deletion can not be undone!",
         "saveFailed": "An error occurred while attempting to save a cohort pathway.",
         "notfound": "There is no pathway analysis with id = %d."
       },
@@ -2078,6 +2209,7 @@
         "design": "Design",
         "executions": "Executions",
         "utilities": "Utilities",
+        "versions": "Versions",
         "messages": "Messages"
       },
       "utilities": {
@@ -2262,6 +2394,55 @@
       "reviewFullSpec": "Review Full Study Specification"
     }
   },
+  "reusables": {
+    "title": "Reusables",
+    "loading": "Loading Reusables...",
+    "manager": {
+      "loading": "Loading Reusable...",
+      "caption": "Reusable #<%=id%>",
+      "captionVersion": "Reusable #<%=id%> - Version <%=number%> Preview",
+      "design": {
+        "description": "<b>Reusable</b> is ...",
+        "descriptionPlaceholder": "Enter description here"
+      },
+      "messages": {
+        "alreadyExists": "A reusable with this name already exists. Please choose a different name.",
+        "beforeClose": "Your changes are not saved. Would you like to continue?",
+        "deleteConfirmation": "Delete Reusable? Warning: deletion can not be undone!",
+        "saveFailed": "An error occurred while attempting to save a reusable.",
+        "notfound": "There is no reusable with id = %d."
+      },
+      "tabs": {
+        "design": "Design",
+        "versions": "Versions"
+      }
+    }
+  },
+  "tagging": {
+    "tabs": {
+      "multiAssign": "Multi-assign"
+    },
+    "multiAssign": {
+      "selectedTags": "Selected Tags",
+      "selectedAssets": "Selected Assets",
+      "chooseTags": "Choose Tags",
+      "chooseAssets": "Choose Assets",
+      "assignTags": "Assign tags",
+      "unassignTags": "Unassign tags",
+      "messageGroupNotMultiple": "Group '<%=group%>' does not allow multiple tags. Tag '<%=replacedName%>' replaced with tag '<%=replacedWithName%>'",
+      "success": "Success!",
+      "error": "Error!",
+      "forbiddenError": "Forbidden!",
+      "tabs": {
+        "conceptsets": "Concept Sets",
+        "cohorts": "Cohorts",
+        "characterizations": "Characterizations",
+        "incidenceRates": "Incidence Rates",
+        "cohortPathways": "Cohort Pathways",
+        "reusables": "Reusables"
+      }
+    }
+  },
   "jobs": {
     "refreshJobs": "Refresh Jobs"
   },
@@ -2277,7 +2458,8 @@
       "clearConfigurationCache": "Clear Configuration Cache",
       "clearServerCache": "Clear Server Cache",
       "importUsers": "Import Users from LDAP/AD",
-      "managePermissions": "Manage Permissions"
+      "managePermissions": "Manage Permissions",
+      "tagManagement": "Tag Management"
     },
     "changeSourcePriorities": "Change source priorities in:",
     "confirms": {
@@ -2414,7 +2596,10 @@
           "pdw": "Microsoft PDW",
           "postgresql": "PostgreSQL",
           "redshift": "Amazon Redshift",
-          "sqlserver": "SQL server"
+          "sqlserver": "SQL server",
+          "synapse": "Azure Synapse",
+          "snowflake": "Snowflake",
+          "spark": "Apache Spark"
         },
         "title": "Source dialect"
       },
@@ -2497,6 +2682,47 @@
           "empty": "&quot;Username&quot; is empty."
         }
       }
+    },
+    "tagManagement": {
+      "allowMultiple": "Multiple",
+      "allowCustom": "Free&#8209;form",
+      "allowCustomCheckbox": "Allow custom tags creation in this group",
+      "apply": "Submit",
+      "color": "Color",
+      "createGroup": "Create Group",
+      "createTag": "Create Tag",
+      "editTag": "Edit Tag",
+      "editTagGroup": "Edit Tag Group",
+      "exampleTagGroup": "Example",
+      "exampleTagGroupTag": "Example name",
+      "exampleTag": "Example",
+      "icon": "Icon",
+      "mandatory": "Mandatory",
+      "multiSelectionCheckbox": "Allow multiple tags from the group in a single asset",
+      "showGroupCheckbox": "Show Tag Group column in assets table",
+      "showInAssetsBrowser": "Show&nbsp;Column",
+      "tagsInGroup": "Tags in Group '<%=group%>'",
+      "tagGroups": "Tag Groups",
+      "tagGroupColor": "Tag group color",
+      "tagGroupColorPlaceholder": "Enter tag group color in #xxxxxx format",
+      "tagGroupDescription": "Tag group description",
+      "tagGroupDescriptionPlaceholder": "Enter tag group description",
+      "tagGroupIcon": "Tag group icon",
+      "tagGroupIconPlaceholder": "Enter tag group icon as font-awesome class",
+      "tagGroupName": "* Tag group name",
+      "tagGroupNamePlaceholder": "Enter tag group name",
+      "tagGroupNameEmpty": "Tag group name cannot be empty",
+      "hideTags": "Hide tags",
+      "showTags": "Show tags",
+      "edit": "Edit",
+      "remove": "Remove",
+      "overrideTagColor": "Override tag group color",
+      "overrideTagIcon": "Override tag group icon",
+      "protected": "Protected",
+      "nameExistsWarning": "Tag or Group name '<%=tagName%>' is already in use.",
+      "errorGroupNotEmpty": "Cannot delete tag group: the group contains tags.",
+      "deleteGroupConfirmation": "Deletion cannot be undone! Are you sure?",
+      "deleteTagConfirmation": "If the tag is assigned to an asset, it will be unassigned. Deletion cannot be undone. Are you sure you want to delete the tag?"
     }
   },
   "feedback": {
@@ -2558,9 +2784,10 @@
       "confirms": {
         "close": "Your cohort changes are not saved. Would you like to continue?",
         "delete": "Delete cohort definition? Warning: deletion can not be undone!",
+        "deleteConflict": "Cohort definition cannot be deleted because it is referenced in some analysis.",
         "generateAnalyses": "This will run <%=descr%> and may take about <%=duration%>. Are you sure?",
-        "save": "Cohort definition cannot be deleted because it is referenced in some analysis.",
-        "saveAlert": "A cohort definition with this name already exists. Please choose a different name."
+        "saveAlert": "A cohort definition with this name already exists. Please choose a different name.",
+        "saveError": "An error occurred while attempting to save a cohort definition."
       },
       "createCopyCohortTitle": "Create a copy of this cohort definition",
       "failedWithoutAnyMessage": "Failed without any message",
@@ -2619,9 +2846,9 @@
           "sampleName": "* Sample name",
           "sampleNamePlaceholder": "Enter sample name",
           "sampleNameEmpty": "Sample name cannot be empty",
-          "numberOfPatients": "* Number of patients",
+          "numberOfPatients": "* Number of patients (from 1 to 500)",
           "numberOfPatientsPlaceholder": "Enter a number",
-          "numberOfPatientsEmpty": "Number of patients must be a positive integer",
+          "numberOfPatientsEmpty": "Number of patients must be a positive integer between 1 and 500",
           "selectAgeCriteria": "Select age criteria",
           "lessThan": "Less than",
           "lessOrEqualTo": "Less or equal to",
@@ -2651,10 +2878,12 @@
         "generation": "Generation",
         "samples": "Samples",
         "messages": "Messages",
+        "versions": "Versions",
         "reporting": "Reporting"
       }
     },
-    "cohortId": "Cohort #<%=id%>",
+    "cohortCaption": "Cohort #<%=id%>",
+    "cohortCaptionPreview": "Cohort #<%=id%> - Version <%=number%> Preview",
     "cohortreports": {
       "inclusionReport": "Inclusion Report",
       "inclusionReportFor": "Inclusion Report for",
@@ -2884,7 +3113,7 @@
         "desc_group": "Add a group to combine criteria using and/or relationships."
       },
       "addVisit": {
-        "title": "Add Visit",
+        "title": "Add Visit occurrence",
         "desc_initial": "Find patients based on visit information.",
         "desc_censoring": "Exit cohort based on visit information.",
         "desc_group": "Find patients based on visit information.",
@@ -2900,6 +3129,28 @@
         "desc_observation": "Filter Observations based on visit occurrence of observation.",
         "title_procedureoccurrence": "Add Visit Criteria",
         "desc_procedureoccurrence": "Filter Procedure Occurrences based on visit occurrence of procedure."
+      },
+      "addVisitDetail": {
+        "title": "Add Visit detail",
+        "desc_initial": "Find patients based on visit  detail information.",
+        "desc_censoring": "Exit cohort based on visit detail information.",
+        "desc_group": "Find patients based on visit detail information.",
+        "title_visit_detail": "Add Visit detail",
+        "desc_occurrence": "Filter Condition Occurrences based on visit detail of diagnosis.",
+        "title_deviceexposure": "Add Visit detail Criteria",
+        "desc_deviceexposure": "Filter Device Exposures based on visit detail of exposure.",
+        "title_drugexposure": "Add Visit detail Criteria",
+        "desc_drugexposure": "Filter Drug Exposures based on visit detail of drug exposure.",
+        "title_measurement": "Add Visit detail Criteria",
+        "desc_measurement": "Filter Measurements based on visit detail of measurement.",
+        "title_observation": "Add Visit detail Criteria",
+        "desc_observation": "Filter Observations based on visit detail of observation.",
+        "title_procedureoccurrence": "Add Visit  detail Criteria",
+        "desc_procedureoccurrence": "Filter Procedure Occurrences based on visit detail of procedure."
+      },
+      "addConditionStatus": {
+        "title_occurrence": "Add Condition Status",
+        "desc_occurrence": "Filter Condition Occurrences based on condition status."
       },
       "addFirstDiagnosis": {
         "title_era": "Add First Diagnosis Criteria",
@@ -2927,7 +3178,9 @@
         "title_specimen": "Add First Occurrence Criteria",
         "desc_specimen": "Limit Specimen to the first occurrence in history.",
         "title_visit": "Add First Visit Criteria",
-        "desc_visit": "Limit Visit Occurrences to the first visit."
+        "desc_visit": "Limit Visit Occurrences to the first visit.",
+        "title_visitDetail": "Add First Visit detail Criteria",
+        "desc_visitDetail": "Limit Visit detail to the first visit."
       },
       "addAgeAtStart": {
         "title_era": "Add Age at Era Start Criteria",
@@ -2980,6 +3233,8 @@
         "desc_specimen": "Filter specimens based on Gender.",
         "title_visit": "Add Gender Criteria",
         "desc_visit": "Filter Visit Occurrences based on Gender.",
+        "title_visitDetail": "Add Gender Criteria",
+        "desc_visitDetail": "Filter Visit detail based on Gender.",
         "title_demographic": "Add Gender Criteria",
         "desc_demographic": "Filter events based on Gender."
       },
@@ -3002,6 +3257,8 @@
         "desc_payerplan": "Filter Payer Plan Periods by Start Date.",
         "title_visit": "Add Start Date Criteria",
         "desc_visit": "Filter Visit Occurrences by the Condition Start Date.",
+        "title_visitDetail": "Add Start Date Criteria",
+        "desc_visitDetail": "Filter Visit detail by the Start Date.",
         "title_demographic": "Add Start Date Criteria",
         "desc_demographic": "Filter events based by Start Date."
       },
@@ -3024,6 +3281,8 @@
         "desc_payerplan": "Filter Payer Plan Periods by End Date.",
         "title_visit": "Add End Date Criteria",
         "desc_visit": "Filter Visit Occurrences by the Condition End Date.",
+        "title_visitDetail": "Add End Date Criteria",
+        "desc_visitDetail": "Filter Visit detail by the End Date.",
         "title_demographic": "Add Event End Date Criteria",
         "desc_demographic": "Filter events based by End Date."
       },
@@ -3053,7 +3312,9 @@
         "title_payerplan": "Add Period Length Criteria",
         "desc_payerplan": "Filter Payer Plan Periods by duration.",
         "title_visit": "Add Visit Length Criteria",
-        "desc_visit": "Filter Visit Occurrences by duration."
+        "desc_visit": "Filter Visit Occurrences by duration.",
+        "title_visitDetail": "Add Visit detail Length Criteria",
+        "desc_visitDetail": "Filter Visit detail by duration."
       },
       "addNested": {
         "title_era": "Add Nested Criteria...",
@@ -3083,7 +3344,9 @@
         "title_specimen": "Add Nested Criteria...",
         "desc_specimen": "Apply criteria using the specimen as the index event.",
         "title_visit": "Add Nested Criteria...",
-        "desc_visit": "Apply criteria using the visit occurrence as the index event."
+        "desc_visit": "Apply criteria using the visit occurrence as the index event.",
+        "title_visitDetail": "Add Nested Criteria...",
+        "desc_visitDetail": "Apply criteria using the visit detail as the index event."
       },
       "addAge": {
         "title_occurrence": "Add Age at Occurrence",
@@ -3104,6 +3367,8 @@
         "desc_specimen": "Filter specimens by age at occurrence.",
         "title_visit": "Add Age at Occurrence Criteria",
         "desc_visit": "Filter Visit Occurrences by age at occurrence.",
+        "title_visitDetail": "Add Age at Visit detail Criteria",
+        "desc_visitDetail": "Filter Visit detail by age at occurrence.",
         "title_demographic": "Add Age Criteria",
         "desc_demographic": "Filter events based on age."
       },
@@ -3127,7 +3392,9 @@
         "title_specimen": "Add Specimen Type Criteria",
         "desc_specimen": "Filter Specimen by the Type.",
         "title_visit": "Add Visit Type Criteria",
-        "desc_visit": "Filter Visit Occurrences by the Condition Type."
+        "desc_visit": "Filter Visit Occurrences by the Condition Type.",
+        "title_visitDetail": "Add Visit detail Type Criteria",
+        "desc_visitDetail": "Filter Visit detail by the Type."
       },
       "addStopReason": {
         "title_occurrence": "Add Stop Reason",
@@ -3181,7 +3448,9 @@
         "title_procedureoccurrence": "Add Procedure Source Concept Criteria",
         "desc_procedureoccurrence": "Filter Procedure Occurrences by the Procedure Source Concept.",
         "title_visit": "Add Visit Source Concept Criteria",
-        "desc_visit": "Filter Visit Occurrences by the Visit Source Concept."
+        "desc_visit": "Filter Visit Occurrences by the Visit Source Concept.",
+        "title_visitDetail": "Add Visit detail Source Concept Criteria",
+        "desc_visitDetail": "Filter Visit detail by the Visit detail Source Concept."
       },
       "addProviderSpecialty": {
         "title_occurrence": "Add Provider Specialty",
@@ -3197,7 +3466,9 @@
         "title_procedureoccurrence": "Add Provider Specialty Criteria",
         "desc_procedureoccurrence": "Filter Procedure Occurrences based on provider specialty.",
         "title_visit": "Add Provider Specialty Criteria",
-        "desc_visit": "Filter Visit Occurrences based on provider specialty."
+        "desc_visit": "Filter Visit Occurrences based on provider specialty.",
+        "title_visitDetail": "Add Provider Specialty Criteria",
+        "desc_visitDetail": "Filter Visit detail based on provider specialty."
       },
       "addDate": {
         "title_death": "Add Death Date Criteria",
@@ -3331,15 +3602,21 @@
       },
       "addPlaceService": {
         "title_visit": "Add Place of Service Criteria",
-        "desc_visit": "Filter Visit Occurrences based on Place of Service."
+        "desc_visit": "Filter Visit Occurrences based on Place of Service.",
+        "title_visitDetail": "Add Place of Service Criteria",
+        "desc_visitDetail": "Filter Visit detail based on Place of Service."
       },
       "addPlaceServiceLocation": {
         "title_visit": "Add Place of Service Location Criteria",
-        "desc_visit": "Filter Visit Occurrences based on where Place of Service is located."
+        "desc_visit": "Filter Visit Occurrences based on where Place of Service is located.",
+        "title_visitDetail": "Add Place of Service Location Criteria",
+        "desc_visitDetail": "Filter Visit detail based on where Place of Service is located."
       },
       "addPlaceServiceDistance": {
         "title_visit": "Add Place of Service Distance Criteria",
-        "desc_visit": "Filter Visit Occurrences based on distance from Place of Service to Patient."
+        "desc_visit": "Filter Visit Occurrences based on distance from Place of Service to Patient.",
+        "title_visitDetail": "Add Place of Service Distance Criteria",
+        "desc_visitDetail": "Filter Visit detail based on distance from Place of Service to Patient."
       }
     },
     "newEntityNames": {
@@ -3352,7 +3629,8 @@
       "ple": "New Population Level Estimation Analysis",
       "plp": "New Patient Level Prediction Analysis",
       "role": "New Role",
-      "source": "New Source"
+      "source": "New Source",
+      "reusable": "New Reusable"
     },
     "weekdays": {
       "friday": {
@@ -3422,7 +3700,7 @@
       "executionEditorText_3": "Minimum covariate occurrence: If a covariate occurs in a fraction of the target population less than this value, it will be removed:",
       "executionEditorText_4": "Normalize covariates:",
       "populationEditorText_1": "Define the time-at-risk window start, relative to target cohort entry:",
-      "populationEditorText_2": "Should descendant concepts be added to the list of included concepts?",
+      "populationEditorText_2": "Define the time-at-risk window end:",
       "populationEditorText_3": "Minimum lookback period applied to target cohort:",
       "populationEditorText_4": "Should subjects without time at risk be removed?",
       "populationEditorText_5": "Minimum time at risk:",

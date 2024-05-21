@@ -16,14 +16,15 @@
  */
 package org.ohdsi.webapi.cdmresults;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
-public class DescendantRecordCount{
+public class DescendantRecordCount {
 
     private int id;
-    private long recordCount;
-    private long descendantRecordCount;
-    private long personRecordCount;
+    private Long recordCount;
+    private Long descendantRecordCount;
 
     public int getId() {
         return id;
@@ -33,28 +34,24 @@ public class DescendantRecordCount{
         this.id = id;
     }
 
-    public long getRecordCount() {
+    public Long getRecordCount() {
         return recordCount;
     }
 
-    public void setRecordCount(long recordCount) {
+    public void setRecordCount(Long recordCount) {
         this.recordCount = recordCount;
     }
 
-    public long getDescendantRecordCount() {
+    public Long getDescendantRecordCount() {
         return descendantRecordCount;
     }
 
-    public void setDescendantRecordCount(long descendantRecordCount) {
+    public void setDescendantRecordCount(Long descendantRecordCount) {
         this.descendantRecordCount = descendantRecordCount;
     }
 
-    public long getPersonRecordCount() {
-        return personRecordCount;
-    }
-
-    public void setPersonRecordCount(long personRecordCount) {
-        this.personRecordCount = personRecordCount;
+    public List<Long> getValues() {
+        return Arrays.asList(recordCount, descendantRecordCount);
     }
 
     @Override

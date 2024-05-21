@@ -2,7 +2,6 @@ package org.ohdsi.webapi.service.converters;
 
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
 import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
-import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -57,6 +57,12 @@ public class FeAnalysisController {
         this.permissionService = permissionService;
     }
 
+    /**
+     * Get a pagable list of all feature analyses available in WebAPI
+     * @summary Feature analyses in WebAPI
+     * @param pageable
+     * @return
+     */
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
@@ -69,6 +75,12 @@ public class FeAnalysisController {
         });
     }
 
+    /**
+     * Does a feature analysis name already exist?
+     * @param id The id for a new feature analysis that does not already exist
+     * @param name The desired name for the new feature analysis
+     * @return 1 if the name conflicts with an existing feature analysis name and 0 otherwise
+     */
     @GET
     @Path("/{id}/exists")
     @Produces(MediaType.APPLICATION_JSON)
@@ -77,6 +89,10 @@ public class FeAnalysisController {
         return service.getCountFeWithSameName(id, name);
     }
 
+    /**
+     * Feature analysis domains
+     * @return Feature analysis domains such as DRUG, DRUG_ERA, MEASUREMENT, etc.
+     */
     @GET
     @Path("/domains")
     @Produces(MediaType.APPLICATION_JSON)
@@ -90,6 +106,11 @@ public class FeAnalysisController {
         return options;
     }
 
+    /**
+     * Create a new feature analysis
+     * @param dto Feature analysis specification
+     * @return
+     */
     @POST
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
@@ -99,6 +120,12 @@ public class FeAnalysisController {
         return convertFeAnalysisToDto(createdEntity);
     }
 
+    /**
+     * Update an existing feature analysis
+     * @param feAnalysisId ID of Feature analysis to update
+     * @param dto Feature analysis specification
+     * @return
+     */
     @PUT
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -108,6 +135,10 @@ public class FeAnalysisController {
         return convertFeAnalysisToDto(updatedEntity);
     }
 
+    /**
+     * Delete a feature analysis
+     * @param feAnalysisId ID of feature analysis to delete
+     */
     @DELETE
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -116,6 +147,11 @@ public class FeAnalysisController {
         service.deleteAnalysis(entity);
     }
 
+    /**
+     * Get data about a specific feature analysis
+     * @param feAnalysisId ID of feature analysis to retrieve
+     * @return ID, type, name domain, description, etc of feature analysis
+     */
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -140,6 +176,11 @@ public class FeAnalysisController {
       }
     }
 
+    /**
+     * Create a copy of a feature analysis
+     * @param feAnalysisId ID of feature analysis to copy
+     * @return The design specification of the new copy
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/copy")
@@ -211,6 +252,10 @@ public class FeAnalysisController {
         return entityForCopy;
     }
 
+    /**
+     * Get aggregation functions used in feature analyses
+     * @return
+     */
     @GET
     @Path("/aggregates")
     @Produces(MediaType.APPLICATION_JSON)

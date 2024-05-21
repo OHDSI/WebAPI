@@ -35,6 +35,13 @@ tryCatch({
                                                                         password = pwd,
                                                                         pathToDriver = driversPath)
 
+        # Evaluating can't use global environment in child threads
+        connectionDetails$user <- function() Sys.getenv("DBMS_USERNAME")
+        connectionDetails$password <- function() Sys.getenv("DBMS_PASSWORD")
+        connectionDetails$connectionString <- function() Sys.getenv("CONNECTION_STRING")
+
+        options(sqlRenderTempEmulationSchema = resultsDatabaseSchema)
+
         outputFolder <- file.path(getwd(), 'results')
         dir.create(outputFolder)
 
@@ -49,7 +56,9 @@ tryCatch({
                 runAnalyses = TRUE,
                 packageResults = TRUE,
                 maxCores = maxCores,
-                minCellCount = 5)
+                minCellCount = 5,
+                # a workaround as renv.lock file is unreachable after the analysis package has been installed
+                verifyDependencies = FALSE)
 }, finally = {
         remove.packages('@packageName')
 })

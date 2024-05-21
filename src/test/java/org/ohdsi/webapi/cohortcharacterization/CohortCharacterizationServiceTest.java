@@ -23,6 +23,7 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceRepository;
+import org.ohdsi.webapi.source.SourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.Response;
@@ -64,6 +65,9 @@ public class CohortCharacterizationServiceTest extends AbstractDatabaseTest {
 
     @Autowired
     private SourceRepository sourceRepository;
+
+    @Autowired
+    private SourceService sourceService;
     
     @Value("${datasource.ohdsi.schema}")
     private String ohdsiSchema;

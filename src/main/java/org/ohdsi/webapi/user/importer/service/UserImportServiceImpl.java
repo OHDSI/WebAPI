@@ -3,6 +3,7 @@ package org.ohdsi.webapi.user.importer.service;
 import org.apache.commons.collections.CollectionUtils;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
+import org.ohdsi.webapi.shiro.Entities.UserOrigin;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.user.Role;
@@ -117,49 +118,59 @@ public class UserImportServiceImpl implements UserImportService {
 
   @Override
   @Transactional
-  public UserImportResult importUsers(List<AtlasUserRoles> users, boolean preserveRoles) {
+  public UserImportResult importUsers(List<AtlasUserRoles> users, LdapProviderType providerType, boolean preserveRoles) {
 
     UserImportResult result = new UserImportResult();
+    UserOrigin userOrigin = UserOrigin.getFrom(providerType);
     users.forEach(user -> {
       String login = UserUtils.toLowerCase(user.getLogin());
       Set<String> roles = user.getRoles().stream().map(role -> role.role).collect(Collectors.toSet());
       roles.addAll(defaultRoles);
       try {
-        UserEntity userEntity;
-        if (Objects.nonNull(userEntity = userRepository.findByLogin(login)) &&
-                LdapUserImportStatus.MODIFIED.equals(getStatus(userEntity, user.getRoles()))) {
-          Set<RoleEntity> userRoles = userManager.getUserRoles(userEntity.getId());
-          if (!preserveRoles) {
-            //Overrides assigned roles
-            userRoles.stream().filter(role -> !role.getName().equalsIgnoreCase(login)).forEach(r -> {
+        UserEntity userEntity = userRepository.findByLogin(login);
+        if (Objects.nonNull(userEntity)) {
+          userEntity.setName(user.getDisplayName());
+          userEntity.setOrigin(userOrigin);
+          if (LdapUserImportStatus.MODIFIED.equals(getStatus(userEntity, user.getRoles()))) {
+            Set<RoleEntity> userRoles = userManager.getUserRoles(userEntity.getId());
+            if (!preserveRoles) {
+              //Overrides assigned roles
+              userRoles.stream().filter(role -> !role.getName().equalsIgnoreCase(login)).forEach(r -> {
+                try {
+                  userManager.removeUserFromRole(r.getName(), userEntity.getLogin(), null);
+                } catch (Exception e) {
+                  logger.warn("Failed to remove user {} from role {}", userEntity.getLogin(), r.getName(), e);
+                }
+              });
+            } else {
+              //Filter roles that is already assigned
+              roles = roles.stream()
+                      .filter(role -> userRoles.stream().noneMatch(ur -> Objects.equals(ur.getName(), role)))
+                      .collect(Collectors.toSet());
+            }
+            roles.forEach(r -> {
               try {
-                userManager.removeUserFromRole(r.getName(), userEntity.getLogin());
+                userManager.addUserToRole(r, userEntity.getLogin(), userOrigin);
               } catch (Exception e) {
-                logger.warn("Failed to remove user {} from role {}", userEntity.getLogin(), r.getName(), e);
+                logger.error("Failed to add user {} to role {}", userEntity.getLogin(), r, e);
               }
             });
-          } else {
-            //Filter roles that is already assigned
-            roles = roles.stream()
-                    .filter(role -> userRoles.stream().noneMatch(ur -> Objects.equals(ur.getName(), role)))
-                    .collect(Collectors.toSet());
+            result.incUpdated();
           }
-          roles.forEach(r -> {
-            try {
-              userManager.addUserToRole(r, userEntity.getLogin());
-            } catch (Exception e) {
-              logger.error("Failed to add user {} to role {}", userEntity.getLogin(), r, e);
-            }
-          });
-          result.incUpdated();
         } else {
-          userManager.registerUser(login, user.getDisplayName(), roles);
+          userManager.registerUser(login, user.getDisplayName(), userOrigin, roles);
           result.incCreated();
         }
       } catch (Exception e) {
         logger.error("Failed to register user {}", login, e);
       }
     });
+    userRepository.findByOrigin(userOrigin).stream()
+            .filter(existingUser -> users.stream()
+                    .noneMatch(user -> UserUtils.toLowerCase(user.getLogin()).equals(existingUser.getLogin())))
+            .forEach(deletedUser -> deletedUser.getUserRoles().stream()
+                    .filter(role -> !role.getRole().getName().equalsIgnoreCase(deletedUser.getLogin()))
+                    .forEach(role -> userManager.removeUserFromRole(role.getRole().getName(), deletedUser.getLogin(), userOrigin)));
     return result;
   }
 

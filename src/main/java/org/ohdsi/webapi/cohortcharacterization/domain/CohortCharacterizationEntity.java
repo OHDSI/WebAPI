@@ -21,10 +21,12 @@ import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.model.CommonEntity;
+import org.ohdsi.webapi.model.CommonEntityExt;
+import org.ohdsi.webapi.tag.domain.Tag;
 
 @Entity
 @Table(name = "cohort_characterization")
-public class CohortCharacterizationEntity extends CommonEntity<Long> implements CohortCharacterization {
+public class CohortCharacterizationEntity extends CommonEntityExt<Long> implements CohortCharacterization {
 
     @Id
     @GenericGenerator(
@@ -40,6 +42,9 @@ public class CohortCharacterizationEntity extends CommonEntity<Long> implements 
     
     @Column
     private String name;
+
+    @Column
+    private String description;
     
     @ManyToMany(targetEntity = CohortDefinition.class, fetch = FetchType.LAZY)
     @JoinTable(name = "cc_cohort",
@@ -70,6 +75,12 @@ public class CohortCharacterizationEntity extends CommonEntity<Long> implements 
     
     @Column(name = "hash_code")
     private Integer hashCode;
+
+    @ManyToMany(targetEntity = Tag.class, fetch = FetchType.LAZY)
+    @JoinTable(name = "cohort_characterization_tag",
+            joinColumns = @JoinColumn(name = "asset_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
+    private Set<Tag> tags;
     
     @Override
     public Set<CohortDefinition> getCohorts() {
@@ -101,6 +112,14 @@ public class CohortCharacterizationEntity extends CommonEntity<Long> implements 
 
     public void setName(final String name) {
         this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public void setParameters(final Set<CcParamEntity> parameters) {
@@ -163,5 +182,13 @@ public class CohortCharacterizationEntity extends CommonEntity<Long> implements 
 
     public void setHashCode(final Integer hashCode) {
         this.hashCode = hashCode;
+    }
+
+    public Set<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(Set<Tag> tags) {
+        this.tags = tags;
     }
 }

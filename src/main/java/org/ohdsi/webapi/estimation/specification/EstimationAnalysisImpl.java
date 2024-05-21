@@ -3,6 +3,7 @@ package org.ohdsi.webapi.estimation.specification;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.ohdsi.analysis.hydra.design.SkeletonTypeEnum;
 import org.ohdsi.analysis.estimation.design.EstimationAnalysis;
@@ -15,6 +16,7 @@ import org.ohdsi.webapi.conceptset.ConceptSetCrossReferenceImpl;
  *
  * @author asena5
  */
+@JsonIgnoreProperties(ignoreUnknown=true, value = {"createdBy", "createdDate", "modifiedBy", "modifiedDate"})
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class EstimationAnalysisImpl implements EstimationAnalysis, CommonDTO {
   private Integer id = null;

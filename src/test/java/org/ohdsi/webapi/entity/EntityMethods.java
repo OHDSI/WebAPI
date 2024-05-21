@@ -3,7 +3,7 @@ package org.ohdsi.webapi.entity;
 import org.ohdsi.webapi.CommonDTO;
 import org.springframework.test.context.TestContextManager;
 
-public interface EntityMethods <T extends CommonDTO> {
+public interface EntityMethods<T extends CommonDTO> {
 
     void initFirstDTO() throws Exception;
 

@@ -130,13 +130,14 @@ public class DataAccessConfig {
     }
 
     @Primary
-    @Bean(name = "transactionManager")
+    @Bean
     public PlatformTransactionManager jpaTransactionManager(EntityManagerFactory entityManagerFactory) {
         JpaTransactionManager txManager = new JpaTransactionManager();
         txManager.setEntityManagerFactory(entityManagerFactory);
         return txManager;
     }
 
+    @Primary
     @Bean
     public TransactionTemplate transactionTemplate(PlatformTransactionManager transactionManager) {
         TransactionTemplate transactionTemplate = new TransactionTemplate();

@@ -21,7 +21,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 import jakarta.servlet.Filter;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -52,7 +51,7 @@ public class ShiroConfiguration {
 
         Map<String, Filter> filters = security.getFilters().entrySet().stream()
                 .collect(Collectors.toMap(f -> f.getKey().getTemplateName(), Map.Entry::getValue));
-        /* shiroFilter.setFilters(filters);  Spring Boot 3 migration compilation issue */
+        shiroFilter.setFilters(filters);
         shiroFilter.setFilterChainDefinitionMap(security.getFilterChain());
 
         return shiroFilter;

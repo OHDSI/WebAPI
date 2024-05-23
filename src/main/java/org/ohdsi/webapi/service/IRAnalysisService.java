@@ -15,8 +15,8 @@
  */
 package org.ohdsi.webapi.service;
 
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
+import com.cosium.spring.data.jpa.entity.graph.domain2.EntityGraph;
+import com.cosium.spring.data.jpa.entity.graph.domain2.NamedEntityGraph;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
@@ -138,7 +138,7 @@ public class IRAnalysisService extends AbstractDaoService implements
   private final static String STRATA_STATS_QUERY_TEMPLATE = ResourceHelper.GetResourceAsString("/resources/incidencerate/sql/strata_stats.sql");
   private static final String NAME = "irAnalysis";
   private static final String NO_INCIDENCE_RATE_ANALYSIS_MESSAGE = "There is no incidence rate analysis with id = %d.";
-  private static final EntityGraph ANALYSIS_WITH_EXECUTION_INFO = EntityGraphUtils.fromName("IncidenceRateAnalysis.withExecutionInfoList");
+  private static final EntityGraph ANALYSIS_WITH_EXECUTION_INFO = NamedEntityGraph.loading("IncidenceRateAnalysis.withExecutionInfoList");
 
   private final IRAnalysisQueryBuilder queryBuilder;
 

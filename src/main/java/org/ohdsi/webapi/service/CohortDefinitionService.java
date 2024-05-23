@@ -84,7 +84,9 @@ import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
+import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -153,12 +155,6 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 
 	@Autowired
 	private CohortDefinitionRepository cohortDefinitionRepository;
-
-	@Autowired
-	private JobBuilderFactory jobBuilders;
-
-	@Autowired
-	private StepBuilderFactory stepBuilders;
 
 	@Autowired
 	private JobTemplate jobTemplate;
@@ -737,17 +733,17 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 
 		CleanupCohortTasklet cleanupTasklet = new CleanupCohortTasklet(this.getTransactionTemplateNoTransaction(), this.getSourceRepository());
 
-		Step cleanupStep = stepBuilders.get("cohortDefinition.cleanupCohort")
+		Step cleanupStep = new StepBuilder("cohortDefinition.cleanupCohort")
 						.tasklet(cleanupTasklet)
 						.build();
 
 		CleanupCohortSamplesTasklet cleanupSamplesTasklet = samplingService.createDeleteSamplesTasklet();
 
-		Step cleanupSamplesStep = stepBuilders.get("cohortDefinition.cleanupSamples")
+		Step cleanupSamplesStep = new StepBuilder("cohortDefinition.cleanupSamples")
 						.tasklet(cleanupSamplesTasklet)
 						.build();
 
-		SimpleJobBuilder cleanupJobBuilder = jobBuilders.get("cleanupCohort")
+		SimpleJobBuilder cleanupJobBuilder = new JobBuilder("cleanupCohort")
 						.start(cleanupStep)
 						.next(cleanupSamplesStep);
 

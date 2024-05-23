@@ -194,7 +194,7 @@ public class SourceController extends AbstractDaoService {
     source.setCreatedBy(getCurrentUser());
     source.setCreatedDate(new Date());
     try {
-      Source saved = sourceRepository.saveAndFlush(source);
+      Source saved = sourceRepository.save(source);
       sourceService.invalidateCache();
       SourceInfo sourceInfo = new SourceInfo(saved);
       publisher.publishEvent(new AddDataSourceEvent(this, source.getSourceId(), source.getSourceName()));

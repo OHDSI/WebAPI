@@ -11,6 +11,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
@@ -32,7 +33,7 @@ import java.util.List;
 @NamedEntityGraph(name = "jobWithMapping",
   attributeNodes = @NamedAttributeNode("roleGroupMapping"))
 public class UserImportJob extends ArachneJob {
-
+	  
   @ElementCollection(fetch = FetchType.EAGER)
   @CollectionTable(name = "user_import_job_weekdays", joinColumns = @JoinColumn(name = "user_import_job_id"))
   @Column(name = "day_of_week")

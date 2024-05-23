@@ -45,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -143,6 +144,7 @@ public abstract class AbstractDaoService extends AbstractAdminService {
   @Autowired
   private SourceHelper sourceHelper;
 
+  @Lazy
   @Autowired
   private TagService tagService;
 

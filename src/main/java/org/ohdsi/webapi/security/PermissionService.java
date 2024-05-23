@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.security;
 
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
+import com.cosium.spring.data.jpa.entity.graph.domain2.DynamicEntityGraph;
+import com.cosium.spring.data.jpa.entity.graph.domain2.EntityGraph;
 import jakarta.annotation.PostConstruct;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.webapi.model.CommonEntity;
@@ -25,6 +25,7 @@ import org.ohdsi.webapi.source.SourceRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.Advised;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -67,7 +68,7 @@ public class PermissionService {
     private ThreadLocal<ConcurrentHashMap<EntityType, ConcurrentHashMap<String, Set<RoleDTO>>>> permissionCache =
             ThreadLocal.withInitial(ConcurrentHashMap::new);
 
-    private final EntityGraph PERMISSION_ENTITY_GRAPH = EntityGraphUtils.fromAttributePaths("rolePermissions", "rolePermissions.role");
+    private final EntityGraph PERMISSION_ENTITY_GRAPH = DynamicEntityGraph.loading().addPath("rolePermissions", "rolePermissions.role").build();
 
     public PermissionService(
             WebApplicationContext appContext,
@@ -190,7 +191,7 @@ public class PermissionService {
 
             Map<Long, RoleDTO> roleDTOMap = new HashMap<>();
             permissionsSQLTemplates.forEach(p -> {
-                Iterable<PermissionEntity> permissionEntities = permissionRepository.findByValueLike(p, PERMISSION_ENTITY_GRAPH);
+                Iterable<PermissionEntity> permissionEntities = permissionRepository.findByValueLike(p);//, PERMISSION_ENTITY_GRAPH);
                 for (PermissionEntity permissionEntity : permissionEntities) {
                     Set<RoleDTO> roles = rolesForEntity.get(permissionEntity.getValue());
                     if (roles == null) {

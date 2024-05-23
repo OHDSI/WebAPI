@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.user.importer.service;
 
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
+import com.cosium.spring.data.jpa.entity.graph.domain2.EntityGraph;
+import com.cosium.spring.data.jpa.entity.graph.domain2.NamedEntityGraph;
 import com.cronutils.model.definition.CronDefinition;
 import com.odysseusinc.scheduler.model.ScheduledTask;
 import com.odysseusinc.scheduler.service.BaseJobServiceImpl;
@@ -47,7 +47,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
   private final StepBuilderFactory stepBuilderFactory;
   private final JobBuilderFactory jobBuilders;
   private final JobTemplate jobTemplate;
-  private EntityGraph jobWithMappingEntityGraph = EntityGraphUtils.fromName("jobWithMapping");
+  private EntityGraph jobWithMappingEntityGraph = NamedEntityGraph.loading("jobWithMapping");
 
   public UserImportJobServiceImpl(TaskScheduler taskScheduler,
                                   CronDefinition cronDefinition,

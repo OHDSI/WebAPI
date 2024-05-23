@@ -61,6 +61,6 @@ public interface TagRepository extends JpaRepository<Tag, Integer> {
             """)
     List<TagInfo> findReusableTagInfo();
 
-    @Query("SELECT t FROM Tag t WHERE t.mandatory = 'TRUE'")
+    @Query("SELECT t FROM Tag t WHERE t.mandatory = TRUE")
     List<Tag> findMandatoryTags();
 }

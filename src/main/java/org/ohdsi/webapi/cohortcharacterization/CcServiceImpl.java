@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
+import com.cosium.spring.data.jpa.entity.graph.domain2.DynamicEntityGraph;
+import com.cosium.spring.data.jpa.entity.graph.domain2.EntityGraph;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableList;
 import jakarta.annotation.PostConstruct;
@@ -161,14 +162,14 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     private Map<String, FeatureExtraction.PrespecAnalysis> prespecAnalysisMap = FeatureExtraction.getNameToPrespecAnalysis();
 
-    private final EntityGraph defaultEntityGraph = EntityUtils.fromAttributePaths(
+    private final EntityGraph defaultEntityGraph = DynamicEntityGraph.loading().addPath(
             "cohortDefinitions",
             "featureAnalyses",
             "stratas",
             "parameters",
             "createdBy",
             "modifiedBy"
-    );
+    ).build();
 
     private final List<String[]> executionPrevalenceHeaderLines = new ArrayList<String[]>() {{
         add(new String[]{"Analysis ID", "Analysis name", "Strata ID",
@@ -527,7 +528,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     @Override
     public CohortCharacterizationEntity findByIdWithLinkedEntities(final Long id) {
-        return repository.findOne(id, defaultEntityGraph);
+        return repository.findById(id, defaultEntityGraph).get();
     }
 
     @Override
@@ -631,7 +632,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
 
     @Override
     public CcGenerationEntity findGenerationById(final Long id) {
-        return ccGenerationRepository.findById(id, EntityUtils.fromAttributePaths("source"));
+        return ccGenerationRepository.findById(id, DynamicEntityGraph.loading().addPath("source").build()).get();
     }
 
     @Override

@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.pathway;
 
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
+import com.cosium.spring.data.jpa.entity.graph.domain2.EntityGraph;
+import com.cosium.spring.data.jpa.entity.graph.domain2.DynamicEntityGraph;
 import com.google.common.base.MoreObjects;
 import com.odysseusinc.arachne.commons.types.DBMSType;
 import org.hibernate.Hibernate;
@@ -88,6 +89,7 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static org.ohdsi.webapi.Constants.GENERATE_PATHWAY_ANALYSIS;
 import static org.ohdsi.webapi.Constants.Params.GENERATION_ID;
@@ -126,12 +128,12 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
 	private final List<String> STEP_COLUMNS = Arrays.asList(new String[]{"step_1", "step_2", "step_3", "step_4", "step_5", "step_6", "step_7", "step_8", "step_9", "step_10"});
 
-	private final EntityGraph defaultEntityGraph = EntityUtils.fromAttributePaths(
+	private final EntityGraph defaultEntityGraph = DynamicEntityGraph.loading().addPath(
 					"targetCohorts.cohortDefinition",
 					"eventCohorts.cohortDefinition",
 					"createdBy",
 					"modifiedBy"
-	);
+	).build();
 
 	public PathwayServiceImpl(
 					PathwayAnalysisEntityRepository pathwayAnalysisRepository,
@@ -227,8 +229,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
 	@Override
 	public Page<PathwayAnalysisEntity> getPage(final Pageable pageable) {
-		List<PathwayAnalysisEntity> pathwayList = pathwayAnalysisRepository.findAll(defaultEntityGraph)
-						.stream().filter(!defaultGlobalReadPermissions ? entity -> permissionService.hasReadAccess(entity) : entity -> true)
+		List<PathwayAnalysisEntity> pathwayList =  StreamSupport.stream(pathwayAnalysisRepository.findAll(defaultEntityGraph).spliterator(), false)
+						.filter(!defaultGlobalReadPermissions ? entity -> permissionService.hasReadAccess(entity) : entity -> true)
 						.collect(Collectors.toList());
 		return getPageFromResults(pageable, pathwayList);
 	}
@@ -250,7 +252,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 	@Override
 	public PathwayAnalysisEntity getById(Integer id) {
 
-		PathwayAnalysisEntity entity = pathwayAnalysisRepository.findOne(id, defaultEntityGraph);
+		PathwayAnalysisEntity entity = pathwayAnalysisRepository.findById(id, defaultEntityGraph).get();
 		if (Objects.nonNull(entity)) {
 			entity.getTargetCohorts().forEach(tc -> Hibernate.initialize(tc.getCohortDefinition().getDetails()));
 			entity.getEventCohorts().forEach(ec -> Hibernate.initialize(ec.getCohortDefinition().getDetails()));
@@ -454,7 +456,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 	@DataSourceAccess
 	public void cancelGeneration(Integer pathwayAnalysisId, @SourceId Integer sourceId) {
 
-		PathwayAnalysisEntity entity = pathwayAnalysisRepository.findOne(pathwayAnalysisId, defaultEntityGraph);
+		PathwayAnalysisEntity entity = pathwayAnalysisRepository.findById(pathwayAnalysisId, defaultEntityGraph).get();
 		String sourceKey = getSourceRepository().findBySourceId(sourceId).getSourceKey();
 		entity.getTargetCohorts().forEach(tc -> cohortDefinitionService.cancelGenerateCohort(tc.getId(), sourceKey));
 		entity.getEventCohorts().forEach(ec -> cohortDefinitionService.cancelGenerateCohort(ec.getId(), sourceKey));
@@ -470,13 +472,13 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 	@Override
 	public List<PathwayAnalysisGenerationEntity> getPathwayGenerations(final Integer pathwayAnalysisId) {
 
-		return pathwayAnalysisGenerationRepository.findAllByPathwayAnalysisId(pathwayAnalysisId, EntityUtils.fromAttributePaths("source"));
+		return pathwayAnalysisGenerationRepository.findAllByPathwayAnalysisId(pathwayAnalysisId, DynamicEntityGraph.loading().addPath("source").build());
 	}
 
 	@Override
 	public PathwayAnalysisGenerationEntity getGeneration(Long generationId) {
 
-		return pathwayAnalysisGenerationRepository.findOne(generationId, EntityUtils.fromAttributePaths("source"));
+		return pathwayAnalysisGenerationRepository.findById(generationId, DynamicEntityGraph.loading().addPath("source").build()).get();
 	}
 
 	@Override

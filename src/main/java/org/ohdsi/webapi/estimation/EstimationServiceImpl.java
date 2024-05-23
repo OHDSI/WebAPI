@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.estimation;
 
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
+import com.cosium.spring.data.jpa.entity.graph.domain2.DynamicEntityGraph;
+import com.cosium.spring.data.jpa.entity.graph.domain2.EntityGraph;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -71,6 +71,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static org.ohdsi.webapi.Constants.GENERATE_ESTIMATION_ANALYSIS;
 import static org.ohdsi.webapi.Constants.Params.ESTIMATION_ANALYSIS_ID;
@@ -89,12 +90,12 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
 
     private final String EXEC_SCRIPT = ResourceHelper.GetResourceAsString("/resources/estimation/r/runAnalysis.R");
 
-    private final EntityGraph DEFAULT_ENTITY_GRAPH = EntityGraphUtils.fromAttributePaths("source", "analysisExecution.resultFiles");
+    private final EntityGraph DEFAULT_ENTITY_GRAPH = DynamicEntityGraph.loading().addPath("source", "analysisExecution.resultFiles").build();
 
-    private final EntityGraph COMMONS_ENTITY_GRAPH = EntityUtils.fromAttributePaths(
+    private final EntityGraph COMMONS_ENTITY_GRAPH = DynamicEntityGraph.loading().addPath(
             "createdBy",
             "modifiedBy"
-    );
+    ).build();
 
     @PersistenceContext
     protected EntityManager entityManager;
@@ -151,7 +152,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     
     @Override
     public Estimation getById(Integer id) {
-        return estimationRepository.findOne(id, COMMONS_ENTITY_GRAPH);
+        return estimationRepository.findById(id, COMMONS_ENTITY_GRAPH).get();
     }
 
     @Override
@@ -213,12 +214,12 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     @Override
     public Estimation getAnalysis(int id) {
 
-        return estimationRepository.findOne(id, COMMONS_ENTITY_GRAPH);
+        return estimationRepository.findById(id, COMMONS_ENTITY_GRAPH).get();
     }
 
     @Override
     public EstimationAnalysisImpl getAnalysisExpression(int id) {
-        return Utils.deserialize(estimationRepository.findOne(id, COMMONS_ENTITY_GRAPH).getSpecification(), EstimationAnalysisImpl.class);
+        return Utils.deserialize(estimationRepository.findById(id, COMMONS_ENTITY_GRAPH).get().getSpecification(), EstimationAnalysisImpl.class);
     }
 
     @Override
@@ -406,7 +407,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
             est.setName(NameUtils.getNameWithSuffix(analysis.getName(), this::getNamesLike));
 
             Estimation savedEstimation = this.createEstimation(est);
-            return estimationRepository.findOne(savedEstimation.getId(), COMMONS_ENTITY_GRAPH);
+            return estimationRepository.findById(savedEstimation.getId(), COMMONS_ENTITY_GRAPH).get();
         } catch (Exception e) {
             log.debug("Error while importing estimation analysis: " + e.getMessage());
             throw e;
@@ -471,9 +472,9 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     @Override
     public List<EstimationGenerationEntity> getEstimationGenerations(Integer estimationAnalysisId) {
 
-        return generationRepository
-            .findByEstimationAnalysisId(estimationAnalysisId, DEFAULT_ENTITY_GRAPH)
-            .stream()
+        return StreamSupport.stream(
+        		generationRepository.findByEstimationAnalysisId(estimationAnalysisId, DEFAULT_ENTITY_GRAPH).spliterator(), false
+             )
             .filter(gen -> sourceAccessor.hasAccess(gen.getSource()))
             .collect(Collectors.toList());
     }
@@ -481,7 +482,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     @Override
     public EstimationGenerationEntity getGeneration(Long generationId) {
 
-        return generationRepository.findOne(generationId, DEFAULT_ENTITY_GRAPH);
+        return generationRepository.findById(generationId, DEFAULT_ENTITY_GRAPH).get();
     }
     
     private Estimation save(Estimation analysis) {

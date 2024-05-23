@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.feanalysis;
 
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
+import com.cosium.spring.data.jpa.entity.graph.domain2.DynamicEntityGraph;
+import com.cosium.spring.data.jpa.entity.graph.domain2.EntityGraph;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
@@ -41,10 +42,10 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     private final ApplicationEventPublisher eventPublisher;
     private FeAnalysisAggregateRepository aggregateRepository;
 
-    private final EntityGraph defaultEntityGraph = EntityUtils.fromAttributePaths(
+    private final EntityGraph defaultEntityGraph = DynamicEntityGraph.loading().addPath(
             "createdBy",
             "modifiedBy"
-    );
+    ).build();
 
     public FeAnalysisServiceImpl(
             final FeAnalysisEntityRepository analysisRepository,

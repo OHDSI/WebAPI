@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.shiro.Entities;
 
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
@@ -13,5 +13,6 @@ public interface PermissionRepository extends CrudRepository<PermissionEntity, L
 
   public PermissionEntity findByValueIgnoreCase(String permission);
 
-  List<PermissionEntity> findByValueLike(String permissionTemplate, EntityGraph entityGraph);
+  @EntityGraph(attributePaths = {"rolePermissions", "rolePermissions.role"})
+  List<PermissionEntity> findByValueLike(String permissionTemplate);
 }

@@ -1,6 +1,6 @@
 package org.ohdsi.webapi;
 
-import com.odysseusinc.arachne.commons.config.flyway.ApplicationContextAwareSpringJdbcMigrationResolver;
+//import com.odysseusinc.arachne.commons.config.flyway.ApplicationContextAwareSpringJdbcMigrationResolver;
 
 import java.util.Map;
 

@@ -17,6 +17,7 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 public class SourceService extends AbstractDaoService {
@@ -80,7 +81,8 @@ public class SourceService extends AbstractDaoService {
     public Collection<Source> getSources() {
 
         if (cachedSources == null) {
-            List<Source> sources = sourceRepository.findAll();
+            List<Source> sources = StreamSupport.stream(sourceRepository.findAll().spliterator(), false)
+                    .collect(Collectors.toList());
             Collections.sort(sources, new SortByKey());
             cachedSources = sources;
         }

@@ -17,7 +17,7 @@
     <flyway.version>4.2.0</flyway.version>
     <waffle.version>2.2.1</waffle.version>
     <jna.version>5.5.0</jna.version>
-    <hibernate.version>6.0.0.Final</hibernate.version>
+    <hibernate.version>6.1.6.Final</hibernate.version>
     <postgresql.version>42.3.7</postgresql.version>
     <bouncycastle.version>1.69</bouncycastle.version>
     <shiro.version>2.0.0</shiro.version>   <!-- MDACA Spring Boot 3 migration shiro.version>1.12.0</shiro.version -->
@@ -200,7 +200,7 @@
     <server.ssl.key-password></server.ssl.key-password>
     <server.servlet.context-path>/WebAPI</server.servlet.context-path>
 
-    <arachne.version>1.17.3</arachne.version>
+    <arachne.version>3.x-MDACA</arachne.version>
     <jersey-media-multipart.version>2.29.1</jersey-media-multipart.version>   <!-- MDACA Spring Boot 3 migration jersey-media-multipart.version>2.25.1</jersey-media-multipart.version -->
     <execution.invalidation.period>600000</execution.invalidation.period>
     <execution.invalidation.maxage.hours>12</execution.invalidation.maxage.hours>
@@ -606,6 +606,11 @@
    <artifactId>jackson-annotations</artifactId>
    <!-- MDACA Spring Boot 3 migration version>${jackson.version}</version -->
   </dependency>
+  <dependency>
+    <groupId>org.springframework.plugin</groupId>
+    <artifactId>spring-plugin-core</artifactId>
+    <version>3.0.0</version>
+</dependency>
   <!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-actuator</artifactId>
     <version>${spring.boot.version}</version> </dependency> -->
   <dependency>
@@ -863,57 +868,69 @@
    <version>4.1</version>
    <type>jar</type>
   </dependency>
-<!--  MDACA Spring Boot 3 migration 
   <dependency>
    <groupId>org.apache.shiro</groupId>
    <artifactId>shiro-core</artifactId>
    <version>${shiro.version}</version>
+            <classifier>jakarta</classifier>
   </dependency>
   <dependency>
    <groupId>org.apache.shiro</groupId>
    <artifactId>shiro-web</artifactId>
    <version>${shiro.version}</version>
+            <classifier>jakarta</classifier>
   </dependency>
   <dependency>
    <groupId>org.apache.shiro</groupId>
    <artifactId>shiro-spring</artifactId>
    <version>${shiro.version}</version>
+            <classifier>jakarta</classifier>
   </dependency>
--->
 
 <!-- MDACA Spring Boot 3 migration. Five dep below added to replace 3 legacy shiro dependecies above -->
-	<dependency>
-	    <groupId>org.apache.shiro</groupId>
-	    <artifactId>shiro-core</artifactId>
-	    <version>${shiro.version}</version>
-	    <classifier>jakarta</classifier>
-	</dependency>
-	<dependency>
-	    <groupId>org.apache.shiro</groupId>
-	    <artifactId>shiro-web</artifactId>
-	    <version>${shiro.version}</version>
-	    <classifier>jakarta</classifier>
+	
+<!--  MDACA Spring Boot 3 migration <dependency>
+	  <groupId>org.apache.shiro</groupId>
+	  <artifactId>shiro-jakarta-ee</artifactId>
+	  <version>2.0.0</version>
 	</dependency>
 	
 	<dependency>
-	    <groupId>org.apache.shiro</groupId>
-	    <artifactId>shiro-spring-boot-web-starter</artifactId>
-	    <version>${shiro.version}</version>
-	    <classifier>jakarta</classifier>
-	</dependency>
-	<dependency>
-	    <groupId>org.apache.shiro</groupId>
-	    <artifactId>shiro-spring-boot-starter</artifactId>
-	    <version>${shiro.version}</version>
-	    <classifier>jakarta</classifier>
-	</dependency>
-	<dependency>
-	    <groupId>org.apache.shiro</groupId>
-	    <artifactId>shiro-spring</artifactId>
-	    <version>${shiro.version}</version>
-	    <classifier>jakarta</classifier>
-	</dependency>
+            <groupId>org.apache.shiro</groupId>
+            <artifactId>shiro-spring</artifactId>
+            <classifier>jakarta</classifier>
+            <version>${shiro.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.shiro</groupId>
+                    <artifactId>shiro-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.shiro</groupId>
+                    <artifactId>shiro-web</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.shiro</groupId>
+            <artifactId>shiro-core</artifactId>
+            <classifier>jakarta</classifier>
+            <version>${shiro.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.shiro</groupId>
+            <artifactId>shiro-web</artifactId>
+            <classifier>jakarta</classifier>
+            <version>${shiro.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.shiro</groupId>
+                    <artifactId>shiro-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
   
+-->
   <dependency>
    <groupId>com.github.waffle</groupId>
    <artifactId>waffle-shiro</artifactId>
@@ -1266,7 +1283,7 @@
     <dependency>
       <groupId>com.cosium.spring.data</groupId>
       <artifactId>spring-data-jpa-entity-graph</artifactId>
-      <version>1.11.03</version>
+      <version>3.2.2</version>
     </dependency>
     <dependency>
       <groupId>org.pac4j</groupId>

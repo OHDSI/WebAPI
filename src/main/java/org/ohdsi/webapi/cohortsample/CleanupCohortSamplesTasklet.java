@@ -24,6 +24,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.StreamSupport;
 
 import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
@@ -62,7 +63,7 @@ public class CleanupCohortSamplesTasklet implements Tasklet {
 				return 0;
 			}
 		} else {
-			return this.sourceRepository.findAll().stream()
+			return StreamSupport.stream(this.sourceRepository.findAll().spliterator(), false)
 					.filter(source-> source.getDaimons()
 							.stream()
 							.anyMatch(daimon -> daimon.getDaimonType() == SourceDaimon.DaimonType.Results))

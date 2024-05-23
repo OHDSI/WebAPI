@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.prediction;
 
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
+import com.cosium.spring.data.jpa.entity.graph.domain2.EntityGraph;
+import com.cosium.spring.data.jpa.entity.graph.domain2.DynamicEntityGraph;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -61,12 +61,12 @@ import static org.ohdsi.webapi.Constants.Params.PREDICTION_SKELETON_VERSION;
 @Transactional
 public class PredictionServiceImpl extends AnalysisExecutionSupport implements PredictionService, GeneratesNotification {
 
-    private static final EntityGraph DEFAULT_ENTITY_GRAPH = EntityGraphUtils.fromAttributePaths("source", "analysisExecution.resultFiles");
+    private static final EntityGraph DEFAULT_ENTITY_GRAPH = DynamicEntityGraph.loading().addPath("source", "analysisExecution.resultFiles").build();
 
-    private final EntityGraph COMMONS_ENTITY_GRAPH = EntityUtils.fromAttributePaths(
+    private final EntityGraph COMMONS_ENTITY_GRAPH = DynamicEntityGraph.loading().addPath(
             "createdBy",
             "modifiedBy"
-    );
+    ).build();
 
     @Autowired
     private PredictionAnalysisRepository predictionAnalysisRepository;
@@ -123,7 +123,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
 
     @Override
     public PredictionAnalysis getById(Integer id) {
-        return predictionAnalysisRepository.findOne(id, COMMONS_ENTITY_GRAPH);
+        return predictionAnalysisRepository.findById(id, COMMONS_ENTITY_GRAPH).get();
     }
 
     @Override
@@ -178,7 +178,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     @Override
     public PredictionAnalysis getAnalysis(int id) {
 
-        return this.predictionAnalysisRepository.findOne(id, COMMONS_ENTITY_GRAPH);
+        return this.predictionAnalysisRepository.findById(id, COMMONS_ENTITY_GRAPH).get();
     }
 
     @Override
@@ -304,7 +304,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
             pa.setName(NameUtils.getNameWithSuffix(analysis.getName(), this::getNamesLike));
 
             PredictionAnalysis savedAnalysis = this.createAnalysis(pa);
-            return predictionAnalysisRepository.findOne(savedAnalysis.getId(), COMMONS_ENTITY_GRAPH);
+            return predictionAnalysisRepository.findById(savedAnalysis.getId(), COMMONS_ENTITY_GRAPH).get();
         } catch (Exception e) {
             log.debug("Error while importing prediction analysis: " + e.getMessage());
             throw e;
@@ -384,7 +384,7 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     @Override
     public PredictionGenerationEntity getGeneration(Long generationId) {
 
-        return generationRepository.findOne(generationId, DEFAULT_ENTITY_GRAPH);
+        return generationRepository.findById(generationId, DEFAULT_ENTITY_GRAPH).get();
     }
     
     private PredictionAnalysis save(PredictionAnalysis analysis) {

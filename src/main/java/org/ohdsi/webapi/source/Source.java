@@ -113,6 +113,10 @@ public class Source extends CommonEntity<Integer> implements Serializable {
   @Column(name = "is_cache_enabled")
   private boolean isCacheEnabled;
 
+  @Column(name = "check_connection")
+  private boolean checkConnection;
+
+
   public String getTableQualifier(DaimonType daimonType) {
 		String result = getTableQualifierOrNull(daimonType);
 		if (result == null)
@@ -249,6 +253,14 @@ public class Source extends CommonEntity<Integer> implements Serializable {
 
   public void setIsCacheEnabled(boolean isCacheEnabled) {
     this.isCacheEnabled = isCacheEnabled;
+  }
+
+  public boolean isCheckConnection() {
+    return checkConnection;
+  }
+
+  public void setCheckConnection(boolean checkConnection) {
+    this.checkConnection = checkConnection;
   }
 
   @Override

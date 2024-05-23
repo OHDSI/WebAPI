@@ -104,8 +104,10 @@ public class SourceService extends AbstractDaoService {
 
     public void checkConnection(Source source) {
 
-        final JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
-        jdbcTemplate.execute(SqlTranslate.translateSql("select 1;", source.getSourceDialect()).replaceAll(";$", ""));
+        if (source.isCheckConnection()) {
+            final JdbcTemplate jdbcTemplate = getSourceJdbcTemplate(source);
+            jdbcTemplate.execute(SqlTranslate.translateSql("select 1;", source.getSourceDialect()).replaceAll(";$", ""));
+        }
     }
 
     public Source getPrioritySourceForDaimon(SourceDaimon.DaimonType daimonType) {

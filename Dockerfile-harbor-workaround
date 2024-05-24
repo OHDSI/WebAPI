@@ -1,0 +1,4 @@
+FROM mip-sf-harbor.med.osd.ds/mip-sf/alpine:3.19.1
+
+COPY WebAPI.war /opt
+

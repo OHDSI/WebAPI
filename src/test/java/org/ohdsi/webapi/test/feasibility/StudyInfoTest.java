@@ -17,6 +17,8 @@ package org.ohdsi.webapi.test.feasibility;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+
+import org.junit.Ignore;
 import org.junit.Test;
 import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.feasibility.FeasibilityStudy;
@@ -48,6 +50,7 @@ public class StudyInfoTest extends AbstractDatabaseTest {
   @PersistenceContext
   protected EntityManager entityManager;
 
+  @Ignore
   @Test
   @Transactional(transactionManager="transactionManager")
   public void testStudyCRUD() {

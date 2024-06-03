@@ -2,21 +2,17 @@ package org.ohdsi.webapi.service;
 
 import com.odysseusinc.arachne.commons.api.v1.dto.CommonAnalysisType;
 
-import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.ohdsi.webapi.shiny.ApplicationBrief;
 import org.ohdsi.webapi.shiny.ConflictPositConnectException;
 import org.ohdsi.webapi.shiny.PackagingStrategies;
 import org.ohdsi.webapi.shiny.PackagingStrategy;
 import org.ohdsi.webapi.shiny.PositConnectClient;
-import org.ohdsi.webapi.shiny.PositConnectClientException;
 import org.ohdsi.webapi.shiny.ShinyPackagingService;
 import org.ohdsi.webapi.shiny.ShinyPublishedEntity;
 import org.ohdsi.webapi.shiny.ShinyPublishedRepository;
 import org.ohdsi.webapi.shiny.TemporaryFile;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
-import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
-import org.ohdsi.webapi.shiro.annotations.SourceKey;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,21 +20,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.sql.Date;
 import java.text.MessageFormat;
 import java.time.Instant;

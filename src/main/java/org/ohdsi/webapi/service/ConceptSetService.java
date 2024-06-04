@@ -28,6 +28,7 @@ import javax.ws.rs.core.Response;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.vocabulary.Concept;
@@ -884,7 +885,6 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
     public boolean saveConceptSetMetaData(@PathParam("id") final int id, ConceptSetMetaDataDTO dto) {
-        UserEntity user = userRepository.findByLogin(security.getSubject());
         if (dto.getRemoveMetadata() != null && !dto.getRemoveMetadata().isEmpty()) {
             for (MetaDataDTO metaDataDTO : dto.getRemoveMetadata()) {
                 this.getConceptSetMetaDataRepository().deleteMetadataByConceptSetIdAndConceptId(id, metaDataDTO.getConceptId());
@@ -903,7 +903,8 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
                     throw new RuntimeException(e);
                 }
                 metaData.setConceptId(m.getConceptId());
-                metaData.setCreatedBy(user);
+                metaData.setCreatedBy(getCurrentUser());
+                metaData.setCreatedDate(new Date());
                 return metaData;
             }).collect(Collectors.toList());
 
@@ -952,6 +953,8 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
                 .findConceptSetMetaDataByConceptIdAndConceptId(id, metaDataDTO.getConceptId())
                 .orElseThrow(() -> new RuntimeException("Concept set metadata not found"));
         metaData.setMetadata(mapper.writeValueAsString(metaDataDTO));
+        metaData.setModifiedBy(getCurrentUser());
+        metaData.setModifiedDate(new Date());
         getConceptSetMetaDataRepository().save(metaData);
         return metaDataDTO;
     }

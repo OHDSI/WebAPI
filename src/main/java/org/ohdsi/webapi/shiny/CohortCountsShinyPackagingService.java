@@ -79,8 +79,7 @@ public class CohortCountsShinyPackagingService implements ShinyPackagingService 
                 ).forEach(manifestUtils.addDataToManifest(manifest, path));
                 fileWriter.writeJsonNodeToFile(manifest, manifestPath);
                 Path appArchive = packaging.apply(path);
-                return new TemporaryFile(String.format("%s_%s_%s.zip", sourceKey, new SimpleDateFormat("yyyy_MM_dd").format(Date.from(Instant.now())),
-                        CommonFilenameUtils.sanitizeFilename(cohort.getName())), appArchive);
+                return new TemporaryFile(String.format("Cohort_%s_%s.zip", cohortId, sourceKey), appArchive);
             } catch (IOException e) {
                 log.error("Failed to prepare Shiny application", e);
                 throw new InternalServerErrorException();

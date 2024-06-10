@@ -13,7 +13,7 @@ import org.ohdsi.webapi.ircalc.AnalysisReport;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisDetails;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
-import org.ohdsi.webapi.service.IRAnalysisService;
+import org.ohdsi.webapi.service.IRAnalysisResource;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -32,7 +32,7 @@ public class IncidenceRatesShinyPackagingServiceTest {
     @Spy
     private FileWriter fileWriter;
     @Mock
-    private IRAnalysisService irAnalysisService;
+    private IRAnalysisResource irAnalysisResource;
     @Spy
     private ObjectMapper objectMapper;
 
@@ -59,7 +59,7 @@ public class IncidenceRatesShinyPackagingServiceTest {
         IncidenceRateAnalysis incidenceRateAnalysis = createIncidenceRateAnalysis();
         PackagingStrategy packagingStrategy = mock(PackagingStrategy.class);
         when(repository.findOne(analysisId)).thenReturn(incidenceRateAnalysis);
-        when(irAnalysisService.getAnalysisReport(anyInt(), anyString(), anyInt(), anyInt()))
+        when(irAnalysisResource.getAnalysisReport(anyInt(), anyString(), anyInt(), anyInt()))
                 .thenReturn(createAnalysisReport(1, 2))
                 .thenReturn(createAnalysisReport(3, 4))
                 .thenReturn(createAnalysisReport(5, 6))

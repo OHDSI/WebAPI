@@ -13,7 +13,7 @@ import org.ohdsi.webapi.ircalc.AnalysisReport;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisExportExpression;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
-import org.ohdsi.webapi.service.IRAnalysisService;
+import org.ohdsi.webapi.service.IRAnalysisResource;
 import org.ohdsi.webapi.service.ShinyService;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.TempFileUtils;
@@ -55,7 +55,7 @@ public class IncidenceRatesShinyPackagingService implements ShinyPackagingServic
     @Autowired
     private IncidenceRateAnalysisRepository incidenceRateAnalysisRepository;
     @Autowired
-    private IRAnalysisService irAnalysisService;
+    private IRAnalysisResource irAnalysisResource;
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -95,7 +95,8 @@ public class IncidenceRatesShinyPackagingService implements ShinyPackagingServic
                 Stream<Path> additionalMetadataFilesPaths = Stream.of(
                         fileWriter.writeTextFile(dataDir.resolve("cohorts.csv"), pw -> pw.print(csvWithCohortDetails)),
                         fileWriter.writeTextFile(dataDir.resolve("atlas_link.txt"), pw -> pw.printf("%s/#/iranalysis/%s", atlasUrl, analysisId)),
-                        fileWriter.writeTextFile(dataDir.resolve("repo_link.txt"), pw -> pw.print(repoLink))
+                        fileWriter.writeTextFile(dataDir.resolve("repo_link.txt"), pw -> pw.print(repoLink)),
+                        fileWriter.writeTextFile(dataDir.resolve("datasource.txt"), pw -> pw.print(sourceKey))
                 );
 
                 Stream.concat(analysisReportPaths, additionalMetadataFilesPaths)
@@ -122,7 +123,7 @@ public class IncidenceRatesShinyPackagingService implements ShinyPackagingServic
 
     private Stream<AnalysisReport> streamAnalysisReportsForOneCohortCombination(Integer targetCohortId, List<CohortDTO> outcomeCohorts, Integer analysisId, String sourceKey) {
         return outcomeCohorts.stream()
-                .map(outcomeCohort -> irAnalysisService.getAnalysisReport(analysisId, sourceKey, targetCohortId, outcomeCohort.getId()));
+                .map(outcomeCohort -> irAnalysisResource.getAnalysisReport(analysisId, sourceKey, targetCohortId, outcomeCohort.getId()));
     }
 
     @Override

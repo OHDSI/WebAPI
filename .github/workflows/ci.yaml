@@ -43,8 +43,7 @@ jobs:
         run: mvn -B -DskipTests=true -DskipUnitTests=true -P${{ env.MAVEN_PROFILE }} package
 
       - name: Test
-        # Skipping unit and integration tests for now, because they keep failing.
-        run: mvn -B -DskipUnitTests=true -DskipITtests=true -P${{ env.MAVEN_PROFILE }} test
+        run: mvn -B -P${{ env.MAVEN_PROFILE }} test
 
   # Check that the docker image builds correctly
   # Push to ohdsi/atlas:master for commits on master.

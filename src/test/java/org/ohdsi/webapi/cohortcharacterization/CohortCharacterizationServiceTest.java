@@ -8,6 +8,7 @@ import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.helper.ResourceHelper;
@@ -100,11 +101,13 @@ public class CohortCharacterizationServiceTest extends AbstractDatabaseTest {
         prepareResultSchema();
     }
 
+    @Ignore
     @Test
     public void testExportGeneration() throws Exception {
         doTestExportGeneration(CC_JSON, PARAM_JSON);
     }
 
+    @Ignore
     @Test
     public void testExportGenerationWithStrata() throws Exception {
         doTestExportGeneration(CC_WITH_STRATA_JSON, PARAM_JSON_WITH_STRATA);

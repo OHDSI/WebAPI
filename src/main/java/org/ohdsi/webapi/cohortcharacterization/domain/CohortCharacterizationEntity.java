@@ -191,4 +191,25 @@ public class CohortCharacterizationEntity extends CommonEntityExt<Long> implemen
     public void setTags(Set<Tag> tags) {
         this.tags = tags;
     }
+
+    public void addCcParamEntity(CcParamEntity ccParamEntity) {
+        this.parameters.add(ccParamEntity);
+        ccParamEntity.setCohortCharacterization(this);
+    }
+
+    public void removeCcParamEntity(CcParamEntity ccParamEntity) {
+        this.parameters.remove(ccParamEntity);
+        ccParamEntity.setCohortCharacterization(null);
+    }
+
+    public void addCcStrataEntity(CcStrataEntity ccStrataEntity) {
+        this.stratas.add(ccStrataEntity);
+        ccStrataEntity.setCohortCharacterization(this);
+    }
+
+    public void removeCcStrataEntity(CcStrataEntity ccStrataEntity) {
+        this.stratas.remove(ccStrataEntity);
+        ccStrataEntity.setCohortCharacterization(null);
+    }
+
 }

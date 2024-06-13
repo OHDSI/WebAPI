@@ -93,4 +93,15 @@ public class UserEntity implements Serializable{
   public void setOrigin(UserOrigin origin) {
     this.origin = origin;
   }
+
+  public void addUserRoleEntity(UserRoleEntity userRoleEntity) {
+    this.userRoles.add(userRoleEntity);
+    userRoleEntity.setUser(this);
+  }
+
+  public void removeUserRoleEntity(UserRoleEntity userRoleEntity) {
+    this.userRoles.remove(userRoleEntity);
+    userRoleEntity.setUser(null);
+  }
+
 }

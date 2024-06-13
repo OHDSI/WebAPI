@@ -89,4 +89,25 @@ public class RoleEntity implements Serializable{
   public void setSystemRole(Boolean system) {
     systemRole = system;
   }
+
+  public void addRolePermissionEntity(RolePermissionEntity rolePermissionEntity) {
+    this.rolePermissions.add(rolePermissionEntity);
+    rolePermissionEntity.setRole(this);
+  }
+
+  public void removeRolePermissionEntity(RolePermissionEntity rolePermissionEntity) {
+    this.rolePermissions.remove(rolePermissionEntity);
+    rolePermissionEntity.setRole(null);
+  }
+
+  public void addUserRoleEntity(UserRoleEntity userRoleEntity) {
+    this.userRoles.add(userRoleEntity);
+    userRoleEntity.setRole(this);
+  }
+
+  public void removeUserRoleEntity(UserRoleEntity userRoleEntity) {
+    this.userRoles.remove(userRoleEntity);
+    userRoleEntity.setRole(null);
+  }
+
 }

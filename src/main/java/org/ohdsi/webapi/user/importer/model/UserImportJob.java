@@ -33,7 +33,7 @@ import java.util.List;
   attributeNodes = @NamedAttributeNode("roleGroupMapping"))
 public class UserImportJob extends ArachneJob {
 
-  @ElementCollection(fetch = FetchType.EAGER)
+  @ElementCollection(fetch = FetchType.LAZY)
   @CollectionTable(name = "user_import_job_weekdays", joinColumns = @JoinColumn(name = "user_import_job_id"))
   @Column(name = "day_of_week")
   @Enumerated(EnumType.STRING)

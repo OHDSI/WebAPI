@@ -2,7 +2,6 @@ package org.ohdsi.webapi.feanalysis;
 
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
-import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcShortDTO;
 import org.ohdsi.webapi.common.OptionDTO;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
@@ -16,6 +15,7 @@ import org.ohdsi.webapi.util.HttpUtils;
 import org.ohdsi.webapi.util.NameUtils;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,8 +32,11 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
+
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,7 +69,14 @@ public class FeAnalysisController {
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Page<FeAnalysisShortDTO> list(@Pagination Pageable pageable) {
+    public Page<FeAnalysisShortDTO> list(@Context UriInfo uriInfo) {
+
+    	var queryParams = uriInfo.getQueryParameters();
+        int page = queryParams.containsKey("page") ? Integer.parseInt(queryParams.get("page").get(0)) : 0;
+        int size = queryParams.containsKey("size") ? Integer.parseInt(queryParams.get("size").get(0)) : 10;
+
+        Pageable pageable = PageRequest.of(page, size);
+        
         return service.getPage(pageable).map(entity -> {
             FeAnalysisShortDTO dto = convertFeAnaysisToShortDto(entity);
             permissionService.fillWriteAccess(entity, dto);

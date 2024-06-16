@@ -64,8 +64,8 @@ public class PredictionServiceImpl extends AnalysisExecutionSupport implements P
     private static final EntityGraph DEFAULT_ENTITY_GRAPH = DynamicEntityGraph.loading().addPath("source", "analysisExecution.resultFiles").build();
 
     private final EntityGraph COMMONS_ENTITY_GRAPH = DynamicEntityGraph.loading().addPath(
-            "createdBy",
-            "modifiedBy"
+            "createdBy"//,
+            //"modifiedBy"
     ).build();
 
     @Autowired

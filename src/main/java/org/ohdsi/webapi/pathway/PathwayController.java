@@ -2,7 +2,6 @@ package org.ohdsi.webapi.pathway;
 
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.ohdsi.webapi.Constants;
-import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.check.CheckResult;
 import org.ohdsi.webapi.check.checker.pathway.PathwayChecker;
 import org.ohdsi.webapi.common.SourceMapKey;
@@ -28,13 +27,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriInfo;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -156,7 +159,14 @@ public class PathwayController {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Transactional
-	public Page<PathwayAnalysisDTO> list(@Pagination Pageable pageable) {
+	public Page<PathwayAnalysisDTO> list(@Context UriInfo uriInfo) {
+
+    	var queryParams = uriInfo.getQueryParameters();
+        int page = queryParams.containsKey("page") ? Integer.parseInt(queryParams.get("page").get(0)) : 0;
+        int size = queryParams.containsKey("size") ? Integer.parseInt(queryParams.get("size").get(0)) : 10;
+
+        Pageable pageable = PageRequest.of(page, size);
+        
 		return pathwayService.getPage(pageable).map(pa -> {
 			PathwayAnalysisDTO dto = conversionService.convert(pa, PathwayAnalysisDTO.class);
 			permissionService.fillWriteAccess(pa, dto);

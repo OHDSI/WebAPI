@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.reusable;
 
-import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.reusable.dto.ReusableDTO;
 import org.ohdsi.webapi.reusable.dto.ReusableVersionFullDTO;
 import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
@@ -8,6 +7,7 @@ import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 
 import jakarta.ws.rs.Consumes;
@@ -20,7 +20,10 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriInfo;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -44,7 +47,14 @@ public class ReusableController {
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Page<ReusableDTO> page(@Pagination Pageable pageable) {
+    public Page<ReusableDTO> page(@Context UriInfo uriInfo) {
+
+    	var queryParams = uriInfo.getQueryParameters();
+        int page = queryParams.containsKey("page") ? Integer.parseInt(queryParams.get("page").get(0)) : 0;
+        int size = queryParams.containsKey("size") ? Integer.parseInt(queryParams.get("size").get(0)) : 10;
+
+        Pageable pageable = PageRequest.of(page, size);
+        
         return reusableService.page(pageable);
     }
 

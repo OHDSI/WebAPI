@@ -108,6 +108,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
 
     Step generateCohortStep = stepBuilders.get("cohortDefinition.generateCohort")
             .tasklet(generateTasklet)
+            .transactionManager(getTransactionTemplate().getTransactionManager())
             .exceptionHandler(exceptionHandler)
             .build();
 

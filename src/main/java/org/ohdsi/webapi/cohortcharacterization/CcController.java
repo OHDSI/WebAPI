@@ -9,7 +9,6 @@ import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.webapi.Constants;
-import org.ohdsi.webapi.Pagination;
 import org.ohdsi.webapi.check.CheckResult;
 import org.ohdsi.webapi.check.checker.characterization.CharacterizationChecker;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
@@ -43,6 +42,7 @@ import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,8 +60,11 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -153,7 +156,14 @@ public class CcController {
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Page<CcShortDTO> list(@Pagination Pageable pageable) {
+    public Page<CcShortDTO> list(@Context UriInfo uriInfo) {
+
+    	var queryParams = uriInfo.getQueryParameters();
+        int page = queryParams.containsKey("page") ? Integer.parseInt(queryParams.get("page").get(0)) : 0;
+        int size = queryParams.containsKey("size") ? Integer.parseInt(queryParams.get("size").get(0)) : 10;
+
+        Pageable pageable = PageRequest.of(page, size);
+        
       return service.getPage(pageable).map(entity -> {
           CcShortDTO dto = convertCcToShortDto(entity);
           permissionService.fillWriteAccess(entity, dto);
@@ -171,7 +181,14 @@ public class CcController {
     @Path("/design")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Page<CohortCharacterizationDTO> listDesign(@Pagination Pageable pageable) {
+    public Page<CohortCharacterizationDTO> listDesign(@Context UriInfo uriInfo) {
+
+    	var queryParams = uriInfo.getQueryParameters();
+        int page = queryParams.containsKey("page") ? Integer.parseInt(queryParams.get("page").get(0)) : 0;
+        int size = queryParams.containsKey("size") ? Integer.parseInt(queryParams.get("size").get(0)) : 10;
+
+        Pageable pageable = PageRequest.of(page, size);
+        
         return service.getPageWithLinkedEntities(pageable).map(entity -> {
           CohortCharacterizationDTO dto = convertCcToDto(entity);
           permissionService.fillWriteAccess(entity, dto);

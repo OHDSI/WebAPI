@@ -109,7 +109,8 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
         if (stopped) {
             return null;
         }
-        Boolean retainCohortCovariates = Boolean.valueOf(jobParameters.get(RETAIN_COHORT_COVARIATES).toString());
+        Boolean retainCohortCovariates = jobParameters.get(RETAIN_COHORT_COVARIATES) != null ? 
+                Boolean.valueOf(jobParameters.get(RETAIN_COHORT_COVARIATES).toString()) : Boolean.FALSE;
         String sessionId = SessionUtils.sessionId();
         CohortGenerationRequestBuilder generationRequestBuilder = new CohortGenerationRequestBuilder(
                 sessionId,

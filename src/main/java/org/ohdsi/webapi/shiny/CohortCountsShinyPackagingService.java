@@ -2,7 +2,6 @@ package org.ohdsi.webapi.shiny;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.odysseusinc.arachne.commons.api.v1.dto.CommonAnalysisType;
-import com.odysseusinc.arachne.commons.utils.CommonFilenameUtils;
 import com.odysseusinc.arachne.execution_engine_common.util.CommonFileUtils;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
@@ -24,9 +23,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.util.Date;
 import java.util.stream.Stream;
 
 @Service
@@ -75,7 +71,8 @@ public class CohortCountsShinyPackagingService implements ShinyPackagingService 
                         fileWriter.writeObjectAsJsonFile(dataDir, byEventReport, sourceKey + "_by_event.json"),
                         fileWriter.writeObjectAsJsonFile(dataDir, byPersonReport, sourceKey + "_by_person.json"),
                         fileWriter.writeTextFile(dataDir.resolve("cohort_link.txt"), pw -> pw.printf("%s/#/cohortdefinition/%s", atlasUrl, cohortId)),
-                        fileWriter.writeTextFile(dataDir.resolve("cohort_name.txt"), pw -> pw.print(cohort.getName()))
+                        fileWriter.writeTextFile(dataDir.resolve("cohort_name.txt"), pw -> pw.print(cohort.getName())),
+                        fileWriter.writeTextFile(dataDir.resolve("datasource.txt"), pw -> pw.print(sourceKey))
                 ).forEach(manifestUtils.addDataToManifest(manifest, path));
                 fileWriter.writeJsonNodeToFile(manifest, manifestPath);
                 Path appArchive = packaging.apply(path);

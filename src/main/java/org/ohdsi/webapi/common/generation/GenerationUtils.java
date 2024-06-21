@@ -114,6 +114,7 @@ public class GenerationUtils extends AbstractDaoService {
         CreateCohortTableTasklet createCohortTableTasklet = new CreateCohortTableTasklet(jdbcTemplate, transactionTemplate, sourceService, sourceAwareSqlRender);
         Step createCohortTableStep = stepBuilderFactory.get(analysisTypeName + ".createCohortTable")
                 .tasklet(createCohortTableTasklet)
+                .transactionManager(transactionTemplate.getTransactionManager())
                 .build();
 
         GenerateLocalCohortTasklet generateLocalCohortTasklet = new GenerateLocalCohortTasklet(
@@ -127,11 +128,13 @@ public class GenerationUtils extends AbstractDaoService {
         );
         Step generateLocalCohortStep = stepBuilderFactory.get(analysisTypeName + ".generateCohort")
                 .tasklet(generateLocalCohortTasklet)
+                .transactionManager(transactionTemplate.getTransactionManager())
                 .build();
 
         Step generateAnalysisStep = stepBuilderFactory.get(analysisTypeName + ".generate")
                 .tasklet(analysisTasklet)
                 .exceptionHandler(exceptionHandler)
+                .transactionManager(transactionTemplate.getTransactionManager())
                 .build();
 
         DropCohortTableListener dropCohortTableListener = new DropCohortTableListener(jdbcTemplate, transactionTemplate, sourceService, sourceAwareSqlRender);
@@ -165,14 +168,17 @@ public class GenerationUtils extends AbstractDaoService {
 
         Step createAnalysisExecutionStep = stepBuilderFactory.get(analysisTypeName + ".createAnalysisExecution")
                 .tasklet(createAnalysisTasklet)
+                .transactionManager(transactionTemplate.getTransactionManager())
                 .build();
 
         Step runExecutionStep = stepBuilderFactory.get(analysisTypeName + ".startExecutionEngine")
                 .tasklet(runExecutionEngineTasklet)
+                .transactionManager(transactionTemplate.getTransactionManager())
                 .build();
 
         Step waitCallbackStep = stepBuilderFactory.get(analysisTypeName + ".waitForCallback")
                 .tasklet(callbackTasklet)
+                .transactionManager(transactionTemplate.getTransactionManager())
                 .build();
         
         DropCohortTableListener dropCohortTableListener = new DropCohortTableListener(getSourceJdbcTemplate(source),

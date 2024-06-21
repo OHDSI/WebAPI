@@ -30,7 +30,7 @@ public class CleanupScheduler {
 
         List<GenerationCache> caches = generationCacheRepository.findAllByCreatedDateBefore(
             DateUtils.addDays(new Date(), -1 * invalidateAfterDays),
-            DynamicEntityGraph.loading().addPath("source", "source.daimons").build()
+            DynamicEntityGraph.loading().addPath("source").addPath("source.daimons").build()
         );
         caches.forEach(gc -> generationCacheService.removeCache(gc.getType(), gc.getSource(), gc.getDesignHash()));
     }

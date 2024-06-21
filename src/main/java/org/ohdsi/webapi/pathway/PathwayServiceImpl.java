@@ -129,11 +129,8 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 	private final List<String> STEP_COLUMNS = Arrays.asList(new String[]{"step_1", "step_2", "step_3", "step_4", "step_5", "step_6", "step_7", "step_8", "step_9", "step_10"});
 
 	private final EntityGraph defaultEntityGraph = DynamicEntityGraph.loading().addPath(
-					"targetCohorts.cohortDefinition",
-					"eventCohorts.cohortDefinition",
-					"createdBy",
-					"modifiedBy"
-	).build();
+					"targetCohorts.cohortDefinition"
+	).addPath("eventCohorts.cohortDefinition").addPath("createdBy").addPath("modifiedBy").build();
 
 	public PathwayServiceImpl(
 					PathwayAnalysisEntityRepository pathwayAnalysisRepository,

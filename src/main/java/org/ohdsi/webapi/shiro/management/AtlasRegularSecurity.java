@@ -326,11 +326,11 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         }
 
         if (this.openidAuthEnabled) {
-            OidcConfiguration configuration = oidcConfCreator.build();
+        	OidcConfiguration configuration = oidcConfCreator.build();
             if (StringUtils.isNotBlank(configuration.getClientId())) {
                 // https://www.pac4j.org/4.0.x/docs/clients/openid-connect.html
                 // OidcClient allows indirect login through UI with code flow            
-                OidcClient oidcClient = new OidcClient(configuration);
+            	OidcClient oidcClient = new OidcClient(configuration);
                 oidcClient.setCallbackUrl(oauthApiCallback);
                 oidcClient.setCallbackUrlResolver(urlResolver);
                 clients.add(oidcClient);
@@ -385,7 +385,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
                 oidcDirectFilter.setClients("HeaderClient");
                 filters.put(OIDC_DIRECT_AUTH, (Filter) oidcDirectFilter);
             }
-
+            
             CallbackFilter callbackFilter = new CallbackFilter();
             callbackFilter.setConfig(cfg);
             filters.put(OAUTH_CALLBACK, (Filter) callbackFilter);
@@ -630,9 +630,8 @@ public class AtlasRegularSecurity extends AtlasSecurity {
                         + URLEncoder.encode(casCallbackUrl, StandardCharsets.UTF_8.name());
             }
             casConf.setLoginUrl(casLoginUrlString);
-
-            Cas20ServiceTicketValidator cas20Validator = new Cas20ServiceTicketValidator(casServerUrl);
-            casConf.setDefaultTicketValidator((TicketValidator) cas20Validator);
+            org.apereo.cas.client.validation.Cas20ServiceTicketValidator stv = new org.apereo.cas.client.validation.Cas20ServiceTicketValidator(casServerUrl);
+            casConf.setDefaultTicketValidator(stv);
 
             CasClient casClient = new CasClient(casConf);
             Config casCfg = new Config(new Clients(casCallbackUrl, casClient));
@@ -648,7 +647,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
             /**
              * CAS callback filter
              */
-            CasHandleFilter casHandleFilter = new CasHandleFilter(cas20Validator, casCallbackUrl, casticket);
+            CasHandleFilter casHandleFilter = new CasHandleFilter(stv, casCallbackUrl, casticket);
             filters.put(HANDLE_CAS, casHandleFilter);
 
         } catch (UnsupportedEncodingException e) {

@@ -90,10 +90,12 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
 
     private final String EXEC_SCRIPT = ResourceHelper.GetResourceAsString("/resources/estimation/r/runAnalysis.R");
 
-    private final EntityGraph DEFAULT_ENTITY_GRAPH = DynamicEntityGraph.loading().addPath("source", "analysisExecution.resultFiles").build();
+    private final EntityGraph DEFAULT_ENTITY_GRAPH = DynamicEntityGraph.loading().addPath("source").addPath("analysisExecution.resultFiles").build();
 
     private final EntityGraph COMMONS_ENTITY_GRAPH = DynamicEntityGraph.loading().addPath(
-            "createdBy",
+            "createdBy"//,
+            //"modifiedBy"
+    ).addPath(
             "modifiedBy"
     ).build();
 

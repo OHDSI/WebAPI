@@ -9,6 +9,7 @@
         <property name="logging.level.org.springframework.orm">${bundle:application:logging.level.org.springframework.orm}</property>  
         <property name="logging.level.org.springframework.jdbc">${bundle:application:logging.level.org.springframework.jdbc}</property>  
         <property name="logging.level.root">${bundle:application:logging.level.root}</property>  
+        <property name="logging.level.io.buji.pac4j">${bundle:application:logging.level.io.buji.pac4j}</property>
     </Properties>
     <Appenders>
         <RollingFile name="audit" fileName="${audit.trail.log.file}"
@@ -62,6 +63,9 @@
           <AppenderRef ref="Console" />
         </logger>
         <logger name="org.pac4j" level="${logging.level.org.pac4j:level:-info}" additivity="false">
+          <AppenderRef ref="Console" />
+        </logger>
+        <logger name="io.buji.pac4j" level="${logging.level.io.buji.pac4j}" additivity="false">
           <AppenderRef ref="Console" />
         </logger>
     </Loggers>

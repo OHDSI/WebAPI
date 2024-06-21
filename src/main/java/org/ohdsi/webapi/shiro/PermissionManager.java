@@ -19,6 +19,9 @@ import org.ohdsi.webapi.shiro.Entities.UserOrigin;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.Entities.UserRoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRoleRepository;
+import org.ohdsi.webapi.shiro.management.AtlasRegularSecurity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
@@ -39,6 +42,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Transactional
 public class PermissionManager {
 
+  private final Logger logger = LoggerFactory.getLogger(PermissionManager.class);
+    
   @Autowired
   private UserRepository userRepository;
 
@@ -303,6 +308,7 @@ public class PermissionManager {
     Set<PermissionEntity> permissions = new LinkedHashSet<>();
 
     for (RoleEntity role : roles) {
+    	
       permissions.addAll(this.getRolePermissions(role));
     }
 

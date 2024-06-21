@@ -20,7 +20,7 @@
     <hibernate.version>8.0.1.Final</hibernate.version>
     <postgresql.version>42.3.7</postgresql.version>
     <bouncycastle.version>1.69</bouncycastle.version>
-    <shiro.version>2.0.0</shiro.version>   <!-- MDACA Spring Boot 3 migration shiro.version>1.12.0</shiro.version -->
+    <shiro.version>2.0.1</shiro.version>   <!-- MDACA Spring Boot 3 migration shiro.version>1.12.0</shiro.version -->
     <dom4j.version>2.1.3</dom4j.version>
     <hydra.version>0.4.0</hydra.version>
     <featureExtraction.version>3.2.0</featureExtraction.version>
@@ -32,7 +32,7 @@
     <jersey.version>2.35</jersey.version>
     <SqlRender.version>1.16.1</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
-    <pac4j.version>6.0.2</pac4j.version>  <!-- pac4j.version>4.0.0</pac4j.version  MDACA Spring Boot 3 migration -->
+    <pac4j.version>6.0.3</pac4j.version>  <!-- pac4j.version>4.0.0</pac4j.version  MDACA Spring Boot 3 migration -->
     <jackson.version>2.14.3</jackson.version>  <!-- MDACA Spring Boot 3 migration jackson.version>2.12.7</jackson.version -->
     <start-class>org.ohdsi.webapi.WebApi</start-class>
     <skipUnitTests>false</skipUnitTests>
@@ -738,6 +738,12 @@
    <artifactId>jakarta.servlet-api</artifactId>
    <scope>provided</scope>
   </dependency>
+    <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>javax.servlet-api</artifactId>
+        <version>4.0.1</version>
+        <scope>provided</scope>
+    </dependency>
   <dependency>
    <groupId>org.ohdsi.sql</groupId>
    <artifactId>SqlRender</artifactId>
@@ -773,6 +779,16 @@
   <!-- It is overriding a transitive dependency from the dependency above -->
   <!-- After migrating to Spring Boot 2.x we should get rid of it -->
   <!-- It is currently inefficient as com.nimbusds:nimbus-jose-jwt has hard bounds [1.3.1,2.3] -->
+<dependency>
+    <groupId>com.nimbusds</groupId>
+    <artifactId>oauth2-oidc-sdk</artifactId>
+    <version>11.12</version> <!-- Update to the appropriate version -->
+</dependency>
+  <dependency>
+    <groupId>com.nimbusds</groupId>
+    <artifactId>nimbus-jose-jwt</artifactId>
+    <version>9.40</version>
+  </dependency>
   <dependency>
    <groupId>net.minidev</groupId>
    <artifactId>json-smart</artifactId>
@@ -997,21 +1013,27 @@
     <dependency>
       <groupId>io.buji</groupId>
       <artifactId>buji-pac4j</artifactId>
-      <version>8.1.0</version>
+      <version>9.0.1</version>
     </dependency>
     
-	<!-- MDACA Spring Boot 3 migration add -->
-    <!-- dependency>
-        <groupId>org.pac4j</groupId>
-        <artifactId>pac4j-jakartaee</artifactId>
-        <version>${pac4j.version}</version>
-    </dependency -->
 	<dependency>
 	    <groupId>org.pac4j</groupId>
 	    <artifactId>jakartaee-pac4j</artifactId>
 	    <version>8.0.1</version>
 	</dependency>
 	
+	<!-- MDACA Spring Boot 3 migration add   -->
+    <dependency>
+        <groupId>org.pac4j</groupId>
+        <artifactId>pac4j-jakartaee</artifactId>
+        <version>${pac4j.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
     <dependency>
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-core</artifactId>
@@ -1236,6 +1258,16 @@
     <dependency>
         <groupId>org.glassfish.jersey.inject</groupId>
         <artifactId>jersey-hk2</artifactId>
+    </dependency>
+    
+    <dependency>
+        <groupId>javax.xml.bind</groupId>
+        <artifactId>jaxb-api</artifactId>
+        <version>2.3.1</version>
+    </dependency>
+    <dependency>
+        <groupId>org.glassfish.jaxb</groupId>
+        <artifactId>jaxb-runtime</artifactId>
     </dependency>
     
     <dependency>

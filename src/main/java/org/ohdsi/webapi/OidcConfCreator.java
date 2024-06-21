@@ -19,7 +19,11 @@
 package org.ohdsi.webapi;
 
 import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.oauth2.sdk.auth.ClientAuthenticationMethod;
+
 import org.pac4j.oidc.config.OidcConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -55,11 +59,13 @@ public class OidcConfCreator {
         OidcConfiguration conf = new OidcConfiguration();
         conf.setClientId(clientId);
         conf.setSecret(apiSecret);
+        
         conf.setDiscoveryURI(url);
         conf.setLogoutUrl(logoutUrl);
         conf.setWithState(true);
         conf.setUseNonce(true);
-        
+        conf.setClientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
+
         if (customParams != null) {
             customParams.forEach(conf::addCustomParam);
         }

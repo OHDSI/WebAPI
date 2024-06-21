@@ -141,6 +141,7 @@ public class JobConfig extends DefaultBatchConfiguration {
         JobExplorerFactoryBean jobExplorerFactoryBean = new JobExplorerFactoryBean();
         jobExplorerFactoryBean.setDataSource(dataSource);
         jobExplorerFactoryBean.setTablePrefix(tablePrefix);
+        jobExplorerFactoryBean.setTransactionManager(getTransactionManager());
         try {
 			jobExplorerFactoryBean.afterPropertiesSet();
 		} catch (Exception e) {

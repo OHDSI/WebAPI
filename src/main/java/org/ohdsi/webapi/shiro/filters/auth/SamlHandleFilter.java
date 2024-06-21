@@ -60,7 +60,7 @@ public class SamlHandleFilter extends AtlasAuthFilter {
 
                 HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
                 HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
-                JEEContext context = new JEEContext(httpRequest, httpResponse);
+                //JEEContext context = new JEEContext(httpRequest, httpResponse);
                 SessionStore store = (SessionStore) new JEESessionStore();
                 
                 SAML2Client client;
@@ -69,10 +69,10 @@ public class SamlHandleFilter extends AtlasAuthFilter {
                 } else {
                     client = saml2Client;
                 }
-                SAML2Credentials credentials = (SAML2Credentials)client.getCredentials(new CallContext(context, store)).get();
-                SAML2Profile samlProfile = (SAML2Profile)client.getUserProfile(new CallContext(context, store), credentials).get();
+                //SAML2Credentials credentials = (SAML2Credentials)client.getCredentials(new CallContext(context, store)).get();
+                //SAML2Profile samlProfile = (SAML2Profile)client.getUserProfile(new CallContext(context, store), credentials).get();
 
-                token = new JwtAuthToken(samlProfile.getId());
+                token = null;//new JwtAuthToken(samlProfile.getId());
             }
         }
         return token;

@@ -20,7 +20,7 @@
     <hibernate.version>8.0.1.Final</hibernate.version>
     <postgresql.version>42.3.7</postgresql.version>
     <bouncycastle.version>1.69</bouncycastle.version>
-    <shiro.version>2.0.1</shiro.version>   <!-- MDACA Spring Boot 3 migration shiro.version>1.12.0</shiro.version -->
+	<shiro.version>2.0.1</shiro.version>   <!-- MDACA Spring Boot 3 migration scan 2 shiro.version>1.12.0</shiro.version -->
     <dom4j.version>2.1.3</dom4j.version>
     <hydra.version>0.4.0</hydra.version>
     <featureExtraction.version>3.2.0</featureExtraction.version>
@@ -836,6 +836,10 @@
      <groupId>log4j</groupId>
      <artifactId>log4j</artifactId>
     </exclusion>
+    <exclusion>
+     <groupId>commons-collections</groupId>   <!-- Spring Boot 3 migration security scan 2  -->
+     <artifactId>commons-collections</artifactId>
+    </exclusion>
    </exclusions>
   </dependency>
 
@@ -1381,7 +1385,7 @@
     <dependency>
       <groupId>com.opentable.components</groupId>
       <artifactId>otj-pg-embedded</artifactId>
-      <version>0.13.1</version>
+      <version>1.0.3</version>   <!-- MADACA Spring Boot 3 migration security scan 2  version>0.13.1</version -->
       <scope>test</scope>
     </dependency>
     <dependency>

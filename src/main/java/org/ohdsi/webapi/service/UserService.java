@@ -50,6 +50,7 @@ public class UserService {
     public String login;
     public String name;
     public List<Permission> permissions;
+    public Map<String, List<String>> permissionIdx;
 
     public User() {}
 
@@ -114,6 +115,7 @@ public class UserService {
     user.login = currentUser.getLogin();
     user.name = currentUser.getName();
     user.permissions = convertPermissions(permissions);
+    user.permissionIdx = authorizer.queryUserPermissions(currentUser.getLogin()).permissions;
 
     return user;
   }

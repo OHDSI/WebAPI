@@ -24,7 +24,8 @@
     <dom4j.version>2.1.3</dom4j.version>
     <hydra.version>0.4.0</hydra.version>
     <featureExtraction.version>3.2.0</featureExtraction.version>
-    <!-- MDACA Spring Boot 3 migration tomcatembed.version>8.5.87</tomcat.embed.version -->
+    <tomcat.version>11.0.0-M21</tomcat.version>
+    <tomcat.embed.version>11.0.0-M21</tomcat.embed.version>
 
     <commons-fileupload.version>1.5</commons-fileupload.version>
 
@@ -568,6 +569,32 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+      
+      <dependency>
+	    <groupId>org.apache.tomcat.embed</groupId>
+	    <artifactId>tomcat-embed-core</artifactId>
+	    <version>11.0.0-M21</version>
+	    <scope>provided</scope>
+	 </dependency>
+      <dependency>
+	    <groupId>org.apache.tomcat.embed</groupId>
+	    <artifactId>tomcat-embed-websocket</artifactId>
+	    <version>11.0.0-M21</version>
+	    <scope>provided</scope>
+	 </dependency>
+      <dependency>
+	    <groupId>org.apache.tomcat</groupId>
+	    <artifactId>tomcat-jdbc</artifactId>
+	    <version>11.0.0-M21</version>
+	    <scope>provided</scope>
+	 </dependency>
+      <dependency>
+	    <groupId>org.apache.tomcat</groupId>
+	    <artifactId>tomcat-juli</artifactId>
+	    <version>11.0.0-M21</version>
+	    <scope>provided</scope>
+	 </dependency>
+      
       <dependency>
         <groupId>com.amazon.redshift</groupId>
         <artifactId>redshift-jdbc42-no-awssdk</artifactId>
@@ -661,11 +688,12 @@
   <!-- We are intentionally overriding the Tomcat version from Spring Boot 1.5.22.RELEASE -->
   <!-- and assuming tomcat-jdbc.jar will be in the Tomcat installation folder (\apache-tomcat-8.5.xxx\lib). -->
   <!-- WebAPI.war.original should not contain overridden libraries -->
-  <!-- MDACA Spring Boot 3 migration dependency>
+  <!-- MDACA Spring Boot 3 migration dependency> -->
+  <dependency>
    <groupId>org.apache.tomcat.embed</groupId>
    <artifactId>tomcat-embed-el</artifactId>
    <version>${tomcat.embed.version}</version>
-  </dependency -->
+  </dependency>
 
   <!-- It is overriding a transitive dependency from the dependency above -->
   <!-- After migrating to Spring Boot 2.x we should get rid of it -->
@@ -678,16 +706,6 @@
    <groupId>org.springframework.boot</groupId>
    <artifactId>spring-boot-starter-jdbc</artifactId>
   </dependency>
-  <dependency>
-   <groupId>org.apache.tomcat</groupId>
-   <artifactId>tomcat-jdbc</artifactId>
-   <scope>provided</scope>
-  </dependency>
-  <!-- dependency Spring Boot 3 migration>
-   <groupId>org.apache.tomcat</groupId>
-   <artifactId>tomcat-juli</artifactId>
-   < Spring Boot 3 migration version>${tomcat.embed.version}</version -->
-  <!-- /dependency -->
   <dependency>
    <groupId>org.springframework.boot</groupId>
    <artifactId>spring-boot-starter-jersey</artifactId>
@@ -736,14 +754,21 @@
   <dependency>
    <groupId>jakarta.servlet</groupId>
    <artifactId>jakarta.servlet-api</artifactId>
+   <version>6.1.0</version>
    <scope>provided</scope>
   </dependency>
-    <dependency>
+<dependency>
+    <groupId>jakarta.platform</groupId>
+    <artifactId>jakarta.jakartaee-web-api</artifactId>
+    <version>9.1.0</version>
+    <scope>provided</scope>
+</dependency>
+    <!--<dependency>
         <groupId>javax.servlet</groupId>
         <artifactId>javax.servlet-api</artifactId>
         <version>4.0.1</version>
         <scope>provided</scope>
-    </dependency>
+    </dependency>-->
   <dependency>
    <groupId>org.ohdsi.sql</groupId>
    <artifactId>SqlRender</artifactId>
@@ -1018,6 +1043,12 @@
       <groupId>io.buji</groupId>
       <artifactId>buji-pac4j</artifactId>
       <version>9.0.1</version>
+      <exclusions>
+      	<exclusion>
+      		<groupId>org.pac4j</groupId>
+      		<artifactId>pac4j-javaee</artifactId>
+      	</exclusion>
+      </exclusions>
     </dependency>
     
 	<dependency>

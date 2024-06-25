@@ -100,7 +100,7 @@ public class PersonService extends AbstractDaoService {
         op.startDate = resultSet.getTimestamp("start_date");
         op.endDate = resultSet.getTimestamp("end_date");
         op.type = resultSet.getString("observation_period_type");
-        op.id = resultSet.getInt("observation_period_id");
+        op.id = resultSet.getLong("observation_period_id");
         
         profile.observationPeriods.add(op);
         return null;

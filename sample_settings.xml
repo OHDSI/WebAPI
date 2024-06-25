@@ -23,10 +23,10 @@
       <security.provider>AtlasRegularSecurity</security.provider>
       <security.token.expiration>43200</security.token.expiration>
       <security.origin>*</security.origin>
-      <security.ssl.enabled>true</security.ssl.enabled>
+      <security.ssl.enabled>false</security.ssl.enabled>
       <security.cors.enabled>true</security.cors.enabled>
-      <security.oauth.callback.ui>https://localhost:8443/Atlas/#/welcome</security.oauth.callback.ui>
-      <security.oauth.callback.api>https://localhost:8443/WebAPI/user/oauth/callback</security.oauth.callback.api>
+      <security.oauth.callback.ui>http://localhost:8443/Atlas/#/welcome</security.oauth.callback.ui>
+      <security.oauth.callback.api>http://localhost:8443/WebAPI/user/oauth/callback</security.oauth.callback.api>
       <security.oauth.google.apiKey></security.oauth.google.apiKey>
       <security.oauth.google.apiSecret></security.oauth.google.apiSecret>
       <security.oauth.facebook.apiKey></security.oauth.facebook.apiKey>

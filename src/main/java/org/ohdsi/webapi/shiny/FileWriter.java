@@ -38,7 +38,7 @@ public class FileWriter {
             }
             return file;
         } catch (IOException e) {
-            LOG.error("Failed to package Cohort Counts Shiny application", e);
+            LOG.error("Failed to package Shiny application", e);
             throw new InternalServerErrorException();
         }
     }

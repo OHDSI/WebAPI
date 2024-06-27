@@ -207,7 +207,7 @@ public class CohortCharacterizationShinyPackagingService implements ShinyPackagi
         CohortCharacterizationEntity cohortCharacterizationEntity = ccService.findById(cohortCharacterization.getId());
         ApplicationBrief applicationBrief = new ApplicationBrief();
         applicationBrief.setName(MessageFormat.format("cohort_characterization_analysis_{0}_{1}", generationId, sourceKey));
-        applicationBrief.setTitle(cohortCharacterizationEntity.getName());
+        applicationBrief.setTitle(String.format("%s (%s)", cohortCharacterizationEntity.getName(), sourceKey));
         applicationBrief.setDescription(cohortCharacterizationEntity.getDescription());
         return applicationBrief;
     }

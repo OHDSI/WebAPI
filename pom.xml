@@ -1956,6 +1956,22 @@
                   <finalName>shiny-cohortCharacterizations</finalName>
                 </configuration>
               </execution>
+              <execution>
+                <id>build-cohortPathways-archive</id>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+                <phase>generate-resources</phase>
+                <configuration>
+                  <appendAssemblyId>false</appendAssemblyId>
+                  <archiveBaseDirectory>${shiny.app.directory}</archiveBaseDirectory>
+                  <outputDirectory>${shiny.output.directory}</outputDirectory>
+                  <descriptors>
+                    <descriptor>src/main/assembly/shiny-cohortPathways.xml</descriptor>
+                  </descriptors>
+                  <finalName>shiny-cohortPathways</finalName>
+                </configuration>
+              </execution>
             </executions>
           </plugin>
         </plugins>

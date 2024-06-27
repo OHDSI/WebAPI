@@ -89,7 +89,7 @@ public class CohortCountsShinyPackagingService implements ShinyPackagingService 
         CohortDefinition cohort = cohortDefinitionRepository.findOne(cohortId);
         ApplicationBrief brief = new ApplicationBrief();
         brief.setName(MessageFormat.format("cohort_{0}_{1}", cohort.getId(), sourceKey));
-        brief.setTitle(cohort.getName());
+        brief.setTitle(String.format("%s (%s)", cohort.getName(), sourceKey));
         brief.setDescription(cohort.getDescription());
         return brief;
     }

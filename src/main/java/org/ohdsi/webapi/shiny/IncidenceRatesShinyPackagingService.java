@@ -131,7 +131,7 @@ public class IncidenceRatesShinyPackagingService implements ShinyPackagingServic
         IncidenceRateAnalysis analysis = incidenceRateAnalysisRepository.findOne(analysisId);
         ApplicationBrief applicationBrief = new ApplicationBrief();
         applicationBrief.setName(MessageFormat.format("incidence_rates_analysis_{0}_{1}", analysisId, sourceKey));
-        applicationBrief.setTitle(analysis.getName());
+        applicationBrief.setTitle(String.format("%s (%s)", analysis.getName(), sourceKey));
         applicationBrief.setDescription(analysis.getDescription());
         return applicationBrief;
     }

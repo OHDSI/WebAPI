@@ -25,7 +25,7 @@ public class FileWriter {
             writer.accept(printWriter);
             return path;
         } catch (IOException e) {
-            LOG.error("Filed to write file", e);
+            LOG.error("Failed to write file", e);
             throw new InternalServerErrorException();
         }
     }

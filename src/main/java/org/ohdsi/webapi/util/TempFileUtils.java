@@ -2,9 +2,12 @@ package org.ohdsi.webapi.util;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.springframework.core.NestedIOException;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Function;
@@ -15,7 +18,10 @@ public class TempFileUtils {
 
     File tempFile = File.createTempFile(prefix, suffix);
     try(InputStream in = TempFileUtils.class.getResourceAsStream(resource)) {
-      try(OutputStream out = new FileOutputStream(tempFile)) {
+      try(OutputStream out = Files.newOutputStream(tempFile.toPath())) {
+        if(in == null) {
+          throw new IOException("File not found: " + resource);
+        }
         IOUtils.copy(in, out);
       }
     }

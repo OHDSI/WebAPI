@@ -1524,10 +1524,8 @@
     "dpcTooltip": "Descendant Person Count",
     "conceptID": "概念 ID",
     "searchData": "搜索数据",
-    "relatedConcepts":"相关概念",
-    "conceptHierarchy": "概念层次结构",
-    "conceptSetData": "概念集数据",
-    "conceptData": "概念数据"
+    "createdBy": "由...制作",
+    "createdDate": "创建日期"
   },
   "dataSources": {
     "const": {

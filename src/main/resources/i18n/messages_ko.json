@@ -1524,10 +1524,8 @@
     "dpcTooltip": "Descendant Person Count",
     "conceptID": "개념 ID",
     "searchData": "데이터 검색",
-    "relatedConcepts": "관련 개념",
-    "conceptHierarchy": "개념 계층 구조",
-    "conceptSetData": "ConceptSet 데이터",
-    "conceptData": "개념 데이터"
+    "createdBy": "만든 사람",
+    "createdDate": "생성 날짜"
   },
   "dataSources": {
     "const": {

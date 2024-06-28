@@ -1524,10 +1524,8 @@
     "validEndDate": "Действительная дата конца",
     "conceptID": "Идентификатор концепции",
     "searchData": "Данные поиска",
-    "relatedConcepts": "Родственное понятие",
-    "conceptHierarchy": "Иерархия понятий",
-    "conceptSetData": "Данные ConceptSet",
-    "conceptData": "Концептуальные данные"
+    "createdBy": "Автор",
+    "createdDate": "Дата создания"
   },
   "dataSources": {
     "headingTitle": "Источники данных",

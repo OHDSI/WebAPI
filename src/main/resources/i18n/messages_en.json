@@ -1528,10 +1528,8 @@
     "dpcTooltip": "Descendant Person Count",
     "conceptID": "Concept Id",
     "searchData": "Search Data",
-    "relatedConcepts": "Related Concept",
-    "conceptHierarchy": "Concept Hierarchy",
-    "conceptSetData": "ConceptSet Data",
-    "conceptData": "Concept Data"
+    "createdBy": "Created By",
+    "createdDate": "Created Date"
   },
   "dataSources": {
     "const": {
@@ -2457,7 +2455,8 @@
     "alerts": {
       "clearLocalCache": "Local Storage has been cleared. Please refresh the page to reload configuration information.",
       "clearServerCache": "Server cache has been cleared.",
-      "failUpdatePrioritySourceDaimon": "Failed to update priority source daimon"
+      "failUpdatePrioritySourceDaimon": "Failed to update priority source daimon",
+      "failUpdateCurrentVocabVersion": "Failed to update current vocabulary version"
     },
     "buttons": {
       "check": "check",

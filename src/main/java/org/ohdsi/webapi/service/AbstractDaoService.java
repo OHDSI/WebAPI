@@ -20,7 +20,7 @@ import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetComparison;
 import org.ohdsi.webapi.conceptset.ConceptSetItemRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetRepository;
-import org.ohdsi.webapi.conceptset.metadata.ConceptSetMetaDataRepository;
+import org.ohdsi.webapi.conceptset.annotation.ConceptSetAnnotationRepository;
 import org.ohdsi.webapi.exception.BadRequestAtlasException;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
 import org.ohdsi.webapi.model.CommonEntity;
@@ -108,7 +108,7 @@ public abstract class AbstractDaoService extends AbstractAdminService {
   private ConceptSetItemRepository conceptSetItemRepository;
 
   @Autowired
-  private ConceptSetMetaDataRepository conceptSetMetaDataRepository;
+  private ConceptSetAnnotationRepository conceptSetAnnotationRepository;
 
   @Autowired
   protected Security security;
@@ -124,8 +124,8 @@ public abstract class AbstractDaoService extends AbstractAdminService {
   public ConceptSetItemRepository getConceptSetItemRepository() {
     return conceptSetItemRepository;
   }
-  public ConceptSetMetaDataRepository getConceptSetMetaDataRepository() {
-    return conceptSetMetaDataRepository;
+  public ConceptSetAnnotationRepository getConceptSetAnnotationRepository() {
+    return conceptSetAnnotationRepository;
   }
   
   @Autowired 

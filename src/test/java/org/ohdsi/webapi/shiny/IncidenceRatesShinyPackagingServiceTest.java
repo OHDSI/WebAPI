@@ -50,7 +50,7 @@ public class IncidenceRatesShinyPackagingServiceTest {
         when(repository.findOne(analysisId)).thenReturn(incidenceRateAnalysis);
         ApplicationBrief brief = sut.getBrief(analysisId, sourceKey);
         assertEquals(brief.getName(), "incidence_rates_analysis_" + analysisId + "_" + sourceKey);
-        assertEquals(brief.getTitle(), "Analysis Name (sourceKey)");
+        assertEquals(brief.getTitle(), "Incidence_1_sourceKey");
         assertEquals(brief.getDescription(), incidenceRateAnalysis.getDescription());
     }
 

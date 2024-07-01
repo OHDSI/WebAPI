@@ -3,7 +3,6 @@ package org.ohdsi.webapi.shiny;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.odysseusinc.arachne.commons.api.v1.dto.CommonAnalysisType;
-import com.odysseusinc.arachne.commons.utils.CommonFilenameUtils;
 import com.odysseusinc.arachne.execution_engine_common.util.CommonFileUtils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -31,9 +30,6 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -46,7 +42,7 @@ public class IncidenceRatesShinyPackagingService implements ShinyPackagingServic
     private static final String SHINY_INCIDENCE_RATES_APP_PATH = "/shiny/shiny-incidenceRates.zip";
     private static final String COHORT_TYPE_TARGET = "target";
     private static final String COHORT_TYPE_OUTCOME = "outcome";
-
+    private static final String APP_NAME_FORMAT = "Incidence_%s_%s";
 
     @Autowired
     private FileWriter fileWriter;
@@ -70,10 +66,10 @@ public class IncidenceRatesShinyPackagingService implements ShinyPackagingServic
     }
 
     @Override
-    public TemporaryFile packageApp(Integer analysisId, String sourceKey, PackagingStrategy packaging) {
+    public TemporaryFile packageApp(Integer generationId, String sourceKey, PackagingStrategy packaging) {
         return TempFileUtils.doInDirectory(path -> {
-            IncidenceRateAnalysis analysis = incidenceRateAnalysisRepository.findOne(analysisId);
-            ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format("There is no incidence rate analysis with id = %d.", analysisId));
+            IncidenceRateAnalysis analysis = incidenceRateAnalysisRepository.findOne(generationId);
+            ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format("There is no incidence rate analysis with id = %d.", generationId));
             try {
                 File templateArchive = TempFileUtils.copyResourceToTempFile(SHINY_INCIDENCE_RATES_APP_PATH, "shiny", ".zip");
                 CommonFileUtils.unzipFiles(templateArchive, path.toFile());
@@ -88,13 +84,13 @@ public class IncidenceRatesShinyPackagingService implements ShinyPackagingServic
                         analysis.getDetails().getExpression(), IncidenceRateAnalysisExportExpression.class);
                 String csvWithCohortDetails = prepareCsvWithCohorts(expression);
 
-                Stream<Path> analysisReportPaths = streamAnalysisReportsForAllCohortCombinations(expression, analysisId, sourceKey)
+                Stream<Path> analysisReportPaths = streamAnalysisReportsForAllCohortCombinations(expression, generationId, sourceKey)
                         .map(analysisReport -> fileWriter.writeObjectAsJsonFile(dataDir, analysisReport, String.format(
                                 "%s_targetId%s_outcomeId%s.json", sourceKey, analysisReport.summary.targetId, analysisReport.summary.outcomeId)));
 
                 Stream<Path> additionalMetadataFilesPaths = Stream.of(
                         fileWriter.writeTextFile(dataDir.resolve("cohorts.csv"), pw -> pw.print(csvWithCohortDetails)),
-                        fileWriter.writeTextFile(dataDir.resolve("atlas_link.txt"), pw -> pw.printf("%s/#/iranalysis/%s", atlasUrl, analysisId)),
+                        fileWriter.writeTextFile(dataDir.resolve("atlas_link.txt"), pw -> pw.printf("%s/#/iranalysis/%s", atlasUrl, generationId)),
                         fileWriter.writeTextFile(dataDir.resolve("repo_link.txt"), pw -> pw.print(repoLink)),
                         fileWriter.writeTextFile(dataDir.resolve("datasource.txt"), pw -> pw.print(sourceKey))
                 );
@@ -104,8 +100,7 @@ public class IncidenceRatesShinyPackagingService implements ShinyPackagingServic
 
                 fileWriter.writeJsonNodeToFile(manifest, manifestPath);
                 Path appArchive = packaging.apply(path);
-                return new TemporaryFile(String.format("%s_%s_%s.zip", sourceKey, new SimpleDateFormat("yyyy_MM_dd").format(Date.from(Instant.now())),
-                        CommonFilenameUtils.sanitizeFilename(analysis.getName())), appArchive);
+                return new TemporaryFile(String.format("%s.zip", prepareAppTitle(generationId, sourceKey)), appArchive);
             } catch (IOException e) {
                 LOG.error("Failed to prepare Shiny application", e);
                 throw new InternalServerErrorException();
@@ -127,11 +122,11 @@ public class IncidenceRatesShinyPackagingService implements ShinyPackagingServic
     }
 
     @Override
-    public ApplicationBrief getBrief(Integer analysisId, String sourceKey) {
-        IncidenceRateAnalysis analysis = incidenceRateAnalysisRepository.findOne(analysisId);
+    public ApplicationBrief getBrief(Integer generationId, String sourceKey) {
+        IncidenceRateAnalysis analysis = incidenceRateAnalysisRepository.findOne(generationId);
         ApplicationBrief applicationBrief = new ApplicationBrief();
-        applicationBrief.setName(MessageFormat.format("incidence_rates_analysis_{0}_{1}", analysisId, sourceKey));
-        applicationBrief.setTitle(String.format("%s (%s)", analysis.getName(), sourceKey));
+        applicationBrief.setName(MessageFormat.format("incidence_rates_analysis_{0}_{1}", generationId, sourceKey));
+        applicationBrief.setTitle(prepareAppTitle(generationId, sourceKey));
         applicationBrief.setDescription(analysis.getDescription());
         return applicationBrief;
     }
@@ -159,5 +154,9 @@ public class IncidenceRatesShinyPackagingService implements ShinyPackagingServic
             LOG.error("Failed to create a CSV file with Cohort details", e);
             throw new InternalServerErrorException();
         }
+    }
+
+    private String prepareAppTitle(Integer generationId, String sourceKey) {
+        return String.format(APP_NAME_FORMAT, generationId, sourceKey);
     }
 }

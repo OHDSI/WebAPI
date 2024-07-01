@@ -139,8 +139,8 @@ public class PositConnectClient implements InitializingBean {
     public void afterPropertiesSet() throws Exception {
         if (properties != null) {
             if (StringUtils.isBlank(properties.getApiKey())) {
-                log.error("Set Posit Connect API Key to property \"shiny.connect.api_key\"");
-                throw new BeanInitializationException("Set Posit Connect API Key to property \"shiny.connect.api_key\"");
+                log.error("Set Posit Connect API Key to property \"shiny.connect.api.key\"");
+                throw new BeanInitializationException("Set Posit Connect API Key to property \"shiny.connect.api.key\"");
             }
             if (StringUtils.isBlank(properties.getUrl())) {
                 log.error("Set Posit Connect URL to property \"shiny.connect.url\"");

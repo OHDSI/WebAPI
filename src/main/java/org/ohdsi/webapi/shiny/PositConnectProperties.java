@@ -1,9 +1,11 @@
 package org.ohdsi.webapi.shiny;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "shiny.connect")
 public class PositConnectProperties {
+    @Value("${shiny.connect.api.key}")
     private String apiKey;
     private String url;
 

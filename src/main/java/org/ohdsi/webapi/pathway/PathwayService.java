@@ -14,6 +14,7 @@ import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -69,4 +70,7 @@ public interface PathwayService extends HasTags<Integer> {
     PathwayVersion saveVersion(int id);
 
     List<PathwayAnalysisDTO> listByTags(TagNameListRequestDTO requestDTO);
+
+    @Transactional
+    PathwayAnalysisDTO getByGenerationId(Integer id);
 }

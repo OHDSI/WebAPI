@@ -1897,6 +1897,8 @@
                   <directory>${shiny.output.directory}</directory>
                   <includes>
                     <include>shiny-cohortCounts.zip</include>
+                    <include>shiny-incidenceRates.zip</include>
+                    <include>shiny-cohortCharacterizations.zip</include>
                   </includes>
                 </fileset>
               </filesets>
@@ -1921,6 +1923,54 @@
                     <descriptor>src/main/assembly/shiny-cohortCounts.xml</descriptor>
                   </descriptors>
                   <finalName>shiny-cohortCounts</finalName>
+                </configuration>
+              </execution>
+              <execution>
+                <id>build-incidenceRates-archive</id>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+                <phase>generate-resources</phase>
+                <configuration>
+                  <appendAssemblyId>false</appendAssemblyId>
+                  <archiveBaseDirectory>${shiny.app.directory}</archiveBaseDirectory>
+                  <outputDirectory>${shiny.output.directory}</outputDirectory>
+                  <descriptors>
+                    <descriptor>src/main/assembly/shiny-incidenceRates.xml</descriptor>
+                  </descriptors>
+                  <finalName>shiny-incidenceRates</finalName>
+                </configuration>
+              </execution>
+              <execution>
+                <id>build-cohortCharacterizations-archive</id>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+                <phase>generate-resources</phase>
+                <configuration>
+                  <appendAssemblyId>false</appendAssemblyId>
+                  <archiveBaseDirectory>${shiny.app.directory}</archiveBaseDirectory>
+                  <outputDirectory>${shiny.output.directory}</outputDirectory>
+                  <descriptors>
+                    <descriptor>src/main/assembly/shiny-cohortCharacterizations.xml</descriptor>
+                  </descriptors>
+                  <finalName>shiny-cohortCharacterizations</finalName>
+                </configuration>
+              </execution>
+              <execution>
+                <id>build-cohortPathways-archive</id>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+                <phase>generate-resources</phase>
+                <configuration>
+                  <appendAssemblyId>false</appendAssemblyId>
+                  <archiveBaseDirectory>${shiny.app.directory}</archiveBaseDirectory>
+                  <outputDirectory>${shiny.output.directory}</outputDirectory>
+                  <descriptors>
+                    <descriptor>src/main/assembly/shiny-cohortPathways.xml</descriptor>
+                  </descriptors>
+                  <finalName>shiny-cohortPathways</finalName>
                 </configuration>
               </execution>
             </executions>

@@ -3,7 +3,6 @@ package org.ohdsi.webapi.shiny;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Iterables;
 import com.odysseusinc.arachne.commons.api.v1.dto.CommonAnalysisType;
-import com.odysseusinc.arachne.commons.utils.CommonFilenameUtils;
 import com.odysseusinc.arachne.execution_engine_common.util.CommonFileUtils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -37,11 +36,7 @@ import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -52,6 +47,7 @@ public class CohortCharacterizationShinyPackagingService implements ShinyPackagi
     private static final Logger LOG = LoggerFactory.getLogger(CohortCharacterizationShinyPackagingService.class);
     private static final Float DEFAULT_THRESHOLD_VALUE = 0.01f;
     private static final String SHINY_COHORT_CHARACTERIZATIONS_APP_PATH = "/shiny/shiny-cohortCharacterizations.zip";
+    private static final String APP_NAME_FORMAT = "Characterization_%s_gv%s_%s";
     @Value("${shiny.atlas.url}")
     private String atlasUrl;
     @Autowired
@@ -100,8 +96,7 @@ public class CohortCharacterizationShinyPackagingService implements ShinyPackagi
 
                 fileWriter.writeJsonNodeToFile(manifest, manifestPath);
                 Path appArchive = packaging.apply(path);
-                return new TemporaryFile(String.format("%s_%s_%s.zip", sourceKey, new SimpleDateFormat("yyyy_MM_dd").format(Date.from(Instant.now())),
-                        CommonFilenameUtils.sanitizeFilename(cohortCharacterization.getName())), appArchive);
+                return new TemporaryFile(String.format("%s.zip", prepareAppTitle(cohortCharacterization.getId(), generationId, sourceKey)), appArchive);
             } catch (IOException e) {
                 LOG.error("Failed to prepare Shiny application", e);
                 throw new InternalServerErrorException();
@@ -207,8 +202,12 @@ public class CohortCharacterizationShinyPackagingService implements ShinyPackagi
         CohortCharacterizationEntity cohortCharacterizationEntity = ccService.findById(cohortCharacterization.getId());
         ApplicationBrief applicationBrief = new ApplicationBrief();
         applicationBrief.setName(MessageFormat.format("cohort_characterization_analysis_{0}_{1}", generationId, sourceKey));
-        applicationBrief.setTitle(String.format("%s (%s)", cohortCharacterizationEntity.getName(), sourceKey));
+        applicationBrief.setTitle(prepareAppTitle(cohortCharacterization.getId(), generationId, sourceKey));
         applicationBrief.setDescription(cohortCharacterizationEntity.getDescription());
         return applicationBrief;
+    }
+
+    private String prepareAppTitle(Long studyAssetId, Integer generationId, String sourceKey) {
+        return String.format(APP_NAME_FORMAT, studyAssetId, generationId, sourceKey);
     }
 }

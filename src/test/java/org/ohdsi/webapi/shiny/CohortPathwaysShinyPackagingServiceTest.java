@@ -40,7 +40,7 @@ public class CohortPathwaysShinyPackagingServiceTest {
 
         ApplicationBrief brief = sut.getBrief(GENERATION_ID, SOURCE_KEY);
         assertEquals(brief.getName(), "cohort_pathways_analysis_" + GENERATION_ID + "_" + SOURCE_KEY);
-        assertEquals(brief.getTitle(), "pathwayAnalysis (SynPuf110k)");
+        assertEquals(brief.getTitle(), "Pathway_8_gv1_SynPuf110k");
         assertEquals(brief.getDescription(), "desc");
     }
 
@@ -65,6 +65,7 @@ public class CohortPathwaysShinyPackagingServiceTest {
 
     private PathwayAnalysisDTO createPathwayAnalysisDTO() {
         PathwayAnalysisDTO pathwayAnalysisDTO = new PathwayAnalysisDTO();
+        pathwayAnalysisDTO.setId(8);
         pathwayAnalysisDTO.setName("pathwayAnalysis");
         pathwayAnalysisDTO.setDescription("desc");
         return pathwayAnalysisDTO;

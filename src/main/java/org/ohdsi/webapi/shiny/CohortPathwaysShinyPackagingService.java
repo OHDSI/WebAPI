@@ -30,6 +30,7 @@ public class CohortPathwaysShinyPackagingService implements ShinyPackagingServic
     private static final Logger log = LoggerFactory.getLogger(CohortPathwaysShinyPackagingService.class);
     private static final String SHINY_COHORT_PATHWAYS = "/shiny/shiny-cohortPathways.zip";
 
+    private static final String APP_NAME_FORMAT = "Pathway_%s_gv%s_%s";
     @Autowired
     private PathwayService pathwayService;
     @Autowired
@@ -67,7 +68,7 @@ public class CohortPathwaysShinyPackagingService implements ShinyPackagingServic
                 ).forEach(manifestUtils.addDataToManifest(manifest, path));
                 fileWriter.writeJsonNodeToFile(manifest, manifestPath);
                 Path appArchive = packaging.apply(path);
-                return new TemporaryFile(String.format("CohortPathways_%s_%s.zip", generationId, sourceKey), appArchive);
+                return new TemporaryFile(String.format("%s.zip", prepareAppTitle(pathwayAnalysis.getId(), generationId, sourceKey)), appArchive);
             } catch (IOException e) {
                 log.error("Failed to prepare Shiny application", e);
                 throw new InternalServerErrorException();
@@ -80,8 +81,12 @@ public class CohortPathwaysShinyPackagingService implements ShinyPackagingServic
         PathwayAnalysisDTO pathwayAnalysis = pathwayService.getByGenerationId(generationId);
         ApplicationBrief applicationBrief = new ApplicationBrief();
         applicationBrief.setName(MessageFormat.format("cohort_pathways_analysis_{0}_{1}", generationId, sourceKey));
-        applicationBrief.setTitle(String.format("%s (%s)", pathwayAnalysis.getName(), sourceKey));
+        applicationBrief.setTitle(prepareAppTitle(pathwayAnalysis.getId(), generationId, sourceKey));
         applicationBrief.setDescription(pathwayAnalysis.getDescription());
         return applicationBrief;
+    }
+
+    private String prepareAppTitle(Integer studyAssetId, Integer generationId, String sourceKey) {
+        return String.format(APP_NAME_FORMAT, studyAssetId, generationId, sourceKey);
     }
 }

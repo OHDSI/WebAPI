@@ -103,6 +103,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
               .orElse(new CohortGenerationInfo(cohortDefinition, source.getSourceId()));
 
       info.setCreatedBy(userEntity);
+      info.setIsChooseDemographic(demographicStat);
 
       cohortDefinition.getGenerationInfoList().add(info);
 
@@ -218,7 +219,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
           Boolean demographic) {
       final JobParametersBuilder jobParametersBuilder = getJobParametersBuilder(source, cohortDefinition);
 
-      if (demographic != null && demographic.booleanValue()) {
+      if (demographic != null && demographic) {
          jobParametersBuilder.addString(DEMOGRAPHIC_STATS, Boolean.TRUE.toString());
          Job job = buildJobForCohortGenerationWithDemographic(cohortDefinition, source, jobParametersBuilder);
          return jobService.runJob(job, jobParametersBuilder.toJobParameters());      } else {

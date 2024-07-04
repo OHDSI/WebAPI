@@ -1,0 +1,1 @@
+ALTER TABLE ${ohdsiSchema}.cohort_generation_info ADD is_choose_covariates BOOLEAN NOT NULL DEFAULT FALSE;

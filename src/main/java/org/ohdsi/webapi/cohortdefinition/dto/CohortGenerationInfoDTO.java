@@ -45,6 +45,8 @@ public class CohortGenerationInfoDTO {
 
     private UserDTO createdBy;
 
+    private boolean isChooseCovariates;
+
     public CohortGenerationInfoId getId() {
         return id;
     }
@@ -123,5 +125,13 @@ public class CohortGenerationInfoDTO {
 
     public void setCreatedBy(UserDTO createdBy) {
         this.createdBy = createdBy;
+    }
+
+    public boolean isChooseCovariates() {
+        return isChooseCovariates;
+    }
+
+    public void setChooseCovariates(boolean chooseCovariates) {
+        isChooseCovariates = chooseCovariates;
     }
 }

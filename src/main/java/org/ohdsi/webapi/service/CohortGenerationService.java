@@ -11,7 +11,6 @@ import org.ohdsi.webapi.generationcache.GenerationCacheHelper;
 import org.ohdsi.webapi.job.GeneratesNotification;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
-import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.SessionUtils;
@@ -38,10 +37,10 @@ import static org.ohdsi.webapi.Constants.GENERATE_COHORT;
 import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
 import static org.ohdsi.webapi.Constants.Params.GENERATE_STATS;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
+import static org.ohdsi.webapi.Constants.Params.RETAIN_COHORT_COVARIATES;
 import static org.ohdsi.webapi.Constants.Params.SESSION_ID;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
 import static org.ohdsi.webapi.Constants.Params.TARGET_DATABASE_SCHEMA;
-import static org.ohdsi.webapi.Constants.Params.RETAIN_COHORT_COVARIATES;
 
 @Component
 @DependsOn("flyway")
@@ -79,6 +78,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
             .orElse(new CohortGenerationInfo(cohortDefinition, source.getSourceId()));
 
     info.setCreatedBy(userEntity);
+    info.setChooseCovariates(retainCohortCovariates);
 
     cohortDefinition.getGenerationInfoList().add(info);
 

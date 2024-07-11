@@ -113,7 +113,11 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
               .setStartTime(Calendar.getInstance().getTime());
 
       cohortDefinitionRepository.save(cohortDefinition);
-
+      // the line below is essential to access the Cohort definition details in GenerateLocalCohortTasklet.generateCohort
+      // and avoid org.hibernate.LazyInitializationException: 
+      // could not initialize proxy [org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails#38] - no Session
+      // the workaround doesn't look pure in the same time refactoring doesn't look minor 
+      // as a lot of components are instantiated by the new operator
       cohortDefinition.getDetails().getExpression();
       return runGenerateCohortJobDemoGraphic(cohortDefinition, source, demographicStat, retainCohortCovariates);
   }

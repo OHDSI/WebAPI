@@ -105,6 +105,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
               .orElse(new CohortGenerationInfo(cohortDefinition, source.getSourceId()));
 
       info.setCreatedBy(userEntity);
+      info.setIsChooseDemographic(demographicStat);
 
       cohortDefinition.getGenerationInfoList().add(info);
 
@@ -112,7 +113,11 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
               .setStartTime(Calendar.getInstance().getTime());
 
       cohortDefinitionRepository.save(cohortDefinition);
-
+      // the line below is essential to access the Cohort definition details in GenerateLocalCohortTasklet.generateCohort
+      // and avoid org.hibernate.LazyInitializationException: 
+      // could not initialize proxy [org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails#38] - no Session
+      // the workaround doesn't look pure in the same time refactoring doesn't look minor 
+      // as a lot of components are instantiated by the new operator
       cohortDefinition.getDetails().getExpression();
       return runGenerateCohortJobDemoGraphic(cohortDefinition, source, demographicStat, retainCohortCovariates);
   }
@@ -208,7 +213,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
   }
   private JobExecutionResource runGenerateCohortJobDemoGraphic(CohortDefinition cohortDefinition, Source source, Boolean demographic, Boolean retainCohortCovariates) {
       final JobParametersBuilder jobParametersBuilder = getJobParametersBuilder(source, cohortDefinition, retainCohortCovariates);
-      if (demographic != null && demographic.booleanValue()) {
+      if (demographic != null && demographic) {
          jobParametersBuilder.addString(DEMOGRAPHIC_STATS, Boolean.TRUE.toString());
          Job job = buildJobForCohortGenerationWithDemographic(cohortDefinition, source, jobParametersBuilder);
          return jobService.runJob(job, jobParametersBuilder.toJobParameters());

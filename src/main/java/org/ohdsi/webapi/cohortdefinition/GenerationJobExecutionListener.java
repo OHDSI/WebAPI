@@ -88,9 +88,7 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 			CohortGenerationInfo info = findBySourceId(df, sourceId);
 			setExecutionDurationIfPossible(je, info);
 			info.setStatus(GenerationStatus.COMPLETE);
-			info.setCcGenerateId(je.getId());
-			info.setIsChooseDemographic(info.getCcGenerateId() != null);
-
+            info.setCcGenerateId(je.getId());
 			if (je.getStatus() == BatchStatus.FAILED || je.getStatus() == BatchStatus.STOPPED) {
 				info.setIsValid(false);
 				info.setRecordCount(null);

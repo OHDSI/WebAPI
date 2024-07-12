@@ -118,7 +118,15 @@ public class IncidenceRatesShinyPackagingService implements ShinyPackagingServic
 
     private Stream<AnalysisReport> streamAnalysisReportsForOneCohortCombination(Integer targetCohortId, List<CohortDTO> outcomeCohorts, Integer analysisId, String sourceKey) {
         return outcomeCohorts.stream()
-                .map(outcomeCohort -> irAnalysisResource.getAnalysisReport(analysisId, sourceKey, targetCohortId, outcomeCohort.getId()));
+                .map(outcomeCohort -> {
+                    AnalysisReport analysisReport = irAnalysisResource.getAnalysisReport(analysisId, sourceKey, targetCohortId, outcomeCohort.getId());
+                    if (analysisReport.summary == null) {
+                        analysisReport.summary = new AnalysisReport.Summary();
+                        analysisReport.summary.targetId = targetCohortId;
+                        analysisReport.summary.outcomeId = outcomeCohort.getId();
+                    }
+                    return analysisReport;
+                });
     }
 
     @Override

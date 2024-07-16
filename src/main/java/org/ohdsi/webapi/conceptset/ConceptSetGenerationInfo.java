@@ -21,7 +21,7 @@ import org.ohdsi.webapi.GenerationStatus;
  * @author Anthony Sena <https://github.com/ohdsi>
  */
 
-@Entity(name = "ConceptSetGenerationInfo")
+@Entity
 @Table(name = "concept_set_generation_info")
 @IdClass(ConceptSetGenerationInfoKey.class)
 public class ConceptSetGenerationInfo implements Serializable {

@@ -939,7 +939,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     }
 
     @DELETE
-    @Path("/{id}")
+    @Path("/annotation/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteConceptSetAnnotation(@PathParam("id") final int id) {
         ConceptSetAnnotation conceptSetAnnotation = getConceptSetAnnotationRepository().findById(id);

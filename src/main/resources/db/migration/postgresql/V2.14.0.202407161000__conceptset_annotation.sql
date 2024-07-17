@@ -20,7 +20,7 @@ CREATE TABLE ${ohdsiSchema}.concept_set_annotation
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description) VALUES
     (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'conceptset:*:annotation:put', 'Create Concept Set Annotation');
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description) VALUES
-    (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'conceptset:%s:annotation:delete', 'Delete Concept Set Annotation');
+    (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'conceptset:annotation:%s:delete', 'Delete Concept Set Annotation');
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description) VALUES
     (nextval('${ohdsiSchema}.sec_permission_id_seq'), 'conceptset:%s:annotation:get', 'List Concept Set Annotation');
 INSERT INTO ${ohdsiSchema}.sec_permission(id, value, description) VALUES
@@ -31,7 +31,7 @@ SELECT nextval('${ohdsiSchema}.sec_role_permission_sequence'), sr.id, sp.id
 FROM ${ohdsiSchema}.sec_permission SP, ${ohdsiSchema}.sec_role sr
 WHERE sp.value IN (
     'conceptset:*:annotation:put',
-    'conceptset:%s:annotation:delete',
+    'conceptset:annotation:%s:delete',
     'conceptset:%s:annotation:get',
     'conceptset:*:annotation:get'
     ) AND sr.name IN ('admin');

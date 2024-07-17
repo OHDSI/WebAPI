@@ -46,17 +46,10 @@ public class CohortGenerationInfoDTO {
     private UserDTO createdBy;
 
     private Long ccGenerateId;
+
     private boolean isChooseDemographic;
 
-    public boolean getIsChooseDemographic() {
-        return isChooseDemographic;
-    }
-
-    public void setIsChooseDemographic(boolean isChooseDemographic) {
-        this.isChooseDemographic = isChooseDemographic;
-    }
-
-
+    private boolean isChooseCovariates;
 
     public CohortGenerationInfoId getId() {
         return id;
@@ -138,11 +131,25 @@ public class CohortGenerationInfoDTO {
         this.createdBy = createdBy;
     }
 
+    public boolean getIsChooseDemographic() {
+        return isChooseDemographic;
+    }
+
+    public void setIsChooseDemographic(boolean isChooseDemographic) {
+        this.isChooseDemographic = isChooseDemographic;
+    }
     public Long getCcGenerateId() {
         return ccGenerateId;
     }
 
     public void setCcGenerateId(Long ccGenerateId) {
         this.ccGenerateId = ccGenerateId;
+    }
+    public boolean isChooseCovariates() {
+        return isChooseCovariates;
+    }
+
+    public void setChooseCovariates(boolean chooseCovariates) {
+        isChooseCovariates = chooseCovariates;
     }
 }

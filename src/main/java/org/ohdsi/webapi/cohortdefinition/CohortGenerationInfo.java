@@ -84,9 +84,12 @@ public class CohortGenerationInfo implements Serializable, IExecutionInfo {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_id")
   private UserEntity createdBy;
-  
+
   @Column(name = "cc_generate_id")
   private Long ccGenerateId;
+
+  @Column(name = "is_choose_covariates")
+  private boolean isChooseCovariates;
 
   // If true, then demographic has been selected.
   @Column(name = "is_choose_demographic")
@@ -209,5 +212,12 @@ public class CohortGenerationInfo implements Serializable, IExecutionInfo {
 
   public void setCcGenerateId(Long ccGenerateId) {
       this.ccGenerateId = ccGenerateId;
+  }
+  public boolean isChooseCovariates() {
+    return isChooseCovariates;
+  }
+
+  public void setChooseCovariates(boolean chooseCovariates) {
+    isChooseCovariates = chooseCovariates;
   }
 }

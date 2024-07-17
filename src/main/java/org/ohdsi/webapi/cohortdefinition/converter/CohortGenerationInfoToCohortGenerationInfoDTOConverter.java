@@ -24,7 +24,7 @@ public class CohortGenerationInfoToCohortGenerationInfoDTOConverter extends Base
         dto.setIsValid(info.isIsValid());
         dto.setCcGenerateId(info.getCcGenerateId());
         dto.setIsChooseDemographic(info.isChooseDemographic());
-
+        dto.setChooseCovariates(info.isChooseCovariates());
         return dto;
     }
 }

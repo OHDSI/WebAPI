@@ -12,7 +12,7 @@ public class ConceptSetAnnotationPermissionSchema extends EntityPermissionSchema
         {
             put("conceptset:*:annotation:put", "Create Concept Set Annotation");
             put("conceptset:update:*:annotation:put", "Update Concept Set Annotation");
-            put("conceptset:%s:annotation:delete", "Delete Concept Set Annotation with ID %s");
+            put("conceptset:annotation:%s:delete", "Delete Concept Set Annotation with ID %s");
         }
     };
 

@@ -29,7 +29,7 @@ import org.hibernate.annotations.Parameter;
  * @author fdefalco
  */
 
-@Entity(name = "ConceptSetItem")
+@Entity
 @Table(name="concept_set_item")
 public class ConceptSetItem implements Serializable{
   

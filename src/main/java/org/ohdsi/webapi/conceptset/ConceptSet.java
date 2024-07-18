@@ -26,6 +26,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
+import javax.persistence.OneToOne;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.webapi.model.CommonEntity;
@@ -36,7 +37,7 @@ import org.ohdsi.webapi.tag.domain.Tag;
  *
  * @author fdefalco
  */
-@Entity(name = "ConceptSet")
+@Entity
 @Table(name="concept_set")
 public class ConceptSet extends CommonEntityExt<Integer> implements Serializable {
   

@@ -16,6 +16,7 @@
 package org.ohdsi.webapi.service;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -24,6 +25,9 @@ import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
@@ -36,9 +40,13 @@ import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
 import org.ohdsi.webapi.conceptset.dto.ConceptSetVersionFullDTO;
+import org.ohdsi.webapi.conceptset.annotation.ConceptSetAnnotation;
 import org.ohdsi.webapi.exception.ConceptNotExistException;
 import org.ohdsi.webapi.security.PermissionService;
+import org.ohdsi.webapi.service.dto.AnnotationDetailsDTO;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
+import org.ohdsi.webapi.service.dto.ConceptSetAnnotationDTO;
+import org.ohdsi.webapi.service.dto.AnnotationDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
@@ -64,12 +72,12 @@ import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
 
- /**
-  * Provides REST services for working with
-  * concept sets.
-  * 
-  * @summary Concept Set
-  */
+/**
+ * Provides REST services for working with
+ * concept sets.
+ *
+ * @summary Concept Set
+ */
 @Component
 @Transactional
 @Path("/conceptset/")
@@ -105,14 +113,15 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Autowired
     private VersionService<ConceptSetVersion> versionService;
 
+
     @Value("${security.defaultGlobalReadPermissions}")
     private boolean defaultGlobalReadPermissions;
-    
+
     public static final String COPY_NAME = "copyName";
 
     /**
      * Get the concept set based in the identifier
-     * 
+     *
      * @summary Get concept set by ID
      * @param id The concept set ID
      * @return The concept set definition
@@ -128,7 +137,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 
     /**
      * Get the full list of concept sets in the WebAPI database
-     * 
+     *
      * @summary Get all concept sets
      * @return A list of all concept sets in the WebAPI database
      */
@@ -151,7 +160,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 
     /**
      * Get the concept set items for a selected concept set ID.
-     * 
+     *
      * @summary Get the concept set items
      * @param id The concept set identifier
      * @return A list of concept set items
@@ -165,7 +174,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 
     /**
      * Get the concept set expression for a selected version of the expression
-     * 
+     *
      * @summary Get concept set expression by version
      * @param id The concept set ID
      * @param version The version identifier
@@ -188,7 +197,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * source key. NOTE: This method requires the specification
      * of a source key but it does not appear to be used by the underlying
      * code.
-     * 
+     *
      * @summary Get concept set expression by version and source.
      * @param id The concept set identifier
      * @param version The version of the concept set
@@ -210,7 +219,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 
     /**
      * Get the concept set expression by identifier
-     * 
+     *
      * @summary Get concept set by ID
      * @param id The concept set identifier
      * @return The concept set expression
@@ -228,7 +237,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 
     /**
      * Get the concept set expression by identifier and source key
-     * 
+     *
      * @summary Get concept set by ID and source
      * @param id The concept set ID
      * @param sourceKey The source key
@@ -288,26 +297,26 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
             throw new ConceptNotExistException("Current data source does not contain required concepts " + ids);
         }
         for(Concept concept : concepts) {
-          map.put(concept.conceptId, concept); // associate the concept object to the conceptID in the map
+            map.put(concept.conceptId, concept); // associate the concept object to the conceptID in the map
         }
 
-        // put the concept information into the expression along with the concept set item information 
+        // put the concept information into the expression along with the concept set item information
         for (ConceptSetItem repositoryItem : repositoryItems) {
-          ConceptSetExpression.ConceptSetItem currentItem  = new ConceptSetExpression.ConceptSetItem();
-          currentItem.concept = map.get(repositoryItem.getConceptId());
-          currentItem.includeDescendants = (repositoryItem.getIncludeDescendants() == 1);
-          currentItem.includeMapped = (repositoryItem.getIncludeMapped() == 1);
-          currentItem.isExcluded = (repositoryItem.getIsExcluded() == 1);
-          expressionItems.add(currentItem); 
+            ConceptSetExpression.ConceptSetItem currentItem  = new ConceptSetExpression.ConceptSetItem();
+            currentItem.concept = map.get(repositoryItem.getConceptId());
+            currentItem.includeDescendants = (repositoryItem.getIncludeDescendants() == 1);
+            currentItem.includeMapped = (repositoryItem.getIncludeMapped() == 1);
+            currentItem.isExcluded = (repositoryItem.getIsExcluded() == 1);
+            expressionItems.add(currentItem);
         }
         expression.items = expressionItems.toArray(new ConceptSetExpression.ConceptSetItem[0]); // this will return a new array
-        
+
         return expression;
     }
 
     /**
      * Check if the concept set name exists (DEPRECATED)
-     * 
+     *
      * @summary DO NOT USE
      * @deprecated
      * @param id The concept set ID
@@ -328,11 +337,11 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * Check if a concept set with the same name exists in the WebAPI
      * database. The name is checked against the selected concept set ID
      * to ensure that only the selected concept set ID has the name specified.
-     * 
+     *
      * @summary Concept set with same name exists
      * @param id The concept set ID
      * @param name The name of the concept set
-     * @return The count of concept sets with the name, excluding the 
+     * @return The count of concept sets with the name, excluding the
      * specified concept set ID.
      */
     @GET
@@ -345,11 +354,11 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     /**
      * Update the concept set items for the selected concept set ID in the
      * WebAPI database.
-     * 
+     *
      * The concept set has two parts: 1) the elements of the ConceptSetDTO that
-     * consist of the identifier, name, etc. 2) the concept set items which 
+     * consist of the identifier, name, etc. 2) the concept set items which
      * contain the concepts and their mapping (i.e. include descendants).
-     * 
+     *
      * @summary Update concept set items
      * @param id The concept set ID
      * @param items An array of ConceptSetItems
@@ -376,12 +385,12 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * Exports a list of concept sets, based on the conceptSetList argument,
      * to one or more comma separated value (CSV) file(s), compresses the files
      * into a ZIP file and sends the ZIP file to the client.
-     * 
+     *
      * @summary Export concept set list to CSV files
      * @param conceptSetList A list of concept set identifiers in the format
      * conceptset=<concept_set_id_1>+<concept_set_id_2>+<concept_set_id_n>
      * @return
-     * @throws Exception 
+     * @throws Exception
      */
     @GET
     @Path("/exportlist")
@@ -411,7 +420,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
                 // Get the concept set information
                 cs.add(getConceptSetForExport(conceptSetIds.get(i), new SourceInfo(source)));
             }
-           // Write Concept Set Expression to a CSV
+            // Write Concept Set Expression to a CSV
             baos = ExportUtil.writeConceptSetExportToCSVAndZip(cs);
 
             response = Response
@@ -427,12 +436,12 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     }
 
     /**
-     * Exports a single concept set to a comma separated value (CSV) 
+     * Exports a single concept set to a comma separated value (CSV)
      * file, compresses to a ZIP file and sends to the client.
 
      * @param id The concept set ID
      * @return A zip file containing the exported concept set
-     * @throws Exception 
+     * @throws Exception
      */
     @GET
     @Path("{id}/export")
@@ -444,7 +453,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 
     /**
      * Save a new concept set to the WebAPI database
-     * 
+     *
      * @summary Create a new concept set
      * @param conceptSetDTO The concept set to save
      * @return The concept set saved with the concept set identifier
@@ -470,7 +479,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * that is used when generating a copy of an existing concept set. This
      * function is generally used in conjunction with the copy endpoint to
      * create a unique name and then save a copy of an existing concept set.
-     * 
+     *
      * @sumamry Get concept set name suggestion for copying
      * @param id The concept set ID
      * @return A map of the new concept set name and the existing concept set
@@ -492,17 +501,17 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 
     /**
      * Updates the concept set for the selected concept set.
-     * 
+     *
      * The concept set has two parts: 1) the elements of the ConceptSetDTO that
-     * consist of the identifier, name, etc. 2) the concept set items which 
+     * consist of the identifier, name, etc. 2) the concept set items which
      * contain the concepts and their mapping (i.e. include descendants).
-     * 
+     *
      * @summary Update concept set
      * @param id The concept set identifier
      * @param conceptSetDTO The concept set header
      * @return The
-     * @throws Exception 
-     */    
+     * @throws Exception
+     */
     @Path("/{id}")
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
@@ -512,7 +521,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 
         ConceptSet updated = getConceptSetRepository().findById(id);
         if (updated == null) {
-          throw new Exception("Concept Set does not exist.");
+            throw new Exception("Concept Set does not exist.");
         }
 
         saveVersion(id);
@@ -528,11 +537,11 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         dst.setDescription(src.getDescription());
         dst.setModifiedDate(new Date());
         dst.setModifiedBy(user);
-        
+
         dst = this.getConceptSetRepository().save(dst);
         return dst;
     }
-    
+
     private ConceptSetExport getConceptSetForExport(int conceptSetId, SourceInfo vocabSource) {
         ConceptSetExport cs = new ConceptSetExport();
 
@@ -556,63 +565,63 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * Get the concept set generation information for the selected concept
      * set ID. This function only works with the configuration of the CEM
      * data source.
-     * 
+     *
      * @link https://github.com/OHDSI/CommonEvidenceModel/wiki
-     * 
+     *
      * @summary Get concept set generation info
      * @param id The concept set identifier.
      * @return A collection of concept set generation info objects
      */
-  @GET
-  @Path("{id}/generationinfo")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Collection<ConceptSetGenerationInfo> getConceptSetGenerationInfo(@PathParam("id") final int id) {
-      return this.conceptSetGenerationInfoRepository.findAllByConceptSetId(id);
-  }
-  
-  /**
-   * Delete the selected concept set by concept set identifier
-   * 
-   * @summary Delete concept set
-   * @param id The concept set ID
-   */
-  @DELETE
-  @Transactional(rollbackOn = Exception.class, dontRollbackOn = EmptyResultDataAccessException.class)
-  @Path("{id}")
-  public void deleteConceptSet(@PathParam("id") final int id) {
-      // Remove any generation info
-      try {
-        this.conceptSetGenerationInfoRepository.deleteByConceptSetId(id);
-      } catch (EmptyResultDataAccessException e) {
-          // Ignore - there may be no data
-          log.warn("Failed to delete Generation Info by ConceptSet with ID = {}, {}", id, e);
-      }
-      catch (Exception e) {
-          throw e;
-      }
-      
-      // Remove the concept set items
-      try {
-        getConceptSetItemRepository().deleteByConceptSetId(id);
-      } catch (EmptyResultDataAccessException e) {
-          // Ignore - there may be no data
-          log.warn("Failed to delete ConceptSet items with ID = {}, {}", id, e);
-      }
-      catch (Exception e) {
-          throw e;
-      }
+    @GET
+    @Path("{id}/generationinfo")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Collection<ConceptSetGenerationInfo> getConceptSetGenerationInfo(@PathParam("id") final int id) {
+        return this.conceptSetGenerationInfoRepository.findAllByConceptSetId(id);
+    }
 
-      // Remove the concept set
-      try {
-        getConceptSetRepository().delete(id);
-      } catch (EmptyResultDataAccessException e) {
-          // Ignore - there may be no data
-          log.warn("Failed to delete ConceptSet with ID = {}, {}", id, e);
-      }
-      catch (Exception e) {
-          throw e;
-      }
-  }
+    /**
+     * Delete the selected concept set by concept set identifier
+     *
+     * @summary Delete concept set
+     * @param id The concept set ID
+     */
+    @DELETE
+    @Transactional(rollbackOn = Exception.class, dontRollbackOn = EmptyResultDataAccessException.class)
+    @Path("{id}")
+    public void deleteConceptSet(@PathParam("id") final int id) {
+        // Remove any generation info
+        try {
+            this.conceptSetGenerationInfoRepository.deleteByConceptSetId(id);
+        } catch (EmptyResultDataAccessException e) {
+            // Ignore - there may be no data
+            log.warn("Failed to delete Generation Info by ConceptSet with ID = {}, {}", id, e);
+        }
+        catch (Exception e) {
+            throw e;
+        }
+
+        // Remove the concept set items
+        try {
+            getConceptSetItemRepository().deleteByConceptSetId(id);
+        } catch (EmptyResultDataAccessException e) {
+            // Ignore - there may be no data
+            log.warn("Failed to delete ConceptSet items with ID = {}, {}", id, e);
+        }
+        catch (Exception e) {
+            throw e;
+        }
+
+        // Remove the concept set
+        try {
+            getConceptSetRepository().delete(id);
+        } catch (EmptyResultDataAccessException e) {
+            // Ignore - there may be no data
+            log.warn("Failed to delete ConceptSet with ID = {}, {}", id, e);
+        }
+        catch (Exception e) {
+            throw e;
+        }
+    }
 
     /**
      * Assign tag to Concept Set
@@ -683,10 +692,10 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     }
 
     /**
-     * Checks a concept set for diagnostic problems. At this time, 
+     * Checks a concept set for diagnostic problems. At this time,
      * this appears to be an endpoint used to check to see which tags
      * are applied to a concept set.
-     * 
+     *
      * @summary Concept set tag check
      * @since v2.10.0
      * @param conceptSetDTO The concept set
@@ -856,5 +865,102 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         version.setCreatedBy(user);
         version.setCreatedDate(versionDate);
         return versionService.create(VersionType.CONCEPT_SET, version);
+    }
+
+    /**
+     * Update the concept set annotation for each concept in concept set ID in the
+     * WebAPI database.
+     * <p>
+     * The body has two parts: 1) the elements new concept which added to the
+     * concept set. 2) the elements concept which remove from concept set.
+     *
+     * @param id  The concept set ID
+     * @param dto An object of 2 Array new annotation and remove annotation
+     * @return Boolean: true if the save is successful
+     * @summary Create new or delete concept set annotation items
+     */
+    @PUT
+    @Path("/{id}/annotation")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public boolean saveConceptSetAnnotation(@PathParam("id") final int id, ConceptSetAnnotationDTO dto) {
+        if (dto.getRemoveAnnotation() != null && !dto.getRemoveAnnotation().isEmpty()) {
+            for (AnnotationDTO annotationDTO : dto.getRemoveAnnotation()) {
+                this.getConceptSetAnnotationRepository().deleteAnnotationByConceptSetIdAndConceptId(id, annotationDTO.getConceptId());
+            }
+//            getConceptSetAnnotationRepository().deleteAnnotationByConceptSetIdAndInConceptId(id,
+//                    dto.getRemoveAnnotation().stream().map(AnnotationDTO::getConceptId).collect(Collectors.toList()));
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        if (dto.getNewAnnotation() != null && !dto.getNewAnnotation().isEmpty()) {
+            List<ConceptSetAnnotation> annotationList = dto.getNewAnnotation().stream().map(m -> {
+                ConceptSetAnnotation conceptSetAnnotation = new ConceptSetAnnotation();
+                conceptSetAnnotation.setConceptSetId(id);
+                try {
+                    AnnotationDetailsDTO annotationDetailsDTO = mapper.readValue(mapper.writeValueAsString(m), AnnotationDetailsDTO.class);
+                    conceptSetAnnotation.setAnnotationDetails(mapper.writeValueAsString(annotationDetailsDTO));
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+                conceptSetAnnotation.setVocabularyVersion(m.getVocabularyVersion());
+                conceptSetAnnotation.setConceptId(m.getConceptId());
+                conceptSetAnnotation.setCreatedBy(getCurrentUser());
+                conceptSetAnnotation.setCreatedDate(new Date());
+                return conceptSetAnnotation;
+            }).collect(Collectors.toList());
+
+            this.getConceptSetAnnotationRepository().save(annotationList);
+        }
+
+        return true;
+    }
+
+    @GET
+    @Path("/{id}/annotation")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<AnnotationDTO> getConceptSetAnnotation(@PathParam("id") final int id) {
+        ObjectMapper mapper = new ObjectMapper();
+        List<ConceptSetAnnotation> annotationList = getConceptSetAnnotationRepository().findByConceptSetId(id);
+        List<AnnotationDTO> annotationDTOList = new ArrayList<>();
+        for (ConceptSetAnnotation conceptSetAnnotation : annotationList) {
+            AnnotationDTO annotationDTO = null;
+            try {
+                annotationDTO = mapper.readValue(conceptSetAnnotation.getAnnotationDetails(), AnnotationDTO.class);
+                annotationDTO.setId(conceptSetAnnotation.getId());
+                annotationDTO.setVocabularyVersion(conceptSetAnnotation.getVocabularyVersion());
+                annotationDTO.setCreatedBy(conceptSetAnnotation.getCreatedBy() != null ? conceptSetAnnotation.getCreatedBy().getName() : null);
+                annotationDTO.setCreatedDate(conceptSetAnnotation.getCreatedDate() != null ? conceptSetAnnotation.getCreatedDate().toString() : null);
+                annotationDTOList.add(annotationDTO);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return annotationDTOList;
+    }
+
+    @DELETE
+    @Path("/annotation/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteConceptSetAnnotation(@PathParam("id") final int id) {
+        ConceptSetAnnotation conceptSetAnnotation = getConceptSetAnnotationRepository().findById(id);
+        if (conceptSetAnnotation != null) {
+            getConceptSetAnnotationRepository().deleteById(id);
+            return Response.ok().build();
+        } else throw new NotFoundException("Concept set annotation not found");
+    }
+
+    @PUT
+    @Path("/update/{id}/annotation")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AnnotationDTO updateConceptSetAnnotation(@PathParam("id") final int id, AnnotationDTO annotationDTO) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        ConceptSetAnnotation conceptSetAnnotation = getConceptSetAnnotationRepository()
+                .findConceptSetAnnotationByConceptIdAndConceptId(id, annotationDTO.getConceptId())
+                .orElseThrow(() -> new RuntimeException("Concept set annotation not found"));
+        conceptSetAnnotation.setAnnotationDetails(mapper.writeValueAsString(annotationDTO));
+        conceptSetAnnotation.setModifiedBy(getCurrentUser());
+        conceptSetAnnotation.setModifiedDate(new Date());
+        getConceptSetAnnotationRepository().save(conceptSetAnnotation);
+        return annotationDTO;
     }
 }

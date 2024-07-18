@@ -1565,7 +1565,11 @@
     "rcTooltip": "Record Count",
     "drcTooltip": "Descendant Record Count",
     "pcTooltip": "Person Count",
-    "dpcTooltip": "Descendant Person Count"
+    "dpcTooltip": "Descendant Person Count",
+    "conceptID": "概念 ID",
+    "searchData": "搜索数据",
+    "createdBy": "由...制作",
+    "createdDate": "创建日期"
   },
   "dataSources": {
     "const": {
@@ -1830,7 +1834,8 @@
         "includedConcepts": "包含的概念",
         "includedSourceCodes": "包含的源代码",
         "versions": "Versions",
-        "messages": "提示信息"
+        "messages": "提示信息",
+        "metadata": "Metadata"
       },
       "concept": {
         "title": "术语集 > 概念",

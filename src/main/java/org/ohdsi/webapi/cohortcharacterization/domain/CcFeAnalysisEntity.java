@@ -2,6 +2,9 @@ package org.ohdsi.webapi.cohortcharacterization.domain;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
+import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysisDomain;
+import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysisType;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 
 import javax.persistence.Column;
@@ -11,10 +14,13 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 @Entity
 @Table(name = "cc_analysis")
-public class CcFeAnalysisEntity {
+public class CcFeAnalysisEntity implements FeatureAnalysis {
 
     @Id
     @GenericGenerator(
@@ -76,5 +82,34 @@ public class CcFeAnalysisEntity {
 
     public void setIncludeTemporal(Boolean includeTemporal) {
         this.includeTemporal = includeTemporal;
+    }
+
+    private <T> T mapFeatureAnalysis(Function<FeAnalysisEntity, T> getter) {
+        return Optional.ofNullable(featureAnalysis).map(getter).orElse(null);
+    }
+
+    @Override
+    public FeatureAnalysisType getType() {
+        return mapFeatureAnalysis(FeatureAnalysis::getType);
+    }
+
+    @Override
+    public String getName() {
+        return mapFeatureAnalysis(FeatureAnalysis::getName);
+    }
+
+    @Override
+    public FeatureAnalysisDomain getDomain() {
+        return mapFeatureAnalysis(FeatureAnalysis::getDomain);
+    }
+
+    @Override
+    public String getDescr() {
+        return mapFeatureAnalysis(FeatureAnalysis::getDescr);
+    }
+
+    @Override
+    public Object getDesign() {
+        return mapFeatureAnalysis(FeatureAnalysis::getDesign);
     }
 }

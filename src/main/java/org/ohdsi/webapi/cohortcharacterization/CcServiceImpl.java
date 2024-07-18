@@ -38,6 +38,8 @@ import org.ohdsi.webapi.cohortcharacterization.dto.ExportExecutionResultRequest;
 import org.ohdsi.webapi.cohortcharacterization.dto.GenerationResults;
 import org.ohdsi.webapi.cohortcharacterization.report.AnalysisItem;
 import org.ohdsi.webapi.cohortcharacterization.report.AnalysisResultItem;
+import org.ohdsi.webapi.cohortcharacterization.report.ComparativeItem;
+import org.ohdsi.webapi.cohortcharacterization.report.ExportItem;
 import org.ohdsi.webapi.cohortcharacterization.report.PrevalenceItem;
 import org.ohdsi.webapi.cohortcharacterization.report.Report;
 import org.ohdsi.webapi.cohortcharacterization.report.TemporalAnnualItem;
@@ -874,11 +876,12 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                 .collect(Collectors.toList());
         Map<Integer, Map<Integer, Map<Long, List<CcTemporalAnnualResult>>>> annualByCohort = groupByResult(mappedAnnualResult);
 
-        List<Report> reports = prepareReportData(analysisMap, cohortDefs, featureAnalyses);
+        List<Report> reports = prepareReportData(analysisMap, cohortDefs, featureAnalyses, params);
         reports.forEach(r -> {
             r.items.stream()
                     .filter(i -> Objects.equals(i.getFaType(), StandardFeatureAnalysisType.PRESET.toString()))
-                    .map(PrevalenceItem.class::cast)
+                    .filter(o -> !r.isComparative)
+                    .map(this::toPrevalenceItem)
                     .forEach(item -> {
                         setTemporal(temporalByCohort, item, cov -> {
                             List<TemporalItem> temporalItems = cov.stream().map(temp -> {
@@ -908,6 +911,10 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         res.setReports(reports);
         res.setCount(ccResults.size());
         return res;
+    }
+
+    private PrevalenceItem<?> toPrevalenceItem(ExportItem<?> exportItem){
+        return PrevalenceItem.class.cast(exportItem);
     }
 
     private static <T extends AbstractTemporalResult> void setTemporal(Map<Integer, Map<Integer, Map<Long, List<T>>>> temporalByCohort, PrevalenceItem item, Consumer<List<T>> setter) {
@@ -970,7 +977,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     }
 
     private List<Report> prepareReportData(Map<Integer, AnalysisItem> analysisMap, Set<CohortDefinition> cohortDefs,
-                                           Set<FeAnalysisEntity> featureAnalyses) {
+                                           Set<FeAnalysisEntity> featureAnalyses, ExecutionResultRequest params) {
         // Create map to get cohort name by its id
         final Map<Integer, CohortDefinition> definitionMap = cohortDefs.stream()
                 .collect(Collectors.toMap(CohortDefinition::getId, Function.identity()));
@@ -1006,7 +1013,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                 reports.add(simpleReport);
 
                 // comparative mode
-                if (definitionMap.size() == 2) {
+                if (definitionMap.size() == 2 && !params.getExcludeComparativeResults()) {
                     Iterator<CohortDefinition> iter = definitionMap.values().iterator();
                     CohortDefinition firstCohortDef = iter.next();
                     CohortDefinition secondCohortDef = iter.next();

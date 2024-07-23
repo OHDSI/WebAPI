@@ -45,17 +45,17 @@
     <!-- default sql server - TODO How about making postgres the default (e.g. in line with open source tech)? -alexfranken -->
     <datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
     <datasource.url>jdbc:sqlserver://serverName;databaseName=databaseName</datasource.url>
-    <datasource.username>user</datasource.username>
-    <datasource.password>password</datasource.password>
+    <datasource.username>ohdsi_app_user</datasource.username>
+    <datasource.password>app1</datasource.password>
     <!--<datasource.validationQuery>SELECT 1</datasource.validationQuery>-->
     <datasource.dialect>sql server</datasource.dialect>
-    <datasource.ohdsi.schema>dbo</datasource.ohdsi.schema>
+    <datasource.ohdsi.schema>webapi</datasource.ohdsi.schema>
     <datasource.dialect.source>sql server</datasource.dialect.source>
     <!-- DB Change Management / Migration -->
     <flyway.datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</flyway.datasource.driverClassName>
     <flyway.datasource.url>jdbc:sqlserver://serverName</flyway.datasource.url>
     <flyway.datasource.username>userWithWritePrivs</flyway.datasource.username>
-    <flyway.datasource.password>password</flyway.datasource.password>
+    <flyway.datasource.password>app1</flyway.datasource.password>
     <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
     <!-- Note: Schema name is case-sensitive. -->
     <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
@@ -78,7 +78,8 @@
     <spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
     <spring.profiles.active>default</spring.profiles.active>
 
-    <security.provider>DisabledSecurity</security.provider>
+    <!-- security.provider>DisabledSecurity</security.provider -->
+	<security.provider>AtlasRegularSecurity</security.provider>
     <security.token.expiration>43200</security.token.expiration>
     <security.origin>http://localhost</security.origin>
     <security.ssl.enabled>false</security.ssl.enabled>
@@ -523,6 +524,20 @@
       <id>ohdsi</id>
       <name>repo.ohdsi.org</name>
       <url>https://repo.ohdsi.org/nexus/content/groups/public</url>
+    </repository>
+    <repository>  
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
+    </repository>
+    <repository>
+      <id>local-repo</id>
+      <url>file:///code/arachne</url>
+	<releases>
+	<enabled>true</enabled>
+	</releases>
+	<snapshots>
+  	<enabled>true</enabled>
+	</snapshots>
     </repository>
   </repositories>
 
@@ -1478,15 +1493,16 @@
       <id>webapi-postgresql</id>
       <properties>
         <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
-        <datasource.url>jdbc:postgresql://54.209.111.128:5432/vocabularyv5</datasource.url>
-        <datasource.username>USER</datasource.username>
-        <datasource.password>PASS</datasource.password>
+        <!-- datasource.url>jdbc:postgresql://54.209.111.128:5432/vocabularyv5</datasource.url -->
+		<datasource.url>jdbc:postgresql://localhost:5432/OHDSI</datasource.url>
+        <datasource.username>ohdsi_app_user</datasource.username>
+        <datasource.password>app1</datasource.password>
         <datasource.dialect>postgresql</datasource.dialect>
-        <datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
+        <datasource.ohdsi.schema>webapi</datasource.ohdsi.schema>
         <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
         <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
         <flyway.datasource.username>userWithWritesToOhdsiSchema</flyway.datasource.username>
-        <flyway.datasource.password>PASS</flyway.datasource.password>
+        <flyway.datasource.password>app1</flyway.datasource.password>
         <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
         <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
         <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
@@ -1500,7 +1516,7 @@
           lower(email) = lower(?)</security.db.datasource.authenticationQuery>
       </properties>
     </profile>
-    <profile>
+<profile>
       <id>webapi-docker</id>
       <properties>
         <git.branch>unknown</git.branch>
@@ -1509,15 +1525,15 @@
         <miredot.phase>none</miredot.phase>
         <skipTests>true</skipTests>
         <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
-        <datasource.url>jdbc:postgresql://54.209.111.128:5432/vocabularyv5</datasource.url>
-        <datasource.username>USER</datasource.username>
-        <datasource.password>PASS</datasource.password>
+        <datasource.url>${WEBAPI_DATASOURCE_URL}</datasource.url>
+        <datasource.username>${WEBAPI_DATASOURCE_USERNAME}</datasource.username>
+        <datasource.password>${WEBAPI_DATASOURCE_PASSWORD}</datasource.password>
         <datasource.dialect>postgresql</datasource.dialect>
-        <datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
+        <datasource.ohdsi.schema>${WEBAPI_SCHEMA}</datasource.ohdsi.schema>
         <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
         <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
-        <flyway.datasource.username>userWithWritesToOhdsiSchema</flyway.datasource.username>
-        <flyway.datasource.password>PASS</flyway.datasource.password>
+        <flyway.datasource.username>${FLYWAY_DATASOURCE_USERNAME}</flyway.datasource.username>
+        <flyway.datasource.password>${FLYWAY_DATASOURCE_PASSWORD}</flyway.datasource.password>
         <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
         <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
         <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
@@ -1529,6 +1545,12 @@
         <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
         <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users_data where \
           lower(email) = lower(?)</security.db.datasource.authenticationQuery>
+        <security.oauth.callback.ui>${OAUTH_CALLBACK_UI}</security.oauth.callback.ui>
+        <security.oauth.callback.api>${OAUTH_CALLBACK_API}</security.oauth.callback.api>
+        <security.oid.clientId>${OID_CLIENTID}</security.oid.clientId>
+        <security.oid.apiSecret>${OID_APISECRET}</security.oid.apiSecret>
+        <security.oid.url>${OID_URL}</security.oid.url>
+        <security.oid.redirectUrl>${OID_REDIRECTURL}</security.oid.redirectUrl>
       </properties>
       <repositories>
 	<repository>

@@ -182,10 +182,12 @@ public class UserImportServiceImpl implements UserImportService {
     List<RoleGroupEntity> deleted = RoleGroupUtils.findDeleted(exists, mappingEntities);
     List<RoleGroupEntity> created = RoleGroupUtils.findCreated(exists, mappingEntities);
     if (!deleted.isEmpty()) {
-      roleGroupMappingRepository.delete(deleted);
+      /* roleGroupMappingRepository.delete(deleted);   MDACA Spring Boot 3 migration compilation issue */
+      roleGroupMappingRepository.deleteAll(deleted);
     }
     if (!created.isEmpty()) {
-      roleGroupMappingRepository.save(created);
+    	/* roleGroupMappingRepository.saveAll(created);   MDACA Spring Boot 3 migration compilation issue */
+      roleGroupMappingRepository.saveAll(created);
     }
   }
 
@@ -208,7 +210,7 @@ public class UserImportServiceImpl implements UserImportService {
 
     @Override
     public UserImportJob getImportUserJob(Long userImportId) {
-      return userImportJobRepository.getOne(userImportId);
+      return userImportJobRepository.getById(userImportId);
     }
 
     private LdapUserImportStatus getStatus(AtlasUserRoles atlasUser) {

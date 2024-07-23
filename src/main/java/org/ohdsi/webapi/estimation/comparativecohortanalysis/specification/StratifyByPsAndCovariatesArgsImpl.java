@@ -5,7 +5,7 @@ import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.BaseSelect
 import org.ohdsi.webapi.RLangClassImpl;
 import java.util.ArrayList;
 import java.util.List;
-import javax.validation.constraints.*;
+import jakarta.validation.constraints.*;
 
 /**
  *

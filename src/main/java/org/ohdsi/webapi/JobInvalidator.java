@@ -1,5 +1,6 @@
 package org.ohdsi.webapi;
 
+import jakarta.annotation.PostConstruct;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,12 +9,12 @@ import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.repository.JobRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.annotation.PostConstruct;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 
 @Component
@@ -28,7 +29,6 @@ public class JobInvalidator {
     private final TransactionTemplate transactionTemplateRequiresNew;
     private final SearchableJobExecutionDao jobExecutionDao;
 
-    @Autowired
     public JobInvalidator(JobRepository repository, TransactionTemplate transactionTemplateRequiresNew,
                           SearchableJobExecutionDao jobExecutionDao) {
         this.jobRepository = repository;
@@ -58,7 +58,7 @@ public class JobInvalidator {
     public void invalidationJobExecution(JobExecution job) {
         job.setStatus(BatchStatus.FAILED);
         job.setExitStatus(new ExitStatus(ExitStatus.FAILED.getExitCode(), INVALIDATED_BY_SYSTEM_EXIT_MESSAGE));
-        job.setEndTime(Calendar.getInstance().getTime());
+        job.setEndTime(LocalDateTime.ofInstant(Calendar.getInstance().getTime().toInstant(), ZoneId.systemDefault()));
         jobRepository.update(job);
     }
 }

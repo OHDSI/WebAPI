@@ -32,6 +32,6 @@ public class ConceptSetWarning extends BaseWarning implements Warning {
     @Override
     public String toMessage() {
 
-        return String.format(template, conceptSet.name);
+        return template.formatted(conceptSet.name);
     }
 }

@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.shiro;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.odysseusinc.logging.event.AddUserEvent;
 import com.odysseusinc.logging.event.DeleteRoleEvent;
 import org.apache.shiro.SecurityUtils;
@@ -25,10 +26,22 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.authz.Permission;
+import org.apache.shiro.authz.permission.WildcardPermission;
+import org.ohdsi.circe.helper.ResourceHelper;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  *
@@ -37,6 +50,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @Transactional
 public class PermissionManager {
+
+  @Value("${datasource.ohdsi.schema}")
+  private String ohdsiSchema;
 
   @Autowired
   private UserRepository userRepository;
@@ -55,9 +71,17 @@ public class PermissionManager {
 
   @Autowired
   private ApplicationEventPublisher eventPublisher;
-
+  
+  @Autowired
+  private JdbcTemplate jdbcTemplate;
+  
   private ThreadLocal<ConcurrentHashMap<String, UserSimpleAuthorizationInfo>> authorizationInfoCache = ThreadLocal.withInitial(ConcurrentHashMap::new);
 
+  public static class PermissionsDTO {
+
+    public Map<String, List<String>> permissions = null;
+  }
+  
   public RoleEntity addRole(String roleName, boolean isSystem) {
     Guard.checkNotEmpty(roleName);
 
@@ -109,6 +133,12 @@ public class PermissionManager {
     }
   }
 
+  /**
+   * Return the UserSimpleAuthorizastionInfo which contains the login, roles and permissions for the specified login
+   * 
+   * @param   login   The login to fetch the authorization info
+   * @return          A UserSimpleAuthorizationInfo containing roles and permissions.
+  */
   public UserSimpleAuthorizationInfo getAuthorizationInfo(final String login) {
 
     return authorizationInfoCache.get().computeIfAbsent(login, newLogin -> {
@@ -125,14 +155,21 @@ public class PermissionManager {
       for (UserRoleEntity userRole: userEntity.getUserRoles()) {
         info.addRole(userRole.getRole().getName());
       }
-      final Set<String> permissionNames = new LinkedHashSet<>();
-      final Set<PermissionEntity> permissions = this.getUserPermissions(userEntity);
 
-      for (PermissionEntity permission : permissions) {
-        permissionNames.add(permission.getValue());
+      // convert permission index from queryUserPermissions() into a map of WildcardPermissions
+      Map<String, List<String>> permsIdx = this.queryUserPermissions(newLogin).permissions;
+      Map permissionMap = new HashMap<String, List<Permission>>();
+      Set<String> permissionNames = new HashSet<>();
+      
+      for(String permIdxKey : permsIdx.keySet()) {
+        List<String> perms = permsIdx.get(permIdxKey);
+        permissionNames.addAll(perms);
+        // convert raw string permission into Wildcard perm for each element in this key's array.
+        permissionMap.put(permIdxKey, perms.stream().map(perm -> new WildcardPermission(perm)).collect(Collectors.toList()));
       }
 
       info.setStringPermissions(permissionNames);
+      info.setPermissionIdx(permissionMap);
       return info;
     });
   }
@@ -186,7 +223,7 @@ public class PermissionManager {
       }
     }
 
-    user = userRepository.findOne(user.getId());
+    user = userRepository.findById(user.getId()).get();
     return user;
   }
 
@@ -227,7 +264,7 @@ public class PermissionManager {
 
   public void removeRole(Long roleId) {
     eventPublisher.publishEvent(new DeleteRoleEvent(this, roleId));
-    this.roleRepository.delete(roleId);
+    this.roleRepository.deleteById(roleId);
   }
 
   public Set<PermissionEntity> getRolePermissions(Long roleId) {
@@ -305,7 +342,51 @@ public class PermissionManager {
 
     return permissions;
   }
+  
+  public PermissionsDTO queryUserPermissions(final String login) {
+    String permQuery = StringUtils.replace(
+            ResourceHelper.GetResourceAsString("/resources/security/getPermissionsForUser.sql"),
+            "@ohdsi_schema",
+            this.ohdsiSchema);
+    final UserEntity user = userRepository.findByLogin(login);
 
+    List<String> permissions = this.jdbcTemplate.query(
+            permQuery, 
+            (ps) -> {
+              ps.setLong(1, user.getId());
+            },
+            (rs, rowNum) -> {
+              return rs.getString("value");
+            });
+    PermissionsDTO permDto = new PermissionsDTO();
+    permDto.permissions = permsToMap(permissions);
+    return permDto;
+  }
+
+  /**
+   * This method takes a list of strings and returns a JSObject representing 
+   * the first element of each permission as a key, and the List<String> of 
+   * permissions that start with the key as the value
+  */
+  private Map<String, List<String>> permsToMap(List<String> permissions) {
+
+    Map<String, List<String>> resultMap = new HashMap<>();
+
+    // Process each input string
+    for (String inputString : permissions) {
+      String[] parts = inputString.split(":");
+      String key = parts[0];
+      // Create a new JsonArray for the key if it doesn't exist
+      resultMap.putIfAbsent(key, new ArrayList<>());
+      // Add the value to the JsonArray
+      resultMap.get(key).add(inputString);
+    }
+
+    // Convert the resultMap to a JsonNode
+
+    return resultMap;
+  }
+  
   private Set<PermissionEntity> getRolePermissions(RoleEntity role) {
     Set<PermissionEntity> permissions = new LinkedHashSet<>();
 
@@ -350,11 +431,11 @@ public class PermissionManager {
   }
 
   public UserEntity getUserById(Long userId) {
-    UserEntity user = this.userRepository.findOne(userId);
-    if (user == null)
+    Optional<UserEntity> user = this.userRepository.findById(userId);
+    if (user == null || user.isEmpty() == true)
       throw new RuntimeException("User doesn't exist");
 
-    return user;
+    return user.get();
   }
 
   private UserEntity getUserByLogin(final String login) {
@@ -378,7 +459,7 @@ public class PermissionManager {
   }
 
   private RoleEntity getRoleById(Long roleId) {
-    final RoleEntity roleEntity = this.roleRepository.findById(roleId);
+    final RoleEntity roleEntity = this.roleRepository.findById(roleId).get();
     if (roleEntity == null)
       throw new RuntimeException("Role doesn't exist");
 
@@ -386,7 +467,7 @@ public class PermissionManager {
   }
 
   private PermissionEntity getPermissionById(Long permissionId) {
-    final PermissionEntity permission = this.permissionRepository.findById(permissionId);
+    final PermissionEntity permission = this.permissionRepository.findById(permissionId).get();
     if (permission == null )
       throw new RuntimeException("Permission doesn't exist");
 
@@ -407,7 +488,7 @@ public class PermissionManager {
   }
 
   private boolean isRelationAllowed(final String relationStatus) {
-    return relationStatus == null || relationStatus == RequestStatus.APPROVED;
+    return relationStatus == null || relationStatus.equals(RequestStatus.APPROVED);
   }
 
   private UserRoleEntity addUser(final UserEntity user, final RoleEntity role,
@@ -441,7 +522,7 @@ public class PermissionManager {
   }
 
   public RoleEntity getRole(Long id) {
-    return this.roleRepository.findById(id);
+    return this.roleRepository.findById(id).get();
   }
 
   public RoleEntity updateRole(RoleEntity roleEntity) {

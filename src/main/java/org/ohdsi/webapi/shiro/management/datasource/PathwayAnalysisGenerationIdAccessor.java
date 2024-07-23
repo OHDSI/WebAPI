@@ -5,7 +5,7 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.EntityUtils;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.NotFoundException;
+import jakarta.ws.rs.NotFoundException;
 
 @Component
 public class PathwayAnalysisGenerationIdAccessor extends BaseDataSourceAccessor<Long> {

@@ -6,7 +6,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
 import org.aspectj.lang.JoinPoint;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class JsonMappingTest {
 

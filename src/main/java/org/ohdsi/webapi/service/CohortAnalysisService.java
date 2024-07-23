@@ -8,13 +8,13 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
@@ -36,7 +36,7 @@ import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
+import org.springframework.util.ObjectUtils;
 
 /**
  * REST Services related to running 
@@ -272,13 +272,13 @@ public class CohortAnalysisService extends AbstractDaoService implements Generat
 			builder.addString("cohortPeriodOnly", "true");
 		}
 		
-		if (!StringUtils.isEmpty(task.getJobName())) {
+		if (!ObjectUtils.isEmpty(task.getJobName())) {
 			builder.addString("jobName", limitJobParams(task.getJobName()));
 		}
 
 		// clear analysis IDs from the generated set
 		this.getTransactionTemplateRequiresNew().execute(status -> { 
-			CohortDefinition cohortDef = this.cohortDefinitionRepository.findOne(Integer.parseInt(task.getCohortDefinitionIds().get(0)));
+			CohortDefinition cohortDef = this.cohortDefinitionRepository.findById(Integer.parseInt(task.getCohortDefinitionIds().get(0))).get();
 			CohortAnalysisGenerationInfo info = cohortDef.getCohortAnalysisGenerationInfoList().stream()
 				.filter(a -> a.getSourceId() == task.getSource().getSourceId())
 				.findFirst()

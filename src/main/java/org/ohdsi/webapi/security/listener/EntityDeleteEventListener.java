@@ -30,9 +30,8 @@ public class EntityDeleteEventListener implements PostDeleteEventListener {
         }
     }
 
-    @Override
-    public boolean requiresPostCommitHanding(EntityPersister entityPersister) {
-
-        return false;
-    }
+	@Override
+	public boolean requiresPostCommitHandling(EntityPersister persister) {
+		return false;
+	}
 }

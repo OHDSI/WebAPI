@@ -4,8 +4,8 @@ import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.cohortcharacterization.design.DemographicCriteriaFeature;
 import org.ohdsi.circe.cohortdefinition.DemographicCriteria;
 
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
 
 @Entity
 @DiscriminatorValue("DEMOGRAPHIC_CRITERIA")

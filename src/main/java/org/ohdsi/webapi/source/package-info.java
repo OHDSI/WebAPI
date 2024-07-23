@@ -1,3 +1,4 @@
+package org.ohdsi.webapi.source;
 /*
  *
  * Copyright 2017 Observational Health Data Sciences and Informatics
@@ -20,6 +21,7 @@
  *
  */
 
+/*  MDACA Spring Boot 3 migration compilation issue, deprecated hibernate annotations: typedefs & typedef
 @TypeDefs({
         @TypeDef(
                 name = "encryptedString",
@@ -29,9 +31,9 @@
                 }
         )
 })
-package org.ohdsi.webapi.source;
 
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
+*/

@@ -63,7 +63,7 @@ public class LdapRealm extends JndiLdapRealm {
     @Override
     protected AuthenticationInfo queryForAuthenticationInfo(AuthenticationToken token,
                                                             LdapContextFactory ldapContextFactory)
-            throws NamingException {
+            throws /*~~>*/NamingException {
 
         Object principal = token.getPrincipal();
         Object credentials = token.getCredentials();
@@ -72,7 +72,7 @@ public class LdapRealm extends JndiLdapRealm {
 
         principal = getLdapPrincipal(token);
 
-        LdapContext ctx = null;
+        /*~~>*/LdapContext ctx = null;
         try {
             ctx = ldapContextFactory.getLdapContext(principal, credentials);
             UserPrincipal userPrincipal = searchForUser(ctx, token);
@@ -83,16 +83,16 @@ public class LdapRealm extends JndiLdapRealm {
     }
     @Override
     protected AuthenticationInfo createAuthenticationInfo(AuthenticationToken token, Object ldapPrincipal,
-                                                          Object ldapCredentials, LdapContext ldapContext) {
+                                                          Object ldapCredentials, /*~~>*/LdapContext ldapContext) {
         return new SimpleAuthenticationInfo(ldapPrincipal, token.getCredentials(), getName());
     }
 
-    private UserPrincipal searchForUser(LdapContext ctx,  AuthenticationToken token) throws NamingException {
-        SearchControls searchCtls = new SearchControls();
+    private UserPrincipal searchForUser(/*~~>*/LdapContext ctx,  AuthenticationToken token) throws /*~~>*/NamingException {
+        /*~~>*/SearchControls searchCtls = new /*~~>*/SearchControls();
         searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 
         Object[] searchArguments = new Object[]{token.getPrincipal()};
-        NamingEnumeration results = ctx.search(ldapSearchBase, searchString, searchArguments, searchCtls);
+        /*~~>*/NamingEnumeration results = ctx.search(ldapSearchBase, searchString, searchArguments, searchCtls);
         boolean processSingleRecord = false;
         UserPrincipal userPrincipal = null;
         while (results.hasMore()) {
@@ -101,8 +101,8 @@ public class LdapRealm extends JndiLdapRealm {
                 throw new RuntimeException("Multiple results found for " + token.getPrincipal());
             }
             processSingleRecord = true;
-            SearchResult searchResult = (SearchResult) results.next();
-            Attributes attributes = searchResult.getAttributes();
+            /*~~>*/SearchResult searchResult = (/*~~>*/SearchResult) results.next();
+            /*~~>*/Attributes attributes = searchResult.getAttributes();
             userPrincipal = userMapper.mapFromAttributes(attributes);
         }
         return userPrincipal;

@@ -1,38 +1,22 @@
-FROM maven:3.6-jdk-11 as builder
+FROM maven:3.9.7-eclipse-temurin-17-alpine as builder
 
 WORKDIR /code
 
 ARG MAVEN_PROFILE=webapi-docker
-ARG MAVEN_PARAMS="" # can use maven options, e.g. -DskipTests=true -DskipUnitTests=true
+ARG MAVEN_PARAMS="-DskipUnitTests -DskipITtests -D\"maven.test.skip\"=true" # can use maven options, e.g. -DskipTests=true -DskipUnitTests=true
 
 ARG OPENTELEMETRY_JAVA_AGENT_VERSION=1.17.0
 RUN curl -LSsO https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${OPENTELEMETRY_JAVA_AGENT_VERSION}/opentelemetry-javaagent.jar
 
-# Download dependencies
-COPY pom.xml /code/
-RUN mkdir .git \
-    && mvn package \
-     -P${MAVEN_PROFILE}
-
-ARG GIT_BRANCH=unknown
-ARG GIT_COMMIT_ID_ABBREV=unknown
-
-# Compile code and repackage it
-COPY src /code/src
-RUN mvn package ${MAVEN_PARAMS} \
-    -Dgit.branch=${GIT_BRANCH} \
-    -Dgit.commit.id.abbrev=${GIT_COMMIT_ID_ABBREV} \
-    -P${MAVEN_PROFILE} \
-    && mkdir war \
-    && mv target/WebAPI.war war \
-    && cd war \
-    && jar -xf WebAPI.war \
-    && rm WebAPI.war
+RUN mkdir war
+COPY WebAPI.war war/WebAPI.war 
+RUN cd war \
+&& jar -xf WebAPI.war \
+   && rm WebAPI.war
 
 # OHDSI WebAPI and ATLAS web application running as a Spring Boot application with Java 11
-FROM openjdk:8-jre-slim
-
-MAINTAINER Lee Evans - www.ltscomputingllc.com
+# FROM openjdk:17-jdk-slim
+FROm eclipse-temurin:17-jre-alpine
 
 # Any Java options to pass along, e.g. memory, garbage collection, etc.
 ENV JAVA_OPTS=""
@@ -57,6 +41,13 @@ COPY --from=builder /code/war/org org
 COPY --from=builder /code/war/WEB-INF/classes WEB-INF/classes
 COPY --from=builder /code/war/META-INF META-INF
 
+ENV WEBAPI_DATASOURCE_URL="jdbc:postgresql://host.docker.internal:5432/OHDSI?currentSchema=webapi"
+ENV WEBAPI_DATASOURCE_USERNAME=ohdsi_app_user
+ENV WEBAPI_DATASOURCE_PASSWORD=app1
+ENV WEBAPI_SCHEMA=webapi
+ENV FLYWAY_DATASOURCE_USERNAME=ohdsi_admin_user
+ENV FLYWAY_DATASOURCE_PASSWORD=admin1
+
 EXPOSE 8080
 
 USER 101
@@ -64,4 +55,4 @@ USER 101
 # Directly run the code as a WAR.
 CMD exec java ${DEFAULT_JAVA_OPTS} ${JAVA_OPTS} \
     -cp ".:WebAPI.jar:WEB-INF/lib/*.jar${CLASSPATH}" \
-    org.springframework.boot.loader.WarLauncher
+    org.springframework.boot.loader.launch.WarLauncher

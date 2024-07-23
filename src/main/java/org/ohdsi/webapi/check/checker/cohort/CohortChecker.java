@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.check.checker.cohort;
 
+import jakarta.annotation.PostConstruct;
 import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.CohortMethodAnalysis;
 import org.ohdsi.analysis.estimation.comparativecohortanalysis.design.ComparativeCohortAnalysis;
 import org.ohdsi.webapi.check.builder.DuplicateValidatorBuilder;
@@ -13,10 +14,8 @@ import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
 import org.ohdsi.webapi.service.dto.CommonEntityExtDTO;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;

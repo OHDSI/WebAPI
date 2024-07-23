@@ -15,11 +15,10 @@
  */
 package org.ohdsi.webapi.feasibility;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.Lob;
-import javax.persistence.Table;
-import org.hibernate.annotations.Type;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.Lob;
+import jakarta.persistence.Table;
 
 /**
  *
@@ -35,8 +34,7 @@ public class InclusionRule {
   private String description;
   
   @Column(name="expression")  
-  @Lob
-  @Type(type = "org.hibernate.type.TextType")  
+  @Lob  
   private String expression;
   public String getName() {
     return name;

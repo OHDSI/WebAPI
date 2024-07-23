@@ -73,7 +73,7 @@ public class ComparativeItem extends ExportItem<ComparativeItem> {
     values.add(this.targetPct != null ? String.valueOf(this.targetPct) : "0");
     values.add(this.comparatorCount != null ? String.valueOf(this.comparatorCount) : "0");
     values.add(this.comparatorPct != null ? String.valueOf(this.comparatorPct) : "0");
-    values.add(String.format("%.4f", this.diff));
+    values.add("%.4f".formatted(this.diff));
     return values;
   }
 

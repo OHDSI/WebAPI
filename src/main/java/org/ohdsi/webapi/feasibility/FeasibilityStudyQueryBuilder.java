@@ -77,7 +77,7 @@ public class FeasibilityStudyQueryBuilder {
   {
     String resultSql = INCLUSION_RULE_QUERY_TEMPLATE;
     String additionalCriteriaQuery = "\nJOIN (\n"
-            + cohortExpressionQueryBuilder.getCriteriaGroupQuery(inclusionRule, "#primary_events", null)
+            + cohortExpressionQueryBuilder.getCriteriaGroupQuery(inclusionRule, "#primary_events", false)
             + ") AC on AC.event_id = pe.event_id";    additionalCriteriaQuery = StringUtils.replace(additionalCriteriaQuery,"@indexId", "" + 0);
     resultSql = StringUtils.replace(resultSql, "@additionalCriteriaQuery", additionalCriteriaQuery);
     return resultSql;

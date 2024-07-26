@@ -44,6 +44,9 @@ public class ConceptSetAnnotation extends CommonEntity<Integer> implements Seria
     @Column(name = "vocabulary_version")
     private String vocabularyVersion;
 
+    @Column(name = "concept_set_version")
+    private String conceptSetVersion;
+
     public Integer getId() {
         return id;
     }
@@ -82,5 +85,13 @@ public class ConceptSetAnnotation extends CommonEntity<Integer> implements Seria
 
     public void setVocabularyVersion(String vocabularyVersion) {
         this.vocabularyVersion = vocabularyVersion;
+    }
+
+    public String getConceptSetVersion() {
+        return conceptSetVersion;
+    }
+
+    public void setConceptSetVersion(String conceptSetVersion) {
+        this.conceptSetVersion = conceptSetVersion;
     }
 }

@@ -19,6 +19,7 @@ public class SourceRequest {
     private String krbAdminServer;
     private Collection<SourceDaimon> daimons;
     private String keyfileName;
+    private Boolean checkConnection;
 
     public String getName() {
 
@@ -110,5 +111,13 @@ public class SourceRequest {
     public void setKeyfileName(String keyfileName) {
 
         this.keyfileName = keyfileName;
+    }
+
+    public Boolean isCheckConnection() {
+        return checkConnection;
+    }
+
+    public void setCheckConnection(Boolean checkConnection) {
+        this.checkConnection = checkConnection;
     }
 }

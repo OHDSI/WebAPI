@@ -903,6 +903,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
                     throw new RuntimeException(e);
                 }
                 conceptSetAnnotation.setVocabularyVersion(m.getVocabularyVersion());
+                conceptSetAnnotation.setConceptSetVersion(m.getConceptSetVersion());
                 conceptSetAnnotation.setConceptId(m.getConceptId());
                 conceptSetAnnotation.setCreatedBy(getCurrentUser());
                 conceptSetAnnotation.setCreatedDate(new Date());
@@ -928,6 +929,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
                 annotationDTO = mapper.readValue(conceptSetAnnotation.getAnnotationDetails(), AnnotationDTO.class);
                 annotationDTO.setId(conceptSetAnnotation.getId());
                 annotationDTO.setVocabularyVersion(conceptSetAnnotation.getVocabularyVersion());
+                annotationDTO.setConceptSetVersion(conceptSetAnnotation.getConceptSetVersion());
                 annotationDTO.setCreatedBy(conceptSetAnnotation.getCreatedBy() != null ? conceptSetAnnotation.getCreatedBy().getName() : null);
                 annotationDTO.setCreatedDate(conceptSetAnnotation.getCreatedDate() != null ? conceptSetAnnotation.getCreatedDate().toString() : null);
                 annotationDTOList.add(annotationDTO);

@@ -238,6 +238,9 @@ public class SourceController extends AbstractDaoService {
       }
       setKeyfileData(updated, source, file);
       transformIfRequired(updated);
+      if (request.isCheckConnection() == null) {
+        updated.setCheckConnection(source.isCheckConnection());
+      }
       updated.setModifiedBy(getCurrentUser());
       updated.setModifiedDate(new Date());
 

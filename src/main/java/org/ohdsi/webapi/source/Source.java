@@ -114,7 +114,7 @@ public class Source extends CommonEntity<Integer> implements Serializable {
   private boolean isCacheEnabled;
 
   @Column(name = "check_connection")
-  private boolean checkConnection;
+  private boolean checkConnection = true;
 
 
   public String getTableQualifier(DaimonType daimonType) {

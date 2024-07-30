@@ -47,6 +47,7 @@ import org.ohdsi.webapi.service.dto.AnnotationDetailsDTO;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.service.dto.ConceptSetAnnotationDTO;
 import org.ohdsi.webapi.service.dto.AnnotationDTO;
+import org.ohdsi.webapi.service.dto.CopyAnnotationsRequest;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
@@ -914,6 +915,32 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         }
 
         return true;
+    }
+
+    private ConceptSetAnnotation copyAnnotation(ConceptSetAnnotation sourceConceptSetAnnotation, int targetConceptSetId){
+        ConceptSetAnnotation targetConceptSetAnnotation = new ConceptSetAnnotation();
+        targetConceptSetAnnotation.setConceptSetId(targetConceptSetId);
+        targetConceptSetAnnotation.setConceptSetVersion(sourceConceptSetAnnotation.getConceptSetVersion());
+        targetConceptSetAnnotation.setAnnotationDetails(sourceConceptSetAnnotation.getAnnotationDetails());
+        targetConceptSetAnnotation.setConceptId(sourceConceptSetAnnotation.getConceptId());
+        targetConceptSetAnnotation.setVocabularyVersion(sourceConceptSetAnnotation.getVocabularyVersion());
+        targetConceptSetAnnotation.setCreatedBy(sourceConceptSetAnnotation.getCreatedBy());
+        targetConceptSetAnnotation.setCreatedDate(sourceConceptSetAnnotation.getCreatedDate());
+        targetConceptSetAnnotation.setModifiedBy(sourceConceptSetAnnotation.getModifiedBy());
+        targetConceptSetAnnotation.setModifiedDate(sourceConceptSetAnnotation.getModifiedDate());
+        return targetConceptSetAnnotation;
+    }
+
+    @POST
+    @Path("/copy-annotations")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public void copyAnnotations(CopyAnnotationsRequest copyAnnotationsRequest ) {
+        List<ConceptSetAnnotation> sourceAnnotations = getConceptSetAnnotationRepository().findByConceptSetId(copyAnnotationsRequest.getSourceConceptSetId());
+        List<ConceptSetAnnotation> copiedAnnotations= sourceAnnotations.stream()
+                .map(sourceAnnotation -> copyAnnotation(sourceAnnotation, copyAnnotationsRequest.getTargetConceptSetId()))
+                .collect(Collectors.toList());
+        getConceptSetAnnotationRepository().save(copiedAnnotations);
     }
 
     @GET

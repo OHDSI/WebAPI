@@ -29,6 +29,7 @@ import javax.ws.rs.core.Response;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.vocabulary.Concept;
@@ -43,9 +44,10 @@ import org.ohdsi.webapi.conceptset.dto.ConceptSetVersionFullDTO;
 import org.ohdsi.webapi.conceptset.annotation.ConceptSetAnnotation;
 import org.ohdsi.webapi.exception.ConceptNotExistException;
 import org.ohdsi.webapi.security.PermissionService;
+import org.ohdsi.webapi.service.annotations.SearchDataTransformer;
 import org.ohdsi.webapi.service.dto.AnnotationDetailsDTO;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
-import org.ohdsi.webapi.service.dto.ConceptSetAnnotationDTO;
+import org.ohdsi.webapi.service.dto.SaveConceptSetAnnotationsRequest;
 import org.ohdsi.webapi.service.dto.AnnotationDTO;
 import org.ohdsi.webapi.service.dto.CopyAnnotationsRequest;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
@@ -113,6 +115,12 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 
     @Autowired
     private VersionService<ConceptSetVersion> versionService;
+
+    @Autowired
+    private  SearchDataTransformer searchDataTransformer;
+
+    @Autowired
+    private ObjectMapper mapper;
 
 
     @Value("${security.defaultGlobalReadPermissions}")
@@ -875,8 +883,8 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * The body has two parts: 1) the elements new concept which added to the
      * concept set. 2) the elements concept which remove from concept set.
      *
-     * @param id  The concept set ID
-     * @param dto An object of 2 Array new annotation and remove annotation
+     * @param conceptSetId  The concept set ID
+     * @param request An object of 2 Array new annotation and remove annotation
      * @return Boolean: true if the save is successful
      * @summary Create new or delete concept set annotation items
      */
@@ -884,19 +892,12 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Path("/{id}/annotation")
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public boolean saveConceptSetAnnotation(@PathParam("id") final int id, ConceptSetAnnotationDTO dto) {
-        if (dto.getRemoveAnnotation() != null && !dto.getRemoveAnnotation().isEmpty()) {
-            for (AnnotationDTO annotationDTO : dto.getRemoveAnnotation()) {
-                this.getConceptSetAnnotationRepository().deleteAnnotationByConceptSetIdAndConceptId(id, annotationDTO.getConceptId());
-            }
-//            getConceptSetAnnotationRepository().deleteAnnotationByConceptSetIdAndInConceptId(id,
-//                    dto.getRemoveAnnotation().stream().map(AnnotationDTO::getConceptId).collect(Collectors.toList()));
-        }
-        ObjectMapper mapper = new ObjectMapper();
-        if (dto.getNewAnnotation() != null && !dto.getNewAnnotation().isEmpty()) {
-            List<ConceptSetAnnotation> annotationList = dto.getNewAnnotation().stream().map(m -> {
+    public boolean saveConceptSetAnnotation(@PathParam("id") final int conceptSetId, SaveConceptSetAnnotationsRequest request) {
+        removeAnnotations(conceptSetId, request);
+        if (CollectionUtils.isNotEmpty(request.getNewAnnotation())) {
+            List<ConceptSetAnnotation> annotationList = request.getNewAnnotation().stream().map(m -> {
                 ConceptSetAnnotation conceptSetAnnotation = new ConceptSetAnnotation();
-                conceptSetAnnotation.setConceptSetId(id);
+                conceptSetAnnotation.setConceptSetId(conceptSetId);
                 try {
                     AnnotationDetailsDTO annotationDetailsDTO = mapper.readValue(mapper.writeValueAsString(m), AnnotationDetailsDTO.class);
                     conceptSetAnnotation.setAnnotationDetails(mapper.writeValueAsString(annotationDetailsDTO));
@@ -916,7 +917,13 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 
         return true;
     }
-
+    private void removeAnnotations(int id, SaveConceptSetAnnotationsRequest request){
+        if (CollectionUtils.isNotEmpty(request.getRemoveAnnotation())) {
+            for (AnnotationDTO annotationDTO : request.getRemoveAnnotation()) {
+                this.getConceptSetAnnotationRepository().deleteAnnotationByConceptSetIdAndConceptId(id, annotationDTO.getConceptId());
+            }
+        }
+    }
     private ConceptSetAnnotation copyAnnotation(ConceptSetAnnotation sourceConceptSetAnnotation, int targetConceptSetId){
         ConceptSetAnnotation targetConceptSetAnnotation = new ConceptSetAnnotation();
         targetConceptSetAnnotation.setConceptSetId(targetConceptSetId);
@@ -947,11 +954,10 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Path("/{id}/annotation")
     @Produces(MediaType.APPLICATION_JSON)
     public List<AnnotationDTO> getConceptSetAnnotation(@PathParam("id") final int id) {
-        ObjectMapper mapper = new ObjectMapper();
         List<ConceptSetAnnotation> annotationList = getConceptSetAnnotationRepository().findByConceptSetId(id);
         List<AnnotationDTO> annotationDTOList = new ArrayList<>();
         for (ConceptSetAnnotation conceptSetAnnotation : annotationList) {
-            AnnotationDTO annotationDTO = null;
+            AnnotationDTO annotationDTO;
             try {
                 annotationDTO = mapper.readValue(conceptSetAnnotation.getAnnotationDetails(), AnnotationDTO.class);
                 annotationDTO.setId(conceptSetAnnotation.getId());
@@ -959,7 +965,11 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
                 annotationDTO.setConceptSetVersion(conceptSetAnnotation.getConceptSetVersion());
                 annotationDTO.setCreatedBy(conceptSetAnnotation.getCreatedBy() != null ? conceptSetAnnotation.getCreatedBy().getName() : null);
                 annotationDTO.setCreatedDate(conceptSetAnnotation.getCreatedDate() != null ? conceptSetAnnotation.getCreatedDate().toString() : null);
-                annotationDTOList.add(annotationDTO);
+
+               String searchDataJSON = annotationDTO.getSearchData();
+               String humanReadableData = searchDataTransformer.convertJsonToReadableFormat(searchDataJSON);
+               annotationDTO.setSearchData(humanReadableData);
+               annotationDTOList.add(annotationDTO);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -982,7 +992,6 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Path("/update/{id}/annotation")
     @Produces(MediaType.APPLICATION_JSON)
     public AnnotationDTO updateConceptSetAnnotation(@PathParam("id") final int id, AnnotationDTO annotationDTO) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         ConceptSetAnnotation conceptSetAnnotation = getConceptSetAnnotationRepository()
                 .findConceptSetAnnotationByConceptIdAndConceptId(id, annotationDTO.getConceptId())
                 .orElseThrow(() -> new RuntimeException("Concept set annotation not found"));

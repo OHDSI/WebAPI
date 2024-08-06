@@ -2,7 +2,7 @@ package org.ohdsi.webapi.service.dto;
 
 import java.util.List;
 
-public class ConceptSetAnnotationDTO {
+public class SaveConceptSetAnnotationsRequest {
     
     private List<AnnotationDTO> newAnnotation;
     

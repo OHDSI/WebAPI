@@ -239,12 +239,8 @@
       "stopGenerationConfirmation": "Действительно остановить исследование?"
     },
     "authorship": {
-      "created": "создано:",
-      "versionCreated": "версия создана: ",
-      "modified": "изменено:",
-      "on": " ",
-      "byCreated": "<%=createdBy%>",
-      "byModified": "<%=modifiedBy%>"
+      "createdLabel": "создано: <%=createdBy%> <%=createdDate%>",
+      "modifiedLabel": "изменено: <%=modifiedBy%> <%=modifiedDate%>"
     },
     "windowedCriteria": {
       "windowedCriteriaText_1": "где",

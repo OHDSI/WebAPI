@@ -213,12 +213,8 @@
   },
   "components": {
     "authorship": {
-      "created": "created",
-      "versionCreated": "version created",
-      "modified": "modified",
-      "on": "on",
-      "byCreated": "by <%=createdBy%>",
-      "byModified": "by <%=modifiedBy%>"
+      "createdLabel": "created by <%=createdBy%> on <%=createdDate%>",
+      "modifiedLabel": "modified by <%=modifiedBy%> on <%=modifiedDate%>"
     },
     "accessDenied": {
       "forbidden": {

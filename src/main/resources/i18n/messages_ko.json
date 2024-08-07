@@ -213,14 +213,8 @@
   },
   "components": {
     "authorship": {
-      "created": " ",
-      "createdEnd": "경에 생성",
-      "versionCreated": "version created",
-      "modified": " ",
-      "modifiedEnd": "경에 수정",
-      "on": " ",
-      "byCreated": "<%=createdBy%>가 ",
-      "byModified": "<%=modifiedBy%>가 "
+      "createdLabel": "<%=createdBy%>가 <%=createdDate%> 경에 생성",
+      "modifiedLabel": "<%=modifiedBy%>가 <%=modifiedDate%> 경에 수정"
     },
     "accessDenied": {
       "forbidden": {

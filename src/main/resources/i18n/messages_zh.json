@@ -213,12 +213,8 @@
   },
   "components": {
     "authorship": {
-      "created": "被创造",
-      "versionCreated": "version created",
-      "modified": "修改的",
-      "on": "基于/在",
-      "byCreated": "由 <%=createdBy%>创建",
-      "byModified": "由 <%=modifiedBy%>修改"
+      "createdLabel": "被创造 由 <%=createdBy%>创建 基于/在 <%=createdDate%>",
+      "modifiedLabel": "修改的 由 <%=modifiedBy%>修改 基于/在 <%=modifiedDate%>"
     },
     "accessDenied": {
       "forbidden": {

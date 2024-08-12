@@ -13,8 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 
-import java.text.MessageFormat;
-
 @Service
 @ConditionalOnBean(ShinyService.class)
 public class CohortCountsShinyPackagingService extends CommonShinyPackagingService implements ShinyPackagingService {
@@ -64,7 +62,7 @@ public class CohortCountsShinyPackagingService extends CommonShinyPackagingServi
     public ApplicationBrief getBrief(Integer generationId, String sourceKey) {
         CohortDefinition cohort = cohortDefinitionRepository.findOne(generationId);
         ApplicationBrief brief = new ApplicationBrief();
-        brief.setName(MessageFormat.format("cohort_{0}_{1}", cohort.getId(), sourceKey));
+        brief.setName(String.format("%s_%s_%s", CommonAnalysisType.COHORT.getCode(), generationId, sourceKey));
         brief.setTitle(prepareAppTitle(generationId, sourceKey));
         brief.setDescription(cohort.getDescription());
         return brief;

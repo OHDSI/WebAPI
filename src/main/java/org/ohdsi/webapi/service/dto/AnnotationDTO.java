@@ -8,6 +8,7 @@ public class AnnotationDTO extends AnnotationDetailsDTO {
     private String createdBy;
     private String createdDate;
     private String vocabularyVersion;
+    private String conceptSetVersion;
 
     public String getCreatedBy() {
         return createdBy;
@@ -31,5 +32,13 @@ public class AnnotationDTO extends AnnotationDetailsDTO {
 
     public void setVocabularyVersion(String vocabularyVersion) {
         this.vocabularyVersion = vocabularyVersion;
+    }
+
+    public String getConceptSetVersion() {
+        return conceptSetVersion;
+    }
+
+    public void setConceptSetVersion(String conceptSetVersion) {
+        this.conceptSetVersion = conceptSetVersion;
     }
 }

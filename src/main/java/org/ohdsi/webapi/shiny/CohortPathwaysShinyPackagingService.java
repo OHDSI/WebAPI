@@ -12,8 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 
-import java.text.MessageFormat;
-
 @Service
 @ConditionalOnBean(ShinyService.class)
 public class CohortPathwaysShinyPackagingService extends CommonShinyPackagingService implements ShinyPackagingService {
@@ -58,7 +56,7 @@ public class CohortPathwaysShinyPackagingService extends CommonShinyPackagingSer
     public ApplicationBrief getBrief(Integer generationId, String sourceKey) {
         PathwayAnalysisDTO pathwayAnalysis = pathwayService.getByGenerationId(generationId);
         ApplicationBrief applicationBrief = new ApplicationBrief();
-        applicationBrief.setName(MessageFormat.format("cpa_{0}_{1}", generationId, sourceKey));
+        applicationBrief.setName(String.format("%s_%s_%s", CommonAnalysisType.COHORT_PATHWAY.getCode(), generationId, sourceKey));
         applicationBrief.setTitle(prepareAppTitle(pathwayAnalysis.getId(), generationId, sourceKey));
         applicationBrief.setDescription(pathwayAnalysis.getDescription());
         return applicationBrief;

@@ -30,7 +30,6 @@ import javax.ws.rs.InternalServerErrorException;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,7 +40,7 @@ public class CohortCharacterizationShinyPackagingService extends CommonShinyPack
     private static final Logger LOG = LoggerFactory.getLogger(CohortCharacterizationShinyPackagingService.class);
     private static final Float DEFAULT_THRESHOLD_VALUE = 0.01f;
     private static final String SHINY_COHORT_CHARACTERIZATIONS_APP_TEMPLATE_FILE_PATH = "/shiny/shiny-cohortCharacterizations.zip";
-    private static final String APP_NAME_FORMAT = "Characterization_%s_gv%s_%s";
+    private static final String APP_TITLE_FORMAT = "Characterization_%s_gv%s_%s";
 
     private final CcService ccService;
 
@@ -184,13 +183,13 @@ public class CohortCharacterizationShinyPackagingService extends CommonShinyPack
         CohortCharacterization cohortCharacterization = ccService.findDesignByGenerationId(Long.valueOf(generationId));
         CohortCharacterizationEntity cohortCharacterizationEntity = ccService.findById(cohortCharacterization.getId());
         ApplicationBrief applicationBrief = new ApplicationBrief();
-        applicationBrief.setName(MessageFormat.format("cca_{0}_{1}", generationId, sourceKey));
+        applicationBrief.setName(String.format("%s_%s_%s", CommonAnalysisType.COHORT_CHARACTERIZATION.getCode(), generationId, sourceKey));
         applicationBrief.setTitle(prepareAppTitle(cohortCharacterization.getId(), generationId, sourceKey));
         applicationBrief.setDescription(cohortCharacterizationEntity.getDescription());
         return applicationBrief;
     }
 
     private String prepareAppTitle(Long studyAssetId, Integer generationId, String sourceKey) {
-        return String.format(APP_NAME_FORMAT, studyAssetId, generationId, sourceKey);
+        return String.format(APP_TITLE_FORMAT, studyAssetId, generationId, sourceKey);
     }
 }

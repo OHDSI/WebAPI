@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 import javax.ws.rs.InternalServerErrorException;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -113,7 +112,7 @@ public class IncidenceRatesShinyPackagingService extends CommonShinyPackagingSer
     public ApplicationBrief getBrief(Integer generationId, String sourceKey) {
         IncidenceRateAnalysis analysis = incidenceRateAnalysisRepository.findOne(generationId);
         ApplicationBrief applicationBrief = new ApplicationBrief();
-        applicationBrief.setName(MessageFormat.format("ira_{0}_{1}", generationId, sourceKey));
+        applicationBrief.setName(String.format("%s_%s_%s", CommonAnalysisType.INCIDENCE.getCode(), generationId, sourceKey));
         applicationBrief.setTitle(prepareAppTitle(generationId, sourceKey));
         applicationBrief.setDescription(analysis.getDescription());
         return applicationBrief;

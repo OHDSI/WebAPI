@@ -895,18 +895,23 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     public boolean saveConceptSetAnnotation(@PathParam("id") final int conceptSetId, SaveConceptSetAnnotationsRequest request) {
         removeAnnotations(conceptSetId, request);
         if (CollectionUtils.isNotEmpty(request.getNewAnnotation())) {
-            List<ConceptSetAnnotation> annotationList = request.getNewAnnotation().stream().map(m -> {
+            List<ConceptSetAnnotation> annotationList = request.getNewAnnotation()
+                    .stream()
+                    .map(newAnnotationData -> {
                 ConceptSetAnnotation conceptSetAnnotation = new ConceptSetAnnotation();
                 conceptSetAnnotation.setConceptSetId(conceptSetId);
                 try {
-                    AnnotationDetailsDTO annotationDetailsDTO = mapper.readValue(mapper.writeValueAsString(m), AnnotationDetailsDTO.class);
+                    AnnotationDetailsDTO annotationDetailsDTO = new AnnotationDetailsDTO();
+                    annotationDetailsDTO.setId(newAnnotationData.getId());
+                    annotationDetailsDTO.setConceptId(newAnnotationData.getConceptId());
+                    annotationDetailsDTO.setSearchData(newAnnotationData.getSearchData());
                     conceptSetAnnotation.setAnnotationDetails(mapper.writeValueAsString(annotationDetailsDTO));
                 } catch (JsonProcessingException e) {
                     throw new RuntimeException(e);
                 }
-                conceptSetAnnotation.setVocabularyVersion(m.getVocabularyVersion());
-                conceptSetAnnotation.setConceptSetVersion(m.getConceptSetVersion());
-                conceptSetAnnotation.setConceptId(m.getConceptId());
+                conceptSetAnnotation.setVocabularyVersion(newAnnotationData.getVocabularyVersion());
+                conceptSetAnnotation.setConceptSetVersion(newAnnotationData.getConceptSetVersion());
+                conceptSetAnnotation.setConceptId(newAnnotationData.getConceptId());
                 conceptSetAnnotation.setCreatedBy(getCurrentUser());
                 conceptSetAnnotation.setCreatedDate(new Date());
                 return conceptSetAnnotation;
@@ -955,26 +960,35 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Produces(MediaType.APPLICATION_JSON)
     public List<AnnotationDTO> getConceptSetAnnotation(@PathParam("id") final int id) {
         List<ConceptSetAnnotation> annotationList = getConceptSetAnnotationRepository().findByConceptSetId(id);
-        List<AnnotationDTO> annotationDTOList = new ArrayList<>();
-        for (ConceptSetAnnotation conceptSetAnnotation : annotationList) {
-            AnnotationDTO annotationDTO;
-            try {
-                annotationDTO = mapper.readValue(conceptSetAnnotation.getAnnotationDetails(), AnnotationDTO.class);
-                annotationDTO.setId(conceptSetAnnotation.getId());
-                annotationDTO.setVocabularyVersion(conceptSetAnnotation.getVocabularyVersion());
-                annotationDTO.setConceptSetVersion(conceptSetAnnotation.getConceptSetVersion());
-                annotationDTO.setCreatedBy(conceptSetAnnotation.getCreatedBy() != null ? conceptSetAnnotation.getCreatedBy().getName() : null);
-                annotationDTO.setCreatedDate(conceptSetAnnotation.getCreatedDate() != null ? conceptSetAnnotation.getCreatedDate().toString() : null);
+        return annotationList.stream()
+                       .map(this::convertAnnotationEntityToDTO)
+                       .collect(Collectors.toList());
+    }
 
-               String searchDataJSON = annotationDTO.getSearchData();
-               String humanReadableData = searchDataTransformer.convertJsonToReadableFormat(searchDataJSON);
-               annotationDTO.setSearchData(humanReadableData);
-               annotationDTOList.add(annotationDTO);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+
+    private AnnotationDTO convertAnnotationEntityToDTO(ConceptSetAnnotation conceptSetAnnotation) {
+        AnnotationDetailsDTO annotationDetails;
+        try {
+            annotationDetails = mapper.readValue(conceptSetAnnotation.getAnnotationDetails(), AnnotationDetailsDTO.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
-        return annotationDTOList;
+
+        AnnotationDTO annotationDTO = new AnnotationDTO();
+
+           annotationDTO.setId(conceptSetAnnotation.getId());
+           annotationDTO.setConceptId(conceptSetAnnotation.getConceptId());
+
+           String searchDataJSON = annotationDetails.getSearchData();
+           String humanReadableData = searchDataTransformer.convertJsonToReadableFormat(searchDataJSON);
+           annotationDTO.setSearchData(humanReadableData);
+
+           annotationDTO.setVocabularyVersion(conceptSetAnnotation.getVocabularyVersion());
+           annotationDTO.setConceptSetVersion(conceptSetAnnotation.getConceptSetVersion());
+           annotationDTO.setCreatedBy(conceptSetAnnotation.getCreatedBy() != null ? conceptSetAnnotation.getCreatedBy().getName() : null);
+           annotationDTO.setCreatedDate(conceptSetAnnotation.getCreatedDate() != null ? conceptSetAnnotation.getCreatedDate().toString() : null);
+
+           return annotationDTO;
     }
 
     @DELETE

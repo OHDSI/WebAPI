@@ -5,7 +5,7 @@ import com.odysseusinc.arachne.commons.api.v1.dto.CommonAnalysisType;
 import com.odysseusinc.arachne.execution_engine_common.util.CommonFileUtils;
 import org.ohdsi.webapi.pathway.PathwayService;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
-import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
+import org.ohdsi.webapi.pathway.dto.PathwayPopulationResultsDTO;
 import org.ohdsi.webapi.service.ShinyService;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.TempFileUtils;
@@ -47,9 +47,9 @@ public class CohortPathwaysShinyPackagingService implements ShinyPackagingServic
     public TemporaryFile packageApp(Integer generationId, String sourceKey, PackagingStrategy packaging) {
         return TempFileUtils.doInDirectory(path -> {
             PathwayAnalysisDTO pathwayAnalysis = pathwayService.getByGenerationId(generationId);
-            PathwayAnalysisResult pathwayAnalysisResult = pathwayService.getResultingPathways(generationId.longValue());
+            PathwayPopulationResultsDTO pathwayPopulationResultsDTO = pathwayService.getGenerationResults(generationId.longValue());
             ExceptionUtils.throwNotFoundExceptionIfNull(pathwayAnalysis, String.format("There is no pathway analysis definition with generation id = %d.", generationId));
-            ExceptionUtils.throwNotFoundExceptionIfNull(pathwayAnalysisResult, String.format("There is no pathway analysis result definition with generation id = %d.", generationId));
+            ExceptionUtils.throwNotFoundExceptionIfNull(pathwayPopulationResultsDTO, String.format("There is no pathway population result with generation id = %d.", generationId));
             try {
                 File templateArchive = TempFileUtils.copyResourceToTempFile(SHINY_COHORT_PATHWAYS, "shiny", ".zip");
                 CommonFileUtils.unzipFiles(templateArchive, path.toFile());
@@ -62,8 +62,8 @@ public class CohortPathwaysShinyPackagingService implements ShinyPackagingServic
                 Path dataDir = path.resolve("data");
                 Files.createDirectory(dataDir);
                 Stream.of(
-                        fileWriter.writeObjectAsJsonFile(dataDir, pathwayAnalysis, "pathwayAnalysis.json"),
-                        fileWriter.writeObjectAsJsonFile(dataDir, pathwayAnalysisResult, "pathwayAnalysisResult.json"),
+                        fileWriter.writeObjectAsJsonFile(dataDir, pathwayAnalysis, "PathwayDefinitionsMetaData.json"),
+                        fileWriter.writeObjectAsJsonFile(dataDir, pathwayPopulationResultsDTO, "PathwayAnalysisDTOs.json"),
                         fileWriter.writeTextFile(dataDir.resolve("datasource.txt"), pw -> pw.print(sourceKey))
                 ).forEach(manifestUtils.addDataToManifest(manifest, path));
                 fileWriter.writeJsonNodeToFile(manifest, manifestPath);

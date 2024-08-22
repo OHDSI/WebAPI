@@ -24,7 +24,11 @@ import org.ohdsi.webapi.pathway.domain.PathwayCohort;
 import org.ohdsi.webapi.pathway.domain.PathwayEventCohort;
 import org.ohdsi.webapi.pathway.domain.PathwayTargetCohort;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
+import org.ohdsi.webapi.pathway.dto.PathwayCodeDTO;
+import org.ohdsi.webapi.pathway.dto.PathwayPopulationEventDTO;
+import org.ohdsi.webapi.pathway.dto.PathwayPopulationResultsDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayVersionFullDTO;
+import org.ohdsi.webapi.pathway.dto.TargetCohortPathwaysDTO;
 import org.ohdsi.webapi.pathway.dto.internal.CohortPathways;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayCode;
@@ -713,5 +717,39 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
         PathwayAnalysisDTO dto = genericConversionService.convert(pathwayAnalysis, PathwayAnalysisDTO.class);
         dto.getEventCohorts().forEach(ec -> ec.setCode(eventCodes.get(ec.getId())));
         return dto;
+    }
+    @Override
+    public PathwayPopulationResultsDTO getGenerationResults(Long generationId) {
+        PathwayAnalysisResult resultingPathways = getResultingPathways(generationId);
+
+        List<PathwayCodeDTO> eventCodeDtos = resultingPathways.getCodes()
+                .stream()
+                .map(entry -> {
+                    PathwayCodeDTO dto = new PathwayCodeDTO();
+                    dto.setCode(entry.getCode());
+                    dto.setName(entry.getName());
+                    dto.setIsCombo(entry.isCombo());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        List<TargetCohortPathwaysDTO> pathwayDtos = resultingPathways.getCohortPathwaysList()
+                .stream()
+                .map(cohortResults -> {
+                    if (cohortResults.getPathwaysCounts() == null) {
+                        return null;
+                    }
+
+                    List<PathwayPopulationEventDTO> eventDTOs = cohortResults.getPathwaysCounts()
+                            .entrySet()
+                            .stream()
+                            .map(entry -> new PathwayPopulationEventDTO(entry.getKey(), entry.getValue()))
+                            .collect(Collectors.toList());
+                    return new TargetCohortPathwaysDTO(cohortResults.getCohortId(), cohortResults.getTargetCohortCount(), cohortResults.getTotalPathwaysCount(), eventDTOs);
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        return new PathwayPopulationResultsDTO(eventCodeDtos, pathwayDtos);
     }
 }

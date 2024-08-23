@@ -8,6 +8,8 @@ public class PositConnectProperties {
     @Value("${shiny.connect.api.key}")
     private String apiKey;
     private String url;
+    @Value("${shiny.connect.okhttp.timeout.seconds}")
+    private Integer timeoutSeconds;
 
     public String getApiKey() {
         return apiKey;
@@ -23,5 +25,13 @@ public class PositConnectProperties {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public Integer getTimeoutSeconds() {
+        return timeoutSeconds;
+    }
+
+    public void setTimeoutSeconds(Integer timeoutSeconds) {
+        this.timeoutSeconds = timeoutSeconds;
     }
 }

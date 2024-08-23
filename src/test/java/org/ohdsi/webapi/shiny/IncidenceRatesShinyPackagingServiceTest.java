@@ -1,25 +1,31 @@
 package org.ohdsi.webapi.shiny;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.odysseusinc.arachne.commons.api.v1.dto.CommonAnalysisType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
 import org.ohdsi.webapi.ircalc.AnalysisReport;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisDetails;
+import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisExportExpression;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
 import org.ohdsi.webapi.service.IRAnalysisResource;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -39,7 +45,6 @@ public class IncidenceRatesShinyPackagingServiceTest {
     @InjectMocks
     private IncidenceRatesShinyPackagingService sut;
 
-
     private final Integer analysisId = 1;
     private final String sourceKey = "sourceKey";
 
@@ -49,23 +54,45 @@ public class IncidenceRatesShinyPackagingServiceTest {
 
         when(repository.findOne(analysisId)).thenReturn(incidenceRateAnalysis);
         ApplicationBrief brief = sut.getBrief(analysisId, sourceKey);
-        assertEquals(brief.getName(), "incidence_rates_analysis_" + analysisId + "_" + sourceKey);
+        assertEquals(brief.getName(), "ira_" + analysisId + "_" + sourceKey);
         assertEquals(brief.getTitle(), "Incidence_1_sourceKey");
         assertEquals(brief.getDescription(), incidenceRateAnalysis.getDescription());
     }
 
     @Test
-    public void shouldPackageApp() {
-        IncidenceRateAnalysis incidenceRateAnalysis = createIncidenceRateAnalysis();
-        PackagingStrategy packagingStrategy = mock(PackagingStrategy.class);
-        when(repository.findOne(analysisId)).thenReturn(incidenceRateAnalysis);
-        when(irAnalysisResource.getAnalysisReport(anyInt(), anyString(), anyInt(), anyInt()))
-                .thenReturn(createAnalysisReport(1, 2))
-                .thenReturn(createAnalysisReport(3, 4))
-                .thenReturn(createAnalysisReport(5, 6))
-                .thenReturn(createAnalysisReport(7, 8));
-        TemporaryFile result = sut.packageApp(analysisId, sourceKey, packagingStrategy);
-        assertNotNull(result);
+    public void shouldPopulateAppDataWithValidData() throws JsonProcessingException {
+        Integer generationId = 1;
+        String sourceKey = "source";
+
+        IncidenceRateAnalysis analysis = Mockito.mock(IncidenceRateAnalysis.class, Answers.RETURNS_DEEP_STUBS.get());
+        when(analysis.getDetails().getExpression()).thenReturn("{}");
+        when(repository.findOne(generationId)).thenReturn(analysis);
+
+        CohortDTO targetCohort = new CohortDTO();
+        targetCohort.setId(101);
+        targetCohort.setName("Target Cohort");
+
+        CohortDTO outcomeCohort = new CohortDTO();
+        outcomeCohort.setId(201);
+        outcomeCohort.setName("Outcome Cohort");
+
+
+        IncidenceRateAnalysisExportExpression expression = new IncidenceRateAnalysisExportExpression();
+        expression.outcomeCohorts.add(outcomeCohort);
+        expression.targetCohorts.add(targetCohort);
+
+        when(objectMapper.readValue("{}", IncidenceRateAnalysisExportExpression.class)).thenReturn(expression);
+        AnalysisReport analysisReport = new AnalysisReport();
+        analysisReport.summary = new AnalysisReport.Summary();
+        when(irAnalysisResource.getAnalysisReport(1, "source", 101, 201)).thenReturn(analysisReport);
+
+        CommonShinyPackagingService.ShinyAppDataConsumers dataConsumers = mock(CommonShinyPackagingService.ShinyAppDataConsumers.class, Answers.RETURNS_DEEP_STUBS.get());
+
+        sut.populateAppData(generationId, sourceKey, dataConsumers);
+
+        verify(dataConsumers.getAppProperties(), times(2)).accept(anyString(), anyString());
+        verify(dataConsumers.getTextFiles(), times(1)).accept(anyString(), anyString());
+        verify(dataConsumers.getJsonObjects(), times(1)).accept(anyString(), any());
     }
 
     @Test

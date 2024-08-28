@@ -17,16 +17,20 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.JobInvalidator;
 import org.ohdsi.webapi.cohortcharacterization.converter.SerializedCcToCcConverter;
+import org.ohdsi.webapi.cohortcharacterization.domain.CcFeAnalysisEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcParamEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcStrataConceptSetEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcStrataEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
+import org.ohdsi.webapi.cohortcharacterization.dto.AbstractTemporalResult;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcDistributionStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcShortDTO;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcTemporalAnnualResult;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcTemporalResult;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcVersionFullDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.ExecutionResultRequest;
@@ -34,9 +38,15 @@ import org.ohdsi.webapi.cohortcharacterization.dto.ExportExecutionResultRequest;
 import org.ohdsi.webapi.cohortcharacterization.dto.GenerationResults;
 import org.ohdsi.webapi.cohortcharacterization.report.AnalysisItem;
 import org.ohdsi.webapi.cohortcharacterization.report.AnalysisResultItem;
+import org.ohdsi.webapi.cohortcharacterization.report.ComparativeItem;
+import org.ohdsi.webapi.cohortcharacterization.report.ExportItem;
+import org.ohdsi.webapi.cohortcharacterization.report.PrevalenceItem;
 import org.ohdsi.webapi.cohortcharacterization.report.Report;
+import org.ohdsi.webapi.cohortcharacterization.report.TemporalAnnualItem;
+import org.ohdsi.webapi.cohortcharacterization.report.TemporalItem;
 import org.ohdsi.webapi.cohortcharacterization.repository.AnalysisGenerationInfoEntityRepository;
 import org.ohdsi.webapi.cohortcharacterization.repository.CcConceptSetRepository;
+import org.ohdsi.webapi.cohortcharacterization.repository.CcFeAnalysisRepository;
 import org.ohdsi.webapi.cohortcharacterization.repository.CcGenerationEntityRepository;
 import org.ohdsi.webapi.cohortcharacterization.repository.CcParamRepository;
 import org.ohdsi.webapi.cohortcharacterization.repository.CcRepository;
@@ -99,6 +109,7 @@ import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -122,10 +133,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.groupingBy;
 import static org.ohdsi.analysis.cohortcharacterization.design.CcResultType.DISTRIBUTION;
 import static org.ohdsi.analysis.cohortcharacterization.design.CcResultType.PREVALENCE;
 import static org.ohdsi.webapi.Constants.GENERATE_COHORT_CHARACTERIZATION;
@@ -149,6 +164,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     private static final String[] PARAMETERS_COUNT = {"cohort_characterization_generation_id", "vocabulary_schema"};
     private static final String[] PREVALENCE_STATS_PARAMS = {"cdm_database_schema", "cdm_results_schema", "cc_generation_id", "analysis_id", "cohort_id", "covariate_id"};
     private final String QUERY_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/queryResults.sql");
+    private final String QUERY_TEMPORAL_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/queryTemporalResults.sql");
+    private final String QUERY_TEMPORAL_ANNUAL_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/queryTemporalAnnualResults.sql");
     private final String QUERY_COUNT = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/queryCountWithoutThreshold.sql");
     private final String DELETE_RESULTS = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/deleteResults.sql");
     private final String DELETE_EXECUTION = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/deleteExecution.sql");
@@ -209,6 +226,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     private final JobInvalidator jobInvalidator;
     private final GenericConversionService genericConversionService;
     private final VocabularyService vocabularyService;
+    private final CcFeAnalysisRepository ccFeAnalysisRepository;
     private VersionService<CharacterizationVersion> versionService;
     
     private PermissionService permissionService;
@@ -238,7 +256,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             final ApplicationEventPublisher eventPublisher,
             final JobInvalidator jobInvalidator,
             final VocabularyService vocabularyService,
-            final VersionService<CharacterizationVersion> versionService,
+            CcFeAnalysisRepository ccFeAnalysisRepository, final VersionService<CharacterizationVersion> versionService,
             final PermissionService permissionService,
             @Qualifier("conversionService") final GenericConversionService genericConversionService,
             Environment env) {
@@ -260,6 +278,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         this.eventPublisher = eventPublisher;
         this.jobInvalidator = jobInvalidator;
         this.vocabularyService = vocabularyService;
+        this.ccFeAnalysisRepository = ccFeAnalysisRepository;
         this.permissionService = permissionService;
         this.genericConversionService = genericConversionService;
         this.versionService = versionService;
@@ -275,7 +294,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     }
 
     private CohortCharacterizationEntity saveCc(final CohortCharacterizationEntity entity) {
-        CohortCharacterizationEntity savedEntity = repository.saveAndFlush(entity);
+        CohortCharacterizationEntity savedEntity = repository.save(entity);
 
         for(CcStrataEntity strata: entity.getStratas()){
           strata.setCohortCharacterization(savedEntity);
@@ -285,6 +304,11 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         for(CcParamEntity param: entity.getParameters()){
           param.setCohortCharacterization(savedEntity);
           paramRepository.save(param);
+        }
+
+        for(CcFeAnalysisEntity analysis : entity.getCcFeatureAnalyses()) {
+            analysis.setCohortCharacterization(savedEntity);
+            ccFeAnalysisRepository.save(analysis);
         }
 
         entityManager.flush();
@@ -422,8 +446,10 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     }
 
     private void updateAnalyses(final CohortCharacterizationEntity entity, final CohortCharacterizationEntity foundEntity) {
-        foundEntity.getFeatureAnalyses().clear();
-        foundEntity.getFeatureAnalyses().addAll(entity.getFeatureAnalyses());
+        ccFeAnalysisRepository.delete(foundEntity.getCcFeatureAnalyses());
+        foundEntity.getCcFeatureAnalyses().clear();
+        foundEntity.getCcFeatureAnalyses().addAll(entity.getCcFeatureAnalyses());
+        ccFeAnalysisRepository.save(foundEntity.getCcFeatureAnalyses());
     }
 
     private <T extends WithId> List<T> getLinksToDelete(final CohortCharacterizationEntity foundEntity,
@@ -478,9 +504,9 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         updateConceptSet(entity, persistedCohortCharacterization);
         
         importCohorts(entity, persistedCohortCharacterization);
-        List<Integer> savedAnalysesIds = importAnalyses(entity, persistedCohortCharacterization);
 
         final CohortCharacterizationEntity savedEntity = saveCc(persistedCohortCharacterization);
+        List<Integer> savedAnalysesIds = importAnalyses(entity, savedEntity);
 
         eventPublisher.publishEvent(new CcImportEvent(savedAnalysesIds));
 
@@ -644,17 +670,29 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     }
 
     protected List<CcResult> findResults(final Long generationId, ExecutionResultRequest params) {
+        return executeFindResults(generationId, params, QUERY_RESULTS, getGenerationResults());
+    }
+
+    private List<CcTemporalResult> findTemporalResults(final Long generationId, ExecutionResultRequest params) {
+        return executeFindResults(generationId, params, QUERY_TEMPORAL_RESULTS, getGenerationTemporalResult());
+    }
+
+    private List<CcTemporalAnnualResult> findTemporalAnnualResults(final Long generationId, ExecutionResultRequest params) {
+        return executeFindResults(generationId, params, QUERY_TEMPORAL_ANNUAL_RESULTS, getGenerationTemporalAnnualResult());
+    }
+
+    private <T> List<T> executeFindResults(final Long generationId, ExecutionResultRequest params, String query, RowMapper<T> rowMapper) {
         final CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
                 .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
         final Source source = generationEntity.getSource();
         String analysis = params.getAnalysisIds().stream().map(String::valueOf).collect(Collectors.joining(","));
         String cohorts = params.getCohortIds().stream().map(String::valueOf).collect(Collectors.joining(","));
-        String generationResults = sourceAwareSqlRender.renderSql(source.getSourceId(), QUERY_RESULTS, PARAMETERS_RESULTS_FILTERED,
+        String generationResults = sourceAwareSqlRender.renderSql(source.getSourceId(), query, PARAMETERS_RESULTS_FILTERED,
                 new String[]{String.valueOf(generationId), String.valueOf(params.getThresholdValuePct()),
                         analysis, cohorts, SourceUtils.getVocabularyQualifier(source)});
         final String tempSchema = SourceUtils.getTempQualifier(source);
         String translatedSql = SqlTranslate.translateSql(generationResults, source.getSourceDialect(), SessionUtils.sessionId(), tempSchema);
-        return getGenerationResults(source, translatedSql);
+        return this.getSourceJdbcTemplate(source).query(translatedSql, rowMapper);
     }
 
     @Override
@@ -720,7 +758,34 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                 .map(fa -> fa.getDomain().toString()).distinct().collect(Collectors.toList()));
         return findResults(generationId, params);
     }
-    
+
+    @Override
+    @DataSourceAccess
+    public List<CcTemporalResult> findTemporalResultAsList(@CcGenerationId final Long generationId) {
+        ExecutionResultRequest params = getExecutionResultRequest(generationId);
+        return findTemporalResults(generationId, params);
+    }
+
+    @DataSourceAccess
+    public List<CcTemporalAnnualResult> findTemporalAnnualResultAsList(@CcGenerationId final Long generationId) {
+        ExecutionResultRequest params = getExecutionResultRequest(generationId);
+        return findTemporalAnnualResults(generationId, params);
+    }
+
+    private ExecutionResultRequest getExecutionResultRequest(Long generationId) {
+        ExecutionResultRequest params = new ExecutionResultRequest();
+        CcGenerationEntity generationEntity = ccGenerationRepository.findById(generationId)
+                .orElseThrow(() -> new IllegalArgumentException(String.format(GENERATION_NOT_FOUND_ERROR, generationId)));
+        CohortCharacterizationEntity characterization = generationEntity.getCohortCharacterization();
+        params.setCohortIds(characterization.getCohortDefinitions().stream()
+                .map(CohortDefinition::getId).collect(Collectors.toList()));
+        params.setAnalysisIds(characterization.getFeatureAnalyses().stream()
+                .map(this::mapFeatureAnalysisId).collect(Collectors.toList()));
+        params.setDomainIds(generationEntity.getCohortCharacterization().getFeatureAnalyses().stream()
+                .map(fa -> fa.getDomain().toString()).distinct().collect(Collectors.toList()));
+        return params;
+    }
+
     @Override
     @DataSourceAccess
     public GenerationResults findResult(@CcGenerationId final Long generationId, ExecutionResultRequest params) {
@@ -758,6 +823,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                         .noneMatch(fe -> mapFeatureAnalysisId(fe).equals(s) && params.getDomainIds().contains(fe.getDomain().toString())));
 
         List<CcResult> ccResults = findResults(generationId, params);
+        List<CcTemporalResult> ccTemporalResults = findTemporalResults(generationId, params);
 
         // create initial structure and fill with results
         Map<Integer, AnalysisItem> analysisMap = new HashMap<>();
@@ -789,12 +855,105 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                 .filter(def -> params.getCohortIds().contains(def.getId()))
                 .collect(Collectors.toSet());
 
-        List<Report> reports = prepareReportData(analysisMap, cohortDefs, featureAnalyses);
+        //Temporal
+        Map<Integer, FeatureExtraction.PrespecAnalysis> prespecAnalysisIdMap = FeatureExtraction.getNameToPrespecAnalysis().values()
+                .stream().collect(Collectors.toMap(a -> a.analysisId, a -> a));
+        List<CcTemporalResult> temporalResult = findTemporalResultAsList(generationId);
+        List<CcTemporalResult> mappedResult = temporalResult.stream().map(tr -> mapTemporalResult(featureAnalyses, prespecAnalysisIdMap, tr, CcTemporalResult::new,
+                        (source, target) -> {
+                            target.setStartDay(source.getStartDay());
+                            target.setEndDay(source.getEndDay());
+                            target.setTimeId(source.getTimeId());
+                        }))
+                .collect(Collectors.toList());
+        Map<Integer, Map<Integer, Map<Long, List<CcTemporalResult>>>> temporalByCohort = groupByResult(mappedResult);
+
+        List<CcTemporalAnnualResult> temporalAnnualResult = findTemporalAnnualResultAsList(generationId);
+        List<CcTemporalAnnualResult> mappedAnnualResult = temporalAnnualResult.stream().map(tr -> mapTemporalResult(featureAnalyses, prespecAnalysisIdMap, tr, CcTemporalAnnualResult::new,
+                        (source, target) -> {
+                            target.setYear(source.getYear());
+                        }))
+                .collect(Collectors.toList());
+        Map<Integer, Map<Integer, Map<Long, List<CcTemporalAnnualResult>>>> annualByCohort = groupByResult(mappedAnnualResult);
+
+        List<Report> reports = prepareReportData(analysisMap, cohortDefs, featureAnalyses, params);
+        reports.forEach(r -> {
+            r.items.stream()
+                    .filter(i -> Objects.equals(i.getFaType(), StandardFeatureAnalysisType.PRESET.toString()))
+                    .filter(o -> !r.isComparative)
+                    .map(this::toPrevalenceItem)
+                    .forEach(item -> {
+                        setTemporal(temporalByCohort, item, cov -> {
+                            List<TemporalItem> temporalItems = cov.stream().map(temp -> {
+                                TemporalItem ti = new TemporalItem();
+                                ti.setAvg(temp.getAvg());
+                                ti.setCount(temp.getCount());
+                                ti.setStartDay(temp.getStartDay());
+                                ti.setEndDay(temp.getEndDay());
+                                return ti;
+                            }).collect(Collectors.toList());
+                            item.setTemporal(temporalItems);
+                        });
+                        setTemporal(annualByCohort, item, cov -> {
+                            List<TemporalAnnualItem> temporalAnnualItems = cov.stream().map(temp -> {
+                                TemporalAnnualItem tai = new TemporalAnnualItem();
+                                tai.setYear(temp.getYear());
+                                tai.setAvg(temp.getAvg());
+                                tai.setCount(temp.getCount());
+                                return tai;
+                            }).collect(Collectors.toList());
+                            item.setTemporalAnnual(temporalAnnualItems);
+                        });
+                    });
+        });
 
         GenerationResults res = new GenerationResults();
         res.setReports(reports);
         res.setCount(ccResults.size());
         return res;
+    }
+
+    private PrevalenceItem<?> toPrevalenceItem(ExportItem<?> exportItem){
+        return PrevalenceItem.class.cast(exportItem);
+    }
+
+    private static <T extends AbstractTemporalResult> void setTemporal(Map<Integer, Map<Integer, Map<Long, List<T>>>> temporalByCohort, PrevalenceItem item, Consumer<List<T>> setter) {
+        Optional.ofNullable(temporalByCohort.get(item.getCohortId()))
+                .flatMap(cr -> Optional.ofNullable(cr.get(item.getAnalysisId()))
+                        .flatMap(ar -> Optional.ofNullable(ar.get(item.getCovariateId()))))
+                .ifPresent(setter);
+    }
+
+    private static <T extends AbstractTemporalResult> Map<Integer, Map<Integer, Map<Long, List<T>>>> groupByResult(List<T> mappedAnnualResult) {
+        return mappedAnnualResult.stream()
+                .collect(groupingBy(T::getCohortId, groupingBy(T::getAnalysisId, groupingBy(T::getCovariateId))));
+    }
+
+    private static <T extends AbstractTemporalResult> T mapTemporalResult(
+            Set<FeAnalysisEntity> featureAnalyses,
+            Map<Integer, FeatureExtraction.PrespecAnalysis> prespecAnalysisIdMap,
+            T source,
+            Supplier<T> constructor,
+            BiConsumer<T, T> initializer
+    ) {
+        T result = constructor.get();
+        String analysisName = prespecAnalysisIdMap.get(source.getAnalysisId()).analysisName;
+        Integer analysisId = featureAnalyses.stream().filter(fa -> Objects.equals(fa.getRawDesign(), analysisName))
+                .findFirst()
+                .map(FeAnalysisEntity::getId)
+                .orElseThrow(() -> new IllegalArgumentException(String.format("Preset analysis [%s} is not mapped to feature", analysisName)));
+        result.setAnalysisId(analysisId);
+        result.setCovariateId(source.getCovariateId());
+        result.setAvg(source.getAvg());
+        result.setCount(source.getCount());
+        result.setAnalysisName(source.getAnalysisName());
+        result.setCovariateName(source.getCovariateName());
+        result.setStrataId(source.getStrataId());
+        result.setCohortId(source.getCohortId());
+        result.setStrataName(source.getStrataName());
+        result.setConceptId(source.getConceptId());
+        initializer.accept(source, result);
+        return result;
     }
 
     private Integer mapFeatureAnalysisId(FeAnalysisEntity feAnalysis) {
@@ -818,7 +977,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     }
 
     private List<Report> prepareReportData(Map<Integer, AnalysisItem> analysisMap, Set<CohortDefinition> cohortDefs,
-                                           Set<FeAnalysisEntity> featureAnalyses) {
+                                           Set<FeAnalysisEntity> featureAnalyses, ExecutionResultRequest params) {
         // Create map to get cohort name by its id
         final Map<Integer, CohortDefinition> definitionMap = cohortDefs.stream()
                 .collect(Collectors.toMap(CohortDefinition::getId, Function.identity()));
@@ -854,7 +1013,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                 reports.add(simpleReport);
 
                 // comparative mode
-                if (definitionMap.size() == 2) {
+                if (definitionMap.size() == 2 && !params.getExcludeComparativeResults()) {
                     Iterator<CohortDefinition> iter = definitionMap.values().iterator();
                     CohortDefinition firstCohortDef = iter.next();
                     CohortDefinition secondCohortDef = iter.next();
@@ -1074,8 +1233,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         return listByTags(entities, names, CcShortDTO.class);
     }
 
-    private List<CcResult> getGenerationResults(final Source source, final String translatedSql) {
-        return this.getSourceJdbcTemplate(source).query(translatedSql, (rs, rowNum) -> {
+    private RowMapper<CcResult> getGenerationResults() {
+        return (rs, rowNum) -> {
             final String type = rs.getString("type");
             if (StringUtils.equals(type, DISTRIBUTION.toString())) {
                 final CcDistributionStat distributionStat = new CcDistributionStat();
@@ -1088,7 +1247,45 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                 return prevalenceStat;
             }
             return null;
-        });
+        };
+    }
+
+    private RowMapper<CcTemporalResult> getGenerationTemporalResult() {
+        return (rs, rowNum) -> {
+           CcTemporalResult result = new CcTemporalResult();
+           result.setAnalysisName(rs.getString("analysis_name"));
+           result.setAvg(rs.getDouble("avg_value"));
+           result.setAnalysisId(rs.getInt("analysis_id"));
+           result.setCohortId(rs.getInt("cohort_definition_id"));
+           result.setConceptId(rs.getInt("concept_id"));
+           result.setCount(rs.getLong("count_value"));
+           result.setCovariateId(rs.getLong("covariate_id"));
+           result.setCovariateName(rs.getString("covariate_name"));
+           result.setStrataId(rs.getInt("strata_id"));
+           result.setEndDay(rs.getInt("end_day"));
+           result.setStartDay(rs.getInt("start_day"));
+           result.setStrataName(rs.getString("strata_name"));
+           result.setTimeId(rs.getInt("time_id"));
+           return result;
+        };
+    }
+
+    private RowMapper<CcTemporalAnnualResult> getGenerationTemporalAnnualResult() {
+        return (rs, rowNum) -> {
+            CcTemporalAnnualResult result = new CcTemporalAnnualResult();
+            result.setAnalysisName(rs.getString("analysis_name"));
+            result.setAvg(rs.getDouble("avg_value"));
+            result.setAnalysisId(rs.getInt("analysis_id"));
+            result.setCohortId(rs.getInt("cohort_definition_id"));
+            result.setConceptId(rs.getInt("concept_id"));
+            result.setCount(rs.getLong("count_value"));
+            result.setCovariateId(rs.getLong("covariate_id"));
+            result.setCovariateName(rs.getString("covariate_name"));
+            result.setStrataId(rs.getInt("strata_id"));
+            result.setStrataName(rs.getString("strata_name"));
+            result.setYear(rs.getInt("event_year"));
+            return result;
+        };
     }
 
     private void gatherForPrevalence(final CcPrevalenceStat stat, final ResultSet rs) throws SQLException {
@@ -1165,7 +1362,16 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
             }
         }
 
-        persistedEntity.setFeatureAnalyses(analysesSet);
+        persistedEntity.getCcFeatureAnalyses().clear();
+        Set<CcFeAnalysisEntity> featureAnalyses = analysesSet.stream().map(a -> {
+            CcFeAnalysisEntity feAnalysisEntity = new CcFeAnalysisEntity();
+            feAnalysisEntity.setFeatureAnalysis(a);
+            feAnalysisEntity.setCohortCharacterization(persistedEntity);
+            return feAnalysisEntity;
+        }).collect(Collectors.toSet());
+        ccFeAnalysisRepository.save(featureAnalyses);
+
+        persistedEntity.getCcFeatureAnalyses().addAll(featureAnalyses);
         return savedAnalysesIds;
     }
 

@@ -40,7 +40,7 @@ public class CohortCharacterizationShinyPackagingService extends CommonShinyPack
     private static final Logger LOG = LoggerFactory.getLogger(CohortCharacterizationShinyPackagingService.class);
     private static final Float DEFAULT_THRESHOLD_VALUE = 0.01f;
     private static final String SHINY_COHORT_CHARACTERIZATIONS_APP_TEMPLATE_FILE_PATH = "/shiny/shiny-cohortCharacterizations.zip";
-    private static final String APP_TITLE_FORMAT = "Characterization_%s_gv%s_%s";
+    private static final String APP_TITLE_FORMAT = "Characterization_%s_gv%sx_%s";
 
     private final CcService ccService;
 

@@ -13,6 +13,7 @@ import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisExportExpression;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
 import org.ohdsi.webapi.service.IRAnalysisResource;
 import org.ohdsi.webapi.service.ShinyService;
+import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.InternalServerErrorException;
 import java.io.IOException;
@@ -34,9 +36,11 @@ public class IncidenceRatesShinyPackagingService extends CommonShinyPackagingSer
     private static final String SHINY_INCIDENCE_RATES_APP_TEMPLATE_FILE_PATH = "/shiny/shiny-incidenceRates.zip";
     private static final String COHORT_TYPE_TARGET = "target";
     private static final String COHORT_TYPE_OUTCOME = "outcome";
-    private static final String APP_NAME_FORMAT = "Incidence_%s_%s";
+    private static final String APP_NAME_FORMAT = "Incidence_%s_gv%sx%s_%s";
     private final IncidenceRateAnalysisRepository incidenceRateAnalysisRepository;
     private final IRAnalysisResource irAnalysisResource;
+
+    private final SourceRepository sourceRepository;
 
     @Autowired
     public IncidenceRatesShinyPackagingService(
@@ -46,10 +50,11 @@ public class IncidenceRatesShinyPackagingService extends CommonShinyPackagingSer
             ManifestUtils manifestUtils,
             ObjectMapper objectMapper,
             IncidenceRateAnalysisRepository incidenceRateAnalysisRepository,
-            IRAnalysisResource irAnalysisResource) {
+            IRAnalysisResource irAnalysisResource, SourceRepository sourceRepository) {
         super(atlasUrl, repoLink, fileWriter, manifestUtils, objectMapper);
         this.incidenceRateAnalysisRepository = incidenceRateAnalysisRepository;
         this.irAnalysisResource = irAnalysisResource;
+        this.sourceRepository = sourceRepository;
     }
 
     @Override
@@ -63,6 +68,7 @@ public class IncidenceRatesShinyPackagingService extends CommonShinyPackagingSer
     }
 
     @Override
+    @Transactional
     public void populateAppData(Integer generationId, String sourceKey, ShinyAppDataConsumers dataConsumers) {
         IncidenceRateAnalysis analysis = incidenceRateAnalysisRepository.findOne(generationId);
         ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format("There is no incidence rate analysis with id = %d.", generationId));
@@ -109,11 +115,14 @@ public class IncidenceRatesShinyPackagingService extends CommonShinyPackagingSer
     }
 
     @Override
+    @Transactional
     public ApplicationBrief getBrief(Integer generationId, String sourceKey) {
         IncidenceRateAnalysis analysis = incidenceRateAnalysisRepository.findOne(generationId);
+        Integer assetId = analysis.getId();
+        Integer sourceId = sourceRepository.findBySourceKey(sourceKey).getSourceId();
         ApplicationBrief applicationBrief = new ApplicationBrief();
         applicationBrief.setName(String.format("%s_%s_%s", CommonAnalysisType.INCIDENCE.getCode(), generationId, sourceKey));
-        applicationBrief.setTitle(prepareAppTitle(generationId, sourceKey));
+        applicationBrief.setTitle(prepareAppTitle(generationId, assetId, sourceId, sourceKey));
         applicationBrief.setDescription(analysis.getDescription());
         return applicationBrief;
     }
@@ -142,7 +151,7 @@ public class IncidenceRatesShinyPackagingService extends CommonShinyPackagingSer
         }
     }
 
-    private String prepareAppTitle(Integer generationId, String sourceKey) {
-        return String.format(APP_NAME_FORMAT, generationId, sourceKey);
+    private String prepareAppTitle(Integer generationId, Integer assetId, Integer sourceId, String sourceKey) {
+        return String.format(APP_NAME_FORMAT, generationId, assetId, sourceId, sourceKey);
     }
 }

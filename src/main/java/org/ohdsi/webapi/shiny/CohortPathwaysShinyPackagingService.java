@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 @ConditionalOnBean(ShinyService.class)
 public class CohortPathwaysShinyPackagingService extends CommonShinyPackagingService implements ShinyPackagingService {
     private static final String SHINY_COHORT_PATHWAYS_APP_TEMPLATE_FILE_PATH = "/shiny/shiny-cohortPathways.zip";
-    private static final String APP_TITLE_FORMAT = "Pathway_%s_gv%s_%s";
+    private static final String APP_TITLE_FORMAT = "Pathway_%s_gv%sx_%s";
 
     private final PathwayService pathwayService;
 

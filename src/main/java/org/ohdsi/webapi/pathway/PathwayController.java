@@ -430,38 +430,7 @@ public class PathwayController {
 	public PathwayPopulationResultsDTO getGenerationResults(
 					@PathParam("generationId") final Long generationId
 	) {
-
-		PathwayAnalysisResult resultingPathways = pathwayService.getResultingPathways(generationId);
-
-		List<PathwayCodeDTO> eventCodeDtos = resultingPathways.getCodes()
-						.stream()
-						.map(entry -> {
-							PathwayCodeDTO dto = new PathwayCodeDTO();
-							dto.setCode(entry.getCode());
-							dto.setName(entry.getName());
-							dto.setIsCombo(entry.isCombo());
-							return dto;
-						})
-						.collect(Collectors.toList());
-
-		List<TargetCohortPathwaysDTO> pathwayDtos = resultingPathways.getCohortPathwaysList()
-						.stream()
-						.map(cohortResults -> {
-							if (cohortResults.getPathwaysCounts() == null) {
-								return null;
-							}
-
-							List<PathwayPopulationEventDTO> eventDTOs = cohortResults.getPathwaysCounts()
-											.entrySet()
-											.stream()
-											.map(entry -> new PathwayPopulationEventDTO(entry.getKey(), entry.getValue()))
-											.collect(Collectors.toList());
-							return new TargetCohortPathwaysDTO(cohortResults.getCohortId(), cohortResults.getTargetCohortCount(), cohortResults.getTotalPathwaysCount(), eventDTOs);
-						})
-						.filter(Objects::nonNull)
-						.collect(Collectors.toList());
-
-		return new PathwayPopulationResultsDTO(eventCodeDtos, pathwayDtos);
+		return pathwayService.getGenerationResults(generationId);
 	}
 
 	private PathwayAnalysisDTO reloadAndConvert(Integer id) {

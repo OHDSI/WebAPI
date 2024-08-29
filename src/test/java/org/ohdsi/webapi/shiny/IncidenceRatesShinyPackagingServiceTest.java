@@ -19,10 +19,13 @@ import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisDetails;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisExportExpression;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysisRepository;
 import org.ohdsi.webapi.service.IRAnalysisResource;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceRepository;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -39,6 +42,8 @@ public class IncidenceRatesShinyPackagingServiceTest {
     private FileWriter fileWriter;
     @Mock
     private IRAnalysisResource irAnalysisResource;
+    @Mock
+    private SourceRepository sourceRepository;
     @Spy
     private ObjectMapper objectMapper;
 
@@ -53,9 +58,12 @@ public class IncidenceRatesShinyPackagingServiceTest {
         IncidenceRateAnalysis incidenceRateAnalysis = createIncidenceRateAnalysis();
 
         when(repository.findOne(analysisId)).thenReturn(incidenceRateAnalysis);
+        Source source = new Source();
+        source.setSourceId(3);
+        when(sourceRepository.findBySourceKey("sourceKey")).thenReturn(source);
         ApplicationBrief brief = sut.getBrief(analysisId, sourceKey);
-        assertEquals(brief.getName(), "ira_" + analysisId + "_" + sourceKey);
-        assertEquals(brief.getTitle(), "Incidence_1_sourceKey");
+        assertEquals(brief.getName(), "ir_" + analysisId + "_" + sourceKey);
+        assertEquals(brief.getTitle(), "Incidence_1_gv1x3_sourceKey");
         assertEquals(brief.getDescription(), incidenceRateAnalysis.getDescription());
     }
 

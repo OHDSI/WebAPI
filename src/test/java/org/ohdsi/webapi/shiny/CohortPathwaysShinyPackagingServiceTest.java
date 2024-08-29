@@ -42,8 +42,8 @@ public class CohortPathwaysShinyPackagingServiceTest {
         when(pathwayService.getResultingPathways(eq((long) GENERATION_ID))).thenReturn(createPathwayAnalysisResult());
 
         ApplicationBrief brief = sut.getBrief(GENERATION_ID, SOURCE_KEY);
-        assertEquals(brief.getName(), "cpa_" + GENERATION_ID + "_" + SOURCE_KEY);
-        assertEquals(brief.getTitle(), "Pathway_8_gv1_SynPuf110k");
+        assertEquals(brief.getName(), "txp_" + GENERATION_ID + "_" + SOURCE_KEY);
+        assertEquals(brief.getTitle(), "Pathway_8_gv1x_SynPuf110k");
         assertEquals(brief.getDescription(), "desc");
     }
 

@@ -7,19 +7,23 @@ import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.InclusionRuleReport;
 import org.ohdsi.webapi.service.CohortDefinitionService;
 import org.ohdsi.webapi.service.ShinyService;
+import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @ConditionalOnBean(ShinyService.class)
 public class CohortCountsShinyPackagingService extends CommonShinyPackagingService implements ShinyPackagingService {
     private static final String SHINY_COHORT_COUNTS_APP_TEMPLATE_FILE_PATH = "/shiny/shiny-cohortCounts.zip";
-    private static final String APP_TITLE_FORMAT = "Cohort_%s_%s";
+    private static final String APP_TITLE_FORMAT = "Cohort_%s_gv%sx%s_%s";
     private final CohortDefinitionService cohortDefinitionService;
     private final CohortDefinitionRepository cohortDefinitionRepository;
+
+    private final SourceRepository sourceRepository;
 
     @Autowired
     public CohortCountsShinyPackagingService(
@@ -27,10 +31,11 @@ public class CohortCountsShinyPackagingService extends CommonShinyPackagingServi
             @Value("${shiny.repo.link}") String repoLink,
             FileWriter fileWriter,
             ManifestUtils manifestUtils,
-            ObjectMapper objectMapper, CohortDefinitionService cohortDefinitionService, CohortDefinitionRepository cohortDefinitionRepository) {
+            ObjectMapper objectMapper, CohortDefinitionService cohortDefinitionService, CohortDefinitionRepository cohortDefinitionRepository, SourceRepository sourceRepository) {
         super(atlasUrl, repoLink, fileWriter, manifestUtils, objectMapper);
         this.cohortDefinitionService = cohortDefinitionService;
         this.cohortDefinitionRepository = cohortDefinitionRepository;
+        this.sourceRepository = sourceRepository;
     }
 
     @Override
@@ -44,6 +49,7 @@ public class CohortCountsShinyPackagingService extends CommonShinyPackagingServi
     }
 
     @Override
+    @Transactional
     public void populateAppData(Integer generationId, String sourceKey, ShinyAppDataConsumers dataConsumers) {
         CohortDefinition cohort = cohortDefinitionRepository.findOne(generationId);
         ExceptionUtils.throwNotFoundExceptionIfNull(cohort, String.format("There is no cohort definition with id = %d.", generationId));
@@ -61,14 +67,17 @@ public class CohortCountsShinyPackagingService extends CommonShinyPackagingServi
     @Override
     public ApplicationBrief getBrief(Integer generationId, String sourceKey) {
         CohortDefinition cohort = cohortDefinitionRepository.findOne(generationId);
+        Integer assetId = cohort.getId();
+        Integer sourceId = sourceRepository.findBySourceKey(sourceKey).getSourceId();
+
         ApplicationBrief brief = new ApplicationBrief();
         brief.setName(String.format("%s_%s_%s", CommonAnalysisType.COHORT.getCode(), generationId, sourceKey));
-        brief.setTitle(prepareAppTitle(generationId, sourceKey));
+        brief.setTitle(prepareAppTitle(generationId, assetId, sourceId, sourceKey));
         brief.setDescription(cohort.getDescription());
         return brief;
     }
 
-    private String prepareAppTitle(Integer generationId, String sourceKey) {
-        return String.format(APP_TITLE_FORMAT, generationId, sourceKey);
+    private String prepareAppTitle(Integer generationId, Integer assetId, Integer sourceId, String sourceKey) {
+        return String.format(APP_TITLE_FORMAT, generationId, assetId, sourceId, sourceKey);
     }
 }

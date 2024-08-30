@@ -3,12 +3,15 @@ package org.ohdsi.webapi.service.dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AnnotationDTO extends AnnotationDetailsDTO {
+public class AnnotationDTO {
 
+    private Integer id;
     private String createdBy;
     private String createdDate;
     private String vocabularyVersion;
     private String conceptSetVersion;
+    private String searchData;
+    private Integer conceptId;
 
     public String getCreatedBy() {
         return createdBy;
@@ -40,5 +43,29 @@ public class AnnotationDTO extends AnnotationDetailsDTO {
 
     public void setConceptSetVersion(String conceptSetVersion) {
         this.conceptSetVersion = conceptSetVersion;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getSearchData() {
+        return searchData;
+    }
+
+    public void setSearchData(String searchData) {
+        this.searchData = searchData;
+    }
+
+    public Integer getConceptId() {
+        return conceptId;
+    }
+
+    public void setConceptId(Integer conceptId) {
+        this.conceptId = conceptId;
     }
 }

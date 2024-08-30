@@ -12,6 +12,8 @@ import org.ohdsi.webapi.Constants;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
 
@@ -64,8 +66,16 @@ public class CorsFilter extends AdviceFilter{
 
     // continue processing request
     //
-    httpResponse.setHeader("Access-Control-Expose-Headers", "Bearer,x-auth-error," +
-            Joiner.on(",").join(Constants.Headers.AUTH_PROVIDER, Constants.Headers.USER_LANGAUGE));
+
+    List<String> exposedHeaders = Arrays.asList(
+            Constants.Headers.BEARER,
+            Constants.Headers.X_AUTH_ERROR,
+            Constants.Headers.AUTH_PROVIDER,
+            Constants.Headers.USER_LANGAUGE,
+            Constants.Headers.CONTENT_DISPOSITION
+    );
+    httpResponse.setHeader(Constants.Headers.ACCESS_CONTROL_EXPOSE_HEADERS, Joiner.on(",").join(exposedHeaders));
+
     return true;
   }
 }

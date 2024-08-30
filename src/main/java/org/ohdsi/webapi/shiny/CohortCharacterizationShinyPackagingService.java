@@ -1,9 +1,8 @@
 package org.ohdsi.webapi.shiny;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Iterables;
 import com.odysseusinc.arachne.commons.api.v1.dto.CommonAnalysisType;
-import com.odysseusinc.arachne.execution_engine_common.util.CommonFileUtils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.QuoteMode;
@@ -19,7 +18,6 @@ import org.ohdsi.webapi.cohortcharacterization.report.ExportItem;
 import org.ohdsi.webapi.cohortcharacterization.report.Report;
 import org.ohdsi.webapi.service.ShinyService;
 import org.ohdsi.webapi.util.ExceptionUtils;
-import org.ohdsi.webapi.util.TempFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,79 +27,63 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.InternalServerErrorException;
-import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @ConditionalOnBean(ShinyService.class)
-public class CohortCharacterizationShinyPackagingService implements ShinyPackagingService {
+public class CohortCharacterizationShinyPackagingService extends CommonShinyPackagingService implements ShinyPackagingService {
     private static final Logger LOG = LoggerFactory.getLogger(CohortCharacterizationShinyPackagingService.class);
     private static final Float DEFAULT_THRESHOLD_VALUE = 0.01f;
-    private static final String SHINY_COHORT_CHARACTERIZATIONS_APP_PATH = "/shiny/shiny-cohortCharacterizations.zip";
-    private static final String APP_NAME_FORMAT = "Characterization_%s_gv%s_%s";
-    @Value("${shiny.atlas.url}")
-    private String atlasUrl;
+    private static final String SHINY_COHORT_CHARACTERIZATIONS_APP_TEMPLATE_FILE_PATH = "/shiny/shiny-cohortCharacterizations.zip";
+    private static final String APP_TITLE_FORMAT = "Characterization_%s_gv%sx_%s";
+
+    private final CcService ccService;
+
+    private final CohortCharacterizationAnalysisHeaderToFieldMapper cohortCharacterizationAnalysisHeaderToFieldMapper;
+
     @Autowired
-    private CcService ccService;
-    @Autowired
-    private FileWriter fileWriter;
-    @Autowired
-    private ManifestUtils manifestUtils;
-    @Autowired
-    private CohortCharacterizationAnalysisHeaderToFieldMapper cohortCharacterizationAnalysisHeaderToFieldMapper;
+    public CohortCharacterizationShinyPackagingService(
+            @Value("${shiny.atlas.url}") String atlasUrl,
+            @Value("${shiny.repo.link}") String repoLink,
+            FileWriter fileWriter,
+            ManifestUtils manifestUtils,
+            ObjectMapper objectMapper,
+            CcService ccService,
+            CohortCharacterizationAnalysisHeaderToFieldMapper cohortCharacterizationAnalysisHeaderToFieldMapper) {
+        super(atlasUrl, repoLink, fileWriter, manifestUtils, objectMapper);
+        this.ccService = ccService;
+        this.cohortCharacterizationAnalysisHeaderToFieldMapper = cohortCharacterizationAnalysisHeaderToFieldMapper;
+    }
 
     @Override
     public CommonAnalysisType getType() {
         return CommonAnalysisType.COHORT_CHARACTERIZATION;
     }
 
+
+    @Override
+    public String getAppTemplateFilePath() {
+        return SHINY_COHORT_CHARACTERIZATIONS_APP_TEMPLATE_FILE_PATH;
+    }
+
     @Override
     @Transactional
-    public TemporaryFile packageApp(Integer generationId, String sourceKey, PackagingStrategy packaging) {
-        return TempFileUtils.doInDirectory(path -> {
-            CohortCharacterization cohortCharacterization = ccService.findDesignByGenerationId(Long.valueOf(generationId));
-            GenerationResults generationResults = fetchGenerationResults(generationId, cohortCharacterization);
-            ExceptionUtils.throwNotFoundExceptionIfNull(generationResults, String.format("There are no analysis generation results with generationId = %d.", generationId));
-            try {
-                File templateArchive = TempFileUtils.copyResourceToTempFile(SHINY_COHORT_CHARACTERIZATIONS_APP_PATH, "shiny", ".zip");
-                CommonFileUtils.unzipFiles(templateArchive, path.toFile());
-                Path manifestPath = path.resolve("manifest.json");
-                if (!Files.exists(manifestPath)) {
-                    throw new PositConnectClientException("manifest.json is not found in the Shiny Application");
-                }
-                JsonNode manifest = manifestUtils.parseManifest(manifestPath);
-                Path dataDir = path.resolve("data");
-                Files.createDirectory(dataDir);
+    public void populateAppData(Integer generationId, String sourceKey, ShinyAppDataConsumers dataConsumers) {
+        CohortCharacterization cohortCharacterization = ccService.findDesignByGenerationId(Long.valueOf(generationId));
+        GenerationResults generationResults = fetchGenerationResults(generationId, cohortCharacterization);
+        ExceptionUtils.throwNotFoundExceptionIfNull(generationResults, String.format("There are no analysis generation results with generationId = %d.", generationId));
 
-                Stream<Path> generatedCsvPaths = generationResults.getReports()
-                        .stream()
-                        .map(this::convertReportToCSV)
-                        .map(contentsByFilename -> fileWriter.writeTextFile(dataDir.resolve(contentsByFilename.getLeft()), pw -> pw.print(contentsByFilename.getRight())));
+        dataConsumers.getAppProperties().accept("atlas_link", String.format("%s/#/cc/characterizations/%s", atlasUrl, cohortCharacterization.getId()));
 
-                Stream<Path> additionalMetadataFilesPaths = Stream.of(
-                        fileWriter.writeTextFile(dataDir.resolve("atlas_link.txt"), pw -> pw.printf("%s/#/cc/characterizations/%s", atlasUrl, cohortCharacterization.getId()))
-                );
-
-                Stream.concat(generatedCsvPaths, additionalMetadataFilesPaths)
-                        .forEach(manifestUtils.addDataToManifest(manifest, path));
-
-                fileWriter.writeJsonNodeToFile(manifest, manifestPath);
-                Path appArchive = packaging.apply(path);
-                return new TemporaryFile(String.format("%s.zip", prepareAppTitle(cohortCharacterization.getId(), generationId, sourceKey)), appArchive);
-            } catch (IOException e) {
-                LOG.error("Failed to prepare Shiny application", e);
-                throw new InternalServerErrorException();
-            }
-        });
+        generationResults.getReports()
+                .stream()
+                .map(this::convertReportToCSV)
+                .forEach(csvDataByFilename -> dataConsumers.getTextFiles().accept(csvDataByFilename.getKey(), csvDataByFilename.getValue()));
     }
 
     //Pair.left == CSV filename
@@ -201,13 +183,13 @@ public class CohortCharacterizationShinyPackagingService implements ShinyPackagi
         CohortCharacterization cohortCharacterization = ccService.findDesignByGenerationId(Long.valueOf(generationId));
         CohortCharacterizationEntity cohortCharacterizationEntity = ccService.findById(cohortCharacterization.getId());
         ApplicationBrief applicationBrief = new ApplicationBrief();
-        applicationBrief.setName(MessageFormat.format("cohort_characterization_analysis_{0}_{1}", generationId, sourceKey));
+        applicationBrief.setName(String.format("%s_%s_%s", CommonAnalysisType.COHORT_CHARACTERIZATION.getCode(), generationId, sourceKey));
         applicationBrief.setTitle(prepareAppTitle(cohortCharacterization.getId(), generationId, sourceKey));
         applicationBrief.setDescription(cohortCharacterizationEntity.getDescription());
         return applicationBrief;
     }
 
     private String prepareAppTitle(Long studyAssetId, Integer generationId, String sourceKey) {
-        return String.format(APP_NAME_FORMAT, studyAssetId, generationId, sourceKey);
+        return String.format(APP_TITLE_FORMAT, studyAssetId, generationId, sourceKey);
     }
 }

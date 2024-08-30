@@ -118,25 +118,9 @@
     "plp": "Прогнозирование",
     "reusable": "Сниппет",
     "addTools": "Добавить инструмент",
-    "loadingTools": "Загрузка инструментов",
     "url": "URL-адрес",
     "apply": "Применять",
-    "tools": "Инструменты",
-    "added": "Добавлен <%=createdDate%>",
-    "monthsName": {
-      "january": "январь",
-      "february": "февраль",
-      "march": "Маршировать",
-      "april": "апрель",
-      "may": "Может",
-      "june": "Июнь",
-      "july": "Июль",
-      "august": "Август",
-      "september": "Сентябрь",
-      "october": "Октябрь",
-      "november": "ноябрь",
-      "december": "Декабрь"
-    }
+    "tools": "Инструменты"
   },
   "tool":{
     "name": "* Имя",

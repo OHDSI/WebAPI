@@ -118,25 +118,9 @@
     "plp": "Patient Level Prediction",
     "reusable": "Reusable",
     "addTools": "도구 추가",
-    "loadingTools": "도구 로딩",
     "url": "URL",
     "apply": "적용하다",
-    "tools": "도구",
-    "added": "추가됨 <%=createdDate%>",
-    "monthsName": {
-      "january": "일월",
-      "february": "이월",
-      "march": "삼월",
-      "april": "사월",
-      "may": "오월",
-      "june": "유월",
-      "july": "칠월",
-      "august": "팔월",
-      "september": "구월",
-      "october": "시월",
-      "november": "십일월",
-      "december": "십이월"
-    }
+    "tools": "도구"
   },
   "tool":{
     "name": "* 이름",

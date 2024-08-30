@@ -29,7 +29,9 @@ import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @ConditionalOnBean(ShinyService.class)
@@ -130,6 +132,9 @@ public class PositConnectClient implements InitializingBean {
     private Call call(Request.Builder request, String token) {
         OkHttpClient client = new OkHttpClient.Builder()
                 .retryOnConnectionFailure(false)
+                .connectTimeout(properties.getTimeoutSeconds(), TimeUnit.SECONDS)
+                .readTimeout(properties.getTimeoutSeconds(), TimeUnit.SECONDS)
+                .writeTimeout(properties.getTimeoutSeconds(), TimeUnit.SECONDS)
                 .build();
         return client.newCall(request.header(HEADER_AUTH, AUTH_PREFIX + " " + token).build());
     }
@@ -144,6 +149,10 @@ public class PositConnectClient implements InitializingBean {
             if (StringUtils.isBlank(properties.getUrl())) {
                 log.error("Set Posit Connect URL to property \"shiny.connect.url\"");
                 throw new BeanInitializationException("Set Posit Connect URL to property \"shiny.connect.url\"");
+            }
+            if (Objects.isNull(properties.getTimeoutSeconds())) {
+                log.error("Set Posit Connect HTTP Connect/Read/Write Timeout to property \"shiny.connect.okhttp.timeout.seconds\"");
+                throw new BeanInitializationException("Set Posit Connect HTTP Connect/Read/Write Timeout to property \"shiny.connect.okhttp.timeout.seconds\"");
             }
         }
     }

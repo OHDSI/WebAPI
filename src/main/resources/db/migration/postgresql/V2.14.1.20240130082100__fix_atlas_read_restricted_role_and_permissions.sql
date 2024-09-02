@@ -1,3 +1,6 @@
+-- When using role 15, remember to remove the role "source user" from all users.
+-- See also https://github.com/OHDSI/WebAPI/wiki/Read-restricted-Configuration
+
 delete from ${ohdsiSchema}.sec_role_permission where role_id = 15;
 
 INSERT INTO ${ohdsiSchema}.sec_role_permission (role_id, permission_id)
@@ -36,54 +39,60 @@ with vocab_source as (
 		(':search:post')
 	) t3 (r)
  ) combined
+),
+ source_perms as (
+ select distinct concat(ls,ms,rs) perm
+ from (
+ select *
+ from (values 
+		('source:')
+	) t11 (ls)
+ cross join 
+	( select source_key 
+	  from vocab_source
+	) t22 (ms)
+ cross join 
+	(values
+		(':access')
+	) t33 (rs)
+ ) combined
+),
+ generate_perms as (
+ select distinct concat(lg,mg,rg) perm
+ from (
+ select *
+ from (values 
+		('cohortdefinition:*:generate:')
+	) t111 (lg)
+ cross join 
+	( select source_key 
+	  from vocab_source
+	) t222 (mg)
+ cross join 
+	(values
+		(':get')
+	) t333 (rg)
+ ) combined
 )
 SELECT DISTINCT 15 role_id, permission_id
     FROM ${ohdsiSchema}.sec_role_permission srp  
        INNER JOIN ${ohdsiSchema}.sec_permission sp ON srp.permission_id = sp.id      
     WHERE 
        sp.value IN (select perm from vocab_perms) 
+	   or
+	   sp.value IN (select perm from source_perms)
+       or
+	   sp.value IN (select perm from generate_perms)
        or
        sp.value IN 
           (
-		'*:cohortresults:*:breakdown:get',
-		'*:person:*:get:dates',
-		'*:vocabulary:lookup:identifiers:post',
-		'cdmresults:*:get',
-		'cohort-characterization:*:download:get',
-		'cohort-characterization:*:exists:get',
-		'cohort-characterization:*:export:conceptset:get',
-		'cohort-characterization:*:export:get',
-		'cohort-characterization:*:post',
-		'cohort-characterization:*:tag:*:delete',
-		'cohort-characterization:*:tag:post',
-		'cohort-characterization:*:version:*:createAsset:put',
-		'cohort-characterization:*:version:*:delete',
-		'cohort-characterization:*:version:*:put',
 		'cohort-characterization:byTags:post',
 		'cohort-characterization:check:post',
-		'cohort-characterization:generation:*:delete',
-		'cohort-characterization:generation:*:design:get',
-		'cohort-characterization:generation:*:explore:prevalence:*:*:*:get',
-		'cohort-characterization:generation:*:result:count:get',
-		'cohort-characterization:generation:*:result:export:post',
-		'cohort-characterization:generation:*:result:get',
-		'cohort-characterization:generation:*:result:post',
 		'cohort-characterization:get',
 		'cohort-characterization:import:post',
 		'cohort-characterization:post',
-		'cohortanalysis:*:get',
 		'cohortanalysis:get',
 		'cohortanalysis:post',
-		'cohortdefinition:*:check:get',
-		'cohortdefinition:*:check:post',
-		'cohortdefinition:*:copy:get',
-		'cohortdefinition:*:exists:get',
-		'cohortdefinition:*:export:conceptset:get',
-		'cohortdefinition:*:tag:*:delete',
-		'cohortdefinition:*:tag:post',
-		'cohortdefinition:*:version:*:createAsset:put',
-		'cohortdefinition:*:version:*:delete',
-		'cohortdefinition:*:version:*:put',
 		'cohortdefinition:byTags:post',
 		'cohortdefinition:check:post',
 		'cohortdefinition:checkv2:post',
@@ -92,73 +101,22 @@ SELECT DISTINCT 15 role_id, permission_id
 		'cohortdefinition:printfriendly:cohort:post',
 		'cohortdefinition:printfriendly:conceptsets:post',
 		'cohortdefinition:sql:post',
-		'cohortresults:*:get',
-		'cohortsample:*:*:*:delete',
-		'cohortsample:*:*:*:get',
-		'cohortsample:*:*:*:refresh:post',
-		'cohortsample:*:*:delete',
-		'cohortsample:*:*:get',
-		'cohortsample:*:*:post',
-		'comparativecohortanalysis:*:copy:get',
-		'comparativecohortanalysis:*:delete',
-		'comparativecohortanalysis:*:put',
 		'comparativecohortanalysis:get',
 		'comparativecohortanalysis:post',
-		'conceptset:*:copy-name:get',
-		'conceptset:*:exists:get',
-		'conceptset:*:export:get',
-		'conceptset:*:expression:*:get',
-		'conceptset:*:generationinfo:get',
-		'conceptset:*:tag:*:delete',
-		'conceptset:*:tag:post',
-		'conceptset:*:version:*:createAsset:put',
-		'conceptset:*:version:*:delete',
-		'conceptset:*:version:*:expression:*:get',
-		'conceptset:*:version:*:get',
-		'conceptset:*:version:*:put',
-		'conceptset:*:version:get',
 		'conceptset:byTags:post',
 		'conceptset:check:post',
 		'conceptset:get',
 		'conceptset:post',
 		'configuration:edit:ui',
-		'estimation:*:exists:get',
-		'estimation:*:generation:*:post',
 		'estimation:check:post',
-		'estimation:generation:*:result:get',
 		'estimation:get',
 		'estimation:import:post',
 		'estimation:post',
-		'evidence:*:drugconditionpairs:post',
-		'evidence:*:druglabel:post',
-		'evidence:*:get',
-		'evidence:*:negativecontrols:*:get',
-		'evidence:*:negativecontrols:post',
-		'executionservice:*:get',
 		'executionservice:execution:run:post',
-		'feasibility:*:delete',
-		'feasibility:*:get',
-		'feasibility:*:put',
 		'feasibility:get',
-		'feature-analysis:*:copy:get',
-		'feature-analysis:*:exists:get',
-		'feature-analysis:*:export:conceptset:get',
-		'feature-analysis:*:get',
 		'feature-analysis:aggregates:get',
 		'feature-analysis:get',
 		'feature-analysis:post',
-		'featureextraction:*:get',
-		'gis:cohort:*:bounds:*:get',
-		'gis:cohort:*:clusters:*:get',
-		'gis:cohort:*:density:*:get',
-		'gis:person:*:bounds:*:get',
-		'gis:source:check:*:get',
-		'ir:*:exists:get',
-		'ir:*:tag:*:delete',
-		'ir:*:tag:post',
-		'ir:*:version:*:createAsset:put',
-		'ir:*:version:*:delete',
-		'ir:*:version:*:put',
 		'ir:byTags:post',
 		'ir:check:post',
 		'ir:design:post',
@@ -167,60 +125,31 @@ SELECT DISTINCT 15 role_id, permission_id
 		'ir:sql:post',
 		'job:execution:get',
 		'job:get',
-		'job:type:*:name:*:get',
 		'notifications:get',
 		'notifications:viewed:get',
 		'notifications:viewed:post',
-		'pathway-analysis:*:exists:get',
-		'pathway-analysis:*:export:get',
-		'pathway-analysis:*:post',
-		'pathway-analysis:*:tag:*:delete',
-		'pathway-analysis:*:tag:post',
-		'pathway-analysis:*:version:*:createAsset:put',
-		'pathway-analysis:*:version:*:delete',
-		'pathway-analysis:*:version:*:put',
 		'pathway-analysis:byTags:post',
 		'pathway-analysis:check:post',
 		'pathway-analysis:get',
 		'pathway-analysis:import:post',
 		'pathway-analysis:post',
-		'plp:*:copy:get',
-		'plp:*:delete',
-		'plp:*:put',
 		'plp:get',
 		'plp:post',
-		'prediction:*:generation:*:post',
-		'prediction:check:post',
-		'prediction:generation:*:result:get',
 		'prediction:get',
 		'prediction:import:post',
 		'prediction:post',
-		'reusable:*:exists:get',
-		'reusable:*:get',
-		'reusable:*:post',
-		'reusable:*:tag:*:delete',
-		'reusable:*:tag:post',
-		'reusable:*:version:*:createAsset:put',
-		'reusable:*:version:*:delete',
-		'reusable:*:version:*:get',
-		'reusable:*:version:*:put',
-		'reusable:*:version:get',
 		'reusable:byTags:post',
 		'reusable:get',
 		'reusable:post',
-		'source:*:get',
 		'source:daimon:priority:get',
 		'source:priorityVocabulary:get',
 		'sqlrender:translate:post',
-		'tag:*:delete',
-		'tag:*:get',
-		'tag:*:put',
 		'tag:get',
 		'tag:multiAssign:post',
 		'tag:multiUnassign:post',
 		'tag:post',
 		'tag:search:get',
-		'vocabulary:*:compare-arbitrary',
-		'vocabulary:*:post'
+		'cohortdefinition:*:exists:get', -- weird one...but is needed / used by UI before saving a new cohortdefinition....
+		'conceptset:*:exists:get', -- weird one...but is needed / used by UI before saving a new conceptset....
        )
 ;

@@ -18,6 +18,9 @@ public class ConceptSetPermissionSchema extends EntityPermissionSchema {
         put("conceptset:%s:get", "view conceptset  definition with id %s");
         put("conceptset:%s:expression:get", "Resolve concept set %s expression");
         put("conceptset:%s:version:*:expression:get", "Get expression for concept set %s items for default source");
+        put("conceptset:%s:expression:*:get", "expression:*:get permission, specific to this conceptset with id %s");
+        put("conceptset:%s:version:get", "version:get permission, specific to this conceptset with id %s");
+        put("conceptset:%s:copy-name:get", "copy-name:get permission, specific to this conceptset with id %s");
     }};
 
     public ConceptSetPermissionSchema() {

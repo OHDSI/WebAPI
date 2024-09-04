@@ -2,12 +2,14 @@ package org.ohdsi.webapi.feanalysis.converter;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.collections4.CollectionUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysisAggregate;
 import org.ohdsi.webapi.feanalysis.domain.*;
 import org.ohdsi.webapi.feanalysis.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -52,6 +54,9 @@ public class FeAnalysisEntityToFeAnalysisDTOConverter extends BaseFeAnalysisEnti
             switch (type) {
                 case CRITERIA_SET:
                     FeAnalysisWithCriteriaEntity<?> sourceWithCriteria = (FeAnalysisWithCriteriaEntity<?>) source;
+                    if (CollectionUtils.isEmpty(sourceWithCriteria.getDesign())) {
+                        return Collections.emptyList();
+                    }
                     return sourceWithCriteria.getDesign()
                             .stream()
                             .map(this::convertCriteria)

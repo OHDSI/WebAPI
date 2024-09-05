@@ -79,6 +79,7 @@ public class CohortCharacterizationShinyPackagingService extends CommonShinyPack
         ExceptionUtils.throwNotFoundExceptionIfNull(generationResults, String.format("There are no analysis generation results with generationId = %d.", generationId));
 
         dataConsumers.getAppProperties().accept("atlas_link", String.format("%s/#/cc/characterizations/%s", atlasUrl, cohortCharacterization.getId()));
+        dataConsumers.getAppProperties().accept("analysis_name", cohortCharacterization.getName());
 
         generationResults.getReports()
                 .stream()

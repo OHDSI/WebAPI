@@ -269,7 +269,7 @@ public class FeAnalysisController {
     private FeAnalysisShortDTO convertFeAnaysisToShortDto(final FeatureAnalysis entity) {
         return conversionService.convert(entity, FeAnalysisShortDTO.class);
     }
-
+    @Transactional
     private FeAnalysisDTO convertFeAnalysisToDto(final FeatureAnalysis entity) {
         return conversionService.convert(entity, FeAnalysisDTO.class);
     }

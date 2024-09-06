@@ -153,6 +153,7 @@ public class FeAnalysisController {
      * @return ID, type, name domain, description, etc of feature analysis
      */
     @GET
+    @Transactional
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public FeAnalysisDTO getFeAnalysis(@PathParam("id") final Integer feAnalysisId) {
@@ -269,7 +270,7 @@ public class FeAnalysisController {
     private FeAnalysisShortDTO convertFeAnaysisToShortDto(final FeatureAnalysis entity) {
         return conversionService.convert(entity, FeAnalysisShortDTO.class);
     }
-    @Transactional
+
     private FeAnalysisDTO convertFeAnalysisToDto(final FeatureAnalysis entity) {
         return conversionService.convert(entity, FeAnalysisDTO.class);
     }

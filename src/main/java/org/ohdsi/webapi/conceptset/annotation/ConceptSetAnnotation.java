@@ -47,6 +47,9 @@ public class ConceptSetAnnotation extends CommonEntity<Integer> implements Seria
     @Column(name = "concept_set_version")
     private String conceptSetVersion;
 
+    @Column(name = "copied_from_concept_set_ids")
+    private String copiedFromConceptSetIds;
+
     public Integer getId() {
         return id;
     }
@@ -93,5 +96,13 @@ public class ConceptSetAnnotation extends CommonEntity<Integer> implements Seria
 
     public void setConceptSetVersion(String conceptSetVersion) {
         this.conceptSetVersion = conceptSetVersion;
+    }
+
+    public String getCopiedFromConceptSetIds() {
+        return copiedFromConceptSetIds;
+    }
+
+    public void setCopiedFromConceptSetIds(String copiedFromConceptSetIds) {
+        this.copiedFromConceptSetIds = copiedFromConceptSetIds;
     }
 }

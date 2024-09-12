@@ -30,6 +30,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.vocabulary.Concept;
@@ -929,7 +930,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
             }
         }
     }
-    private ConceptSetAnnotation copyAnnotation(ConceptSetAnnotation sourceConceptSetAnnotation, int targetConceptSetId){
+    private ConceptSetAnnotation copyAnnotation(ConceptSetAnnotation sourceConceptSetAnnotation, int sourceConceptSetId, int targetConceptSetId){
         ConceptSetAnnotation targetConceptSetAnnotation = new ConceptSetAnnotation();
         targetConceptSetAnnotation.setConceptSetId(targetConceptSetId);
         targetConceptSetAnnotation.setConceptSetVersion(sourceConceptSetAnnotation.getConceptSetVersion());
@@ -940,7 +941,15 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         targetConceptSetAnnotation.setCreatedDate(sourceConceptSetAnnotation.getCreatedDate());
         targetConceptSetAnnotation.setModifiedBy(sourceConceptSetAnnotation.getModifiedBy());
         targetConceptSetAnnotation.setModifiedDate(sourceConceptSetAnnotation.getModifiedDate());
+        targetConceptSetAnnotation.setCopiedFromConceptSetIds(appendCopiedFromConceptSetId(sourceConceptSetAnnotation.getCopiedFromConceptSetIds(), sourceConceptSetId));
         return targetConceptSetAnnotation;
+    }
+
+    private String appendCopiedFromConceptSetId(String copiedFromConceptSetIds, int sourceConceptSetId) {
+        if(StringUtils.isEmpty(copiedFromConceptSetIds)){
+            return Integer.toString(sourceConceptSetId);
+        }
+        return copiedFromConceptSetIds.concat(",").concat(Integer.toString(sourceConceptSetId));
     }
 
     @POST
@@ -950,7 +959,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     public void copyAnnotations(CopyAnnotationsRequest copyAnnotationsRequest ) {
         List<ConceptSetAnnotation> sourceAnnotations = getConceptSetAnnotationRepository().findByConceptSetId(copyAnnotationsRequest.getSourceConceptSetId());
         List<ConceptSetAnnotation> copiedAnnotations= sourceAnnotations.stream()
-                .map(sourceAnnotation -> copyAnnotation(sourceAnnotation, copyAnnotationsRequest.getTargetConceptSetId()))
+                .map(sourceAnnotation -> copyAnnotation(sourceAnnotation, copyAnnotationsRequest.getSourceConceptSetId(), copyAnnotationsRequest.getTargetConceptSetId()))
                 .collect(Collectors.toList());
         getConceptSetAnnotationRepository().save(copiedAnnotations);
     }
@@ -985,6 +994,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 
            annotationDTO.setVocabularyVersion(conceptSetAnnotation.getVocabularyVersion());
            annotationDTO.setConceptSetVersion(conceptSetAnnotation.getConceptSetVersion());
+           annotationDTO.setCopiedFromConceptSetIds(conceptSetAnnotation.getCopiedFromConceptSetIds());
            annotationDTO.setCreatedBy(conceptSetAnnotation.getCreatedBy() != null ? conceptSetAnnotation.getCreatedBy().getName() : null);
            annotationDTO.setCreatedDate(conceptSetAnnotation.getCreatedDate() != null ? conceptSetAnnotation.getCreatedDate().toString() : null);
 

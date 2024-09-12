@@ -1,0 +1,1 @@
+ALTER TABLE ${ohdsiSchema}.concept_set_annotation ADD copied_from_concept_set_ids VARCHAR;

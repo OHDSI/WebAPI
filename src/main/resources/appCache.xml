@@ -1,0 +1,33 @@
+<config
+	xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+	xmlns='http://www.ehcache.org/v3'
+	xmlns:jsr107='http://www.ehcache.org/v3/jsr107'>
+
+	<service>
+		<jsr107:defaults>
+			<jsr107:cache name="cohortDefinitionList" template="small-heap"/>
+			<jsr107:cache name="conceptSetList" template="small-heap"/>
+			<jsr107:cache name="authorizationInfo" template="small-heap"/>
+			<jsr107:cache name="conceptDetail" template="medium-heap"/>
+			<jsr107:cache name="conceptRelated" template="medium-heap"/>
+			<jsr107:cache name="conceptHierarchy" template="medium-heap"/>
+		</jsr107:defaults>
+	</service>
+	<cache-template name="small-heap">
+		<resources>
+			<heap unit="entries">10</heap>
+		</resources>
+	</cache-template>
+	<cache-template name="medium-heap">
+		<resources>
+			<heap unit="entries">100</heap>
+		</resources>
+	</cache-template>
+	<cache-template name="medium-offheap">
+		<resources>
+			<heap unit="entries">100</heap>
+			<offheap unit="MB">10</offheap> <!-- unit of measure is case sensitive! -->
+		</resources>
+	</cache-template>
+	
+</config>

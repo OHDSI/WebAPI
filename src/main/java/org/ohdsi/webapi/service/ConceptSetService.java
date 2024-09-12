@@ -19,6 +19,8 @@ import java.io.ByteArrayOutputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import javax.cache.CacheManager;
+import javax.cache.configuration.MutableConfiguration;
 
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
@@ -30,6 +32,7 @@ import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.vocabulary.Concept;
 import org.ohdsi.webapi.check.CheckResult;
 import org.ohdsi.webapi.check.checker.conceptset.ConceptSetChecker;
+import org.ohdsi.webapi.cohortdefinition.dto.CohortMetadataDTO;
 import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
@@ -60,6 +63,9 @@ import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.ohdsi.webapi.versioning.service.VersionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.cache.JCacheManagerCustomizer;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
@@ -74,7 +80,22 @@ import org.springframework.stereotype.Component;
 @Transactional
 @Path("/conceptset/")
 public class ConceptSetService extends AbstractDaoService implements HasTags<Integer> {
+	//create cache
+	@Component
+	public static class CachingSetup implements JCacheManagerCustomizer {
 
+		public static final String CONCEPT_SET_LIST_CACHE = "conceptSetList";
+
+		@Override
+		public void customize(CacheManager cacheManager) {
+			// Evict when a cohort definition is created or updated, or permissions, or tags
+			cacheManager.createCache(CONCEPT_SET_LIST_CACHE, new MutableConfiguration<String, Collection<ConceptSetDTO>>()
+				.setTypes(String.class, (Class<Collection<ConceptSetDTO>>) (Class<?>) List.class)
+				.setStoreByValue(false)
+				.setStatisticsEnabled(true));
+		}
+	}
+	
     @Autowired
     private ConceptSetGenerationInfoRepository conceptSetGenerationInfoRepository;
 
@@ -135,6 +156,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
+	@Cacheable(cacheNames = ConceptSetService.CachingSetup.CONCEPT_SET_LIST_CACHE, key = "@permissionService.getAssetListCacheKey()")
     public Collection<ConceptSetDTO> getConceptSets() {
         return getTransactionTemplate().execute(
                 transactionStatus -> StreamSupport.stream(getConceptSetRepository().findAll().spliterator(), false)
@@ -453,6 +475,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+	@CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
     public ConceptSetDTO createConceptSet(ConceptSetDTO conceptSetDTO) {
 
         UserEntity user = userRepository.findByLogin(security.getSubject());
@@ -508,6 +531,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
+	@CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
     public ConceptSetDTO updateConceptSet(@PathParam("id") final int id, ConceptSetDTO conceptSetDTO) throws Exception {
 
         ConceptSet updated = getConceptSetRepository().findById(id);
@@ -795,6 +819,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{version}/createAsset")
     @Transactional
+	@CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
     public ConceptSetDTO copyAssetFromVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
         checkVersion(id, version, false);
         ConceptSetVersion conceptSetVersion = versionService.getById(VersionType.CONCEPT_SET, id, version);

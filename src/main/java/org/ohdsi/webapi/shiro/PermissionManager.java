@@ -35,11 +35,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import javax.cache.CacheManager;
+import javax.cache.configuration.MutableConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.Permission;
 import org.apache.shiro.authz.permission.WildcardPermission;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.cache.JCacheManagerCustomizer;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
@@ -49,6 +54,22 @@ import org.springframework.jdbc.core.JdbcTemplate;
 @Component
 @Transactional
 public class PermissionManager {
+	//create cache
+	@Component
+	public static class CachingSetup implements JCacheManagerCustomizer {
+
+		public static final String AUTH_INFO_CACHE = "authorizationInfo";
+
+		@Override
+		public void customize(CacheManager cacheManager) {
+			// Evict when a user, role or permission is modified/deleted.
+			cacheManager.createCache(AUTH_INFO_CACHE, new MutableConfiguration<String, UserSimpleAuthorizationInfo>()
+				.setTypes(String.class, UserSimpleAuthorizationInfo.class)
+				.setStoreByValue(false)
+				.setStatisticsEnabled(true));
+		}
+	}
+	
 
   @Value("${datasource.ohdsi.schema}")
   private String ohdsiSchema;
@@ -74,8 +95,6 @@ public class PermissionManager {
   @Autowired
   private JdbcTemplate jdbcTemplate;
   
-  private ThreadLocal<ConcurrentHashMap<String, UserSimpleAuthorizationInfo>> authorizationInfoCache = ThreadLocal.withInitial(ConcurrentHashMap::new);
-
   public static class PermissionsDTO {
 
     public Map<String, List<String>> permissions = null;
@@ -93,10 +112,12 @@ public class PermissionManager {
     return role;
   }
 
+	@CacheEvict(cacheNames = CachingSetup.AUTH_INFO_CACHE, key = "#login")
   public String addUserToRole(String roleName, String login) {
     return addUserToRole(roleName, login, UserOrigin.SYSTEM);
   }
 
+	@CacheEvict(cacheNames = CachingSetup.AUTH_INFO_CACHE, key = "#login")
   public String addUserToRole(String roleName, String login, UserOrigin userOrigin) {
     Guard.checkNotEmpty(roleName);
     Guard.checkNotEmpty(login);
@@ -108,6 +129,7 @@ public class PermissionManager {
     return userRole.getStatus();
   }
 
+	@CacheEvict(cacheNames = CachingSetup.AUTH_INFO_CACHE, key = "#login")
   public void removeUserFromRole(String roleName, String login, UserOrigin origin) {
     Guard.checkNotEmpty(roleName);
     Guard.checkNotEmpty(login);
@@ -138,43 +160,42 @@ public class PermissionManager {
    * @param   login   The login to fetch the authorization info
    * @return          A UserSimpleAuthorizationInfo containing roles and permissions.
   */
+	@Cacheable(cacheNames = CachingSetup.AUTH_INFO_CACHE)
   public UserSimpleAuthorizationInfo getAuthorizationInfo(final String login) {
 
-    return authorizationInfoCache.get().computeIfAbsent(login, newLogin -> {
-      final UserSimpleAuthorizationInfo info = new UserSimpleAuthorizationInfo();
+		final UserSimpleAuthorizationInfo info = new UserSimpleAuthorizationInfo();
 
-      final UserEntity userEntity = userRepository.findByLogin(newLogin);
-      if(userEntity == null) {
-        throw new UnknownAccountException("Account does not exist");
-      }
+		final UserEntity userEntity = userRepository.findByLogin(login);
+		if(userEntity == null) {
+			throw new UnknownAccountException("Account does not exist");
+		}
 
-      info.setUserId(userEntity.getId());
-      info.setLogin(userEntity.getLogin());
+		info.setUserId(userEntity.getId());
+		info.setLogin(userEntity.getLogin());
 
-      for (UserRoleEntity userRole: userEntity.getUserRoles()) {
-        info.addRole(userRole.getRole().getName());
-      }
+		for (UserRoleEntity userRole: userEntity.getUserRoles()) {
+			info.addRole(userRole.getRole().getName());
+		}
 
-      // convert permission index from queryUserPermissions() into a map of WildcardPermissions
-      Map<String, List<String>> permsIdx = this.queryUserPermissions(newLogin).permissions;
-      Map permissionMap = new HashMap<String, List<Permission>>();
-      Set<String> permissionNames = new HashSet<>();
-      
-      for(String permIdxKey : permsIdx.keySet()) {
-        List<String> perms = permsIdx.get(permIdxKey);
-        permissionNames.addAll(perms);
-        // convert raw string permission into Wildcard perm for each element in this key's array.
-        permissionMap.put(permIdxKey, perms.stream().map(perm -> new WildcardPermission(perm)).collect(Collectors.toList()));
-      }
+		// convert permission index from queryUserPermissions() into a map of WildcardPermissions
+		Map<String, List<String>> permsIdx = this.queryUserPermissions(login).permissions;
+		Map permissionMap = new HashMap<String, List<Permission>>();
+		Set<String> permissionNames = new HashSet<>();
 
-      info.setStringPermissions(permissionNames);
-      info.setPermissionIdx(permissionMap);
-      return info;
-    });
+		for(String permIdxKey : permsIdx.keySet()) {
+			List<String> perms = permsIdx.get(permIdxKey);
+			permissionNames.addAll(perms);
+			// convert raw string permission into Wildcard perm for each element in this key's array.
+			permissionMap.put(permIdxKey, perms.stream().map(perm -> new WildcardPermission(perm)).collect(Collectors.toList()));
+		}
+
+		info.setStringPermissions(permissionNames);
+		info.setPermissionIdx(permissionMap);
+		return info;
   }
 
+	@CacheEvict(cacheNames = CachingSetup.AUTH_INFO_CACHE, allEntries = true)
   public void clearAuthorizationInfoCache() {
-    this.authorizationInfoCache.set(new ConcurrentHashMap<>());
   }
 
   @Transactional
@@ -261,6 +282,7 @@ public class PermissionManager {
     return permissions;
   }
 
+	@CacheEvict(cacheNames = CachingSetup.AUTH_INFO_CACHE, allEntries = true)
   public void removeRole(Long roleId) {
     eventPublisher.publishEvent(new DeleteRoleEvent(this, roleId));
     this.roleRepository.delete(roleId);
@@ -283,6 +305,7 @@ public class PermissionManager {
     this.addPermission(role, permission, null);
   }
 
+	@CacheEvict(cacheNames = CachingSetup.AUTH_INFO_CACHE, allEntries = true)
   public void removePermission(Long permissionId, Long roleId) {
     RolePermissionEntity rolePermission = this.rolePermissionRepository.findByRoleIdAndPermissionId(roleId, permissionId);
     if (rolePermission != null)
@@ -308,6 +331,7 @@ public class PermissionManager {
       this.userRoleRepository.delete(userRole);
   }
 
+	@CacheEvict(cacheNames = CachingSetup.AUTH_INFO_CACHE, allEntries = true)
   public void removePermission(String value) {
     PermissionEntity permission = this.permissionRepository.findByValueIgnoreCase(value);
     if (permission != null)
@@ -473,6 +497,7 @@ public class PermissionManager {
     return permission;
   }
 
+	@CacheEvict(cacheNames = CachingSetup.AUTH_INFO_CACHE, allEntries = true)
   private RolePermissionEntity addPermission(final RoleEntity role, final PermissionEntity permission, final String status) {
     RolePermissionEntity relation = this.rolePermissionRepository.findByRoleAndPermission(role, permission);
     if (relation == null) {

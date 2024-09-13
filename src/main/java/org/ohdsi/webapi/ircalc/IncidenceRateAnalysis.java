@@ -130,4 +130,13 @@ public class IncidenceRateAnalysis extends CommonEntityExt<Integer> implements S
   public void setTags(Set<Tag> tags) {
     this.tags = tags;
   }
+
+  public void addExecutionInfo(ExecutionInfo executionInfo){
+    executionInfoList.add(executionInfo);
+    executionInfo.setAnalysis(this);
+  }
+  public void removeExecutionInfo(ExecutionInfo executionInfo){
+    executionInfoList.remove(executionInfo);
+  }
+
 }

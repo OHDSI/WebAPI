@@ -76,4 +76,14 @@ public class ExecutionEngineAnalysisStatus {
       this.resultFiles = resultFiles;
     }
 
+    public void addAnalysisResultFile(AnalysisResultFile analysisResultFile) {
+        this.resultFiles.add(analysisResultFile);
+        analysisResultFile.setExecution(this);
+    }
+
+    public void removeAnalysisResultFile(AnalysisResultFile analysisResultFile) {
+        this.resultFiles.remove(analysisResultFile);
+        analysisResultFile.setExecution(null);
+    }
+
 }

@@ -216,4 +216,13 @@ public class FeasibilityStudy {
     this.inclusionRules = inclusionRules;
     return this;
   }
+
+  public void addStudyGenerationInfo(StudyGenerationInfo studyGenerationInfo) {
+    studyGenerationInfoList.add(studyGenerationInfo);
+    studyGenerationInfo.setFeasibilityStudy(this);
+  }
+  public void removeStudyGenerationInfo(StudyGenerationInfo studyGenerationInfo) {
+    studyGenerationInfoList.remove(studyGenerationInfo);
+    studyGenerationInfo.setFeasibilityStudy(null);
+  }
 }

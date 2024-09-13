@@ -15,17 +15,17 @@
 	</service>
 	<cache-template name="small-heap">
 		<resources>
-			<heap unit="entries">10</heap>
+			<heap unit="entries">50</heap>
 		</resources>
 	</cache-template>
 	<cache-template name="medium-heap">
 		<resources>
-			<heap unit="entries">100</heap>
+			<heap unit="entries">500</heap>
 		</resources>
 	</cache-template>
 	<cache-template name="medium-offheap">
 		<resources>
-			<heap unit="entries">100</heap>
+			<heap unit="entries">500</heap>
 			<offheap unit="MB">10</offheap> <!-- unit of measure is case sensitive! -->
 		</resources>
 	</cache-template>

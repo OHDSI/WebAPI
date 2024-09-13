@@ -294,6 +294,7 @@ public class PermissionManager {
     return permissions;
   }
 
+	@CacheEvict(cacheNames = CachingSetup.AUTH_INFO_CACHE, allEntries = true)
   public void addPermission(Long roleId, Long permissionId) {
     PermissionEntity permission = this.getPermissionById(permissionId);
     RoleEntity role = this.getRoleById(roleId);
@@ -301,6 +302,7 @@ public class PermissionManager {
     this.addPermission(role, permission, null);
   }
 
+	@CacheEvict(cacheNames = CachingSetup.AUTH_INFO_CACHE, allEntries = true)
   public void addPermission(RoleEntity role, PermissionEntity permission) {
     this.addPermission(role, permission, null);
   }
@@ -318,6 +320,7 @@ public class PermissionManager {
     return users;
   }
 
+	@CacheEvict(cacheNames = CachingSetup.AUTH_INFO_CACHE, allEntries = true)
   public void addUser(Long userId, Long roleId) {
     UserEntity user = this.getUserById(userId);
     RoleEntity role = this.getRoleById(roleId);
@@ -325,6 +328,7 @@ public class PermissionManager {
     this.addUser(user, role, UserOrigin.SYSTEM, null);
   }
 
+	@CacheEvict(cacheNames = CachingSetup.AUTH_INFO_CACHE, allEntries = true)
   public void removeUser(Long userId, Long roleId) {
     UserRoleEntity userRole = this.userRoleRepository.findByUserIdAndRoleId(userId, roleId);
     if (userRole != null)
@@ -553,6 +557,7 @@ public class PermissionManager {
     return this.roleRepository.save(roleEntity);
   }
 
+	@CacheEvict(cacheNames = CachingSetup.AUTH_INFO_CACHE, allEntries = true)
   public void addPermissionsFromTemplate(RoleEntity roleEntity, Map<String, String> template, String value) {
     for (Map.Entry<String, String> entry : template.entrySet()) {
       String permission = String.format(entry.getKey(), value);
@@ -562,11 +567,13 @@ public class PermissionManager {
     }
   }
 
+	@CacheEvict(cacheNames = CachingSetup.AUTH_INFO_CACHE, allEntries = true)
   public void addPermissionsFromTemplate(Map<String, String> template, String value) {
     RoleEntity currentUserPersonalRole = getCurrentUserPersonalRole();
     addPermissionsFromTemplate(currentUserPersonalRole, template, value);
   }
 
+	@CacheEvict(cacheNames = CachingSetup.AUTH_INFO_CACHE, allEntries = true)
   public void removePermissionsFromTemplate(Map<String, String> template, String value) {
     for (Map.Entry<String, String> entry : template.entrySet()) {
       String permission = String.format(entry.getKey(), value);

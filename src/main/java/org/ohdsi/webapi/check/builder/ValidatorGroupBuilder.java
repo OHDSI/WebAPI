@@ -69,7 +69,8 @@ public class ValidatorGroupBuilder<T, V> extends ValidatorBaseBuilder<T, Validat
         return new ValidatorGroup<>(validators, groups, valueGetter, conditionGetter);
     }
 
-    // note: exact same functionality as initAndBuildList, just needed to change the signature
+    // Note: exact same functionality as initAndBuildList, just needed a different call signature.
+    // This method was added to enable development using Eclipse
     private List<ValidatorGroup<V, ?>> initAndBuildGroupList(List<ValidatorGroupBuilder<V, ?>> builders) {
 
         builders.forEach(builder -> {

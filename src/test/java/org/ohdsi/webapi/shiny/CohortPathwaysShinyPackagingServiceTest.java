@@ -10,6 +10,7 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.ohdsi.webapi.pathway.PathwayService;
+import org.ohdsi.webapi.pathway.domain.PathwayAnalysisGenerationEntity;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayPopulationResultsDTO;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
@@ -55,6 +56,11 @@ public class CohortPathwaysShinyPackagingServiceTest {
     public void shouldPopulateAppData() {
         when(pathwayService.findDesignByGenerationId(eq((long) GENERATION_ID))).thenReturn("design json");
         when(pathwayService.getGenerationResults(eq((long) GENERATION_ID))).thenReturn(createPathwayGenerationResults());
+
+        PathwayAnalysisDTO pathwayAnalysisDTO = Mockito.mock(PathwayAnalysisDTO.class);
+        PathwayAnalysisGenerationEntity generationEntity = Mockito.mock(PathwayAnalysisGenerationEntity.class);
+        when(pathwayService.getByGenerationId(eq(GENERATION_ID))).thenReturn(pathwayAnalysisDTO);
+        when(pathwayService.getGeneration(eq((long) GENERATION_ID))).thenReturn(generationEntity);
 
         CommonShinyPackagingService.ShinyAppDataConsumers dataConsumers = Mockito.mock(CommonShinyPackagingService.ShinyAppDataConsumers.class, Answers.RETURNS_DEEP_STUBS.get());
         sut.populateAppData(GENERATION_ID, SOURCE_KEY, dataConsumers);

@@ -4,6 +4,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.odysseusinc.arachne.commons.api.v1.dto.CommonAnalysisType;
 import com.odysseusinc.arachne.execution_engine_common.util.CommonFileUtils;
+import org.ohdsi.webapi.report.CDMDashboard;
+import org.ohdsi.webapi.service.CDMResultsService;
+import org.ohdsi.webapi.shiny.summary.DataSourceSummary;
+import org.ohdsi.webapi.shiny.summary.DataSourceSummaryConverter;
+import org.ohdsi.webapi.source.Source;
+import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.TempFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +19,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -21,6 +30,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public abstract class CommonShinyPackagingService {
+    protected static final String VALUE_NOT_AVAILABLE = "N/A";
+    private static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+
     private static final Logger LOG = LoggerFactory.getLogger(CommonShinyPackagingService.class);
     protected final String atlasUrl;
     protected String repoLink;
@@ -28,13 +40,20 @@ public abstract class CommonShinyPackagingService {
     protected final FileWriter fileWriter;
     protected final ManifestUtils manifestUtils;
     protected final ObjectMapper objectMapper;
+    protected final SourceRepository sourceRepository;
+    protected final CDMResultsService cdmResultsService;
+    protected final DataSourceSummaryConverter dataSourceSummaryConverter;
+    protected static final String ASSET_ID_KEY = "asset_id";
 
-    public CommonShinyPackagingService(String atlasUrl, String repoLink, FileWriter fileWriter, ManifestUtils manifestUtils, ObjectMapper objectMapper) {
+    public CommonShinyPackagingService(String atlasUrl, String repoLink, FileWriter fileWriter, ManifestUtils manifestUtils, ObjectMapper objectMapper, SourceRepository sourceRepository, CDMResultsService cdmResultsService, DataSourceSummaryConverter dataSourceSummaryConverter) {
         this.atlasUrl = atlasUrl;
         this.repoLink = repoLink;
         this.fileWriter = fileWriter;
         this.manifestUtils = manifestUtils;
         this.objectMapper = objectMapper;
+        this.sourceRepository = sourceRepository;
+        this.cdmResultsService = cdmResultsService;
+        this.dataSourceSummaryConverter = dataSourceSummaryConverter;
     }
 
     public abstract CommonAnalysisType getType();
@@ -74,6 +93,19 @@ public abstract class CommonShinyPackagingService {
         return objectMapper;
     }
 
+    public SourceRepository getSourceRepository() {
+        return sourceRepository;
+    }
+
+    public CDMResultsService getCdmResultsService() {
+        return cdmResultsService;
+    }
+
+    public DataSourceSummaryConverter getDataSourceSummaryConverter() {
+        return dataSourceSummaryConverter;
+    }
+
+
     class ShinyAppDataConsumers {
         private final Map<String, String> applicationProperties = new HashMap<>();
         private final Map<String, Object> jsonObjectsToSave = new HashMap<>();
@@ -109,12 +141,17 @@ public abstract class CommonShinyPackagingService {
                 Path dataDir = path.resolve("data");
                 Files.createDirectory(dataDir);
 
+                Source source = getSourceRepository().findBySourceKey(sourceKey);
+
                 ShinyAppDataConsumers shinyAppDataConsumers = new ShinyAppDataConsumers();
 
                 //Default properties common for each shiny app
                 shinyAppDataConsumers.applicationProperties.put("repo_link", getRepoLink());
                 shinyAppDataConsumers.applicationProperties.put("atlas_url", getAtlasUrl());
                 shinyAppDataConsumers.applicationProperties.put("datasource", sourceKey);
+                shinyAppDataConsumers.applicationProperties.put("datasource_name", source.getSourceName());
+
+                populateCDMDataSourceSummaryIfPresent(source, shinyAppDataConsumers);
 
                 populateAppData(generationId, sourceKey, shinyAppDataConsumers);
 
@@ -145,9 +182,27 @@ public abstract class CommonShinyPackagingService {
         });
     }
 
+    private void populateCDMDataSourceSummaryIfPresent(Source source, ShinyAppDataConsumers shinyAppDataConsumers) {
+        DataSourceSummary dataSourceSummary;
+        try {
+            CDMDashboard cdmDashboard = getCdmResultsService().getDashboard(source.getSourceKey());
+            dataSourceSummary = getDataSourceSummaryConverter().convert(cdmDashboard);
+        } catch (Exception e) {
+            LOG.warn("Could not populate datasource summary", e);
+            dataSourceSummary = getDataSourceSummaryConverter().emptySummary(source.getSourceName());
+        }
+        shinyAppDataConsumers.jsonObjectsToSave.put("datasource_summary.json", dataSourceSummary);
+    }
+
     private String convertAppPropertiesToString(Map<String, String> appProperties) {
         return appProperties.entrySet().stream()
                 .map(entry -> String.format("%s=%s\n", entry.getKey(), entry.getValue()))
                 .collect(Collectors.joining());
+    }
+
+    protected String dateToString(Date date) {
+        if (date == null) return null;
+        DateFormat df = new SimpleDateFormat(DATE_TIME_FORMAT);
+        return df.format(date);
     }
 }

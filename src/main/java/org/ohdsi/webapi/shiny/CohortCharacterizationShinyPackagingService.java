@@ -11,12 +11,17 @@ import org.ohdsi.analysis.CohortMetadata;
 import org.ohdsi.analysis.WithId;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
 import org.ohdsi.webapi.cohortcharacterization.CcService;
+import org.ohdsi.webapi.cohortcharacterization.domain.CcGenerationEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.cohortcharacterization.dto.ExecutionResultRequest;
 import org.ohdsi.webapi.cohortcharacterization.dto.GenerationResults;
 import org.ohdsi.webapi.cohortcharacterization.report.ExportItem;
 import org.ohdsi.webapi.cohortcharacterization.report.Report;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.service.CDMResultsService;
 import org.ohdsi.webapi.service.ShinyService;
+import org.ohdsi.webapi.shiny.summary.DataSourceSummaryConverter;
+import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,8 +59,11 @@ public class CohortCharacterizationShinyPackagingService extends CommonShinyPack
             ManifestUtils manifestUtils,
             ObjectMapper objectMapper,
             CcService ccService,
-            CohortCharacterizationAnalysisHeaderToFieldMapper cohortCharacterizationAnalysisHeaderToFieldMapper) {
-        super(atlasUrl, repoLink, fileWriter, manifestUtils, objectMapper);
+            CohortCharacterizationAnalysisHeaderToFieldMapper cohortCharacterizationAnalysisHeaderToFieldMapper,
+            SourceRepository sourceRepository,
+            CDMResultsService cdmResultsService,
+            DataSourceSummaryConverter dataSourceSummaryConverter) {
+        super(atlasUrl, repoLink, fileWriter, manifestUtils, objectMapper, sourceRepository, cdmResultsService, dataSourceSummaryConverter);
         this.ccService = ccService;
         this.cohortCharacterizationAnalysisHeaderToFieldMapper = cohortCharacterizationAnalysisHeaderToFieldMapper;
     }
@@ -75,6 +83,7 @@ public class CohortCharacterizationShinyPackagingService extends CommonShinyPack
     @Transactional
     public void populateAppData(Integer generationId, String sourceKey, ShinyAppDataConsumers dataConsumers) {
         CohortCharacterization cohortCharacterization = ccService.findDesignByGenerationId(Long.valueOf(generationId));
+        CohortCharacterizationEntity cohortCharacterizationEntity = ccService.findById(cohortCharacterization.getId());
         GenerationResults generationResults = fetchGenerationResults(generationId, cohortCharacterization);
         ExceptionUtils.throwNotFoundExceptionIfNull(generationResults, String.format("There are no analysis generation results with generationId = %d.", generationId));
 
@@ -85,6 +94,48 @@ public class CohortCharacterizationShinyPackagingService extends CommonShinyPack
                 .stream()
                 .map(this::convertReportToCSV)
                 .forEach(csvDataByFilename -> dataConsumers.getTextFiles().accept(csvDataByFilename.getKey(), csvDataByFilename.getValue()));
+
+        CcGenerationEntity generationEntity = ccService.findGenerationById(Long.valueOf(generationId));
+
+        Long resultsTotalCount = ccService.getCCResultsTotalCount(Long.valueOf(generationId));
+
+        dataConsumers.getAppProperties().accept("author", getAuthor(cohortCharacterizationEntity));
+        dataConsumers.getAppProperties().accept(ASSET_ID_KEY, cohortCharacterization.getId().toString());
+        dataConsumers.getAppProperties().accept("generated_date", getGenerationStartTime(generationEntity));
+        dataConsumers.getAppProperties().accept("record_count", Long.toString(resultsTotalCount));
+        dataConsumers.getAppProperties().accept("author_notes", getDescription(cohortCharacterizationEntity));
+        dataConsumers.getAppProperties().accept("referenced_cohorts", getReferencedCohorts(cohortCharacterizationEntity));
+        dataConsumers.getAppProperties().accept("version_id", Integer.toString(generationId));
+        dataConsumers.getAppProperties().accept("generation_id", Integer.toString(generationId));
+    }
+
+    private String getReferencedCohorts(CohortCharacterizationEntity cohortCharacterizationEntity) {
+        if (cohortCharacterizationEntity != null) {
+            return cohortCharacterizationEntity.getCohortDefinitions().stream().map(CohortDefinition::getName).collect(Collectors.joining("; "));
+        }
+        return VALUE_NOT_AVAILABLE;
+    }
+
+
+    private String getAuthor(CohortCharacterizationEntity cohortCharacterizationEntity) {
+        if (cohortCharacterizationEntity.getCreatedBy() != null) {
+            return cohortCharacterizationEntity.getCreatedBy().getLogin();
+        }
+        return VALUE_NOT_AVAILABLE;
+    }
+
+    private String getGenerationStartTime(CcGenerationEntity generation) {
+        if (generation != null) {
+            return dateToString(generation.getStartTime());
+        }
+        return VALUE_NOT_AVAILABLE;
+    }
+
+    private String getDescription(CohortCharacterizationEntity cohortCharacterizationEntity) {
+        if (cohortCharacterizationEntity != null && cohortCharacterizationEntity.getDescription() != null) {
+            return cohortCharacterizationEntity.getDescription();
+        }
+        return VALUE_NOT_AVAILABLE;
     }
 
     //Pair.left == CSV filename

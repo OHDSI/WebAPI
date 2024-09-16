@@ -25,7 +25,6 @@ import org.ohdsi.webapi.source.SourceRepository;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -72,6 +71,10 @@ public class IncidenceRatesShinyPackagingServiceTest {
         Integer generationId = 1;
         String sourceKey = "source";
 
+        Source source = new Source();
+        source.setSourceId(3);
+        when(sourceRepository.findBySourceKey("source")).thenReturn(source);
+
         IncidenceRateAnalysis analysis = Mockito.mock(IncidenceRateAnalysis.class, Answers.RETURNS_DEEP_STUBS.get());
         when(analysis.getDetails().getExpression()).thenReturn("{}");
         when(repository.findOne(generationId)).thenReturn(analysis);
@@ -98,7 +101,7 @@ public class IncidenceRatesShinyPackagingServiceTest {
 
         sut.populateAppData(generationId, sourceKey, dataConsumers);
 
-        verify(dataConsumers.getAppProperties(), times(2)).accept(anyString(), anyString());
+        verify(dataConsumers.getAppProperties(), times(11)).accept(anyString(), anyString());
         verify(dataConsumers.getTextFiles(), times(1)).accept(anyString(), anyString());
         verify(dataConsumers.getJsonObjects(), times(1)).accept(anyString(), any());
     }

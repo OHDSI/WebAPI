@@ -44,7 +44,8 @@ public abstract class AbstractForEachValidatorBuilder<T, V> extends ValidatorBui
         return initAndBuildGroupList(this.validatorGroupBuilders);
     }
 
-    // note: exact same functionality as initAndBuildList, just needed a different call signature
+    // Note: exact same functionality as initAndBuildList, just needed a different call signature.
+    // This method was added to enable development using Eclipse
     private List<ValidatorGroup<T, ?>> initAndBuildGroupList(List<ValidatorGroupBuilder<T, ?>> builders) {
 
         builders.forEach(builder -> {

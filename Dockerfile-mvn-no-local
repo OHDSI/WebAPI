@@ -20,11 +20,6 @@ ARG GIT_COMMIT_ID_ABBREV=unknown
 COPY src /code/src
 RUN mvn package ${MAVEN_PARAMS} \
     -P${MAVEN_PROFILE} \
-    && mkdir war \
-    && mv target/WebAPI.war war \
-    && cd war \
-    && jar -xf WebAPI.war \
-    && rm WebAPI.war
 
 
 # OHDSI WebAPI and ATLAS web application running as a Spring Boot application with Java 11

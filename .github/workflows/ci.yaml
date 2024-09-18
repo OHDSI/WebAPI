@@ -31,7 +31,7 @@ jobs:
        
           # Get token from ECR and Docker login
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com
-          IMAGE_TAG=3.20.2
+          IMAGE_TAG=3.0.1
  
           # Set ENV for Docker build
           ECR_REPOSITORY=mdaca/ohdsi/webapi

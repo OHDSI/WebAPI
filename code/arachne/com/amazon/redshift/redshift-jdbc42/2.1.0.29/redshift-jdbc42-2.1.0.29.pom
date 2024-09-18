@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+        xmlns="http://maven.apache.org/POM/4.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.amazon.redshift</groupId>
+    <artifactId>redshift-jdbc42</artifactId>
+    <version>2.1.0.29</version>
+    <packaging>jar</packaging>
+
+    <name>amazon-redshift-jdbc-driver</name>
+    <description>Java JDBC 4.2 (JRE 8+) driver for Redshift database</description>
+    <url>https://github.com/aws/amazon-redshift-jdbc-driver</url>
+
+    <organization>
+        <name>Amazon.com Inc.</name>
+        <url>https://aws.amazon.com/redshift/</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://github.com/aws/amazon-redshift-jdbc-driver/blob/master/LICENSE</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:git://github.com/amazon-redshift-jdbc-driver</connection>
+        <developerConnection>scm:git:git://github.com/amazon-redshift-jdbc-driver</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/aws/amazon-redshift-jdbc-driver</url>
+    </scm>
+
+    <developers>
+        <developer>
+            <id>iggarish</id>
+            <email>iggarish@amazon.com</email>
+        </developer>
+        <developer>
+            <id>bomaksym</id>
+            <email>bomaksym@amazon.com</email>
+        </developer>
+        <developer>
+            <id>whbrook</id>
+            <email>whbrook@amazon.com</email>
+        </developer>
+        <developer>
+            <id>sjn</id>
+            <email>sjn@amazon.com</email>
+        </developer>
+        <developer>
+            <id>bhvkshah</id>
+            <email>bhvkshah@amazon.com</email>
+        </developer>
+    </developers>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-core</artifactId>
+            <version>1.12.577</version>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-redshift</artifactId>
+            <version>1.12.577</version>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-redshiftserverless</artifactId>
+            <version>1.12.577</version>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-sts</artifactId>
+            <version>1.12.577</version>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>3.0.0-M1</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.0.1</version>
+                <configuration>
+                    <subpackages>com.amazon.redshift</subpackages>
+                    <maxmemory>2g</maxmemory>
+                    <failOnWarnings>false</failOnWarnings>
+                    <failOnError>false</failOnError>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.4</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.6</version>
+            </plugin>
+        </plugins>
+    </build>
+
+    <distributionManagement>
+        <repository>
+            <id>staging-repo</id>
+            <name>aws-sonatype</name>
+            <url>https://aws.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
+</project>

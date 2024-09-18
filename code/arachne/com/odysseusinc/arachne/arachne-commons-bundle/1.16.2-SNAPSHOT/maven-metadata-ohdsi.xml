@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata modelVersion="1.1.0">
+  <groupId>com.odysseusinc.arachne</groupId>
+  <artifactId>arachne-commons-bundle</artifactId>
+  <version>1.16.2-SNAPSHOT</version>
+  <versioning>
+    <snapshot>
+      <timestamp>20200914.105632</timestamp>
+      <buildNumber>15</buildNumber>
+    </snapshot>
+    <lastUpdated>20200914105632</lastUpdated>
+    <snapshotVersions>
+      <snapshotVersion>
+        <extension>pom</extension>
+        <value>1.16.2-20200914.105632-15</value>
+        <updated>20200914105632</updated>
+      </snapshotVersion>
+    </snapshotVersions>
+  </versioning>
+</metadata>

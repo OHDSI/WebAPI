@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.atlassian.pom</groupId>
+        <artifactId>central-pom</artifactId>
+        <version>5.0.13</version>
+    </parent>
+
+    <packaging>pom</packaging>
+
+    <groupId>com.atlassian.commonmark</groupId>
+    <artifactId>commonmark-parent</artifactId>
+    <version>0.15.2</version>
+    <name>commonmark-java parent</name>
+    <description>
+        Java implementation of CommonMark, a specification of the Markdown format for turning plain text into formatted
+        text.
+    </description>
+    <url>https://github.com/atlassian/commonmark-java</url>
+
+    <modules>
+        <module>commonmark</module>
+        <module>commonmark-ext-autolink</module>
+        <module>commonmark-ext-gfm-strikethrough</module>
+        <module>commonmark-ext-gfm-tables</module>
+        <module>commonmark-ext-heading-anchor</module>
+        <module>commonmark-ext-image-attributes</module>
+        <module>commonmark-ext-ins</module>
+        <module>commonmark-ext-task-list-items</module>
+        <module>commonmark-ext-yaml-front-matter</module>
+        <module>commonmark-integration-test</module>
+        <module>commonmark-test-util</module>
+    </modules>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <commonmark.javadoc.location>${project.basedir}/../commonmark/target/apidocs/</commonmark.javadoc.location>
+    </properties>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.1</version>
+                    <configuration>
+                        <source>7</source>
+                        <target>7</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.0.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <excludePackageNames>*.internal,*.internal.*</excludePackageNames>
+                        <!-- The offline links make links from extensions to core work. -->
+                        <detectOfflineLinks>false</detectOfflineLinks>
+                        <offlineLinks>
+                            <offlineLink>
+                                <url>http://static.javadoc.io/com.atlassian.commonmark/commonmark/${project.version}/</url>
+                                <location>${commonmark.javadoc.location}</location>
+                            </offlineLink>
+                        </offlineLinks>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+		    <version>2.22.1</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- For dependencies between modules -->
+            <dependency>
+                <groupId>com.atlassian.commonmark</groupId>
+                <artifactId>commonmark</artifactId>
+                <version>0.15.2</version>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.commonmark</groupId>
+                <artifactId>commonmark-ext-autolink</artifactId>
+                <version>0.15.2</version>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.commonmark</groupId>
+                <artifactId>commonmark-ext-image-attributes</artifactId>
+                <version>0.15.2</version>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.commonmark</groupId>
+                <artifactId>commonmark-ext-ins</artifactId>
+                <version>0.15.2</version>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.commonmark</groupId>
+                <artifactId>commonmark-ext-gfm-strikethrough</artifactId>
+                <version>0.15.2</version>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.commonmark</groupId>
+                <artifactId>commonmark-ext-gfm-tables</artifactId>
+                <version>0.15.2</version>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.commonmark</groupId>
+                <artifactId>commonmark-ext-heading-anchor</artifactId>
+                <version>0.15.2</version>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.commonmark</groupId>
+                <artifactId>commonmark-ext-task-list-items</artifactId>
+                <version>0.15.2</version>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.commonmark</groupId>
+                <artifactId>commonmark-ext-yaml-front-matter</artifactId>
+                <version>0.15.2</version>
+            </dependency>
+            <dependency>
+                <groupId>com.atlassian.commonmark</groupId>
+                <artifactId>commonmark-test-util</artifactId>
+                <version>0.15.2</version>
+            </dependency>
+
+            <!-- Common test dependencies -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.12</version>
+            </dependency>
+            <dependency>
+                <groupId>org.openjdk.jmh</groupId>
+                <artifactId>jmh-core</artifactId>
+                <version>1.17.5</version>
+            </dependency>
+            <dependency>
+                <groupId>org.openjdk.jmh</groupId>
+                <artifactId>jmh-generator-annprocess</artifactId>
+                <version>1.17.5</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <profiles>
+        <profile>
+            <id>coverage</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.7.9</version>
+                        <configuration>
+                            <excludes>
+                                <!-- Classes from test-util -->
+                                <exclude>org/commonmark/spec/*</exclude>
+                                <exclude>org/commonmark/test/*</exclude>
+                            </excludes>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>prepare-agent</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <licenses>
+        <license>
+            <name>BSD 2-Clause License</name>
+            <url>http://opensource.org/licenses/BSD-2-Clause</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Robin Stocker</name>
+            <email>rstocker@atlassian.com</email>
+            <organization>Atlassian</organization>
+            <organizationUrl>https://www.atlassian.com/</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git@github.com:atlassian/commonmark-java.git</connection>
+        <!-- Push URL is used for pushing commits and tag when doing a release on internal systems, see https://maven.apache.org/scm/git.html -->
+        <developerConnection>scm:git:[fetch=]git@github.com:atlassian/commonmark-java.git[push=]git@bitbucket.org:atlassian/commonmark-java.git</developerConnection>
+        <url>https://github.com/atlassian/commonmark-java</url>
+        <tag>commonmark-parent-0.15.2</tag>
+    </scm>
+
+</project>

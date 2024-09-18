@@ -1,0 +1,82 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.eclipse.ee4j</groupId>
+		<artifactId>project</artifactId>
+		<version>1.0.6</version>
+	</parent>
+
+	<groupId>jakarta.enterprise</groupId>
+	<artifactId>jakarta.enterprise.cdi-parent</artifactId>
+	<packaging>pom</packaging>
+	<version>4.0.1</version>
+
+	<description>Parent module for CDI Specification</description>
+
+	<licenses>
+		<license>
+			<name>Apache License 2.0</name>
+			<url>https://repository.jboss.org/licenses/apache-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<scm>
+		<connection>scm:git:git://github.com/eclipse-ee4j/cdi.git</connection>
+		<developerConnection>scm:git:git@github.com:eclipse-ee4j/cdi.git</developerConnection>
+		<url>https://github.com/eclipse-ee4j/cdi</url>
+		<tag>4.0.1</tag>
+	</scm>
+
+	<modules>
+		<module>spec</module>
+		<module>lang-model</module>
+		<module>api</module>
+	</modules>
+	<build>
+		<defaultGoal>clean package</defaultGoal>
+	</build>
+
+	<properties>
+		<sonatypeOssDistMgmtNexusUrl>https://jakarta.oss.sonatype.org/</sonatypeOssDistMgmtNexusUrl>
+		<sonatypeOssDistMgmtStagingUrl>${sonatypeOssDistMgmtNexusUrl}content/repositories/staging/</sonatypeOssDistMgmtStagingUrl>
+	</properties>
+
+	<profiles>
+		<!-- A profile that allows to consume staged but unreleased Jakarta artifacts -->
+		<profile>
+			<id>staging</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<repositories>
+				<repository>
+					<id>sonatype-nexus-staging</id>
+					<name>Sonatype Nexus Staging</name>
+					<url>${sonatypeOssDistMgmtStagingUrl}</url>
+					<releases>
+						<enabled>true</enabled>
+					</releases>
+					<snapshots>
+						<enabled>false</enabled>
+					</snapshots>
+				</repository>
+			</repositories>
+			<pluginRepositories>
+				<pluginRepository>
+					<id>sonatype-nexus-staging</id>
+					<name>Sonatype Nexus Staging</name>
+					<url>${sonatypeOssDistMgmtStagingUrl}</url>
+					<releases>
+						<enabled>true</enabled>
+					</releases>
+					<snapshots>
+						<enabled>false</enabled>
+					</snapshots>
+				</pluginRepository>
+			</pluginRepositories>
+		</profile>
+	</profiles>
+
+</project>

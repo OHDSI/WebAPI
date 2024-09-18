@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata modelVersion="1.1.0">
+  <groupId>org.ohdsi</groupId>
+  <artifactId>standardized-analysis-utils</artifactId>
+  <version>1.2.1-SNAPSHOT</version>
+  <versioning>
+    <snapshot>
+      <timestamp>20201204.180243</timestamp>
+      <buildNumber>3</buildNumber>
+    </snapshot>
+    <lastUpdated>20201204180243</lastUpdated>
+    <snapshotVersions>
+      <snapshotVersion>
+        <extension>jar</extension>
+        <value>1.2.1-20201204.180243-3</value>
+        <updated>20201204180243</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <extension>pom</extension>
+        <value>1.2.1-20201204.180243-3</value>
+        <updated>20201204180243</updated>
+      </snapshotVersion>
+    </snapshotVersions>
+  </versioning>
+</metadata>

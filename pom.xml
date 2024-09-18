@@ -539,6 +539,10 @@
   	<enabled>true</enabled>
 	</snapshots>
     </repository>
+    <repository>
+      <id>mdaca-OHDSI</id>
+      <url>https://mdaca-201959883603.d.codeartifact.us-east-2.amazonaws.com/maven/OHDSI/</url>
+    </repository>
   </repositories>
 
   <pluginRepositories>
@@ -1506,7 +1510,7 @@
           lower(email) = lower(?)</security.db.datasource.authenticationQuery>
       </properties>
     </profile>
-<profile>
+	<profile>
       <id>webapi-docker</id>
       <properties>
         <git.branch>unknown</git.branch>

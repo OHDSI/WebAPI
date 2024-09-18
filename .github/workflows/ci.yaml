@@ -3,7 +3,7 @@ name: Docker Maven Build and Push Docker Image to MDACA ECR
 on:
   push:
     branches:
-      - main
+      - mdaca-3.0.1
 
 jobs:
   build:

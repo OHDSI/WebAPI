@@ -13,14 +13,7 @@ RUN curl -LSsO https://github.com/open-telemetry/opentelemetry-java-instrumentat
 
 
 # OHDSI WebAPI and ATLAS web application running as a Spring Boot application with Java 11
-# FROM openjdk:17-jdk-slim
-# FROM eclipse-temurin:17-jre-alpine
-ARG BASE_REGISTRY=201959883603.dkr.ecr.us-east-2.amazonaws.com
-ARG BASE_IMAGE_PATH=mdaca/base-images/ironbank-alpine-java
-ARG BASE_TAG=3.20.2_jdk17
-ARG BASE_IMAGE=${BASE_REGISTRY}/${BASE_IMAGE_PATH}:${BASE_TAG}
-ARG $BASE_IMAGE
-FROM $BASE_IMAGE
+FROM 201959883603.dkr.ecr.us-east-2.amazonaws.com/mdaca/base-images/ironbank-alpine-java:3.20.2_jdk17
 
 # Any Java options to pass along, e.g. memory, garbage collection, etc.
 ENV JAVA_OPTS=""

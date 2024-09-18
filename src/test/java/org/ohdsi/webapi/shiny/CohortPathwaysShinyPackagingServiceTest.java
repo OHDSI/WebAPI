@@ -11,10 +11,14 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.ohdsi.webapi.pathway.PathwayService;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
+import org.ohdsi.webapi.pathway.dto.PathwayPopulationResultsDTO;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
+
+import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -49,14 +53,18 @@ public class CohortPathwaysShinyPackagingServiceTest {
 
     @Test
     public void shouldPopulateAppData() {
-        when(pathwayService.getByGenerationId(eq(GENERATION_ID))).thenReturn(createPathwayAnalysisDTO());
-        when(pathwayService.getResultingPathways(eq((long) GENERATION_ID))).thenReturn(createPathwayAnalysisResult());
+        when(pathwayService.findDesignByGenerationId(eq((long) GENERATION_ID))).thenReturn("design json");
+        when(pathwayService.getGenerationResults(eq((long) GENERATION_ID))).thenReturn(createPathwayGenerationResults());
 
         CommonShinyPackagingService.ShinyAppDataConsumers dataConsumers = Mockito.mock(CommonShinyPackagingService.ShinyAppDataConsumers.class, Answers.RETURNS_DEEP_STUBS.get());
         sut.populateAppData(GENERATION_ID, SOURCE_KEY, dataConsumers);
 
-        verify(dataConsumers.getJsonObjects(), times(1)).accept(eq("pathwayAnalysis.json"), any(PathwayAnalysisDTO.class));
-        verify(dataConsumers.getJsonObjects(), times(1)).accept(eq("pathwayAnalysisResult.json"), any(PathwayAnalysisResult.class));
+        verify(dataConsumers.getTextFiles(), times(1)).accept(eq("design.json"), anyString());
+        verify(dataConsumers.getJsonObjects(), times(1)).accept(eq("chartData.json"), any(PathwayPopulationResultsDTO.class));
+    }
+
+    private PathwayPopulationResultsDTO createPathwayGenerationResults() {
+        return new PathwayPopulationResultsDTO(Collections.emptyList(), Collections.emptyList());
     }
 
     @Test

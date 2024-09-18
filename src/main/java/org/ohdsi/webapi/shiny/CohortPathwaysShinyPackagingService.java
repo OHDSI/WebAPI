@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.odysseusinc.arachne.commons.api.v1.dto.CommonAnalysisType;
 import org.ohdsi.webapi.pathway.PathwayService;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
-import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
+import org.ohdsi.webapi.pathway.dto.PathwayPopulationResultsDTO;
 import org.ohdsi.webapi.service.ShinyService;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,13 +43,14 @@ public class CohortPathwaysShinyPackagingService extends CommonShinyPackagingSer
 
     @Override
     public void populateAppData(Integer generationId, String sourceKey, ShinyAppDataConsumers dataConsumers) {
-        PathwayAnalysisDTO pathwayAnalysis = pathwayService.getByGenerationId(generationId);
-        PathwayAnalysisResult pathwayAnalysisResult = pathwayService.getResultingPathways(generationId.longValue());
-        ExceptionUtils.throwNotFoundExceptionIfNull(pathwayAnalysis, String.format("There is no pathway analysis definition with generation id = %d.", generationId));
-        ExceptionUtils.throwNotFoundExceptionIfNull(pathwayAnalysisResult, String.format("There is no pathway analysis result definition with generation id = %d.", generationId));
+        String designJSON = pathwayService.findDesignByGenerationId(generationId.longValue());
+        PathwayPopulationResultsDTO generationResults = pathwayService.getGenerationResults(generationId.longValue());
 
-        dataConsumers.getJsonObjects().accept("pathwayAnalysis.json", pathwayAnalysis);
-        dataConsumers.getJsonObjects().accept("pathwayAnalysisResult.json", pathwayAnalysisResult);
+        ExceptionUtils.throwNotFoundExceptionIfNull(generationResults, String.format("There are no pathway analysis generation results with generation id = %d.", generationId));
+        ExceptionUtils.throwNotFoundExceptionIfNull(designJSON, String.format("There is no pathway analysis design with generation id = %d.", generationId));
+
+        dataConsumers.getTextFiles().accept("design.json", designJSON);
+        dataConsumers.getJsonObjects().accept("chartData.json", generationResults);
     }
 
     @Override

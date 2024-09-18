@@ -2,14 +2,29 @@ FROM maven:3.9.7-eclipse-temurin-17-alpine AS builder
 WORKDIR /code
 
 ARG MAVEN_PROFILE=webapi-docker
-ARG MAVEN_PARAMS="-DskipUnitTests -DskipITtests -D\"maven.test.skip\"=true" # can use maven options, e.g. -DskipTests=true -DskipUnitTests=true
-
-# Install curl
-RUN apk add --no-cache curl
+ARG MAVEN_PARAMS="" # can use maven options, e.g. -DskipTests=true -DskipUnitTests=true
 
 ARG OPENTELEMETRY_JAVA_AGENT_VERSION=1.17.0
 RUN curl -LSsO https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${OPENTELEMETRY_JAVA_AGENT_VERSION}/opentelemetry-javaagent.jar
 
+# Download dependencies
+COPY pom.xml /code/
+RUN mkdir .git \
+    && mvn package \
+     -P${MAVEN_PROFILE}
+
+ARG GIT_BRANCH=unknown
+ARG GIT_COMMIT_ID_ABBREV=unknown
+
+# Compile code and repackage it
+COPY src /code/src
+RUN mvn package ${MAVEN_PARAMS} \
+    -P${MAVEN_PROFILE} \
+    && mkdir war \
+    && mv target/WebAPI.war war \
+    && cd war \
+    && jar -xf WebAPI.war \
+    && rm WebAPI.war
 
 
 # OHDSI WebAPI and ATLAS web application running as a Spring Boot application with Java 11

@@ -11,6 +11,7 @@ public class AnnotationDTO {
     private String vocabularyVersion;
     private String conceptSetVersion;
     private String searchData;
+    private String copiedFromConceptSetIds;
     private Integer conceptId;
 
     public String getCreatedBy() {
@@ -67,5 +68,13 @@ public class AnnotationDTO {
 
     public void setConceptId(Integer conceptId) {
         this.conceptId = conceptId;
+    }
+
+    public String getCopiedFromConceptSetIds() {
+        return copiedFromConceptSetIds;
+    }
+
+    public void setCopiedFromConceptSetIds(String copiedFromConceptSetIds) {
+        this.copiedFromConceptSetIds = copiedFromConceptSetIds;
     }
 }

@@ -2081,5 +2081,62 @@
         </dependency>
       </dependencies>
     </profile>-->
+   <profile>
+      <id>webapi-docker-mdaca-codeartifact</id>
+      <properties>
+        <git.branch>unknown</git.branch>
+        <git.commit.id.abbrev>unknown</git.commit.id.abbrev>
+        <maven.gitcommitid.skip>true</maven.gitcommitid.skip>
+        <miredot.phase>none</miredot.phase>
+        <skipTests>true</skipTests>
+        <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
+        <datasource.url>jdbc:postgresql://54.209.111.128:5432/vocabularyv5</datasource.url>
+        <datasource.username>USER</datasource.username>
+        <datasource.password>PASS</datasource.password>
+        <datasource.dialect>postgresql</datasource.dialect>
+        <datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
+        <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
+        <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
+        <flyway.datasource.username>userWithWritesToOhdsiSchema</flyway.datasource.username>
+        <flyway.datasource.password>PASS</flyway.datasource.password>
+        <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
+        <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
+        <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
+        <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
+        <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
+        <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
+        <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
+        <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
+        <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
+        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users_data where \
+          lower(email) = lower(?)</security.db.datasource.authenticationQuery>
+      </properties>
+      <repositories>
+        <!-- OHDSI Snapshots Repository -->
+        <repository>
+            <id>ohdsi.snapshots</id>
+            <name>repo.ohdsi.org-snapshots</name>
+            <url>https://repo.ohdsi.org/nexus/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <!-- AWS CodeArtifact Repository -->
+        <repository>
+            <id>mdaca-OHDSI</id>
+            <name>AWS CodeArtifact MDACA OHDSI Repository</name>
+            <url>https://mdaca-201959883603.d.codeartifact.us-east-2.amazonaws.com/maven/OHDSI/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+      </repositories>
+    </profile>
   </profiles>
 </project>

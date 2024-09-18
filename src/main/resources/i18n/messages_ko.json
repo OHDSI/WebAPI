@@ -1412,6 +1412,7 @@
     "notPrevalent": "만연하지 않음(Not Prevalent)",
     "optimizedOut": "최적화",
     "options": "옵션",
+    "originConceptSets": "오리진 컨셉트 세트",
     "outcomeCohortName": "아웃컴(outcome) 코호트 이름",
     "outcomeId": "아웃컴(outcome) ID",
     "outcomeModel": "결과 모델",

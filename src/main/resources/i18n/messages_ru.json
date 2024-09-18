@@ -1338,6 +1338,7 @@
     "binary": "Двоичный",
     "model": "Модель",
     "options": "Опции",
+    "originConceptSets": "Исходные наборы концепций",
     "firstExposureOnly": "Только первое знакомство",
     "washoutPeriod": "Период вымывания",
     "includeAllOutcomes": "Включить все результаты",

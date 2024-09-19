@@ -9,7 +9,8 @@ ARG MAVEN_PARAMS="-DskipUnitTests -DskipITtests -D\"maven.test.skip\"=true" # ca
 # Install curl
 RUN apk add --no-cache curl
 
-ARG OPENTELEMETRY_JAVA_AGENT_VERSION=1.17.0
+# ARG OPENTELEMETRY_JAVA_AGENT_VERSION=1.17.0
+ARG OPENTELEMETRY_JAVA_AGENT_VERSION=2.8.0
 RUN curl -LSsO https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${OPENTELEMETRY_JAVA_AGENT_VERSION}/opentelemetry-javaagent.jar
 
 RUN mkdir war

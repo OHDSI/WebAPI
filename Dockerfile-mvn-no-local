@@ -13,12 +13,7 @@ COPY .m2 .m2
 
 # Download dependencies
 COPY pom.xml /code/
-RUN mkdir .git \
-    && mvn package -s ${MAVEN_M2} -P${MAVEN_PROFILE}
-
-# Compile code and repackage it
-COPY src /code/src
-RUN mvn package -s ${MAVEN_M2} ${MAVEN_PARAMS} -P${MAVEN_PROFILE}
+RUN echo "$CODEARTIFACT_AUTH_TOKEN" && cat .m2/settings.xml && $mvn package -s ${MAVEN_M2} ${MAVEN_PARAMS} -P${MAVEN_PROFILE}
 
 # OHDSI WebAPI and ATLAS web application running as a Spring Boot application with Java 11
 FROM 201959883603.dkr.ecr.us-east-2.amazonaws.com/mdaca/base-images/ironbank-alpine-java:3.20.2_jdk17

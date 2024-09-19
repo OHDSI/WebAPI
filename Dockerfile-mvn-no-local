@@ -13,8 +13,8 @@ COPY .m2 /code/.m2
 
 # Download dependencies
 COPY pom.xml /code/
-RUN mvn package -s ${MAVEN_M2} ${MAVEN_PARAMS} -P${MAVEN_PROFILE}
-
+RUN mvn package -q -s ${MAVEN_M2} ${MAVEN_PARAMS} -P${MAVEN_PROFILE}
+COPY src /code/src
 # OHDSI WebAPI and ATLAS web application running as a Spring Boot application with Java 11
 FROM 201959883603.dkr.ecr.us-east-2.amazonaws.com/mdaca/base-images/ironbank-alpine-java:3.20.2_jdk17
 

@@ -1,7 +1,7 @@
 FROM maven:3.9.7-eclipse-temurin-17-alpine AS builder
 WORKDIR /code
 ARG CODEARTIFACT_AUTH_TOKEN
-ARG MAVEN_PROFILE=webapi-docker
+ARG MAVEN_PROFILE=webapi-docker-mdaca-codeartifact
 ARG MAVEN_PARAMS="-DskipUnitTests -DskipITtests -D\"maven.test.skip\"=true" # can use maven options, e.g. -DskipTests=true -DskipUnitTests=true
 ARG MAVEN_M2="/code/.m2/settings.xml"
 ARG OPENTELEMETRY_JAVA_AGENT_VERSION=1.17.0

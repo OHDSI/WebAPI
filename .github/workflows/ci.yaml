@@ -30,7 +30,7 @@ jobs:
           aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
           aws configure set default.region $AWS_REGION
           echo "Running Maven Build"
-          export CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token \
+          export GET_CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token \
             --domain ${{ secrets.CODEARTIFACT_DOMAIN }} \
             --domain-owner $AWS_ACCOUNT_ID \
             --region $AWS_REGION \
@@ -47,7 +47,7 @@ jobs:
           REGISTRY=201959883603.dkr.ecr.us-east-2.amazonaws.com
 
           # Build the Docker image
-          docker build --build-arg CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token \
+          docker build --build-arg CODEARTIFACT_AUTH_TOKEN=$GET_CODEARTIFACT_AUTH_TOKEN \
             --domain ${{ secrets.CODEARTIFACT_DOMAIN }} \
             --domain-owner $AWS_ACCOUNT_ID \
             --region $AWS_REGION \

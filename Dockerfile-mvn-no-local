@@ -15,7 +15,12 @@ COPY .m2 /code/.m2
 COPY pom.xml /code/
 RUN mvn package -q -s ${MAVEN_M2} ${MAVEN_PARAMS} -P${MAVEN_PROFILE}
 COPY src /code/src
-RUN mvn package -q -s ${MAVEN_M2} ${MAVEN_PARAMS} -P${MAVEN_PROFILE}
+RUN mvn package -q -s ${MAVEN_M2} ${MAVEN_PARAMS} -P${MAVEN_PROFILE} && \
+    && mkdir war \
+    && mv target/WebAPI.war war \
+    && cd war \
+    && jar -xf WebAPI.war \
+    && rm WebAPI.war
 
 # OHDSI WebAPI and ATLAS web application running as a Spring Boot application with Java 11
 FROM 201959883603.dkr.ecr.us-east-2.amazonaws.com/mdaca/base-images/ironbank-alpine-java:3.20.2_jdk17

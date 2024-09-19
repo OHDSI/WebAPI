@@ -29,29 +29,31 @@ jobs:
           aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
           aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
           aws configure set default.region $AWS_REGION
+          
           echo "Running Maven Build"
-          export GET_CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token \
+          CODEARTIFACT_TOKEN_FILE=${{ github.workspace }}/codeartifact-auth
+
+          aws codeartifact get-authorization-token \
             --domain ${{ secrets.CODEARTIFACT_DOMAIN }} \
             --domain-owner $AWS_ACCOUNT_ID \
             --region $AWS_REGION \
             --query authorizationToken \
-            --output text) > codeartifcact-auth
-          export CODEARTIFACT_AUTH_TOKEN=$(cat codeartifcact-auth) 
-       
+            --output text > $CODEARTIFACT_TOKEN_FILE
+          
+          export CODEARTIFACT_AUTH_TOKEN=$(cat $CODEARTIFACT_TOKEN_FILE)
+          echo "$CODEARTIFACT_AUTH_TOKEN"
+
           # Get token from ECR and Docker login
-          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com
-          IMAGE_TAG=3.0.1
- 
-          # Set ENV for Docker build
-          ECR_REPOSITORY=mdaca/ohdsi/webapi
-          REPOSITORY=$ECR_REPOSITORY
-          REGISTRY=201959883603.dkr.ecr.us-east-2.amazonaws.com
+          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+
+          REGISTRY=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 
           # Build the Docker image
-          docker build --build-arg CODEARTIFACT_AUTH_TOKEN=$CODEARTIFACT_AUTH_TOKEN -f Dockerfile-mvn-no-local -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          docker build --build-arg CODEARTIFACT_AUTH_TOKEN=$CODEARTIFACT_AUTH_TOKEN -f Dockerfile-mvn-no-local -t $REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
 
           # Push the Docker image
-          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          docker push $REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
 
   security:
     runs-on: ubuntu-latest

@@ -35,7 +35,8 @@ jobs:
             --domain-owner $AWS_ACCOUNT_ID \
             --region $AWS_REGION \
             --query authorizationToken \
-            --output text) 
+            --output text) > codeartifcact-auth
+          export CODEARTIFACT_AUTH_TOKEN=$(cat codeartifcact-auth) 
        
           # Get token from ECR and Docker login
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com
@@ -47,7 +48,7 @@ jobs:
           REGISTRY=201959883603.dkr.ecr.us-east-2.amazonaws.com
 
           # Build the Docker image
-          docker build --build-arg CODEARTIFACT_AUTH_TOKEN=$GET_CODEARTIFACT_AUTH_TOKEN -f Dockerfile-mvn-no-local -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          docker build --build-arg CODEARTIFACT_AUTH_TOKEN=$CODEARTIFACT_AUTH_TOKEN -f Dockerfile-mvn-no-local -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
 
           # Push the Docker image
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG

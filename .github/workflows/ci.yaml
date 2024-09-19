@@ -47,12 +47,7 @@ jobs:
           REGISTRY=201959883603.dkr.ecr.us-east-2.amazonaws.com
 
           # Build the Docker image
-          docker build --build-arg CODEARTIFACT_AUTH_TOKEN=$GET_CODEARTIFACT_AUTH_TOKEN \
-            --domain ${{ secrets.CODEARTIFACT_DOMAIN }} \
-            --domain-owner $AWS_ACCOUNT_ID \
-            --region $AWS_REGION \
-            --query authorizationToken \
-            --output text) -f Dockerfile-mvn-no-local -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          docker build --build-arg CODEARTIFACT_AUTH_TOKEN=$GET_CODEARTIFACT_AUTH_TOKEN -f Dockerfile-mvn-no-local -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
 
           # Push the Docker image
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG

@@ -24,13 +24,10 @@ public abstract class CommonShinyPackagingService {
     private static final Logger LOG = LoggerFactory.getLogger(CommonShinyPackagingService.class);
     protected final String atlasUrl;
     protected String repoLink;
+
     protected final FileWriter fileWriter;
     protected final ManifestUtils manifestUtils;
     protected final ObjectMapper objectMapper;
-
-    private final Map<String, String> applicationProperties = new HashMap<>();
-    private final Map<String, Object> jsonObjectsToSave = new HashMap<>();
-    private final Map<String, String> textFilesToSave = new HashMap<>();
 
     public CommonShinyPackagingService(String atlasUrl, String repoLink, FileWriter fileWriter, ManifestUtils manifestUtils, ObjectMapper objectMapper) {
         this.atlasUrl = atlasUrl;
@@ -77,36 +74,26 @@ public abstract class CommonShinyPackagingService {
         return objectMapper;
     }
 
-    public Map<String, String> getApplicationProperties() {
-        return applicationProperties;
-    }
-
-    public Map<String, Object> getJsonObjectsToSave() {
-        return jsonObjectsToSave;
-    }
-
-    public Map<String, String> getTextFilesToSave() {
-        return textFilesToSave;
-    }
-
     class ShinyAppDataConsumers {
-        private final BiConsumer<String, String> appProperties = getApplicationProperties()::put;
-        private final BiConsumer<String, String> textFiles = getTextFilesToSave()::put;
-        private final BiConsumer<String, Object> jsonObjects = getJsonObjectsToSave()::put;
+        private final Map<String, String> applicationProperties = new HashMap<>();
+        private final Map<String, Object> jsonObjectsToSave = new HashMap<>();
+        private final Map<String, String> textFilesToSave = new HashMap<>();
+        private final BiConsumer<String, String> appPropertiesConsumer = applicationProperties::put;
+        private final BiConsumer<String, String> textFilesConsumer = textFilesToSave::put;
+        private final BiConsumer<String, Object> jsonObjectsConsumer = jsonObjectsToSave::put;
 
         public BiConsumer<String, String> getAppProperties() {
-            return appProperties;
+            return appPropertiesConsumer;
         }
 
         public BiConsumer<String, String> getTextFiles() {
-            return textFiles;
+            return textFilesConsumer;
         }
 
         public BiConsumer<String, Object> getJsonObjects() {
-            return jsonObjects;
+            return jsonObjectsConsumer;
         }
     }
-
 
     public final TemporaryFile packageApp(Integer generationId, String sourceKey, PackagingStrategy packaging) {
         return TempFileUtils.doInDirectory(path -> {
@@ -122,23 +109,25 @@ public abstract class CommonShinyPackagingService {
                 Path dataDir = path.resolve("data");
                 Files.createDirectory(dataDir);
 
+                ShinyAppDataConsumers shinyAppDataConsumers = new ShinyAppDataConsumers();
+
                 //Default properties common for each shiny app
-                getApplicationProperties().put("repo_link", getRepoLink());
-                getApplicationProperties().put("atlas_url", getAtlasUrl());
-                getApplicationProperties().put("datasource", sourceKey);
+                shinyAppDataConsumers.applicationProperties.put("repo_link", getRepoLink());
+                shinyAppDataConsumers.applicationProperties.put("atlas_url", getAtlasUrl());
+                shinyAppDataConsumers.applicationProperties.put("datasource", sourceKey);
 
-                populateAppData(generationId, sourceKey, new ShinyAppDataConsumers());
+                populateAppData(generationId, sourceKey, shinyAppDataConsumers);
 
-                Stream<Path> textFilesPaths = getTextFilesToSave().entrySet()
+                Stream<Path> textFilesPaths = shinyAppDataConsumers.textFilesToSave.entrySet()
                         .stream()
                         .map(entry -> getFileWriter().writeTextFile(dataDir.resolve(entry.getKey()), pw -> pw.print(entry.getValue())));
 
-                Stream<Path> jsonFilesPaths = getJsonObjectsToSave().entrySet()
+                Stream<Path> jsonFilesPaths = shinyAppDataConsumers.jsonObjectsToSave.entrySet()
                         .stream()
                         .map(entry -> getFileWriter().writeObjectAsJsonFile(dataDir, entry.getValue(), entry.getKey()));
 
                 Stream<Path> appPropertiesFilePath = Stream.of(
-                        getFileWriter().writeTextFile(dataDir.resolve("app.properties"), pw -> pw.print(prepareAppProperties(applicationProperties)))
+                        getFileWriter().writeTextFile(dataDir.resolve("app.properties"), pw -> pw.print(convertAppPropertiesToString(shinyAppDataConsumers.applicationProperties)))
                 );
 
                 Stream.of(textFilesPaths, jsonFilesPaths, appPropertiesFilePath)
@@ -156,8 +145,8 @@ public abstract class CommonShinyPackagingService {
         });
     }
 
-    private String prepareAppProperties(Map<String, String> appProperties) {
-        return getApplicationProperties().entrySet().stream()
+    private String convertAppPropertiesToString(Map<String, String> appProperties) {
+        return appProperties.entrySet().stream()
                 .map(entry -> String.format("%s=%s\n", entry.getKey(), entry.getValue()))
                 .collect(Collectors.joining());
     }

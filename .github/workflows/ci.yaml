@@ -118,7 +118,7 @@ jobs:
           ECR_REPOSITORY: mdaca/ohdsi/webapi
         run: |
           syft $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
-          syft $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG  > OHDSI-WEBAPI-sbom.tf
+          syft $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG  > OHDSI-Webapi-sbom.tf
 
       - name: Upload Reports
         uses: actions/upload-artifact@v4

@@ -125,5 +125,5 @@ jobs:
         with:
           name: trivy-and-sbom-reports
           path: |
-            OHDSI-Webapi.csv
+            OHDSI-Webapi-Trivy.csv
             OHDSI-Webapi-sbom.tf

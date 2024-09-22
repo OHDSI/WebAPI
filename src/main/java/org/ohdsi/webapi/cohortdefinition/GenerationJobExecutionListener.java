@@ -34,6 +34,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
@@ -67,7 +68,7 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 		return df.getGenerationInfoList().stream()
 						.filter(info -> info.getId().getSourceId().equals(sourceId))
 						.findFirst()
-						.orElseThrow(() -> new IllegalStateException(String.format("Cannot find cohortGenerationInfo for cohortDefinition[{}] sourceId[%s]", df.getId(), sourceId)));
+						.orElseThrow(() -> new IllegalStateException("Cannot find cohortGenerationInfo for cohortDefinition[{}] sourceId[%s]".formatted(df.getId(), sourceId)));
 	}
 
 	@Override
@@ -84,7 +85,7 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 
 		try {
 			Source source = sourceService.findBySourceId(sourceId);
-			CohortDefinition df = this.cohortDefinitionRepository.findOne(defId);
+			CohortDefinition df = this.cohortDefinitionRepository.findById(defId).get();
 			CohortGenerationInfo info = findBySourceId(df, sourceId);
 			setExecutionDurationIfPossible(je, info);
 			info.setStatus(GenerationStatus.COMPLETE);
@@ -124,7 +125,7 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 			log.error("Cannot set duration time for cohortGenerationInfo[{}]. startData[{}] and endData[{}] cannot be empty.", info.getId(), je.getStartTime(), je.getEndTime());
 			return;
 		}
-		info.setExecutionDuration((int) (je.getEndTime().getTime() - je.getStartTime().getTime()));
+		info.setExecutionDuration((int) (Date.from(je.getEndTime().atZone(ZoneId.systemDefault()).toInstant()).getTime() - Date.from(je.getStartTime().atZone(ZoneId.systemDefault()).toInstant()).getTime()));
 	}
 
 	@Override
@@ -138,7 +139,7 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 		initTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 		TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(initTx);
 		try {
-			CohortDefinition df = this.cohortDefinitionRepository.findOne(defId);
+			CohortDefinition df = this.cohortDefinitionRepository.findById(defId).get();
 			CohortGenerationInfo info = findBySourceId(df, sourceId);
 			info.setIsValid(false);
 			info.setStartTime(startTime);

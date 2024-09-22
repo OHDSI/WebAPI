@@ -16,11 +16,11 @@ public class ExpressionFileUtils {
             Collectors.toMap(ExpressionFileUtils::getKey, item -> item.concept.conceptName);
 
     public static String getKey(final ConceptSetExpression.ConceptSetItem item) {
-        return String.format(CODE_AND_VOCABID_KEY, item.concept.conceptCode, item.concept.vocabularyId);
+        return CODE_AND_VOCABID_KEY.formatted(item.concept.conceptCode, item.concept.vocabularyId);
     }
 
     public static String getKey(final ConceptSetComparison item) {
-        return String.format(CODE_AND_VOCABID_KEY, item.conceptCode, item.vocabularyId);
+        return CODE_AND_VOCABID_KEY.formatted(item.conceptCode, item.vocabularyId);
     }
 
     public static Collection<ConceptSetComparison> combine(final Map<String, Concept> input1ex,

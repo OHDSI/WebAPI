@@ -19,6 +19,6 @@ public enum TagType {
         return Arrays.stream(values())
                 .filter(t -> t.value == value)
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(String.format("Tag type (%s) cannot be found", value)));
+                .orElseThrow(() -> new IllegalArgumentException("Tag type (%s) cannot be found".formatted(value)));
     }
 }

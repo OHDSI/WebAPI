@@ -21,25 +21,24 @@ import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
 
-import javax.transaction.Transactional;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -208,7 +207,7 @@ public class EstimationController {
   public EstimationDTO getAnalysis(@PathParam("id") int id) {
 
     Estimation est = service.getAnalysis(id);
-    ExceptionUtils.throwNotFoundExceptionIfNull(est, String.format(NO_ESTIMATION_MESSAGE, id));
+    ExceptionUtils.throwNotFoundExceptionIfNull(est, NO_ESTIMATION_MESSAGE.formatted(id));
     return conversionService.convert(est, EstimationDTO.class);
   }
 
@@ -228,7 +227,7 @@ public class EstimationController {
   public EstimationAnalysisImpl exportAnalysis(@PathParam("id") int id) {
 
     Estimation estimation = service.getAnalysis(id);
-    ExceptionUtils.throwNotFoundExceptionIfNull(estimation, String.format(NO_ESTIMATION_MESSAGE, id));
+    ExceptionUtils.throwNotFoundExceptionIfNull(estimation, NO_ESTIMATION_MESSAGE.formatted(id));
     return service.exportAnalysis(estimation);
   }
   
@@ -280,7 +279,7 @@ public class EstimationController {
     return Response
             .ok(baos)
             .type(MediaType.APPLICATION_OCTET_STREAM)
-            .header("Content-Disposition", String.format("attachment; filename=\"estimation_%d.zip\"", id))
+            .header("Content-Disposition", "attachment; filename=\"estimation_%d.zip\"".formatted(id))
             .build();
   }
 
@@ -302,7 +301,7 @@ public class EstimationController {
                                             @PathParam("sourceKey") String sourceKey) throws IOException {
 
     Estimation analysis = service.getAnalysis(analysisId);
-    ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format(NO_ESTIMATION_MESSAGE, analysisId));
+    ExceptionUtils.throwNotFoundExceptionIfNull(analysis, NO_ESTIMATION_MESSAGE.formatted(analysisId));
     EstimationDTO estimationDTO = conversionService.convert(analysis, EstimationDTO.class);
     CheckResult checkResult = runDiagnostics(estimationDTO);
     if (checkResult.hasCriticalErrors()) {
@@ -341,7 +340,7 @@ public class EstimationController {
   public ExecutionBasedGenerationDTO getGeneration(@PathParam("generationId") Long generationId) {
 
     EstimationGenerationEntity generationEntity = service.getGeneration(generationId);
-    ExceptionUtils.throwNotFoundExceptionIfNull(generationEntity, String.format(NO_GENERATION_MESSAGE, generationId));
+    ExceptionUtils.throwNotFoundExceptionIfNull(generationEntity, NO_GENERATION_MESSAGE.formatted(generationId));
     return sensitiveInfoService.filterSensitiveInfo(conversionService.convert(generationEntity, ExecutionBasedGenerationDTO.class),
             Collections.singletonMap(Constants.Variables.SOURCE, generationEntity.getSource()));
   }

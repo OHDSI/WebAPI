@@ -27,7 +27,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.ws.rs.NotFoundException;
+import jakarta.ws.rs.NotFoundException;
 
 public class CohortAnalysisTasklet implements Tasklet {
     
@@ -71,7 +71,7 @@ public class CohortAnalysisTasklet implements Tasklet {
 				String failMessage = null;
 				Integer cohortDefinitionId = Integer.parseInt(task.getCohortDefinitionIds().get(0));
 				this.transactionTemplate.execute(status -> {
-					CohortDefinition cohortDef = cohortDefinitionRepository.findOne(cohortDefinitionId);
+					CohortDefinition cohortDef = cohortDefinitionRepository.findById(cohortDefinitionId).get();
 					CohortAnalysisGenerationInfo gi = cohortDef.getCohortAnalysisGenerationInfoList().stream()
 													.filter(a -> a.getSourceId() == task.getSource().getSourceId())
 													.findFirst()
@@ -95,7 +95,7 @@ public class CohortAnalysisTasklet implements Tasklet {
 						int[] ret = executor.execute(progress -> {
 
 							transactionTemplateRequiresNew.execute(status -> {
-								CohortDefinition cohortDef = cohortDefinitionRepository.findOne(cohortDefinitionId);
+								CohortDefinition cohortDef = cohortDefinitionRepository.findById(cohortDefinitionId).get();
 								CohortAnalysisGenerationInfo info = cohortDef.getCohortAnalysisGenerationInfoList().stream()
 												.filter(a -> a.getSourceId() == task.getSource().getSourceId())
 												.findFirst().orElseThrow(NotFoundException::new);
@@ -124,7 +124,7 @@ public class CohortAnalysisTasklet implements Tasklet {
 						
 						this.transactionTemplateRequiresNew.execute(status -> {
 
-							CohortDefinition cohortDef = cohortDefinitionRepository.findOne(cohortDefinitionId);
+							CohortDefinition cohortDef = cohortDefinitionRepository.findById(cohortDefinitionId).get();
 							CohortAnalysisGenerationInfo info = cohortDef.getCohortAnalysisGenerationInfoList().stream()
 											.filter(a -> a.getSourceId() == task.getSource().getSourceId())
 											.findFirst().orElseThrow(NotFoundException::new);

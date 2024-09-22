@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.opensaml</groupId>
+        <artifactId>opensaml-parent</artifactId>
+        <version>5.0.0</version>
+        <relativePath>../opensaml-parent</relativePath>
+    </parent>
+
+    <name>OpenSAML :: Messaging API</name>
+    <description>Messaging API</description>
+    <artifactId>opensaml-messaging-api</artifactId>
+    <packaging>jar</packaging>
+
+    <properties>
+        <automatic.module.name>org.opensaml.messaging</automatic.module.name>
+    </properties>
+
+    <dependencies>
+    
+        <!-- Compile Dependencies -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>opensaml-core-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>${httpclient.groupId}</groupId>
+            <artifactId>${httpclient.artifactId}</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${httpclient.httpcore.groupId}</groupId>
+            <artifactId>${httpclient.httpcore.artifactId}</artifactId>
+        </dependency>
+
+        <!-- Provided Dependencies -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+        </dependency>
+
+        <!-- Runtime Dependencies -->
+
+        <!-- Test Dependencies -->
+        
+    </dependencies>
+    
+    <scm>
+        <connection>${shibboleth.scm.connection}java-opensaml</connection>
+        <developerConnection>${shibboleth.scm.developerConnection}java-opensaml</developerConnection>
+        <url>${shibboleth.scm.url}java-opensaml.git</url>
+    </scm>
+
+    <distributionManagement>
+        <site>
+            <id>site</id>
+            <url>scp:${opensaml-module.site.url}</url>
+        </site>
+    </distributionManagement>
+
+</project>

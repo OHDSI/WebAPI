@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 2022 Contributors to the Eclipse Foundation.
+    Copyright (c) 1997, 2021 Oracle and/or its affiliates and others.
+    All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.eclipse.ee4j</groupId>
+        <artifactId>project</artifactId>
+        <version>1.0.6</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>org.glassfish.expressly</groupId>
+    <artifactId>expressly</artifactId>
+    <version>5.0.0</version>
+
+    <name>Eclipse Expressly</name>
+    <description>Jakarta Expression Language Implementation</description>
+    <url>https://projects.eclipse.org/projects/ee4j.expressly</url>
+
+    <developers>
+        <developer>
+            <id>jakarta-ee4j-expressly</id>
+            <name>Eclipse Expressly Developers</name>
+            <organization>Eclipse Foundation</organization>
+            <email>expressly-dev@eclipse.org</email>
+        </developer>
+    </developers>
+    <contributors>
+       <contributor>
+           <name>Jakarta Expression Language Contributors</name>
+           <email>el-dev@eclipse.org</email>
+           <url>https://github.com/eclipse-ee4j/el-ri/graphs/contributors</url>
+       </contributor>
+    </contributors>
+
+    <mailingLists>
+        <mailingList>
+            <name>Expressly dev mailing list</name>
+            <post>expressly-dev@eclipse.org</post>
+            <subscribe>https://dev.eclipse.org/mailman/listinfo/expressly-dev</subscribe>
+            <unsubscribe>https://dev.eclipse.org/mailman/listinfo/expressly-dev</unsubscribe>
+            <archive>https://dev.eclipse.org/mhonarc/lists/expressly-dev</archive>
+        </mailingList>
+    </mailingLists>
+
+    <scm>
+        <connection>scm:git:https://github.com/eclipse-ee4j/expressly-ri.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/eclipse-ee4j/expressly-ri.git</developerConnection>
+        <url>https://github.com/eclipse-ee4j/expressly-ri</url>
+        <tag>HEAD</tag>
+    </scm>
+    <issueManagement>
+        <system>github</system>
+        <url>https://github.com/eclipse-ee4j/expressly-ri/issues</url>
+    </issueManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>jakarta.el</groupId>
+            <artifactId>jakarta.el-api</artifactId>
+            <version>5.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                    <include>**/*.xml</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>${project.basedir}/..</directory>
+                <includes>
+                    <include>LICENSE.md</include>
+                    <include>NOTICE.md</include>
+                </includes>
+                <targetPath>META-INF</targetPath>
+            </resource>
+        </resources>
+        <plugins>
+            <!-- Sets minimal Maven version -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>enforce-maven</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>3.6.0</version>
+                                </requireMavenVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Configure maven-bundle-plugin to generate OSGi manifest. Please note: we use the manifest goal only and not the bundle goal. 
+                The bundle goal can lead to very surprising results if the package names are not correctly specified. So, we use the jar plugin to generate the 
+                jar. -->
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>5.1.4</version>
+                <configuration>
+                	<supportIncrementalBuild>true</supportIncrementalBuild>
+                    <instructions>
+                        <Bundle-SymbolicName>org.glassfish.expressly</Bundle-SymbolicName>
+                        <_include>-osgi.bundle</_include>
+                    </instructions>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Adds the manifest file created by the org.apache.felix:maven-bundle-plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.2</version>
+                <configuration>
+                    <archive>
+                        <manifestFile>
+                            ${project.build.outputDirectory}/META-INF/MANIFEST.MF
+                        </manifestFile>
+                        <manifestEntries>
+                            <Extension-Name>org.glassfish.expressly</Extension-Name>
+                            <Specification-Version>5.0</Specification-Version>
+                            <Specification-Vendor>Eclipse Foundation</Specification-Vendor>
+                            <Implementation-Version>${project.version}</Implementation-Version>
+                            <Implementation-Vendor>${vendorName}</Implementation-Vendor>
+                            <Automatic-Module-Name>org.glassfish.expressly</Automatic-Module-Name>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <!-- Restricts the Java version to 11 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.10.1</version>
+                <configuration>
+                    <release>11</release>
+                    <compilerArgument>-Xlint:unchecked</compilerArgument>
+                </configuration>
+            </plugin>
+
+            <!-- Create Javadoc for API jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.3.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <source>11</source>
+                            <additionalJOption>-Xdoclint:none</additionalJOption>
+                            <quiet>true</quiet>
+                            <groups>
+                                <group>
+                                    <title>Eclipse Expressly ${project.version}, a Jakarta Expression Language Implementation</title>
+                                    <packages>org.glassfish.expressly</packages>
+                                </group>
+                            </groups>
+                            <bottom><![CDATA[
+Comments to: <a href="mailto:el-dev@eclipse.org">el-dev@eclipse.org</a>.<br>
+Copyright &#169; 2018, 2022 Eclipse Foundation. All rights reserved.<br>
+Use is subject to <a href="http://www.eclipse.org/legal/epl-2.0" target="_top">license terms</a>.]]>
+                            </bottom>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <!-- Use ant to manually invoke javacc, as this required is very infrequently <plugin> <groupId>org.codehaus.mojo</groupId> <artifactId>javacc-maven-plugin</artifactId> 
+                <version>2.6</version> <executions> <execution> <id>jjtree-javacc</id> <goals> <goal>jjtree-javacc</goal> </goals> <configuration> <sourceDirectory>src/main/java/com/sun/el/parser</sourceDirectory> 
+                <outputDirectory>src/main/java/com/sun/el/parser</outputDirectory> </configuration> </execution> </executions> </plugin> -->
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <configuration>
+                    <mavenExecutorId>forked-path</mavenExecutorId>
+                    <useReleaseProfile>false</useReleaseProfile>
+                    <arguments>${release.arguments}</arguments>
+                </configuration>
+            </plugin>
+            
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M5</version>
+                <configuration>
+                    <forkMode>never</forkMode>
+                </configuration>
+            </plugin>
+	   </plugins>
+    </build>
+</project>

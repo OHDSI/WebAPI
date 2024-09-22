@@ -4,7 +4,7 @@ import static org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisSta
 import static org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus.Status.FAILED;
 
 import java.util.Optional;
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineGenerationEntity;
 import org.ohdsi.webapi.executionengine.repository.ExecutionEngineGenerationRepository;

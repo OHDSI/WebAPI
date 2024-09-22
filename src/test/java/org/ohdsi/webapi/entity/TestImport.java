@@ -3,7 +3,7 @@ package org.ohdsi.webapi.entity;
 import org.ohdsi.webapi.CommonDTO;
 import org.ohdsi.webapi.model.CommonEntity;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.ohdsi.webapi.test.TestConstants.NEW_TEST_ENTITY;
 import static org.ohdsi.webapi.test.TestConstants.SOME_UNIQUE_TEST_NAME;
 

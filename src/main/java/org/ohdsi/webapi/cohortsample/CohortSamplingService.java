@@ -12,14 +12,13 @@ import org.ohdsi.webapi.user.dto.UserDTO;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionCallback;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.NotFoundException;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.NotFoundException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -48,7 +47,6 @@ public class CohortSamplingService extends AbstractDaoService {
 	private final StepBuilderFactory stepBuilders;
 	private final JobTemplate jobTemplate;
 
-	@Autowired
 	public CohortSamplingService(
 			CohortSampleRepository sampleRepository,
 			JobBuilderFactory jobBuilders,
@@ -196,7 +194,7 @@ public class CohortSamplingService extends AbstractDaoService {
 	 */
 	public void refreshSample(Integer sampleId) {
 		
-				CohortSample sample = sampleRepository.findById(sampleId);
+				CohortSample sample = sampleRepository.findById(sampleId).get();
 		if (sample == null) {
 			throw new NotFoundException("Cohort sample with ID " + sampleId + " not found");
 		}
@@ -212,10 +210,10 @@ public class CohortSamplingService extends AbstractDaoService {
 		final List<SampleElement> elements = sampleElements(sampleParamaters, sample, jdbcTemplate, source);		
 		
 		getTransactionTemplate().execute((TransactionCallback<Void>) transactionStatus -> {
-			String deleteSql = String.format(
-							"DELETE FROM %s.cohort_sample_element WHERE cohort_sample_id = %d;",
-							source.getTableQualifier(SourceDaimon.DaimonType.Results),
-							sample.getId());
+			String deleteSql = 
+                    "DELETE FROM %s.cohort_sample_element WHERE cohort_sample_id = %d;".formatted(
+                    source.getTableQualifier(SourceDaimon.DaimonType.Results),
+                    sample.getId());
 			String translatedDeleteSql = SqlTranslate.translateSql(deleteSql, source.getSourceDialect(), null, null);
 			jdbcTemplate.update(translatedDeleteSql);
 			insertSampledElements(source, jdbcTemplate, sample.getId(), elements);
@@ -431,14 +429,14 @@ public class CohortSamplingService extends AbstractDaoService {
 
 		jdbcTemplate.setMaxRows(sample.getSize());
 
-		return jdbcTemplate.query(renderer.getSql(), renderer.getOrderedParams(), (rs, rowNum) -> {
+		return jdbcTemplate.query(renderer.getSql(), (rs, rowNum) -> {
 			SampleElement element = new SampleElement();
 			element.setRank(rowNum);
 			element.setAge(rs.getInt("age"));
 			element.setGenderConceptId(rs.getInt("gender_concept_id"));
 			element.setPersonId(rs.getLong("person_id"));
 			return element;
-		});
+		}, renderer.getOrderedParams());
 	}
 
 	/** Delete a sample and its elements. */
@@ -452,7 +450,7 @@ public class CohortSamplingService extends AbstractDaoService {
 						resultsSchema,
 						"cohortSampleId",
 						sampleId).getSql();
-		CohortSample sample = sampleRepository.findOne(sampleId);
+		CohortSample sample = sampleRepository.findById(sampleId);
 		if (sample == null) {
 			throw new NotFoundException("Sample with ID " + sampleId + " does not exist");
 		}
@@ -464,7 +462,7 @@ public class CohortSamplingService extends AbstractDaoService {
 		}
 
 		getTransactionTemplate().execute((TransactionCallback<Void>) transactionStatus -> {
-			sampleRepository.delete(sampleId);
+			sampleRepository.deleteById(sampleId);
 			jdbcTemplate.update(sql, sampleId);
 			return null;
 		});

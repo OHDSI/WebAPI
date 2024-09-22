@@ -9,9 +9,11 @@ import org.springframework.data.repository.query.Param;
 
 public interface AnalysisExecutionRepository extends JpaRepository<ExecutionEngineAnalysisStatus, Integer> {
 
-    @Query(" SELECT st FROM ExecutionEngineAnalysisStatus st JOIN st.executionEngineGeneration ge " +
-            " WHERE st.executionStatus in(:statuses) " +
-            " AND   ge.startTime < :invalidate ")
+    @Query("""
+             SELECT st FROM ExecutionEngineAnalysisStatus st JOIN st.executionEngineGeneration ge \
+             WHERE st.executionStatus in(:statuses) \
+             AND   ge.startTime < :invalidate \
+            """)
     List<ExecutionEngineAnalysisStatus> findAllInvalidAnalysis(
             @Param("invalidate") Date invalidate,
             @Param("statuses") List<ExecutionEngineAnalysisStatus.Status> statuses

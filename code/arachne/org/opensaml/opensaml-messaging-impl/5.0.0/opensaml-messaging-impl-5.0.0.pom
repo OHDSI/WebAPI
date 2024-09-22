@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.opensaml</groupId>
+		<artifactId>opensaml-parent</artifactId>
+		<version>5.0.0</version>
+		<relativePath>../opensaml-parent</relativePath>
+	</parent>
+
+	<name>OpenSAML :: Messaging Implementations</name>
+    <description>Messaging Implementations</description>
+    <artifactId>opensaml-messaging-impl</artifactId>
+	<packaging>jar</packaging>
+
+    <properties>
+        <automatic.module.name>org.opensaml.messaging.impl</automatic.module.name>
+    </properties>
+
+	<dependencies>
+		<!-- Compile Dependencies -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>opensaml-core-api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>opensaml-messaging-api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+        <dependency>
+            <groupId>${shib-shared.groupId}</groupId>
+            <artifactId>shib-networking</artifactId>
+        </dependency>		
+
+		<!-- Provided Dependencies -->
+
+		<!-- Runtime Dependencies -->
+
+		<!-- Test Dependencies -->
+		
+		<!-- Needed for XMLObject providers -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>opensaml-core-impl</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>opensaml-testing</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+        <dependency>
+            <groupId>${spring.groupId}</groupId>
+            <artifactId>spring-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+	</dependencies>
+
+    <scm>
+        <connection>${shibboleth.scm.connection}java-opensaml</connection>
+        <developerConnection>${shibboleth.scm.developerConnection}java-opensaml</developerConnection>
+        <url>${shibboleth.scm.url}java-opensaml.git</url>
+    </scm>
+
+    <distributionManagement>
+        <site>
+            <id>site</id>
+            <url>scp:${opensaml-module.site.url}</url>
+        </site>
+    </distributionManagement>
+
+</project>

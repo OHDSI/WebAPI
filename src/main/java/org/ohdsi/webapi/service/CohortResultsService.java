@@ -7,10 +7,9 @@ import java.sql.SQLException;
 import java.util.*;
 
 import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
@@ -38,7 +37,7 @@ import java.io.ByteArrayOutputStream;
 import java.sql.ResultSetMetaData;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import org.ohdsi.webapi.person.CohortPerson;
 
@@ -578,7 +577,7 @@ public class CohortResultsService extends AbstractDaoService {
   public GenerationInfoDTO getAnalysisProgress(@PathParam("sourceKey") String sourceKey, @PathParam("id") Integer id) {
 
     return getTransactionTemplateRequiresNew().execute(status -> {
-      org.ohdsi.webapi.cohortdefinition.CohortDefinition def = cohortDefinitionRepository.findOne(id);
+      org.ohdsi.webapi.cohortdefinition.CohortDefinition def = cohortDefinitionRepository.findById(id).get();
       Source source = getSourceRepository().findBySourceKey(sourceKey);
       return def.getCohortAnalysisGenerationInfoList().stream()
               .filter(cd -> Objects.equals(cd.getSourceId(), source.getSourceId()))
@@ -1719,7 +1718,7 @@ public class CohortResultsService extends AbstractDaoService {
     String tqName = "tableQualifier";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
     PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, tqName, tqValue, "cohortDefinitionId", whitelist(id), SessionUtils.sessionId());
-    return getSourceJdbcTemplate(source).queryForObject(psr.getSql(), psr.getOrderedParams(), Long.class);
+    return getSourceJdbcTemplate(source).queryForObject(psr.getSql(), Long.class, psr.getOrderedParams());
   }
 
   /**

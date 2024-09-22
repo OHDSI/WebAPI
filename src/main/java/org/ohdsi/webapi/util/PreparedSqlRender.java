@@ -61,14 +61,14 @@ public class PreparedSqlRender {
 
     if (value instanceof String || value instanceof Integer || value instanceof Long || value == null) {
       result.add(value);
-    } else if (value instanceof String[]) {
-      result.addAll(Arrays.asList((String[]) value));
-    } else if (value instanceof Long[]) {
-      result.addAll(Arrays.asList((Long[]) value));
-    } else if (value instanceof Integer[]) {
-      result.addAll(Arrays.asList((Integer[]) value));
-    } else if (value instanceof Object[]) {
-      result.addAll(Arrays.asList((Object[]) value));
+    } else if (value instanceof String[] strings) {
+      result.addAll(Arrays.asList(strings));
+    } else if (value instanceof Long[] long1s) {
+      result.addAll(Arrays.asList(long1s));
+    } else if (value instanceof Integer[] integers) {
+      result.addAll(Arrays.asList(integers));
+    } else if (value instanceof Object[] objects) {
+      result.addAll(Arrays.asList(objects));
     }
   }
 	

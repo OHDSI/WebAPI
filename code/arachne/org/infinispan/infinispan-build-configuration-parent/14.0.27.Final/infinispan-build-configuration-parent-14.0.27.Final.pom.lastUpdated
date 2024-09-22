@@ -1,0 +1,9 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Tue Jul 16 10:23:26 EDT 2024
+https\://repository.jboss.org/nexus/content/groups/public-jboss/.error=
+http\://0.0.0.0/.error=Could not transfer artifact org.infinispan\:infinispan-build-configuration-parent\:pom\:14.0.27.Final from/to maven-default-http-blocker (http\://0.0.0.0/)\: Blocked mirror for repositories\: [jboss-ga-repository (http\://maven.repository.redhat.com/techpreview/all, default, releases), jboss-public-repository (http\://repository.jboss.org/nexus/content/repositories/public/, default, releases), fusesource (http\://repo.fusesource.com/nexus/content/groups/public/, default, releases), redhat-ga-repository (http\://maven.repository.redhat.com/ga/, default, releases)]
+@default-maven-default-http-blocker-http\://0.0.0.0/.lastUpdated=1721139806479
+https\://repository.jboss.org/nexus/content/groups/public-jboss/.lastUpdated=1721139806588
+https\://repo.fusesource.com/nexus/content/groups/public/.error=
+https\://repo.fusesource.com/nexus/content/groups/public/.lastUpdated=1721139806734
+https\://repo.ohdsi.org/nexus/content/groups/public/.lastUpdated=1721139806890

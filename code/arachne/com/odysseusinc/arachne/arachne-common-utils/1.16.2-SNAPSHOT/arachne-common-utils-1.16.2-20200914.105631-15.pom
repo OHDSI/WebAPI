@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>arachne-commons-bundle</artifactId>
+        <groupId>com.odysseusinc.arachne</groupId>
+        <version>1.16.2-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>arachne-common-utils</artifactId>
+
+    <properties>
+        <java.version>1.8</java.version>
+        <spring.version>5.1.7.RELEASE</spring.version>
+        <handlebars.version>4.0.6</handlebars.version>
+        <commons.io.version>2.5</commons.io.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.github.jknack</groupId>
+            <artifactId>handlebars</artifactId>
+            <version>${handlebars.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons.io.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.7.0</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>artifactory</id>
+            <name>Odysseus community snapshots</name>
+            <url>http://repo.odysseusinc.com/artifactory/community-libs-snapshot-local</url>
+        </snapshotRepository>
+        <repository>
+            <id>artifactory</id>
+            <name>Odysseus community releases</name>
+            <url>http://repo.odysseusinc.com/artifactory/community-libs-release-local</url>
+        </repository>
+    </distributionManagement>
+
+</project>

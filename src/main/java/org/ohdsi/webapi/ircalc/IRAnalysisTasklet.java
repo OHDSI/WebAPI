@@ -72,7 +72,7 @@ public class IRAnalysisTasklet extends CancelableTasklet {
     Integer analysisId = Integer.valueOf(jobParams.get(ANALYSIS_ID).toString());
     String sessionId = jobParams.get(SESSION_ID).toString();
     try {
-      IncidenceRateAnalysis analysis = this.incidenceRateAnalysisRepository.findOne(analysisId);
+      IncidenceRateAnalysis analysis = this.incidenceRateAnalysisRepository.findById(analysisId).get();
       IncidenceRateAnalysisExpression expression = objectMapper.readValue(analysis.getDetails().getExpression(), IncidenceRateAnalysisExpression.class);
       
       IRAnalysisQueryBuilder.BuildExpressionQueryOptions options = new IRAnalysisQueryBuilder.BuildExpressionQueryOptions();

@@ -25,14 +25,14 @@ import org.apache.shiro.authz.UnauthorizedException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.messaging.support.ErrorMessage;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -67,8 +67,8 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
             responseStatus = Status.NOT_FOUND;
         } else if (ex instanceof BadRequestException) {
             responseStatus = Status.BAD_REQUEST;
-        } else if (ex instanceof UndeclaredThrowableException) {
-            Throwable throwable = getThrowable((UndeclaredThrowableException)ex);
+        } else if (ex instanceof UndeclaredThrowableException exception) {
+            Throwable throwable = getThrowable(exception);
             if (Objects.nonNull(throwable)) {
                 if (throwable instanceof UnauthorizedException || throwable instanceof ForbiddenException) {
                     responseStatus = Status.FORBIDDEN;

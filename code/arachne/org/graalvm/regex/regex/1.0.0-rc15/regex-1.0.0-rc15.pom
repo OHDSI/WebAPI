@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.graalvm.regex</groupId>
+  <artifactId>regex</artifactId>
+  <version>1.0.0-rc15</version>
+  <url>http://www.graalvm.org/</url>
+  <name>Tregex</name>
+  <description>Truffle regular expressions language.</description>
+  <developers>
+    <developer>
+      <name>Truffle and Graal developers</name>
+      <email>graalvm-users@oss.oracle.com</email>
+      <organization>Graal</organization>
+      <organizationUrl>http://www.graalvm.org/</organizationUrl>
+    </developer>
+  </developers>
+  <licenses>
+    <license>
+      <name>GNU General Public License, version 2, with the Classpath Exception</name>
+      <url>http://openjdk.java.net/legal/gplv2+ce.html</url>
+    </license>
+  </licenses>
+  <dependencies>
+    <dependency>
+      <groupId>org.graalvm.truffle</groupId>
+      <artifactId>truffle-api</artifactId>
+      <version>1.0.0-rc15</version>
+    </dependency>
+  </dependencies>
+  <scm>
+    <connection>scm:git:https://github.com/oracle/graal.git</connection>
+    <developerConnection>scm:git:git@github.com:oracle/graal.git</developerConnection>
+    <url>https://github.com/oracle/graal</url>
+  </scm>
+</project>

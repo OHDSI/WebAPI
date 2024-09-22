@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Tue Jul 16 10:23:20 EDT 2024
+http\://0.0.0.0/.error=Could not transfer artifact org.springframework.boot\:spring-boot-dependencies\:pom\:3.2.5 from/to maven-default-http-blocker (http\://0.0.0.0/)\: Blocked mirror for repositories\: [jboss-ga-repository (http\://maven.repository.redhat.com/techpreview/all, default, releases), jboss-public-repository (http\://repository.jboss.org/nexus/content/repositories/public/, default, releases), fusesource (http\://repo.fusesource.com/nexus/content/groups/public/, default, releases), redhat-ga-repository (http\://maven.repository.redhat.com/ga/, default, releases)]
+@default-maven-default-http-blocker-http\://0.0.0.0/.lastUpdated=1721139799066
+https\://repo1.maven.org/maven2/.lastUpdated=1721139800172

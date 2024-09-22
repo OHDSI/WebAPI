@@ -16,8 +16,8 @@
 package org.ohdsi.webapi.feasibility;
 
 import java.io.Serializable;
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 
 /**
  *
@@ -59,9 +59,9 @@ public class StudyGenerationInfoId implements Serializable {
   }
   
   public boolean equals(Object o) {
-    return ((o instanceof StudyGenerationInfoId) 
-            && studyId.equals(((StudyGenerationInfoId) o).getStudyId()) 
-            && sourceId.equals(((StudyGenerationInfoId) o).getSourceId()));
+    return ((o instanceof StudyGenerationInfoId sgii) 
+            && studyId.equals(sgii.getStudyId()) 
+            && sourceId.equals(sgii.getSourceId()));
   }
   
   public int hashCode() {

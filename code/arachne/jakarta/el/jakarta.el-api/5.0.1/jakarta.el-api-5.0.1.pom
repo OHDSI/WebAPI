@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 1997, 2022 Oracle and/or its affiliates and others.
+    All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.eclipse.ee4j</groupId>
+        <artifactId>project</artifactId>
+        <version>1.0.6</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>jakarta.el</groupId>
+    <artifactId>jakarta.el-api</artifactId>
+    <version>5.0.1</version>
+    <packaging>jar</packaging>
+
+    <name>Jakarta Expression Language API</name>
+    <description>
+        Jakarta Expression Language defines an expression language for Java applications
+    </description>
+    <url>https://projects.eclipse.org/projects/ee4j.el</url>
+
+    <developers>
+        <developer>
+            <id>jakarta-ee4j-el</id>
+            <name>Jakarta Expression Language Developers</name>
+            <organization>Eclipse Foundation</organization>
+            <email>el-dev@eclipse.org</email>
+        </developer>
+    </developers>
+    <contributors>
+       <contributor>
+           <name>Jakarta Expression Language Contributors</name>
+           <email>el-dev@eclipse.org</email>
+           <url>https://github.com/eclipse-ee4j/el-ri/graphs/contributors</url>
+       </contributor>
+    </contributors>
+
+    <mailingLists>
+        <mailingList>
+            <name>Expression Language dev mailing list</name>
+            <post>el-dev@eclipse.org</post>
+            <subscribe>https://dev.eclipse.org/mailman/listinfo/el-dev</subscribe>
+            <unsubscribe>https://dev.eclipse.org/mailman/listinfo/el-dev</unsubscribe>
+            <archive>https://dev.eclipse.org/mhonarc/lists/el-dev</archive>
+        </mailingList>
+    </mailingLists>
+
+    <scm>
+        <connection>scm:git:https://github.com/eclipse-ee4j/el-ri.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/eclipse-ee4j/el-ri.git</developerConnection>
+        <url>https://github.com/eclipse-ee4j/el-ri</url>
+        <tag>HEAD</tag>
+    </scm>
+    <issueManagement>
+        <system>github</system>
+        <url>https://github.com/eclipse-ee4j/el-ri/issues</url>
+    </issueManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.8.1</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <properties>
+        <!-- Make sure the two versions are in sync with the maven version -->
+        <spec.version>5.0</spec.version>
+        <bundle.version>${project.version}</bundle.version>
+        <extensionName>jakarta.el</extensionName>
+        <bundle.symbolicName>jakarta.el-api</bundle.symbolicName>
+        <vendorName>Eclipse Foundation</vendorName>
+    </properties>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>${project.basedir}/..</directory>
+                <includes>
+                    <include>LICENSE.md</include>
+                    <include>NOTICE.md</include>
+                </includes>
+                <targetPath>META-INF</targetPath>
+            </resource>
+        </resources>
+        <plugins>
+            <!-- Sets minimal Maven version -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>enforce-maven</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>3.6.0</version>
+                                </requireMavenVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        
+            <!-- Restricts the Java version to 11 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <release>11</release>
+                    <compilerArgument>-Xlint:unchecked</compilerArgument>
+                </configuration>
+            </plugin>
+
+            <!-- Execute unit tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M5</version>
+            </plugin>
+
+            <!-- Checks copyright / license headers -->
+            <plugin>
+                <groupId>org.glassfish.copyright</groupId>
+                <artifactId>glassfish-copyright-maven-plugin</artifactId>
+                <version>2.3</version>
+                <configuration>
+                    <excludeFile>etc/config/copyright-exclude</excludeFile>
+                    <!--svn|mercurial|git - defaults to svn -->
+                    <scm>git</scm>
+                    <!-- turn on/off debugging -->
+                    <debug>false</debug>
+                    <!-- skip files not under SCM -->
+                    <scmOnly>true</scmOnly>
+                    <!-- turn off warnings -->
+                    <warn>true</warn>
+                    <!-- for use with repair -->
+                    <update>false</update>
+                    <!-- check that year is correct -->
+                    <ignoreYear>false</ignoreYear>
+                    <templateFile>etc/config/copyright-eclipse.txt</templateFile>
+                    <alternateTemplateFile>etc/config/copyright-oracle.txt</alternateTemplateFile>
+                </configuration>
+            </plugin>
+
+            <!-- Creates the OSGi MANIFEST.MF file -->
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>5.1.2</version>
+                <configuration>
+                    <supportedProjectTypes>
+                        <supportedProjectType>jar</supportedProjectType>
+                    </supportedProjectTypes>
+                    <instructions>
+                        <Bundle-Description>Jakarta Expression Language ${spec.version}</Bundle-Description>
+                        <Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
+                        <Bundle-Version>${bundle.version}</Bundle-Version>
+                        <Extension-Name>${extensionName}</Extension-Name>
+                        <Specification-Version>${spec.version}</Specification-Version>
+                        <Specification-Vendor>${vendorName}</Specification-Vendor>
+                        <Implementation-Version>${project.version}</Implementation-Version>
+                        <Implementation-Vendor>${vendorName}</Implementation-Vendor>
+                        <Export-Package>jakarta.el</Export-Package>
+                    </instructions>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Adds the manifest file created by the org.apache.felix:maven-bundle-plugin -->
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
+                    <excludes>
+                        <exclude>**/*.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <!-- Creates the source jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.2.1</version>
+                <configuration>
+                    <includePom>true</includePom>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Create Javadoc for API jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.3.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <source>11</source>
+                            <additionalJOption>-Xdoclint:none</additionalJOption>
+                            <quiet>true</quiet>
+                            <description>Jakarta Expression Language API documentation</description>
+                            <doctitle>Jakarta Expression Language API documentation</doctitle>
+                            <windowtitle>Jakarta Expression Language API documentation</windowtitle>
+                            <header><![CDATA[<br>Jakarta Expression Language API v${project.version}]]></header>
+                            <bottom><![CDATA[
+Comments to: <a href="mailto:el-dev@eclipse.org">el-dev@eclipse.org</a>.<br>
+Copyright &#169; 2018, 2022 Eclipse Foundation. All rights reserved.<br>
+Use is subject to <a href="{@docRoot}/doc-files/EFSL.html" target="_top">license terms</a>.]]>
+                            </bottom>
+                            <docfilessubdirs>true</docfilessubdirs>
+                            <groups>
+                                <group>
+                                    <title>Jakarta Expression Language API Documentation</title>
+                                    <packages>
+                                        jakarta.el.*
+                                    </packages>
+                                </group>
+                            </groups>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+</project>

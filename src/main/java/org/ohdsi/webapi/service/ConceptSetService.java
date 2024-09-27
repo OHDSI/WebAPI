@@ -41,6 +41,7 @@ import org.ohdsi.webapi.conceptset.ConceptSetItem;
 import org.ohdsi.webapi.conceptset.dto.ConceptSetVersionFullDTO;
 import org.ohdsi.webapi.exception.ConceptNotExistException;
 import org.ohdsi.webapi.security.PermissionService;
+import static org.ohdsi.webapi.service.CohortDefinitionService.CachingSetup.COHORT_DEFINITION_LIST_CACHE;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
@@ -51,6 +52,7 @@ import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.tag.domain.HasTags;
 import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
+import org.ohdsi.webapi.util.CacheHelper;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
@@ -88,14 +90,18 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 
 		@Override
 		public void customize(CacheManager cacheManager) {
+			// due to unit tests causing application contexts to reload cache manager caches, we
+			// have to check for the existance of a cache before creating it
+			Set<String> cacheNames = CacheHelper.getCacheNames(cacheManager);
 			// Evict when a cohort definition is created or updated, or permissions, or tags
-			cacheManager.createCache(CONCEPT_SET_LIST_CACHE, new MutableConfiguration<String, Collection<ConceptSetDTO>>()
-				.setTypes(String.class, (Class<Collection<ConceptSetDTO>>) (Class<?>) List.class)
-				.setStoreByValue(false)
-				.setStatisticsEnabled(true));
+			if (!cacheNames.contains(CONCEPT_SET_LIST_CACHE)) {
+				cacheManager.createCache(CONCEPT_SET_LIST_CACHE, new MutableConfiguration<String, Collection<ConceptSetDTO>>()
+					.setTypes(String.class, (Class<Collection<ConceptSetDTO>>) (Class<?>) List.class)
+					.setStoreByValue(false)
+					.setStatisticsEnabled(true));
+			}
 		}
 	}
-	
     @Autowired
     private ConceptSetGenerationInfoRepository conceptSetGenerationInfoRepository;
 

@@ -1,8 +1,10 @@
 package org.ohdsi.webapi.util;
 
 import java.lang.management.ManagementFactory;
+import java.util.HashSet;
 import java.util.Set;
 import javax.cache.CacheManager;
+import javax.cache.configuration.MutableConfiguration;
 import javax.cache.management.CacheStatisticsMXBean;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerInvocationHandler;
@@ -32,5 +34,11 @@ public class CacheHelper {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public static Set<String> getCacheNames(CacheManager cacheManager) {
+		Set<String> cacheNames = new HashSet<>();
+		cacheManager.getCacheNames().forEach((name) -> cacheNames.add(name));
+		return cacheNames;
 	}
 }

@@ -17,7 +17,6 @@ package org.ohdsi.webapi.cache;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.StreamSupport;
 import javax.cache.Cache;
 import javax.cache.CacheManager;
@@ -54,6 +53,10 @@ public class CacheService {
 		this.cacheManager = cacheManager;
 	}
 
+	public CacheService() {
+	}
+
+	
 	@GET
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -88,5 +91,4 @@ public class CacheService {
 		}
 		return result;
 	}
-
 }

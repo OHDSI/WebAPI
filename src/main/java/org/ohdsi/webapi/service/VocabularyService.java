@@ -53,6 +53,7 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.util.CacheHelper;
 import org.ohdsi.webapi.util.PreparedSqlRender;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.vocabulary.ConceptRecommendedNotInstalledException;
@@ -98,19 +99,28 @@ public class VocabularyService extends AbstractDaoService {
 
 		@Override
 		public void customize(CacheManager cacheManager) {
+			// due to unit tests causing application contexts to reload cache manager caches, we
+			// have to check for the existance of a cache before creating it
+			Set<String> cacheNames = CacheHelper.getCacheNames(cacheManager);
 			// Evict when a cohort definition is created or updated, or permissions, or tags
-			cacheManager.createCache(CONCEPT_DETAIL_CACHE, new MutableConfiguration<String, Concept>()
-				.setTypes(String.class, Concept.class)
-				.setStoreByValue(false)
-				.setStatisticsEnabled(true));
-			cacheManager.createCache(CONCEPT_RELATED_CACHE, new MutableConfiguration<String, Collection<RelatedConcept>>()
-				.setTypes(String.class, (Class<Collection<RelatedConcept>>) (Class<?>) Collection.class)
-				.setStoreByValue(false)
-				.setStatisticsEnabled(true));
-			cacheManager.createCache(CONCEPT_HIERARCHY_CACHE, new MutableConfiguration<String, Collection<RelatedConcept>>()
-				.setTypes(String.class, (Class<Collection<RelatedConcept>>) (Class<?>) Collection.class)
-				.setStoreByValue(false)
-				.setStatisticsEnabled(true));
+			if (!cacheNames.contains(CONCEPT_DETAIL_CACHE)) {
+				cacheManager.createCache(CONCEPT_DETAIL_CACHE, new MutableConfiguration<String, Concept>()
+					.setTypes(String.class, Concept.class)
+					.setStoreByValue(false)
+					.setStatisticsEnabled(true));
+			}
+			if (!cacheNames.contains(CONCEPT_RELATED_CACHE)) {
+				cacheManager.createCache(CONCEPT_RELATED_CACHE, new MutableConfiguration<String, Collection<RelatedConcept>>()
+					.setTypes(String.class, (Class<Collection<RelatedConcept>>) (Class<?>) Collection.class)
+					.setStoreByValue(false)
+					.setStatisticsEnabled(true));
+			}
+			if (!cacheNames.contains(CONCEPT_HIERARCHY_CACHE)) {
+				cacheManager.createCache(CONCEPT_HIERARCHY_CACHE, new MutableConfiguration<String, Collection<RelatedConcept>>()
+					.setTypes(String.class, (Class<Collection<RelatedConcept>>) (Class<?>) Collection.class)
+					.setStoreByValue(false)
+					.setStatisticsEnabled(true));
+			}
 		}
 	}
 	

@@ -41,6 +41,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.Permission;
 import org.apache.shiro.authz.permission.WildcardPermission;
 import org.ohdsi.circe.helper.ResourceHelper;
+import org.ohdsi.webapi.util.CacheHelper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.cache.JCacheManagerCustomizer;
 import org.springframework.cache.annotation.CacheEvict;
@@ -62,14 +63,18 @@ public class PermissionManager {
 
 		@Override
 		public void customize(CacheManager cacheManager) {
+			// due to unit tests causing application contexts to reload cache manager caches, we
+			// have to check for the existance of a cache before creating it
+			Set<String> cacheNames = CacheHelper.getCacheNames(cacheManager);
 			// Evict when a user, role or permission is modified/deleted.
-			cacheManager.createCache(AUTH_INFO_CACHE, new MutableConfiguration<String, UserSimpleAuthorizationInfo>()
-				.setTypes(String.class, UserSimpleAuthorizationInfo.class)
-				.setStoreByValue(false)
-				.setStatisticsEnabled(true));
+			if (!cacheNames.contains(AUTH_INFO_CACHE)) {
+				cacheManager.createCache(AUTH_INFO_CACHE, new MutableConfiguration<String, UserSimpleAuthorizationInfo>()
+					.setTypes(String.class, UserSimpleAuthorizationInfo.class)
+					.setStoreByValue(false)
+					.setStatisticsEnabled(true));
+			}
 		}
 	}
-	
 
   @Value("${datasource.ohdsi.schema}")
   private String ohdsiSchema;
@@ -95,6 +100,8 @@ public class PermissionManager {
   @Autowired
   private JdbcTemplate jdbcTemplate;
   
+	private ThreadLocal<ConcurrentHashMap<String, UserSimpleAuthorizationInfo>> authorizationInfoCache = ThreadLocal.withInitial(ConcurrentHashMap::new);
+	
   public static class PermissionsDTO {
 
     public Map<String, List<String>> permissions = null;
@@ -163,39 +170,42 @@ public class PermissionManager {
 	@Cacheable(cacheNames = CachingSetup.AUTH_INFO_CACHE)
   public UserSimpleAuthorizationInfo getAuthorizationInfo(final String login) {
 
-		final UserSimpleAuthorizationInfo info = new UserSimpleAuthorizationInfo();
+		return authorizationInfoCache.get().computeIfAbsent(login, newLogin -> {
+			final UserSimpleAuthorizationInfo info = new UserSimpleAuthorizationInfo();
 
-		final UserEntity userEntity = userRepository.findByLogin(login);
-		if(userEntity == null) {
-			throw new UnknownAccountException("Account does not exist");
-		}
+			final UserEntity userEntity = userRepository.findByLogin(login);
+			if(userEntity == null) {
+				throw new UnknownAccountException("Account does not exist");
+			}
 
-		info.setUserId(userEntity.getId());
-		info.setLogin(userEntity.getLogin());
+			info.setUserId(userEntity.getId());
+			info.setLogin(userEntity.getLogin());
 
-		for (UserRoleEntity userRole: userEntity.getUserRoles()) {
-			info.addRole(userRole.getRole().getName());
-		}
+			for (UserRoleEntity userRole: userEntity.getUserRoles()) {
+				info.addRole(userRole.getRole().getName());
+			}
 
-		// convert permission index from queryUserPermissions() into a map of WildcardPermissions
-		Map<String, List<String>> permsIdx = this.queryUserPermissions(login).permissions;
-		Map permissionMap = new HashMap<String, List<Permission>>();
-		Set<String> permissionNames = new HashSet<>();
+			// convert permission index from queryUserPermissions() into a map of WildcardPermissions
+			Map<String, List<String>> permsIdx = this.queryUserPermissions(login).permissions;
+			Map permissionMap = new HashMap<String, List<Permission>>();
+			Set<String> permissionNames = new HashSet<>();
 
-		for(String permIdxKey : permsIdx.keySet()) {
-			List<String> perms = permsIdx.get(permIdxKey);
-			permissionNames.addAll(perms);
-			// convert raw string permission into Wildcard perm for each element in this key's array.
-			permissionMap.put(permIdxKey, perms.stream().map(perm -> new WildcardPermission(perm)).collect(Collectors.toList()));
-		}
+			for(String permIdxKey : permsIdx.keySet()) {
+				List<String> perms = permsIdx.get(permIdxKey);
+				permissionNames.addAll(perms);
+				// convert raw string permission into Wildcard perm for each element in this key's array.
+				permissionMap.put(permIdxKey, perms.stream().map(perm -> new WildcardPermission(perm)).collect(Collectors.toList()));
+			}
 
-		info.setStringPermissions(permissionNames);
-		info.setPermissionIdx(permissionMap);
-		return info;
-  }
+			info.setStringPermissions(permissionNames);
+			info.setPermissionIdx(permissionMap);
+			return info;
+		});
+	}
 
 	@CacheEvict(cacheNames = CachingSetup.AUTH_INFO_CACHE, allEntries = true)
   public void clearAuthorizationInfoCache() {
+		authorizationInfoCache.remove();
   }
 
   @Transactional

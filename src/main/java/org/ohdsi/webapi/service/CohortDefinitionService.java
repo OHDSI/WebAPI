@@ -163,10 +163,12 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 		@Override
 		public void customize(CacheManager cacheManager) {
 			// Evict when a cohort definition is created or updated, or permissions, or tags
-			cacheManager.createCache(COHORT_DEFINITION_LIST_CACHE, new MutableConfiguration<String, List<CohortMetadataDTO>>()
-				.setTypes(String.class, (Class<List<CohortMetadataDTO>>) (Class<?>) List.class)
-				.setStoreByValue(false)
-				.setStatisticsEnabled(true));
+			if (!CacheHelper.getCacheNames(cacheManager).contains(COHORT_DEFINITION_LIST_CACHE)) {
+				cacheManager.createCache(COHORT_DEFINITION_LIST_CACHE, new MutableConfiguration<String, List<CohortMetadataDTO>>()
+					.setTypes(String.class, (Class<List<CohortMetadataDTO>>) (Class<?>) List.class)
+					.setStoreByValue(false)
+					.setStatisticsEnabled(true));
+			}
 		}
 	}
 	

@@ -37,7 +37,7 @@ import org.ohdsi.circe.vocabulary.ConceptSetExpressionQueryBuilder;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.vocabulary.Concept;
-import org.ohdsi.vocabulary.SearchProviderConfig;
+import org.ohdsi.vocabulary.VocabularySearchProviderConfig;
 import org.ohdsi.webapi.activity.Activity.ActivityType;
 import org.ohdsi.webapi.activity.Tracker;
 import org.ohdsi.webapi.conceptset.ConceptSetComparison;
@@ -668,8 +668,8 @@ public class VocabularyService extends AbstractDaoService {
         Source source = getSourceRepository().findBySourceKey(sourceKey);
         VocabularyInfo vocabularyInfo = getInfo(sourceKey);
         String versionKey = vocabularyInfo.version.replace(' ', '_');
-        SearchProviderConfig searchConfig = new SearchProviderConfig(source.getSourceKey(), versionKey);
-        concepts = vocabSearchService.getSearchProvider(searchConfig).executeSearch(searchConfig, query, rows);
+        VocabularySearchProviderConfig searchConfig = new VocabularySearchProviderConfig(source.getSourceKey(), versionKey);
+        concepts = vocabSearchService.getVocabularySearchProvider(searchConfig).executeSearch(searchConfig, query, rows);
     } catch (Exception ex) {
         log.error("An error occurred during the vocabulary search", ex);
     }

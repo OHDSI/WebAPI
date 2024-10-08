@@ -11,7 +11,8 @@ public class CohortGenerationRequest {
     private String targetSchema;
     private Integer targetId;
 
-    public CohortGenerationRequest(CohortExpression expression, Source source, String sessionId, Integer targetId, String targetSchema) {
+    public CohortGenerationRequest(CohortExpression expression, Source source, String sessionId, Integer targetId,
+            String targetSchema) {
 
         this.expression = expression;
         this.source = source;

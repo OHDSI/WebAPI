@@ -34,7 +34,7 @@ public class CohortGenerationRequestBuilder {
         this.targetId = targetId;
         return this;
     }
-    }
+
     public CohortGenerationRequest build() {
 
         if (this.source == null || this.expression == null || this.targetId == null) {

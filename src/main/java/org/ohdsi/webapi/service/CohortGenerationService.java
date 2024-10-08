@@ -118,7 +118,8 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
       // as a lot of components are instantiated by the new operator
       cohortDefinition.getDetails().getExpression();
 
-      return runGenerateCohortJob(cohortDefinition, source, demographicStat);  }
+      return runGenerateCohortJob(cohortDefinition, source, demographicStat);
+  }
 
   private Job buildGenerateCohortJob(CohortDefinition cohortDefinition, Source source, JobParameters jobParameters) {
 
@@ -206,17 +207,8 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
       return generateJobBuilder.build();
   }
 
-  private JobExecutionResource runGenerateCohortJob(CohortDefinition cohortDefinition, Source source, Boolean retainCohortCovariates) {
-    final JobParametersBuilder jobParametersBuilder = getJobParametersBuilder(source, cohortDefinition, retainCohortCovariates);
-    Job job = buildGenerateCohortJob(cohortDefinition, source, jobParametersBuilder.toJobParameters());
-    return jobService.runJob(job, jobParametersBuilder.toJobParameters());
-
   protected void addSessionParams(JobParametersBuilder builder, String sessionId) {
       builder.addString(TARGET_TABLE, GenerationUtils.getTempCohortTableName(sessionId));
-  }
-
-  private JobExecutionResource runGenerateCohortJob(CohortDefinition cohortDefinition, Source source) {
-      return runGenerateCohortJob(cohortDefinition, source, null);
   }
 
   private JobExecutionResource runGenerateCohortJob(CohortDefinition cohortDefinition, Source source,
@@ -226,7 +218,8 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
       if (demographic != null && demographic) {
          jobParametersBuilder.addString(DEMOGRAPHIC_STATS, Boolean.TRUE.toString());
          Job job = buildJobForCohortGenerationWithDemographic(cohortDefinition, source, jobParametersBuilder);
-         return jobService.runJob(job, jobParametersBuilder.toJobParameters());      } else {
+         return jobService.runJob(job, jobParametersBuilder.toJobParameters());
+      } else {
           Job job = buildGenerateCohortJob(cohortDefinition, source, jobParametersBuilder.toJobParameters());
           return jobService.runJob(job, jobParametersBuilder.toJobParameters());
       }

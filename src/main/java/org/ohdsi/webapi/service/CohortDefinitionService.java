@@ -131,6 +131,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.cache.CacheManager;
+import javax.cache.configuration.MutableConfiguration;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
@@ -138,6 +140,9 @@ import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
 import org.ohdsi.webapi.source.SourceService;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+import org.springframework.boot.autoconfigure.cache.JCacheManagerCustomizer;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 
 /**
  * Provides REST services for working with cohort definitions.
@@ -149,6 +154,24 @@ import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 @Component
 public class CohortDefinitionService extends AbstractDaoService implements HasTags<Integer> {
 
+	//create cache
+	@Component
+	public static class CachingSetup implements JCacheManagerCustomizer {
+
+		public static final String COHORT_DEFINITION_LIST_CACHE = "cohortDefinitionList";
+
+		@Override
+		public void customize(CacheManager cacheManager) {
+			// Evict when a cohort definition is created or updated, or permissions, or tags
+			if (!CacheHelper.getCacheNames(cacheManager).contains(COHORT_DEFINITION_LIST_CACHE)) {
+				cacheManager.createCache(COHORT_DEFINITION_LIST_CACHE, new MutableConfiguration<String, List<CohortMetadataDTO>>()
+					.setTypes(String.class, (Class<List<CohortMetadataDTO>>) (Class<?>) List.class)
+					.setStoreByValue(false)
+					.setStatisticsEnabled(true));
+			}
+		}
+	}
+	
 	private static final CohortExpressionQueryBuilder queryBuilder = new CohortExpressionQueryBuilder();
 
 	@Autowired
@@ -205,7 +228,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Autowired
 	private VersionService<CohortVersion> versionService;
 
-        @Value("${security.defaultGlobalReadPermissions}")
+	@Value("${security.defaultGlobalReadPermissions}")
 	private boolean defaultGlobalReadPermissions;
 
 	private final MarkdownRender markdownPF = new MarkdownRender();
@@ -408,6 +431,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Transactional
+	@Cacheable(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, key = "@permissionService.getSubjectCacheKey()")
 	public List<CohortMetadataDTO> getCohortDefinitionList() {
 		List<CohortDefinition> definitions = cohortDefinitionRepository.list();
 		return definitions.stream()
@@ -436,6 +460,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Transactional
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
+	@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true)
 	public CohortDTO createCohortDefinition(CohortDTO dto) {
 
 		Date currentTime = Calendar.getInstance().getTime();
@@ -538,6 +563,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Transactional
+	@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true)
 	public CohortDTO saveCohortDefinition(@PathParam("id") final int id, CohortDTO def) {
 		Date currentTime = Calendar.getInstance().getTime();
 
@@ -670,6 +696,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/copy")
 	@Transactional
+	@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true)
 	public CohortDTO copy(@PathParam("id") final int id) {
 		CohortDTO sourceDef = getCohortDefinition(id);
 		sourceDef.setId(null); // clear the ID
@@ -954,6 +981,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@POST
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/tag/")
+	@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true)
 	@Transactional
 	public void assignTag(@PathParam("id") final Integer id, final int tagId) {
 		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
@@ -971,6 +999,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@DELETE
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/tag/{tagId}")
+	@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true)
 	@Transactional
 	public void unassignTag(@PathParam("id") final Integer id, @PathParam("tagId") final int tagId) {
 		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
@@ -1106,6 +1135,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/version/{version}/createAsset")
 	@Transactional
+	@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true)
 	public CohortDTO copyAssetFromVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
 		checkVersion(id, version, false);
 		CohortVersion cohortVersion = versionService.getById(VersionType.COHORT, id, version);

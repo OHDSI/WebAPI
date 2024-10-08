@@ -1,7 +1,7 @@
 {
   "public.sec_user": [
     {
-      "id":1001,
+      "id":100001,
       "login":"permsTest",
       "name":"Perms Test User",
       "origin":"SYSTEM"
@@ -9,29 +9,29 @@
   ],
   "public.sec_role": [
     {
-      "id": 1001,
+      "id": 100001,
       "name":"permsTest",
       "system_role":false
     }
   ],
   "public.sec_permission" : [
     {
-      "id": 1001,
+      "id": 100001,
       "value":"*"
     }
   ],
   "public.sec_role_permission" : [
     {
-      "id":1001,
-      "role_id":1001,
-      "permission_id":1001
+      "id":100001,
+      "role_id":100001,
+      "permission_id":100001
     }
   ],
   "public.sec_user_role": [
     {
-      "id": 1001,
-      "user_id":1001,
-      "role_id":1001,
+      "id": 100001,
+      "user_id":100001,
+      "role_id":100001,
       "origin":"SYSTEM"
     }
   ]

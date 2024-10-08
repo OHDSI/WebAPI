@@ -210,9 +210,9 @@ public class TagService extends AbstractDaoService {
 
     public AssignmentPermissionsDTO getAssignmentPermissions() {
         final AssignmentPermissionsDTO tagPermission = new AssignmentPermissionsDTO();
-        tagPermission.setAnyAssetMultiAssignPermitted(isAdmin());
-        tagPermission.setCanAssignProtectedTags(!isSecured() || TagSecurityUtils.canAssingProtectedTags());
-        tagPermission.setCanUnassignProtectedTags(!isSecured() || TagSecurityUtils.canUnassingProtectedTags());
+        tagPermission.setAnyAssetMultiAssignPermitted(isAdmin() || TagSecurityUtils.canManageTags());
+        tagPermission.setCanAssignProtectedTags(!isSecured() || TagSecurityUtils.canAssignProtectedTags());
+        tagPermission.setCanUnassignProtectedTags(!isSecured() || TagSecurityUtils.canUnassignProtectedTags());
         return tagPermission;
     }
 }

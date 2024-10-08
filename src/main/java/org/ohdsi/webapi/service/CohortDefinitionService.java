@@ -431,7 +431,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Transactional
-	@Cacheable(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, key = "@permissionService.getAssetListCacheKey()")
+	@Cacheable(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, key = "@permissionService.getSubjectCacheKey()")
 	public List<CohortMetadataDTO> getCohortDefinitionList() {
 		List<CohortDefinition> definitions = cohortDefinitionRepository.list();
 		return definitions.stream()

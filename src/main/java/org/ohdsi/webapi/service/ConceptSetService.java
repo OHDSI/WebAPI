@@ -162,7 +162,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
-	@Cacheable(cacheNames = ConceptSetService.CachingSetup.CONCEPT_SET_LIST_CACHE, key = "@permissionService.getAssetListCacheKey()")
+    @Cacheable(cacheNames = ConceptSetService.CachingSetup.CONCEPT_SET_LIST_CACHE, key = "@permissionService.getSubjectCacheKey()")
     public Collection<ConceptSetDTO> getConceptSets() {
         return getTransactionTemplate().execute(
                 transactionStatus -> StreamSupport.stream(getConceptSetRepository().findAll().spliterator(), false)
@@ -481,7 +481,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-	@CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
+    @CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
     public ConceptSetDTO createConceptSet(ConceptSetDTO conceptSetDTO) {
 
         UserEntity user = userRepository.findByLogin(security.getSubject());
@@ -609,6 +609,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
   @DELETE
   @Transactional(rollbackOn = Exception.class, dontRollbackOn = EmptyResultDataAccessException.class)
   @Path("{id}")
+	@CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
   public void deleteConceptSet(@PathParam("id") final int id) {
       // Remove any generation info
       try {
@@ -656,6 +657,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/")
     @Transactional
+    @CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
     public void assignTag(@PathParam("id") final Integer id, final int tagId) {
         ConceptSet entity = getConceptSetRepository().findById(id);
         checkOwnerOrAdminOrGranted(entity);

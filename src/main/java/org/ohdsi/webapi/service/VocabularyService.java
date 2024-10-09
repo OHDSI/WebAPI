@@ -71,6 +71,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import org.ohdsi.webapi.vocabulary.MappedRelatedConcept;
 
  /**
   * Provides REST services for working with
@@ -783,7 +784,68 @@ public class VocabularyService extends AbstractDaoService {
     return concepts.values();
   }
 
-  /**
+   @POST
+   @Path("{sourceKey}/related-standard")
+   @Produces(MediaType.APPLICATION_JSON)
+   public Collection<MappedRelatedConcept> getRelatedStandardMappedConcepts(@PathParam("sourceKey") String sourceKey, List<Long> conceptIds) {
+     Source source = getSourceRepository().findBySourceKey(sourceKey);
+     String sqlPath = "/resources/vocabulary/sql/getRelatedStandardMappedConcepts.sql";
+     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+
+     String[] searchStrings = {"CDM_schema"};
+     String[] replacementStrings = {tableQualifier};
+
+     String[] varNames = {"conceptIdList"};
+     Object[] varValues = {conceptIds.toArray()};
+
+     PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, searchStrings, replacementStrings, varNames, varValues);
+
+     final Map<Long, MappedRelatedConcept> concepts = new HashMap<>();
+     getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), (RowMapper<Void>) (resultSet, arg1) -> {
+       addMappedRelationships(concepts, resultSet);
+       return null;
+     });
+     return concepts.values();
+   }
+   private void addMappedRelationships(final Map<Long, MappedRelatedConcept> concepts, final ResultSet resultSet) throws SQLException {
+     final Long concept_id = resultSet.getLong("CONCEPT_ID");
+     if (!concepts.containsKey(concept_id)) {
+       final MappedRelatedConcept concept = new MappedRelatedConcept();
+       concept.conceptId = concept_id;
+       concept.conceptCode = resultSet.getString("CONCEPT_CODE");
+       concept.conceptName = resultSet.getString("CONCEPT_NAME");
+       concept.standardConcept = resultSet.getString("STANDARD_CONCEPT");
+       concept.invalidReason = resultSet.getString("INVALID_REASON");
+       concept.vocabularyId = resultSet.getString("VOCABULARY_ID");
+       concept.validStartDate = resultSet.getDate("VALID_START_DATE");
+       concept.validEndDate = resultSet.getDate("VALID_END_DATE");
+       concept.conceptClassId = resultSet.getString("CONCEPT_CLASS_ID");
+       concept.domainId = resultSet.getString("DOMAIN_ID");
+
+       final ConceptRelationship relationship = new ConceptRelationship();
+       relationship.relationshipName = resultSet.getString("RELATIONSHIP_NAME");
+       relationship.relationshipDistance = resultSet.getInt("RELATIONSHIP_DISTANCE");
+       concept.relationships.add(relationship);
+
+       concept.mappedFromIds = extractMappedFromIds(resultSet);
+       concepts.put(concept_id, concept);
+     } else {
+       final ConceptRelationship relationship = new ConceptRelationship();
+       relationship.relationshipName = resultSet.getString("RELATIONSHIP_NAME");
+       relationship.relationshipDistance = resultSet.getInt("RELATIONSHIP_DISTANCE");
+       concepts.get(concept_id).relationships.add(relationship);
+       concepts.get(concept_id).mappedFromIds.addAll(extractMappedFromIds(resultSet));
+     }
+   }
+   private Set<Long> extractMappedFromIds(ResultSet resultSet) throws SQLException {
+     String mappedFromIds = resultSet.getString("mapped_from");
+     return Arrays.stream(mappedFromIds.split(","))
+             .map(Long::parseLong)
+             .collect(Collectors.toSet());
+   }
+
+
+   /**
    * Get ancestor and descendant concepts for the selected concept identifier 
    * from a source. 
    * 

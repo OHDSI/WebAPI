@@ -87,8 +87,8 @@ public class CohortCharacterizationShinyPackagingService extends CommonShinyPack
         GenerationResults generationResults = fetchGenerationResults(generationId, cohortCharacterization);
         ExceptionUtils.throwNotFoundExceptionIfNull(generationResults, String.format("There are no analysis generation results with generationId = %d.", generationId));
 
-        dataConsumers.getAppProperties().accept("atlas_link", String.format("%s/#/cc/characterizations/%s", atlasUrl, cohortCharacterization.getId()));
-        dataConsumers.getAppProperties().accept("analysis_name", cohortCharacterization.getName());
+        dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_ATLAS_LINK.getValue(), String.format("%s/#/cc/characterizations/%s", atlasUrl, cohortCharacterization.getId()));
+        dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_ANALYSIS_NAME.getValue(), cohortCharacterization.getName());
 
         generationResults.getReports()
                 .stream()
@@ -99,21 +99,21 @@ public class CohortCharacterizationShinyPackagingService extends CommonShinyPack
 
         Long resultsTotalCount = ccService.getCCResultsTotalCount(Long.valueOf(generationId));
 
-        dataConsumers.getAppProperties().accept("author", getAuthor(cohortCharacterizationEntity));
-        dataConsumers.getAppProperties().accept(ASSET_ID_KEY, cohortCharacterization.getId().toString());
-        dataConsumers.getAppProperties().accept("generated_date", getGenerationStartTime(generationEntity));
-        dataConsumers.getAppProperties().accept("record_count", Long.toString(resultsTotalCount));
-        dataConsumers.getAppProperties().accept("author_notes", getDescription(cohortCharacterizationEntity));
-        dataConsumers.getAppProperties().accept("referenced_cohorts", getReferencedCohorts(cohortCharacterizationEntity));
-        dataConsumers.getAppProperties().accept("version_id", Integer.toString(generationId));
-        dataConsumers.getAppProperties().accept("generation_id", Integer.toString(generationId));
+        dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_AUTHOR.getValue(), getAuthor(cohortCharacterizationEntity));
+        dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_ASSET_ID.getValue(), cohortCharacterization.getId().toString());
+        dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_GENERATED_DATE.getValue(), getGenerationStartTime(generationEntity));
+        dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_RECORD_COUNT.getValue(), Long.toString(resultsTotalCount));
+        dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_AUTHOR_NOTES.getValue(), getDescription(cohortCharacterizationEntity));
+        dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_REFERENCED_COHORTS.getValue(), getReferencedCohorts(cohortCharacterizationEntity));
+        dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_VERSION_ID.getValue(), Integer.toString(generationId));
+        dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_GENERATION_ID.getValue(), Integer.toString(generationId));
     }
 
     private String getReferencedCohorts(CohortCharacterizationEntity cohortCharacterizationEntity) {
         if (cohortCharacterizationEntity != null) {
             return cohortCharacterizationEntity.getCohortDefinitions().stream().map(CohortDefinition::getName).collect(Collectors.joining("; "));
         }
-        return VALUE_NOT_AVAILABLE;
+        return ShinyConstants.VALUE_NOT_AVAILABLE.getValue();
     }
 
 
@@ -121,21 +121,21 @@ public class CohortCharacterizationShinyPackagingService extends CommonShinyPack
         if (cohortCharacterizationEntity.getCreatedBy() != null) {
             return cohortCharacterizationEntity.getCreatedBy().getLogin();
         }
-        return VALUE_NOT_AVAILABLE;
+        return ShinyConstants.VALUE_NOT_AVAILABLE.getValue();
     }
 
     private String getGenerationStartTime(CcGenerationEntity generation) {
         if (generation != null) {
             return dateToString(generation.getStartTime());
         }
-        return VALUE_NOT_AVAILABLE;
+        return ShinyConstants.VALUE_NOT_AVAILABLE.getValue();
     }
 
     private String getDescription(CohortCharacterizationEntity cohortCharacterizationEntity) {
         if (cohortCharacterizationEntity != null && cohortCharacterizationEntity.getDescription() != null) {
             return cohortCharacterizationEntity.getDescription();
         }
-        return VALUE_NOT_AVAILABLE;
+        return ShinyConstants.VALUE_NOT_AVAILABLE.getValue();
     }
 
     //Pair.left == CSV filename

@@ -30,20 +30,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public abstract class CommonShinyPackagingService {
-    protected static final String VALUE_NOT_AVAILABLE = "N/A";
-    private static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
-
     private static final Logger LOG = LoggerFactory.getLogger(CommonShinyPackagingService.class);
     protected final String atlasUrl;
     protected String repoLink;
-
     protected final FileWriter fileWriter;
     protected final ManifestUtils manifestUtils;
     protected final ObjectMapper objectMapper;
     protected final SourceRepository sourceRepository;
     protected final CDMResultsService cdmResultsService;
     protected final DataSourceSummaryConverter dataSourceSummaryConverter;
-    protected static final String ASSET_ID_KEY = "asset_id";
 
     public CommonShinyPackagingService(String atlasUrl, String repoLink, FileWriter fileWriter, ManifestUtils manifestUtils, ObjectMapper objectMapper, SourceRepository sourceRepository, CDMResultsService cdmResultsService, DataSourceSummaryConverter dataSourceSummaryConverter) {
         this.atlasUrl = atlasUrl;
@@ -146,10 +141,10 @@ public abstract class CommonShinyPackagingService {
                 ShinyAppDataConsumers shinyAppDataConsumers = new ShinyAppDataConsumers();
 
                 //Default properties common for each shiny app
-                shinyAppDataConsumers.applicationProperties.put("repo_link", getRepoLink());
-                shinyAppDataConsumers.applicationProperties.put("atlas_url", getAtlasUrl());
-                shinyAppDataConsumers.applicationProperties.put("datasource", sourceKey);
-                shinyAppDataConsumers.applicationProperties.put("datasource_name", source.getSourceName());
+                shinyAppDataConsumers.applicationProperties.put(ShinyConstants.PROPERTY_NAME_REPO_LINK.getValue(), getRepoLink());
+                shinyAppDataConsumers.applicationProperties.put(ShinyConstants.PROPERTY_NAME_ATLAS_URL.getValue(), getAtlasUrl());
+                shinyAppDataConsumers.applicationProperties.put(ShinyConstants.PROPERTY_NAME_DATASOURCE_KEY.getValue(), sourceKey);
+                shinyAppDataConsumers.applicationProperties.put(ShinyConstants.PROPERTY_NAME_DATASOURCE_NAME.getValue(), source.getSourceName());
 
                 populateCDMDataSourceSummaryIfPresent(source, shinyAppDataConsumers);
 
@@ -202,7 +197,7 @@ public abstract class CommonShinyPackagingService {
 
     protected String dateToString(Date date) {
         if (date == null) return null;
-        DateFormat df = new SimpleDateFormat(DATE_TIME_FORMAT);
+        DateFormat df = new SimpleDateFormat(ShinyConstants.DATE_TIME_FORMAT.getValue());
         return df.format(date);
     }
 }

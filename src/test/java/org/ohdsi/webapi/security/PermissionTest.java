@@ -65,7 +65,7 @@ public class PermissionTest extends AbstractDatabaseTest {
     ThreadContext.bind(subject);    
   }
 
-  @Ignore
+//  @Ignore
   @Test
   public void permsTest() throws Exception {
     // need to clear authorization cache before each test
@@ -88,7 +88,7 @@ public class PermissionTest extends AbstractDatabaseTest {
     
   }
   
-  @Ignore
+//  @Ignore
   @Test
   public void wildcardTest() throws Exception {
     // need to clear authorization cache before each test

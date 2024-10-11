@@ -205,7 +205,7 @@ public class PermissionManager {
 
 	@CacheEvict(cacheNames = CachingSetup.AUTH_INFO_CACHE, allEntries = true)
   public void clearAuthorizationInfoCache() {
-		authorizationInfoCache.remove();
+    authorizationInfoCache.set(new ConcurrentHashMap<>());
   }
 
   @Transactional

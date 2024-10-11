@@ -7,6 +7,7 @@ import org.ohdsi.webapi.report.ConceptDistributionRecord;
 import org.ohdsi.webapi.report.CumulativeObservationRecord;
 import org.ohdsi.webapi.report.MonthObservationRecord;
 import org.ohdsi.webapi.service.ShinyService;
+import org.ohdsi.webapi.shiny.ShinyConstants;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 
@@ -19,9 +20,7 @@ import java.util.stream.Collectors;
 @ConditionalOnBean(ShinyService.class)
 public class DataSourceSummaryConverter {
 
-    private static final String VALUE_NOT_AVAILABLE = "N/A";
-
-    private double calculateVariance(List<Double> values, double mean) {
+    private double calculateVariance(List<Integer> values, double mean) {
         double variance = 0;
         for (double value : values) {
             variance += Math.pow(value - mean, 2);
@@ -65,12 +64,14 @@ public class DataSourceSummaryConverter {
         }
 
         if (cdmDashboard.getAgeAtFirstObservation() != null) {
-            List<Double> percents = cdmDashboard.getAgeAtFirstObservation().stream()
-                    .map(ConceptDistributionRecord::getPercentValue)
+            List<Integer> ages = cdmDashboard.getAgeAtFirstObservation().stream()
+                    .map(ConceptDistributionRecord::getIntervalIndex)
                     .collect(Collectors.toList());
-            double sum = percents.stream().mapToDouble(Double::doubleValue).sum();
-            double mean = sum / percents.size();
-            double variance = calculateVariance(percents, mean);
+            double sum = ages.stream()
+                    .mapToInt(Integer::intValue)
+                    .sum();
+            double mean = sum / ages.size();
+            double variance = calculateVariance(ages, mean);
 
             int minYear = cdmDashboard.getAgeAtFirstObservation().stream()
                     .min(Comparator.comparingInt(ConceptDistributionRecord::getIntervalIndex))
@@ -78,17 +79,17 @@ public class DataSourceSummaryConverter {
             int maxYear = cdmDashboard.getAgeAtFirstObservation().stream()
                     .max(Comparator.comparingInt(ConceptDistributionRecord::getIntervalIndex))
                     .orElse(new ConceptDistributionRecord()).getIntervalIndex();
-            dataSourceSummary.setAgeAtFirstObservation(String.format("[%d - %d] (M= %.1f; SD= %.1f)",
+            dataSourceSummary.setAgeAtFirstObservation(String.format("[%d - %d] (M = %.1f; SD = %.1f)",
                     minYear, maxYear, mean, Math.sqrt(variance)));
         }
 
         if (cdmDashboard.getCumulativeObservation() != null) {
-            List<Double> percentPersons = cdmDashboard.getCumulativeObservation().stream()
-                    .map(CumulativeObservationRecord::getyPercentPersons)
+            List<Integer> observationLengths = cdmDashboard.getCumulativeObservation().stream()
+                    .map(CumulativeObservationRecord::getxLengthOfObservation)
                     .collect(Collectors.toList());
-            double sum = percentPersons.stream().mapToDouble(Double::doubleValue).sum();
-            double mean = sum / percentPersons.size();
-            double variance = calculateVariance(percentPersons, mean);
+            double sum = observationLengths.stream().mapToInt(Integer::intValue).sum();
+            double mean = sum / observationLengths.size();
+            double variance = calculateVariance(observationLengths, mean);
 
             int minObs = cdmDashboard.getCumulativeObservation().stream()
                     .min(Comparator.comparingInt(CumulativeObservationRecord::getxLengthOfObservation))
@@ -96,7 +97,7 @@ public class DataSourceSummaryConverter {
             int maxObs = cdmDashboard.getCumulativeObservation().stream()
                     .max(Comparator.comparingInt(CumulativeObservationRecord::getxLengthOfObservation))
                     .orElse(new CumulativeObservationRecord()).getxLengthOfObservation();
-            dataSourceSummary.setCumulativeObservation(String.format("[%d - %d] (M= %.1f; SD= %.1f)",
+            dataSourceSummary.setCumulativeObservation(String.format("[%d - %d] (M = %.1f; SD = %.1f)",
                     minObs, maxObs, mean, Math.sqrt(variance)));
         }
 
@@ -115,12 +116,12 @@ public class DataSourceSummaryConverter {
     public DataSourceSummary emptySummary(String dataSourceName) {
         DataSourceSummary dataSourceSummary = new DataSourceSummary();
         dataSourceSummary.setSourceName(dataSourceName);
-        dataSourceSummary.setFemale(VALUE_NOT_AVAILABLE);
-        dataSourceSummary.setMale(VALUE_NOT_AVAILABLE);
-        dataSourceSummary.setCumulativeObservation(VALUE_NOT_AVAILABLE);
-        dataSourceSummary.setAgeAtFirstObservation(VALUE_NOT_AVAILABLE);
-        dataSourceSummary.setContinuousObservationCoverage(VALUE_NOT_AVAILABLE);
-        dataSourceSummary.setNumberOfPersons(VALUE_NOT_AVAILABLE);
+        dataSourceSummary.setFemale(ShinyConstants.VALUE_NOT_AVAILABLE.getValue());
+        dataSourceSummary.setMale(ShinyConstants.VALUE_NOT_AVAILABLE.getValue());
+        dataSourceSummary.setCumulativeObservation(ShinyConstants.VALUE_NOT_AVAILABLE.getValue());
+        dataSourceSummary.setAgeAtFirstObservation(ShinyConstants.VALUE_NOT_AVAILABLE.getValue());
+        dataSourceSummary.setContinuousObservationCoverage(ShinyConstants.VALUE_NOT_AVAILABLE.getValue());
+        dataSourceSummary.setNumberOfPersons(ShinyConstants.VALUE_NOT_AVAILABLE.getValue());
         return dataSourceSummary;
     }
 }

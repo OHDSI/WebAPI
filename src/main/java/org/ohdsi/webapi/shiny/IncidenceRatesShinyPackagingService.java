@@ -89,15 +89,15 @@ public class IncidenceRatesShinyPackagingService extends CommonShinyPackagingSer
             Integer assetId = analysis.getId();
             Integer sourceId = sourceRepository.findBySourceKey(sourceKey).getSourceId();
 
-            dataConsumers.getAppProperties().accept("author", getAuthor(analysis));
-            dataConsumers.getAppProperties().accept(ASSET_ID_KEY, analysis.getId().toString());
-            dataConsumers.getAppProperties().accept("generated_date", getGenerationStartTime(analysis));
-            dataConsumers.getAppProperties().accept("record_count", getRecordCount(analysisInfoDTO));
-            dataConsumers.getAppProperties().accept("person_count", getPersonCount(analysisInfoDTO));
-            dataConsumers.getAppProperties().accept("author_notes", getDescription(analysis));
-            dataConsumers.getAppProperties().accept("referenced_cohorts", prepareReferencedCohorts(expression));
-            dataConsumers.getAppProperties().accept("version_id", getGenerationId(assetId, sourceId));
-            dataConsumers.getAppProperties().accept("generation_id", getGenerationId(assetId, sourceId));
+            dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_AUTHOR.getValue(), getAuthor(analysis));
+            dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_ASSET_ID.getValue(), analysis.getId().toString());
+            dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_GENERATED_DATE.getValue(), getGenerationStartTime(analysis));
+            dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_RECORD_COUNT.getValue(), getRecordCount(analysisInfoDTO));
+            dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_PERSON_COUNT.getValue(), getPersonCount(analysisInfoDTO));
+            dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_AUTHOR_NOTES.getValue(), getDescription(analysis));
+            dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_REFERENCED_COHORTS.getValue(), prepareReferencedCohorts(expression));
+            dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_VERSION_ID.getValue(), getGenerationId(assetId, sourceId));
+            dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_GENERATION_ID.getValue(), getGenerationId(assetId, sourceId));
 
             String csvWithCohortDetails = prepareCsvWithCohorts(expression);
 
@@ -119,7 +119,7 @@ public class IncidenceRatesShinyPackagingService extends CommonShinyPackagingSer
         if (analysis.getCreatedBy() != null) {
             return analysis.getCreatedBy().getLogin();
         }
-        return VALUE_NOT_AVAILABLE;
+        return ShinyConstants.VALUE_NOT_AVAILABLE.getValue();
     }
 
     private String getGenerationStartTime(IncidenceRateAnalysis analysis) {
@@ -128,28 +128,28 @@ public class IncidenceRatesShinyPackagingService extends CommonShinyPackagingSer
                 return dateToString(Iterables.getLast(analysis.getExecutionInfoList()).getStartTime());
             }
         }
-        return VALUE_NOT_AVAILABLE;
+        return ShinyConstants.VALUE_NOT_AVAILABLE.getValue();
     }
 
     private String getDescription(IncidenceRateAnalysis analysis) {
         if (analysis != null && analysis.getDescription() != null) {
             return analysis.getDescription();
         }
-        return VALUE_NOT_AVAILABLE;
+        return ShinyConstants.VALUE_NOT_AVAILABLE.getValue();
     }
 
     private String getPersonCount(AnalysisInfoDTO analysisInfo) {
         if (analysisInfo != null && CollectionUtils.isNotEmpty(analysisInfo.getSummaryList())) {
             return Long.toString(Iterables.getLast(analysisInfo.getSummaryList()).cases);
         }
-        return VALUE_NOT_AVAILABLE;
+        return ShinyConstants.VALUE_NOT_AVAILABLE.getValue();
     }
 
     private String getRecordCount(AnalysisInfoDTO analysisInfo) {
         if (analysisInfo != null && CollectionUtils.isNotEmpty(analysisInfo.getSummaryList())) {
             return Long.toString(Iterables.getLast(analysisInfo.getSummaryList()).totalPersons);
         }
-        return VALUE_NOT_AVAILABLE;
+        return ShinyConstants.VALUE_NOT_AVAILABLE.getValue();
     }
 
     private String getGenerationId(Integer assetId, Integer sourceId) {

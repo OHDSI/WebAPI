@@ -68,36 +68,36 @@ public class CohortPathwaysShinyPackagingService extends CommonShinyPackagingSer
         int totalCount = generationResults.getPathwayGroups().stream().mapToInt(TargetCohortPathwaysDTO::getTargetCohortCount).sum();
         int personCount = generationResults.getPathwayGroups().stream().mapToInt(TargetCohortPathwaysDTO::getTotalPathwaysCount).sum();
 
-        dataConsumers.getAppProperties().accept("author", getAuthor(pathwayAnalysisDTO));
-        dataConsumers.getAppProperties().accept("asset_name", pathwayAnalysisDTO.getName());
-        dataConsumers.getAppProperties().accept(ASSET_ID_KEY, pathwayAnalysisDTO.getId().toString());
-        dataConsumers.getAppProperties().accept("generated_date", getGenerationStartTime(generationEntity));
-        dataConsumers.getAppProperties().accept("record_count", Integer.toString(totalCount));
-        dataConsumers.getAppProperties().accept("person_count", Integer.toString(personCount));
-        dataConsumers.getAppProperties().accept("author_notes", getDescription(pathwayAnalysisDTO));
-        dataConsumers.getAppProperties().accept("referenced_cohorts", prepareReferencedCohorts(pathwayAnalysisDTO));
-        dataConsumers.getAppProperties().accept("version_id", Integer.toString(generationId));
-        dataConsumers.getAppProperties().accept("generation_id", Integer.toString(generationId));
+        dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_AUTHOR.getValue(), getAuthor(pathwayAnalysisDTO));
+        dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_ASSET_NAME.getValue(), pathwayAnalysisDTO.getName());
+        dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_ASSET_ID.getValue(), pathwayAnalysisDTO.getId().toString());
+        dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_GENERATED_DATE.getValue(), getGenerationStartTime(generationEntity));
+        dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_RECORD_COUNT.getValue(), Integer.toString(totalCount));
+        dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_PERSON_COUNT.getValue(), Integer.toString(personCount));
+        dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_AUTHOR_NOTES.getValue(), getDescription(pathwayAnalysisDTO));
+        dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_REFERENCED_COHORTS.getValue(), prepareReferencedCohorts(pathwayAnalysisDTO));
+        dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_VERSION_ID.getValue(), Integer.toString(generationId));
+        dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_GENERATION_ID.getValue(), Integer.toString(generationId));
     }
 
     private String getAuthor(PathwayAnalysisDTO pathwayAnalysisDTO) {
         if (pathwayAnalysisDTO.getCreatedBy() != null) {
             return pathwayAnalysisDTO.getCreatedBy().getLogin();
         }
-        return VALUE_NOT_AVAILABLE;
+        return ShinyConstants.VALUE_NOT_AVAILABLE.getValue();
     }
 
     private String getDescription(PathwayAnalysisDTO pathwayAnalysisDTO) {
         if (pathwayAnalysisDTO != null && pathwayAnalysisDTO.getDescription() != null) {
             return pathwayAnalysisDTO.getDescription();
         }
-        return VALUE_NOT_AVAILABLE;
+        return ShinyConstants.VALUE_NOT_AVAILABLE.getValue();
     }
 
 
     private String prepareReferencedCohorts(PathwayAnalysisDTO pathwayAnalysisDTO) {
         if (pathwayAnalysisDTO == null) {
-            return VALUE_NOT_AVAILABLE;
+            return ShinyConstants.VALUE_NOT_AVAILABLE.getValue();
         }
         Set<String> referencedCohortNames = new HashSet<>();
         for (PathwayCohortDTO eventCohort : pathwayAnalysisDTO.getEventCohorts()) {
@@ -113,7 +113,7 @@ public class CohortPathwaysShinyPackagingService extends CommonShinyPackagingSer
         if (generationEntity != null) {
             return dateToString(generationEntity.getStartTime());
         }
-        return VALUE_NOT_AVAILABLE;
+        return ShinyConstants.VALUE_NOT_AVAILABLE.getValue();
     }
 
     @Override

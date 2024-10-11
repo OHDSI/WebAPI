@@ -19,7 +19,7 @@ public class TagSecurityUtils {
     public static String PATHWAY_ANALYSIS = "pathway-analysis";
     public static String REUSABLE = "reusable";
 
-    public static boolean canAssingProtectedTags() {
+    public static boolean canAssignProtectedTags() {
         return checkPermission(COHORT_DEFINITION, "post") ||
                 checkPermission(CONCEPT_SET, "post") ||
                 checkPermission(COHORT_CHARACTERIZATION, "post") ||
@@ -28,7 +28,7 @@ public class TagSecurityUtils {
                 checkPermission(REUSABLE, "post");
     }
 
-    public static boolean canUnassingProtectedTags() {
+    public static boolean canUnassignProtectedTags() {
         return checkPermission(COHORT_DEFINITION, "delete") ||
                 checkPermission(CONCEPT_SET, "delete") ||
                 checkPermission(COHORT_CHARACTERIZATION, "delete") ||
@@ -73,5 +73,9 @@ public class TagSecurityUtils {
             return TagSecurityUtils.REUSABLE;
         }
         return null;
+    }
+
+    public static boolean canManageTags() {
+        return SecurityUtils.getSubject().isPermitted("tag:management");
     }
 }

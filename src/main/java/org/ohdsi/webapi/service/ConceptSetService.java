@@ -628,7 +628,6 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Transactional
     public void assignTag(@PathParam("id") final Integer id, final int tagId) {
         ConceptSet entity = getConceptSetRepository().findById(id);
-        checkOwnerOrAdminOrGranted(entity);
         assignTag(entity, tagId);
     }
 
@@ -646,7 +645,6 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Transactional
     public void unassignTag(@PathParam("id") final Integer id, @PathParam("tagId") final int tagId) {
         ConceptSet entity = getConceptSetRepository().findById(id);
-        checkOwnerOrAdminOrGranted(entity);
         unassignTag(entity, tagId);
     }
 

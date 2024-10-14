@@ -74,4 +74,8 @@ public class TagSecurityUtils {
         }
         return null;
     }
+
+    public static boolean canManageTags() {
+        return SecurityUtils.getSubject().isPermitted("tag:management");
+    }
 }

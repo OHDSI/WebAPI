@@ -75,6 +75,7 @@ public class TagGroupService extends AbstractDaoService {
                 service.assignTag(id, tagId);
             } catch (final ForbiddenException e) {
                 log.warn("Tag {} cannot be assigned to entity {} in service {} - forbidden", tagId, id, service.getClass().getName());
+                throw e;
             }
         });
     }

@@ -2,6 +2,7 @@ package org.ohdsi.webapi.pathway;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
 import com.odysseusinc.arachne.commons.types.DBMSType;
 import org.hibernate.Hibernate;
 import org.ohdsi.circe.helper.ResourceHelper;
@@ -33,6 +34,7 @@ import org.ohdsi.webapi.pathway.repository.PathwayAnalysisGenerationRepository;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.CohortDefinitionService;
 import org.ohdsi.webapi.service.JobService;
+import org.ohdsi.webapi.service.dto.PermissionCheckType;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
@@ -611,11 +613,11 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 		ExceptionUtils.throwNotFoundExceptionIfNull(pathwayVersion,
 				String.format("There is no pathway analysis version with id = %d.", version));
 
-		PathwayAnalysisEntity entity = this.pathwayAnalysisRepository.findOne(id);
-		if (checkOwnerShip) {
-			checkOwnerOrAdminOrGranted(entity);
-		}
-	}
+        PathwayAnalysisEntity entity = this.pathwayAnalysisRepository.findOne(id);
+        if (checkOwnerShip) {
+            checkPermissions(entity, ImmutableSet.of(PermissionCheckType.IS_OWNER, PermissionCheckType.IS_ADMIN, PermissionCheckType.HAS_WRITE_ACCESS));
+        }
+    }
 
 	public PathwayVersion saveVersion(int id) {
 		PathwayAnalysisEntity def = this.pathwayAnalysisRepository.findOne(id);

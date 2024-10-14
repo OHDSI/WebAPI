@@ -1,11 +1,13 @@
 package org.ohdsi.webapi.reusable;
 
+import com.google.common.collect.ImmutableSet;
 import org.ohdsi.webapi.reusable.domain.Reusable;
 import org.ohdsi.webapi.reusable.dto.ReusableDTO;
 import org.ohdsi.webapi.reusable.dto.ReusableVersionFullDTO;
 import org.ohdsi.webapi.reusable.repository.ReusableRepository;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.AbstractDaoService;
+import org.ohdsi.webapi.service.dto.PermissionCheckType;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.tag.domain.HasTags;
 import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
@@ -132,9 +134,7 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
 
     public void delete(Integer id) {
         Reusable existing = reusableRepository.findOne(id);
-
-        checkOwnerOrAdminOrModerator(existing.getCreatedBy());
-
+        checkPermissions(existing, ImmutableSet.of(PermissionCheckType.IS_OWNER, PermissionCheckType.IS_ADMIN, PermissionCheckType.IS_MODERATOR));
         reusableRepository.delete(id);
     }
 
@@ -197,7 +197,7 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
 
         Reusable entity = this.reusableRepository.findOne(id);
         if (checkOwnerShip) {
-            checkOwnerOrAdminOrGranted(entity);
+            checkPermissions(entity, ImmutableSet.of(PermissionCheckType.IS_OWNER, PermissionCheckType.IS_ADMIN, PermissionCheckType.HAS_WRITE_ACCESS));
         }
     }
 

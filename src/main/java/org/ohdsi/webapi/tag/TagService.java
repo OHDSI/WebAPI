@@ -1,8 +1,10 @@
 package org.ohdsi.webapi.tag;
 
+import com.google.common.collect.ImmutableSet;
 import org.apache.shiro.SecurityUtils;
 import org.glassfish.jersey.internal.util.Producer;
 import org.ohdsi.webapi.service.AbstractDaoService;
+import org.ohdsi.webapi.service.dto.PermissionCheckType;
 import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.tag.domain.TagInfo;
 import org.ohdsi.webapi.tag.domain.TagType;
@@ -112,7 +114,7 @@ public class TagService extends AbstractDaoService {
     public TagDTO update(Integer id, TagDTO entity) {
         Tag existing = tagRepository.findOne(id);
 
-        checkOwnerOrAdmin(existing.getCreatedBy());
+        checkPermissions(existing, ImmutableSet.of(PermissionCheckType.IS_OWNER, PermissionCheckType.IS_ADMIN, PermissionCheckType.IS_MODERATOR));
 
         Tag toUpdate = this.conversionService.convert(entity, Tag.class);
 
@@ -133,9 +135,7 @@ public class TagService extends AbstractDaoService {
 
     public void delete(Integer id) {
         Tag existing = tagRepository.findOne(id);
-
-        checkOwnerOrAdmin(existing.getCreatedBy());
-
+        checkPermissions(existing, ImmutableSet.of(PermissionCheckType.IS_OWNER, PermissionCheckType.IS_ADMIN));
         tagRepository.delete(id);
     }
 

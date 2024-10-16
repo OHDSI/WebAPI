@@ -26,6 +26,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.google.common.collect.ImmutableSet;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -51,6 +52,7 @@ import org.ohdsi.webapi.service.dto.ConceptSetDTO;
 import org.ohdsi.webapi.service.dto.SaveConceptSetAnnotationsRequest;
 import org.ohdsi.webapi.service.dto.AnnotationDTO;
 import org.ohdsi.webapi.service.dto.CopyAnnotationsRequest;
+import org.ohdsi.webapi.service.dto.PermissionCheckType;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
@@ -647,7 +649,6 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Transactional
     public void assignTag(@PathParam("id") final Integer id, final int tagId) {
         ConceptSet entity = getConceptSetRepository().findById(id);
-        checkOwnerOrAdminOrGranted(entity);
         assignTag(entity, tagId);
     }
 
@@ -665,7 +666,6 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Transactional
     public void unassignTag(@PathParam("id") final Integer id, @PathParam("tagId") final int tagId) {
         ConceptSet entity = getConceptSetRepository().findById(id);
-        checkOwnerOrAdminOrGranted(entity);
         unassignTag(entity, tagId);
     }
 
@@ -862,7 +862,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 
         ConceptSet entity = getConceptSetRepository().findOne(id);
         if (checkOwnerShip) {
-            checkOwnerOrAdminOrGranted(entity);
+            checkPermissions(entity, ImmutableSet.of(PermissionCheckType.IS_OWNER, PermissionCheckType.IS_ADMIN, PermissionCheckType.HAS_WRITE_ACCESS));
         }
     }
 

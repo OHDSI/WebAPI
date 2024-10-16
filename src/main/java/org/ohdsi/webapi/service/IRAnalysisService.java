@@ -20,6 +20,7 @@ import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.opencsv.CSVWriter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IterableUtils;
@@ -56,6 +57,7 @@ import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.dto.AnalysisInfoDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisDTO;
 import org.ohdsi.webapi.service.dto.IRAnalysisShortDTO;
+import org.ohdsi.webapi.service.dto.PermissionCheckType;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
@@ -806,7 +808,6 @@ public class IRAnalysisService extends AbstractDaoService implements
   @Transactional
   public void assignTag(final Integer id, final int tagId) {
     IncidenceRateAnalysis entity = irAnalysisRepository.findOne(id);
-    checkOwnerOrAdminOrGranted(entity);
     assignTag(entity, tagId);
   }
 
@@ -814,7 +815,6 @@ public class IRAnalysisService extends AbstractDaoService implements
   @Transactional
   public void unassignTag(final Integer id, final int tagId) {
     IncidenceRateAnalysis entity = irAnalysisRepository.findOne(id);
-    checkOwnerOrAdminOrGranted(entity);
     unassignTag(entity, tagId);
   }
 
@@ -979,7 +979,7 @@ public class IRAnalysisService extends AbstractDaoService implements
 
     IncidenceRateAnalysis entity = this.irAnalysisRepository.findOne(id);
     if (checkOwnerShip) {
-      checkOwnerOrAdminOrGranted(entity);
+      checkPermissions(entity, ImmutableSet.of(PermissionCheckType.IS_OWNER, PermissionCheckType.IS_ADMIN, PermissionCheckType.HAS_WRITE_ACCESS));
     }
   }
 

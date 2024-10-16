@@ -1,10 +1,12 @@
 package org.ohdsi.webapi.service;
 
+import com.google.common.collect.ImmutableSet;
 import com.odysseusinc.arachne.commons.types.DBMSType;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
 import com.odysseusinc.datasourcemanager.krblogin.KerberosService;
 import com.odysseusinc.datasourcemanager.krblogin.KrbConfig;
 import com.odysseusinc.datasourcemanager.krblogin.RuntimeServiceMode;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
@@ -29,6 +31,7 @@ import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.reusable.domain.Reusable;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.dto.CommonEntityDTO;
+import org.ohdsi.webapi.service.dto.PermissionCheckType;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.DisabledSecurity;
@@ -371,6 +374,7 @@ public abstract class AbstractDaoService extends AbstractAdminService {
   }
 
   protected void assignTag(CommonEntityExt<?> entity, int tagId) {
+    checkPermissions(entity, ImmutableSet.of(PermissionCheckType.IS_OWNER, PermissionCheckType.IS_ADMIN, PermissionCheckType.HAS_WRITE_ACCESS, PermissionCheckType.IS_TAG_MANAGER));
     if (Objects.nonNull(entity)) {
       Tag tag = tagService.getById(tagId);
       if (Objects.nonNull(tag)) {
@@ -397,6 +401,7 @@ public abstract class AbstractDaoService extends AbstractAdminService {
   }
 
   protected void unassignTag(CommonEntityExt<?> entity, int tagId) {
+    checkPermissions(entity, ImmutableSet.of(PermissionCheckType.IS_OWNER, PermissionCheckType.IS_ADMIN, PermissionCheckType.HAS_WRITE_ACCESS, PermissionCheckType.IS_TAG_MANAGER));
     if (Objects.nonNull(entity)) {
       Tag tag = tagService.getById(tagId);
       if (Objects.nonNull(tag)) {
@@ -420,43 +425,30 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     return TagSecurityUtils.checkPermission(TagSecurityUtils.getAssetName(entity), method);
   }
 
-  protected void checkOwnerOrAdmin(UserEntity owner) {
+  protected void checkPermissions(CommonEntity<?> entity, Set<PermissionCheckType> permissionsToCheck) {
+    if(CollectionUtils.isEmpty(permissionsToCheck)){
+      return;
+    }
+
     if (security instanceof DisabledSecurity) {
       return;
     }
 
-    UserEntity user = getCurrentUser();
-    Long ownerId = Objects.nonNull(owner) ? owner.getId() : null;
+    boolean isAllowed = (permissionsToCheck.contains(PermissionCheckType.IS_OWNER) && isEntityOwner(entity)) ||
+                        (permissionsToCheck.contains(PermissionCheckType.IS_ADMIN) && isAdmin()) ||
+                        (permissionsToCheck.contains(PermissionCheckType.IS_MODERATOR) && isModerator()) ||
+                        (permissionsToCheck.contains(PermissionCheckType.HAS_WRITE_ACCESS) &&  permissionService.hasWriteAccess(entity)) ||
+                        (permissionsToCheck.contains(PermissionCheckType.IS_TAG_MANAGER) && TagSecurityUtils.canManageTags());
 
-    if (!(user.getId().equals(ownerId) || isAdmin())) {
+    if(!isAllowed) {
       throw new ForbiddenException();
     }
   }
 
-  protected void checkOwnerOrAdminOrModerator(UserEntity owner) {
-    if (security instanceof DisabledSecurity) {
-      return;
-    }
-
-    UserEntity user = getCurrentUser();
-    Long ownerId = Objects.nonNull(owner) ? owner.getId() : null;
-
-    if (!(user.getId().equals(ownerId) || isAdmin() || isModerator())) {
-      throw new ForbiddenException();
-    }
-  }
-
-  protected void checkOwnerOrAdminOrGranted(CommonEntity<?> entity) {
-    if (security instanceof DisabledSecurity) {
-      return;
-    }
-
+  private boolean isEntityOwner(CommonEntity<?> entity){
     UserEntity user = getCurrentUser();
     Long ownerId = Objects.nonNull(entity.getCreatedBy()) ? entity.getCreatedBy().getId() : null;
-
-    if (!(user.getId().equals(ownerId) || isAdmin() || permissionService.hasWriteAccess(entity))) {
-      throw new ForbiddenException();
-    }
+    return user.getId().equals(ownerId);
   }
 
   protected <T extends CommonEntityDTO> List<T> listByTags(List<? extends CommonEntityExt<? extends Number>> entities,

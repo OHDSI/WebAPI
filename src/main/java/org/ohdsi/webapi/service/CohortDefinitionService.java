@@ -18,6 +18,7 @@ package org.ohdsi.webapi.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.StringUtils;
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.tables.TablesExtension;
@@ -73,6 +74,7 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.dto.CheckResultDTO;
+import org.ohdsi.webapi.service.dto.PermissionCheckType;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.management.datasource.SourceIdAccessor;
 import org.ohdsi.webapi.source.Source;
@@ -1253,7 +1255,6 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Transactional
 	public void assignTag(@PathParam("id") final Integer id, final int tagId) {
 		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
-		checkOwnerOrAdminOrGranted(entity);
 		assignTag(entity, tagId);
 	}
 
@@ -1270,7 +1271,6 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Transactional
 	public void unassignTag(@PathParam("id") final Integer id, @PathParam("tagId") final int tagId) {
 		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
-		checkOwnerOrAdminOrGranted(entity);
 		unassignTag(entity, tagId);
 	}
 
@@ -1451,7 +1451,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 
 		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
 		if (checkOwnerShip) {
-			checkOwnerOrAdminOrGranted(entity);
+            checkPermissions(entity, ImmutableSet.of(PermissionCheckType.IS_OWNER, PermissionCheckType.IS_ADMIN, PermissionCheckType.HAS_WRITE_ACCESS));
 		}
 	}
 

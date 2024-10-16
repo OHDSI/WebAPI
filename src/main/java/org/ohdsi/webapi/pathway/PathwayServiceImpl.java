@@ -2,6 +2,7 @@ package org.ohdsi.webapi.pathway;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
 import com.odysseusinc.arachne.commons.types.DBMSType;
 import org.hibernate.Hibernate;
 import org.ohdsi.circe.helper.ResourceHelper;
@@ -38,6 +39,7 @@ import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.CohortDefinitionService;
 import org.ohdsi.webapi.service.JobService;
+import org.ohdsi.webapi.service.dto.PermissionCheckType;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
@@ -538,14 +540,11 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
     @Override
     public void assignTag(Integer id, int tagId) {
         PathwayAnalysisEntity entity = getById(id);
-        checkOwnerOrAdminOrGranted(entity);
         assignTag(entity, tagId);
     }
-
     @Override
     public void unassignTag(Integer id, int tagId) {
         PathwayAnalysisEntity entity = getById(id);
-        checkOwnerOrAdminOrGranted(entity);
         unassignTag(entity, tagId);
     }
 
@@ -616,7 +615,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 
         PathwayAnalysisEntity entity = this.pathwayAnalysisRepository.findOne(id);
         if (checkOwnerShip) {
-            checkOwnerOrAdminOrGranted(entity);
+            checkPermissions(entity, ImmutableSet.of(PermissionCheckType.IS_OWNER, PermissionCheckType.IS_ADMIN, PermissionCheckType.HAS_WRITE_ACCESS));
         }
     }
 

@@ -114,7 +114,7 @@ public class TagService extends AbstractDaoService {
     public TagDTO update(Integer id, TagDTO entity) {
         Tag existing = tagRepository.findOne(id);
 
-        checkPermissions(existing, ImmutableSet.of(PermissionCheckType.IS_OWNER, PermissionCheckType.IS_ADMIN, PermissionCheckType.IS_MODERATOR));
+        checkPermissions(existing, ImmutableSet.of(PermissionCheckType.IS_OWNER, PermissionCheckType.IS_ADMIN));
 
         Tag toUpdate = this.conversionService.convert(entity, Tag.class);
 

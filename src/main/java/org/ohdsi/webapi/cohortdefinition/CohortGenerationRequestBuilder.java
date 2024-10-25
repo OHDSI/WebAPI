@@ -66,4 +66,9 @@ public class CohortGenerationRequestBuilder {
 
         return new CohortGenerationRequest(expression, source, sessionId, targetId, targetSchema,
                 retainCohortCovariates, cohortId);
-    }}
+    }
+    
+    public boolean hasRetainCohortCovariates() {
+    	return retainCohortCovariates != null ? retainCohortCovariates.booleanValue() : false;
+    }
+}

@@ -2,9 +2,6 @@ package org.ohdsi.webapi.tool;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import javax.ws.rs.ForbiddenException;
-
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.tool.converter.ToolConvertor;
@@ -25,17 +22,11 @@ public class ToolServiceImpl extends AbstractDaoService implements ToolService {
     public List<ToolDTO> getTools() {
         List<Tool> tools = isAdmin() ? toolRepository.findAll() : toolRepository.findAllByIsEnabled(true);
         return tools.stream()
-                .map(tool -> {
-                    ToolDTO dto = toolConvertor.toDTO(tool);
-                    return dto;
-                }).collect(Collectors.toList());
+                .map(toolConvertor::toDTO).collect(Collectors.toList());
     }
 
     @Override
     public ToolDTO saveTool(ToolDTO toolDTO) {
-        if (!isAdmin()) {
-            throw new ForbiddenException();
-        }
         Tool tool = saveToolFromDTO(toolDTO, getCurrentUser());
         return toolConvertor.toDTO(toolRepository.saveAndFlush(tool));
     }
@@ -56,9 +47,6 @@ public class ToolServiceImpl extends AbstractDaoService implements ToolService {
 
     @Override
     public void delete(Integer id) {
-        if (!isAdmin()) {
-            throw new ForbiddenException();
-        }
         toolRepository.delete(id);
     }
 }

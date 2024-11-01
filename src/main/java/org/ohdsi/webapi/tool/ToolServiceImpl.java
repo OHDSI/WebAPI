@@ -2,6 +2,9 @@ package org.ohdsi.webapi.tool;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.shiro.SecurityUtils;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.tool.converter.ToolConvertor;
@@ -20,7 +23,7 @@ public class ToolServiceImpl extends AbstractDaoService implements ToolService {
 
     @Override
     public List<ToolDTO> getTools() {
-        List<Tool> tools = isAdmin() ? toolRepository.findAll() : toolRepository.findAllByIsEnabled(true);
+        List<Tool> tools = (isAdmin() || canManageTools()) ? toolRepository.findAll() : toolRepository.findAllByIsEnabled(true);
         return tools.stream()
                 .map(toolConvertor::toDTO).collect(Collectors.toList());
     }
@@ -48,5 +51,10 @@ public class ToolServiceImpl extends AbstractDaoService implements ToolService {
     @Override
     public void delete(Integer id) {
         toolRepository.delete(id);
+    }
+
+    private boolean canManageTools() {
+        return Stream.of("tool:put", "tool:post", "tool:*:delete")
+                .allMatch(permission -> SecurityUtils.getSubject().isPermitted(permission));
     }
 }

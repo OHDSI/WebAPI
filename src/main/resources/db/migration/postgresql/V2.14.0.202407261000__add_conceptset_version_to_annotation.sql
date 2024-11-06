@@ -1,1 +1,0 @@
-ALTER TABLE ${ohdsiSchema}.concept_set_annotation ADD concept_set_version VARCHAR;

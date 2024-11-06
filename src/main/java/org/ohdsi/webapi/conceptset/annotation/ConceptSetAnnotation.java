@@ -11,7 +11,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
 
-@Entity
+@Entity(name = "ConceptSetAnnotation")
 @Table(name = "concept_set_annotation")
 public class ConceptSetAnnotation extends CommonEntity<Integer> implements Serializable {
     /**

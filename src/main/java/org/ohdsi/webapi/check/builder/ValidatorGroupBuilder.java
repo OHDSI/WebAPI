@@ -63,30 +63,16 @@ public class ValidatorGroupBuilder<T, V> extends ValidatorBaseBuilder<T, Validat
 
     public ValidatorGroup<T, V> build() {
 
-        List<ValidatorGroup<V, ?>> groups = initAndBuildGroup(this.validatorGroupBuilders);
+        List<ValidatorGroup<V, ?>> groups = initAndBuildGroupList(this.validatorGroupBuilders);
         List<Validator<V>> validators = initAndBuildList(this.validatorBuilders);
 
         return new ValidatorGroup<>(validators, groups, valueGetter, conditionGetter);
     }
 
-    private List<ValidatorGroup<V, ?>> initAndBuildGroup(List<ValidatorGroupBuilder<V, ?>> builders) {
-        builders.forEach(builder -> {
-            if (Objects.nonNull(this.errorMessage)) {
-                builder.errorMessage(this.errorMessage);
-            }
-            if (Objects.isNull(builder.getBasePath())) {
-                builder.basePath(createChildPath());
-            }
-            if (Objects.isNull(builder.severity)) {
-                builder.severity(this.severity);
-            }
-        });
-        return builders.stream()
-                .map(ValidatorBaseBuilder::build)
-                .collect(Collectors.toList());
-    }
+    // Note: exact same functionality as initAndBuildList, just needed a different call signature.
+    // This method was added to enable development using Eclipse
+    private List<ValidatorGroup<V, ?>> initAndBuildGroupList(List<ValidatorGroupBuilder<V, ?>> builders) {
 
-    private <U> List<U> initAndBuildList(List<? extends ValidatorBaseBuilder<V, U, ?>> builders) {
         builders.forEach(builder -> {
             if (Objects.nonNull(this.errorMessage)) {
                 builder.errorMessage(this.errorMessage);
@@ -101,6 +87,28 @@ public class ValidatorGroupBuilder<T, V> extends ValidatorBaseBuilder<T, Validat
         return builders.stream()
                 .map(ValidatorBaseBuilder::build)
                 .collect(Collectors.toList());
+
+
+    }
+    
+    private <U> List<U> initAndBuildList(List<? extends ValidatorBaseBuilder<V, U, ?>> builders) {
+
+        builders.forEach(builder -> {
+            if (Objects.nonNull(this.errorMessage)) {
+                builder.errorMessage(this.errorMessage);
+            }
+            if (Objects.isNull(builder.getBasePath())) {
+                builder.basePath(createChildPath());
+            }
+            if (Objects.isNull(builder.severity)) {
+                builder.severity(this.severity);
+            }
+        });
+        return builders.stream()
+                .map(ValidatorBaseBuilder::build)
+                .collect(Collectors.toList());
+
+
     }
 
 }

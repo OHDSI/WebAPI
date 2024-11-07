@@ -41,15 +41,14 @@ public abstract class AbstractForEachValidatorBuilder<T, V> extends ValidatorBui
     }
 
     protected List<ValidatorGroup<T, ?>> initGroups() {
-        return initAndBuildList(this.validatorGroupBuilders);
+        return initAndBuildGroup(this.validatorGroupBuilders);
     }
 
     protected List<Validator<T>> initValidators() {
         return initAndBuildList(this.validatorBuilders);
     }
 
-    private <U> List<U> initAndBuildList(List<? extends ValidatorBaseBuilder<T, U, ?>> builders) {
-
+    private List<ValidatorGroup<T, ?>> initAndBuildGroup(List<ValidatorGroupBuilder<T, ?>> builders) {
         builders.forEach(builder -> {
             if (Objects.isNull(builder.getBasePath())) {
                 builder.basePath(createChildPath());
@@ -67,7 +66,25 @@ public abstract class AbstractForEachValidatorBuilder<T, V> extends ValidatorBui
         return builders.stream()
                 .map(ValidatorBaseBuilder::build)
                 .collect(Collectors.toList());
+    }
 
-
+    private <U> List<U> initAndBuildList(List<? extends ValidatorBaseBuilder<T, U, ?>> builders) {
+        builders.forEach(builder -> {
+            if (Objects.isNull(builder.getBasePath())) {
+                builder.basePath(createChildPath());
+            }
+            if (Objects.isNull(builder.getErrorMessage())) {
+                builder.errorMessage(this.errorMessage);
+            }
+            if (Objects.isNull(builder.getSeverity())) {
+                builder.severity(this.severity);
+            }
+            if (Objects.isNull(builder.getAttrName())) {
+                builder.attrName(this.attrName);
+            }
+        });
+        return builders.stream()
+                .map(ValidatorBaseBuilder::build)
+                .collect(Collectors.toList());
     }
 }

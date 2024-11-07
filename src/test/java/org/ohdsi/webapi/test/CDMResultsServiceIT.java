@@ -25,8 +25,8 @@ import org.springframework.http.ResponseEntity;
 public class CDMResultsServiceIT extends WebApiIT {
     private static final String CDM_RESULTS_FILE_PATH = "/database/cdm_results.sql";
 
-    @Value("${cdmService.endpoint.results}")
-    private String cdmResultsEndpoint;
+    @Value("${cdmResultsService.endpoint.conceptRecordCount}")
+    private String conceptRecordCountEndpoint;
 
     @Autowired
     private SourceRepository sourceRepository;
@@ -50,7 +50,7 @@ public class CDMResultsServiceIT extends WebApiIT {
     }
 
     @Test
-    public void requestCDMResultsForConcept_firstTime_returnsResults() {
+    public void requestConceptRecordCounts_firstTime_returnsResults() {
 
         // Arrange
         List<Integer> conceptIds = Arrays.asList(1);
@@ -62,7 +62,7 @@ public class CDMResultsServiceIT extends WebApiIT {
         Class<List<LinkedHashMap<String, List<Integer>>>> returnClass = (Class<List<LinkedHashMap<String, List<Integer>>>>)list.getClass(); 
 
         // Act
-        final ResponseEntity<List<LinkedHashMap<String, List<Integer>>>> entity = getRestTemplate().postForEntity(this.cdmResultsEndpoint, conceptIds, 
+        final ResponseEntity<List<LinkedHashMap<String, List<Integer>>>> entity = getRestTemplate().postForEntity(this.conceptRecordCountEndpoint, conceptIds, 
                 returnClass, queryParameters );
 
         // Assertion

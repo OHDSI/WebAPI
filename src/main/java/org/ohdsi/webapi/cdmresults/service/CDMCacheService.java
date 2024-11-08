@@ -73,6 +73,10 @@ public class CDMCacheService extends AbstractDaoService {
     }
   }
 
+  public void clearCache(Source source) {
+    cdmCacheRepository.deleteBySource(source.getSourceId());
+  }
+
   public List<CDMCacheEntity> findAndCache(Source source, List<Integer> conceptIds) {
     if (CollectionUtils.isEmpty(conceptIds)) {
       return Collections.emptyList();

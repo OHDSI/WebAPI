@@ -272,6 +272,7 @@
     <cache.jobs.count>3</cache.jobs.count>
     <!-- Achilles cache -->
     <cache.achilles.usePersonCount>true</cache.achilles.usePersonCount>
+    <cdm.result.clear.cache.enable>true</cdm.result.clear.cache.enable>
 
     <!-- Build info -->
     <buildinfo.atlas.milestone.id>47</buildinfo.atlas.milestone.id>

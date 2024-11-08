@@ -12,6 +12,7 @@ public interface Constants {
   String GENERATE_PREDICTION_ANALYSIS = "generatePredictionAnalysis";
   String GENERATE_ESTIMATION_ANALYSIS = "generateEstimationAnalysis";
   String WARM_CACHE = "warmCache";
+  String CLEAR_CACHE = "clearCache";
   String USERS_IMPORT = "usersImport";
   String JOB_IS_ALREADY_SCHEDULED = "Job for provider %s is already scheduled";
 

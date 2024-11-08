@@ -8,7 +8,9 @@ import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.achilles.aspect.AchillesCache;
 import org.ohdsi.webapi.achilles.service.AchillesCacheService;
 import org.ohdsi.webapi.cdmresults.AchillesCacheTasklet;
+import org.ohdsi.webapi.cdmresults.AchillesClearCacheTasklet;
 import org.ohdsi.webapi.cdmresults.CDMResultsCacheTasklet;
+import org.ohdsi.webapi.cdmresults.CDMResultsClearCacheTasklet;
 import org.ohdsi.webapi.cdmresults.DescendantRecordAndPersonCount;
 import org.ohdsi.webapi.cdmresults.DescendantRecordCount;
 import org.ohdsi.webapi.cdmresults.domain.CDMCacheEntity;
@@ -115,6 +117,9 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     
     @Value("${cdm.cache.achilles.warming.enable}")
     private boolean cdmAchillesCacheWarmingEnable;
+
+    @Value("${cdm.result.clear.cache.enable}")
+    private boolean cdmResultClearCacheEnable;
 
     @Value("${cache.achilles.usePersonCount:false}")
     private boolean usePersonCount;
@@ -283,6 +288,47 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         return new JobExecutionResource();
     }
     
+    /**
+     * Refresh the results cache for a selected source
+     * 
+     * @summary Refresh results cache
+     * @param sourceKey The source key
+     * @return The job execution resource
+     */
+    @GET
+    @Path("clearCaches")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<JobExecutionResource> clearCaches() {
+        List<JobExecutionResource> jobs = new ArrayList<>();
+
+        if (!cdmResultClearCacheEnable) {
+            logger.info("Clearing cache is disabled for CDM results");
+            return jobs;
+        }
+
+        if (!isSecured() || !isAdmin()) {
+            return jobs;
+        }
+
+        List<Source> sources = getSourceRepository().findAll();
+        for (Source source : sources) {
+            if (!sourceAccessor.hasAccess(source)) {
+                continue;
+            }
+            JobExecutionResource jobExecutionResource = jobService.findJobByName(Constants.CLEAR_CACHE,
+                    getClearCacheJobName(String.valueOf(source.getSourceId()), source.getSourceKey()));
+            if (jobExecutionResource == null) {
+                if (source.getDaimons().stream()
+                        .anyMatch(sd -> Objects.equals(sd.getDaimonType(), SourceDaimon.DaimonType.Results))) {
+                    jobs.add(clearCache(source));
+                }
+            } else {
+                jobs.add(jobExecutionResource);
+            }
+        }
+        return jobs;
+    }
+
     /**
      * Queries for data density report for the given sourceKey
      * 
@@ -503,6 +549,18 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         }
     }
 
+    /*
+     * Warm cache for a single source
+     */
+    private JobExecutionResource clearCache(Source source) {
+        String jobName = getClearCacheJobName(String.valueOf(source.getSourceId()), source.getSourceKey());
+        List<Step> jobSteps = createClearCacheJobSteps(source, jobName);
+        SimpleJobBuilder builder = createJob(String.valueOf(source.getSourceId()),
+                source.getSourceKey(),
+                jobSteps);
+        return runJob(source.getSourceKey(), source.getSourceId(), jobName, builder);
+    }
+
     private SimpleJobBuilder createJob(String sourceIds, String sourceKeys, List<Step> steps) {
         final SimpleJobBuilder[] stepBuilder = {null};
         String jobName = getWarmCacheJobName(sourceIds, sourceKeys);
@@ -566,6 +624,29 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
                 .build();
     }
 
+    private List<Step> createClearCacheJobSteps(Source source, String jobName) {
+        SimpleJob job = new SimpleJob(jobName);
+        job.setJobRepository(jobRepository);
+        List<Step> steps = new ArrayList<>();
+        steps.add(getAchillesClearCacheStep(source, jobName));
+        steps.add(getCountClearCacheStep(source, jobName));
+        return steps;
+    }
+
+    private Step getAchillesClearCacheStep(Source source, String jobStepName) {
+        AchillesClearCacheTasklet achillesTasklet = new AchillesClearCacheTasklet(source, cacheService);
+        return stepBuilderFactory.get(jobStepName + " achilles")
+                .tasklet(achillesTasklet)
+                .build();
+    }
+
+    private Step getCountClearCacheStep(Source source, String jobStepName) {
+        CDMResultsClearCacheTasklet countTasklet = new CDMResultsClearCacheTasklet(source, cdmCacheService);
+        return stepBuilderFactory.get(jobStepName + " counts")
+                .tasklet(countTasklet)
+                .build();
+    }
+
     private int getResultsDaimonPriority(Source source) {
         Optional<Integer> resultsPriority = source.getDaimons().stream()
                 .filter(d -> d.getDaimonType().equals(SourceDaimon.DaimonType.Results))
@@ -576,11 +657,19 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     }
 
     private String getWarmCacheJobName(String sourceIds, String sourceKeys) {
+        return getJobName("warming cache", sourceIds, sourceKeys);
+    }
+
+    private String getClearCacheJobName(String sourceIds, String sourceKeys) {
+        return getJobName("clearing cache", sourceIds, sourceKeys);
+    }
+
+    private String getJobName(String jobType, String sourceIds, String sourceKeys) {
         // for multiple sources: try to compose a job name from source keys, and if it is too long - use source ids
-        String jobName = String.format("warming cache: %s", sourceKeys);
+        String jobName = String.format("%s: %s", jobType, sourceKeys);
 
         if (jobName.length() >= 100) { // job name in batch_job_instance is varchar(100)
-            jobName = String.format("warming cache: %s", sourceIds);
+            jobName = String.format("%s: %s", jobType, sourceIds);
 
             if (jobName.length() >= 100) { // if we still have more than 100 symbols
                 jobName = jobName.substring(0, 88);

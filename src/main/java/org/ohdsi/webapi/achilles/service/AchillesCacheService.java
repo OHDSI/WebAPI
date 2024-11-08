@@ -85,6 +85,11 @@ public class AchillesCacheService {
         nodes.clear();
     }
 
+    @Transactional()
+    public void clearCache(Source source) {
+        cacheRepository.deleteBySource(source);
+    }
+
     private void createCacheEntities(Source source, Map<String, ObjectNode> nodes) {
         List<AchillesCacheEntity> cacheEntities = getEntities(source, nodes);
         cacheRepository.save(cacheEntities);

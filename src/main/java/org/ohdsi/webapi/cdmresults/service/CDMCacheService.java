@@ -145,9 +145,9 @@ public class CDMCacheService extends AbstractDaoService {
       PreparedStatementRenderer psr = getPartialPreparedStatementRenderer(source, idsSlice);
       Set<Integer> cachedIds = loadCache(source, psr, mapper, jdbcTemplate);
       // in this batch, need to save any concepts that were not found when loading cache
-      idsSlice.removeAll(cachedIds);
-      if (!idsSlice.isEmpty()) { // store zeros in cache
-        List<CDMCacheEntity> zeroConcepts = idsSlice.stream().map(id -> {
+      List<Integer> notFoundIds = new ArrayList<Integer>(CollectionUtils.subtract(idsSlice, cachedIds));
+      if (!notFoundIds.isEmpty()) { // store zeros in cache
+        List<CDMCacheEntity> zeroConcepts = notFoundIds.stream().map(id -> {
           CDMCacheEntity ce = new CDMCacheEntity();
           ce.setConceptId(id);
           ce.setRecordCount(0L);

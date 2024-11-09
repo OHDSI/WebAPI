@@ -1795,8 +1795,7 @@
         "includedConcepts": "포함된 컨셉",
         "includedSourceCodes": "포함된 소스 코드",
         "versions": "Versions",
-        "messages": "메시지",
-        "metadata": "Metadata"
+        "messages": "메시지"
       },
       "concept": {
         "title": "어휘(Vocabulary) > 컨셉",

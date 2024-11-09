@@ -13,7 +13,7 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "concept_set_annotation")
-public class ConceptSetAnnotation extends CommonEntity<Integer> implements Serializable {
+public class ConceptSetAnnotation implements Serializable {
     /**
      *
      */

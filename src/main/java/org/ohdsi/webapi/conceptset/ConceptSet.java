@@ -37,7 +37,7 @@ import org.ohdsi.webapi.tag.domain.Tag;
  *
  * @author fdefalco
  */
-@Entity(name="ConceptSet")
+@Entity(name = "ConceptSet")
 @Table(name="concept_set")
 public class ConceptSet extends CommonEntityExt<Integer> implements Serializable {
   

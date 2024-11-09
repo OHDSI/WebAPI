@@ -1791,8 +1791,7 @@
         "includedConcepts": "Included Concepts",
         "includedSourceCodes": "Included Source Codes",
         "versions": "Versions",
-        "messages": "Messages",
-        "metadata": "Metadata"
+        "messages": "Messages"
       },
       "concept": {
         "title": "Vocabulary > Concept",

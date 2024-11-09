@@ -11,6 +11,7 @@ public class ConceptSetPermissionSchema extends EntityPermissionSchema {
     private static Map<String, String> writePermissions = new HashMap<String, String>() {{
         put("conceptset:%s:put", "Update Concept Set with ID = %s");
         put("conceptset:%s:items:put", "Update Items of Concept Set with ID = %s");
+        put("conceptset:*:annotation:put", "Create Concept Set Annotation");
         put("conceptset:%s:annotation:*:delete", "Delete Annotations of Concept Set with ID = %s");
         put("conceptset:*:annotation:*:delete", "Delete Annotations of any Concept Set");
         put("conceptset:%s:delete", "Delete Concept Set with ID = %s");

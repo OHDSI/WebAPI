@@ -45,7 +45,7 @@ public class ConceptSetAnnotation implements Serializable {
     private String vocabularyVersion;
 
     @Column(name = "concept_set_version")
-    private String conceptSetVersion;
+    private Integer conceptSetVersion;
 
     @Column(name = "copied_from_concept_set_ids")
     private String copiedFromConceptSetIds;
@@ -90,11 +90,11 @@ public class ConceptSetAnnotation implements Serializable {
         this.vocabularyVersion = vocabularyVersion;
     }
 
-    public String getConceptSetVersion() {
+    public Integer getConceptSetVersion() {
         return conceptSetVersion;
     }
 
-    public void setConceptSetVersion(String conceptSetVersion) {
+    public void setConceptSetVersion(Integer conceptSetVersion) {
         this.conceptSetVersion = conceptSetVersion;
     }
 

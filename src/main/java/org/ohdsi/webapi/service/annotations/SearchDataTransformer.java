@@ -5,9 +5,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 @Service
 public class SearchDataTransformer {
@@ -15,91 +15,86 @@ public class SearchDataTransformer {
     private static final String FILTER_DATA = "filterData";
     private static final String TITLE = "title";
     private static final String VALUE = "value";
+    private static final String KEY = "key";
     private static final String FILTER_SOURCE = "filterSource";
-    private static final String FILTER_SOURCE_LABEL = "Filter Source";
+    private static final String FILTER_SOURCE_LABEL = "Filtered By";
     private static final String SEARCH_TEXT = "searchText";
-    private static final String SEARCH_TEXT_LABEL = "Search Text";
-    private static final String FILTER_COLUMNS = "filterColumns";
-    private static final String QUOTE = "\"";
-
+    private static final String DEFAULT_FILTER_SOURCE = "Search";
     private static final String DELIMITER = ", ";
-
     private static final String ENTRY_FORMAT = "%s: \"%s\"";
 
     public String convertJsonToReadableFormat(String jsonInput) {
-        JSONObject searchObject = new JSONObject(jsonInput);
+        JSONObject searchObject = new JSONObject(Optional.ofNullable(jsonInput).orElse("{}"));
+
+        if (searchObject.isEmpty()) {
+            return "";
+        }
+
         StringBuilder result = new StringBuilder();
 
-        String filterDataResult = extractFilterData(searchObject);
-        appendCommaSeparated(result, filterDataResult);
+        String filterSource = processFilterSource(searchObject);
+        append(result, getDefaultOrActual(filterSource, DEFAULT_FILTER_SOURCE));
 
-        String filterSourceResult = processFilterSource(searchObject);
-        appendCommaSeparated(result, filterSourceResult);
+        JSONObject filterDataObject = searchObject.optJSONObject(FILTER_DATA);
+        JSONArray filterDataArray = searchObject.optJSONArray(FILTER_DATA);
 
-        return result.toString();
-    }
-
-    private String extractFilterData(JSONObject jsonObject) {
-        JSONObject filterData = jsonObject.optJSONObject(FILTER_DATA);
-        if (filterData != null) {
-            String searchText = extractSearchText(filterData);
-            String filterColumns = extractFilterColumns(filterData);
-            return Stream.of(searchText, filterColumns)
-                    .filter(StringUtils::isNotEmpty)
-                    .collect(Collectors.joining(DELIMITER));
+        if (filterDataObject != null) {
+            Optional.ofNullable(filterDataObject).map(this::processSearchText).ifPresent(searchText -> appendCommaSeparated(result, formatQuoted(searchText)));
+            Optional.ofNullable(filterDataObject.optJSONArray("filterColumns")).map(this::formatKeyValuePairs).ifPresent(
+                    fdResult -> appendCommaSeparated(result, FILTER_SOURCE_LABEL + ": \"" + fdResult + "\"")
+            );
+        } else if (filterDataArray != null) {
+            String extractedData = formatKeyValuePairs(filterDataArray);
+            if (!extractedData.isEmpty()) {
+                appendCommaSeparated(result, FILTER_SOURCE_LABEL + ": \"" + extractedData + "\"");
+            }
         }
-        JSONArray filterDataArray = jsonObject.optJSONArray(FILTER_DATA);
-        if (filterDataArray != null) {
-            return formatKeyValuePairs(filterDataArray);
-        }
-        return "";
-    }
 
-    private String extractFilterColumns(JSONObject filterData) {
-        JSONArray filterColumns = filterData.optJSONArray(FILTER_COLUMNS);
-        if (filterColumns != null) {
-            return formatKeyValuePairs(filterColumns);
-        }
-        return "";
+        return result.toString().trim();
     }
 
     private String processFilterSource(JSONObject jsonObject) {
-        String filterSource = jsonObject.optString(FILTER_SOURCE, "");
-        if (!filterSource.isEmpty()) {
-            return String.format(ENTRY_FORMAT, FILTER_SOURCE_LABEL, filterSource);
-        }
-        return "";
+        return jsonObject.optString(FILTER_SOURCE, "");
     }
 
-    private String extractSearchText(JSONObject jsonObject) {
-        String searchText = jsonObject.optString(SEARCH_TEXT, "");
-        if (!searchText.isEmpty()) {
-            return String.format(ENTRY_FORMAT, SEARCH_TEXT_LABEL, searchText);
-        }
-        return "";
+    private String processSearchText(JSONObject filterData) {
+        return filterData.optString(SEARCH_TEXT, "");
     }
 
-    private String formatKeyValuePairs(JSONArray filterColumns) {
-        return IntStream.range(0, filterColumns.length())
-                .mapToObj(index -> {
-                    JSONObject item = filterColumns.getJSONObject(index);
-                    String title = optString(item, TITLE);
-                    String value = StringUtils.unwrap(optString(item, VALUE), QUOTE);
-                    return String.format(ENTRY_FORMAT, title, value);
-                })
+    private String formatKeyValuePairs(JSONArray filterDataArray) {
+        return IntStream.range(0, filterDataArray.length())
+                .mapToObj(index -> formatEntry(filterDataArray.getJSONObject(index)))
                 .collect(Collectors.joining(DELIMITER));
     }
 
-    private void appendCommaSeparated(StringBuilder resultBuilder, String part) {
+    private String formatEntry(JSONObject item) {
+        String title = optString(item, TITLE);
+        String key = StringUtils.unwrap(optString(item, KEY), '"');
+        return String.format(ENTRY_FORMAT, title, key);
+    }
+
+    private void appendCommaSeparated(StringBuilder builder, String part) {
         if (!part.isEmpty()) {
-            if (resultBuilder.length() > 0) {
-                resultBuilder.append(DELIMITER);
-            }
-            resultBuilder.append(part);
+            append(builder, part);
         }
+    }
+
+    private void append(StringBuilder builder, String part) {
+        if (builder.length() > 0) {
+            builder.append(DELIMITER);
+        }
+        builder.append(part);
     }
 
     private String optString(JSONObject item, String key) {
         return item.optString(key, "");
+    }
+
+    private String getDefaultOrActual(String actual, String defaultVal) {
+        return actual.isEmpty() ? defaultVal : actual;
+    }
+
+    private String formatQuoted(String text) {
+        return String.format("\"%s\"", text);
     }
 }

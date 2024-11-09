@@ -892,7 +892,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Transactional
     public boolean saveConceptSetAnnotation(@PathParam("id") final int conceptSetId, SaveConceptSetAnnotationsRequest request) {
         removeAnnotations(conceptSetId, request);
-        if (request.getNewAnnotation() == null || request.getNewAnnotation().isEmpty()) {
+        if (request.getNewAnnotation() != null && !request.getNewAnnotation().isEmpty()) {
             List<ConceptSetAnnotation> annotationList = request.getNewAnnotation()
                     .stream()
                     .map(newAnnotationData -> {

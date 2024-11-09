@@ -9,7 +9,7 @@ public class AnnotationDTO {
     private String createdBy;
     private String createdDate;
     private String vocabularyVersion;
-    private String conceptSetVersion;
+    private Integer conceptSetVersion;
     private String searchData;
     private String copiedFromConceptSetIds;
     private Integer conceptId;
@@ -38,11 +38,11 @@ public class AnnotationDTO {
         this.vocabularyVersion = vocabularyVersion;
     }
 
-    public String getConceptSetVersion() {
+    public Integer getConceptSetVersion() {
         return conceptSetVersion;
     }
 
-    public void setConceptSetVersion(String conceptSetVersion) {
+    public void setConceptSetVersion(Integer conceptSetVersion) {
         this.conceptSetVersion = conceptSetVersion;
     }
 

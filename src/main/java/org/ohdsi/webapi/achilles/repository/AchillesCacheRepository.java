@@ -2,6 +2,7 @@ package org.ohdsi.webapi.achilles.repository;
 
 import org.ohdsi.webapi.achilles.domain.AchillesCacheEntity;
 import org.ohdsi.webapi.source.Source;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -16,6 +17,7 @@ public interface AchillesCacheRepository extends CrudRepository<AchillesCacheEnt
     @Query("select ac from AchillesCacheEntity ac where source = :source and cacheName in :names")
     List<AchillesCacheEntity> findBySourceAndNames(@Param("source") Source source, @Param("names") List<String> names);
 
+    @Modifying
     @Query("delete from AchillesCacheEntity where source = :source")
     void deleteBySource(@Param("source") Source source);
 }

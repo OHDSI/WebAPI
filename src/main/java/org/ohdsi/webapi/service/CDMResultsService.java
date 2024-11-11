@@ -486,9 +486,7 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         
         String jobName = getWarmCacheJobName(String.valueOf(source.getSourceId()), source.getSourceKey());
         List<Step> jobSteps = createCacheWarmingJobSteps(source, jobName);
-        SimpleJobBuilder builder = createJob(String.valueOf(source.getSourceId()),
-                source.getSourceKey(),
-                jobSteps);
+        SimpleJobBuilder builder = createJob(jobName, jobSteps);
         return runJob(source.getSourceKey(), source.getSourceId(), jobName, builder);
     }
 
@@ -533,9 +531,9 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
 
             if (counter++ >= bucketSizes[bucketIndex] - 1) {
                 if (!allJobSteps.isEmpty()) {
-                    SimpleJobBuilder builder = createJob(sourceIds.stream().map(String::valueOf).collect(Collectors.joining(",")),
-                            String.join(",", sourceKeys),
-                            allJobSteps);
+                    String compositeJobName = getWarmCacheJobName(sourceIds.stream().map(String::valueOf)
+                            .collect(Collectors.joining(",")), String.join(",", sourceKeys));
+                    SimpleJobBuilder builder = createJob(compositeJobName, allJobSteps);
                     runJob(source.getSourceKey(), source.getSourceId(), jobName, builder);
                 }
                 
@@ -549,20 +547,18 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     }
 
     /*
-     * Warm cache for a single source
+     * Clear cache for a single source
      */
     private JobExecutionResource clearCache(Source source) {
         String jobName = getClearCacheJobName(String.valueOf(source.getSourceId()), source.getSourceKey());
         List<Step> jobSteps = createClearCacheJobSteps(source, jobName);
-        SimpleJobBuilder builder = createJob(String.valueOf(source.getSourceId()),
-                source.getSourceKey(),
+        SimpleJobBuilder builder = createJob(jobName,
                 jobSteps);
         return runJob(source.getSourceKey(), source.getSourceId(), jobName, builder);
     }
 
-    private SimpleJobBuilder createJob(String sourceIds, String sourceKeys, List<Step> steps) {
+    private SimpleJobBuilder createJob(String jobName, List<Step> steps) {
         final SimpleJobBuilder[] stepBuilder = {null};
-        String jobName = getWarmCacheJobName(sourceIds, sourceKeys);
         if (jobService.findJobByName(jobName, jobName) == null && !steps.isEmpty()) {
             JobBuilder jobBuilder = jobBuilders.get(jobName);
 

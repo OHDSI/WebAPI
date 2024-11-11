@@ -289,16 +289,15 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     }
     
     /**
-     * Refresh the results cache for a selected source
+     * Clear the cdm_cache and achilles_cache for all sources
      * 
-     * @summary Refresh results cache
-     * @param sourceKey The source key
-     * @return The job execution resource
+     * @summary Clear the cdm_cache and achilles_cache for all sources
+     * @return List of JobExecutionResources
      */
     @GET
-    @Path("clearCaches")
+    @Path("clearCache")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<JobExecutionResource> clearCaches() {
+    public List<JobExecutionResource> clearCache() {
         List<JobExecutionResource> jobs = new ArrayList<>();
 
         if (!cdmResultClearCacheEnable) {

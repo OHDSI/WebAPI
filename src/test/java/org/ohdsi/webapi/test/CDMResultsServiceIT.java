@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +28,9 @@ public class CDMResultsServiceIT extends WebApiIT {
 
     @Value("${cdmResultsService.endpoint.conceptRecordCount}")
     private String conceptRecordCountEndpoint;
+
+    @Value("${cdmResultsService.endpoint.clearCache}")
+    private String clearCacheEndpoint;
 
     @Autowired
     private SourceRepository sourceRepository;
@@ -65,7 +69,7 @@ public class CDMResultsServiceIT extends WebApiIT {
         final ResponseEntity<List<LinkedHashMap<String, List<Integer>>>> entity = getRestTemplate().postForEntity(this.conceptRecordCountEndpoint, conceptIds, 
                 returnClass, queryParameters );
 
-        // Assertion
+        // Assert
         assertOK(entity);
         List<LinkedHashMap<String, List<Integer>>> results = entity.getBody();
         assertEquals(1, results.size());
@@ -77,5 +81,24 @@ public class CDMResultsServiceIT extends WebApiIT {
         assertEquals(101, counts.get(1).intValue());
         assertEquals(102, counts.get(2).intValue());
         assertEquals(103, counts.get(3).intValue());
+    }
+
+    @Test
+    public void clearCache_nothingInCache_returns() {
+
+        // Arrange
+        List<JobExecutionResource> list = new ArrayList<>();
+        @SuppressWarnings("unchecked")
+        Class<List<JobExecutionResource>> returnClass = (Class<List<JobExecutionResource>>) list
+                .getClass();
+
+        // Act
+        final ResponseEntity<List<JobExecutionResource>> entity = getRestTemplate().getForEntity(this.clearCacheEndpoint, returnClass);
+
+        // Assert
+        assertOK(entity);
+        // Right now we don't have security enabled in the test environment, so the cache is not cleared (there's a check that we're using security)
+        List<JobExecutionResource> results = entity.getBody();
+        assertEquals(0, results.size());
     }
 }

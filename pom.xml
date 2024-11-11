@@ -252,6 +252,7 @@
     <!-- Cache Config -->
     <cdm.result.cache.warming.enable>true</cdm.result.cache.warming.enable>
     <cdm.cache.achilles.warming.enable>false</cdm.cache.achilles.warming.enable>
+    <cdm.result.clear.cache.enable>true</cdm.result.clear.cache.enable>
     <!-- Enable or disable warming cdm cache by cron -->
     <cdm.cache.cron.warming.enable>false</cdm.cache.cron.warming.enable>
     <!-- cron expression to warm cdm cache -->
@@ -272,7 +273,6 @@
     <cache.jobs.count>3</cache.jobs.count>
     <!-- Achilles cache -->
     <cache.achilles.usePersonCount>true</cache.achilles.usePersonCount>
-    <cdm.result.clear.cache.enable>true</cdm.result.clear.cache.enable>
 
     <!-- Build info -->
     <buildinfo.atlas.milestone.id>47</buildinfo.atlas.milestone.id>

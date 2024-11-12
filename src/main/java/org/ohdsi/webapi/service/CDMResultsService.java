@@ -118,9 +118,6 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     @Value("${cdm.cache.achilles.warming.enable}")
     private boolean cdmAchillesCacheWarmingEnable;
 
-    @Value("${cdm.result.clear.cache.enable}")
-    private boolean cdmResultClearCacheEnable;
-
     @Value("${cache.achilles.usePersonCount:false}")
     private boolean usePersonCount;
 
@@ -299,11 +296,6 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     @Produces(MediaType.APPLICATION_JSON)
     public List<JobExecutionResource> clearCache() {
         List<JobExecutionResource> jobs = new ArrayList<>();
-
-        if (!cdmResultClearCacheEnable) {
-            logger.info("Clearing cache is disabled for CDM results");
-            return jobs;
-        }
 
         if (!isSecured() || !isAdmin()) {
             return jobs;

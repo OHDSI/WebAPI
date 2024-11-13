@@ -8,9 +8,7 @@ import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.achilles.aspect.AchillesCache;
 import org.ohdsi.webapi.achilles.service.AchillesCacheService;
 import org.ohdsi.webapi.cdmresults.AchillesCacheTasklet;
-import org.ohdsi.webapi.cdmresults.AchillesClearCacheTasklet;
 import org.ohdsi.webapi.cdmresults.CDMResultsCacheTasklet;
-import org.ohdsi.webapi.cdmresults.CDMResultsClearCacheTasklet;
 import org.ohdsi.webapi.cdmresults.DescendantRecordAndPersonCount;
 import org.ohdsi.webapi.cdmresults.DescendantRecordCount;
 import org.ohdsi.webapi.cdmresults.domain.CDMCacheEntity;
@@ -48,6 +46,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -289,35 +288,17 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
      * Clear the cdm_cache and achilles_cache for all sources
      * 
      * @summary Clear the cdm_cache and achilles_cache for all sources
-     * @return List of JobExecutionResources
+     * @return void
+     * @throws ForbiddenException if the user is not an admin
      */
     @GET
     @Path("clearCache")
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<JobExecutionResource> clearCache() {
-        List<JobExecutionResource> jobs = new ArrayList<>();
-
+    public void clearCache() {
         if (!isSecured() || !isAdmin()) {
-            return jobs;
+            throw new ForbiddenException();
         }
-
         List<Source> sources = getSourceRepository().findAll();
-        for (Source source : sources) {
-            if (!sourceAccessor.hasAccess(source)) {
-                continue;
-            }
-            JobExecutionResource jobExecutionResource = jobService.findJobByName(Constants.CLEAR_CACHE,
-                    getClearCacheJobName(String.valueOf(source.getSourceId()), source.getSourceKey()));
-            if (jobExecutionResource == null) {
-                if (source.getDaimons().stream()
-                        .anyMatch(sd -> Objects.equals(sd.getDaimonType(), SourceDaimon.DaimonType.Results))) {
-                    jobs.add(clearCache(source));
-                }
-            } else {
-                jobs.add(jobExecutionResource);
-            }
-        }
-        return jobs;
+        sources.parallelStream().forEach(this::clearCache);
     }
 
     /**
@@ -541,12 +522,12 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     /*
      * Clear cache for a single source
      */
-    private JobExecutionResource clearCache(Source source) {
-        String jobName = getClearCacheJobName(String.valueOf(source.getSourceId()), source.getSourceKey());
-        List<Step> jobSteps = createClearCacheJobSteps(source, jobName);
-        SimpleJobBuilder builder = createJob(jobName,
-                jobSteps);
-        return runJob(source.getSourceKey(), source.getSourceId(), jobName, builder);
+    private void clearCache(Source source) {
+        if (!sourceAccessor.hasAccess(source)) {
+            return;
+        }
+        cacheService.clearCache(source);
+        cdmCacheService.clearCache(source);
     }
 
     private SimpleJobBuilder createJob(String jobName, List<Step> steps) {
@@ -611,29 +592,6 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
                 .build();
     }
 
-    private List<Step> createClearCacheJobSteps(Source source, String jobName) {
-        SimpleJob job = new SimpleJob(jobName);
-        job.setJobRepository(jobRepository);
-        List<Step> steps = new ArrayList<>();
-        steps.add(getAchillesClearCacheStep(source, jobName));
-        steps.add(getCountClearCacheStep(source, jobName));
-        return steps;
-    }
-
-    private Step getAchillesClearCacheStep(Source source, String jobStepName) {
-        AchillesClearCacheTasklet achillesTasklet = new AchillesClearCacheTasklet(source, cacheService);
-        return stepBuilderFactory.get(jobStepName + " achilles")
-                .tasklet(achillesTasklet)
-                .build();
-    }
-
-    private Step getCountClearCacheStep(Source source, String jobStepName) {
-        CDMResultsClearCacheTasklet countTasklet = new CDMResultsClearCacheTasklet(source, cdmCacheService);
-        return stepBuilderFactory.get(jobStepName + " counts")
-                .tasklet(countTasklet)
-                .build();
-    }
-
     private int getResultsDaimonPriority(Source source) {
         Optional<Integer> resultsPriority = source.getDaimons().stream()
                 .filter(d -> d.getDaimonType().equals(SourceDaimon.DaimonType.Results))
@@ -645,10 +603,6 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
 
     private String getWarmCacheJobName(String sourceIds, String sourceKeys) {
         return getJobName("warming cache", sourceIds, sourceKeys);
-    }
-
-    private String getClearCacheJobName(String sourceIds, String sourceKeys) {
-        return getJobName("clearing cache", sourceIds, sourceKeys);
     }
 
     private String getJobName(String jobType, String sourceIds, String sourceKeys) {

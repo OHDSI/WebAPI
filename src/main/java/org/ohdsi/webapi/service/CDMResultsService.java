@@ -291,7 +291,7 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
      * @return void
      * @throws ForbiddenException if the user is not an admin
      */
-    @GET
+    @POST
     @Path("clearCache")
     public void clearCache() {
         if (!isSecured() || !isAdmin()) {

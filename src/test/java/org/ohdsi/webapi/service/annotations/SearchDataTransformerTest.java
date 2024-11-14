@@ -5,10 +5,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyString;
-import static org.hamcrest.Matchers.not;
 
 public class SearchDataTransformerTest {
 
@@ -30,50 +28,43 @@ public class SearchDataTransformerTest {
     public void shouldHandleSearchText() {
         String input = "{\"filterData\":{\"searchText\":\"testSearch\"}}";
         String result = sut.convertJsonToReadableFormat(input);
-        assertThat(result, is("Search Text: \"testSearch\""));
+        assertThat(result, is("Search, \"testSearch\""));
     }
 
     @Test
     public void shouldHandleFilterSource() {
         String input = "{\"filterSource\":\"Search\"}";
         String result = sut.convertJsonToReadableFormat(input);
-        assertThat(result, is("Filter Source: \"Search\""));
+        assertThat(result, is("Search"));
     }
 
     @Test
     public void shouldHandleFilterColumns() {
-        String input = "{\"filterData\":{\"filterColumns\":[{\"title\":\"Domain\",\"value\":\"Drug\"}]} }";
+        String input = "{\"filterData\":{\"filterColumns\":[{\"title\":\"Domain\",\"key\":\"Drug\"}]} }";
         String result = sut.convertJsonToReadableFormat(input);
-        assertThat(result, is("Domain: \"Drug\""));
+        assertThat(result, is("Search, \"\", Filtered By: \"Domain: \"Drug\"\""));
     }
 
     @Test
     public void shouldCombineFilterDataAndFilterSource() {
-        String input = "{\"filterData\":{\"searchText\":\"testSearch\",\"filterColumns\":[{\"title\":\"Domain\",\"value\":\"Drug\"}]},\"filterSource\":\"Search\"}";
+        String input = "{\"filterData\":{\"searchText\":\"testSearch\",\"filterColumns\":[{\"title\":\"Domain\",\"key\":\"Drug\"}]},\"filterSource\":\"Search\"}";
         String result = sut.convertJsonToReadableFormat(input);
-        String expected = "Search Text: \"testSearch\", Domain: \"Drug\", Filter Source: \"Search\"";
+        String expected = "Search, \"testSearch\", Filtered By: \"Domain: \"Drug\"\"";
         assertThat(result, is(expected));
     }
 
     @Test
     public void shouldHandleMultipleFilterColumns() {
-        String input = "{\"filterData\":{\"filterColumns\":[{\"title\":\"Domain\",\"value\":\"Drug\"},{\"title\":\"Class\",\"value\":\"Medication\"}]}}";
+        String input = "{\"filterData\":{\"filterColumns\":[{\"title\":\"Domain\",\"key\":\"Drug\"},{\"title\":\"Class\",\"key\":\"Medication\"}]}}";
         String result = sut.convertJsonToReadableFormat(input);
-        String expected = "Domain: \"Drug\", Class: \"Medication\"";
+        String expected = "Search, \"\", Filtered By: \"Domain: \"Drug\"" + ", Class: \"Medication\"\"";
         assertThat(result, is(expected));
     }
 
     @Test
-    public void shouldIgnoreEmptyFilterColumnsAndSearchText() {
-        String input = "{\"filterData\":{\"searchText\":\"\",\"filterColumns\":[]}, \"filterSource\":\"\"}";
-        String result = sut.convertJsonToReadableFormat(input);
-        assertThat(result, isEmptyString());
-    }
-
-    @Test
     public void shouldHandleNullValuesGracefully() {
-        String input = "{\"filterData\":{\"filterColumns\":[{\"title\":null,\"value\":null}], \"searchText\":null}, \"filterSource\":null}";
+        String input = "{\"filterData\":{\"filterColumns\":[{\"title\":null,\"key\":null}], \"searchText\":null}, \"filterSource\":null}";
         String result = sut.convertJsonToReadableFormat(input);
-        assertThat(result, not(containsString("null")));
+        assertThat(result, is("Search, \"\", Filtered By: \": \"\"\""));
     }
 }

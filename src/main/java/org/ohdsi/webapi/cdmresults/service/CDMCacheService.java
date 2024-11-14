@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
@@ -73,6 +74,7 @@ public class CDMCacheService extends AbstractDaoService {
     }
   }
 
+  @Transactional()
   public void clearCache(Source source) {
     cdmCacheRepository.deleteBySource(source.getSourceId());
   }

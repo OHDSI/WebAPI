@@ -16,7 +16,6 @@
 package org.ohdsi.webapi.service;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -30,8 +29,6 @@ import com.google.common.collect.ImmutableSet;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.vocabulary.Concept;
@@ -895,7 +892,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Transactional
     public boolean saveConceptSetAnnotation(@PathParam("id") final int conceptSetId, SaveConceptSetAnnotationsRequest request) {
         removeAnnotations(conceptSetId, request);
-        if (CollectionUtils.isNotEmpty(request.getNewAnnotation())) {
+        if (request.getNewAnnotation() != null && !request.getNewAnnotation().isEmpty()) {
             List<ConceptSetAnnotation> annotationList = request.getNewAnnotation()
                     .stream()
                     .map(newAnnotationData -> {
@@ -908,13 +905,12 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
                     annotationDetailsDTO.setSearchData(newAnnotationData.getSearchData());
                     conceptSetAnnotation.setAnnotationDetails(mapper.writeValueAsString(annotationDetailsDTO));
                 } catch (JsonProcessingException e) {
+                    log.error("Could not serialize Concept Set AnnotationDetailsDTO", e);
                     throw new RuntimeException(e);
                 }
                 conceptSetAnnotation.setVocabularyVersion(newAnnotationData.getVocabularyVersion());
                 conceptSetAnnotation.setConceptSetVersion(newAnnotationData.getConceptSetVersion());
                 conceptSetAnnotation.setConceptId(newAnnotationData.getConceptId());
-                conceptSetAnnotation.setCreatedBy(getCurrentUser());
-                conceptSetAnnotation.setCreatedDate(new Date());
                 return conceptSetAnnotation;
             }).collect(Collectors.toList());
 
@@ -924,34 +920,12 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         return true;
     }
     private void removeAnnotations(int id, SaveConceptSetAnnotationsRequest request){
-        if (CollectionUtils.isNotEmpty(request.getRemoveAnnotation())) {
+        if (request.getRemoveAnnotation() != null && !request.getRemoveAnnotation().isEmpty()) {
             for (AnnotationDTO annotationDTO : request.getRemoveAnnotation()) {
                 this.getConceptSetAnnotationRepository().deleteAnnotationByConceptSetIdAndConceptId(id, annotationDTO.getConceptId());
             }
         }
     }
-    private ConceptSetAnnotation copyAnnotation(ConceptSetAnnotation sourceConceptSetAnnotation, int sourceConceptSetId, int targetConceptSetId){
-        ConceptSetAnnotation targetConceptSetAnnotation = new ConceptSetAnnotation();
-        targetConceptSetAnnotation.setConceptSetId(targetConceptSetId);
-        targetConceptSetAnnotation.setConceptSetVersion(sourceConceptSetAnnotation.getConceptSetVersion());
-        targetConceptSetAnnotation.setAnnotationDetails(sourceConceptSetAnnotation.getAnnotationDetails());
-        targetConceptSetAnnotation.setConceptId(sourceConceptSetAnnotation.getConceptId());
-        targetConceptSetAnnotation.setVocabularyVersion(sourceConceptSetAnnotation.getVocabularyVersion());
-        targetConceptSetAnnotation.setCreatedBy(sourceConceptSetAnnotation.getCreatedBy());
-        targetConceptSetAnnotation.setCreatedDate(sourceConceptSetAnnotation.getCreatedDate());
-        targetConceptSetAnnotation.setModifiedBy(sourceConceptSetAnnotation.getModifiedBy());
-        targetConceptSetAnnotation.setModifiedDate(sourceConceptSetAnnotation.getModifiedDate());
-        targetConceptSetAnnotation.setCopiedFromConceptSetIds(appendCopiedFromConceptSetId(sourceConceptSetAnnotation.getCopiedFromConceptSetIds(), sourceConceptSetId));
-        return targetConceptSetAnnotation;
-    }
-
-    private String appendCopiedFromConceptSetId(String copiedFromConceptSetIds, int sourceConceptSetId) {
-        if(StringUtils.isEmpty(copiedFromConceptSetIds)){
-            return Integer.toString(sourceConceptSetId);
-        }
-        return copiedFromConceptSetIds.concat(",").concat(Integer.toString(sourceConceptSetId));
-    }
-
     @POST
     @Path("/copy-annotations")
     @Produces(MediaType.APPLICATION_JSON)
@@ -962,6 +936,22 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
                 .map(sourceAnnotation -> copyAnnotation(sourceAnnotation, copyAnnotationsRequest.getSourceConceptSetId(), copyAnnotationsRequest.getTargetConceptSetId()))
                 .collect(Collectors.toList());
         getConceptSetAnnotationRepository().save(copiedAnnotations);
+    }
+    private ConceptSetAnnotation copyAnnotation(ConceptSetAnnotation sourceConceptSetAnnotation, int sourceConceptSetId, int targetConceptSetId){
+        ConceptSetAnnotation targetConceptSetAnnotation = new ConceptSetAnnotation();
+        targetConceptSetAnnotation.setConceptSetId(targetConceptSetId);
+        targetConceptSetAnnotation.setConceptSetVersion(sourceConceptSetAnnotation.getConceptSetVersion());
+        targetConceptSetAnnotation.setAnnotationDetails(sourceConceptSetAnnotation.getAnnotationDetails());
+        targetConceptSetAnnotation.setConceptId(sourceConceptSetAnnotation.getConceptId());
+        targetConceptSetAnnotation.setVocabularyVersion(sourceConceptSetAnnotation.getVocabularyVersion());
+        targetConceptSetAnnotation.setCopiedFromConceptSetIds(appendCopiedFromConceptSetId(sourceConceptSetAnnotation.getCopiedFromConceptSetIds(), sourceConceptSetId));
+        return targetConceptSetAnnotation;
+    }
+    private String appendCopiedFromConceptSetId(String copiedFromConceptSetIds, int sourceConceptSetId) {
+        if(copiedFromConceptSetIds == null || copiedFromConceptSetIds.isEmpty()){
+            return Integer.toString(sourceConceptSetId);
+        }
+        return copiedFromConceptSetIds.concat(",").concat(Integer.toString(sourceConceptSetId));
     }
 
     @GET
@@ -980,6 +970,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         try {
             annotationDetails = mapper.readValue(conceptSetAnnotation.getAnnotationDetails(), AnnotationDetailsDTO.class);
         } catch (JsonProcessingException e) {
+            log.error("Could not deserialize Concept Set AnnotationDetailsDTO", e);
             throw new RuntimeException(e);
         }
 
@@ -995,34 +986,17 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
            annotationDTO.setVocabularyVersion(conceptSetAnnotation.getVocabularyVersion());
            annotationDTO.setConceptSetVersion(conceptSetAnnotation.getConceptSetVersion());
            annotationDTO.setCopiedFromConceptSetIds(conceptSetAnnotation.getCopiedFromConceptSetIds());
-           annotationDTO.setCreatedBy(conceptSetAnnotation.getCreatedBy() != null ? conceptSetAnnotation.getCreatedBy().getName() : null);
-           annotationDTO.setCreatedDate(conceptSetAnnotation.getCreatedDate() != null ? conceptSetAnnotation.getCreatedDate().toString() : null);
-
            return annotationDTO;
     }
 
     @DELETE
-    @Path("/annotation/{id}")
+    @Path("/{conceptSetId}/annotation/{annotationId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteConceptSetAnnotation(@PathParam("id") final int id) {
-        ConceptSetAnnotation conceptSetAnnotation = getConceptSetAnnotationRepository().findById(id);
+    public Response deleteConceptSetAnnotation(@PathParam("conceptSetId") final int conceptSetId, @PathParam("annotationId") final int annotationId) {
+        ConceptSetAnnotation conceptSetAnnotation = getConceptSetAnnotationRepository().findById(annotationId);
         if (conceptSetAnnotation != null) {
-            getConceptSetAnnotationRepository().deleteById(id);
+            getConceptSetAnnotationRepository().deleteById(annotationId);
             return Response.ok().build();
         } else throw new NotFoundException("Concept set annotation not found");
-    }
-
-    @PUT
-    @Path("/update/{id}/annotation")
-    @Produces(MediaType.APPLICATION_JSON)
-    public AnnotationDTO updateConceptSetAnnotation(@PathParam("id") final int id, AnnotationDTO annotationDTO) throws IOException {
-        ConceptSetAnnotation conceptSetAnnotation = getConceptSetAnnotationRepository()
-                .findConceptSetAnnotationByConceptIdAndConceptId(id, annotationDTO.getConceptId())
-                .orElseThrow(() -> new RuntimeException("Concept set annotation not found"));
-        conceptSetAnnotation.setAnnotationDetails(mapper.writeValueAsString(annotationDTO));
-        conceptSetAnnotation.setModifiedBy(getCurrentUser());
-        conceptSetAnnotation.setModifiedDate(new Date());
-        getConceptSetAnnotationRepository().save(conceptSetAnnotation);
-        return annotationDTO;
     }
 }

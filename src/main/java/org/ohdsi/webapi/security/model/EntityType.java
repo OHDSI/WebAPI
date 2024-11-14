@@ -4,7 +4,6 @@ import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEnti
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortsample.CohortSample;
 import org.ohdsi.webapi.conceptset.ConceptSet;
-import org.ohdsi.webapi.conceptset.annotation.ConceptSetAnnotation;
 import org.ohdsi.webapi.estimation.Estimation;
 import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
 import org.ohdsi.webapi.ircalc.IncidenceRateAnalysis;
@@ -29,8 +28,8 @@ public enum EntityType {
     COHORT_SAMPLE(CohortSample.class),
     TAG(Tag.class),
     REUSABLE(Reusable.class),
-    TOOL(Tool.class),
-    CONCEPT_SET_ANNOTATION(ConceptSetAnnotation.class);
+    TOOL(Tool.class);
+
     private final Class<? extends CommonEntity> entityClass;
 
     EntityType(Class<? extends CommonEntity> entityClass) {

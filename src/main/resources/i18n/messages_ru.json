@@ -1745,8 +1745,7 @@
         "includedConcepts": "Включенные концепции",
         "exploreEvidence": "Исследовать Свидетельство",
         "versions": "История версий",
-        "messages": "Сообщения",
-        "metadata": "Metadata"
+        "messages": "Сообщения"
       },
       "exploreEvidence": {
         "title": "Исследование Свидетельства:",

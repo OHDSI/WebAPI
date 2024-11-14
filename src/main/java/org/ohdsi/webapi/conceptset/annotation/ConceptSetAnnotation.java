@@ -11,9 +11,9 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
 
-@Entity
+@Entity(name = "ConceptSetAnnotation")
 @Table(name = "concept_set_annotation")
-public class ConceptSetAnnotation extends CommonEntity<Integer> implements Serializable {
+public class ConceptSetAnnotation implements Serializable {
     /**
      *
      */
@@ -45,7 +45,7 @@ public class ConceptSetAnnotation extends CommonEntity<Integer> implements Seria
     private String vocabularyVersion;
 
     @Column(name = "concept_set_version")
-    private String conceptSetVersion;
+    private Integer conceptSetVersion;
 
     @Column(name = "copied_from_concept_set_ids")
     private String copiedFromConceptSetIds;
@@ -90,11 +90,11 @@ public class ConceptSetAnnotation extends CommonEntity<Integer> implements Seria
         this.vocabularyVersion = vocabularyVersion;
     }
 
-    public String getConceptSetVersion() {
+    public Integer getConceptSetVersion() {
         return conceptSetVersion;
     }
 
-    public void setConceptSetVersion(String conceptSetVersion) {
+    public void setConceptSetVersion(Integer conceptSetVersion) {
         this.conceptSetVersion = conceptSetVersion;
     }
 

@@ -1835,8 +1835,7 @@
         "includedConcepts": "包含的概念",
         "includedSourceCodes": "包含的源代码",
         "versions": "Versions",
-        "messages": "提示信息",
-        "metadata": "Metadata"
+        "messages": "提示信息"
       },
       "concept": {
         "title": "术语集 > 概念",

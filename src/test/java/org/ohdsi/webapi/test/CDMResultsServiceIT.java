@@ -91,7 +91,7 @@ public class CDMResultsServiceIT extends WebApiIT {
         // Arrange
 
         // Act
-        final ResponseEntity<String> entity = getRestTemplate().getForEntity(this.clearCacheEndpoint, String.class);
+        final ResponseEntity<String> entity = getRestTemplate().postForEntity(this.clearCacheEndpoint, null, String.class);
 
         // Assert
         assertOK(entity);

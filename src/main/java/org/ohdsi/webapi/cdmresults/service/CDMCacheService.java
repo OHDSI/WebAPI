@@ -74,11 +74,6 @@ public class CDMCacheService extends AbstractDaoService {
     }
   }
 
-  @Transactional()
-  public void clearCache(Source source) {
-    cdmCacheRepository.deleteBySource(source.getSourceId());
-  }
-
   public List<CDMCacheEntity> findAndCache(Source source, List<Integer> conceptIds) {
     if (CollectionUtils.isEmpty(conceptIds)) {
       return Collections.emptyList();
@@ -99,6 +94,16 @@ public class CDMCacheService extends AbstractDaoService {
     }
 
     return cacheEntities;
+  }
+
+  @Transactional()
+  public void clearCache() {
+    List<Source> sources = getSourceRepository().findAll();
+    sources.parallelStream().forEach(this::clearCache);
+  }
+
+  private void clearCache(Source source) {
+    cdmCacheRepository.deleteBySource(source.getSourceId());
   }
 
   private List<CDMCacheEntity> find(Source source, List<Integer> conceptIds) {

@@ -297,8 +297,8 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         if (!isSecured() || !isAdmin()) {
             throw new ForbiddenException();
         }
-        List<Source> sources = getSourceRepository().findAll();
-        sources.parallelStream().forEach(this::clearCache);
+        cacheService.clearCache();
+        cdmCacheService.clearCache();
     }
 
     /**
@@ -517,17 +517,6 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
                 allJobSteps.clear();
             }
         }
-    }
-
-    /*
-     * Clear cache for a single source
-     */
-    private void clearCache(Source source) {
-        if (!sourceAccessor.hasAccess(source)) {
-            return;
-        }
-        cacheService.clearCache(source);
-        cdmCacheService.clearCache(source);
     }
 
     private SimpleJobBuilder createJob(String jobName, List<Step> steps) {

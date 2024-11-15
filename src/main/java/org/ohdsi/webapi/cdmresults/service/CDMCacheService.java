@@ -10,11 +10,13 @@ import org.ohdsi.webapi.cdmresults.mapper.DescendantRecordAndPersonCountMapper;
 import org.ohdsi.webapi.cdmresults.mapper.DescendantRecordCountMapper;
 import org.ohdsi.webapi.cdmresults.repository.CDMCacheRepository;
 import org.ohdsi.webapi.service.AbstractDaoService;
+import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedSqlRender;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -51,6 +53,9 @@ public class CDMCacheService extends AbstractDaoService {
   private final CDMCacheRepository cdmCacheRepository;
 
   private final ConversionService conversionService;
+
+  @Autowired
+  private SourceAccessor sourceAccessor;
 
   public CDMCacheService(CDMCacheBatchService cdmCacheBatchService,
           ConversionService conversionService,
@@ -99,11 +104,13 @@ public class CDMCacheService extends AbstractDaoService {
   @Transactional()
   public void clearCache() {
     List<Source> sources = getSourceRepository().findAll();
-    sources.parallelStream().forEach(this::clearCache);
+    sources.stream().forEach(this::clearCache);
   }
 
   private void clearCache(Source source) {
-    cdmCacheRepository.deleteBySource(source.getSourceId());
+    if (sourceAccessor.hasAccess(source)) {
+      cdmCacheRepository.deleteBySource(source.getSourceId());
+    }
   }
 
   private List<CDMCacheEntity> find(Source source, List<Integer> conceptIds) {

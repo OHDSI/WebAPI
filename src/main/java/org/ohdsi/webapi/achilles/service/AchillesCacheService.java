@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.ohdsi.webapi.achilles.domain.AchillesCacheEntity;
 import org.ohdsi.webapi.achilles.repository.AchillesCacheRepository;
+import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.slf4j.Logger;
@@ -35,6 +36,9 @@ public class AchillesCacheService {
 
   @Autowired
   private SourceRepository sourceRepository;
+
+  @Autowired
+  private SourceAccessor sourceAccessor;
 
   public AchillesCacheService(AchillesCacheRepository cacheRepository,
       ObjectMapper objectMapper) {
@@ -95,11 +99,13 @@ public class AchillesCacheService {
   @Transactional()
   public void clearCache() {
     List<Source> sources = sourceRepository.findAll();
-    sources.parallelStream().forEach(this::clearCache);
+    sources.stream().forEach(this::clearCache);
   }
 
   private void clearCache(Source source) {
-    cacheRepository.deleteBySource(source);
+    if (sourceAccessor.hasAccess(source)) {
+      cacheRepository.deleteBySource(source);
+    }
   }
 
   private void createCacheEntities(Source source, Map<String, ObjectNode> nodes) {

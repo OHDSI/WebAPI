@@ -44,6 +44,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.ForbiddenException;
@@ -293,6 +294,7 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
      */
     @POST
     @Path("clearCache")
+    @Transactional()
     public void clearCache() {
         if (!isSecured() || !isAdmin()) {
             throw new ForbiddenException();

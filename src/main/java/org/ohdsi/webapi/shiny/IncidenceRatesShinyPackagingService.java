@@ -80,8 +80,8 @@ public class IncidenceRatesShinyPackagingService extends CommonShinyPackagingSer
         IncidenceRateAnalysis analysis = incidenceRateAnalysisRepository.findOne(generationId);
         ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format("There is no incidence rate analysis with id = %d.", generationId));
         try {
-            dataConsumers.getAppProperties().accept("atlas_link", String.format("%s/#/iranalysis/%s", atlasUrl, generationId));
-            dataConsumers.getAppProperties().accept("analysis_name", analysis.getName());
+            dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_ATLAS_LINK.getValue(), String.format("%s/#/iranalysis/%s", atlasUrl, generationId));
+            dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_ANALYSIS_NAME.getValue(), analysis.getName());
 
             IncidenceRateAnalysisExportExpression expression = objectMapper.readValue(analysis.getDetails().getExpression(), IncidenceRateAnalysisExportExpression.class);
             AnalysisInfoDTO analysisInfoDTO = irAnalysisResource.getAnalysisInfo(analysis.getId(), sourceKey);

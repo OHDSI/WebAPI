@@ -78,6 +78,9 @@ public class CohortPathwaysShinyPackagingService extends CommonShinyPackagingSer
         dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_REFERENCED_COHORTS.getValue(), prepareReferencedCohorts(pathwayAnalysisDTO));
         dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_VERSION_ID.getValue(), Integer.toString(generationId));
         dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_GENERATION_ID.getValue(), Integer.toString(generationId));
+
+        dataConsumers.getAppProperties().accept(ShinyConstants.PROPERTY_NAME_ATLAS_LINK.getValue(), String.format("%s/#/pathways/%s", atlasUrl, pathwayAnalysisDTO.getId()));
+
     }
 
     private String getAuthor(PathwayAnalysisDTO pathwayAnalysisDTO) {

@@ -12,7 +12,6 @@ import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.util.ObjectUtils;
 
-
 import java.util.Arrays;
 import java.util.List;
 

@@ -90,7 +90,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     return runGenerateCohortJob(cohortDefinition, source, retainCohortCovariates);
   }
 
-  private Job buildGenerateCohortJob(CohortDefinition cohortDefinition, Source source, JobParameters jobParameters, Boolean retainCohortCovariates) {
+  private Job buildGenerateCohortJob(CohortDefinition cohortDefinition, Source source, JobParameters jobParameters) {
 
     log.info("Beginning generate cohort for cohort definition id: {}", cohortDefinition.getId());
 
@@ -124,7 +124,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
 
   private JobExecutionResource runGenerateCohortJob(CohortDefinition cohortDefinition, Source source, Boolean retainCohortCovariates) {
     final JobParametersBuilder jobParametersBuilder = getJobParametersBuilder(source, cohortDefinition, retainCohortCovariates);
-    Job job = buildGenerateCohortJob(cohortDefinition, source, jobParametersBuilder.toJobParameters(), retainCohortCovariates);
+    Job job = buildGenerateCohortJob(cohortDefinition, source, jobParametersBuilder.toJobParameters());
     return jobService.runJob(job, jobParametersBuilder.toJobParameters());
   }
 

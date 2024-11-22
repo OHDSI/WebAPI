@@ -779,6 +779,12 @@
       <version>2.4.9</version>
     </dependency>
     <dependency>
+      <groupId>net.minidev</groupId>
+      <artifactId>asm</artifactId>
+      <version>1.0.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>3.12.0</version>

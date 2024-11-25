@@ -107,7 +107,8 @@ public class CDMCacheService extends AbstractDaoService {
     sources.stream().forEach(this::clearCache);
   }
 
-  private void clearCache(Source source) {
+  @Transactional()
+  public void clearCache(Source source) {
     if (sourceAccessor.hasAccess(source)) {
       cdmCacheRepository.deleteBySource(source.getSourceId());
     }

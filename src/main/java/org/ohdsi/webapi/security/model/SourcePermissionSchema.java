@@ -33,6 +33,7 @@ public class SourcePermissionSchema extends EntityPermissionSchema {
         put("cdmresults:%s:*:get", "Get Achilles reports on Source with SourceKey = %s");
         put("cdmresults:%s:conceptRecordCount:post", "Get Achilles concept counts on Source with SourceKey = %s");
         put("cdmresults:%s:*:*:get", "Get Achilles reports details on Source with SourceKey = %s");
+        put("cdmresults:%s:clearcache:post", "Clear the Achilles and CDM results caches on Source with SourceKey = %s");
         put("cohortresults:%s:*:*:get", "Get cohort results on Source with SourceKey = %s");
         put("cohortresults:%s:*:*:*:get", "Get cohort results details on Source with SourceKey = %s");
         put("cohortresults:%s:*:healthcareutilization:*:*:get", "Get cohort results baseline on period for Source with SourceKey = %s");

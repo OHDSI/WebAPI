@@ -284,6 +284,25 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         }
         return new JobExecutionResource();
     }
+
+    /**
+     * Clear the cdm_cache and achilles_cache for all sources
+     * 
+     * @summary Clear the cdm_cache and achilles_cache for all sources
+     * @return void
+     * @throws ForbiddenException if the user is not an admin
+     */
+    @POST
+    @Path("{sourceKey}/clearCache")
+    @Transactional()
+    public void clearCacheForSource(@PathParam("sourceKey") final String sourceKey) {
+      if (!isSecured() || !isAdmin()) {
+        throw new ForbiddenException();
+      }
+      Source source = getSourceRepository().findBySourceKey(sourceKey);
+      cacheService.clearCache(source);
+      cdmCacheService.clearCache(source);
+    }
     
     /**
      * Clear the cdm_cache and achilles_cache for all sources

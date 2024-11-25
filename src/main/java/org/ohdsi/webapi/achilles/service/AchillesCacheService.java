@@ -102,7 +102,8 @@ public class AchillesCacheService {
     sources.stream().forEach(this::clearCache);
   }
 
-  private void clearCache(Source source) {
+  @Transactional()
+  public void clearCache(Source source) {
     if (sourceAccessor.hasAccess(source)) {
       cacheRepository.deleteBySource(source);
     }

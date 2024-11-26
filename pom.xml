@@ -19,7 +19,7 @@
     <jna.version>5.5.0</jna.version>
     <hibernate.version>8.0.1.Final</hibernate.version>
     <postgresql.version>42.3.7</postgresql.version>
-    <bouncycastle.version>1.69</bouncycastle.version>
+    <bouncycastle.version>1.78</bouncycastle.version>
 	<shiro.version>2.0.1</shiro.version>
     <dom4j.version>2.1.3</dom4j.version>
     <hydra.version>0.4.0</hydra.version>
@@ -1167,7 +1167,7 @@
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
-      <artifactId>bcprov-jdk15on</artifactId>
+      <artifactId>bcprov-jdk18on</artifactId>
       <version>${bouncycastle.version}</version>
     </dependency>
     <dependency>
@@ -1267,7 +1267,7 @@
       <exclusions>
         <exclusion>
           <groupId>org.bouncycastle</groupId>
-          <artifactId>bcprov-jdk15</artifactId>
+          <artifactId>bcprov-jdk18</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

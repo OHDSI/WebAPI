@@ -13,18 +13,18 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- MDACA Spring Boot manages spring.version as well -->
     <spring.boot.version>3.2.5</spring.boot.version>
-    <log4j2.version>2.23.0</log4j2.version>   <!-- log4j2.version>2.17.1</log4j2.version MDACA Spring Boot 3 migration  -->
+    <log4j2.version>2.23.0</log4j2.version>
     <flyway.version>4.2.0</flyway.version>
     <waffle.version>2.2.1</waffle.version>
     <jna.version>5.5.0</jna.version>
     <hibernate.version>8.0.1.Final</hibernate.version>
     <postgresql.version>42.3.7</postgresql.version>
     <bouncycastle.version>1.69</bouncycastle.version>
-	<shiro.version>2.0.1</shiro.version>   <!-- MDACA Spring Boot 3 migration scan 2 shiro.version>1.12.0</shiro.version -->
+	<shiro.version>2.0.1</shiro.version>
     <dom4j.version>2.1.3</dom4j.version>
     <hydra.version>0.4.0</hydra.version>
     <featureExtraction.version>3.2.0</featureExtraction.version>
-    <tomcat.embed.version>10.1.25</tomcat.embed.version>    <!-- MDACA scan 3  tomcat.embed.version>10.1.20</tomcat.embed.version -->
+    <tomcat.embed.version>10.1.25</tomcat.embed.version>
 
     <commons-fileupload.version>1.5</commons-fileupload.version>
 
@@ -32,8 +32,8 @@
     <jersey.version>2.35</jersey.version>
     <SqlRender.version>1.16.1</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
-    <pac4j.version>6.0.3</pac4j.version>  <!-- pac4j.version>4.0.0</pac4j.version  MDACA Spring Boot 3 migration -->
-    <jackson.version>2.14.3</jackson.version>  <!-- MDACA Spring Boot 3 migration jackson.version>2.12.7</jackson.version -->
+    <pac4j.version>6.0.3</pac4j.version>
+    <jackson.version>2.14.3</jackson.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
     <skipUnitTests>false</skipUnitTests>
     <skipITtests>false</skipITtests>
@@ -202,7 +202,7 @@
     <server.servlet.context-path>/WebAPI</server.servlet.context-path>
 
     <arachne.version>3.x-MDACA</arachne.version>
-    <jersey-media-multipart.version>2.29.1</jersey-media-multipart.version>   <!-- MDACA Spring Boot 3 migration jersey-media-multipart.version>2.25.1</jersey-media-multipart.version -->
+    <jersey-media-multipart.version>2.29.1</jersey-media-multipart.version>
     <execution.invalidation.period>600000</execution.invalidation.period>
     <execution.invalidation.maxage.hours>12</execution.invalidation.maxage.hours>
     <execution.status.period>10000</execution.status.period>
@@ -349,7 +349,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.6.1</version>   <!-- MDACA Spring Boot 3 migration version>3.5.0</version -->
+        <version>3.6.1</version>
       </plugin>
       <plugin>
         <groupId>pl.project13.maven</groupId>
@@ -376,8 +376,8 @@
       </plugin>
       <plugin>
         <groupId>org.codehaus.gmaven</groupId>
-        <artifactId>groovy-maven-plugin</artifactId>   <!-- MDACA Spring Boot 3 migration artifactId>gmaven-plugin</artifactId -->
-        <version>2.1.1</version>   <!-- MDACA Spring Boot 3 migration version>1.5</version -->
+        <artifactId>groovy-maven-plugin</artifactId>
+        <version>2.1.1</version>
         <!-- executions  MDACA Spring Boot 3 migration compilation issue  >
           <execution>
             <id>add-git-branch-info</id>
@@ -618,12 +618,11 @@
   <dependency>
     <groupId>org.codehaus.jettison</groupId>
     <artifactId>jettison</artifactId>
-    <version>1.5.4</version>   <!-- version>1.4.1</version MDACA Spring Boot 3 migration -->
+    <version>1.5.4</version>
   </dependency>
   <dependency>
    <groupId>com.fasterxml.jackson.core</groupId>
    <artifactId>jackson-databind</artifactId>
-   <!-- MDACA Spring Boot 3 migration version>${jackson.version}</version -->
    <exclusions>
     <exclusion>
      <groupId>com.fasterxml.jackson.core</groupId>
@@ -650,8 +649,6 @@
     <artifactId>spring-plugin-core</artifactId>
     <version>3.0.0</version>
 </dependency>
-  <!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-actuator</artifactId>
-    <version>${spring.boot.version}</version> </dependency> -->
   <dependency>
    <groupId>org.springframework.boot</groupId>
    <artifactId>spring-boot-starter</artifactId>
@@ -667,7 +664,6 @@
   <dependency>
    <groupId>org.yaml</groupId>
    <artifactId>snakeyaml</artifactId>
-   <!-- MDACA Spring Boot 3 migration version>2.0</version -->
   </dependency>
   <dependency>
    <groupId>org.springframework.boot</groupId>
@@ -827,7 +823,6 @@
   <dependency>
    <groupId>net.minidev</groupId>
    <artifactId>json-smart</artifactId>
-   <!-- MDACA Spring Boot 3 migration version>2.4.9</version -->
   </dependency>
   <dependency>
    <groupId>org.apache.commons</groupId>
@@ -836,12 +831,7 @@
   <dependency>
    <groupId>org.flywaydb</groupId>
    <artifactId>flyway-core</artifactId>
-   <!-- MDACA Spring Boot 3 migration version>${flyway.version}</version -->
   </dependency>
-  <!-- DACA Spring Boot 3 migration  dependency>
-   <groupId>org.apache.httpcomponents</groupId>
-   <artifactId>httpclient</artifactId>
-  </dependency -->
   <dependency>
 	<groupId>org.apache.httpcomponents.client5</groupId>
 	<artifactId>httpclient5</artifactId>
@@ -872,7 +862,7 @@
      <artifactId>log4j</artifactId>
     </exclusion>
     <exclusion>
-     <groupId>commons-collections</groupId>   <!-- Spring Boot 3 migration security scan 2  -->
+     <groupId>commons-collections</groupId>
      <artifactId>commons-collections</artifactId>
     </exclusion>
    </exclusions>
@@ -888,7 +878,6 @@
   <dependency>
    <groupId>org.postgresql</groupId>
    <artifactId>postgresql</artifactId>
-   <!-- MDACA Spring Boot 3 migration version>${postgresql.version}</version -->
    <type>jar</type>
   </dependency>
   <dependency>
@@ -899,7 +888,6 @@
   <dependency>
    <groupId>com.microsoft.sqlserver</groupId>
    <artifactId>mssql-jdbc</artifactId>
-   <!-- MDACA Spring Boot 3 migration version>10.2.1.jre8</version -->
   </dependency>
   <dependency>
    <groupId>com.microsoft.azure</groupId>
@@ -946,51 +934,6 @@
    <version>${shiro.version}</version>
             <classifier>jakarta</classifier>
   </dependency>
-
-<!-- MDACA Spring Boot 3 migration. Five dep below added to replace 3 legacy shiro dependecies above -->
-	
-<!--  MDACA Spring Boot 3 migration <dependency>
-	  <groupId>org.apache.shiro</groupId>
-	  <artifactId>shiro-jakarta-ee</artifactId>
-	  <version>2.0.0</version>
-	</dependency>
-	
-	<dependency>
-            <groupId>org.apache.shiro</groupId>
-            <artifactId>shiro-spring</artifactId>
-            <classifier>jakarta</classifier>
-            <version>${shiro.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.shiro</groupId>
-                    <artifactId>shiro-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.shiro</groupId>
-                    <artifactId>shiro-web</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.shiro</groupId>
-            <artifactId>shiro-core</artifactId>
-            <classifier>jakarta</classifier>
-            <version>${shiro.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.shiro</groupId>
-            <artifactId>shiro-web</artifactId>
-            <classifier>jakarta</classifier>
-            <version>${shiro.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.shiro</groupId>
-                    <artifactId>shiro-core</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-  
--->
   <dependency>
    <groupId>com.github.waffle</groupId>
    <artifactId>waffle-shiro</artifactId>
@@ -1067,7 +1010,6 @@
 	    <version>8.0.1</version>
 	</dependency>
 	
-	<!-- MDACA Spring Boot 3 migration add   -->
     <dependency>
         <groupId>org.pac4j</groupId>
         <artifactId>pac4j-jakartaee</artifactId>
@@ -1124,15 +1066,15 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <!-- dependency MDACA Spring Boot 3 migration >
-      <groupId>org.pac4j</groupId>
-      <artifactId>pac4j-saml-opensamlv3</artifactId>
-      <version>${pac4j.version}</version>
-    </dependency -->
 	<dependency>
 	    <groupId>org.pac4j</groupId>
 	    <artifactId>pac4j-saml-opensamlv5</artifactId>
-	    <version>5.7.4</version>
+	    <version>5.7.7</version>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.santuario</groupId>
+		<artifactId>xmlsec</artifactId>
+		<version>3.0.3</version>
 	</dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
@@ -1163,7 +1105,7 @@
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
-      <version>20231013</version>    <!-- version>20230227</version -->
+      <version>20231013</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
@@ -1187,7 +1129,6 @@
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-      <!-- MDACA Spring Boot 3 migration version>2.9.0</version -->
     </dependency>
     <dependency>
       <groupId>org.jasypt</groupId>
@@ -1314,7 +1255,6 @@
     <dependency>
       <groupId>org.glassfish.jersey.media</groupId>
       <artifactId>jersey-media-multipart</artifactId>
-      <!-- MDACA Spring Boot 3 migration version>${jersey-media-multipart.version}</version -->
     </dependency>
     <dependency>
       <groupId>org.springframework.ldap</groupId>
@@ -1422,7 +1362,7 @@
     <dependency>
       <groupId>com.opentable.components</groupId>
       <artifactId>otj-pg-embedded</artifactId>
-      <version>1.0.3</version>   <!-- MADACA Spring Boot 3 migration security scan 2  version>0.13.1</version -->
+      <version>1.0.3</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -1487,7 +1427,6 @@
       <id>webapi-postgresql</id>
       <properties>
         <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
-        <!-- datasource.url>jdbc:postgresql://54.209.111.128:5432/vocabularyv5</datasource.url -->
 		<datasource.url>jdbc:postgresql://localhost:5432/OHDSI</datasource.url>
         <datasource.username>ohdsi_app_user</datasource.username>
         <datasource.password>app1</datasource.password>

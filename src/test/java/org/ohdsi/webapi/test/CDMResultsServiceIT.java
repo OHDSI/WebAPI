@@ -17,6 +17,8 @@ import org.junit.Test;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.achilles.service.AchillesCacheService;
+import org.ohdsi.webapi.cdmresults.service.CDMCacheService;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,8 +30,17 @@ public class CDMResultsServiceIT extends WebApiIT {
     @Value("${cdmResultsService.endpoint.conceptRecordCount}")
     private String conceptRecordCountEndpoint;
 
+    @Value("${cdmResultsService.endpoint.clearCache}")
+    private String clearCacheEndpoint;
+
     @Autowired
     private SourceRepository sourceRepository;
+
+    @Autowired
+    private AchillesCacheService achillesService;
+
+    @Autowired
+    private CDMCacheService cdmCacheService;
 
     @Before
     public void init() throws Exception {
@@ -65,7 +76,7 @@ public class CDMResultsServiceIT extends WebApiIT {
         final ResponseEntity<List<LinkedHashMap<String, List<Integer>>>> entity = getRestTemplate().postForEntity(this.conceptRecordCountEndpoint, conceptIds, 
                 returnClass, queryParameters );
 
-        // Assertion
+        // Assert
         assertOK(entity);
         List<LinkedHashMap<String, List<Integer>>> results = entity.getBody();
         assertEquals(1, results.size());
@@ -78,4 +89,68 @@ public class CDMResultsServiceIT extends WebApiIT {
         assertEquals(102, counts.get(2).intValue());
         assertEquals(103, counts.get(3).intValue());
     }
-}
+
+    @Test
+    public void achillesService_clearCache_nothingInCache_doesNothing() {
+
+        // Arrange
+
+        // Act
+        achillesService.clearCache();
+
+        // Assert
+        String sql = "SELECT COUNT(*) FROM achilles_cache";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
+        assertEquals(0, count.intValue());
+    }
+
+    @Test
+    public void achillesService_clearCache_somethingInCache_clearsAllRowsForSource() {
+
+      // Arrange
+      String insertSqlRow1 = "INSERT INTO achilles_cache (id, source_id, cache_name, cache) VALUES (1, 1, 'cache1', 'cache1')";  
+      jdbcTemplate.execute(insertSqlRow1);
+      String insertSqlRow2 = "INSERT INTO achilles_cache (id, source_id, cache_name, cache) VALUES (2, 1, 'cache2', 'cache2')";
+      jdbcTemplate.execute(insertSqlRow2);
+
+      // Act
+      achillesService.clearCache();
+
+      // Assert
+      String sql = "SELECT COUNT(*) FROM achilles_cache";
+      Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
+      assertEquals(0, count.intValue());
+    }
+
+    @Test
+    public void cdmCacheService_clearCache_nothingInCache_doesNothing() {
+
+      // Arrange
+
+      // Act
+      cdmCacheService.clearCache();
+
+      // Assert
+      String sql = "SELECT COUNT(*) FROM cdm_cache";
+      Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
+      assertEquals(0, count.intValue());
+    }
+
+    @Test
+    public void cdmCacheService_clearCache_somethingInCache_clearsAllRowsForSource() {
+
+      // Arrange
+      String insertSqlRow1 = "INSERT INTO cdm_cache (id, concept_id, source_id, record_count, descendant_record_count, person_count, descendant_person_count) VALUES (1, 1, 1, 100, 101, 102, 103)";
+      jdbcTemplate.execute(insertSqlRow1);
+      String insertSqlRow2 = "INSERT INTO cdm_cache (id, concept_id, source_id, record_count, descendant_record_count, person_count, descendant_person_count) VALUES (2, 2, 1, 200, 201, 202, 203)";
+      jdbcTemplate.execute(insertSqlRow2);
+
+      // Act
+      cdmCacheService.clearCache();
+
+      // Assert
+      String sql = "SELECT COUNT(*) FROM cdm_cache";
+      Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
+      assertEquals(0, count.intValue());
+    }
+  }

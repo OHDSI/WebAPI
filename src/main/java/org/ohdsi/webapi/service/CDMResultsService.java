@@ -44,8 +44,10 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -282,7 +284,44 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         }
         return new JobExecutionResource();
     }
+
+    /**
+     * Clear the cdm_cache and achilles_cache for all sources
+     * 
+     * @summary Clear the cdm_cache and achilles_cache for all sources
+     * @return void
+     * @throws ForbiddenException if the user is not an admin
+     */
+    @POST
+    @Path("{sourceKey}/clearCache")
+    @Transactional()
+    public void clearCacheForSource(@PathParam("sourceKey") final String sourceKey) {
+      if (!isSecured() || !isAdmin()) {
+        throw new ForbiddenException();
+      }
+      Source source = getSourceRepository().findBySourceKey(sourceKey);
+      cacheService.clearCache(source);
+      cdmCacheService.clearCache(source);
+    }
     
+    /**
+     * Clear the cdm_cache and achilles_cache for all sources
+     * 
+     * @summary Clear the cdm_cache and achilles_cache for all sources
+     * @return void
+     * @throws ForbiddenException if the user is not an admin
+     */
+    @POST
+    @Path("clearCache")
+    @Transactional()
+    public void clearCache() {
+        if (!isSecured() || !isAdmin()) {
+            throw new ForbiddenException();
+        }
+        cacheService.clearCache();
+        cdmCacheService.clearCache();
+    }
+
     /**
      * Queries for data density report for the given sourceKey
      * 
@@ -441,9 +480,7 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         
         String jobName = getWarmCacheJobName(String.valueOf(source.getSourceId()), source.getSourceKey());
         List<Step> jobSteps = createCacheWarmingJobSteps(source, jobName);
-        SimpleJobBuilder builder = createJob(String.valueOf(source.getSourceId()),
-                source.getSourceKey(),
-                jobSteps);
+        SimpleJobBuilder builder = createJob(jobName, jobSteps);
         return runJob(source.getSourceKey(), source.getSourceId(), jobName, builder);
     }
 
@@ -488,9 +525,9 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
 
             if (counter++ >= bucketSizes[bucketIndex] - 1) {
                 if (!allJobSteps.isEmpty()) {
-                    SimpleJobBuilder builder = createJob(sourceIds.stream().map(String::valueOf).collect(Collectors.joining(",")),
-                            String.join(",", sourceKeys),
-                            allJobSteps);
+                    String compositeJobName = getWarmCacheJobName(sourceIds.stream().map(String::valueOf)
+                            .collect(Collectors.joining(",")), String.join(",", sourceKeys));
+                    SimpleJobBuilder builder = createJob(compositeJobName, allJobSteps);
                     runJob(source.getSourceKey(), source.getSourceId(), jobName, builder);
                 }
                 
@@ -503,9 +540,8 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         }
     }
 
-    private SimpleJobBuilder createJob(String sourceIds, String sourceKeys, List<Step> steps) {
+    private SimpleJobBuilder createJob(String jobName, List<Step> steps) {
         final SimpleJobBuilder[] stepBuilder = {null};
-        String jobName = getWarmCacheJobName(sourceIds, sourceKeys);
         if (jobService.findJobByName(jobName, jobName) == null && !steps.isEmpty()) {
             JobBuilder jobBuilder = jobBuilders.get(jobName);
 
@@ -576,11 +612,15 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     }
 
     private String getWarmCacheJobName(String sourceIds, String sourceKeys) {
+        return getJobName("warming cache", sourceIds, sourceKeys);
+    }
+
+    private String getJobName(String jobType, String sourceIds, String sourceKeys) {
         // for multiple sources: try to compose a job name from source keys, and if it is too long - use source ids
-        String jobName = String.format("warming cache: %s", sourceKeys);
+        String jobName = String.format("%s: %s", jobType, sourceKeys);
 
         if (jobName.length() >= 100) { // job name in batch_job_instance is varchar(100)
-            jobName = String.format("warming cache: %s", sourceIds);
+            jobName = String.format("%s: %s", jobType, sourceIds);
 
             if (jobName.length() >= 100) { // if we still have more than 100 symbols
                 jobName = jobName.substring(0, 88);

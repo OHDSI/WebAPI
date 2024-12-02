@@ -1,8 +1,7 @@
 package org.ohdsi.webapi.vocabulary;
 
-import org.ohdsi.vocabulary.SearchProvider;
-import org.ohdsi.vocabulary.SearchProviderConfig;
-
+import org.ohdsi.vocabulary.VocabularySearchProvider;
+import org.ohdsi.vocabulary.VocabularySearchProviderConfig;
 public interface VocabularySearchService {
-    SearchProvider getSearchProvider(SearchProviderConfig config);
+    VocabularySearchProvider getVocabularySearchProvider(VocabularySearchProviderConfig config);
 }

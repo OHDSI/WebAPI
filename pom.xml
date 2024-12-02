@@ -1105,7 +1105,7 @@
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>standardized-analysis-specs</artifactId>
-      <version>1.5.0</version>
+      <version>1.6.0-SNAPSHOT</version>
       <exclusions>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
@@ -1867,12 +1867,14 @@
         <solr.endpoint></solr.endpoint>
         <solr.query.prefix>{!complexphrase inOrder=true}</solr.query.prefix>
         <solr.version>8.11.2</solr.version>
+        <solr.conceptsets.core>webapi-conceptsets</solr.conceptsets.core>
+        <solr.conceptsets.maxResults>1000</solr.conceptsets.maxResults>
       </properties>
       <dependencies>
         <dependency>
           <groupId>org.ohdsi</groupId>
           <artifactId>webapi-solr</artifactId>
-          <version>1.0.0</version>
+          <version>1.1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
           <groupId>org.apache.solr</groupId>

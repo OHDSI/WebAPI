@@ -1717,7 +1717,10 @@
       "tabs": {
         "export": "导出",
         "list": "列表"
-      }
+      },
+      "searchCS": "Search Concept Sets",
+      "closeSearchCS":"Close Search Concept Sets",
+      "clearSearchCS": "Clear search concept sets"
     },
     "manager": {
       "attemptingToFindMessage": "正在尝试为此概念集找到最佳定义...",
@@ -2446,7 +2449,9 @@
     "alerts": {
       "clearLocalCache": "本地存储已清除。 请刷新页面以重新加载配置信息。",
       "clearServerCache": "服务器缓存已清除。",
-      "failUpdatePrioritySourceDaimon": "无法更新优先级源守护程序"
+      "failUpdatePrioritySourceDaimon": "无法更新优先级源守护程序",
+      "changeSource": "You are changing current source, we recommend you to do reindexing concept sets",
+      "reindexRunning": "Reindexing of concept sets is currently in progress"
     },
     "buttons": {
       "check": "检查",
@@ -2455,11 +2460,14 @@
       "clearServerCache": "清除服务器缓存",
       "importUsers": "从LDAP / AD导入用户",
       "managePermissions": "管理权限",
-      "tagManagement": "Tag Management"
+      "tagManagement": "Tag Management",
+      "reindexCS": "Concept Sets Reindex",
+      "reindexCSStatus": "Concept Sets Reindex (<%=doneCount%> of <%=maxCount%>)"
     },
     "changeSourcePriorities": "更改源优先级：",
     "confirms": {
-      "clearServerCache": "您确定要清除服务器缓存吗？"
+      "clearServerCache": "您确定要清除服务器缓存吗？",
+      "reindexSource": "Reindexing may take a long time. It depends on amount and complexity of concept sets"
     },
     "executionEngine": "执行引擎",
     "newSource": "新来源",
@@ -2489,6 +2497,7 @@
       "rolesDefinitionJson": "角色定义JSON",
       "title": "导入角色"
     },
+    "searchCS":"Search Concept Sets",
     "title": "配置",
     "userImport": {
       "findGroup": "查找组",

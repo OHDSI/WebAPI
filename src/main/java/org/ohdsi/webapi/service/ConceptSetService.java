@@ -15,18 +15,9 @@
  */
 package org.ohdsi.webapi.service;
 
-import java.io.ByteArrayOutputStream;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import javax.transaction.Transactional;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
+import org.ohdsi.conceptset.ConceptSetSearchDocument;
 import org.ohdsi.vocabulary.Concept;
 import org.ohdsi.webapi.check.CheckResult;
 import org.ohdsi.webapi.check.checker.conceptset.ConceptSetChecker;
@@ -35,10 +26,14 @@ import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
+import org.ohdsi.webapi.conceptset.ConceptSetSearchService;
 import org.ohdsi.webapi.conceptset.dto.ConceptSetVersionFullDTO;
+import org.ohdsi.webapi.conceptset.search.ConceptSetReindexJobService;
 import org.ohdsi.webapi.exception.ConceptNotExistException;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
+import org.ohdsi.webapi.service.dto.ConceptSetReindexDTO;
+import org.ohdsi.webapi.service.dto.ConceptSetSearchDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
@@ -48,9 +43,9 @@ import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.tag.domain.HasTags;
 import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
+import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.NameUtils;
-import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.versioning.domain.ConceptSetVersion;
 import org.ohdsi.webapi.versioning.domain.Version;
 import org.ohdsi.webapi.versioning.domain.VersionBase;
@@ -64,7 +59,36 @@ import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
 
- /**
+import javax.transaction.Transactional;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+/**
   * Provides REST services for working with
   * concept sets.
   * 
@@ -80,6 +104,9 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 
     @Autowired
     private VocabularyService vocabService;
+
+    @Autowired
+    private ConceptSetSearchService conceptSetSearchService;
 
     @Autowired
     private SourceService sourceService;
@@ -105,9 +132,12 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Autowired
     private VersionService<ConceptSetVersion> versionService;
 
+    @Autowired
+    private ConceptSetReindexJobService conceptSetReindexJobService;
+
     @Value("${security.defaultGlobalReadPermissions}")
     private boolean defaultGlobalReadPermissions;
-    
+
     public static final String COPY_NAME = "copyName";
 
     /**
@@ -244,6 +274,16 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         return getConceptSetExpression(id, null, source.getSourceInfo());
     }
 
+    @Transactional(dontRollbackOn = ConceptNotExistException.class)
+    public ConceptSetExpression getConceptSetExpressionOrNull(final int id) {
+        SourceInfo sourceInfo = sourceService.getPriorityVocabularySourceInfo();
+        try {
+            return getConceptSetExpression(id, null, sourceInfo);
+        } catch (ConceptNotExistException e) {
+            return null;
+        }
+    }
+
     private ConceptSetExpression getConceptSetExpression(int id, Integer version, SourceInfo sourceInfo) {
         HashMap<Long, Concept> map = new HashMap<>();
 
@@ -367,6 +407,25 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
             csi.setId(0);
             csi.setConceptSetId(id);
             getConceptSetItemRepository().save(csi);
+        }
+
+        if (conceptSetSearchService.getConceptSetSearchProvider().isSearchAvailable()) {
+
+            // Index concept set for search
+            final ConceptSetExport csExport = getConceptSetForExport(id, new SourceInfo(sourceService.getPriorityVocabularySource()));
+
+            final Collection<ConceptSetSearchDocument> concepts = csExport.mappedConcepts.stream()
+                    .map(item -> {
+                        final ConceptSetSearchDocument concept = new ConceptSetSearchDocument();
+                        concept.setConceptSetId(id);
+                        concept.setConceptId(item.conceptId);
+                        concept.setConceptName(item.conceptName);
+                        concept.setConceptCode(item.conceptCode);
+                        concept.setDomainName(item.domainId);
+                        return concept;
+                    }).collect(Collectors.toList());
+
+            conceptSetSearchService.getConceptSetSearchProvider().reindexConceptSet(id, concepts);
         }
 
         return true;
@@ -612,6 +671,9 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
       catch (Exception e) {
           throw e;
       }
+
+      // Delete CS index
+      conceptSetSearchService.getConceptSetSearchProvider().deleteConceptSetIndex(id);
   }
 
     /**
@@ -831,6 +893,80 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
                 .collect(Collectors.toList());
         List<ConceptSet> entities = getConceptSetRepository().findByTags(names);
         return listByTags(entities, names, ConceptSetDTO.class);
+    }
+
+    /**
+     * Checks, if concept sets search is available.
+     *
+     * @summary Is concept sets search available.
+     */
+    @Path("/searchAvailable")
+    @GET
+    public boolean isSearchAvailable() {
+        return conceptSetSearchService.getConceptSetSearchProvider().isSearchAvailable();
+    }
+
+    /**
+     * Search for concept sets.
+     *
+     * @summary Search for concept sets by search string and domains (search among containing concepts)
+     * @param sourceKey The source key
+     * @param search The ConceptSetSearchDTO
+     * @return A collection of concept sets
+     */
+    @Path("{sourceKey}/search")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Collection<ConceptSetDTO> executeSearch(@PathParam("sourceKey") String sourceKey, ConceptSetSearchDTO search) {
+        if (search == null) {
+        	return Collections.emptyList();
+        }
+
+        final Set<Integer> ids = conceptSetSearchService.getConceptSetSearchProvider().executeSearch(search.getQuery(), search.getDomainIds());
+
+        if (ids.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return getConceptSetRepository().findAllById(ids).stream()
+                .map(conceptSet -> {
+                    ConceptSetDTO dto = conversionService.convert(conceptSet, ConceptSetDTO.class);
+                    permissionService.fillWriteAccess(conceptSet, dto);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Index concept sets for search.
+     *
+     * @summary Index all concept sets for search
+     * @param sourceKey The source key
+     */
+    @Path("{sourceKey}/index")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public ConceptSetReindexDTO fullIndex(@PathParam("sourceKey") String sourceKey) {
+        return conceptSetReindexJobService.createIndex(sourceKey);
+    }
+
+    /**
+     * Get status of reindexing of concept sets for search.
+     *
+     * @summary  Get status of reindexing of concept sets for search.
+     * @param sourceKey The source key
+     * @param executionId The identifier of execution. In case of null value service will search active job
+     */
+    @Path("{sourceKey}/index/{executionId}/status")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public ConceptSetReindexDTO fullIndexStatus(@PathParam("sourceKey") String sourceKey,
+                                                @PathParam("executionId") Long executionId) {
+        return conceptSetReindexJobService.getIndexStatus(sourceKey, executionId);
     }
 
     private void checkVersion(int id, int version) {

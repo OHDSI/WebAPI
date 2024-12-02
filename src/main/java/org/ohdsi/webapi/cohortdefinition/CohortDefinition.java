@@ -210,4 +210,25 @@ public class CohortDefinition extends CommonEntityExt<Integer> implements Serial
   public void setTags(Set<Tag> tags) {
     this.tags = tags;
   }
+
+  public void addCohortAnalysisGenerationInfo(CohortAnalysisGenerationInfo cohortAnalysisGenerationInfo) {
+    this.cohortAnalysisGenerationInfoList.add(cohortAnalysisGenerationInfo);
+    cohortAnalysisGenerationInfo.setCohortDefinition(this);
+  }
+
+  public void removeCohortAnalysisGenerationInfo(CohortAnalysisGenerationInfo cohortAnalysisGenerationInfo) {
+    this.cohortAnalysisGenerationInfoList.remove(cohortAnalysisGenerationInfo);
+    cohortAnalysisGenerationInfo.setCohortDefinition(null);
+  }
+
+  public void addCohortGenerationInfo(CohortGenerationInfo cohortGenerationInfo) {
+    this.generationInfoList.add(cohortGenerationInfo);
+    cohortGenerationInfo.setCohortDefinition(this);
+  }
+
+  public void removeCohortGenerationInfo(CohortGenerationInfo cohortGenerationInfo) {
+    this.generationInfoList.remove(cohortGenerationInfo);
+    cohortGenerationInfo.setCohortDefinition(null);
+  }
+
 }

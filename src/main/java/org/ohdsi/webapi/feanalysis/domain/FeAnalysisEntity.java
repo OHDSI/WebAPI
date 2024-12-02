@@ -184,12 +184,10 @@ public abstract class FeAnalysisEntity<T> extends CommonEntity<Integer> implemen
     }
 
     public Set<CohortCharacterizationEntity> getCohortCharacterizations() {
-
         return cohortCharacterizations;
     }
 
     public void setCohortCharacterizations(final Set<CohortCharacterizationEntity> cohortCharacterizations) {
-
         this.cohortCharacterizations = cohortCharacterizations;
     }
 
@@ -207,5 +205,16 @@ public abstract class FeAnalysisEntity<T> extends CommonEntity<Integer> implemen
 
         this.statType = statType;
     }
+
+    public void addCohortCharacterizationEntity(CohortCharacterizationEntity cohortCharacterizationEntity) {
+        this.cohortCharacterizations.add(cohortCharacterizationEntity);
+        cohortCharacterizationEntity.getFeatureAnalyses().add(this);
+    }
+
+    public void removeCohortCharacterizationEntity(CohortCharacterizationEntity cohortCharacterizationEntity) {
+        this.cohortCharacterizations.remove(cohortCharacterizationEntity);
+        cohortCharacterizationEntity.getFeatureAnalyses().remove(this);
+    }
+
 }
 

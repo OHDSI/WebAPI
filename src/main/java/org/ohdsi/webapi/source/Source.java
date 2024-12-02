@@ -17,10 +17,7 @@ package org.ohdsi.webapi.source;
 
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -299,4 +296,19 @@ public class Source extends CommonEntity<Integer> implements Serializable {
 
     return sourceId;
   }
+  public void addSourceDaimon(SourceDaimon sourceDaimon) {
+    if (this.daimons == null) {
+      this.daimons = new ArrayList<>();
+    }
+    this.daimons.add(sourceDaimon);
+    sourceDaimon.setSource(this);
+  }
+
+  public void removeSourceDaimon(SourceDaimon sourceDaimon) {
+    if (this.daimons!= null) {
+      this.daimons.remove(sourceDaimon);
+      sourceDaimon.setSource(null);
+    }
+  }
+
 }

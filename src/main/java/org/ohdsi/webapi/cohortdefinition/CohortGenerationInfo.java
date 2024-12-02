@@ -52,7 +52,7 @@ public class CohortGenerationInfo implements Serializable, IExecutionInfo {
   @EmbeddedId
   private CohortGenerationInfoId id;
   
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @MapsId("cohortDefinitionId")
   @JoinColumn(name="id", referencedColumnName="id")
   private CohortDefinition cohortDefinition;

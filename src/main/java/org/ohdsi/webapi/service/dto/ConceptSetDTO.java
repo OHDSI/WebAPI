@@ -29,4 +29,5 @@ public class ConceptSetDTO extends CommonEntityExtDTO {
   public void setDescription(String description) {
     this.description = description;
   }
+
 }

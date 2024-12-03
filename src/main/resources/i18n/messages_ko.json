@@ -1408,6 +1408,7 @@
     "notPrevalent": "만연하지 않음(Not Prevalent)",
     "optimizedOut": "최적화",
     "options": "옵션",
+    "originConceptSets": "오리진 컨셉트 세트",
     "outcomeCohortName": "아웃컴(outcome) 코호트 이름",
     "outcomeId": "아웃컴(outcome) ID",
     "outcomeModel": "결과 모델",
@@ -1521,7 +1522,11 @@
     "rcTooltip": "Record Count",
     "drcTooltip": "Descendant Record Count",
     "pcTooltip": "Person Count",
-    "dpcTooltip": "Descendant Person Count"
+    "dpcTooltip": "Descendant Person Count",
+    "conceptID": "개념 ID",
+    "searchData": "데이터 검색",
+    "createdBy": "만든 사람",
+    "createdDate": "생성 날짜"
   },
   "dataSources": {
     "const": {

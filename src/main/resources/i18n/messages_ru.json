@@ -1338,6 +1338,7 @@
     "binary": "Двоичный",
     "model": "Модель",
     "options": "Опции",
+    "originConceptSets": "Исходные наборы концепций",
     "firstExposureOnly": "Только первое знакомство",
     "washoutPeriod": "Период вымывания",
     "includeAllOutcomes": "Включить все результаты",
@@ -1521,7 +1522,11 @@
     "pcTooltip": "Количество пациентов",
     "dpcTooltip": "Количество пациентов-потомков",
     "validStartDate": "Действительная дата начала",
-    "validEndDate": "Действительная дата конца"
+    "validEndDate": "Действительная дата конца",
+    "conceptID": "Идентификатор концепции",
+    "searchData": "Данные поиска",
+    "createdBy": "Автор",
+    "createdDate": "Дата создания"
   },
   "dataSources": {
     "headingTitle": "Источники данных",

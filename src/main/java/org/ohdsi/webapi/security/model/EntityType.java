@@ -27,7 +27,6 @@ public enum EntityType {
     COHORT_SAMPLE(CohortSample.class),
     TAG(Tag.class),
     REUSABLE(Reusable.class);
-
     private final Class<? extends CommonEntity> entityClass;
 
     EntityType(Class<? extends CommonEntity> entityClass) {

@@ -84,6 +84,8 @@ public class CohortGenerationInfo implements Serializable, IExecutionInfo {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "created_by_id")
   private UserEntity createdBy;
+  @Column(name = "is_choose_covariates")
+  private boolean isChooseCovariates;
 
   public CohortGenerationInfoId getId() {
     return id;
@@ -186,5 +188,13 @@ public class CohortGenerationInfo implements Serializable, IExecutionInfo {
 
   public UserEntity getCreatedBy() {
     return createdBy;
+  }
+
+  public boolean isChooseCovariates() {
+    return isChooseCovariates;
+  }
+
+  public void setChooseCovariates(boolean chooseCovariates) {
+    isChooseCovariates = chooseCovariates;
   }
 }

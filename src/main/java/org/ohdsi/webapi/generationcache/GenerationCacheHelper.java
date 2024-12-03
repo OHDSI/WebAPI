@@ -51,15 +51,20 @@ public class GenerationCacheHelper {
             return transactionTemplateRequiresNew.execute(s -> {
                 log.info("Retrieves or invalidates cache for cohort id = {}", cohortDefinition.getId());
                 GenerationCache cache = generationCacheService.getCacheOrEraseInvalid(type, designHash, source.getSourceId());
-                if (cache == null) {
-                    log.info("Cache is absent for cohort id = {}. Calculating with design hash = {}", cohortDefinition.getId(), designHash);
+                if (cache == null || requestBuilder.hasRetainCohortCovariates()) {
+                	String messagePrefix = (cache == null ? "Cache is absent" : "Cache will not be used because the retain cohort covariates option is switched on");
+                    log.info(messagePrefix + " for cohort id = {}. Calculating with design hash = {}", cohortDefinition.getId(), designHash);
                     // Ensure that there are no records in results schema with which we could mess up
                     generationCacheService.removeCache(type, source, designHash);
+                    // the line below forces a cached entry to be really deleted and it is a bit unclear why this line was even present as the cache had to be null anyway
+                    // without it there is a constraint violation exception when there was a cache entry present and the retain covariates option is on  
+                    GenerationCache cachedResultsStillPresent = generationCacheService.getCacheOrEraseInvalid(type, designHash, source.getSourceId());
                     CohortGenerationRequest cohortGenerationRequest = requestBuilder
                             .withExpression(cohortDefinition.getDetails().getExpressionObject())
                             .withSource(source)
                             .withTargetId(designHash)
-                            .build();
+                            .withCohortId(cohortDefinition.getId())
+                            .buildWithRetainCohortCovariates();
                     String[] sqls = CohortGenerationUtils.buildGenerationSql(cohortGenerationRequest);
                     sqlExecutor.accept(designHash, sqls);
                     cache = generationCacheService.cacheResults(CacheableGenerationType.COHORT, designHash, source.getSourceId());

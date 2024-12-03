@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.cohortcharacterization;
 
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
+import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationRequestBuilder;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationUtils;
 import org.ohdsi.webapi.generationcache.GenerationCacheHelper;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
 import static org.ohdsi.webapi.Constants.Params.TARGET_TABLE;
+import static org.ohdsi.webapi.Constants.Params.DEMOGRAPHIC_STATS;
 
 public class GenerateLocalCohortTasklet implements StoppableTasklet {
 
@@ -89,14 +91,14 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
         if (useAsyncCohortGeneration) {
             List<CompletableFuture> executions = cohortDefinitions.stream()
                     .map(cd ->
-                            CompletableFuture.supplyAsync(() -> generateCohort(cd, source, resultSchema, targetTable),
+                    CompletableFuture.supplyAsync(() -> generateCohort(cd, source, resultSchema, targetTable),
                                     Executors.newSingleThreadExecutor()
                             )
                     ).collect(Collectors.toList());
             CompletableFuture.allOf(executions.toArray(new CompletableFuture[]{})).join();
         } else {
             CompletableFuture.runAsync(() ->
-                            cohortDefinitions.stream().forEach(cd -> generateCohort(cd, source, resultSchema, targetTable)),
+            cohortDefinitions.stream().forEach(cd -> generateCohort(cd, source, resultSchema, targetTable)),
                     Executors.newSingleThreadExecutor()
             ).join();
         }
@@ -113,8 +115,8 @@ public class GenerateLocalCohortTasklet implements StoppableTasklet {
                 sessionId,
                 resultSchema
         );
-
-        int designHash = this.generationCacheHelper.computeHash(cd.getDetails().getExpression());
+        CohortDefinitionDetails details = cd.getDetails();
+        int designHash = this.generationCacheHelper.computeHash(details.getExpression());
         CohortGenerationUtils.insertInclusionRules(cd, source, designHash, resultSchema, sessionId, cancelableJdbcTemplate);
 
         try {

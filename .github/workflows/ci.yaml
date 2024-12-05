@@ -89,7 +89,7 @@ jobs:
        
           # Get token from ECR and Docker login
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com
-          IMAGE_TAG=3.0.1
+          IMAGE_TAG=3.0.1.2
  
           docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
           docker images

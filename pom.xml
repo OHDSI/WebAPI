@@ -559,6 +559,11 @@
 
   <dependencyManagement>
     <dependencies>
+	<dependency>
+	    <groupId>org.springframework</groupId>
+		<artifactId>spring-context</artifactId>
+		<version>6.1.14</version>
+	</dependency>
       <dependency>
         <groupId>org.apache.logging.log4j</groupId>
         <artifactId>log4j-api</artifactId>

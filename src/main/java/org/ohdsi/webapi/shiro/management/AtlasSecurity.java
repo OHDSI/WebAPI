@@ -99,7 +99,6 @@ public abstract class AtlasSecurity extends Security {
     return filterChainBuilder
             // version info
             .addRestPath("/info")
-			.addRestPath("/cache/*") // move this to protected path before PR
             // DDL service
             .addRestPath("/ddl/results")
             .addRestPath("/ddl/cemresults")

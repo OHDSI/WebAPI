@@ -11,6 +11,7 @@
 			<jsr107:cache name="conceptDetail" template="medium-heap"/>
 			<jsr107:cache name="conceptRelated" template="medium-heap"/>
 			<jsr107:cache name="conceptHierarchy" template="medium-heap"/>
+			<jsr107:cache name="sourceList" template="small-heap"/>
 		</jsr107:defaults>
 	</service>
 	<cache-template name="small-heap">

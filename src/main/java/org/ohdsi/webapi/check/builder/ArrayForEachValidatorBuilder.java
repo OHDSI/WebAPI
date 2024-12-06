@@ -10,7 +10,10 @@ public class ArrayForEachValidatorBuilder<T> extends AbstractForEachValidatorBui
     @Override
     public Validator<T[]> build() {
         List<ValidatorGroup<T, ?>> groups = initGroups();
-        List<Validator<T>> validators = initValidators();
+        /* List<Validator<T>> validators = initValidators();    MDACA Spring Boot 3 migration compilation issue */
+        
+        @SuppressWarnings("unchecked")
+        List<Validator<T>> validators = (List<Validator<T>>) (List<?>) initValidators();
 
         return new ArrayForEachValidator<>(createChildPath(), severity, errorMessage, validators, groups);
     }

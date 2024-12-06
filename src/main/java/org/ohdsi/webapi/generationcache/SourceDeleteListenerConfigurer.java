@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.generationcache;
 
+import jakarta.annotation.PostConstruct;
 import org.hibernate.event.service.spi.EventListenerRegistry;
 import org.hibernate.event.spi.EventType;
 import org.hibernate.event.spi.PreDeleteEventListener;
@@ -8,9 +9,8 @@ import org.ohdsi.webapi.source.Source;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 
-import javax.annotation.PostConstruct;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceUnit;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.PersistenceUnit;
 import java.util.List;
 import java.util.concurrent.Future;
 

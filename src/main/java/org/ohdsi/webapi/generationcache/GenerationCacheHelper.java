@@ -64,7 +64,7 @@ public class GenerationCacheHelper {
                     sqlExecutor.accept(designHash, sqls);
                     cache = generationCacheService.cacheResults(CacheableGenerationType.COHORT, designHash, source.getSourceId());
                 } else {
-                    log.info(String.format(CACHE_USED, type, cohortDefinition.getId(), source.getSourceKey()));
+                    log.info(CACHE_USED.formatted(type, cohortDefinition.getId(), source.getSourceKey()));
                 }
                 String sql = SqlRender.renderSql(
                         generationCacheService.getResultsSql(cache),

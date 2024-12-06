@@ -3,10 +3,10 @@ package org.ohdsi.webapi.test;
 import com.opentable.db.postgres.embedded.EmbeddedPostgres;
 import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.apache.shiro.subject.Subject;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+/* import org.junit.runner.RunWith;    MDACA Spring Boot 3 migration */
+/* import org.junit.runners.Suite;    MDACA Spring Boot 3 migration */
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +16,7 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.SQLException;
 
+/*
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
         SecurityIT.class,
@@ -23,13 +24,14 @@ import java.sql.SQLException;
         CohortAnalysisServiceIT.class,
         VocabularyServiceIT.class
 })
+	MDACA Spring Boot 3 migration */
 @TestPropertySource(locations = "/application-test.properties")
 public class ITStarter extends AbstractShiro {
 
     private static EmbeddedPostgres pg;
     private static final Logger log = LoggerFactory.getLogger(ITStarter.class);
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws IOException {
 
         if (pg == null) {
@@ -61,7 +63,7 @@ public class ITStarter extends AbstractShiro {
         return pg.getPostgresDatabase();
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownSubject() {
         
         String callerClassName = Thread.currentThread().getStackTrace()[2].getClassName();

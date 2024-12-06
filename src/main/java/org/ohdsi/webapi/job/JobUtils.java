@@ -2,6 +2,7 @@ package org.ohdsi.webapi.job;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -11,7 +12,6 @@ import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobInstance;
 import org.springframework.batch.core.JobParameter;
-import org.springframework.batch.core.JobParameter.ParameterType;
 import org.springframework.batch.core.JobParameters;
 
 /**
@@ -32,12 +32,12 @@ public final class JobUtils {
         final JobExecutionResource execution = new JobExecutionResource(
                 toJobInstanceResource(jobExecution.getJobInstance()), jobExecution.getId());
         execution.setStatus(jobExecution.getStatus().name());
-        execution.setStartDate(jobExecution.getStartTime());
-        execution.setEndDate(jobExecution.getEndTime());
+        execution.setStartDate(Timestamp.valueOf(jobExecution.getStartTime()));
+        execution.setEndDate(Timestamp.valueOf(jobExecution.getEndTime()));
         execution.setExitStatus(jobExecution.getExitStatus().getExitCode());
         JobParameters jobParams = jobExecution.getJobParameters();
         if (jobParams != null) {
-            Map<String, JobParameter> params = jobParams.getParameters();
+            Map<String, JobParameter<?>> params = jobParams.getParameters();
             if (params != null && !params.isEmpty()) {
                 Map<String, Object> jobParametersResource = new HashMap<String, Object>();
                 Set<String> keys = params.keySet().stream()
@@ -84,12 +84,12 @@ public final class JobUtils {
                 JobExecution jobExecution = new JobExecution(jobInstance, null);//jobParameters);
                 jobExecution.setId(id);
                 
-                jobExecution.setStartTime(rs.getTimestamp(2));
-                jobExecution.setEndTime(rs.getTimestamp(3));
+                jobExecution.setStartTime(rs.getTimestamp(2).toLocalDateTime());
+                jobExecution.setEndTime(rs.getTimestamp(3).toLocalDateTime());
                 jobExecution.setStatus(BatchStatus.valueOf(rs.getString(4)));
                 jobExecution.setExitStatus(new ExitStatus(rs.getString(5), rs.getString(6)));
-                jobExecution.setCreateTime(rs.getTimestamp(7));
-                jobExecution.setLastUpdated(rs.getTimestamp(8));
+                jobExecution.setCreateTime(rs.getTimestamp(7).toLocalDateTime());
+                jobExecution.setLastUpdated(rs.getTimestamp(8).toLocalDateTime());
                 jobExecution.setVersion(rs.getInt(9));
                 jobexec = toJobExecutionResource(jobExecution);
             }
@@ -98,23 +98,23 @@ public final class JobUtils {
             String key = rs.getString(12);
 
             if (!PROTECTED_PARAMS.contains(key)) {
-                ParameterType type = ParameterType.valueOf(rs.getString(13));
+                String type = rs.getString(13);
                 JobParameter value = null;
                 switch (type) {
-                    case STRING: {
-                        value = new JobParameter(rs.getString(14), rs.getString(18).equalsIgnoreCase("Y"));
+                    case "STRING": {
+                        value = new JobParameter(rs.getString(14), String.class, rs.getString(18).equalsIgnoreCase("Y"));
                         break;
                     }
-                    case LONG: {
-                        value = new JobParameter(rs.getLong(16), rs.getString(18).equalsIgnoreCase("Y"));
+                    case "LONG": {
+                        value = new JobParameter(rs.getLong(16), long.class, rs.getString(18).equalsIgnoreCase("Y"));
                         break;
                     }
-                    case DOUBLE: {
-                        value = new JobParameter(rs.getDouble(17), rs.getString(18).equalsIgnoreCase("Y"));
+                    case "DOUBLE": {
+                        value = new JobParameter(rs.getDouble(17), double.class, rs.getString(18).equalsIgnoreCase("Y"));
                         break;
                     }
-                    case DATE: {
-                        value = new JobParameter(rs.getTimestamp(15), rs.getString(18).equalsIgnoreCase("Y"));
+                    case "DATE": {
+                        value = new JobParameter(rs.getTimestamp(15), Timestamp.class, rs.getString(18).equalsIgnoreCase("Y"));
                         break;
                     }
                 }

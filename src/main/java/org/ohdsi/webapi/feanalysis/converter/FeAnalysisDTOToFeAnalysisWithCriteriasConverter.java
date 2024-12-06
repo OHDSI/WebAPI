@@ -55,7 +55,7 @@ public class FeAnalysisDTOToFeAnalysisWithCriteriasConverter extends BaseFeAnaly
         } else if (Objects.equals(CcResultType.DISTRIBUTION, statType)) {
             return new FeAnalysisDistributionCriteriaBuilder(conversionService);
         }
-        throw new IllegalArgumentException(String.format(RESULT_TYPE_IS_NOT_SUPPORTED, statType));
+        throw new IllegalArgumentException(RESULT_TYPE_IS_NOT_SUPPORTED.formatted(statType));
     }
 
     static abstract class FeAnalysisBuilderSupport<T extends FeAnalysisCriteriaEntity>  implements FeAnalysisBuilder<T> {
@@ -106,8 +106,8 @@ public class FeAnalysisDTOToFeAnalysisWithCriteriasConverter extends BaseFeAnaly
 
         @Override
         protected Object getExpression(BaseFeAnalysisCriteriaDTO typifiedCriteria) {
-            if (typifiedCriteria instanceof FeAnalysisCriteriaDTO) {
-                return ((FeAnalysisCriteriaDTO)typifiedCriteria).getExpression();
+            if (typifiedCriteria instanceof FeAnalysisCriteriaDTO tO) {
+                return tO.getExpression();
             }
             return null;
         }
@@ -131,10 +131,10 @@ public class FeAnalysisDTOToFeAnalysisWithCriteriasConverter extends BaseFeAnaly
 
         @Override
         protected Object getExpression(BaseFeAnalysisCriteriaDTO typifiedCriteria) {
-            if (typifiedCriteria instanceof FeAnalysisWindowedCriteriaDTO) {
-                return ((FeAnalysisWindowedCriteriaDTO)typifiedCriteria).getExpression();
-            } else if (typifiedCriteria instanceof FeAnalysisDemographicCriteriaDTO) {
-                return ((FeAnalysisDemographicCriteriaDTO)typifiedCriteria).getExpression();
+            if (typifiedCriteria instanceof FeAnalysisWindowedCriteriaDTO tO) {
+                return tO.getExpression();
+            } else if (typifiedCriteria instanceof FeAnalysisDemographicCriteriaDTO tO) {
+                return tO.getExpression();
             }
             throw new IllegalArgumentException(DTO_IS_NOT_SUPPORTED);
         }

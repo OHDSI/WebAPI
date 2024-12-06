@@ -75,7 +75,7 @@ public class DataSourceAccessBeanPostProcessor implements BeanPostProcessor {
     List<Method> methods = AnnotationReflectionUtils.getMethodsAnnotatedWith(type, DataSourceAccess.class);
     methods.forEach(m -> {
       if (Objects.isNull(accessParameterResolver.resolveParameterBinding(m))) {
-        throw new BeanInitializationException(String.format("One of method: %s parameters should be annotated with SourceKey of CcGenerationId", m.toString()));
+        throw new BeanInitializationException("One of method: %s parameters should be annotated with SourceKey of CcGenerationId".formatted(m.toString()));
       }
     });
     return methods;

@@ -23,8 +23,8 @@ public class SecurityConfigurationInfo extends ConfigurationInfo {
         properties.put("enabled", enabled);
         properties.put("samlEnabled", samlEnabled);
         boolean samlActivated = false;
-        if (atlasSecurity instanceof AtlasRegularSecurity) {
-            samlActivated = ((AtlasRegularSecurity) atlasSecurity).isSamlEnabled();
+        if (atlasSecurity instanceof AtlasRegularSecurity security) {
+            samlActivated = security.isSamlEnabled();
         }
         properties.put("samlActivated", samlActivated);
     }

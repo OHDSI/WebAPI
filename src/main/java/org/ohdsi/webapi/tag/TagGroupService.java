@@ -7,11 +7,10 @@ import org.ohdsi.webapi.service.*;
 import org.ohdsi.webapi.tag.domain.HasTags;
 import org.ohdsi.webapi.tag.dto.TagGroupSubscriptionDTO;
 import org.ohdsi.webapi.tag.repository.TagRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.ws.rs.ForbiddenException;
+import jakarta.ws.rs.ForbiddenException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +25,6 @@ public class TagGroupService extends AbstractDaoService {
     private final IRAnalysisResource irAnalysisService;
     private final ReusableService reusableService;
 
-    @Autowired
     public TagGroupService(
             TagRepository tagRepository,
             PathwayService pathwayService,

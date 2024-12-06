@@ -7,7 +7,6 @@ import org.ohdsi.webapi.service.dto.CommonEntityExtDTO;
 import org.ohdsi.webapi.tag.TagService;
 import org.ohdsi.webapi.tag.dto.TagDTO;
 import org.ohdsi.webapi.tag.repository.TagRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 

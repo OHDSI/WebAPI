@@ -1,0 +1,31 @@
+Analysis ID,analysisId
+Analysis name,analysisName
+Strata ID,strataId
+Strata name,strataName
+Cohort ID,cohortId
+Cohort name,cohortName
+Covariate ID,covariateId
+Covariate name,covariateName
+Covariate short name,covariateShortName
+Count,count
+Percent,pct
+Value field,
+Missing Means Zero,missingMeansZero
+Avg,avg
+StdDev,stdDev
+Min,min
+P10,p10
+P25,p25
+Median,median
+P75,p75
+P90,p90
+Max,max
+Target cohort ID,targetCohortId
+Target cohort name,targetCohortName
+Comparator cohort ID,comparatorCohortId
+Comparator cohort name,comparatorCohortName
+Target count,targetCount
+Target percent,targetPct
+Comparator count,comparatorCount
+Comparator percent,comparatorPct
+Std. Diff Of Mean,diff

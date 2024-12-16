@@ -49,6 +49,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.ohdsi.webapi.Constants.Params.*;
 
@@ -92,14 +93,17 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
   protected String[] prepareQueries(ChunkContext chunkContext, CancelableJdbcTemplate jdbcTemplate) {
       Map<String, Object> jobParams = chunkContext.getStepContext().getJobParameters();
 
+      String[] defaultQueries = prepareQueriesDefault(jobParams, jdbcTemplate);
+
       Boolean demographicStat = jobParams.get(DEMOGRAPHIC_STATS) == null ? null
               : Boolean.valueOf((String) jobParams.get(DEMOGRAPHIC_STATS));
 
       if (demographicStat != null && demographicStat.booleanValue()) {
-          return prepareQueriesDemographic(chunkContext, jdbcTemplate);
+          String[] demographicsQueries = prepareQueriesDemographic(chunkContext, jdbcTemplate);
+          return Stream.concat(Arrays.stream(defaultQueries), Arrays.stream(demographicsQueries)).toArray(String[]::new);
       }
 
-      return prepareQueriesDefault(jobParams, jdbcTemplate);
+      return defaultQueries;
   }
 
   private String[] prepareQueriesDemographic(ChunkContext chunkContext, CancelableJdbcTemplate jdbcTemplate) {

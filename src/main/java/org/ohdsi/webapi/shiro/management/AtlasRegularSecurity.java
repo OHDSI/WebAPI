@@ -3,7 +3,7 @@ package org.ohdsi.webapi.shiro.management;
 import org.pac4j.jee.filter.CallbackFilter;
 import org.pac4j.jee.filter.SecurityFilter;
 import io.buji.pac4j.realm.Pac4jRealm;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.activedirectory.ActiveDirectoryRealm;
 import org.apache.shiro.realm.ldap.DefaultLdapRealm;

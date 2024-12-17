@@ -43,24 +43,35 @@
 
     <!-- Primary DataSource -->
     <!-- default sql server - TODO How about making postgres the default (e.g. in line with open source tech)? -alexfranken -->
-    <datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
-    <datasource.url>jdbc:sqlserver://serverName;databaseName=databaseName</datasource.url>
+    <!-- datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
+    <datasource.url>jdbc:sqlserver://serverName;databaseName=databaseName</datasource.url -->
+	<datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
+	<datasource.url>jdbc:postgresql://localhost:5432/OHDSI?currentSchema=webapi</datasource.url>
     <datasource.username>ohdsi_app_user</datasource.username>
     <datasource.password>app1</datasource.password>
     <!--<datasource.validationQuery>SELECT 1</datasource.validationQuery>-->
-    <datasource.dialect>sql server</datasource.dialect>
+    <!-- datasource.dialect>sql server</datasource.dialect -->
+	<datasource.dialect>postgresql</datasource.dialect>
     <datasource.ohdsi.schema>webapi</datasource.ohdsi.schema>
-    <datasource.dialect.source>sql server</datasource.dialect.source>
+    <!-- datasource.dialect.source>sql server</datasource.dialect.source -->
+    <datasource.dialect.source>postgresql</datasource.dialect.source>
     <!-- DB Change Management / Migration -->
-    <flyway.datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</flyway.datasource.driverClassName>
+    <!-- flyway.datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</flyway.datasource.driverClassName>
     <flyway.datasource.url>jdbc:sqlserver://serverName</flyway.datasource.url>
-    <flyway.datasource.username>userWithWritePrivs</flyway.datasource.username>
-    <flyway.datasource.password>app1</flyway.datasource.password>
-    <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
+    <flyway.datasource.username>userWithWritePrivs</flyway.datasource.username -->
+    <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
+    <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
+    <flyway.datasource.username>ohdsi_admin_user</flyway.datasource.username>
+    <flyway.datasource.password>admin1</flyway.datasource.password>
+    <!-- flyway.locations>classpath:db/migration/sqlserver</flyway.locations -->
+	<flyway.locations>classpath:db/migration/postgresql</flyway.locations>
     <!-- Note: Schema name is case-sensitive. -->
     <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
-    <flyway.validateOnMigrate>false</flyway.validateOnMigrate>
     <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
+    <flyway.validateOnMigrate>false</flyway.validateOnMigrate>
+
+	<hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</hibernate.dialect>
+
     <!-- CDM properties -->
     <source.name>CDM_NAME</source.name>
     <cdm.version>5</cdm.version>
@@ -76,10 +87,11 @@
 
     <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
     <spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
-    <spring.profiles.active>default</spring.profiles.active>
+    <!-- spring.profiles.active>default</spring.profiles.active -->
+	<spring.profiles.active>webapi-postgresql</spring.profiles.active>
 
-    <!-- security.provider>DisabledSecurity</security.provider -->
-	<security.provider>AtlasRegularSecurity</security.provider>
+    <security.provider>DisabledSecurity</security.provider>
+	<!-- security.provider>AtlasRegularSecurity</security.provider -->
     <security.token.expiration>43200</security.token.expiration>
     <security.origin>http://localhost</security.origin>
     <security.ssl.enabled>false</security.ssl.enabled>
@@ -841,7 +853,7 @@
 	<groupId>org.apache.httpcomponents.client5</groupId>
 	<artifactId>httpclient5</artifactId>
 	</dependency>
-  <dependency>
+  <!-- dependency>
    <groupId>org.springframework.batch</groupId>
    <artifactId>spring-batch-admin-manager</artifactId>
    <version>2.0.0.M1</version>
@@ -871,7 +883,7 @@
      <artifactId>commons-collections</artifactId>
     </exclusion>
    </exclusions>
-  </dependency>
+  </dependency -->
 
   <!-- overriding commons-fileupload version from the plug-in above -->
   <dependency>
@@ -1438,15 +1450,17 @@
       <id>webapi-postgresql</id>
       <properties>
         <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
-		<datasource.url>jdbc:postgresql://localhost:5432/OHDSI</datasource.url>
+		<datasource.url>jdbc:postgresql://localhost:5432/OHDSI?currentSchema=webapi</datasource.url>
         <datasource.username>ohdsi_app_user</datasource.username>
         <datasource.password>app1</datasource.password>
         <datasource.dialect>postgresql</datasource.dialect>
         <datasource.ohdsi.schema>webapi</datasource.ohdsi.schema>
+        <datasource.dialect.source>postgresql</datasource.dialect.source>
         <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
         <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
-        <flyway.datasource.username>userWithWritesToOhdsiSchema</flyway.datasource.username>
-        <flyway.datasource.password>app1</flyway.datasource.password>
+        <!-- flyway.datasource.username>userWithWritesToOhdsiSchema</flyway.datasource.username -->
+        <flyway.datasource.username>ohdsi_admin_user</flyway.datasource.username>
+        <flyway.datasource.password>admin1</flyway.datasource.password>
         <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
         <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
         <flyway.locations>classpath:db/migration/postgresql</flyway.locations>

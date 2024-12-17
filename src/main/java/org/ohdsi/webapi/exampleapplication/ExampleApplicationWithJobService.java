@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.exampleapplication;
 
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.webapi.exampleapplication.model.Widget;
 import org.ohdsi.webapi.exampleapplication.repository.WidgetRepository;

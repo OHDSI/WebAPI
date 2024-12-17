@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.user.importer.providers;
 
 import com.google.common.collect.ImmutableSet;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.user.importer.model.LdapGroup;
 import org.ohdsi.webapi.user.importer.model.LdapUser;
 import org.springframework.beans.factory.annotation.Value;

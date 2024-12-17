@@ -12,6 +12,8 @@ public class PrevalenceItem<T extends PrevalenceItem> extends ExportItem<T> {
     protected final Long count;
     protected final Double pct;
     protected final Double avg;
+    private List<TemporalItem> temporal;
+    private List<TemporalAnnualItem> temporalAnnual;
 
     public PrevalenceItem(CcPrevalenceStat prevalenceStat, String cohortName) {
         super(prevalenceStat);
@@ -96,6 +98,22 @@ public class PrevalenceItem<T extends PrevalenceItem> extends ExportItem<T> {
 
     public String getCohortName() {
         return cohortName;
+    }
+
+    public List<TemporalItem> getTemporal() {
+        return temporal;
+    }
+
+    public void setTemporal(List<TemporalItem> temporal) {
+        this.temporal = temporal;
+    }
+
+    public List<TemporalAnnualItem> getTemporalAnnual() {
+        return temporalAnnual;
+    }
+
+    public void setTemporalAnnual(List<TemporalAnnualItem> temporalAnnual) {
+        this.temporalAnnual = temporalAnnual;
     }
 
     @Override

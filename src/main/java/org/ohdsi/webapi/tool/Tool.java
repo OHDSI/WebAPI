@@ -35,7 +35,7 @@ public class Tool extends CommonEntity<Integer> {
     @Column(name = "description")
     private String description;
     @Column(name = "is_enabled")
-    private Boolean isEnabled;
+    private Boolean enabled;
 
     @Override
     public Integer getId() {
@@ -71,11 +71,11 @@ public class Tool extends CommonEntity<Integer> {
     }
 
     public Boolean getEnabled() {
-        return isEnabled;
+        return enabled;
     }
 
     public void setEnabled(Boolean enabled) {
-        isEnabled = enabled;
+        this.enabled = enabled;
     }
 
     @Override

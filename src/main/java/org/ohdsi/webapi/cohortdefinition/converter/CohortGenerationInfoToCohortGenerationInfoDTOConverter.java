@@ -22,6 +22,8 @@ public class CohortGenerationInfoToCohortGenerationInfoDTOConverter extends Base
         dto.setStartTime(info.getStartTime());
         dto.setStatus(info.getStatus());
         dto.setIsValid(info.isIsValid());
+        dto.setCcGenerateId(info.getCcGenerateId());
+        dto.setIsChooseDemographic(info.isChooseDemographic());
 
         return dto;
     }

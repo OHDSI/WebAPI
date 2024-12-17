@@ -70,7 +70,7 @@ public class CohortGenerationUtils {
         "results_database_schema.cohort_inclusion_stats", 
         "results_database_schema.cohort_summary_stats", 
         "results_database_schema.cohort_censor_stats",
-        "results_database_schema.cohort_inclusion" 
+        "results_database_schema.cohort_inclusion"
       },
       new String[] {
         COHORT_CACHE, 

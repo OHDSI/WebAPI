@@ -27,6 +27,8 @@ import javax.ws.rs.core.Response;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.cache.CacheManager;
+import javax.cache.configuration.MutableConfiguration;
 
 import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
@@ -57,6 +59,7 @@ import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.tag.domain.HasTags;
 import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
+import org.ohdsi.webapi.util.CacheHelper;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.NameUtils;
 import org.ohdsi.webapi.util.ExceptionUtils;
@@ -69,6 +72,9 @@ import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.ohdsi.webapi.versioning.service.VersionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.cache.JCacheManagerCustomizer;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
@@ -83,7 +89,26 @@ import org.springframework.stereotype.Component;
 @Transactional
 @Path("/conceptset/")
 public class ConceptSetService extends AbstractDaoService implements HasTags<Integer> {
+	//create cache
+	@Component
+	public static class CachingSetup implements JCacheManagerCustomizer {
 
+		public static final String CONCEPT_SET_LIST_CACHE = "conceptSetList";
+
+		@Override
+		public void customize(CacheManager cacheManager) {
+			// due to unit tests causing application contexts to reload cache manager caches, we
+			// have to check for the existance of a cache before creating it
+			Set<String> cacheNames = CacheHelper.getCacheNames(cacheManager);
+			// Evict when a cohort definition is created or updated, or permissions, or tags
+			if (!cacheNames.contains(CONCEPT_SET_LIST_CACHE)) {
+				cacheManager.createCache(CONCEPT_SET_LIST_CACHE, new MutableConfiguration<String, Collection<ConceptSetDTO>>()
+					.setTypes(String.class, (Class<Collection<ConceptSetDTO>>) (Class<?>) List.class)
+					.setStoreByValue(false)
+					.setStatisticsEnabled(true));
+			}
+		}
+	}
     @Autowired
     private ConceptSetGenerationInfoRepository conceptSetGenerationInfoRepository;
 
@@ -151,7 +176,8 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<ConceptSetDTO> getConceptSets() {
+    @Cacheable(cacheNames = ConceptSetService.CachingSetup.CONCEPT_SET_LIST_CACHE, key = "@permissionService.getSubjectCacheKey()")
+		public Collection<ConceptSetDTO> getConceptSets() {
         return getTransactionTemplate().execute(
                 transactionStatus -> StreamSupport.stream(getConceptSetRepository().findAll().spliterator(), false)
                         .filter(!defaultGlobalReadPermissions ? entity -> permissionService.hasReadAccess(entity) : entity -> true)
@@ -469,7 +495,8 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ConceptSetDTO createConceptSet(ConceptSetDTO conceptSetDTO) {
+    @CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
+		public ConceptSetDTO createConceptSet(ConceptSetDTO conceptSetDTO) {
 
         UserEntity user = userRepository.findByLogin(security.getSubject());
         ConceptSet conceptSet = conversionService.convert(conceptSetDTO, ConceptSet.class);
@@ -524,7 +551,8 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
-    public ConceptSetDTO updateConceptSet(@PathParam("id") final int id, ConceptSetDTO conceptSetDTO) throws Exception {
+		@CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
+		public ConceptSetDTO updateConceptSet(@PathParam("id") final int id, ConceptSetDTO conceptSetDTO) throws Exception {
 
         ConceptSet updated = getConceptSetRepository().findById(id);
         if (updated == null) {
@@ -595,7 +623,8 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @DELETE
     @Transactional(rollbackOn = Exception.class, dontRollbackOn = EmptyResultDataAccessException.class)
     @Path("{id}")
-    public void deleteConceptSet(@PathParam("id") final int id) {
+		@CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
+		public void deleteConceptSet(@PathParam("id") final int id) {
         // Remove any generation info
         try {
             this.conceptSetGenerationInfoRepository.deleteByConceptSetId(id);
@@ -642,7 +671,8 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/")
     @Transactional
-    public void assignTag(@PathParam("id") final Integer id, final int tagId) {
+		@CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
+		public void assignTag(@PathParam("id") final Integer id, final int tagId) {
         ConceptSet entity = getConceptSetRepository().findById(id);
         checkOwnerOrAdminOrGranted(entity);
         assignTag(entity, tagId);
@@ -811,6 +841,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/version/{version}/createAsset")
     @Transactional
+		@CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
     public ConceptSetDTO copyAssetFromVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
         checkVersion(id, version, false);
         ConceptSetVersion conceptSetVersion = versionService.getById(VersionType.CONCEPT_SET, id, version);

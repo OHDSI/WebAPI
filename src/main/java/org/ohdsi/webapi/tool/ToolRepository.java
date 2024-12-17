@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ToolRepository extends JpaRepository<Tool, Integer> {
-    List<Tool> findAllByIsEnabled(boolean isEnabled);
+    List<Tool> findAllByEnabled(boolean enabled);
 }

@@ -26,7 +26,7 @@ public class ToolServiceImpl extends AbstractDaoService implements ToolService {
 
     @Override
     public List<ToolDTO> getTools() {
-        List<Tool> tools = (isAdmin() || canManageTools()) ? toolRepository.findAll() : toolRepository.findAllByIsEnabled(true);
+        List<Tool> tools = (isAdmin() || canManageTools()) ? toolRepository.findAll() : toolRepository.findAllByEnabled(true);
         return tools.stream()
                 .map(this::toDTO).collect(Collectors.toList());
     }

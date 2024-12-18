@@ -58,17 +58,14 @@ public class FeAnalysisEntityToFeAnalysisDTOConverter extends BaseFeAnalysisEnti
 
     private BaseFeAnalysisCriteriaDTO convertCriteria(FeAnalysisCriteriaEntity criteriaEntity){
         BaseFeAnalysisCriteriaDTO criteriaDTO;
-        if (criteriaEntity instanceof FeAnalysisCriteriaGroupEntity) {
-            FeAnalysisCriteriaGroupEntity groupEntity = (FeAnalysisCriteriaGroupEntity) criteriaEntity;
+        if (criteriaEntity instanceof FeAnalysisCriteriaGroupEntity groupEntity) {
             criteriaDTO = new FeAnalysisCriteriaDTO(groupEntity.getId(), groupEntity.getName(), groupEntity.getExpression());
-        } else if (criteriaEntity instanceof FeAnalysisWindowedCriteriaEntity) {
-            FeAnalysisWindowedCriteriaEntity w = (FeAnalysisWindowedCriteriaEntity) criteriaEntity;
+        } else if (criteriaEntity instanceof FeAnalysisWindowedCriteriaEntity w) {
             criteriaDTO = new FeAnalysisWindowedCriteriaDTO(w.getId(), w.getName(), w.getExpression());
-        } else if (criteriaEntity instanceof FeAnalysisDemographicCriteriaEntity) {
-            FeAnalysisDemographicCriteriaEntity d = (FeAnalysisDemographicCriteriaEntity) criteriaEntity;
+        } else if (criteriaEntity instanceof FeAnalysisDemographicCriteriaEntity d) {
             criteriaDTO = new FeAnalysisDemographicCriteriaDTO(d.getId(), d.getName(), d.getExpression());
         } else {
-            throw new IllegalArgumentException(String.format("Cannot convert criteria entity, %s is not supported", criteriaEntity));
+            throw new IllegalArgumentException("Cannot convert criteria entity, %s is not supported".formatted(criteriaEntity));
         }
         criteriaDTO.setAggregate(conversionService.convert(criteriaEntity.getAggregate(), FeAnalysisAggregateDTO.class));
         return criteriaDTO;

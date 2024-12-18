@@ -27,6 +27,6 @@ public class VocabularySearchServiceImpl implements VocabularySearchService {
                 .sorted(Comparator.comparingInt(SearchProvider::getPriority))
                 .filter(p -> p.supports(config.getVersionKey()))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException(String.format(NO_PROVIDER_ERROR, config.getSourceKey())));
+                .orElseThrow(() -> new RuntimeException(NO_PROVIDER_ERROR.formatted(config.getSourceKey())));
     }
 }

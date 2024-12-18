@@ -24,6 +24,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.StreamSupport;
 
 import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
@@ -55,14 +56,14 @@ public class CleanupCohortSamplesTasklet implements Tasklet {
 
 		if (jobParams.containsKey(SOURCE_ID)) {
 			int sourceId = Integer.parseInt(jobParams.get(SOURCE_ID).toString());
-			Source source = this.sourceRepository.findOne(sourceId);
+			Source source = this.sourceRepository.findById(sourceId).get();
 			if (source != null) {
 				return mapSource(source, cohortDefinitionId);
 			} else {
 				return 0;
 			}
 		} else {
-			return this.sourceRepository.findAll().stream()
+			return StreamSupport.stream(this.sourceRepository.findAll().spliterator(), false)
 					.filter(source-> source.getDaimons()
 							.stream()
 							.anyMatch(daimon -> daimon.getDaimonType() == SourceDaimon.DaimonType.Results))
@@ -80,7 +81,7 @@ public class CleanupCohortSamplesTasklet implements Tasklet {
 					return 0;
 				}
 
-				sampleRepository.delete(samples);
+				sampleRepository.deleteAll(samples);
 
 				int[] cohortSampleIds = samples.stream()
 						.mapToInt(CohortSample::getId)
@@ -113,7 +114,7 @@ public class CleanupCohortSamplesTasklet implements Tasklet {
 
 	public JobExecutionResource launch(JobBuilderFactory jobBuilders, StepBuilderFactory stepBuilders, JobTemplate jobTemplate, int cohortDefinitionId) {
 		JobParametersBuilder builder = new JobParametersBuilder();
-		builder.addString(JOB_NAME, String.format("Cleanup cohort samples of cohort definition %d.", cohortDefinitionId));
+		builder.addString(JOB_NAME, "Cleanup cohort samples of cohort definition %d.".formatted(cohortDefinitionId));
 		builder.addString(COHORT_DEFINITION_ID, String.valueOf(cohortDefinitionId));
 
 		log.info("Beginning cohort cleanup for cohort definition id: {}", cohortDefinitionId);
@@ -122,7 +123,7 @@ public class CleanupCohortSamplesTasklet implements Tasklet {
 
 	public JobExecutionResource launch(JobBuilderFactory jobBuilders, StepBuilderFactory stepBuilders, JobTemplate jobTemplate, int cohortDefinitionId, int sourceId) {
 		JobParametersBuilder builder = new JobParametersBuilder();
-		builder.addString(JOB_NAME, String.format("Cleanup cohort samples of cohort definition %d.", cohortDefinitionId));
+		builder.addString(JOB_NAME, "Cleanup cohort samples of cohort definition %d.".formatted(cohortDefinitionId));
 		builder.addString(COHORT_DEFINITION_ID, String.valueOf(cohortDefinitionId));
 		builder.addString(SOURCE_ID, String.valueOf(sourceId));
 

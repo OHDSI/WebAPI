@@ -4,12 +4,18 @@ import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.PermissionManager;
-import org.springframework.batch.admin.service.SearchableJobExecutionDao;
+// import org.springframework.batch.admin.service.SearchableJobExecutionDao;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.JobInstance;
+import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.chrono.ChronoLocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -28,16 +34,21 @@ public class NotificationServiceImpl implements NotificationService {
     private static final int PAGE_SIZE = MAX_SIZE * 10;
     private static final List<String> WHITE_LIST = new ArrayList<>();
     private static final List<String> FOLDING_KEYS = new ArrayList<>();
+    private static final List<JobExecution> executions = new ArrayList<>();
+    private static final String NOTIFICATION_SERVICE_JOB = "NotificationServiceJob";
 
-    private final SearchableJobExecutionDao jobExecutionDao;
+//    private final SearchableJobExecutionDao jobExecutionDao;
+    private final JobExplorer jobExplorer;
     private final PermissionManager permissionManager;
     private final UserRepository userRepository;
 
     @Value("#{!'${security.provider}'.equals('DisabledSecurity')}")
     private boolean securityEnabled;
 
-    public NotificationServiceImpl(SearchableJobExecutionDao jobExecutionDao, List<GeneratesNotification> whiteList, PermissionManager permissionManager, UserRepository userRepository) {
-        this.jobExecutionDao = jobExecutionDao;
+    public NotificationServiceImpl(/*SearchableJobExecutionDao jobExecutionDao,*/ JobExplorer jobExplorer, List<GeneratesNotification> whiteList, 
+    		PermissionManager permissionManager, UserRepository userRepository) {
+        // this.jobExecutionDao = jobExecutionDao;
+        this.jobExplorer = jobExplorer;
         this.permissionManager = permissionManager;
         this.userRepository = userRepository;
         whiteList.forEach(g -> {
@@ -60,11 +71,11 @@ public class NotificationServiceImpl implements NotificationService {
 
     public List<JobExecutionInfo> findJobs(List<BatchStatus> hideStatuses, int maxSize, boolean refreshJobsOnly) {
         BiFunction<JobExecutionInfo, JobExecutionInfo, JobExecutionInfo> mergeFunction = (x, y) -> {
-            final Date xStartTime = x != null ? x.getJobExecution().getStartTime() : null;
-            final Date yStartTime = y != null ? y.getJobExecution().getStartTime() : null;
+            final LocalDateTime xStartTime = x != null ? x.getJobExecution().getStartTime() : null;
+            final LocalDateTime yStartTime = y != null ? y.getJobExecution().getStartTime() : null;
             return xStartTime != null ?
                     yStartTime != null ?
-                            xStartTime.after(yStartTime) ? x
+                            xStartTime.isAfter(yStartTime) ? x
                                     : y
                             : x
                     : y;
@@ -72,11 +83,22 @@ public class NotificationServiceImpl implements NotificationService {
         final Map<String, JobExecutionInfo> allJobMap = new HashMap<>();
         final Map<String, JobExecutionInfo> userJobMap = new HashMap<>();
         for (int start = 0; (!refreshJobsOnly && userJobMap.size() < MAX_SIZE) || allJobMap.size() < MAX_SIZE; start += PAGE_SIZE) {
-            final List<JobExecution> page = jobExecutionDao.getJobExecutions(start, PAGE_SIZE);
+//            final List<JobExecution> page = jobExecutionDao.getJobExecutions(start, PAGE_SIZE);
+        	
+            // Fetch paginated JobInstances
+            List<JobInstance> jobInstances = jobExplorer.findJobInstancesByJobName(NOTIFICATION_SERVICE_JOB, start, PAGE_SIZE);
+            // Retrieve JobExecutions for each JobInstance
+            for (JobInstance jobInstance : jobInstances) {
+                List<JobExecution> jobExecutions = jobExplorer.getJobExecutions(jobInstance);
+                executions.addAll(jobExecutions);
+            }
+            final List<JobExecution> page = executions;
+        	
             if(page.size() == 0) {
                 break;
             }
             for (JobExecution jobExec: page) {
+            	
                 // ignore completed jobs when user does not want to see them
                 if (hideStatuses.contains(jobExec.getStatus())) {
                     continue;

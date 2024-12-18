@@ -22,9 +22,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceException;
-import javax.ws.rs.NotFoundException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceException;
+import jakarta.ws.rs.NotFoundException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +43,6 @@ public class VersionService<T extends Version> extends AbstractDaoService {
     @Autowired
     private VersionService<T> versionService;
 
-    @Autowired
     public VersionService(
             EntityManager entityManager,
             CohortVersionRepository cohortRepository,
@@ -101,7 +100,7 @@ public class VersionService<T extends Version> extends AbstractDaoService {
     }
 
     public T update(VersionType type, VersionUpdateDTO updateDTO) {
-        T currentVersion = getRepository(type).findOne(updateDTO.getVersionPk());
+        T currentVersion = getRepository(type).findById(updateDTO.getVersionPk()).get();
         if (Objects.isNull(currentVersion)) {
             throw new NotFoundException("Version not found");
         }
@@ -113,7 +112,7 @@ public class VersionService<T extends Version> extends AbstractDaoService {
 
     public void delete(VersionType type, long assetId, int version) {
         VersionPK pk = new VersionPK(assetId, version);
-        T currentVersion = getRepository(type).getOne(pk);
+        T currentVersion = getRepository(type).getById(pk);
         if (Objects.isNull(currentVersion)) {
             throw new NotFoundException("Version not found");
         }
@@ -122,13 +121,13 @@ public class VersionService<T extends Version> extends AbstractDaoService {
 
     public T getById(VersionType type, long assetId, int version) {
         VersionPK pk = new VersionPK(assetId, version);
-        return getRepository(type).findOne(pk);
+        return getRepository(type).findById(pk).get();
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public T save(VersionType type, T version) {
         version = getRepository(type).saveAndFlush(version);
         entityManager.refresh(version);
-        return getRepository(type).getOne(version.getPk());
+        return getRepository(type).getById(version.getPk());
     }
 }

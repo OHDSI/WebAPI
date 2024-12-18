@@ -37,7 +37,7 @@ public abstract class Validator<T> {
         }
         String msg = this.errorMessage != null ? this.errorMessage : getDefaultErrorMessage();
         if (params.length > 0) {
-            msg = String.format(msg, params);
+            msg = msg.formatted(params);
         }
         sb.append(msg);
         return sb.toString();

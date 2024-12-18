@@ -4,7 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
+// import org.hibernate.annotations.TypeDef; MDACA Spring Boot 3 migration compilation issue 
 import org.ohdsi.analysis.TableJoin;
 import org.ohdsi.analysis.WithId;
 import org.ohdsi.analysis.cohortcharacterization.design.AggregateFunction;
@@ -12,13 +12,15 @@ import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysisAggregate
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.ohdsi.circe.cohortdefinition.builders.CriteriaColumn;
 import org.ohdsi.webapi.common.orm.EnumListType;
+import org.ohdsi.webapi.source.CheckedEncryptedStringType;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
 @Table(name = "fe_analysis_aggregate")
-@TypeDef(typeClass = EnumListType.class, name = "enum-list")
+// @TypeDef(typeClass = EnumListType.class, name = "enumm-list")   MDACA Spring Boot 3 migration compilation issue 
+@Convert(attributeName = "enumm-list", converter = EnumListType.class)
 public class FeAnalysisAggregateEntity implements FeatureAnalysisAggregate, WithId<Integer> {
 
   @Id
@@ -64,9 +66,11 @@ public class FeAnalysisAggregateEntity implements FeatureAnalysisAggregate, With
   private boolean isMissingMeansZero;
 
 	@Column(name = "criteria_columns")
-  @Type(type = "enum-list", parameters = {
+/*   MDACA Spring Boot 3 migration compilation issue, see package-info.java	
+  @Type(value = enumm-list.class, parameters = {
           @Parameter(name = "enumClass", value = "org.ohdsi.circe.cohortdefinition.builders.CriteriaColumn")
   })
+*/
   private List<CriteriaColumn> columns;
 
   @Override

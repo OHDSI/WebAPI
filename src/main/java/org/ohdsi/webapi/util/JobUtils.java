@@ -28,7 +28,7 @@ public final class JobUtils {
                     daimonName = "Temp";
                     break;
             }
-            throw new NullPointerException(String.format("DaimonType (\"%s\") not found in Source", daimonName));
+            throw new NullPointerException("DaimonType (\"%s\") not found in Source".formatted(daimonName));
         }
     }
 }

@@ -32,8 +32,14 @@ public final class JobUtils {
         final JobExecutionResource execution = new JobExecutionResource(
                 toJobInstanceResource(jobExecution.getJobInstance()), jobExecution.getId());
         execution.setStatus(jobExecution.getStatus().name());
-        execution.setStartDate(Timestamp.valueOf(jobExecution.getStartTime()));
-        execution.setEndDate(Timestamp.valueOf(jobExecution.getEndTime()));
+        
+        if(jobExecution.getStartTime() != null) {
+            execution.setStartDate(Timestamp.valueOf(jobExecution.getStartTime()));
+        }
+        if(jobExecution.getEndTime() != null) {
+            execution.setEndDate(Timestamp.valueOf(jobExecution.getEndTime()));
+        }
+        
         execution.setExitStatus(jobExecution.getExitStatus().getExitCode());
         JobParameters jobParams = jobExecution.getJobParameters();
         if (jobParams != null) {

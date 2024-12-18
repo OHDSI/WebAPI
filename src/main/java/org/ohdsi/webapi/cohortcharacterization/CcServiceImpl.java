@@ -1228,8 +1228,8 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
         getTransactionTemplateRequiresNew().execute(transactionStatus -> {
             List<CcGenerationEntity> generations = findAllIncompleteGenerations();
             generations.forEach(gen -> {
-                JobExecution job = jobService.getJobExecution(gen.getId());
-                jobInvalidator.invalidationJobExecution(job);
+            	JobExecution job = jobService.findJobExecution(gen.getId());
+                jobInvalidator.invalidateJobExecution(job);
             });
             return null;
         });

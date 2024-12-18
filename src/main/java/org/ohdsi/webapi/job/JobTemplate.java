@@ -10,6 +10,11 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
@@ -21,9 +26,8 @@ import static org.ohdsi.webapi.Constants.SYSTEM_USER;
 import static org.ohdsi.webapi.Constants.WARM_CACHE;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
-/**
- *
- */
+import javax.sql.DataSource;
+
 public class JobTemplate {
 
     private static final Logger log = LoggerFactory.getLogger(JobTemplate.class);
@@ -33,59 +37,61 @@ public class JobTemplate {
     private final StepBuilderFactory stepBuilders;
     private final Security security;
 
-    public JobTemplate(final JobLauncher jobLauncher, final JobBuilderFactory jobBuilders,
-                       final StepBuilderFactory stepBuilders, final Security security) {
+    @Autowired
+    private PlatformTransactionManager transactionManager;
+    
+    public JobTemplate(JobLauncher jobLauncher, JobBuilderFactory jobBuilders,
+                       StepBuilderFactory stepBuilders, Security security) {
         this.jobLauncher = jobLauncher;
         this.jobBuilders = jobBuilders;
         this.stepBuilders = stepBuilders;
         this.security = security;
     }
 
-    public JobExecutionResource launch(final Job job, JobParameters jobParameters) throws WebApplicationException {
-        JobExecution exec;
-        try {
-            JobParametersBuilder builder = new JobParametersBuilder(jobParameters);
-            builder.addLong(JOB_START_TIME, System.currentTimeMillis());
-            if (jobParameters.getString(JOB_AUTHOR) == null) {
-                builder.addString(JOB_AUTHOR, security.getSubject());
-            }
-            jobParameters = builder.toJobParameters();
-            exec = this.jobLauncher.run(job, jobParameters);
-            if (log.isDebugEnabled()) {
-                log.debug("JobExecution queued: {}", exec);
-            }
-        } catch (final JobExecutionAlreadyRunningException e) {
-            throw new WebApplicationException(e, Response.status(Status.CONFLICT).entity(whitelist(e)).build());
-        } catch (final Exception e) {
-            throw new WebApplicationException(e, Response.status(Status.INTERNAL_SERVER_ERROR).entity(whitelist(e)).build());
-        }
-        return JobUtils.toJobExecutionResource(exec);
+    public JobExecutionResource launch(Job job, JobParameters jobParameters) throws WebApplicationException {
+    	
+    	TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
+        transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+
+        return transactionTemplate.execute(status -> {
+	        JobExecution exec;
+	        try {
+	            JobParametersBuilder builder = new JobParametersBuilder(jobParameters);
+	            builder.addLong(JOB_START_TIME, System.currentTimeMillis());
+	            if (jobParameters.getString(JOB_AUTHOR) == null) {
+	                builder.addString(JOB_AUTHOR, security.getSubject());
+	            }
+	            final JobParameters jobParams = builder.toJobParameters();
+	            exec = this.jobLauncher.run(job, jobParams);
+	            if (log.isDebugEnabled()) {
+	                log.debug("JobExecution queued: {}", exec);
+	            }
+	        } catch (final JobExecutionAlreadyRunningException e) {
+	            throw new WebApplicationException(e, Response.status(Status.CONFLICT).entity(whitelist(e)).build());
+	        } catch (final Exception e) {
+	            throw new WebApplicationException(e, Response.status(Status.INTERNAL_SERVER_ERROR).entity(whitelist(e)).build());
+	        }
+	        return JobUtils.toJobExecutionResource(exec);
+        });
     }
 
-    public JobExecutionResource launchTasklet(final String jobName, final String stepName, final Tasklet tasklet,
-                                              JobParameters jobParameters) throws WebApplicationException {
-        JobExecution exec;
+    public JobExecutionResource launchTasklet(String jobName, String stepName, Tasklet tasklet,
+                                              JobParameters jobParameters) {
         try {
-            //TODO Consider JobParametersIncrementer
             jobParameters = new JobParametersBuilder(jobParameters)
-                    .addLong(JOB_START_TIME, System.currentTimeMillis())
-                    .addString(JOB_AUTHOR, getAuthorForTasklet(jobName))
+                    .addLong("jobStartTime", System.currentTimeMillis())
+                    .addString("jobAuthor", getAuthorForTasklet(jobName))
                     .toJobParameters();
-            //TODO Consider our own check (since adding unique JobParameter) to see if related-job is running and throw "already running"
-            final Step step = this.stepBuilders.get(stepName).tasklet(tasklet).allowStartIfComplete(true).build();
-            final Job job = this.jobBuilders.get(jobName).start(step).build();
-            exec = this.jobLauncher.run(job, jobParameters);
-        } catch (final JobExecutionAlreadyRunningException e) {
-            throw new WebApplicationException(Response.status(Status.CONFLICT).entity(whitelist(e.getMessage())).build());
-        } catch (final JobInstanceAlreadyCompleteException e) {
-            throw new WebApplicationException(Response.status(Status.CONFLICT).entity(whitelist(e.getMessage())).build());
-        } catch (final Exception e) {
-            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity(whitelist(e.getMessage())).build());
+            Step step = this.stepBuilders.get(stepName).tasklet(tasklet).build();
+            Job job = this.jobBuilders.get(jobName).start(step).build();
+            JobExecution execution = this.jobLauncher.run(job, jobParameters);
+            return JobUtils.toJobExecutionResource(execution);
+        } catch (Exception e) {
+            throw new WebApplicationException(e, Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build());
         }
-        return JobUtils.toJobExecutionResource(exec);
     }
 
-    private String getAuthorForTasklet(final String jobName) {
-        return WARM_CACHE.equals(jobName) ? SYSTEM_USER : security.getSubject();
+    private String getAuthorForTasklet(String jobName) {
+        return "warmCache".equals(jobName) ? "systemUser" : security.getSubject();
     }
 }

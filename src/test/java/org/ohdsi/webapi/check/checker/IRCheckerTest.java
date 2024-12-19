@@ -1,8 +1,7 @@
 package org.ohdsi.webapi.check.checker;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.check.CheckResult;
 import org.ohdsi.webapi.check.Checker;
@@ -32,7 +31,7 @@ public class IRCheckerTest extends BaseCheckerTest {
 
         Checker<IRAnalysisDTO> checker = this.checker;
         CheckResult result = new CheckResult(checker.check(dto));
-        Assert.assertEquals(0, result.getWarnings().size());
+        Assertions.assertEquals(0, result.getWarnings().size());
     }
 
     @Test

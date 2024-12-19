@@ -3,7 +3,8 @@ package org.ohdsi.webapi.report.mapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.lang.WordUtils;
+
+import org.apache.commons.text.WordUtils;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.JdbcUtils;
 
@@ -34,26 +35,26 @@ public class GenericRowMapper implements RowMapper<JsonNode> {
             column = this.snakeCaseToCamelCase(column);
             if (value == null) {
                 objectNode.putNull(column);
-            } else if (value instanceof Integer) {
-                objectNode.put(column, (Integer) value);
-            } else if (value instanceof String) {
-                objectNode.put(column, (String) value);
-            } else if (value instanceof Boolean) {
-                objectNode.put(column, (Boolean) value);
-            } else if (value instanceof Date) {
-                objectNode.put(column, ((Date) value).getTime());
-            } else if (value instanceof Long) {
-                objectNode.put(column, (Long) value);
-            } else if (value instanceof Double) {
-                objectNode.put(column, (Double) value);
-            } else if (value instanceof Float) {
-                objectNode.put(column, (Float) value);
-            } else if (value instanceof BigDecimal) {
-                objectNode.put(column, (BigDecimal) value);
-            } else if (value instanceof Byte) {
-                objectNode.put(column, (Byte) value);
-            } else if (value instanceof byte[]) {
-                objectNode.put(column, (byte[]) value);
+            } else if (value instanceof Integer integer) {
+                objectNode.put(column, integer);
+            } else if (value instanceof String string) {
+                objectNode.put(column, string);
+            } else if (value instanceof Boolean boolean1) {
+                objectNode.put(column, boolean1);
+            } else if (value instanceof Date date) {
+                objectNode.put(column, date.getTime());
+            } else if (value instanceof Long long1) {
+                objectNode.put(column, long1);
+            } else if (value instanceof Double double1) {
+                objectNode.put(column, double1);
+            } else if (value instanceof Float float1) {
+                objectNode.put(column, float1);
+            } else if (value instanceof BigDecimal decimal) {
+                objectNode.put(column, decimal);
+            } else if (value instanceof Byte byte1) {
+                objectNode.put(column, byte1);
+            } else if (value instanceof byte[] bytes) {
+                objectNode.put(column, bytes);
             } else {
                 throw new IllegalArgumentException("Unmappable object type: " + value.getClass());
             }

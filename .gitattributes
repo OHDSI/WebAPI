@@ -8,8 +8,8 @@
 *.js text
 *.vm text
 *.properties text
-
 *.png binary
 *.jpeg binary
 *.jpg binary
 *.gif binary
+*.war filter=lfs diff=lfs merge=lfs -text

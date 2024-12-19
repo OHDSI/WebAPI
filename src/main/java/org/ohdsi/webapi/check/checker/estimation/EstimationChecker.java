@@ -4,7 +4,8 @@ import static org.ohdsi.webapi.check.checker.estimation.helper.EstimationHelper.
 
 import java.util.Arrays;
 import java.util.List;
-import javax.annotation.PostConstruct;
+
+import jakarta.annotation.PostConstruct;
 import org.ohdsi.webapi.check.builder.ValidatorGroupBuilder;
 import org.ohdsi.webapi.check.checker.BaseChecker;
 import org.ohdsi.webapi.estimation.dto.EstimationDTO;

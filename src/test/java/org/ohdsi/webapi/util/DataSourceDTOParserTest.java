@@ -2,30 +2,38 @@ package org.ohdsi.webapi.util;
 
 import com.odysseusinc.arachne.commons.types.DBMSType;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.ohdsi.webapi.source.Source;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.*;
 
 public class DataSourceDTOParserTest {
 
     public static final String PGSQL_CONN_STR = "jdbc:postgresql://localhost:5432/ohdsi?ssl=true&user=user&password=secret";
     public static final String PGSQL_WO_PWD_CONN_STR = "jdbc:postgresql://localhost:5432/ohdsi?ssl=true";
     public static final String MSSQL_CONN_STR = "jdbc:sqlserver://localhost:1433;databaseName=ohdsi;user=msuser;password=password";
-    public static final String PDW_CONN_STR = "jdbc:sqlserver://yourserver.database.windows.net:1433;database=yourdatabase;user=pdw_user;password=pdw_password;" +
-            "encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;";
-    public static final String REDSHIFT_CONN_STR = "jdbc:redshift://examplecluster.abc123xyz789.us-west-2.redshift.amazonaws.com:5439/" +
-            "dev?ssl=true&UID=your_username&PWD=your_password";
+    public static final String PDW_CONN_STR = """
+            jdbc:sqlserver://yourserver.database.windows.net:1433;database=yourdatabase;user=pdw_user;password=pdw_password;\
+            encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;\
+            """;
+    public static final String REDSHIFT_CONN_STR = """
+            jdbc:redshift://examplecluster.abc123xyz789.us-west-2.redshift.amazonaws.com:5439/\
+            dev?ssl=true&UID=your_username&PWD=your_password\
+            """;
     public static final String NETEZZA_CONN_STR = "jdbc:netezza://main:5490/sales;user=admin;password=password;loglevel=2;logdirpath=C:\\";
     public static final String IMPALA_AUTH3_CONN_STR = "jdbc:impala://node1.example.com:18000/default2;AuthMech=3;UID=cloudera;PWD=cloudera";
     public static final String IMPALA_AUTH0_CONN_STR = "jdbc:impala://localhost:21050;AuthMech=0;";
-    public static final String IMPALA_AUTH1_CONN_STR = "jdbc:impala://node1.example.com:21050;AuthMech=1;" +
-            "KrbRealm=EXAMPLE.COM;KrbHostFQDN=node1.example.com;KrbServiceName=impala";
-    private static final String BIGQUERY_CONN_STR = "jdbc:bigquery://https://www.googleapis.com/bigquery/v2:443;" +
-            "ProjectId=MyBigQueryProject;OAuthType=0;OAuthServiceAcctEmail==bqtest1@data-driver-testing.iam.gserviceaccount.com;" +
-            "OAuthPvtKeyPath=C:\\SecureFiles\\ServiceKeyFile.p12;";
+    public static final String IMPALA_AUTH1_CONN_STR = """
+            jdbc:impala://node1.example.com:21050;AuthMech=1;\
+            KrbRealm=EXAMPLE.COM;KrbHostFQDN=node1.example.com;KrbServiceName=impala\
+            """;
+    private static final String BIGQUERY_CONN_STR = """
+            jdbc:bigquery://https://www.googleapis.com/bigquery/v2:443;\
+            ProjectId=MyBigQueryProject;OAuthType=0;OAuthServiceAcctEmail==bqtest1@data-driver-testing.iam.gserviceaccount.com;\
+            OAuthPvtKeyPath=C:\\SecureFiles\\ServiceKeyFile.p12;\
+            """;
     public static final String ORACLE_WO_PWD_CONN_STR = "jdbc:oracle:thin:@myhost:1521:orcl";
     public static final String ORACLE_WITH_PWD_CONN_STR = "jdbc:oracle:thin:scott/tiger@myhost:1521:orcl";
     public static final String HIVE_CONN_STR = "jdbc:hive2://sandbox-hdp.hortonworks.com:2181/synpuf_531_orc;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2";

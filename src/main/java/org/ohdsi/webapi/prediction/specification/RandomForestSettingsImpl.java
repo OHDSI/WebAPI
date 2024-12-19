@@ -38,8 +38,8 @@ public class RandomForestSettingsImpl extends SeedSettingsImpl implements Random
         if (mtries != null) {
             if (mtries instanceof ArrayList) {
                 this.mtries = (ArrayList<Integer>) mtries;
-            } else if (mtries instanceof Integer) {
-                this.mtries = new ArrayList<>(Arrays.asList((Integer) mtries));
+            } else if (mtries instanceof Integer integer) {
+                this.mtries = new ArrayList<>(Arrays.asList(integer));
             } else {
                 throw new InputMismatchException("Expected ArrayList<Integer> or Integer");
             }
@@ -67,8 +67,8 @@ public class RandomForestSettingsImpl extends SeedSettingsImpl implements Random
         if (ntrees != null) {
             if (ntrees instanceof ArrayList) {
                 this.ntrees = (ArrayList<Integer>) ntrees;
-            } else if (ntrees instanceof Integer) {
-                this.ntrees = new ArrayList<>(Arrays.asList((Integer) ntrees));
+            } else if (ntrees instanceof Integer integer) {
+                this.ntrees = new ArrayList<>(Arrays.asList(integer));
             } else {
                 throw new InputMismatchException("Expected ArrayList<Integer> or Integer");
             }
@@ -99,10 +99,10 @@ public class RandomForestSettingsImpl extends SeedSettingsImpl implements Random
                 this.maxDepth = new ArrayList<>();
             
             maxDepth.forEach((o) -> {
-                if (o instanceof BigDecimal) {
-                    this.maxDepth.add(((BigDecimal) o).intValue());
-                } else if (o instanceof Integer) {
-                    this.maxDepth.add((Integer) o);
+                if (o instanceof BigDecimal decimal) {
+                    this.maxDepth.add(decimal.intValue());
+                } else if (o instanceof Integer integer) {
+                    this.maxDepth.add(integer);
                 } else {
                     throw new InputMismatchException("Expected ArrayList<Integer> or ArrayList<BigDecimal>");
                 }
@@ -132,8 +132,8 @@ public class RandomForestSettingsImpl extends SeedSettingsImpl implements Random
         if (varImp != null) {
             if (varImp instanceof ArrayList) {
                 this.varImp = (ArrayList<Boolean>) varImp;
-            } else if (varImp instanceof Boolean) {
-                this.varImp = new ArrayList<>(Arrays.asList((Boolean) varImp));
+            } else if (varImp instanceof Boolean boolean1) {
+                this.varImp = new ArrayList<>(Arrays.asList(boolean1));
             } else {
                 throw new InputMismatchException("Expected ArrayList<Boolean> or Boolean");
             }

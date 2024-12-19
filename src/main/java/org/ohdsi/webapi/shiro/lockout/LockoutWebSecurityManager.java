@@ -27,8 +27,8 @@ public class LockoutWebSecurityManager extends DefaultWebSecurityManager {
     protected void onFailedLogin(AuthenticationToken token, AuthenticationException ae, Subject subject) {
         log.debug("Failed to login: {}", ae.getMessage(), ae);
         super.onFailedLogin(token, ae, subject);
-        if (token instanceof UsernamePasswordToken) {
-            String username = ((UsernamePasswordToken) token).getUsername();
+        if (token instanceof UsernamePasswordToken passwordToken) {
+            String username = passwordToken.getUsername();
             lockoutPolicy.loginFailed(username);
         }
     }
@@ -37,8 +37,8 @@ public class LockoutWebSecurityManager extends DefaultWebSecurityManager {
     protected void onSuccessfulLogin(AuthenticationToken token, AuthenticationInfo info, Subject subject) {
 
         super.onSuccessfulLogin(token, info, subject);
-        if (token instanceof UsernamePasswordToken) {
-            String username = ((UsernamePasswordToken) token).getUsername();
+        if (token instanceof UsernamePasswordToken passwordToken) {
+            String username = passwordToken.getUsername();
             lockoutPolicy.loginSucceeded(username);
         }
     }
@@ -48,8 +48,8 @@ public class LockoutWebSecurityManager extends DefaultWebSecurityManager {
 
         AuthenticationInfo info;
 
-        if (token instanceof UsernamePasswordToken) {
-            String username = ((UsernamePasswordToken) token).getUsername();
+        if (token instanceof UsernamePasswordToken passwordToken) {
+            String username = passwordToken.getUsername();
             if (lockoutPolicy.isLockedOut(username)) {
                 long expiration = lockoutPolicy.getLockExpiration(username);
                 long now = new Date().getTime();
@@ -70,8 +70,10 @@ public class LockoutWebSecurityManager extends DefaultWebSecurityManager {
                 onFailedLogin(token, ae, subject);
             } catch (Exception e) {
                 if (log.isInfoEnabled()) {
-                    log.info("onFailedLogin method threw an " +
-                            "exception.  Logging and propagating original AuthenticationException.", e);
+                    log.info("""
+                            onFailedLogin method threw an \
+                            exception.  Logging and propagating original AuthenticationException.\
+                            """, e);
                 }
             }
             throw ae;

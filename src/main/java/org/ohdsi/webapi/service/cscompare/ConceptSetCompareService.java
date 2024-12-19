@@ -95,7 +95,7 @@ public class ConceptSetCompareService extends AbstractDaoService {
     }
 
     private String createTempTable(final Source source, final JdbcTemplate jdbcTemplate) {
-        final String tableName = String.format(TEMP_TABLE_NAME_TEMPLATE,
+        final String tableName = TEMP_TABLE_NAME_TEMPLATE.formatted(
                 StringUtils.replace(UUID.randomUUID().toString(), "-", ""));
 
         String createStatement = SqlRender.renderSql(TEMP_TABLE_CREATE_TEMPLATE, new String[]{"temp_table"}, new String[]{tableName});

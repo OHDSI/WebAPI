@@ -11,7 +11,9 @@ public class IterableForEachValidatorBuilder<T> extends AbstractForEachValidator
     @Override
     public Validator<Collection<? extends T>> build() {
         List<ValidatorGroup<T, ?>> groups = initGroups();
-        List<Validator<T>> validators = initValidators();
+        /* List<Validator<T>> validators = initValidators();    MDACA Spring Boot 3 migration compilation issue */
+        @SuppressWarnings("unchecked")
+        List<Validator<T>> validators = (List<Validator<T>>) (List<?>) initValidators();
 
         return new IterableForEachValidator<>(createChildPath(), severity, errorMessage, validators, groups);
     }

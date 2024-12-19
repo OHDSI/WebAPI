@@ -24,14 +24,14 @@ public class NotNullNotEmptyValidator<T> extends Validator<T> {
         if (Objects.isNull(value)) {
             isValid = false;
         } else {
-            if (value instanceof Collection) {
-                isValid = ((Collection) value).size() > 0;
-            } else if (value instanceof String) {
-                isValid = !((String) value).isEmpty();
+            if (value instanceof Collection collection) {
+                isValid = collection.size() > 0;
+            } else if (value instanceof String string) {
+                isValid = !string.isEmpty();
             } else if (value.getClass().isArray()) {
                 isValid = Array.getLength(value) > 0;
-            } else if (value instanceof Map) {
-                isValid = ((Map) value).size() > 0;
+            } else if (value instanceof Map map) {
+                isValid = map.size() > 0;
             }
         }
         if (!isValid) {

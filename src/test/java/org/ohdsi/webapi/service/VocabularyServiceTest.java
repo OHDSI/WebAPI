@@ -1,12 +1,12 @@
 package org.ohdsi.webapi.service;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
@@ -20,7 +20,7 @@ public class VocabularyServiceTest extends AbstractServiceTest {
   @Autowired
   private VocabularyService vocabularyService;
 
-  @Before
+  @BeforeEach
   public void before() {
 
     if (vocabularyService == null) {

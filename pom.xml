@@ -90,8 +90,7 @@
     <!-- spring.profiles.active>default</spring.profiles.active -->
 	<spring.profiles.active>webapi-postgresql</spring.profiles.active>
 
-    <security.provider>DisabledSecurity</security.provider>
-	<!-- security.provider>AtlasRegularSecurity</security.provider -->
+	<security.provider>AtlasRegularSecurity</security.provider>
     <security.token.expiration>43200</security.token.expiration>
     <security.origin>http://localhost</security.origin>
     <security.ssl.enabled>false</security.ssl.enabled>

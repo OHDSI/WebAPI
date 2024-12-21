@@ -77,18 +77,27 @@ public class JobTemplate {
 
     public JobExecutionResource launchTasklet(String jobName, String stepName, Tasklet tasklet,
                                               JobParameters jobParameters) {
+
+    	TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
+        transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+
+        return transactionTemplate.execute(status -> {
+	        JobExecution exec;
         try {
-            jobParameters = new JobParametersBuilder(jobParameters)
-                    .addLong("jobStartTime", System.currentTimeMillis())
-                    .addString("jobAuthor", getAuthorForTasklet(jobName))
-                    .toJobParameters();
-            Step step = this.stepBuilders.get(stepName).tasklet(tasklet).build();
+            JobParametersBuilder builder = new JobParametersBuilder(jobParameters);
+            builder.addLong("jobStartTime", System.currentTimeMillis())
+                    .addString("jobAuthor", getAuthorForTasklet(jobName));
+              
+            Step step = this.stepBuilders.get(stepName).tasklet(tasklet)
+                    .transactionManager(transactionManager).build();
             Job job = this.jobBuilders.get(jobName).start(step).build();
-            JobExecution execution = this.jobLauncher.run(job, jobParameters);
-            return JobUtils.toJobExecutionResource(execution);
+            final JobParameters jobParams = builder.toJobParameters();
+            exec = this.jobLauncher.run(job, jobParams);
         } catch (Exception e) {
             throw new WebApplicationException(e, Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build());
         }
+        return JobUtils.toJobExecutionResource(exec);
+        });
     }
 
     private String getAuthorForTasklet(String jobName) {

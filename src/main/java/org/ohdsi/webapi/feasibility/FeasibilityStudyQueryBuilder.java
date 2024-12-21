@@ -68,7 +68,7 @@ public class FeasibilityStudyQueryBuilder {
     for (int i = 0; i< inclusionRules.size(); i++)
     {
       InclusionRule r = inclusionRules.get(i);
-      insertStatements.append(String.format(insertTemplate, study.getId(), i, r.getName()));
+      insertStatements.append(insertTemplate.formatted(study.getId(), i, r.getName()));
     }
     return insertStatements.toString();
   }

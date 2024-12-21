@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.user.importer.providers;
 
 import com.google.common.collect.ImmutableSet;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.user.importer.model.LdapGroup;
 import org.ohdsi.webapi.user.importer.model.LdapUser;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,7 +13,6 @@ import org.springframework.ldap.core.support.SimpleDirContextAuthenticationStrat
 import org.springframework.ldap.support.LdapUtils;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
@@ -97,15 +96,15 @@ public class ActiveDirectoryProvider extends AbstractLdapProvider {
   }
 
   @Override
-  public List<LdapGroup> getLdapGroups(Attributes attributes) throws NamingException {
+  public List<LdapGroup> getLdapGroups(/*~~>*/Attributes attributes) throws /*~~>*/NamingException {
     return valueAsList(attributes.get("memberOf")).stream()
             .map(v -> new LdapGroup("", v))
             .collect(Collectors.toList());
   }
 
   @Override
-  public SearchControls getUserSearchControls() {
-    SearchControls searchControls = new SearchControls();
+  public /*~~>*/SearchControls getUserSearchControls() {
+    /*~~>*/SearchControls searchControls = new /*~~>*/SearchControls();
     searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
     searchControls.setCountLimit(countLimit);
     return searchControls;

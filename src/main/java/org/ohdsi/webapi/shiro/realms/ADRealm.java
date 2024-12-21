@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.shiro.realms;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
@@ -73,22 +73,22 @@ public class ADRealm extends ActiveDirectoryRealm {
     }
 
     @Override
-    protected AuthenticationInfo queryForAuthenticationInfo(AuthenticationToken token, LdapContextFactory ldapContextFactory) throws NamingException {
+    protected AuthenticationInfo queryForAuthenticationInfo(AuthenticationToken token, LdapContextFactory ldapContextFactory) throws /*~~>*/NamingException {
 
         if (Objects.nonNull(ldapTemplate) && StringUtils.isNotBlank(searchFilter) && StringUtils.isNotBlank(searchString)) {
             UsernamePasswordToken upToken = (UsernamePasswordToken) token;
             String userPrincipalName = getUserPrincipalName(upToken.getUsername());
 
-            String userSearch = String.format(searchString, userPrincipalName);
+            String userSearch = searchString.formatted(userPrincipalName);
             List<UserPrincipal> result = ldapTemplate.search("", userSearch, SearchControls.SUBTREE_SCOPE,
                     userMapper);
 
             if (result.size() == 1) {
                 UserPrincipal userPrincipal = result.iterator().next();
-                List<String> filterResult = ldapTemplate.search("", String.format(searchFilter, userPrincipal.getUsername()),
+                List<String> filterResult = ldapTemplate.search("", searchFilter.formatted(userPrincipal.getUsername()),
                         SearchControls.SUBTREE_SCOPE, dnAttributesMapper);
                 if (!filterResult.isEmpty()) {
-                    LdapContext ctx = null;
+                    /*~~>*/LdapContext ctx = null;
                     try {
                         ctx = ldapContextFactory.getLdapContext(upToken.getUsername(), String.valueOf(upToken.getPassword()));
                     } finally {

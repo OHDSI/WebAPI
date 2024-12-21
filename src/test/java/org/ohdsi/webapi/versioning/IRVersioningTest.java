@@ -13,9 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.io.IOException;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class IRVersioningTest extends BaseVersioningTest<IRAnalysisDTO, IRVersionFullDTO, Integer> {
     private static final String JSON_PATH = "/versioning/ir.json";

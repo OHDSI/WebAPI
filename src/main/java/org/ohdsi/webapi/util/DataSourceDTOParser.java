@@ -84,7 +84,7 @@ public final class DataSourceDTOParser {
         return Arrays.stream(DBMSType.values())
                     .filter(type -> Objects.equals(type.getOhdsiDB(), source.getSourceDialect()))
                     .findFirst()
-                    .orElseThrow(() -> new RuntimeException(String.format("Unsupported data source dialect: %s", source.getSourceDialect())));
+                    .orElseThrow(() -> new RuntimeException("Unsupported data source dialect: %s".formatted(source.getSourceDialect())));
     }
 
 }

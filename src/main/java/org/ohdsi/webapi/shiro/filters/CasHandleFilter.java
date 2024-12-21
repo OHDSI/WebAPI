@@ -6,18 +6,18 @@ import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.servlet.ShiroHttpServletRequest;
-import org.jasig.cas.client.authentication.AttributePrincipal;
-import org.jasig.cas.client.validation.Assertion;
-import org.jasig.cas.client.validation.TicketValidationException;
-import org.jasig.cas.client.validation.TicketValidator;
+import org.apereo.cas.client.authentication.AttributePrincipal;
+import org.apereo.cas.client.validation.Assertion;
+import org.apereo.cas.client.validation.TicketValidationException;
+import org.apereo.cas.client.validation.TicketValidator;
 import org.pac4j.cas.profile.CasProfile;
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 
@@ -54,8 +54,8 @@ public class CasHandleFilter extends AtlasAuthFilter {
     }
     
     /**
-     * @see org.apache.shiro.web.filter.authc.AuthenticatingFilter#createToken(javax.servlet.ServletRequest,
-     *      javax.servlet.ServletResponse)
+     * @see org.apache.shiro.web.filter.authc.AuthenticatingFilter#createToken(jakarta.servlet.ServletRequest,
+     *      jakarta.servlet.ServletResponse)
      */
     @Override
     protected AuthenticationToken createToken(ServletRequest servletRequest,
@@ -98,8 +98,8 @@ public class CasHandleFilter extends AtlasAuthFilter {
     }
     
     /**
-     * @see org.apache.shiro.web.filter.AccessControlFilter#onAccessDenied(javax.servlet.ServletRequest,
-     *      javax.servlet.ServletResponse)
+     * @see org.apache.shiro.web.filter.AccessControlFilter#onAccessDenied(jakarta.servlet.ServletRequest,
+     *      jakarta.servlet.ServletResponse)
      */
     @Override
     protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception {

@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.security.config;
 
+import jakarta.annotation.PostConstruct;
 import org.hibernate.event.service.spi.EventListenerRegistry;
 import org.hibernate.event.spi.EventType;
 import org.hibernate.internal.SessionFactoryImpl;
@@ -10,9 +11,8 @@ import org.ohdsi.webapi.shiro.management.DisabledSecurity;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.annotation.PostConstruct;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceUnit;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.PersistenceUnit;
 
 @Configuration
 @ConditionalOnMissingBean(value = DisabledSecurity.class)

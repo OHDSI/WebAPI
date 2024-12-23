@@ -44,6 +44,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -134,6 +135,9 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     @Autowired
     private ConversionService conversionService;
 
+    @Autowired
+    private PlatformTransactionManager transactionManager;
+    
     @Override
     public void afterPropertiesSet() throws Exception {
         queryRunner.init(this.getSourceDialect(), objectMapper);
@@ -555,14 +559,14 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         AchillesCacheTasklet achillesTasklet = new AchillesCacheTasklet(source, instance, cacheService,
                 queryRunner, objectMapper);
         return stepBuilderFactory.get(jobStepName + " achilles")
-                .tasklet(achillesTasklet)
+                .tasklet(achillesTasklet).transactionManager(transactionManager)
                 .build();
     }
 
     private Step getCountStep(Source source, String jobStepName) {
         CDMResultsCacheTasklet countTasklet = new CDMResultsCacheTasklet(source, cdmCacheService);
         return stepBuilderFactory.get(jobStepName + " counts")
-                .tasklet(countTasklet)
+                .tasklet(countTasklet).transactionManager(transactionManager)
                 .build();
     }
 

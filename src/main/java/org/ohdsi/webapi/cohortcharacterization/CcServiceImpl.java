@@ -163,11 +163,11 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
     private Map<String, FeatureExtraction.PrespecAnalysis> prespecAnalysisMap = FeatureExtraction.getNameToPrespecAnalysis();
 
     private final EntityGraph defaultEntityGraph = DynamicEntityGraph.loading().addPath(
-            "cohortDefinitions",
-            "featureAnalyses",
-            "stratas",
-            "parameters",
-            "createdBy",
+            "cohortDefinitions").addPath(
+            "featureAnalyses").addPath(
+            "stratas").addPath(
+            "parameters").addPath(
+            "createdBy").addPath(
             "modifiedBy"
     ).build();
 

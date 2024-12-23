@@ -42,10 +42,7 @@ public class FeAnalysisServiceImpl extends AbstractDaoService implements FeAnaly
     private final ApplicationEventPublisher eventPublisher;
     private FeAnalysisAggregateRepository aggregateRepository;
 
-    private final EntityGraph defaultEntityGraph = DynamicEntityGraph.loading().addPath(
-            "createdBy",
-            "modifiedBy"
-    ).build();
+    private final EntityGraph defaultEntityGraph = DynamicEntityGraph.loading().addPath("createdBy").addPath("modifiedBy").build();
 
     public FeAnalysisServiceImpl(
             final FeAnalysisEntityRepository analysisRepository,

@@ -439,7 +439,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 		);
 		TransactionalTasklet statisticsTasklet = new PathwayStatisticsTasklet(getSourceJdbcTemplate(source), getTransactionTemplate(), source, this, genericConversionService);
 		Step generateStatistics = stepBuilderFactory.get(GENERATE_PATHWAY_ANALYSIS + ".generateStatistics")
-						.tasklet(statisticsTasklet)
+						.tasklet(statisticsTasklet).transactionManager(getTransactionTemplate().getTransactionManager())
 						.build();
 
 		generateAnalysisJob.next(generateStatistics);

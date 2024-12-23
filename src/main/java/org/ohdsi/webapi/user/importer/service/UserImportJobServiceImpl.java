@@ -147,7 +147,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
 
     UserImportTasklet userImportTasklet = new UserImportTasklet(transactionTemplate, userImportService);
     return stepBuilderFactory.get("importUsers")
-            .tasklet(userImportTasklet)
+            .tasklet(userImportTasklet).transactionManager(transactionTemplate.getTransactionManager())
             .build();
   }
 
@@ -155,7 +155,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
 
     FindUsersToImportTasklet findUsersTasklet = new FindUsersToImportTasklet(transactionTemplate, userImportService);
     Step findUsersStep = stepBuilderFactory.get("findUsersForImport")
-            .tasklet(findUsersTasklet)
+            .tasklet(findUsersTasklet).transactionManager(transactionTemplate.getTransactionManager())
             .build();
 
     if (job.getUserRoles() != null) {

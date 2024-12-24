@@ -16,14 +16,12 @@ import org.ohdsi.webapi.source.CheckedEncryptedStringType;
 
 import jakarta.persistence.*;
 import java.util.List;
-
+import java.util.List;
 @Entity
 @Table(name = "fe_analysis_aggregate")
-// @TypeDef(typeClass = EnumListType.class, name = "enumm-list")   MDACA Spring Boot 3 migration compilation issue 
-@Convert(attributeName = "enumm-list", converter = EnumListType.class)
 public class FeAnalysisAggregateEntity implements FeatureAnalysisAggregate, WithId<Integer> {
-
-  @Id
+	
+	@Id
   @GenericGenerator(
           name = "fe_aggregate_generator",
           strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
@@ -65,13 +63,10 @@ public class FeAnalysisAggregateEntity implements FeatureAnalysisAggregate, With
   @Column(name = "missing_means_zero")
   private boolean isMissingMeansZero;
 
+
 	@Column(name = "criteria_columns")
-/*   MDACA Spring Boot 3 migration compilation issue, see package-info.java	
-  @Type(value = enumm-list.class, parameters = {
-          @Parameter(name = "enumClass", value = "org.ohdsi.circe.cohortdefinition.builders.CriteriaColumn")
-  })
-*/
-  private List<CriteriaColumn> columns;
+	@Convert(converter = CriteriaColumnListConverter.class)
+private List<CriteriaColumn> columns;
 
   @Override
   public Integer getId() {

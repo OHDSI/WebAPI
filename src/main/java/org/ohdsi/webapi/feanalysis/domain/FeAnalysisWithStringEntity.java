@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.feanalysis.domain;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Lob;
@@ -15,8 +16,8 @@ public class FeAnalysisWithStringEntity extends FeAnalysisEntity<String> {
     public FeAnalysisWithStringEntity(final FeAnalysisWithStringEntity analysis) {
         super(analysis);
     }
-    
-    @Lob
+
+    @Column
     private String design;
 
     @Override

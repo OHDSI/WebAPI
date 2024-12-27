@@ -1229,6 +1229,15 @@
           "tag": "Tag:"
         }
       }
+    },
+    "shiny": {
+      "button": {
+        "title": "Shiny App",
+        "menu": {
+          "download": "Download",
+          "publish": "Publish"
+        }
+      }
     }
   },
   "facets": {

@@ -236,6 +236,10 @@
     <logging.level.org.hibernate>info</logging.level.org.hibernate>
     <logging.level.org.apache.shiro>warn</logging.level.org.apache.shiro>
 
+    <!-- Spring Cache properties -->
+    <spring.cache.type>jcache</spring.cache.type>
+
+    <!-- Spring Batch -->
     <spring.batch.taskExecutor.corePoolSize>10</spring.batch.taskExecutor.corePoolSize>
     <spring.batch.taskExecutor.maxPoolSize>20</spring.batch.taskExecutor.maxPoolSize>
     <spring.batch.taskExecutor.queueCapacity>2147483647</spring.batch.taskExecutor.queueCapacity>
@@ -272,6 +276,7 @@
     <cache.jobs.count>3</cache.jobs.count>
     <!-- Achilles cache -->
     <cache.achilles.usePersonCount>true</cache.achilles.usePersonCount>
+    <cache.webapi.enabled>true</cache.webapi.enabled>
 
     <!-- Build info -->
     <buildinfo.atlas.milestone.id>47</buildinfo.atlas.milestone.id>
@@ -744,6 +749,10 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>javax.cache</groupId>
+      <artifactId>cache-api</artifactId>
+      <version>1.1.1</version>
+    </dependency>    <dependency>
       <groupId>org.ohdsi.sql</groupId>
       <artifactId>SqlRender</artifactId>
       <version>${SqlRender.version}</version>
@@ -1202,6 +1211,10 @@
       <version>1.1.7</version>
     </dependency>
     <dependency>
+      <groupId>org.ehcache</groupId>
+      <artifactId>ehcache</artifactId>
+      <version>3.9.11</version>
+    </dependency>    <dependency>
       <groupId>com.opentable.components</groupId>
       <artifactId>otj-pg-embedded</artifactId>
       <version>0.13.1</version>

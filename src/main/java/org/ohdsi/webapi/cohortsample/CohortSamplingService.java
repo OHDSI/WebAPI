@@ -15,6 +15,7 @@ import org.springframework.batch.core.configuration.annotation.StepBuilderFactor
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionCallback;
 
 import jakarta.ws.rs.BadRequestException;
@@ -46,16 +47,19 @@ public class CohortSamplingService extends AbstractDaoService {
 	private final JobBuilderFactory jobBuilders;
 	private final StepBuilderFactory stepBuilders;
 	private final JobTemplate jobTemplate;
+	private final PlatformTransactionManager transactionManager;
 
 	public CohortSamplingService(
 			CohortSampleRepository sampleRepository,
 			JobBuilderFactory jobBuilders,
 			StepBuilderFactory stepBuilders,
-			JobTemplate jobTemplate) {
+			JobTemplate jobTemplate,
+			PlatformTransactionManager transactionManager) {
 		this.sampleRepository = sampleRepository;
 		this.jobBuilders = jobBuilders;
 		this.stepBuilders = stepBuilders;
 		this.jobTemplate = jobTemplate;
+		this.transactionManager = transactionManager;
 	}
 
 	public List<CohortSampleDTO> listSamples(int cohortDefinitionId, int sourceId) {
@@ -481,7 +485,7 @@ public class CohortSamplingService extends AbstractDaoService {
 	}
 
 	public CleanupCohortSamplesTasklet createDeleteSamplesTasklet() {
-		return new CleanupCohortSamplesTasklet(getTransactionTemplate(), getSourceRepository(), this, sampleRepository);
+		return new CleanupCohortSamplesTasklet(getTransactionTemplate(), getSourceRepository(), this, sampleRepository, transactionManager);
 	}
 
 	/** Maps a SQL result to a sample element. */

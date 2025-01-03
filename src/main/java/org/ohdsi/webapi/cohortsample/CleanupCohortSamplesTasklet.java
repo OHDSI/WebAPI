@@ -20,7 +20,13 @@ import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
 
 import java.util.List;
 import java.util.Map;
@@ -37,17 +43,20 @@ public class CleanupCohortSamplesTasklet implements Tasklet {
 	private final SourceRepository sourceRepository;
 	private final CohortSamplingService samplingService;
 	private final CohortSampleRepository sampleRepository;
+	private final PlatformTransactionManager transactionManager;
 
 	public CleanupCohortSamplesTasklet(
 			final TransactionTemplate transactionTemplate,
 			final SourceRepository sourceRepository,
 			CohortSamplingService samplingService,
-			CohortSampleRepository sampleRepository
+			CohortSampleRepository sampleRepository,
+			PlatformTransactionManager transactionManager
 	) {
 		this.transactionTemplate = transactionTemplate;
 		this.sourceRepository = sourceRepository;
 		this.samplingService = samplingService;
 		this.sampleRepository = sampleRepository;
+		this.transactionManager = transactionManager;
 	}
 
 	private Integer doTask(ChunkContext chunkContext) {
@@ -134,6 +143,7 @@ public class CleanupCohortSamplesTasklet implements Tasklet {
 	private JobExecutionResource launch(JobBuilderFactory jobBuilders, StepBuilderFactory stepBuilders, JobTemplate jobTemplate, JobParameters jobParameters) {
 		Step cleanupStep = stepBuilders.get("cohortSample.cleanupSamples")
 				.tasklet(this)
+				.transactionManager(transactionManager)
 				.build();
 
 		SimpleJobBuilder cleanupJobBuilder = jobBuilders.get("cleanupSamples")
@@ -143,4 +153,5 @@ public class CleanupCohortSamplesTasklet implements Tasklet {
 
 		return jobTemplate.launch(cleanupCohortJob, jobParameters);
 	}
+	
 }

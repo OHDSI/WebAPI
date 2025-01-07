@@ -103,7 +103,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
               .orElse(new CohortGenerationInfo(cohortDefinition, source.getSourceId()));
 
       info.setCreatedBy(userEntity);
-      info.setIsChooseDemographic(demographicStat);
+      info.setIsDemographic(demographicStat);
 
       cohortDefinition.getGenerationInfoList().add(info);
 

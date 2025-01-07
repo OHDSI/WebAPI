@@ -46,14 +46,14 @@ public class CohortGenerationInfoDTO {
     private UserDTO createdBy;
     
     private Long ccGenerateId;
-    private boolean isChooseDemographic;
+    private boolean isDemographic;
 
-    public boolean getIsChooseDemographic() {
-        return isChooseDemographic;
+    public boolean getIsDemographic() {
+        return isDemographic;
     }
 
-    public void setIsChooseDemographic(boolean isChooseDemographic) {
-        this.isChooseDemographic = isChooseDemographic;
+    public void setIsDemographic(boolean isDemographic) {
+        this.isDemographic = isDemographic;
     }
 
 

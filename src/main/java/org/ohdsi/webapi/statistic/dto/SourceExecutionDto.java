@@ -1,19 +1,16 @@
 package org.ohdsi.webapi.statistic.dto;
 
-import java.time.Instant;
-import java.time.LocalDate;
-
 public class SourceExecutionDto {
     private String sourceName;
     private String executionName;
     private String executionDate;
-    private String userID;
+    private String userId;
 
-    public SourceExecutionDto(String sourceName, String executionName, String executionDate, String userID) {
+    public SourceExecutionDto(String sourceName, String executionName, String executionDate, String userId) {
         this.sourceName = sourceName;
         this.executionName = executionName;
         this.executionDate = executionDate;
-        this.userID = userID;
+        this.userId = userId;
     }
 
     public String getSourceName() {
@@ -40,11 +37,11 @@ public class SourceExecutionDto {
         this.executionDate = executionDate;
     }
 
-    public String getUserID() {
-        return userID;
+    public String getUserId() {
+        return userId;
     }
 
-    public void setUserID(String userID) {
-        this.userID = userID;
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }

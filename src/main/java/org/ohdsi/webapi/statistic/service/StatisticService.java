@@ -37,14 +37,12 @@ public class StatisticService {
     protected final Logger LOG = LoggerFactory.getLogger(getClass());
 
     @Value("${audit.trail.log.file}")
-    // TODO remove value
-    private String absoluteLogFileName = "/tmp/atlas/audit/audit.log";
+    private String absoluteLogFileName;
 
     private String logFileName;
 
     @Value("${audit.trail.log.file.pattern}")
-    // TODO remove value
-    private String absoluteLogFileNamePattern = "/tmp/atlas/audit/audit-%d{yyyy-MM-dd}-%i.log";
+    private String absoluteLogFileNamePattern;
 
     private String logFileNamePattern;
 
@@ -102,6 +100,10 @@ public class StatisticService {
     }
 
     public StatisticService() {
+        if (absoluteLogFileName == null || absoluteLogFileNamePattern == null) {
+            throw new RuntimeException("Application statistics can't operate because of missing configuration values for the audit trail log file or its pattern");
+        }
+        
         logFileName = new File(absoluteLogFileName).getName();
         logFileNamePattern = new File(absoluteLogFileNamePattern).getName();
 

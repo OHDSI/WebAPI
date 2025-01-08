@@ -8,6 +8,8 @@ import org.ohdsi.webapi.statistic.dto.EndpointDto;
 import org.ohdsi.webapi.statistic.dto.SourceExecutionDto;
 import org.ohdsi.webapi.statistic.dto.SourceExecutionsDto;
 import org.ohdsi.webapi.statistic.service.StatisticService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Controller;
 
@@ -30,6 +32,9 @@ import java.util.stream.Collectors;
 @Path("/statistic/")
 @ConditionalOnProperty(value = "audit.trail.enabled", havingValue = "true")
 public class StatisticController {
+    
+    private static final Logger log = LoggerFactory.getLogger(StatisticController.class);
+    
     private StatisticService service;
 
     public enum ResponseFormat {
@@ -40,8 +45,16 @@ public class StatisticController {
         add(new String[]{"Date", "Source", "Execution Type"});
     }};
     
+    private static final List<String[]> EXECUTION_STATISTICS_CSV_RESULT_HEADER_WITH_USER_ID = new ArrayList<String[]>() {{
+        add(new String[]{"Date", "Source", "Execution Type", "User ID"});
+    }};
+    
     private static final List<String[]> ACCESS_TRENDS_CSV_RESULT_HEADER = new ArrayList<String[]>() {{
-        add(new String[]{"Date", "Endpoint", "UserID"});
+        add(new String[]{"Date", "Endpoint"});
+    }};
+    
+    private static final List<String[]> ACCESS_TRENDS_CSV_RESULT_HEADER_WITH_USER_ID = new ArrayList<String[]>() {{
+        add(new String[]{"Date", "Endpoint", "User ID"});
     }};
 
     public StatisticController(StatisticService service) {
@@ -93,31 +106,30 @@ public class StatisticController {
     }
 
     private Response prepareExecutionResultResponse(List<SourceExecutionDto> executions, String filename, boolean showUserInformation) {
-        updateExecutionStatisticsHeader(showUserInformation);
         List<String[]> data = executions.stream()
                 .map(execution -> showUserInformation
-                        ? new String[]{execution.getExecutionDate(), execution.getSourceName(), execution.getExecutionName(), execution.getUserID()}
+                        ? new String[]{execution.getExecutionDate(), execution.getSourceName(), execution.getExecutionName(), execution.getUserId()}
                         : new String[]{execution.getExecutionDate(), execution.getSourceName(), execution.getExecutionName()}
                 )
                 .collect(Collectors.toList());
-        return prepareResponse(data, filename, EXECUTION_STATISTICS_CSV_RESULT_HEADER);
+        return prepareResponse(data, filename, showUserInformation ? EXECUTION_STATISTICS_CSV_RESULT_HEADER_WITH_USER_ID : EXECUTION_STATISTICS_CSV_RESULT_HEADER);
     }
 
     private Response prepareAccessTrendsResponse(List<AccessTrendDto> trends, String filename, boolean showUserInformation) {
-        updateAccessTrendsHeader(showUserInformation);
         List<String[]> data = trends.stream()
                 .map(trend -> showUserInformation
                         ? new String[]{trend.getExecutionDate().toString(), trend.getEndpointName(), trend.getUserID()}
                         : new String[]{trend.getExecutionDate().toString(), trend.getEndpointName()}
                 )
                 .collect(Collectors.toList());
-        return prepareResponse(data, filename, ACCESS_TRENDS_CSV_RESULT_HEADER);
+        return prepareResponse(data, filename, showUserInformation ? ACCESS_TRENDS_CSV_RESULT_HEADER_WITH_USER_ID : ACCESS_TRENDS_CSV_RESULT_HEADER);
     }
 
     private Response prepareResponse(List<String[]> data, String filename, List<String[]> header) {
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
             StringWriter sw = new StringWriter();
-            CSVWriter csvWriter = new CSVWriter(sw, ',', CSVWriter.DEFAULT_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER);
+            CSVWriter csvWriter = new CSVWriter(sw, ',', CSVWriter.DEFAULT_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER)) {
+
             csvWriter.writeAll(header);
             csvWriter.writeAll(data);
             csvWriter.flush();
@@ -129,25 +141,8 @@ public class StatisticController {
                     .header("Content-Disposition", String.format("attachment; filename=\"%s\"", filename))
                     .build();
         } catch (Exception ex) {
+            log.error("An error occurred while building a response");
             throw new RuntimeException(ex);
-        }
-    }
-
-    private void updateExecutionStatisticsHeader(boolean showUserInformation) {
-        EXECUTION_STATISTICS_CSV_RESULT_HEADER.clear();
-        if (showUserInformation) {
-            EXECUTION_STATISTICS_CSV_RESULT_HEADER.add(new String[]{"Date", "Source", "Execution Type", "User ID"});
-        } else {
-            EXECUTION_STATISTICS_CSV_RESULT_HEADER.add(new String[]{"Date", "Source", "Execution Type"});
-        }
-    }
-
-    private void updateAccessTrendsHeader(boolean showUserInformation) {
-        ACCESS_TRENDS_CSV_RESULT_HEADER.clear();
-        if (showUserInformation) {
-            ACCESS_TRENDS_CSV_RESULT_HEADER.add(new String[]{"Date", "Endpoint", "UserID"});
-        } else {
-            ACCESS_TRENDS_CSV_RESULT_HEADER.add(new String[]{"Date", "Endpoint"});
         }
     }
 

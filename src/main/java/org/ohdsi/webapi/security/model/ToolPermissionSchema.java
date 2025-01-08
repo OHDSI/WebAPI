@@ -9,8 +9,8 @@ import java.util.Map;
 public class ToolPermissionSchema extends EntityPermissionSchema {
     private static Map<String, String> writePermissions = new HashMap<String, String>() {{
         put("tool:%s:delete", "Delete Tool with id = %s");
-        put("tool:%s:put", "Update Tool with id = %s");
-        put("tool:%s:post", "Create Tool with id = %s");
+        put("tool:put", "Update a Tool");
+        put("tool:post", "Create a Tool");
     }};
     private static Map<String, String> readPermissions = new HashMap<String, String>() {
         {

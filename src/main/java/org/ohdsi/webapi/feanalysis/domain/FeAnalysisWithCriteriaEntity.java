@@ -48,4 +48,15 @@ public abstract class FeAnalysisWithCriteriaEntity<T extends FeAnalysisCriteriaE
 
         return Objects.nonNull(this.conceptSetEntity) ? this.conceptSetEntity.getConceptSets() : Collections.emptyList();
     }
+
+    public void addFeAnalysisCriteriaEntity(T feAnalysisCriteriaEntity) {
+        this.design.add(feAnalysisCriteriaEntity);
+        feAnalysisCriteriaEntity.setFeatureAnalysis(this);
+    }
+
+    public void removeFeAnalysisCriteriaEntity(T feAnalysisCriteriaEntity) {
+        this.design.remove(feAnalysisCriteriaEntity);
+        feAnalysisCriteriaEntity.setFeatureAnalysis(null);
+    }
+
 }

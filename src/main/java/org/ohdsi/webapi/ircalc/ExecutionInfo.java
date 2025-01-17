@@ -152,7 +152,13 @@ public class ExecutionInfo implements Serializable, IExecutionInfo {
     return analysis;
   }
 
+  public void setAnalysis(IncidenceRateAnalysis incidenceRateAnalysis) {
+      this.analysis = incidenceRateAnalysis;
+  }
+
   public Source getSource() {
     return source;
   }
+
+
 }

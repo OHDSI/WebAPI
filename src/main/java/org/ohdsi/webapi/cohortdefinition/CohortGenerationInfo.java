@@ -187,4 +187,13 @@ public class CohortGenerationInfo implements Serializable, IExecutionInfo {
   public UserEntity getCreatedBy() {
     return createdBy;
   }
+
+  public void setCohortDefinition(CohortDefinition cohortDefinition) {
+    this.cohortDefinition = cohortDefinition;
+    cohortDefinition.addCohortGenerationInfo(this);
+  }
+  public void removeCohortDefinition(CohortDefinition cohortDefinition) {
+    cohortDefinition.removeCohortGenerationInfo(this);
+    this.cohortDefinition = null;
+  }
 }

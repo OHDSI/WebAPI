@@ -94,4 +94,15 @@ public class UserImportJob extends ArachneJob {
   public void setUserRoles(String userRoles) {
     this.userRoles = userRoles;
   }
+
+  public void addRoleGroupEntity(RoleGroupEntity roleGroupEntity) {
+    this.roleGroupMapping.add(roleGroupEntity);
+    roleGroupEntity.setUserImportJob(this);
+  }
+
+  public void removeRoleGroupEntity(RoleGroupEntity roleGroupEntity) {
+    this.roleGroupMapping.remove(roleGroupEntity);
+    roleGroupEntity.setUserImportJob(null);
+  }
+
 }

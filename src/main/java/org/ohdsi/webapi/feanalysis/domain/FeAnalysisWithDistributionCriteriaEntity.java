@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.feanalysis.domain;
 
+
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
@@ -13,4 +14,5 @@ public class FeAnalysisWithDistributionCriteriaEntity extends FeAnalysisWithCrit
   public FeAnalysisWithDistributionCriteriaEntity(FeAnalysisWithCriteriaEntity analysis) {
     super(analysis);
   }
+
 }

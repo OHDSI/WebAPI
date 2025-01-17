@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.cohortdefinition;
 
 import org.apache.commons.lang3.StringUtils;
-
+import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.InclusionRule;
 import org.ohdsi.sql.SqlRender;
@@ -10,14 +10,14 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.util.SourceUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
-
+import org.springframework.util.ObjectUtils;
 
 import java.util.Arrays;
 import java.util.List;
 
 import static org.ohdsi.webapi.Constants.Params.TARGET_DATABASE_SCHEMA;
 import static org.ohdsi.webapi.Constants.Params.DESIGN_HASH;
-
+import static org.ohdsi.webapi.Constants.Params.RESULTS_DATABASE_SCHEMA;
 import static org.ohdsi.webapi.Constants.Tables.COHORT_CACHE;
 import static org.ohdsi.webapi.Constants.Tables.COHORT_CENSOR_STATS_CACHE;
 import static org.ohdsi.webapi.Constants.Tables.COHORT_INCLUSION_RESULT_CACHE;
@@ -46,6 +46,7 @@ public class CohortGenerationUtils {
   public static String[] buildGenerationSql(CohortGenerationRequest request) {
 
     Source source = request.getSource();
+    CohortExpression expression = request.getExpression();
 
     String cdmSchema = SourceUtils.getCdmQualifier(source);
     String vocabSchema = SourceUtils.getVocabQualifierOrNull(source);
@@ -56,13 +57,15 @@ public class CohortGenerationUtils {
     CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
     options.cohortIdFieldName = DESIGN_HASH;
     options.cohortId = request.getTargetId();
+    options.resultCohortId = request.getCohortId();
     options.cdmSchema = cdmSchema;
     options.vocabularySchema = vocabSchema;
     options.generateStats = true; // always generate with stats
+    options.retainCohortCovariates = !ObjectUtils.isEmpty(request.getRetainCohortCovariates()) && request.getRetainCohortCovariates(); // this field decides whether to retain cohort covariates
 
     final String oracleTempSchema = SourceUtils.getTempQualifier(source);
 
-    String expressionSql = expressionQueryBuilder.buildExpressionQuery(request.getExpression(), options);
+    String expressionSql = expressionQueryBuilder.buildExpressionQuery(expression, options);
     expressionSql = SqlRender.renderSql(
       expressionSql,
       new String[] {"target_cohort_table", 
@@ -81,6 +84,7 @@ public class CohortGenerationUtils {
         "@target_database_schema.cohort_inclusion"
       }
     );
+    expressionSql = expressionSql.replaceAll("@results_database_schema", request.getTargetSchema());
     sqlBuilder.append(expressionSql);
 
     String renderedSql = SqlRender.renderSql(

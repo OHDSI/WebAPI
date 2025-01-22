@@ -489,4 +489,9 @@ public abstract class AbstractDaoService extends AbstractAdminService {
             })
             .collect(Collectors.toList());
   }
+
+  public TagService getTagService() {
+    return tagService;
+  }
+
 }

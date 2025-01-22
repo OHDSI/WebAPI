@@ -17,6 +17,7 @@ package org.ohdsi.webapi.service;
 
 import java.io.ByteArrayOutputStream;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -47,9 +48,17 @@ import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.annotations.SearchDataTransformer;
 import org.ohdsi.webapi.service.dto.AnnotationDetailsDTO;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
+import org.ohdsi.webapi.service.dto.LockedConceptSetsResponse;
 import org.ohdsi.webapi.service.dto.SaveConceptSetAnnotationsRequest;
 import org.ohdsi.webapi.service.dto.AnnotationDTO;
 import org.ohdsi.webapi.service.dto.CopyAnnotationsRequest;
+import org.ohdsi.webapi.service.lock.ConceptSetLockingService;
+import org.ohdsi.webapi.service.lock.dto.ConceptSetSnapshotActionRequest;
+import org.ohdsi.webapi.service.lock.dto.ConceptSetSnapshotParameters;
+import org.ohdsi.webapi.service.lock.dto.GetConceptSetSnapshotItemsRequest;
+import org.ohdsi.webapi.service.lock.dto.GetConceptSetSnapshotItemsResponse;
+import org.ohdsi.webapi.service.lock.dto.IsLockedBatchCheckRequest;
+import org.ohdsi.webapi.service.lock.dto.IsLockedBatchCheckResponse;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
@@ -145,6 +154,8 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Autowired
     private ObjectMapper mapper;
 
+    @Autowired
+    private ConceptSetLockingService conceptSetLockingService;
 
     @Value("${security.defaultGlobalReadPermissions}")
     private boolean defaultGlobalReadPermissions;
@@ -189,6 +200,19 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
                         })
                         .collect(Collectors.toList()));
 
+    }
+
+    /**
+     * Get the list of concept sets that were locked using the snapshot lock feature
+     *
+     * @summary Get all locked concept sets
+     * @return A list of locked concept sets
+     */
+    @GET
+    @Path("/locked")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Collection<LockedConceptSetsResponse> getLockedConceptSets() {
+        return conceptSetLockingService.getLockedConceptSets(defaultGlobalReadPermissions);
     }
 
     /**
@@ -564,6 +588,71 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         ConceptSet conceptSet = conversionService.convert(conceptSetDTO, ConceptSet.class);
         return conversionService.convert(updateConceptSet(updated, conceptSet), ConceptSetDTO.class);
     }
+		@Path("/{id}/snapshots")
+		@GET
+		@Produces(MediaType.APPLICATION_JSON)
+		public List<ConceptSetSnapshotParameters> listSnapshots(@PathParam("id") final int id) throws Exception {
+		  	return conceptSetLockingService.listSnapshotsByConceptSetId(id);
+		}
+
+        @Path("/{id}/snapshot")
+        @GET
+        @Produces(MediaType.APPLICATION_JSON)
+        public ConceptSetSnapshotParameters getLastSnapshot(@PathParam("id") final int id) throws Exception {
+            return conceptSetLockingService.getLastSnapshotByConceptSetId(id);
+        }
+
+		@POST
+		@Path("/{id}/snapshot")
+		@Consumes(MediaType.APPLICATION_JSON)
+		@Produces(MediaType.APPLICATION_JSON)
+		public Response invokeSnapshotAction(@PathParam("id") final int id, ConceptSetSnapshotActionRequest snapshotActionRequest) {
+			try {
+                Supplier<ConceptSetExpression> conceptSetExpressionSupplier = () -> getConceptSetExpression(id, snapshotActionRequest.getSourceKey());
+				conceptSetLockingService.invokeSnapshotAction(id, snapshotActionRequest, conceptSetExpressionSupplier);
+				return Response.ok().entity("Snapshot action successfully invoked.").build();
+			} catch (Exception e) {
+				log.error("Invoke snapshot action failed", e);
+				return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+					.entity("Invoke snapshot action failed: " + e.getMessage())
+					.build();
+			}
+		}
+
+		@POST
+		@Path("/locked")
+		@Consumes(MediaType.APPLICATION_JSON)
+		@Produces(MediaType.APPLICATION_JSON)
+		public Response checkIsLockedBatch(IsLockedBatchCheckRequest isLockedBatchCheckRequest) {
+			IsLockedBatchCheckResponse response = new IsLockedBatchCheckResponse();
+			try {
+				List<Integer> ids = isLockedBatchCheckRequest.getConceptSetIds();
+				Map<Integer, Boolean> lockStatuses = conceptSetLockingService.areLocked(ids);
+				response.setLockStatus(lockStatuses);
+				return Response.ok(response).build();
+			} catch (Exception e) {
+				return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+					.entity("Error checking lock statuses: " + e.getMessage())
+					.build();
+			}
+		}
+
+		@POST
+		@Path("/snapshot-items")
+		@Consumes(MediaType.APPLICATION_JSON)
+		@Produces(MediaType.APPLICATION_JSON)
+		public Response getSnapshotItems(GetConceptSetSnapshotItemsRequest request) {
+			try {
+				List<ConceptSetExpression.ConceptSetItem> conceptSetItems = conceptSetLockingService.getConceptSetSnapshotItemsBySnapshotId(request.getSnapshotId(), request.getSnapshotItemType());
+				GetConceptSetSnapshotItemsResponse response = new GetConceptSetSnapshotItemsResponse();
+				response.setConceptSetItems(conceptSetItems);
+				return Response.ok(response).build();
+			} catch (Exception e) {
+				return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+					.entity("Error fetching snapshot items: " + e.getMessage())
+					.build();
+			}
+		}
 
     private ConceptSet updateConceptSet(ConceptSet dst, ConceptSet src) {
 

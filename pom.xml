@@ -64,6 +64,14 @@
     <!-- CDM properties -->
     <source.name>CDM_NAME</source.name>
     <cdm.version>5</cdm.version>
+    <!-- Snapshot datasource properties -->
+		<snapshot.history.source.connection>jdbc:postgresql://localhost:5432/OHDSI_LOCK_HISTORY</snapshot.history.source.connection>
+		<snapshot.history.source.schema>lock_history</snapshot.history.source.schema>
+		<snapshot.history.source.dialect>postgresql</snapshot.history.source.dialect>
+		<snapshot.history.source.username>userWithWritePrivs</snapshot.history.source.username>
+		<snapshot.history.source.password>password</snapshot.history.source.password>
+		<snapshot.history.flyway.locations>classpath:snapshots_db/migration/postgresql</snapshot.history.flyway.locations>
+		<snapshot.locking.enabled>true</snapshot.locking.enabled>
     <!-- Person properties -->
     <person.viewDates>false</person.viewDates>
     <!-- Heracles properties -->

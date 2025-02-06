@@ -24,7 +24,7 @@
     <dom4j.version>2.1.3</dom4j.version>
     <hydra.version>0.4.0</hydra.version>
     <featureExtraction.version>3.2.0</featureExtraction.version>
-    <tomcat.embed.version>10.1.25</tomcat.embed.version>
+    <tomcat.embed.version>10.1.34</tomcat.embed.version>
 
     <commons-fileupload.version>1.5</commons-fileupload.version>
 
@@ -90,7 +90,8 @@
     <!-- spring.profiles.active>default</spring.profiles.active -->
 	<spring.profiles.active>webapi-postgresql</spring.profiles.active>
 
-	<security.provider>AtlasRegularSecurity</security.provider>
+    <security.provider>DisabledSecurity</security.provider>
+	<!-- security.provider>AtlasRegularSecurity</security.provider -->
     <security.token.expiration>43200</security.token.expiration>
     <security.origin>http://localhost</security.origin>
     <security.ssl.enabled>false</security.ssl.enabled>
@@ -236,16 +237,16 @@
     <jdbc.suppressInvalidApiException>true</jdbc.suppressInvalidApiException>
 
     <!-- Logging -->
-    <spring.jpa.show-sql>false</spring.jpa.show-sql>
+    <spring.jpa.show-sql>true</spring.jpa.show-sql>
     <spring.jpa.properties.hibernate.generate_statistics>false</spring.jpa.properties.hibernate.generate_statistics>
     <spring.jpa.properties.hibernate.jdbc.batch_size>200</spring.jpa.properties.hibernate.jdbc.batch_size>
     <spring.jpa.properties.hibernate.order_inserts>true</spring.jpa.properties.hibernate.order_inserts>
     <logging.level.root>info</logging.level.root>
     <logging.level.org.ohdsi>info</logging.level.org.ohdsi>
-    <logging.level.org.springframework.orm>info</logging.level.org.springframework.orm>
-    <logging.level.org.springframework.jdbc>info</logging.level.org.springframework.jdbc>
+    <logging.level.org.springframework.orm>debug</logging.level.org.springframework.orm>
+    <logging.level.org.springframework.jdbc>debug</logging.level.org.springframework.jdbc>
     <logging.level.org.springframework.web>info</logging.level.org.springframework.web>
-    <logging.level.org.hibernate>info</logging.level.org.hibernate>
+    <logging.level.org.hibernate>debug</logging.level.org.hibernate>
     <logging.level.org.apache.shiro>warn</logging.level.org.apache.shiro>
 
     <spring.batch.taskExecutor.corePoolSize>10</spring.batch.taskExecutor.corePoolSize>

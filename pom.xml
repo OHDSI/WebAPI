@@ -1311,6 +1311,7 @@
     <dependency>
       <groupId>org.springframework.ldap</groupId>
       <artifactId>spring-ldap-core</artifactId>
+	  <version>3.2.8</version>
     </dependency>
     <dependency>
       <groupId>com.odysseusinc</groupId>

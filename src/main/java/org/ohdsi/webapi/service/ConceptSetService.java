@@ -606,11 +606,17 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 		public Response invokeSnapshotAction(@PathParam("id") final int id, ConceptSetSnapshotActionRequest snapshotActionRequest) {
 			try {
 				String sourceKey = snapshotActionRequest.getSourceKey();
-				ConceptSetExpression conceptSetExpression =  getConceptSetExpression(id, sourceKey);
-				Collection<Concept> includedConcepts = vocabService.executeIncludedConceptLookup(sourceKey, conceptSetExpression);
-				Collection<Concept> includedSourceCodes = vocabService.executeMappedLookup(sourceKey, conceptSetExpression);
-	
-				conceptSetLockingService.invokeSnapshotAction(id, snapshotActionRequest, conceptSetExpression, includedConcepts, includedSourceCodes);
+				
+				if(snapshotActionRequest.isTakeSnapshot()) {
+
+					ConceptSetExpression conceptSetExpression = getConceptSetExpression(id, sourceKey);
+					Collection<Concept> includedConcepts = vocabService.executeIncludedConceptLookup(sourceKey, conceptSetExpression);
+					Collection<Concept> includedSourceCodes = vocabService.executeMappedLookup(sourceKey, conceptSetExpression);
+
+					conceptSetLockingService.invokeSnapshotAction(id, snapshotActionRequest, conceptSetExpression, includedConcepts, includedSourceCodes);
+				} else {
+					conceptSetLockingService.invokeSnapshotAction(id, snapshotActionRequest, null, null, null);
+				}
 				return Response.ok().entity("Snapshot action successfully invoked.").build();
 			} catch (Exception e) {
 				log.error("Invoke snapshot action failed", e);

@@ -96,9 +96,11 @@ public class ConceptSetLockingService extends AbstractDaoService {
 						new Object[]{conceptSetId, snapshotActionRequest.getAction(), lockedDate, snapshotCreatedBy, snapshotActionRequest.getMessage(), vocabularyBundleName,
 							vocabularyBundleSchema, vocabularyBundleVersion, conceptSetVersion}, Long.class);
 
-					Arrays.stream(conceptSetExpression.items).forEach(conceptSetItem -> saveConceptSetExpressionItemSnapshot(jdbcTemplate, conceptSetItem, snapshotMetadataId));
-					includedConcepts.forEach(concept -> saveIncludedConceptSnapshot(jdbcTemplate, concept, snapshotMetadataId));
-					includedSourceCodes.forEach(sourceCode -> saveIncludedSourceCodeSnapshot(jdbcTemplate, sourceCode, snapshotMetadataId));
+					if (conceptSetExpression != null && includedConcepts != null && includedSourceCodes != null) {
+						Arrays.stream(conceptSetExpression.items).forEach(conceptSetItem -> saveConceptSetExpressionItemSnapshot(jdbcTemplate, conceptSetItem, snapshotMetadataId));
+						includedConcepts.forEach(concept -> saveIncludedConceptSnapshot(jdbcTemplate, concept, snapshotMetadataId));
+						includedSourceCodes.forEach(sourceCode -> saveIncludedSourceCodeSnapshot(jdbcTemplate, sourceCode, snapshotMetadataId));
+					}
 					return null;
 				} catch (Exception ex) {
 					log.error("An error occurred during snapshot creation", ex);

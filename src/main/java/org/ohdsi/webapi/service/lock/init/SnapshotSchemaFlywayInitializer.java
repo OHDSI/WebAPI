@@ -25,8 +25,6 @@ public class SnapshotSchemaFlywayInitializer {
 	private String snapshotHistorySourceConnection;
 	@Value("${snapshot.history.source.schema}")
 	private String snapshotHistorySourceSchema;
-	@Value("${snapshot.history.source.dialect}")
-	private String snapshotHistorySourceDialect;
 	@Value("${snapshot.history.source.username}")
 	private String snapshotHistorySourceUsername;
 	@Value("${snapshot.history.source.password}")

@@ -5,6 +5,7 @@ public class ConceptSetSnapshotActionRequest {
 	private String action;
 	private String user;
 	private String message;
+	private boolean takeSnapshot;
 
 
 	public String getSourceKey() {
@@ -38,5 +39,13 @@ public class ConceptSetSnapshotActionRequest {
 
 	public void setMessage(String message) {
 		this.message = message;
+	}
+
+	public boolean isTakeSnapshot() {
+		return takeSnapshot;
+	}
+
+	public void setTakeSnapshot(boolean takeSnapshot) {
+		this.takeSnapshot = takeSnapshot;
 	}
 }

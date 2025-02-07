@@ -652,7 +652,6 @@
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>2.14.0</version>
-		<scope>import</scope>
       </dependency>
 	  <dependency>
 		<groupId>net.lingala.zip4j</groupId>

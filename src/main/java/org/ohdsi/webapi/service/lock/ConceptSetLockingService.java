@@ -41,10 +41,17 @@ import java.util.function.Function;
 
 @Service
 public class ConceptSetLockingService extends AbstractDaoService {
-	@Value("${snapshot.history.sourceKey}")
-	private String snapshotHistorySourceKey;
-	@Value("${snapshot.history.sourceSchema}")
+	@Value("${snapshot.history.source.connection}")
+	private String snapshotHistorySourceConnection;
+	@Value("${snapshot.history.source.schema}")
 	private String snapshotHistorySourceSchema;
+	@Value("${snapshot.history.source.dialect}")
+	private String snapshotHistorySourceDialect;
+	@Value("${snapshot.history.source.username}")
+	private String snapshotHistorySourceUsername;
+	@Value("${snapshot.history.source.password}")
+	private String snapshotHistorySourcePassword;
+
 	@Autowired
 	private ObjectMapper objectMapper;
 	@Autowired
@@ -56,7 +63,7 @@ public class ConceptSetLockingService extends AbstractDaoService {
 
 	@Transactional
 	public void invokeSnapshotAction(int conceptSetId, ConceptSetSnapshotActionRequest snapshotActionRequest, ConceptSetExpression conceptSetExpression, Collection<Concept> includedConcepts, Collection<Concept> includedSourceCodes) throws JsonProcessingException {
-		Source snapshotHistorySource = sourceRepository.findBySourceKey(snapshotHistorySourceKey);
+		Source snapshotHistorySource = prepareSnapshotHistorySource();
 
 		ConceptSet conceptSet = getConceptSetRepository().findById(conceptSetId);
 		if (conceptSet == null) {
@@ -102,6 +109,15 @@ public class ConceptSetLockingService extends AbstractDaoService {
 		executeInTransaction(snapshotHistorySource, callbackFunction);
 	}
 
+	private Source prepareSnapshotHistorySource() {
+		Source source = new Source();
+		source.setSourceConnection(snapshotHistorySourceConnection);
+		source.setSourceDialect(snapshotHistorySourceDialect);
+		source.setUsername(snapshotHistorySourceUsername);
+		source.setPassword(snapshotHistorySourcePassword);
+		return source;
+	}
+
 	private void saveConceptSetExpressionItemSnapshot(JdbcTemplate jdbcTemplate, ConceptSetExpression.ConceptSetItem conceptSetItem, Long snapshotMetadataId) {
 		jdbcTemplate.update("INSERT INTO " + snapshotHistorySourceSchema + ".CONCEPT_SET_ITEM_SNAPSHOTS " +
 				"(SNAPSHOT_METADATA_ID, CONCEPT_ID, CONCEPT_NAME, DOMAIN_ID, VOCABULARY_ID, CONCEPT_CLASS_ID, STANDARD_CONCEPT, CONCEPT_CODE, VALID_START_DATE, VALID_END_DATE, INVALID_REASON, IS_EXCLUDED, INCLUDE_DESCENDANTS, INCLUDE_MAPPED) " +
@@ -132,7 +148,7 @@ public class ConceptSetLockingService extends AbstractDaoService {
 
 	@Transactional(readOnly = true)
 	public Map<Integer, Boolean> areLocked(List<Integer> conceptSetIds) {
-		Source lockHistorySource = sourceRepository.findBySourceKey(snapshotHistorySourceKey);
+		Source lockHistorySource = prepareSnapshotHistorySource();
 		if (lockHistorySource == null) {
 			throw new RuntimeException("Snapshot/Lock history source not found");
 		}
@@ -153,7 +169,7 @@ public class ConceptSetLockingService extends AbstractDaoService {
 
 	@Transactional(readOnly = true)
 	public List<ConceptSetSnapshotParameters> listSnapshotsByConceptSetId(Integer conceptSetId) {
-		Source lockHistorySource = sourceRepository.findBySourceKey(snapshotHistorySourceKey);
+		Source lockHistorySource = prepareSnapshotHistorySource();
 		if (lockHistorySource == null) {
 			throw new RuntimeException("Snapshot/Lock history source not found");
 		}
@@ -208,7 +224,7 @@ public class ConceptSetLockingService extends AbstractDaoService {
 				"INVALID_REASON FROM " + tableName + " WHERE SNAPSHOT_METADATA_ID = ?";
 		}
 
-		Source lockHistorySource = sourceRepository.findBySourceKey(snapshotHistorySourceKey);
+		Source lockHistorySource = prepareSnapshotHistorySource();
 		CancelableJdbcTemplate jdbcTemplate = getSourceJdbcTemplate(lockHistorySource);
 
 		return jdbcTemplate.query(sql, new Object[]{snapshotId}, (rs, rowNum) -> convertToConceptSetItem(rs, type));

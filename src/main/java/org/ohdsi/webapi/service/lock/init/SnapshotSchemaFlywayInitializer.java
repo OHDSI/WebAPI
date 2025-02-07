@@ -1,11 +1,8 @@
 package org.ohdsi.webapi.service.lock.init;
 
 import org.flywaydb.core.Flyway;
-import org.ohdsi.webapi.source.Source;
-import org.ohdsi.webapi.source.SourceRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.stereotype.Component;
@@ -24,30 +21,20 @@ public class SnapshotSchemaFlywayInitializer {
 	@Value("${snapshot.history.flyway.locations}")
 	private String snapshotHistoryFlywayLocations;
 
-	@Value("${snapshot.history.sourceKey}")
-	private String snapshotHistorySourceKey;
-
-	@Value("${snapshot.history.sourceSchema}")
+	@Value("${snapshot.history.source.connection}")
+	private String snapshotHistorySourceConnection;
+	@Value("${snapshot.history.source.schema}")
 	private String snapshotHistorySourceSchema;
-
-	@Autowired
-	private SourceRepository sourceRepository;
+	@Value("${snapshot.history.source.dialect}")
+	private String snapshotHistorySourceDialect;
+	@Value("${snapshot.history.source.username}")
+	private String snapshotHistorySourceUsername;
+	@Value("${snapshot.history.source.password}")
+	private String snapshotHistorySourcePassword;
 
 	@PostConstruct
 	public void initializeSnapshotStorageSchemaIfEmpty() {
-		Source snapshotHistorySource = sourceRepository.findBySourceKey(snapshotHistorySourceKey);
-
-		if (snapshotHistorySource == null) {
-			log.error("Snapshot source was not found by source key: {}", snapshotHistorySourceKey);
-			return;
-		}
-
-		String externalDbUrl = snapshotHistorySource.getSourceConnection();
-		String user = snapshotHistorySource.getUsername();
-		String password = snapshotHistorySource.getPassword();
-
-		DataSource externalDataSource = new DriverManagerDataSource(externalDbUrl, user, password);
-
+		DataSource externalDataSource = new DriverManagerDataSource(snapshotHistorySourceConnection, snapshotHistorySourceUsername, snapshotHistorySourcePassword);
 		Flyway flyway = new Flyway();
 		flyway.setSchemas(snapshotHistorySourceSchema);
 		flyway.setPlaceholders(Collections.singletonMap(SNAPSHOT_HISTORY_SCHEMA_PLACEHOLDER, snapshotHistorySourceSchema));
@@ -55,4 +42,5 @@ public class SnapshotSchemaFlywayInitializer {
 		flyway.setLocations(snapshotHistoryFlywayLocations);
 		flyway.migrate();
 	}
+
 }

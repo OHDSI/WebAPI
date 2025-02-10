@@ -3,10 +3,9 @@ package org.ohdsi.webapi.check.checker;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
+
+import static org.hamcrest.MatcherAssert.assertThat;
 import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.check.CheckResult;
@@ -34,6 +33,6 @@ public abstract class BaseCheckerTest extends AbstractDatabaseTest {
 
         List<String> warningMessages = result.getWarnings().stream().map(Warning::toMessage).collect(Collectors.toList());
 
-        Assert.assertThat(warningMessages, Matchers.hasItem(message));
+        assertThat(warningMessages, Matchers.hasItem(message));
     }
 }

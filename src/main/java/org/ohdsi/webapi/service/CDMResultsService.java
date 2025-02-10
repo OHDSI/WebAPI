@@ -44,14 +44,15 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -134,6 +135,9 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     @Autowired
     private ConversionService conversionService;
 
+    @Autowired
+    private PlatformTransactionManager transactionManager;
+    
     @Override
     public void afterPropertiesSet() throws Exception {
         queryRunner.init(this.getSourceDialect(), objectMapper);
@@ -555,14 +559,14 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         AchillesCacheTasklet achillesTasklet = new AchillesCacheTasklet(source, instance, cacheService,
                 queryRunner, objectMapper);
         return stepBuilderFactory.get(jobStepName + " achilles")
-                .tasklet(achillesTasklet)
+                .tasklet(achillesTasklet).transactionManager(transactionManager)
                 .build();
     }
 
     private Step getCountStep(Source source, String jobStepName) {
         CDMResultsCacheTasklet countTasklet = new CDMResultsCacheTasklet(source, cdmCacheService);
         return stepBuilderFactory.get(jobStepName + " counts")
-                .tasklet(countTasklet)
+                .tasklet(countTasklet).transactionManager(transactionManager)
                 .build();
     }
 
@@ -577,10 +581,10 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
 
     private String getWarmCacheJobName(String sourceIds, String sourceKeys) {
         // for multiple sources: try to compose a job name from source keys, and if it is too long - use source ids
-        String jobName = String.format("warming cache: %s", sourceKeys);
+        String jobName = "warming cache: %s".formatted(sourceKeys);
 
         if (jobName.length() >= 100) { // job name in batch_job_instance is varchar(100)
-            jobName = String.format("warming cache: %s", sourceIds);
+            jobName = "warming cache: %s".formatted(sourceIds);
 
             if (jobName.length() >= 100) { // if we still have more than 100 symbols
                 jobName = jobName.substring(0, 88);

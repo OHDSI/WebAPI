@@ -34,21 +34,27 @@ public class CheckedEncryptedStringType extends AbstractEncryptedAsStringType {
     }
 
     @Override
-    public Object nullSafeGet(ResultSet rs, String[] names, SharedSessionContractImplementor session, Object owner) throws HibernateException, SQLException {
+    public Class returnedClass() {
+
+        return String.class;
+    }
+
+	@Override
+	public int getSqlType() {
+		return org.hibernate.type.SqlTypes.VARCHAR;
+	}
+
+	@Override
+	public Object nullSafeGet(ResultSet rs, int position, SharedSessionContractImplementor session, Object owner)
+			throws SQLException {
 
         checkInitialization();
-        final String message = rs.getString(names[0]);
+        final String message = rs.getString(position);
 
         if (Objects.isNull(message)) {
             return null;
         }
 
         return EncryptorUtils.decrypt(this.encryptor, message);
-    }
-
-    @Override
-    public Class returnedClass() {
-
-        return String.class;
-    }
+	}
 }

@@ -1,11 +1,10 @@
 package org.ohdsi.webapi.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
-import org.junit.Before;
-import org.junit.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.ohdsi.webapi.evidence.EvidenceSearch;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +14,7 @@ public class EvidenceServiceTest extends AbstractServiceTest {
   @Autowired
   EvidenceService evidenceService;
 
-  @Before
+  @BeforeEach
   public void before() {
 
     if (evidenceService == null) evidenceService = new EvidenceService();

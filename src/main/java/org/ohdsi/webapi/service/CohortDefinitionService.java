@@ -84,35 +84,39 @@ import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.servlet.ServletContext;
-import javax.transaction.Transactional;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.servlet.ServletContext;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -131,7 +135,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.ws.rs.core.Response.ResponseBuilder;
+import jakarta.ws.rs.core.Response.ResponseBuilder;
 
 import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
@@ -153,12 +157,6 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 
 	@Autowired
 	private CohortDefinitionRepository cohortDefinitionRepository;
-
-	@Autowired
-	private JobBuilderFactory jobBuilders;
-
-	@Autowired
-	private StepBuilderFactory stepBuilders;
 
 	@Autowired
 	private JobTemplate jobTemplate;
@@ -204,7 +202,14 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 
 	@Autowired
 	private VersionService<CohortVersion> versionService;
-
+	
+	@Autowired
+	private PlatformTransactionManager transactionManager;
+	
+	@Autowired
+	private JobRepository jobRepository;
+	
+	
         @Value("${security.defaultGlobalReadPermissions}")
 	private boolean defaultGlobalReadPermissions;
 
@@ -268,8 +273,10 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 
 	private InclusionRuleReport.Summary getInclusionRuleReportSummary(int id, Source source, int modeId) {
 
-		String sql = "select cs.base_count, cs.final_count, cc.lost_count from @tableQualifier.cohort_summary_stats cs left join @tableQualifier.cohort_censor_stats cc "
-						+ "on cc.cohort_definition_id = cs.cohort_definition_id where cs.cohort_definition_id = @id and cs.mode_id = @modeId";
+		String sql = """
+                        select cs.base_count, cs.final_count, cc.lost_count from @tableQualifier.cohort_summary_stats cs left join @tableQualifier.cohort_censor_stats cc \
+                        on cc.cohort_definition_id = cs.cohort_definition_id where cs.cohort_definition_id = @id and cs.mode_id = @modeId\
+                        """;
 		String tqName = "tableQualifier";
 		String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 		String[] varNames = {"id", "modeId"};
@@ -281,10 +288,12 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 
 	private List<InclusionRuleReport.InclusionRuleStatistic> getInclusionRuleStatistics(int id, Source source, int modeId) {
 
-		String sql = "select i.rule_sequence, i.name, s.person_count, s.gain_count, s.person_total"
-						+ " from @tableQualifier.cohort_inclusion i join @tableQualifier.cohort_inclusion_stats s on i.cohort_definition_id = s.cohort_definition_id"
-						+ " and i.rule_sequence = s.rule_sequence"
-						+ " where i.cohort_definition_id = @id and mode_id = @modeId ORDER BY i.rule_sequence";
+		String sql = """
+                        select i.rule_sequence, i.name, s.person_count, s.gain_count, s.person_total\
+                         from @tableQualifier.cohort_inclusion i join @tableQualifier.cohort_inclusion_stats s on i.cohort_definition_id = s.cohort_definition_id\
+                         and i.rule_sequence = s.rule_sequence\
+                         where i.cohort_definition_id = @id and mode_id = @modeId ORDER BY i.rule_sequence\
+                        """;
 		String tqName = "tableQualifier";
 		String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 		String[] varNames = {"id", "modeId"};
@@ -339,7 +348,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 				treemapData.append(",");
 			}
 
-			treemapData.append(String.format("{\"name\" : \"Group %d\", \"children\" : [", groupKey));
+			treemapData.append("{\"name\" : \"Group %d\", \"children\" : [".formatted(groupKey));
 
 			int groupItemCount = 0;
 			for (Long[] groupItem : groups.get(groupKey)) {
@@ -348,7 +357,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 				}
 
 				//sb_treemap.Append("{\"name\": \"" + cohort_identifer + "\", \"size\": " + cohorts[cohort_identifer].ToString() + "}");
-				treemapData.append(String.format("{\"name\": \"%s\", \"size\": %d}", formatBitMask(groupItem[0], inclusionRuleCount), groupItem[1]));
+				treemapData.append("{\"name\": \"%s\", \"size\": %d}".formatted(formatBitMask(groupItem[0], inclusionRuleCount), groupItem[1]));
 				groupItemCount++;
 			}
 			groupCount++;
@@ -481,7 +490,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	public CohortRawDTO getCohortDefinitionRaw(@PathParam("id") final int id) {
 		return getTransactionTemplate().execute(transactionStatus -> {
 			CohortDefinition d = this.cohortDefinitionRepository.findOneWithDetail(id);
-			ExceptionUtils.throwNotFoundExceptionIfNull(d, String.format("There is no cohort definition with id = %d.", id));
+			ExceptionUtils.throwNotFoundExceptionIfNull(d, "There is no cohort definition with id = %d.".formatted(id));
 			return conversionService.convert(d, CohortRawDTO.class);
 		});
 	}
@@ -496,7 +505,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	public CohortDTO getCohortDefinition(final int id) {
 		return getTransactionTemplate().execute(transactionStatus -> {
 			CohortDefinition d = this.cohortDefinitionRepository.findOneWithDetail(id);
-			ExceptionUtils.throwNotFoundExceptionIfNull(d, String.format("There is no cohort definition with id = %d.", id));
+			ExceptionUtils.throwNotFoundExceptionIfNull(d, "There is no cohort definition with id = %d.".formatted(id));
 			return conversionService.convert(d, CohortDTO.class);
 		});
 	}
@@ -573,7 +582,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	public JobExecutionResource generateCohort(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
 
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
-		CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOne(id);
+		CohortDefinition currentDefinition = this.cohortDefinitionRepository.findById(id).get();
 		UserEntity user = userRepository.findByLogin(security.getSubject());
 		return cohortGenerationService.generateCohortViaJob(user, currentDefinition, source);
 	}
@@ -602,7 +611,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 		final Source source = Optional.ofNullable(getSourceRepository().findBySourceKey(sourceKey))
 						.orElseThrow(NotFoundException::new);
 		getTransactionTemplateRequiresNew().execute(status -> {
-			CohortDefinition currentDefinition = cohortDefinitionRepository.findOne(id);
+			CohortDefinition currentDefinition = cohortDefinitionRepository.findById(id).get();
 			if (Objects.nonNull(currentDefinition)) {
 				CohortGenerationInfo info = findBySourceId(currentDefinition.getGenerationInfoList(), source.getSourceId());
 				if (Objects.nonNull(info)) {
@@ -641,8 +650,8 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Path("/{id}/info")
 	@Transactional
 	public List<CohortGenerationInfoDTO> getInfo(@PathParam("id") final int id) {
-		CohortDefinition def = this.cohortDefinitionRepository.findOne(id);
-		ExceptionUtils.throwNotFoundExceptionIfNull(def, String.format("There is no cohort definition with id = %d.", id));
+		CohortDefinition def = this.cohortDefinitionRepository.findById(id).get();
+		ExceptionUtils.throwNotFoundExceptionIfNull(def, "There is no cohort definition with id = %d.".formatted(id));
 
 		Set<CohortGenerationInfo> infoList = def.getGenerationInfoList();
 
@@ -702,7 +711,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 		this.getTransactionTemplateRequiresNew().execute(new TransactionCallbackWithoutResult() {
 			@Override
 			public void doInTransactionWithoutResult(final TransactionStatus status) {
-				CohortDefinition def = cohortDefinitionRepository.findOne(id);
+				CohortDefinition def = cohortDefinitionRepository.findById(id).get();
 				if (!Objects.isNull(def)) {
 					def.getGenerationInfoList().forEach(cohortGenerationInfo -> {
 						Integer sourceId = cohortGenerationInfo.getId().getSourceId();
@@ -724,7 +733,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 		});
 
 		JobParametersBuilder builder = new JobParametersBuilder();
-		builder.addString(JOB_NAME, String.format("Cleanup cohort %d.", id));
+		builder.addString(JOB_NAME, "Cleanup cohort %d.".formatted(id));
 		builder.addString(COHORT_DEFINITION_ID, ("" + id));
 
 		final JobParameters jobParameters = builder.toJobParameters();
@@ -733,17 +742,19 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 
 		CleanupCohortTasklet cleanupTasklet = new CleanupCohortTasklet(this.getTransactionTemplateNoTransaction(), this.getSourceRepository());
 
-		Step cleanupStep = stepBuilders.get("cohortDefinition.cleanupCohort")
+		Step cleanupStep = new StepBuilder("cohortDefinition.cleanupCohort", jobRepository)
 						.tasklet(cleanupTasklet)
+						.transactionManager(transactionManager)
 						.build();
 
 		CleanupCohortSamplesTasklet cleanupSamplesTasklet = samplingService.createDeleteSamplesTasklet();
 
-		Step cleanupSamplesStep = stepBuilders.get("cohortDefinition.cleanupSamples")
+		Step cleanupSamplesStep = new StepBuilder("cohortDefinition.cleanupSamples", jobRepository)
 						.tasklet(cleanupSamplesTasklet)
+						.transactionManager(transactionManager)
 						.build();
 
-		SimpleJobBuilder cleanupJobBuilder = jobBuilders.get("cleanupCohort")
+		SimpleJobBuilder cleanupJobBuilder = new JobBuilder("cleanupCohort", jobRepository)
 						.start(cleanupStep)
 						.next(cleanupSamplesStep);
 
@@ -795,7 +806,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 		List<ConceptSetExport> exports = getConceptSetExports(def, new SourceInfo(source));
 		ByteArrayOutputStream exportStream = ExportUtil.writeConceptSetExportToCSVAndZip(exports);
 
-		return HttpUtils.respondBinary(exportStream, String.format("cohortdefinition_%d_export.zip", def.getId()));
+		return HttpUtils.respondBinary(exportStream, "cohortdefinition_%d_export.zip".formatted(def.getId()));
 	}
 
 	/**
@@ -956,7 +967,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Path("/{id}/tag/")
 	@Transactional
 	public void assignTag(@PathParam("id") final Integer id, final int tagId) {
-		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
+		CohortDefinition entity = cohortDefinitionRepository.findById(id).get();
 		checkOwnerOrAdminOrGranted(entity);
 		assignTag(entity, tagId);
 	}
@@ -973,7 +984,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Path("/{id}/tag/{tagId}")
 	@Transactional
 	public void unassignTag(@PathParam("id") final Integer id, @PathParam("tagId") final int tagId) {
-		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
+		CohortDefinition entity = cohortDefinitionRepository.findById(id).get();
 		checkOwnerOrAdminOrGranted(entity);
 		unassignTag(entity, tagId);
 	}
@@ -1151,9 +1162,9 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	private void checkVersion(int id, int version, boolean checkOwnerShip) {
 		Version cohortVersion = versionService.getById(VersionType.COHORT, id, version);
 		ExceptionUtils.throwNotFoundExceptionIfNull(cohortVersion,
-				String.format("There is no cohort version with id = %d.", version));
+                "There is no cohort version with id = %d.".formatted(version));
 
-		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
+		CohortDefinition entity = cohortDefinitionRepository.findById(id).get();
 		if (checkOwnerShip) {
 			checkOwnerOrAdminOrGranted(entity);
 		}
@@ -1179,7 +1190,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 
 	public List<CohortDefinition> getCohorts(List<Integer> ids) {
 		return ids.stream()
-				.map(id -> cohortDefinitionRepository.findOne(id))
+				.map(id -> cohortDefinitionRepository.findById(id).get())
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
 	}

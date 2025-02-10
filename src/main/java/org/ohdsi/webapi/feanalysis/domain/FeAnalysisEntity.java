@@ -3,24 +3,23 @@ package org.ohdsi.webapi.feanalysis.domain;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.Lob;
-import javax.persistence.ManyToMany;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.hibernate.annotations.DiscriminatorFormula;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.Type;
 import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
@@ -32,8 +31,7 @@ import org.ohdsi.webapi.model.CommonEntity;
 @Table(name = "fe_analysis")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorFormula(
-        "CASE WHEN type = 'CRITERIA_SET' THEN CONCAT(CONCAT(type,'_'),stat_type) " +
-          "ELSE type END"
+        "CASE WHEN type = 'CRITERIA_SET' THEN CONCAT(CONCAT(type,'_'),stat_type) ELSE type END"
 )
 public abstract class FeAnalysisEntity<T> extends CommonEntity<Integer> implements FeatureAnalysis<T, Integer>, Comparable<FeAnalysisEntity<String>> {
 
@@ -70,8 +68,6 @@ public abstract class FeAnalysisEntity<T> extends CommonEntity<Integer> implemen
     @Column
     private String name;
 
-    @Lob
-    @Type(type = "org.hibernate.type.TextType")
     @Column(name = "design", insertable = false, updatable = false)
     private String rawDesign;
     

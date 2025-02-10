@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -1366,8 +1367,7 @@ public class CohortResultsAnalysisRunner {
 			return;
 		}
 		
-		if (dataObject instanceof List) {
-			List<?> listObject = (List<?>) dataObject;
+		if (dataObject instanceof List listObject) {
 			if (listObject.size() == 0) {
 				log.warn("No need to store empty list for {}", visualizationKey);
 				return;
@@ -1415,8 +1415,7 @@ public class CohortResultsAnalysisRunner {
 			return;
 		}
 		
-		if (dataObject instanceof List) {
-			List<?> listObject = (List<?>) dataObject;
+		if (dataObject instanceof List listObject) {
 			if (listObject.size() == 0) {
 				log.warn("No need to store empty list for {}",  visualizationKey);
 				return;
@@ -1530,8 +1529,8 @@ public class CohortResultsAnalysisRunner {
 		report.summary = jdbcTemplate.query(summaryPsr.getSql(), summaryPsr.getSetter(), (rs,rowNum) -> {
 			HealthcareExposureReport.Summary s = new HealthcareExposureReport.Summary();
 			s.personsCount = rs.getLong("person_total");
-			s.exposureTotal = new BigDecimal(rs.getDouble("exposure_years_total")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			s.exposureAvg = new BigDecimal(rs.getDouble("exposure_avg_years_1k")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			s.exposureTotal = new BigDecimal(rs.getDouble("exposure_years_total")).setScale(2, RoundingMode.HALF_UP);
+			s.exposureAvg = new BigDecimal(rs.getDouble("exposure_avg_years_1k")).setScale(2, RoundingMode.HALF_UP);
 			return s;
 		}).get(0);
 		
@@ -1547,10 +1546,10 @@ public class CohortResultsAnalysisRunner {
 			item.periodStart = rs.getDate("period_start_date");
 			item.periodEnd = rs.getDate("period_end_date");
 			item.personsCount = rs.getLong("person_total");
-			item.personsPct = new BigDecimal(rs.getDouble("person_percent")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			item.exposureTotal = new BigDecimal(rs.getDouble("exposure_years_total")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			item.exposurePct = new BigDecimal(rs.getDouble("exposure_percent")).setScale(2, BigDecimal.ROUND_HALF_UP); 
-			item.exposureAvg = new BigDecimal(rs.getDouble("exposure_avg_years_1k")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			item.personsPct = new BigDecimal(rs.getDouble("person_percent")).setScale(2, RoundingMode.HALF_UP);
+			item.exposureTotal = new BigDecimal(rs.getDouble("exposure_years_total")).setScale(2, RoundingMode.HALF_UP);
+			item.exposurePct = new BigDecimal(rs.getDouble("exposure_percent")).setScale(2, RoundingMode.HALF_UP); 
+			item.exposureAvg = new BigDecimal(rs.getDouble("exposure_avg_years_1k")).setScale(2, RoundingMode.HALF_UP);
 			return item;
 		});
 
@@ -1664,21 +1663,21 @@ public class CohortResultsAnalysisRunner {
 		List<HealthcareVisitUtilizationReport.Summary> summaryRows = jdbcTemplate.query(summaryPsr.getSql(), summaryPsr.getSetter(), (rs,rowNum) -> {
 			HealthcareVisitUtilizationReport.Summary s = new HealthcareVisitUtilizationReport.Summary();
 			s.personsCount = rs.getLong("person_total");
-			s.personsPct = new BigDecimal(rs.getDouble("person_percent")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			s.personsPct = new BigDecimal(rs.getDouble("person_percent")).setScale(2, RoundingMode.HALF_UP);
 			s.visitsCount = rs.getLong("records_total");
-			s.visitsPer1000 = new BigDecimal(rs.getDouble("records_per_1000")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			s.visitsPer1000WithVisits = new BigDecimal(rs.getDouble("records_per_1000_with_record")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			s.visitsPer1000PerYear = new BigDecimal(rs.getDouble("records_per_1000_per_year")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			s.visitsPer1000 = new BigDecimal(rs.getDouble("records_per_1000")).setScale(2, RoundingMode.HALF_UP);
+			s.visitsPer1000WithVisits = new BigDecimal(rs.getDouble("records_per_1000_with_record")).setScale(2, RoundingMode.HALF_UP);
+			s.visitsPer1000PerYear = new BigDecimal(rs.getDouble("records_per_1000_per_year")).setScale(2, RoundingMode.HALF_UP);
 			s.lengthOfStayTotal = rs.getLong("los_total");
-			s.lengthOfStayAvg = rs.getString("los_average") == null ? null : new BigDecimal(rs.getDouble("los_average")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			s.allowed = rs.getString("allowed") == null ? null : new BigDecimal(rs.getDouble("allowed")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			s.allowedPmPm = rs.getString("allowed_pmpm") == null ? null : new BigDecimal(rs.getDouble("allowed_pmpm")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			s.charged = rs.getString("charged") == null ? null : new BigDecimal(rs.getDouble("charged")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			s.chargedPmPm = rs.getString("charged_pmpm") == null ? null : new BigDecimal(rs.getDouble("charged_pmpm")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			s.paid = rs.getString("paid") == null ? null : new BigDecimal(rs.getDouble("paid")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			s.paidPmPm = rs.getString("paid_pmpm") == null ? null : new BigDecimal(rs.getDouble("paid_pmpm")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			s.allowedChargedRatio = rs.getString("allowed_charged") == null ? null : new BigDecimal(rs.getDouble("allowed_charged")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			s.paidAllowedRatio = rs.getString("paid_allowed") == null ? null : new BigDecimal(rs.getDouble("paid_allowed")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			s.lengthOfStayAvg = rs.getString("los_average") == null ? null : new BigDecimal(rs.getDouble("los_average")).setScale(2, RoundingMode.HALF_UP);
+			s.allowed = rs.getString("allowed") == null ? null : new BigDecimal(rs.getDouble("allowed")).setScale(2, RoundingMode.HALF_UP);
+			s.allowedPmPm = rs.getString("allowed_pmpm") == null ? null : new BigDecimal(rs.getDouble("allowed_pmpm")).setScale(2, RoundingMode.HALF_UP);
+			s.charged = rs.getString("charged") == null ? null : new BigDecimal(rs.getDouble("charged")).setScale(2, RoundingMode.HALF_UP);
+			s.chargedPmPm = rs.getString("charged_pmpm") == null ? null : new BigDecimal(rs.getDouble("charged_pmpm")).setScale(2, RoundingMode.HALF_UP);
+			s.paid = rs.getString("paid") == null ? null : new BigDecimal(rs.getDouble("paid")).setScale(2, RoundingMode.HALF_UP);
+			s.paidPmPm = rs.getString("paid_pmpm") == null ? null : new BigDecimal(rs.getDouble("paid_pmpm")).setScale(2, RoundingMode.HALF_UP);
+			s.allowedChargedRatio = rs.getString("allowed_charged") == null ? null : new BigDecimal(rs.getDouble("allowed_charged")).setScale(2, RoundingMode.HALF_UP);
+			s.paidAllowedRatio = rs.getString("paid_allowed") == null ? null : new BigDecimal(rs.getDouble("paid_allowed")).setScale(2, RoundingMode.HALF_UP);
 
 			return s;
 		});
@@ -1695,21 +1694,21 @@ public class CohortResultsAnalysisRunner {
 			item.periodStart = rs.getDate("period_start_date");
 			item.periodEnd = rs.getDate("period_end_date");
 			item.personsCount = rs.getLong("person_total");
-			item.personsPct = new BigDecimal(rs.getDouble("person_percent")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			item.personsPct = new BigDecimal(rs.getDouble("person_percent")).setScale(2, RoundingMode.HALF_UP);
 			item.visitsCount = rs.getLong("records_total");
-			item.visitsPer1000 = new BigDecimal(rs.getDouble("records_per_1000")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			item.visitsPer1000WithVisits = new BigDecimal(rs.getDouble("records_per_1000_with_record")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			item.visitsPer1000PerYear = new BigDecimal(rs.getDouble("records_per_1000_per_year")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			item.visitsPer1000 = new BigDecimal(rs.getDouble("records_per_1000")).setScale(2, RoundingMode.HALF_UP);
+			item.visitsPer1000WithVisits = new BigDecimal(rs.getDouble("records_per_1000_with_record")).setScale(2, RoundingMode.HALF_UP);
+			item.visitsPer1000PerYear = new BigDecimal(rs.getDouble("records_per_1000_per_year")).setScale(2, RoundingMode.HALF_UP);
 			item.lengthOfStayTotal = rs.getLong("los_total");
-			item.lengthOfStayAvg = new BigDecimal(rs.getDouble("los_average")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			item.allowed = rs.getString("allowed") == null ? null : new BigDecimal(rs.getDouble("allowed")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			item.allowedPmPm = rs.getString("allowed_pmpm") == null ? null : new BigDecimal(rs.getDouble("allowed_pmpm")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			item.charged = rs.getString("charged") == null ? null : new BigDecimal(rs.getDouble("charged")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			item.chargedPmPm = rs.getString("charged_pmpm") == null ? null : new BigDecimal(rs.getDouble("charged_pmpm")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			item.paid = rs.getString("paid") == null ? null : new BigDecimal(rs.getDouble("paid")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			item.paidPmPm = rs.getString("paid_pmpm") == null ? null : new BigDecimal(rs.getDouble("paid_pmpm")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			item.allowedChargedRatio = rs.getString("allowed_charged") == null ? null : new BigDecimal(rs.getDouble("allowed_charged")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			item.paidAllowedRatio = rs.getString("paid_allowed") == null ? null : new BigDecimal(rs.getDouble("paid_allowed")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			item.lengthOfStayAvg = new BigDecimal(rs.getDouble("los_average")).setScale(2, RoundingMode.HALF_UP);
+			item.allowed = rs.getString("allowed") == null ? null : new BigDecimal(rs.getDouble("allowed")).setScale(2, RoundingMode.HALF_UP);
+			item.allowedPmPm = rs.getString("allowed_pmpm") == null ? null : new BigDecimal(rs.getDouble("allowed_pmpm")).setScale(2, RoundingMode.HALF_UP);
+			item.charged = rs.getString("charged") == null ? null : new BigDecimal(rs.getDouble("charged")).setScale(2, RoundingMode.HALF_UP);
+			item.chargedPmPm = rs.getString("charged_pmpm") == null ? null : new BigDecimal(rs.getDouble("charged_pmpm")).setScale(2, RoundingMode.HALF_UP);
+			item.paid = rs.getString("paid") == null ? null : new BigDecimal(rs.getDouble("paid")).setScale(2, RoundingMode.HALF_UP);
+			item.paidPmPm = rs.getString("paid_pmpm") == null ? null : new BigDecimal(rs.getDouble("paid_pmpm")).setScale(2, RoundingMode.HALF_UP);
+			item.allowedChargedRatio = rs.getString("allowed_charged") == null ? null : new BigDecimal(rs.getDouble("allowed_charged")).setScale(2, RoundingMode.HALF_UP);
+			item.paidAllowedRatio = rs.getString("paid_allowed") == null ? null : new BigDecimal(rs.getDouble("paid_allowed")).setScale(2, RoundingMode.HALF_UP);
 			
 			return item;
 		});
@@ -1813,25 +1812,25 @@ public class CohortResultsAnalysisRunner {
 			r.drugClass = rs.getString("drug_concept_class");
 			r.drugVocabularyId = rs.getString("drug_vocabulary_id");
 			r.personsCount = rs.getLong("person_total");
-			r.personsPct = new BigDecimal(rs.getDouble("person_percent")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			r.personsPct = new BigDecimal(rs.getDouble("person_percent")).setScale(2, RoundingMode.HALF_UP);
 			r.exposureCount = rs.getLong("records_total");
-			r.exposuresPer1000= new BigDecimal(rs.getDouble("records_per_1000")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.exposurePer1000WithExposures = new BigDecimal(rs.getDouble("records_per_1000_with_record")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.exposurePer1000PerYear = new BigDecimal(rs.getDouble("records_per_1000_per_year")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			r.exposuresPer1000= new BigDecimal(rs.getDouble("records_per_1000")).setScale(2, RoundingMode.HALF_UP);
+			r.exposurePer1000WithExposures = new BigDecimal(rs.getDouble("records_per_1000_with_record")).setScale(2, RoundingMode.HALF_UP);
+			r.exposurePer1000PerYear = new BigDecimal(rs.getDouble("records_per_1000_per_year")).setScale(2, RoundingMode.HALF_UP);
 			r.quantityTotal = rs.getLong("quantity_total");
-			r.quantityAvg = new BigDecimal(rs.getDouble("quantity_average")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.quantityPer1000PerYear = new BigDecimal(rs.getDouble("quantity_per_1000_per_year")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			r.quantityAvg = new BigDecimal(rs.getDouble("quantity_average")).setScale(2, RoundingMode.HALF_UP);
+			r.quantityPer1000PerYear = new BigDecimal(rs.getDouble("quantity_per_1000_per_year")).setScale(2, RoundingMode.HALF_UP);
 			r.daysSupplyTotal = rs.getLong("days_supply_total");
-			r.daysSupplyAvg = new BigDecimal(rs.getDouble("days_supply_average")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.daysSupplyPer1000PerYear = new BigDecimal(rs.getDouble("days_supply_per_1000_per_year")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.allowed = rs.getString("allowed") == null ? null : new BigDecimal(rs.getDouble("allowed")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.allowedPmPm = rs.getString("allowed_pmpm") == null ? null : new BigDecimal(rs.getDouble("allowed_pmpm")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.charged = rs.getString("charged") == null ? null : new BigDecimal(rs.getDouble("charged")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.chargedPmPm = rs.getString("charged_pmpm") == null ? null : new BigDecimal(rs.getDouble("charged_pmpm")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.paid = rs.getString("paid") == null ? null : new BigDecimal(rs.getDouble("paid")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.paidPmPm = rs.getString("paid_pmpm") == null ? null : new BigDecimal(rs.getDouble("paid_pmpm")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.allowedChargedRatio = rs.getString("allowed_charged") == null ? null : new BigDecimal(rs.getDouble("allowed_charged")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.paidAllowedRatio = rs.getString("paid_allowed") == null ? null : new BigDecimal(rs.getDouble("paid_allowed")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			r.daysSupplyAvg = new BigDecimal(rs.getDouble("days_supply_average")).setScale(2, RoundingMode.HALF_UP);
+			r.daysSupplyPer1000PerYear = new BigDecimal(rs.getDouble("days_supply_per_1000_per_year")).setScale(2, RoundingMode.HALF_UP);
+			r.allowed = rs.getString("allowed") == null ? null : new BigDecimal(rs.getDouble("allowed")).setScale(2, RoundingMode.HALF_UP);
+			r.allowedPmPm = rs.getString("allowed_pmpm") == null ? null : new BigDecimal(rs.getDouble("allowed_pmpm")).setScale(2, RoundingMode.HALF_UP);
+			r.charged = rs.getString("charged") == null ? null : new BigDecimal(rs.getDouble("charged")).setScale(2, RoundingMode.HALF_UP);
+			r.chargedPmPm = rs.getString("charged_pmpm") == null ? null : new BigDecimal(rs.getDouble("charged_pmpm")).setScale(2, RoundingMode.HALF_UP);
+			r.paid = rs.getString("paid") == null ? null : new BigDecimal(rs.getDouble("paid")).setScale(2, RoundingMode.HALF_UP);
+			r.paidPmPm = rs.getString("paid_pmpm") == null ? null : new BigDecimal(rs.getDouble("paid_pmpm")).setScale(2, RoundingMode.HALF_UP);
+			r.allowedChargedRatio = rs.getString("allowed_charged") == null ? null : new BigDecimal(rs.getDouble("allowed_charged")).setScale(2, RoundingMode.HALF_UP);
+			r.paidAllowedRatio = rs.getString("paid_allowed") == null ? null : new BigDecimal(rs.getDouble("paid_allowed")).setScale(2, RoundingMode.HALF_UP);
 			
 			return r;
 		});
@@ -1913,25 +1912,25 @@ public class CohortResultsAnalysisRunner {
 			r.periodStart = rs.getDate("period_start_date");
 			r.periodEnd = rs.getDate("period_end_date");
 			r.personsCount = rs.getLong("person_total");
-			r.personsPct = new BigDecimal(rs.getDouble("person_percent")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			r.personsPct = new BigDecimal(rs.getDouble("person_percent")).setScale(2, RoundingMode.HALF_UP);
 			r.exposureCount = rs.getLong("records_total");
-			r.exposuresPer1000= new BigDecimal(rs.getDouble("records_per_1000")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.exposurePer1000WithExposures = new BigDecimal(rs.getDouble("records_per_1000_with_record")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.exposurePer1000PerYear = new BigDecimal(rs.getDouble("records_per_1000_per_year")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			r.exposuresPer1000= new BigDecimal(rs.getDouble("records_per_1000")).setScale(2, RoundingMode.HALF_UP);
+			r.exposurePer1000WithExposures = new BigDecimal(rs.getDouble("records_per_1000_with_record")).setScale(2, RoundingMode.HALF_UP);
+			r.exposurePer1000PerYear = new BigDecimal(rs.getDouble("records_per_1000_per_year")).setScale(2, RoundingMode.HALF_UP);
 			r.quantityTotal = rs.getLong("quantity_total");
-			r.quantityAvg = new BigDecimal(rs.getDouble("quantity_average")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.quantityPer1000PerYear = new BigDecimal(rs.getDouble("quantity_per_1000_per_year")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			r.quantityAvg = new BigDecimal(rs.getDouble("quantity_average")).setScale(2, RoundingMode.HALF_UP);
+			r.quantityPer1000PerYear = new BigDecimal(rs.getDouble("quantity_per_1000_per_year")).setScale(2, RoundingMode.HALF_UP);
 			r.daysSupplyTotal = rs.getLong("days_supply_total");
-			r.daysSupplyAvg = new BigDecimal(rs.getDouble("days_supply_average")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.daysSupplyPer1000PerYear = new BigDecimal(rs.getDouble("days_supply_per_1000_per_year")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.allowed = rs.getString("allowed") == null ? null : new BigDecimal(rs.getDouble("allowed")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.allowedPmPm = rs.getString("allowed_pmpm") == null ? null : new BigDecimal(rs.getDouble("allowed_pmpm")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.charged = rs.getString("charged") == null ? null : new BigDecimal(rs.getDouble("charged")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.chargedPmPm = rs.getString("charged_pmpm") == null ? null : new BigDecimal(rs.getDouble("charged_pmpm")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.paid = rs.getString("paid") == null ? null : new BigDecimal(rs.getDouble("paid")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.paidPmPm = rs.getString("paid_pmpm") == null ? null : new BigDecimal(rs.getDouble("paid_pmpm")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.allowedChargedRatio = rs.getString("allowed_charged") == null ? null : new BigDecimal(rs.getDouble("allowed_charged")).setScale(2, BigDecimal.ROUND_HALF_UP);
-			r.paidAllowedRatio = rs.getString("paid_allowed") == null ? null : new BigDecimal(rs.getDouble("paid_allowed")).setScale(2, BigDecimal.ROUND_HALF_UP);
+			r.daysSupplyAvg = new BigDecimal(rs.getDouble("days_supply_average")).setScale(2, RoundingMode.HALF_UP);
+			r.daysSupplyPer1000PerYear = new BigDecimal(rs.getDouble("days_supply_per_1000_per_year")).setScale(2, RoundingMode.HALF_UP);
+			r.allowed = rs.getString("allowed") == null ? null : new BigDecimal(rs.getDouble("allowed")).setScale(2, RoundingMode.HALF_UP);
+			r.allowedPmPm = rs.getString("allowed_pmpm") == null ? null : new BigDecimal(rs.getDouble("allowed_pmpm")).setScale(2, RoundingMode.HALF_UP);
+			r.charged = rs.getString("charged") == null ? null : new BigDecimal(rs.getDouble("charged")).setScale(2, RoundingMode.HALF_UP);
+			r.chargedPmPm = rs.getString("charged_pmpm") == null ? null : new BigDecimal(rs.getDouble("charged_pmpm")).setScale(2, RoundingMode.HALF_UP);
+			r.paid = rs.getString("paid") == null ? null : new BigDecimal(rs.getDouble("paid")).setScale(2, RoundingMode.HALF_UP);
+			r.paidPmPm = rs.getString("paid_pmpm") == null ? null : new BigDecimal(rs.getDouble("paid_pmpm")).setScale(2, RoundingMode.HALF_UP);
+			r.allowedChargedRatio = rs.getString("allowed_charged") == null ? null : new BigDecimal(rs.getDouble("allowed_charged")).setScale(2, RoundingMode.HALF_UP);
+			r.paidAllowedRatio = rs.getString("paid_allowed") == null ? null : new BigDecimal(rs.getDouble("paid_allowed")).setScale(2, RoundingMode.HALF_UP);
 			return r;
 		});
 		

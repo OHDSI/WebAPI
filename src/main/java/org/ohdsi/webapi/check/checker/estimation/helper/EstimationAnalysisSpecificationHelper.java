@@ -36,7 +36,7 @@ public class EstimationAnalysisSpecificationHelper {
                 .validators(
                         new NotNullNotEmptyValidatorBuilder<>(),
                         new DuplicateValidatorBuilder<TargetComparatorOutcomes, String>()
-                                .elementGetter(t -> String.format("%s,%s", t.getTargetId(), t.getComparatorId())),
+                                .elementGetter(t -> "%s,%s".formatted(t.getTargetId(), t.getComparatorId())),
                         new IterableForEachValidatorBuilder<TargetComparatorOutcomes>()
                                 .validators(predicateValidatorBuilder)
                 );

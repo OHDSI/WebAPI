@@ -15,9 +15,10 @@
  */
 package org.ohdsi.webapi.cohortcharacterization;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 import org.ohdsi.cohortcharacterization.CCQueryBuilder;
 
 /**

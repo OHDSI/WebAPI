@@ -1,9 +1,9 @@
 package org.ohdsi.webapi.feanalysis.domain;
 
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.persistence.Lob;
-import org.hibernate.annotations.Type;
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Lob;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
 
 @Entity
@@ -16,9 +16,8 @@ public class FeAnalysisWithStringEntity extends FeAnalysisEntity<String> {
     public FeAnalysisWithStringEntity(final FeAnalysisWithStringEntity analysis) {
         super(analysis);
     }
-    
-    @Lob
-    @Type(type = "org.hibernate.type.TextType")
+
+    @Column
     private String design;
 
     @Override

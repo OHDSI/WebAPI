@@ -13,8 +13,8 @@ import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableList;
 import com.odysseusinc.arachne.commons.types.DBMSType;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.BigQuerySparkTranslate;
 import org.ohdsi.sql.SqlRender;
@@ -309,14 +309,14 @@ public class PreparedStatementRenderer implements ParameterizedSqlProvider {
     if (!value.getClass().isArray()) return value;
 
 
-    if (value instanceof boolean[]) return ArrayUtils.toObject((boolean[]) value);
-    if (value instanceof byte[]) return ArrayUtils.toObject((byte[]) value);
-    if (value instanceof char[]) return ArrayUtils.toObject((char[]) value);
-    if (value instanceof double[]) return ArrayUtils.toObject((double[]) value);
-    if (value instanceof float[]) return ArrayUtils.toObject((float[]) value);
-    if (value instanceof int[]) return ArrayUtils.toObject((int[]) value);
-    if (value instanceof long[]) return ArrayUtils.toObject((long[]) value);
-    if (value instanceof short[]) return ArrayUtils.toObject((short[]) value);
+    if (value instanceof boolean[] booleans) return ArrayUtils.toObject(booleans);
+    if (value instanceof byte[] bytes) return ArrayUtils.toObject(bytes);
+    if (value instanceof char[] chars) return ArrayUtils.toObject(chars);
+    if (value instanceof double[] doubles) return ArrayUtils.toObject(doubles);
+    if (value instanceof float[] floats) return ArrayUtils.toObject(floats);
+    if (value instanceof int[] ints) return ArrayUtils.toObject(ints);
+    if (value instanceof long[] longs) return ArrayUtils.toObject(longs);
+    if (value instanceof short[] shorts) return ArrayUtils.toObject(shorts);
     return value;
   }
 
@@ -328,8 +328,8 @@ public class PreparedStatementRenderer implements ParameterizedSqlProvider {
           String result = String.valueOf(obj);
           if (obj instanceof String[]) {
             result = "'" + StringUtils.join((Object[])v,"','") + "'";
-          } else if (obj instanceof Object[]) {
-            result = StringUtils.join((Object[])obj,",");
+          } else if (obj instanceof Object[] objects) {
+            result = StringUtils.join(objects,",");
           }
           return result; 
         })

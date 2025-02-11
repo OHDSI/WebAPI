@@ -6,6 +6,7 @@ import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEnti
 import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcShortDTO;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcTemporalResult;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcVersionFullDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.ExecutionResultRequest;
@@ -15,6 +16,8 @@ import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.cohortdefinition.event.CohortDefinitionChangedEvent;
 import org.ohdsi.webapi.feanalysis.event.FeAnalysisChangedEvent;
 import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.shiro.annotations.CcGenerationId;
+import org.ohdsi.webapi.shiro.annotations.DataSourceAccess;
 import org.ohdsi.webapi.tag.domain.HasTags;
 import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.versioning.domain.CharacterizationVersion;
@@ -63,6 +66,9 @@ public interface CcService extends HasTags<Long> {
     CcGenerationEntity findGenerationById(final Long id);
 
     List<CcGenerationEntity> findGenerationsByCcIdAndSource(Long id, String sourceKey);
+
+    @DataSourceAccess
+    List<CcTemporalResult> findTemporalResultAsList(@CcGenerationId Long generationId);
 
     GenerationResults findResult(Long generationId, ExecutionResultRequest params);
     

@@ -15,21 +15,8 @@
  */
 package org.ohdsi.webapi.service;
 
-import java.io.ByteArrayOutputStream;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import javax.transaction.Transactional;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import javax.cache.CacheManager;
-import javax.cache.configuration.MutableConfiguration;
-
 import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
 import org.ohdsi.vocabulary.Concept;
@@ -40,16 +27,23 @@ import org.ohdsi.webapi.conceptset.ConceptSetExport;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfo;
 import org.ohdsi.webapi.conceptset.ConceptSetGenerationInfoRepository;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
-import org.ohdsi.webapi.conceptset.dto.ConceptSetVersionFullDTO;
 import org.ohdsi.webapi.conceptset.annotation.ConceptSetAnnotation;
+import org.ohdsi.webapi.conceptset.dto.ConceptSetVersionFullDTO;
 import org.ohdsi.webapi.exception.ConceptNotExistException;
 import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.annotations.SearchDataTransformer;
+import org.ohdsi.webapi.service.dto.AnnotationDTO;
 import org.ohdsi.webapi.service.dto.AnnotationDetailsDTO;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
-import org.ohdsi.webapi.service.dto.SaveConceptSetAnnotationsRequest;
-import org.ohdsi.webapi.service.dto.AnnotationDTO;
 import org.ohdsi.webapi.service.dto.CopyAnnotationsRequest;
+import org.ohdsi.webapi.service.dto.SaveConceptSetAnnotationsRequest;
+import org.ohdsi.webapi.service.lock.ConceptSetLockingService;
+import org.ohdsi.webapi.service.lock.dto.ConceptSetSnapshotActionRequest;
+import org.ohdsi.webapi.service.lock.dto.ConceptSetSnapshotParameters;
+import org.ohdsi.webapi.service.lock.dto.GetConceptSetSnapshotItemsRequest;
+import org.ohdsi.webapi.service.lock.dto.GetConceptSetSnapshotItemsResponse;
+import org.ohdsi.webapi.service.lock.dto.IsLockedBatchCheckRequest;
+import org.ohdsi.webapi.service.lock.dto.IsLockedBatchCheckResponse;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
@@ -60,9 +54,9 @@ import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.tag.domain.HasTags;
 import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.util.CacheHelper;
+import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.util.ExportUtil;
 import org.ohdsi.webapi.util.NameUtils;
-import org.ohdsi.webapi.util.ExceptionUtils;
 import org.ohdsi.webapi.versioning.domain.ConceptSetVersion;
 import org.ohdsi.webapi.versioning.domain.Version;
 import org.ohdsi.webapi.versioning.domain.VersionBase;
@@ -78,6 +72,37 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
+
+import javax.cache.CacheManager;
+import javax.cache.configuration.MutableConfiguration;
+import javax.transaction.Transactional;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * Provides REST services for working with
@@ -145,6 +170,8 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Autowired
     private ObjectMapper mapper;
 
+    @Autowired
+    private ConceptSetLockingService conceptSetLockingService;
 
     @Value("${security.defaultGlobalReadPermissions}")
     private boolean defaultGlobalReadPermissions;
@@ -564,6 +591,75 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         ConceptSet conceptSet = conversionService.convert(conceptSetDTO, ConceptSet.class);
         return conversionService.convert(updateConceptSet(updated, conceptSet), ConceptSetDTO.class);
     }
+		@Path("/{id}/list-snapshots")
+		@GET
+		@Produces(MediaType.APPLICATION_JSON)
+		@Transactional
+		public List<ConceptSetSnapshotParameters> listSnapshots(@PathParam("id") final int id) throws Exception {
+		  	return conceptSetLockingService.listSnapshotsByConceptSetId(id);
+		}
+		@POST
+		@Path("/{id}/snapshot")
+		@Consumes(MediaType.APPLICATION_JSON)
+		@Produces(MediaType.APPLICATION_JSON)
+		@Transactional
+		public Response invokeSnapshotAction(@PathParam("id") final int id, ConceptSetSnapshotActionRequest snapshotActionRequest) {
+			try {
+				String sourceKey = snapshotActionRequest.getSourceKey();
+				
+				if(snapshotActionRequest.isTakeSnapshot()) {
+
+					ConceptSetExpression conceptSetExpression = getConceptSetExpression(id, sourceKey);
+					Collection<Concept> includedConcepts = vocabService.executeIncludedConceptLookup(sourceKey, conceptSetExpression);
+					Collection<Concept> includedSourceCodes = vocabService.executeMappedLookup(sourceKey, conceptSetExpression);
+
+					conceptSetLockingService.invokeSnapshotAction(id, snapshotActionRequest, conceptSetExpression, includedConcepts, includedSourceCodes);
+				} else {
+					conceptSetLockingService.invokeSnapshotAction(id, snapshotActionRequest, null, null, null);
+				}
+				return Response.ok().entity("Snapshot action successfully invoked.").build();
+			} catch (Exception e) {
+				log.error("Invoke snapshot action failed", e);
+				return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+					.entity("Invoke snapshot action failed: " + e.getMessage())
+					.build();
+			}
+		}
+
+		@POST
+		@Path("/check-locked")
+		@Consumes(MediaType.APPLICATION_JSON)
+		@Produces(MediaType.APPLICATION_JSON)
+		public Response checkIsLockedBatch(IsLockedBatchCheckRequest isLockedBatchCheckRequest) {
+			IsLockedBatchCheckResponse response = new IsLockedBatchCheckResponse();
+			try {
+				List<Integer> ids = isLockedBatchCheckRequest.getConceptSetIds();
+				Map<Integer, Boolean> lockStatuses = conceptSetLockingService.areLocked(ids);
+				response.setLockStatus(lockStatuses);
+				return Response.ok(response).build();
+			} catch (Exception e) {
+				return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+					.entity("Error checking lock statuses: " + e.getMessage())
+					.build();
+			}
+		}
+
+		@POST
+		@Path("/get-snapshot-items")
+		@Consumes(MediaType.APPLICATION_JSON)
+		@Produces(MediaType.APPLICATION_JSON)
+		public Response getSnapshotItems(GetConceptSetSnapshotItemsRequest request) {
+			try {
+				List<ConceptSetExpression.ConceptSetItem> conceptSetItems = conceptSetLockingService.getConceptSetSnapshotItemsBySnapshotId(request.getSnapshotId(), request.getSnapshotItemType());
+				GetConceptSetSnapshotItemsResponse response = new GetConceptSetSnapshotItemsResponse();
+				response.setConceptSetItems(conceptSetItems);
+				return Response.ok(response).build();
+			} catch (Exception e) {
+				return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+					.entity("Error fetching snapshot items: " + e.getMessage())
+					.build();
+			}
+		}
 
     private ConceptSet updateConceptSet(ConceptSet dst, ConceptSet src) {
 

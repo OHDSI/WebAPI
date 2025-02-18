@@ -13,6 +13,8 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.cache.CacheManager;
+import javax.cache.configuration.MutableConfiguration;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -53,6 +55,7 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.util.CacheHelper;
 import org.ohdsi.webapi.util.PreparedSqlRender;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.vocabulary.ConceptRecommendedNotInstalledException;
@@ -68,6 +71,10 @@ import org.ohdsi.webapi.vocabulary.VocabularyInfo;
 import org.ohdsi.webapi.vocabulary.VocabularySearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.cache.JCacheManagerCustomizer;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowCallbackHandler;
@@ -85,7 +92,42 @@ import org.ohdsi.webapi.vocabulary.MappedRelatedConcept;
 @Component
 public class VocabularyService extends AbstractDaoService {
 
-  private static Hashtable<String, VocabularyInfo> vocabularyInfoCache = null;
+	//create cache
+	@Component
+	public static class CachingSetup implements JCacheManagerCustomizer {
+
+		public static final String CONCEPT_DETAIL_CACHE = "conceptDetail";
+		public static final String CONCEPT_RELATED_CACHE = "conceptRelated";
+		public static final String CONCEPT_HIERARCHY_CACHE = "conceptHierarchy";
+
+		@Override
+		public void customize(CacheManager cacheManager) {
+			// due to unit tests causing application contexts to reload cache manager caches, we
+			// have to check for the existance of a cache before creating it
+			Set<String> cacheNames = CacheHelper.getCacheNames(cacheManager);
+			// Evict when a cohort definition is created or updated, or permissions, or tags
+			if (!cacheNames.contains(CONCEPT_DETAIL_CACHE)) {
+				cacheManager.createCache(CONCEPT_DETAIL_CACHE, new MutableConfiguration<String, Concept>()
+					.setTypes(String.class, Concept.class)
+					.setStoreByValue(false)
+					.setStatisticsEnabled(true));
+			}
+			if (!cacheNames.contains(CONCEPT_RELATED_CACHE)) {
+				cacheManager.createCache(CONCEPT_RELATED_CACHE, new MutableConfiguration<String, Collection<RelatedConcept>>()
+					.setTypes(String.class, (Class<Collection<RelatedConcept>>) (Class<?>) Collection.class)
+					.setStoreByValue(false)
+					.setStatisticsEnabled(true));
+			}
+			if (!cacheNames.contains(CONCEPT_HIERARCHY_CACHE)) {
+				cacheManager.createCache(CONCEPT_HIERARCHY_CACHE, new MutableConfiguration<String, Collection<RelatedConcept>>()
+					.setTypes(String.class, (Class<Collection<RelatedConcept>>) (Class<?>) Collection.class)
+					.setStoreByValue(false)
+					.setStatisticsEnabled(true));
+			}
+		}
+	}
+	
+	private static Hashtable<String, VocabularyInfo> vocabularyInfoCache = null;
   public static final String DEFAULT_SEARCH_ROWS = "20000";
 
   @Autowired
@@ -723,6 +765,7 @@ public class VocabularyService extends AbstractDaoService {
   @GET
   @Path("{sourceKey}/concept/{id}")
   @Produces(MediaType.APPLICATION_JSON)
+	@Cacheable(cacheNames = CachingSetup.CONCEPT_DETAIL_CACHE, key = "#sourceKey.concat('/').concat(#id)")
   public Concept getConcept(@PathParam("sourceKey") final String sourceKey, @PathParam("id") final long id) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String sqlPath = "/resources/vocabulary/sql/getConcept.sql";
@@ -774,6 +817,7 @@ public class VocabularyService extends AbstractDaoService {
   @GET
   @Path("{sourceKey}/concept/{id}/related")
   @Produces(MediaType.APPLICATION_JSON)
+	@Cacheable(cacheNames = CachingSetup.CONCEPT_RELATED_CACHE, key = "#sourceKey.concat('/').concat(#id)")
   public Collection<RelatedConcept> getRelatedConcepts(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id) {
     final Map<Long, RelatedConcept> concepts = new HashMap<>();
     Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -869,6 +913,7 @@ public class VocabularyService extends AbstractDaoService {
   @GET
   @Path("{sourceKey}/concept/{id}/ancestorAndDescendant")
   @Produces(MediaType.APPLICATION_JSON)
+	@Cacheable(cacheNames = CachingSetup.CONCEPT_HIERARCHY_CACHE, key = "#sourceKey.concat('/').concat(#id)")
   public Collection<RelatedConcept> getConceptAncestorAndDescendant(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id) {
     final Map<Long, RelatedConcept> concepts = new HashMap<>();
     Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -1285,9 +1330,19 @@ public class VocabularyService extends AbstractDaoService {
     return vocabularyInfoCache.get(sourceKey);
   }
 
+	@Caching(evict = {
+		@CacheEvict(value=CachingSetup.CONCEPT_DETAIL_CACHE, allEntries = true),
+		@CacheEvict(value=CachingSetup.CONCEPT_RELATED_CACHE, allEntries = true),
+		@CacheEvict(value=CachingSetup.CONCEPT_RELATED_CACHE, allEntries = true)
+	})
   public void clearVocabularyInfoCache() {
     vocabularyInfoCache = null;
   }
+	
+	
+	public void clearCaches() {
+		
+	}
   
   /**
    * Get the descendant concepts of the selected ancestor vocabulary and 

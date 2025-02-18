@@ -64,7 +64,8 @@ public abstract class WebApiIT {
             "/ddl/results/pathway_analysis_codes.sql",
             "/ddl/results/pathway_analysis_events.sql",
             "/ddl/results/pathway_analysis_paths.sql",
-            "/ddl/results/pathway_analysis_stats.sql"
+            "/ddl/results/pathway_analysis_stats.sql",
+            "/ddl/results/achilles_result_concept_count.sql"
     );
 
 

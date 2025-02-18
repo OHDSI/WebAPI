@@ -1,5 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
 
@@ -28,7 +28,7 @@
 
     <commons-fileupload.version>1.5</commons-fileupload.version>
 
-    <circe.version>1.11.2</circe.version>
+    <circe.version>1.12.0</circe.version>
     <jersey.version>2.14</jersey.version>
     <SqlRender.version>1.16.1</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
@@ -122,7 +122,7 @@
     <security.ad.system.password></security.ad.system.password>
     <security.ad.searchFilter>(&amp;(objectClass=person)(cn=%s))</security.ad.searchFilter>
     <security.ad.ignore.partial.result.exception>true</security.ad.ignore.partial.result.exception>
-    <security.ad.result.count.limit>30000</security.ad.result.count.limit> <!-- 0 means no limit -->
+    <security.ad.result.count.limit>30000</security.ad.result.count.limit>    <!-- 0 means no limit -->
     <security.ad.default.import.group>public</security.ad.default.import.group>
     <security.ad.searchString>(&amp;(objectClass=person)(userPrincipalName=%s))</security.ad.searchString>
     <security.ad.userMapping.displaynameAttr>displayname</security.ad.userMapping.displaynameAttr>
@@ -191,8 +191,8 @@
     <!-- If defaultGlobalReadPermissions is set to true (default), then all users can see every artifact.  -->
     <!-- If it is set to false, WebAPI will filter out the artifacts that a user does not explicitly have -->
     <!-- read permissions to -->
-    <security.defaultGlobalReadPermissions>true</security.defaultGlobalReadPermissions>	
-    
+    <security.defaultGlobalReadPermissions>true</security.defaultGlobalReadPermissions>
+
     <!-- EMBEDDED SERVER CONFIGURATION (ServerProperties) -->
     <server.port>8080</server.port>
     <server.ssl.key-store></server.ssl.key-store>
@@ -216,7 +216,7 @@
     <jasypt.encryptor.enabled>false</jasypt.encryptor.enabled>
     <jasypt.encryptor.password></jasypt.encryptor.password>
     <jasypt.encryptor.algorithm>PBEWithMD5AndDES</jasypt.encryptor.algorithm>
-                
+
     <!-- ORGANIZATION SETTINGS -->
     <organization.name>OHDSI</organization.name>
 
@@ -236,6 +236,10 @@
     <logging.level.org.hibernate>info</logging.level.org.hibernate>
     <logging.level.org.apache.shiro>warn</logging.level.org.apache.shiro>
 
+    <!-- Spring Cache properties -->
+    <spring.cache.type>jcache</spring.cache.type>
+
+    <!-- Spring Batch -->
     <spring.batch.taskExecutor.corePoolSize>10</spring.batch.taskExecutor.corePoolSize>
     <spring.batch.taskExecutor.maxPoolSize>20</spring.batch.taskExecutor.maxPoolSize>
     <spring.batch.taskExecutor.queueCapacity>2147483647</spring.batch.taskExecutor.queueCapacity>
@@ -272,6 +276,7 @@
     <cache.jobs.count>3</cache.jobs.count>
     <!-- Achilles cache -->
     <cache.achilles.usePersonCount>true</cache.achilles.usePersonCount>
+    <cache.webapi.enabled>true</cache.webapi.enabled>
 
     <!-- Build info -->
     <buildinfo.atlas.milestone.id>47</buildinfo.atlas.milestone.id>
@@ -298,6 +303,7 @@
     <audit.trail.log.file>/tmp/atlas/audit/audit.log</audit.trail.log.file>
     <audit.trail.log.extraFile>/tmp/atlas/audit/audit-extra.log</audit.trail.log.extraFile>
   </properties>
+
   <build>
     <finalName>WebAPI</finalName>
     <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
@@ -368,8 +374,8 @@
           <!-- only include properties to speed up plugin -->
           <!-- ref: https://github.com/git-commit-id/git-commit-id-maven-plugin/issues/462 -->
           <includeOnlyProperties>
-              <includeOnlyProperty>git.branch</includeOnlyProperty>
-              <includeOnlyProperty>git.commit.id.abbrev</includeOnlyProperty>
+            <includeOnlyProperty>git.branch</includeOnlyProperty>
+            <includeOnlyProperty>git.commit.id.abbrev</includeOnlyProperty>
           </includeOnlyProperties>
         </configuration>
       </plugin>
@@ -483,7 +489,7 @@
           </execution>
         </executions>
         <configuration>
-          <licence>cHJvamVjdHxvcmcub2hkc2kuV2ViQVBJfDIwMjUtMDEtMDF8ZmFsc2V8LTEjTUN3Q0ZDZkowMkZrVmVSeVlBazZVbTBmNThIbE15SjRBaFEwcVZyRUZuamZMTzJ0KzFtR3E3U3lMMkFESHc9PQ==</licence>
+          <licence>cHJvamVjdHxvcmcub2hkc2kuV2ViQVBJfDIwMzAtMDEtMDF8ZmFsc2V8LTEjTUN3Q0ZDOEFFWEdzU0lISUJiMzBBWC9WazlGcmdPME1BaFI4MVM5bkViQUpXN0tiWE9zR1NpRFlPam5zaXc9PQ==</licence>
           <restModel>
             <httpStatusCodes>
               <httpStatusCode>
@@ -575,6 +581,7 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+
   <dependencies>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -742,6 +749,10 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>javax.cache</groupId>
+      <artifactId>cache-api</artifactId>
+      <version>1.1.1</version>
+    </dependency>    <dependency>
       <groupId>org.ohdsi.sql</groupId>
       <artifactId>SqlRender</artifactId>
       <version>${SqlRender.version}</version>
@@ -770,9 +781,20 @@
       <version>2.4.9</version>
     </dependency>
     <dependency>
+      <groupId>net.minidev</groupId>
+      <artifactId>asm</artifactId>
+      <version>1.0.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>3.12.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-text</artifactId>
+      <version>1.10.0</version>
     </dependency>
     <dependency>
       <groupId>org.flywaydb</groupId>
@@ -802,12 +824,12 @@
           <artifactId>jackson-databind</artifactId>
         </exclusion>
         <exclusion>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
         <exclusion>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
+          <groupId>log4j</groupId>
+          <artifactId>log4j</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -1153,7 +1175,7 @@
       <version>${pac4j.version}</version>
       <exclusions>
         <exclusion>
-      <groupId>com.fasterxml.jackson.core</groupId>
+          <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-databind</artifactId>
         </exclusion>
       </exclusions>
@@ -1189,6 +1211,10 @@
       <version>1.1.7</version>
     </dependency>
     <dependency>
+      <groupId>org.ehcache</groupId>
+      <artifactId>ehcache</artifactId>
+      <version>3.9.11</version>
+    </dependency>    <dependency>
       <groupId>com.opentable.components</groupId>
       <artifactId>otj-pg-embedded</artifactId>
       <version>0.13.1</version>
@@ -1199,12 +1225,12 @@
       <artifactId>spring-boot-starter-test</artifactId>
       <version>${spring.boot.version}</version>
       <scope>test</scope>
-        <exclusions>
-            <exclusion>
-                <groupId>com.vaadin.external.google</groupId>
-                <artifactId>android-json</artifactId>
-            </exclusion>
-        </exclusions>
+      <exclusions>
+        <exclusion>
+          <groupId>com.vaadin.external.google</groupId>
+          <artifactId>android-json</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.dbunit</groupId>
@@ -1225,12 +1251,13 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-        <groupId>com.github.mjeanroy</groupId>
-        <artifactId>dbunit-plus</artifactId>
-        <version>2.0.1</version>
-        <scope>test</scope>
+      <groupId>com.github.mjeanroy</groupId>
+      <artifactId>dbunit-plus</artifactId>
+      <version>2.0.1</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
+
   <profiles>
     <profile>
       <id>webapi-oracle</id>
@@ -1323,17 +1350,17 @@
           lower(email) = lower(?)</security.db.datasource.authenticationQuery>
       </properties>
       <repositories>
-	<repository>
+        <repository>
           <id>ohdsi.snapshots</id>
           <name>repo.ohdsi.org-snapshots</name>
           <url>https://repo.ohdsi.org/nexus/content/repositories/snapshots</url>
           <releases>
             <enabled>false</enabled>
           </releases>
-      	  <snapshots>
+          <snapshots>
             <enabled>true</enabled>
-      	  </snapshots>
-    	</repository>
+          </snapshots>
+        </repository>
       </repositories>
     </profile>
     <profile>
@@ -1406,7 +1433,7 @@
         <impala.enabled>true</impala.enabled>
         <impala.driver.version>2.6.15</impala.driver.version>
         <!-- Impala JDBC driver path -->
-		<impala.classpath>...path/to/impala/jdbc/drivers...</impala.classpath>
+        <impala.classpath>...path/to/impala/jdbc/drivers...</impala.classpath>
       </properties>
       <dependencies>
         <dependency>
@@ -1511,9 +1538,9 @@
           <version>v2-rev20220326-1.32.1</version>
         </dependency>
         <dependency>
-            <groupId>com.google.cloud</groupId>
-            <artifactId>google-cloud-bigquery</artifactId>
-            <version>1.2.15</version>
+          <groupId>com.google.cloud</groupId>
+          <artifactId>google-cloud-bigquery</artifactId>
+          <version>1.2.15</version>
         </dependency>
         <dependency>
           <groupId>com.google.http-client</groupId>
@@ -1822,7 +1849,7 @@
       <id>webapi-snowflake</id>
       <properties>
         <snowflake.enabled>true</snowflake.enabled>
-        <snowflake.driver.version>3.13.22</snowflake.driver.version>
+        <snowflake.driver.version>3.20.0</snowflake.driver.version>
       </properties>
       <dependencies>
         <dependency>

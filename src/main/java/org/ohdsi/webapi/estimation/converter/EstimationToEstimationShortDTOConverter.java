@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.estimation.converter;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.estimation.Estimation;
 import org.ohdsi.webapi.estimation.dto.EstimationShortDTO;
 import org.ohdsi.webapi.service.converters.BaseCommonEntityToDTOConverter;

@@ -61,12 +61,12 @@
       <security.maxLoginAttempts>3</security.maxLoginAttempts>
       <security.duration.initial>10</security.duration.initial>
       <security.duration.increment>10</security.duration.increment>
-      <security.db.datasource.schema>${datasource.ohdsi.schema}</security.db.datasource.schema>
+      <security.db.datasource.schema>atlas_security</security.db.datasource.schema>
       <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
       <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
       <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
       <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
-      <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users where lower(email) = lower(?)</security.db.datasource.authenticationQuery>
+      <security.db.datasource.authenticationQuery>select password,firstName,middleName,lastName from ${security.db.datasource.schema}.users where username = ?</security.db.datasource.authenticationQuery>
     </properties> 
   </profile>     
   </profiles>

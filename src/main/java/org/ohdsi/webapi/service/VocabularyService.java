@@ -3,6 +3,8 @@ package org.ohdsi.webapi.service;
 import static org.ohdsi.webapi.service.cscompare.ConceptSetCompareService.CONCEPT_SET_COMPARISON_ROW_MAPPER;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -78,6 +80,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import org.ohdsi.webapi.vocabulary.MappedRelatedConcept;
 
  /**
   * Provides REST services for working with
@@ -138,7 +141,10 @@ public class VocabularyService extends AbstractDaoService {
 
   @Autowired
   private ConceptSetCompareService conceptSetCompareService;
-  
+
+  @Autowired
+  private ObjectMapper objectMapper;
+
   @Value("${datasource.driverClassName}")
   private String driver;
 
@@ -827,7 +833,75 @@ public class VocabularyService extends AbstractDaoService {
     return concepts.values();
   }
 
-  /**
+   @POST
+   @Path("{sourceKey}/related-standard")
+   @Produces(MediaType.APPLICATION_JSON)
+   public Collection<MappedRelatedConcept> getRelatedStandardMappedConcepts(@PathParam("sourceKey") String sourceKey, List<Long> allConceptIds) {
+     Source source = getSourceRepository().findBySourceKey(sourceKey);
+     String relatedConceptsSQLPath = "/resources/vocabulary/sql/getRelatedStandardMappedConcepts.sql";
+     String relatedMappedFromIdsSQLPath = "/resources/vocabulary/sql/getRelatedStandardMappedConcepts_getMappedFromIds.sql";
+     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+
+     String[] searchStrings = {"CDM_schema"};
+     String[] replacementStrings = {tableQualifier};
+
+     String[] varNames = {"conceptIdList"};
+
+     final Map<Long, MappedRelatedConcept> resultCombinedMappedConcepts = new HashMap<>();
+     final Map<Long, RelatedConcept> relatedStandardConcepts = new HashMap<>();
+     for(final List<Long> conceptIdsBatch: Lists.partition(allConceptIds, PreparedSqlRender.getParameterLimit(source))) {
+       Object[] varValues = {conceptIdsBatch.toArray()};
+       PreparedStatementRenderer relatedConceptsRenderer = new PreparedStatementRenderer(source, relatedConceptsSQLPath, searchStrings, replacementStrings, varNames, varValues);
+       getSourceJdbcTemplate(source).query(relatedConceptsRenderer.getSql(), relatedConceptsRenderer.getSetter(), (RowMapper<Void>) (resultSet, arg1) -> {
+         addRelationships(relatedStandardConcepts, resultSet);
+         return null;
+       });
+
+       final Map<Long, Set<Long>> relatedNonStandardConceptIdsByStandardId = new HashMap<>();
+
+       PreparedStatementRenderer mappedFromConceptsRenderer = new PreparedStatementRenderer(source, relatedMappedFromIdsSQLPath, searchStrings, replacementStrings, varNames, varValues);
+       getSourceJdbcTemplate(source).query(mappedFromConceptsRenderer.getSql(), mappedFromConceptsRenderer.getSetter(), (RowMapper<Void>) (resultSet, arg1) -> {
+         populateRelatedConceptIds(relatedNonStandardConceptIdsByStandardId, resultSet);
+         return null;
+       });
+
+       enrichResultCombinedMappedConcepts(resultCombinedMappedConcepts, relatedStandardConcepts, relatedNonStandardConceptIdsByStandardId);
+      }
+     return resultCombinedMappedConcepts.values();
+   }
+
+   private void populateRelatedConceptIds(final Map<Long, Set<Long>> mappedConceptsIds, final ResultSet resultSet) throws SQLException {
+     final Long concept_id = resultSet.getLong("CONCEPT_ID");
+     if (!mappedConceptsIds.containsKey(concept_id)) {
+       Set<Long> mappedIds = new HashSet<>();
+       mappedIds.add(resultSet.getLong("MAPPED_FROM_ID"));
+       mappedConceptsIds.put(concept_id,mappedIds);
+     } else {
+       mappedConceptsIds.get(concept_id).add(resultSet.getLong("MAPPED_FROM_ID"));
+     }
+   }
+
+   void enrichResultCombinedMappedConcepts(Map<Long, MappedRelatedConcept> resultCombinedMappedConcepts,
+                                           Map<Long, RelatedConcept> relatedStandardConcepts,
+                                           Map<Long, Set<Long>> relatedNonStandardConceptIdsByStandardId) {
+    relatedNonStandardConceptIdsByStandardId.forEach((standardConceptId, mappedFromIds)->{
+      if(resultCombinedMappedConcepts.containsKey(standardConceptId)){
+        resultCombinedMappedConcepts.get(standardConceptId).mappedFromIds.addAll(mappedFromIds);
+      } else {
+        MappedRelatedConcept mappedRelatedConcept;
+         try {
+           mappedRelatedConcept = objectMapper.readValue(objectMapper.writeValueAsString(relatedStandardConcepts.get(standardConceptId)), MappedRelatedConcept.class);
+           mappedRelatedConcept.mappedFromIds=mappedFromIds;
+           resultCombinedMappedConcepts.put(standardConceptId,mappedRelatedConcept);
+         } catch (JsonProcessingException e) {
+           log.error("Could not convert RelatedConcept to MappedRelatedConcept", e);
+           throw new WebApplicationException(e);
+         }
+      }
+    });
+   }
+
+   /**
    * Get ancestor and descendant concepts for the selected concept identifier 
    * from a source. 
    * 

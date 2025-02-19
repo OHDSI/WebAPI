@@ -100,7 +100,7 @@ public class CohortCountsShinyPackagingService extends CommonShinyPackagingServi
 
     private String getDescription(CohortDefinition cohort) {
         if (cohort != null && cohort.getDescription() != null) {
-            return cohort.getDescription();
+            return escapeLineBreaks(cohort.getDescription());
         }
         return ShinyConstants.VALUE_NOT_AVAILABLE.getValue();
     }

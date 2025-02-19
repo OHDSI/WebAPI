@@ -92,7 +92,7 @@ public class CohortPathwaysShinyPackagingService extends CommonShinyPackagingSer
 
     private String getDescription(PathwayAnalysisDTO pathwayAnalysisDTO) {
         if (pathwayAnalysisDTO != null && pathwayAnalysisDTO.getDescription() != null) {
-            return pathwayAnalysisDTO.getDescription();
+            return escapeLineBreaks(pathwayAnalysisDTO.getDescription());
         }
         return ShinyConstants.VALUE_NOT_AVAILABLE.getValue();
     }

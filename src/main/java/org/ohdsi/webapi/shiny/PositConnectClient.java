@@ -39,6 +39,7 @@ import java.util.concurrent.TimeUnit;
 public class PositConnectClient implements InitializingBean {
 
     private static final Logger log = LoggerFactory.getLogger(PositConnectClient.class);
+    private static final int BODY_BYTE_COUNT_TO_LOG = 10_000;
     private static final MediaType JSON_TYPE = MediaType.parse(org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE);
     private static final MediaType OCTET_STREAM_TYPE = MediaType.parse(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE);
     private static final String HEADER_AUTH = "Authorization";
@@ -48,6 +49,7 @@ public class PositConnectClient implements InitializingBean {
 
     @Autowired(required = false)
     private PositConnectProperties properties;
+
     public UUID createContentItem(ApplicationBrief brief) {
         ContentItem contentItem = new ContentItem();
         contentItem.accessType = "acl";
@@ -64,7 +66,8 @@ public class PositConnectClient implements InitializingBean {
         String url = connect("/v1/content");
         Request.Builder request = new Request.Builder()
                 .url(url);
-        return doCall(new TypeReference<List<ContentItemResponse>>() {}, request, url);
+        return doCall(new TypeReference<List<ContentItemResponse>>() {
+        }, request, url);
     }
 
     public String uploadBundle(UUID contentId, TemporaryFile bundle) {
@@ -100,13 +103,10 @@ public class PositConnectClient implements InitializingBean {
 
     private <T> T doCall(TypeReference<T> responseClass, Request.Builder request, String url) {
         Call call = call(request, properties.getApiKey());
-        try(Response response = call.execute()) {
+        try (Response response = call.execute()) {
             if (!response.isSuccessful()) {
-                log.error("Request [{}] returned code: [{}], message: [{}]", url, response.code(), response.message());
+                log.error("Request [{}] returned code: [{}], message: [{}], bodyPart: [{}]", url, response.code(), response.message(), response.body() != null ? response.peekBody(BODY_BYTE_COUNT_TO_LOG).string() : "");
                 String message = MessageFormat.format("Request [{0}] returned code: [{1}], message: [{2}]", url, response.code(), response.message());
-                if (response.code() == 409) {
-                    throw new ConflictPositConnectException(message);
-                }
                 throw new PositConnectClientException(message);
             }
             if (response.body() == null) {

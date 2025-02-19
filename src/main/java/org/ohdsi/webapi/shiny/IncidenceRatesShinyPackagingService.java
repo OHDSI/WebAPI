@@ -133,7 +133,7 @@ public class IncidenceRatesShinyPackagingService extends CommonShinyPackagingSer
 
     private String getDescription(IncidenceRateAnalysis analysis) {
         if (analysis != null && analysis.getDescription() != null) {
-            return analysis.getDescription();
+            return escapeLineBreaks(analysis.getDescription());
         }
         return ShinyConstants.VALUE_NOT_AVAILABLE.getValue();
     }

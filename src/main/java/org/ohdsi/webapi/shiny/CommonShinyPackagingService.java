@@ -41,8 +41,8 @@ public abstract class CommonShinyPackagingService {
     protected final CDMResultsService cdmResultsService;
     protected final DataSourceSummaryConverter dataSourceSummaryConverter;
 
-    public CommonShinyPackagingService(String atlasUrl, String repoLink, FileWriter fileWriter, ManifestUtils manifestUtils, ObjectMapper objectMapper, 
-           SourceRepository sourceRepository, CDMResultsService cdmResultsService, DataSourceSummaryConverter dataSourceSummaryConverter) {
+    public CommonShinyPackagingService(String atlasUrl, String repoLink, FileWriter fileWriter, ManifestUtils manifestUtils, ObjectMapper objectMapper,
+                                       SourceRepository sourceRepository, CDMResultsService cdmResultsService, DataSourceSummaryConverter dataSourceSummaryConverter) {
         this.atlasUrl = atlasUrl;
         this.repoLink = repoLink;
         this.fileWriter = fileWriter;
@@ -191,7 +191,7 @@ public abstract class CommonShinyPackagingService {
     }
 
     private String convertAppPropertiesToString(Map<String, String> appProperties) {
-        return appProperties.entrySet().stream()                .map(entry -> String.format("%s=%s\n", entry.getKey(), entry.getValue()))
+        return appProperties.entrySet().stream().map(entry -> String.format("%s=%s\n", entry.getKey(), entry.getValue()))
                 .collect(Collectors.joining());
     }
 
@@ -199,5 +199,10 @@ public abstract class CommonShinyPackagingService {
         if (date == null) return null;
         DateFormat df = new SimpleDateFormat(ShinyConstants.DATE_TIME_FORMAT.getValue());
         return df.format(date);
+    }
+
+    protected String escapeLineBreaks(String input) {
+        if (input == null) return null;
+        return input.replace("\n", "\\n").replace("\r", "\\r");
     }
 }

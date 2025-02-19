@@ -133,7 +133,7 @@ public class CohortCharacterizationShinyPackagingService extends CommonShinyPack
 
     private String getDescription(CohortCharacterizationEntity cohortCharacterizationEntity) {
         if (cohortCharacterizationEntity != null && cohortCharacterizationEntity.getDescription() != null) {
-            return cohortCharacterizationEntity.getDescription();
+            return escapeLineBreaks(cohortCharacterizationEntity.getDescription());
         }
         return ShinyConstants.VALUE_NOT_AVAILABLE.getValue();
     }

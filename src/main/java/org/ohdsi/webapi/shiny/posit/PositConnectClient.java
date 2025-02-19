@@ -46,6 +46,7 @@ import java.util.concurrent.TimeUnit;
 public class PositConnectClient implements InitializingBean {
 
     private static final Logger log = LoggerFactory.getLogger(PositConnectClient.class);
+    private static final int BODY_BYTE_COUNT_TO_LOG = 10_000;
     private static final MediaType JSON_TYPE = MediaType.parse(org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE);
     private static final MediaType OCTET_STREAM_TYPE = MediaType.parse(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE);
     private static final String HEADER_AUTH = "Authorization";
@@ -125,7 +126,7 @@ public class PositConnectClient implements InitializingBean {
         Call call = call(request, properties.getApiKey());
         try (Response response = call.execute()) {
             if (!response.isSuccessful()) {
-                log.error("Request [{}] returned code: [{}], message: [{}]", url, response.code(), response.message());
+                log.error("Request [{}] returned code: [{}], message: [{}], bodyPart: [{}]", url, response.code(), response.message(), response.body() != null ? response.peekBody(BODY_BYTE_COUNT_TO_LOG).string() : "");
                 String message = MessageFormat.format("Request [{0}] returned code: [{1}], message: [{2}]", url, response.code(), response.message());
                 if (response.code() == 409) {
                     throw new ConflictPositConnectException(message);

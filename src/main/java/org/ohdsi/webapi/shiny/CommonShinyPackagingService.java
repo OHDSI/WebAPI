@@ -201,4 +201,9 @@ public abstract class CommonShinyPackagingService {
         DateFormat df = new SimpleDateFormat(ShinyConstants.DATE_TIME_FORMAT.getValue());
         return df.format(date);
     }
+
+    protected String escapeLineBreaks(String input) {
+        if (input == null) return null;
+        return input.replace("\n", "\\n").replace("\r", "\\r");
+    }
 }

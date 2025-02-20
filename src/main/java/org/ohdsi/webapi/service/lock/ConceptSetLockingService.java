@@ -41,15 +41,15 @@ import java.util.function.Function;
 
 @Service
 public class ConceptSetLockingService extends AbstractDaoService {
-	@Value("${snapshot.history.source.connection}")
+	@Value("${datasource.url}")
 	private String snapshotHistorySourceConnection;
-	@Value("${snapshot.history.source.schema}")
+	@Value("${datasource.ohdsi.schema}")
 	private String snapshotHistorySourceSchema;
-	@Value("${snapshot.history.source.dialect}")
+	@Value("${datasource.dialect}")
 	private String snapshotHistorySourceDialect;
-	@Value("${snapshot.history.source.username}")
+	@Value("${datasource.username}")
 	private String snapshotHistorySourceUsername;
-	@Value("${snapshot.history.source.password}")
+	@Value("${datasource.password}")
 	private String snapshotHistorySourcePassword;
 
 	@Autowired

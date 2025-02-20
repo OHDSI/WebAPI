@@ -65,10 +65,10 @@ public abstract class AtlasSecurity extends Security {
   @Autowired
   protected OidcConfCreator oidcConfCreator;
 
-	@Value("${snapshot.locking.enabled}")
-	private boolean snapshotLockingEnabled;
-	@Autowired
-	protected ConceptSetLockingService conceptSetLockingService;
+  @Value("${snapshot.locking.enabled}")
+  private boolean snapshotLockingEnabled;
+  @Autowired
+  protected ConceptSetLockingService conceptSetLockingService;
 
   @Value("${server.port}")
   private int sslPort;
@@ -137,8 +137,8 @@ public abstract class AtlasSecurity extends Security {
 
     filters.put(NO_SESSION_CREATION, new NoSessionCreationFilter());
     filters.put(FORCE_SESSION_CREATION, new ForceSessionCreationFilter());
-		filters.put(CS_LOCK, new ConceptSetLockWriteBlockingFilter(snapshotLockingEnabled, conceptSetLockingService));
-		filters.put(AUTHZ, new UrlBasedAuthorizingFilter());
+	filters.put(CS_LOCK, new ConceptSetLockWriteBlockingFilter(snapshotLockingEnabled, conceptSetLockingService));
+	filters.put(AUTHZ, new UrlBasedAuthorizingFilter());
     filters.put(CORS, new CorsFilter());
     filters.put(SSL, this.getSslFilter());
     filters.put(NO_CACHE, this.getNoCacheFilter());

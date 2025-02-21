@@ -17,6 +17,7 @@ package org.ohdsi.webapi.service;
 
 import java.io.ByteArrayOutputStream;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -547,10 +548,9 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         ConceptSet conceptSet = conversionService.convert(conceptSetDTO, ConceptSet.class);
         return conversionService.convert(updateConceptSet(updated, conceptSet), ConceptSetDTO.class);
     }
-		@Path("/{id}/list-snapshots")
+		@Path("/{id}/snapshots")
 		@GET
 		@Produces(MediaType.APPLICATION_JSON)
-		@Transactional
 		public List<ConceptSetSnapshotParameters> listSnapshots(@PathParam("id") final int id) throws Exception {
 		  	return conceptSetLockingService.listSnapshotsByConceptSetId(id);
 		}
@@ -558,21 +558,10 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 		@Path("/{id}/snapshot")
 		@Consumes(MediaType.APPLICATION_JSON)
 		@Produces(MediaType.APPLICATION_JSON)
-		@Transactional
 		public Response invokeSnapshotAction(@PathParam("id") final int id, ConceptSetSnapshotActionRequest snapshotActionRequest) {
 			try {
-				String sourceKey = snapshotActionRequest.getSourceKey();
-
-				if(snapshotActionRequest.isTakeSnapshot()) {
-
-					ConceptSetExpression conceptSetExpression = getConceptSetExpression(id, sourceKey);
-					Collection<Concept> includedConcepts = vocabService.executeIncludedConceptLookup(sourceKey, conceptSetExpression);
-					Collection<Concept> includedSourceCodes = vocabService.executeMappedLookup(sourceKey, conceptSetExpression);
-
-					conceptSetLockingService.invokeSnapshotAction(id, snapshotActionRequest, conceptSetExpression, includedConcepts, includedSourceCodes);
-				} else {
-					conceptSetLockingService.invokeSnapshotAction(id, snapshotActionRequest, null, null, null);
-				}
+                Supplier<ConceptSetExpression> conceptSetExpressionSupplier = () -> getConceptSetExpression(id, snapshotActionRequest.getSourceKey());
+				conceptSetLockingService.invokeSnapshotAction(id, snapshotActionRequest, conceptSetExpressionSupplier);
 				return Response.ok().entity("Snapshot action successfully invoked.").build();
 			} catch (Exception e) {
 				log.error("Invoke snapshot action failed", e);
@@ -583,7 +572,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 		}
 
 		@POST
-		@Path("/check-locked")
+		@Path("/locked")
 		@Consumes(MediaType.APPLICATION_JSON)
 		@Produces(MediaType.APPLICATION_JSON)
 		public Response checkIsLockedBatch(IsLockedBatchCheckRequest isLockedBatchCheckRequest) {
@@ -601,7 +590,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 		}
 
 		@POST
-		@Path("/get-snapshot-items")
+		@Path("/snapshot-items")
 		@Consumes(MediaType.APPLICATION_JSON)
 		@Produces(MediaType.APPLICATION_JSON)
 		public Response getSnapshotItems(GetConceptSetSnapshotItemsRequest request) {

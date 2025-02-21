@@ -1,7 +1,6 @@
 package org.ohdsi.webapi.service.lock;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.BooleanUtils;
 import org.ohdsi.circe.vocabulary.ConceptSetExpression;
@@ -38,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 @Service
 public class ConceptSetLockingService extends AbstractDaoService {
@@ -62,7 +62,7 @@ public class ConceptSetLockingService extends AbstractDaoService {
 	private VersionService<ConceptSetVersion> versionService;
 
 	@Transactional
-	public void invokeSnapshotAction(int conceptSetId, ConceptSetSnapshotActionRequest snapshotActionRequest, ConceptSetExpression conceptSetExpression, Collection<Concept> includedConcepts, Collection<Concept> includedSourceCodes) throws JsonProcessingException {
+	public void invokeSnapshotAction(int conceptSetId, ConceptSetSnapshotActionRequest snapshotActionRequest, Supplier<ConceptSetExpression> conceptSetExpressionSupplier) {
 		Source snapshotHistorySource = prepareSnapshotHistorySource();
 
 		ConceptSet conceptSet = getConceptSetRepository().findById(conceptSetId);
@@ -96,10 +96,15 @@ public class ConceptSetLockingService extends AbstractDaoService {
 						new Object[]{conceptSetId, snapshotActionRequest.getAction(), lockedDate, snapshotCreatedBy, snapshotActionRequest.getMessage(), vocabularyBundleName,
 							vocabularyBundleSchema, vocabularyBundleVersion, conceptSetVersion}, Long.class);
 
-					if (conceptSetExpression != null && includedConcepts != null && includedSourceCodes != null) {
+					if (snapshotActionRequest.isTakeSnapshot()) {
+						ConceptSetExpression conceptSetExpression = conceptSetExpressionSupplier.get();
 						Arrays.stream(conceptSetExpression.items).forEach(conceptSetItem -> saveConceptSetExpressionItemSnapshot(jdbcTemplate, conceptSetItem, snapshotMetadataId));
-						includedConcepts.forEach(concept -> saveIncludedConceptSnapshot(jdbcTemplate, concept, snapshotMetadataId));
-						includedSourceCodes.forEach(sourceCode -> saveIncludedSourceCodeSnapshot(jdbcTemplate, sourceCode, snapshotMetadataId));
+
+						vocabularyService.executeIncludedConceptLookup(snapshotActionRequest.getSourceKey(), conceptSetExpression)
+								.forEach(concept -> saveIncludedConceptSnapshot(jdbcTemplate, concept, snapshotMetadataId));
+
+						vocabularyService.executeMappedLookup(snapshotActionRequest.getSourceKey(), conceptSetExpression)
+								.forEach(sourceCode -> saveIncludedSourceCodeSnapshot(jdbcTemplate, sourceCode, snapshotMetadataId));
 					}
 					return null;
 				} catch (Exception ex) {

@@ -36,7 +36,7 @@ public class ConceptSetLockWriteBlockingFilterTest {
 		when(conceptSetLockingServiceMock.areLocked(anyListOf(Integer.class))).thenReturn(ImmutableMap.of(1, true));
 		ConceptSetLockWriteBlockingFilter sut = new ConceptSetLockWriteBlockingFilter(true, conceptSetLockingServiceMock);
 		assertThat(sut.isPermitted("conceptset:check:post"), is(true));
-		assertThat(sut.isPermitted("conceptset:check-locked:post"), is(true));
+		assertThat(sut.isPermitted("conceptset:locked:post"), is(true));
 		assertThat(sut.isPermitted("conceptset:1:get"), is(true));
 		assertThat(sut.isPermitted("conceptset:1:annotation:get"), is(true));
 		assertThat(sut.isPermitted("conceptset:1:items:get"), is(true));

@@ -6,7 +6,12 @@ on:
   push:
     branches:
       - mdaca-3.0.1
-
+    paths:
+      - 'Dockerfile-mvn-no-local'
+      - 'src/*'
+      - '.m2/*'
+      - '.github/workflows/ci.yaml'
+      - 'pom.xml'
 jobs:
   build:
     runs-on: ubuntu-latest

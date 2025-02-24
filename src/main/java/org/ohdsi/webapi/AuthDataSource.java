@@ -60,7 +60,7 @@ public class AuthDataSource {
     private String mbeanName;
 
     @Bean(name = "authDataSource")
-    public DataSource authDataSource() {
+    DataSource authDataSource() {
 
         try {
             HikariConfig config = new HikariConfig();

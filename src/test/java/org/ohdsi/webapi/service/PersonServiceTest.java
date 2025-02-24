@@ -1,9 +1,9 @@
 package org.ohdsi.webapi.service;
 
 import java.io.IOException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -12,7 +12,7 @@ public class PersonServiceTest extends AbstractServiceTest {
   @Autowired
   private PersonService personService;
 
-  @Before
+  @BeforeEach
   public void before() {
 
     if (personService == null) {
@@ -26,8 +26,8 @@ public class PersonServiceTest extends AbstractServiceTest {
     String personId = "5555";
     PreparedStatementRenderer psr = personService.prepareGetPersonProfile(personId, getSource());
     String actualSql = psr.getSql();
-    Assert.assertNotNull(actualSql);
-    Assert.assertNotNull(psr.getSetter());
+    Assertions.assertNotNull(actualSql);
+    Assertions.assertNotNull(psr.getSetter());
 
     assertSqlEquals("/person/sql/getRecords-expected.sql", psr);
 
@@ -38,10 +38,10 @@ public class PersonServiceTest extends AbstractServiceTest {
       qmarkCount++;
       startIndex++;
     }
-    Assert.assertEquals(qmarkCount, psr.getOrderedParamsList().size());
+    Assertions.assertEquals(qmarkCount, psr.getOrderedParamsList().size());
     /// make sure that all of the parameters are equivalent to personId value
     for (Object param : psr.getOrderedParamsList()) {
-      Assert.assertEquals(param, 5555L);
+      Assertions.assertEquals(param, 5555L);
     }
   }
 }

@@ -4,9 +4,9 @@ import com.odysseusinc.arachne.commons.types.DBMSType;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.helper.ResourceHelper;
@@ -93,20 +93,20 @@ public class GenerationCacheTest extends AbstractDatabaseTest {
 
     private CohortGenerationRequestBuilder cohortGenerationRequestBuilder;
 
-    @Before
+    @BeforeEach
     public void setUp() throws SQLException {
 
         if (!isSetup) { // one-time setup per class here
-          truncateTable(String.format("%s.%s", ohdsiSchema, "source"));
-          resetSequence(String.format("%s.%s", ohdsiSchema,"source_sequence"));         
+          truncateTable("%s.%s".formatted(ohdsiSchema, "source"));
+          resetSequence("%s.%s".formatted(ohdsiSchema, "source_sequence"));         
           sourceRepository.saveAndFlush(getCdmSource());
           isSetup = true;
         }
 
         // reset cohort tables
-        truncateTable(String.format("%s.%s", ohdsiSchema, "cohort_definition_details"));
-        truncateTable(String.format("%s.%s", ohdsiSchema, "cohort_definition"));
-        resetSequence(String.format("%s.%s", ohdsiSchema, "cohort_definition_sequence"));
+        truncateTable("%s.%s".formatted(ohdsiSchema, "cohort_definition_details"));
+        truncateTable("%s.%s".formatted(ohdsiSchema, "cohort_definition"));
+        resetSequence("%s.%s".formatted(ohdsiSchema, "cohort_definition_sequence"));
         
         cohortId = cohortDefinitionRepository.save(getCohortDefinition()).getId();
         cohortGenerationRequestBuilder = getCohortGenerationRequestBuilder(sourceRepository.findBySourceKey(SOURCE_KEY));
@@ -130,11 +130,11 @@ public class GenerationCacheTest extends AbstractDatabaseTest {
                 (resId, sqls) -> executeCohort(isSqlExecuted, resId)
         );
 
-        Assert.assertTrue("Cohort SQL is executed in case of empty cache", isSqlExecuted.get());
+        Assertions.assertTrue(isSqlExecuted.get(), "Cohort SQL is executed in case of empty cache");
 
         Map<String, Long> counts = retrieveCohortGenerationCounts(res.getIdentifier());
 
-        Assert.assertTrue("Cohort generation properly fills tables", checkCohortCounts(counts));
+        Assertions.assertTrue(checkCohortCounts(counts), "Cohort generation properly fills tables");
 
         // Second time generation. Cached results
 
@@ -147,11 +147,11 @@ public class GenerationCacheTest extends AbstractDatabaseTest {
                 (resId, sqls) -> isSqlExecuted.set(true)
         );
 
-        Assert.assertFalse("Cohort results are retrieved from cache", isSqlExecuted.get());
+        Assertions.assertFalse(isSqlExecuted.get(), "Cohort results are retrieved from cache");
 
         // Generation after results were corrupted
 
-        jdbcTemplate.execute(String.format("DELETE FROM %s.cohort_cache;", RESULT_SCHEMA_NAME));
+        jdbcTemplate.execute("DELETE FROM %s.cohort_cache;".formatted(RESULT_SCHEMA_NAME));
 
         isSqlExecuted.set(false);
 
@@ -162,11 +162,11 @@ public class GenerationCacheTest extends AbstractDatabaseTest {
                 (resId, sqls) -> executeCohort(isSqlExecuted, resId)
         );
 
-        Assert.assertTrue("Cohort SQL is executed in case of invalid cache", isSqlExecuted.get());
+        Assertions.assertTrue(isSqlExecuted.get(), "Cohort SQL is executed in case of invalid cache");
 
         counts = retrieveCohortGenerationCounts(res.getIdentifier());
 
-        Assert.assertTrue("Cohort generation properly fills tables after invalid cache", checkCohortCounts(counts));
+        Assertions.assertTrue(checkCohortCounts(counts), "Cohort generation properly fills tables after invalid cache");
     }
 
     @Test
@@ -184,7 +184,7 @@ public class GenerationCacheTest extends AbstractDatabaseTest {
         );
 
         GenerationCache generationCache = generationCacheService.getCacheOrEraseInvalid(type, generationCacheService.getDesignHash(type, cohortDefinition.getDetails().getExpression()), source.getSourceId());
-        Assert.assertNotNull("Empty result set is cached", generationCache);
+        Assertions.assertNotNull(generationCache, "Empty result set is cached");
     }
 
     @Test
@@ -201,7 +201,7 @@ public class GenerationCacheTest extends AbstractDatabaseTest {
 
         Integer updatedHash = generationCacheHelper.computeHash(Utils.serialize(expression));
         
-        Assert.assertEquals("Expression with different name and descritpion results in same hash", originalHash,updatedHash);
+        Assertions.assertEquals(originalHash,updatedHash,"Expression with different name and descritpion results in same hash");
     }
 
     private void executeCohort(AtomicBoolean isSqlExecuted, Integer resId) {
@@ -332,7 +332,7 @@ public class GenerationCacheTest extends AbstractDatabaseTest {
         for (final File file : tempDir.toFile().listFiles()) {
             if (file.getName().endsWith(".csv")) {
                 String tableName = file.getName().replace(".csv", "");
-                String sql = String.format("INSERT INTO @cdm_database_schema.%s SELECT * FROM CSVREAD('%s');", tableName, file.getAbsolutePath());
+                String sql = "INSERT INTO @cdm_database_schema.%s SELECT * FROM CSVREAD('%s');".formatted(tableName, file.getAbsolutePath());
                 cdmSqlBuilder.append(sql).append("\n\n");
             }
         }
@@ -343,8 +343,8 @@ public class GenerationCacheTest extends AbstractDatabaseTest {
     private static String getResultTablesSql() {
 
         StringBuilder ddl = new StringBuilder();
-        ddl.append(String.format("DROP SCHEMA IF EXISTS %s CASCADE;", RESULT_SCHEMA_NAME)).append("\n");
-        ddl.append(String.format("CREATE SCHEMA %s;", RESULT_SCHEMA_NAME)).append("\n");
+        ddl.append("DROP SCHEMA IF EXISTS %s CASCADE;".formatted(RESULT_SCHEMA_NAME)).append("\n");
+        ddl.append("CREATE SCHEMA %s;".formatted(RESULT_SCHEMA_NAME)).append("\n");
         COHORT_DDL_FILE_PATHS.forEach(sqlPath -> ddl.append(ResourceHelper.GetResourceAsString(sqlPath)).append("\n"));
         String resultSql = SqlRender.renderSql(ddl.toString(), new String[]{"results_schema"}, new String[]{RESULT_SCHEMA_NAME});
         return SqlTranslate.translateSql(resultSql, DBMSType.POSTGRESQL.getOhdsiDB());

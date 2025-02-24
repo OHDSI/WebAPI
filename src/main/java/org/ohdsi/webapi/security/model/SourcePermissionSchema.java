@@ -104,6 +104,6 @@ public class SourcePermissionSchema extends EntityPermissionSchema {
 
     private String getSourceRoleName(String sourceKey) {
 
-        return String.format("Source user (%s)", sourceKey);
+        return "Source user (%s)".formatted(sourceKey);
     }
 }

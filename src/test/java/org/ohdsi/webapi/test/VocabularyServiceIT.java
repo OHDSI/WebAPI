@@ -1,8 +1,8 @@
 package org.ohdsi.webapi.test;
 
 import com.odysseusinc.arachne.commons.types.DBMSType;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -26,10 +26,10 @@ public class VocabularyServiceIT extends WebApiIT {
     @Autowired
     private SourceRepository sourceRepository;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
-        truncateTable(String.format("%s.%s", "public", "source"));
-        resetSequence(String.format("%s.%s", "public", "source_sequence"));
+        truncateTable("%s.%s".formatted("public", "source"));
+        resetSequence("%s.%s".formatted("public", "source_sequence"));
         sourceRepository.saveAndFlush(getCdmSource());
         prepareCdmSchema();
         prepareResultSchema();

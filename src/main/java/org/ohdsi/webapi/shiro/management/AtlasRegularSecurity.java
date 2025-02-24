@@ -1,13 +1,14 @@
 package org.ohdsi.webapi.shiro.management;
 
-import io.buji.pac4j.filter.CallbackFilter;
-import io.buji.pac4j.filter.SecurityFilter;
+import org.pac4j.jee.filter.CallbackFilter;
+import org.pac4j.jee.filter.SecurityFilter;
 import io.buji.pac4j.realm.Pac4jRealm;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.activedirectory.ActiveDirectoryRealm;
 import org.apache.shiro.realm.ldap.DefaultLdapRealm;
 import org.apache.shiro.realm.ldap.JndiLdapContextFactory;
+import org.apereo.cas.client.validation.TicketValidator;
 import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.security.model.EntityPermissionSchemaResolver;
@@ -44,7 +45,7 @@ import org.pac4j.oauth.client.GitHubClient;
 import org.pac4j.oauth.client.Google2Client;
 import org.pac4j.oidc.client.OidcClient;
 import org.pac4j.oidc.config.OidcConfiguration;
-import org.pac4j.oidc.credentials.authenticator.UserInfoOidcAuthenticator;
+import org.pac4j.oidc.credentials.authenticator.OidcAuthenticator;
 import org.pac4j.saml.client.SAML2Client;
 import org.pac4j.saml.config.SAML2Configuration;
 import org.slf4j.Logger;
@@ -53,6 +54,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.ldap.core.LdapTemplate;
@@ -62,7 +64,7 @@ import waffle.shiro.negotiate.NegotiateAuthenticationFilter;
 import waffle.shiro.negotiate.NegotiateAuthenticationRealm;
 
 import javax.naming.Context;
-import javax.servlet.Filter;
+import jakarta.servlet.Filter;
 import javax.sql.DataSource;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -75,6 +77,7 @@ import static org.ohdsi.webapi.shiro.management.FilterTemplates.*;
 @Component
 @ConditionalOnProperty(name = "security.provider", havingValue = Constants.SecurityProviders.REGULAR)
 @DependsOn("flyway")
+@DependsOnDatabaseInitialization
 public class AtlasRegularSecurity extends AtlasSecurity {
 
     private final Logger logger = LoggerFactory.getLogger(AtlasRegularSecurity.class);
@@ -323,16 +326,16 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         }
 
         if (this.openidAuthEnabled) {
-            OidcConfiguration configuration = oidcConfCreator.build();
+        	OidcConfiguration configuration = oidcConfCreator.build();
             if (StringUtils.isNotBlank(configuration.getClientId())) {
                 // https://www.pac4j.org/4.0.x/docs/clients/openid-connect.html
                 // OidcClient allows indirect login through UI with code flow            
-                OidcClient oidcClient = new OidcClient(configuration);
+            	OidcClient oidcClient = new OidcClient(configuration);
                 oidcClient.setCallbackUrl(oauthApiCallback);
                 oidcClient.setCallbackUrlResolver(urlResolver);
                 clients.add(oidcClient);
                 // HeaderClient allows api access with a bearer token from the identity provider
-                UserInfoOidcAuthenticator authenticator = new UserInfoOidcAuthenticator(configuration);
+                OidcAuthenticator authenticator = new OidcAuthenticator(configuration, oidcClient);
                 HeaderClient headerClient = new HeaderClient("Authorization", "Bearer ", authenticator);
                 clients.add(headerClient);
             } else {
@@ -354,38 +357,38 @@ public class AtlasRegularSecurity extends AtlasSecurity {
                 SecurityFilter googleOauthFilter = new SecurityFilter();
                 googleOauthFilter.setConfig(cfg);
                 googleOauthFilter.setClients("Google2Client");
-                filters.put(GOOGLE_AUTHC, googleOauthFilter);
+                filters.put(GOOGLE_AUTHC, (Filter) googleOauthFilter);
             }
 
             if (this.facebookAuthEnabled) {
                 SecurityFilter facebookOauthFilter = new SecurityFilter();
                 facebookOauthFilter.setConfig(cfg);
                 facebookOauthFilter.setClients("FacebookClient");
-                filters.put(FACEBOOK_AUTHC, facebookOauthFilter);
+                filters.put(FACEBOOK_AUTHC, (Filter) facebookOauthFilter);
             }
 
             if (this.githubAuthEnabled) {
                 SecurityFilter githubOauthFilter = new SecurityFilter();
                 githubOauthFilter.setConfig(cfg);
                 githubOauthFilter.setClients("GitHubClient");
-                filters.put(GITHUB_AUTHC, githubOauthFilter);
+                filters.put(GITHUB_AUTHC, (Filter) githubOauthFilter);
             }
 
             if (this.openidAuthEnabled) {
                 SecurityFilter oidcFilter = new SecurityFilter();
                 oidcFilter.setConfig(cfg);
                 oidcFilter.setClients("OidcClient");
-                filters.put(OIDC_AUTH, oidcFilter);
+                filters.put(OIDC_AUTH, (Filter) oidcFilter);
 
                 SecurityFilter oidcDirectFilter = new SecurityFilter();
                 oidcDirectFilter.setConfig(cfg);
                 oidcDirectFilter.setClients("HeaderClient");
-                filters.put(OIDC_DIRECT_AUTH, oidcDirectFilter);
+                filters.put(OIDC_DIRECT_AUTH, (Filter) oidcDirectFilter);
             }
-
+            
             CallbackFilter callbackFilter = new CallbackFilter();
             callbackFilter.setConfig(cfg);
-            filters.put(OAUTH_CALLBACK, callbackFilter);
+            filters.put(OAUTH_CALLBACK, (Filter) callbackFilter);
             filters.put(HANDLE_UNSUCCESSFUL_OAUTH, new RedirectOnFailedOAuthFilter(this.oauthUiCallback));
         }
 
@@ -566,7 +569,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         SecurityFilter samlAuthFilter = new SecurityFilter();
         samlAuthFilter.setConfig(samlCfg);
         samlAuthFilter.setClients("saml2Client");
-        filters.put(template, samlAuthFilter);
+        filters.put(template, (Filter) samlAuthFilter);
 
         return saml2Client;
     }
@@ -597,7 +600,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         ActiveDirectoryRealm realm = new ADRealm(getLdapTemplate(), adSearchFilter, adSearchString, adUserMapper);
         realm.setUrl(dequote(adUrl));
         realm.setSearchBase(dequote(adSearchBase));
-        realm.setPrincipalSuffix(dequote(adPrincipalSuffix));
+        //realm.setPrincipalSuffix(dequote(adPrincipalSuffix)); need to find alternate method for appending suffix to usernames
         realm.setSystemUsername(dequote(adSystemUsername));
         realm.setSystemPassword(dequote(adSystemPassword));
         return realm;
@@ -627,9 +630,8 @@ public class AtlasRegularSecurity extends AtlasSecurity {
                         + URLEncoder.encode(casCallbackUrl, StandardCharsets.UTF_8.name());
             }
             casConf.setLoginUrl(casLoginUrlString);
-
-            Cas20ServiceTicketValidator cas20Validator = new Cas20ServiceTicketValidator(casServerUrl);
-            casConf.setDefaultTicketValidator(cas20Validator);
+            org.apereo.cas.client.validation.Cas20ServiceTicketValidator stv = new org.apereo.cas.client.validation.Cas20ServiceTicketValidator(casServerUrl);
+            casConf.setDefaultTicketValidator(stv);
 
             CasClient casClient = new CasClient(casConf);
             Config casCfg = new Config(new Clients(casCallbackUrl, casClient));
@@ -640,12 +642,12 @@ public class AtlasRegularSecurity extends AtlasSecurity {
             SecurityFilter casAuthnFilter = new SecurityFilter();
             casAuthnFilter.setConfig(casCfg);
             casAuthnFilter.setClients("CasClient");
-            filters.put(CAS_AUTHC, casAuthnFilter);
+            filters.put(CAS_AUTHC, (Filter) casAuthnFilter);
 
             /**
              * CAS callback filter
              */
-            CasHandleFilter casHandleFilter = new CasHandleFilter(cas20Validator, casCallbackUrl, casticket);
+            CasHandleFilter casHandleFilter = new CasHandleFilter(stv, casCallbackUrl, casticket);
             filters.put(HANDLE_CAS, casHandleFilter);
 
         } catch (UnsupportedEncodingException e) {

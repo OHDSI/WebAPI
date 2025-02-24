@@ -17,7 +17,7 @@ public class KrbConfiguration {
     private String configPath;
 
     @Bean
-    public KerberosService kerberosService(){
+    KerberosService kerberosService(){
         return new KerberosServiceImpl(timeout, kinitPath, configPath);
     }
 }

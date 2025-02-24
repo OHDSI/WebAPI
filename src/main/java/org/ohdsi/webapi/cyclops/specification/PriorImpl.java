@@ -68,11 +68,11 @@ public class PriorImpl extends RLangClassImpl implements Prior {
         if (variance != null) {
             if (variance instanceof ArrayList) {
                 this.variance = (ArrayList<BigDecimal>) variance;
-            } else if (variance instanceof Integer) {
+            } else if (variance instanceof Integer integer) {
                 if (this.variance == null) {
                     this.variance = new ArrayList<>();
                 }
-                this.variance.add(new BigDecimal((Integer) variance));
+                this.variance.add(new BigDecimal(integer));
             } else {
                 throw new InputMismatchException("Expected ArrayList<BigDecimal> or Integer");
             }
@@ -100,8 +100,8 @@ public class PriorImpl extends RLangClassImpl implements Prior {
         if (exclude != null) {
             if (exclude instanceof ArrayList) {
                 this.exclude = (ArrayList<Integer>) exclude;
-            } else if (exclude instanceof Integer) {
-                this.exclude = new ArrayList<>(Arrays.asList((Integer) exclude));
+            } else if (exclude instanceof Integer integer) {
+                this.exclude = new ArrayList<>(Arrays.asList(integer));
             } else {
                 throw new InputMismatchException("Expected ArrayList<String> or Integer");
             }
@@ -148,8 +148,8 @@ public class PriorImpl extends RLangClassImpl implements Prior {
         if (neighborhood != null) {
             if (neighborhood instanceof ArrayList) {
                 this.neighborhood = (ArrayList<String>) neighborhood;
-            } else if (neighborhood instanceof String) {
-                this.neighborhood = new ArrayList<>(Arrays.asList((String) neighborhood));
+            } else if (neighborhood instanceof String string) {
+                this.neighborhood = new ArrayList<>(Arrays.asList(string));
             } else {
                 throw new InputMismatchException("Expected ArrayList<String> or String");
             }

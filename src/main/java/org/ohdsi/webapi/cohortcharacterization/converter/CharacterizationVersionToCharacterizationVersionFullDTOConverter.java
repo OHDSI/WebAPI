@@ -31,7 +31,7 @@ public class CharacterizationVersionToCharacterizationVersionFullDTOConverter
 
     @Override
     public CcVersionFullDTO convert(CharacterizationVersion source) {
-        CohortCharacterizationEntity def = ccRepository.findOne(source.getAssetId());
+        CohortCharacterizationEntity def = ccRepository.findById(source.getAssetId()).get();
         CohortCharacterizationImpl characterizationImpl =
                 Utils.deserialize(source.getAssetJson(), CohortCharacterizationImpl.class);
         CohortCharacterizationEntity entity = conversionService.convert(characterizationImpl, CohortCharacterizationEntity.class);

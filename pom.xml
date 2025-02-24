@@ -6,61 +6,72 @@
   <groupId>org.ohdsi</groupId>
   <artifactId>WebAPI</artifactId>
   <packaging>war</packaging>
-  <version>2.14.0</version>
+  <version>3.0.0</version>
   <name>WebAPI</name>
   <properties>
     <build.number>${BUILD_NUMBER}</build.number>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <!-- Spring Boot manages spring.version as well -->
-    <spring.boot.version>1.5.22.RELEASE</spring.boot.version>
-    <log4j2.version>2.17.1</log4j2.version>
+    <!-- MDACA Spring Boot manages spring.version as well -->
+    <spring.boot.version>3.2.5</spring.boot.version>
+    <log4j2.version>2.23.0</log4j2.version>
     <flyway.version>4.2.0</flyway.version>
     <waffle.version>2.2.1</waffle.version>
     <jna.version>5.5.0</jna.version>
-    <hibernate.version>5.4.2.Final</hibernate.version>
+    <hibernate.version>8.0.1.Final</hibernate.version>
     <postgresql.version>42.3.7</postgresql.version>
-    <bouncycastle.version>1.69</bouncycastle.version>
-    <shiro.version>1.12.0</shiro.version>
+    <bouncycastle.version>1.78</bouncycastle.version>
+	<shiro.version>2.0.1</shiro.version>
     <dom4j.version>2.1.3</dom4j.version>
     <hydra.version>0.4.0</hydra.version>
     <featureExtraction.version>3.2.0</featureExtraction.version>
-    <tomcat.embed.version>8.5.87</tomcat.embed.version>
+    <tomcat.embed.version>10.1.34</tomcat.embed.version>
 
     <commons-fileupload.version>1.5</commons-fileupload.version>
 
     <circe.version>1.11.2</circe.version>
-    <jersey.version>2.14</jersey.version>
+    <jersey.version>2.35</jersey.version>
     <SqlRender.version>1.16.1</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
-    <pac4j.version>4.0.0</pac4j.version>
-    <jackson.version>2.12.7</jackson.version>
+    <pac4j.version>6.0.3</pac4j.version>
+    <jackson.version>2.14.3</jackson.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
     <skipUnitTests>false</skipUnitTests>
     <skipITtests>false</skipITtests>
     <miredot.phase>package</miredot.phase>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
 
     <!-- Primary DataSource -->
     <!-- default sql server - TODO How about making postgres the default (e.g. in line with open source tech)? -alexfranken -->
-    <datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
-    <datasource.url>jdbc:sqlserver://serverName;databaseName=databaseName</datasource.url>
-    <datasource.username>user</datasource.username>
-    <datasource.password>password</datasource.password>
+    <!-- datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
+    <datasource.url>jdbc:sqlserver://serverName;databaseName=databaseName</datasource.url -->
+	<datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
+	<datasource.url>jdbc:postgresql://localhost:5432/OHDSI?currentSchema=webapi</datasource.url>
+    <datasource.username>ohdsi_app_user</datasource.username>
+    <datasource.password>app1</datasource.password>
     <!--<datasource.validationQuery>SELECT 1</datasource.validationQuery>-->
-    <datasource.dialect>sql server</datasource.dialect>
-    <datasource.ohdsi.schema>dbo</datasource.ohdsi.schema>
-    <datasource.dialect.source>sql server</datasource.dialect.source>
+    <!-- datasource.dialect>sql server</datasource.dialect -->
+	<datasource.dialect>postgresql</datasource.dialect>
+    <datasource.ohdsi.schema>webapi</datasource.ohdsi.schema>
+    <!-- datasource.dialect.source>sql server</datasource.dialect.source -->
+    <datasource.dialect.source>postgresql</datasource.dialect.source>
     <!-- DB Change Management / Migration -->
-    <flyway.datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</flyway.datasource.driverClassName>
+    <!-- flyway.datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</flyway.datasource.driverClassName>
     <flyway.datasource.url>jdbc:sqlserver://serverName</flyway.datasource.url>
-    <flyway.datasource.username>userWithWritePrivs</flyway.datasource.username>
-    <flyway.datasource.password>password</flyway.datasource.password>
-    <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
+    <flyway.datasource.username>userWithWritePrivs</flyway.datasource.username -->
+    <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
+    <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
+    <flyway.datasource.username>ohdsi_admin_user</flyway.datasource.username>
+    <flyway.datasource.password>admin1</flyway.datasource.password>
+    <!-- flyway.locations>classpath:db/migration/sqlserver</flyway.locations -->
+	<flyway.locations>classpath:db/migration/postgresql</flyway.locations>
     <!-- Note: Schema name is case-sensitive. -->
     <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
-    <flyway.validateOnMigrate>false</flyway.validateOnMigrate>
     <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
+    <flyway.validateOnMigrate>false</flyway.validateOnMigrate>
+
+	<hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</hibernate.dialect>
+
     <!-- CDM properties -->
     <source.name>CDM_NAME</source.name>
     <cdm.version>5</cdm.version>
@@ -76,9 +87,11 @@
 
     <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
     <spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
-    <spring.profiles.active>default</spring.profiles.active>
+    <!-- spring.profiles.active>default</spring.profiles.active -->
+	<spring.profiles.active>webapi-postgresql</spring.profiles.active>
 
     <security.provider>DisabledSecurity</security.provider>
+	<!-- security.provider>AtlasRegularSecurity</security.provider -->
     <security.token.expiration>43200</security.token.expiration>
     <security.origin>http://localhost</security.origin>
     <security.ssl.enabled>false</security.ssl.enabled>
@@ -200,8 +213,8 @@
     <server.ssl.key-password></server.ssl.key-password>
     <server.servlet.context-path>/WebAPI</server.servlet.context-path>
 
-    <arachne.version>1.17.3</arachne.version>
-    <jersey-media-multipart.version>2.25.1</jersey-media-multipart.version>
+    <arachne.version>3.x-MDACA</arachne.version>
+    <jersey-media-multipart.version>2.29.1</jersey-media-multipart.version>
     <execution.invalidation.period>600000</execution.invalidation.period>
     <execution.invalidation.maxage.hours>12</execution.invalidation.maxage.hours>
     <execution.status.period>10000</execution.status.period>
@@ -224,16 +237,16 @@
     <jdbc.suppressInvalidApiException>true</jdbc.suppressInvalidApiException>
 
     <!-- Logging -->
-    <spring.jpa.show-sql>false</spring.jpa.show-sql>
+    <spring.jpa.show-sql>true</spring.jpa.show-sql>
     <spring.jpa.properties.hibernate.generate_statistics>false</spring.jpa.properties.hibernate.generate_statistics>
     <spring.jpa.properties.hibernate.jdbc.batch_size>200</spring.jpa.properties.hibernate.jdbc.batch_size>
     <spring.jpa.properties.hibernate.order_inserts>true</spring.jpa.properties.hibernate.order_inserts>
     <logging.level.root>info</logging.level.root>
     <logging.level.org.ohdsi>info</logging.level.org.ohdsi>
-    <logging.level.org.springframework.orm>info</logging.level.org.springframework.orm>
-    <logging.level.org.springframework.jdbc>info</logging.level.org.springframework.jdbc>
+    <logging.level.org.springframework.orm>ERROR</logging.level.org.springframework.orm>
+    <logging.level.org.springframework.jdbc>ERROR</logging.level.org.springframework.jdbc>
     <logging.level.org.springframework.web>info</logging.level.org.springframework.web>
-    <logging.level.org.hibernate>info</logging.level.org.hibernate>
+    <logging.level.org.hibernate>ERROR</logging.level.org.hibernate>
     <logging.level.org.apache.shiro>warn</logging.level.org.apache.shiro>
 
     <spring.batch.taskExecutor.corePoolSize>10</spring.batch.taskExecutor.corePoolSize>
@@ -348,7 +361,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.5.0</version>
+        <version>3.6.1</version>
       </plugin>
       <plugin>
         <groupId>pl.project13.maven</groupId>
@@ -375,9 +388,9 @@
       </plugin>
       <plugin>
         <groupId>org.codehaus.gmaven</groupId>
-        <artifactId>gmaven-plugin</artifactId>
-        <version>1.5</version>
-        <executions>
+        <artifactId>groovy-maven-plugin</artifactId>
+        <version>2.1.1</version>
+        <!-- executions  MDACA Spring Boot 3 migration compilation issue  >
           <execution>
             <id>add-git-branch-info</id>
             <phase>generate-resources</phase>
@@ -391,7 +404,7 @@
               </source>
             </configuration>
           </execution>
-        </executions>
+        </executions -->
       </plugin>
       <plugin>
         <groupId>org.springframework.boot</groupId>
@@ -423,7 +436,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.22.2</version>
+        <version>3.1.2</version>
         <configuration>
           <skipTests>${skipUnitTests}</skipTests>
         </configuration>
@@ -452,7 +465,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>2.22.2</version>
+        <version>3.1.2</version>
         <configuration>
           <skipITs>${skipITtests}</skipITs>
         </configuration>
@@ -475,12 +488,12 @@
         <artifactId>miredot-plugin</artifactId>
         <version>2.4.0</version>
         <executions>
-          <execution>
+          <!-- execution MDACA Spring Boot 3 migration compilation issue>
             <phase>${miredot.phase}</phase>
             <goals>
               <goal>restdoc</goal>
             </goals>
-          </execution>
+          </execution -->
         </executions>
         <configuration>
           <licence>cHJvamVjdHxvcmcub2hkc2kuV2ViQVBJfDIwMjUtMDEtMDF8ZmFsc2V8LTEjTUN3Q0ZDZkowMkZrVmVSeVlBazZVbTBmNThIbE15SjRBaFEwcVZyRUZuamZMTzJ0KzFtR3E3U3lMMkFESHc9PQ==</licence>
@@ -524,6 +537,24 @@
       <name>repo.ohdsi.org</name>
       <url>https://repo.ohdsi.org/nexus/content/groups/public</url>
     </repository>
+    <repository>  
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
+    </repository>
+    <repository>
+      <id>local-repo</id>
+      <url>file:///code/arachne</url>
+	<releases>
+	<enabled>true</enabled>
+	</releases>
+	<snapshots>
+  	<enabled>true</enabled>
+	</snapshots>
+    </repository>
+    <repository>
+      <id>codeartifact</id>
+      <url>https://mdaca-201959883603.d.codeartifact.us-east-2.amazonaws.com/maven/OHDSI/</url>
+    </repository>
   </repositories>
 
   <pluginRepositories>
@@ -540,6 +571,31 @@
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-beans</artifactId>
+        <version>6.1.14</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-core</artifactId>
+        <version>6.1.14</version>
+      </dependency>
+	  <dependency>
+	    <groupId>org.springframework</groupId>
+		<artifactId>spring-context</artifactId>
+		<version>6.1.14</version>
+		</dependency>
+	  <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-web</artifactId>
+        <version>6.1.14</version>
+      </dependency>
+	  <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-webmvc</artifactId>
+        <version>6.1.14</version>
+      </dependency>
       <dependency>
         <groupId>org.apache.logging.log4j</groupId>
         <artifactId>log4j-api</artifactId>
@@ -569,367 +625,478 @@
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>com.amazon.redshift</groupId>
-        <artifactId>redshift-jdbc42-no-awssdk</artifactId>
-        <version>1.2.10.1009</version>
+	    <groupId>org.apache.tomcat.embed</groupId>
+	    <artifactId>tomcat-embed-core</artifactId>
+	    <version>${tomcat.embed.version}</version>
+	    <scope>provided</scope>
+	  </dependency>
+      <dependency>
+	    <groupId>org.apache.tomcat.embed</groupId>
+	    <artifactId>tomcat-embed-websocket</artifactId>
+	    <version>${tomcat.embed.version}</version>
+	    <scope>provided</scope>
+	  </dependency>
+      <dependency>
+	    <groupId>org.apache.tomcat</groupId>
+	    <artifactId>tomcat-jdbc</artifactId>
+	    <version>${tomcat.embed.version}</version>
+	    <scope>provided</scope>
+	  </dependency>
+      <dependency>
+	    <groupId>org.apache.tomcat</groupId>
+	    <artifactId>tomcat-juli</artifactId>
+	    <version>${tomcat.embed.version}</version>
+	    <scope>provided</scope>
+	  </dependency>
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>2.14.0</version>
       </dependency>
+	  <dependency>
+		<groupId>net.lingala.zip4j</groupId>
+		<artifactId>zip4j</artifactId>
+		<version>2.11.3</version> 
+	  </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>${jackson.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-annotations</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-core</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-      <version>${jackson.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-      <version>${jackson.version}</version>
-    </dependency>
-    <!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-actuator</artifactId>
-    <version>${spring.boot.version}</version> </dependency> -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-starter-logging</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <!-- It is overriding a transitive dependency from the dependency above -->
-    <!-- After migrating to Spring Boot 2.x we should get rid of it -->
-    <dependency>
-      <groupId>org.yaml</groupId>
-      <artifactId>snakeyaml</artifactId>
-      <version>2.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.hibernate</groupId>
-          <artifactId>hibernate-validator</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-log4j2</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-tomcat</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-batch</artifactId>
-    </dependency>
+	<dependency>
+		<groupId>org.apache.velocity</groupId>
+		<artifactId>velocity-engine-core</artifactId>
+		<version>2.4</version>
+		<exclusions>
+			<exclusion>
+				<groupId>commons-io</groupId>
+				<artifactId>commons-io</artifactId>
+			</exclusion>
+		</exclusions>
+	</dependency>
+  <dependency>
+    <groupId>org.codehaus.jettison</groupId>
+    <artifactId>jettison</artifactId>
+    <version>1.5.4</version>
+  </dependency>
+  <dependency>
+   <groupId>com.fasterxml.jackson.core</groupId>
+   <artifactId>jackson-databind</artifactId>
+   <exclusions>
+    <exclusion>
+     <groupId>com.fasterxml.jackson.core</groupId>
+     <artifactId>jackson-annotations</artifactId>
+    </exclusion>
+    <exclusion>
+     <groupId>com.fasterxml.jackson.core</groupId>
+     <artifactId>jackson-core</artifactId>
+    </exclusion>
+   </exclusions>
+  </dependency>
+  <dependency>
+   <groupId>com.fasterxml.jackson.core</groupId>
+   <artifactId>jackson-core</artifactId>
+   <!-- MDACA Spring Boot 3 migration version>${jackson.version}</version -->
+  </dependency>
+  <dependency>
+   <groupId>com.fasterxml.jackson.core</groupId>
+   <artifactId>jackson-annotations</artifactId>
+   <!-- MDACA Spring Boot 3 migration version>${jackson.version}</version -->
+  </dependency>
+  <dependency>
+    <groupId>org.springframework.plugin</groupId>
+    <artifactId>spring-plugin-core</artifactId>
+    <version>3.0.0</version>
+</dependency>
+  <dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter</artifactId>
+   <exclusions>
+    <exclusion>
+     <groupId>org.springframework.boot</groupId>
+     <artifactId>spring-boot-starter-logging</artifactId>
+    </exclusion>
+   </exclusions>
+  </dependency>
+  <!-- It is overriding a transitive dependency from the dependency above -->
+  <!-- After migrating to Spring Boot 2.x we should get rid of it -->
+  <dependency>
+   <groupId>org.yaml</groupId>
+   <artifactId>snakeyaml</artifactId>
+  </dependency>
+  <dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter-web</artifactId>
+   <exclusions>
+    <exclusion>
+     <groupId>org.hibernate</groupId>
+     <artifactId>hibernate-validator</artifactId>
+    </exclusion>
+    <exclusion>
+     <groupId>com.fasterxml.jackson.core</groupId>
+     <artifactId>jackson-databind</artifactId>
+    </exclusion>
+   </exclusions>
+  </dependency>
+  <dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter-log4j2</artifactId>
+  </dependency>
+  <dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter-tomcat</artifactId>
+   <scope>provided</scope>
+  </dependency>
+  <dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter-batch</artifactId>
+  </dependency>
 
-    <!-- We are intentionally overriding the Tomcat version from Spring Boot 1.5.22.RELEASE -->
-    <!-- and assuming tomcat-jdbc.jar will be in the Tomcat installation folder (\apache-tomcat-8.5.xxx\lib). -->
-    <!-- WebAPI.war.original should not contain overridden libraries -->
-    <dependency>
-      <groupId>org.apache.tomcat.embed</groupId>
-      <artifactId>tomcat-embed-el</artifactId>
-      <version>${tomcat.embed.version}</version>
-    </dependency>
+  <!-- We are intentionally overriding the Tomcat version from Spring Boot 1.5.22.RELEASE -->
+  <!-- and assuming tomcat-jdbc.jar will be in the Tomcat installation folder (\apache-tomcat-8.5.xxx\lib). -->
+  <!-- WebAPI.war.original should not contain overridden libraries -->
+  <!-- MDACA Spring Boot 3 migration dependency> -->
+  <dependency>
+   <groupId>org.apache.tomcat.embed</groupId>
+   <artifactId>tomcat-embed-el</artifactId>
+   <version>${tomcat.embed.version}</version>
+  </dependency>
 
-    <!-- It is overriding a transitive dependency from the dependency above -->
-    <!-- After migrating to Spring Boot 2.x we should get rid of it -->
-    <dependency>
-      <groupId>com.thoughtworks.xstream</groupId>
-      <artifactId>xstream</artifactId>
-      <version>1.4.19</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-jdbc</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.tomcat</groupId>
-      <artifactId>tomcat-jdbc</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.tomcat</groupId>
-      <artifactId>tomcat-juli</artifactId>
-      <version>${tomcat.embed.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-jersey</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.hibernate</groupId>
-          <artifactId>hibernate-validator</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-annotations</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-core</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-data-jpa</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-cache</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-core</artifactId>
-      <version>${hibernate.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.dom4j</groupId>
-          <artifactId>dom4j</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-validator</artifactId>
-      <version>5.4.2.Final</version>
-    </dependency>
-    <dependency>
-      <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-entitymanager</artifactId>
-      <version>${hibernate.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.dom4j</groupId>
-          <artifactId>dom4j</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <version>3.1.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.ohdsi.sql</groupId>
-      <artifactId>SqlRender</artifactId>
-      <version>${SqlRender.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-dbutils</groupId>
-      <artifactId>commons-dbutils</artifactId>
-      <version>1.6</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>2.7</version>
-    </dependency>
-    <dependency>
-      <groupId>com.sun.xml.security</groupId>
-      <artifactId>xml-security-impl</artifactId>
-      <version>1.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-test</artifactId>
-      <version>${spring.boot.version}</version>
-      <scope>test</scope>
-        <exclusions>
-            <exclusion>
-                <groupId>com.vaadin.external.google</groupId>
-                <artifactId>android-json</artifactId>
-            </exclusion>
-        </exclusions>
-    </dependency>
-    <!-- It is overriding a transitive dependency from the dependency above -->
-    <!-- After migrating to Spring Boot 2.x we should get rid of it -->
-    <!-- It is currently inefficient as com.nimbusds:nimbus-jose-jwt has hard bounds [1.3.1,2.3] -->
-    <dependency>
-      <groupId>net.minidev</groupId>
-      <artifactId>json-smart</artifactId>
-      <version>2.4.9</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <version>3.12.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.flywaydb</groupId>
-      <artifactId>flyway-core</artifactId>
-      <version>${flyway.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>4.5.13</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.batch</groupId>
-      <artifactId>spring-batch-admin-manager</artifactId>
-      <version>2.0.0.M1</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>freemarker</artifactId>
-          <groupId>org.freemarker</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>commons-dbcp</artifactId>
-          <groupId>commons-dbcp</groupId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-        <exclusion>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-        </exclusion>
-        <exclusion>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
+  <!-- It is overriding a transitive dependency from the dependency above -->
+  <!-- After migrating to Spring Boot 2.x we should get rid of it -->
+  <dependency>
+   <groupId>com.thoughtworks.xstream</groupId>
+   <artifactId>xstream</artifactId>
+   <version>1.4.21</version>
+  </dependency>
+  <dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter-jdbc</artifactId>
+  </dependency>
+  <dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter-jersey</artifactId>
+   <exclusions>
+    <exclusion>
+     <groupId>org.hibernate</groupId>
+     <artifactId>hibernate-validator</artifactId>
+    </exclusion>
+    <exclusion>
+     <groupId>com.fasterxml.jackson.core</groupId>
+     <artifactId>jackson-databind</artifactId>
+    </exclusion>
+    <exclusion>
+     <groupId>com.fasterxml.jackson.core</groupId>
+     <artifactId>jackson-annotations</artifactId>
+    </exclusion>
+    <exclusion>
+     <groupId>com.fasterxml.jackson.core</groupId>
+     <artifactId>jackson-core</artifactId>
+    </exclusion>
+   </exclusions>
+  </dependency>
+  <dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter-data-jpa</artifactId>
+  </dependency>
+  <dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter-cache</artifactId>
+  </dependency>
+  <dependency>
+   <groupId>org.hibernate.orm</groupId>
+   <artifactId>hibernate-core</artifactId>
+   <exclusions>
+    <exclusion>
+     <groupId>org.dom4j</groupId>
+     <artifactId>dom4j</artifactId>
+    </exclusion>
+   </exclusions>
+  </dependency>
+  <dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-validator</artifactId>
+   <version>${hibernate.version}</version>
+  </dependency>
+  <dependency>
+   <groupId>jakarta.servlet</groupId>
+   <artifactId>jakarta.servlet-api</artifactId>
+   <scope>provided</scope>
+  </dependency>
+  <dependency>
+    <groupId>jakarta.platform</groupId>
+    <artifactId>jakarta.jakartaee-web-api</artifactId>
+    <version>10.0.0</version>
+    <scope>provided</scope>
+  </dependency>
+  <dependency>
+  <groupId>jakarta.platform</groupId>
+  <artifactId>jakarta.jakartaee-api</artifactId>
+  <version>10.0.0</version>
+</dependency>
+  <dependency>
+   <groupId>org.ohdsi.sql</groupId>
+   <artifactId>SqlRender</artifactId>
+   <version>${SqlRender.version}</version>
+  </dependency>
+  <dependency>
+   <groupId>commons-dbutils</groupId>
+   <artifactId>commons-dbutils</artifactId>
+   <version>1.6</version>
+  </dependency>
+  <dependency>
+   <groupId>commons-io</groupId>
+   <artifactId>commons-io</artifactId>
+   <version>2.14.0</version>
+  </dependency>
+  <dependency>
+   <groupId>com.sun.xml.security</groupId>
+   <artifactId>xml-security-impl</artifactId>
+   <version>1.0</version>
+  </dependency>
+  <dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-starter-test</artifactId>
+   <!-- MDACA Spring Boot 3 migration version>${spring.boot.version}</version -->
+   <scope>test</scope>
+   <exclusions>
+    <exclusion>
+     <groupId>com.vaadin.external.google</groupId>
+     <artifactId>android-json</artifactId>
+    </exclusion>
+   </exclusions>
+  </dependency>
+  <!-- It is overriding a transitive dependency from the dependency above -->
+  <!-- After migrating to Spring Boot 2.x we should get rid of it -->
+  <!-- It is currently inefficient as com.nimbusds:nimbus-jose-jwt has hard bounds [1.3.1,2.3] -->
+<dependency>
+    <groupId>com.nimbusds</groupId>
+    <artifactId>oauth2-oidc-sdk</artifactId>
+    <version>11.12</version> <!-- Update to the appropriate version -->
+</dependency>
+  <dependency>
+    <groupId>com.nimbusds</groupId>
+    <artifactId>nimbus-jose-jwt</artifactId>
+    <version>9.40</version>
+  </dependency>
+  <dependency>
+   <groupId>net.minidev</groupId>
+   <artifactId>json-smart</artifactId>
+   <version>2.5.2</version>
+  </dependency>
+  <dependency>
+   <groupId>org.apache.commons</groupId>
+   <artifactId>commons-lang3</artifactId>
+  </dependency>
+  <dependency>
+   <groupId>org.flywaydb</groupId>
+   <artifactId>flyway-core</artifactId>
+  </dependency>
+  <dependency>
+	<groupId>org.apache.httpcomponents.client5</groupId>
+	<artifactId>httpclient5</artifactId>
+	</dependency>
+  <!-- dependency>
+   <groupId>org.springframework.batch</groupId>
+   <artifactId>spring-batch-admin-manager</artifactId>
+   <version>2.0.0.M1</version>
+   <exclusions>
+    <exclusion>
+     <artifactId>freemarker</artifactId>
+     <groupId>org.freemarker</groupId>
+    </exclusion>
+    <exclusion>
+     <artifactId>commons-dbcp</artifactId>
+     <groupId>commons-dbcp</groupId>
+    </exclusion>
+    <exclusion>
+     <groupId>com.fasterxml.jackson.core</groupId>
+     <artifactId>jackson-databind</artifactId>
+    </exclusion>
+    <exclusion>
+     <groupId>org.slf4j</groupId>
+     <artifactId>slf4j-log4j12</artifactId>
+    </exclusion>
+    <exclusion>
+     <groupId>log4j</groupId>
+     <artifactId>log4j</artifactId>
+    </exclusion>
+    <exclusion>
+     <groupId>commons-collections</groupId>
+     <artifactId>commons-collections</artifactId>
+    </exclusion>
+   </exclusions>
+  </dependency -->
 
-    <!-- overriding commons-fileupload version from the plug-in above -->
-    <dependency>
-      <groupId>commons-fileupload</groupId>
-      <artifactId>commons-fileupload</artifactId>
-      <version>${commons-fileupload.version}</version>
-    </dependency>
+  <!-- overriding commons-fileupload version from the plug-in above -->
+  <dependency>
+   <groupId>commons-fileupload</groupId>
+   <artifactId>commons-fileupload</artifactId>
+   <version>${commons-fileupload.version}</version>
+  </dependency>
 
-    <dependency>
-      <groupId>org.postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <version>${postgresql.version}</version>
-      <type>jar</type>
-    </dependency>
-    <dependency>
-      <groupId>com.microsoft.sqlserver</groupId>
-      <artifactId>mssql-jdbc</artifactId>
-      <version>10.2.1.jre8</version>
-    </dependency>
-    <dependency>
-      <groupId>com.microsoft.azure</groupId>
-      <artifactId>msal4j</artifactId>
-      <version>1.9.0</version>
-    </dependency>
-    <dependency>
-      <groupId>com.opencsv</groupId>
-      <artifactId>opencsv</artifactId>
-      <version>3.7</version>
-      <type>jar</type>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.collections</groupId>
-      <artifactId>eclipse-collections-api</artifactId>
-      <version>8.0.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.collections</groupId>
-      <artifactId>eclipse-collections</artifactId>
-      <version>8.0.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-collections4</artifactId>
-      <version>4.1</version>
-      <type>jar</type>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.shiro</groupId>
-      <artifactId>shiro-core</artifactId>
-      <version>${shiro.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.shiro</groupId>
-      <artifactId>shiro-web</artifactId>
-      <version>${shiro.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.shiro</groupId>
-      <artifactId>shiro-spring</artifactId>
-      <version>${shiro.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.waffle</groupId>
-      <artifactId>waffle-shiro</artifactId>
-      <version>2.2.1</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.waffle</groupId>
-      <artifactId>waffle-jna</artifactId>
-      <version>${waffle.version}</version>
-      <exclusions>
+  <dependency>
+   <groupId>org.postgresql</groupId>
+   <artifactId>postgresql</artifactId>
+   <type>jar</type>
+  </dependency>
+  <dependency>
+    <groupId>com.amazon.redshift</groupId>
+    <artifactId>redshift-jdbc42</artifactId>
+    <version>2.1.0.30</version>
+</dependency>
+  <dependency>
+   <groupId>com.microsoft.sqlserver</groupId>
+   <artifactId>mssql-jdbc</artifactId>
+  </dependency>
+  <dependency>
+   <groupId>com.microsoft.azure</groupId>
+   <artifactId>msal4j</artifactId>
+   <version>1.9.0</version>
+  </dependency>
+  <dependency>
+   <groupId>com.opencsv</groupId>
+   <artifactId>opencsv</artifactId>
+   <version>3.7</version>
+   <type>jar</type>
+  </dependency>
+  <dependency>
+   <groupId>org.eclipse.collections</groupId>
+   <artifactId>eclipse-collections-api</artifactId>
+   <version>8.0.0</version>
+  </dependency>
+  <dependency>
+   <groupId>org.eclipse.collections</groupId>
+   <artifactId>eclipse-collections</artifactId>
+   <version>8.0.0</version>
+  </dependency>
+  <dependency>
+   <groupId>org.apache.commons</groupId>
+   <artifactId>commons-collections4</artifactId>
+   <version>4.1</version>
+   <type>jar</type>
+  </dependency>
+  <dependency>
+   <groupId>org.apache.shiro</groupId>
+   <artifactId>shiro-core</artifactId>
+   <version>${shiro.version}</version>
+            <classifier>jakarta</classifier>
+  </dependency>
+  <dependency>
+   <groupId>org.apache.shiro</groupId>
+   <artifactId>shiro-web</artifactId>
+   <version>${shiro.version}</version>
+            <classifier>jakarta</classifier>
+  </dependency>
+  <dependency>
+   <groupId>org.apache.shiro</groupId>
+   <artifactId>shiro-spring</artifactId>
+   <version>${shiro.version}</version>
+            <classifier>jakarta</classifier>
+  </dependency>
+  <dependency>
+   <groupId>com.github.waffle</groupId>
+   <artifactId>waffle-shiro</artifactId>
+   <version>2.2.1</version>
+  </dependency>
+  <dependency>
+   <groupId>com.github.waffle</groupId>
+   <artifactId>waffle-jna</artifactId>
+   <version>${waffle.version}</version>
+   <exclusions>
+    <exclusion>
+     <groupId>net.java.dev.jna</groupId>
+     <artifactId>jna</artifactId>
+    </exclusion>
+    <exclusion>
+     <groupId>net.java.dev.jna</groupId>
+     <artifactId>jna-platform</artifactId>
+    </exclusion>
+   </exclusions>
+  </dependency>
+  <dependency>
+   <groupId>net.java.dev.jna</groupId>
+   <artifactId>jna</artifactId>
+   <version>${jna.version}</version>
+  </dependency>
+  <dependency>
+   <groupId>net.java.dev.jna</groupId>
+   <artifactId>jna-platform</artifactId>
+   <version>${jna.version}</version>
+  </dependency>
+  <dependency>
+   <groupId>io.jsonwebtoken</groupId>
+   <artifactId>jjwt</artifactId>
+   <version>0.9.1</version>
+   <exclusions>
+    <exclusion>
+     <groupId>com.fasterxml.jackson.core</groupId>
+     <artifactId>jackson-databind</artifactId>
+    </exclusion>
+   </exclusions>
+  </dependency>
+  <dependency>
+   <groupId>jakarta.inject</groupId>
+   <artifactId>jakarta.inject-api</artifactId>
+   <version>2.0.1</version>
+  </dependency>
+  <dependency>
+   <groupId>jakarta.validation</groupId>
+   <artifactId>jakarta.validation-api</artifactId>
+  </dependency>
+  
+  
+  <dependency>
+    <groupId>org.jasig.cas.client</groupId>
+    <artifactId>cas-client-core</artifactId>
+    <version>3.6.1</version>
+    <exclusions>
         <exclusion>
-          <groupId>net.java.dev.jna</groupId>
-          <artifactId>jna</artifactId>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
         </exclusion>
-        <exclusion>
-          <groupId>net.java.dev.jna</groupId>
-          <artifactId>jna-platform</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>net.java.dev.jna</groupId>
-      <artifactId>jna</artifactId>
-      <version>${jna.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>net.java.dev.jna</groupId>
-      <artifactId>jna-platform</artifactId>
-      <version>${jna.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt</artifactId>
-      <version>0.9.1</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
+    </exclusions>
+</dependency>
+  
     <dependency>
       <groupId>io.buji</groupId>
       <artifactId>buji-pac4j</artifactId>
-      <version>5.0.1</version>
+      <version>9.0.1</version>
+      <exclusions>
+      	<exclusion>
+      		<groupId>org.pac4j</groupId>
+      		<artifactId>pac4j-javaee</artifactId>
+      	</exclusion>
+      </exclusions>
     </dependency>
+    
+	<dependency>
+	    <groupId>org.pac4j</groupId>
+	    <artifactId>jakartaee-pac4j</artifactId>
+	    <version>8.0.1</version>
+	</dependency>
+	
+    <dependency>
+        <groupId>org.pac4j</groupId>
+        <artifactId>pac4j-jakartaee</artifactId>
+        <version>${pac4j.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.pac4j</groupId>
+      <artifactId>pac4j-core</artifactId>
+      <version>${pac4j.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    
     <dependency>
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-oauth</artifactId>
@@ -963,11 +1130,16 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <dependency>
-      <groupId>org.pac4j</groupId>
-      <artifactId>pac4j-saml-opensamlv3</artifactId>
-      <version>${pac4j.version}</version>
-    </dependency>
+	<dependency>
+	    <groupId>org.pac4j</groupId>
+	    <artifactId>pac4j-saml-opensamlv5</artifactId>
+	    <version>5.7.7</version>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.santuario</groupId>
+		<artifactId>xmlsec</artifactId>
+		<version>3.0.3</version>
+	</dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
       <artifactId>circe</artifactId>
@@ -997,7 +1169,7 @@
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
-      <version>20230227</version>
+      <version>20231013</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
@@ -1011,34 +1183,33 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>com.amazon.redshift</groupId>
-      <artifactId>redshift-jdbc42-no-awssdk</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-crypto</artifactId>
-      <version>4.2.3.RELEASE</version>
     </dependency>
     <dependency>
       <groupId>com.zaxxer</groupId>
       <artifactId>HikariCP</artifactId>
-      <version>4.0.3</version>
     </dependency>
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-      <version>2.9.0</version>
     </dependency>
     <dependency>
       <groupId>org.jasypt</groupId>
       <artifactId>jasypt-hibernate4</artifactId>
       <version>1.9.2</version>
     </dependency>
-    <dependency>
-      <groupId>org.dbunit</groupId>
-      <artifactId>dbunit</artifactId>
-      <version>2.7.0</version>
-      <scope>test</scope>
+  <dependency>
+   <groupId>org.dbunit</groupId>
+   <artifactId>dbunit</artifactId>
+   <version>2.7.0</version>
+   <scope>test</scope>
+   <exclusions>
+    <exclusion>
+     <groupId>junit</groupId>
+     <artifactId>junit</artifactId>
+    </exclusion>
+   </exclusions>
     </dependency>
     <dependency>
       <groupId>com.github.springtestdbunit</groupId>
@@ -1046,15 +1217,21 @@
       <version>1.3.0</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>pl.pragmatists</groupId>
-      <artifactId>JUnitParams</artifactId>
-      <version>1.1.0</version>
-      <scope>test</scope>
+  <dependency>
+   <groupId>pl.pragmatists</groupId>
+   <artifactId>JUnitParams</artifactId>
+   <version>1.1.0</version>
+   <scope>test</scope>
+   <exclusions>
+    <exclusion>
+     <groupId>junit</groupId>
+     <artifactId>junit</artifactId>
+    </exclusion>
+   </exclusions>
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
-      <artifactId>bcprov-jdk15on</artifactId>
+      <artifactId>bcprov-jdk18on</artifactId>
       <version>${bouncycastle.version}</version>
     </dependency>
     <dependency>
@@ -1104,14 +1281,49 @@
       </exclusions>
     </dependency>
     <dependency>
+        <groupId>org.glassfish</groupId>
+        <artifactId>jakarta.el</artifactId>
+        <version>3.0.3</version>
+    </dependency>
+    <dependency>
+        <groupId>org.glassfish.jersey.core</groupId>
+        <artifactId>jersey-server</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.glassfish.jersey.ext</groupId>
+        <artifactId>jersey-bean-validation</artifactId>
+    </dependency>
+    
+    <!-- Jersey Container Servlet Dependency -->
+    <dependency>
+        <groupId>org.glassfish.jersey.containers</groupId>
+        <artifactId>jersey-container-servlet</artifactId>
+    </dependency>
+
+    <!-- Jersey HK2 Dependency -->
+    <dependency>
+        <groupId>org.glassfish.jersey.inject</groupId>
+        <artifactId>jersey-hk2</artifactId>
+    </dependency>
+    
+    <dependency>
+        <groupId>javax.xml.bind</groupId>
+        <artifactId>jaxb-api</artifactId>
+        <version>2.3.1</version>
+    </dependency>
+    <dependency>
+        <groupId>org.glassfish.jaxb</groupId>
+        <artifactId>jaxb-runtime</artifactId>
+    </dependency>
+    
+    <dependency>
       <groupId>org.glassfish.jersey.media</groupId>
       <artifactId>jersey-media-multipart</artifactId>
-      <version>${jersey-media-multipart.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.ldap</groupId>
       <artifactId>spring-ldap-core</artifactId>
-      <version>2.3.2.RELEASE</version>
+	  <version>3.2.8</version>
     </dependency>
     <dependency>
       <groupId>com.odysseusinc</groupId>
@@ -1120,7 +1332,7 @@
       <exclusions>
         <exclusion>
           <groupId>org.bouncycastle</groupId>
-          <artifactId>bcprov-jdk15</artifactId>
+          <artifactId>bcprov-jdk18</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -1180,7 +1392,7 @@
     <dependency>
       <groupId>com.cosium.spring.data</groupId>
       <artifactId>spring-data-jpa-entity-graph</artifactId>
-      <version>1.11.03</version>
+      <version>3.2.2</version>
     </dependency>
     <dependency>
       <groupId>org.pac4j</groupId>
@@ -1206,7 +1418,6 @@
     <dependency>
       <groupId>org.freemarker</groupId>
       <artifactId>freemarker</artifactId>
-      <version>2.3.30</version>
     </dependency>
     <dependency>
       <groupId>com.atlassian.commonmark</groupId>
@@ -1216,7 +1427,7 @@
     <dependency>
       <groupId>com.opentable.components</groupId>
       <artifactId>otj-pg-embedded</artifactId>
-      <version>0.13.1</version>
+      <version>1.0.3</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -1235,10 +1446,15 @@
       <artifactId>syslog-java-client</artifactId>
       <version>1.1.7</version>
     </dependency>
-  </dependencies>
+    <dependency>
+    	<groupId>org.springframework.boot</groupId>
+    	<artifactId>spring-boot-configuration-processor</artifactId>
+    	<optional>true</optional>
+    </dependency>
+ </dependencies>
   <profiles>
 
-    <profile>
+<!--    <profile>   MDACA Spring Boot 3 migration
       <id>webapi-oracle</id>
       <properties>
         <datasource.driverClassName>oracle.jdbc.OracleDriver</datasource.driverClassName>
@@ -1254,7 +1470,7 @@
         <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
         <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
         <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
-        <!--<datasource.validationQuery>SELECT 1 FROM DUAL</datasource.validationQuery>-->
+        <datasource.validationQuery>SELECT 1 FROM DUAL</datasource.validationQuery>
         <flyway.locations>classpath:db/migration/oracle</flyway.locations>
         <hibernate.dialect>org.hibernate.dialect.Oracle10gDialect</hibernate.dialect>
         <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
@@ -1271,25 +1487,27 @@
           <version>19.8.0.0</version>
         </dependency>
       </dependencies>
-    </profile>
+    </profile>-->
     <profile>
       <id>webapi-postgresql</id>
       <properties>
         <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
-        <datasource.url>jdbc:postgresql://54.209.111.128:5432/vocabularyv5</datasource.url>
-        <datasource.username>USER</datasource.username>
-        <datasource.password>PASS</datasource.password>
+		<datasource.url>jdbc:postgresql://localhost:5432/OHDSI?currentSchema=webapi</datasource.url>
+        <datasource.username>ohdsi_app_user</datasource.username>
+        <datasource.password>app1</datasource.password>
         <datasource.dialect>postgresql</datasource.dialect>
-        <datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
+        <datasource.ohdsi.schema>webapi</datasource.ohdsi.schema>
+        <datasource.dialect.source>postgresql</datasource.dialect.source>
         <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
         <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
-        <flyway.datasource.username>userWithWritesToOhdsiSchema</flyway.datasource.username>
-        <flyway.datasource.password>PASS</flyway.datasource.password>
+        <!-- flyway.datasource.username>userWithWritesToOhdsiSchema</flyway.datasource.username -->
+        <flyway.datasource.username>ohdsi_admin_user</flyway.datasource.username>
+        <flyway.datasource.password>admin1</flyway.datasource.password>
         <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
         <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
         <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
         <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
-        <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
+        <hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</hibernate.dialect>
         <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
         <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
         <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
@@ -1298,7 +1516,7 @@
           lower(email) = lower(?)</security.db.datasource.authenticationQuery>
       </properties>
     </profile>
-    <profile>
+	<profile>
       <id>webapi-docker</id>
       <properties>
         <git.branch>unknown</git.branch>
@@ -1307,26 +1525,32 @@
         <miredot.phase>none</miredot.phase>
         <skipTests>true</skipTests>
         <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
-        <datasource.url>jdbc:postgresql://54.209.111.128:5432/vocabularyv5</datasource.url>
-        <datasource.username>USER</datasource.username>
-        <datasource.password>PASS</datasource.password>
+        <datasource.url>${WEBAPI_DATASOURCE_URL}</datasource.url>
+        <datasource.username>${WEBAPI_DATASOURCE_USERNAME}</datasource.username>
+        <datasource.password>${WEBAPI_DATASOURCE_PASSWORD}</datasource.password>
         <datasource.dialect>postgresql</datasource.dialect>
-        <datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
+        <datasource.ohdsi.schema>${WEBAPI_SCHEMA}</datasource.ohdsi.schema>
         <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
         <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
-        <flyway.datasource.username>userWithWritesToOhdsiSchema</flyway.datasource.username>
-        <flyway.datasource.password>PASS</flyway.datasource.password>
+        <flyway.datasource.username>${FLYWAY_DATASOURCE_USERNAME}</flyway.datasource.username>
+        <flyway.datasource.password>${FLYWAY_DATASOURCE_PASSWORD}</flyway.datasource.password>
         <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
         <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
         <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
         <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
-        <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
+        <hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</hibernate.dialect>
         <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
         <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
         <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
         <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
         <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users_data where \
           lower(email) = lower(?)</security.db.datasource.authenticationQuery>
+        <security.oauth.callback.ui>${OAUTH_CALLBACK_UI}</security.oauth.callback.ui>
+        <security.oauth.callback.api>${OAUTH_CALLBACK_API}</security.oauth.callback.api>
+        <security.oid.clientId>${OID_CLIENTID}</security.oid.clientId>
+        <security.oid.apiSecret>${OID_APISECRET}</security.oid.apiSecret>
+        <security.oid.url>${OID_URL}</security.oid.url>
+        <security.oid.redirectUrl>${OID_REDIRECTURL}</security.oid.redirectUrl>
       </properties>
       <repositories>
 	<repository>
@@ -1342,7 +1566,7 @@
     	</repository>
       </repositories>
     </profile>
-    <profile>
+<!--    <profile>   MDACA Spring Boot 3 migration
       <id>webapi-mssql</id>
       <properties>
         <datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
@@ -1367,8 +1591,8 @@
         <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \
           lower(email) = lower(?)</security.db.datasource.authenticationQuery>
       </properties>
-    </profile>
-    <profile>
+    </profile>-->
+<!--    <profile>   MDACA Spring Boot 3 migration
       <id>webapi-netezza</id>
       <properties>
         <netezza.enabled>true</netezza.enabled>
@@ -1405,13 +1629,13 @@
           </plugin>
         </plugins>
       </build>
-    </profile>
-    <profile>
+    </profile>-->
+<!--    <profile>   MDACA Spring Boot 3 migration
       <id>webapi-impala</id>
       <properties>
         <impala.enabled>true</impala.enabled>
         <impala.driver.version>2.6.15</impala.driver.version>
-        <!-- Impala JDBC driver path -->
+         Impala JDBC driver path 
 		<impala.classpath>...path/to/impala/jdbc/drivers...</impala.classpath>
       </properties>
       <dependencies>
@@ -1446,12 +1670,12 @@
           </plugin>
         </plugins>
       </build>
-    </profile>
-    <profile>
+    </profile>-->
+<!--    <profile>   MDACA Spring Boot 3 migration
       <id>webapi-spark</id>
       <properties>
         <spark.enabled>true</spark.enabled>
-        <!-- Spark JDBC driver path -->
+         Spark JDBC driver path 
         <spark.classpath>${basedir}/src/main/extras/spark</spark.classpath>
       </properties>
       <dependencies>
@@ -1486,12 +1710,12 @@
           </plugin>
         </plugins>
       </build>
-    </profile>
-    <profile>
+    </profile>-->
+<!--    <profile>   MDACA Spring Boot 3 migration
       <id>webapi-bigquery</id>
       <properties>
         <bigquery.enabled>true</bigquery.enabled>
-        <!-- BigQuery JDBC driver path -->
+         BigQuery JDBC driver path 
         <bigquery.classpath>${basedir}/src/main/extras/bigquery</bigquery.classpath>
       </properties>
       <dependencies>
@@ -1670,8 +1894,8 @@
           </plugin>
         </plugins>
       </build>
-    </profile>
-    <profile>
+    </profile>-->
+<!--    <profile>   MDACA Spring Boot 3 migration
       <id>webapi-hive</id>
       <dependencies>
         <dependency>
@@ -1705,7 +1929,7 @@
             </exclusion>
             <exclusion>
               <artifactId>servlet-api</artifactId>
-              <groupId>javax.servlet</groupId>
+              <groupId>jakarta.servlet-api</groupId>    Spring Boot 3 migration groupId>jakarta.servlet-api</groupId 
             </exclusion>
             <exclusion>
               <groupId>com.zaxxer</groupId>
@@ -1780,7 +2004,7 @@
           <version>1.19.4</version>
         </dependency>
       </dependencies>
-    </profile>
+    </profile>-->
     <profile>
       <id>webapi-redshift</id>
       <properties>
@@ -1791,19 +2015,19 @@
         <dependency>
           <groupId>com.amazonaws</groupId>
           <artifactId>aws-java-sdk-core</artifactId>
-          <version>1.11.118</version>
+          <version>2.1.0.28</version>
         </dependency>
 
         <dependency>
           <groupId>com.amazonaws</groupId>
           <artifactId>aws-java-sdk-redshift</artifactId>
-          <version>1.11.118</version>
+          <version>2.1.0.28</version>
         </dependency>
 
         <dependency>
           <groupId>com.amazonaws</groupId>
           <artifactId>aws-java-sdk-sts</artifactId>
-          <version>1.11.118</version>
+          <version>2.1.0.28</version>
         </dependency>
 
         <dependency>
@@ -1813,7 +2037,7 @@
         </dependency>
       </dependencies>
     </profile>
-    <profile>
+<!--    <profile>   MDACA Spring Boot 3 migration
       <id>webapi-snowflake</id>
       <properties>
         <snowflake.enabled>true</snowflake.enabled>
@@ -1826,8 +2050,8 @@
           <version>${snowflake.driver.version}</version>
         </dependency>
       </dependencies>
-    </profile>
-    <profile>
+    </profile>-->
+<!--    <profile>   MDACA Spring Boot 3 migration
       <id>webapi-gis</id>
       <properties>
         <atlasgis.version>1.0.1</atlasgis.version>
@@ -1840,11 +2064,11 @@
           <version>${atlasgis.version}</version>
         </dependency>
       </dependencies>
-    </profile>
-    <profile>
+    </profile>-->
+<!--    <profile>   MDACA Spring Boot 3 migration
       <id>webapi-solr</id>
       <properties>
-        <!-- Full Text Search With SOLR Settings -->
+         Full Text Search With SOLR Settings 
         <solr.endpoint></solr.endpoint>
         <solr.query.prefix>{!complexphrase inOrder=true}</solr.query.prefix>
         <solr.version>8.11.2</solr.version>
@@ -1862,6 +2086,63 @@
           <type>jar</type>
         </dependency>
       </dependencies>
+    </profile>-->
+   <profile>
+      <id>webapi-docker-mdaca-codeartifact</id>
+      <properties>
+        <git.branch>unknown</git.branch>
+        <git.commit.id.abbrev>unknown</git.commit.id.abbrev>
+        <maven.gitcommitid.skip>true</maven.gitcommitid.skip>
+        <miredot.phase>none</miredot.phase>
+        <skipTests>true</skipTests>
+        <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
+        <datasource.url>jdbc:postgresql://54.209.111.128:5432/vocabularyv5</datasource.url>
+        <datasource.username>USER</datasource.username>
+        <datasource.password>PASS</datasource.password>
+        <datasource.dialect>postgresql</datasource.dialect>
+        <datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
+        <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
+        <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
+        <flyway.datasource.username>userWithWritesToOhdsiSchema</flyway.datasource.username>
+        <flyway.datasource.password>PASS</flyway.datasource.password>
+        <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
+        <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
+        <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
+        <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
+        <hibernate.dialect>org.hibernate.dialect.PostgreSQL9Dialect</hibernate.dialect>
+        <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
+        <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
+        <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
+        <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
+        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users_data where \
+          lower(email) = lower(?)</security.db.datasource.authenticationQuery>
+      </properties>
+      <repositories>
+        <!-- OHDSI Snapshots Repository -->
+        <repository>
+            <id>ohdsi.snapshots</id>
+            <name>repo.ohdsi.org-snapshots</name>
+            <url>https://repo.ohdsi.org/nexus/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <!-- AWS CodeArtifact Repository -->
+        <repository>
+            <id>codeartifact</id>
+            <name>AWS CodeArtifact MDACA OHDSI Repository</name>
+            <url>https://mdaca-201959883603.d.codeartifact.us-east-2.amazonaws.com/maven/OHDSI/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+      </repositories>
     </profile>
   </profiles>
 </project>

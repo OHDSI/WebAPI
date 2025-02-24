@@ -243,10 +243,10 @@
     <spring.jpa.properties.hibernate.order_inserts>true</spring.jpa.properties.hibernate.order_inserts>
     <logging.level.root>info</logging.level.root>
     <logging.level.org.ohdsi>info</logging.level.org.ohdsi>
-    <logging.level.org.springframework.orm>debug</logging.level.org.springframework.orm>
-    <logging.level.org.springframework.jdbc>debug</logging.level.org.springframework.jdbc>
+    <logging.level.org.springframework.orm>ERROR</logging.level.org.springframework.orm>
+    <logging.level.org.springframework.jdbc>ERROR</logging.level.org.springframework.jdbc>
     <logging.level.org.springframework.web>info</logging.level.org.springframework.web>
-    <logging.level.org.hibernate>debug</logging.level.org.hibernate>
+    <logging.level.org.hibernate>ERROR</logging.level.org.hibernate>
     <logging.level.org.apache.shiro>warn</logging.level.org.apache.shiro>
 
     <spring.batch.taskExecutor.corePoolSize>10</spring.batch.taskExecutor.corePoolSize>

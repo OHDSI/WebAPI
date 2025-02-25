@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.user.importer.providers;
 
 import com.google.common.collect.ImmutableSet;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.user.importer.model.LdapGroup;
 import org.ohdsi.webapi.user.importer.model.LdapUser;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,11 +13,9 @@ import org.springframework.ldap.core.support.SimpleDirContextAuthenticationStrat
 import org.springframework.ldap.support.LdapUtils;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;

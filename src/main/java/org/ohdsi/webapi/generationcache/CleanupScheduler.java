@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.generationcache;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

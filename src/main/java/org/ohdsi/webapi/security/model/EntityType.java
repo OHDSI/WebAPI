@@ -29,7 +29,6 @@ public enum EntityType {
     TAG(Tag.class),
     TOOL(Tool.class),
     REUSABLE(Reusable.class);
-
     private final Class<? extends CommonEntity> entityClass;
 
     EntityType(Class<? extends CommonEntity> entityClass) {

@@ -3,6 +3,8 @@ package org.ohdsi.webapi.service;
 import static org.ohdsi.webapi.service.cscompare.ConceptSetCompareService.CONCEPT_SET_COMPARISON_ROW_MAPPER;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -11,6 +13,8 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.cache.CacheManager;
+import javax.cache.configuration.MutableConfiguration;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -51,6 +55,7 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceInfo;
+import org.ohdsi.webapi.util.CacheHelper;
 import org.ohdsi.webapi.util.PreparedSqlRender;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.vocabulary.ConceptRecommendedNotInstalledException;
@@ -66,11 +71,16 @@ import org.ohdsi.webapi.vocabulary.VocabularyInfo;
 import org.ohdsi.webapi.vocabulary.VocabularySearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.cache.JCacheManagerCustomizer;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import org.ohdsi.webapi.vocabulary.MappedRelatedConcept;
 
  /**
   * Provides REST services for working with
@@ -82,7 +92,42 @@ import org.springframework.stereotype.Component;
 @Component
 public class VocabularyService extends AbstractDaoService {
 
-  private static Hashtable<String, VocabularyInfo> vocabularyInfoCache = null;
+	//create cache
+	@Component
+	public static class CachingSetup implements JCacheManagerCustomizer {
+
+		public static final String CONCEPT_DETAIL_CACHE = "conceptDetail";
+		public static final String CONCEPT_RELATED_CACHE = "conceptRelated";
+		public static final String CONCEPT_HIERARCHY_CACHE = "conceptHierarchy";
+
+		@Override
+		public void customize(CacheManager cacheManager) {
+			// due to unit tests causing application contexts to reload cache manager caches, we
+			// have to check for the existance of a cache before creating it
+			Set<String> cacheNames = CacheHelper.getCacheNames(cacheManager);
+			// Evict when a cohort definition is created or updated, or permissions, or tags
+			if (!cacheNames.contains(CONCEPT_DETAIL_CACHE)) {
+				cacheManager.createCache(CONCEPT_DETAIL_CACHE, new MutableConfiguration<String, Concept>()
+					.setTypes(String.class, Concept.class)
+					.setStoreByValue(false)
+					.setStatisticsEnabled(true));
+			}
+			if (!cacheNames.contains(CONCEPT_RELATED_CACHE)) {
+				cacheManager.createCache(CONCEPT_RELATED_CACHE, new MutableConfiguration<String, Collection<RelatedConcept>>()
+					.setTypes(String.class, (Class<Collection<RelatedConcept>>) (Class<?>) Collection.class)
+					.setStoreByValue(false)
+					.setStatisticsEnabled(true));
+			}
+			if (!cacheNames.contains(CONCEPT_HIERARCHY_CACHE)) {
+				cacheManager.createCache(CONCEPT_HIERARCHY_CACHE, new MutableConfiguration<String, Collection<RelatedConcept>>()
+					.setTypes(String.class, (Class<Collection<RelatedConcept>>) (Class<?>) Collection.class)
+					.setStoreByValue(false)
+					.setStatisticsEnabled(true));
+			}
+		}
+	}
+	
+	private static Hashtable<String, VocabularyInfo> vocabularyInfoCache = null;
   public static final String DEFAULT_SEARCH_ROWS = "20000";
 
   @Autowired
@@ -96,7 +141,10 @@ public class VocabularyService extends AbstractDaoService {
 
   @Autowired
   private ConceptSetCompareService conceptSetCompareService;
-  
+
+  @Autowired
+  private ObjectMapper objectMapper;
+
   @Value("${datasource.driverClassName}")
   private String driver;
 
@@ -717,6 +765,7 @@ public class VocabularyService extends AbstractDaoService {
   @GET
   @Path("{sourceKey}/concept/{id}")
   @Produces(MediaType.APPLICATION_JSON)
+	@Cacheable(cacheNames = CachingSetup.CONCEPT_DETAIL_CACHE, key = "#sourceKey.concat('/').concat(#id)")
   public Concept getConcept(@PathParam("sourceKey") final String sourceKey, @PathParam("id") final long id) {
     Source source = getSourceRepository().findBySourceKey(sourceKey);
     String sqlPath = "/resources/vocabulary/sql/getConcept.sql";
@@ -768,6 +817,7 @@ public class VocabularyService extends AbstractDaoService {
   @GET
   @Path("{sourceKey}/concept/{id}/related")
   @Produces(MediaType.APPLICATION_JSON)
+	@Cacheable(cacheNames = CachingSetup.CONCEPT_RELATED_CACHE, key = "#sourceKey.concat('/').concat(#id)")
   public Collection<RelatedConcept> getRelatedConcepts(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id) {
     final Map<Long, RelatedConcept> concepts = new HashMap<>();
     Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -783,7 +833,75 @@ public class VocabularyService extends AbstractDaoService {
     return concepts.values();
   }
 
-  /**
+   @POST
+   @Path("{sourceKey}/related-standard")
+   @Produces(MediaType.APPLICATION_JSON)
+   public Collection<MappedRelatedConcept> getRelatedStandardMappedConcepts(@PathParam("sourceKey") String sourceKey, List<Long> allConceptIds) {
+     Source source = getSourceRepository().findBySourceKey(sourceKey);
+     String relatedConceptsSQLPath = "/resources/vocabulary/sql/getRelatedStandardMappedConcepts.sql";
+     String relatedMappedFromIdsSQLPath = "/resources/vocabulary/sql/getRelatedStandardMappedConcepts_getMappedFromIds.sql";
+     String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+
+     String[] searchStrings = {"CDM_schema"};
+     String[] replacementStrings = {tableQualifier};
+
+     String[] varNames = {"conceptIdList"};
+
+     final Map<Long, MappedRelatedConcept> resultCombinedMappedConcepts = new HashMap<>();
+     final Map<Long, RelatedConcept> relatedStandardConcepts = new HashMap<>();
+     for(final List<Long> conceptIdsBatch: Lists.partition(allConceptIds, PreparedSqlRender.getParameterLimit(source))) {
+       Object[] varValues = {conceptIdsBatch.toArray()};
+       PreparedStatementRenderer relatedConceptsRenderer = new PreparedStatementRenderer(source, relatedConceptsSQLPath, searchStrings, replacementStrings, varNames, varValues);
+       getSourceJdbcTemplate(source).query(relatedConceptsRenderer.getSql(), relatedConceptsRenderer.getSetter(), (RowMapper<Void>) (resultSet, arg1) -> {
+         addRelationships(relatedStandardConcepts, resultSet);
+         return null;
+       });
+
+       final Map<Long, Set<Long>> relatedNonStandardConceptIdsByStandardId = new HashMap<>();
+
+       PreparedStatementRenderer mappedFromConceptsRenderer = new PreparedStatementRenderer(source, relatedMappedFromIdsSQLPath, searchStrings, replacementStrings, varNames, varValues);
+       getSourceJdbcTemplate(source).query(mappedFromConceptsRenderer.getSql(), mappedFromConceptsRenderer.getSetter(), (RowMapper<Void>) (resultSet, arg1) -> {
+         populateRelatedConceptIds(relatedNonStandardConceptIdsByStandardId, resultSet);
+         return null;
+       });
+
+       enrichResultCombinedMappedConcepts(resultCombinedMappedConcepts, relatedStandardConcepts, relatedNonStandardConceptIdsByStandardId);
+      }
+     return resultCombinedMappedConcepts.values();
+   }
+
+   private void populateRelatedConceptIds(final Map<Long, Set<Long>> mappedConceptsIds, final ResultSet resultSet) throws SQLException {
+     final Long concept_id = resultSet.getLong("CONCEPT_ID");
+     if (!mappedConceptsIds.containsKey(concept_id)) {
+       Set<Long> mappedIds = new HashSet<>();
+       mappedIds.add(resultSet.getLong("MAPPED_FROM_ID"));
+       mappedConceptsIds.put(concept_id,mappedIds);
+     } else {
+       mappedConceptsIds.get(concept_id).add(resultSet.getLong("MAPPED_FROM_ID"));
+     }
+   }
+
+   void enrichResultCombinedMappedConcepts(Map<Long, MappedRelatedConcept> resultCombinedMappedConcepts,
+                                           Map<Long, RelatedConcept> relatedStandardConcepts,
+                                           Map<Long, Set<Long>> relatedNonStandardConceptIdsByStandardId) {
+    relatedNonStandardConceptIdsByStandardId.forEach((standardConceptId, mappedFromIds)->{
+      if(resultCombinedMappedConcepts.containsKey(standardConceptId)){
+        resultCombinedMappedConcepts.get(standardConceptId).mappedFromIds.addAll(mappedFromIds);
+      } else {
+        MappedRelatedConcept mappedRelatedConcept;
+         try {
+           mappedRelatedConcept = objectMapper.readValue(objectMapper.writeValueAsString(relatedStandardConcepts.get(standardConceptId)), MappedRelatedConcept.class);
+           mappedRelatedConcept.mappedFromIds=mappedFromIds;
+           resultCombinedMappedConcepts.put(standardConceptId,mappedRelatedConcept);
+         } catch (JsonProcessingException e) {
+           log.error("Could not convert RelatedConcept to MappedRelatedConcept", e);
+           throw new WebApplicationException(e);
+         }
+      }
+    });
+   }
+
+   /**
    * Get ancestor and descendant concepts for the selected concept identifier 
    * from a source. 
    * 
@@ -795,6 +913,7 @@ public class VocabularyService extends AbstractDaoService {
   @GET
   @Path("{sourceKey}/concept/{id}/ancestorAndDescendant")
   @Produces(MediaType.APPLICATION_JSON)
+	@Cacheable(cacheNames = CachingSetup.CONCEPT_HIERARCHY_CACHE, key = "#sourceKey.concat('/').concat(#id)")
   public Collection<RelatedConcept> getConceptAncestorAndDescendant(@PathParam("sourceKey") String sourceKey, @PathParam("id") final Long id) {
     final Map<Long, RelatedConcept> concepts = new HashMap<>();
     Source source = getSourceRepository().findBySourceKey(sourceKey);
@@ -1211,9 +1330,19 @@ public class VocabularyService extends AbstractDaoService {
     return vocabularyInfoCache.get(sourceKey);
   }
 
+	@Caching(evict = {
+		@CacheEvict(value=CachingSetup.CONCEPT_DETAIL_CACHE, allEntries = true),
+		@CacheEvict(value=CachingSetup.CONCEPT_RELATED_CACHE, allEntries = true),
+		@CacheEvict(value=CachingSetup.CONCEPT_RELATED_CACHE, allEntries = true)
+	})
   public void clearVocabularyInfoCache() {
     vocabularyInfoCache = null;
   }
+	
+	
+	public void clearCaches() {
+		
+	}
   
   /**
    * Get the descendant concepts of the selected ancestor vocabulary and 

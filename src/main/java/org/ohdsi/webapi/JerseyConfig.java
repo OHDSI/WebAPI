@@ -37,6 +37,7 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Singleton;
 import javax.ws.rs.ext.RuntimeDelegate;
+import org.ohdsi.webapi.cache.CacheService;
 
 /**
  *
@@ -59,31 +60,32 @@ public class JerseyConfig extends ResourceConfig implements InitializingBean {
     public void afterPropertiesSet() throws Exception {
         packages(this.rootPackage);
         register(ActivityService.class);
+        register(CacheService.class);
+        register(CcController.class);
         register(CDMResultsService.class);
         register(CohortAnalysisService.class);
         register(CohortDefinitionService.class);
         register(CohortResultsService.class);
         register(CohortService.class);
         register(ConceptSetService.class);
+        register(DDLService.class);
         register(EvidenceService.class);
         register(FeasibilityService.class);
+        register(FeatureExtractionService.class);
         register(InfoService.class);
         register(IRAnalysisResource.class);
         register(JobService.class);
+        register(MultiPartFeature.class);
+        register(PermissionController.class);
         register(PersonService.class);
+        register(ScriptExecutionController.class);
+        register(ScriptExecutionCallbackController.class);
         register(SourceController.class);
         register(SqlRenderService.class);
-        register(DDLService.class);
+        register(SSOController.class);
         register(TherapyPathResultsService.class);
         register(UserService.class);
         register(VocabularyService.class);
-        register(ScriptExecutionController.class);
-        register(ScriptExecutionCallbackController.class);
-        register(MultiPartFeature.class);
-        register(FeatureExtractionService.class);
-        register(CcController.class);
-        register(SSOController.class);
-        register(PermissionController.class);
         register(new AbstractBinder() {
             @Override
             protected void configure() {

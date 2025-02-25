@@ -10,6 +10,8 @@ public class FeAnalysisShortDTO extends CommonEntityDTO {
 
     @JsonProperty("description")
     protected String description;
+    protected Boolean supportsAnnual;
+    protected Boolean supportsTemporal;
     @JsonProperty("id")
     private Integer id;
     @JsonProperty("name")
@@ -20,6 +22,10 @@ public class FeAnalysisShortDTO extends CommonEntityDTO {
     private StandardFeatureAnalysisDomain domain;
     @JsonProperty("statType")
     private CcResultType statType;
+    @JsonProperty("includeAnnual")
+    private Boolean includeAnnual;
+    @JsonProperty("includeTemporal")
+    private Boolean includeTemporal;
 
     public Integer getId() {
 
@@ -75,5 +81,37 @@ public class FeAnalysisShortDTO extends CommonEntityDTO {
     public void setStatType(CcResultType statType) {
 
         this.statType = statType;
+    }
+
+    public Boolean getSupportsAnnual() {
+        return supportsAnnual;
+    }
+
+    public void setSupportsAnnual(Boolean supportsAnnual) {
+        this.supportsAnnual = supportsAnnual;
+    }
+
+    public Boolean getSupportsTemporal() {
+        return supportsTemporal;
+    }
+
+    public void setSupportsTemporal(Boolean supportsTemporal) {
+        this.supportsTemporal = supportsTemporal;
+    }
+
+    public Boolean getIncludeAnnual() {
+        return includeAnnual;
+    }
+
+    public void setIncludeAnnual(Boolean includeAnnual) {
+        this.includeAnnual = includeAnnual;
+    }
+
+    public Boolean getIncludeTemporal() {
+        return includeTemporal;
+    }
+
+    public void setIncludeTemporal(Boolean includeTemporal) {
+        this.includeTemporal = includeTemporal;
     }
 }

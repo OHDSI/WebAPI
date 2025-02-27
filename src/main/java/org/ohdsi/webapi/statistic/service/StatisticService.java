@@ -163,7 +163,7 @@ public class StatisticService {
                     .map(str -> {
                             return patterns.stream()
                                     .map(pattern -> pattern.matcher(str))
-                                    .filter(Matcher::matches)
+                                    .filter(matcher -> matcher.matches())
                                     .map(matcher -> new AccessTrendDto(matcher.group(4), matcher.group(1), showUserInformation ? matcher.group(3) : null))
                                     .findFirst();
                         })

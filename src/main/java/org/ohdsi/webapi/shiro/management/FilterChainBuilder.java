@@ -11,6 +11,7 @@ public class FilterChainBuilder {
     private String restFilters;
     private String authcFilter;
     private String authzFilter;
+    private String featureLockFilter;
     private String filtersBeforeOAuth;
     private String filtersAfterOAuth;
 
@@ -39,6 +40,11 @@ public class FilterChainBuilder {
         return this;
     }
 
+		public FilterChainBuilder setFeatureLockFilter(FilterTemplates... featureLockFilters) {
+			this.featureLockFilter = convertArrayToString(featureLockFilters);
+			return this;
+		}
+
     public FilterChainBuilder addRestPath(String path, String filters) {
         return this.addPath(path, this.restFilters + ", " + filters);
     }
@@ -56,7 +62,7 @@ public class FilterChainBuilder {
     }
 
     public FilterChainBuilder addProtectedRestPath(String path) {
-        return this.addRestPath(path, this.authcFilter + ", " + this.authzFilter);
+        return this.addRestPath(path, this.authcFilter + ", " + this.authzFilter + ", " + this.featureLockFilter);
     }
 
     public FilterChainBuilder addProtectedRestPath(String path, FilterTemplates... filters) {

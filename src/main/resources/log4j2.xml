@@ -2,7 +2,8 @@
 <Configuration>
     <Properties>
         <property name="audit.trail.log.extraFile">${bundle:application:audit.trail.log.extraFile}</property>  
-        <property name="audit.trail.log.file">${bundle:application:audit.trail.log.file}</property>  
+        <property name="audit.trail.log.file">${bundle:application:audit.trail.log.file}</property>
+        <property name="audit.trail.log.file.pattern">${bundle:application:audit.trail.log.file.pattern}</property>
         <property name="logging.level.org.apache.shiro">${bundle:application:logging.level.org.apache.shiro}</property>  
         <property name="logging.level.org.ohdsi">${bundle:application:logging.level.org.ohdsi}</property>  
         <property name="logging.level.org.pac4j">${bundle:application:logging.level.org.pac4j}</property>  
@@ -12,7 +13,7 @@
     </Properties>
     <Appenders>
         <RollingFile name="audit" fileName="${audit.trail.log.file}"
-            filePattern="/tmp/atlas/audit/audit-%d{yyyy-MM-dd}-%i.log">
+            filePattern="${audit.trail.log.file.pattern}">
           <PatternLayout>
             <Pattern>%m%n</Pattern>
           </PatternLayout>

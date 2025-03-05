@@ -20,6 +20,7 @@ public enum FilterTemplates {
     NO_SESSION_CREATION("noSessionCreation"),
     FORCE_SESSION_CREATION("forceSessionCreation"),
     AUTHZ("authz"),
+	  CS_LOCK("cslock"),
     CORS("cors"),
     SSL("ssl"),
     NO_CACHE("noCache"),

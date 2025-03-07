@@ -4,6 +4,7 @@ import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisGenerationEntity;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
+import org.ohdsi.webapi.pathway.dto.PathwayPopulationResultsDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayVersionFullDTO;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
 import org.ohdsi.webapi.shiro.annotations.PathwayAnalysisGenerationId;
@@ -69,4 +70,8 @@ public interface PathwayService extends HasTags<Integer> {
     PathwayVersion saveVersion(int id);
 
     List<PathwayAnalysisDTO> listByTags(TagNameListRequestDTO requestDTO);
+
+    PathwayAnalysisDTO getByGenerationId(Integer id);
+
+    PathwayPopulationResultsDTO getGenerationResults(Long generationId);
 }

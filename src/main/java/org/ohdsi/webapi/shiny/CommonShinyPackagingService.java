@@ -6,6 +6,7 @@ import com.odysseusinc.arachne.commons.api.v1.dto.CommonAnalysisType;
 import com.odysseusinc.arachne.execution_engine_common.util.CommonFileUtils;
 import org.ohdsi.webapi.report.CDMDashboard;
 import org.ohdsi.webapi.service.CDMResultsService;
+import org.ohdsi.webapi.shiny.posit.PositConnectClientException;
 import org.ohdsi.webapi.shiny.summary.DataSourceSummary;
 import org.ohdsi.webapi.shiny.summary.DataSourceSummaryConverter;
 import org.ohdsi.webapi.source.Source;

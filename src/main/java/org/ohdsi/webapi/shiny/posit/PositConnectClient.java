@@ -1,7 +1,5 @@
-package org.ohdsi.webapi.shiny;
+package org.ohdsi.webapi.shiny.posit;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +12,13 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.service.ShinyService;
+import org.ohdsi.webapi.shiny.ApplicationBrief;
+import org.ohdsi.webapi.shiny.TemporaryFile;
+import org.ohdsi.webapi.shiny.posit.dto.BundleDeploymentResponse;
+import org.ohdsi.webapi.shiny.posit.dto.BundleRequest;
+import org.ohdsi.webapi.shiny.posit.dto.BundleResponse;
+import org.ohdsi.webapi.shiny.posit.dto.ContentItem;
+import org.ohdsi.webapi.shiny.posit.dto.ContentItemResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
@@ -27,7 +32,6 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.text.MessageFormat;
-import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -51,14 +55,14 @@ public class PositConnectClient implements InitializingBean {
 
     public UUID createContentItem(ApplicationBrief brief) {
         ContentItem contentItem = new ContentItem();
-        contentItem.accessType = "acl";
-        contentItem.name = brief.getName();
-        contentItem.title = brief.getTitle();
-        contentItem.description = brief.getDescription();
+        contentItem.setAccessType("acl");
+        contentItem.setName(brief.getName());
+        contentItem.setTitle(brief.getTitle());
+        contentItem.setDescription(brief.getDescription());
         RequestBody body = RequestBody.create(toJson(contentItem), JSON_TYPE);
         String url = connect("/v1/content");
         ContentItemResponse response = doPost(ContentItemResponse.class, url, body);
-        return response.guid;
+        return response.getGuid();
     }
 
     public List<ContentItemResponse> listContentItems() {
@@ -71,16 +75,16 @@ public class PositConnectClient implements InitializingBean {
     public String uploadBundle(UUID contentId, TemporaryFile bundle) {
         String url = connect(MessageFormat.format("/v1/content/{0}/bundles", contentId));
         BundleResponse response = doPost(BundleResponse.class, url, RequestBody.create(bundle.getFile().toFile(), OCTET_STREAM_TYPE));
-        return response.id;
+        return response.getId();
     }
 
     public String deployBundle(UUID contentId, String bundleId) {
         String url = connect(MessageFormat.format("/v1/content/{0}/deploy", contentId));
         BundleRequest request = new BundleRequest();
-        request.bundleId = bundleId;
+        request.setBundleId(bundleId);
         RequestBody requestBody = RequestBody.create(toJson(request), JSON_TYPE);
         BundleDeploymentResponse response = doPost(BundleDeploymentResponse.class, url, requestBody);
-        return response.taskId;
+        return response.getTaskId();
     }
 
     private <T> T doPost(Class<T> responseClass, String url, RequestBody requestBody) {
@@ -160,56 +164,5 @@ public class PositConnectClient implements InitializingBean {
 
     private String connect(String path) {
         return StringUtils.removeEnd(properties.getUrl(), "/") + "/__api__/" + StringUtils.removeStart(path, "/");
-    }
-
-    public static class ContentItem {
-        public String name;
-        public String title;
-        public String description;
-        @JsonProperty("access_type")
-        public String accessType;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class ContentItemResponse extends ContentItem {
-        public UUID guid;
-        @JsonProperty("owner_guid")
-        public UUID ownerGuid;
-        public String id;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class BundleResponse {
-        public String id;
-        @JsonProperty("content_guid")
-        public String contentGuid;
-        @JsonProperty("created_time")
-        public Instant createdTime;
-        @JsonProperty("cluster_name")
-        public String clusterName;
-        @JsonProperty("image_name")
-        public String imageName;
-        @JsonProperty("r_version")
-        public String rVersion;
-        @JsonProperty("r_environment_management")
-        public Boolean rEnvironmentManagement;
-        @JsonProperty("py_version")
-        public String pyVersion;
-        @JsonProperty("py_environment_management")
-        public Boolean pyEnvironmentManagement;
-        @JsonProperty("quarto_version")
-        public String quartoVersion;
-        public Boolean active;
-        public Integer size;
-    }
-
-    static class BundleRequest {
-        @JsonProperty("bundle_id")
-        public String bundleId;
-    }
-
-    static class BundleDeploymentResponse {
-        @JsonProperty("task_id")
-        public String taskId;
     }
 }

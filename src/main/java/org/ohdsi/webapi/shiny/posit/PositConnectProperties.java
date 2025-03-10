@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.shiny;
+package org.ohdsi.webapi.shiny.posit;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;

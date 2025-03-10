@@ -1,4 +1,4 @@
-package org.ohdsi.webapi.shiny;
+package org.ohdsi.webapi.shiny.posit;
 
 public class PositConnectClientException extends RuntimeException {
     public PositConnectClientException(String message) {

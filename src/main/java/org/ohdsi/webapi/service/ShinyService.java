@@ -1,18 +1,17 @@
 package org.ohdsi.webapi.service;
 
 import com.odysseusinc.arachne.commons.api.v1.dto.CommonAnalysisType;
-
 import org.ohdsi.webapi.shiny.ApplicationBrief;
-import org.ohdsi.webapi.shiny.ConflictPositConnectException;
 import org.ohdsi.webapi.shiny.PackagingStrategies;
 import org.ohdsi.webapi.shiny.PackagingStrategy;
-import org.ohdsi.webapi.shiny.PositConnectClient;
 import org.ohdsi.webapi.shiny.ShinyPackagingService;
 import org.ohdsi.webapi.shiny.ShinyPublishedEntity;
 import org.ohdsi.webapi.shiny.ShinyPublishedRepository;
 import org.ohdsi.webapi.shiny.TemporaryFile;
-import org.ohdsi.webapi.shiro.PermissionManager;
+import org.ohdsi.webapi.shiny.posit.PositConnectClient;
+import org.ohdsi.webapi.shiny.posit.dto.ContentItemResponse;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
+import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +22,6 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
-
 import java.sql.Date;
 import java.text.MessageFormat;
 import java.time.Instant;
@@ -50,9 +48,9 @@ public class ShinyService {
     protected Security security;
     @Autowired
     protected UserRepository userRepository;
-    
+
     @Value("#{!'${security.provider}'.equals('DisabledSecurity')}")
-    private boolean securityEnabled;    
+    private boolean securityEnabled;
 
     @Inject
     public ShinyService(List<ShinyPackagingService> services) {
@@ -64,23 +62,27 @@ public class ShinyService {
         ShinyPublishedEntity publication = getPublication(id, sourceKey);
         ShinyPackagingService service = findShinyService(CommonAnalysisType.valueOf(type.toUpperCase()));
         UUID contentId = Optional.ofNullable(publication.getContentId())
-                .orElseGet(() -> createOrFindItem(service.getBrief(id, sourceKey)));
+                .orElseGet(() -> findOrCreateItem(service.getBrief(id, sourceKey)));
         String bundleId = connectClient.uploadBundle(contentId, data);
         String taskId = connectClient.deployBundle(contentId, bundleId);
         log.debug("Bundle [{}] is deployed to Shiny server, task id: [{}]", id, taskId);
     }
 
-    private UUID createOrFindItem(ApplicationBrief brief) {
-        try {
+    private UUID findOrCreateItem(ApplicationBrief brief) {
+        Optional<UUID> contentItemUUID = fetchContentItemUUIDIfExists(brief.getName());
+        if (contentItemUUID.isPresent()) {
+            log.info("Content item [{}] already exists, will update", brief.getName());
+            return contentItemUUID.get();
+        } else {
             return connectClient.createContentItem(brief);
-        } catch (ConflictPositConnectException e) {
-            log.warn("Content item [{}] already exist, will update", brief.getName());
-            return connectClient.listContentItems().stream()
-                    .filter(i -> Objects.equals(i.name, brief.getName()))
-                    .findFirst()
-                    .map(i -> i.guid)
-                    .orElseThrow(NotFoundException::new);
         }
+    }
+
+    private Optional<UUID> fetchContentItemUUIDIfExists(String itemName) {
+        return connectClient.listContentItems().stream()
+                .filter(i -> Objects.equals(i.getName(), itemName))
+                .findFirst()
+                .map(ContentItemResponse::getGuid);
     }
 
     private ShinyPublishedEntity getPublication(int id, String sourceKey) {

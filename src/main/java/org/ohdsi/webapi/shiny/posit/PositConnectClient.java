@@ -13,12 +13,15 @@ import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.service.ShinyService;
 import org.ohdsi.webapi.shiny.ApplicationBrief;
+import org.ohdsi.webapi.shiny.ConflictPositConnectException;
 import org.ohdsi.webapi.shiny.TemporaryFile;
+import org.ohdsi.webapi.shiny.posit.dto.AddTagRequest;
 import org.ohdsi.webapi.shiny.posit.dto.BundleDeploymentResponse;
 import org.ohdsi.webapi.shiny.posit.dto.BundleRequest;
 import org.ohdsi.webapi.shiny.posit.dto.BundleResponse;
 import org.ohdsi.webapi.shiny.posit.dto.ContentItem;
 import org.ohdsi.webapi.shiny.posit.dto.ContentItemResponse;
+import org.ohdsi.webapi.shiny.posit.dto.TagMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanInitializationException;
@@ -69,7 +72,22 @@ public class PositConnectClient implements InitializingBean {
         String url = connect("/v1/content");
         Request.Builder request = new Request.Builder()
                 .url(url);
-        return doCall(new TypeReference<List<ContentItemResponse>>() {}, request, url);
+        return doCall(new TypeReference<List<ContentItemResponse>>() {
+        }, request, url);
+    }
+
+    public List<TagMetadata> listTags() {
+        String url = connect("/v1/tags");
+        Request.Builder request = new Request.Builder()
+                .url(url);
+        return doCall(new TypeReference<List<TagMetadata>>() {
+        }, request, url);
+    }
+
+    public void addTagToContent(UUID contentId, AddTagRequest addTagRequest) {
+        String url = connect(MessageFormat.format("/v1/content/{0}/tags", contentId));
+        RequestBody requestBody = RequestBody.create(toJson(addTagRequest), JSON_TYPE);
+        doPost(Void.class, url, requestBody);
     }
 
     public String uploadBundle(UUID contentId, TemporaryFile bundle) {
@@ -105,7 +123,7 @@ public class PositConnectClient implements InitializingBean {
 
     private <T> T doCall(TypeReference<T> responseClass, Request.Builder request, String url) {
         Call call = call(request, properties.getApiKey());
-        try(Response response = call.execute()) {
+        try (Response response = call.execute()) {
             if (!response.isSuccessful()) {
                 log.error("Request [{}] returned code: [{}], message: [{}]", url, response.code(), response.message());
                 String message = MessageFormat.format("Request [{0}] returned code: [{1}], message: [{2}]", url, response.code(), response.message());
@@ -113,6 +131,9 @@ public class PositConnectClient implements InitializingBean {
                     throw new ConflictPositConnectException(message);
                 }
                 throw new PositConnectClientException(message);
+            }
+            if (responseClass.getType() == Void.class) {
+                return null;
             }
             if (response.body() == null) {
                 log.error("Failed to create a content, an empty result returned [{}]", url);

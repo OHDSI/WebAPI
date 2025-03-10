@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.service;
 
 import com.odysseusinc.arachne.commons.api.v1.dto.CommonAnalysisType;
+import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.shiny.ApplicationBrief;
 import org.ohdsi.webapi.shiny.PackagingStrategies;
 import org.ohdsi.webapi.shiny.PackagingStrategy;
@@ -9,7 +10,10 @@ import org.ohdsi.webapi.shiny.ShinyPublishedEntity;
 import org.ohdsi.webapi.shiny.ShinyPublishedRepository;
 import org.ohdsi.webapi.shiny.TemporaryFile;
 import org.ohdsi.webapi.shiny.posit.PositConnectClient;
+import org.ohdsi.webapi.shiny.posit.TagMapper;
+import org.ohdsi.webapi.shiny.posit.dto.AddTagRequest;
 import org.ohdsi.webapi.shiny.posit.dto.ContentItemResponse;
+import org.ohdsi.webapi.shiny.posit.dto.TagMetadata;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.management.Security;
@@ -48,6 +52,8 @@ public class ShinyService {
     protected Security security;
     @Autowired
     protected UserRepository userRepository;
+    @Autowired
+    private TagMapper tagMapper;
 
     @Value("#{!'${security.provider}'.equals('DisabledSecurity')}")
     private boolean securityEnabled;
@@ -65,7 +71,28 @@ public class ShinyService {
                 .orElseGet(() -> findOrCreateItem(service.getBrief(id, sourceKey)));
         String bundleId = connectClient.uploadBundle(contentId, data);
         String taskId = connectClient.deployBundle(contentId, bundleId);
+        enrichPublicationWithAtlasTag(contentId, type);
+
         log.debug("Bundle [{}] is deployed to Shiny server, task id: [{}]", id, taskId);
+    }
+
+    private void enrichPublicationWithAtlasTag(UUID contentId, String type) {
+        try {
+            String expectedPositTagName = tagMapper.getPositTagNameForAnalysisType(CommonAnalysisType.valueOf(type.toUpperCase()));
+            List<TagMetadata> existingPositTags = connectClient.listTags();
+            log.info("Resolved [{}] tags from Posit server, enriching contentId [{}] of type [{}] and expected Posit tag name [{}]", existingPositTags.size(), contentId, type, expectedPositTagName);
+            TagMetadata tagMetadata = existingPositTags.stream()
+                    .filter(Objects::nonNull)
+                    .filter(metadata -> Objects.nonNull(metadata.getName()))
+                    .filter(metadata -> StringUtils.trim(metadata.getName()).equals(StringUtils.trim(expectedPositTagName)))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException(String.format("Could not find tag metadata on Posit server for expected tag name: %s and type: %s", expectedPositTagName, type)));
+
+            log.debug("Resolved tag metadata for Posit tag: {}, tag id: {}", tagMetadata.getName(), tagMetadata.getId());
+            connectClient.addTagToContent(contentId, new AddTagRequest(tagMetadata.getId()));
+        } catch (Exception e) {
+            log.error("Could not enrich the published contentId {} of type {} with an atlas tag", contentId, type, e);
+        }
     }
 
     private UUID findOrCreateItem(ApplicationBrief brief) {

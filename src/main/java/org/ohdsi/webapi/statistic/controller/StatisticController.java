@@ -10,6 +10,7 @@ import org.ohdsi.webapi.statistic.dto.SourceExecutionsDto;
 import org.ohdsi.webapi.statistic.service.StatisticService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 
@@ -60,6 +61,7 @@ public class StatisticController {
         add(new String[]{"Date", "Endpoint", "User ID"});
     }};
 
+    @Autowired
     public StatisticController(StatisticService service) {
         this.service = service;
     }

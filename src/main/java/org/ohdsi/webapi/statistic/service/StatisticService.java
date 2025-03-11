@@ -9,7 +9,6 @@ import org.ohdsi.webapi.statistic.dto.SourceExecutionsDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -32,7 +31,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
-@ConditionalOnProperty(value = "audit.trail.enabled", havingValue = "true")
 public class StatisticService {
     protected final Logger LOG = LoggerFactory.getLogger(getClass());
 

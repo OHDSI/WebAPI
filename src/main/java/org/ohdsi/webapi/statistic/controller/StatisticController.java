@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.NotFoundException;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -76,7 +76,7 @@ public class StatisticController {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response executionStatistics(ExecutionStatisticsRequest executionStatisticsRequest) {
     	if (!auditTrailEnabled) {
-    		throw new NotFoundException("Audit Trail functionality should be enabled (audit.trail.enabled) to serve this endpoint");
+    		throw new InternalServerErrorException("Audit Trail functionality should be enabled (audit.trail.enabled) to serve this endpoint");
     	}
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         boolean showUserInformation = executionStatisticsRequest.isShowUserInformation();
@@ -101,7 +101,7 @@ public class StatisticController {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response accessStatistics(AccessTrendsStatisticsRequest accessTrendsStatisticsRequest) {
     	if (!auditTrailEnabled) {
-    		throw new NotFoundException("Audit Trail functionality should be enabled (audit.trail.enabled) to serve this endpoint");
+    		throw new InternalServerErrorException("Audit Trail functionality should be enabled (audit.trail.enabled) to serve this endpoint");
     	}
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         boolean showUserInformation = accessTrendsStatisticsRequest.isShowUserInformation();

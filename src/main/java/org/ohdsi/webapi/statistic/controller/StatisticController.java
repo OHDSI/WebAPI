@@ -10,10 +10,11 @@ import org.ohdsi.webapi.statistic.dto.SourceExecutionsDto;
 import org.ohdsi.webapi.statistic.service.StatisticService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -30,12 +31,14 @@ import java.util.stream.Collectors;
 
 @Controller
 @Path("/statistic/")
-@ConditionalOnProperty(value = "audit.trail.enabled", havingValue = "true")
 public class StatisticController {
     
     private static final Logger log = LoggerFactory.getLogger(StatisticController.class);
     
     private StatisticService service;
+    
+    @Value("${audit.trail.enabled}")
+    private boolean auditTrailEnabled;
 
     public enum ResponseFormat {
         CSV, JSON
@@ -70,6 +73,9 @@ public class StatisticController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response executionStatistics(ExecutionStatisticsRequest executionStatisticsRequest) {
+    	if (!auditTrailEnabled) {
+    		throw new NotFoundException("Audit Trail functionality should be enabled (audit.trail.enabled) to serve this endpoint");
+    	}
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         boolean showUserInformation = executionStatisticsRequest.isShowUserInformation();
         
@@ -92,6 +98,9 @@ public class StatisticController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response accessStatistics(AccessTrendsStatisticsRequest accessTrendsStatisticsRequest) {
+    	if (!auditTrailEnabled) {
+    		throw new NotFoundException("Audit Trail functionality should be enabled (audit.trail.enabled) to serve this endpoint");
+    	}
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         boolean showUserInformation = accessTrendsStatisticsRequest.isShowUserInformation();
 

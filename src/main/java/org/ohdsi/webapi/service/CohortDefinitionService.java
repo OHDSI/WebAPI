@@ -957,7 +957,6 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Transactional
 	public void assignTag(@PathParam("id") final Integer id, final int tagId) {
 		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
-		checkOwnerOrAdminOrGranted(entity);
 		assignTag(entity, tagId);
 	}
 
@@ -974,7 +973,6 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Transactional
 	public void unassignTag(@PathParam("id") final Integer id, @PathParam("tagId") final int tagId) {
 		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
-		checkOwnerOrAdminOrGranted(entity);
 		unassignTag(entity, tagId);
 	}
 

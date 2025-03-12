@@ -534,19 +534,17 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 		return entity.getDesign();
 	}
 
-	@Override
-	public void assignTag(Integer id, int tagId) {
-		PathwayAnalysisEntity entity = getById(id);
-		checkOwnerOrAdminOrGranted(entity);
-		assignTag(entity, tagId);
-	}
+    @Override
+    public void assignTag(Integer id, int tagId) {
+        PathwayAnalysisEntity entity = getById(id);
+        assignTag(entity, tagId);
+    }
 
-	@Override
-	public void unassignTag(Integer id, int tagId) {
-		PathwayAnalysisEntity entity = getById(id);
-		checkOwnerOrAdminOrGranted(entity);
-		unassignTag(entity, tagId);
-	}
+    @Override
+    public void unassignTag(Integer id, int tagId) {
+        PathwayAnalysisEntity entity = getById(id);
+        unassignTag(entity, tagId);
+    }
 
 	@Override
 	public List<VersionDTO> getVersions(long id) {
@@ -657,7 +655,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 						new String[]{GENERATION_ID},
 						new Object[]{generationId}
 		);
-		Map<Integer, Map<String, Integer>> pathwayResults = 
+		Map<Integer, Map<String, Integer>> pathwayResults =
 						getSourceJdbcTemplate(source).query(pathwayResultsPsr.getSql(), pathwayResultsPsr.getOrderedParams(), pathwayExtractor);
 
 		cohortStats.stream().forEach((cp) -> {

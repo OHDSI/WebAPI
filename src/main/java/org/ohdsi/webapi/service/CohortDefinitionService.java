@@ -1126,7 +1126,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
         report.treemapData = treemapData;
 
         if (DEMOGRAPHIC_MODE == modeId) {
-            if (ccGenerateId != null && ccGenerateId != "null") {
+            if (ccGenerateId != null && (!ccGenerateId.equals("null"))) {
                 List<Report> listDemoDetail = getDemographicStatistics(whitelist(id), source, modeId,
                         Long.valueOf(ccGenerateId));
 

@@ -7,13 +7,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class TagMapper {
 
-    @Value("${shiny.tag.name.analysis.cohort}")
+    @Value("${shiny.tag.name.analysis.cohort:Atlas Cohort}")
     private String cohortAnalysisTagName;
-    @Value("${shiny.tag.name.analysis.cohort-characterizations}")
+    @Value("${shiny.tag.name.analysis.cohort-characterizations:Atlas Cohort Characterization}")
     private String cohortCharacterizationsAnalysisTagName;
-    @Value("${shiny.tag.name.analysis.cohort-pathways}")
+    @Value("${shiny.tag.name.analysis.cohort-pathways:Atlas Cohort Pathways}")
     private String cohortPathwaysAnalysisTagName;
-    @Value("${shiny.tag.name.analysis.incidence-rates}")
+    @Value("${shiny.tag.name.analysis.incidence-rates:Atlas Incidence Rate Analysis}")
     private String incidenceRatesAnalysisTagName;
 
     public String getPositTagNameForAnalysisType(CommonAnalysisType analysisType) {

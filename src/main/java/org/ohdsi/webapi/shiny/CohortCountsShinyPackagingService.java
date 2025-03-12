@@ -87,8 +87,8 @@ public class CohortCountsShinyPackagingService extends CommonShinyPackagingServi
 
         dataConsumers.getTextFiles().accept("cohort_summary_markdown.txt", cohortSummaryAsMarkdown);
 
-        InclusionRuleReport byEventReport = cohortDefinitionService.getInclusionRuleReport(generationId, sourceKey, 0); //by event
-        InclusionRuleReport byPersonReport = cohortDefinitionService.getInclusionRuleReport(generationId, sourceKey, 1); //by person
+        InclusionRuleReport byEventReport = cohortDefinitionService.getInclusionRuleReport(generationId, sourceKey, 0, null); //by event
+        InclusionRuleReport byPersonReport = cohortDefinitionService.getInclusionRuleReport(generationId, sourceKey, 1, null); //by person
 
         dataConsumers.getJsonObjects().accept(sourceKey + "_by_event.json", byEventReport);
         dataConsumers.getJsonObjects().accept(sourceKey + "_by_person.json", byPersonReport);

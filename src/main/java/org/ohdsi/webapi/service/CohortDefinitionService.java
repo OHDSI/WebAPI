@@ -1126,7 +1126,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
         report.treemapData = treemapData;
 
         if (DEMOGRAPHIC_MODE == modeId) {
-            if (ccGenerateId != null && ccGenerateId != "null") {
+            if (ccGenerateId != null && (!ccGenerateId.equals("null"))) {
                 List<Report> listDemoDetail = getDemographicStatistics(whitelist(id), source, modeId,
                         Long.valueOf(ccGenerateId));
 
@@ -1207,7 +1207,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Path("/printfriendly/cohort")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response cohortPrintFriendly(CohortExpression expression, @DefaultValue("html") @QueryParam("format") String format) {
-		String markdown = markdownPF.renderCohort(expression);
+		String markdown = convertCohortExpressionToMarkdown(expression);
 		return printFrindly(markdown, format);
 	}
 
@@ -1233,16 +1233,23 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 		return printFrindly(markdown, format);
 	}
 
+    public String convertCohortExpressionToMarkdown(CohortExpression expression){
+        return markdownPF.renderCohort(expression);
+    }
+
+    public String convertMarkdownToHTML(String markdown){
+        Parser parser = Parser.builder().extensions(extensions).build();
+        Node document = parser.parse(markdown);
+        HtmlRenderer renderer = HtmlRenderer.builder().extensions(extensions).build();
+        return renderer.render(document);
+    }
+
 	private Response printFrindly(String markdown, String format) {
 
 		ResponseBuilder res;
 		if ("html".equalsIgnoreCase(format)) {
-			Parser parser = Parser.builder().extensions(extensions).build();
-			Node document = parser.parse(markdown);
-			HtmlRenderer renderer = HtmlRenderer.builder().extensions(extensions).build();
-			String html = renderer.render(document);
+			String html = convertMarkdownToHTML(markdown);
 			res = Response.ok(html, MediaType.TEXT_HTML);
-
 		} else if ("markdown".equals(format)) {
 			res = Response.ok(markdown, MediaType.TEXT_PLAIN);
 		} else {

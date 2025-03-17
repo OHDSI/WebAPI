@@ -116,7 +116,26 @@
     "incidenceRate": "Инцидентность",
     "ple": "Оценочный анализ",
     "plp": "Прогнозирование",
-    "reusable": "Сниппет"
+    "reusable": "Сниппет",
+    "addTools": "Добавить инструмент",
+    "url": "URL-адрес",
+    "apply": "Применять",
+    "tools": "Инструменты"
+  },
+  "tool":{
+    "name": "* Имя",
+    "url": "* URL",
+    "nameValidMess": "Имя инструмента не может быть пустым.",
+    "urlValidMess": "URL инструмента не может быть пустым.",
+    "loading": "Загрузка инструментов",
+    "error": {
+      "list": "Невозможно получить список данных в данный момент; попробуйте снова позже.",
+      "create": "Не удалось создать инструмент.",
+      "update": "Не удалось обновить инструмент.",
+      "delete": "Не удалось удалить инструмент."
+    },
+    "toolDisabled": "Инструмент отключен",
+    "toolEnabled": "Инструмент включен"
   },
   "commonErrors": {
     "browserWarning": "Пожалуйста, обратите внимание, что официально поддерживается только браузер Chrome версии не ниже v.63",
@@ -139,7 +158,8 @@
     "jobs": "Задания",
     "configuration": "Конфигурация",
     "feedback": "Обратная связь",
-    "tagging": "Теггинг"
+    "tagging": "Теггинг",
+    "tools": "Инструменты"
   },
   "options": {
     "atMost": "В большинстве",
@@ -239,12 +259,8 @@
       "stopGenerationConfirmation": "Действительно остановить исследование?"
     },
     "authorship": {
-      "created": "создано:",
-      "versionCreated": "версия создана: ",
-      "modified": "изменено:",
-      "on": " ",
-      "byCreated": "<%=createdBy%>",
-      "byModified": "<%=modifiedBy%>"
+      "createdLabel": "создано: <%=createdBy%> <%=createdDate%>",
+      "modifiedLabel": "изменено: <%=modifiedBy%> <%=modifiedDate%>"
     },
     "windowedCriteria": {
       "windowedCriteriaText_1": "где",
@@ -1342,6 +1358,7 @@
     "binary": "Двоичный",
     "model": "Модель",
     "options": "Опции",
+    "originConceptSets": "Исходные наборы концепций",
     "firstExposureOnly": "Только первое знакомство",
     "washoutPeriod": "Период вымывания",
     "includeAllOutcomes": "Включить все результаты",
@@ -1525,7 +1542,11 @@
     "pcTooltip": "Количество пациентов",
     "dpcTooltip": "Количество пациентов-потомков",
     "validStartDate": "Действительная дата начала",
-    "validEndDate": "Действительная дата конца"
+    "validEndDate": "Действительная дата конца",
+    "conceptID": "Идентификатор концепции",
+    "searchData": "Данные поиска",
+    "createdBy": "Автор",
+    "createdDate": "Дата создания"
   },
   "dataSources": {
     "headingTitle": "Источники данных",
@@ -2513,7 +2534,8 @@
           "hive": "Hive LLAP",
           "synapse": "Azure Synapse",
           "snowflake": "Snowflake",
-          "spark": "Apache Spark"
+          "spark": "Apache Spark",
+          "iris": "InterSystems IRIS"
         }
       },
       "connectionString": {

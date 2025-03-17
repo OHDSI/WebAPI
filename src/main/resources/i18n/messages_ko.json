@@ -116,7 +116,26 @@
     "incidenceRate": "Incidence Rate",
     "ple": "Population Level Effect Estimation",
     "plp": "Patient Level Prediction",
-    "reusable": "Reusable"
+    "reusable": "Reusable",
+    "addTools": "도구 추가",
+    "url": "URL",
+    "apply": "적용하다",
+    "tools": "도구"
+  },
+  "tool":{
+    "name": "* 이름",
+    "url": "* URL",
+    "nameValidMess": "도구 이름은 비워둘 수 없습니다.",
+    "urlValidMess": "도구 URL은 비워둘 수 없습니다.",
+    "loading": "도구 로딩",
+    "error": {
+      "list": "현재 목록 데이터를 가져올 수 없습니다. 나중에 다시 시도해주세요.",
+      "create": "도구를 만들지 못했습니다.",
+      "update": "도구 업데이트에 실패했습니다.",
+      "delete": "도구 삭제에 실패했습니다."
+    },
+    "toolDisabled": "도구 비활성화됨",
+    "toolEnabled": "도구 활성화됨"
   },
   "commonErrors": {
     "noSources": "현재 WebAPI에 정의된 소스가 없습니다. <br/> 해당 페이지에서 하나 이상을 추가하십시오 <a href=\"#/configure\">configuration</a> page.",
@@ -139,7 +158,8 @@
     "prediction": "예측",
     "profiles": "프로필",
     "search": "검색",
-    "tagging": "Tagging"
+    "tagging": "Tagging",
+    "tools": "도구"
   },
   "options": {
     "after": "다음",
@@ -213,12 +233,8 @@
   },
   "components": {
     "authorship": {
-      "created": "만들어진",
-      "versionCreated": "version created",
-      "modified": "수정된",
-      "on": "~에",
-      "byCreated": "by <%=createdBy%>",
-      "byModified": "by <%=modifiedBy%>"
+      "createdLabel": "<%=createdBy%>가 <%=createdDate%> 경에 생성",
+      "modifiedLabel": "<%=modifiedBy%>가 <%=modifiedDate%> 경에 수정"
     },
     "accessDenied": {
       "forbidden": {
@@ -1412,6 +1428,7 @@
     "notPrevalent": "만연하지 않음(Not Prevalent)",
     "optimizedOut": "최적화",
     "options": "옵션",
+    "originConceptSets": "오리진 컨셉트 세트",
     "outcomeCohortName": "아웃컴(outcome) 코호트 이름",
     "outcomeId": "아웃컴(outcome) ID",
     "outcomeModel": "결과 모델",
@@ -1525,7 +1542,11 @@
     "rcTooltip": "Record Count",
     "drcTooltip": "Descendant Record Count",
     "pcTooltip": "Person Count",
-    "dpcTooltip": "Descendant Person Count"
+    "dpcTooltip": "Descendant Person Count",
+    "conceptID": "개념 ID",
+    "searchData": "데이터 검색",
+    "createdBy": "만든 사람",
+    "createdDate": "생성 날짜"
   },
   "dataSources": {
     "const": {
@@ -2599,7 +2620,8 @@
           "sqlserver": "SQL server",
           "synapse": "Azure Synapse",
           "snowflake": "Snowflake",
-          "spark": "Apache Spark"
+          "spark": "Apache Spark",
+          "iris": "InterSystems IRIS"
         },
         "title": "소스 dialect"
       },

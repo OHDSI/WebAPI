@@ -62,6 +62,9 @@ public class PermissionService {
     @Value("#{!'${security.provider}'.equals('DisabledSecurity')}")
     private boolean securityEnabled;
 
+	@Value("${security.defaultGlobalReadPermissions}")
+	private boolean defaultGlobalReadPermissions;
+
     private final EntityGraph PERMISSION_ENTITY_GRAPH = EntityGraphUtils.fromAttributePaths("rolePermissions", "rolePermissions.role");
 
     public PermissionService(
@@ -227,4 +230,17 @@ public class PermissionService {
     public boolean isSecurityEnabled() {
       return this.securityEnabled;
     }
+
+		// Use this key for cache (asset lists) that may be associated to a user or shared across users.
+		public String getAssetListCacheKey() {
+			if (this.isSecurityEnabled() && !defaultGlobalReadPermissions) 
+				return permissionManager.getSubjectName();
+			else
+				return "ALL_USERS";
+		}
+		
+		// use this cache key when the cache is associated to a user
+		public String getSubjectCacheKey() {
+			return this.isSecurityEnabled() ? permissionManager.getSubjectName() : "ALL_USERS";
+		}
 }

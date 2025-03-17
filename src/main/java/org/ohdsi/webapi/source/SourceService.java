@@ -17,12 +17,33 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.stream.Collectors;
+import javax.cache.CacheManager;
+import javax.cache.configuration.MutableConfiguration;
+import org.ohdsi.webapi.util.CacheHelper;
+import org.springframework.boot.autoconfigure.cache.JCacheManagerCustomizer;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Component;
 
 @Service
 public class SourceService extends AbstractDaoService {
 
-    private static Collection<Source> cachedSources = null;
+	@Component
+	public static class CachingSetup implements JCacheManagerCustomizer {
 
+		public static final String SOURCE_LIST_CACHE = "sourceList";
+
+		@Override
+		public void customize(CacheManager cacheManager) {
+			// Evict when a cohort definition is created or updated, or permissions, or tags
+			if (!CacheHelper.getCacheNames(cacheManager).contains(SOURCE_LIST_CACHE)) {
+				cacheManager.createCache(SOURCE_LIST_CACHE, new MutableConfiguration<Object, List<Source>>()
+					.setTypes(Object.class, (Class<List<Source>>) (Class<?>) List.class)
+					.setStoreByValue(false)
+					.setStatisticsEnabled(true));
+			}
+		}
+	}
     @Value("${jasypt.encryptor.enabled}")
     private boolean encryptorEnabled;
 
@@ -77,15 +98,13 @@ public class SourceService extends AbstractDaoService {
         }
     }
 
-    public Collection<Source> getSources() {
+	@Cacheable(cacheNames = CachingSetup.SOURCE_LIST_CACHE)
+	public Collection<Source> getSources() {
 
-        if (cachedSources == null) {
-            List<Source> sources = sourceRepository.findAll();
-            Collections.sort(sources, new SortByKey());
-            cachedSources = sources;
-        }
-        return cachedSources;
-    }
+		List<Source> sources = sourceRepository.findAll();
+		Collections.sort(sources, new SortByKey());
+		return sources;
+	}
 
     public Source findBySourceKey(final String sourceKey) {
 
@@ -160,10 +179,9 @@ public class SourceService extends AbstractDaoService {
         return new SourceInfo(source);
     }
 
-    public void invalidateCache() {
-
-        this.cachedSources = null;
-    }
+	@CacheEvict(cacheNames = CachingSetup.SOURCE_LIST_CACHE, allEntries = true)
+	public void invalidateCache() {
+	}
 
     private boolean checkConnectionSafe(Source source) {
 

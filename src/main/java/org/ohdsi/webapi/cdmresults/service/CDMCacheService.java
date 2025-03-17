@@ -10,15 +10,18 @@ import org.ohdsi.webapi.cdmresults.mapper.DescendantRecordAndPersonCountMapper;
 import org.ohdsi.webapi.cdmresults.mapper.DescendantRecordCountMapper;
 import org.ohdsi.webapi.cdmresults.repository.CDMCacheRepository;
 import org.ohdsi.webapi.service.AbstractDaoService;
+import org.ohdsi.webapi.shiro.management.datasource.SourceAccessor;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.util.PreparedSqlRender;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
@@ -50,6 +53,9 @@ public class CDMCacheService extends AbstractDaoService {
   private final CDMCacheRepository cdmCacheRepository;
 
   private final ConversionService conversionService;
+
+  @Autowired
+  private SourceAccessor sourceAccessor;
 
   public CDMCacheService(CDMCacheBatchService cdmCacheBatchService,
           ConversionService conversionService,
@@ -93,6 +99,19 @@ public class CDMCacheService extends AbstractDaoService {
     }
 
     return cacheEntities;
+  }
+
+  @Transactional()
+  public void clearCache() {
+    List<Source> sources = getSourceRepository().findAll();
+    sources.stream().forEach(this::clearCache);
+  }
+
+  @Transactional()
+  public void clearCache(Source source) {
+    if (sourceAccessor.hasAccess(source)) {
+      cdmCacheRepository.deleteBySource(source.getSourceId());
+    }
   }
 
   private List<CDMCacheEntity> find(Source source, List<Integer> conceptIds) {
@@ -145,9 +164,9 @@ public class CDMCacheService extends AbstractDaoService {
       PreparedStatementRenderer psr = getPartialPreparedStatementRenderer(source, idsSlice);
       Set<Integer> cachedIds = loadCache(source, psr, mapper, jdbcTemplate);
       // in this batch, need to save any concepts that were not found when loading cache
-      idsSlice.removeAll(cachedIds);
-      if (!idsSlice.isEmpty()) { // store zeros in cache
-        List<CDMCacheEntity> zeroConcepts = idsSlice.stream().map(id -> {
+      List<Integer> notFoundIds = new ArrayList<Integer>(CollectionUtils.subtract(idsSlice, cachedIds));
+      if (!notFoundIds.isEmpty()) { // store zeros in cache
+        List<CDMCacheEntity> zeroConcepts = notFoundIds.stream().map(id -> {
           CDMCacheEntity ce = new CDMCacheEntity();
           ce.setConceptId(id);
           ce.setRecordCount(0L);

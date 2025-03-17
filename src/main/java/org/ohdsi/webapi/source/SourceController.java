@@ -28,8 +28,8 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import org.springframework.cache.annotation.CacheEvict;
 
 @Path("/source/")
 @Component
@@ -157,6 +157,7 @@ public class SourceController extends AbstractDaoService {
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
+	@CacheEvict(cacheNames = SourceService.CachingSetup.SOURCE_LIST_CACHE, allEntries = true)
   public SourceInfo createSource(@FormDataParam("keyfile") InputStream file, @FormDataParam("keyfile") FormDataContentDisposition fileDetail, @FormDataParam("source") SourceRequest request) throws Exception {
     if (!securityEnabled) {
       throw new NotAuthorizedException(SECURE_MODE_ERROR);
@@ -219,6 +220,7 @@ public class SourceController extends AbstractDaoService {
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)
   @Transactional
+	@CacheEvict(cacheNames = SourceService.CachingSetup.SOURCE_LIST_CACHE, allEntries = true)
   public SourceInfo updateSource(@PathParam("sourceId") Integer sourceId, @FormDataParam("keyfile") InputStream file, @FormDataParam("keyfile") FormDataContentDisposition fileDetail, @FormDataParam("source") SourceRequest request) throws IOException {
     if (!securityEnabled) {
       throw new NotAuthorizedException(SECURE_MODE_ERROR);
@@ -318,6 +320,7 @@ public class SourceController extends AbstractDaoService {
 	@Path("{sourceId}")
   @DELETE
   @Transactional
+	@CacheEvict(cacheNames = SourceService.CachingSetup.SOURCE_LIST_CACHE, allEntries = true)
   public Response delete(@PathParam("sourceId") Integer sourceId) throws Exception {
     if (!securityEnabled){
         return getInsecureModeResponse();
@@ -384,6 +387,7 @@ public class SourceController extends AbstractDaoService {
 	@Path("{sourceKey}/daimons/{daimonType}/set-priority")
   @POST
   @Produces(MediaType.APPLICATION_JSON)
+	@CacheEvict(cacheNames = SourceService.CachingSetup.SOURCE_LIST_CACHE, allEntries = true)
   public Response updateSourcePriority(
           @PathParam("sourceKey") final String sourceKey,
           @PathParam("daimonType") final String daimonTypeName

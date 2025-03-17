@@ -25,17 +25,28 @@ import org.commonmark.node.*;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.ohdsi.analysis.Utils;
+import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.circe.check.Checker;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.circe.cohortdefinition.printfriendly.MarkdownRender;
+import org.ohdsi.circe.helper.ResourceHelper;
+import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.sql.SqlRender;
+import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.check.CheckResult;
 import org.ohdsi.webapi.check.checker.cohort.CohortChecker;
 import org.ohdsi.webapi.check.warning.Warning;
 import org.ohdsi.webapi.check.warning.WarningUtils;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcDistributionStat;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
+import org.ohdsi.webapi.cohortcharacterization.dto.ExecutionResultRequest;
+import org.ohdsi.webapi.cohortcharacterization.report.AnalysisItem;
+import org.ohdsi.webapi.cohortcharacterization.report.AnalysisResultItem;
+import org.ohdsi.webapi.cohortcharacterization.report.Report;
 import org.ohdsi.webapi.cohortdefinition.CleanupCohortTasklet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
@@ -55,6 +66,8 @@ import org.ohdsi.webapi.common.SourceMapKey;
 import org.ohdsi.webapi.common.generation.GenerateSqlResult;
 import org.ohdsi.webapi.common.sensitiveinfo.CohortGenerationSensitiveInfoService;
 import org.ohdsi.webapi.conceptset.ConceptSetExport;
+import org.ohdsi.webapi.feanalysis.domain.FeAnalysisEntity;
+import org.ohdsi.webapi.feanalysis.repository.FeAnalysisEntityRepository;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.security.PermissionService;
@@ -67,10 +80,6 @@ import org.ohdsi.webapi.source.SourceInfo;
 import org.ohdsi.webapi.tag.domain.HasTags;
 import org.ohdsi.webapi.tag.dto.TagNameListRequestDTO;
 import org.ohdsi.webapi.util.*;
-import org.ohdsi.webapi.util.ExceptionUtils;
-import org.ohdsi.webapi.util.NameUtils;
-import org.ohdsi.webapi.util.PreparedStatementRenderer;
-import org.ohdsi.webapi.util.SessionUtils;
 import org.ohdsi.webapi.versioning.domain.CohortVersion;
 import org.ohdsi.webapi.versioning.domain.Version;
 import org.ohdsi.webapi.versioning.domain.VersionBase;
@@ -124,20 +133,32 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.cache.CacheManager;
+import javax.cache.configuration.MutableConfiguration;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
+import static org.ohdsi.analysis.cohortcharacterization.design.CcResultType.DISTRIBUTION;
+import static org.ohdsi.analysis.cohortcharacterization.design.CcResultType.PREVALENCE;
 import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
 import org.ohdsi.webapi.source.SourceService;
+import org.ohdsi.webapi.sqlrender.SourceAwareSqlRender;
+
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
+import org.springframework.boot.autoconfigure.cache.JCacheManagerCustomizer;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 
 /**
  * Provides REST services for working with cohort definitions.
@@ -149,7 +170,55 @@ import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 @Component
 public class CohortDefinitionService extends AbstractDaoService implements HasTags<Integer> {
 
+	//create cache
+	@Component
+	public static class CachingSetup implements JCacheManagerCustomizer {
+
+		public static final String COHORT_DEFINITION_LIST_CACHE = "cohortDefinitionList";
+
+		@Override
+		public void customize(CacheManager cacheManager) {
+			// Evict when a cohort definition is created or updated, or permissions, or tags
+			if (!CacheHelper.getCacheNames(cacheManager).contains(COHORT_DEFINITION_LIST_CACHE)) {
+				cacheManager.createCache(COHORT_DEFINITION_LIST_CACHE, new MutableConfiguration<String, List<CohortMetadataDTO>>()
+					.setTypes(String.class, (Class<List<CohortMetadataDTO>>) (Class<?>) List.class)
+					.setStoreByValue(false)
+					.setStatisticsEnabled(true));
+			}
+		}
+	}
+	
 	private static final CohortExpressionQueryBuilder queryBuilder = new CohortExpressionQueryBuilder();
+    private static final int DEMOGRAPHIC_MODE = 2;
+    private static final String DEMOGRAPHIC_DOMAIN = "DEMOGRAPHICS";
+    private static final String[] PARAMETERS_RESULTS_FILTERED = { "cohort_characterization_generation_id",
+                    "threshold_level", "analysis_ids", "cohort_ids", "vocabulary_schema" };
+    private final List<String[]> executionPrevalenceHeaderLines = new ArrayList<String[]>() {
+        {
+            add(new String[] { "Analysis ID", "Analysis name", "Strata ID", "Strata name", "Cohort ID", "Cohort name",
+                            "Covariate ID", "Covariate name", "Covariate short name", "Count", "Percent" });
+        }
+    };
+    private final List<String[]> executionDistributionHeaderLines = new ArrayList<String[]>() {
+        {
+            add(new String[] { "Analysis ID", "Analysis name", "Strata ID", "Strata name", "Cohort ID", "Cohort name",
+                            "Covariate ID", "Covariate name", "Covariate short name", "Value field",
+                            "Missing Means Zero", "Count", "Avg", "StdDev", "Min", "P10", "P25", "Median", "P75", "P90",
+                            "Max" });
+        }
+    };
+    private final List<String[]> executionComparativeHeaderLines = new ArrayList<String[]>() {
+        {
+            add(new String[] { "Analysis ID", "Analysis name", "Strata ID", "Strata name", "Target cohort ID",
+                            "Target cohort name", "Comparator cohort ID", "Comparator cohort name", "Covariate ID",
+                            "Covariate name", "Covariate short name", "Target count", "Target percent",
+                            "Comparator count", "Comparator percent", "Std. Diff Of Mean" });
+        }
+    };
+    private Map<String, FeatureExtraction.PrespecAnalysis> prespecAnalysisMap = FeatureExtraction
+            .getNameToPrespecAnalysis();
+    private final String QUERY_RESULTS = ResourceHelper
+            .GetResourceAsString("/resources/cohortcharacterizations/sql/queryResults.sql");
 
 	@Autowired
 	private CohortDefinitionRepository cohortDefinitionRepository;
@@ -205,7 +274,13 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Autowired
 	private VersionService<CohortVersion> versionService;
 
-        @Value("${security.defaultGlobalReadPermissions}")
+  @Autowired
+  private FeAnalysisEntityRepository feAnalysisRepository;
+
+  @Autowired
+  private SourceAwareSqlRender sourceAwareSqlRender;
+
+  @Value("${security.defaultGlobalReadPermissions}")
 	private boolean defaultGlobalReadPermissions;
 
 	private final MarkdownRender markdownPF = new MarkdownRender();
@@ -292,6 +367,220 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 		PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sql, tqName, tqValue, varNames, varValues, SessionUtils.sessionId());
 		return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), inclusionRuleStatisticMapper);
 	}
+
+    private List<Report> getDemographicStatistics(int id, Source source,
+            int modeId, long ccGenerateId) {
+        ExecutionResultRequest params = new ExecutionResultRequest();
+
+        // Get FE Analysis Demographic (Gender, Age, Race,)
+        Set<FeAnalysisEntity> featureAnalyses = feAnalysisRepository.findByListIds(Arrays.asList(70, 72, 74, 77));
+
+        params.setCohortIds(Arrays.asList(id));
+        params.setAnalysisIds(featureAnalyses.stream().map(this::mapFeatureAnalysisId).collect(Collectors.toList()));
+        params.setDomainIds(Arrays.asList(DEMOGRAPHIC_DOMAIN));
+
+        List<CcResult> ccResults = findResults(ccGenerateId, params, source);
+        Map<Integer, AnalysisItem> analysisMap = new HashMap<>();
+        ccResults.stream().peek(cc -> {
+            if (StandardFeatureAnalysisType.PRESET.toString().equals(cc.getFaType())) {
+                featureAnalyses.stream().filter(fa -> Objects.equals(fa.getDesign(), cc.getAnalysisName())).findFirst()
+                        .ifPresent(v -> cc.setAnalysisId(v.getId()));
+            }
+        }).forEach(ccResult -> {
+            if (ccResult instanceof CcPrevalenceStat) {
+                analysisMap.putIfAbsent(ccResult.getAnalysisId(), new AnalysisItem());
+                AnalysisItem analysisItem = analysisMap.get(ccResult.getAnalysisId());
+                analysisItem.setType(ccResult.getResultType());
+                analysisItem.setName(ccResult.getAnalysisName());
+                analysisItem.setFaType(ccResult.getFaType());
+                List<CcResult> results = analysisItem.getOrCreateCovariateItem(
+                        ((CcPrevalenceStat) ccResult).getCovariateId(), ccResult.getStrataId());
+                results.add(ccResult);
+            }
+        });
+
+        CohortDefinition cohortDefinition = cohortDefinitionRepository.findOne(id);
+        List<Report> reports = prepareReportData(analysisMap,
+                new HashSet<CohortDefinition>(Arrays.asList(cohortDefinition)), featureAnalyses);
+
+        return reports;
+    }
+
+    private List<Report> prepareReportData(Map<Integer, AnalysisItem> analysisMap, Set<CohortDefinition> cohortDefs,
+            Set<FeAnalysisEntity> featureAnalyses) {
+        // Create map to get cohort name by its id
+        final Map<Integer, CohortDefinition> definitionMap = cohortDefs.stream()
+                .collect(Collectors.toMap(CohortDefinition::getId, Function.identity()));
+        // Create map to get feature analyses by its name
+        final Map<String, String> feAnalysisMap = featureAnalyses.stream()
+                .collect(Collectors.toMap(this::mapFeatureName, entity -> entity.getDomain().toString()));
+
+        List<Report> reports = new ArrayList<>();
+        try {
+            // list to accumulate results from simple reports
+            List<AnalysisResultItem> simpleResultSummary = new ArrayList<>();
+            // list to accumulate results from comparative reports
+            List<AnalysisResultItem> comparativeResultSummary = new ArrayList<>();
+            // do not create summary reports when only one analyses is present
+            boolean ignoreSummary = analysisMap.keySet().size() == 1;
+            for (Integer analysisId : analysisMap.keySet()) {
+                analysisMap.putIfAbsent(analysisId, new AnalysisItem());
+                AnalysisItem analysisItem = analysisMap.get(analysisId);
+                AnalysisResultItem resultItem = analysisItem.getSimpleItems(definitionMap, feAnalysisMap);
+                Report simpleReport = new Report(analysisItem.getName(), analysisId, resultItem);
+                simpleReport.faType = analysisItem.getFaType();
+                simpleReport.domainId = feAnalysisMap.get(analysisItem.getName());
+
+                if (PREVALENCE.equals(analysisItem.getType())) {
+                    simpleReport.header = executionPrevalenceHeaderLines;
+                    simpleReport.resultType = PREVALENCE;
+                    // Summary comparative reports are only available for
+                    // prevalence type
+                    simpleResultSummary.add(resultItem);
+                } else if (DISTRIBUTION.equals(analysisItem.getType())) {
+                    simpleReport.header = executionDistributionHeaderLines;
+                    simpleReport.resultType = DISTRIBUTION;
+                }
+                reports.add(simpleReport);
+
+                // comparative mode
+                if (definitionMap.size() == 2) {
+                    Iterator<CohortDefinition> iter = definitionMap.values().iterator();
+                    CohortDefinition firstCohortDef = iter.next();
+                    CohortDefinition secondCohortDef = iter.next();
+                    AnalysisResultItem comparativeResultItem = analysisItem.getComparativeItems(firstCohortDef,
+                            secondCohortDef, feAnalysisMap);
+                    Report comparativeReport = new Report(analysisItem.getName(), analysisId, comparativeResultItem);
+                    comparativeReport.header = executionComparativeHeaderLines;
+                    comparativeReport.isComparative = true;
+                    comparativeReport.faType = analysisItem.getFaType();
+                    comparativeReport.domainId = feAnalysisMap.get(analysisItem.getName());
+                    if (PREVALENCE.equals(analysisItem.getType())) {
+                        comparativeReport.resultType = PREVALENCE;
+                        // Summary comparative reports are only available for
+                        // prevalence type
+                        comparativeResultSummary.add(comparativeResultItem);
+                    } else if (DISTRIBUTION.equals(analysisItem.getType())) {
+                        comparativeReport.resultType = DISTRIBUTION;
+                    }
+                    reports.add(comparativeReport);
+                }
+            }
+            if (!ignoreSummary) {
+                // summary comparative reports are only available for prevalence
+                // type
+                if (!simpleResultSummary.isEmpty()) {
+                    Report simpleSummaryData = new Report("All prevalence covariates", simpleResultSummary);
+                    simpleSummaryData.header = executionPrevalenceHeaderLines;
+                    simpleSummaryData.isSummary = true;
+                    simpleSummaryData.resultType = PREVALENCE;
+                    reports.add(simpleSummaryData);
+                }
+                // comparative mode
+                if (!comparativeResultSummary.isEmpty()) {
+                    Report comparativeSummaryData = new Report("All prevalence covariates", comparativeResultSummary);
+                    comparativeSummaryData.header = executionComparativeHeaderLines;
+                    comparativeSummaryData.isSummary = true;
+                    comparativeSummaryData.isComparative = true;
+                    comparativeSummaryData.resultType = PREVALENCE;
+                    reports.add(comparativeSummaryData);
+                }
+            }
+
+            return reports;
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private String mapFeatureName(FeAnalysisEntity entity) {
+
+        if (StandardFeatureAnalysisType.PRESET == entity.getType()) {
+            return entity.getDesign().toString();
+        }
+        return entity.getName();
+    }
+
+    private List<CcResult> findResults(final Long generationId, ExecutionResultRequest params, Source source) {
+        return executeFindResults(generationId, params, QUERY_RESULTS, getGenerationResults(source), source);
+    }
+
+    private <T> List<T> executeFindResults(final Long generationId, ExecutionResultRequest params, String query,
+            RowMapper<T> rowMapper, Source source) {
+        String analysis = params.getAnalysisIds().stream().map(String::valueOf).collect(Collectors.joining(","));
+        String cohorts = params.getCohortIds().stream().map(String::valueOf).collect(Collectors.joining(","));
+        String generationResults = sourceAwareSqlRender.renderSql(source.getSourceId(), query,
+                PARAMETERS_RESULTS_FILTERED,
+                new String[] { String.valueOf(generationId), String.valueOf(params.getThresholdValuePct()), analysis,
+                                cohorts, SourceUtils.getVocabularyQualifier(source) });
+        final String tempSchema = SourceUtils.getTempQualifier(source);
+        String translatedSql = SqlTranslate.translateSql(generationResults, source.getSourceDialect(),
+                SessionUtils.sessionId(), tempSchema);
+        return this.getSourceJdbcTemplate(source).query(translatedSql, rowMapper);
+    }
+
+    private RowMapper<CcResult> getGenerationResults(Source source) {
+        return (rs, rowNum) -> {
+            final String type = rs.getString("type");
+            if (StringUtils.equals(type, DISTRIBUTION.toString())) {
+                final CcDistributionStat distributionStat = new CcDistributionStat();
+                gatherForPrevalence(distributionStat, rs, source);
+                gatherForDistribution(distributionStat, rs);
+                return distributionStat;
+            } else if (StringUtils.equals(type, PREVALENCE.toString())) {
+                final CcPrevalenceStat prevalenceStat = new CcPrevalenceStat();
+                gatherForPrevalence(prevalenceStat, rs, source);
+                return prevalenceStat;
+            }
+            return null;
+        };
+    }
+
+    private void gatherForPrevalence(final CcPrevalenceStat stat, final ResultSet rs, Source source)
+            throws SQLException {
+        stat.setFaType(rs.getString("fa_type"));
+        stat.setSourceKey(source.getSourceKey());
+        stat.setCohortId(rs.getInt("cohort_definition_id"));
+        stat.setAnalysisId(rs.getInt("analysis_id"));
+        stat.setAnalysisName(rs.getString("analysis_name"));
+        stat.setResultType(PREVALENCE);
+        stat.setCovariateId(rs.getLong("covariate_id"));
+        stat.setCovariateName(rs.getString("covariate_name"));
+        stat.setConceptName(rs.getString("concept_name"));
+        stat.setConceptId(rs.getLong("concept_id"));
+        stat.setAvg(rs.getDouble("avg_value"));
+        stat.setCount(rs.getLong("count_value"));
+        stat.setStrataId(rs.getLong("strata_id"));
+        stat.setStrataName(rs.getString("strata_name"));
+    }
+
+    private void gatherForDistribution(final CcDistributionStat stat, final ResultSet rs) throws SQLException {
+        stat.setResultType(DISTRIBUTION);
+        stat.setAvg(rs.getDouble("avg_value"));
+        stat.setStdDev(rs.getDouble("stdev_value"));
+        stat.setMin(rs.getDouble("min_value"));
+        stat.setP10(rs.getDouble("p10_value"));
+        stat.setP25(rs.getDouble("p25_value"));
+        stat.setMedian(rs.getDouble("median_value"));
+        stat.setP75(rs.getDouble("p75_value"));
+        stat.setP90(rs.getDouble("p90_value"));
+        stat.setMax(rs.getDouble("max_value"));
+        stat.setAggregateId(rs.getInt("aggregate_id"));
+        stat.setAggregateName(rs.getString("aggregate_name"));
+        stat.setMissingMeansZero(rs.getInt("missing_means_zero") == 1);
+    }
+
+    private Integer mapFeatureAnalysisId(FeAnalysisEntity feAnalysis) {
+
+        if (feAnalysis.isPreset()) {
+            return prespecAnalysisMap.values().stream()
+                    .filter(p -> Objects.equals(p.analysisName, feAnalysis.getDesign())).findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            String.format("Preset analysis with id=%s does not exist", feAnalysis.getId()))).analysisId;
+        } else {
+            return feAnalysis.getId();
+        }
+    }
 
 	private int countSetBits(long n) {
 		int count = 0;
@@ -408,6 +697,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Transactional
+	@Cacheable(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, key = "@permissionService.getSubjectCacheKey()")
 	public List<CohortMetadataDTO> getCohortDefinitionList() {
 		List<CohortDefinition> definitions = cohortDefinitionRepository.list();
 		return definitions.stream()
@@ -436,6 +726,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Transactional
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
+	@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true)
 	public CohortDTO createCohortDefinition(CohortDTO dto) {
 
 		Date currentTime = Calendar.getInstance().getTime();
@@ -538,6 +829,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Transactional
+	@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true)
 	public CohortDTO saveCohortDefinition(@PathParam("id") final int id, CohortDTO def) {
 		Date currentTime = Calendar.getInstance().getTime();
 
@@ -570,13 +862,13 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/generate/{sourceKey}")
 	@Transactional
-	public JobExecutionResource generateCohort(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
-
+    public JobExecutionResource generateCohort(@PathParam("id") final int id,
+            @PathParam("sourceKey") final String sourceKey,
+            @QueryParam("demographic") Boolean demographicStat) {
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOne(id);
 		UserEntity user = userRepository.findByLogin(security.getSubject());
-		return cohortGenerationService.generateCohortViaJob(user, currentDefinition, source);
-	}
+        return cohortGenerationService.generateCohortViaJob(user, currentDefinition, source, demographicStat);	}
 
 	/**
 	 * Cancel a cohort generation task
@@ -670,6 +962,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/copy")
 	@Transactional
+	@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true)
 	public CohortDTO copy(@PathParam("id") final int id) {
 		CohortDTO sourceDef = getCohortDefinition(id);
 		sourceDef.setId(null); // clear the ID
@@ -819,7 +1112,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	public InclusionRuleReport getInclusionRuleReport(
 					@PathParam("id") final int id,
 					@PathParam("sourceKey") final String sourceKey,
-					@DefaultValue("0") @QueryParam("mode") int modeId) {
+            @DefaultValue("0") @QueryParam("mode") int modeId, @QueryParam("ccGenerateId") String ccGenerateId) {
 
 		Source source = this.getSourceRepository().findBySourceKey(sourceKey);
 
@@ -827,23 +1120,37 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 		List<InclusionRuleReport.InclusionRuleStatistic> inclusionRuleStats = getInclusionRuleStatistics(whitelist(id), source, modeId);
 		String treemapData = getInclusionRuleTreemapData(whitelist(id), inclusionRuleStats.size(), source, modeId);
 
-		InclusionRuleReport report = new InclusionRuleReport();
-		report.summary = summary;
-		report.inclusionRuleStats = inclusionRuleStats;
-		report.treemapData = treemapData;
+        InclusionRuleReport report = new InclusionRuleReport();
+        report.summary = summary;
+        report.inclusionRuleStats = inclusionRuleStats;
+        report.treemapData = treemapData;
+
+        if (DEMOGRAPHIC_MODE == modeId) {
+            if (ccGenerateId != null && ccGenerateId != "null") {
+                List<Report> listDemoDetail = getDemographicStatistics(whitelist(id), source, modeId,
+                        Long.valueOf(ccGenerateId));
+
+                report.demographicsStats = listDemoDetail;
+                report.count = 4;
+                report.showEmptyResults = false;
+                report.prevalenceThreshold = 0.01f;
+            }
+        }
 
 		return report;
 	}
 
-	/**
-	 * Checks the cohort definition for logic issues
-	 * 
-	 * This method runs a series of logical checks on a cohort definition and returns the set of warning, info and error messages.
-	 *
-	 * @summary Check Cohort Definition
-	 * @param expression The cohort definition expression
-	 * @return The cohort check result
-	 */
+    /**
+     * Checks the cohort definition for logic issues
+     *
+     * This method runs a series of logical checks on a cohort definition and
+     * returns the set of warning, info and error messages.
+     *
+     * @summary Check Cohort Definition
+     * @param expression
+     *            The cohort definition expression
+     * @return The cohort check result
+     */
 	@POST
 	@Path("/check")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -954,10 +1261,10 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@POST
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/tag/")
+	@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true)
 	@Transactional
 	public void assignTag(@PathParam("id") final Integer id, final int tagId) {
 		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
-		checkOwnerOrAdminOrGranted(entity);
 		assignTag(entity, tagId);
 	}
 
@@ -971,10 +1278,10 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@DELETE
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/tag/{tagId}")
+	@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true)
 	@Transactional
 	public void unassignTag(@PathParam("id") final Integer id, @PathParam("tagId") final int tagId) {
 		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
-		checkOwnerOrAdminOrGranted(entity);
 		unassignTag(entity, tagId);
 	}
 
@@ -1106,6 +1413,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/version/{version}/createAsset")
 	@Transactional
+	@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true)
 	public CohortDTO copyAssetFromVersion(@PathParam("id") final int id, @PathParam("version") final int version) {
 		checkVersion(id, version, false);
 		CohortVersion cohortVersion = versionService.getById(VersionType.COHORT, id, version);

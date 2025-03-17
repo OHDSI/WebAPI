@@ -21,7 +21,8 @@ import java.sql.SQLException;
         SecurityIT.class,
         JobServiceIT.class,
         CohortAnalysisServiceIT.class,
-        VocabularyServiceIT.class
+        VocabularyServiceIT.class,
+        CDMResultsServiceIT.class
 })
 @TestPropertySource(locations = "/application-test.properties")
 public class ITStarter extends AbstractShiro {

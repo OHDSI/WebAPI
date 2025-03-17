@@ -806,7 +806,6 @@ public class IRAnalysisService extends AbstractDaoService implements
   @Transactional
   public void assignTag(final Integer id, final int tagId) {
     IncidenceRateAnalysis entity = irAnalysisRepository.findOne(id);
-    checkOwnerOrAdminOrGranted(entity);
     assignTag(entity, tagId);
   }
 
@@ -814,7 +813,6 @@ public class IRAnalysisService extends AbstractDaoService implements
   @Transactional
   public void unassignTag(final Integer id, final int tagId) {
     IncidenceRateAnalysis entity = irAnalysisRepository.findOne(id);
-    checkOwnerOrAdminOrGranted(entity);
     unassignTag(entity, tagId);
   }
 

@@ -303,6 +303,9 @@
     <audit.trail.log.file>/tmp/atlas/audit/audit.log</audit.trail.log.file>
     <audit.trail.log.file.pattern>/tmp/atlas/audit/audit-%d{yyyy-MM-dd}-%i.log</audit.trail.log.file.pattern>
     <audit.trail.log.extraFile>/tmp/atlas/audit/audit-extra.log</audit.trail.log.extraFile>
+
+    <!-- Shiny -->
+    <shiny.enabled>false</shiny.enabled>
   </properties>
 
   <build>
@@ -1257,6 +1260,15 @@
       <version>2.0.1</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>okhttp</artifactId>
+      <version>4.12.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+    </dependency>
   </dependencies>
 
   <profiles>
@@ -1909,6 +1921,108 @@
           <type>jar</type>
         </dependency>
       </dependencies>
+    </profile>
+    <profile>
+      <id>webapi-shiny</id>
+      <properties>
+        <shiny.enabled>true</shiny.enabled>
+        <shiny.atlas.url>http://localhost/Atlas</shiny.atlas.url>
+        <shiny.output.directory>src/main/resources/shiny</shiny.output.directory>
+        <shiny.app.directory></shiny.app.directory>
+        <spring.profiles.active>default,shiny</spring.profiles.active>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-clean-plugin</artifactId>
+            <version>3.3.2</version>
+            <configuration>
+              <filesets>
+                <fileset>
+                  <directory>${shiny.output.directory}</directory>
+                  <includes>
+                    <include>shiny-cohortCounts.zip</include>
+                    <include>shiny-incidenceRates.zip</include>
+                    <include>shiny-cohortCharacterizations.zip</include>
+                  </includes>
+                </fileset>
+              </filesets>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>3.6.0</version>
+            <executions>
+              <execution>
+                <id>build-cohortCounts-archive</id>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+                <phase>generate-resources</phase>
+                <configuration>
+                  <appendAssemblyId>false</appendAssemblyId>
+                  <archiveBaseDirectory>${shiny.app.directory}</archiveBaseDirectory>
+                  <outputDirectory>${shiny.output.directory}</outputDirectory>
+                  <descriptors>
+                    <descriptor>src/main/assembly/shiny-cohortCounts.xml</descriptor>
+                  </descriptors>
+                  <finalName>shiny-cohortCounts</finalName>
+                </configuration>
+              </execution>
+              <execution>
+                <id>build-incidenceRates-archive</id>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+                <phase>generate-resources</phase>
+                <configuration>
+                  <appendAssemblyId>false</appendAssemblyId>
+                  <archiveBaseDirectory>${shiny.app.directory}</archiveBaseDirectory>
+                  <outputDirectory>${shiny.output.directory}</outputDirectory>
+                  <descriptors>
+                    <descriptor>src/main/assembly/shiny-incidenceRates.xml</descriptor>
+                  </descriptors>
+                  <finalName>shiny-incidenceRates</finalName>
+                </configuration>
+              </execution>
+              <execution>
+                <id>build-cohortCharacterizations-archive</id>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+                <phase>generate-resources</phase>
+                <configuration>
+                  <appendAssemblyId>false</appendAssemblyId>
+                  <archiveBaseDirectory>${shiny.app.directory}</archiveBaseDirectory>
+                  <outputDirectory>${shiny.output.directory}</outputDirectory>
+                  <descriptors>
+                    <descriptor>src/main/assembly/shiny-cohortCharacterizations.xml</descriptor>
+                  </descriptors>
+                  <finalName>shiny-cohortCharacterizations</finalName>
+                </configuration>
+              </execution>
+              <execution>
+                <id>build-cohortPathways-archive</id>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+                <phase>generate-resources</phase>
+                <configuration>
+                  <appendAssemblyId>false</appendAssemblyId>
+                  <archiveBaseDirectory>${shiny.app.directory}</archiveBaseDirectory>
+                  <outputDirectory>${shiny.output.directory}</outputDirectory>
+                  <descriptors>
+                    <descriptor>src/main/assembly/shiny-cohortPathways.xml</descriptor>
+                  </descriptors>
+                  <finalName>shiny-cohortPathways</finalName>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>

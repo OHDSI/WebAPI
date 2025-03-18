@@ -2,14 +2,17 @@ package org.ohdsi.webapi.feanalysis.converter;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.collections4.CollectionUtils;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysisAggregate;
 import org.ohdsi.webapi.feanalysis.domain.*;
 import org.ohdsi.webapi.feanalysis.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType.CRITERIA_SET;
@@ -24,6 +27,8 @@ public class FeAnalysisEntityToFeAnalysisDTOConverter extends BaseFeAnalysisEnti
     public FeAnalysisDTO convert(final FeAnalysisEntity source) {
         final FeAnalysisDTO dto = super.convert(source);
         dto.setDesign(convertDesignToJson(source));
+        dto.setSupportsAnnual(source.getSupportsAnnual());
+        dto.setSupportsTemporal(source.getSupportsTemporal());
         if (CRITERIA_SET.equals(source.getType())){
             FeAnalysisWithConceptSetDTO dtoWithConceptSet = (FeAnalysisWithConceptSetDTO) dto;
             FeAnalysisWithCriteriaEntity<?> sourceWithCriteria = (FeAnalysisWithCriteriaEntity) source;
@@ -34,26 +39,33 @@ public class FeAnalysisEntityToFeAnalysisDTOConverter extends BaseFeAnalysisEnti
 
     @Override
     protected FeAnalysisDTO createResultObject(FeAnalysisEntity feAnalysisEntity) {
-        switch (feAnalysisEntity.getType()){
-            case CRITERIA_SET:
-              return new FeAnalysisWithConceptSetDTO();
-            default:
-              return new FeAnalysisDTO();
-        }
+        return Optional.ofNullable(feAnalysisEntity.getType()).map(type -> {
+            switch (type) {
+                case CRITERIA_SET:
+                    return new FeAnalysisWithConceptSetDTO();
+                default:
+                    return new FeAnalysisDTO();
+            }
+        }).orElseGet(() -> new FeAnalysisDTO());
     }
 
     private Object convertDesignToJson(final FeAnalysisEntity source) {
-        switch (source.getType()) {
-            case CRITERIA_SET:
-                FeAnalysisWithCriteriaEntity<?> sourceWithCriteria = (FeAnalysisWithCriteriaEntity<?>) source;
-                return sourceWithCriteria.getDesign()
-                          .stream()
-                          .map(this::convertCriteria)
-                          .map(c -> (JsonNode)objectMapper.valueToTree(c))
-                          .collect(Collectors.toList());
-            default:
-                return source.getDesign();
-        }
+        return Optional.ofNullable(source.getType()).map(type -> {
+            switch (type) {
+                case CRITERIA_SET:
+                    FeAnalysisWithCriteriaEntity<?> sourceWithCriteria = (FeAnalysisWithCriteriaEntity<?>) source;
+                    if (CollectionUtils.isEmpty(sourceWithCriteria.getDesign())) {
+                        return Collections.emptyList();
+                    }
+                    return sourceWithCriteria.getDesign()
+                            .stream()
+                            .map(this::convertCriteria)
+                            .map(c -> (JsonNode) objectMapper.valueToTree(c))
+                            .collect(Collectors.toList());
+                default:
+                    return source.getDesign();
+            }
+        }).orElseGet(() -> source.getDesign());
     }
 
     private BaseFeAnalysisCriteriaDTO convertCriteria(FeAnalysisCriteriaEntity criteriaEntity){

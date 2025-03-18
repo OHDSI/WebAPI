@@ -30,6 +30,7 @@ import org.ohdsi.webapi.service.SqlRenderService;
 import org.ohdsi.webapi.service.TherapyPathResultsService;
 import org.ohdsi.webapi.service.UserService;
 import org.ohdsi.webapi.service.VocabularyService;
+import org.ohdsi.webapi.shiny.ShinyController;
 import org.ohdsi.webapi.source.SourceController;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,6 +48,8 @@ public class JerseyConfig extends ResourceConfig implements InitializingBean {
     
     @Value("${jersey.resources.root.package}")
     private String rootPackage;
+    @Value("${shiny.enabled:false}")
+    private Boolean shinyEnabled;
     
     public JerseyConfig() {
        RuntimeDelegate.setInstance(new org.glassfish.jersey.internal.RuntimeDelegateImpl());
@@ -94,5 +97,8 @@ public class JerseyConfig extends ResourceConfig implements InitializingBean {
                         .in(Singleton.class);
             }
         });
+        if (shinyEnabled) {
+            register(ShinyController.class);
+        }
     }
 }

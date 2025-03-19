@@ -40,7 +40,7 @@ public class IncidenceRateAnalysisDetails implements Serializable {
   private Integer id;
   
   @MapsId
-  @OneToOne
+  @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name="id")
   private IncidenceRateAnalysis analysis;
  

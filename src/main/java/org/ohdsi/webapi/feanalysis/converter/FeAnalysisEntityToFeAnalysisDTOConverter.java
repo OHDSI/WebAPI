@@ -7,6 +7,7 @@ import org.ohdsi.webapi.feanalysis.domain.*;
 import org.ohdsi.webapi.feanalysis.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.hibernate.Hibernate;
 
 import java.util.List;
 import java.util.Objects;
@@ -46,6 +47,7 @@ public class FeAnalysisEntityToFeAnalysisDTOConverter extends BaseFeAnalysisEnti
         switch (source.getType()) {
             case CRITERIA_SET:
                 FeAnalysisWithCriteriaEntity<?> sourceWithCriteria = (FeAnalysisWithCriteriaEntity<?>) source;
+                Hibernate.initialize(sourceWithCriteria.getDesign());  // Explicitly initialize the collection
                 return sourceWithCriteria.getDesign()
                           .stream()
                           .map(this::convertCriteria)

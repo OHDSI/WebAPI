@@ -13,6 +13,7 @@ public class ConceptSetPermissionSchema extends EntityPermissionSchema {
         put("conceptset:%s:items:put", "Update Items of Concept Set with ID = %s");
         put("conceptset:%s:annotation:*:delete", "Delete Annotations of Concept Set with ID = %s");
         put("conceptset:%s:delete", "Delete Concept Set with ID = %s");
+        put("conceptset:%s:snapshot:post", "Invoke Snapshot Action for Concept Set with ID = %s");
     }};
 
     private static Map<String, String> readPermissions = new HashMap<String, String>() {{

@@ -28,7 +28,7 @@ CREATE TABLE @results_schema.cc_results
   missing_means_zero INTEGER
 );
 
-IF OBJECT_ID('@results_schema.cc_temporal_results') IS NULL
+IF OBJECT_ID('@results_schema.cc_temporal_results', 'U') IS NULL
 CREATE TABLE @results_schema.cc_temporal_results(
   type                 varchar(255),
   fa_type              varchar(255),
@@ -48,7 +48,7 @@ CREATE TABLE @results_schema.cc_temporal_results(
   end_day              integer
 );
 
-IF OBJECT_ID('@results_schema.cc_temporal_annual_results') IS NULL
+IF OBJECT_ID('@results_schema.cc_temporal_annual_results', 'U') IS NULL
     CREATE TABLE @results_schema.cc_temporal_annual_results(
       type                 varchar(255),
       fa_type              varchar(255),

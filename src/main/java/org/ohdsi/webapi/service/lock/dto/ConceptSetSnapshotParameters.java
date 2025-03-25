@@ -10,6 +10,7 @@ public class ConceptSetSnapshotParameters {
 	private String vocabularyBundleVersion;
 	private String conceptSetVersion;
 	private String message;
+	private boolean emptySnapshot;
 
 	public String getSnapshotDate() {
 		return snapshotDate;
@@ -81,5 +82,13 @@ public class ConceptSetSnapshotParameters {
 
 	public void setSnapshotId(Long snapshotId) {
 		this.snapshotId = snapshotId;
+	}
+
+	public boolean isEmptySnapshot() {
+		return emptySnapshot;
+	}
+
+	public void setEmptySnapshot(boolean emptySnapshot) {
+		this.emptySnapshot = emptySnapshot;
 	}
 }

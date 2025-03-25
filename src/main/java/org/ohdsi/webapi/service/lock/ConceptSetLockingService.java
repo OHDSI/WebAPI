@@ -203,7 +203,17 @@ public class ConceptSetLockingService extends AbstractDaoService {
                 "WHERE CONCEPT_SET_ID = ? ORDER BY ACTION_DATE DESC", snapshotHistorySourceProvider.getSnapshotHistorySourceSchema());
 
         CancelableJdbcTemplate jdbcTemplate = getSourceJdbcTemplate(snapshotHistorySourceProvider.getSnapshotHistorySource());
-        return jdbcTemplate.query(sql, new Object[]{conceptSetId}, (rs, rowNum) -> toConceptSetSnapshotParameters(rs));
+        List<ConceptSetSnapshotParameters> snapshots = jdbcTemplate.query(sql, new Object[]{conceptSetId}, (rs, rowNum) -> toConceptSetSnapshotParameters(rs));
+        enrichSnapshotParametersWithEmptyIndicator(snapshots, jdbcTemplate);
+        return snapshots;
+    }
+    private void enrichSnapshotParametersWithEmptyIndicator(List<ConceptSetSnapshotParameters> snapshots, CancelableJdbcTemplate jdbcTemplate){
+        for (ConceptSetSnapshotParameters snapshot : snapshots) {
+            Long snapshotId = snapshot.getSnapshotId();
+            if (isSnapshotEmpty(jdbcTemplate, snapshotId)) {
+                snapshot.setEmptySnapshot(true);
+            }
+        }
     }
 
     private ConceptSetSnapshotParameters toConceptSetSnapshotParameters(ResultSet rs) throws SQLException {
@@ -251,6 +261,26 @@ public class ConceptSetLockingService extends AbstractDaoService {
 
         CancelableJdbcTemplate jdbcTemplate = getSourceJdbcTemplate(snapshotHistorySourceProvider.getSnapshotHistorySource());
         return jdbcTemplate.query(sql, new Object[]{snapshotId}, (rs, rowNum) -> convertToConceptSetItem(rs, type));
+    }
+
+    /**
+     * Helper method to check if the snapshot metadata ID has records in associated tables.
+     *
+     * @param jdbcTemplate JDBC template for querying the database.
+     * @param snapshotMetadataId Metadata ID to check for records.
+     * @return true if all tables are empty, false if at least one table contains records.
+     */
+    private boolean isSnapshotEmpty(CancelableJdbcTemplate jdbcTemplate, Long snapshotMetadataId) {
+        String itemSnapshotsQuery = String.format("SELECT COUNT(*) FROM %s.CONCEPT_SET_ITEM_SNAPSHOTS WHERE SNAPSHOT_METADATA_ID = ?", snapshotHistorySourceProvider.getSnapshotHistorySourceSchema());
+        Integer itemSnapshotsCount = jdbcTemplate.queryForObject(itemSnapshotsQuery, new Object[]{snapshotMetadataId}, Integer.class);
+
+        String includedConceptsQuery = String.format("SELECT COUNT(*) FROM %s.INCLUDED_CONCEPTS_SNAPSHOTS WHERE SNAPSHOT_METADATA_ID = ?", snapshotHistorySourceProvider.getSnapshotHistorySourceSchema());
+        Integer includedConceptsCount = jdbcTemplate.queryForObject(includedConceptsQuery, new Object[]{snapshotMetadataId}, Integer.class);
+
+        String includedSourceCodesQuery = String.format("SELECT COUNT(*) FROM %s.INCLUDED_SOURCE_CODES_SNAPSHOTS WHERE SNAPSHOT_METADATA_ID = ?", snapshotHistorySourceProvider.getSnapshotHistorySourceSchema());
+        Integer includedSourceCodesCount = jdbcTemplate.queryForObject(includedSourceCodesQuery, new Object[]{snapshotMetadataId}, Integer.class);
+
+        return (itemSnapshotsCount == 0) && (includedConceptsCount == 0) && (includedSourceCodesCount == 0);
     }
 
     private ConceptSetExpression.ConceptSetItem convertToConceptSetItem(ResultSet rs, GetConceptSetSnapshotItemsRequest.ItemType type) throws SQLException {

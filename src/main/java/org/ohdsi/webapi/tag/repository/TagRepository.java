@@ -11,6 +11,8 @@ public interface TagRepository extends JpaRepository<Tag, Integer> {
     @Query("SELECT t FROM Tag t WHERE LOWER(t.name) LIKE LOWER(CONCAT(?1, '%'))")
     List<Tag> findAllTags(String namePart);
 
+    List<Tag> findByName(String name);
+
     List<Tag> findByIdIn(List<Integer> ids);
 
     @Query("SELECT ct.assetId.tagId as id, " +

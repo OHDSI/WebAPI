@@ -81,3 +81,61 @@ CREATE TABLE ${ohdsiSchema}.INCLUDED_SOURCE_CODES_SNAPSHOTS (
     INVALID_REASON VARCHAR(1),
     FOREIGN KEY (SNAPSHOT_METADATA_ID) REFERENCES ${ohdsiSchema}.CONCEPT_SET_SNAPSHOT_METADATA(ID)
 );
+
+-- This script inserts a new permission of type "conceptset:%s:snapshot:post" and maps it to the existing roles if such permission does not exist
+--for each concept set which has a "conceptset:%s:put" permission. This is made to allow making snapshot actions to old concept sets
+--which were created before the snapshot/lock feature was deployed
+
+DO $$
+DECLARE
+    permission RECORD;
+    new_permission_id INTEGER;
+    new_permission_value VARCHAR;
+    new_role_permission_id INTEGER;
+BEGIN
+    FOR permission IN
+        SELECT p.id AS permission_id, p.value AS permission_value, rp.role_id AS role_id
+        FROM ${ohdsiSchema}.sec_permission p
+        INNER JOIN ${ohdsiSchema}.sec_role_permission rp
+            ON p.id = rp.permission_id
+        WHERE p.value ~ '^conceptset:[0-9]+:put$'
+    LOOP
+        new_permission_value := 'conceptset:' || split_part(permission.permission_value, ':', 2) || ':snapshot:post';
+
+        IF NOT EXISTS (
+            SELECT 1
+            FROM ${ohdsiSchema}.sec_permission
+            WHERE "value" = new_permission_value
+        )
+        THEN
+            new_permission_id := nextval('${ohdsiSchema}.sec_permission_id_seq');
+
+            INSERT INTO ${ohdsiSchema}.sec_permission (id, value, description)
+            VALUES (new_permission_id, new_permission_value, 'Permission to create snapshot for concept set');
+
+            RAISE NOTICE 'Inserted New Permission: % (ID: %)', new_permission_value, new_permission_id;
+        ELSE
+            SELECT id INTO new_permission_id
+            FROM ${ohdsiSchema}.sec_permission
+            WHERE "value" = new_permission_value;
+
+            RAISE NOTICE 'Permission Already Exists: % (ID: %)', new_permission_value, new_permission_id;
+        END IF;
+
+        IF NOT EXISTS (
+            SELECT 1
+            FROM ${ohdsiSchema}.sec_role_permission
+            WHERE role_id = permission.role_id AND permission_id = new_permission_id
+        )
+        THEN
+            new_role_permission_id := nextval('${ohdsiSchema}.sec_role_permission_sequence');
+
+            INSERT INTO ${ohdsiSchema}.sec_role_permission (id, role_id, permission_id)
+            VALUES (new_role_permission_id, permission.role_id, new_permission_id);
+
+            RAISE NOTICE 'Mapped New Permission to Role: % (Role ID: %)', new_permission_value, permission.role_id;
+        ELSE
+            RAISE NOTICE 'Mapping Already Exists: Permission: % - Role ID: %', new_permission_value, permission.role_id;
+        END IF;
+    END LOOP;
+END $$;

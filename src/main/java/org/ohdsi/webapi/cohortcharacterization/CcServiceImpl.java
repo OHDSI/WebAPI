@@ -873,7 +873,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                         }))
                 .collect(Collectors.toList());
         Map<Integer, Map<Integer, Map<Long, List<CcTemporalAnnualResult>>>> annualByCohort = groupByResult(mappedAnnualResult);
-
+								
         List<Report> reports = prepareReportData(analysisMap, cohortDefs, featureAnalyses, params);
         reports.forEach(r -> {
             r.items.stream()
@@ -1011,7 +1011,7 @@ public class CcServiceImpl extends AbstractDaoService implements CcService, Gene
                 reports.add(simpleReport);
 
                 // comparative mode
-                if (definitionMap.size() == 2 && !params.getExcludeComparativeResults()) {
+                if (definitionMap.size() == 2) {
                     Iterator<CohortDefinition> iter = definitionMap.values().iterator();
                     CohortDefinition firstCohortDef = iter.next();
                     CohortDefinition secondCohortDef = iter.next();

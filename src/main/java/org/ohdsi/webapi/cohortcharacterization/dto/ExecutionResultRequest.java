@@ -27,8 +27,6 @@ public class ExecutionResultRequest {
     @JsonProperty("showEmptyResults")
     private Boolean isShowEmptyResults = false;
 
-    @JsonProperty("excludeComparativeResults")
-    private boolean excludeComparativeResults;
     public List<Integer> getCohortIds() {
         if(cohortIds == null) {
             return Collections.emptyList();
@@ -90,11 +88,4 @@ public class ExecutionResultRequest {
         isShowEmptyResults = showEmptyResults;
     }
 
-    public boolean getExcludeComparativeResults() {
-        return excludeComparativeResults;
-    }
-
-    public void setExcludeComparativeResults(boolean excludeComparativeResults) {
-        this.excludeComparativeResults = excludeComparativeResults;
-    }
 }

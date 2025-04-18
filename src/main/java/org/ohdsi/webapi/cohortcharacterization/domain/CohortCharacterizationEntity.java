@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.cohortcharacterization.domain;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -52,11 +53,9 @@ public class CohortCharacterizationEntity extends CommonEntityExt<Long> implemen
             inverseJoinColumns = @JoinColumn(name = "cohort_id", referencedColumnName = "id"))
     private Set<CohortDefinition> cohortDefinitions = new HashSet<>();
     
-    @ManyToMany(targetEntity = FeAnalysisEntity.class, fetch = FetchType.LAZY)
-    @JoinTable(name = "cc_analysis",
-            joinColumns = @JoinColumn(name = "cohort_characterization_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "fe_analysis_id", referencedColumnName = "id"))
-    private Set<FeAnalysisEntity> featureAnalyses = new HashSet<>();
+    @OneToMany(orphanRemoval = true)
+    @JoinColumn(name = "cohort_characterization_id", insertable = false, updatable = false, nullable = false)
+    private Set<CcFeAnalysisEntity> featureAnalyses = new HashSet<>();
     
     @OneToMany(mappedBy = "cohortCharacterization", fetch = FetchType.LAZY, targetEntity = CcParamEntity.class)
     private Set<CcParamEntity> parameters = new HashSet<>();
@@ -89,12 +88,22 @@ public class CohortCharacterizationEntity extends CommonEntityExt<Long> implemen
 
     @Override
     public Set<FeAnalysisEntity> getFeatureAnalyses() {
+        return featureAnalyses != null ?
+                featureAnalyses.stream().map(CcFeAnalysisEntity::getFeatureAnalysis).collect(Collectors.toSet()) :
+                Collections.emptySet();
+    }
+
+    public Set<CcFeAnalysisEntity> getCcFeatureAnalyses() {
         return featureAnalyses;
     }
 
     @Override
     public Set<CcParamEntity> getParameters() {
         return parameters;
+    }
+
+    public void setFeatureAnalyses(Set<CcFeAnalysisEntity> featureAnalyses) {
+        this.featureAnalyses = featureAnalyses;
     }
 
     @Override
@@ -124,10 +133,6 @@ public class CohortCharacterizationEntity extends CommonEntityExt<Long> implemen
 
     public void setParameters(final Set<CcParamEntity> parameters) {
         this.parameters = parameters;
-    }
-
-    public void setFeatureAnalyses(final Set<FeAnalysisEntity> featureAnalyses) {
-        this.featureAnalyses = featureAnalyses;
     }
 
     public Set<CohortDefinition> getCohortDefinitions() {

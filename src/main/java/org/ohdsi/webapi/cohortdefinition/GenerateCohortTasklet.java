@@ -21,6 +21,7 @@ import org.ohdsi.sql.BigQuerySparkTranslate;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
+import org.ohdsi.webapi.cohortcharacterization.domain.CcFeAnalysisEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.common.generation.CancelableTasklet;
 import org.ohdsi.webapi.common.generation.GenerationUtils;
@@ -117,14 +118,14 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
       // Get FE Analysis Demographic (Gender, Age, Race,)
       Set<FeAnalysisEntity> feAnalysis = feAnalysisRepository.findByListIds(Arrays.asList(70, 72, 74, 77));
 
-//      Set<CcFeAnalysisEntity> ccFeAnalysis = feAnalysis.stream().map(a -> {
-//          CcFeAnalysisEntity ccA = new CcFeAnalysisEntity();
-//          ccA.setCohortCharacterization(cohortCharacterization);
-//          ccA.setFeatureAnalysis(a);
-//          return ccA;
-//      }).collect(Collectors.toSet());
+      Set<CcFeAnalysisEntity> ccFeAnalysis = feAnalysis.stream().map(a -> {
+          CcFeAnalysisEntity ccA = new CcFeAnalysisEntity();
+          ccA.setCohortCharacterization(cohortCharacterization);
+          ccA.setFeatureAnalysis(a);
+          return ccA;
+      }).collect(Collectors.toSet());
 
-      cohortCharacterization.setFeatureAnalyses(feAnalysis);
+      cohortCharacterization.setFeatureAnalyses(ccFeAnalysis);
 
       final Long jobId = chunkContext.getStepContext().getStepExecution().getJobExecution().getId();
 
@@ -141,7 +142,7 @@ public class GenerateCohortTasklet extends CancelableTasklet implements Stoppabl
 
       CCQueryBuilder ccQueryBuilder = new CCQueryBuilder(cohortCharacterization, cohortTable, sessionId,
               SourceUtils.getCdmQualifier(source), SourceUtils.getResultsQualifier(source),
-              SourceUtils.getVocabularyQualifier(source), tempSchema, jobId);
+              SourceUtils.getVocabularyQualifier(source), tempSchema, jobId, includeAnnual, includeTemporal);
       String sql = ccQueryBuilder.build();
 
       /*

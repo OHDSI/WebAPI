@@ -990,6 +990,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@DELETE
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}")
+	@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true)
 	public void delete(@PathParam("id") final int id) {
 		// perform the JPA update in a separate transaction
 		this.getTransactionTemplateRequiresNew().execute(new TransactionCallbackWithoutResult() {

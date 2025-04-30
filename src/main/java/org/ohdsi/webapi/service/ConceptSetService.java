@@ -689,6 +689,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/{tagId}")
     @Transactional
+		@CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
     public void unassignTag(@PathParam("id") final Integer id, @PathParam("tagId") final int tagId) {
         ConceptSet entity = getConceptSetRepository().findById(id);
         unassignTag(entity, tagId);
@@ -722,6 +723,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/protectedtag/{tagId}")
     @Transactional
+		@CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
     public void unassignPermissionProtectedTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
         unassignTag(id, tagId);
     }

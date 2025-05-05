@@ -11,13 +11,12 @@ import org.ohdsi.webapi.tag.dto.AssignmentPermissionsDTO;
 import org.ohdsi.webapi.tag.repository.TagRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,7 +30,6 @@ public class TagService extends AbstractDaoService {
 
     private final ArrayList<Producer<List<TagInfo>>> infoProducers;
 
-    @Autowired
     public TagService(
             TagRepository tagRepository,
             EntityManager entityManager,
@@ -77,11 +75,11 @@ public class TagService extends AbstractDaoService {
     }
 
     public Tag getById(Integer id) {
-        return tagRepository.findOne(id);
+        return tagRepository.findById(id).get();
     }
 
     public TagDTO getDTOById(Integer id) {
-        Tag tag = tagRepository.findOne(id);
+        Tag tag = tagRepository.findById(id).get();
         return conversionService.convert(tag, TagDTO.class);
     }
 
@@ -110,7 +108,7 @@ public class TagService extends AbstractDaoService {
     }
 
     public TagDTO update(Integer id, TagDTO entity) {
-        Tag existing = tagRepository.findOne(id);
+        Tag existing = tagRepository.findById(id).get();
 
         checkOwnerOrAdmin(existing.getCreatedBy());
 
@@ -132,17 +130,17 @@ public class TagService extends AbstractDaoService {
     }
 
     public void delete(Integer id) {
-        Tag existing = tagRepository.findOne(id);
+        Tag existing = tagRepository.findById(id).get();
 
         checkOwnerOrAdmin(existing.getCreatedBy());
 
-        tagRepository.delete(id);
+        tagRepository.deleteById(id);
     }
 
     private Tag save(Tag tag) {
         tag = tagRepository.saveAndFlush(tag);
         entityManager.refresh(tag);
-        return tagRepository.findOne(tag.getId());
+        return tagRepository.findById(tag.getId()).get();
     }
 
     @Transactional
@@ -165,7 +163,7 @@ public class TagService extends AbstractDaoService {
                         }
                     })
                     .collect(Collectors.toList());
-            tagRepository.save(tags);
+            tagRepository.saveAll(tags);
         } catch (Exception e) {
             logger.error("Cannot refresh tags statistics");
         }

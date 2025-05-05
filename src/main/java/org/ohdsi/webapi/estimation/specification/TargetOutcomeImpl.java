@@ -2,7 +2,7 @@ package org.ohdsi.webapi.estimation.specification;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.validation.constraints.*;
+import jakarta.validation.constraints.*;
 import org.ohdsi.analysis.estimation.design.TargetOutcome;
 
 /**

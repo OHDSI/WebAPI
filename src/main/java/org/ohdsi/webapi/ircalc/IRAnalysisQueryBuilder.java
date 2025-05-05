@@ -78,11 +78,11 @@ public class IRAnalysisQueryBuilder {
     // target and outcome statements for analysis
     ArrayList<String> cohortIdStatements = new ArrayList<>();
     for (int targetId : analysisExpression.targetIds) {
-      cohortIdStatements.add(String.format("SELECT %d as cohort_id, 0 as is_outcome", targetId));
+      cohortIdStatements.add("SELECT %d as cohort_id, 0 as is_outcome".formatted(targetId));
     }
 
     for (int outcomeId : analysisExpression.outcomeIds) {
-      cohortIdStatements.add(String.format("SELECT %d as cohort_id, 1 as is_outcome", outcomeId));
+      cohortIdStatements.add("SELECT %d as cohort_id, 1 as is_outcome".formatted(outcomeId));
     }
 
     resultSql = StringUtils.replace(resultSql,"@cohortInserts", StringUtils.join(cohortIdStatements,"\nUNION\n"));
@@ -91,12 +91,12 @@ public class IRAnalysisQueryBuilder {
 
     String adjustmentExpression = "DATEADD(day,%d,%s)";
 
-    String adjustedStart = String.format(adjustmentExpression,
+    String adjustedStart = adjustmentExpression.formatted(
             analysisExpression.timeAtRisk.start.offset,
             analysisExpression.timeAtRisk.start.dateField == FieldOffset.DateField.StartDate ? "cohort_start_date" : "cohort_end_date");
     resultSql = StringUtils.replace(resultSql,"@adjustedStart", adjustedStart);
 
-    String adjustedEnd = String.format(adjustmentExpression,
+    String adjustedEnd = adjustmentExpression.formatted(
             analysisExpression.timeAtRisk.end.offset,
             analysisExpression.timeAtRisk.end.dateField == FieldOffset.DateField.StartDate ? "cohort_start_date" : "cohort_end_date");
     resultSql = StringUtils.replace(resultSql,"@adjustedEnd", adjustedEnd);
@@ -106,9 +106,9 @@ public class IRAnalysisQueryBuilder {
     if (analysisExpression.studyWindow != null)
     {
       if (analysisExpression.studyWindow.startDate != null && analysisExpression.studyWindow.startDate.length() > 0)
-        studyWindowClauses.add(String.format("t.cohort_start_date >= %s", SqlUtils.dateStringToSql(analysisExpression.studyWindow.startDate)));
+        studyWindowClauses.add("t.cohort_start_date >= %s".formatted(SqlUtils.dateStringToSql(analysisExpression.studyWindow.startDate)));
       if (analysisExpression.studyWindow.endDate != null && analysisExpression.studyWindow.endDate.length() > 0)
-        studyWindowClauses.add(String.format("t.cohort_start_date <= %s", SqlUtils.dateStringToSql(analysisExpression.studyWindow.endDate)));
+        studyWindowClauses.add("t.cohort_start_date <= %s".formatted(SqlUtils.dateStringToSql(analysisExpression.studyWindow.endDate)));
     }
     if (studyWindowClauses.size() > 0)
       resultSql = StringUtils.replace(resultSql, "@cohortDataFilter", "AND " + StringUtils.join(studyWindowClauses," AND "));
@@ -119,8 +119,8 @@ public class IRAnalysisQueryBuilder {
     if (analysisExpression.studyWindow != null && analysisExpression.studyWindow.endDate != null && analysisExpression.studyWindow.endDate.length() > 0)
     {
       StringBuilder endDatesQuery = new StringBuilder(
-              String.format("UNION\nselect combos.target_id, combos.outcome_id, t.subject_id, t.cohort_start_date, %s as followup_end, 0 as is_case",
-              SqlUtils.dateStringToSql(analysisExpression.studyWindow.endDate))
+              "UNION\nselect combos.target_id, combos.outcome_id, t.subject_id, t.cohort_start_date, %s as followup_end, 0 as is_case".formatted(
+                      SqlUtils.dateStringToSql(analysisExpression.studyWindow.endDate))
       );
       endDatesQuery.append("\nFROM #cteCohortCombos combos");
       endDatesQuery.append("\nJOIN  #cteCohortData t on combos.target_id = t.target_id and combos.outcome_id = t.outcome_id");

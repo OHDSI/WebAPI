@@ -1,9 +1,9 @@
 package org.ohdsi.webapi.versioning;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.service.dto.CommonEntityExtDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
@@ -21,9 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class BaseVersioningTest<S extends CommonEntityExtDTO,
         T extends VersionFullDTO<?>, ID extends Number> extends AbstractDatabaseTest {
@@ -40,7 +38,7 @@ public abstract class BaseVersioningTest<S extends CommonEntityExtDTO,
         return FileUtils.readFileToString(ple_spec, StandardCharsets.UTF_8);
     }
 
-    @Before
+    @BeforeEach
     public void createInitialData() throws IOException {
         UserEntity user = new UserEntity();
         user.setLogin("anonymous");
@@ -51,7 +49,7 @@ public abstract class BaseVersioningTest<S extends CommonEntityExtDTO,
 
     protected abstract void doCreateInitialData() throws IOException;
 
-    @After
+    @AfterEach
     public void clear() {
         doClear();
         userRepository.deleteAll();

@@ -6,9 +6,9 @@ import static org.ohdsi.webapi.shiro.management.AtlasSecurity.TOKEN_ATTRIBUTE;
 import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.PrintWriter;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.util.WebUtils;
 import org.slf4j.Logger;
@@ -32,7 +32,7 @@ public class SendTokenInHeaderFilter extends AdviceFilter {
 
     HttpServletResponse httpResponse = WebUtils.toHttp(response);
     httpResponse.setHeader(TOKEN_HEADER_NAME, jwt);
-    httpResponse.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+    httpResponse.setContentType(MediaType.APPLICATION_JSON_VALUE);
     httpResponse.setStatus(HttpServletResponse.SC_OK);
 
     try (final PrintWriter responseWriter = response.getWriter()) {

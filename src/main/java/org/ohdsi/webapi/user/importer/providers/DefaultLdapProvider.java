@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.user.importer.providers;
 
 import com.google.common.collect.ImmutableSet;
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.webapi.user.importer.model.LdapGroup;
 import org.ohdsi.webapi.user.importer.model.LdapUser;
@@ -17,7 +18,6 @@ import org.springframework.ldap.filter.OrFilter;
 import org.springframework.ldap.support.LdapUtils;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.naming.NameClassPair;
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
@@ -106,7 +106,7 @@ public class DefaultLdapProvider extends AbstractLdapProvider {
   }
 
   @Override
-  public List<LdapGroup> getLdapGroups(Attributes attributes) throws NamingException {
+  public List<LdapGroup> getLdapGroups(/*~~>*/Attributes attributes) throws /*~~>*/NamingException {
 
     String dn = valueAsString(attributes.get(DN));
     if (StringUtils.isNotEmpty(dn)) {
@@ -117,7 +117,7 @@ public class DefaultLdapProvider extends AbstractLdapProvider {
       memberFilter.or(new EqualsFilter("uniqueMember", dn));
       memberFilter.or(new EqualsFilter("member", dn));
       filter.and(memberFilter);
-      SearchControls searchControls = new SearchControls();
+      /*~~>*/SearchControls searchControls = new /*~~>*/SearchControls();
       searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
       searchControls.setReturningAttributes(RETURNING_ATTRS);
       return template.search(LdapUtils.emptyLdapName(), filter.encode(), searchControls,
@@ -128,8 +128,8 @@ public class DefaultLdapProvider extends AbstractLdapProvider {
   }
 
   @Override
-  public SearchControls getUserSearchControls() {
-    SearchControls searchControls = new SearchControls();
+  public /*~~>*/SearchControls getUserSearchControls() {
+    /*~~>*/SearchControls searchControls = new /*~~>*/SearchControls();
     searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
     searchControls.setReturningAttributes(userAttributes);
     return searchControls;
@@ -198,18 +198,18 @@ public class DefaultLdapProvider extends AbstractLdapProvider {
     }
 
     @Override
-    public T getObjectFromNameClassPair(NameClassPair nameClassPair) throws NamingException {
+    public T getObjectFromNameClassPair(/*~~>*/NameClassPair nameClassPair) throws /*~~>*/NamingException {
 
-      if (!(nameClassPair instanceof SearchResult)) {
+      if (!(nameClassPair instanceof /*~~>*/SearchResult)) {
         throw new IllegalArgumentException("Parameter must be an instance of SearchResult");
       } else {
-        SearchResult searchResult = (SearchResult)nameClassPair;
-        Attributes attributes = searchResult.getAttributes();
+        /*~~>*/SearchResult searchResult = (/*~~>*/SearchResult)nameClassPair;
+        /*~~>*/Attributes attributes = searchResult.getAttributes();
         attributes.put(DN, searchResult.getNameInNamespace());
 
         try {
           return this.mapper.mapFromAttributes(attributes);
-        } catch (NamingException var5) {
+        } catch (/*~~>*/NamingException var5) {
           throw LdapUtils.convertLdapException(var5);
         }
       }

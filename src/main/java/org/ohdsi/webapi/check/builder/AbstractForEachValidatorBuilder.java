@@ -44,11 +44,11 @@ public abstract class AbstractForEachValidatorBuilder<T, V> extends ValidatorBui
         return initAndBuildList(this.validatorGroupBuilders);
     }
 
-    protected List<Validator<T>> initValidators() {
+    protected List<ValidatorGroup<T, ?>> initValidators() {
         return initAndBuildList(this.validatorBuilders);
     }
 
-    private <U> List<U> initAndBuildList(List<? extends ValidatorBaseBuilder<T, U, ?>> builders) {
+    private <U> List<ValidatorGroup<T, ?>> initAndBuildList(List<? extends ValidatorBaseBuilder<T, U, ?>> builders) {
 
         builders.forEach(builder -> {
             if (Objects.isNull(builder.getBasePath())) {
@@ -64,7 +64,7 @@ public abstract class AbstractForEachValidatorBuilder<T, V> extends ValidatorBui
                 builder.attrName(this.attrName);
             }
         });
-        return builders.stream()
+        return (List<ValidatorGroup<T, ?>>) builders.stream()
                 .map(ValidatorBaseBuilder::build)
                 .collect(Collectors.toList());
 

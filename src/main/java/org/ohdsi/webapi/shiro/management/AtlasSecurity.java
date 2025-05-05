@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.PostConstruct;
-import javax.servlet.Filter;
+import jakarta.servlet.Filter;
 
+import jakarta.annotation.PostConstruct;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;

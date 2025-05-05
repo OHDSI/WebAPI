@@ -1,7 +1,5 @@
 package org.ohdsi.webapi.test;
 
-import static org.junit.Assert.assertEquals;
-
 import com.github.springtestdbunit.DbUnitTestExecutionListener;
 import com.github.springtestdbunit.annotation.DbUnitConfiguration;
 import java.io.IOException;
@@ -10,11 +8,12 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import com.odysseusinc.arachne.commons.types.DBMSType;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
 import org.apache.catalina.webresources.TomcatURLStreamHandlerFactory;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
@@ -28,7 +27,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestExecutionListeners;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
@@ -36,7 +34,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 import org.springframework.test.context.support.DirtiesContextTestExecutionListener;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest(classes = WebApi.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @DbUnitConfiguration(databaseConnection = {"primaryDataSource"})
@@ -75,14 +72,14 @@ public class WebApiIT {
 
     protected static JdbcTemplate jdbcTemplate;
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws IOException {
         TomcatURLStreamHandlerFactory.disable();
         ITStarter.before();
         jdbcTemplate = new JdbcTemplate(ITStarter.getDataSource());
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() {
         ITStarter.tearDownSubject();
     }
@@ -111,10 +108,10 @@ public class WebApiIT {
     }
 
     protected void truncateTable(final String tableName) {
-        jdbcTemplate.execute(String.format("TRUNCATE %s CASCADE",tableName));
+        jdbcTemplate.execute("TRUNCATE %s CASCADE".formatted(tableName));
     }
     protected void resetSequence(final String sequenceName) {
-        jdbcTemplate.execute(String.format("ALTER SEQUENCE %s RESTART WITH 1", sequenceName));
+        jdbcTemplate.execute("ALTER SEQUENCE %s RESTART WITH 1".formatted(sequenceName));
     }
 
     protected Source getCdmSource() throws SQLException {
@@ -161,8 +158,8 @@ public class WebApiIT {
     private void prepareSchema(final String schemaName, final String schemaToken, final Collection<String> schemaPaths) {
         StringBuilder ddl = new StringBuilder();
 
-        ddl.append(String.format("DROP SCHEMA IF EXISTS %s CASCADE;", schemaName));
-        ddl.append(String.format("CREATE SCHEMA %s;", schemaName));
+        ddl.append("DROP SCHEMA IF EXISTS %s CASCADE;".formatted(schemaName));
+        ddl.append("CREATE SCHEMA %s;".formatted(schemaName));
         schemaPaths.forEach(sqlPath -> ddl.append(ResourceHelper.GetResourceAsString(sqlPath)).append("\n"));
         String resultSql = SqlRender.renderSql(ddl.toString(), new String[]{schemaToken}, new String[]{schemaName});
         String ddlSql = SqlTranslate.translateSql(resultSql, DBMSType.POSTGRESQL.getOhdsiDB());

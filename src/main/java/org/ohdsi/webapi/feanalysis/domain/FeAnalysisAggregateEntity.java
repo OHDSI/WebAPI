@@ -4,7 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
+// import org.hibernate.annotations.TypeDef; MDACA Spring Boot 3 migration compilation issue 
 import org.ohdsi.analysis.TableJoin;
 import org.ohdsi.analysis.WithId;
 import org.ohdsi.analysis.cohortcharacterization.design.AggregateFunction;
@@ -12,16 +12,16 @@ import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysisAggregate
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisDomain;
 import org.ohdsi.circe.cohortdefinition.builders.CriteriaColumn;
 import org.ohdsi.webapi.common.orm.EnumListType;
+import org.ohdsi.webapi.source.CheckedEncryptedStringType;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.List;
-
+import java.util.List;
 @Entity
 @Table(name = "fe_analysis_aggregate")
-@TypeDef(typeClass = EnumListType.class, name = "enum-list")
 public class FeAnalysisAggregateEntity implements FeatureAnalysisAggregate, WithId<Integer> {
-
-  @Id
+	
+	@Id
   @GenericGenerator(
           name = "fe_aggregate_generator",
           strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
@@ -63,11 +63,10 @@ public class FeAnalysisAggregateEntity implements FeatureAnalysisAggregate, With
   @Column(name = "missing_means_zero")
   private boolean isMissingMeansZero;
 
+
 	@Column(name = "criteria_columns")
-  @Type(type = "enum-list", parameters = {
-          @Parameter(name = "enumClass", value = "org.ohdsi.circe.cohortdefinition.builders.CriteriaColumn")
-  })
-  private List<CriteriaColumn> columns;
+	@Convert(converter = CriteriaColumnListConverter.class)
+private List<CriteriaColumn> columns;
 
   @Override
   public Integer getId() {

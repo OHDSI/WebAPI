@@ -15,7 +15,7 @@ import org.springframework.data.repository.CrudRepository;
  */
 public interface ConceptSetGenerationInfoRepository extends CrudRepository<ConceptSetGenerationInfo, Integer> {
 
-    @Query("from ConceptSetGenerationInfo where concept_set_id = ?1")    
+    @Query("SELECT c from ConceptSetGenerationInfo c where c.conceptSetId = ?1")    
     List<ConceptSetGenerationInfo> findAllByConceptSetId(Integer conceptSetId);
 
     void deleteByConceptSetId(Integer conceptSetId);

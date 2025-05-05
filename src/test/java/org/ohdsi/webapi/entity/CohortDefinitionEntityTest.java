@@ -1,8 +1,8 @@
 package org.ohdsi.webapi.entity;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
@@ -20,14 +20,14 @@ public class CohortDefinitionEntityTest extends AbstractDatabaseTest implements 
 
     // in JUnit 4 it's impossible to mark methods inside interface with annotations, it was implemented in JUnit 5. After upgrade it's needed
     // to mark interface methods with @Test, @Before, @After and to remove them from this class
-    @After
+    @AfterEach
     @Override
     public void tearDownDB() {
 
         cdRepository.deleteAll();
     }
 
-    @Before
+    @BeforeEach
     @Override
     public void init() throws Exception {
 

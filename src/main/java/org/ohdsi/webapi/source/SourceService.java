@@ -1,5 +1,6 @@
 package org.ohdsi.webapi.source;
 
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.jasypt.properties.PropertyValueEncryptionUtils;
@@ -14,9 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
-import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 public class SourceService extends AbstractDaoService {
@@ -80,7 +81,8 @@ public class SourceService extends AbstractDaoService {
     public Collection<Source> getSources() {
 
         if (cachedSources == null) {
-            List<Source> sources = sourceRepository.findAll();
+            List<Source> sources = StreamSupport.stream(sourceRepository.findAll().spliterator(), false)
+                    .collect(Collectors.toList());
             Collections.sort(sources, new SortByKey());
             cachedSources = sources;
         }

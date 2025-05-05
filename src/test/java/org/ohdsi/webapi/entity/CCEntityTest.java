@@ -1,8 +1,8 @@
 package org.ohdsi.webapi.entity;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.cohortcharacterization.CcController;
 import org.ohdsi.webapi.cohortcharacterization.CcService;
@@ -30,14 +30,14 @@ public class CCEntityTest extends AbstractDatabaseTest implements TestCreate, Te
 
     // in JUnit 4 it's impossible to mark methods inside interface with annotations, it was implemented in JUnit 5. After upgrade it's needed
     // to mark interface methods with @Test, @Before, @After and to remove them from this class
-    @Before
+    @BeforeEach
     @Override
     public void init() throws Exception {
 
         TestCreate.super.init();
     }
 
-    @After
+    @AfterEach
     @Override
     public void tearDownDB() {
 

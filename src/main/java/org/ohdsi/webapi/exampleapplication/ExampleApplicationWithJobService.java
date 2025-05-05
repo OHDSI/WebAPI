@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.exampleapplication;
 
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.ohdsi.circe.vocabulary.Concept;
 import org.ohdsi.webapi.exampleapplication.model.Widget;
 import org.ohdsi.webapi.exampleapplication.repository.WidgetRepository;
@@ -23,9 +23,9 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.persistence.EntityManager;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import jakarta.persistence.EntityManager;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -113,7 +113,7 @@ public class ExampleApplicationWithJobService extends AbstractDaoService {
     @Path("widget")
     @Produces(MediaType.APPLICATION_JSON)
     public List<Widget> findAllWidgets() {
-        Page<Widget> page = this.widgetRepository.findAll(new PageRequest(0, 10));
+        Page<Widget> page = this.widgetRepository.findAll(PageRequest.of(0, 10));
         return page.getContent();
     }
     
@@ -185,7 +185,7 @@ public class ExampleApplicationWithJobService extends AbstractDaoService {
     @Path("widgets")
     public void writeWidgets() {
         final List<Widget> widgets = createWidgets();
-        this.widgetRepository.save(widgets);
+        this.widgetRepository.saveAll(widgets);
         log.info("Persisted {} widgets", widgets.size());
     }
     

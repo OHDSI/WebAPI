@@ -1,10 +1,11 @@
 package org.ohdsi.webapi.user.importer.service;
 
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
+import com.cosium.spring.data.jpa.entity.graph.domain2.EntityGraph;
+import com.cosium.spring.data.jpa.entity.graph.domain2.NamedEntityGraph;
 import com.cronutils.model.definition.CronDefinition;
 import com.odysseusinc.scheduler.model.ScheduledTask;
 import com.odysseusinc.scheduler.service.BaseJobServiceImpl;
+import jakarta.annotation.PostConstruct;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.user.importer.model.LdapProviderType;
@@ -27,7 +28,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -47,7 +47,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
   private final StepBuilderFactory stepBuilderFactory;
   private final JobBuilderFactory jobBuilders;
   private final JobTemplate jobTemplate;
-  private EntityGraph jobWithMappingEntityGraph = EntityGraphUtils.fromName("jobWithMapping");
+  private EntityGraph jobWithMappingEntityGraph = NamedEntityGraph.loading("jobWithMapping");
 
   public UserImportJobServiceImpl(TaskScheduler taskScheduler,
                                   CronDefinition cronDefinition,
@@ -85,7 +85,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
   protected void saveAdditionalFields(UserImportJob job) {
     if (job.getRoleGroupMapping() != null && !job.getRoleGroupMapping().isEmpty()) {
       job.getRoleGroupMapping().forEach(mapping -> mapping.setUserImportJob(job));
-      roleGroupRepository.save(job.getRoleGroupMapping());
+      roleGroupRepository.saveAll(job.getRoleGroupMapping());
     }
   }
 
@@ -105,10 +105,10 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
     List<RoleGroupEntity> created = RoleGroupUtils.findCreated(existMapping, updatedMapping);
     created.forEach(c -> c.setUserImportJob(exists));
     if (!deleted.isEmpty()) {
-      roleGroupRepository.delete(deleted);
+      roleGroupRepository.deleteAll(deleted);
     }
     if (!created.isEmpty()) {
-      existMapping.addAll(roleGroupRepository.save(created));
+      existMapping.addAll(roleGroupRepository.saveAll(created));
     }
     exists.setPreserveRoles(updated.getPreserveRoles());
   }
@@ -128,7 +128,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
   @Override
   public Optional<UserImportJob> getJob(Long id) {
 
-    return Optional.ofNullable(jobRepository.findOne(id)).map(this::assignNextExecution);
+    return Optional.ofNullable(jobRepository.findById(id)).get().map(this::assignNextExecution);
   }
 
   @Override
@@ -147,7 +147,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
 
     UserImportTasklet userImportTasklet = new UserImportTasklet(transactionTemplate, userImportService);
     return stepBuilderFactory.get("importUsers")
-            .tasklet(userImportTasklet)
+            .tasklet(userImportTasklet).transactionManager(transactionTemplate.getTransactionManager())
             .build();
   }
 
@@ -155,7 +155,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
 
     FindUsersToImportTasklet findUsersTasklet = new FindUsersToImportTasklet(transactionTemplate, userImportService);
     Step findUsersStep = stepBuilderFactory.get("findUsersForImport")
-            .tasklet(findUsersTasklet)
+            .tasklet(findUsersTasklet).transactionManager(transactionTemplate.getTransactionManager())
             .build();
 
     if (job.getUserRoles() != null) {
@@ -180,7 +180,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
     @Override
     public void run() {
       JobParameters jobParameters = new JobParametersBuilder()
-              .addString(Constants.Params.JOB_NAME, String.format("Users import for %s", getProviderName(job.getProviderType())))
+              .addString(Constants.Params.JOB_NAME, "Users import for %s".formatted(getProviderName(job.getProviderType())))
               .addString(Constants.Params.JOB_AUTHOR, SYSTEM_USER)
               .addString(Constants.Params.USER_IMPORT_ID, String.valueOf(job.getId()))
               .toJobParameters();

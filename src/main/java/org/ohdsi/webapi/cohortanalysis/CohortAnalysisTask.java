@@ -296,13 +296,15 @@ public class CohortAnalysisTask {
 
 	@Override
 	public String toString() {
-			return String.format("jobName = %s, source = %s, smallCellCount = %d, runHeraclesHeel = %s, " +
-					"cohortPeriodOnly = %s, cdmVersion = %s, visualizations = %s, cohortDefinitionIds = %s, " +
-					"analysisIds = %s, conditionConceptIds = %s, drugConceptIds = %s, procedureConceptIds = %s, " +
-					"observationConceptIds = %s, measurementConceptIds = %s, periods = %s",
-					jobName, source, smallCellCount, runHeraclesHeel, cohortPeriodOnly, cdmVersion,
-					visualizations, cohortDefinitionIds, analysisIds, conditionConceptIds, drugConceptIds,
-					procedureConceptIds, observationConceptIds, measurementConceptIds, periods);
+			return ("""
+                    jobName = %s, source = %s, smallCellCount = %d, runHeraclesHeel = %s, \
+                    cohortPeriodOnly = %s, cdmVersion = %s, visualizations = %s, cohortDefinitionIds = %s, \
+                    analysisIds = %s, conditionConceptIds = %s, drugConceptIds = %s, procedureConceptIds = %s, \
+                    observationConceptIds = %s, measurementConceptIds = %s, periods = %s\
+                    """).formatted(
+                    jobName, source, smallCellCount, runHeraclesHeel, cohortPeriodOnly, cdmVersion,
+                    visualizations, cohortDefinitionIds, analysisIds, conditionConceptIds, drugConceptIds,
+                    procedureConceptIds, observationConceptIds, measurementConceptIds, periods);
 
 	}
 }

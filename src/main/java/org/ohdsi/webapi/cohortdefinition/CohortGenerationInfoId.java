@@ -16,8 +16,8 @@
 package org.ohdsi.webapi.cohortdefinition;
 
 import java.io.Serializable;
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 
 /**
  *
@@ -59,9 +59,9 @@ public class CohortGenerationInfoId implements Serializable {
   }
 
   public boolean equals(Object o) {
-    return ((o instanceof CohortGenerationInfoId) 
-            && cohortDefinitionId.equals(((CohortGenerationInfoId) o).getCohortDefinitionId()) 
-            && sourceId.equals(((CohortGenerationInfoId) o).getSourceId()));
+    return ((o instanceof CohortGenerationInfoId cgii) 
+            && cohortDefinitionId.equals(cgii.getCohortDefinitionId()) 
+            && sourceId.equals(cgii.getSourceId()));
   }
   
   public int hashCode() {

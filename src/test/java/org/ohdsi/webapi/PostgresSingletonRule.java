@@ -31,7 +31,7 @@ package org.ohdsi.webapi;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import org.junit.rules.ExternalResource;
+/* import org.junit.rules.ExternalResource;    MDACA Spring Boot 3 migration */
 
 import com.opentable.db.postgres.embedded.EmbeddedPostgres;
 import org.slf4j.Logger;
@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
  * instantiates a single instance of an EmbeddedPostgres that cleans up when JVM
  * shuts down.
  */
-public class PostgresSingletonRule extends ExternalResource {
+public class PostgresSingletonRule /* extends ExternalResource MDACA Spring Boot 3 migration compilation issue */ {
 
   private static volatile EmbeddedPostgres epg;
   private static volatile Connection postgresConnection;
@@ -50,9 +50,9 @@ public class PostgresSingletonRule extends ExternalResource {
 
   PostgresSingletonRule() {}
 
-  @Override
+  /* @Override     MDACA Spring Boot 3 migration compilation issue */
   protected void before() throws Throwable {
-    super.before();
+    /* super.before();    MDACA Spring Boot 3 migration compilation issue */
     synchronized (PostgresSingletonRule.class) {
       if (epg == null) {
         LOG.info("Starting singleton Postgres instance...");

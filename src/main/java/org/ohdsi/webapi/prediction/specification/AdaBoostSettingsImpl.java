@@ -34,8 +34,8 @@ public class AdaBoostSettingsImpl extends SeedSettingsImpl implements AdaBoostSe
         if (nEstimators != null) {
             if (nEstimators instanceof ArrayList) {
                 this.nEstimators = (ArrayList<Integer>) nEstimators;
-            } else if (nEstimators instanceof Integer) {
-                this.nEstimators = new ArrayList<>(Arrays.asList((Integer) nEstimators));
+            } else if (nEstimators instanceof Integer integer) {
+                this.nEstimators = new ArrayList<>(Arrays.asList(integer));
             } else {
                 throw new InputMismatchException("Expected ArrayList<Integer> or Integer");
             }
@@ -65,8 +65,8 @@ public class AdaBoostSettingsImpl extends SeedSettingsImpl implements AdaBoostSe
         if (learningRate != null) {
             if (learningRate instanceof ArrayList) {
                 this.learningRate = (ArrayList<BigDecimal>) learningRate;
-            } else if (learningRate instanceof Integer) {
-                this.learningRate = new ArrayList<>(Arrays.asList(new BigDecimal((Integer) learningRate)));
+            } else if (learningRate instanceof Integer integer) {
+                this.learningRate = new ArrayList<>(Arrays.asList(new BigDecimal(integer)));
             } else {
                 throw new InputMismatchException("Expected ArrayList<BigDecimal> or Integer");
             }

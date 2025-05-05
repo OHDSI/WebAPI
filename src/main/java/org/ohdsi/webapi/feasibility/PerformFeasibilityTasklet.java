@@ -116,7 +116,7 @@ public class PerformFeasibilityTasklet implements Tasklet {
     int[] result;
     try {
       String sessionId = SessionUtils.sessionId();
-      FeasibilityStudy study = this.feasibilityStudyRepository.findOne(studyId);
+      FeasibilityStudy study = this.feasibilityStudyRepository.findById(studyId).get();
       FeasibilityStudyQueryBuilder.BuildExpressionQueryOptions options = new FeasibilityStudyQueryBuilder.BuildExpressionQueryOptions();
       options.cdmSchema = jobParams.get("cdm_database_schema").toString();
       options.ohdsiSchema = jobParams.get("target_database_schema").toString();
@@ -152,7 +152,7 @@ public class PerformFeasibilityTasklet implements Tasklet {
     requresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     
     TransactionStatus initStatus = this.transactionTemplate.getTransactionManager().getTransaction(requresNewTx);
-    FeasibilityStudy study = this.feasibilityStudyRepository.findOne(studyId);
+    FeasibilityStudy study = this.feasibilityStudyRepository.findById(studyId).get();
     
     CohortDefinition resultDef = study.getResultRule();
     if (resultDef != null) {
@@ -188,19 +188,19 @@ public class PerformFeasibilityTasklet implements Tasklet {
     finally {
       TransactionStatus completeStatus = this.transactionTemplate.getTransactionManager().getTransaction(requresNewTx);
       Date endTime = Calendar.getInstance().getTime();
-      study = this.feasibilityStudyRepository.findOne(studyId);
+      study = this.feasibilityStudyRepository.findById(studyId).get();
       resultDef = study.getResultRule();
       if (resultDef != null)
       {
         CohortGenerationInfo resultInfo = findCohortGenerationInfoBySourceId(resultDef.getGenerationInfoList(), sourceId);
         resultInfo.setIsValid(isValid);
-        resultInfo.setExecutionDuration(new Integer((int)(endTime.getTime() - startTime.getTime())));
+        resultInfo.setExecutionDuration(Integer.valueOf((int) (endTime.getTime() - startTime.getTime())));
         resultInfo.setStatus(GenerationStatus.COMPLETE);
       }
       
       studyInfo = findStudyGenerationInfoBySourceId(study.getStudyGenerationInfoList(), sourceId);
       studyInfo.setIsValid(isValid);
-      studyInfo.setExecutionDuration(new Integer((int)(endTime.getTime() - startTime.getTime())));
+      studyInfo.setExecutionDuration(Integer.valueOf((int) (endTime.getTime() - startTime.getTime())));
       studyInfo.setStatus(GenerationStatus.COMPLETE);
       
       this.feasibilityStudyRepository.save(study);

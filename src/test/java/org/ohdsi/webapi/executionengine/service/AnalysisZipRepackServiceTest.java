@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.executionengine.service;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.compress.utils.IOUtils;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.ohdsi.webapi.executionengine.entity.AnalysisResultFileContent;
 import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
 
@@ -22,7 +22,7 @@ public class AnalysisZipRepackServiceTest {
     private ExecutionEngineAnalysisStatus execution;
     private List<AnalysisResultFileContent> resultFileContents;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
 
         execution = new ExecutionEngineAnalysisStatus();

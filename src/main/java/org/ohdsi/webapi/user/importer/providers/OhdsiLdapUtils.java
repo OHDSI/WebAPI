@@ -12,11 +12,11 @@ import java.util.Set;
 
 public class OhdsiLdapUtils {
 
-  public static String valueAsString(Attribute attribute) throws NamingException {
+  public static String valueAsString(/*~~>*/Attribute attribute) throws /*~~>*/NamingException {
     return Objects.nonNull(attribute) ? attribute.get().toString() : "";
   }
 
-  public static List<String> valueAsList(Attribute attribute) throws NamingException {
+  public static List<String> valueAsList(/*~~>*/Attribute attribute) throws /*~~>*/NamingException {
     List<String> result = new ArrayList<>();
     if (Objects.nonNull(attribute)) {
       for (int i = 0; i < attribute.size(); i++) {

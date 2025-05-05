@@ -5,8 +5,8 @@ public class WarningUtils {
         WarningSeverity severity = convertCirceWarningSeverity(
                 ((org.ohdsi.circe.check.warnings.BaseWarning) circeWarning).getSeverity());
         Warning warning;
-        if (circeWarning instanceof org.ohdsi.circe.check.warnings.ConceptSetWarning) {
-            warning = new ConceptSetWarning(severity, circeWarning.toMessage(), ((org.ohdsi.circe.check.warnings.ConceptSetWarning) circeWarning).getConceptSet());
+        if (circeWarning instanceof org.ohdsi.circe.check.warnings.ConceptSetWarning setWarning) {
+            warning = new ConceptSetWarning(severity, circeWarning.toMessage(), setWarning.getConceptSet());
         } else {
             warning = new DefaultWarning(severity, circeWarning.toMessage());
         }

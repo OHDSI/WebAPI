@@ -7,8 +7,8 @@ import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMe
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
@@ -26,7 +26,7 @@ import org.ohdsi.webapi.source.SourceRepository;
 import org.ohdsi.webapi.source.SourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -39,9 +39,9 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -87,12 +87,12 @@ public class CohortCharacterizationServiceTest extends AbstractDatabaseTest {
             "/ddl/results/cohort_characterizations.sql"
     );
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         if (!isCdmInitialized) {
             // one-time setup of CDM and CDM source
-            truncateTable(String.format("%s.%s", ohdsiSchema, "source"));
-            resetSequence(String.format("%s.%s", ohdsiSchema,"source_sequence"));
+            truncateTable("%s.%s".formatted(ohdsiSchema, "source"));
+            resetSequence("%s.%s".formatted(ohdsiSchema, "source_sequence"));
             sourceRepository.saveAndFlush(getCdmSource());
             prepareCdmSchema();
             isCdmInitialized = true;
@@ -134,32 +134,32 @@ public class CohortCharacterizationServiceTest extends AbstractDatabaseTest {
     }
 
     private void checkRequest(CohortCharacterizationEntity entity, Long generationId, ParamItem paramItem) throws IOException {
-        String dataItemMessage = String.format("Checking dataitem %s", paramItem.toString());
+        String dataItemMessage = "Checking dataitem %s".formatted(paramItem.toString());
         try {
             ZipFile zipFile = getZipFile(generationId, paramItem);
             if (paramItem.fileItems.isEmpty()) {
                 // File is valid
-                assertTrue(dataItemMessage, zipFile.isValidZipFile());
+                assertTrue(zipFile.isValidZipFile(), dataItemMessage);
                 // but empty
-                assertTrue(dataItemMessage, zipFile.getFileHeaders().isEmpty());
+                assertTrue(zipFile.getFileHeaders().isEmpty(), dataItemMessage);
             } else {
                 // File should not be empty
-                assertTrue(dataItemMessage, zipFile.isValidZipFile());
+                assertTrue(zipFile.isValidZipFile(), dataItemMessage);
                 Path tempDir = Files.createTempDirectory(String.valueOf(System.currentTimeMillis()));
                 tempDir.toFile().deleteOnExit();
                 zipFile.extractAll(tempDir.toAbsolutePath().toString());
-                assertEquals(dataItemMessage, paramItem.fileItems.size(), tempDir.toFile().listFiles().length);
+                assertEquals(paramItem.fileItems.size(), tempDir.toFile().listFiles().length, dataItemMessage);
 
                 for (File file : tempDir.toFile().listFiles()) {
-                    String fileMessage = String.format("Checking filename %s for dataitem %s", file.getName(), paramItem.toString());
+                    String fileMessage = "Checking filename %s for dataitem %s".formatted(file.getName(), paramItem.toString());
                     Optional<FileItem> fileItem = paramItem.fileItems.stream()
                             .filter(f -> f.fileName.equals(file.getName()))
                             .findAny();
-                    assertTrue(fileMessage, fileItem.isPresent());
+                    assertTrue(fileItem.isPresent(), fileMessage);
 
                     long count = Files.lines(file.toPath()).count();
                     // include header line
-                    assertEquals(fileMessage, fileItem.get().lineCount + 1, count);
+                    assertEquals(fileItem.get().lineCount + 1, count, fileMessage);
                 }
             }
         } catch (IllegalArgumentException e) {
@@ -167,8 +167,8 @@ public class CohortCharacterizationServiceTest extends AbstractDatabaseTest {
             int analysisId = paramItem.analysisIds.stream().filter(
                 aid -> entity.getFeatureAnalyses().stream().noneMatch(fa -> Objects.equals(fa.getId(), aid))
             ).findFirst().get();
-            String expectedMessage = String.format("Feature with id=%s not found in analysis", analysisId);
-            assertEquals(dataItemMessage, e.getMessage(), expectedMessage);
+            String expectedMessage = "Feature with id=%s not found in analysis".formatted(analysisId);
+            assertEquals(e.getMessage(), expectedMessage, dataItemMessage);
         }
     }
 
@@ -204,8 +204,8 @@ public class CohortCharacterizationServiceTest extends AbstractDatabaseTest {
 
     private static String getResultTablesSql() {
         StringBuilder ddl = new StringBuilder();
-        ddl.append(String.format("DROP SCHEMA IF EXISTS %s CASCADE;", RESULT_SCHEMA_NAME)).append("\n");
-        ddl.append(String.format("CREATE SCHEMA %s;", RESULT_SCHEMA_NAME)).append("\n");
+        ddl.append("DROP SCHEMA IF EXISTS %s CASCADE;".formatted(RESULT_SCHEMA_NAME)).append("\n");
+        ddl.append("CREATE SCHEMA %s;".formatted(RESULT_SCHEMA_NAME)).append("\n");
         COHORT_DDL_FILE_PATHS.forEach(sqlPath -> ddl.append(ResourceHelper.GetResourceAsString(sqlPath)).append("\n"));
         String resultSql = SqlRender.renderSql(ddl.toString(), new String[]{"results_schema"}, new String[]{RESULT_SCHEMA_NAME});
         return SqlTranslate.translateSql(resultSql, DBMSType.POSTGRESQL.getOhdsiDB());
@@ -269,7 +269,7 @@ public class CohortCharacterizationServiceTest extends AbstractDatabaseTest {
         for (final File file : tempDir.toFile().listFiles()) {
             if (file.getName().endsWith(".csv")) {
                 String tableName = file.getName().replace(".csv", "");
-                String sql = String.format("COPY @cdm_database_schema.%s FROM '%s' DELIMITER ',' CSV HEADER;", tableName, file.getAbsolutePath());
+                String sql = "COPY @cdm_database_schema.%s FROM '%s' DELIMITER ',' CSV HEADER;".formatted(tableName, file.getAbsolutePath());
                 cdmSqlBuilder.append(sql).append("\n\n");
             }
         }

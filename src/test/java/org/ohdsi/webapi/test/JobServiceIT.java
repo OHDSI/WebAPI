@@ -1,16 +1,15 @@
 package org.ohdsi.webapi.test;
 
-import static org.junit.Assert.assertEquals;
-
 import com.github.springtestdbunit.annotation.DatabaseOperation;
 import com.github.springtestdbunit.annotation.DatabaseSetup;
 import com.github.springtestdbunit.annotation.DatabaseTearDown;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.ohdsi.webapi.exampleapplication.ExampleApplicationWithJobService;
 import org.ohdsi.webapi.job.JobExecutionResource;
 import org.ohdsi.webapi.job.JobInstanceResource;
@@ -40,7 +39,7 @@ public class JobServiceIT extends WebApiIT {
     /* The test is ignored, because it is failing with current xstream version com.thoughtworks.xstream:xstream:1.4.19.
      *  see https://github.com/OHDSI/WebAPI/issues/2109 for details. */
     @Test
-    @Ignore
+    @Disabled
     public void createAndFindJob() {
         //create/queue job
         final ResponseEntity<JobExecutionResource> postEntity = getRestTemplate().postForEntity(this.endpointExample, null,
@@ -97,7 +96,7 @@ public class JobServiceIT extends WebApiIT {
     }
     
     private void assertJobInstance(final JobInstanceResource instance) {
-        Assert.assertNotNull(instance.getInstanceId());
+        Assertions.assertNotNull(instance.getInstanceId());
         assertEquals(ExampleApplicationWithJobService.EXAMPLE_JOB_NAME, instance.getName());
     }
     
@@ -106,8 +105,8 @@ public class JobServiceIT extends WebApiIT {
     }
     
     private void assertJobExecution(final JobExecutionResource execution) {
-        Assert.assertNotNull(execution);
-        Assert.assertNotNull(execution.getExecutionId());
-        Assert.assertNotNull(execution.getJobInstanceResource().getInstanceId());
+        Assertions.assertNotNull(execution);
+        Assertions.assertNotNull(execution.getExecutionId());
+        Assertions.assertNotNull(execution.getJobInstanceResource().getInstanceId());
     }
 }

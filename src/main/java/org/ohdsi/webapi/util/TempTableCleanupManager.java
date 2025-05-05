@@ -77,7 +77,7 @@ public class TempTableCleanupManager {
       try (ResultSet resultSet = metaData.getTables(null, tempSchema, tablePrefix, TABLE_TYPES)) {
         RowMapperResultSetExtractor<String> extractor = new RowMapperResultSetExtractor<>((rs, rowNum) -> rs.getString("TABLE_NAME"));
         List<String> tableNames = extractor.extractData(resultSet);
-        String sql = tableNames.stream().map(table -> String.format(DROP_TABLE_STATEMENT, tempSchema + "." + table)).collect(Collectors.joining());
+        String sql = tableNames.stream().map(table -> DROP_TABLE_STATEMENT.formatted(tempSchema + "." + table)).collect(Collectors.joining());
         String translatedSql = SqlTranslate.translateSql(sql, dialect);
         Arrays.asList(SqlSplit.splitSql(translatedSql)).forEach(jdbcTemplate::execute);
       }

@@ -19,6 +19,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -99,6 +100,11 @@ public class AchillesCacheAspect {
     private Map<String, String> getParams(JoinPoint joinPoint) {
         String[] names = ((MethodSignature) joinPoint.getSignature()).getParameterNames();
         Object[] objects = joinPoint.getArgs();
+        
+        if(names == null) {
+        	return new HashMap<String, String>();
+        }
+        
         return IntStream.range(0, names.length)
                 .boxed()
                 .collect(Collectors.toMap(i -> names[i],

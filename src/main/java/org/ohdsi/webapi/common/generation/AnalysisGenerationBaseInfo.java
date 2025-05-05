@@ -2,7 +2,7 @@ package org.ohdsi.webapi.common.generation;
 
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Embeddable
 @MappedSuperclass

@@ -3,7 +3,7 @@ package org.ohdsi.webapi.executionengine.entity;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity(name = "output_files")
 public class AnalysisResultFile {

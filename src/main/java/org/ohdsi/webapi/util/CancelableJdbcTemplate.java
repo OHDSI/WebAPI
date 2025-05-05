@@ -6,6 +6,7 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.jdbc.core.*;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import javax.sql.DataSource;
@@ -99,7 +100,7 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
       }
 
       private String appendSql(String sql, String statement) {
-        return (StringUtils.isEmpty(sql) ? statement : sql + "; " + statement);
+        return (ObjectUtils.isEmpty(sql) ? statement : sql + "; " + statement);
       }
 
       @Override
@@ -141,8 +142,8 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
       }
 
       private String getSql(PreparedStatementCreator statement) {
-        if (statement instanceof SqlProvider) {
-          return ((SqlProvider)statement).getSql();
+        if (statement instanceof SqlProvider provider) {
+          return provider.getSql();
         }
         return "";
       }

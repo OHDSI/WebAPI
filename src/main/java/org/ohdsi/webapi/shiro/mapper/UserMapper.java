@@ -9,19 +9,19 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 
 public abstract class UserMapper implements AttributesMapper<UserPrincipal> {
-    private String getAttrCoalesce(Attributes attrList, String key) throws NamingException {
+    private String getAttrCoalesce(/*~~>*/Attributes attrList, String key) throws /*~~>*/NamingException {
         String result = null;
-        Attribute attribute = attrList.get(key);
+        /*~~>*/Attribute attribute = attrList.get(key);
         if (attribute != null) {
             Object value = attribute.get();
-            if(value instanceof String) {
-                result = (String) value;
+            if(value instanceof String string) {
+                result = string;
             }
         }
         return result;
     }
 
-    public UserPrincipal mapFromAttributes(Attributes attrs) throws NamingException {
+    public UserPrincipal mapFromAttributes(/*~~>*/Attributes attrs) throws /*~~>*/NamingException {
         UserPrincipal user = new UserPrincipal();
 
         user.setUsername(getAttrCoalesce(attrs, getUsernameAttr()));
@@ -41,7 +41,7 @@ public abstract class UserMapper implements AttributesMapper<UserPrincipal> {
         return user;
     }
 
-    private void processAttribute(Attributes attrs, String key, StringBuilder name) throws NamingException {
+    private void processAttribute(/*~~>*/Attributes attrs, String key, StringBuilder name) throws /*~~>*/NamingException {
         if (key != null) {
             String attrValue = getAttrCoalesce(attrs, key);
             if (attrValue != null) {

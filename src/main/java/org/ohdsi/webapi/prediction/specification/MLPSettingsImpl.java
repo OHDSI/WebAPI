@@ -35,8 +35,8 @@ public class MLPSettingsImpl extends SeedSettingsImpl implements MLPSettings {
         if (size != null) {
             if (size instanceof ArrayList) {
                 this.size = (ArrayList<Integer>) size;
-            } else if (size instanceof Integer) {
-                this.size = new ArrayList<>(Arrays.asList((Integer) size));
+            } else if (size instanceof Integer integer) {
+                this.size = new ArrayList<>(Arrays.asList(integer));
             } else {
                 throw new InputMismatchException("Expected ArrayList<Integer> or Integer");
             }
@@ -64,8 +64,8 @@ public class MLPSettingsImpl extends SeedSettingsImpl implements MLPSettings {
         if (alpha != null) {
             if (alpha instanceof ArrayList) {
                 this.alpha = (ArrayList<BigDecimal>) alpha;
-            } else if (alpha instanceof Float) {
-                this.alpha = new ArrayList<>(Arrays.asList(new BigDecimal((Float) alpha)));
+            } else if (alpha instanceof Float float1) {
+                this.alpha = new ArrayList<>(Arrays.asList(new BigDecimal(float1)));
             } else {
                 throw new InputMismatchException("Expected ArrayList<BigDecimal> or Float");
             }

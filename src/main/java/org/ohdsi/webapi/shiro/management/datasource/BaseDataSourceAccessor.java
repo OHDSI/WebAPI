@@ -6,7 +6,7 @@ import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.ws.rs.ForbiddenException;
+import jakarta.ws.rs.ForbiddenException;
 
 public abstract class BaseDataSourceAccessor<T> implements DataSourceAccessor<T> {
 
@@ -28,7 +28,7 @@ public abstract class BaseDataSourceAccessor<T> implements DataSourceAccessor<T>
     if (source == null) {
       return false;
     }
-    return SecurityUtils.getSubject().isPermitted(String.format(Security.SOURCE_ACCESS_PERMISSION, source.getSourceKey()));
+    return SecurityUtils.getSubject().isPermitted(Security.SOURCE_ACCESS_PERMISSION.formatted(source.getSourceKey()));
   }
 
   protected abstract Source extractSource(T source);

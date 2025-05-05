@@ -16,8 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
@@ -75,7 +75,7 @@ public class GoogleAccessTokenFilter extends AtlasAuthFilter {
 
         String result = null;
         try {
-            ResponseEntity<String> response = restTemplate.getForEntity(String.format(VALIDATE_URL, token), String.class);
+            ResponseEntity<String> response = restTemplate.getForEntity(VALIDATE_URL.formatted(token), String.class);
             if (response.getStatusCode() == HttpStatus.OK) {
                 JsonNode root = mapper.readTree(response.getBody());
                 result = getValueAsString(root, "email");

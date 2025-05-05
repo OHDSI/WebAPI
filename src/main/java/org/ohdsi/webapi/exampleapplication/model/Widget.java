@@ -2,10 +2,10 @@ package org.ohdsi.webapi.exampleapplication.model;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 
@@ -61,6 +61,6 @@ public class Widget implements Serializable {
     
     @Override
     public String toString() {
-        return String.format("Widget Id=%s Name=%s", getId(), getName());
+        return "Widget Id=%s Name=%s".formatted(getId(), getName());
     }
 }

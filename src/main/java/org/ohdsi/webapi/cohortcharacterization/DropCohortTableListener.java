@@ -39,8 +39,9 @@ public class DropCohortTableListener extends JobExecutionListenerSupport {
 
   private Object doTask(JobParameters parameters) {
 
-    final Map<String, JobParameter> jobParameters = parameters.getParameters();
-    final Integer sourceId = Integer.valueOf(jobParameters.get(SOURCE_ID).toString());
+    /* final Map<String, JobParameter> jobParameters = parameters.getParameters();   MDACA Spring Boot 3 migration compilation issue */
+	final Map<String, JobParameter<?>> jobParameters = parameters.getParameters();
+    final Integer sourceId = Integer.valueOf(jobParameters.get(SOURCE_ID).getValue().toString());
     final String targetTable = jobParameters.get(TARGET_TABLE).getValue().toString();
     final String sql = sourceAwareSqlRender.renderSql(sourceId, DROP_TABLE_SQL, TARGET_TABLE, targetTable );
 

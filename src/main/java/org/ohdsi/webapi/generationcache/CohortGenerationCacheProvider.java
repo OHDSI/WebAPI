@@ -67,7 +67,7 @@ public class CohortGenerationCacheProvider extends AbstractDaoService implements
                 designHash,
                 SessionUtils.sessionId()
         );
-        String checksum = getSourceJdbcTemplate(source).queryForObject(psr.getSql(), psr.getOrderedParams(), String.class);
+        String checksum = getSourceJdbcTemplate(source).queryForObject(psr.getSql(), String.class, psr.getOrderedParams());
         log.info(CACHE_VALIDATION_TIME, designHash, System.currentTimeMillis() - startTime);
         return checksum;
     }

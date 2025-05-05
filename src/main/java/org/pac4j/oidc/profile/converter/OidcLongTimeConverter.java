@@ -26,24 +26,24 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 
-public class OidcLongTimeConverter implements AttributeConverter<Date> {
+public class OidcLongTimeConverter implements AttributeConverter { /*  MDACA Spring Boot 3 migration compilation issue */
     public OidcLongTimeConverter() {
     }
 
     public Date convert(Object attribute) {
-        if (attribute instanceof Long) {
-            long milliseconds = (Long) attribute * 1000L;
+        if (attribute instanceof Long long1) {
+            long milliseconds = long1 * 1000L;
             return new Date(milliseconds);
-        } else if (attribute instanceof String) {
+        } else if (attribute instanceof String string) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss'Z'");
 
             try {
-                return sdf.parse((String)attribute);
+                return sdf.parse(string);
             } catch (ParseException var4) {
                 throw new TechnicalException(var4);
             }
         } else {
-            return attribute instanceof Date ? (Date)attribute : null;
+            return attribute instanceof Date d ? d : null;
         }
     }
 }

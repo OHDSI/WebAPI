@@ -1,7 +1,8 @@
 package org.ohdsi.webapi.security;
 
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
+import com.cosium.spring.data.jpa.entity.graph.domain2.DynamicEntityGraph;
+import com.cosium.spring.data.jpa.entity.graph.domain2.EntityGraph;
+import jakarta.annotation.PostConstruct;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.security.dto.RoleDTO;
@@ -24,6 +25,7 @@ import org.ohdsi.webapi.source.SourceRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.Advised;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -31,7 +33,6 @@ import org.springframework.data.repository.support.Repositories;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.annotation.PostConstruct;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
@@ -67,7 +68,7 @@ public class PermissionService {
     private ThreadLocal<ConcurrentHashMap<EntityType, ConcurrentHashMap<String, Set<RoleDTO>>>> permissionCache =
             ThreadLocal.withInitial(ConcurrentHashMap::new);
 
-    private final EntityGraph PERMISSION_ENTITY_GRAPH = EntityGraphUtils.fromAttributePaths("rolePermissions", "rolePermissions.role");
+    private final EntityGraph PERMISSION_ENTITY_GRAPH = DynamicEntityGraph.loading().addPath("rolePermissions", "rolePermissions.role").build();
 
     public PermissionService(
             WebApplicationContext appContext,
@@ -116,7 +117,7 @@ public class PermissionService {
 
     public void checkCommonEntityOwnership(EntityType entityType, Integer entityId) throws Exception {
 
-        JpaRepository entityRepository = (JpaRepository) (((Advised) repositories.getRepositoryFor(entityType.getEntityClass())).getTargetSource().getTarget());
+        JpaRepository entityRepository = (JpaRepository) (((Advised) repositories.getRepositoryFor(entityType.getEntityClass()).get()).getTargetSource().getTarget());
         Class idClazz = Arrays.stream(entityType.getEntityClass().getMethods())
             // Overriden methods from parameterized interface are "bridges" and should be ignored.
             // For more information see https://docs.oracle.com/javase/tutorial/java/generics/bridgeMethods.html
@@ -124,7 +125,7 @@ public class PermissionService {
             .findFirst()
             .orElseThrow(() -> new RuntimeException("Cannot retrieve common entity"))
             .getReturnType();
-        CommonEntity entity = (CommonEntity) entityRepository.getOne((Serializable) conversionService.convert(entityId, idClazz));
+        CommonEntity entity = (CommonEntity) entityRepository.getById((Serializable) conversionService.convert(entityId, idClazz));
 
         if (!isCurrentUserOwnerOf(entity)) {
             throw new UnauthorizedException();
@@ -150,25 +151,25 @@ public class PermissionService {
 
     public void removePermissionsFromRole(Map<String, String> permissionTemplates, Integer entityId, Long roleId) {
 
-        RoleEntity role = roleRepository.findById(roleId);
+        RoleEntity role = roleRepository.findById(roleId).get();
         permissionTemplates.keySet()
                 .forEach(pt -> {
                     String permission = getPermission(pt, entityId);
                     PermissionEntity permissionEntity = permissionRepository.findByValueIgnoreCase(permission);
                     if (permissionEntity != null) {
                         RolePermissionEntity rp = rolePermissionRepository.findByRoleAndPermission(role, permissionEntity);
-                        rolePermissionRepository.delete(rp.getId());
+                        rolePermissionRepository.deleteById(rp.getId());
                     }
                 });
     }
 
     public String getPermission(String template, Object entityId) {
 
-        return String.format(template, entityId);
+        return template.formatted(entityId);
     }
 
     public String getPermissionSqlTemplate(String template) {
-        return String.format(template, "%%");
+        return template.formatted("%%");
     }
 
     private boolean isCurrentUserOwnerOf(CommonEntity entity) {
@@ -190,7 +191,7 @@ public class PermissionService {
 
             Map<Long, RoleDTO> roleDTOMap = new HashMap<>();
             permissionsSQLTemplates.forEach(p -> {
-                Iterable<PermissionEntity> permissionEntities = permissionRepository.findByValueLike(p, PERMISSION_ENTITY_GRAPH);
+                Iterable<PermissionEntity> permissionEntities = permissionRepository.findByValueLike(p);//, PERMISSION_ENTITY_GRAPH);
                 for (PermissionEntity permissionEntity : permissionEntities) {
                     Set<RoleDTO> roles = rolesForEntity.get(permissionEntity.getValue());
                     if (roles == null) {

@@ -1,9 +1,9 @@
 package org.ohdsi.webapi.tagging;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.service.dto.CommonEntityExtDTO;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public abstract class BaseTaggingTest<T extends CommonEntityExtDTO, ID extends Number> extends AbstractDatabaseTest {
     protected T initialDTO;
@@ -46,7 +46,7 @@ public abstract class BaseTaggingTest<T extends CommonEntityExtDTO, ID extends N
         return FileUtils.readFileToString(ple_spec, StandardCharsets.UTF_8);
     }
 
-    @Before
+    @BeforeEach
     public void createInitialData() throws IOException {
         UserEntity user = new UserEntity();
         user.setLogin("anonymous");
@@ -83,7 +83,7 @@ public abstract class BaseTaggingTest<T extends CommonEntityExtDTO, ID extends N
         doCreateInitialData();
     }
 
-    @After
+    @AfterEach
     public void clear() {
         doClear();
         tagRepository.deleteAll();

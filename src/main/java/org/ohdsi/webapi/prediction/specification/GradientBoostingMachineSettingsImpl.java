@@ -40,10 +40,10 @@ public class GradientBoostingMachineSettingsImpl extends SeedSettingsImpl implem
                 this.nTrees = new ArrayList<>();
             
             nTrees.forEach((o) -> {
-                if (o instanceof BigDecimal) {
-                    this.nTrees.add(((BigDecimal) o).intValue());
-                } else if (o instanceof Integer) {
-                    this.nTrees.add((Integer) o);
+                if (o instanceof BigDecimal decimal) {
+                    this.nTrees.add(decimal.intValue());
+                } else if (o instanceof Integer integer) {
+                    this.nTrees.add(integer);
                 } else {
                     throw new InputMismatchException("Expected ArrayList<Integer> or ArrayList<BigDecimal>");
                 }
@@ -92,8 +92,8 @@ public class GradientBoostingMachineSettingsImpl extends SeedSettingsImpl implem
         if (maxDepth != null) {
             if (maxDepth instanceof ArrayList) {
                 this.maxDepth = (ArrayList<Integer>) maxDepth;
-            } else if (maxDepth instanceof Integer) {
-                this.maxDepth = new ArrayList<>(Arrays.asList((Integer) maxDepth));
+            } else if (maxDepth instanceof Integer integer) {
+                this.maxDepth = new ArrayList<>(Arrays.asList(integer));
             } else {
                 throw new InputMismatchException("Expected ArrayList<Integer> or Integer");
             }
@@ -121,8 +121,8 @@ public class GradientBoostingMachineSettingsImpl extends SeedSettingsImpl implem
         if (minRows != null) {
             if (minRows instanceof ArrayList) {
                 this.minRows = (ArrayList<Integer>) minRows;
-            } else if (minRows instanceof Integer) {
-                this.minRows = new ArrayList<>(Arrays.asList((Integer) minRows));
+            } else if (minRows instanceof Integer integer) {
+                this.minRows = new ArrayList<>(Arrays.asList(integer));
             } else {
                 throw new InputMismatchException("Expected ArrayList<Integer> or Integer");
             }

@@ -41,7 +41,7 @@ import org.ohdsi.webapi.cdmresults.DescendantRecordCount;
 public class CDMResultsCache {
     //BoundedConcurrentHashMap is hibernate implementation of the LRU(Least recently used) cache map. It supports concurrency out of the box, and does not block get operation.
     //I set 1,000,000 for capacity, this is a significant amount, but at the same time it should be only 20-25mb for 8 digital ids
-    private Set<Integer> requestedIdsThatDoesNotHaveValueInStorage  = Collections.newSetFromMap(new BoundedConcurrentHashMap<>(1_000_000));
+    private Set<Integer> requestedIdsThatDoesNotHaveValueInStorage  = Collections.newSetFromMap(new BoundedConcurrentHashMap<>(1_000_000, 1));
     private Map<Integer, DescendantRecordCount> cachedValues = new ConcurrentHashMapUnsafe<>();
 
     private boolean warm;

@@ -7,17 +7,21 @@ import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.helper.Guard;
 import org.ohdsi.webapi.shiro.filters.AtlasAuthFilter;
 import org.ohdsi.webapi.shiro.tokens.JwtAuthToken;
-import org.pac4j.core.context.JEEContext;
+import org.pac4j.core.context.CallContext;
+import org.pac4j.core.context.session.SessionStore;
+import org.pac4j.jee.context.JEEContext;
+import org.pac4j.jee.context.session.JEESessionStoreFactory;
+import org.pac4j.jee.context.session.JEESessionStore;
 import org.pac4j.saml.client.SAML2Client;
 import org.pac4j.saml.credentials.SAML2Credentials;
 import org.pac4j.saml.exceptions.SAMLAuthnInstantException;
 import org.pac4j.saml.profile.SAML2Profile;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -57,15 +61,16 @@ public class SamlHandleFilter extends AtlasAuthFilter {
                 HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
                 HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
                 JEEContext context = new JEEContext(httpRequest, httpResponse);
-
+                SessionStore store = (SessionStore) new JEESessionStore();
+                
                 SAML2Client client;
                 if (isForceAuth(request)) {
                     client = saml2ForceClient;
                 } else {
                     client = saml2Client;
                 }
-                SAML2Credentials credentials = client.getCredentials(context).get();
-                SAML2Profile samlProfile = (SAML2Profile)client.getUserProfile(credentials, context).get();
+                SAML2Credentials credentials = (SAML2Credentials)client.getCredentials(new CallContext(context, store)).get();
+                SAML2Profile samlProfile = (SAML2Profile)client.getUserProfile(new CallContext(context, store), credentials).get();
 
                 token = new JwtAuthToken(samlProfile.getId());
             }

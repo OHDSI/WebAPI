@@ -15,9 +15,10 @@
  */
 package org.ohdsi.webapi.test.feasibility;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import org.junit.Test;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+
+import org.junit.jupiter.api.Test;
 import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.feasibility.FeasibilityStudy;
 import org.ohdsi.webapi.feasibility.FeasibilityStudyRepository;

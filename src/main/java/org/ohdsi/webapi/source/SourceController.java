@@ -21,10 +21,10 @@ import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.PersistenceException;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.persistence.PersistenceException;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -194,7 +194,7 @@ public class SourceController extends AbstractDaoService {
     source.setCreatedBy(getCurrentUser());
     source.setCreatedDate(new Date());
     try {
-      Source saved = sourceRepository.saveAndFlush(source);
+      Source saved = sourceRepository.save(source);
       sourceService.invalidateCache();
       SourceInfo sourceInfo = new SourceInfo(saved);
       publisher.publishEvent(new AddDataSourceEvent(this, source.getSourceId(), source.getSourceName()));
@@ -246,7 +246,8 @@ public class SourceController extends AbstractDaoService {
       List<SourceDaimon> removed = source.getDaimons().stream().filter(d -> !updated.getDaimons().contains(d))
               .collect(Collectors.toList());
       // Delete MUST be called after fetching user or source data to prevent autoflush (see DefaultPersistEventListener.onPersist)
-      sourceDaimonRepository.delete(removed);
+      /* sourceDaimonRepository.delete(removed);  MDACA Spring Boot 3 migration compilation issue   */
+      sourceDaimonRepository.deleteAll(removed);
       Source result = sourceRepository.save(updated);
       publisher.publishEvent(new ChangeDataSourceEvent(this, updated.getSourceId(), updated.getSourceName()));
       sourceService.invalidateCache();

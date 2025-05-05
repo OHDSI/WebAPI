@@ -30,7 +30,7 @@ public class JwtAuthRealm extends AuthorizingRealm {
 
   @Override
   protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
-    final String login = (String) principals.getPrimaryPrincipal();
+    final String login = principals.getPrimaryPrincipal().toString();
     return authorizer.getAuthorizationInfo(login);
   }
 

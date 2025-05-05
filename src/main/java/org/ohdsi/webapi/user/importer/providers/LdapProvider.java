@@ -14,9 +14,9 @@ public interface LdapProvider {
 
   LdapTemplate getLdapTemplate();
 
-  List<LdapGroup> getLdapGroups(Attributes attributes) throws NamingException;
+  List<LdapGroup> getLdapGroups(/*~~>*/Attributes attributes) throws /*~~>*/NamingException;
 
-  SearchControls getUserSearchControls();
+  /*~~>*/SearchControls getUserSearchControls();
 
   Set<String> getGroupClasses();
 

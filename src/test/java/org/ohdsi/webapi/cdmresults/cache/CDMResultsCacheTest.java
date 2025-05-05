@@ -1,11 +1,7 @@
 package org.ohdsi.webapi.cdmresults.cache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -17,15 +13,16 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.ohdsi.webapi.cdmresults.DescendantRecordCount;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CDMResultsCacheTest {
 
     private CDMResultsCache cache = new CDMResultsCache();
@@ -84,7 +81,8 @@ public class CDMResultsCacheTest {
         List<Integer> ids2 = Arrays.asList(1, 2, 3, 4);
 
         when(function.apply(any())).then(invocation -> {
-                    List<Integer> ids = invocation.getArgumentAt(0, List.class);
+                    /* List<Integer> ids = invocation.getArgumentAt(0, List.class);    MDACA Spring Boot 3 migration compilation issue */
+                    List<Integer> ids = invocation.getArgument(0, List.class);
                     return ids.stream().map(CDMResultsCacheTest.this::createDescendantRecordCount).collect(Collectors.toList());
                 }
 
@@ -105,7 +103,7 @@ public class CDMResultsCacheTest {
         List<Integer> ids2 = Arrays.asList(1, 2);
 
         when(function.apply(any())).then(invocation -> {
-                    List<Integer> ids = invocation.getArgumentAt(0, List.class);
+                    List<Integer> ids = invocation.getArgument(0, List.class);
                     return ids2.stream().map(CDMResultsCacheTest.this::createDescendantRecordCount).collect(Collectors.toList());
                 }
 
@@ -129,10 +127,10 @@ public class CDMResultsCacheTest {
         cache.cacheValue(createDescendantRecordCount(1));
         cache.cacheValue(createDescendantRecordCount(2));
 
-        assertEquals(new Long(1_001L), cache.get(1).getRecordCount());
-        assertEquals(new Long(1_000_001L), cache.get(1).getDescendantRecordCount());
-        assertEquals(new Long(1_002L), cache.get(2).getRecordCount());
-        assertEquals(new Long(1_000_002L), cache.get(2).getDescendantRecordCount());
+        assertEquals(Long.valueOf(1_001L), cache.get(1).getRecordCount());
+        assertEquals(Long.valueOf(1_000_001L), cache.get(1).getDescendantRecordCount());
+        assertEquals(Long.valueOf(1_002L), cache.get(2).getRecordCount());
+        assertEquals(Long.valueOf(1_000_002L), cache.get(2).getDescendantRecordCount());
 
     }
 
@@ -153,8 +151,8 @@ public class CDMResultsCacheTest {
     public void get() {
 
         cache.cacheValue(createDescendantRecordCount(1));
-        assertEquals(new Long(1_001L), cache.get(1).getRecordCount());
-        assertEquals(new Long(1_000_001L), cache.get(1).getDescendantRecordCount());
+        assertEquals(Long.valueOf(1_001L), cache.get(1).getRecordCount());
+        assertEquals(Long.valueOf(1_000_001L), cache.get(1).getDescendantRecordCount());
     }
 
     @Test

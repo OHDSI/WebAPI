@@ -20,10 +20,17 @@ import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.StreamSupport;
 
 import static org.ohdsi.webapi.Constants.Params.COHORT_DEFINITION_ID;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
@@ -36,17 +43,20 @@ public class CleanupCohortSamplesTasklet implements Tasklet {
 	private final SourceRepository sourceRepository;
 	private final CohortSamplingService samplingService;
 	private final CohortSampleRepository sampleRepository;
+	private final PlatformTransactionManager transactionManager;
 
 	public CleanupCohortSamplesTasklet(
 			final TransactionTemplate transactionTemplate,
 			final SourceRepository sourceRepository,
 			CohortSamplingService samplingService,
-			CohortSampleRepository sampleRepository
+			CohortSampleRepository sampleRepository,
+			PlatformTransactionManager transactionManager
 	) {
 		this.transactionTemplate = transactionTemplate;
 		this.sourceRepository = sourceRepository;
 		this.samplingService = samplingService;
 		this.sampleRepository = sampleRepository;
+		this.transactionManager = transactionManager;
 	}
 
 	private Integer doTask(ChunkContext chunkContext) {
@@ -55,14 +65,14 @@ public class CleanupCohortSamplesTasklet implements Tasklet {
 
 		if (jobParams.containsKey(SOURCE_ID)) {
 			int sourceId = Integer.parseInt(jobParams.get(SOURCE_ID).toString());
-			Source source = this.sourceRepository.findOne(sourceId);
+			Source source = this.sourceRepository.findById(sourceId).get();
 			if (source != null) {
 				return mapSource(source, cohortDefinitionId);
 			} else {
 				return 0;
 			}
 		} else {
-			return this.sourceRepository.findAll().stream()
+			return StreamSupport.stream(this.sourceRepository.findAll().spliterator(), false)
 					.filter(source-> source.getDaimons()
 							.stream()
 							.anyMatch(daimon -> daimon.getDaimonType() == SourceDaimon.DaimonType.Results))
@@ -80,7 +90,7 @@ public class CleanupCohortSamplesTasklet implements Tasklet {
 					return 0;
 				}
 
-				sampleRepository.delete(samples);
+				sampleRepository.deleteAll(samples);
 
 				int[] cohortSampleIds = samples.stream()
 						.mapToInt(CohortSample::getId)
@@ -113,7 +123,7 @@ public class CleanupCohortSamplesTasklet implements Tasklet {
 
 	public JobExecutionResource launch(JobBuilderFactory jobBuilders, StepBuilderFactory stepBuilders, JobTemplate jobTemplate, int cohortDefinitionId) {
 		JobParametersBuilder builder = new JobParametersBuilder();
-		builder.addString(JOB_NAME, String.format("Cleanup cohort samples of cohort definition %d.", cohortDefinitionId));
+		builder.addString(JOB_NAME, "Cleanup cohort samples of cohort definition %d.".formatted(cohortDefinitionId));
 		builder.addString(COHORT_DEFINITION_ID, String.valueOf(cohortDefinitionId));
 
 		log.info("Beginning cohort cleanup for cohort definition id: {}", cohortDefinitionId);
@@ -122,7 +132,7 @@ public class CleanupCohortSamplesTasklet implements Tasklet {
 
 	public JobExecutionResource launch(JobBuilderFactory jobBuilders, StepBuilderFactory stepBuilders, JobTemplate jobTemplate, int cohortDefinitionId, int sourceId) {
 		JobParametersBuilder builder = new JobParametersBuilder();
-		builder.addString(JOB_NAME, String.format("Cleanup cohort samples of cohort definition %d.", cohortDefinitionId));
+		builder.addString(JOB_NAME, "Cleanup cohort samples of cohort definition %d.".formatted(cohortDefinitionId));
 		builder.addString(COHORT_DEFINITION_ID, String.valueOf(cohortDefinitionId));
 		builder.addString(SOURCE_ID, String.valueOf(sourceId));
 
@@ -133,6 +143,7 @@ public class CleanupCohortSamplesTasklet implements Tasklet {
 	private JobExecutionResource launch(JobBuilderFactory jobBuilders, StepBuilderFactory stepBuilders, JobTemplate jobTemplate, JobParameters jobParameters) {
 		Step cleanupStep = stepBuilders.get("cohortSample.cleanupSamples")
 				.tasklet(this)
+				.transactionManager(transactionManager)
 				.build();
 
 		SimpleJobBuilder cleanupJobBuilder = jobBuilders.get("cleanupSamples")
@@ -142,4 +153,5 @@ public class CleanupCohortSamplesTasklet implements Tasklet {
 
 		return jobTemplate.launch(cleanupCohortJob, jobParameters);
 	}
+	
 }

@@ -20,14 +20,13 @@ import org.ohdsi.webapi.source.SourceService;
 import org.ohdsi.webapi.util.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -71,7 +70,6 @@ public class PredictionController {
   @Value("${security.defaultGlobalReadPermissions}")
   private boolean defaultGlobalReadPermissions;
   
-  @Autowired
   public PredictionController(PredictionService service,
                               GenericConversionService conversionService,
                               ConverterUtils converterUtils,
@@ -202,7 +200,7 @@ public class PredictionController {
   public PredictionAnalysisDTO getAnalysis(@PathParam("id") int id) {
 
     PredictionAnalysis analysis = service.getAnalysis(id);
-    ExceptionUtils.throwNotFoundExceptionIfNull(analysis, String.format(NO_PREDICTION_ANALYSIS_MESSAGE, id));
+    ExceptionUtils.throwNotFoundExceptionIfNull(analysis, NO_PREDICTION_ANALYSIS_MESSAGE.formatted(id));
     return conversionService.convert(analysis, PredictionAnalysisDTO.class);
   }
 
@@ -273,7 +271,7 @@ public class PredictionController {
     Response response = Response
             .ok(baos)
             .type(MediaType.APPLICATION_OCTET_STREAM)
-            .header("Content-Disposition", String.format("attachment; filename=\"prediction_study_%d_export.zip\"", id))
+            .header("Content-Disposition", "attachment; filename=\"prediction_study_%d_export.zip\"".formatted(id))
             .build();
 
     return response;
@@ -297,7 +295,7 @@ public class PredictionController {
                                             @PathParam("sourceKey") String sourceKey) throws IOException {
 
     PredictionAnalysis predictionAnalysis = service.getAnalysis(predictionAnalysisId);
-    ExceptionUtils.throwNotFoundExceptionIfNull(predictionAnalysis, String.format(NO_PREDICTION_ANALYSIS_MESSAGE, predictionAnalysisId));
+    ExceptionUtils.throwNotFoundExceptionIfNull(predictionAnalysis, NO_PREDICTION_ANALYSIS_MESSAGE.formatted(predictionAnalysisId));
     PredictionAnalysisDTO predictionAnalysisDTO = conversionService.convert(predictionAnalysis, PredictionAnalysisDTO.class);
     CheckResult checkResult = runDiagnostics(predictionAnalysisDTO);
     if (checkResult.hasCriticalErrors()) {
@@ -337,7 +335,7 @@ public class PredictionController {
   public ExecutionBasedGenerationDTO getGeneration(@PathParam("generationId") Long generationId) {
 
     PredictionGenerationEntity generationEntity = service.getGeneration(generationId);
-    ExceptionUtils.throwNotFoundExceptionIfNull(generationEntity, String.format(NO_GENERATION_MESSAGE, generationId));
+    ExceptionUtils.throwNotFoundExceptionIfNull(generationEntity, NO_GENERATION_MESSAGE.formatted(generationId));
     return sensitiveInfoService.filterSensitiveInfo(conversionService.convert(generationEntity, ExecutionBasedGenerationDTO.class),
             Collections.singletonMap(Constants.Variables.SOURCE, generationEntity.getSource()));
   }

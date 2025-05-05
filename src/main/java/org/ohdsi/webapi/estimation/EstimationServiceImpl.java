@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.estimation;
 
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
+import com.cosium.spring.data.jpa.entity.graph.domain2.DynamicEntityGraph;
+import com.cosium.spring.data.jpa.entity.graph.domain2.EntityGraph;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -54,10 +54,10 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
-import javax.ws.rs.InternalServerErrorException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.InternalServerErrorException;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -69,7 +69,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static org.ohdsi.webapi.Constants.GENERATE_ESTIMATION_ANALYSIS;
 import static org.ohdsi.webapi.Constants.Params.ESTIMATION_ANALYSIS_ID;
@@ -88,12 +90,14 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
 
     private final String EXEC_SCRIPT = ResourceHelper.GetResourceAsString("/resources/estimation/r/runAnalysis.R");
 
-    private final EntityGraph DEFAULT_ENTITY_GRAPH = EntityGraphUtils.fromAttributePaths("source", "analysisExecution.resultFiles");
+    private final EntityGraph DEFAULT_ENTITY_GRAPH = DynamicEntityGraph.loading().addPath("source").addPath("analysisExecution.resultFiles").build();
 
-    private final EntityGraph COMMONS_ENTITY_GRAPH = EntityUtils.fromAttributePaths(
-            "createdBy",
+    private final EntityGraph COMMONS_ENTITY_GRAPH = DynamicEntityGraph.loading().addPath(
+            "createdBy"//,
+            //"modifiedBy"
+    ).addPath(
             "modifiedBy"
-    );
+    ).build();
 
     @PersistenceContext
     protected EntityManager entityManager;
@@ -150,13 +154,13 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     
     @Override
     public Estimation getById(Integer id) {
-        return estimationRepository.findOne(id, COMMONS_ENTITY_GRAPH);
+        return estimationRepository.findById(id, COMMONS_ENTITY_GRAPH).get();
     }
 
     @Override
     public void delete(final int id) {
 
-        this.estimationRepository.delete(id);
+        this.estimationRepository.deleteById(id);
     }
 
     @Override
@@ -197,7 +201,12 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     @Override
     public Estimation copy(final int id) throws Exception {
 
-        Estimation est = estimationRepository.findOne(id);
+        /* Estimation est = estimationRepository.findOne(id);   */
+    	Estimation est = null;
+    	Optional<Estimation> optionalEst = estimationRepository.findById(id);
+    	if (optionalEst.isPresent()) {
+    	    est = optionalEst.get();
+    	}
         entityManager.detach(est); // Detach from the persistence context in order to save a copy
         est.setId(null);
         est.setName(getNameForCopy(est.getName()));
@@ -207,12 +216,12 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     @Override
     public Estimation getAnalysis(int id) {
 
-        return estimationRepository.findOne(id, COMMONS_ENTITY_GRAPH);
+        return estimationRepository.findById(id, COMMONS_ENTITY_GRAPH).get();
     }
 
     @Override
     public EstimationAnalysisImpl getAnalysisExpression(int id) {
-        return Utils.deserialize(estimationRepository.findOne(id, COMMONS_ENTITY_GRAPH).getSpecification(), EstimationAnalysisImpl.class);
+        return Utils.deserialize(estimationRepository.findById(id, COMMONS_ENTITY_GRAPH).get().getSpecification(), EstimationAnalysisImpl.class);
     }
 
     @Override
@@ -400,7 +409,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
             est.setName(NameUtils.getNameWithSuffix(analysis.getName(), this::getNamesLike));
 
             Estimation savedEstimation = this.createEstimation(est);
-            return estimationRepository.findOne(savedEstimation.getId(), COMMONS_ENTITY_GRAPH);
+            return estimationRepository.findById(savedEstimation.getId(), COMMONS_ENTITY_GRAPH).get();
         } catch (Exception e) {
             log.debug("Error while importing estimation analysis: " + e.getMessage());
             throw e;
@@ -429,8 +438,8 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
         final Source source = sourceService.findBySourceKey(sourceKey);
         final Integer analysisId = estimation.getId();
 
-        String packageName = String.format("EstimationAnalysis.%s", SessionUtils.sessionId());
-        String packageFilename = String.format("estimation_study_%d.zip", analysisId);
+        String packageName = "EstimationAnalysis.%s".formatted(SessionUtils.sessionId());
+        String packageFilename = "estimation_study_%d.zip".formatted(analysisId);
         List<AnalysisFile> analysisFiles = new ArrayList<>();
         AnalysisFile analysisFile = new AnalysisFile();
         analysisFile.setFileName(packageFilename);
@@ -444,7 +453,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
 
         JobParametersBuilder builder = prepareJobParametersBuilder(source, analysisId, packageName, packageFilename)
                 .addString(ESTIMATION_ANALYSIS_ID, analysisId.toString())
-                .addString(JOB_NAME, String.format("Generating Estimation Analysis %d using %s (%s)", analysisId, source.getSourceName(), source.getSourceKey()));
+                .addString(JOB_NAME, "Generating Estimation Analysis %d using %s (%s)".formatted(analysisId, source.getSourceName(), source.getSourceKey()));
 
         Job generateAnalysisJob = generationUtils.buildJobForExecutionEngineBasedAnalysisTasklet(
                 GENERATE_ESTIMATION_ANALYSIS,
@@ -465,9 +474,9 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     @Override
     public List<EstimationGenerationEntity> getEstimationGenerations(Integer estimationAnalysisId) {
 
-        return generationRepository
-            .findByEstimationAnalysisId(estimationAnalysisId, DEFAULT_ENTITY_GRAPH)
-            .stream()
+        return StreamSupport.stream(
+        		generationRepository.findByEstimationAnalysisId(estimationAnalysisId, DEFAULT_ENTITY_GRAPH).spliterator(), false
+             )
             .filter(gen -> sourceAccessor.hasAccess(gen.getSource()))
             .collect(Collectors.toList());
     }
@@ -475,7 +484,7 @@ public class EstimationServiceImpl extends AnalysisExecutionSupport implements E
     @Override
     public EstimationGenerationEntity getGeneration(Long generationId) {
 
-        return generationRepository.findOne(generationId, DEFAULT_ENTITY_GRAPH);
+        return generationRepository.findById(generationId, DEFAULT_ENTITY_GRAPH).get();
     }
     
     private Estimation save(Estimation analysis) {

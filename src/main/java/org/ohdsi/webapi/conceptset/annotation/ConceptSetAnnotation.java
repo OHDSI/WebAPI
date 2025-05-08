@@ -3,13 +3,18 @@ package org.ohdsi.webapi.conceptset.annotation;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.ohdsi.webapi.model.CommonEntity;
+import org.ohdsi.webapi.shiro.Entities.UserEntity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.util.Date;
 
 @Entity(name = "ConceptSetAnnotation")
 @Table(name = "concept_set_annotation")
@@ -49,6 +54,57 @@ public class ConceptSetAnnotation implements Serializable {
 
     @Column(name = "copied_from_concept_set_ids")
     private String copiedFromConceptSetIds;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_id", updatable = false)
+    private UserEntity createdBy;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "modified_by_id")
+    private UserEntity modifiedBy;
+    @Column(name = "created_date", updatable = false)
+    private Date createdDate;
+    @Column(name = "modified_date")
+    private Date modifiedDate;
+
+    public UserEntity getCreatedBy() {
+
+        return createdBy;
+    }
+
+    public void setCreatedBy(UserEntity createdBy) {
+
+        this.createdBy = createdBy;
+    }
+
+    public UserEntity getModifiedBy() {
+
+        return modifiedBy;
+    }
+
+    public void setModifiedBy(UserEntity modifiedBy) {
+
+        this.modifiedBy = modifiedBy;
+    }
+
+    public Date getCreatedDate() {
+
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+
+        this.createdDate = createdDate;
+    }
+
+    public Date getModifiedDate() {
+
+        return modifiedDate;
+    }
+
+    public void setModifiedDate(Date modifiedDate) {
+
+        this.modifiedDate = modifiedDate;
+    }
 
     public Integer getId() {
         return id;

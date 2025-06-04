@@ -109,14 +109,6 @@ public class GenerateCohortCharacterizationTasklet extends AnalysisTasklet {
                     .replaceAll("#", tempSchema + "." + sessionId + "_")
                     .replaceAll("tempdb\\.\\.", "");
         }
-        if (source.getSourceDialect().equals("spark")) {
-            try {
-                sql = BigQuerySparkTranslate.sparkHandleInsert(sql, source.getSourceConnection());
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-
         final String translatedSql = SqlTranslate.translateSql(sql, source.getSourceDialect(), sessionId, tempSchema);
         return SqlSplit.splitSql(translatedSql);
     }

@@ -97,7 +97,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
   }
 
   public JobExecutionResource generateCohortViaJob(UserEntity userEntity, CohortDefinition cohortDefinition,
-          Source source, Boolean demographicStat) {
+          Source source, boolean demographicStat) {
       CohortGenerationInfo info = cohortDefinition.getGenerationInfoList().stream()
               .filter(val -> Objects.equals(val.getId().getSourceId(), source.getSourceId())).findFirst()
               .orElse(new CohortGenerationInfo(cohortDefinition, source.getSourceId()));

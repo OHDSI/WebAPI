@@ -864,7 +864,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Transactional
     public JobExecutionResource generateCohort(@PathParam("id") final int id,
             @PathParam("sourceKey") final String sourceKey,
-            @QueryParam("demographic") Boolean demographicStat) {
+            @QueryParam("demographic") boolean demographicStat) {
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOne(id);
 		UserEntity user = userRepository.findByLogin(security.getSubject());

@@ -61,6 +61,7 @@ import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.vocabulary.ConceptRecommendedNotInstalledException;
 import org.ohdsi.webapi.vocabulary.ConceptRelationship;
 import org.ohdsi.webapi.vocabulary.ConceptSearch;
+import org.ohdsi.webapi.vocabulary.ConceptSetCondenser;
 import org.ohdsi.webapi.vocabulary.DescendentOfAncestorSearch;
 import org.ohdsi.webapi.vocabulary.Domain;
 import org.ohdsi.webapi.vocabulary.RecommendedConcept;
@@ -1673,84 +1674,6 @@ public class VocabularyService extends AbstractDaoService {
     return compareConceptSets(defaultSourceKey, conceptSetExpressionList);
   }
   
-  /**
-   * Optimizes a concept set expressions to find redundant concepts specified
-   * in a concept set expression for the selected source key.
-   * 
-   * @summary Optimize concept set
-   * @param sourceKey The source containing the vocabulary
-   * @param conceptSetExpression The concept set expression to optimize
-   * @return A concept set optimization
-   */
-  @Path("{sourceKey}/optimize")
-  @POST
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public ConceptSetOptimizationResult optimizeConceptSet(@PathParam("sourceKey") String sourceKey, ConceptSetExpression conceptSetExpression) throws Exception {
-    Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
-    
-    // Get the optimization script
-    String sql_statement = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/optimizeConceptSet.sql");
-    
-    // Find all of the concepts that should be considered for optimization
-    // Create a hashtable to hold all of the contents of the ConceptSetExpression
-    // for use later
-    Hashtable<Integer, ConceptSetExpression.ConceptSetItem> allConceptSetItems = new Hashtable<>();
-    ArrayList<Integer> includedConcepts = new ArrayList<>();
-    ArrayList<Integer> descendantConcepts = new ArrayList<>();
-    ArrayList<Integer> allOtherConcepts = new ArrayList<>();
-    for(ConceptSetExpression.ConceptSetItem item : conceptSetExpression.items) {
-        allConceptSetItems.put(item.concept.conceptId.intValue(), item);
-        if (!item.isExcluded) {
-            includedConcepts.add(item.concept.conceptId.intValue());
-            if (item.includeDescendants) {
-                descendantConcepts.add(item.concept.conceptId.intValue());
-            }
-        } else {
-            allOtherConcepts.add(item.concept.conceptId.intValue());
-        }
-    }
-    
-    // If no descendant concepts are specified, initialize this field to use concept_id = 0 so the query will work properly
-    if (descendantConcepts.isEmpty())
-        descendantConcepts.add(0);
-    
-    String allConceptsList = includedConcepts.stream().map(Object::toString).collect(Collectors.joining(", "));
-    String descendantConceptsList = descendantConcepts.stream().map(Object::toString).collect(Collectors.joining(", "));
-    
-    sql_statement = SqlRender.renderSql(sql_statement, new String[]{"allConcepts", "descendantConcepts", "cdm_database_schema"}, new String[]{allConceptsList, descendantConceptsList, tableQualifier});
-    sql_statement = SqlTranslate.translateSql(sql_statement, source.getSourceDialect());
-
-    // Execute the query to obtain a result set that contains the
-    // most optimized version of the concept set. Then, using these results,
-    // construct a new ConceptSetExpression object that only contains the
-    // concepts that were identified as optimal to achieve the same definition
-    ConceptSetOptimizationResult returnVal = new ConceptSetOptimizationResult();
-    ArrayList<ConceptSetExpression.ConceptSetItem> optimzedExpressionItems = new ArrayList<>();
-    ArrayList<ConceptSetExpression.ConceptSetItem> removedExpressionItems = new ArrayList<>();
-    List<Map<String, Object>> rows = getSourceJdbcTemplate(source).queryForList(sql_statement);
-    for (Map rs : rows) {
-        Integer conceptId = Integer.parseInt(rs.get("concept_id").toString());
-        String removed = String.valueOf(rs.get("removed"));
-        ConceptSetExpression.ConceptSetItem csi = allConceptSetItems.get(conceptId);
-        if (removed.equals("0")) {
-            optimzedExpressionItems.add(csi);            
-        } else {
-            removedExpressionItems.add(csi);
-        }
-    }
-    // Re-add back the other concepts that are not considered
-    // as part of the optimizatin process
-    for(Integer conceptId : allOtherConcepts) {
-        ConceptSetExpression.ConceptSetItem csi = allConceptSetItems.get(conceptId);
-        optimzedExpressionItems.add(csi);
-    }
-    returnVal.optimizedConceptSet.items = optimzedExpressionItems.toArray(new ConceptSetExpression.ConceptSetItem[optimzedExpressionItems.size()]);
-    returnVal.removedConceptSet.items = removedExpressionItems.toArray(new ConceptSetExpression.ConceptSetItem[removedExpressionItems.size()]);
-    
-    return returnVal;
-  }
   
   /**
    * Optimizes a concept set expressions to find redundant concepts specified
@@ -1773,7 +1696,93 @@ public class VocabularyService extends AbstractDaoService {
 
     return optimizeConceptSet(defaultSourceKey, conceptSetExpression);
   }
+
+  /**
+   * Optimizes a concept set expressions to find redundant concepts specified
+   * in a concept set expression for the selected source key.
+   * 
+   * @summary Optimize concept set
+   * @param sourceKey The source containing the vocabulary
+   * @param conceptSetExpression The concept set expression to optimize
+   * @return A concept set optimization
+   */
+  @Path("{sourceKey}/optimize")
+  @POST
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public ConceptSetOptimizationResult optimizeConceptSet(@PathParam("sourceKey") String sourceKey, ConceptSetExpression conceptSetExpression) throws Exception {
+    // resolve the concept set to get included concepts
+    Collection<Long> includedConcepts = this.resolveConceptSetExpression(sourceKey, conceptSetExpression);
+    long[] includedConceptsArray = includedConcepts.stream().mapToLong(Long::longValue).toArray();
+    
+    // perform vocabulary search to find ancestor/descendant concepts for the included concepts
+    Source source = getSourceRepository().findBySourceKey(sourceKey);
+    String tableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
+    String ancestorSql = ResourceHelper.GetResourceAsString("/resources/vocabulary/sql/calculateAncestors.sql");
+    String allConceptsList = includedConcepts.stream().map(Object::toString).collect(Collectors.joining(", "));
+      
+    ancestorSql = SqlRender.renderSql(ancestorSql, new String[]{"ancestors", "CDM_schema"}, new String[]{allConceptsList, tableQualifier});
+    ancestorSql = SqlTranslate.translateSql(ancestorSql, source.getSourceDialect());
+    List<Map<String, Object>> rows = getSourceJdbcTemplate(source).queryForList(ancestorSql);
+    
+    // the candidate concepts are all ancestors from the query, and we add any
+    // descendants in the result to the collection of CandidateConcepts
+    Map<Long, Collection<Long>> ancestorMap = new HashMap<>();
+    for (Map rs : rows) {
+      final Long ancestorConceptId = Long.valueOf(rs.get("ancestor_id").toString());
+      ancestorMap.computeIfAbsent(ancestorConceptId,k -> new ArrayList<>())
+        .add(Long.valueOf(rs.get("descendant_id").toString()));
+    }
+
+    // use conceptSetCondenser to optimize concept set
+    ArrayList<ConceptSetCondenser.CandidateConcept> candidateConcepts = new ArrayList<>();
+    for (Long candidateConcept : ancestorMap.keySet()){
+      long[] candidateDescendants = ancestorMap.get(candidateConcept).stream().mapToLong(Long::longValue).toArray();
+      candidateConcepts.add(new ConceptSetCondenser.CandidateConcept(candidateConcept, candidateDescendants));
+    }
+    ConceptSetCondenser.CandidateConcept[] candidateConceptsArray = candidateConcepts.toArray(new ConceptSetCondenser.CandidateConcept[0]);
+    ConceptSetCondenser condenser = new ConceptSetCondenser(includedConceptsArray, candidateConceptsArray);
+    condenser.condense();
+    ConceptSetCondenser.ConceptExpression[] conceptExpressionArray = condenser.getConceptSetExpression();
+    
+    // convert condensed concept set to a ConceptSetExpression
+    // 1. get lookup of Concept objects from the conceptExpression[] and make a map
+    Collection<Concept> concepts = executeIdentifierLookup(source, Arrays.stream(conceptExpressionArray).mapToLong(ce -> ce.conceptId).toArray());
+    Map<Long, Concept> conceptMap = concepts.stream().collect(Collectors.toMap(obj -> obj.conceptId, obj -> obj));
+    
+    // 2. map conceptExpressionArray into an array of ConceptSetItem and put into the optimimized ConceptSetExpression.
+    ConceptSetExpression optimizedCSE = new ConceptSetExpression();
+    optimizedCSE.items = Arrays.stream(conceptExpressionArray)
+      .map((ce -> {
+        ConceptSetExpression.ConceptSetItem csi = new ConceptSetExpression.ConceptSetItem();
+        csi.concept = conceptMap.get(ce.conceptId);
+        csi.includeDescendants = ce.descendants;
+        csi.isExcluded = ce.exclude;
+        return csi;
+      })).toArray(ConceptSetExpression.ConceptSetItem[]::new);
+    
+    // Create the result and return to client
+    // 1. The condensed concept set is the optimized results
+    ConceptSetOptimizationResult result = new ConceptSetOptimizationResult();
+    result.optimizedConceptSet = optimizedCSE;
+
+    // 2. the removed items are those concepts + options (from the conceptSetExpression input)
+    // that don't match any in the optimized result
+    ConceptSetExpression.ConceptSetItem[] removedCsi = Arrays.stream(conceptSetExpression.items)
+      .filter(ci -> 
+        Arrays.stream(optimizedCSE.items)
+          .noneMatch(oci -> Objects.equals(ci.concept.conceptId, oci.concept.conceptId) &&
+            ci.includeDescendants == oci.includeDescendants &&
+            ci.isExcluded == oci.isExcluded)
+      ).toArray(ConceptSetExpression.ConceptSetItem[]::new);
+    ConceptSetExpression removedConceptSet = new ConceptSetExpression();
+    removedConceptSet.items = removedCsi;
+    result.removedConceptSet = removedConceptSet;
+    return result;
+
+  }
   
+
   private String JoinArray(final long[] array) {
     String result = "";
 

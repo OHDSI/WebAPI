@@ -689,6 +689,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/tag/{tagId}")
     @Transactional
+		@CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
     public void unassignTag(@PathParam("id") final Integer id, @PathParam("tagId") final int tagId) {
         ConceptSet entity = getConceptSetRepository().findById(id);
         unassignTag(entity, tagId);
@@ -722,6 +723,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}/protectedtag/{tagId}")
     @Transactional
+		@CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
     public void unassignPermissionProtectedTag(@PathParam("id") final int id, @PathParam("tagId") final int tagId) {
         unassignTag(id, tagId);
     }
@@ -940,6 +942,8 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
                 conceptSetAnnotation.setVocabularyVersion(newAnnotationData.getVocabularyVersion());
                 conceptSetAnnotation.setConceptSetVersion(newAnnotationData.getConceptSetVersion());
                 conceptSetAnnotation.setConceptId(newAnnotationData.getConceptId());
+                conceptSetAnnotation.setCreatedBy(getCurrentUser());
+                conceptSetAnnotation.setCreatedDate(new Date());
                 return conceptSetAnnotation;
             }).collect(Collectors.toList());
 
@@ -973,6 +977,10 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         targetConceptSetAnnotation.setAnnotationDetails(sourceConceptSetAnnotation.getAnnotationDetails());
         targetConceptSetAnnotation.setConceptId(sourceConceptSetAnnotation.getConceptId());
         targetConceptSetAnnotation.setVocabularyVersion(sourceConceptSetAnnotation.getVocabularyVersion());
+        targetConceptSetAnnotation.setCreatedBy(sourceConceptSetAnnotation.getCreatedBy());
+        targetConceptSetAnnotation.setCreatedDate(sourceConceptSetAnnotation.getCreatedDate());
+        targetConceptSetAnnotation.setModifiedBy(sourceConceptSetAnnotation.getModifiedBy());
+        targetConceptSetAnnotation.setModifiedDate(sourceConceptSetAnnotation.getModifiedDate());
         targetConceptSetAnnotation.setCopiedFromConceptSetIds(appendCopiedFromConceptSetId(sourceConceptSetAnnotation.getCopiedFromConceptSetIds(), sourceConceptSetId));
         return targetConceptSetAnnotation;
     }
@@ -1015,6 +1023,8 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
            annotationDTO.setVocabularyVersion(conceptSetAnnotation.getVocabularyVersion());
            annotationDTO.setConceptSetVersion(conceptSetAnnotation.getConceptSetVersion());
            annotationDTO.setCopiedFromConceptSetIds(conceptSetAnnotation.getCopiedFromConceptSetIds());
+           annotationDTO.setCreatedBy(conceptSetAnnotation.getCreatedBy() != null ? conceptSetAnnotation.getCreatedBy().getName() : null);
+           annotationDTO.setCreatedDate(conceptSetAnnotation.getCreatedDate() != null ? conceptSetAnnotation.getCreatedDate().toString() : null);
            return annotationDTO;
     }
 

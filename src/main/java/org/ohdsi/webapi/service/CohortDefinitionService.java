@@ -864,7 +864,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Transactional
     public JobExecutionResource generateCohort(@PathParam("id") final int id,
             @PathParam("sourceKey") final String sourceKey,
-            @QueryParam("demographic") Boolean demographicStat) {
+            @QueryParam("demographic") boolean demographicStat) {
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
 		CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOne(id);
 		UserEntity user = userRepository.findByLogin(security.getSubject());
@@ -990,6 +990,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@DELETE
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}")
+	@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true)
 	public void delete(@PathParam("id") final int id) {
 		// perform the JPA update in a separate transaction
 		this.getTransactionTemplateRequiresNew().execute(new TransactionCallbackWithoutResult() {

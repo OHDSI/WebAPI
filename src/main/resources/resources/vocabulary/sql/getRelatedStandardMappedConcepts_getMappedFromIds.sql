@@ -15,6 +15,7 @@ FROM (
         cr.CONCEPT_ID_1 IN (@conceptIdList)
         AND COALESCE(c.STANDARD_CONCEPT, 'N') IN ('S', 'C')
         AND cr.INVALID_REASON IS NULL
+        AND cr.relationship_id = 'Maps to'
 ) c
 ORDER BY
    c.CONCEPT_ID;

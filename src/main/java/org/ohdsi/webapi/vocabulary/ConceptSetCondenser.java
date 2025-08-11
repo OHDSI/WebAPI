@@ -32,6 +32,8 @@ public class ConceptSetCondenser {
   private int optimalLength;
   private int firstExclusionIndex;
   private List<Set<Long>> remainingConceptsAtLevel;
+  private long stepCount;
+  private static long MAX_STEP_COUNT = 10000000;
 
   /**
    * Constructor
@@ -78,7 +80,7 @@ public class ConceptSetCondenser {
   }
 
   /**
-   * Encapsulates the conceptId and concept's descendants and is used to capture 
+   * Encapsulates the conceptId and concept's descendants and is used to capture
    * the options required for the final solution.
    */
   public static class CandidateConcept {
@@ -91,6 +93,7 @@ public class ConceptSetCondenser {
     public Set<Long> descendants;
     public Options[] validOptions;
     public boolean inConceptSet;
+    public int relevantDescendantCount;
 
     /**
      * @param conceptId The concept ID
@@ -118,14 +121,13 @@ public class ConceptSetCondenser {
       return false;
     }
   }
-  
 
   /**
    * Condense the concept set to the optimal (shortest) expression.
    */
   public void condense() {
     determineValidStatesAndRemoveRedundant();
-    bruteForeSearch();
+    bruteForceSearch();
   }
 
   /**
@@ -162,7 +164,7 @@ public class ConceptSetCondenser {
     return expression;
   }
 
-  private void bruteForeSearch() {
+  private void bruteForceSearch() {
     // Sort candidate concepts to determine order in which tree is traversed.
     // First sorting so inclusions are executed first. This allows us to build the concept set 
     // on the fly (exclusions must always be done last).
@@ -180,7 +182,7 @@ public class ConceptSetCondenser {
       if (result != 0) {
         return result;
       }
-      return Integer.compare(obj2.descendants.size(), obj1.descendants.size());
+      return Integer.compare(obj2.relevantDescendantCount, obj1.relevantDescendantCount);
     };
     candidateConcepts.sort(comparator);
 
@@ -212,18 +214,21 @@ public class ConceptSetCondenser {
     }
     Collections.reverse(remainingConceptsAtLevel);
 
-    // For debugging: output candidateConcepts:
-    //		for (CandidateConcept candidateConcept : candidateConcepts) {
-    //			System.out.println("- Concept ID " + candidateConcept.conceptId + ", valid options:" + Arrays.toString(candidateConcept.validOptions));
-    //		}
     optimalLength = candidateConcepts.size() + 1;
     optimalSolution = new CandidateConcept.Options[candidateConcepts.size()];
     currentSolution = new CandidateConcept.Options[candidateConcepts.size()];
+    stepCount = 0;
     recurseOverOptions(0, 0, new HashSet<>());
+    if (stepCount >= MAX_STEP_COUNT) {
+      System.out.println("Reached max step count. Solution may not be optimal");
+    }
   }
 
   private void recurseOverOptions(int index, int currentLength, Set<Long> currentConceptSet) {
-    if (currentLength > optimalLength) {
+    stepCount++;
+    if (stepCount > MAX_STEP_COUNT) {
+      return;
+    } else if (currentLength >= optimalLength) {
       // Already cannot improve on current best solution
       return;
     } else if (index == candidateConcepts.size()) {
@@ -264,6 +269,11 @@ public class ConceptSetCondenser {
             if (currentConceptSet.containsAll(candidateConcept.descendants)) {
               continue;
             }
+            Set<Long> surplusConcepts = new HashSet<>(candidateConcept.descendants);
+            surplusConcepts.removeAll(currentConceptSet);
+            if (Collections.disjoint(includedConcepts, surplusConcepts)) {
+              continue;
+            }
             newConceptSet = new HashSet<>(currentConceptSet);
             newConceptSet.addAll(candidateConcept.descendants);
             newLength++;
@@ -278,8 +288,7 @@ public class ConceptSetCondenser {
             newLength++;
             break;
           case EXCLUDE_WITH_DESCENDANTS:
-            if (Collections.disjoint(currentConceptSet, candidateConcept.descendants)
-              || hasOverlap(includedConcepts, candidateConcept.descendants)) {
+            if (Collections.disjoint(currentConceptSet, candidateConcept.descendants)) {
               continue;
             }
             newConceptSet = new HashSet<>(currentConceptSet);
@@ -293,14 +302,6 @@ public class ConceptSetCondenser {
         }
         recurseOverOptions(index + 1, newLength, newConceptSet);
       }
-    }
-  }
-
-  private boolean hasOverlap(Set<Long> set1, Set<Long> set2) {
-    if (set1.size() > set2.size()) {
-      return set2.stream().anyMatch(set1::contains);
-    } else {
-      return set1.stream().anyMatch(set2::contains);
     }
   }
 
@@ -325,15 +326,22 @@ public class ConceptSetCondenser {
       if (includedConcepts.contains(candidateConcept.conceptId)) {
         // Concept is in the concept set
         candidateConcept.inConceptSet = true;
+        // If concept is not a descendant of any other concept, it is not an option to
+        // ignore it
+        if (!cantIgnore(candidateConcept)) {
+          validOptions.add(CandidateConcept.Options.IGNORE);
+        }
         if (candidateConcept.descendants.size() == 1) {
           // Has no descendants, so no difference between INCLUDE and
           // INCLUDE_WITH_DESCENDANTS
           validOptions.add(CandidateConcept.Options.INCLUDE_WITH_DESCENDANTS);
+          candidateConcept.relevantDescendantCount = 1;
         } else {
           if (includedConcepts.containsAll(candidateConcept.descendants)) {
             // All descendants are in concept set, so no reason to evaluate
             // INCLUDE
             validOptions.add(CandidateConcept.Options.INCLUDE_WITH_DESCENDANTS);
+            candidateConcept.relevantDescendantCount = candidateConcept.descendants.size();
 
             // Also, descendants are redundant, so can be removed from candidate list:
             Set<Long> toRemove = new HashSet<>(candidateConcept.descendants);
@@ -342,16 +350,16 @@ public class ConceptSetCondenser {
           } else {
             validOptions.add(CandidateConcept.Options.INCLUDE);
             validOptions.add(CandidateConcept.Options.INCLUDE_WITH_DESCENDANTS);
+
+            Set<Long> intersection = new HashSet<>(candidateConcept.descendants);
+            intersection.retainAll(includedConcepts);
+            candidateConcept.relevantDescendantCount = intersection.size();
           }
-        }
-        // If concept is not a descendant of any other concept, it is not an option to
-        // ignore it
-        if (!cantIgnore(candidateConcept)) {
-          validOptions.add(CandidateConcept.Options.IGNORE);
         }
       } else {
         // Concept is *not* in the concept set
         candidateConcept.inConceptSet = false;
+        candidateConcept.relevantDescendantCount = candidateConcept.descendants.size();
         validOptions.add(CandidateConcept.Options.IGNORE);
         if (candidateConcept.descendants.size() == 1) {
           // Has no descendants, so no difference between EXCLUDE and

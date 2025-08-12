@@ -19,10 +19,14 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import javax.cache.Cache;
+import javax.cache.CacheManager;
 import org.ohdsi.webapi.analysis.AnalysisConceptSet;
 import org.ohdsi.webapi.conceptset.ConceptSetItem;
 import org.ohdsi.webapi.service.ConceptSetService;
 import org.ohdsi.webapi.service.dto.ConceptSetDTO;
+import org.ohdsi.webapi.shiro.PermissionManager;
 import org.springframework.core.convert.ConversionService;
 
 @Service
@@ -34,10 +38,12 @@ public class DesignImportService {
     private final ConversionService conversionService;
     private final ConceptSetService conceptSetService;
     private final CohortDefinitionService cohortDefinitionService;
+    private final CacheManager cacheManager;
 
     public DesignImportService(Security security, UserRepository userRepository, CohortDefinitionRepository cohortRepository, 
                                CohortDefinitionDetailsRepository detailsRepository, ConceptSetService conceptSetService, 
-                               ConversionService conversionService, CohortDefinitionService cohortDefinitionService) {
+                               ConversionService conversionService, CohortDefinitionService cohortDefinitionService,
+                               @Nullable CacheManager cacheManager) {
         this.security = security;
         this.userRepository = userRepository;
         this.cohortRepository = cohortRepository;
@@ -45,6 +51,7 @@ public class DesignImportService {
         this.conceptSetService = conceptSetService;
         this.conversionService = conversionService;
         this.cohortDefinitionService = cohortDefinitionService;
+        this.cacheManager = cacheManager;
     }
     
     public ConceptSetDTO persistConceptSet(final AnalysisConceptSet analysisConceptSet) {
@@ -75,6 +82,16 @@ public class DesignImportService {
             cohort.setName(NameUtils.getNameWithSuffix(cohort.getName(), this::getCdNamesLike));
             final CohortDefinition savedCohort = cohortRepository.save(cohort);
             detailsRepository.save(details);
+
+            // if this is new, we will need to decache the cohort definition list
+            if (this.cacheManager != null) {
+              Cache cohortDefCache = cacheManager.getCache(CohortDefinitionService.CachingSetup.COHORT_DEFINITION_LIST_CACHE);
+              if (cohortDefCache != null) {
+                cohortDefCache.clear(); // wipes all entries in cohort definition list cache cache
+              }
+            }
+            // permission caching is handled via the EntityInsertEventListener and EntityPermissionSchema.onInsert
+
             return savedCohort;
         });
     }

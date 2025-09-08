@@ -78,5 +78,24 @@ It was chosen to use embedded PG instead of H2 for unit tests since H2 doesn't s
 - WebAPI follows [Semantic versioning](https://semver.org/);
 - Only Non-SNAPSHOT dependencies should be presented in POM.xml on release branches/tags.
 
+### Development Quick Start Guide
+
+To start the application locally, the following quick steps (all commands are executed from repository root directory)
+
+1. Ensure that you have the following tools installed: Java 1.8, maven (check via `mvn -v`), docker-ce (check via `docker -v`), psql command line client 
+(check via psql --version) or other tool that allows to connect to postgres DB.
+2. Run `mvn clean install` and make sure it completes successfully, resolve dependency issues if any.
+3. Create a new database in docker: `docker create --name postgres-webapi -p 8432:5432 -e POSTGRES_PASSWORD=ohdsi postgres:15.0-alpine`.
+4. Start DB container: `docker start postgres-webapi`.
+	 Verify that you can connect via psql console (`PGPASSWORD='ohdsi' psql -d postgresql://localhost:8432/?user=postgres`).
+5. If your default java version is too high (e.g. 17), set JAVA_HOME to point to 1.8 installaction, for example `export JAVA_HOME=/usr/lib/jvm/zulu8-ca-amd64` 
+6. Start WebAPI `mvn clean install spring-boot:run -Dmaven.test.skip=true -P webapi-postgresql -s src/dev/settings.xml -f pom.xml`
+7. Log in with the username of your liking
+8. Grant this newly created user admin privileges by running the following sql `INSERT INTO sec_user_role (user_id, role_id, origin) VALUES (1000, 2, 'SYSTEM');`
+   and log in again.
+
+At this point you have the application running and admin account operational. To actually use it, additional steps are required to set up privileges 
+and at least one CDM database. They are covered in the respective documentation sections. 
+	 
 ## License
 OHDSI WebAPI is licensed under Apache License 2.0

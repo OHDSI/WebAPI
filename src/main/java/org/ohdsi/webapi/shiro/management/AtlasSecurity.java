@@ -1,12 +1,5 @@
 package org.ohdsi.webapi.shiro.management;
 
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
-import javax.annotation.PostConstruct;
-import javax.servlet.Filter;
-
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
@@ -17,7 +10,9 @@ import org.ohdsi.webapi.OidcConfCreator;
 import org.ohdsi.webapi.cohortcharacterization.CcImportEvent;
 import org.ohdsi.webapi.security.model.EntityPermissionSchemaResolver;
 import org.ohdsi.webapi.security.model.EntityType;
+import org.ohdsi.webapi.service.lock.ConceptSetLockingService;
 import org.ohdsi.webapi.shiro.PermissionManager;
+import org.ohdsi.webapi.shiro.filters.ConceptSetLockWriteBlockingFilter;
 import org.ohdsi.webapi.shiro.filters.CorsFilter;
 import org.ohdsi.webapi.shiro.filters.ForceSessionCreationFilter;
 import org.ohdsi.webapi.shiro.filters.ResponseNoCacheFilter;
@@ -30,8 +25,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import waffle.shiro.negotiate.NegotiateAuthenticationStrategy;
 
+import javax.annotation.PostConstruct;
+import javax.servlet.Filter;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.AUTHZ;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.CORS;
+import static org.ohdsi.webapi.shiro.management.FilterTemplates.CONCEPTSET_LOCK;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.FORCE_SESSION_CREATION;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.JWT_AUTHC;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.NO_CACHE;
@@ -61,6 +64,11 @@ public abstract class AtlasSecurity extends Security {
 
   @Autowired
   protected OidcConfCreator oidcConfCreator;
+
+  @Value("${snapshot.locking.disabled:false}")
+  private boolean snapshotLockingDisabled;
+  @Autowired
+  protected ConceptSetLockingService conceptSetLockingService;
 
   @Value("${server.port}")
   private int sslPort;
@@ -129,7 +137,8 @@ public abstract class AtlasSecurity extends Security {
 
     filters.put(NO_SESSION_CREATION, new NoSessionCreationFilter());
     filters.put(FORCE_SESSION_CREATION, new ForceSessionCreationFilter());
-    filters.put(AUTHZ, new UrlBasedAuthorizingFilter());
+	filters.put(CONCEPTSET_LOCK, new ConceptSetLockWriteBlockingFilter(snapshotLockingDisabled, conceptSetLockingService));
+	filters.put(AUTHZ, new UrlBasedAuthorizingFilter());
     filters.put(CORS, new CorsFilter());
     filters.put(SSL, this.getSslFilter());
     filters.put(NO_CACHE, this.getNoCacheFilter());

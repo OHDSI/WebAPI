@@ -40,13 +40,13 @@ public class ExecutionInfo implements Serializable, IExecutionInfo {
   private ExecutionInfoId id;
   
   @JsonIgnore
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @MapsId("analysisId")
   @JoinColumn(name="analysis_id", referencedColumnName="id")
   private IncidenceRateAnalysis analysis;
 
   @JsonIgnore
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @MapsId("sourceId")
   @JoinColumn(name="source_id", referencedColumnName="source_id")
   @NotFound(action = NotFoundAction.IGNORE)

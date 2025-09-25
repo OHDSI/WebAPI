@@ -3,6 +3,7 @@ package org.ohdsi.webapi.shiro.Entities;
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -37,11 +38,11 @@ public class RolePermissionEntity implements Serializable {
   @Column(name = "STATUS")
   private String status;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name="ROLE_ID", nullable=false)
   private RoleEntity role;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name="PERMISSION_ID", nullable=false)
   private PermissionEntity permission;
 

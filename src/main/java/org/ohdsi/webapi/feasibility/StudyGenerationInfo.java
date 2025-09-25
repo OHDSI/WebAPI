@@ -22,6 +22,7 @@ import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.MapsId;
@@ -42,13 +43,13 @@ public class StudyGenerationInfo implements Serializable {
   private StudyGenerationInfoId id;
   
   @JsonIgnore
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @MapsId("studyId")
   @JoinColumn(name="study_id", referencedColumnName="id")
   private FeasibilityStudy study;
 
   @JsonIgnore
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @MapsId("sourceId")
   @JoinColumn(name="source_id", referencedColumnName="source_id")
   private Source source;

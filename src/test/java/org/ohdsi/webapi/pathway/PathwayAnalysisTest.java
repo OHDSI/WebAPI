@@ -42,14 +42,19 @@ import org.ohdsi.sql.SqlSplit;
 import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.job.JobExecutionResource;
+import org.ohdsi.webapi.pathway.converter.PathwayAnalysisToPathwayVersionConverter;
+import org.ohdsi.webapi.pathway.converter.PathwayVersionToPathwayVersionFullDTOConverter;
 import org.ohdsi.webapi.pathway.converter.SerializedPathwayAnalysisToPathwayAnalysisConverter;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisEntity;
 import org.ohdsi.webapi.pathway.domain.PathwayAnalysisGenerationEntity;
+import org.ohdsi.webapi.pathway.dto.PathwayAnalysisExportDTO;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 
 /**
  *
@@ -87,6 +92,9 @@ public class PathwayAnalysisTest extends AbstractDatabaseTest {
   @Autowired
   private PathwayService pathwayService;
 
+	@Autowired
+	private ConversionService conversionService;
+
   @Value("${datasource.ohdsi.schema}")
   private String ohdsiSchema;
 
@@ -110,7 +118,8 @@ public class PathwayAnalysisTest extends AbstractDatabaseTest {
     resetSequence(String.format("%s.%s", ohdsiSchema, "pathway_analysis_sequence"));
     truncateTable(String.format("%s.%s", ohdsiSchema, "generation_cache"));
     prepareCdmSchema();
-    prepareResultSchema();    
+    prepareResultSchema();
+		SerializedPathwayAnalysisToPathwayAnalysisConverter.setConversionService(conversionService);
   }
 
   @After

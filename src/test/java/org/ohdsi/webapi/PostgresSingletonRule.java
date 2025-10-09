@@ -31,9 +31,10 @@ package org.ohdsi.webapi;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+
+import io.zonky.test.db.postgres.embedded.EmbeddedPostgres;
 import org.junit.rules.ExternalResource;
 
-import com.opentable.db.postgres.embedded.EmbeddedPostgres;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

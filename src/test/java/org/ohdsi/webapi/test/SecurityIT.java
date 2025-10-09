@@ -1,9 +1,12 @@
 package org.ohdsi.webapi.test;
 
 
+import com.github.springtestdbunit.DbUnitTestExecutionListener;
 import com.github.springtestdbunit.annotation.DatabaseOperation;
 import com.github.springtestdbunit.annotation.DatabaseTearDown;
+import com.github.springtestdbunit.annotation.DbUnitConfiguration;
 import com.google.common.collect.ImmutableMap;
+import org.apache.catalina.webresources.TomcatURLStreamHandlerFactory;
 import org.glassfish.jersey.server.model.Parameter;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
@@ -12,23 +15,38 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
+import org.junit.runner.RunWith;
 import org.ohdsi.webapi.JerseyConfig;
+import org.ohdsi.webapi.WebApi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
-import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestExecutionListeners;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.ws.rs.core.MediaType;
+import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.springframework.test.context.TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = {WebApi.class, WebApiIT.DbUnitConfiguration.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
+@DbUnitConfiguration(databaseConnection = "dbUnitDatabaseConnection")
+@TestExecutionListeners(value = {DbUnitTestExecutionListener.class}, mergeMode = MERGE_WITH_DEFAULTS)
 @DatabaseTearDown(value = "/database/empty.xml", type = DatabaseOperation.DELETE_ALL)
-public class SecurityIT extends WebApiIT {
+@TestPropertySource(properties = {"security.provider=AtlasRegularSecurity"})
+public class SecurityIT {
 
     private final Map<String, HttpStatus> EXPECTED_RESPONSE_CODES = ImmutableMap.<String, HttpStatus>builder()
             .put("/info/", HttpStatus.OK)
@@ -47,25 +65,26 @@ public class SecurityIT extends WebApiIT {
     @Autowired
     private JerseyConfig jerseyConfig;
 
+    @Value("${baseUri}")
+    private String baseUri;
+
     @Rule
     public ErrorCollector collector = new ErrorCollector();
 
     private final Logger LOG = LoggerFactory.getLogger(SecurityIT.class);
 
     @BeforeClass
-    public static void prepare() {
-        
-        System.setProperty("security.provider", "AtlasRegularSecurity");
+    public static void before() throws IOException {
+        TomcatURLStreamHandlerFactory.disable();
+        ITStarter.before();
     }
 
     @AfterClass
-    public static void disableSecurity() {
-
-        System.setProperty("security.provider", "DisabledSecurity");
+    public static void after() {
+        ITStarter.tearDownSubject();
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
     public void testServiceSecurity() {
 
         Map<String, List<ServiceInfo>> serviceMap = getServiceMap();
@@ -76,7 +95,7 @@ public class SecurityIT extends WebApiIT {
                     serviceInfo.pathPrefix = "/" + serviceInfo.pathPrefix;
                 }
                 serviceInfo.pathPrefix = serviceInfo.pathPrefix.replaceAll("//", "/");
-                String rawUrl = getBaseUri() + serviceInfo.pathPrefix;
+                String rawUrl = baseUri + serviceInfo.pathPrefix;
                 URI uri = null;
                 try {
                     Map<String, String> parametersMap = prepareParameters(serviceInfo.parameters);

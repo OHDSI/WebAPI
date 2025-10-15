@@ -72,6 +72,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -116,6 +118,23 @@ public abstract class AbstractDaoService extends AbstractAdminService {
   @Autowired
   protected UserRepository userRepository;
 
+	private static class DataSourceCacheEntry {
+		final DriverManagerDataSource dataSource;
+		final long timestamp;
+
+		DataSourceCacheEntry(DriverManagerDataSource dataSource) {
+			this.dataSource = dataSource;
+			this.timestamp = System.currentTimeMillis();
+		}
+
+		boolean isExpired() {
+			return System.currentTimeMillis() - timestamp > TimeUnit.HOURS.toMillis(1);
+		}
+	}
+
+	private final Map<String, DataSourceCacheEntry> dataSourceCache = new ConcurrentHashMap<>();
+	private static final int MAX_CACHE_SIZE = 100;
+	
   public static final List<GenerationStatus> INVALIDATE_STATUSES = new ArrayList<GenerationStatus>() {{
     add(GenerationStatus.PENDING);
     add(GenerationStatus.RUNNING);
@@ -186,14 +205,14 @@ public abstract class AbstractDaoService extends AbstractAdminService {
 
   public CancelableJdbcTemplate getSourceJdbcTemplate(Source source) {
 
-    DriverManagerDataSource dataSource = getDriverManagerDataSource(source);
+    DriverManagerDataSource dataSource = getCachedDriverManagerDataSource(source);
     CancelableJdbcTemplate jdbcTemplate = new CancelableJdbcTemplate(dataSource);
     jdbcTemplate.setSuppressApiException(suppressApiException);
     return jdbcTemplate;
   }
 
   public <T> T executeInTransaction(Source source, Function<JdbcTemplate, TransactionCallback<T>> callbackFunction) {
-    DriverManagerDataSource dataSource = getDriverManagerDataSource(source);
+    DriverManagerDataSource dataSource = getCachedDriverManagerDataSource(source);
     CancelableJdbcTemplate jdbcTemplate = new CancelableJdbcTemplate(dataSource);
     jdbcTemplate.setSuppressApiException(suppressApiException);
     DataSourceTransactionManager transactionManager = new DataSourceTransactionManager(dataSource);
@@ -203,8 +222,18 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     return transactionTemplate.execute(callbackFunction.apply(jdbcTemplate));
   }
 
-  private DriverManagerDataSource getDriverManagerDataSource(Source source) {
-    DataSourceUnsecuredDTO dataSourceData = DataSourceDTOParser.parseDTO(source);
+  private DriverManagerDataSource getCachedDriverManagerDataSource(Source source) {
+		String sourceKey = source.getSourceKey();
+		if(sourceKey!=null) {
+			cleanExpiredEntries();
+
+			DataSourceCacheEntry entry = dataSourceCache.get(sourceKey);
+			if (entry != null && !entry.isExpired()) {
+				return entry.dataSource;
+			}
+		}
+		
+		DataSourceUnsecuredDTO dataSourceData = DataSourceDTOParser.parseDTO(source);
     if (dataSourceData.getUseKerberos()) {
       loginToKerberos(dataSourceData);
     }
@@ -225,6 +254,14 @@ public abstract class AbstractDaoService extends AbstractAdminService {
         dataSource.setConnectionProperties(new Properties());
       }
       dataSource.getConnectionProperties().setProperty("CLIENT_RESULT_COLUMN_CASE_INSENSITIVE", "true");
+    }
+		
+		if(sourceKey!=null) {
+			if (dataSourceCache.size() >= MAX_CACHE_SIZE) {
+			  String oldestKey = dataSourceCache.keySet().iterator().next();
+			  dataSourceCache.remove(oldestKey);
+		  }
+	    dataSourceCache.put(sourceKey, new DataSourceCacheEntry(dataSource));
     }
     return dataSource;
   }
@@ -489,4 +526,16 @@ public abstract class AbstractDaoService extends AbstractAdminService {
             })
             .collect(Collectors.toList());
   }
+
+  public TagService getTagService() {
+    return tagService;
+  }
+
+	private void cleanExpiredEntries() {
+		dataSourceCache.entrySet().removeIf(entry -> entry.getValue().isExpired());
+	}
+
+	protected void cleanSourceCache() {
+		dataSourceCache.clear();
+	}
 }

@@ -349,7 +349,7 @@ public class SourceController extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Transactional(noRollbackFor = CannotGetJdbcConnectionException.class)
   public SourceInfo checkConnection(@PathParam("key") final String sourceKey) {
-
+		cleanSourceCache();
     final Source source = sourceService.findBySourceKey(sourceKey);
     sourceService.checkConnection(source);
     return source.getSourceInfo();

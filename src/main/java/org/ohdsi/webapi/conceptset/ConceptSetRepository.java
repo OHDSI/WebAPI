@@ -15,10 +15,12 @@
  */
 package org.ohdsi.webapi.conceptset;
 
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Date;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -27,7 +29,7 @@ import java.util.Optional;
  *
  * @author fdefalco
  */
-public interface ConceptSetRepository extends CrudRepository<ConceptSet, Integer> {
+public interface ConceptSetRepository extends CrudRepository<ConceptSet, Integer>, JpaSpecificationExecutor<ConceptSet> {
   ConceptSet findById(Integer conceptSetId);
   
   @Deprecated
@@ -44,4 +46,31 @@ public interface ConceptSetRepository extends CrudRepository<ConceptSet, Integer
   
   @Query("SELECT DISTINCT cs FROM ConceptSet cs JOIN FETCH cs.tags t WHERE lower(t.name) in :tagNames")
   List<ConceptSet> findByTags(@Param("tagNames") List<String> tagNames);
+
+	@Query("SELECT cs FROM ConceptSet cs WHERE " +
+		"(:createdFrom IS NULL OR cs.createdDate >= :createdFrom) AND " +
+		"(:createdTo IS NULL OR cs.createdDate <= :createdTo) AND " +
+		"(:updatedFrom IS NULL OR cs.modifiedDate >= :updatedFrom) AND " +
+		"(:updatedTo IS NULL OR cs.modifiedDate <= :updatedTo)")
+	List<ConceptSet> findByDateFilters(
+		@Param("createdFrom") Date createdFrom,
+		@Param("createdTo") Date createdTo,
+		@Param("updatedFrom") Date updatedFrom,
+		@Param("updatedTo") Date updatedTo
+	);
+
+	@Query("SELECT DISTINCT cs FROM ConceptSet cs " +
+		"JOIN cs.tags t " +
+		"WHERE t.id IN :tagIds AND " +
+		"(:createdFrom IS NULL OR cs.createdDate >= :createdFrom) AND " +
+		"(:createdTo IS NULL OR cs.createdDate <= :createdTo) AND " +
+		"(:updatedFrom IS NULL OR cs.modifiedDate >= :updatedFrom) AND " +
+		"(:updatedTo IS NULL OR cs.modifiedDate <= :updatedTo)")
+	List<ConceptSet> findByTagsAndDateFilters(
+		@Param("tagIds") List<Integer> tagIds,
+		@Param("createdFrom") Date createdFrom,
+		@Param("createdTo") Date createdTo,
+		@Param("updatedFrom") Date updatedFrom,
+		@Param("updatedTo") Date updatedTo
+	);
 }

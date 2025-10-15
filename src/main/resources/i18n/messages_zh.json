@@ -1723,7 +1723,7 @@
         "headingMessage": "使用此实用程序可以比较两个概念集的内容，以查看它们可以共享哪些概念。",
         "modalTitle": "选择一个概念集",
         "sameConcepts": "Compared Concept Sets contain Concepts which are identical",
-        "sameWarning": "您无法比较相同的概念集。",
+        "sameWarning": "您不能将相同的概念集与相同的词汇进行比较。",
         "saveFromComparisonNameTail": " - 来自对照",
         "saveMessage": "从下面的选择中保存新概念集",
         "saveWarning": "您必须保存当前概念集，然后才能执行此比较。",

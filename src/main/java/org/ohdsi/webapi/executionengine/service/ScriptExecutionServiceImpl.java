@@ -45,7 +45,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.net.ssl.HttpsURLConnection;
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.Entity;

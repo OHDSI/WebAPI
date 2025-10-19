@@ -36,7 +36,9 @@ public class SqlRenderService {
         if (sourceStatement == null) {
             return new TranslatedStatement();
         }
-        sourceStatement.setOracleTempSchema(TEMP_DATABASE_SCHEMA_PLACEHOLDER);
+        if (StringUtils.isBlank(sourceStatement.getOracleTempSchema())) {
+            sourceStatement.setOracleTempSchema(TEMP_DATABASE_SCHEMA_PLACEHOLDER);
+        }
         return translatedStatement(sourceStatement);
     }
 

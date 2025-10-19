@@ -40,6 +40,17 @@ public class SqlRenderServiceTest {
     }
 
     @Test
+    public void translateSQLFromSourceStatement_keepsProvidedOracleTempSchema() {
+
+        SourceStatement statement = createSourceStatement(TEST_SQL, "oracle");
+        statement.setOracleTempSchema("custom_schema");
+        sqlRenderService.translateSQLFromSourceStatement(statement);
+
+        verify(sqlRenderService).translatedStatement(sourceStatementCaptor.capture());
+        assertEquals("custom_schema", sourceStatementCaptor.getValue().getOracleTempSchema());
+    }
+
+    @Test
     public void translateSQL_sourceStatementIsNull() {
         assertEquals(new TranslatedStatement(), SqlRenderService.translateSQL(null));
     }

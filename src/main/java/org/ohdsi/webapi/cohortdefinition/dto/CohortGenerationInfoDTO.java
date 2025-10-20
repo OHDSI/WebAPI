@@ -44,6 +44,18 @@ public class CohortGenerationInfoDTO {
     private Long recordCount;
 
     private UserDTO createdBy;
+    
+    private Long ccGenerateId;
+    private boolean isDemographic;
+
+    public boolean getIsDemographic() {
+        return isDemographic;
+    }
+
+    public void setIsDemographic(boolean isDemographic) {
+        this.isDemographic = isDemographic;
+    }
+
 
     public CohortGenerationInfoId getId() {
         return id;
@@ -124,4 +136,13 @@ public class CohortGenerationInfoDTO {
     public void setCreatedBy(UserDTO createdBy) {
         this.createdBy = createdBy;
     }
+    
+    public Long getCcGenerateId() {
+        return ccGenerateId;
+    }
+    
+    public void setCcGenerateId(Long ccGenerateId) {
+        this.ccGenerateId = ccGenerateId;
+    }
+    
 }

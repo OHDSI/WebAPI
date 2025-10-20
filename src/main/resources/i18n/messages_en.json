@@ -116,7 +116,26 @@
     "incidenceRate": "Incidence Rate",
     "ple": "Population Level Effect Estimation",
     "plp": "Patient Level Prediction",
-    "reusable": "Reusable"
+    "reusable": "Reusable",
+    "addTools": "Add Tool",
+    "url": "URL",
+    "apply": "Apply",
+    "tools": "Tools"
+  },
+  "tool":{
+    "name": "* Name",
+    "url": "* URL",
+    "nameValidMess": "Tool name cannot be empty.",
+    "urlValidMess": "Tool url cannot be empty.",
+    "loading": "Loading tools",
+    "error": {
+      "list": "Unable to retrieve the list data at this time; please try again later.",
+      "create": "Failed to create Tool.",
+      "update": "Failed to update Tool.",
+      "delete": "Failed to delete Tool."
+    },
+    "toolDisabled": "Tool disabled",
+    "toolEnabled": "Tool enabled"
   },
   "commonErrors": {
     "noSources": "The current WebAPI has no sources defined.<br/>Please add one or more on <a href=\"#/configure\">configuration</a> page.",
@@ -139,7 +158,8 @@
     "prediction": "Prediction",
     "profiles": "Profiles",
     "search": "Search",
-    "tagging": "Tagging"
+    "tagging": "Tagging",
+    "tools": "Tools"
   },
   "options": {
     "after": "After",
@@ -1286,6 +1306,15 @@
           "tag": "Tag:"
         }
       }
+    },
+    "shiny": {
+      "button": {
+        "title": "Shiny App",
+        "menu": {
+          "download": "Download",
+          "publish": "Publish"
+        }
+      }
     }
   },
   "facets": {
@@ -1531,6 +1560,7 @@
     "stddev": "Std Dev",
     "strata": "Strata",
     "suggestedNegativeControl": "Suggested Negative Control",
+    "supportsAnnual": "Supports Annual",
     "tableQualifiers": "Table Qualifiers",
     "target": "Target",
     "targetCohortName": "Target Cohort Name",
@@ -2658,7 +2688,8 @@
           "sqlserver": "SQL server",
           "synapse": "Azure Synapse",
           "snowflake": "Snowflake",
-          "spark": "Apache Spark"
+          "spark": "Apache Spark",
+          "iris": "InterSystems IRIS"
         },
         "title": "Source dialect"
       },

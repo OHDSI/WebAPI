@@ -285,13 +285,6 @@ public class PreparedStatementRenderer implements ParameterizedSqlProvider {
   }
 
   public String getSql() {
-    if (targetDialect.equals("spark")) {
-      try {
-        sql = BigQuerySparkTranslate.sparkHandleInsert(sql, source.getSourceConnection());
-      } catch (SQLException e) {
-        e.printStackTrace();
-      }
-    }
     return SqlTranslate.translateSingleStatementSql(sql, targetDialect, sessionId, tempSchema);
   }
 

@@ -153,6 +153,7 @@ public class FeAnalysisController {
      * @return ID, type, name domain, description, etc of feature analysis
      */
     @GET
+    @Transactional
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public FeAnalysisDTO getFeAnalysis(@PathParam("id") final Integer feAnalysisId) {

@@ -18,6 +18,8 @@ public abstract class BaseFeAnalysisDTOToFeAnalysisConverter<D extends FeAnalysi
     result.setName(StringUtils.trim(source.getName()));
     result.setType(source.getType());
     result.setStatType(source.getStatType());
+    result.setSupportsAnnual(source.getSupportsAnnual());
+    result.setSupportsTemporal(source.getSupportsTemporal());
 
     return result;
   }

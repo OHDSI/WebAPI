@@ -371,6 +371,7 @@ public abstract class AbstractDaoService extends AbstractAdminService {
   }
 
   protected void assignTag(CommonEntityExt<?> entity, int tagId) {
+    checkOwnerOrAdminOrGrantedOrTagManager(entity);
     if (Objects.nonNull(entity)) {
       Tag tag = tagService.getById(tagId);
       if (Objects.nonNull(tag)) {
@@ -397,6 +398,7 @@ public abstract class AbstractDaoService extends AbstractAdminService {
   }
 
   protected void unassignTag(CommonEntityExt<?> entity, int tagId) {
+    checkOwnerOrAdminOrGrantedOrTagManager(entity);
     if (Objects.nonNull(entity)) {
       Tag tag = tagService.getById(tagId);
       if (Objects.nonNull(tag)) {
@@ -455,6 +457,19 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     Long ownerId = Objects.nonNull(entity.getCreatedBy()) ? entity.getCreatedBy().getId() : null;
 
     if (!(user.getId().equals(ownerId) || isAdmin() || permissionService.hasWriteAccess(entity))) {
+      throw new ForbiddenException();
+    }
+  }
+
+  protected void checkOwnerOrAdminOrGrantedOrTagManager(CommonEntity<?> entity) {
+    if (security instanceof DisabledSecurity) {
+      return;
+    }
+
+    UserEntity user = getCurrentUser();
+    Long ownerId = Objects.nonNull(entity.getCreatedBy()) ? entity.getCreatedBy().getId() : null;
+
+    if (!(user.getId().equals(ownerId) || isAdmin() || permissionService.hasWriteAccess(entity) || TagSecurityUtils.canManageTags())) {
       throw new ForbiddenException();
     }
   }

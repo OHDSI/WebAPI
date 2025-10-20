@@ -1,6 +1,7 @@
 package org.ohdsi.webapi.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.springframework.test.context.TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS;
 
 import com.github.springtestdbunit.DbUnitTestExecutionListener;
 import com.github.springtestdbunit.annotation.DbUnitConfiguration;
@@ -9,6 +10,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
 
+import com.github.springtestdbunit.bean.DatabaseDataSourceConnectionFactoryBean;
 import com.odysseusinc.arachne.commons.types.DBMSType;
 import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
 import org.apache.catalina.webresources.TomcatURLStreamHandlerFactory;
@@ -26,6 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -33,14 +37,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
-import org.springframework.test.context.support.DirtiesContextTestExecutionListener;
+
+import javax.sql.DataSource;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = WebApi.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = {WebApi.class, WebApiIT.DbUnitConfiguration.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-@DbUnitConfiguration(databaseConnection = {"primaryDataSource"})
-@TestExecutionListeners({DependencyInjectionTestExecutionListener.class, DbUnitTestExecutionListener.class, DirtiesContextTestExecutionListener.class})
+@DbUnitConfiguration(databaseConnection = "dbUnitDatabaseConnection")
+@TestExecutionListeners(value = {DbUnitTestExecutionListener.class}, mergeMode = MERGE_WITH_DEFAULTS)
 public abstract class WebApiIT {
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -68,6 +72,15 @@ public abstract class WebApiIT {
             "/ddl/results/achilles_result_concept_count.sql"
     );
 
+		@TestConfiguration
+		public static class DbUnitConfiguration {
+			@Bean
+			DatabaseDataSourceConnectionFactoryBean dbUnitDatabaseConnection(DataSource primaryDataSource) {
+				DatabaseDataSourceConnectionFactoryBean dbUnitDatabaseConnection = new DatabaseDataSourceConnectionFactoryBean(primaryDataSource);
+				dbUnitDatabaseConnection.setSchema("public");
+				return dbUnitDatabaseConnection;
+			}
+		}
 
     @Value("${baseUri}")
     private String baseUri;

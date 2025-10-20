@@ -156,6 +156,8 @@ public class CancelableJdbcTemplate extends JdbcTemplate {
 
     // NOTE:
     // com.cloudera.impala.hivecommon.dataengine.HiveJDBCDataEngine.prepareBatch throws NOT_IMPLEMENTED exception
-    return JdbcUtils.supportsBatchUpdates(connection) && !connection.getMetaData().getURL().startsWith("jdbc:impala");
+    return JdbcUtils.supportsBatchUpdates(connection) 
+              && !connection.getMetaData().getURL().startsWith("jdbc:impala")
+              && !connection.getMetaData().getURL().startsWith("jdbc:IRIS");
   }
 }

@@ -82,6 +82,7 @@ public interface Constants {
     String EXECUTABLE_FILE_NAME = "executableFilename";
     String GENERATION_ID = "generation_id";
     String DESIGN_HASH = "design_hash";
+    String DEMOGRAPHIC_STATS = "demographic_stats";
   }
 
   interface Variables {
@@ -89,9 +90,13 @@ public interface Constants {
   }
 
   interface Headers {
+    String ACCESS_CONTROL_EXPOSE_HEADERS = "Access-Control-Expose-Headers";
     String AUTH_PROVIDER = "x-auth-provider";
     String USER_LANGAUGE = "User-Language";
     String ACTION_LOCATION = "action-location";
+    String BEARER = "Bearer";
+    String X_AUTH_ERROR = "x-auth-error";
+    String CONTENT_DISPOSITION = "Content-Disposition";
   }
 
   interface SecurityProviders {

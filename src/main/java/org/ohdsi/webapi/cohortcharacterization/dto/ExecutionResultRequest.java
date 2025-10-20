@@ -87,4 +87,5 @@ public class ExecutionResultRequest {
     public void setShowEmptyResults(Boolean showEmptyResults) {
         isShowEmptyResults = showEmptyResults;
     }
+
 }

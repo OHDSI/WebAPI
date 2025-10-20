@@ -24,12 +24,17 @@ import org.ohdsi.webapi.pathway.domain.PathwayCohort;
 import org.ohdsi.webapi.pathway.domain.PathwayEventCohort;
 import org.ohdsi.webapi.pathway.domain.PathwayTargetCohort;
 import org.ohdsi.webapi.pathway.dto.PathwayAnalysisDTO;
+import org.ohdsi.webapi.pathway.dto.PathwayCodeDTO;
+import org.ohdsi.webapi.pathway.dto.PathwayPopulationEventDTO;
+import org.ohdsi.webapi.pathway.dto.PathwayPopulationResultsDTO;
 import org.ohdsi.webapi.pathway.dto.PathwayVersionFullDTO;
+import org.ohdsi.webapi.pathway.dto.TargetCohortPathwaysDTO;
 import org.ohdsi.webapi.pathway.dto.internal.CohortPathways;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayAnalysisResult;
 import org.ohdsi.webapi.pathway.dto.internal.PathwayCode;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisEntityRepository;
 import org.ohdsi.webapi.pathway.repository.PathwayAnalysisGenerationRepository;
+import org.ohdsi.webapi.security.PermissionService;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.CohortDefinitionService;
 import org.ohdsi.webapi.service.JobService;
@@ -63,9 +68,11 @@ import org.springframework.batch.core.configuration.annotation.StepBuilderFactor
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
@@ -96,10 +103,6 @@ import static org.ohdsi.webapi.Constants.Params.JOB_AUTHOR;
 import static org.ohdsi.webapi.Constants.Params.JOB_NAME;
 import static org.ohdsi.webapi.Constants.Params.PATHWAY_ANALYSIS_ID;
 import static org.ohdsi.webapi.Constants.Params.SOURCE_ID;
-import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
-import org.ohdsi.webapi.security.PermissionService;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.PageImpl;
 
 @Service
 @Transactional
@@ -534,19 +537,17 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 		return entity.getDesign();
 	}
 
-	@Override
-	public void assignTag(Integer id, int tagId) {
-		PathwayAnalysisEntity entity = getById(id);
-		checkOwnerOrAdminOrGranted(entity);
-		assignTag(entity, tagId);
-	}
+    @Override
+    public void assignTag(Integer id, int tagId) {
+        PathwayAnalysisEntity entity = getById(id);
+        assignTag(entity, tagId);
+    }
 
-	@Override
-	public void unassignTag(Integer id, int tagId) {
-		PathwayAnalysisEntity entity = getById(id);
-		checkOwnerOrAdminOrGranted(entity);
-		unassignTag(entity, tagId);
-	}
+    @Override
+    public void unassignTag(Integer id, int tagId) {
+        PathwayAnalysisEntity entity = getById(id);
+        unassignTag(entity, tagId);
+    }
 
 	@Override
 	public List<VersionDTO> getVersions(long id) {
@@ -657,7 +658,7 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 						new String[]{GENERATION_ID},
 						new Object[]{generationId}
 		);
-		Map<Integer, Map<String, Integer>> pathwayResults = 
+		Map<Integer, Map<String, Integer>> pathwayResults =
 						getSourceJdbcTemplate(source).query(pathwayResultsPsr.getSql(), pathwayResultsPsr.getOrderedParams(), pathwayExtractor);
 
 		cohortStats.stream().forEach((cp) -> {
@@ -701,8 +702,53 @@ public class PathwayServiceImpl extends AbstractDaoService implements PathwaySer
 		return GENERATE_PATHWAY_ANALYSIS;
 	}
 
-	@Override
-	public String getExecutionFoldingKey() {
-		return PATHWAY_ANALYSIS_ID;
-	}
+  @Override
+  public String getExecutionFoldingKey() {
+    return PATHWAY_ANALYSIS_ID;
+  }
+
+    @Override
+    @Transactional
+    public PathwayAnalysisDTO getByGenerationId(final Integer id) {
+        PathwayAnalysisGenerationEntity pathwayAnalysisGenerationEntity = getGeneration(id.longValue());
+        PathwayAnalysisEntity pathwayAnalysis = pathwayAnalysisGenerationEntity.getPathwayAnalysis();
+        Map<Integer, Integer> eventCodes = getEventCohortCodes(pathwayAnalysis);
+        PathwayAnalysisDTO dto = genericConversionService.convert(pathwayAnalysis, PathwayAnalysisDTO.class);
+        dto.getEventCohorts().forEach(ec -> ec.setCode(eventCodes.get(ec.getId())));
+        return dto;
+    }
+    @Override
+    public PathwayPopulationResultsDTO getGenerationResults(Long generationId) {
+        PathwayAnalysisResult resultingPathways = getResultingPathways(generationId);
+
+        List<PathwayCodeDTO> eventCodeDtos = resultingPathways.getCodes()
+                .stream()
+                .map(entry -> {
+                    PathwayCodeDTO dto = new PathwayCodeDTO();
+                    dto.setCode(entry.getCode());
+                    dto.setName(entry.getName());
+                    dto.setIsCombo(entry.isCombo());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        List<TargetCohortPathwaysDTO> pathwayDtos = resultingPathways.getCohortPathwaysList()
+                .stream()
+                .map(cohortResults -> {
+                    if (cohortResults.getPathwaysCounts() == null) {
+                        return null;
+                    }
+
+                    List<PathwayPopulationEventDTO> eventDTOs = cohortResults.getPathwaysCounts()
+                            .entrySet()
+                            .stream()
+                            .map(entry -> new PathwayPopulationEventDTO(entry.getKey(), entry.getValue()))
+                            .collect(Collectors.toList());
+                    return new TargetCohortPathwaysDTO(cohortResults.getCohortId(), cohortResults.getTargetCohortCount(), cohortResults.getTotalPathwaysCount(), eventDTOs);
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        return new PathwayPopulationResultsDTO(eventCodeDtos, pathwayDtos);
+    }
 }

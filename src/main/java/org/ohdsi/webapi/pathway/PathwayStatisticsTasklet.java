@@ -170,13 +170,6 @@ public class PathwayStatisticsTasklet extends CancelableTasklet {
 
 	private int[] savePaths(Source source, Long generationId) throws SQLException {
 		String sql = SAVE_PATHS_SQL;
-		if (source.getSourceDialect().equals("spark")) {
-			sql = SqlRender.renderSql(sql, 
-							new String[]{"target_database_schema", GENERATION_ID}, 
-							new String[]{source.getTableQualifier(SourceDaimon.DaimonType.Results), generationId.toString()}
-			);
-			sql = BigQuerySparkTranslate.sparkHandleInsert(sql, source.getSourceConnection());
-		}
 
 		PreparedStatementRenderer pathwayEventsPsr = new PreparedStatementRenderer(
 				source,

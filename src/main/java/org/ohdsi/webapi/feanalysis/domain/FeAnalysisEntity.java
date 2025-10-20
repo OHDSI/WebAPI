@@ -92,6 +92,12 @@ public abstract class FeAnalysisEntity<T> extends CommonEntity<Integer> implemen
     @Enumerated(value = EnumType.STRING)
     private CcResultType statType;
 
+    @Column(name = "supports_annual", updatable = false, insertable = false)
+    private Boolean supportsAnnual;
+
+    @Column(name = "supports_temporal", updatable = false, insertable = false)
+    private Boolean supportsTemporal;
+
     @Override
     public Integer getId() {
         return id;
@@ -206,6 +212,22 @@ public abstract class FeAnalysisEntity<T> extends CommonEntity<Integer> implemen
     public void setStatType(final CcResultType statType) {
 
         this.statType = statType;
+    }
+
+    public Boolean getSupportsAnnual() {
+        return supportsAnnual;
+    }
+
+    public void setSupportsAnnual(Boolean supportsAnnual) {
+        this.supportsAnnual = supportsAnnual;
+    }
+
+    public Boolean getSupportsTemporal() {
+        return supportsTemporal;
+    }
+
+    public void setSupportsTemporal(Boolean supportsTemporal) {
+        this.supportsTemporal = supportsTemporal;
     }
 }
 

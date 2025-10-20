@@ -25,7 +25,6 @@ import org.dbunit.operation.DatabaseOperation;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.ohdsi.webapi.AbstractDatabaseTest;
 import org.ohdsi.webapi.shiro.PermissionManager;
@@ -65,7 +64,6 @@ public class PermissionTest extends AbstractDatabaseTest {
     ThreadContext.bind(subject);    
   }
 
-//  @Ignore
   @Test
   public void permsTest() throws Exception {
     // need to clear authorization cache before each test
@@ -88,7 +86,6 @@ public class PermissionTest extends AbstractDatabaseTest {
     
   }
   
-//  @Ignore
   @Test
   public void wildcardTest() throws Exception {
     // need to clear authorization cache before each test

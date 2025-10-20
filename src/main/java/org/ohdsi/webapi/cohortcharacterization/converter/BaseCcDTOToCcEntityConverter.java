@@ -2,9 +2,9 @@ package org.ohdsi.webapi.cohortcharacterization.converter;
 
 import com.odysseusinc.arachne.commons.utils.ConverterUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.ohdsi.analysis.CohortMetadata;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
+import org.ohdsi.webapi.cohortcharacterization.domain.CcFeAnalysisEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcStrataConceptSetEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcParamEntity;
 import org.ohdsi.webapi.cohortcharacterization.domain.CcStrataEntity;
@@ -18,7 +18,6 @@ import org.ohdsi.webapi.feanalysis.dto.FeAnalysisShortDTO;
 import org.ohdsi.webapi.tag.domain.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -51,7 +50,16 @@ public abstract class BaseCcDTOToCcEntityConverter<T extends BaseCcDTO<? extends
         fa.setStatType(CcResultType.PREVALENCE);
       }
     });
-    cohortCharacterization.setFeatureAnalyses(converterUtils.convertSet(source.getFeatureAnalyses(), FeAnalysisEntity.class));
+    cohortCharacterization.setFeatureAnalyses(
+            source.getFeatureAnalyses().stream().map(fa -> {
+              CcFeAnalysisEntity feAnalysisEntity = new CcFeAnalysisEntity();
+              feAnalysisEntity.setFeatureAnalysis(conversionService.convert(fa, FeAnalysisEntity.class));
+              feAnalysisEntity.setCohortCharacterization(cohortCharacterization);
+              feAnalysisEntity.setIncludeAnnual(fa.getIncludeAnnual());
+              feAnalysisEntity.setIncludeTemporal(fa.getIncludeTemporal());
+              return feAnalysisEntity;
+            }).collect(Collectors.toSet())
+    );
 
     cohortCharacterization.setParameters(converterUtils.convertSet(source.getParameters(), CcParamEntity.class));
     cohortCharacterization.setStratas(converterUtils.convertSet(source.getStratas(), CcStrataEntity.class));

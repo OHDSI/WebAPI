@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Sample ready-to-use configuration file for Maven to configure WebAPI in development environment. -->
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+	<profiles>
+		<profile>
+			<id>webapi-postgresql</id>
+			<properties>
+				<datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
+				<datasource.url>jdbc:postgresql://localhost:8432/</datasource.url>
+				<datasource.username>postgres</datasource.username>
+				<datasource.password>ohdsi</datasource.password>
+				<datasource.dialect>postgresql</datasource.dialect>
+				<datasource.ohdsi.schema>public</datasource.ohdsi.schema>
+				<flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
+				<flyway.datasource.url>${datasource.url}</flyway.datasource.url>
+				<flyway.datasource.username>${datasource.username}</flyway.datasource.username>
+				<flyway.datasource.password>${datasource.password}</flyway.datasource.password>
+				<flyway.locations>classpath:db/migration/postgresql</flyway.locations>
+
+				<security.enabled>true</security.enabled>
+				<security.provider>AtlasRegularSecurity</security.provider>
+				<security.origin>http://localhost:8081</security.origin>
+				<!--	
+					'password'. Obviously not secure in any way, intended for local environment only.
+				  The configuration below allows you to spawn as many users as needed and test for behaviour when user is not found using 'notfound' username 
+				-->
+				<security.db.datasource.authenticationQuery>SELECT '$2a$10$a.oAKDX3Yy9uz1WQUSuaSOSuPDCpvjMo3uG27z0Pnds.NA1pm7WTq' WHERE ? != 'notfound'</security.db.datasource.authenticationQuery>
+				<profiles.allow.physicalDates>true</profiles.allow.physicalDates>
+<!--				<spring.jpa.show-sql>true</spring.jpa.show-sql>-->
+				<cache.invalidation.period>3600000</cache.invalidation.period>
+			</properties>
+		</profile>
+	</profiles>
+</settings>

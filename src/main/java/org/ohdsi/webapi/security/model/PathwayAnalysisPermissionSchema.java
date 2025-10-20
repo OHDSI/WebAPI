@@ -17,9 +17,6 @@ public class PathwayAnalysisPermissionSchema extends EntityPermissionSchema {
   private static Map<String, String> readPermissions = new HashMap<String, String>() {{                                     
 	put("pathway-analysis:%s:get", "Get Pathways Analysis instance");
 	put("pathway-analysis:%s:generation:get", "Get Pathways Analysis generations list");
-	put("pathway-analysis:generation:*:get", "Get Pathways Analysis generation instance");
-	put("pathway-analysis:generation:*:result:get", "Get Pathways Analysis generation results");
-	put("pathway-analysis:generation:*:design:get", "Get Pathways Analysis generation design");
 	put("pathway-analysis:%s:version:get", "Get list of pathway analysis versions");
 	put("pathway-analysis:%s:version:*:get", "Get pathway analysis version");
       }

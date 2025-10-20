@@ -18,6 +18,7 @@ import org.ohdsi.webapi.cohortcharacterization.dto.CcExportDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcPrevalenceStat;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcResult;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcShortDTO;
+import org.ohdsi.webapi.cohortcharacterization.dto.CcTemporalResult;
 import org.ohdsi.webapi.cohortcharacterization.dto.CcVersionFullDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.CohortCharacterizationDTO;
 import org.ohdsi.webapi.cohortcharacterization.dto.ExportExecutionResultRequest;
@@ -257,7 +258,7 @@ public class CcController {
         final CohortCharacterizationEntity entity = conversionService.convert(dto, CohortCharacterizationEntity.class);
         entity.setId(id);
         final CohortCharacterizationEntity updatedEntity = service.updateCc(entity);
-        return conversionService.convert(updatedEntity, CohortCharacterizationDTO.class);
+        return convertCcToDto(updatedEntity);
     }
 
     /**
@@ -443,6 +444,14 @@ public class CcController {
     public List<CcResult> getGenerationsResults(
             @PathParam("generationId") final Long generationId, @DefaultValue("0.01") @QueryParam("thresholdLevel") final float thresholdLevel) {
         return service.findResultAsList(generationId, thresholdLevel);
+    }
+
+    @GET
+    @Path("/generation/{generationId}/temporalresult")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public List<CcTemporalResult> getGenerationTemporalResults(@PathParam("generationId") final Long generationId) {
+        return service.findTemporalResultAsList(generationId);
     }
 
     @POST

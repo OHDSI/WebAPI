@@ -27,3 +27,41 @@ CREATE TABLE @results_schema.cc_results
   aggregate_name VARCHAR(1000),
   missing_means_zero INTEGER
 );
+
+IF OBJECT_ID('@results_schema.cc_temporal_results', 'U') IS NULL
+CREATE TABLE @results_schema.cc_temporal_results(
+  type                 varchar(255),
+  fa_type              varchar(255),
+  cc_generation_id     bigint,
+  analysis_id          integer,
+  analysis_name        varchar(1000),
+  covariate_id         bigint,
+  covariate_name       varchar(1000),
+  strata_id            bigint,
+  strata_name          varchar(1000),
+  concept_id           integer,
+  count_value          bigint,
+  avg_value            double precision,
+  cohort_definition_id bigint,
+  time_id              integer,
+  start_day            integer,
+  end_day              integer
+);
+
+IF OBJECT_ID('@results_schema.cc_temporal_annual_results', 'U') IS NULL
+    CREATE TABLE @results_schema.cc_temporal_annual_results(
+      type                 varchar(255),
+      fa_type              varchar(255),
+      cc_generation_id     bigint,
+      analysis_id          integer,
+      analysis_name        varchar(1000),
+      covariate_id         bigint,
+      covariate_name       varchar(1000),
+      strata_id            bigint,
+      strata_name          varchar(1000),
+      concept_id           integer,
+      count_value          bigint,
+      avg_value            double precision,
+      cohort_definition_id bigint,
+      event_year           integer
+);

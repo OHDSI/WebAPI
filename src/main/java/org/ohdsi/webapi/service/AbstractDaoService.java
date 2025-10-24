@@ -59,6 +59,9 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import java.io.File;
 import java.io.IOException;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.DriverPropertyInfo;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -70,9 +73,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.BiFunction;
 import java.util.Properties;
 import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -224,7 +227,9 @@ public abstract class AbstractDaoService extends AbstractAdminService {
       if (dataSource.getConnectionProperties() == null) {
         dataSource.setConnectionProperties(new Properties());
       }
-      dataSource.getConnectionProperties().setProperty("CLIENT_RESULT_COLUMN_CASE_INSENSITIVE", "true");
+      Properties connectionProperties = dataSource.getConnectionProperties();
+      connectionProperties.setProperty("CLIENT_RESULT_COLUMN_CASE_INSENSITIVE", "true");
+      applySnowflakeKeyPairProperties(connectionProperties, connectionString, dataSourceData);
     }
     return dataSource;
   }
@@ -488,5 +493,100 @@ public abstract class AbstractDaoService extends AbstractAdminService {
               return dto;
             })
             .collect(Collectors.toList());
+  }
+
+  private void applySnowflakeKeyPairProperties(Properties target,
+                                               String connectionString,
+                                               DataSourceUnsecuredDTO dataSourceData) {
+  Map<String, String> props = extractSnowflakeProperties(connectionString);
+    boolean hasPrivateKey = false;
+    for (Map.Entry<String, String> entry : props.entrySet()) {
+      String key = entry.getKey();
+      String value = entry.getValue();
+      if (value == null) {
+        continue;
+      }
+      if ("privateKeyFile".equalsIgnoreCase(key) || "private_key_file".equalsIgnoreCase(key)) {
+        target.setProperty("private_key_file", value);
+        hasPrivateKey = true;
+      }
+    }
+
+    if (hasPrivateKey) {
+      String username = dataSourceData != null ? dataSourceData.getUsername() : null;
+      if (username != null && !username.isEmpty()) {
+        target.setProperty("user", username);
+      }
+      String password = dataSourceData != null ? dataSourceData.getPassword() : null;
+      if (password != null && !password.isEmpty()) {
+        target.setProperty("private_key_file_pwd", password);
+      }
+    }
+  }
+
+  private Map<String, String> extractSnowflakeProperties(String connectionString) {
+    Map<String, String> params = new HashMap<>();
+    if (StringUtils.isBlank(connectionString)) {
+      return params;
+    }
+
+    try {
+      params.putAll(extractUsingJdbcDriver(connectionString));
+      if (!params.isEmpty()) {
+        return params;
+      }
+    } catch (SQLException ex) {
+      log.debug("Unable to resolve JDBC driver properties from URL: {}", ex.getMessage());
+    }
+
+    params.putAll(extractFromQueryString(connectionString));
+    return params;
+  }
+
+  private Map<String, String> extractUsingJdbcDriver(String connectionString) throws SQLException {
+    Map<String, String> params = new HashMap<>();
+    Driver driver = DriverManager.getDriver(connectionString);
+    if (driver != null) {
+      DriverPropertyInfo[] propertyInfo = driver.getPropertyInfo(connectionString, new Properties());
+      if (propertyInfo != null) {
+        for (DriverPropertyInfo info : propertyInfo) {
+          if (info != null && info.name != null && info.value != null) {
+            params.put(info.name, info.value);
+          }
+        }
+      }
+    }
+    return params;
+  }
+
+  private Map<String, String> extractFromQueryString(String connectionString) {
+    Map<String, String> params = new HashMap<>();
+    int idx = connectionString.indexOf('?');
+    if (idx < 0 || idx == connectionString.length() - 1) {
+      return params;
+    }
+    String query = connectionString.substring(idx + 1);
+    for (String pair : query.split("&")) {
+      if (pair.isEmpty()) {
+        continue;
+      }
+      String[] keyValue = pair.split("=", 2);
+      if (keyValue.length == 0 || keyValue[0].isEmpty()) {
+        continue;
+      }
+      String key = decodeQueryComponent(keyValue[0]);
+      String value = keyValue.length > 1 ? decodeQueryComponent(keyValue[1]) : null;
+      params.put(key, value);
+    }
+    return params;
+  }
+
+  private String decodeQueryComponent(String value) {
+    try {
+      return java.net.URLDecoder.decode(value, java.nio.charset.StandardCharsets.UTF_8.name());
+    } catch (java.io.UnsupportedEncodingException | IllegalArgumentException ex) {
+      log.warn("Unable to decode Snowflake connection property component: {}", ex.getMessage());
+      return value;
+    }
   }
 }

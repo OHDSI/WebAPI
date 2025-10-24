@@ -2137,6 +2137,108 @@
     "toggleTableTooltip": "테이블 표시 전환",
     "сantFind": "찾을 수 없습니다"
   },
+  "pathways": {
+    "loading": "경로 분석 목록 로드중...",
+    "manager": {
+      "caption": "코호트 경로 #<%=id%>",
+      "captionVersion": "Cohort Pathway #<%=id%> - Version <%=number%> Preview",
+      "design": {
+        "analysisSettings": {
+          "combinationWindow": {
+            "description": "통합으로 간주되기 위해 두 개의 이벤트 코호트가 겹쳐야 하는 시간 범위.",
+            "title": "통합 기간 범위:"
+          },
+          "description": "경로 분석을 수행할 때 다음의 설정이 사용됩니다.",
+          "maximumPathLength": {
+            "description": "Sunburst plot에 포함될 경로 단계의 최대수.",
+            "title": "최대 경로 길이:"
+          },
+          "minimumCellCount": {
+            "description": "경로에서 수 집계를 위해 주어진 이벤트에 대한 표적 코호트의 최소 대상자 수.",
+            "title": "최소 분석 단위 수:"
+          },
+          "allowRepeats": {
+            "description": "코호트 이벤트/콤보가 동일한 경로에서 여러 번 표시 되도록 허용.",
+            "title": "반복 허용:"
+          },
+          "title": "분석 설정"
+        },
+        "description": "코호트 경로(Cohort pathway)의 분석은 표적 코호트에 속한 사람들 중에서 이벤트 코호트로 정의된 여러 이벤트들이 발생한 전이 과정을 생성하는 프로세스로 정의됩니다.",
+        "eventCohorts": {
+          "description": "각 이벤트 코호트는 대상 코호트에 속한 사람들에게 발생할 수 있는 경로의 단계를 정의합니다.",
+          "title": "이벤트 코호트"
+        },
+        "targetCohorts": {
+          "description": "각각의 표적코호트는 이벤트 코호트를 통한 경로들로 분석됩니다.",
+          "title": "표적 코호트"
+        }
+      },
+      "executions": {
+        "title": "실행",
+        "dialogs": {
+          "design": {
+            "loadError": "설계를 로드할 수 없습니다.",
+            "title": "설계"
+          }
+        },
+        "results": {
+          "date": "날짜:",
+          "design": "설계:",
+          "details": {
+            "noPath": "경로가 선택되지 않음 : 상세정보를 위해 경로를 클릭하세요",
+            "title": "경로 상세정보"
+          },
+          "diagram": {
+            "title": "썬버스트(Sunburst) 플롯"
+          },
+          "filters": {
+            "cohorts": "코호트"
+          },
+          "legend": {
+            "eventCohorts": "이벤트 코호트",
+            "personsCount": "경로별 환자 수:",
+            "personsPortion": "전체 대상 코호트 환자 수 대비 pathway 내 환자 수 비율:",
+            "targetCohort": "표적 코호트",
+            "targetCohortCount": "표적 코호트 수:",
+            "title": "범례"
+          },
+          "noPathways": "경로가 발견되지 않았습니다",
+          "title": "Pathway 리포트",
+          "visualization": "시각화",
+          "tabular": "표의",
+          "tableview": {
+            "cohortName": "코호트 <%=name%>",
+            "maximumPathLength": "최대 경로 길이 :",
+            "allPathwaysTitle": "테이블 <%=index%> a : 모든 경로",
+            "eventCohortCountsByRank": "테이블 <%=index%> b : 순위별 이벤트 코호트 카운트",
+            "eventCohortCounts": "테이블 <%=index%> c : 이벤트 코호트 카운트",
+            "distinctEventCohorts": "테이블 <%=index%> d : 고유한 이벤트 코호트",
+            "stepN": "단계 <%=i%>",
+            "exactly": "정확히 <%=v%>"
+          }
+        }
+      },
+      "loading": "코호트 경로 분석 로드중...",
+      "messages": {
+        "alreadyExists": "이 이름의 코호트 경로가 이미 존재합니다. 다른 이름을 선택하십시오.",
+        "beforeClose": "변경 사항은 저장되지 않습니다. 계속 하시겠습니까?",
+        "deleteConfirmation": "확실합니까?",
+        "saveFailed": "코호트 경로를 저장하는 중에 오류가 발생했습니다.",
+        "notfound": "id = %d 인 경로 분석이 없습니다."
+      },
+      "tabs": {
+        "design": "설계",
+        "executions": "실행",
+        "utilities": "유틸리티",
+        "versions": "Versions",
+        "messages": "메시지"
+      },
+      "utilities": {
+        "title": "유틸리티"
+      }
+    },
+    "title": "코호트 경로"
+  },
   "ple": {
     "analysisExistsAlert": "이 이름의 추정(estimation) 분석이 이미 존재합니다. 다른 이름을 선택하십시오.",
     "analysisSaveErrorAlert": "추정(estimation) 분석을 저장하는 중에 오류가 발생했습니다.",

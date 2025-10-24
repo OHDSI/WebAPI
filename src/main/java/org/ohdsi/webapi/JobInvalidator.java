@@ -1,6 +1,5 @@
 package org.ohdsi.webapi;
 
-import org.ohdsi.webapi.executionengine.entity.ExecutionEngineAnalysisStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.admin.service.SearchableJobExecutionDao;
@@ -44,16 +43,6 @@ public class JobInvalidator {
         });
     }
 
-    public void invalidateJobExecutionById(ExecutionEngineAnalysisStatus executionEngineAnalysisStatus) {
-        JobExecution job = jobExecutionDao.getJobExecution(executionEngineAnalysisStatus.getExecutionEngineGeneration().getId());
-        if (job == null || job.getJobId() == null) {
-            log.error("Cannot invalidate job. There is no job for execution-engine-analysis-status with id = {}", executionEngineAnalysisStatus.getId());
-            return;
-        }
-
-        invalidationJobExecution(job);
-
-    }
 
     public void invalidationJobExecution(JobExecution job) {
         job.setStatus(BatchStatus.FAILED);

@@ -46,9 +46,4 @@ public class HttpClient {
                 .register(MultiPartFeature.class)
                 .build();
     }
-
-    public WebTarget target(final String executionEngineURL) {
-
-        return client.target(executionEngineURL);
-    }
 }

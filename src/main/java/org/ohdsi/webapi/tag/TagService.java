@@ -42,10 +42,7 @@ public class TagService extends AbstractDaoService {
 
         this.infoProducers = new ArrayList<>();
         this.infoProducers.add(tagRepository::findCohortTagInfo);
-        this.infoProducers.add(tagRepository::findCcTagInfo);
         this.infoProducers.add(tagRepository::findConceptSetTagInfo);
-        this.infoProducers.add(tagRepository::findIrTagInfo);
-        this.infoProducers.add(tagRepository::findPathwayTagInfo);
         this.infoProducers.add(tagRepository::findReusableTagInfo);
     }
 

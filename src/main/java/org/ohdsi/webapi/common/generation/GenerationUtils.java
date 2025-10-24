@@ -1,16 +1,7 @@
 package org.ohdsi.webapi.common.generation;
 
 import org.ohdsi.webapi.Constants;
-import org.ohdsi.webapi.cohortcharacterization.CreateCohortTableTasklet;
-import org.ohdsi.webapi.cohortcharacterization.DropCohortTableListener;
-import org.ohdsi.webapi.cohortcharacterization.GenerateLocalCohortTasklet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
-import org.ohdsi.webapi.executionengine.entity.AnalysisFile;
-import org.ohdsi.webapi.executionengine.job.CreateAnalysisTasklet;
-import org.ohdsi.webapi.executionengine.job.ExecutionEngineCallbackTasklet;
-import org.ohdsi.webapi.executionengine.job.RunExecutionEngineTasklet;
-import org.ohdsi.webapi.executionengine.repository.ExecutionEngineGenerationRepository;
-import org.ohdsi.webapi.executionengine.service.ScriptExecutionService;
 import org.ohdsi.webapi.generationcache.GenerationCacheHelper;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.service.CohortGenerationService;
@@ -51,8 +42,6 @@ public class GenerationUtils extends AbstractDaoService {
     private JobBuilderFactory jobBuilders;
     private JobService jobService;
     private final SourceAwareSqlRender sourceAwareSqlRender;
-    private final ScriptExecutionService executionService;
-    private final ExecutionEngineGenerationRepository executionEngineGenerationRepository;
     private final EntityManager entityManager;
     private final GenerationCacheHelper generationCacheHelper;
 
@@ -66,8 +55,6 @@ public class GenerationUtils extends AbstractDaoService {
                            JobBuilderFactory jobBuilders,
                            SourceAwareSqlRender sourceAwareSqlRender,
                            JobService jobService,
-                           ScriptExecutionService executionService,
-                           ExecutionEngineGenerationRepository executionEngineGenerationRepository,
                            EntityManager entityManager,
                            GenerationCacheHelper generationCacheHelper) {
 
@@ -78,8 +65,6 @@ public class GenerationUtils extends AbstractDaoService {
         this.jobBuilders = jobBuilders;
         this.sourceAwareSqlRender = sourceAwareSqlRender;
         this.jobService = jobService;
-        this.executionService = executionService;
-        this.executionEngineGenerationRepository = executionEngineGenerationRepository;
         this.entityManager = entityManager;
         this.generationCacheHelper = generationCacheHelper;
     }
@@ -89,100 +74,9 @@ public class GenerationUtils extends AbstractDaoService {
         return Constants.TEMP_COHORT_TABLE_PREFIX + sessionId;
     }
 
-    public SimpleJobBuilder buildJobForCohortBasedAnalysisTasklet(
-            String analysisTypeName,
-            Source source,
-            JobParametersBuilder builder,
-            JdbcTemplate jdbcTemplate,
-            Function<ChunkContext, Collection<CohortDefinition>> cohortGetter,
-            CancelableTasklet analysisTasklet
-    ) {
-
-        final String sessionId = SessionUtils.sessionId();
-        addSessionParams(builder, sessionId);
-
-        TempTableCleanupManager cleanupManager = new TempTableCleanupManager(
-                getSourceJdbcTemplate(source),
-                transactionTemplate,
-                source.getSourceDialect(),
-                sessionId,
-                SourceUtils.getTempQualifier(source)
-        );
-
-        GenerationTaskExceptionHandler exceptionHandler = new GenerationTaskExceptionHandler(cleanupManager);
-
-        CreateCohortTableTasklet createCohortTableTasklet = new CreateCohortTableTasklet(jdbcTemplate, transactionTemplate, sourceService, sourceAwareSqlRender);
-        Step createCohortTableStep = stepBuilderFactory.get(analysisTypeName + ".createCohortTable")
-                .tasklet(createCohortTableTasklet)
-                .build();
-
-        GenerateLocalCohortTasklet generateLocalCohortTasklet = new GenerateLocalCohortTasklet(
-                transactionTemplate,
-                getSourceJdbcTemplate(source),
-                cohortGenerationService,
-                sourceService,
-                cohortGetter,
-                generationCacheHelper,
-                useAsyncCohortGeneration
-        );
-        Step generateLocalCohortStep = stepBuilderFactory.get(analysisTypeName + ".generateCohort")
-                .tasklet(generateLocalCohortTasklet)
-                .build();
-
-        Step generateAnalysisStep = stepBuilderFactory.get(analysisTypeName + ".generate")
-                .tasklet(analysisTasklet)
-                .exceptionHandler(exceptionHandler)
-                .build();
-
-        DropCohortTableListener dropCohortTableListener = new DropCohortTableListener(jdbcTemplate, transactionTemplate, sourceService, sourceAwareSqlRender);
-
-        SimpleJobBuilder generateJobBuilder = jobBuilders.get(analysisTypeName)
-                .start(createCohortTableStep)
-                .next(generateLocalCohortStep)
-                .next(generateAnalysisStep)
-                .listener(dropCohortTableListener)
-                .listener(new AutoremoveJobListener(jobService));
-
-        return generateJobBuilder;
-    }
-
     protected void addSessionParams(JobParametersBuilder builder, String sessionId) {
         builder.addString(SESSION_ID, sessionId);
         builder.addString(TARGET_TABLE, GenerationUtils.getTempCohortTableName(sessionId));
     }
 
-    public SimpleJobBuilder buildJobForExecutionEngineBasedAnalysisTasklet(String analysisTypeName,
-                                                              Source source,
-                                                              JobParametersBuilder builder,
-                                                              List<AnalysisFile> analysisFiles) {
-
-        final String sessionId = SessionUtils.sessionId();
-        addSessionParams(builder, sessionId);
-
-        CreateAnalysisTasklet createAnalysisTasklet = new CreateAnalysisTasklet(executionService, source.getSourceKey(), analysisFiles);
-        RunExecutionEngineTasklet runExecutionEngineTasklet = new RunExecutionEngineTasklet(executionService, source, analysisFiles);
-        ExecutionEngineCallbackTasklet callbackTasklet = new ExecutionEngineCallbackTasklet(executionEngineGenerationRepository, entityManager);
-
-        Step createAnalysisExecutionStep = stepBuilderFactory.get(analysisTypeName + ".createAnalysisExecution")
-                .tasklet(createAnalysisTasklet)
-                .build();
-
-        Step runExecutionStep = stepBuilderFactory.get(analysisTypeName + ".startExecutionEngine")
-                .tasklet(runExecutionEngineTasklet)
-                .build();
-
-        Step waitCallbackStep = stepBuilderFactory.get(analysisTypeName + ".waitForCallback")
-                .tasklet(callbackTasklet)
-                .build();
-        
-        DropCohortTableListener dropCohortTableListener = new DropCohortTableListener(getSourceJdbcTemplate(source),
-                transactionTemplate, sourceService, sourceAwareSqlRender);
-
-        return jobBuilders.get(analysisTypeName)
-                .start(createAnalysisExecutionStep)
-                .next(runExecutionStep)
-                .next(waitCallbackStep)
-                .listener(dropCohortTableListener)
-                .listener(new AutoremoveJobListener(jobService));
-    }
 }

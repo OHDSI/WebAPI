@@ -2137,6 +2137,108 @@
     "toggleTableTooltip": "切换表显示",
     "сantFind": "无法找到"
   },
+  "pathways": {
+    "loading": "正在加载路径分析列表...",
+    "manager": {
+      "caption": "队列路径 #<%=id%>",
+      "captionVersion": "Cohort Pathway #<%=id%> - Version <%=number%> Preview",
+      "design": {
+        "analysisSettings": {
+          "combinationWindow": {
+            "description": "两个事件队列必须联合使用才能被视为组合的时间窗。",
+            "title": "联合治疗的时间窗："
+          },
+          "description": "执行路径分析时，使用以下参数集",
+          "maximumPathLength": {
+            "description": "在sunburst图中保罗的指定路径的最大步骤数。",
+            "title": "最大路径长度："
+          },
+          "minimumCellCount": {
+            "description": "目标队列中有定义的事件队列的最小受试者数，以便于在途径中进行计数。",
+            "title": "最少分析的单位数："
+          },
+          "allowRepeats": {
+            "description": "Allow cohort events/combos to appear multiple times in the same pathway.",
+            "title": "允许重复："
+          },
+          "title": "分析设置"
+        },
+        "description": "队列路径定义是在目标队列人群中生成事件队列序列的过程。",
+        "eventCohorts": {
+          "description": "每个事件队列都定义了目标队列中病人可能发生的路径中的步骤。",
+          "title": "事件队列"
+        },
+        "targetCohorts": {
+          "description": "对于每个目标队列分析事件队列的途径",
+          "title": "目标队列"
+        }
+      },
+      "executions": {
+        "title": "执行",
+        "dialogs": {
+          "design": {
+            "loadError": "无法加载设计",
+            "title": "设计"
+          }
+        },
+        "results": {
+          "date": "日期:",
+          "design": "设计:",
+          "details": {
+            "noPath": "未选择路径：单击路径以获取详细信息",
+            "title": "路径细节"
+          },
+          "diagram": {
+            "title": "朝阳图"
+          },
+          "filters": {
+            "cohorts": "队列"
+          },
+          "legend": {
+            "eventCohorts": "事件队列",
+            "personsCount": "接受治疗的患者人数：",
+            "personsPortion": "接受治疗的患者占目标人群总数的比例：",
+            "targetCohort": "目标队列",
+            "targetCohortCount": "目标队列人数：",
+            "title": "图例"
+          },
+          "noPathways": "未找到任何途径",
+          "title": "路径分析",
+          "visualization": "可视化",
+          "tabular": "表格",
+          "tableview": {
+            "cohortName": "队列 <%=name%>",
+            "maximumPathLength": "最大路径长度：",
+            "allPathwaysTitle": "表<%=index%>a：所有路径",
+            "eventCohortCountsByRank": "表<%=index%>b：按排名划分的事件队列计数",
+            "eventCohortCounts": "表<%=index%>c：事件同类群组计数",
+            "distinctEventCohorts": "表<%=index%>d：不同事件队列",
+            "stepN": "步骤<%=i%>",
+            "exactly": "准确<%=v%>"
+          }
+        }
+      },
+      "loading": "正在载入队列路径...",
+      "messages": {
+        "alreadyExists": "具有该名称的队列路径已经存在。 请选择其他名称。",
+        "beforeClose": "您的更改未保存。 您想继续吗？",
+        "deleteConfirmation": "您确定么？",
+        "saveFailed": "尝试保存队列路径时发生错误。",
+        "notfound": "没有ID=%d的路径分析。"
+      },
+      "tabs": {
+        "design": "设计",
+        "executions": "执行",
+        "utilities": "程序",
+        "versions": "Versions",
+        "messages": "提示信息"
+      },
+      "utilities": {
+        "title": "程序"
+      }
+    },
+    "title": "队列路径"
+  },
   "ple": {
     "analysisExistsAlert": "使用此名称的估算分析已经存在。 请选择其他名称。",
     "analysisSaveErrorAlert": "尝试保存估算分析时发生错误。",

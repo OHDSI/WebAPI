@@ -7,11 +7,8 @@ import org.ohdsi.webapi.versioning.domain.VersionBase;
 import org.ohdsi.webapi.versioning.domain.VersionPK;
 import org.ohdsi.webapi.versioning.domain.VersionType;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
-import org.ohdsi.webapi.versioning.repository.CharacterizationVersionRepository;
 import org.ohdsi.webapi.versioning.repository.CohortVersionRepository;
 import org.ohdsi.webapi.versioning.repository.ConceptSetVersionRepository;
-import org.ohdsi.webapi.versioning.repository.IrVersionRepository;
-import org.ohdsi.webapi.versioning.repository.PathwayVersionRepository;
 import org.ohdsi.webapi.versioning.repository.ReusableVersionRepository;
 import org.ohdsi.webapi.versioning.repository.VersionRepository;
 import org.slf4j.Logger;
@@ -48,18 +45,12 @@ public class VersionService<T extends Version> extends AbstractDaoService {
             EntityManager entityManager,
             CohortVersionRepository cohortRepository,
             ConceptSetVersionRepository conceptSetVersionRepository,
-            CharacterizationVersionRepository characterizationVersionRepository,
-            IrVersionRepository irRepository,
-            PathwayVersionRepository pathwayRepository,
             ReusableVersionRepository reusableRepository) {
         this.entityManager = entityManager;
 
         this.repositoryMap = new HashMap<>();
         this.repositoryMap.put(VersionType.COHORT, (VersionRepository<T>) cohortRepository);
         this.repositoryMap.put(VersionType.CONCEPT_SET, (VersionRepository<T>) conceptSetVersionRepository);
-        this.repositoryMap.put(VersionType.CHARACTERIZATION, (VersionRepository<T>) characterizationVersionRepository);
-        this.repositoryMap.put(VersionType.INCIDENCE_RATE, (VersionRepository<T>) irRepository);
-        this.repositoryMap.put(VersionType.PATHWAY, (VersionRepository<T>) pathwayRepository);
         this.repositoryMap.put(VersionType.REUSABLE, (VersionRepository<T>) reusableRepository);
     }
 

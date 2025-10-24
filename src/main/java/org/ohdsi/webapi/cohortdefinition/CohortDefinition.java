@@ -45,7 +45,6 @@ import org.hibernate.annotations.Parameter;
 import org.ohdsi.analysis.Cohort;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortanalysis.CohortAnalysisGenerationInfo;
-import org.ohdsi.webapi.cohortcharacterization.domain.CohortCharacterizationEntity;
 import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.model.CommonEntityExt;
 import org.ohdsi.webapi.tag.domain.Tag;
@@ -95,12 +94,6 @@ public class CohortDefinition extends CommonEntityExt<Integer> implements Serial
 
   @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "cohortDefinition")
   private Set<CohortAnalysisGenerationInfo> cohortAnalysisGenerationInfoList = new HashSet<>();
-
-  @ManyToMany(targetEntity = CohortCharacterizationEntity.class, fetch = FetchType.LAZY)
-  @JoinTable(name = "cc_cohort",
-          joinColumns = @JoinColumn(name = "cohort_id", referencedColumnName = "id"),
-          inverseJoinColumns = @JoinColumn(name = "cohort_characterization_id", referencedColumnName = "id"))
-  private List<CohortCharacterizationEntity> cohortCharacterizations = new ArrayList<>();
 
   @ManyToMany(targetEntity = Tag.class, fetch = FetchType.LAZY)
   @JoinTable(name = "cohort_tag",
@@ -191,15 +184,6 @@ public class CohortDefinition extends CommonEntityExt<Integer> implements Serial
       return details != null ? details.getExpressionObject() : null;
     }
 
-  public List<CohortCharacterizationEntity> getCohortCharacterizations() {
-
-    return cohortCharacterizations;
-  }
-
-  public void setCohortCharacterizations(final List<CohortCharacterizationEntity> cohortCharacterizations) {
-
-    this.cohortCharacterizations = cohortCharacterizations;
-  }
 
   @Override
   public Set<Tag> getTags() {

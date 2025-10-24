@@ -6,9 +6,6 @@ import org.springframework.batch.core.ExitStatus;
 public interface Constants {
   String DEFAULT_DIALECT = "sql server";
   String GENERATE_COHORT = "generateCohort";
-  String GENERATE_COHORT_CHARACTERIZATION = "generateCohortCharacterization";
-  String GENERATE_PATHWAY_ANALYSIS = "generatePathwayAnalysis";
-  String GENERATE_IR_ANALYSIS = "irAnalysis";
   String GENERATE_PREDICTION_ANALYSIS = "generatePredictionAnalysis";
   String GENERATE_ESTIMATION_ANALYSIS = "generateEstimationAnalysis";
   String WARM_CACHE = "warmCache";
@@ -34,8 +31,6 @@ public interface Constants {
           "scriptType",
           "analysis_id",
           "concept_set_id",
-          "cohort_characterization_id",
-          "pathway_analysis_id",
           "estimation_analysis_id",
           "prediction_analysis_id"
   );
@@ -53,8 +48,6 @@ public interface Constants {
 
     String VOCABULARY_DATABASE_SCHEMA = "vocabulary_database_schema";
     String COHORT_DEFINITION_ID = "cohort_definition_id";
-    String COHORT_CHARACTERIZATION_ID = "cohort_characterization_id";
-    String PATHWAY_ANALYSIS_ID = "pathway_analysis_id";
     String PREDICTION_ANALYSIS_ID = "prediction_analysis_id";
     String PREDICTION_SKELETON_VERSION = "v0.0.1";
     String ESTIMATION_ANALYSIS_ID = "estimation_analysis_id";

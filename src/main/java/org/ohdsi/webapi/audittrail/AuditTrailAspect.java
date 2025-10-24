@@ -43,9 +43,6 @@ public class AuditTrailAspect {
     @Pointcut("execution(public * org.ohdsi.webapi.job.NotificationController.*(..))")
     public void notificationsPointcut() {
     }
-    @Pointcut("execution(public * org.ohdsi.webapi.executionengine.controller.ScriptExecutionController.*(..))")
-    public void executionenginePointcut() {
-    }
     @Pointcut("execution(public * org.ohdsi.webapi.service.VocabularyService.getInfo(..))")
     public void vocabularyServiceGetInfoPointcut() {
     }
@@ -57,7 +54,6 @@ public class AuditTrailAspect {
             " && " +
             // exclude system calls
             "!notificationsPointcut() && " +
-            "!executionenginePointcut() && " +
             "!vocabularyServiceGetInfoPointcut() && " +
             "!webapiGetInfoPointcut()")
     public Object auditLog(final ProceedingJoinPoint joinPoint) throws Throwable {

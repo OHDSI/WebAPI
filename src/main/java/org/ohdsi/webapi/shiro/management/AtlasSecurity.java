@@ -14,7 +14,6 @@ import org.apache.shiro.realm.Realm;
 import org.apache.shiro.web.filter.authz.SslFilter;
 import org.apache.shiro.web.filter.session.NoSessionCreationFilter;
 import org.ohdsi.webapi.OidcConfCreator;
-import org.ohdsi.webapi.cohortcharacterization.CcImportEvent;
 import org.ohdsi.webapi.security.model.EntityPermissionSchemaResolver;
 import org.ohdsi.webapi.security.model.EntityType;
 import org.ohdsi.webapi.shiro.PermissionManager;
@@ -72,13 +71,11 @@ public abstract class AtlasSecurity extends Security {
 
   protected final Set<String> defaultRoles = new LinkedHashSet<>();
 
-  private final Map<String, String> featureAnalysisPermissionTemplates;
   private final Map<FilterTemplates, Filter> filters = new HashMap<>();
 
   public AtlasSecurity(EntityPermissionSchemaResolver permissionSchemaResolver) {
     this.defaultRoles.add("public");
     this.permissionSchemaResolver = permissionSchemaResolver;
-    featureAnalysisPermissionTemplates = permissionSchemaResolver.getForType(EntityType.FE_ANALYSIS).getAllPermissions();
   }
 
   @PostConstruct
@@ -170,13 +167,5 @@ public abstract class AtlasSecurity extends Security {
       log.warn("No security manager is available, authenticated as anonymous");
     }
     return "anonymous";
-  }
-
-  // Since we need to create permissions only for certain analyses, we cannot go with `addProcessEntityFilter`
-  @EventListener
-  public void onCcImport(CcImportEvent event) throws Exception {
-      for (Integer id : event.getSavedAnalysesIds()) {
-          authorizer.addPermissionsFromTemplate(featureAnalysisPermissionTemplates, id.toString());
-      }
   }
 }

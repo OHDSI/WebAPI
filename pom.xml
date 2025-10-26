@@ -1141,6 +1141,11 @@
       <version>0.15.2</version>
     </dependency>
     <dependency>
+      <groupId>org.freemarker</groupId>
+      <artifactId>freemarker</artifactId>
+      <version>2.3.30</version>
+    </dependency>
+    <dependency>
       <groupId>com.atlassian.commonmark</groupId>
       <artifactId>commonmark-ext-gfm-tables</artifactId>
       <version>0.15.2</version>

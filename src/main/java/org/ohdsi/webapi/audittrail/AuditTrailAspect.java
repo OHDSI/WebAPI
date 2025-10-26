@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Component
 @Aspect
@@ -24,16 +24,16 @@ public class AuditTrailAspect {
     @Autowired
     private AuditTrailService auditTrailService;
 
-    @Pointcut("@annotation(javax.ws.rs.GET)")
+    @Pointcut("@annotation(jakarta.ws.rs.GET)")
     public void restGetPointcut() {
     }
-    @Pointcut("@annotation(javax.ws.rs.POST)")
+    @Pointcut("@annotation(jakarta.ws.rs.POST)")
     public void restPostPointcut() {
     }
-    @Pointcut("@annotation(javax.ws.rs.PUT)")
+    @Pointcut("@annotation(jakarta.ws.rs.PUT)")
     public void restPutPointcut() {
     }
-    @Pointcut("@annotation(javax.ws.rs.DELETE)")
+    @Pointcut("@annotation(jakarta.ws.rs.DELETE)")
     public void restDeletePointcut() {
     }
     @Pointcut("execution(public * org.ohdsi.webapi.service.IRAnalysisResource+.*(..))")

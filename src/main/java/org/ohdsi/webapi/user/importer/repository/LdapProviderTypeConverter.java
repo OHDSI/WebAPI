@@ -2,7 +2,7 @@ package org.ohdsi.webapi.user.importer.repository;
 
 import org.ohdsi.webapi.user.importer.model.LdapProviderType;
 
-import javax.persistence.AttributeConverter;
+import jakarta.persistence.AttributeConverter;
 import java.util.Objects;
 
 public class LdapProviderTypeConverter implements AttributeConverter<LdapProviderType, String> {

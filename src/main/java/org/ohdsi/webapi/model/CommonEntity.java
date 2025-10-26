@@ -5,7 +5,7 @@ import org.ohdsi.webapi.shiro.Entities.UserEntity;
 
 import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @MappedSuperclass
 public abstract class CommonEntity<T extends Number> implements Serializable, WithId<T> {

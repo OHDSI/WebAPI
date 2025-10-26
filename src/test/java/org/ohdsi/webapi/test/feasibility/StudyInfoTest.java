@@ -15,8 +15,8 @@
  */
 package org.ohdsi.webapi.test.feasibility;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import org.junit.Ignore;
 import org.junit.Test;

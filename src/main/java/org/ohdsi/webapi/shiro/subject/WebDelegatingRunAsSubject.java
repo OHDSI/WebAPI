@@ -10,8 +10,8 @@ import org.apache.shiro.web.subject.support.WebDelegatingSubject;
 import org.ohdsi.webapi.shiro.runas.DefaultInMemoryRunAsStorage;
 import org.ohdsi.webapi.shiro.runas.RunAsStorage;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;

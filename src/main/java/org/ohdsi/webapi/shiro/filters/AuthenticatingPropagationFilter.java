@@ -1,8 +1,8 @@
 package org.ohdsi.webapi.shiro.filters;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import org.ohdsi.webapi.arachne.logging.event.FailedLoginEvent;
 import org.ohdsi.webapi.arachne.logging.event.SuccessLoginEvent;
 import org.apache.shiro.authc.AuthenticationException;

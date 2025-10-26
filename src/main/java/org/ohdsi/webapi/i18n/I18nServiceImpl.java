@@ -7,8 +7,8 @@ import org.ohdsi.circe.helper.ResourceHelper;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import javax.ws.rs.InternalServerErrorException;
+import jakarta.annotation.PostConstruct;
+import jakarta.ws.rs.InternalServerErrorException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;

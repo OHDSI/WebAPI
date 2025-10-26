@@ -21,16 +21,18 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import com.google.common.collect.ImmutableList;
 import org.hibernate.annotations.GenericGenerator;
@@ -87,11 +89,11 @@ public class Source extends CommonEntity<Integer> implements Serializable {
   private String sourceKey;
 
   @Column
-  @Type(type = "encryptedString")
+  @JdbcTypeCode(SqlTypes.VARCHAR) // TODO: Custom type "encryptedString" needs Hibernate 6 migration
   private String username;
 
   @Column
-  @Type(type = "encryptedString")
+  @JdbcTypeCode(SqlTypes.VARCHAR) // TODO: Custom type "encryptedString" needs Hibernate 6 migration
   private String password;
 
   @Column(name = "deleted_date")

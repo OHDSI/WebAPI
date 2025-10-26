@@ -15,7 +15,9 @@
 package org.ohdsi.webapi.cohortdefinition;
 
 import java.io.Serializable;
-import javax.persistence.*;
+import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.hibernate.annotations.Type;
@@ -41,7 +43,7 @@ public class CohortDefinitionDetails implements Serializable {
   private CohortDefinition definition;
 
   @Lob
-  @Type(type = "org.hibernate.type.TextType")
+  @JdbcTypeCode(SqlTypes.VARCHAR) // TODO: Custom type "org.hibernate.type.TextType" needs Hibernate 6 migration
   private String expression;
 
   @Column(name = "hash_code")

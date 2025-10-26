@@ -12,30 +12,32 @@
     <build.number>${BUILD_NUMBER}</build.number>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- Spring Boot manages spring.version as well -->
-    <spring.boot.version>1.5.22.RELEASE</spring.boot.version>
-    <log4j2.version>2.17.1</log4j2.version>
+    <spring.boot.version>3.2.11</spring.boot.version>
+    <log4j2.version>2.24.3</log4j2.version>
     <flyway.version>4.2.0</flyway.version>
     <waffle.version>2.2.1</waffle.version>
     <jna.version>5.5.0</jna.version>
-    <hibernate.version>5.4.2.Final</hibernate.version>
-    <postgresql.version>42.3.10</postgresql.version>
-    <shiro.version>1.13.0</shiro.version>
+    <hibernate.version>6.5.3.Final</hibernate.version>
+    <postgresql.version>42.7.4</postgresql.version>
+    <shiro.version>2.0.2</shiro.version>
     <tomcat.embed.version>8.5.87</tomcat.embed.version>
 
     <commons-fileupload.version>1.5</commons-fileupload.version>
 
     <circe.version>1.12.1</circe.version>
-    <jersey.version>2.14</jersey.version>
+    <jersey.version>3.1.9</jersey.version>
     <SqlRender.version>1.19.1</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
-    <pac4j.version>4.0.0</pac4j.version>
-    <jackson.version>2.12.7</jackson.version>
+    <pac4j.version>5.7.5</pac4j.version>
+    <jackson.version>2.18.2</jackson.version>
     <start-class>org.ohdsi.webapi.WebApi</start-class>
     <skipUnitTests>false</skipUnitTests>
     <skipITtests>false</skipITtests>
     <miredot.phase>none</miredot.phase>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <java.version>21</java.version>
+    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
+    <maven.compiler.release>21</maven.compiler.release>
 
     <!-- Primary DataSource -->
     <!-- default sql server - TODO How about making postgres the default (e.g. in line with open source tech)? -alexfranken -->
@@ -354,7 +356,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.5.0</version>
+        <version>3.8.1</version>
       </plugin>
       <plugin>
         <groupId>pl.project13.maven</groupId>
@@ -379,10 +381,11 @@
           </includeOnlyProperties>
         </configuration>
       </plugin>
+      <!-- Replaced gmaven-plugin 1.5 with groovy-maven-plugin for Java 21 compatibility -->
       <plugin>
-        <groupId>org.codehaus.gmaven</groupId>
-        <artifactId>gmaven-plugin</artifactId>
-        <version>1.5</version>
+        <groupId>org.codehaus.gmavenplus</groupId>
+        <artifactId>gmavenplus-plugin</artifactId>
+        <version>3.0.2</version>
         <executions>
           <execution>
             <id>add-git-branch-info</id>
@@ -391,13 +394,23 @@
               <goal>execute</goal>
             </goals>
             <configuration>
-              <source>
-                if (project.properties.getProperty("git.branch") == null) project.properties.setProperty("git.branch", "*");
-                if (project.properties.getProperty("git.commit.id.abbrev") == null) project.properties.setProperty("git.commit.id.abbrev", "*");
-              </source>
+              <scripts>
+                <script><![CDATA[
+                  if (project.properties.getProperty("git.branch") == null) project.properties.setProperty("git.branch", "*")
+                  if (project.properties.getProperty("git.commit.id.abbrev") == null) project.properties.setProperty("git.commit.id.abbrev", "*")
+                ]]></script>
+              </scripts>
             </configuration>
           </execution>
         </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy</artifactId>
+            <version>4.0.23</version>
+            <scope>runtime</scope>
+          </dependency>
+        </dependencies>
       </plugin>
       <plugin>
         <groupId>org.springframework.boot</groupId>
@@ -429,7 +442,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.22.2</version>
+        <version>3.5.2</version>
         <configuration>
           <skipTests>${skipUnitTests}</skipTests>
         </configuration>
@@ -437,7 +450,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.10.1</version>
+        <version>3.13.0</version>
         <inherited>true</inherited>
         <configuration>
           <compilerArgs>
@@ -449,7 +462,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
-        <version>3.3.1</version>
+        <version>3.4.0</version>
         <configuration>
           <failOnMissingWebXml>false</failOnMissingWebXml>
           <attachClasses>true</attachClasses>
@@ -458,7 +471,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>2.22.2</version>
+        <version>3.5.2</version>
         <configuration>
           <skipITs>${skipITtests}</skipITs>
         </configuration>
@@ -520,6 +533,30 @@
             </html>
           </output>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.openrewrite.maven</groupId>
+        <artifactId>rewrite-maven-plugin</artifactId>
+        <version>5.45.0</version>
+        <configuration>
+          <exportDatatables>true</exportDatatables>
+          <activeRecipes>
+            <recipe>org.openrewrite.java.migrate.UpgradeToJava21</recipe>
+            <recipe>org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_2</recipe>
+          </activeRecipes>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.openrewrite.recipe</groupId>
+            <artifactId>rewrite-migrate-java</artifactId>
+            <version>2.27.1</version>
+          </dependency>
+          <dependency>
+            <groupId>org.openrewrite.recipe</groupId>
+            <artifactId>rewrite-spring</artifactId>
+            <version>5.22.0</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>
@@ -722,7 +759,8 @@
       <artifactId>spring-boot-starter-cache</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.hibernate</groupId>
+      <!-- Hibernate 6.x uses groupId org.hibernate.orm -->
+      <groupId>org.hibernate.orm</groupId>
       <artifactId>hibernate-core</artifactId>
       <version>${hibernate.version}</version>
       <exclusions>
@@ -733,11 +771,14 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.hibernate</groupId>
+      <!-- Hibernate Validator updated to 8.x for Jakarta validation -->
+      <groupId>org.hibernate.validator</groupId>
       <artifactId>hibernate-validator</artifactId>
-      <version>5.4.2.Final</version>
+      <version>8.0.1.Final</version>
     </dependency>
-    <dependency>
+    <!-- Hibernate 6.x: hibernate-entitymanager is merged into hibernate-core -->
+    <!-- This dependency is no longer needed with Hibernate 6+ -->
+    <!-- <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-entitymanager</artifactId>
       <version>${hibernate.version}</version>
@@ -747,7 +788,7 @@
           <artifactId>dom4j</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
+    </dependency> -->
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
@@ -974,9 +1015,10 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <!-- pac4j 5.x: renamed from pac4j-saml-opensamlv3 to pac4j-saml -->
     <dependency>
       <groupId>org.pac4j</groupId>
-      <artifactId>pac4j-saml-opensamlv3</artifactId>
+      <artifactId>pac4j-saml</artifactId>
       <version>${pac4j.version}</version>
     </dependency>
     <dependency>

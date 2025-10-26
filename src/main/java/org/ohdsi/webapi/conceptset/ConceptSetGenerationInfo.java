@@ -7,12 +7,14 @@ package org.ohdsi.webapi.conceptset;
 
 import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.Lob;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
+import jakarta.persistence.Lob;
+import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.hibernate.annotations.Type;
 import org.ohdsi.webapi.GenerationStatus;
 
@@ -62,7 +64,7 @@ public class ConceptSetGenerationInfo implements Serializable {
     private boolean isCanceled;
 		
 		@Lob
-		@Type(type = "org.hibernate.type.TextType")  
+		@JdbcTypeCode(SqlTypes.VARCHAR) // TODO: Custom type "org.hibernate.type.TextType" needs Hibernate 6 migration  
 		private String params;
 		
 

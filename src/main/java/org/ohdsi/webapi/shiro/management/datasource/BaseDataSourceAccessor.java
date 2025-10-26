@@ -6,7 +6,7 @@ import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.source.Source;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.ws.rs.ForbiddenException;
+import jakarta.ws.rs.ForbiddenException;
 
 public abstract class BaseDataSourceAccessor<T> implements DataSourceAccessor<T> {
 

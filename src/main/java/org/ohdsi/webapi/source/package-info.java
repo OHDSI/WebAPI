@@ -20,6 +20,9 @@
  *
  */
 
+// TODO: Hibernate 6 migration - TypeDef removed, need to use @CompositeType or AttributeConverter
+// For now, custom types are temporarily disabled - need manual migration
+/*
 @TypeDefs({
         @TypeDef(
                 name = "encryptedString",
@@ -29,9 +32,10 @@
                 }
         )
 })
+*/
 package org.ohdsi.webapi.source;
 
-import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
+// import org.hibernate.annotations.Parameter;
+// import org.hibernate.annotations.TypeDef;
+// import org.hibernate.annotations.TypeDefs;
 

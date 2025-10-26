@@ -19,7 +19,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import javax.cache.Cache;
 import javax.cache.CacheManager;
 import org.ohdsi.webapi.analysis.AnalysisConceptSet;

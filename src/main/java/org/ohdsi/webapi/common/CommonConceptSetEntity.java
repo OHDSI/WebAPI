@@ -4,9 +4,11 @@ import org.hibernate.annotations.Type;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 
-import javax.persistence.Column;
-import javax.persistence.Lob;
-import javax.persistence.MappedSuperclass;
+import jakarta.persistence.Column;
+import jakarta.persistence.Lob;
+import jakarta.persistence.MappedSuperclass;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.util.List;
 import java.util.Objects;
 
@@ -14,7 +16,7 @@ import java.util.Objects;
 public class CommonConceptSetEntity {
   @Lob
   @Column(name = "expression")
-  @Type(type = "org.hibernate.type.TextType")
+  @JdbcTypeCode(SqlTypes.VARCHAR) // TODO: Custom type "org.hibernate.type.TextType" needs Hibernate 6 migration
   private String rawExpression;
 
   public String getRawExpression() {

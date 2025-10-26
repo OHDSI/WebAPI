@@ -15,10 +15,12 @@
  */
 package org.ohdsi.webapi.feasibility;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.Lob;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.Lob;
+import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.hibernate.annotations.Type;
 
 /**
@@ -36,7 +38,7 @@ public class InclusionRule {
   
   @Column(name="expression")  
   @Lob
-  @Type(type = "org.hibernate.type.TextType")  
+  @JdbcTypeCode(SqlTypes.VARCHAR) // TODO: Custom type "org.hibernate.type.TextType" needs Hibernate 6 migration  
   private String expression;
   public String getName() {
     return name;

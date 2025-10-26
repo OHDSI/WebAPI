@@ -6,7 +6,7 @@ import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.model.CommonEntityExt;
 import org.ohdsi.webapi.reusable.domain.Reusable;
 
-import javax.ws.rs.BadRequestException;
+import jakarta.ws.rs.BadRequestException;
 
 public class TagSecurityUtils {
     public static String COHORT_DEFINITION = "cohortdefinition";

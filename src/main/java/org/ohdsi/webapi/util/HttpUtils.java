@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.util;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import java.io.OutputStream;
 
 public class HttpUtils {

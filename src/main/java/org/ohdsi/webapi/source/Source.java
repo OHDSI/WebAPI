@@ -15,7 +15,7 @@
  */
 package org.ohdsi.webapi.source;
 
-import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
+import org.ohdsi.webapi.arachne.datasource.dto.KerberosAuthMechanism;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;

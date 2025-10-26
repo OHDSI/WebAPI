@@ -11,8 +11,8 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import com.github.springtestdbunit.bean.DatabaseDataSourceConnectionFactoryBean;
-import com.odysseusinc.arachne.commons.types.DBMSType;
-import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
+import org.ohdsi.webapi.common.DBMSType;
+import org.ohdsi.webapi.arachne.datasource.dto.KerberosAuthMechanism;
 import org.apache.catalina.webresources.TomcatURLStreamHandlerFactory;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.odysseusinc.logging.event.*;
+import org.ohdsi.webapi.arachne.logging.event.*;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;

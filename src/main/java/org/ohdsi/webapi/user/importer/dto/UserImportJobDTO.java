@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.user.importer.dto;
 
-import com.odysseusinc.scheduler.api.v1.dto.ArachneJobDTO;
+import org.ohdsi.webapi.arachne.scheduler.api.v1.dto.ArachneJobDTO;
 import org.ohdsi.webapi.user.importer.model.LdapProviderType;
 import org.ohdsi.webapi.user.importer.model.RoleGroupMapping;
 

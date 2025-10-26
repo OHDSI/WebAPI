@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.db.migartion;
 
-import com.odysseusinc.arachne.commons.config.flyway.ApplicationContextAwareSpringMigration;
+import org.ohdsi.webapi.arachne.commons.config.flyway.ApplicationContextAwareSpringMigration;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class V2_8_0_20190520171430__cohortExpressionHashCode implements ApplicationContextAwareSpringMigration {
+public class V2_8_0_20190520171430__cohortExpressionHashCode extends ApplicationContextAwareSpringMigration {
 
     private CohortDefinitionDetailsRepository detailsRepository;
 

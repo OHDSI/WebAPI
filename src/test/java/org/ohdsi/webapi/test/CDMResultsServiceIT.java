@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.test;
 
-import com.odysseusinc.arachne.commons.types.DBMSType;
+import org.ohdsi.webapi.common.DBMSType;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

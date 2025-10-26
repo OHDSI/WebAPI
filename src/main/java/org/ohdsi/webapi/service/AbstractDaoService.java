@@ -1,10 +1,10 @@
 package org.ohdsi.webapi.service;
 
-import com.odysseusinc.arachne.commons.types.DBMSType;
-import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.DataSourceUnsecuredDTO;
-import com.odysseusinc.datasourcemanager.krblogin.KerberosService;
-import com.odysseusinc.datasourcemanager.krblogin.KrbConfig;
-import com.odysseusinc.datasourcemanager.krblogin.RuntimeServiceMode;
+import org.ohdsi.webapi.common.DBMSType;
+import org.ohdsi.webapi.arachne.datasource.dto.DataSourceUnsecuredDTO;
+import org.ohdsi.webapi.arachne.kerberos.KerberosService;
+import org.ohdsi.webapi.arachne.kerberos.KrbConfig;
+import org.ohdsi.webapi.arachne.kerberos.RuntimeServiceMode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;

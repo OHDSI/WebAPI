@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.user.importer.model;
 
-import com.odysseusinc.scheduler.model.ArachneJob;
+import org.ohdsi.webapi.arachne.scheduler.model.ArachneJob;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 

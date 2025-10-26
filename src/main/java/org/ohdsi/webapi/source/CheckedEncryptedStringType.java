@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.source;
 
-import com.odysseusinc.datasourcemanager.encryption.EncryptorUtils;
+import org.ohdsi.webapi.arachne.encryption.EncryptorUtils;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;

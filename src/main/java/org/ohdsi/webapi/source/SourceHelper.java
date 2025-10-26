@@ -1,8 +1,8 @@
 package org.ohdsi.webapi.source;
 
-import com.odysseusinc.arachne.commons.types.DBMSType;
-import com.odysseusinc.arachne.execution_engine_common.util.BigQueryUtils;
-import com.odysseusinc.logging.event.ChangeDataSourceEvent;
+import org.ohdsi.webapi.common.DBMSType;
+import org.ohdsi.webapi.arachne.datasource.util.BigQueryUtils;
+import org.ohdsi.webapi.arachne.logging.event.ChangeDataSourceEvent;
 import org.apache.commons.io.IOUtils;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;

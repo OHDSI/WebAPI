@@ -583,6 +583,20 @@
   </dependencyManagement>
 
   <dependencies>
+    <!-- Handlebars template engine (for TemplateUtils) -->
+    <dependency>
+      <groupId>com.github.jknack</groupId>
+      <artifactId>handlebars</artifactId>
+      <version>4.3.0</version>
+    </dependency>
+
+    <!-- Apache Tika (for BatchStatementExecutorWithProgress) -->
+    <dependency>
+      <groupId>org.apache.tika</groupId>
+      <artifactId>tika-core</artifactId>
+      <version>1.28.5</version>
+    </dependency>
+
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
@@ -815,6 +829,11 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>com.cronutils</groupId>
+      <artifactId>cron-utils</artifactId>
+      <version>9.1.6</version>
+    </dependency>
 
     <!-- overriding commons-fileupload version from the plug-in above -->
     <dependency>
@@ -1000,52 +1019,6 @@
       <version>1.9.2</version>
     </dependency>
     <dependency>
-      <groupId>com.odysseusinc.arachne</groupId>
-      <artifactId>arachne-common-utils</artifactId>
-      <version>${arachne.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.odysseusinc.arachne</groupId>
-      <artifactId>execution-engine-commons</artifactId>
-      <version>${arachne.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-annotations</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.odysseusinc</groupId>
-      <artifactId>logging</artifactId>
-      <version>${arachne.version}</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>org.hibernate</artifactId>
-          <groupId>hibernate-validator</groupId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-annotations</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.odysseusinc.arachne</groupId>
-      <artifactId>arachne-scheduler</artifactId>
-      <version>${arachne.version}</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>org.hibernate</artifactId>
-          <groupId>hibernate-validator</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
       <groupId>org.glassfish.jersey.media</groupId>
       <artifactId>jersey-media-multipart</artifactId>
       <version>${jersey-media-multipart.version}</version>
@@ -1054,17 +1027,6 @@
       <groupId>org.springframework.ldap</groupId>
       <artifactId>spring-ldap-core</artifactId>
       <version>2.3.2.RELEASE</version>
-    </dependency>
-    <dependency>
-      <groupId>com.odysseusinc</groupId>
-      <artifactId>data-source-manager</artifactId>
-      <version>${arachne.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.bouncycastle</groupId>
-          <artifactId>bcprov-jdk15</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
@@ -1097,29 +1059,6 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.ohdsi</groupId>
-      <artifactId>SkeletonCohortCharacterization</artifactId>
-      <version>2.0.2</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.ohdsi</groupId>
-          <artifactId>standardized-analysis-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.ohdsi.sql</groupId>
-          <artifactId>SqlRender</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.ohdsi</groupId>
-          <artifactId>circe</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.ohdsi</groupId>
-          <artifactId>featureExtraction</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
       <groupId>com.cosium.spring.data</groupId>
       <artifactId>spring-data-jpa-entity-graph</artifactId>
       <version>1.11.03</version>
@@ -1145,6 +1084,7 @@
       <artifactId>freemarker</artifactId>
       <version>2.3.30</version>
     </dependency>
+    
     <dependency>
       <groupId>com.atlassian.commonmark</groupId>
       <artifactId>commonmark-ext-gfm-tables</artifactId>

@@ -1,6 +1,6 @@
 package org.ohdsi.webapi;
 
-import com.odysseusinc.arachne.commons.config.flyway.ApplicationContextAwareSpringJdbcMigrationResolver;
+import org.ohdsi.webapi.arachne.commons.config.flyway.ApplicationContextAwareSpringJdbcMigrationResolver;
 import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
 

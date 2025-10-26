@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.test;
 
-import com.odysseusinc.arachne.commons.types.DBMSType;
+import org.ohdsi.webapi.common.DBMSType;
 import org.junit.Before;
 import org.junit.Test;
 import org.ohdsi.circe.helper.ResourceHelper;

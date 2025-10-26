@@ -1,8 +1,8 @@
 package org.ohdsi.webapi.shiro;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.odysseusinc.logging.event.AddUserEvent;
-import com.odysseusinc.logging.event.DeleteRoleEvent;
+import org.ohdsi.webapi.arachne.logging.event.AddUserEvent;
+import org.ohdsi.webapi.arachne.logging.event.DeleteRoleEvent;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.subject.Subject;

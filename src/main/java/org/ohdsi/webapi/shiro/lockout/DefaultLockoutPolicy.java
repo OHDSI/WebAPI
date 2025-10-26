@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.shiro.lockout;
 
-import com.odysseusinc.logging.event.LockoutStartEvent;
-import com.odysseusinc.logging.event.LockoutStopEvent;
+import org.ohdsi.webapi.arachne.logging.event.LockoutStartEvent;
+import org.ohdsi.webapi.arachne.logging.event.LockoutStopEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 

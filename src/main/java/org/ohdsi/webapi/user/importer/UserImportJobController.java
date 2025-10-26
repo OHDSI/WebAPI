@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.user.importer;
 
-import com.odysseusinc.scheduler.exception.JobNotFoundException;
+import org.ohdsi.webapi.arachne.scheduler.exception.JobNotFoundException;
 import org.ohdsi.webapi.user.importer.dto.JobHistoryItemDTO;
 import org.ohdsi.webapi.user.importer.dto.UserImportJobDTO;
 import org.ohdsi.webapi.user.importer.exception.JobAlreadyExistException;

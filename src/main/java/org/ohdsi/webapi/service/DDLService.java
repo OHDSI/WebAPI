@@ -20,7 +20,7 @@ package org.ohdsi.webapi.service;
 
 import static org.ohdsi.webapi.service.SqlRenderService.translateSQL;
 
-import com.odysseusinc.arachne.commons.types.DBMSType;
+import org.ohdsi.webapi.common.DBMSType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;

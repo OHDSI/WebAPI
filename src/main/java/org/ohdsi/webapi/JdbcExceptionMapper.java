@@ -1,6 +1,6 @@
 package org.ohdsi.webapi;
 
-import com.odysseusinc.logging.event.FailedDbConnectEvent;
+import org.ohdsi.webapi.arachne.logging.event.FailedDbConnectEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;

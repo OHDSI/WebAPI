@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.user.importer;
 
-import com.odysseusinc.scheduler.model.JobExecutingType;
+import org.ohdsi.webapi.arachne.scheduler.model.JobExecutingType;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.webapi.user.importer.converter.RoleGroupMappingConverter;
 import org.ohdsi.webapi.user.importer.dto.UserImportJobDTO;

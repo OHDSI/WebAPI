@@ -3,8 +3,8 @@ package org.ohdsi.webapi.user.importer.service;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.cronutils.model.definition.CronDefinition;
-import com.odysseusinc.scheduler.model.ScheduledTask;
-import com.odysseusinc.scheduler.service.BaseJobServiceImpl;
+import org.ohdsi.webapi.arachne.scheduler.model.ScheduledTask;
+import org.ohdsi.webapi.arachne.scheduler.service.BaseJobServiceImpl;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.job.JobTemplate;
 import org.ohdsi.webapi.user.importer.model.LdapProviderType;
@@ -92,7 +92,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
   @Override
   protected List<UserImportJob> getActiveJobs() {
 
-    return jobRepository.findAllByEnabledTrueAndIsClosedFalse(jobWithMappingEntityGraph);
+    return jobRepository.findAllByEnabledTrueAndIsClosedFalse();
   }
 
   @Override

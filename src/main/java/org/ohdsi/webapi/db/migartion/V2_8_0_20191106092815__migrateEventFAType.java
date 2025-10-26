@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.db.migartion;
 
-import com.odysseusinc.arachne.commons.config.flyway.ApplicationContextAwareSpringMigration;
+import org.ohdsi.webapi.arachne.commons.config.flyway.ApplicationContextAwareSpringMigration;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Component
-public class V2_8_0_20191106092815__migrateEventFAType implements ApplicationContextAwareSpringMigration {
+public class V2_8_0_20191106092815__migrateEventFAType extends ApplicationContextAwareSpringMigration {
     private final static String UPDATE_VALUE_SQL = ResourceHelper.GetResourceAsString(
             "/db/migration/java/V2_8_0_20191106092815__migrateEventFAType/updateFaType.sql");
     private final static String UPDATE_VALUE_IMPALA_SQL = ResourceHelper.GetResourceAsString(

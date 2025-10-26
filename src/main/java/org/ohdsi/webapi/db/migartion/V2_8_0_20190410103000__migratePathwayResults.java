@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.db.migartion;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.odysseusinc.arachne.commons.config.flyway.ApplicationContextAwareSpringMigration;
+import org.ohdsi.webapi.arachne.commons.config.flyway.ApplicationContextAwareSpringMigration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -30,7 +30,7 @@ import org.springframework.stereotype.Service;
 import static org.ohdsi.webapi.Constants.Params.GENERATION_ID;
 
 @Component
-public class V2_8_0_20190410103000__migratePathwayResults implements ApplicationContextAwareSpringMigration {
+public class V2_8_0_20190410103000__migratePathwayResults extends ApplicationContextAwareSpringMigration {
 
 	private final static String SQL_PATH = "/db/migration/java/V2_8_0_20190410103000__migratePathwayResults/";
 	private static final Logger log = LoggerFactory.getLogger(V2_8_0_20190410103000__migratePathwayResults.class);

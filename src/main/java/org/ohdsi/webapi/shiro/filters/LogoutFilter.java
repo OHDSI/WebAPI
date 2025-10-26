@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.shiro.filters;
 
-import com.odysseusinc.logging.event.FailedLogoutEvent;
-import com.odysseusinc.logging.event.SuccessLogoutEvent;
+import org.ohdsi.webapi.arachne.logging.event.FailedLogoutEvent;
+import org.ohdsi.webapi.arachne.logging.event.SuccessLogoutEvent;
 import io.jsonwebtoken.JwtException;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;

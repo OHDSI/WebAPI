@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.user.importer.service;
 
-import com.odysseusinc.scheduler.service.BaseJobService;
+import org.ohdsi.webapi.arachne.scheduler.service.BaseJobService;
 import org.ohdsi.webapi.user.importer.model.UserImportJob;
 import org.ohdsi.webapi.user.importer.model.UserImportJobHistoryItem;
 

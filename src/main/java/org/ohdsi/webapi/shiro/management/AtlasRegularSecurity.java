@@ -70,7 +70,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-import static com.odysseusinc.arachne.commons.utils.QuoteUtils.dequote;
+import static org.ohdsi.webapi.util.QuoteUtils.dequote;
 import static org.ohdsi.webapi.shiro.management.FilterTemplates.*;
 
 @Component

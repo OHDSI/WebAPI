@@ -1,9 +1,8 @@
 package org.ohdsi.webapi.generationcache;
 
-import com.odysseusinc.arachne.commons.types.DBMSType;
-import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
-import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
+import org.ohdsi.webapi.common.DBMSType;
+import org.ohdsi.webapi.arachne.datasource.dto.KerberosAuthMechanism;
+import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,6 +36,10 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.ohdsi.webapi.Constants.Params.DESIGN_HASH;
@@ -297,7 +300,7 @@ public class GenerationCacheTest extends AbstractDatabaseTest {
 
     // NOTE:
     // Not used in the current test set. Will be utilized for cohort generation testing
-    private static void prepareCdmSchema() throws IOException, ZipException {
+    private static void prepareCdmSchema() throws IOException {
 
         String cdmSql = getCdmSql();
         jdbcTemplate.batchUpdate("CREATE SCHEMA cdm;", cdmSql);
@@ -309,7 +312,7 @@ public class GenerationCacheTest extends AbstractDatabaseTest {
         jdbcTemplate.batchUpdate(SqlSplit.splitSql(resultSql));
     }
 
-    private static String getCdmSql() throws IOException, ZipException {
+    private static String getCdmSql() throws IOException {
 
         StringBuilder cdmSqlBuilder = new StringBuilder(CDM_SQL);
 
@@ -326,8 +329,26 @@ public class GenerationCacheTest extends AbstractDatabaseTest {
             Files.copy(is, eunomiaZip.toPath(), REPLACE_EXISTING);
         }
 
-        ZipFile zipFile = new ZipFile(eunomiaZip);
-        zipFile.extractAll(tempDir.toAbsolutePath().toString());
+        // Extract ZIP file using java.util.zip
+        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(eunomiaZip))) {
+            ZipEntry entry;
+            byte[] buffer = new byte[1024];
+            while ((entry = zis.getNextEntry()) != null) {
+                File newFile = new File(tempDir.toFile(), entry.getName());
+                if (entry.isDirectory()) {
+                    newFile.mkdirs();
+                } else {
+                    new File(newFile.getParent()).mkdirs();
+                    try (FileOutputStream fos = new FileOutputStream(newFile)) {
+                        int len;
+                        while ((len = zis.read(buffer)) > 0) {
+                            fos.write(buffer, 0, len);
+                        }
+                    }
+                }
+                zis.closeEntry();
+            }
+        }
 
         for (final File file : tempDir.toFile().listFiles()) {
             if (file.getName().endsWith(".csv")) {

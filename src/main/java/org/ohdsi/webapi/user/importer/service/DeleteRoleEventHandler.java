@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.user.importer.service;
 
-import com.odysseusinc.logging.event.DeleteRoleEvent;
+import org.ohdsi.webapi.arachne.logging.event.DeleteRoleEvent;
 import org.ohdsi.webapi.user.importer.repository.RoleGroupRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;

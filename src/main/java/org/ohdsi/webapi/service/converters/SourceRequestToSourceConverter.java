@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.service.converters;
 
-import com.odysseusinc.arachne.execution_engine_common.api.v1.dto.KerberosAuthMechanism;
+import org.ohdsi.webapi.arachne.datasource.dto.KerberosAuthMechanism;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRequest;
 import org.springframework.core.convert.converter.Converter;

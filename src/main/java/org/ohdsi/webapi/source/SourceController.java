@@ -1,9 +1,9 @@
 package org.ohdsi.webapi.source;
 
-import com.odysseusinc.arachne.commons.types.DBMSType;
-import com.odysseusinc.logging.event.AddDataSourceEvent;
-import com.odysseusinc.logging.event.ChangeDataSourceEvent;
-import com.odysseusinc.logging.event.DeleteDataSourceEvent;
+import org.ohdsi.webapi.common.DBMSType;
+import org.ohdsi.webapi.arachne.logging.event.AddDataSourceEvent;
+import org.ohdsi.webapi.arachne.logging.event.ChangeDataSourceEvent;
+import org.ohdsi.webapi.arachne.logging.event.DeleteDataSourceEvent;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;

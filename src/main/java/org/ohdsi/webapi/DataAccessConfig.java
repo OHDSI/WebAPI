@@ -1,8 +1,8 @@
 package org.ohdsi.webapi;
 
 import com.cosium.spring.data.jpa.entity.graph.repository.support.EntityGraphJpaRepositoryFactoryBean;
-import com.odysseusinc.datasourcemanager.encryption.EncryptorUtils;
-import com.odysseusinc.datasourcemanager.encryption.NotEncrypted;
+import org.ohdsi.webapi.arachne.encryption.EncryptorUtils;
+import org.ohdsi.webapi.arachne.encryption.NotEncrypted;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.jasypt.hibernate4.encryptor.HibernatePBEEncryptorRegistry;
 import org.slf4j.Logger;

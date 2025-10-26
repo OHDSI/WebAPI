@@ -888,7 +888,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         Version conceptSetVersion = versionService.getById(VersionType.CONCEPT_SET, id, version);
         ExceptionUtils.throwNotFoundExceptionIfNull(conceptSetVersion, String.format("There is no concept set version with id = %d.", version));
 
-        ConceptSet entity = getConceptSetRepository().findOne(id);
+        ConceptSet entity = getConceptSetRepository().findById(id);
         if (checkOwnerShip) {
             checkOwnerOrAdminOrGranted(entity);
         }

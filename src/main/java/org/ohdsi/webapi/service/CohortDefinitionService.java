@@ -606,7 +606,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
             @PathParam("sourceKey") final String sourceKey,
             @QueryParam("demographic") boolean demographicStat) {
 		Source source = getSourceRepository().findBySourceKey(sourceKey);
-		CohortDefinition currentDefinition = this.cohortDefinitionRepository.findOne(id);
+		CohortDefinition currentDefinition = this.cohortDefinitionRepository.findById(id);
 		UserEntity user = userRepository.findByLogin(security.getSubject());
         return cohortGenerationService.generateCohortViaJob(user, currentDefinition, source, demographicStat);	}
 
@@ -634,7 +634,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 		final Source source = Optional.ofNullable(getSourceRepository().findBySourceKey(sourceKey))
 						.orElseThrow(NotFoundException::new);
 		getTransactionTemplateRequiresNew().execute(status -> {
-			CohortDefinition currentDefinition = cohortDefinitionRepository.findOne(id);
+			CohortDefinition currentDefinition = cohortDefinitionRepository.findById(id);
 			if (Objects.nonNull(currentDefinition)) {
 				CohortGenerationInfo info = findBySourceId(currentDefinition.getGenerationInfoList(), source.getSourceId());
 				if (Objects.nonNull(info)) {
@@ -673,7 +673,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Path("/{id}/info")
 	@Transactional
 	public List<CohortGenerationInfoDTO> getInfo(@PathParam("id") final int id) {
-		CohortDefinition def = this.cohortDefinitionRepository.findOne(id);
+		CohortDefinition def = this.cohortDefinitionRepository.findById(id);
 		ExceptionUtils.throwNotFoundExceptionIfNull(def, String.format("There is no cohort definition with id = %d.", id));
 
 		Set<CohortGenerationInfo> infoList = def.getGenerationInfoList();
@@ -736,7 +736,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 		this.getTransactionTemplateRequiresNew().execute(new TransactionCallbackWithoutResult() {
 			@Override
 			public void doInTransactionWithoutResult(final TransactionStatus status) {
-				CohortDefinition def = cohortDefinitionRepository.findOne(id);
+				CohortDefinition def = cohortDefinitionRepository.findById(id);
 				if (!Objects.isNull(def)) {
 					def.getGenerationInfoList().forEach(cohortGenerationInfo -> {
 						Integer sourceId = cohortGenerationInfo.getId().getSourceId();
@@ -1000,7 +1000,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true)
 	@Transactional
 	public void assignTag(@PathParam("id") final Integer id, final int tagId) {
-		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
+		CohortDefinition entity = cohortDefinitionRepository.findById(id);
 		assignTag(entity, tagId);
 	}
 
@@ -1017,7 +1017,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@CacheEvict(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, allEntries = true)
 	@Transactional
 	public void unassignTag(@PathParam("id") final Integer id, @PathParam("tagId") final int tagId) {
-		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
+		CohortDefinition entity = cohortDefinitionRepository.findById(id);
 		unassignTag(entity, tagId);
 	}
 
@@ -1197,7 +1197,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 		ExceptionUtils.throwNotFoundExceptionIfNull(cohortVersion,
 				String.format("There is no cohort version with id = %d.", version));
 
-		CohortDefinition entity = cohortDefinitionRepository.findOne(id);
+		CohortDefinition entity = cohortDefinitionRepository.findById(id);
 		if (checkOwnerShip) {
 			checkOwnerOrAdminOrGranted(entity);
 		}
@@ -1223,7 +1223,7 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 
 	public List<CohortDefinition> getCohorts(List<Integer> ids) {
 		return ids.stream()
-				.map(id -> cohortDefinitionRepository.findOne(id))
+				.map(id -> cohortDefinitionRepository.findById(id))
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
 	}

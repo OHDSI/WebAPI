@@ -452,7 +452,7 @@ public class CohortSamplingService extends AbstractDaoService {
 						resultsSchema,
 						"cohortSampleId",
 						sampleId).getSql();
-		CohortSample sample = sampleRepository.findOne(sampleId);
+		CohortSample sample = sampleRepository.findById(sampleId);
 		if (sample == null) {
 			throw new NotFoundException("Sample with ID " + sampleId + " does not exist");
 		}

@@ -1,0 +1,24 @@
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.ohdsi.webapi.JavaUpgrade
+displayName: Upgrade WebAPI to Java 21 and Spring Boot 3.2
+description: Migrates WebAPI from Java 8/Spring Boot 1.5 to Java 21/Spring Boot 3.2
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeToJava21
+  - org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_2
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.hibernate
+      artifactId: hibernate-core
+      newVersion: 6.5.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.postgresql
+      artifactId: postgresql
+      newVersion: 42.7.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.apache.logging.log4j
+      artifactId: log4j-core
+      newVersion: 2.24.x
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: com.fasterxml.jackson.core
+      artifactId: jackson-databind
+      newVersion: 2.18.x

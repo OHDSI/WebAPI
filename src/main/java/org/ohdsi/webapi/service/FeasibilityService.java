@@ -507,7 +507,7 @@ public class FeasibilityService extends AbstractDaoService {
 
     UserEntity user = userRepository.findByLogin(security.getSubject());
 
-    FeasibilityStudy updatedStudy = this.feasibilityStudyRepository.findOne(id);
+    FeasibilityStudy updatedStudy = this.feasibilityStudyRepository.findById(id);
     updatedStudy.setName(study.name)
             .setDescription(study.description)
             .setModifiedBy(user)
@@ -577,9 +577,9 @@ public class FeasibilityService extends AbstractDaoService {
 
     TransactionStatus initStatus = this.getTransactionTemplate().getTransactionManager().getTransaction(requresNewTx);
 
-    FeasibilityStudy study = this.feasibilityStudyRepository.findOne(study_id);
+    FeasibilityStudy study = this.feasibilityStudyRepository.findById(study_id);
 
-    CohortDefinition indexRule = this.cohortDefinitionRepository.findOne(study.getIndexRule().getId());
+    CohortDefinition indexRule = this.cohortDefinitionRepository.findById(study.getIndexRule().getId());
     CohortGenerationInfo indexInfo = findCohortGenerationInfoBySourceId(indexRule.getGenerationInfoList(), source.getSourceId());
     if (indexInfo == null) {
       indexInfo = new CohortGenerationInfo(indexRule, source.getSourceId());
@@ -592,7 +592,7 @@ public class FeasibilityService extends AbstractDaoService {
 
     if (study.getResultRule() != null)
     {
-      CohortDefinition resultRule = this.cohortDefinitionRepository.findOne(study.getResultRule().getId());
+      CohortDefinition resultRule = this.cohortDefinitionRepository.findById(study.getResultRule().getId());
       CohortGenerationInfo resultInfo = findCohortGenerationInfoBySourceId(resultRule.getGenerationInfoList(), source.getSourceId());
       if (resultInfo == null) {
         resultInfo = new CohortGenerationInfo(resultRule, source.getSourceId());
@@ -673,7 +673,7 @@ public class FeasibilityService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Transactional(readOnly = true)
   public List<StudyInfoDTO> getSimulationInfo(@PathParam("id") final int id) {
-    FeasibilityStudy study = this.feasibilityStudyRepository.findOne(id);
+    FeasibilityStudy study = this.feasibilityStudyRepository.findById(id);
 
     List<StudyInfoDTO> result = new ArrayList<>();
     for (StudyGenerationInfo generationInfo : study.getStudyGenerationInfoList()) {
@@ -761,7 +761,7 @@ public class FeasibilityService extends AbstractDaoService {
   @Path("/{id}/info/{sourceKey}")
   @Transactional    
   public void deleteInfo(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
-    FeasibilityStudy study = feasibilityStudyRepository.findOne(id);
+    FeasibilityStudy study = feasibilityStudyRepository.findById(id);
     StudyGenerationInfo itemToRemove = null;
     for (StudyGenerationInfo info : study.getStudyGenerationInfoList())
     {

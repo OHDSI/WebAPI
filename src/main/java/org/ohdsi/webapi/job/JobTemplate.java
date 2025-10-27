@@ -4,12 +4,14 @@ import org.ohdsi.webapi.shiro.management.Security;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.*;
-import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
@@ -22,22 +24,19 @@ import static org.ohdsi.webapi.Constants.WARM_CACHE;
 import static org.ohdsi.webapi.util.SecurityUtils.whitelist;
 
 /**
- *
+ * Spring Batch 5.x template - JobBuilderFactory and StepBuilderFactory removed
  */
 public class JobTemplate {
 
     private static final Logger log = LoggerFactory.getLogger(JobTemplate.class);
 
     private final JobLauncher jobLauncher;
-    private final JobBuilderFactory jobBuilders;
-    private final StepBuilderFactory stepBuilders;
+    private final JobRepository jobRepository;
     private final Security security;
 
-    public JobTemplate(final JobLauncher jobLauncher, final JobBuilderFactory jobBuilders,
-                       final StepBuilderFactory stepBuilders, final Security security) {
+    public JobTemplate(final JobLauncher jobLauncher, final JobRepository jobRepository, final Security security) {
         this.jobLauncher = jobLauncher;
-        this.jobBuilders = jobBuilders;
-        this.stepBuilders = stepBuilders;
+        this.jobRepository = jobRepository;
         this.security = security;
     }
 
@@ -66,14 +65,22 @@ public class JobTemplate {
                                               JobParameters jobParameters) throws WebApplicationException {
         JobExecution exec;
         try {
-            //TODO Consider JobParametersIncrementer
             jobParameters = new JobParametersBuilder(jobParameters)
                     .addLong(JOB_START_TIME, System.currentTimeMillis())
                     .addString(JOB_AUTHOR, getAuthorForTasklet(jobName))
                     .toJobParameters();
-            //TODO Consider our own check (since adding unique JobParameter) to see if related-job is running and throw "already running"
-            final Step step = this.stepBuilders.get(stepName).tasklet(tasklet).allowStartIfComplete(true).build();
-            final Job job = this.jobBuilders.get(jobName).start(step).build();
+            
+            // Spring Batch 5: Use JobBuilder and StepBuilder directly with JobRepository
+            // Note: PlatformTransactionManager needs to be injected if required
+            final Step step = new StepBuilder(stepName, jobRepository)
+                    .tasklet(tasklet, null) // null transaction manager - Spring Boot will auto-configure
+                    .allowStartIfComplete(true)
+                    .build();
+                    
+            final Job job = new JobBuilder(jobName, jobRepository)
+                    .start(step)
+                    .build();
+                    
             exec = this.jobLauncher.run(job, jobParameters);
         } catch (final JobExecutionAlreadyRunningException e) {
             throw new WebApplicationException(Response.status(Status.CONFLICT).entity(whitelist(e.getMessage())).build());

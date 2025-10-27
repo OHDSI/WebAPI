@@ -113,7 +113,7 @@ public class ExampleApplicationWithJobService extends AbstractDaoService {
     @Path("widget")
     @Produces(MediaType.APPLICATION_JSON)
     public List<Widget> findAllWidgets() {
-        Page<Widget> page = this.widgetRepository.findAll(new PageRequest(0, 10));
+        Page<Widget> page = this.widgetRepository.findAll(PageRequest.of(0, 10));
         return page.getContent();
     }
     

@@ -11,7 +11,8 @@ import java.util.List;
  */
 public interface RoleRepository extends CrudRepository<RoleEntity, Long> {
 
-  RoleEntity findById(Long id);
+  // Removed: clashes with CrudRepository.findById which returns Optional<T>
+  //   RoleEntity findById(Long id);
 
   RoleEntity findByNameAndSystemRole(String name, Boolean isSystem);
 

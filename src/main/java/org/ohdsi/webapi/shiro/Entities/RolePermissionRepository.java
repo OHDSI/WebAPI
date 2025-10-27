@@ -9,7 +9,8 @@ import org.springframework.data.repository.CrudRepository;
  */
 public interface RolePermissionRepository extends CrudRepository<RolePermissionEntity, Long> {
   
-  RolePermissionEntity findById(Long id);
+  // Removed: clashes with CrudRepository.findById which returns Optional<T>
+  //   RolePermissionEntity findById(Long id);
   
   RolePermissionEntity findByRoleAndPermission(RoleEntity role, PermissionEntity permission);
 

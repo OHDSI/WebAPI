@@ -201,14 +201,14 @@ public class JobService extends AbstractDaoService {
           return JobUtils.toJobExecutionResource(rs);
         }
       });
-      return new PageImpl<>(resources, new PageRequest(0, pageSize), resources.size());
+      return new PageImpl<>(resources, PageRequest.of(0, pageSize), resources.size());
     } else {
       resources = new ArrayList<>();
       for (final JobExecution jobExecution : (jobName == null ? this.jobExecutionDao.getJobExecutions(pageIndex,
               pageSize) : this.jobExecutionDao.getJobExecutions(jobName, pageIndex, pageSize))) {
         resources.add(JobUtils.toJobExecutionResource(jobExecution));
       }
-      return new PageImpl<>(resources, new PageRequest(pageIndex, pageSize),
+      return new PageImpl<>(resources, PageRequest.of(pageIndex, pageSize),
               this.jobExecutionDao.countJobExecutions());
     }
 

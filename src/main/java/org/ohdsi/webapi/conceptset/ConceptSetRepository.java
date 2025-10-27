@@ -28,7 +28,8 @@ import java.util.Optional;
  * @author fdefalco
  */
 public interface ConceptSetRepository extends CrudRepository<ConceptSet, Integer> {
-  ConceptSet findById(Integer conceptSetId);
+  // Removed: clashes with CrudRepository.findById which returns Optional<T>
+  //   ConceptSet findById(Integer conceptSetId);
   
   @Deprecated
   @Query("SELECT cs FROM ConceptSet cs WHERE cs.name = :conceptSetName and cs.id <> :conceptSetId")

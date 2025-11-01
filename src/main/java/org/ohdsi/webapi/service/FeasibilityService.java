@@ -580,7 +580,7 @@ public class FeasibilityService extends AbstractDaoService {
 
     FeasibilityStudy study = this.feasibilityStudyRepository.findById(study_id).orElse(null);
 
-    CohortDefinition indexRule = this.cohortDefinitionRepository.findById(study.getIndexRule().getId());
+    CohortDefinition indexRule = this.cohortDefinitionRepository.findById(study.getIndexRule().getId()).orElse(null);
     CohortGenerationInfo indexInfo = findCohortGenerationInfoBySourceId(indexRule.getGenerationInfoList(), source.getSourceId());
     if (indexInfo == null) {
       indexInfo = new CohortGenerationInfo(indexRule, source.getSourceId());
@@ -593,7 +593,7 @@ public class FeasibilityService extends AbstractDaoService {
 
     if (study.getResultRule() != null)
     {
-      CohortDefinition resultRule = this.cohortDefinitionRepository.findById(study.getResultRule().getId());
+      CohortDefinition resultRule = this.cohortDefinitionRepository.findById(study.getResultRule().getId()).orElse(null);
       CohortGenerationInfo resultInfo = findCohortGenerationInfoBySourceId(resultRule.getGenerationInfoList(), source.getSourceId());
       if (resultInfo == null) {
         resultInfo = new CohortGenerationInfo(resultRule, source.getSourceId());

@@ -114,7 +114,11 @@ public class PermissionService {
 
     public void checkCommonEntityOwnership(EntityType entityType, Integer entityId) throws Exception {
 
-        JpaRepository entityRepository = (JpaRepository) (((Advised) repositories.getRepositoryFor(entityType.getEntityClass())).getTargetSource().getTarget());
+        Object repositoryTarget = repositories.getRepositoryFor(entityType.getEntityClass());
+        if (!(repositoryTarget instanceof Advised)) {
+            throw new IllegalStateException("Repository is not advised");
+        }
+        JpaRepository entityRepository = (JpaRepository) (((Advised) repositoryTarget).getTargetSource().getTarget());
         Class idClazz = Arrays.stream(entityType.getEntityClass().getMethods())
             // Overriden methods from parameterized interface are "bridges" and should be ignored.
             // For more information see https://docs.oracle.com/javase/tutorial/java/generics/bridgeMethods.html

@@ -5,7 +5,7 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.EncodingFilter;
-import org.glassfish.jersey.server.spi.internal.ValueFactoryProvider;
+import org.glassfish.jersey.server.spi.internal.ValueParamProvider;
 import org.ohdsi.webapi.info.InfoService;
 import org.ohdsi.webapi.security.PermissionController;
 import org.ohdsi.webapi.security.SSOController;
@@ -76,7 +76,7 @@ public class JerseyConfig extends ResourceConfig implements InitializingBean {
             @Override
             protected void configure() {
                 bind(PageableValueFactoryProvider.class)
-                        .to(ValueFactoryProvider.class)
+                        .to(ValueParamProvider.class)
                         .in(Singleton.class);
             }
         });

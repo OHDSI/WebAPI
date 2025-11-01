@@ -162,7 +162,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public ConceptSetDTO getConceptSet(@PathParam("id") final int id) {
-        ConceptSet conceptSet = getConceptSetRepository().findById(id);
+        ConceptSet conceptSet = getConceptSetRepository().findById(id).orElse(null);
         ExceptionUtils.throwNotFoundExceptionIfNull(conceptSet, String.format("There is no concept set with id = %d.", id));
         return conversionService.convert(conceptSet, ConceptSetDTO.class);
     }
@@ -554,7 +554,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 		@CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
 		public ConceptSetDTO updateConceptSet(@PathParam("id") final int id, ConceptSetDTO conceptSetDTO) throws Exception {
 
-        ConceptSet updated = getConceptSetRepository().findById(id);
+        ConceptSet updated = getConceptSetRepository().findById(id).orElse(null);
         if (updated == null) {
             throw new Exception("Concept Set does not exist.");
         }
@@ -673,7 +673,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Transactional
 		@CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
 		public void assignTag(@PathParam("id") final Integer id, final int tagId) {
-        ConceptSet entity = getConceptSetRepository().findById(id);
+        ConceptSet entity = getConceptSetRepository().findById(id).orElse(null);
         assignTag(entity, tagId);
     }
 
@@ -691,7 +691,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Transactional
 		@CacheEvict(cacheNames = CachingSetup.CONCEPT_SET_LIST_CACHE, allEntries = true)
     public void unassignTag(@PathParam("id") final Integer id, @PathParam("tagId") final int tagId) {
-        ConceptSet entity = getConceptSetRepository().findById(id);
+        ConceptSet entity = getConceptSetRepository().findById(id).orElse(null);
         unassignTag(entity, tagId);
     }
 
@@ -888,14 +888,14 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         Version conceptSetVersion = versionService.getById(VersionType.CONCEPT_SET, id, version);
         ExceptionUtils.throwNotFoundExceptionIfNull(conceptSetVersion, String.format("There is no concept set version with id = %d.", version));
 
-        ConceptSet entity = getConceptSetRepository().findById(id);
+        ConceptSet entity = getConceptSetRepository().findById(id).orElse(null);
         if (checkOwnerShip) {
             checkOwnerOrAdminOrGranted(entity);
         }
     }
 
     private ConceptSetVersion saveVersion(int id) {
-        ConceptSet def = getConceptSetRepository().findById(id);
+        ConceptSet def = getConceptSetRepository().findById(id).orElse(null);
         ConceptSetVersion version = conversionService.convert(def, ConceptSetVersion.class);
 
         UserEntity user = Objects.nonNull(def.getModifiedBy()) ? def.getModifiedBy() : def.getCreatedBy();
@@ -1032,7 +1032,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
     @Path("/{conceptSetId}/annotation/{annotationId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteConceptSetAnnotation(@PathParam("conceptSetId") final int conceptSetId, @PathParam("annotationId") final int annotationId) {
-        ConceptSetAnnotation conceptSetAnnotation = getConceptSetAnnotationRepository().findById(annotationId);
+        ConceptSetAnnotation conceptSetAnnotation = getConceptSetAnnotationRepository().findById(annotationId).orElse(null);
         if (conceptSetAnnotation != null) {
             getConceptSetAnnotationRepository().deleteById(annotationId);
             return Response.ok().build();

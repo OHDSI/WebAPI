@@ -74,11 +74,11 @@ public class TagService extends AbstractDaoService {
     }
 
     public Tag getById(Integer id) {
-        return tagRepository.findById(id);
+        return tagRepository.findById(id).orElse(null);
     }
 
     public TagDTO getDTOById(Integer id) {
-        Tag tag = tagRepository.findById(id);
+        Tag tag = tagRepository.findById(id).orElse(null);
         return conversionService.convert(tag, TagDTO.class);
     }
 
@@ -107,7 +107,7 @@ public class TagService extends AbstractDaoService {
     }
 
     public TagDTO update(Integer id, TagDTO entity) {
-        Tag existing = tagRepository.findById(id);
+        Tag existing = tagRepository.findById(id).orElse(null);
 
         checkOwnerOrAdmin(existing.getCreatedBy());
 
@@ -129,7 +129,7 @@ public class TagService extends AbstractDaoService {
     }
 
     public void delete(Integer id) {
-        Tag existing = tagRepository.findById(id);
+        Tag existing = tagRepository.findById(id).orElse(null);
 
         checkOwnerOrAdmin(existing.getCreatedBy());
 
@@ -139,7 +139,7 @@ public class TagService extends AbstractDaoService {
     private Tag save(Tag tag) {
         tag = tagRepository.saveAndFlush(tag);
         entityManager.refresh(tag);
-        return tagRepository.findById(tag.getId());
+        return tagRepository.findById(tag.getId().orElse(null));
     }
 
     @Transactional

@@ -28,6 +28,7 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.*;
+import java.util.Optional;
 
 @Path("/cohortsample")
 @Component
@@ -71,7 +72,7 @@ public class CohortSampleService {
 		result.setSourceId(source.getId());
 
 		CohortGenerationInfo generationInfo = generationInfoRepository.findById(
-				new CohortGenerationInfoId(cohortDefinitionId, source.getId()));
+				new CohortGenerationInfoId(cohortDefinitionId, source.getId().orElse(null)));
 		result.setGenerationStatus(generationInfo != null ? generationInfo.getStatus() : null);
 		result.setIsValid(generationInfo != null && generationInfo.isIsValid());
 
@@ -172,11 +173,11 @@ public class CohortSampleService {
 	) {
 		sampleParameters.validate();
 		Source source = getSource(sourceKey);
-		if (cohortDefinitionRepository.findById(cohortDefinitionId) == null) {
+		if (cohortDefinitionRepository.findById(cohortDefinitionId).orElse(null) == null) {
 			throw new NotFoundException("Cohort definition " + cohortDefinitionId + " does not exist.");
 		}
 		CohortGenerationInfo generationInfo = generationInfoRepository.findById(
-				new CohortGenerationInfoId(cohortDefinitionId, source.getId()));
+				new CohortGenerationInfoId(cohortDefinitionId, source.getId().orElse(null)));
 		if (generationInfo == null || generationInfo.getStatus() != GenerationStatus.COMPLETE) {
 			throw new BadRequestException("Cohort is not yet generated");
 		}
@@ -198,7 +199,7 @@ public class CohortSampleService {
 			@PathParam("sampleId") int sampleId
 	) {
 		Source source = getSource(sourceKey);
-		if (cohortDefinitionRepository.findById(cohortDefinitionId) == null) {
+		if (cohortDefinitionRepository.findById(cohortDefinitionId).orElse(null) == null) {
 			throw new NotFoundException("Cohort definition " + cohortDefinitionId + " does not exist.");
 		}
 		samplingService.deleteSample(cohortDefinitionId, source, sampleId);
@@ -218,7 +219,7 @@ public class CohortSampleService {
 			@PathParam("cohortDefinitionId") int cohortDefinitionId
 	) {
 		Source source = getSource(sourceKey);
-		if (cohortDefinitionRepository.findById(cohortDefinitionId) == null) {
+		if (cohortDefinitionRepository.findById(cohortDefinitionId).orElse(null) == null) {
 			throw new NotFoundException("Cohort definition " + cohortDefinitionId + " does not exist.");
 		}
 		samplingService.launchDeleteSamplesTasklet(cohortDefinitionId, source.getId());

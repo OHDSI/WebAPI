@@ -48,7 +48,7 @@ public class ToolServiceImpl extends AbstractDaoService implements ToolService {
 
     @Override
     public ToolDTO getById(Integer id) {
-        return toDTO(toolRepository.findById(id));
+        return toDTO(toolRepository.findById(id).orElse(null));
     }
 
     @Override
@@ -63,7 +63,7 @@ public class ToolServiceImpl extends AbstractDaoService implements ToolService {
     
     Tool toEntity(ToolDTO toolDTO) {
         boolean isNewTool = toolDTO.getId() == null;
-        Tool tool = isNewTool ? new Tool() : toolRepository.findById(toolDTO.getId());
+        Tool tool = isNewTool ? new Tool() : toolRepository.findById(toolDTO.getId().orElse(null));
         Instant currentInstant = Instant.now();
         if (isNewTool) {
             setCreationDetails(tool, currentInstant);

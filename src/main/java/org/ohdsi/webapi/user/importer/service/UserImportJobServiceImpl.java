@@ -128,7 +128,7 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
   @Override
   public Optional<UserImportJob> getJob(Long id) {
 
-    return Optional.ofNullable(jobRepository.findById(id)).map(this::assignNextExecution);
+    return Optional.ofNullable(jobRepository.findById(id).orElse(null)).map(this::assignNextExecution);
   }
 
   @Override

@@ -89,6 +89,7 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+import java.util.Optional;
 
 /**
  * REST Services related to performing a feasibility analysis but 
@@ -507,7 +508,7 @@ public class FeasibilityService extends AbstractDaoService {
 
     UserEntity user = userRepository.findByLogin(security.getSubject());
 
-    FeasibilityStudy updatedStudy = this.feasibilityStudyRepository.findById(id);
+    FeasibilityStudy updatedStudy = this.feasibilityStudyRepository.findById(id).orElse(null);
     updatedStudy.setName(study.name)
             .setDescription(study.description)
             .setModifiedBy(user)
@@ -577,7 +578,7 @@ public class FeasibilityService extends AbstractDaoService {
 
     TransactionStatus initStatus = this.getTransactionTemplate().getTransactionManager().getTransaction(requresNewTx);
 
-    FeasibilityStudy study = this.feasibilityStudyRepository.findById(study_id);
+    FeasibilityStudy study = this.feasibilityStudyRepository.findById(study_id).orElse(null);
 
     CohortDefinition indexRule = this.cohortDefinitionRepository.findById(study.getIndexRule().getId());
     CohortGenerationInfo indexInfo = findCohortGenerationInfoBySourceId(indexRule.getGenerationInfoList(), source.getSourceId());
@@ -673,7 +674,7 @@ public class FeasibilityService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Transactional(readOnly = true)
   public List<StudyInfoDTO> getSimulationInfo(@PathParam("id") final int id) {
-    FeasibilityStudy study = this.feasibilityStudyRepository.findById(id);
+    FeasibilityStudy study = this.feasibilityStudyRepository.findById(id).orElse(null);
 
     List<StudyInfoDTO> result = new ArrayList<>();
     for (StudyGenerationInfo generationInfo : study.getStudyGenerationInfoList()) {
@@ -761,7 +762,7 @@ public class FeasibilityService extends AbstractDaoService {
   @Path("/{id}/info/{sourceKey}")
   @Transactional    
   public void deleteInfo(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
-    FeasibilityStudy study = feasibilityStudyRepository.findById(id);
+    FeasibilityStudy study = feasibilityStudyRepository.findById(id).orElse(null);
     StudyGenerationInfo itemToRemove = null;
     for (StudyGenerationInfo info : study.getStudyGenerationInfoList())
     {

@@ -39,6 +39,7 @@ import java.sql.ResultSetMetaData;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import jakarta.ws.rs.core.Response;
+import java.util.Optional;
 
 
 /**
@@ -577,7 +578,7 @@ public class CohortResultsService extends AbstractDaoService {
   public GenerationInfoDTO getAnalysisProgress(@PathParam("sourceKey") String sourceKey, @PathParam("id") Integer id) {
 
     return getTransactionTemplateRequiresNew().execute(status -> {
-      org.ohdsi.webapi.cohortdefinition.CohortDefinition def = cohortDefinitionRepository.findById(id);
+      org.ohdsi.webapi.cohortdefinition.CohortDefinition def = cohortDefinitionRepository.findById(id).orElse(null);
       Source source = getSourceRepository().findBySourceKey(sourceKey);
       return def.getCohortAnalysisGenerationInfoList().stream()
               .filter(cd -> Objects.equals(cd.getSourceId(), source.getSourceId()))

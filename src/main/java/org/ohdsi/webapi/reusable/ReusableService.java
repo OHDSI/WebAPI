@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -72,11 +73,11 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
     }
 
     public Reusable getById(Integer id) {
-        return reusableRepository.findById(id);
+        return reusableRepository.findById(id).orElse(null);
     }
 
     public ReusableDTO getDTOById(Integer id) {
-        Reusable reusable = reusableRepository.findById(id);
+        Reusable reusable = reusableRepository.findById(id).orElse(null);
         return conversionService.convert(reusable, ReusableDTO.class);
     }
 
@@ -98,7 +99,7 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
 
         saveVersion(id);
 
-        Reusable existing = reusableRepository.findById(id);
+        Reusable existing = reusableRepository.findById(id).orElse(null);
         UserEntity modifier = userRepository.findByLogin(security.getSubject());
 
         existing.setName(entity.getName())
@@ -131,7 +132,7 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
     }
 
     public void delete(Integer id) {
-        Reusable existing = reusableRepository.findById(id);
+        Reusable existing = reusableRepository.findById(id).orElse(null);
 
         checkOwnerOrAdminOrModerator(existing.getCreatedBy());
 
@@ -195,14 +196,14 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
         ExceptionUtils.throwNotFoundExceptionIfNull(reusableVersion,
                 String.format("There is no reusable version with id = %d.", version));
 
-        Reusable entity = this.reusableRepository.findById(id);
+        Reusable entity = this.reusableRepository.findById(id).orElse(null);
         if (checkOwnerShip) {
             checkOwnerOrAdminOrGranted(entity);
         }
     }
 
     public ReusableVersion saveVersion(int id) {
-        Reusable def = this.reusableRepository.findById(id);
+        Reusable def = this.reusableRepository.findById(id).orElse(null);
         ReusableVersion version = conversionService.convert(def, ReusableVersion.class);
 
         UserEntity user = Objects.nonNull(def.getModifiedBy()) ? def.getModifiedBy() : def.getCreatedBy();
@@ -215,7 +216,7 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
     private Reusable save(Reusable reusable) {
         reusable = reusableRepository.saveAndFlush(reusable);
         entityManager.refresh(reusable);
-        return reusableRepository.findById(reusable.getId());
+        return reusableRepository.findById(reusable.getId().orElse(null));
     }
 
     public boolean exists(final int id, final String name) {

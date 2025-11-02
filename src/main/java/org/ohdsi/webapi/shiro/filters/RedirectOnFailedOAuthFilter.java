@@ -2,8 +2,8 @@ package org.ohdsi.webapi.shiro.filters;
 
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
+import org.ohdsi.webapi.shiro.ServletBridge;
 import org.apache.shiro.web.servlet.AdviceFilter;
-import org.apache.shiro.web.util.WebUtils;
 
 /**
  *
@@ -19,8 +19,8 @@ public class RedirectOnFailedOAuthFilter extends AdviceFilter {
 
   @Override
   protected boolean preHandle(ServletRequest request, ServletResponse response) throws Exception {
-    if (WebUtils.toHttp(request).getParameter("code") == null) {
-      WebUtils.toHttp(response).sendRedirect(redirectUrl);
+    if (ServletBridge.toHttp(request).getParameter("code") == null) {
+      ServletBridge.toHttp(response).sendRedirect(redirectUrl);
       return false;
     }
     return true;

@@ -3,12 +3,12 @@ package org.ohdsi.webapi.shiro.filters;
 import org.ohdsi.webapi.arachne.logging.event.FailedLogoutEvent;
 import org.ohdsi.webapi.arachne.logging.event.SuccessLogoutEvent;
 import io.jsonwebtoken.JwtException;
+import org.ohdsi.webapi.shiro.ServletBridge;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.session.SessionException;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.servlet.AdviceFilter;
-import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.shiro.TokenManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +35,7 @@ public class LogoutFilter extends AdviceFilter {
   @Override
   protected boolean preHandle(ServletRequest request, ServletResponse response) {
 
-    HttpServletResponse httpResponse = WebUtils.toHttp(response);
+    HttpServletResponse httpResponse = ServletBridge.toHttp(response);
     httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
     String jwt = TokenManager.extractToken(request);

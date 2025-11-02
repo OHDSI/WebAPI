@@ -5,13 +5,13 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import org.ohdsi.webapi.arachne.logging.event.FailedLoginEvent;
 import org.ohdsi.webapi.arachne.logging.event.SuccessLoginEvent;
+import org.ohdsi.webapi.shiro.ServletBridge;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.LockedAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
-import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.audittrail.events.AuditTrailLoginFailedEvent;
 import org.ohdsi.webapi.audittrail.events.AuditTrailSessionCreatedEvent;
@@ -46,7 +46,7 @@ public abstract class AuthenticatingPropagationFilter extends AuthenticatingFilt
     @Override
     protected boolean onLoginFailure(AuthenticationToken token, AuthenticationException e, ServletRequest request, ServletResponse response) {
 
-        HttpServletResponse httpResponse = WebUtils.toHttp(response);
+        HttpServletResponse httpResponse = ServletBridge.toHttp(response);
         httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         if (e instanceof LockedAccountException) {
             httpResponse.setHeader(HEADER_AUTH_ERROR, e.getMessage());

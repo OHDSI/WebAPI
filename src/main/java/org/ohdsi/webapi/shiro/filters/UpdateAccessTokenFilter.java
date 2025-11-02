@@ -19,12 +19,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.ws.rs.core.UriBuilder;
 import org.apache.commons.lang3.StringUtils;
+import org.ohdsi.webapi.shiro.ServletBridge;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.servlet.ShiroHttpServletRequest;
-import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.shiro.Entities.UserPrincipal;
 import org.ohdsi.webapi.shiro.PermissionManager;
@@ -57,7 +57,7 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
   @Override
   protected boolean preHandle(ServletRequest request, ServletResponse response) throws Exception {
     if (!SecurityUtils.getSubject().isAuthenticated()) {
-      WebUtils.toHttp(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      ServletBridge.toHttp(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       return false;
     }
 
@@ -90,7 +90,7 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
           session.stop();
         }
 
-        HttpServletResponse httpResponse = WebUtils.toHttp(response);
+        HttpServletResponse httpResponse = ServletBridge.toHttp(response);
 
         URI oauthFailURI = getOAuthFailUri();
         httpResponse.sendRedirect(oauthFailURI.toString());
@@ -128,7 +128,7 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
       try {
         this.authorizer.registerUser(login, name, defaultRoles);
       } catch (Exception e) {
-        WebUtils.toHttp(response).setHeader("x-auth-error", e.getMessage());
+        ServletBridge.toHttp(response).setHeader("x-auth-error", e.getMessage());
         throw new Exception(e);
       }
 

@@ -9,8 +9,8 @@ import java.io.PrintWriter;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletResponse;
+import org.ohdsi.webapi.shiro.ServletBridge;
 import org.apache.shiro.web.servlet.AdviceFilter;
-import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +39,7 @@ public class SendTokenInHeaderFilter extends AdviceFilter {
     String jwt = (String)request.getAttribute(TOKEN_ATTRIBUTE);
     PermissionManager.PermissionsDTO permissions = (PermissionManager.PermissionsDTO)request.getAttribute(PERMISSIONS_ATTRIBUTE);
 
-    HttpServletResponse httpResponse = WebUtils.toHttp(response);
+    HttpServletResponse httpResponse = ServletBridge.toHttp(response);
     httpResponse.setHeader(TOKEN_HEADER_NAME, jwt);
     httpResponse.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
     httpResponse.setStatus(HttpServletResponse.SC_OK);

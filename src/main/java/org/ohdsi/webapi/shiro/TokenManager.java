@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Objects;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
-import org.apache.shiro.web.util.WebUtils;
+import org.ohdsi.webapi.shiro.ServletBridge;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.util.ExpiringMultimap;
 
@@ -114,7 +114,7 @@ public class TokenManager {
   }
 
   public static String extractToken(ServletRequest request) {
-    HttpServletRequest httpRequest = WebUtils.toHttp(request);
+    HttpServletRequest httpRequest = ServletBridge.toHttp(request);
 
     String header =  httpRequest.getHeader(AUTHORIZATION_HEADER);
     if (header == null || header.isEmpty())

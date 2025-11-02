@@ -6,8 +6,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import com.google.common.base.Joiner;
+import org.ohdsi.webapi.shiro.ServletBridge;
 import org.apache.shiro.web.servlet.AdviceFilter;
-import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.Constants;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -37,7 +37,7 @@ public class CorsFilter extends AdviceFilter{
     }
     // check if it's CORS request
     //
-    HttpServletRequest httpRequest = WebUtils.toHttp(request);
+    HttpServletRequest httpRequest = ServletBridge.toHttp(request);
     String requestOrigin = httpRequest.getHeader("Origin");
     if (requestOrigin == null) {
       return true;
@@ -45,7 +45,7 @@ public class CorsFilter extends AdviceFilter{
 
     // set headers
     //
-    HttpServletResponse httpResponse = WebUtils.toHttp(response);
+    HttpServletResponse httpResponse = ServletBridge.toHttp(response);
     httpResponse.setHeader("Access-Control-Allow-Origin", this.origin);
     httpResponse.setHeader("Access-Control-Allow-Credentials", "true");
 

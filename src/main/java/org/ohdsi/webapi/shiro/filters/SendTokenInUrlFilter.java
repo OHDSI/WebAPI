@@ -1,8 +1,8 @@
 package org.ohdsi.webapi.shiro.filters;
 
 import org.apache.commons.lang3.StringUtils;
+import org.ohdsi.webapi.shiro.ServletBridge;
 import org.apache.shiro.web.servlet.AdviceFilter;
-import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.helper.Guard;
 
 import jakarta.servlet.ServletRequest;
@@ -38,7 +38,7 @@ public class SendTokenInUrlFilter extends AdviceFilter {
           urlValue = urlValue + "/" + URLEncoder.encode(request.getParameter("redirectUrl"), StandardCharsets.UTF_8.name());
         }
     }
-    WebUtils.toHttp(response).sendRedirect(urlValue);
+    ServletBridge.toHttp(response).sendRedirect(urlValue);
 
     return false;
   }

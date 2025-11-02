@@ -9,7 +9,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import org.apache.shiro.web.util.WebUtils;
+import org.ohdsi.webapi.shiro.ServletBridge;
 
 /**
  *
@@ -24,7 +24,7 @@ public abstract class SkipFurtherFilteringFilter implements Filter {
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
     if (shouldSkip(request, response)) {
-      HttpServletRequest httpRequest = WebUtils.toHttp(request);
+      HttpServletRequest httpRequest = ServletBridge.toHttp(request);
       String path = httpRequest.getServletPath() + httpRequest.getPathInfo();
       RequestDispatcher requestDispatcher = request.getRequestDispatcher(path);
       requestDispatcher.forward(request, response);

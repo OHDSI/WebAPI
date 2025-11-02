@@ -12,10 +12,10 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import io.buji.pac4j.subject.Pac4jPrincipal;
+import org.ohdsi.webapi.shiro.ServletBridge;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.subject.PrincipalCollection;
-import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.Constants;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.tokens.JwtAuthToken;
@@ -77,7 +77,7 @@ public class GoogleIapJwtAuthFilter extends AtlasAuthFilter {
     @Override
     protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception {
 
-        HttpServletResponse httpResponse = WebUtils.toHttp(response);
+        HttpServletResponse httpResponse = ServletBridge.toHttp(response);
         httpResponse.setHeader(Constants.Headers.AUTH_PROVIDER, Constants.SecurityProviders.GOOGLE);
 
         boolean loggedIn = executeLogin(request, response);
@@ -123,7 +123,7 @@ public class GoogleIapJwtAuthFilter extends AtlasAuthFilter {
 
     private String getJwtToken(ServletRequest request) {
 
-        HttpServletRequest httpRequest = WebUtils.toHttp(request);
+        HttpServletRequest httpRequest = ServletBridge.toHttp(request);
         return httpRequest.getHeader(JWT_HEADER);
     }
 

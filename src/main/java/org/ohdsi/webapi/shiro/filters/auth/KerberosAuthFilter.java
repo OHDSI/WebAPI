@@ -23,17 +23,17 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.ohdsi.webapi.shiro.ServletBridge;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
-import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.shiro.tokens.SpnegoToken;
 
 public class KerberosAuthFilter extends AuthenticatingFilter {
 
     private String getAuthHeader(ServletRequest servletRequest) {
 
-        HttpServletRequest request = WebUtils.toHttp(servletRequest);
+        HttpServletRequest request = ServletBridge.toHttp(servletRequest);
         return request.getHeader("Authorization");
     }
 
@@ -66,7 +66,7 @@ public class KerberosAuthFilter extends AuthenticatingFilter {
         }
 
         if (!loggedIn) {
-            HttpServletResponse response = WebUtils.toHttp(servletResponse);
+            HttpServletResponse response = ServletBridge.toHttp(servletResponse);
             response.addHeader("WWW-Authenticate", "Negotiate");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }

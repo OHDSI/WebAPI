@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.shiro.filters;
 
-import org.apache.shiro.web.util.WebUtils;
+import org.ohdsi.webapi.shiro.ServletBridge;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -18,7 +18,7 @@ public class ResponseNoCacheFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        HttpServletResponse httpResponse = WebUtils.toHttp(response);
+        HttpServletResponse httpResponse = ServletBridge.toHttp(response);
 
         httpResponse.setHeader("Cache-Control", "no-store");
         httpResponse.setHeader("Pragma", "no-cache");

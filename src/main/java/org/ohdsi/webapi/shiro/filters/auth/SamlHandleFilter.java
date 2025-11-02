@@ -1,9 +1,9 @@
 package org.ohdsi.webapi.shiro.filters.auth;
 
+import org.ohdsi.webapi.shiro.ServletBridge;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.web.servlet.ShiroHttpServletRequest;
-import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.helper.Guard;
 import org.ohdsi.webapi.shiro.filters.AtlasAuthFilter;
 import org.ohdsi.webapi.shiro.tokens.JwtAuthToken;
@@ -87,20 +87,20 @@ public class SamlHandleFilter extends AtlasAuthFilter {
             if (!isForceAuth(request)) {
                 createForceAuthCookie(response);
 
-                WebUtils.toHttp(response).sendRedirect(WebUtils.toHttp(request).getContextPath() + "/user/login/samlForce");
+                ServletBridge.toHttp(response).sendRedirect(ServletBridge.toHttp(request).getContextPath() + "/user/login/samlForce");
             } else {
                 deleteForceAuthCookie(response);
 
                 String urlValue = oauthUiCallback.replaceAll("/+$", "");
                 urlValue = urlValue + "/" + AUTH_CLIENT_SAML + "/reloginRequired";
-                WebUtils.toHttp(response).sendRedirect(urlValue);
+                ServletBridge.toHttp(response).sendRedirect(urlValue);
             }
         }
         return false;
     }
 
     private boolean isForceAuth(ServletRequest request) {
-        Cookie[] cookies = WebUtils.toHttp(request).getCookies();
+        Cookie[] cookies = ServletBridge.toHttp(request).getCookies();
         if (Objects.nonNull(cookies)) {
             for (Cookie cookie: cookies) {
                 if (AUTH_COOKIE.equals(cookie.getName())) {
@@ -114,13 +114,13 @@ public class SamlHandleFilter extends AtlasAuthFilter {
     private void createForceAuthCookie(ServletResponse response) {
         Cookie cookie = new Cookie(AUTH_COOKIE, Boolean.TRUE.toString());
         cookie.setPath("/");
-        WebUtils.toHttp(response).addCookie(cookie);
+        ServletBridge.toHttp(response).addCookie(cookie);
     }
 
     private void deleteForceAuthCookie(ServletResponse response) {
         Cookie cookie = new Cookie(AUTH_COOKIE, Boolean.TRUE.toString());
         cookie.setMaxAge(0);
         cookie.setPath("/");
-        WebUtils.toHttp(response).addCookie(cookie);
+        ServletBridge.toHttp(response).addCookie(cookie);
     }
 }

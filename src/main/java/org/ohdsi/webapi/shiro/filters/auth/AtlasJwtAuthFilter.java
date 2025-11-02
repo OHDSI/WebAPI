@@ -5,8 +5,8 @@ import io.jsonwebtoken.JwtException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletResponse;
+import org.ohdsi.webapi.shiro.ServletBridge;
 import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.web.util.WebUtils;
 import org.ohdsi.webapi.shiro.filters.AtlasAuthFilter;
 import org.ohdsi.webapi.shiro.tokens.JwtAuthToken;
 import org.ohdsi.webapi.shiro.TokenManager;
@@ -38,7 +38,7 @@ public final class AtlasJwtAuthFilter extends AtlasAuthFilter {
     }
 
     if (!loggedIn) {
-        HttpServletResponse httpResponse = WebUtils.toHttp(response);
+        HttpServletResponse httpResponse = ServletBridge.toHttp(response);
         httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     }
 

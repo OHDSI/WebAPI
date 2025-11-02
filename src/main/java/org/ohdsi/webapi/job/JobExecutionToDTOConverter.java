@@ -32,8 +32,10 @@ public class JobExecutionToDTOConverter extends BaseConversionServiceAwareConver
         final JobExecution execution = entity.getJobExecution();
         result.setStatus(execution.getStatus().name());
         result.setExitStatus(execution.getExitStatus().getExitCode());
-        result.setStartDate(execution.getStartTime());
-        result.setEndDate(execution.getEndTime());
+        result.setStartDate(execution.getStartTime() != null ?
+            java.util.Date.from(execution.getStartTime().atZone(java.time.ZoneId.systemDefault()).toInstant()) : null);
+        result.setEndDate(execution.getEndTime() != null ?
+            java.util.Date.from(execution.getEndTime().atZone(java.time.ZoneId.systemDefault()).toInstant()) : null);
         result.setJobParametersResource(
                 execution.getJobParameters().getParameters().entrySet()
                 .stream()

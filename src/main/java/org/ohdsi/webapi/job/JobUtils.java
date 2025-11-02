@@ -32,12 +32,14 @@ public final class JobUtils {
         final JobExecutionResource execution = new JobExecutionResource(
                 toJobInstanceResource(jobExecution.getJobInstance()), jobExecution.getId());
         execution.setStatus(jobExecution.getStatus().name());
-        execution.setStartDate(jobExecution.getStartTime());
-        execution.setEndDate(jobExecution.getEndTime());
+        execution.setStartDate(jobExecution.getStartTime() != null ?
+            java.util.Date.from(jobExecution.getStartTime().atZone(java.time.ZoneId.systemDefault()).toInstant()) : null);
+        execution.setEndDate(jobExecution.getEndTime() != null ?
+            java.util.Date.from(jobExecution.getEndTime().atZone(java.time.ZoneId.systemDefault()).toInstant()) : null);
         execution.setExitStatus(jobExecution.getExitStatus().getExitCode());
         JobParameters jobParams = jobExecution.getJobParameters();
         if (jobParams != null) {
-            Map<String, JobParameter> params = jobParams.getParameters();
+            Map<String, JobParameter<?>> params = jobParams.getParameters();
             if (params != null && !params.isEmpty()) {
                 Map<String, Object> jobParametersResource = new HashMap<String, Object>();
                 Set<String> keys = params.keySet().stream()
@@ -84,12 +86,12 @@ public final class JobUtils {
                 JobExecution jobExecution = new JobExecution(jobInstance, null);//jobParameters);
                 jobExecution.setId(id);
                 
-                jobExecution.setStartTime(rs.getTimestamp(2));
-                jobExecution.setEndTime(rs.getTimestamp(3));
+                jobExecution.setStartTime(rs.getTimestamp(2) != null ? rs.getTimestamp(2).toLocalDateTime() : null);
+                jobExecution.setEndTime(rs.getTimestamp(3) != null ? rs.getTimestamp(3).toLocalDateTime() : null);
                 jobExecution.setStatus(BatchStatus.valueOf(rs.getString(4)));
                 jobExecution.setExitStatus(new ExitStatus(rs.getString(5), rs.getString(6)));
-                jobExecution.setCreateTime(rs.getTimestamp(7));
-                jobExecution.setLastUpdated(rs.getTimestamp(8));
+                jobExecution.setCreateTime(rs.getTimestamp(7) != null ? rs.getTimestamp(7).toLocalDateTime() : null);
+                jobExecution.setLastUpdated(rs.getTimestamp(8) != null ? rs.getTimestamp(8).toLocalDateTime() : null);
                 jobExecution.setVersion(rs.getInt(9));
                 jobexec = toJobExecutionResource(jobExecution);
             }
@@ -102,19 +104,19 @@ public final class JobUtils {
                 JobParameter value = null;
                 switch (type) {
                     case STRING: {
-                        value = new JobParameter(rs.getString(14), rs.getString(18).equalsIgnoreCase("Y"));
+                        value = new JobParameter<>(rs.getString(14), String.class);
                         break;
                     }
                     case LONG: {
-                        value = new JobParameter(rs.getLong(16), rs.getString(18).equalsIgnoreCase("Y"));
+                        value = new JobParameter<>(rs.getLong(16), Long.class);
                         break;
                     }
                     case DOUBLE: {
-                        value = new JobParameter(rs.getDouble(17), rs.getString(18).equalsIgnoreCase("Y"));
+                        value = new JobParameter<>(rs.getDouble(17), Double.class);
                         break;
                     }
                     case DATE: {
-                        value = new JobParameter(rs.getTimestamp(15), rs.getString(18).equalsIgnoreCase("Y"));
+                        value = new JobParameter<>(rs.getTimestamp(15), java.util.Date.class);
                         break;
                     }
                 }

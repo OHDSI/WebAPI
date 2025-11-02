@@ -947,7 +947,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
                 return conceptSetAnnotation;
             }).collect(Collectors.toList());
 
-            this.getConceptSetAnnotationRepository().save(annotationList);
+            this.getConceptSetAnnotationRepository().saveAll(annotationList);
         }
 
         return true;
@@ -968,7 +968,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
         List<ConceptSetAnnotation> copiedAnnotations= sourceAnnotations.stream()
                 .map(sourceAnnotation -> copyAnnotation(sourceAnnotation, copyAnnotationsRequest.getSourceConceptSetId(), copyAnnotationsRequest.getTargetConceptSetId()))
                 .collect(Collectors.toList());
-        getConceptSetAnnotationRepository().save(copiedAnnotations);
+        getConceptSetAnnotationRepository().saveAll(copiedAnnotations);
     }
     private ConceptSetAnnotation copyAnnotation(ConceptSetAnnotation sourceConceptSetAnnotation, int sourceConceptSetId, int targetConceptSetId){
         ConceptSetAnnotation targetConceptSetAnnotation = new ConceptSetAnnotation();

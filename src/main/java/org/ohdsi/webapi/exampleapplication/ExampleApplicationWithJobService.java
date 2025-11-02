@@ -185,7 +185,7 @@ public class ExampleApplicationWithJobService extends AbstractDaoService {
     @Path("widgets")
     public void writeWidgets() {
         final List<Widget> widgets = createWidgets();
-        this.widgetRepository.save(widgets);
+        this.widgetRepository.saveAll(widgets);
         log.info("Persisted {} widgets", widgets.size());
     }
     

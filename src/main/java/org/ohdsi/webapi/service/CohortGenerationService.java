@@ -181,7 +181,7 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     getTransactionTemplateRequiresNew().execute(status -> {
       List<CohortGenerationInfo> executions = cohortGenerationInfoRepository.findByStatusIn(INVALIDATE_STATUSES);
       invalidateExecutions(executions);
-      cohortGenerationInfoRepository.save(executions);
+      cohortGenerationInfoRepository.saveAll(executions);
       return null;
     });
   }

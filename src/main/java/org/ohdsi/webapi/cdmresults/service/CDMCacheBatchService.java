@@ -58,7 +58,7 @@ public class CDMCacheBatchService {
             modified.add(processedEntity);
         });
         if (!modified.isEmpty()) {
-          cdmCacheRepository.save(modified);
+          cdmCacheRepository.saveAll(modified);
         }
         return new ArrayList<>( cacheEntities.values());
     }

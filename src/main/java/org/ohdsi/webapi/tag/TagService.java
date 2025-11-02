@@ -162,7 +162,7 @@ public class TagService extends AbstractDaoService {
                         }
                     })
                     .collect(Collectors.toList());
-            tagRepository.save(tags);
+            tagRepository.saveAll(tags);
         } catch (Exception e) {
             logger.error("Cannot refresh tags statistics");
         }

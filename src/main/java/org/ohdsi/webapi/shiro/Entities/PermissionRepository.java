@@ -11,7 +11,8 @@ import java.util.List;
  */
 public interface PermissionRepository extends CrudRepository<PermissionEntity, Long> {
 
-  public PermissionEntity findById(Long id);
+  // Removed: clashes with CrudRepository.findById which returns Optional<T>
+  // PermissionEntity findById(Long id);
 
   public PermissionEntity findByValueIgnoreCase(String permission);
 

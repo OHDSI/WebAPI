@@ -76,7 +76,7 @@ public class JobConfig {
     
     @Bean
     public TaskExecutor batchTaskExecutor() {
-        ManagedThreadPoolTaskExecutor taskExecutor = new ManagedThreadPoolTaskExecutor(jobService, security);
+        ManagedThreadPoolTaskExecutor taskExecutor = new ManagedThreadPoolTaskExecutor();
         taskExecutor.setCorePoolSize(corePoolSize);
         taskExecutor.setMaxPoolSize(maxPoolSize);
         taskExecutor.setQueueCapacity(queueCapacity);

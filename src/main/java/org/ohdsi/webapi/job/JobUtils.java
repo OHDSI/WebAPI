@@ -11,7 +11,6 @@ import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobInstance;
 import org.springframework.batch.core.JobParameter;
-import org.springframework.batch.core.JobParameter.ParameterType;
 import org.springframework.batch.core.JobParameters;
 
 /**
@@ -100,25 +99,18 @@ public final class JobUtils {
             String key = rs.getString(12);
 
             if (!PROTECTED_PARAMS.contains(key)) {
-                ParameterType type = ParameterType.valueOf(rs.getString(13));
-                JobParameter value = null;
-                switch (type) {
-                    case STRING: {
-                        value = new JobParameter<>(rs.getString(14), String.class);
-                        break;
-                    }
-                    case LONG: {
-                        value = new JobParameter<>(rs.getLong(16), Long.class);
-                        break;
-                    }
-                    case DOUBLE: {
-                        value = new JobParameter<>(rs.getDouble(17), Double.class);
-                        break;
-                    }
-                    case DATE: {
-                        value = new JobParameter<>(rs.getTimestamp(15), java.util.Date.class);
-                        break;
-                    }
+                String typeStr = rs.getString(13);
+                JobParameter<?> value = null;
+                
+                // Spring Batch 5: Simplified parameter creation
+                if ("STRING".equals(typeStr)) {
+                    value = new JobParameter<>(rs.getString(14), String.class);
+                } else if ("LONG".equals(typeStr)) {
+                    value = new JobParameter<>(rs.getLong(16), Long.class);
+                } else if ("DOUBLE".equals(typeStr)) {
+                    value = new JobParameter<>(rs.getDouble(17), Double.class);
+                } else if ("DATE".equals(typeStr)) {
+                    value = new JobParameter<>(rs.getTimestamp(15), java.util.Date.class);
                 }
 
                 // No need to assert that value is not null because it's an enum

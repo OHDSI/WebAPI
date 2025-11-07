@@ -139,7 +139,7 @@ public class TagService extends AbstractDaoService {
     private Tag save(Tag tag) {
         tag = tagRepository.saveAndFlush(tag);
         entityManager.refresh(tag);
-        return tagRepository.findById(tag.getId().orElse(null));
+        return tagRepository.findById(tag.getId()).orElse(null);
     }
 
     @Transactional

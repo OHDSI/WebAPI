@@ -47,7 +47,7 @@ public class JobInvalidator {
     public void invalidationJobExecution(JobExecution job) {
         job.setStatus(BatchStatus.FAILED);
         job.setExitStatus(new ExitStatus(ExitStatus.FAILED.getExitCode(), INVALIDATED_BY_SYSTEM_EXIT_MESSAGE));
-        job.setEndTime(Calendar.getInstance().getTime());
+        job.setEndTime(java.time.LocalDateTime.now());
         jobRepository.update(job);
     }
 }

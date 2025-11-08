@@ -125,7 +125,12 @@ public class GenerationJobExecutionListener implements JobExecutionListener {
 			log.error("Cannot set duration time for cohortGenerationInfo[{}]. startData[{}] and endData[{}] cannot be empty.", info.getId(), je.getStartTime(), je.getEndTime());
 			return;
 		}
-		info.setExecutionDuration((int) (je.getEndTime().getTime() - je.getStartTime().getTime()));
+		// Spring Batch 5: LocalDateTime instead of Date
+		long startTime = je.getStartTime() != null ? 
+		    je.getStartTime().atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli() : 0;
+		long endTime = je.getEndTime() != null ?
+		    je.getEndTime().atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli() : 0;
+		info.setExecutionDuration((int) (endTime - startTime));
 	}
 
 	@Override

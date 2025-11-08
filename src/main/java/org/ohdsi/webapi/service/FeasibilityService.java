@@ -746,7 +746,7 @@ public class FeasibilityService extends AbstractDaoService {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/{id}")
   public void delete(@PathParam("id") final int id) {
-    feasibilityStudyRepository.delete(id);
+    feasibilityStudyRepository.deleteById(id);
   }
   
   /**

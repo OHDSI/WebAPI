@@ -649,7 +649,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
 
         // Remove the concept set
         try {
-            getConceptSetRepository().delete(id);
+            getConceptSetRepository().deleteById(id);
         } catch (EmptyResultDataAccessException e) {
             // Ignore - there may be no data
             log.warn("Failed to delete ConceptSet with ID = {}, {}", id, e);

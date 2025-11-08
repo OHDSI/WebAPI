@@ -136,7 +136,7 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
 
         checkOwnerOrAdminOrModerator(existing.getCreatedBy());
 
-        reusableRepository.delete(id);
+        reusableRepository.deleteById(id);
     }
 
     public List<VersionDTO> getVersions(long id) {

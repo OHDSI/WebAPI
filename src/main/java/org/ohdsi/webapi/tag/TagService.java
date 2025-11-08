@@ -133,7 +133,7 @@ public class TagService extends AbstractDaoService {
 
         checkOwnerOrAdmin(existing.getCreatedBy());
 
-        tagRepository.delete(id);
+        tagRepository.deleteById(id);
     }
 
     private Tag save(Tag tag) {

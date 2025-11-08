@@ -464,7 +464,7 @@ public class CohortSamplingService extends AbstractDaoService {
 		}
 
 		getTransactionTemplate().execute((TransactionCallback<Void>) transactionStatus -> {
-			sampleRepository.delete(sampleId);
+			sampleRepository.deleteById(sampleId);
 			jdbcTemplate.update(sql, sampleId);
 			return null;
 		});

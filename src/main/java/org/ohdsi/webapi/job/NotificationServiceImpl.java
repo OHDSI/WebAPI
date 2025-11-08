@@ -60,12 +60,12 @@ public class NotificationServiceImpl implements NotificationService {
 
     public List<JobExecutionInfo> findJobs(List<BatchStatus> hideStatuses, int maxSize, boolean refreshJobsOnly) {
         BiFunction<JobExecutionInfo, JobExecutionInfo, JobExecutionInfo> mergeFunction = (x, y) -> {
-            final Date xStartTime = x != null ? x.getJobExecution().getStartTime() : null;
-            final Date yStartTime = y != null ? y.getJobExecution().getStartTime() : null;
+            // Spring Batch 5: getStartTime returns LocalDateTime
+            final java.time.LocalDateTime xStartTime = x != null ? x.getJobExecution().getStartTime() : null;
+            final java.time.LocalDateTime yStartTime = y != null ? y.getJobExecution().getStartTime() : null;
             return xStartTime != null ?
                     yStartTime != null ?
-                            xStartTime.after(yStartTime) ? x
-                                    : y
+                            xStartTime.isAfter(yStartTime) ? x : y
                             : x
                     : y;
         };

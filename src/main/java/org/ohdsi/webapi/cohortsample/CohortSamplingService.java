@@ -67,7 +67,7 @@ public class CohortSamplingService extends AbstractDaoService {
 	}
 
 	public CohortSampleDTO getSample(int sampleId, boolean withRecordCounts) {
-		CohortSample sample = sampleRepository.findById(sampleId).orElse(null);
+		CohortSample sample = sampleRepository.findById(sampleId);
 		if (sample == null) {
 			throw new NotFoundException("Cohort sample with ID " + sampleId + " not found");
 		}
@@ -452,7 +452,7 @@ public class CohortSamplingService extends AbstractDaoService {
 						resultsSchema,
 						"cohortSampleId",
 						sampleId).getSql();
-		CohortSample sample = sampleRepository.findById(sampleId).orElse(null);
+		CohortSample sample = sampleRepository.findById(sampleId);
 		if (sample == null) {
 			throw new NotFoundException("Sample with ID " + sampleId + " does not exist");
 		}

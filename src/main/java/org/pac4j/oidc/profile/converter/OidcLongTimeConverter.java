@@ -26,7 +26,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 
-public class OidcLongTimeConverter implements AttributeConverter<Date> {
+public class OidcLongTimeConverter implements AttributeConverter {
     public OidcLongTimeConverter() {
     }
 

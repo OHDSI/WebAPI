@@ -3,6 +3,7 @@ package io.buji.pac4j.filter;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.pac4j.core.config.Config;
 import java.io.IOException;
 
 /**
@@ -11,9 +12,14 @@ import java.io.IOException;
  */
 public class CallbackFilter implements Filter {
     private String defaultUrl;
+    private Config config;
     
     public void setDefaultUrl(String url) {
         this.defaultUrl = url;
+    }
+    
+    public void setConfig(Config config) {
+        this.config = config;
     }
     
     @Override

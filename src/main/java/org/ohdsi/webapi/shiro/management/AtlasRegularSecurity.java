@@ -45,7 +45,7 @@ import org.pac4j.oauth.client.GitHubClient;
 import org.pac4j.oauth.client.Google2Client;
 import org.pac4j.oidc.client.OidcClient;
 import org.pac4j.oidc.config.OidcConfiguration;
-import org.pac4j.oidc.credentials.authenticator.UserInfoOidcAuthenticator;
+// import org.pac4j.oidc.credentials.authenticator.UserInfoOidcAuthenticator; // Removed in pac4j 6.x
 import org.pac4j.saml.client.SAML2Client;
 import org.pac4j.saml.config.SAML2Configuration;
 import org.slf4j.Logger;
@@ -335,10 +335,11 @@ public class AtlasRegularSecurity extends AtlasSecurity {
                 oidcClient.setCallbackUrl(oauthApiCallback);
                 oidcClient.setCallbackUrlResolver(urlResolver);
                 clients.add(oidcClient);
+                // TODO: pac4j 6.x - UserInfoOidcAuthenticator was removed, needs refactor
                 // HeaderClient allows api access with a bearer token from the identity provider
-                UserInfoOidcAuthenticator authenticator = new UserInfoOidcAuthenticator(configuration);
-                HeaderClient headerClient = new HeaderClient("Authorization", "Bearer ", authenticator);
-                clients.add(headerClient);
+                // UserInfoOidcAuthenticator authenticator = new UserInfoOidcAuthenticator(configuration);
+                // HeaderClient headerClient = new HeaderClient("Authorization", "Bearer ", authenticator);
+                // clients.add(headerClient);
             } else {
                 logger.warn("openidAuth is enabled but no client id is provided");
             }

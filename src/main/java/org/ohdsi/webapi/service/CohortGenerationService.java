@@ -35,6 +35,8 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import jakarta.annotation.PostConstruct;
@@ -89,29 +91,49 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
     this.sourceAwareSqlRender = sourceAwareSqlRender;
   }
 
+  @Transactional(propagation = Propagation.NOT_SUPPORTED)
   public JobExecutionResource generateCohortViaJob(UserEntity userEntity, CohortDefinition cohortDefinition,
           Source source, boolean demographicStat) {
-      CohortGenerationInfo info = cohortDefinition.getGenerationInfoList().stream()
-              .filter(val -> Objects.equals(val.getId().getSourceId(), source.getSourceId())).findFirst()
-              .orElse(new CohortGenerationInfo(cohortDefinition, source.getSourceId()));
+      // Store ID to reload later
+      final Integer cohortDefId = cohortDefinition.getId();
+      final Integer sourceId = source.getSourceId();
+      
+      // Execute the persistence logic in a new separate transaction that completes before batch job
+      transactionTemplate.execute(status -> {
+          // Reload entity in this transaction
+          CohortDefinition cd = cohortDefinitionRepository.findOneWithDetail(cohortDefId);
+          if (cd == null) {
+              throw new RuntimeException("CohortDefinition not found: " + cohortDefId);
+          }
+          
+          CohortGenerationInfo info = cd.getGenerationInfoList().stream()
+                  .filter(val -> Objects.equals(val.getId().getSourceId(), sourceId)).findFirst()
+                  .orElse(new CohortGenerationInfo(cd, sourceId));
 
-      info.setCreatedBy(userEntity);
-      info.setIsDemographic(demographicStat);
+          info.setCreatedBy(userEntity);
+          info.setIsDemographic(demographicStat);
 
-      cohortDefinition.getGenerationInfoList().add(info);
+          cd.getGenerationInfoList().add(info);
 
-      info.setStatus(GenerationStatus.PENDING)
-              .setStartTime(Calendar.getInstance().getTime());
+          info.setStatus(GenerationStatus.PENDING)
+                  .setStartTime(Calendar.getInstance().getTime());
 
-      cohortDefinitionRepository.save(cohortDefinition);
-      // the line below is essential to access the Cohort definition details in GenerateLocalCohortTasklet.generateCohort
-      // and avoid org.hibernate.LazyInitializationException: 
-      // could not initialize proxy [org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails#38] - no Session
-      // the workaround doesn't look pure in the same time refactoring doesn't look minor 
-      // as a lot of components are instantiated by the new operator
-      cohortDefinition.getDetails().getExpression();
+          cohortDefinitionRepository.save(cd);
+          
+          // Ensure lazy fields are initialized before transaction ends
+          if (cd.getDetails() != null) {
+              cd.getDetails().getExpression();
+          }
+          
+          return null;
+      });
 
-      return runGenerateCohortJob(cohortDefinition, source, demographicStat);
+      // Reload for the batch job in another short transaction
+      CohortDefinition reloadedDef = transactionTemplate.execute(status -> 
+          cohortDefinitionRepository.findOneWithDetail(cohortDefId)
+      );
+      
+      return runGenerateCohortJob(reloadedDef, source, demographicStat);
   }
 
   private Job buildGenerateCohortJob(CohortDefinition cohortDefinition, Source source, JobParameters jobParameters) {

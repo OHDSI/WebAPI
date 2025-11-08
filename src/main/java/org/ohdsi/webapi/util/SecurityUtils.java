@@ -25,6 +25,11 @@ public class SecurityUtils {
     }
 
     public static String whitelist(Exception exception) {
+        // Log the actual exception for debugging
+        if (exception instanceof DataAccessException || exception instanceof SQLException) {
+            exception.printStackTrace();
+        }
+        
         if (exception instanceof JobInstanceAlreadyCompleteException) {
             return "Job instance already complete exception";
         } else if (exception instanceof JsonProcessingException) {
@@ -34,7 +39,7 @@ public class SecurityUtils {
         } else if (exception instanceof TransactionException) {
             return "Transaction exception";
         } else if (exception instanceof DataAccessException) {
-            return "Data access exception";
+            return "Data access exception: " + exception.getMessage();
         } else if (exception instanceof SQLException) {
             return "SQL exception";
         }

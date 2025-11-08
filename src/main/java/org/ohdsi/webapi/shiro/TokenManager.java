@@ -3,11 +3,10 @@ package org.ohdsi.webapi.shiro;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.UnsupportedJwtException;
-import io.jsonwebtoken.impl.crypto.MacProvider;
-import java.security.Key;
+import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
+import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -28,13 +27,13 @@ public class TokenManager {
 
   private static final String AUTHORIZATION_HEADER = "Authorization";
 
-  private static final Map<String, Key> userToKeyMap = new HashMap<>();
-  private static final ExpiringMultimap<String, Key> gracePeriodInvalidTokens = new ExpiringMultimap<>(30000);
+  private static final Map<String, SecretKey> userToKeyMap = new HashMap<>();
+  private static final ExpiringMultimap<String, SecretKey> gracePeriodInvalidTokens = new ExpiringMultimap<>(30000);
 
   public static String createJsonWebToken(String subject, String sessionId, Date expiration) {
-    Key key = MacProvider.generateKey();
+    SecretKey key = Keys.hmacShaKeyFor(Keys.secretKeyFor(io.jsonwebtoken.SignatureAlgorithm.HS512).getEncoded());
 
-    Key oldKey;
+    SecretKey oldKey;
     if ((oldKey = userToKeyMap.get(subject)) != null) {
         gracePeriodInvalidTokens.put(subject, oldKey);
     }
@@ -43,10 +42,10 @@ public class TokenManager {
     Map<String, Object> claims = new HashMap<>();
     claims.put(Constants.SESSION_ID, sessionId);
     return Jwts.builder()
-            .setClaims(claims)
-            .setSubject(subject)
-            .setExpiration(expiration)
-            .signWith(SignatureAlgorithm.HS512, key)
+            .claims(claims)
+            .subject(subject)
+            .expiration(expiration)
+            .signWith(key)
             .compact();
   }
 
@@ -64,7 +63,7 @@ public class TokenManager {
     }
 
     // Pick all secret keys: latest one + previous keys, which were just invalidated (to overcome concurrency issue)
-    List<Key> keyOptions = gracePeriodInvalidTokens.get(untrustedSubject);
+    List<SecretKey> keyOptions = gracePeriodInvalidTokens.get(untrustedSubject);
     if (userToKeyMap.containsKey(untrustedSubject)) {
       keyOptions.add(0, userToKeyMap.get(untrustedSubject));
     }
@@ -73,9 +72,10 @@ public class TokenManager {
             .map(key -> {
               try {
                 return Jwts.parser()
-                        .setSigningKey(key)
-                        .parseClaimsJws(jwt)
-                        .getBody();
+                        .verifyWith(key)
+                        .build()
+                        .parseSignedClaims(jwt)
+                        .getPayload();
               } catch (Exception ex) {
                 return null;
               }
@@ -91,7 +91,7 @@ public class TokenManager {
         return null;
     }
     String untrustedJwtString = jws.substring(0, i+1);
-    return Jwts.parser().parseClaimsJwt(untrustedJwtString).getBody().getSubject();
+    return Jwts.parser().unsecured().build().parseUnsecuredClaims(untrustedJwtString).getPayload().getSubject();
   }
 
   public static Boolean invalidate(String jwt) {

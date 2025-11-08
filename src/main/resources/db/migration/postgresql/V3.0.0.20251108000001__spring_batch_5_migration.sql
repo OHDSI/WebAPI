@@ -1,0 +1,26 @@
+-- Migrate Spring Batch 4 schema to Spring Batch 5 schema for PostgreSQL
+-- This updates all Spring Batch tables to be compatible with Spring Batch 5.x
+
+-- 1. Update BATCH_JOB_EXECUTION_PARAMS table structure
+-- Drop the old table and recreate with new Spring Batch 5 column names
+DROP TABLE IF EXISTS ${ohdsiSchema}.BATCH_JOB_EXECUTION_PARAMS CASCADE;
+
+CREATE TABLE ${ohdsiSchema}.BATCH_JOB_EXECUTION_PARAMS  (
+	JOB_EXECUTION_ID BIGINT NOT NULL ,
+	PARAMETER_NAME VARCHAR(100) NOT NULL ,
+	PARAMETER_TYPE VARCHAR(100) NOT NULL ,
+	PARAMETER_VALUE VARCHAR(2500) ,
+	IDENTIFYING CHAR(1) NOT NULL ,
+	constraint JOB_EXEC_PARAMS_FK foreign key (JOB_EXECUTION_ID)
+	references ${ohdsiSchema}.BATCH_JOB_EXECUTION(JOB_EXECUTION_ID)
+);
+
+CREATE INDEX BJEP_JOB_EXEC_PARAMS_IDX ON ${ohdsiSchema}.BATCH_JOB_EXECUTION_PARAMS (JOB_EXECUTION_ID);
+
+-- 2. Add missing CREATE_TIME column to BATCH_STEP_EXECUTION
+ALTER TABLE ${ohdsiSchema}.BATCH_STEP_EXECUTION 
+ADD COLUMN IF NOT EXISTS CREATE_TIME TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+-- 3. Make START_TIME nullable for Spring Batch 5 compatibility
+ALTER TABLE ${ohdsiSchema}.BATCH_STEP_EXECUTION 
+ALTER COLUMN START_TIME DROP NOT NULL;

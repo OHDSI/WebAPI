@@ -18,6 +18,8 @@ import org.springframework.batch.core.configuration.annotation.EnableBatchProces
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +33,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 /**
  * Spring Batch 5.x configuration for Java 21 / Spring Boot 3.2
- * JobRepository, PlatformTransactionManager, and JobExplorer are auto-configured by Spring Boot
  */
 @Configuration
 @EnableBatchProcessing
@@ -71,6 +72,25 @@ public class JobConfig {
         log.info("Batch table prefix: {}", this.tablePrefix);
     }
     
+    // Spring Batch transaction manager (separate from JPA)
+    @Bean("batchTransactionManager")
+    public DataSourceTransactionManager batchTransactionManager(DataSource dataSource) {
+        return new DataSourceTransactionManager(dataSource);
+    }
+    
+    // JobRepository configuration for Spring Batch 5
+    @Bean
+    public JobRepository jobRepository(DataSource dataSource, 
+                                       @Qualifier("batchTransactionManager") DataSourceTransactionManager batchTransactionManager) throws Exception {
+        JobRepositoryFactoryBean factory = new JobRepositoryFactoryBean();
+        factory.setDataSource(dataSource);
+        factory.setTransactionManager(batchTransactionManager);
+        factory.setTablePrefix(this.tablePrefix);
+        factory.setIsolationLevelForCreate(isolationLevelForCreate);
+        factory.afterPropertiesSet();
+        return factory.getObject();
+    }
+    
     @Bean
     public TaskExecutor batchTaskExecutor() {
         ManagedThreadPoolTaskExecutor taskExecutor = new ManagedThreadPoolTaskExecutor();
@@ -89,8 +109,7 @@ public class JobConfig {
         return taskExecutor;
     }
     
-    // Spring Batch 5: JobRepository is auto-configured, we just inject it
-    // Custom JobLauncher for async execution
+    // Spring Batch 5: Custom JobLauncher for async execution
     @Bean
     @Primary
     public JobLauncher asyncJobLauncher(JobRepository jobRepository, @Qualifier("batchTaskExecutor") TaskExecutor batchTaskExecutor) throws Exception {
@@ -103,7 +122,6 @@ public class JobConfig {
     
     @Bean
     public JobTemplate jobTemplate(JobLauncher jobLauncher, JobRepository jobRepository, Security security) {
-        // Spring Batch 5: JobBuilderFactory removed, pass JobRepository directly
         return new JobTemplate(jobLauncher, jobRepository, security);
     }
     

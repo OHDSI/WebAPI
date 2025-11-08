@@ -97,7 +97,10 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.ServletContext;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.hibernate.Hibernate;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
@@ -187,6 +190,14 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 
 	@Autowired
 	private PlatformTransactionManager transactionManager;
+	
+	private TransactionTemplate transactionTemplate;
+	
+	@Autowired
+	public void setTransactionManager(PlatformTransactionManager transactionManager) {
+		this.transactionManager = transactionManager;
+		this.transactionTemplate = new TransactionTemplate(transactionManager);
+	}
 
 	@Autowired
 	private JobTemplate jobTemplate;
@@ -603,14 +614,42 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/{id}/generate/{sourceKey}")
-	@Transactional
     public JobExecutionResource generateCohort(@PathParam("id") final int id,
             @PathParam("sourceKey") final String sourceKey,
             @QueryParam("demographic") boolean demographicStat) {
-		Source source = getSourceRepository().findBySourceKey(sourceKey);
-		CohortDefinition currentDefinition = this.cohortDefinitionRepository.findById(id).orElse(null);
-		UserEntity user = userRepository.findByLogin(security.getSubject());
-        return cohortGenerationService.generateCohortViaJob(user, currentDefinition, source, demographicStat);	}
+		// Load entities within a transaction and eagerly initialize all lazy fields
+		Source source = transactionTemplate.execute(status -> {
+			Source s = getSourceRepository().findBySourceKey(sourceKey);
+			if (s != null) {
+				Hibernate.initialize(s);
+			}
+			return s;
+		});
+		
+		// Use findOneWithDetail to eagerly fetch the details relationship
+		CohortDefinition currentDefinition = transactionTemplate.execute(status -> {
+			CohortDefinition cd = this.cohortDefinitionRepository.findOneWithDetail(id);
+			if (cd != null) {
+				// Force initialization of all lazy fields
+				if (cd.getDetails() != null) {
+					cd.getDetails().getExpression(); // Access field to initialize
+				}
+				// Initialize the generationInfoList collection
+				Hibernate.initialize(cd.getGenerationInfoList());
+			}
+			return cd;
+		});
+		
+		UserEntity user = transactionTemplate.execute(status -> {
+			UserEntity u = userRepository.findByLogin(security.getSubject());
+			if (u != null) {
+				Hibernate.initialize(u);
+			}
+			return u;
+		});
+		
+        return cohortGenerationService.generateCohortViaJob(user, currentDefinition, source, demographicStat);
+	}
 
 	/**
 	 * Cancel a cohort generation task

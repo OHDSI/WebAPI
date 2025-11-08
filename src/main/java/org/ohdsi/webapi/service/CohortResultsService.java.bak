@@ -7,9 +7,9 @@ import java.sql.SQLException;
 import java.util.*;
 
 import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import jakarta.annotation.PostConstruct;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -38,9 +38,9 @@ import java.io.ByteArrayOutputStream;
 import java.sql.ResultSetMetaData;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
+import java.util.Optional;
 
-import org.ohdsi.webapi.person.CohortPerson;
 
 /**
  * REST Services related to retrieving
@@ -578,7 +578,7 @@ public class CohortResultsService extends AbstractDaoService {
   public GenerationInfoDTO getAnalysisProgress(@PathParam("sourceKey") String sourceKey, @PathParam("id") Integer id) {
 
     return getTransactionTemplateRequiresNew().execute(status -> {
-      org.ohdsi.webapi.cohortdefinition.CohortDefinition def = cohortDefinitionRepository.findOne(id);
+      org.ohdsi.webapi.cohortdefinition.CohortDefinition def = cohortDefinitionRepository.findById(id).orElse(null);
       Source source = getSourceRepository().findBySourceKey(sourceKey);
       return def.getCohortAnalysisGenerationInfoList().stream()
               .filter(cd -> Objects.equals(cd.getSourceId(), source.getSourceId()))
@@ -1557,30 +1557,6 @@ public class CohortResultsService extends AbstractDaoService {
     return summary;
   }
 
-  /**
-   * Returns the person identifiers of all members of a generated cohort
-   * definition identifier
-   * 
-   * @summary Get persons in cohort
-   * @param id The cohort ID
-   * @param sourceKey The source key
-   * @param min The minimum number of persons to return
-   * @param max The maximum number of persons to return
-   * @return Collection<CohortPerson>
-   */
-  @GET
-  @Path("{sourceKey}/{id}/members/{min}-{max}")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Collection<CohortPerson> getCohortMembers(@PathParam("id") final int id, @PathParam("sourceKey") String sourceKey, @PathParam("min") final int min, @PathParam("max") final int max) {
-    Source source = getSourceRepository().findBySourceKey(sourceKey);
-    String sqlPath = "/resources/cohortresults/sql/raw/getMembers.sql";
-    String tqName = "tableQualifier";
-    String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    String[] names = new String[]{"cohortDefinitionId", "min", "max"};
-    Object[] values = new Object[]{whitelist(id), whitelist(min), whitelist(max)};
-    PreparedStatementRenderer psr = new PreparedStatementRenderer(source, sqlPath, tqName, tqValue, names, values, SessionUtils.sessionId());
-    return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), cohortMemberMapper);
-  }
 
   /**
    * Returns breakdown with counts about people in cohort
@@ -1606,100 +1582,6 @@ public class CohortResultsService extends AbstractDaoService {
     return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), cohortBreakdownMapper);
   }
 
-  /**
-   * Returns the person identifiers of all members of a cohort breakdown from above
-   * 
-   * @summary Get cohort person breakdown
-   * @param id The cohort ID
-   * @param sourceKey The source key
-   * @param gender The string for gender (male/female)
-   * @param age The numeric age
-   * @param conditions The condition concept IDs
-   * @param drugs The drug concept ids
-   * @param rows The row limit
-   * @return List of all members of a generated cohort definition identifier
-   */
-  @GET
-  @Path("{sourceKey}/{id}/breakdown/{gender}/{age}/{conditions}/{drugs}/{rows}")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Collection<CohortPerson> getCohortMembers(
-                                        @PathParam("id") final int id, 
-                                        @PathParam("sourceKey") String sourceKey, 
-                                        @PathParam("gender") String gender, 
-                                        @PathParam("age") String age, 
-                                        @PathParam("conditions") String conditions, 
-                                        @PathParam("drugs") String drugs,
-                                        @PathParam("rows") final int rows) {
-
-
-    Source source = getSourceRepository().findBySourceKey(sourceKey);
-    PreparedStatementRenderer psr = prepareGetCohortMembers(id, gender,
-        age, conditions, drugs, rows, source);
-    return getSourceJdbcTemplate(source).query(psr.getSql(),psr.getSetter(), cohortMemberMapper);
-  }
-
-
-  protected PreparedStatementRenderer prepareGetCohortMembers(final int id,
-                                                              String gender, String age, String conditions, String drugs,
-                                                              final int rows, Source source) {
-    String path =   "/resources/cohortresults/sql/raw/getCohortBreakdownPeople.sql";
-    List<String> params = new ArrayList<>();
-    List<String> wherecols = new ArrayList<>();
-    int groups = 1;
-    if (gender.length() > 0 && !gender.equals("''")) {
-        params.add(" gender in (@gender) ");
-        wherecols.add("gender");
-        groups = groups * gender.split(",").length;
-    }
-    if (age.length() > 0 && !age.equals("''")) {
-        params.add(" age in (@age) ");
-        wherecols.add("age");
-        groups = groups * age.split(",").length;
-    }
-    if (conditions.length() > 0 && !conditions.equals("''")) {
-        params.add(" conditions in (@conditions) ");
-        wherecols.add("conditions");
-        groups = groups * conditions.split(",").length;
-    }
-    if (drugs.length() > 0 && !"''".equals(drugs)) {
-      params.add(" drugs in (@drugs) ");
-      wherecols.add("drugs");
-      groups = groups * drugs.split(",").length;
-    }
-    String clause = " where 1=1\n";
-    for (String param : params) {
-      clause += (" and " + param + "\n");
-    }
-
-    String resultsTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.Results);
-    String cdmTableQualifier = source.getTableQualifier(SourceDaimon.DaimonType.CDM);
-
-    String wherecolsStr = "";
-    if (!wherecols.isEmpty()) {
-      wherecolsStr += wherecols.get(0);
-      for (int i = 1; i < wherecols.size(); i++) {
-        wherecolsStr += (',' + wherecols.get(i));
-      }
-    }
-    String[] searchFor = new String[]{"tableQualifier", "resultsTableQualifier", "whereclause", "wherecols", "partition by"};
-    String[] replaceWith = new String[]{cdmTableQualifier, resultsTableQualifier, clause, wherecolsStr, "partition by"};
-
-    if (wherecols.isEmpty()) {
-      searchFor = new String[]{"tableQualifier", "resultsTableQualifier", "whereclause", "wherecols", "partition by"};
-      replaceWith = new String[]{cdmTableQualifier, resultsTableQualifier, clause, wherecolsStr, ""};
-    }
-
-    String[] names = new String[]{"cohortDefinitionId", "gender", "age", "conditions", "drugs", "rows", "groups"};
-
-    String[] genderArray= gender.replaceAll("'", "").split(",");
-    String[] ageArray= age.replaceAll("'", "").split(",");
-
-    List<Integer> conditionIds =  Arrays.stream(conditions.split(",")).map(NumberUtils::toInt).collect(Collectors.toList());
-    List<Integer> drugIds =  Arrays.stream(drugs.split(",")).map(NumberUtils::toInt).collect(Collectors.toList());
-
-    Object[] values = new Object[]{id, genderArray, ageArray, conditionIds.toArray(), drugIds.toArray(), rows, groups};
-    return new PreparedStatementRenderer(source, path, searchFor, replaceWith, names, values);
-  }
   
   /**
    * Returns the count of all members of a generated cohort
@@ -2254,16 +2136,6 @@ public class CohortResultsService extends AbstractDaoService {
     return new PreparedStatementRenderer(source, path, searchFor, replace, names, values);
   }
 
-  private final RowMapper<CohortPerson> cohortMemberMapper = new RowMapper<CohortPerson>() {
-    @Override
-    public CohortPerson mapRow(final ResultSet rs, final int rowNum) throws SQLException {
-      CohortPerson person = new CohortPerson();
-      person.personId = rs.getLong("subject_id");
-      person.startDate = rs.getTimestamp("cohort_start_date");
-      person.endDate = rs.getTimestamp("cohort_end_date");
-      return person;
-    }
-  };
 
   private final RowMapper<CohortBreakdown> cohortBreakdownMapper = new RowMapper<CohortBreakdown>() {
     @Override

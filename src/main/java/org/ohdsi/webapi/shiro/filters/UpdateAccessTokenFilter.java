@@ -30,7 +30,7 @@ import org.ohdsi.webapi.shiro.Entities.UserPrincipal;
 import org.ohdsi.webapi.shiro.PermissionManager;
 import org.ohdsi.webapi.shiro.TokenManager;
 import org.ohdsi.webapi.util.UserUtils;
-import org.pac4j.core.profile.CommonProfile;
+import org.pac4j.core.profile.UserProfile;
 
 /**
  *
@@ -68,8 +68,8 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
     Object principal = principals.getPrimaryPrincipal();
     
     if (principal instanceof Pac4jPrincipal) {
-      login = ((Pac4jPrincipal)principal).getProfile().getEmail();
-      name = ((Pac4jPrincipal)principal).getProfile().getDisplayName();
+      login = (String) ((Pac4jPrincipal)principal).getProfile().getAttribute("email");
+      name = (String) ((Pac4jPrincipal)principal).getProfile().getAttribute("name");
       
       /**
       * for CAS login
@@ -97,7 +97,7 @@ public class UpdateAccessTokenFilter extends AdviceFilter {
         return false;
       }
 
-      CommonProfile profile = (((Pac4jPrincipal) principal).getProfile());
+      UserProfile profile = (((Pac4jPrincipal) principal).getProfile());
       if (Objects.nonNull(profile)) {
         String clientName = profile.getClientName();
         request.setAttribute(AUTH_CLIENT_ATTRIBUTE, clientName);

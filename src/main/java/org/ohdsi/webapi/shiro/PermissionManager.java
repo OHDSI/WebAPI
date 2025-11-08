@@ -254,7 +254,7 @@ public class PermissionManager {
       }
     }
 
-    user = userRepository.findById(user.getId().orElse(null)).orElse(null);
+    user = userRepository.findById(user.getId()).orElse(null);
     return user;
   }
 

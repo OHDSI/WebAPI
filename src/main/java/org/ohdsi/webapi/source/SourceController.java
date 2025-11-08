@@ -251,7 +251,7 @@ public class SourceController extends AbstractDaoService {
       List<SourceDaimon> removed = source.getDaimons().stream().filter(d -> !updated.getDaimons().contains(d))
               .collect(Collectors.toList());
       // Delete MUST be called after fetching user or source data to prevent autoflush (see DefaultPersistEventListener.onPersist)
-      sourceDaimonRepository.delete(removed);
+      sourceDaimonRepository.deleteAll(removed);
       Source result = sourceRepository.save(updated);
       publisher.publishEvent(new ChangeDataSourceEvent(this, updated.getSourceId(), updated.getSourceName()));
       sourceService.invalidateCache();

@@ -72,7 +72,7 @@ public class CohortSampleService {
 		result.setSourceId(source.getId());
 
 		CohortGenerationInfo generationInfo = generationInfoRepository.findById(
-				new CohortGenerationInfoId(cohortDefinitionId, source.getId().orElse(null)));
+				new CohortGenerationInfoId(cohortDefinitionId, source.getId())).orElse(null);
 		result.setGenerationStatus(generationInfo != null ? generationInfo.getStatus() : null);
 		result.setIsValid(generationInfo != null && generationInfo.isIsValid());
 
@@ -177,7 +177,7 @@ public class CohortSampleService {
 			throw new NotFoundException("Cohort definition " + cohortDefinitionId + " does not exist.");
 		}
 		CohortGenerationInfo generationInfo = generationInfoRepository.findById(
-				new CohortGenerationInfoId(cohortDefinitionId, source.getId().orElse(null)));
+				new CohortGenerationInfoId(cohortDefinitionId, source.getId())).orElse(null);
 		if (generationInfo == null || generationInfo.getStatus() != GenerationStatus.COMPLETE) {
 			throw new BadRequestException("Cohort is not yet generated");
 		}

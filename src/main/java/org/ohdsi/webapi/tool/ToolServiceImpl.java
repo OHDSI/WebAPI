@@ -53,7 +53,7 @@ public class ToolServiceImpl extends AbstractDaoService implements ToolService {
 
     @Override
     public void delete(Integer id) {
-        toolRepository.delete(id);
+        toolRepository.deleteById(id);
     }
 
     private boolean canManageTools() {
@@ -63,7 +63,7 @@ public class ToolServiceImpl extends AbstractDaoService implements ToolService {
     
     Tool toEntity(ToolDTO toolDTO) {
         boolean isNewTool = toolDTO.getId() == null;
-        Tool tool = isNewTool ? new Tool() : toolRepository.findById(toolDTO.getId().orElse(null));
+        Tool tool = isNewTool ? new Tool() : toolRepository.findById(toolDTO.getId()).orElse(null);
         Instant currentInstant = Instant.now();
         if (isNewTool) {
             setCreationDetails(tool, currentInstant);
@@ -101,12 +101,12 @@ public class ToolServiceImpl extends AbstractDaoService implements ToolService {
                     toolDTO.setDescription(t.getDescription());
                     Optional.ofNullable(tool.getCreatedBy())
                             .map(UserEntity::getId)
-                            .map(userRepository::findOne)
+                            .flatMap(userRepository::findById)
                             .map(UserEntity::getName)
                             .ifPresent(toolDTO::setCreatedByName);
                     Optional.ofNullable(tool.getModifiedBy())
                             .map(UserEntity::getId)
-                            .map(userRepository::findOne)
+                            .flatMap(userRepository::findById)
                             .map(UserEntity::getName)
                             .ifPresent(toolDTO::setModifiedByName);
                     toolDTO.setCreatedDate(t.getCreatedDate() != null ? new SimpleDateFormat(DATE_TIME_FORMAT).format(t.getCreatedDate()) : null);

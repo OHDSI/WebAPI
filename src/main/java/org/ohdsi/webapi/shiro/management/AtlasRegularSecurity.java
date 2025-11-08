@@ -601,7 +601,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
         ActiveDirectoryRealm realm = new ADRealm(getLdapTemplate(), adSearchFilter, adSearchString, adUserMapper);
         realm.setUrl(dequote(adUrl));
         realm.setSearchBase(dequote(adSearchBase));
-        realm.setPrincipalSuffix(dequote(adPrincipalSuffix));
+        // realm.setPrincipalSuffix(dequote(adPrincipalSuffix)); // Removed in Shiro 2.x - use searchFilter instead
         realm.setSystemUsername(dequote(adSystemUsername));
         realm.setSystemPassword(dequote(adSystemPassword));
         return realm;

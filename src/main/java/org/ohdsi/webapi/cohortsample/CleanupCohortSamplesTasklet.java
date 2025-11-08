@@ -80,7 +80,7 @@ public class CleanupCohortSamplesTasklet implements Tasklet {
 					return 0;
 				}
 
-				sampleRepository.delete(samples);
+				sampleRepository.deleteAll(samples);
 
 				int[] cohortSampleIds = samples.stream()
 						.mapToInt(CohortSample::getId)

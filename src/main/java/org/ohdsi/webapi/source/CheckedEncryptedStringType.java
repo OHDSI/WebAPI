@@ -33,11 +33,11 @@ public class CheckedEncryptedStringType extends AbstractEncryptedAsStringType {
         st.setString(index, encrypted);
     }
 
+    // Hibernate 6 signature
     @Override
-    public Object nullSafeGet(ResultSet rs, String[] names, SharedSessionContractImplementor session, Object owner) throws HibernateException, SQLException {
-
+    public Object nullSafeGet(ResultSet rs, int position, SharedSessionContractImplementor session, Object owner) throws HibernateException, SQLException {
         checkInitialization();
-        final String message = rs.getString(names[0]);
+        final String message = rs.getString(position);
 
         if (Objects.isNull(message)) {
             return null;
@@ -46,9 +46,20 @@ public class CheckedEncryptedStringType extends AbstractEncryptedAsStringType {
         return EncryptorUtils.decrypt(this.encryptor, message);
     }
 
+    // Legacy signature for compatibility
+    public Object nullSafeGet(ResultSet rs, String[] names, SharedSessionContractImplementor session, Object owner) throws HibernateException, SQLException {
+        return nullSafeGet(rs, 1, session, owner);
+    }
+
     @Override
     public Class returnedClass() {
 
         return String.class;
+    }
+
+    // Hibernate 6 requires getSqlType
+    @Override
+    public int getSqlType() {
+        return Types.VARCHAR;
     }
 }

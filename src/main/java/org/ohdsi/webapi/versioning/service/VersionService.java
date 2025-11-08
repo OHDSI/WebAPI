@@ -93,7 +93,7 @@ public class VersionService<T extends Version> extends AbstractDaoService {
     }
 
     public T update(VersionType type, VersionUpdateDTO updateDTO) {
-        T currentVersion = getRepository(type).findById(updateDTO.getVersionPk()).orElse(null);
+        T currentVersion = getRepository(type).findById(updateDTO.getVersionPk().orElse(null)).orElse(null);
         if (Objects.isNull(currentVersion)) {
             throw new NotFoundException("Version not found");
         }

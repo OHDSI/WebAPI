@@ -159,7 +159,7 @@ public class PermissionService {
                     PermissionEntity permissionEntity = permissionRepository.findByValueIgnoreCase(permission);
                     if (permissionEntity != null) {
                         RolePermissionEntity rp = rolePermissionRepository.findByRoleAndPermission(role, permissionEntity);
-                        rolePermissionRepository.delete(rp.getId());
+                        rolePermissionRepository.deleteById(rp.getId());
                     }
                 });
     }

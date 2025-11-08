@@ -47,6 +47,7 @@ import org.springframework.boot.autoconfigure.cache.JCacheManagerCustomizer;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.jdbc.core.JdbcTemplate;
+import java.util.Optional;
 
 /**
  *
@@ -253,7 +254,7 @@ public class PermissionManager {
       }
     }
 
-    user = userRepository.findById(user.getId().orElse(null));
+    user = userRepository.findById(user.getId().orElse(null)).orElse(null);
     return user;
   }
 
@@ -295,7 +296,7 @@ public class PermissionManager {
 	@CacheEvict(cacheNames = CachingSetup.AUTH_INFO_CACHE, allEntries = true)
   public void removeRole(Long roleId) {
     eventPublisher.publishEvent(new DeleteRoleEvent(this, roleId));
-    this.roleRepository.delete(roleId);
+    this.roleRepository.deleteById(roleId);
   }
 
   public Set<PermissionEntity> getRolePermissions(Long roleId) {

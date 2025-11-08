@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityManager;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -139,7 +140,7 @@ public class TagService extends AbstractDaoService {
     private Tag save(Tag tag) {
         tag = tagRepository.saveAndFlush(tag);
         entityManager.refresh(tag);
-        return tagRepository.findById(tag.getId()).orElse(null);
+        return tagRepository.findById(tag.getId().orElse(null)).orElse(null);
     }
 
     @Transactional

@@ -216,7 +216,7 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
     private Reusable save(Reusable reusable) {
         reusable = reusableRepository.saveAndFlush(reusable);
         entityManager.refresh(reusable);
-        return reusableRepository.findById(reusable.getId()).orElse(null);
+        return reusableRepository.findById(reusable.getId().orElse(null)).orElse(null);
     }
 
     public boolean exists(final int id, final String name) {

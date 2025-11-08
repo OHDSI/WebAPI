@@ -7,7 +7,9 @@ import org.apache.shiro.web.servlet.ShiroHttpServletRequest;
 import org.ohdsi.webapi.helper.Guard;
 import org.ohdsi.webapi.shiro.filters.AtlasAuthFilter;
 import org.ohdsi.webapi.shiro.tokens.JwtAuthToken;
+import org.pac4j.core.context.CallContext;
 import org.pac4j.jee.context.JEEContext;
+import org.pac4j.jee.context.session.JEESessionStore;
 import org.pac4j.saml.client.SAML2Client;
 import org.pac4j.saml.credentials.SAML2Credentials;
 import org.pac4j.saml.exceptions.SAMLAuthnInstantException;
@@ -54,25 +56,26 @@ public class SamlHandleFilter extends AtlasAuthFilter {
             if (!SecurityUtils.getSubject().isAuthenticated()) {
                 request.setAttribute(AUTH_CLIENT_ATTRIBUTE, AUTH_CLIENT_SAML);
 
-                // TODO: pac4j 6.x API changed - getCredentials() and getUserProfile() signatures changed
-                // Needs refactor to use CallContext instead of JEEContext + credentials
-                /*
                 HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
                 HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
-                JEEContext context = new JEEContext(httpRequest, httpResponse);
+                
+                // pac4j 6.x API: Use CallContext wrapper
+                JEEContext webContext = new JEEContext(httpRequest, httpResponse);
+                JEESessionStore sessionStore = new JEESessionStore();
+                CallContext callContext = new CallContext(webContext, sessionStore);
 
-                SAML2Client client;
-                if (isForceAuth(request)) {
-                    client = saml2ForceClient;
-                } else {
-                    client = saml2Client;
+                SAML2Client client = isForceAuth(request) ? saml2ForceClient : saml2Client;
+                
+                // Get credentials and profile using pac4j 6.x API
+                var credentialsOpt = client.getCredentials(callContext);
+                if (credentialsOpt.isPresent()) {
+                    SAML2Credentials credentials = (SAML2Credentials) credentialsOpt.get();
+                    var profileOpt = client.getUserProfile(callContext, credentials);
+                    if (profileOpt.isPresent()) {
+                        SAML2Profile samlProfile = (SAML2Profile) profileOpt.get();
+                        token = new JwtAuthToken(samlProfile.getId());
+                    }
                 }
-                SAML2Credentials credentials = client.getCredentials(context).get();
-                SAML2Profile samlProfile = (SAML2Profile)client.getUserProfile(credentials, context).get();
-
-                token = new JwtAuthToken(samlProfile.getId());
-                */
-                // SAML authentication temporarily disabled - requires pac4j 6.x API refactor
             }
         }
         return token;

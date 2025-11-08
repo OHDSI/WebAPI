@@ -4,15 +4,24 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.pac4j.core.config.Config;
+import org.pac4j.core.engine.CallbackLogic;
+import org.pac4j.core.engine.DefaultCallbackLogic;
+import org.pac4j.jee.context.JEEFrameworkParameters;
+
 import java.io.IOException;
 
 /**
- * Temporary stub for CallbackFilter (removed in buji-pac4j 9+)
- * TODO: Refactor OAuth/SAML to use pac4j 6.x architecture
+ * Callback filter for pac4j 6.x / buji-pac4j 9.x integration
+ * Handles OAuth/SAML callback after successful authentication
  */
 public class CallbackFilter implements Filter {
-    private String defaultUrl;
+    private String defaultUrl = "/";
     private Config config;
+    private CallbackLogic callbackLogic;
+    
+    public CallbackFilter() {
+        this.callbackLogic = new DefaultCallbackLogic();
+    }
     
     public void setDefaultUrl(String url) {
         this.defaultUrl = url;
@@ -25,7 +34,21 @@ public class CallbackFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) 
             throws IOException, ServletException {
-        // Stub implementation - OAuth/SAML disabled pending refactor
-        chain.doFilter(request, response);
+        
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
+        
+        JEEFrameworkParameters parameters = new JEEFrameworkParameters(httpRequest, httpResponse);
+        
+        // Execute pac4j 6.x callback logic
+        callbackLogic.perform(
+            config,
+            defaultUrl,
+            true, // renewSession
+            null, // defaultClient
+            parameters
+        );
+        
+        // Callback logic handles the response, don't continue chain
     }
 }

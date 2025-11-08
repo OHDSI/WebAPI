@@ -15,13 +15,16 @@ import org.ohdsi.webapi.util.SourceUtils;
 import org.ohdsi.webapi.util.TempTableCleanupManager;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
+import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.scope.context.ChunkContext;
+import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import jakarta.persistence.EntityManager;
@@ -35,11 +38,11 @@ import static org.ohdsi.webapi.Constants.Params.TARGET_TABLE;
 @Component
 public class GenerationUtils extends AbstractDaoService {
 
-    private StepBuilderFactory stepBuilderFactory;
+    private JobRepository jobRepository;
+    private PlatformTransactionManager transactionManager;
     private TransactionTemplate transactionTemplate;
     private CohortGenerationService cohortGenerationService;
     private SourceService sourceService;
-    private JobBuilderFactory jobBuilders;
     private JobService jobService;
     private final SourceAwareSqlRender sourceAwareSqlRender;
     private final EntityManager entityManager;
@@ -48,21 +51,21 @@ public class GenerationUtils extends AbstractDaoService {
     @Value("${cache.generation.useAsync:false}")
     private boolean useAsyncCohortGeneration;
 
-    public GenerationUtils(StepBuilderFactory stepBuilderFactory,
-                           TransactionTemplate transactionTemplate,
+    public GenerationUtils(JobRepository jobRepository,
+                           PlatformTransactionManager transactionManager,
+                           @Qualifier("transactionTemplate") TransactionTemplate transactionTemplate,
                            CohortGenerationService cohortGenerationService,
                            SourceService sourceService,
-                           JobBuilderFactory jobBuilders,
                            SourceAwareSqlRender sourceAwareSqlRender,
                            JobService jobService,
                            EntityManager entityManager,
                            GenerationCacheHelper generationCacheHelper) {
 
-        this.stepBuilderFactory = stepBuilderFactory;
+        this.jobRepository = jobRepository;
+        this.transactionManager = transactionManager;
         this.transactionTemplate = transactionTemplate;
         this.cohortGenerationService = cohortGenerationService;
         this.sourceService = sourceService;
-        this.jobBuilders = jobBuilders;
         this.sourceAwareSqlRender = sourceAwareSqlRender;
         this.jobService = jobService;
         this.entityManager = entityManager;

@@ -12,6 +12,7 @@ import org.ohdsi.webapi.tag.repository.TagRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -36,7 +37,7 @@ public class TagService extends AbstractDaoService {
     public TagService(
             TagRepository tagRepository,
             EntityManager entityManager,
-            ConversionService conversionService) {
+            @Qualifier("conversionService") ConversionService conversionService) {
         this.tagRepository = tagRepository;
         this.entityManager = entityManager;
         this.conversionService = conversionService;

@@ -6,6 +6,7 @@ import org.ohdsi.webapi.user.importer.dto.UserImportJobDTO;
 import org.ohdsi.webapi.user.importer.exception.JobAlreadyExistException;
 import org.ohdsi.webapi.user.importer.model.UserImportJob;
 import org.ohdsi.webapi.user.importer.service.UserImportJobService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,7 +41,7 @@ public class UserImportJobController {
   private final UserImportJobService jobService;
   private final GenericConversionService conversionService;
 
-  public UserImportJobController(UserImportJobService jobService, GenericConversionService conversionService) {
+  public UserImportJobController(UserImportJobService jobService, @Qualifier("conversionService") GenericConversionService conversionService) {
 
     this.jobService = jobService;
     this.conversionService = conversionService;

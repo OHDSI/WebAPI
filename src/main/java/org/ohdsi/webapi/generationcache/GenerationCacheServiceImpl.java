@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.generationcache;
 
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
+import com.cosium.spring.data.jpa.entity.graph.domain2.DynamicEntityGraph;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.slf4j.Logger;
@@ -43,7 +43,7 @@ public class GenerationCacheServiceImpl implements GenerationCacheService {
     public GenerationCache getCacheOrEraseInvalid(CacheableGenerationType type, Integer designHash, Integer sourceId) {
 
         Source source = sourceRepository.findBySourceId(sourceId);
-        GenerationCache generationCache = generationCacheRepository.findByTypeAndAndDesignHashAndSource(type, designHash, source, EntityGraphUtils.fromAttributePaths("source"));
+        GenerationCache generationCache = generationCacheRepository.findByTypeAndAndDesignHashAndSource(type, designHash, source, DynamicEntityGraph.loading().addPath("source").build());
         GenerationCacheProvider provider = getProvider(type);
         if (generationCache != null) {
             String checksum = provider.getResultsChecksum(generationCache.getSource(), generationCache.getDesignHash());
@@ -89,7 +89,7 @@ public class GenerationCacheServiceImpl implements GenerationCacheService {
         // Cleanup cached results
         getProvider(type).remove(source, designHash);
         // Cleanup cache record
-        GenerationCache generationCache = generationCacheRepository.findByTypeAndAndDesignHashAndSource(type, designHash, source, EntityGraphUtils.fromAttributePaths("source"));
+        GenerationCache generationCache = generationCacheRepository.findByTypeAndAndDesignHashAndSource(type, designHash, source, DynamicEntityGraph.loading().addPath("source").build());
         if (generationCache != null) {
             generationCacheRepository.delete(generationCache);
         }

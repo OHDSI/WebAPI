@@ -8,6 +8,7 @@ import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -28,7 +29,8 @@ public class JobInvalidator {
     private final SearchableJobExecutionDao jobExecutionDao;
 
     @Autowired
-    public JobInvalidator(JobRepository repository, TransactionTemplate transactionTemplateRequiresNew,
+    public JobInvalidator(JobRepository repository, 
+                          @Qualifier("transactionTemplateRequiresNew") TransactionTemplate transactionTemplateRequiresNew,
                           SearchableJobExecutionDao jobExecutionDao) {
         this.jobRepository = repository;
         this.transactionTemplateRequiresNew = transactionTemplateRequiresNew;

@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.BatchStatus;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +35,7 @@ public class NotificationController {
     private final NotificationService service;
     private final GenericConversionService conversionService;
 
-    NotificationController(final NotificationService service, GenericConversionService conversionService) {
+    NotificationController(final NotificationService service, @Qualifier("conversionService") GenericConversionService conversionService) {
         this.service = service;
         this.conversionService = conversionService;
     }

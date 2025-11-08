@@ -5,7 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -22,7 +22,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.ohdsi.webapi.cdmresults.DescendantRecordCount;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -84,7 +84,7 @@ public class CDMResultsCacheTest {
         List<Integer> ids2 = Arrays.asList(1, 2, 3, 4);
 
         when(function.apply(any())).then(invocation -> {
-                    List<Integer> ids = invocation.getArgumentAt(0, List.class);
+                    List<Integer> ids = invocation.getArgument(0, List.class);
                     return ids.stream().map(CDMResultsCacheTest.this::createDescendantRecordCount).collect(Collectors.toList());
                 }
 
@@ -105,7 +105,7 @@ public class CDMResultsCacheTest {
         List<Integer> ids2 = Arrays.asList(1, 2);
 
         when(function.apply(any())).then(invocation -> {
-                    List<Integer> ids = invocation.getArgumentAt(0, List.class);
+                    List<Integer> ids = invocation.getArgument(0, List.class);
                     return ids2.stream().map(CDMResultsCacheTest.this::createDescendantRecordCount).collect(Collectors.toList());
                 }
 

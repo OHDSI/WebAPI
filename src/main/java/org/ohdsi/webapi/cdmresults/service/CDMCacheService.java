@@ -17,6 +17,7 @@ import org.ohdsi.webapi.util.PreparedSqlRender;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -58,7 +59,7 @@ public class CDMCacheService extends AbstractDaoService {
   private SourceAccessor sourceAccessor;
 
   public CDMCacheService(CDMCacheBatchService cdmCacheBatchService,
-          ConversionService conversionService,
+          @Qualifier("conversionService") ConversionService conversionService,
           CDMCacheRepository cdmCacheRepository) {
     this.cdmCacheBatchService = cdmCacheBatchService;
     this.conversionService = conversionService;

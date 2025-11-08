@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.user.importer.service;
 
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
+import com.cosium.spring.data.jpa.entity.graph.domain2.EntityGraph;
+import com.cosium.spring.data.jpa.entity.graph.domain2.NamedEntityGraph;
 import com.cronutils.model.definition.CronDefinition;
 import org.ohdsi.webapi.arachne.scheduler.model.ScheduledTask;
 import org.ohdsi.webapi.arachne.scheduler.service.BaseJobServiceImpl;
@@ -19,12 +19,14 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import jakarta.annotation.PostConstruct;
@@ -44,10 +46,10 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
   private final RoleGroupRepository roleGroupRepository;
   private final UserImportJobHistoryItemRepository jobHistoryItemRepository;
   private final TransactionTemplate transactionTemplate;
-  private final StepBuilderFactory stepBuilderFactory;
-  private final JobBuilderFactory jobBuilders;
+  private final JobRepository jobRepositoryBatch;
+  private final PlatformTransactionManager transactionManager;
   private final JobTemplate jobTemplate;
-  private EntityGraph jobWithMappingEntityGraph = EntityGraphUtils.fromName("jobWithMapping");
+  private EntityGraph jobWithMappingEntityGraph = NamedEntityGraph.loading("jobWithMapping");
 
   public UserImportJobServiceImpl(TaskScheduler taskScheduler,
                                   CronDefinition cronDefinition,
@@ -57,8 +59,8 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
                                   UserImportJobHistoryItemRepository jobHistoryItemRepository,
                                   @Qualifier("transactionTemplateRequiresNew")
                                   TransactionTemplate transactionTemplate,
-                                  StepBuilderFactory stepBuilderFactory,
-                                  JobBuilderFactory jobBuilders,
+                                  JobRepository jobRepositoryBatch,
+                                  PlatformTransactionManager transactionManager,
                                   JobTemplate jobTemplate) {
 
     super(taskScheduler, cronDefinition, jobRepository);
@@ -67,8 +69,8 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
     this.roleGroupRepository = roleGroupRepository;
     this.jobHistoryItemRepository = jobHistoryItemRepository;
     this.transactionTemplate = transactionTemplate;
-    this.stepBuilderFactory = stepBuilderFactory;
-    this.jobBuilders = jobBuilders;
+    this.jobRepositoryBatch = jobRepositoryBatch;
+    this.transactionManager = transactionManager;
     this.jobTemplate = jobTemplate;
   }
 
@@ -146,25 +148,25 @@ public class UserImportJobServiceImpl extends BaseJobServiceImpl<UserImportJob> 
   Step userImportStep() {
 
     UserImportTasklet userImportTasklet = new UserImportTasklet(transactionTemplate, userImportService);
-    return stepBuilderFactory.get("importUsers")
-            .tasklet(userImportTasklet)
+    return new StepBuilder("importUsers", jobRepositoryBatch)
+            .tasklet(userImportTasklet, transactionManager)
             .build();
   }
 
   Job buildJobForUserImportTasklet(UserImportJob job) {
 
     FindUsersToImportTasklet findUsersTasklet = new FindUsersToImportTasklet(transactionTemplate, userImportService);
-    Step findUsersStep = stepBuilderFactory.get("findUsersForImport")
-            .tasklet(findUsersTasklet)
+    Step findUsersStep = new StepBuilder("findUsersForImport", jobRepositoryBatch)
+            .tasklet(findUsersTasklet, transactionManager)
             .build();
 
     if (job.getUserRoles() != null) {
         // when user roles are already defined then we do not need to look for them
-        return jobBuilders.get(Constants.USERS_IMPORT)
+        return new JobBuilder(Constants.USERS_IMPORT, jobRepositoryBatch)
                 .start(userImportStep())
                 .build();
     } else {
-        return jobBuilders.get(Constants.USERS_IMPORT)
+        return new JobBuilder(Constants.USERS_IMPORT, jobRepositoryBatch)
                 .start(findUsersStep)
                 .next(userImportStep())
                 .build();

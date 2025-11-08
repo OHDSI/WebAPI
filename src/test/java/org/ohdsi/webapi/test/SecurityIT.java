@@ -181,7 +181,7 @@ public class SecurityIT {
             List<ServiceInfo> serviceInfos = info.computeIfAbsent(pathPrefix, k -> new ArrayList<>());
             ServiceInfo serviceInfo = new ServiceInfo();
             serviceInfo.pathPrefix = pathPrefix;
-            serviceInfo.httpMethod = HttpMethod.resolve(method.getHttpMethod());
+            serviceInfo.httpMethod = HttpMethod.valueOf(method.getHttpMethod());
             serviceInfo.parameters = method.getInvocable().getParameters();
             serviceInfo.mediaTypes = method.getProducedTypes();
             serviceInfos.add(serviceInfo);

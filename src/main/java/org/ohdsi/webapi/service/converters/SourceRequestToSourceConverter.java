@@ -3,6 +3,7 @@ package org.ohdsi.webapi.service.converters;
 import org.ohdsi.webapi.arachne.datasource.dto.KerberosAuthMechanism;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceRequest;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Component;
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SourceRequestToSourceConverter implements Converter<SourceRequest, Source> {
 
-    public SourceRequestToSourceConverter(GenericConversionService conversionService) {
+    public SourceRequestToSourceConverter(@Qualifier("conversionService") GenericConversionService conversionService) {
         conversionService.addConverter(this);
     }
 

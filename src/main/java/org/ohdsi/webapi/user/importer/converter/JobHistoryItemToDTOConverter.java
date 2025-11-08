@@ -2,6 +2,7 @@ package org.ohdsi.webapi.user.importer.converter;
 
 import org.ohdsi.webapi.user.importer.dto.JobHistoryItemDTO;
 import org.ohdsi.webapi.user.importer.model.UserImportJobHistoryItem;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.stereotype.Component;
@@ -9,7 +10,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class JobHistoryItemToDTOConverter implements Converter<UserImportJobHistoryItem, JobHistoryItemDTO> {
 
-  public JobHistoryItemToDTOConverter(GenericConversionService conversionService) {
+  public JobHistoryItemToDTOConverter(@Qualifier("conversionService") GenericConversionService conversionService) {
 
     conversionService.addConverter(this);
   }

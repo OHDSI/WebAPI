@@ -11,6 +11,7 @@ import org.ohdsi.webapi.util.SourceUtils;
 import org.ohdsi.webapi.util.StatementCancel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -30,7 +31,7 @@ public class GenerationCacheHelper {
 
     private final GenerationCacheService generationCacheService;
 
-    public GenerationCacheHelper(GenerationCacheService generationCacheService, TransactionTemplate transactionTemplateRequiresNew) {
+    public GenerationCacheHelper(GenerationCacheService generationCacheService, @Qualifier("transactionTemplateRequiresNew") TransactionTemplate transactionTemplateRequiresNew) {
 
         this.generationCacheService = generationCacheService;
         this.transactionTemplateRequiresNew = transactionTemplateRequiresNew;

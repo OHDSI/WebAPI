@@ -19,6 +19,7 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,7 +35,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
  */
 @Configuration
 @EnableBatchProcessing
-@DependsOn({"batchDatabaseInitializer"})
 public class JobConfig {
     
     private static final Logger log = LoggerFactory.getLogger(JobConfig.class);
@@ -56,9 +56,6 @@ public class JobConfig {
     
     @Autowired
     private DataSource dataSource;
-    
-    @Autowired
-    private JobService jobService;
     
     @Autowired
     private Security security;
@@ -96,7 +93,7 @@ public class JobConfig {
     // Custom JobLauncher for async execution
     @Bean
     @Primary
-    public JobLauncher asyncJobLauncher(JobRepository jobRepository, TaskExecutor batchTaskExecutor) throws Exception {
+    public JobLauncher asyncJobLauncher(JobRepository jobRepository, @Qualifier("batchTaskExecutor") TaskExecutor batchTaskExecutor) throws Exception {
         TaskExecutorJobLauncher jobLauncher = new TaskExecutorJobLauncher();
         jobLauncher.setJobRepository(jobRepository);
         jobLauncher.setTaskExecutor(batchTaskExecutor);

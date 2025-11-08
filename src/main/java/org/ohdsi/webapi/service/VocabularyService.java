@@ -72,6 +72,7 @@ import org.ohdsi.webapi.vocabulary.VocabularyInfo;
 import org.ohdsi.webapi.vocabulary.VocabularySearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.boot.autoconfigure.cache.JCacheManagerCustomizer;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -135,6 +136,7 @@ public class VocabularyService extends AbstractDaoService {
   private SourceService sourceService;
   
   @Autowired
+  @Lazy
   private VocabularySearchService vocabSearchService;
 
   @Autowired

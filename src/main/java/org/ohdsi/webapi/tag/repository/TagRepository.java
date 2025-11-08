@@ -31,6 +31,6 @@ public interface TagRepository extends JpaRepository<Tag, Integer> {
             "GROUP BY rt.assetId.tagId")
     List<TagInfo> findReusableTagInfo();
 
-    @Query("SELECT t FROM Tag t WHERE t.mandatory = 'TRUE'")
+    @Query("SELECT t FROM Tag t WHERE t.mandatory = true")
     List<Tag> findMandatoryTags();
 }

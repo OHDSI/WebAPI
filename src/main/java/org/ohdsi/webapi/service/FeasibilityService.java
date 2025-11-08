@@ -80,11 +80,13 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
@@ -110,10 +112,10 @@ public class FeasibilityService extends AbstractDaoService {
   private FeasibilityStudyRepository feasibilityStudyRepository;
 
   @Autowired
-  private JobBuilderFactory jobBuilders;
+  private JobRepository jobRepository;
 
   @Autowired
-  private StepBuilderFactory stepBuilders;
+  private PlatformTransactionManager transactionManager;
 
   @Autowired
   private JobTemplate jobTemplate;
@@ -641,18 +643,18 @@ public class FeasibilityService extends AbstractDaoService {
       sourceService
     );
 
-    Step generateCohortStep = stepBuilders.get("performStudy.generateIndexCohort")
-            .tasklet(indexRuleTasklet)
+    Step generateCohortStep = new StepBuilder("performStudy.generateIndexCohort", jobRepository)
+            .tasklet(indexRuleTasklet, transactionManager)
             .exceptionHandler(new TerminateJobStepExceptionHandler())
             .build();
 
     PerformFeasibilityTasklet simulateTasket = new PerformFeasibilityTasklet(sourceJdbcTemplate, getTransactionTemplate(), feasibilityStudyRepository, objectMapper);
 
-    Step performStudyStep = stepBuilders.get("performStudy.performStudy")
-            .tasklet(simulateTasket)
+    Step performStudyStep = new StepBuilder("performStudy.performStudy", jobRepository)
+            .tasklet(simulateTasket, transactionManager)
             .build();
 
-    Job performStudyJob = jobBuilders.get("performStudy")
+    Job performStudyJob = new JobBuilder("performStudy", jobRepository)
             .start(generateCohortStep)
             .next(performStudyStep)
             .build();

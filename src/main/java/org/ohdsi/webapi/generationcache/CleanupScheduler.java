@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.generationcache;
 
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
+import com.cosium.spring.data.jpa.entity.graph.domain2.DynamicEntityGraph;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -29,7 +29,7 @@ public class CleanupScheduler {
 
         List<GenerationCache> caches = generationCacheRepository.findAllByCreatedDateBefore(
             DateUtils.addDays(new Date(), -1 * invalidateAfterDays),
-            EntityGraphUtils.fromAttributePaths("source", "source.daimons")
+            DynamicEntityGraph.loading().addPath("source", "source.daimons").build()
         );
         caches.forEach(gc -> generationCacheService.removeCache(gc.getType(), gc.getSource(), gc.getDesignHash()));
     }

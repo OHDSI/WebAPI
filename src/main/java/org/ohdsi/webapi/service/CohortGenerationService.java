@@ -24,14 +24,17 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.repeat.exception.ExceptionHandler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import jakarta.annotation.PostConstruct;
@@ -57,34 +60,32 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
 
   private final CohortDefinitionRepository cohortDefinitionRepository;
   private final CohortGenerationInfoRepository cohortGenerationInfoRepository;
-  private final JobBuilderFactory jobBuilders;
-  private final StepBuilderFactory stepBuilders;
+  private final JobRepository jobRepository;
+  private final PlatformTransactionManager transactionManager;
   private final JobService jobService;
   private final SourceService sourceService;
   private final GenerationCacheHelper generationCacheHelper;
   private final SourceAwareSqlRender sourceAwareSqlRender;
   private TransactionTemplate transactionTemplate;
-  private StepBuilderFactory stepBuilderFactory;
 
   @Autowired
   public CohortGenerationService(CohortDefinitionRepository cohortDefinitionRepository,
                                  CohortGenerationInfoRepository cohortGenerationInfoRepository,
-                                 JobBuilderFactory jobBuilders,
-                                 StepBuilderFactory stepBuilders,
+                                 JobRepository jobRepository,
+                                 PlatformTransactionManager transactionManager,
                                  JobService jobService,
                                  SourceService sourceService,
                                  GenerationCacheHelper generationCacheHelper,
-          TransactionTemplate transactionTemplate, StepBuilderFactory stepBuilderFactory,
+          @Qualifier("transactionTemplate") TransactionTemplate transactionTemplate,
           SourceAwareSqlRender sourceAwareSqlRender) {
     this.cohortDefinitionRepository = cohortDefinitionRepository;
     this.cohortGenerationInfoRepository = cohortGenerationInfoRepository;
-    this.jobBuilders = jobBuilders;
-    this.stepBuilders = stepBuilders;
+    this.jobRepository = jobRepository;
+    this.transactionManager = transactionManager;
     this.jobService = jobService;
     this.sourceService = sourceService;
     this.generationCacheHelper = generationCacheHelper;
     this.transactionTemplate = transactionTemplate;
-    this.stepBuilderFactory = stepBuilderFactory;
     this.sourceAwareSqlRender = sourceAwareSqlRender;
   }
 
@@ -132,12 +133,12 @@ public class CohortGenerationService extends AbstractDaoService implements Gener
             SourceUtils.getTempQualifierOrNull(source)
     ));
 
-    Step generateCohortStep = stepBuilders.get("cohortDefinition.generateCohort")
-            .tasklet(generateTasklet)
+    Step generateCohortStep = new StepBuilder("cohortDefinition.generateCohort", jobRepository)
+            .tasklet(generateTasklet, transactionManager)
             .exceptionHandler(exceptionHandler)
             .build();
 
-    SimpleJobBuilder generateJobBuilder = jobBuilders.get(GENERATE_COHORT).start(generateCohortStep);
+    SimpleJobBuilder generateJobBuilder = new JobBuilder(GENERATE_COHORT, jobRepository).start(generateCohortStep);
 
     generateJobBuilder.listener(new GenerationJobExecutionListener(sourceService, cohortDefinitionRepository, this.getTransactionTemplateRequiresNew(),
             this.getSourceJdbcTemplate(source)));

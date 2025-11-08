@@ -19,6 +19,7 @@ import org.ohdsi.webapi.versioning.dto.VersionDTO;
 import org.ohdsi.webapi.versioning.dto.VersionUpdateDTO;
 import org.ohdsi.webapi.versioning.service.VersionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -47,7 +48,7 @@ public class ReusableService extends AbstractDaoService implements HasTags<Integ
     public ReusableService(
             ReusableRepository reusableRepository,
             EntityManager entityManager,
-            ConversionService conversionService,
+            @Qualifier("conversionService") ConversionService conversionService,
             PermissionService permissionService,
             VersionService<ReusableVersion> versionService) {
         this.reusableRepository = reusableRepository;

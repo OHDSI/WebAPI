@@ -29,12 +29,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.job.SimpleJob;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.job.builder.SimpleJobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,6 +44,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.ForbiddenException;
@@ -92,10 +92,10 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     private JobService jobService;
 
     @Autowired
-    private JobBuilderFactory jobBuilders;
+    private JobRepository jobRepository;
 
     @Autowired
-    private StepBuilderFactory stepBuilderFactory;
+    private PlatformTransactionManager transactionManager;
 
     @Autowired
     private SourceService sourceService;
@@ -105,9 +105,6 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @Autowired
-    private JobRepository jobRepository;
 
     @Value("${cdm.result.cache.warming.enable}")
     private boolean cdmResultCacheWarmingEnable;
@@ -543,7 +540,7 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
     private SimpleJobBuilder createJob(String jobName, List<Step> steps) {
         final SimpleJobBuilder[] stepBuilder = {null};
         if (jobService.findJobByName(jobName, jobName) == null && !steps.isEmpty()) {
-            JobBuilder jobBuilder = jobBuilders.get(jobName);
+            JobBuilder jobBuilder = new JobBuilder(jobName, jobRepository);
 
             
             steps.forEach(step -> {
@@ -590,15 +587,15 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
         CDMResultsService instance = applicationContext.getBean(CDMResultsService.class);
         AchillesCacheTasklet achillesTasklet = new AchillesCacheTasklet(source, instance, cacheService,
                 queryRunner, objectMapper);
-        return stepBuilderFactory.get(jobStepName + " achilles")
-                .tasklet(achillesTasklet)
+        return new StepBuilder(jobStepName + " achilles", jobRepository)
+                .tasklet(achillesTasklet, transactionManager)
                 .build();
     }
 
     private Step getCountStep(Source source, String jobStepName) {
         CDMResultsCacheTasklet countTasklet = new CDMResultsCacheTasklet(source, cdmCacheService);
-        return stepBuilderFactory.get(jobStepName + " counts")
-                .tasklet(countTasklet)
+        return new StepBuilder(jobStepName + " counts", jobRepository)
+                .tasklet(countTasklet, transactionManager)
                 .build();
     }
 

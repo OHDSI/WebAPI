@@ -4,7 +4,6 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.subject.support.SubjectThreadState;
-import org.apache.shiro.util.LifecycleUtils;
 import org.apache.shiro.util.ThreadState;
 import org.apache.shiro.mgt.SecurityManager;
 import org.junit.AfterClass;
@@ -66,7 +65,11 @@ public abstract class AbstractShiro {
         doClearSubject();
         try {
             SecurityManager securityManager = getSecurityManager();
-            LifecycleUtils.destroy(securityManager);
+            // Shiro 2.x removed LifecycleUtils.destroy() and Destroyable interface
+            // Manual cleanup if needed
+            if (securityManager != null) {
+                // Shiro 2.x handles lifecycle internally
+            }
         } catch (UnavailableSecurityManagerException e) {
             //we don't care about this when cleaning up the test environment
             //(for example, maybe the subclass is a unit test and it didn't

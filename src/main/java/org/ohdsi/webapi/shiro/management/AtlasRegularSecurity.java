@@ -190,7 +190,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     @Qualifier("activeDirectoryProvider")
     private LdapProvider adLdapProvider;
 
-    @Autowired
+    @Autowired(required = false)
     @Qualifier("authDataSource")
     private DataSource jdbcDataSource;
 

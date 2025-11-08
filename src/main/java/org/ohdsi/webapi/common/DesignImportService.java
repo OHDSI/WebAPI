@@ -11,6 +11,7 @@ import org.ohdsi.webapi.shiro.Entities.UserEntity;
 import org.ohdsi.webapi.shiro.Entities.UserRepository;
 import org.ohdsi.webapi.shiro.management.Security;
 import org.ohdsi.webapi.util.NameUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -42,7 +43,7 @@ public class DesignImportService {
 
     public DesignImportService(Security security, UserRepository userRepository, CohortDefinitionRepository cohortRepository, 
                                CohortDefinitionDetailsRepository detailsRepository, ConceptSetService conceptSetService, 
-                               ConversionService conversionService, CohortDefinitionService cohortDefinitionService,
+                               @Qualifier("conversionService") ConversionService conversionService, CohortDefinitionService cohortDefinitionService,
                                @Nullable CacheManager cacheManager) {
         this.security = security;
         this.userRepository = userRepository;

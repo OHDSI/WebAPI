@@ -57,7 +57,7 @@ public class DataAccessConfig {
         return properties;
     }
       
-    @Bean
+    @Bean({"primaryDataSource", "dataSource"})
 		@DependsOn("defaultStringEncryptor")
     @Primary    
     public DataSource primaryDataSource() {
@@ -145,7 +145,7 @@ public class DataAccessConfig {
         return factory.getObject();
     }
 
-    @Bean
+    @Bean({"jpaTransactionManager", "transactionManager"})
     @Primary
     //This is needed so that JpaTransactionManager is used for autowiring, instead of DataSourceTransactionManager
     public PlatformTransactionManager jpaTransactionManager(EntityManagerFactory entityManagerFactory) {

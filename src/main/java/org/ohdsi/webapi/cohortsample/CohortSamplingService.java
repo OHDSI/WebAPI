@@ -10,12 +10,12 @@ import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
 import org.ohdsi.webapi.user.dto.UserDTO;
 import org.ohdsi.webapi.util.PreparedStatementRenderer;
-import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionCallback;
 
 import jakarta.ws.rs.BadRequestException;
@@ -44,19 +44,19 @@ import org.ohdsi.webapi.util.SourceUtils;
 @Component
 public class CohortSamplingService extends AbstractDaoService {
 	private final CohortSampleRepository sampleRepository;
-	private final JobBuilderFactory jobBuilders;
-	private final StepBuilderFactory stepBuilders;
+	private final JobRepository jobRepository;
+	private final PlatformTransactionManager transactionManager;
 	private final JobTemplate jobTemplate;
 
 	@Autowired
 	public CohortSamplingService(
 			CohortSampleRepository sampleRepository,
-			JobBuilderFactory jobBuilders,
-			StepBuilderFactory stepBuilders,
+			JobRepository jobRepository,
+			PlatformTransactionManager transactionManager,
 			JobTemplate jobTemplate) {
 		this.sampleRepository = sampleRepository;
-		this.jobBuilders = jobBuilders;
-		this.stepBuilders = stepBuilders;
+		this.jobRepository = jobRepository;
+		this.transactionManager = transactionManager;
 		this.jobTemplate = jobTemplate;
 	}
 
@@ -473,13 +473,13 @@ public class CohortSamplingService extends AbstractDaoService {
 	public void launchDeleteSamplesTasklet(int cohortDefinitionId) {
 		CleanupCohortSamplesTasklet tasklet = createDeleteSamplesTasklet();
 
-		tasklet.launch(jobBuilders, stepBuilders, jobTemplate, cohortDefinitionId);
+		tasklet.launch(jobRepository, transactionManager, jobTemplate, cohortDefinitionId);
 	}
 
 	public void launchDeleteSamplesTasklet(int cohortDefinitionId, int sourceId) {
 		CleanupCohortSamplesTasklet tasklet = createDeleteSamplesTasklet();
 
-		tasklet.launch(jobBuilders, stepBuilders, jobTemplate, cohortDefinitionId, sourceId);
+		tasklet.launch(jobRepository, transactionManager, jobTemplate, cohortDefinitionId, sourceId);
 	}
 
 	public CleanupCohortSamplesTasklet createDeleteSamplesTasklet() {

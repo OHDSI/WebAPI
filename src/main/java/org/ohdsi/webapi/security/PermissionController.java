@@ -7,6 +7,7 @@ import org.ohdsi.webapi.service.UserService;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.PermissionManager;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +43,7 @@ public class PermissionController {
     private final PermissionManager permissionManager;
     private final ConversionService conversionService;
 
-    public PermissionController(PermissionService permissionService, PermissionManager permissionManager, ConversionService conversionService) {
+    public PermissionController(PermissionService permissionService, PermissionManager permissionManager, @Qualifier("conversionService") ConversionService conversionService) {
 
         this.permissionService = permissionService;
         this.permissionManager = permissionManager;

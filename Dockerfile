@@ -1,4 +1,4 @@
-FROM maven:3.6-jdk-11 as builder
+FROM maven:3.9-eclipse-temurin-21 as builder
 
 WORKDIR /code
 
@@ -29,8 +29,8 @@ RUN mvn package ${MAVEN_PARAMS} \
     && jar -xf WebAPI.war \
     && rm WebAPI.war
 
-# OHDSI WebAPI and ATLAS web application running as a Spring Boot application with Java 8
-FROM index.docker.io/library/eclipse-temurin:8-jre
+# OHDSI WebAPI and ATLAS web application running as a Spring Boot application with Java 21
+FROM index.docker.io/library/eclipse-temurin:21-jre
 
 MAINTAINER Lee Evans - www.ltscomputingllc.com
 

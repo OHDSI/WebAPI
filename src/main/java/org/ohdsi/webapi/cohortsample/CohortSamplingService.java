@@ -447,12 +447,12 @@ public class CohortSamplingService extends AbstractDaoService {
 		String resultsSchema = source.getTableQualifier(SourceDaimon.DaimonType.Results);
 		String sql = new PreparedStatementRenderer(
 						source,
-						"/resources/cohortsample/sql/deleteSampleElementsById.sql",
-						"results_schema",
-						resultsSchema,
-						"cohortSampleId",
-						sampleId).getSql();
-		CohortSample sample = sampleRepository.findById(sampleId);
+					"/resources/cohortsample/sql/deleteSampleElementsById.sql",
+					"results_schema",
+					resultsSchema,
+					"cohortSampleId",
+					sampleId).getSql();
+		CohortSample sample = sampleRepository.findById(sampleId).orElse(null);
 		if (sample == null) {
 			throw new NotFoundException("Sample with ID " + sampleId + " does not exist");
 		}

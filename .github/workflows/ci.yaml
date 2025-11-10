@@ -20,6 +20,22 @@ jobs:
     env:
       MAVEN_PROFILE: webapi-postgresql
 
+    # PostgreSQL service for tests
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: ohdsi
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: mypass
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -44,6 +60,15 @@ jobs:
         run: mvn -B -DskipTests=true -DskipUnitTests=true -P${{ env.MAVEN_PROFILE }} package
 
       - name: Test
+        env:
+          # Use the PostgreSQL service
+          datasource.url: jdbc:postgresql://localhost:5432/ohdsi
+          datasource.username: postgres
+          datasource.password: mypass
+          flyway.datasource.url: jdbc:postgresql://localhost:5432/ohdsi
+          flyway.datasource.jdbcUrl: jdbc:postgresql://localhost:5432/ohdsi
+          flyway.datasource.username: postgres
+          flyway.datasource.password: mypass
         run: mvn -B -P${{ env.MAVEN_PROFILE }} test
 
   # Check that the docker image builds correctly

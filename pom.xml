@@ -458,6 +458,7 @@
             --add-opens java.base/java.util.function=ALL-UNNAMED
             --add-opens java.base/java.lang.reflect=ALL-UNNAMED
             --add-opens java.naming/com.sun.jndi.ldap=ALL-UNNAMED
+            --add-exports java.naming/com.sun.jndi.ldap=ALL-UNNAMED
           </argLine>
         </configuration>
       </plugin>

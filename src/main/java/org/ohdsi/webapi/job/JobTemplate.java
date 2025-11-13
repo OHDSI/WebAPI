@@ -33,11 +33,13 @@ public class JobTemplate {
     private final JobLauncher jobLauncher;
     private final JobRepository jobRepository;
     private final Security security;
+    private final PlatformTransactionManager transactionManager;
 
-    public JobTemplate(final JobLauncher jobLauncher, final JobRepository jobRepository, final Security security) {
+    public JobTemplate(final JobLauncher jobLauncher, final JobRepository jobRepository, final Security security, final PlatformTransactionManager transactionManager) {
         this.jobLauncher = jobLauncher;
         this.jobRepository = jobRepository;
         this.security = security;
+        this.transactionManager = transactionManager;
     }
 
     public JobExecutionResource launch(final Job job, JobParameters jobParameters) throws WebApplicationException {
@@ -71,9 +73,8 @@ public class JobTemplate {
                     .toJobParameters();
             
             // Spring Batch 5: Use JobBuilder and StepBuilder directly with JobRepository
-            // Note: PlatformTransactionManager needs to be injected if required
             final Step step = new StepBuilder(stepName, jobRepository)
-                    .tasklet(tasklet, null) // null transaction manager - Spring Boot will auto-configure
+                    .tasklet(tasklet, transactionManager)
                     .allowStartIfComplete(true)
                     .build();
                     

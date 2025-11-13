@@ -30,6 +30,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * Spring Batch 5.x configuration for Java 21 / Spring Boot 3.2
@@ -121,8 +122,9 @@ public class JobConfig {
     }
     
     @Bean
-    public JobTemplate jobTemplate(JobLauncher jobLauncher, JobRepository jobRepository, Security security) {
-        return new JobTemplate(jobLauncher, jobRepository, security);
+    public JobTemplate jobTemplate(JobLauncher jobLauncher, JobRepository jobRepository, Security security,
+                                   @Qualifier("batchTransactionManager") PlatformTransactionManager batchTransactionManager) {
+        return new JobTemplate(jobLauncher, jobRepository, security, batchTransactionManager);
     }
     
     @Bean

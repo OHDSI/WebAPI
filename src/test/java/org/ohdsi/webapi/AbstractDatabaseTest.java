@@ -9,6 +9,8 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,8 +42,10 @@ public abstract class AbstractDatabaseTest {
       try {
         // note for future reference: should probably either define a TestContext DataSource with these params
         // or make it so this proparty is only set once (during database initialization) since the below will run for each test class (but only be effective once)
-        System.setProperty("datasource.url", getDataSource().getConnection().getMetaData().getURL());
-        System.setProperty("flyway.datasource.url", System.getProperty("datasource.url"));
+        String jdbcUrl = getDataSource().getConnection().getMetaData().getURL();
+        System.setProperty("datasource.url", jdbcUrl);
+        System.setProperty("flyway.datasource.url", jdbcUrl);
+        System.setProperty("flyway.datasource.jdbcUrl", jdbcUrl);
       } catch (Exception ex) {
         throw new RuntimeException(ex);
       }
@@ -77,6 +81,18 @@ public abstract class AbstractDatabaseTest {
   protected static PostgresSingletonRule pg;
 
   protected static JdbcTemplate jdbcTemplate;
+
+  @DynamicPropertySource
+  public static void configureTestDatabase(DynamicPropertyRegistry registry) {
+    try {
+      String jdbcUrl = getDataSource().getConnection().getMetaData().getURL();
+      registry.add("datasource.url", () -> jdbcUrl);
+      registry.add("flyway.datasource.url", () -> jdbcUrl);
+      registry.add("flyway.datasource.jdbcUrl", () -> jdbcUrl);
+    } catch (Exception ex) {
+      throw new RuntimeException("Failed to configure test database URL", ex);
+    }
+  }
 
   protected static DataSource getDataSource() {
     return pg.getEmbeddedPostgres().getPostgresDatabase();

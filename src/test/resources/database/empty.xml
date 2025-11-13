@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <dataset>
-    <source/>
-    <source_daimon/>
-    <cohort_definition/>
     <cohort_analysis_gen_info/>
+    <cohort_definition_details/>
+    <cohort_definition/>
+    <source_daimon/>
+    <source/>
 </dataset>

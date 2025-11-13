@@ -75,8 +75,9 @@ public abstract class WebApiIT {
 		@TestConfiguration
 		public static class DbUnitConfiguration {
 			@Bean
-			DatabaseDataSourceConnectionFactoryBean dbUnitDatabaseConnection(DataSource primaryDataSource) {
-				DatabaseDataSourceConnectionFactoryBean dbUnitDatabaseConnection = new DatabaseDataSourceConnectionFactoryBean(primaryDataSource);
+			DatabaseDataSourceConnectionFactoryBean dbUnitDatabaseConnection() {
+				// Use the embedded PostgreSQL datasource from ITStarter
+				DatabaseDataSourceConnectionFactoryBean dbUnitDatabaseConnection = new DatabaseDataSourceConnectionFactoryBean(ITStarter.getDataSource());
 				dbUnitDatabaseConnection.setSchema("public");
 				return dbUnitDatabaseConnection;
 			}

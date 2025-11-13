@@ -53,11 +53,11 @@ public class CohortAnalysisServiceIT extends WebApiIT {
         task.setAnalysisIds(Collections.singletonList("0"));
         task.setCohortDefinitionIds(Collections.singletonList("1"));
         task.setSourceKey(SOURCE_KEY);
-        
+
         //Action
         final ResponseEntity<JobExecutionResource> entity = getRestTemplate().postForEntity(this.endpointCohortAnalysis,
                 task, JobExecutionResource.class);
-        
+
         //Assert
         assertOK(entity);
     }

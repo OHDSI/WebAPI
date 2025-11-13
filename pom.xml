@@ -625,13 +625,6 @@
       <version>4.3.0</version>
     </dependency>
 
-    <!-- Apache Tika (for BatchStatementExecutorWithProgress) -->
-    <dependency>
-      <groupId>org.apache.tika</groupId>
-      <artifactId>tika-core</artifactId>
-      <version>1.28.5</version>
-    </dependency>
-
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>

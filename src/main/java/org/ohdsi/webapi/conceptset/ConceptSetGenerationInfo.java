@@ -15,7 +15,6 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import org.hibernate.annotations.Type;
 import org.ohdsi.webapi.GenerationStatus;
 
 /**
@@ -64,7 +63,7 @@ public class ConceptSetGenerationInfo implements Serializable {
     private boolean isCanceled;
 		
 		@Lob
-		@JdbcTypeCode(SqlTypes.VARCHAR) // TODO: Custom type "org.hibernate.type.TextType" needs Hibernate 6 migration  
+		@JdbcTypeCode(SqlTypes.VARCHAR)
 		private String params;
 		
 

@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Objects;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -38,7 +39,6 @@ import com.google.common.collect.ImmutableList;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Where;
 import org.ohdsi.webapi.model.CommonEntity;
 import org.ohdsi.webapi.source.SourceDaimon.DaimonType;
@@ -89,11 +89,11 @@ public class Source extends CommonEntity<Integer> implements Serializable {
   private String sourceKey;
 
   @Column
-  @JdbcTypeCode(SqlTypes.VARCHAR) // TODO: Custom type "encryptedString" needs Hibernate 6 migration
+  @Convert(converter = EncryptedStringConverter.class)
   private String username;
 
   @Column
-  @JdbcTypeCode(SqlTypes.VARCHAR) // TODO: Custom type "encryptedString" needs Hibernate 6 migration
+  @Convert(converter = EncryptedStringConverter.class)
   private String password;
 
   @Column(name = "deleted_date")

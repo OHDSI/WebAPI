@@ -1,6 +1,5 @@
 package org.ohdsi.webapi.common;
 
-import org.hibernate.annotations.Type;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 
@@ -16,7 +15,7 @@ import java.util.Objects;
 public class CommonConceptSetEntity {
   @Lob
   @Column(name = "expression")
-  @JdbcTypeCode(SqlTypes.VARCHAR) // TODO: Custom type "org.hibernate.type.TextType" needs Hibernate 6 migration
+  @JdbcTypeCode(SqlTypes.VARCHAR)
   private String rawExpression;
 
   public String getRawExpression() {

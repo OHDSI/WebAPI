@@ -27,7 +27,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 
 @DatabaseSetup("/database/cohort.xml")
-@DatabaseTearDown(value = "/database/empty.xml", type = DatabaseOperation.DELETE_ALL)
 public class CohortAnalysisServiceIT extends WebApiIT {
 
     @Value("${cohortanalysis.endpoint}")

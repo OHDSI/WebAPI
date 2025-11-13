@@ -27,9 +27,18 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-// TODO: Jersey 3 migration - ValueFactoryProvider API changed significantly
-// This needs complete rewrite using new Jersey 3 injection APIs
+/**
+ * Jersey 3 value provider for Spring Data Pageable injection.
+ *
+ * Extracts pagination parameters from query strings:
+ * - page: Page number (0-indexed, default: 0)
+ * - size: Page size (default: 10)
+ * - sort: Sort specification in format "property,direction" (e.g., "name,asc")
+ */
 public class PageableValueFactoryProvider implements ValueParamProvider {
+
+    private static final int DEFAULT_PAGE = 0;
+    private static final int DEFAULT_SIZE = 10;
 
     private final ServiceLocator locator;
 
@@ -42,12 +51,55 @@ public class PageableValueFactoryProvider implements ValueParamProvider {
     public Function<org.glassfish.jersey.server.ContainerRequest, ?> getValueProvider(Parameter parameter) {
         if (parameter.getRawType() == Pageable.class
                 && parameter.isAnnotationPresent(Pagination.class)) {
-            return (request) -> {
-                // Simplified implementation - needs proper query param extraction
-                return PageRequest.of(0, 10);
-            };
+            return this::extractPageable;
         }
         return null;
+    }
+
+    private Pageable extractPageable(org.glassfish.jersey.server.ContainerRequest request) {
+        int page = getQueryParamAsInt(request, "page", DEFAULT_PAGE);
+        int size = getQueryParamAsInt(request, "size", DEFAULT_SIZE);
+
+        List<String> sortParams = request.getUriInfo().getQueryParameters().get("sort");
+        Sort sort = parseSort(sortParams);
+
+        return PageRequest.of(page, size, sort);
+    }
+
+    private int getQueryParamAsInt(org.glassfish.jersey.server.ContainerRequest request, String param, int defaultValue) {
+        String value = request.getUriInfo().getQueryParameters().getFirst(param);
+        if (value != null) {
+            try {
+                return Integer.parseInt(value);
+            } catch (NumberFormatException e) {
+                return defaultValue;
+            }
+        }
+        return defaultValue;
+    }
+
+    private Sort parseSort(List<String> sortParams) {
+        if (sortParams == null || sortParams.isEmpty()) {
+            return Sort.unsorted();
+        }
+
+        List<Sort.Order> orders = new ArrayList<>();
+        for (String sortParam : sortParams) {
+            String[] parts = sortParam.split(",");
+            String property = parts[0].trim();
+            Sort.Direction direction = Sort.Direction.ASC;
+
+            if (parts.length > 1) {
+                String directionStr = parts[1].trim().toUpperCase();
+                if ("DESC".equals(directionStr)) {
+                    direction = Sort.Direction.DESC;
+                }
+            }
+
+            orders.add(new Sort.Order(direction, property));
+        }
+
+        return Sort.by(orders);
     }
 
     @Override

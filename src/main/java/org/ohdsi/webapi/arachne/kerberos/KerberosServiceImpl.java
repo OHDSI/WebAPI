@@ -140,8 +140,15 @@ public class KerberosServiceImpl implements KerberosService {
                             .statement("echo " + dataSource.getKrbPassword() + " | " + kinitPath + KINIT_COMMAND + " " +
                                     dataSource.getKrbUser() + "@" + dataSource.getKrbRealm());
                 } else if (SystemUtils.IS_OS_WINDOWS) {
-                    //todo: implement https://github.com/Waffle/waffle solution for this case
-                    throw new RuntimeException("PASSWORD authentication is forbidden for Windows, use KEYTAB instead");
+                    // Windows: Use Java JAAS Kerberos authentication instead of kinit
+                    // This avoids exposing passwords in process command lines
+                    try {
+                        authenticateWithJaas(dataSource.getKrbUser(), dataSource.getKrbPassword(),
+                                            dataSource.getKrbRealm());
+                        log.info("Successfully authenticated using JAAS on Windows");
+                    } catch (Exception e) {
+                        throw new RuntimeException("Failed to authenticate with Kerberos on Windows: " + e.getMessage(), e);
+                    }
                 }
                 break;
             case KEYTAB:
@@ -297,5 +304,59 @@ public class KerberosServiceImpl implements KerberosService {
             process.destroy();
         } catch (IOException | InterruptedException ignored) {
         }
+    }
+
+    /**
+     * Authenticates with Kerberos using Java JAAS on Windows.
+     * This method uses Java's built-in Kerberos support instead of external kinit command,
+     * which is more secure as it doesn't expose passwords in process command lines.
+     *
+     * @param username Kerberos principal name (without realm)
+     * @param password User password
+     * @param realm Kerberos realm
+     * @throws Exception if authentication fails
+     */
+    private void authenticateWithJaas(String username, String password, String realm) throws Exception {
+        // Create a LoginContext with Kerberos configuration
+        String principal = username + "@" + realm;
+
+        // Configure JAAS for Kerberos authentication
+        javax.security.auth.login.Configuration config = new javax.security.auth.login.Configuration() {
+            @Override
+            public javax.security.auth.login.AppConfigurationEntry[] getAppConfigurationEntry(String name) {
+                Map<String, String> options = new HashMap<>();
+                options.put("useTicketCache", "true");
+                options.put("doNotPrompt", "false");
+                options.put("principal", principal);
+                options.put("storeKey", "true");
+                options.put("refreshKrb5Config", "true");
+
+                return new javax.security.auth.login.AppConfigurationEntry[]{
+                    new javax.security.auth.login.AppConfigurationEntry(
+                        "com.sun.security.auth.module.Krb5LoginModule",
+                        javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag.REQUIRED,
+                        options
+                    )
+                };
+            }
+        };
+
+        // Create callback handler for password
+        javax.security.auth.callback.CallbackHandler callbackHandler = callbacks -> {
+            for (javax.security.auth.callback.Callback callback : callbacks) {
+                if (callback instanceof javax.security.auth.callback.NameCallback) {
+                    ((javax.security.auth.callback.NameCallback) callback).setName(principal);
+                } else if (callback instanceof javax.security.auth.callback.PasswordCallback) {
+                    ((javax.security.auth.callback.PasswordCallback) callback).setPassword(password.toCharArray());
+                }
+            }
+        };
+
+        // Perform login
+        javax.security.auth.login.LoginContext loginContext =
+            new javax.security.auth.login.LoginContext("KerberosAuth", null, callbackHandler, config);
+        loginContext.login();
+
+        log.info("Successfully authenticated {} with Kerberos realm {}", username, realm);
     }
 }

@@ -20,7 +20,6 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.hibernate.annotations.Type;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 
@@ -43,7 +42,7 @@ public class CohortDefinitionDetails implements Serializable {
   private CohortDefinition definition;
 
   @Lob
-  @JdbcTypeCode(SqlTypes.VARCHAR) // TODO: Custom type "org.hibernate.type.TextType" needs Hibernate 6 migration
+  @JdbcTypeCode(SqlTypes.VARCHAR)
   private String expression;
 
   @Column(name = "hash_code")

@@ -21,7 +21,6 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import org.hibernate.annotations.Type;
 
 /**
  *
@@ -36,9 +35,9 @@ public class InclusionRule {
   @Column(name="description")
   private String description;
   
-  @Column(name="expression")  
+  @Column(name="expression")
   @Lob
-  @JdbcTypeCode(SqlTypes.VARCHAR) // TODO: Custom type "org.hibernate.type.TextType" needs Hibernate 6 migration  
+  @JdbcTypeCode(SqlTypes.VARCHAR)
   private String expression;
   public String getName() {
     return name;

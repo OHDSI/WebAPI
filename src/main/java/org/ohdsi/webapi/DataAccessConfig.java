@@ -4,7 +4,6 @@ import com.cosium.spring.data.jpa.entity.graph.repository.support.EntityGraphJpa
 import org.ohdsi.webapi.arachne.encryption.EncryptorUtils;
 import org.ohdsi.webapi.arachne.encryption.NotEncrypted;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
-import org.jasypt.hibernate4.encryptor.HibernatePBEEncryptorRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -122,9 +121,8 @@ public class DataAccessConfig {
                 EncryptorUtils.buildStringEncryptor(env) :
                 new NotEncrypted();
 
-        HibernatePBEEncryptorRegistry
-                .getInstance()
-                .registerPBEStringEncryptor("defaultStringEncryptor", stringEncryptor);
+        // Note: HibernatePBEEncryptorRegistry registration removed - no longer needed
+        // with Hibernate 6 AttributeConverter approach (see EncryptedStringConverter)
 
         return stringEncryptor;
     }

@@ -494,6 +494,7 @@
         </configuration>
         <executions>
           <execution>
+            <id>integration-test</id>
             <phase>test</phase>
             <goals>
               <goal>integration-test</goal>
@@ -503,6 +504,13 @@
                 <include>**/*IT.java</include>
               </includes>
             </configuration>
+          </execution>
+          <execution>
+            <id>verify</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>verify</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>
@@ -1079,8 +1087,8 @@
     </dependency>
     <dependency>
       <groupId>org.jasypt</groupId>
-      <artifactId>jasypt-hibernate4</artifactId>
-      <version>1.9.2</version>
+      <artifactId>jasypt</artifactId>
+      <version>1.9.3</version>
     </dependency>
     <dependency>
       <groupId>org.glassfish.jersey.media</groupId>

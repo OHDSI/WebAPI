@@ -44,8 +44,7 @@ public abstract class AbstractDatabaseTest {
         // or make it so this proparty is only set once (during database initialization) since the below will run for each test class (but only be effective once)
         String jdbcUrl = getDataSource().getConnection().getMetaData().getURL();
         System.setProperty("datasource.url", jdbcUrl);
-        System.setProperty("flyway.datasource.url", jdbcUrl);
-        System.setProperty("flyway.datasource.jdbcUrl", jdbcUrl);
+        System.setProperty("spring.flyway.url", jdbcUrl);
       } catch (Exception ex) {
         throw new RuntimeException(ex);
       }
@@ -87,8 +86,7 @@ public abstract class AbstractDatabaseTest {
     try {
       String jdbcUrl = getDataSource().getConnection().getMetaData().getURL();
       registry.add("datasource.url", () -> jdbcUrl);
-      registry.add("flyway.datasource.url", () -> jdbcUrl);
-      registry.add("flyway.datasource.jdbcUrl", () -> jdbcUrl);
+      registry.add("spring.flyway.url", () -> jdbcUrl);
     } catch (Exception ex) {
       throw new RuntimeException("Failed to configure test database URL", ex);
     }

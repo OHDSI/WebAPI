@@ -1,39 +1,42 @@
 package org.ohdsi.webapi;
 
-import org.ohdsi.webapi.arachne.commons.config.flyway.ApplicationContextAwareSpringJdbcMigrationResolver;
 import javax.sql.DataSource;
-import org.flywaydb.core.Flyway;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.flyway.FlywayDataSource;
-import org.springframework.boot.autoconfigure.flyway.FlywayMigrationInitializer;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import com.zaxxer.hikari.HikariDataSource;
 
 
 /**
- * Flyway configuration for database migrations
+ * Flyway configuration for database migrations (Flyway 11.7 / Spring Boot 3.x)
+ *
+ * Spring Boot auto-configuration handles Flyway initialization.
+ * Java-based migrations marked with @Component are automatically discovered
+ * and their dependencies are autowired by Spring.
  */
 @Configuration
-@ConditionalOnProperty(prefix = "flyway", name = "enabled", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "spring.flyway", name = "enabled", matchIfMissing = true)
 public class FlywayConfig {
- 
-    @Value("${flyway.datasource.url:#{null}}")
+
+    @Value("${spring.flyway.url:#{null}}")
     private String flywayUrl;
-    
-    @Value("${flyway.datasource.username:#{null}}")
+
+    @Value("${spring.flyway.user:#{null}}")
     private String flywayUsername;
-    
-    @Value("${flyway.datasource.password:#{null}}")
+
+    @Value("${spring.flyway.password:#{null}}")
     private String flywayPassword;
-    
-    @Value("${flyway.datasource.driverClassName:org.postgresql.Driver}")
+
+    @Value("${spring.flyway.driver-class-name:org.postgresql.Driver}")
     private String flywayDriverClassName;
 
+    /**
+     * DataSource for Flyway migrations.
+     * Can be different from the main application DataSource.
+     */
     @Bean
     @FlywayDataSource
     public DataSource secondaryDataSource() {
@@ -49,23 +52,6 @@ public class FlywayConfig {
         }
         dataSource.setDriverClassName(flywayDriverClassName);
         return dataSource;
-    }
-
-    @Bean(initMethod = "migrate", name = "flyway")
-    @ConfigurationProperties(prefix="flyway")
-    public Flyway flyway() {
-      Flyway flyway = new Flyway();
-      flyway.setDataSource(secondaryDataSource());
-      return flyway;
-    }
-
-    @Bean
-    public FlywayMigrationInitializer flywayInitializer(ApplicationContext context, Flyway flyway) {
-
-        ApplicationContextAwareSpringJdbcMigrationResolver contextAwareResolver = new ApplicationContextAwareSpringJdbcMigrationResolver(context);
-        flyway.setResolvers(contextAwareResolver);
-
-        return new FlywayMigrationInitializer(flyway, null);
     }
 
 }

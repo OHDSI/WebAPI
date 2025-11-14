@@ -12,7 +12,7 @@
     <build.number>${BUILD_NUMBER}</build.number>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- Spring Boot manages spring.version as well -->
-    <spring.boot.version>3.2.11</spring.boot.version>
+    <spring.boot.version>3.5.6</spring.boot.version>
     <log4j2.version>2.24.3</log4j2.version>
     <flyway.version>4.2.0</flyway.version>
     <waffle.version>2.2.1</waffle.version>

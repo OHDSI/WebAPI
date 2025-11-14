@@ -1138,7 +1138,7 @@
     <dependency>
       <groupId>com.cosium.spring.data</groupId>
       <artifactId>spring-data-jpa-entity-graph</artifactId>
-      <version>3.2.0</version>
+      <version>3.5.0</version>
     </dependency>
     <dependency>
       <groupId>org.pac4j</groupId>
@@ -1159,7 +1159,7 @@
     <dependency>
       <groupId>org.freemarker</groupId>
       <artifactId>freemarker</artifactId>
-      <version>2.3.30</version>
+      <!-- Version managed by Spring Boot 3.5.6 BOM (2.3.33 with Jakarta EE 10 support) -->
     </dependency>
     
     <dependency>

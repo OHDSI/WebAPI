@@ -29,14 +29,16 @@ import org.springframework.stereotype.Service;
 
 import static org.ohdsi.webapi.Constants.Params.GENERATION_ID;
 
-@Component
+/**
+ * Flyway Java migration to migrate pathway analysis results.
+ *
+ * Note: NOT a @Component - Flyway discovers this via classpath scanning.
+ * Dependencies are retrieved from ApplicationContext to avoid circular dependency issues.
+ */
 public class V2_8_0_20190410103000__migratePathwayResults extends ApplicationContextAwareSpringMigration {
 
 	private final static String SQL_PATH = "/db/migration/java/V2_8_0_20190410103000__migratePathwayResults/";
 	private static final Logger log = LoggerFactory.getLogger(V2_8_0_20190410103000__migratePathwayResults.class);
-	private final SourceRepository sourceRepository;
-	private final MigrationDAO migrationDAO;
-	private final Environment env;
 
 	@Service
 	public static class MigrationDAO extends AbstractDaoService {
@@ -70,19 +72,14 @@ public class V2_8_0_20190410103000__migratePathwayResults extends ApplicationCon
 		public String name;
 	}
 
-	@Autowired
-	public V2_8_0_20190410103000__migratePathwayResults(final SourceRepository sourceRepository,
-					final MigrationDAO migrationDAO,
-					final Environment env) {
-		this.sourceRepository = sourceRepository;
-		this.migrationDAO = migrationDAO;
-		this.env = env;
-	}
-
 	@Override
 	public void migrate() throws JsonProcessingException {
+		// Get beans from Spring ApplicationContext (set by Flyway before migration runs)
+		SourceRepository sourceRepository = applicationContext.getBean(SourceRepository.class);
+		MigrationDAO migrationDAO = applicationContext.getBean(MigrationDAO.class);
+		Environment env = applicationContext.getBean(Environment.class);
 
-		String webAPISchema = this.env.getProperty("spring.jpa.properties.hibernate.default_schema");
+		String webAPISchema = env.getProperty("spring.jpa.properties.hibernate.default_schema");
 
 		sourceRepository.findAll().forEach(source -> {
 			try {
@@ -118,7 +115,7 @@ public class V2_8_0_20190410103000__migratePathwayResults extends ApplicationCon
 				params = new String[]{"webapi_schema", "source_id"};
 				values = new String[]{webAPISchema, Integer.toString(source.getSourceId())};
 				String generatedDesignSql = SqlRender.renderSql(ResourceHelper.GetResourceAsString(SQL_PATH + "getPathwayGeneratedDesigns.sql"), params, values);
-				translatedSql = SqlTranslate.translateSingleStatementSql(generatedDesignSql, this.migrationDAO.getDialect());
+				translatedSql = SqlTranslate.translateSingleStatementSql(generatedDesignSql, migrationDAO.getDialect());
 
 				Map<Long, List<EventCohort>> designEventCohorts = migrationDAO.getJdbcTemplate().query(translatedSql, rs -> {
 					Map<Long, List<EventCohort>> result = new HashMap<>();
@@ -173,7 +170,7 @@ public class V2_8_0_20190410103000__migratePathwayResults extends ApplicationCon
 					return result;
 				});
 
-				this.migrationDAO.savePathwayCodes(generatedComboNames, source, jdbcTemplate);
+				migrationDAO.savePathwayCodes(generatedComboNames, source, jdbcTemplate);
 
 			}
 			catch(Exception e) {

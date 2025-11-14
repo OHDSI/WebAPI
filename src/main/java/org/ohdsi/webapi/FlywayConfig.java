@@ -5,6 +5,7 @@ import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.flyway.FlywayDataSource;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import com.zaxxer.hikari.HikariDataSource;
@@ -14,12 +15,27 @@ import com.zaxxer.hikari.HikariDataSource;
  * Flyway configuration for database migrations (Flyway 11.7 / Spring Boot 3.x)
  *
  * Spring Boot auto-configuration handles Flyway initialization.
- * Java-based migrations marked with @Component are automatically discovered
- * and their dependencies are autowired by Spring.
+ * Java-based migrations can access Spring beans via the static ApplicationContextHolder.
  */
 @Configuration
 @ConditionalOnProperty(prefix = "spring.flyway", name = "enabled", matchIfMissing = true)
 public class FlywayConfig {
+
+    /**
+     * Static holder for ApplicationContext to be accessed by Flyway migrations.
+     * Set during bean initialization to avoid circular dependencies.
+     */
+    public static class ApplicationContextHolder {
+        private static ApplicationContext context;
+
+        public static void setApplicationContext(ApplicationContext ctx) {
+            context = ctx;
+        }
+
+        public static ApplicationContext getApplicationContext() {
+            return context;
+        }
+    }
 
     @Value("${spring.flyway.url:#{null}}")
     private String flywayUrl;
@@ -52,6 +68,15 @@ public class FlywayConfig {
         }
         dataSource.setDriverClassName(flywayDriverClassName);
         return dataSource;
+    }
+
+    /**
+     * Store ApplicationContext in static holder for Flyway migrations to access.
+     */
+    @Bean
+    public ApplicationContextHolder applicationContextHolder(ApplicationContext applicationContext) {
+        ApplicationContextHolder.setApplicationContext(applicationContext);
+        return new ApplicationContextHolder();
     }
 
 }

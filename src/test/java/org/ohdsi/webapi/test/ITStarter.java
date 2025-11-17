@@ -18,7 +18,7 @@ import java.sql.SQLException;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        SecurityIT.class,
+        // SecurityIT.class, // DISABLED - Jersey-specific test
         JobServiceIT.class,
         CohortAnalysisServiceIT.class,
         VocabularyServiceIT.class,

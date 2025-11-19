@@ -23,10 +23,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
-import org.eclipse.collections.impl.map.mutable.ConcurrentHashMapUnsafe;
 import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
 import org.ohdsi.webapi.cdmresults.DescendantRecordCount;
 
@@ -42,7 +42,7 @@ public class CDMResultsCache {
     //BoundedConcurrentHashMap is hibernate implementation of the LRU(Least recently used) cache map. It supports concurrency out of the box, and does not block get operation.
     //I set 1,000,000 for capacity, this is a significant amount, but at the same time it should be only 20-25mb for 8 digital ids
     private Set<Integer> requestedIdsThatDoesNotHaveValueInStorage  = Collections.newSetFromMap(new BoundedConcurrentHashMap<>(1_000_000));
-    private Map<Integer, DescendantRecordCount> cachedValues = new ConcurrentHashMapUnsafe<>();
+    private Map<Integer, DescendantRecordCount> cachedValues = new ConcurrentHashMap<>();
 
     private boolean warm;
 

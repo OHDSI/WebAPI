@@ -1,7 +1,6 @@
 package org.ohdsi.webapi.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.eclipse.collections.impl.block.factory.Comparators;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 
 import java.util.Comparator;
@@ -35,7 +34,7 @@ public class Role implements Comparable<Role> {
 
   @Override
   public int compareTo(Role o) {
-    Comparator c = Comparators.naturalOrder();
+    Comparator c = Comparator.naturalOrder();
     if (this.id == null && o.id == null)
       return c.compare(this.role, o.role);
     else

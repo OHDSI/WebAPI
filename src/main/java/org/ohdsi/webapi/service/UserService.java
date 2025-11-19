@@ -2,7 +2,6 @@ package org.ohdsi.webapi.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.odysseusinc.logging.event.*;
-import org.eclipse.collections.impl.block.factory.Comparators;
 import org.ohdsi.webapi.shiro.Entities.PermissionEntity;
 import org.ohdsi.webapi.shiro.Entities.RoleEntity;
 import org.ohdsi.webapi.shiro.Entities.UserEntity;
@@ -63,7 +62,7 @@ public class UserService {
 
     @Override
     public int compareTo(User o) {
-      Comparator c = Comparators.naturalOrder();
+      Comparator c = Comparator.naturalOrder();
       if (this.id == null && o.id == null)
         return c.compare(this.login, o.login);
       else
@@ -86,7 +85,7 @@ public class UserService {
 
     @Override
     public int compareTo(Permission o) {
-      Comparator c = Comparators.naturalOrder();
+      Comparator c = Comparator.naturalOrder();
       if (this.id == null && o.id == null)
         return c.compare(this.permission, o.permission);
       else

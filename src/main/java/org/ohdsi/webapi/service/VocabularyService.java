@@ -11,6 +11,7 @@ import com.google.common.collect.Maps;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.cache.CacheManager;
@@ -131,6 +132,10 @@ public class VocabularyService extends AbstractDaoService {
 	
 	private static Hashtable<String, VocabularyInfo> vocabularyInfoCache = null;
   public static final String DEFAULT_SEARCH_ROWS = "20000";
+
+  // Feature: 001-concept-search-optimization
+  // Cache pg_trgm extension availability per source to avoid repeated checks
+  private final Map<String, Boolean> pgTrgmAvailabilityCache = new ConcurrentHashMap<>();
 
   @Autowired
   private SourceService sourceService;
@@ -513,18 +518,57 @@ public class VocabularyService extends AbstractDaoService {
     return getSourceJdbcTemplate(source).query(psr.getSql(), psr.getSetter(), rowMapper);
   }
 
+  /**
+   * Check if pg_trgm extension is available for the given source.
+   * Results are cached to avoid repeated database queries.
+   *
+   * @param source The data source to check
+   * @return true if pg_trgm extension is installed, false otherwise
+   */
+  private boolean isPgTrgmAvailable(Source source) {
+    String sourceKey = source.getSourceKey();
+
+    // Check cache first
+    return pgTrgmAvailabilityCache.computeIfAbsent(sourceKey, key -> {
+      try {
+        // Query pg_extension table to check if pg_trgm is installed
+        String checkSql = "SELECT COUNT(*) FROM pg_extension WHERE extname = 'pg_trgm'";
+        Integer count = getSourceJdbcTemplate(source).queryForObject(checkSql, Integer.class);
+        boolean available = (count != null && count > 0);
+
+        if (available) {
+          log.info("pg_trgm extension available for source: {}", sourceKey);
+        } else {
+          log.warn("pg_trgm extension NOT available for source: {}. Falling back to LIKE-based search. " +
+                   "Install with: CREATE EXTENSION IF NOT EXISTS pg_trgm;", sourceKey);
+        }
+
+        return available;
+      } catch (Exception e) {
+        // If query fails (e.g., not PostgreSQL, insufficient permissions), assume not available
+        log.debug("Could not check pg_trgm availability for source: {}. Assuming not available. Error: {}",
+                  sourceKey, e.getMessage());
+        return false;
+      }
+    });
+  }
+
   protected PreparedStatementRenderer prepareExecuteSearch(ConceptSearch search, Source source) {
     // escape for bracket
     search.query = search.query.replace("[", "[[]");
 
     // Feature: 001-concept-search-optimization
-    // Detect PostgreSQL dialect for trigram-based search optimization
+    // Use PostgreSQL trigram search if:
+    // 1. Dialect is PostgreSQL AND
+    // 2. pg_trgm extension is installed
+    // Note: GIN indexes are optional (improve performance but not required)
     boolean isPostgreSQL = "postgresql".equalsIgnoreCase(source.getSourceDialect());
+    boolean useTrigram = isPostgreSQL && isPgTrgmAvailable(source);
 
     String resourcePath;
     if (search.isLexical) {
       resourcePath = "/resources/vocabulary/sql/searchLexical.sql";
-    } else if (isPostgreSQL) {
+    } else if (useTrigram) {
       resourcePath = "/resources/vocabulary/sql/searchPostgres.sql";
     } else {
       resourcePath = "/resources/vocabulary/sql/search.sql";
@@ -643,9 +687,10 @@ public class VocabularyService extends AbstractDaoService {
      }
     } else {
       if (!search.query.isEmpty()) {
-        if (isPostgreSQL) {
+        if (useTrigram) {
           // Feature: 001-concept-search-optimization
           // PostgreSQL trigram-based fuzzy search
+          // Note: Works with or without GIN indexes (indexes improve performance)
 
           // Calculate adaptive similarity threshold (0.6 for 1-2 chars, 0.3 for longer queries)
           double similarityThreshold = (search.query.length() <= 2) ? 0.6 : 0.3;
@@ -655,7 +700,8 @@ public class VocabularyService extends AbstractDaoService {
             "GREATEST(similarity(lower(concept_name), '@query'), similarity(lower(concept_code), '@query'))"
           );
 
-          // Trigram similarity filter (uses GIN indexes)
+          // Trigram similarity filter
+          // Performance: Fast with GIN indexes, slower without (sequential scan)
           String queryFilter = String.format(
             "(similarity(lower(concept_name), '@query') > %s OR similarity(lower(concept_code), '@query') > %s)",
             similarityThreshold, similarityThreshold
@@ -677,7 +723,7 @@ public class VocabularyService extends AbstractDaoService {
           variableNameList.add("query");
           variableValueList.add(search.query.toLowerCase());
         } else {
-          // Non-PostgreSQL: Use traditional LIKE-based search
+          // Non-PostgreSQL or pg_trgm not available: Use traditional LIKE-based search
           String queryFilter = "LOWER(CONCEPT_NAME) LIKE '%@query%' or LOWER(CONCEPT_CODE) LIKE '%@query%'";
           if (StringUtils.isNumeric(search.query)) {
             queryFilter += " or CONCEPT_ID = CAST(@query as int)";

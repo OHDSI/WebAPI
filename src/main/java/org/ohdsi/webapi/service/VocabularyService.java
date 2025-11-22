@@ -517,7 +517,18 @@ public class VocabularyService extends AbstractDaoService {
     // escape for bracket
     search.query = search.query.replace("[", "[[]");
 
-    String resourcePath = search.isLexical ? "/resources/vocabulary/sql/searchLexical.sql" : "/resources/vocabulary/sql/search.sql";
+    // Feature: 001-concept-search-optimization
+    // Detect PostgreSQL dialect for trigram-based search optimization
+    boolean isPostgreSQL = "postgresql".equalsIgnoreCase(source.getSourceDialect());
+
+    String resourcePath;
+    if (search.isLexical) {
+      resourcePath = "/resources/vocabulary/sql/searchLexical.sql";
+    } else if (isPostgreSQL) {
+      resourcePath = "/resources/vocabulary/sql/searchPostgres.sql";
+    } else {
+      resourcePath = "/resources/vocabulary/sql/search.sql";
+    }
     String searchSql = ResourceHelper.GetResourceAsString(resourcePath);
     String tqName = "CDM_schema";
     String tqValue = source.getTableQualifier(SourceDaimon.DaimonType.Vocabulary);
@@ -632,13 +643,49 @@ public class VocabularyService extends AbstractDaoService {
      }
     } else {
       if (!search.query.isEmpty()) {
-        String queryFilter = "LOWER(CONCEPT_NAME) LIKE '%@query%' or LOWER(CONCEPT_CODE) LIKE '%@query%'";
-        if (StringUtils.isNumeric(search.query)) {
-          queryFilter += " or CONCEPT_ID = CAST(@query as int)";
+        if (isPostgreSQL) {
+          // Feature: 001-concept-search-optimization
+          // PostgreSQL trigram-based fuzzy search
+
+          // Calculate adaptive similarity threshold (0.6 for 1-2 chars, 0.3 for longer queries)
+          double similarityThreshold = (search.query.length() <= 2) ? 0.6 : 0.3;
+
+          // Build similarity expression for concept_name and concept_code
+          String similarityExpr = String.format(
+            "GREATEST(similarity(lower(concept_name), '@query'), similarity(lower(concept_code), '@query'))"
+          );
+
+          // Trigram similarity filter (uses GIN indexes)
+          String queryFilter = String.format(
+            "(similarity(lower(concept_name), '@query') > %s OR similarity(lower(concept_code), '@query') > %s)",
+            similarityThreshold, similarityThreshold
+          );
+
+          // Add numeric ID fallback for exact numeric queries
+          if (StringUtils.isNumeric(search.query)) {
+            queryFilter += " OR CONCEPT_ID = CAST(@query as int)";
+          }
+
+          filters += " AND (" + queryFilter + ")";
+
+          // Add similarity expression and threshold as SQL template parameters
+          searchNamesList.add("similarity_expression");
+          replacementNamesList.add(similarityExpr);
+          searchNamesList.add("similarity_threshold");
+          replacementNamesList.add(String.valueOf(similarityThreshold));
+
+          variableNameList.add("query");
+          variableValueList.add(search.query.toLowerCase());
+        } else {
+          // Non-PostgreSQL: Use traditional LIKE-based search
+          String queryFilter = "LOWER(CONCEPT_NAME) LIKE '%@query%' or LOWER(CONCEPT_CODE) LIKE '%@query%'";
+          if (StringUtils.isNumeric(search.query)) {
+            queryFilter += " or CONCEPT_ID = CAST(@query as int)";
+          }
+          filters += " AND (" + queryFilter + ")";
+          variableNameList.add("query");
+          variableValueList.add(search.query.toLowerCase());
         }
-        filters += " AND (" + queryFilter + ")";
-        variableNameList.add("query");
-        variableValueList.add(search.query.toLowerCase());
       }
     }
     searchSql = StringUtils.replace(searchSql, "@filters", filters);

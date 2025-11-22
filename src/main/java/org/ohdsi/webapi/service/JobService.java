@@ -29,13 +29,6 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.MediaType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -51,7 +44,6 @@ import java.util.function.Predicate;
  * 
  * @summary Jobs
  */
-@Path("/job/")
 @Component
 public class JobService extends AbstractDaoService {
 
@@ -80,10 +72,7 @@ public class JobService extends AbstractDaoService {
    * @param jobId The job ID
    * @return The job information
    */
-  @GET
-  @Path("{jobId}")
-  @Produces(MediaType.APPLICATION_JSON)
-  public JobInstanceResource findJob(@PathParam("jobId") final Long jobId) {
+  public JobInstanceResource findJob(final Long jobId) {
     final JobInstance job = this.jobExplorer.getJobInstance(jobId);
     if (job == null) {
       return null;//TODO #8 conventions under review
@@ -99,10 +88,7 @@ public class JobService extends AbstractDaoService {
    * @param jobType The job type
    * @return JobExecutionResource
    */
-    @GET
-    @Path("/type/{jobType}/name/{jobName}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public JobExecutionResource findJobByName(@PathParam("jobName") final String jobName, @PathParam("jobType") final String jobType) {
+    public JobExecutionResource findJobByName(final String jobName, final String jobType) {
             final Optional<JobExecution> jobExecution = jobExplorer.findRunningJobExecutions(jobType).stream()
                     .filter(job -> jobName.equals(job.getJobParameters().getString(Constants.Params.JOB_NAME)))
                     .findFirst();
@@ -117,11 +103,8 @@ public class JobService extends AbstractDaoService {
      * @param executionId The execution ID
      * @return JobExecutionResource
      */
-  @GET
-  @Path("{jobId}/execution/{executionId}")
-  @Produces(MediaType.APPLICATION_JSON)
-  public JobExecutionResource findJobExecution(@PathParam("jobId") final Long jobId,
-          @PathParam("executionId") final Long executionId) {
+  public JobExecutionResource findJobExecution(final Long jobId,
+          final Long executionId) {
     return service(jobId, executionId);
   }
 
@@ -132,10 +115,7 @@ public class JobService extends AbstractDaoService {
    * @param executionId The job execution ID
    * @return JobExecutionResource
    */
-  @GET
-  @Path("/execution/{executionId}")
-  @Produces(MediaType.APPLICATION_JSON)
-  public JobExecutionResource findJobExecution(@PathParam("executionId") final Long executionId) {
+  public JobExecutionResource findJobExecution(final Long executionId) {
     return service(null, executionId);
   }
 
@@ -156,8 +136,6 @@ public class JobService extends AbstractDaoService {
    * @summary Get list of jobs
    * @return A list of jobs
    */
-  @GET
-  @Produces(MediaType.APPLICATION_JSON)
   public List<String> findJobNames() {
     return this.jobExplorer.getJobNames();
   }
@@ -178,13 +156,10 @@ public class JobService extends AbstractDaoService {
    * @return collection of JobExecutionInfo
    * @throws NoSuchJobException
    */
-  @GET
-  @Path("/execution")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Page<JobExecutionResource> list(@QueryParam("jobName") final String jobName,
-          @DefaultValue("0") @QueryParam("pageIndex") final Integer pageIndex,
-          @DefaultValue("20") @QueryParam("pageSize") final Integer pageSize,
-          @QueryParam("comprehensivePage") boolean comprehensivePage)
+  public Page<JobExecutionResource> list(final String jobName,
+          final Integer pageIndex,
+          final Integer pageSize,
+          boolean comprehensivePage)
           throws NoSuchJobException {
 
     List<JobExecutionResource> resources = null;

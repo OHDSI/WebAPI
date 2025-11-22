@@ -27,7 +27,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import jakarta.ws.rs.NotFoundException;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 public class CohortAnalysisTasklet implements Tasklet {
     
@@ -98,7 +99,7 @@ public class CohortAnalysisTasklet implements Tasklet {
 								CohortDefinition cohortDef = cohortDefinitionRepository.findById(cohortDefinitionId).orElse(null);
 								CohortAnalysisGenerationInfo info = cohortDef.getCohortAnalysisGenerationInfoList().stream()
 												.filter(a -> a.getSourceId() == task.getSource().getSourceId())
-												.findFirst().orElseThrow(NotFoundException::new);
+												.findFirst().orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 								info.setProgress(progress);
 								cohortDefinitionRepository.save(cohortDef);
 								return null;
@@ -127,7 +128,7 @@ public class CohortAnalysisTasklet implements Tasklet {
 							CohortDefinition cohortDef = cohortDefinitionRepository.findById(cohortDefinitionId).orElse(null);
 							CohortAnalysisGenerationInfo info = cohortDef.getCohortAnalysisGenerationInfoList().stream()
 											.filter(a -> a.getSourceId() == task.getSource().getSourceId())
-											.findFirst().orElseThrow(NotFoundException::new);
+											.findFirst().orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 							info.setExecutionDuration((int)(Calendar.getInstance().getTime().getTime()- info.getLastExecution().getTime()));
 
 							if (f_successful) {

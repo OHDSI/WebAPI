@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.mvc;
 
-import jakarta.ws.rs.core.MediaType;
+import org.springframework.http.MediaType;
 
 /**
  * Utility methods to assist with Jersey to Spring MVC migration.
@@ -11,16 +11,16 @@ public class MigrationUtils {
      * Convert JAX-RS MediaType constant to Spring media type string
      */
     public static String toSpringMediaType(String jaxrsMediaType) {
-        // JAX-RS uses constants like MediaType.APPLICATION_JSON
+        // JAX-RS uses constants like MediaType.APPLICATION_JSON_VALUE
         // Spring uses constants like MediaType.APPLICATION_JSON_VALUE
         // This is mainly for documentation/reference
         return switch (jaxrsMediaType) {
-            case MediaType.APPLICATION_JSON -> org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-            case MediaType.APPLICATION_XML -> org.springframework.http.MediaType.APPLICATION_XML_VALUE;
-            case MediaType.TEXT_PLAIN -> org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
-            case MediaType.TEXT_HTML -> org.springframework.http.MediaType.TEXT_HTML_VALUE;
-            case MediaType.MULTIPART_FORM_DATA -> org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
-            case MediaType.APPLICATION_FORM_URLENCODED -> org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED_VALUE;
+            case "application/json" -> org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+            case "application/xml" -> org.springframework.http.MediaType.APPLICATION_XML_VALUE;
+            case "text/plain" -> org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
+            case "text/html" -> org.springframework.http.MediaType.TEXT_HTML_VALUE;
+            case "multipart/form-data" -> org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
+            case "application/x-www-form-urlencoded" -> org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED_VALUE;
             default -> jaxrsMediaType;
         };
     }

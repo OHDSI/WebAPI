@@ -46,14 +46,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -71,11 +63,12 @@ import static org.ohdsi.webapi.cdmresults.AchillesCacheTasklet.DRILLDOWN;
 import static org.ohdsi.webapi.cdmresults.AchillesCacheTasklet.OBSERVATION_PERIOD;
 import static org.ohdsi.webapi.cdmresults.AchillesCacheTasklet.PERSON;
 import static org.ohdsi.webapi.cdmresults.AchillesCacheTasklet.TREEMAP;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 /**
  * @author fdefalco
  */
-@Path("/cdmresults")
 @Component
 @DependsOn({"jobInvalidator", "flyway"})
 public class CDMResultsService extends AbstractDaoService implements InitializingBean {
@@ -176,11 +169,7 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
      * </p>
      * For concept id "201826" in the SYNPUF5PCT data source the record count is 612861 and the descendant record count is 653173.
      */
-    @Path("{sourceKey}/conceptRecordCount")
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public List<SimpleEntry<Integer, List<Long>>> getConceptRecordCount(@PathParam("sourceKey") String sourceKey, List<Integer> identifiers) {
+    public List<SimpleEntry<Integer, List<Long>>> getConceptRecordCount(String sourceKey, List<Integer> identifiers) {
         Source source = sourceService.findBySourceKey(sourceKey);
         if (source != null) {
             List<CDMCacheEntity> entities = cdmCacheService.findAndCache(source, identifiers);
@@ -209,12 +198,8 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
      *
      * @return CDMDashboard
      */
-    @GET
-    @Path("{sourceKey}/dashboard")
-    @Produces(MediaType.APPLICATION_JSON)
     @AchillesCache(DASHBOARD)
-    public CDMDashboard getDashboard(@PathParam("sourceKey")
-            final String sourceKey) {
+    public CDMDashboard getDashboard(final String sourceKey) {
         return getRawDashboard(sourceKey);
     }
 
@@ -228,11 +213,8 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
      *
      * @return CDMPersonSummary
      */
-    @GET
-    @Path("{sourceKey}/person")
-    @Produces(MediaType.APPLICATION_JSON)
     @AchillesCache(PERSON)
-    public CDMPersonSummary getPerson(@PathParam("sourceKey") final String sourceKey) {
+    public CDMPersonSummary getPerson(final String sourceKey) {
         return getRawPerson(sourceKey);
     }
 
@@ -248,10 +230,7 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
      * @param sourceKey The source key
      * @return The job execution information
      */
-    @GET
-    @Path("{sourceKey}/warmCache")
-    @Produces(MediaType.APPLICATION_JSON)
-    public JobExecutionResource warmCache(@PathParam("sourceKey") final String sourceKey) {
+    public JobExecutionResource warmCache(final String sourceKey) {
         return this.warmCacheByKey(sourceKey);
     }
 
@@ -262,10 +241,7 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
      * @param sourceKey The source key
      * @return The job execution resource
      */
-    @GET
-    @Path("{sourceKey}/refreshCache")
-    @Produces(MediaType.APPLICATION_JSON)
-    public JobExecutionResource refreshCache(@PathParam("sourceKey") final String sourceKey) {
+    public JobExecutionResource refreshCache(final String sourceKey) {
         if(isSecured() && isAdmin()) {
             Source source = getSourceRepository().findBySourceKey(sourceKey);
             if (sourceAccessor.hasAccess(source)) {
@@ -289,12 +265,10 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
      * @return void
      * @throws ForbiddenException if the user is not an admin
      */
-    @POST
-    @Path("{sourceKey}/clearCache")
     @Transactional()
-    public void clearCacheForSource(@PathParam("sourceKey") final String sourceKey) {
+    public void clearCacheForSource(final String sourceKey) {
       if (!isSecured() || !isAdmin()) {
-        throw new ForbiddenException();
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN);
       }
       Source source = getSourceRepository().findBySourceKey(sourceKey);
       cacheService.clearCache(source);
@@ -308,12 +282,10 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
      * @return void
      * @throws ForbiddenException if the user is not an admin
      */
-    @POST
-    @Path("clearCache")
     @Transactional()
     public void clearCache() {
         if (!isSecured() || !isAdmin()) {
-            throw new ForbiddenException();
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
         cacheService.clearCache();
         cdmCacheService.clearCache();
@@ -325,11 +297,8 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
      * @param sourceKey The source key
      * @return CDMDataDensity
      */
-    @GET
-    @Path("{sourceKey}/datadensity")
-    @Produces(MediaType.APPLICATION_JSON)
     @AchillesCache(DATA_DENSITY)
-    public CDMDataDensity getDataDensity(@PathParam("sourceKey") final String sourceKey) {
+    public CDMDataDensity getDataDensity(final String sourceKey) {
         return getRawDataDesity(sourceKey);
     }
 
@@ -344,11 +313,8 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
      *
      * @return CDMDataDensity
      */
-    @GET
-    @Path("{sourceKey}/death")
-    @Produces(MediaType.APPLICATION_JSON)
     @AchillesCache(DEATH)
-    public CDMDeath getDeath(@PathParam("sourceKey") final String sourceKey) {
+    public CDMDeath getDeath(final String sourceKey) {
         return getRawDeath(sourceKey);
     }
 
@@ -362,11 +328,8 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
      *
      * @return CDMDataDensity
      */
-    @GET
-    @Path("{sourceKey}/observationPeriod")
-    @Produces(MediaType.APPLICATION_JSON)
     @AchillesCache(OBSERVATION_PERIOD)
-    public CDMObservationPeriod getObservationPeriod(@PathParam("sourceKey") final String sourceKey) {
+    public CDMObservationPeriod getObservationPeriod(final String sourceKey) {
         return getRawObservationPeriod(sourceKey);
     }
 
@@ -380,14 +343,9 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
      *
      * @return List<ArrayNode>
      */
-    @GET
-    @Path("{sourceKey}/{domain}/")
-    @Produces(MediaType.APPLICATION_JSON)
     @AchillesCache(TREEMAP)
     public ArrayNode getTreemap(
-            @PathParam("domain")
             final String domain,
-            @PathParam("sourceKey")
             final String sourceKey) {
 
         return getRawTreeMap(domain, sourceKey);
@@ -407,15 +365,9 @@ public class CDMResultsService extends AbstractDaoService implements Initializin
      * @param sourceKey The source key
      * @return The JSON results
      */
-    @GET
-    @Path("{sourceKey}/{domain}/{conceptId}")
-    @Produces(MediaType.APPLICATION_JSON)
     @AchillesCache(DRILLDOWN)
-    public JsonNode getDrilldown(@PathParam("domain")
-            final String domain,
-            @PathParam("conceptId")
+    public JsonNode getDrilldown(final String domain,
             final int conceptId,
-            @PathParam("sourceKey")
             final String sourceKey) {
 
         return getRawDrilldown(domain, conceptId, sourceKey);

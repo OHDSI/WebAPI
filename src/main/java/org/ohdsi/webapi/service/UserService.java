@@ -12,8 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -23,7 +21,6 @@ import java.util.stream.StreamSupport;
  * @author gennadiy.anisimov
  */
 
-@Path("/")
 @Component
 public class UserService {
 
@@ -92,19 +89,11 @@ public class UserService {
         return c.compare(this.id, o.id);
     }
   }
-
-  @GET
-  @Path("user")
-  @Produces(MediaType.APPLICATION_JSON)
   public ArrayList<User> getUsers() {
     Iterable<UserEntity> userEntities = this.authorizer.getUsers();
     ArrayList<User> users = convertUsers(userEntities);
     return users;
   }
-
-  @GET
-  @Path("user/me")
-  @Produces(MediaType.APPLICATION_JSON)
   public User getCurrentUser() throws Exception {
 
     UserEntity currentUser = this.authorizer.getCurrentUser();
@@ -120,31 +109,18 @@ public class UserService {
 
     return user;
   }
-
-  @GET
-  @Path("user/{userId}/permissions")
-  @Produces(MediaType.APPLICATION_JSON)
-  public List<Permission> getUsersPermissions(@PathParam("userId") Long userId) throws Exception {
+  public List<Permission> getUsersPermissions(Long userId) throws Exception {
     Set<PermissionEntity> permissionEntities = this.authorizer.getUserPermissions(userId);
     List<Permission> permissions = convertPermissions(permissionEntities);
     Collections.sort(permissions);
     return permissions;
   }
-
-  @GET
-  @Path("user/{userId}/roles")
-  @Produces(MediaType.APPLICATION_JSON)
-  public ArrayList<Role> getUserRoles(@PathParam("userId") Long userId) throws Exception {
+  public ArrayList<Role> getUserRoles(Long userId) throws Exception {
     Set<RoleEntity> roleEntities = this.authorizer.getUserRoles(userId);
     ArrayList<Role> roles = convertRoles(roleEntities);
     Collections.sort(roles);
     return roles;
   }
-
-  @POST
-  @Path("role")
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
   public Role createRole(Role role) throws Exception {
     RoleEntity roleEntity = this.authorizer.addRole(role.role, true);
     RoleEntity personalRole = this.authorizer.getCurrentUserPersonalRole();
@@ -156,12 +132,7 @@ public class UserService {
     eventPublisher.publishEvent(new AddRoleEvent(this, newRole.id, newRole.role));
     return newRole;
   }
-
-  @PUT
-  @Path("role/{roleId}")
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Role updateRole(@PathParam("roleId") Long id, Role role) throws Exception {
+  public Role updateRole(Long id, Role role) throws Exception {
     RoleEntity roleEntity = this.authorizer.getRole(id);
     if (roleEntity == null) {
       throw new Exception("Role doesn't exist");
@@ -171,46 +142,28 @@ public class UserService {
     eventPublisher.publishEvent(new ChangeRoleEvent(this, id, role.role));
     return new Role(roleEntity);
   }
-
-  @GET
-  @Path("role")
-  @Produces(MediaType.APPLICATION_JSON)
   public ArrayList<Role> getRoles(
-          @DefaultValue("false") @QueryParam("include_personal") boolean includePersonalRoles) {
+          boolean includePersonalRoles) {
     Iterable<RoleEntity> roleEntities = this.authorizer.getRoles(includePersonalRoles);
     ArrayList<Role> roles = convertRoles(roleEntities);
     return roles;
   }
-
-  @GET
-  @Path("role/{roleId}")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Role getRole(@PathParam("roleId") Long id) {
+  public Role getRole(Long id) {
     RoleEntity roleEntity = this.authorizer.getRole(id);
     Role role = new Role(roleEntity);
     return role;
   }
-
-  @DELETE
-  @Path("role/{roleId}")
-  public void removeRole(@PathParam("roleId") Long roleId) {
+  public void removeRole(Long roleId) {
     this.authorizer.removeRole(roleId);
     this.authorizer.removePermissionsFromTemplate(this.roleCreatorPermissionsTemplate, String.valueOf(roleId));
   }
-
-  @GET
-  @Path("role/{roleId}/permissions")
-  @Produces(MediaType.APPLICATION_JSON)
-  public List<Permission> getRolePermissions(@PathParam("roleId") Long roleId) throws Exception {
+  public List<Permission> getRolePermissions(Long roleId) throws Exception {
     Set<PermissionEntity> permissionEntities = this.authorizer.getRolePermissions(roleId);
     List<Permission> permissions = convertPermissions(permissionEntities);
     Collections.sort(permissions);
     return permissions;
   }
-
-  @PUT
-  @Path("role/{roleId}/permissions/{permissionIdList}")
-  public void addPermissionToRole(@PathParam("roleId") Long roleId, @PathParam("permissionIdList") String permissionIdList) throws Exception {
+  public void addPermissionToRole(Long roleId, String permissionIdList) throws Exception {
     String[] ids = permissionIdList.split("\\+");
     for (String permissionIdString : ids) {
       Long permissionId = Long.parseLong(permissionIdString);
@@ -218,10 +171,7 @@ public class UserService {
       eventPublisher.publishEvent(new AddPermissionEvent(this, permissionId, roleId));
     }
   }
-
-  @DELETE
-  @Path("role/{roleId}/permissions/{permissionIdList}")
-  public void removePermissionFromRole(@PathParam("roleId") Long roleId, @PathParam("permissionIdList") String permissionIdList) {
+  public void removePermissionFromRole(Long roleId, String permissionIdList) {
     String[] ids = permissionIdList.split("\\+");
     for (String permissionIdString : ids) {
       Long permissionId = Long.parseLong(permissionIdString);
@@ -229,20 +179,13 @@ public class UserService {
       eventPublisher.publishEvent(new DeletePermissionEvent(this, permissionId, roleId));
     }
   }
-
-  @GET
-  @Path("role/{roleId}/users")
-  @Produces(MediaType.APPLICATION_JSON)
-  public ArrayList<User> getRoleUsers(@PathParam("roleId") Long roleId) throws Exception {
+  public ArrayList<User> getRoleUsers(Long roleId) throws Exception {
     Set<UserEntity> userEntities = this.authorizer.getRoleUsers(roleId);
     ArrayList<User> users = this.convertUsers(userEntities);
     Collections.sort(users);
     return users;
   }
-
-  @PUT
-  @Path("role/{roleId}/users/{userIdList}")
-  public void addUserToRole(@PathParam("roleId") Long roleId, @PathParam("userIdList") String userIdList) throws Exception {
+  public void addUserToRole(Long roleId, String userIdList) throws Exception {
     String[] ids = userIdList.split("\\+");
     for (String userIdString : ids) {
       Long userId = Long.parseLong(userIdString);
@@ -250,10 +193,7 @@ public class UserService {
       eventPublisher.publishEvent(new AssignRoleEvent(this, roleId, userId));
     }
   }
-
-  @DELETE
-  @Path("role/{roleId}/users/{userIdList}")
-  public void removeUserFromRole(@PathParam("roleId") Long roleId, @PathParam("userIdList") String userIdList) {
+  public void removeUserFromRole(Long roleId, String userIdList) {
     String[] ids = userIdList.split("\\+");
     for (String userIdString : ids) {
       Long userId = Long.parseLong(userIdString);

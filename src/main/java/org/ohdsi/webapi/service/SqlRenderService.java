@@ -5,11 +5,6 @@ import static org.ohdsi.webapi.Constants.SqlSchemaPlaceholders.TEMP_DATABASE_SCH
 
 import java.util.Collections;
 import java.util.Map;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlTranslate;
@@ -21,17 +16,12 @@ import org.ohdsi.webapi.util.SessionUtils;
  *
  * @author Lee Evans
  */
-@Path("/sqlrender/")
 public class SqlRenderService {
     /**
      * Translate an OHDSI SQL to a supported target SQL dialect
      * @param sourceStatement JSON with parameters, source SQL, and target dialect
      * @return rendered and translated SQL
      */
-    @Path("translate")
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
     public TranslatedStatement translateSQLFromSourceStatement(SourceStatement sourceStatement) {
         if (sourceStatement == null) {
             return new TranslatedStatement();

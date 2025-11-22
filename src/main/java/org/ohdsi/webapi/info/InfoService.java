@@ -18,10 +18,6 @@
 
 package org.ohdsi.webapi.info;
 
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.info.ConfigurationInfo;
@@ -31,7 +27,6 @@ import org.springframework.stereotype.Controller;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Path("/info")
 @Controller
 public class InfoService {
 
@@ -51,9 +46,6 @@ public class InfoService {
     /**
      * Get info about the WebAPI instance
      */
-    @GET
-    @Path("/")
-    @Produces(MediaType.APPLICATION_JSON)
     public Info getInfo() {
 
         return info;

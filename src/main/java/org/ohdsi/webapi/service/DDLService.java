@@ -28,11 +28,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
 import org.apache.commons.lang3.ObjectUtils;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.webapi.sqlrender.SourceStatement;
@@ -40,7 +35,6 @@ import org.ohdsi.webapi.sqlrender.TranslatedStatement;
 import org.ohdsi.webapi.util.SessionUtils;
 import org.springframework.stereotype.Component;
 
-@Path("/ddl/")
 @Component
 public class DDLService {
 
@@ -132,15 +126,12 @@ public class DDLService {
 	 * @param tempSchema
 	 * @return SQL to create tables in results schema
 	 */
-	@GET
-	@Path("results")
-	@Produces("text/plain")
 	public String generateResultSQL(
-			@QueryParam("dialect") String dialect,
-			@DefaultValue("vocab") @QueryParam("vocabSchema") String vocabSchema,
-			@DefaultValue("results") @QueryParam("schema") String resultSchema,
-			@DefaultValue("true") @QueryParam("initConceptHierarchy") Boolean initConceptHierarchy,
-			@QueryParam("tempSchema") String tempSchema) {
+			String dialect,
+			String vocabSchema,
+			String resultSchema,
+			Boolean initConceptHierarchy,
+			String tempSchema) {
 
 		Collection<String> resultDDLFilePaths = new ArrayList<>(RESULT_DDL_FILE_PATHS);
 
@@ -171,10 +162,7 @@ public class DDLService {
 	 * @param schema schema name
 	 * @return SQL
 	 */
-	@GET
-	@Path("cemresults")
-	@Produces("text/plain")
-	public String generateCemResultSQL(@QueryParam("dialect") String dialect, @DefaultValue("cemresults") @QueryParam("schema") String schema) {
+	public String generateCemResultSQL(String dialect, String schema) {
 
 		Map<String, String> params = new HashMap<String, String>() {{
 			put(CEM_SCHEMA, schema);
@@ -190,13 +178,10 @@ public class DDLService {
 	 * @param resultSchema results schema
 	 * @return SQL
 	 */
-	@GET
-	@Path("achilles")
-	@Produces("text/plain")
 	public String generateAchillesSQL(
-            @QueryParam("dialect") String dialect,
-			@DefaultValue("vocab") @QueryParam("vocabSchema") String vocabSchema,
-			@DefaultValue("results") @QueryParam("schema") String resultSchema) {
+            String dialect,
+			String vocabSchema,
+			String resultSchema) {
 
 		final Collection<String> achillesDDLFilePaths = new ArrayList<>(ACHILLES_DDL_FILE_PATHS);
 

@@ -36,15 +36,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import jakarta.servlet.ServletContext;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.ohdsi.circe.cohortdefinition.CohortExpression;
 import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
@@ -101,7 +92,6 @@ import java.util.Optional;
  * 
  * @summary Feasibility analysis (DO NOT USE)
  */
-@Path("/feasibility/")
 @Component
 public class FeasibilityService extends AbstractDaoService {
 
@@ -135,7 +125,6 @@ public class FeasibilityService extends AbstractDaoService {
   @Autowired
   private SourceService sourceService;
 
-  @Context
   ServletContext context;
 
   private StudyGenerationInfo findStudyGenerationInfoBySourceId(Collection<StudyGenerationInfo> infoList, Integer sourceId) {
@@ -384,9 +373,6 @@ public class FeasibilityService extends AbstractDaoService {
    * @deprecated
    * @return List<FeasibilityService.FeasibilityStudyListItem>
    */
-  @GET
-  @Path("/")
-  @Produces(MediaType.APPLICATION_JSON)
   public List<FeasibilityService.FeasibilityStudyListItem> getFeasibilityStudyList() {
 
     return getTransactionTemplate().execute(transactionStatus -> {
@@ -415,10 +401,6 @@ public class FeasibilityService extends AbstractDaoService {
    * @param study The feasibility study
    * @return Feasibility study
    */
-  @PUT
-  @Path("/")
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
   @Transactional
   public FeasibilityService.FeasibilityStudyDTO createStudy(FeasibilityService.FeasibilityStudyDTO study) {
 
@@ -479,12 +461,8 @@ public class FeasibilityService extends AbstractDaoService {
    * @param id The study ID
    * @return Feasibility study
    */
-  @GET
-  @Path("/{id}")
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
   @Transactional(readOnly = true)
-  public FeasibilityService.FeasibilityStudyDTO getStudy(@PathParam("id") final int id) {
+  public FeasibilityService.FeasibilityStudyDTO getStudy(final int id) {
 
     return getTransactionTemplate().execute(transactionStatus -> {
       FeasibilityStudy s = this.feasibilityStudyRepository.findOneWithDetail(id);
@@ -501,11 +479,8 @@ public class FeasibilityService extends AbstractDaoService {
    * @param study The study information
    * @return The updated study information
    */
-  @PUT
-  @Path("/{id}")
-  @Produces(MediaType.APPLICATION_JSON)
   @Transactional
-  public FeasibilityService.FeasibilityStudyDTO saveStudy(@PathParam("id") final int id, FeasibilityStudyDTO study) {
+  public FeasibilityService.FeasibilityStudyDTO saveStudy(final int id, FeasibilityStudyDTO study) {
     Date currentTime = Calendar.getInstance().getTime();
 
     UserEntity user = userRepository.findByLogin(security.getSubject());
@@ -564,11 +539,7 @@ public class FeasibilityService extends AbstractDaoService {
    * @param sourceKey The source key
    * @return JobExecutionResource
    */
-  @GET
-  @Path("/{study_id}/generate/{sourceKey}")
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public JobExecutionResource performStudy(@PathParam("study_id") final int study_id, @PathParam("sourceKey") final String sourceKey) {
+  public JobExecutionResource performStudy(final int study_id, final String sourceKey) {
     Date startTime = Calendar.getInstance().getTime();
 
     Source source = this.getSourceRepository().findBySourceKey(sourceKey);
@@ -671,11 +642,8 @@ public class FeasibilityService extends AbstractDaoService {
    * @param id The study ID
    * @return List<StudyInfoDTO>
    */
-  @GET
-  @Path("/{id}/info")
-  @Produces(MediaType.APPLICATION_JSON)
   @Transactional(readOnly = true)
-  public List<StudyInfoDTO> getSimulationInfo(@PathParam("id") final int id) {
+  public List<StudyInfoDTO> getSimulationInfo(final int id) {
     FeasibilityStudy study = this.feasibilityStudyRepository.findById(id).orElse(null);
 
     List<StudyInfoDTO> result = new ArrayList<>();
@@ -697,11 +665,8 @@ public class FeasibilityService extends AbstractDaoService {
    * @param sourceKey The source key
    * @return FeasibilityReport
    */
-  @GET
-  @Path("/{id}/report/{sourceKey}")
-  @Produces(MediaType.APPLICATION_JSON)
   @Transactional
-  public FeasibilityReport getSimulationReport(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
+  public FeasibilityReport getSimulationReport(final int id, final String sourceKey) {
 
     Source source = this.getSourceRepository().findBySourceKey(sourceKey);
 
@@ -725,11 +690,8 @@ public class FeasibilityService extends AbstractDaoService {
    * @param id - the Cohort Definition ID to copy
    * @return the copied feasibility study as a FeasibilityStudyDTO
    */
-  @GET
-  @Produces(MediaType.APPLICATION_JSON)
-  @Path("/{id}/copy")
   @jakarta.transaction.Transactional
-  public FeasibilityStudyDTO copy(@PathParam("id") final int id) {
+  public FeasibilityStudyDTO copy(final int id) {
     FeasibilityStudyDTO sourceStudy = getStudy(id);
     sourceStudy.id = null; // clear the ID
     sourceStudy.name = String.format(Constants.Templates.ENTITY_COPY_PREFIX, sourceStudy.name);
@@ -744,10 +706,7 @@ public class FeasibilityService extends AbstractDaoService {
    * @deprecated
    * @param id The study ID
    */
-  @DELETE
-  @Produces(MediaType.APPLICATION_JSON)
-  @Path("/{id}")
-  public void delete(@PathParam("id") final int id) {
+  public void delete(final int id) {
     feasibilityStudyRepository.deleteById(id);
   }
   
@@ -759,11 +718,8 @@ public class FeasibilityService extends AbstractDaoService {
    * @param id The study ID
    * @param sourceKey The source key
    */
-  @DELETE
-  @Produces(MediaType.APPLICATION_JSON)
-  @Path("/{id}/info/{sourceKey}")
   @Transactional    
-  public void deleteInfo(@PathParam("id") final int id, @PathParam("sourceKey") final String sourceKey) {
+  public void deleteInfo(final int id, final String sourceKey) {
     FeasibilityStudy study = feasibilityStudyRepository.findById(id).orElse(null);
     StudyGenerationInfo itemToRemove = null;
     for (StudyGenerationInfo info : study.getStudyGenerationInfoList())

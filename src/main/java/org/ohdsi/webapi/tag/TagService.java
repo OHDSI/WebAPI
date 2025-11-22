@@ -1,7 +1,6 @@
 package org.ohdsi.webapi.tag;
 
 import org.apache.shiro.SecurityUtils;
-import org.glassfish.jersey.internal.util.Producer;
 import org.ohdsi.webapi.service.AbstractDaoService;
 import org.ohdsi.webapi.tag.domain.Tag;
 import org.ohdsi.webapi.tag.domain.TagInfo;
@@ -20,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityManager;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.Optional;
 
@@ -31,7 +31,7 @@ public class TagService extends AbstractDaoService {
     private final EntityManager entityManager;
     private final ConversionService conversionService;
 
-    private final ArrayList<Producer<List<TagInfo>>> infoProducers;
+    private final ArrayList<Supplier<List<TagInfo>>> infoProducers;
 
     @Autowired
     public TagService(
@@ -171,9 +171,9 @@ public class TagService extends AbstractDaoService {
         logger.info("Finishing tags statistics refreshing");
     }
 
-    private void processTagInfo(Producer<List<TagInfo>> infoProducer,
+    private void processTagInfo(Supplier<List<TagInfo>> infoProducer,
                                 Map<Integer, TagDTO> infoMap) {
-        List<TagInfo> tagInfos = infoProducer.call();
+        List<TagInfo> tagInfos = infoProducer.get();
         tagInfos.forEach(info -> {
             int id = info.getId();
             TagDTO dto = infoMap.get(id);

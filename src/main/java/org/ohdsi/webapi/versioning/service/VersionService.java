@@ -22,7 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceException;
-import jakarta.ws.rs.NotFoundException;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -97,7 +98,7 @@ public class VersionService<T extends Version> extends AbstractDaoService {
     public T update(VersionType type, VersionUpdateDTO updateDTO) {
         T currentVersion = getRepository(type).findById(updateDTO.getVersionPk()).orElse(null);
         if (Objects.isNull(currentVersion)) {
-            throw new NotFoundException("Version not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Version not found");
         }
 
         currentVersion.setComment(updateDTO.getComment());
@@ -109,7 +110,7 @@ public class VersionService<T extends Version> extends AbstractDaoService {
         VersionPK pk = new VersionPK(assetId, version);
         T currentVersion = getRepository(type).getOne(pk);
         if (Objects.isNull(currentVersion)) {
-            throw new NotFoundException("Version not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Version not found");
         }
         currentVersion.setArchived(true);
     }

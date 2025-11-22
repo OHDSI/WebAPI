@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.tagging;
 
-import org.ohdsi.webapi.reusable.ReusableController;
+import org.ohdsi.webapi.reusable.ReusableMvcController;
 import org.ohdsi.webapi.reusable.dto.ReusableDTO;
 import org.ohdsi.webapi.reusable.repository.ReusableRepository;
 import org.ohdsi.webapi.tag.domain.Tag;
@@ -12,7 +12,7 @@ import java.util.List;
 
 public class ReusableTaggingTest extends BaseTaggingTest<ReusableDTO, Integer> {
     @Autowired
-    private ReusableController controller;
+    private ReusableMvcController controller;
 
     @Autowired
     private ReusableRepository repository;
@@ -24,12 +24,12 @@ public class ReusableTaggingTest extends BaseTaggingTest<ReusableDTO, Integer> {
         dto.setName("test name");
         dto.setDescription("test description");
 
-        initialDTO = controller.create(dto);
+        initialDTO = controller.create(dto).getBody();
     }
 
     @Override
     protected ReusableDTO doCopyData(ReusableDTO def) {
-        return controller.copy(def.getId());
+        return controller.copy(def.getId()).getBody();
     }
 
     @Override
@@ -64,7 +64,7 @@ public class ReusableTaggingTest extends BaseTaggingTest<ReusableDTO, Integer> {
 
     @Override
     protected ReusableDTO getDTO(Integer id) {
-        return controller.get(id);
+        return controller.get(id).getBody();
     }
 
     @Override
@@ -83,6 +83,6 @@ public class ReusableTaggingTest extends BaseTaggingTest<ReusableDTO, Integer> {
     protected List<ReusableDTO> getDTOsByTag(List<String> tagNames) {
         TagNameListRequestDTO requestDTO = new TagNameListRequestDTO();
         requestDTO.setNames(tagNames);
-        return controller.listByTags(requestDTO);
+        return controller.listByTags(requestDTO).getBody();
     }
 }

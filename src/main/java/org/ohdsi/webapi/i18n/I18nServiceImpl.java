@@ -8,7 +8,8 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.ws.rs.InternalServerErrorException;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
@@ -53,7 +54,7 @@ public class I18nServiceImpl implements I18nService {
       JsonNode node = root.at(pointer);
       return node.isValueNode() ? node.asText() : defaultValue;
     }catch (IOException e) {
-      throw new InternalServerErrorException(e);
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
     }
   }
 

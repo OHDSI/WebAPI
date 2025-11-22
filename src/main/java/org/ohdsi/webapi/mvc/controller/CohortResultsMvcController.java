@@ -112,8 +112,8 @@ public class CohortResultsMvcController extends AbstractMvcController {
             @PathVariable("id") int id,
             @PathVariable("sourceKey") String sourceKey) {
 
-        jakarta.ws.rs.core.Response jerseyResponse = cohortResultsService.exportCohortResults(id, sourceKey);
-        ByteArrayOutputStream baos = (ByteArrayOutputStream) jerseyResponse.getEntity();
+        ResponseEntity jerseyResponse = cohortResultsService.exportCohortResults(id, sourceKey);
+        ByteArrayOutputStream baos = (ByteArrayOutputStream) jerseyResponse.getBody();
 
         ByteArrayResource resource = new ByteArrayResource(baos.toByteArray());
 

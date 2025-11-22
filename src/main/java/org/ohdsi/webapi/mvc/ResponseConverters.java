@@ -3,26 +3,26 @@ package org.ohdsi.webapi.mvc;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import jakarta.ws.rs.core.Response;
+import org.springframework.http.ResponseEntity;
 
 /**
- * Utility class to convert JAX-RS Response objects to Spring ResponseEntity.
+ * Utility class to convert JAX-RS ResponseEntity objects to Spring ResponseEntity.
  * Used during migration to facilitate gradual conversion of endpoints.
  */
 public class ResponseConverters {
 
     /**
-     * Convert JAX-RS Response to Spring ResponseEntity
+     * Convert JAX-RS ResponseEntity to Spring ResponseEntity
      */
-    public static <T> ResponseEntity<T> toResponseEntity(Response response) {
+    public static <T> ResponseEntity<T> toResponseEntity(ResponseEntity response) {
         if (response == null) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
 
-        HttpStatus status = HttpStatus.valueOf(response.getStatus());
+        HttpStatus status = HttpStatus.valueOf(response.getStatusCode().value());
 
         @SuppressWarnings("unchecked")
-        T body = (T) response.getEntity();
+        T body = (T) response.getBody();
 
         if (body == null) {
             return ResponseEntity.status(status).build();
@@ -31,26 +31,7 @@ public class ResponseConverters {
         return ResponseEntity.status(status).body(body);
     }
 
-    /**
-     * Convert JAX-RS Response.Status to Spring HttpStatus
-     */
-    public static HttpStatus toHttpStatus(Response.Status status) {
-        return HttpStatus.valueOf(status.getStatusCode());
-    }
-
-    /**
-     * Convert JAX-RS Response.StatusType to Spring HttpStatus
-     */
-    public static HttpStatus toHttpStatus(Response.StatusType statusType) {
-        return HttpStatus.valueOf(statusType.getStatusCode());
-    }
-
-    /**
-     * Create ResponseEntity from JAX-RS status and entity
-     */
-    public static <T> ResponseEntity<T> fromJaxRs(Response.Status status, T entity) {
-        return ResponseEntity.status(toHttpStatus(status)).body(entity);
-    }
+    // JAX-RS conversion methods removed - no longer needed after migration to Spring MVC
 
     /**
      * Create ResponseEntity from status code and entity

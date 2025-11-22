@@ -52,8 +52,10 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.ForbiddenException;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 import java.io.File;
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -429,7 +431,7 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     Long ownerId = Objects.nonNull(owner) ? owner.getId() : null;
 
     if (!(user.getId().equals(ownerId) || isAdmin())) {
-      throw new ForbiddenException();
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
   }
 
@@ -442,7 +444,7 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     Long ownerId = Objects.nonNull(owner) ? owner.getId() : null;
 
     if (!(user.getId().equals(ownerId) || isAdmin() || isModerator())) {
-      throw new ForbiddenException();
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
   }
 
@@ -455,7 +457,7 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     Long ownerId = Objects.nonNull(entity.getCreatedBy()) ? entity.getCreatedBy().getId() : null;
 
     if (!(user.getId().equals(ownerId) || isAdmin() || permissionService.hasWriteAccess(entity))) {
-      throw new ForbiddenException();
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
   }
 
@@ -468,7 +470,7 @@ public abstract class AbstractDaoService extends AbstractAdminService {
     Long ownerId = Objects.nonNull(entity.getCreatedBy()) ? entity.getCreatedBy().getId() : null;
 
     if (!(user.getId().equals(ownerId) || isAdmin() || permissionService.hasWriteAccess(entity) || TagSecurityUtils.canManageTags())) {
-      throw new ForbiddenException();
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
   }
 

@@ -6,7 +6,8 @@ import org.ohdsi.webapi.conceptset.ConceptSet;
 import org.ohdsi.webapi.model.CommonEntityExt;
 import org.ohdsi.webapi.reusable.domain.Reusable;
 
-import jakarta.ws.rs.BadRequestException;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 public class TagSecurityUtils {
     public static String COHORT_DEFINITION = "cohortdefinition";
@@ -39,7 +40,7 @@ public class TagSecurityUtils {
                 template = "%s:*:protectedtag:*:delete";
                 break;
             default:
-                throw new BadRequestException(String.format("Unsupported method: %s", method));
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Unsupported method: %s", method));
 
         }
         final String permission = String.format(template, asset);

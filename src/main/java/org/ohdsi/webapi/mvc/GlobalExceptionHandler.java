@@ -22,9 +22,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.NotFoundException;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -78,7 +81,7 @@ public class GlobalExceptionHandler {
     /**
      * Handle authorization/permission exceptions
      */
-    @ExceptionHandler({UnauthorizedException.class, ForbiddenException.class})
+    @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ErrorMessage> handleAuthorizationException(Exception ex) {
         logException(ex);
         ex.setStackTrace(new StackTraceElement[0]);
@@ -87,14 +90,15 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handle not found exceptions
+     * Handle Spring ResponseStatusException (replaces JAX-RS NotFoundException, ForbiddenException, etc.)
      */
-    @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<ErrorMessage> handleNotFoundException(NotFoundException ex) {
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ErrorMessage> handleResponseStatusException(ResponseStatusException ex) {
         logException(ex);
-        ex.setStackTrace(new StackTraceElement[0]);
-        ErrorMessage errorMessage = new ErrorMessage(ex);
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        RuntimeException sanitizedException = new RuntimeException(ex.getReason() != null ? ex.getReason() : ex.getMessage());
+        sanitizedException.setStackTrace(new StackTraceElement[0]);
+        ErrorMessage errorMessage = new ErrorMessage(sanitizedException);
+        return ResponseEntity.status(ex.getStatusCode()).body(errorMessage);
     }
 
     /**
@@ -113,7 +117,7 @@ public class GlobalExceptionHandler {
     /**
      * Handle bad request exceptions
      */
-    @ExceptionHandler({BadRequestException.class, ConceptNotExistException.class})
+    @ExceptionHandler(ConceptNotExistException.class)
     public ResponseEntity<ErrorMessage> handleBadRequestException(Exception ex) {
         logException(ex);
         ex.setStackTrace(new StackTraceElement[0]);
@@ -144,7 +148,7 @@ public class GlobalExceptionHandler {
         Throwable responseException;
 
         if (Objects.nonNull(throwable)) {
-            if (throwable instanceof UnauthorizedException || throwable instanceof ForbiddenException) {
+            if (throwable instanceof UnauthorizedException) {
                 status = HttpStatus.FORBIDDEN;
                 responseException = throwable;
             } else if (throwable instanceof BadRequestAtlasException || throwable instanceof ConceptNotExistException) {

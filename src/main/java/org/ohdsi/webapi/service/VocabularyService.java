@@ -567,7 +567,9 @@ public class VocabularyService extends AbstractDaoService {
 
     String resourcePath;
     if (search.isLexical) {
-      resourcePath = "/resources/vocabulary/sql/searchLexical.sql";
+      resourcePath = useTrigram
+          ? "/resources/vocabulary/sql/searchLexicalPostgres.sql"
+          : "/resources/vocabulary/sql/searchLexical.sql";
     } else if (useTrigram) {
       resourcePath = "/resources/vocabulary/sql/searchPostgres.sql";
     } else {
@@ -644,47 +646,81 @@ public class VocabularyService extends AbstractDaoService {
     }
     
     if (search.isLexical) {
-      // 1. Create term variables for the expressions including truncated terms (terms >=8 are truncated to 6 letters
-      List<String> searchTerms = Arrays.asList(StringUtils.split(search.query.toLowerCase(), " "));
-      List<String> allTerms = Stream.concat(
-          searchTerms.stream(), 
-          searchTerms.stream().filter(i -> i.length() >= 8).map(i -> StringUtils.left(i,6))
-      ).sorted((a,b) -> b.length() - a.length()).collect(Collectors.toList());
-      LinkedHashMap<String, String> termMap = new LinkedHashMap<>();
-      for (int i=0;i<allTerms.size();i++) {
-        termMap.put(String.format("term_%d",i+1), allTerms.get(i));
+      if (useTrigram) {
+        // Feature: 001-concept-search-optimization - PostgreSQL lexical search with trigrams
+        double similarityThreshold = (search.query.length() <= 2) ? 0.6 : 0.3;
+
+        // Trigram similarity filters for name and synonyms
+        String nameFilter = String.format("similarity(lower(concept_name), '@query') > %s", similarityThreshold);
+        String synonymFilter = String.format("similarity(lower(concept_synonym_name), '@query') > %s", similarityThreshold);
+
+        searchNamesList.add("name_filters");
+        replacementNamesList.add(nameFilter);
+        searchNamesList.add("synonym_filters");
+        replacementNamesList.add(synonymFilter);
+
+        // Similarity expressions for ordering
+        String nameSimilarityExpr = "similarity(lower(concept_name), '@query')";
+        String synonymSimilarityExpr = "similarity(lower(concept_synonym_name), '@query')";
+        String combinedSimilarityExpr = String.format(
+          "GREATEST(%s, COALESCE((SELECT MAX(similarity(lower(cs.concept_synonym_name), '@query')) " +
+          "FROM @CDM_schema.concept_synonym cs WHERE cs.concept_id = c1.concept_id), 0))",
+          nameSimilarityExpr
+        );
+
+        searchNamesList.add("name_similarity_expression");
+        replacementNamesList.add(nameSimilarityExpr);
+        searchNamesList.add("synonym_similarity_expression");
+        replacementNamesList.add(synonymSimilarityExpr);
+        searchNamesList.add("similarity_expression");
+        replacementNamesList.add(combinedSimilarityExpr);
+
+        variableNameList.add("query");
+        variableValueList.add(search.query.toLowerCase());
+      } else {
+        // Non-PostgreSQL lexical search - original LIKE-based logic
+        // 1. Create term variables for the expressions including truncated terms (terms >=8 are truncated to 6 letters
+        List<String> searchTerms = Arrays.asList(StringUtils.split(search.query.toLowerCase(), " "));
+        List<String> allTerms = Stream.concat(
+            searchTerms.stream(),
+            searchTerms.stream().filter(i -> i.length() >= 8).map(i -> StringUtils.left(i,6))
+        ).sorted((a,b) -> b.length() - a.length()).collect(Collectors.toList());
+        LinkedHashMap<String, String> termMap = new LinkedHashMap<>();
+        for (int i=0;i<allTerms.size();i++) {
+          termMap.put(String.format("term_%d",i+1), allTerms.get(i));
+        }
+        // 2. Create REPLACE expressions to caluclate the match ratio
+        String replaceExpression = termMap.keySet().stream()
+            .reduce("", (acc, element) -> {
+              return "".equals(acc) ?
+                  String.format("REPLACE(lower(concept_name), '@%s','')",element) // the first iteration
+                  : String.format("REPLACE(%s, '@%s','')", acc, element); // the subsequent iterations
+            });
+        searchNamesList.add("replace_expression");
+        replacementNamesList.add(replaceExpression);
+
+        // 3. Create the set of 'like' expressions for concept name from the terms that are < 8 chars
+        List<String> nameFilterList = termMap.keySet().stream()
+            .filter(k -> termMap.get(k).length() < 8)
+            .map(k -> String.format("lower(concept_name) like '%%@%s%%'",k))
+            .collect(Collectors.toList());
+        searchNamesList.add("name_filters");
+        replacementNamesList.add(StringUtils.join(nameFilterList, " AND "));
+
+        // 4. Create the set of 'like' expressions for concept synonyms
+        List<String> synonymFilterList = termMap.keySet().stream()
+            .filter(k -> termMap.get(k).length() < 8)
+            .map(k -> String.format("lower(concept_synonym_name) like '%%@%s%%'",k))
+            .collect(Collectors.toList());
+        searchNamesList.add("synonym_filters");
+        replacementNamesList.add(StringUtils.join(synonymFilterList, " AND "));
+
+       // 5. Create name-value pairs for each term paramater
+       for (Map.Entry<String,String> entry : termMap.entrySet()) {
+         variableNameList.add(entry.getKey());
+         variableValueList.add(entry.getValue());
+       }
       }
-      // 2. Create REPLACE expressions to caluclate the match ratio
-      String replaceExpression = termMap.keySet().stream()
-          .reduce("", (acc, element) -> {
-            return "".equals(acc) ? 
-                String.format("REPLACE(lower(concept_name), '@%s','')",element) // the first iteration
-                : String.format("REPLACE(%s, '@%s','')", acc, element); // the subsequent iterations
-          });
-      searchNamesList.add("replace_expression");
-      replacementNamesList.add(replaceExpression);
-      
-      // 3. Create the set of 'like' expressions for concept name from the terms that are < 8 chars
-      List<String> nameFilterList = termMap.keySet().stream()
-          .filter(k -> termMap.get(k).length() < 8)
-          .map(k -> String.format("lower(concept_name) like '%%@%s%%'",k))
-          .collect(Collectors.toList());
-      searchNamesList.add("name_filters");
-      replacementNamesList.add(StringUtils.join(nameFilterList, " AND "));
-      
-      // 4. Create the set of 'like' expressions for concept synonyms
-      List<String> synonymFilterList = termMap.keySet().stream()
-          .filter(k -> termMap.get(k).length() < 8)
-          .map(k -> String.format("lower(concept_synonym_name) like '%%@%s%%'",k))
-          .collect(Collectors.toList());
-      searchNamesList.add("synonym_filters");
-      replacementNamesList.add(StringUtils.join(synonymFilterList, " AND "));
-      
-     // 5. Create name-value pairs for each term paramater
-     for (Map.Entry<String,String> entry : termMap.entrySet()) {
-       variableNameList.add(entry.getKey());
-       variableValueList.add(entry.getValue());
-     }
     } else {
       if (!search.query.isEmpty()) {
         if (useTrigram) {

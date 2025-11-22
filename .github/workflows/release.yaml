@@ -43,7 +43,7 @@ jobs:
       - name: Upload to GitHub
         uses: AButler/upload-release-assets@v2.0
         with:
-          files: 'target/WebAPI.war'
+          files: 'target/WebAPI.jar'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   # Build and push tagged release docker image to

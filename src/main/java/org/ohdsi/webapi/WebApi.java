@@ -1,12 +1,10 @@
 package org.ohdsi.webapi;
 
 import org.apache.catalina.webresources.TomcatURLStreamHandlerFactory;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
@@ -15,25 +13,18 @@ import java.util.TimeZone;
 
 
 /**
- * Launch as java application or deploy as WAR (@link {@link WebApplication}
- * will source this file).
+ * OHDSI WebAPI Spring Boot Application
+ * Launch as standalone JAR: java -jar WebAPI.jar
  */
 @EnableScheduling
 @SpringBootApplication(exclude={HibernateJpaAutoConfiguration.class, ErrorMvcAutoConfiguration.class})
 @EnableAspectJAutoProxy(proxyTargetClass = true)
-public class WebApi extends SpringBootServletInitializer {
-
-
-
-    @Override
-    protected SpringApplicationBuilder configure(final SpringApplicationBuilder application) {
-        return application.sources(WebApi.class);
-    }
+public class WebApi {
 
     public static void main(final String[] args) throws Exception
     {
         TomcatURLStreamHandlerFactory.disable();
-        new SpringApplicationBuilder(WebApi.class).run(args);
+        SpringApplication.run(WebApi.class, args);
     }
 
     @PostConstruct

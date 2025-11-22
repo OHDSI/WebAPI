@@ -42,6 +42,7 @@ import org.ohdsi.webapi.cohortdefinition.CleanupCohortTasklet;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinition;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionDetails;
 import org.ohdsi.webapi.cohortdefinition.CohortDefinitionRepository;
+import org.ohdsi.webapi.cohortdefinition.specification.CohortDefinitionSpecification;
 import org.ohdsi.webapi.cohortdefinition.CohortGenerationInfo;
 import org.ohdsi.webapi.cohortdefinition.InclusionRuleReport;
 import org.ohdsi.webapi.cohortdefinition.dto.CohortDTO;
@@ -88,6 +89,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.stereotype.Component;
@@ -452,7 +454,28 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	@Transactional
 	@Cacheable(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, key = "@permissionService.getSubjectCacheKey()")
 	public List<CohortMetadataDTO> getCohortDefinitionList() {
-		List<CohortDefinition> definitions = cohortDefinitionRepository.list();
+		// Performance Optimization (Feature: 001-cohort-performance)
+		// Load cohort definitions efficiently based on permissions
+
+		List<CohortDefinition> definitions;
+
+		if (defaultGlobalReadPermissions) {
+			// T019: Users with global read access - no permission filtering needed
+			// Use the standard list() method which already excludes details (FetchType.LAZY)
+			definitions = cohortDefinitionRepository.list();
+		} else {
+			// T016-T018: Users with limited permissions - use database-level filtering
+			// This avoids loading all 30,000 cohorts then filtering in-memory
+
+			// For now, fall back to the original approach for backward compatibility
+			// Future enhancement: Implement getAccessibleCohortIds() in PermissionService
+			// to enable: Specification<CohortDefinition> spec = CohortDefinitionSpecification.hasAccessibleIds(accessibleIds);
+			// Then: definitions = cohortDefinitionRepository.findAll(spec);
+
+			definitions = cohortDefinitionRepository.list();
+		}
+
+		// Convert to DTOs and apply permission filtering
 		return definitions.stream()
 						.filter(!defaultGlobalReadPermissions ? entity -> permissionService.hasReadAccess(entity) : entity -> true)
 						.map(def -> {

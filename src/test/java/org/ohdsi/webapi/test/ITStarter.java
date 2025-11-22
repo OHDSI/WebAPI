@@ -22,7 +22,8 @@ import java.sql.SQLException;
         JobServiceIT.class,
         CohortAnalysisServiceIT.class,
         VocabularyServiceIT.class,
-        CDMResultsServiceIT.class
+        CDMResultsServiceIT.class,
+        org.ohdsi.webapi.cohortdefinition.CohortDefinitionPerformanceIT.class
 })
 @TestPropertySource(locations = "/application-test.properties")
 public class ITStarter extends AbstractShiro {

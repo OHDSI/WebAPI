@@ -20,6 +20,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -28,7 +29,7 @@ import org.springframework.data.repository.query.Param;
  *
  * @author cknoll1
  */
-public interface CohortDefinitionRepository extends CrudRepository<CohortDefinition, Integer> {
+public interface CohortDefinitionRepository extends CrudRepository<CohortDefinition, Integer>, JpaSpecificationExecutor<CohortDefinition> {
   Page<CohortDefinition> findAll(Pageable pageable);
   
   // Bug in hibernate, findById should use @EntityGraph, but details are not being fetched. Workaround: mark details Fetch.EAGER,

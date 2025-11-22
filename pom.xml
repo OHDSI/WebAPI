@@ -503,6 +503,9 @@
               <includes>
                 <include>**/*IT.java</include>
               </includes>
+              <!-- Exclude performance tests from regular integration test runs -->
+              <!-- To run performance tests: mvn verify -Dgroups="org.ohdsi.webapi.test.PerformanceTest" -->
+              <excludedGroups>org.ohdsi.webapi.test.PerformanceTest</excludedGroups>
             </configuration>
           </execution>
           <execution>

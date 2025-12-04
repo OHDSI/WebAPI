@@ -24,6 +24,7 @@ import org.ohdsi.webapi.service.SqlRenderService;
 import org.ohdsi.webapi.service.UserService;
 import org.ohdsi.webapi.service.VocabularyService;
 import org.ohdsi.webapi.source.SourceController;
+import org.ohdsi.webapi.trexsql.TrexsqlController;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
@@ -61,6 +62,7 @@ public class JerseyConfig extends ResourceConfig {
        register(SourceController.class);
        register(SqlRenderService.class);
        register(SSOController.class);
+       register(TrexsqlController.class);
        register(UserService.class);
        register(VocabularyService.class);
        

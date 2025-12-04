@@ -304,6 +304,11 @@
 
     <!-- Shiny -->
     <shiny.enabled>false</shiny.enabled>
+
+    <!-- Trexsql -->
+    <trexsql.enabled>false</trexsql.enabled>
+    <trexsql.cache-path>./data/cache</trexsql.cache-path>
+    <trexsql.extensions-path></trexsql.extensions-path>
   </properties>
 
   <build>
@@ -419,6 +424,8 @@
         <configuration>
           <!-- Since we filter properties files via Maven, do not add resources. -->
           <addResources>false</addResources>
+          <!-- Include system-scoped dependencies like trexsql in the executable JAR -->
+          <includeSystemScope>true</includeSystemScope>
           <mainClass>org.ohdsi.webapi.WebApi</mainClass>
           <jvmArguments>
             --add-opens java.base/java.lang=ALL-UNNAMED
@@ -1248,6 +1255,14 @@
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jsr310</artifactId>
+    </dependency>
+    <!-- Trexsql integration for vocabulary search and Circe execution -->
+    <dependency>
+      <groupId>com.trex</groupId>
+      <artifactId>trexsql</artifactId>
+      <version>0.1.0</version>
+      <scope>system</scope>
+      <systemPath>${project.basedir}/lib/trexsql-0.1.0-standalone.jar</systemPath>
     </dependency>
   </dependencies>
 

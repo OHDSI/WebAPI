@@ -4,9 +4,9 @@ name: CI
 # Run in master and dev branches and in all pull requests to those branches
 on:
   push:
-    branches: [ master ]
+    branches: [ master, webapi-3.0 ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, webapi-3.0 ]
 
 env:
   DOCKER_IMAGE: ohdsi/webapi

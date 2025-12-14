@@ -424,8 +424,8 @@
         <configuration>
           <!-- Since we filter properties files via Maven, do not add resources. -->
           <addResources>false</addResources>
-          <!-- Include system-scoped dependencies like trexsql in the executable JAR -->
-          <includeSystemScope>true</includeSystemScope>
+          <!-- System-scoped deps (trexsql) excluded by default; use -Pwith-trexsql to include -->
+          <includeSystemScope>false</includeSystemScope>
           <mainClass>org.ohdsi.webapi.WebApi</mainClass>
           <jvmArguments>
             --add-opens java.base/java.lang=ALL-UNNAMED
@@ -1257,6 +1257,7 @@
       <artifactId>jackson-datatype-jsr310</artifactId>
     </dependency>
     <!-- Trexsql integration for vocabulary search and Circe execution -->
+    <!-- Only packaged when building with: mvn package -Pwith-trexsql -->
     <dependency>
       <groupId>com.trex</groupId>
       <artifactId>trexsql</artifactId>
@@ -1267,6 +1268,21 @@
   </dependencies>
 
   <profiles>
+    <!-- Include trexsql in the packaged JAR -->
+    <profile>
+      <id>with-trexsql</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <configuration>
+              <includeSystemScope>true</includeSystemScope>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
     <profile>
       <id>webapi-oracle</id>
       <properties>

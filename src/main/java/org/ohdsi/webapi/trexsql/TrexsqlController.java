@@ -7,6 +7,7 @@ import jakarta.ws.rs.core.*;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -18,6 +19,7 @@ import java.util.Map;
  */
 @Path("trexsql")
 @Component
+@ConditionalOnProperty(name = "trexsql.enabled", havingValue = "true", matchIfMissing = false)
 public class TrexsqlController {
 
     private static final Logger log = LoggerFactory.getLogger(TrexsqlController.class);

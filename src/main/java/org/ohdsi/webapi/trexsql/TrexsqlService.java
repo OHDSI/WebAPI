@@ -3,6 +3,7 @@ package org.ohdsi.webapi.trexsql;
 import com.trex.Trexsql;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -14,6 +15,7 @@ import java.util.Map;
  * Service for TrexSQL operations used by SearchProvider.
  */
 @Service
+@ConditionalOnProperty(name = "trexsql.enabled", havingValue = "true", matchIfMissing = false)
 public class TrexsqlService {
 
     private static final Logger log = LoggerFactory.getLogger(TrexsqlService.class);

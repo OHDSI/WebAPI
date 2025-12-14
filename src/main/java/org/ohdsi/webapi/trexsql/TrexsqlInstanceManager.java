@@ -4,6 +4,7 @@ import com.trex.Trexsql;
 import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -15,6 +16,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Provides lazy initialization and graceful shutdown.
  */
 @Component
+@ConditionalOnProperty(name = "trexsql.enabled", havingValue = "true", matchIfMissing = false)
 public class TrexsqlInstanceManager {
 
     private static final Logger log = LoggerFactory.getLogger(TrexsqlInstanceManager.class);

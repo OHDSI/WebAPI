@@ -4,6 +4,7 @@ import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.flyway.FlywayConfigurationCustomizer;
 import org.springframework.boot.autoconfigure.flyway.FlywayDataSource;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -77,6 +78,15 @@ public class FlywayConfig {
     public ApplicationContextHolder applicationContextHolder(ApplicationContext applicationContext) {
         ApplicationContextHolder.setApplicationContext(applicationContext);
         return new ApplicationContextHolder();
+    }
+
+    /**
+     * Register baseline callback to handle fresh database installations.
+     * For fresh databases, marks V2.x migrations as applied so V3.0.0.0 baseline runs.
+     */
+    @Bean
+    public FlywayConfigurationCustomizer flywayBaselineCustomizer() {
+        return configuration -> configuration.callbacks(new FlywayBaselineCallback());
     }
 
 }

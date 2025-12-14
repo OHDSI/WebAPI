@@ -82,14 +82,14 @@ jobs:
         id: build_params
         run: |
           echo "::set-output name=sha8::${GITHUB_SHA::8}"
-          if [ ${{ github.event_name == 'pull_request' }} ]; then
-            echo "::set-output name=push::false"
-            echo "::set-output name=load::true"
-            echo "::set-output name=platforms::linux/amd64"
-          else
+          if [ "${{ github.event_name }}" != "pull_request" ] && [ "${{ github.ref }}" == "refs/heads/master" ]; then
             echo "::set-output name=push::true"
             echo "::set-output name=load::false"
             echo "::set-output name=platforms::linux/amd64,linux/arm64"
+          else
+            echo "::set-output name=push::false"
+            echo "::set-output name=load::true"
+            echo "::set-output name=platforms::linux/amd64"
           fi
 
       - name: Login to DockerHub

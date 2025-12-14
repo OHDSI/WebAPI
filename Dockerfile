@@ -22,22 +22,15 @@ COPY src /code/src
 RUN mvn package ${MAVEN_PARAMS} \
     -Dgit.branch=${GIT_BRANCH} \
     -Dgit.commit.id.abbrev=${GIT_COMMIT_ID_ABBREV} \
-    -P${MAVEN_PROFILE} \
-    && mkdir war \
-    && mv target/WebAPI.war war \
-    && cd war \
-    && jar -xf WebAPI.war \
-    && rm WebAPI.war
+    -P${MAVEN_PROFILE}
 
-# OHDSI WebAPI and ATLAS web application running as a Spring Boot application with Java 21
+# OHDSI WebAPI running as a Spring Boot executable JAR with Java 21
 FROM index.docker.io/library/eclipse-temurin:21-jre
 
 MAINTAINER Lee Evans - www.ltscomputingllc.com
 
 # Any Java options to pass along, e.g. memory, garbage collection, etc.
 ENV JAVA_OPTS=""
-# Additional classpath parameters to pass along. If provided, start with colon ":"
-ENV CLASSPATH=""
 # Default Java options. The first entry is a fix for when java reads secure random numbers:
 # in a containerized system using /dev/random may reduce entropy too much, causing slowdowns.
 # https://ruleoftech.com/2016/avoiding-jvm-delays-caused-by-random-number-generation
@@ -47,21 +40,13 @@ ENV DEFAULT_JAVA_OPTS="-Djava.security.egd=file:///dev/./urandom"
 WORKDIR /var/lib/ohdsi/webapi
 
 COPY --from=builder /code/opentelemetry-javaagent.jar .
-
-# deploy the just built OHDSI WebAPI war file
-# copy resources in order of fewest changes to most changes.
-# This way, the libraries step is not duplicated if the dependencies
-# do not change.
-COPY --from=builder /code/war/WEB-INF/lib*/* WEB-INF/lib/
-COPY --from=builder /code/war/org org
-COPY --from=builder /code/war/WEB-INF/classes WEB-INF/classes
-COPY --from=builder /code/war/META-INF META-INF
+COPY --from=builder /code/target/WebAPI.jar .
 
 EXPOSE 8080
 
 USER 101
 
-# Directly run the code as a WAR.
+# Run the executable JAR
 CMD exec java ${DEFAULT_JAVA_OPTS} ${JAVA_OPTS} \
-    -cp ".:WebAPI.jar:WEB-INF/lib/*.jar${CLASSPATH}" \
-    org.springframework.boot.loader.WarLauncher
+    --add-opens java.naming/com.sun.jndi.ldap=ALL-UNNAMED \
+    -jar WebAPI.jar

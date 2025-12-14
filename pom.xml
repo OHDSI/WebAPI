@@ -477,15 +477,6 @@
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-war-plugin</artifactId>
-        <version>3.4.0</version>
-        <configuration>
-          <failOnMissingWebXml>false</failOnMissingWebXml>
-          <attachClasses>true</attachClasses>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>3.5.2</version>
         <configuration>
@@ -694,9 +685,8 @@
       <artifactId>spring-boot-starter-batch</artifactId>
     </dependency>
 
-    <!-- We are intentionally overriding the Tomcat version from Spring Boot 1.5.22.RELEASE -->
-    <!-- and assuming tomcat-jdbc.jar will be in the Tomcat installation folder (\apache-tomcat-8.5.xxx\lib). -->
-    <!-- WebAPI.war.original should not contain overridden libraries -->
+    <!-- Embedded Tomcat dependencies for executable JAR -->
+    <!-- Note: WAR packaging is available via 'mvn package -Pwar' profile -->
     <dependency>
       <groupId>org.apache.tomcat.embed</groupId>
       <artifactId>tomcat-embed-el</artifactId>
@@ -1901,6 +1891,37 @@
           <type>jar</type>
         </dependency>
       </dependencies>
+    </profile>
+
+    <!-- WAR packaging profile - use with: mvn package -Pwar -->
+    <profile>
+      <id>war</id>
+      <properties>
+        <packaging.type>war</packaging.type>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-war-plugin</artifactId>
+            <version>3.4.0</version>
+            <executions>
+              <execution>
+                <id>build-war</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>war</goal>
+                </goals>
+                <configuration>
+                  <failOnMissingWebXml>false</failOnMissingWebXml>
+                  <attachClasses>true</attachClasses>
+                  <warName>WebAPI</warName>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>

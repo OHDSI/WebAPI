@@ -12,6 +12,7 @@ RUN curl -LSsO https://github.com/open-telemetry/opentelemetry-java-instrumentat
 COPY pom.xml /code/
 RUN mkdir .git \
     && mvn package \
+     -Dpackaging.type=jar \
      -P${MAVEN_PROFILE}
 
 ARG GIT_BRANCH=unknown
@@ -20,6 +21,7 @@ ARG GIT_COMMIT_ID_ABBREV=unknown
 # Compile code and repackage it
 COPY src /code/src
 RUN mvn package ${MAVEN_PARAMS} \
+    -Dpackaging.type=jar \
     -Dgit.branch=${GIT_BRANCH} \
     -Dgit.commit.id.abbrev=${GIT_COMMIT_ID_ABBREV} \
     -P${MAVEN_PROFILE}

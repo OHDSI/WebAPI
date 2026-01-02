@@ -9,7 +9,7 @@
   <version>3.0.0-SNAPSHOT</version>
   <name>WebAPI</name>
   <properties>
-    <packaging.type>jar</packaging.type>
+    <packaging.type>war</packaging.type>
     <build.number>${BUILD_NUMBER}</build.number>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- Spring Boot manages spring.version as well -->

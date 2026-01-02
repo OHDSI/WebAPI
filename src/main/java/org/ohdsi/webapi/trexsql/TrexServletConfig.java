@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.trexsql;
 
-import com.trex.TrexServlet;
+import org.trex.TrexServlet;
 import jakarta.servlet.http.HttpServlet;
 import org.ohdsi.webapi.source.SourceRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

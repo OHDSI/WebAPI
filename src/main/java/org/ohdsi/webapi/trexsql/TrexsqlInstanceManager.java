@@ -1,6 +1,6 @@
 package org.ohdsi.webapi.trexsql;
 
-import com.trex.Trexsql;
+import org.trex.Trexsql;
 import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -46,6 +46,10 @@ public class TrexSQLService {
         log.debug("Searching vocabulary for source {} with term: {}", sourceKey, searchTerm);
 
         TrexSQLSourceConfig sourceConfig = config.getSourceConfig(sourceKey);
+        if (sourceConfig == null) {
+            throw new IllegalStateException("TrexSQL source configuration not found for key: " + sourceKey);
+        }
+
         String databaseCode = sourceConfig.getDatabaseCode();
 
         Map<String, Object> options = new HashMap<>();

@@ -31,7 +31,7 @@ public class TrexSQLInstanceManager {
 
     public Object getInstance() {
         if (!config.isEnabled()) {
-            throw new IllegalStateException("Trexsql is not enabled");
+            throw new IllegalStateException("TrexSQL is not enabled");
         }
 
         if (trexsqlDb == null) {

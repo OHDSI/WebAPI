@@ -466,6 +466,9 @@
             --add-opens java.naming/com.sun.jndi.ldap=ALL-UNNAMED
             --add-exports java.naming/com.sun.jndi.ldap=ALL-UNNAMED
           </argLine>
+          <systemPropertyVariables>
+            <org.springframework.boot.logging.LoggingSystem>org.springframework.boot.logging.log4j2.Log4J2LoggingSystem</org.springframework.boot.logging.LoggingSystem>
+          </systemPropertyVariables>
         </configuration>
       </plugin>
       <plugin>
@@ -488,6 +491,9 @@
         <version>3.5.2</version>
         <configuration>
           <skipITs>${skipITtests}</skipITs>
+          <systemPropertyVariables>
+            <org.springframework.boot.logging.LoggingSystem>org.springframework.boot.logging.log4j2.Log4J2LoggingSystem</org.springframework.boot.logging.LoggingSystem>
+          </systemPropertyVariables>
         </configuration>
         <executions>
           <execution>

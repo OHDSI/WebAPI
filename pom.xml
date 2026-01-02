@@ -424,7 +424,7 @@
         <configuration>
           <!-- Since we filter properties files via Maven, do not add resources. -->
           <addResources>false</addResources>
-          <!-- System-scoped deps (trexsql) excluded by default; use -Pwith-trexsql to include -->
+          <!-- System-scoped deps (trexsql) excluded by default; use -Ptcache to include -->
           <includeSystemScope>false</includeSystemScope>
           <mainClass>org.ohdsi.webapi.WebApi</mainClass>
           <jvmArguments>
@@ -1257,20 +1257,23 @@
       <artifactId>jackson-datatype-jsr310</artifactId>
     </dependency>
     <!-- Trexsql integration for vocabulary search and Circe execution -->
-    <!-- Only packaged when building with: mvn package -Pwith-trexsql -->
+    <!-- Only packaged when building with: mvn package -Ptcache -->
     <dependency>
       <groupId>com.trex</groupId>
       <artifactId>trexsql</artifactId>
-      <version>0.1.0</version>
+      <version>0.1.1</version>
       <scope>system</scope>
-      <systemPath>${project.basedir}/lib/trexsql-0.1.0-standalone.jar</systemPath>
+      <systemPath>${project.basedir}/lib/trexsql-0.1.1-standalone.jar</systemPath>
     </dependency>
   </dependencies>
 
   <profiles>
-    <!-- Include trexsql in the packaged JAR -->
+    <!-- Include trexsql cache in the packaged JAR and enable it by default -->
     <profile>
-      <id>with-trexsql</id>
+      <id>tcache</id>
+      <properties>
+        <trexsql.enabled>true</trexsql.enabled>
+      </properties>
       <build>
         <plugins>
           <plugin>

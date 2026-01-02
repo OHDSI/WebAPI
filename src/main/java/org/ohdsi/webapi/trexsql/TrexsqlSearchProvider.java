@@ -3,8 +3,6 @@ package org.ohdsi.webapi.trexsql;
 import org.ohdsi.vocabulary.Concept;
 import org.ohdsi.vocabulary.SearchProvider;
 import org.ohdsi.vocabulary.SearchProviderConfig;
-import org.ohdsi.webapi.trexsql.exception.CacheNotFoundException;
-import org.ohdsi.webapi.trexsql.exception.TrexsqlNotAvailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -50,12 +48,12 @@ public class TrexsqlSearchProvider implements SearchProvider {
 
         if (!trexsqlService.isEnabledForSource(sourceKey)) {
             log.debug("TrexSQL not enabled for source {}", sourceKey);
-            throw new TrexsqlNotAvailableException(sourceKey, "TrexSQL not enabled for source: " + sourceKey);
+            throw new IllegalStateException("TrexSQL not enabled for source: " + sourceKey);
         }
 
         if (!trexsqlService.isCacheAvailable(sourceKey)) {
             log.debug("Cache not available for source {}", sourceKey);
-            throw new CacheNotFoundException(sourceKey);
+            throw new IllegalStateException("TrexSQL cache not available for source: " + sourceKey);
         }
 
         int maxRows = parseRows(rows);
@@ -64,8 +62,6 @@ public class TrexsqlSearchProvider implements SearchProvider {
         try {
             List<Map<String, Object>> results = trexsqlService.searchVocab(sourceKey, query, maxRows);
             return mapToConcepts(results);
-        } catch (TrexsqlNotAvailableException | CacheNotFoundException e) {
-            throw e;
         } catch (Exception e) {
             log.error("TrexSQL search failed for source {}: {}", sourceKey, e.getMessage(), e);
             throw new RuntimeException("TrexSQL search failed: " + e.getMessage(), e);

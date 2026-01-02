@@ -1,1 +1,0 @@
-ALTER TABLE ${ohdsiSchema}.fe_analysis_criteria ADD COLUMN conceptsets VARCHAR;

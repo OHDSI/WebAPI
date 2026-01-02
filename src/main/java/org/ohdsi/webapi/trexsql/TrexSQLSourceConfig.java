@@ -1,7 +1,7 @@
 package org.ohdsi.webapi.trexsql;
 
 /**
- * Per-source configuration for trexsql integration.
+ * Per-source configuration for TrexSQL integration.
  * Maps to trexsql.sources.{sourceKey} in application properties.
  */
 public class TrexSQLSourceConfig {

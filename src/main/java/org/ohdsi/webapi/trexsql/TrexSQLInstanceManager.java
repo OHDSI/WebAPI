@@ -85,16 +85,21 @@ public class TrexSQLInstanceManager {
 
     @PreDestroy
     public void shutdown() {
-        if (trexsqlDb != null) {
-            log.info("Shutting down TrexSQL instance");
-            try {
-                Trexsql.shutdown(trexsqlDb);
-                log.info("TrexSQL instance shut down successfully");
-            } catch (Exception e) {
-                log.error("Error shutting down TrexSQL instance: {}", e.getMessage(), e);
-            } finally {
-                trexsqlDb = null;
+        initLock.lock();
+        try {
+            if (trexsqlDb != null) {
+                log.info("Shutting down TrexSQL instance");
+                try {
+                    Trexsql.shutdown(trexsqlDb);
+                    log.info("TrexSQL instance shut down successfully");
+                } catch (Exception e) {
+                    log.error("Error shutting down TrexSQL instance: {}", e.getMessage(), e);
+                } finally {
+                    trexsqlDb = null;
+                }
             }
+        } finally {
+            initLock.unlock();
         }
     }
 }

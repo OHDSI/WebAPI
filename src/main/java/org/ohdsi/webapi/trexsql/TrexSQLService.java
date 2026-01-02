@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,8 +37,12 @@ public class TrexSQLService {
         if (sourceConfig == null) {
             return false;
         }
-        String cachePath = config.getCachePath() + "/" + sourceConfig.getDatabaseCode() + ".db";
-        return new File(cachePath).exists();
+        String databaseCode = sourceConfig.getDatabaseCode();
+        if (databaseCode == null || databaseCode.isEmpty()) {
+            return false;
+        }
+        return Paths.get(config.getCachePath(), databaseCode + ".db")
+            .toFile().exists();
     }
 
     @SuppressWarnings("unchecked")
@@ -51,6 +55,9 @@ public class TrexSQLService {
         }
 
         String databaseCode = sourceConfig.getDatabaseCode();
+        if (databaseCode == null || databaseCode.isEmpty()) {
+            throw new IllegalStateException("TrexSQL database code not configured for source: " + sourceKey);
+        }
 
         Map<String, Object> options = new HashMap<>();
         options.put("database-code", databaseCode);

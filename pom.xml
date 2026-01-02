@@ -565,6 +565,10 @@
       <name>repo.ohdsi.org</name>
       <url>https://repo.ohdsi.org/nexus/content/groups/public</url>
     </repository>
+    <repository>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
+    </repository>
   </repositories>
 
   <pluginRepositories>
@@ -1247,11 +1251,9 @@
       <artifactId>jackson-datatype-jsr310</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.trex</groupId>
-      <artifactId>trexsql</artifactId>
-      <version>0.1.1</version>
-      <scope>system</scope>
-      <systemPath>${project.basedir}/lib/trexsql-0.1.1-standalone.jar</systemPath>
+      <groupId>com.github.p-hoffmann</groupId>
+      <artifactId>trexsql-ext</artifactId>
+      <version>0.1.2</version>
     </dependency>
   </dependencies>
 

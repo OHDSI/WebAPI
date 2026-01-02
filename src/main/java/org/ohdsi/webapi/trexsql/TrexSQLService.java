@@ -16,14 +16,14 @@ import java.util.Map;
  */
 @Service
 @ConditionalOnProperty(name = "trexsql.enabled", havingValue = "true", matchIfMissing = false)
-public class TrexsqlService {
+public class TrexSQLService {
 
-    private static final Logger log = LoggerFactory.getLogger(TrexsqlService.class);
+    private static final Logger log = LoggerFactory.getLogger(TrexSQLService.class);
 
-    private final TrexsqlConfig config;
-    private final TrexsqlInstanceManager instanceManager;
+    private final TrexSQLConfig config;
+    private final TrexSQLInstanceManager instanceManager;
 
-    public TrexsqlService(TrexsqlConfig config, TrexsqlInstanceManager instanceManager) {
+    public TrexSQLService(TrexSQLConfig config, TrexSQLInstanceManager instanceManager) {
         this.config = config;
         this.instanceManager = instanceManager;
     }
@@ -33,7 +33,7 @@ public class TrexsqlService {
     }
 
     public boolean isCacheAvailable(String sourceKey) {
-        TrexsqlSourceConfig sourceConfig = config.getSourceConfig(sourceKey);
+        TrexSQLSourceConfig sourceConfig = config.getSourceConfig(sourceKey);
         if (sourceConfig == null) {
             return false;
         }
@@ -45,7 +45,7 @@ public class TrexsqlService {
     public List<Map<String, Object>> searchVocab(String sourceKey, String searchTerm, int maxRows) {
         log.debug("Searching vocabulary for source {} with term: {}", sourceKey, searchTerm);
 
-        TrexsqlSourceConfig sourceConfig = config.getSourceConfig(sourceKey);
+        TrexSQLSourceConfig sourceConfig = config.getSourceConfig(sourceKey);
         String databaseCode = sourceConfig.getDatabaseCode();
 
         Map<String, Object> options = new HashMap<>();

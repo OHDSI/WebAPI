@@ -10,11 +10,11 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ConditionalOnProperty(name = "trexsql.enabled", havingValue = "true")
-public class TrexServletConfig {
+public class TrexSQLServletConfig {
 
     @Bean
-    public ServletRegistrationBean<HttpServlet> trexServlet(
-            TrexsqlInstanceManager instanceManager,
+        public ServletRegistrationBean<HttpServlet> trexServlet(
+            TrexSQLInstanceManager instanceManager,
             SourceRepository sourceRepository) {
 
         TrexServlet servlet = new TrexServlet();

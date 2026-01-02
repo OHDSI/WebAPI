@@ -4,7 +4,7 @@ package org.ohdsi.webapi.trexsql;
  * Per-source configuration for trexsql integration.
  * Maps to trexsql.sources.{sourceKey} in application properties.
  */
-public class TrexsqlSourceConfig {
+public class TrexSQLSourceConfig {
 
     private boolean enabled = false;
     private String databaseCode;

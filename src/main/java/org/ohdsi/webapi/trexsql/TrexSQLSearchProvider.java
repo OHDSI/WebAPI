@@ -18,16 +18,16 @@ import java.util.Map;
  */
 @Component
 @ConditionalOnProperty(name = "trexsql.enabled", havingValue = "true", matchIfMissing = false)
-public class TrexsqlSearchProvider implements SearchProvider {
+public class TrexSQLSearchProvider implements SearchProvider {
 
-    private static final Logger log = LoggerFactory.getLogger(TrexsqlSearchProvider.class);
+    private static final Logger log = LoggerFactory.getLogger(TrexSQLSearchProvider.class);
 
     private static final int TREXSQL_PRIORITY = 1;
 
-    private final TrexsqlService trexsqlService;
-    private final TrexsqlConfig config;
+    private final TrexSQLService trexsqlService;
+    private final TrexSQLConfig config;
 
-    public TrexsqlSearchProvider(TrexsqlService trexsqlService, TrexsqlConfig config) {
+    public TrexSQLSearchProvider(TrexSQLService trexsqlService, TrexSQLConfig config) {
         this.trexsqlService = trexsqlService;
         this.config = config;
     }

@@ -12,12 +12,12 @@ import java.util.Map;
  */
 @Configuration
 @ConfigurationProperties(prefix = "trexsql")
-public class TrexsqlConfig {
+public class TrexSQLConfig {
 
     private boolean enabled = false;
     private String cachePath = "./data/cache";
     private String extensionsPath;
-    private Map<String, TrexsqlSourceConfig> sources = new HashMap<>();
+    private Map<String, TrexSQLSourceConfig> sources = new HashMap<>();
 
     public boolean isEnabled() {
         return enabled;
@@ -43,15 +43,15 @@ public class TrexsqlConfig {
         this.extensionsPath = extensionsPath;
     }
 
-    public Map<String, TrexsqlSourceConfig> getSources() {
+    public Map<String, TrexSQLSourceConfig> getSources() {
         return sources;
     }
 
-    public void setSources(Map<String, TrexsqlSourceConfig> sources) {
+    public void setSources(Map<String, TrexSQLSourceConfig> sources) {
         this.sources = sources;
     }
 
-    public TrexsqlSourceConfig getSourceConfig(String sourceKey) {
+    public TrexSQLSourceConfig getSourceConfig(String sourceKey) {
         return sources.get(sourceKey);
     }
 
@@ -59,7 +59,7 @@ public class TrexsqlConfig {
         if (!enabled) {
             return false;
         }
-        TrexsqlSourceConfig sourceConfig = sources.get(sourceKey);
+        TrexSQLSourceConfig sourceConfig = sources.get(sourceKey);
         return sourceConfig != null && sourceConfig.isEnabled();
     }
 }

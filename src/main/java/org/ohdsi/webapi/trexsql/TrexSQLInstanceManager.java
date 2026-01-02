@@ -17,15 +17,15 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @Component
 @ConditionalOnProperty(name = "trexsql.enabled", havingValue = "true", matchIfMissing = false)
-public class TrexsqlInstanceManager {
+public class TrexSQLInstanceManager {
 
-    private static final Logger log = LoggerFactory.getLogger(TrexsqlInstanceManager.class);
+    private static final Logger log = LoggerFactory.getLogger(TrexSQLInstanceManager.class);
 
-    private final TrexsqlConfig config;
+    private final TrexSQLConfig config;
     private volatile Object trexsqlDb = null;
     private final ReentrantLock initLock = new ReentrantLock();
 
-    public TrexsqlInstanceManager(TrexsqlConfig config) {
+    public TrexSQLInstanceManager(TrexSQLConfig config) {
         this.config = config;
     }
 

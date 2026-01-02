@@ -34,7 +34,9 @@ public class TrexSQLSearchProvider implements SearchProvider {
 
     @Override
     public boolean supports(String vocabularyVersionKey) {
-        return config.isEnabled();
+        return config.isEnabled()
+            && trexsqlService.isEnabledForSource(vocabularyVersionKey)
+            && trexsqlService.isCacheAvailable(vocabularyVersionKey);
     }
 
     @Override
@@ -99,17 +101,17 @@ public class TrexSQLSearchProvider implements SearchProvider {
             concept.invalidReason = (String) row.get("invalid_reason");
 
             Object validStartDate = row.get("valid_start_date");
-            if (validStartDate instanceof java.util.Date) {
-                concept.validStartDate = (java.util.Date) validStartDate;
-            } else if (validStartDate instanceof java.sql.Date) {
+            if (validStartDate instanceof java.sql.Date) {
                 concept.validStartDate = new java.util.Date(((java.sql.Date) validStartDate).getTime());
+            } else if (validStartDate instanceof java.util.Date) {
+                concept.validStartDate = (java.util.Date) validStartDate;
             }
 
             Object validEndDate = row.get("valid_end_date");
-            if (validEndDate instanceof java.util.Date) {
-                concept.validEndDate = (java.util.Date) validEndDate;
-            } else if (validEndDate instanceof java.sql.Date) {
+            if (validEndDate instanceof java.sql.Date) {
                 concept.validEndDate = new java.util.Date(((java.sql.Date) validEndDate).getTime());
+            } else if (validEndDate instanceof java.util.Date) {
+                concept.validEndDate = (java.util.Date) validEndDate;
             }
 
             concepts.add(concept);

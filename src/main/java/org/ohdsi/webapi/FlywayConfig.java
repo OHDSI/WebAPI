@@ -80,13 +80,4 @@ public class FlywayConfig {
         return new ApplicationContextHolder();
     }
 
-    /**
-     * Register baseline callback to handle fresh database installations.
-     * For fresh databases, marks V2.x migrations as applied so V3.0.0.0 baseline runs.
-     */
-    @Bean
-    public FlywayConfigurationCustomizer flywayBaselineCustomizer() {
-        return configuration -> configuration.callbacks(new FlywayBaselineCallback());
-    }
-
 }

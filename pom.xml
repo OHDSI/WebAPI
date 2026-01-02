@@ -5,10 +5,11 @@
 
   <groupId>org.ohdsi</groupId>
   <artifactId>WebAPI</artifactId>
-  <packaging>war</packaging>
+  <packaging>${packaging.type}</packaging>
   <version>3.0.0-SNAPSHOT</version>
   <name>WebAPI</name>
   <properties>
+    <packaging.type>war</packaging.type>
     <build.number>${BUILD_NUMBER}</build.number>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- Spring Boot manages spring.version as well -->
@@ -416,7 +417,6 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <version>${spring.boot.version}</version>
-        <!-- executable-war via 'java -jar WebAPI-exec.war' currently fails with Jersey FileNotFound exception. TODO -->
         <configuration>
           <!-- Since we filter properties files via Maven, do not add resources. -->
           <addResources>false</addResources>
@@ -474,15 +474,6 @@
             <!-- Preserve parameter names for reflection (required for AspectJ parameter resolution) -->
             <arg>-parameters</arg>
           </compilerArgs>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-war-plugin</artifactId>
-        <version>3.4.0</version>
-        <configuration>
-          <failOnMissingWebXml>false</failOnMissingWebXml>
-          <attachClasses>true</attachClasses>
         </configuration>
       </plugin>
       <plugin>
@@ -689,16 +680,14 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-tomcat</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-batch</artifactId>
     </dependency>
 
-    <!-- We are intentionally overriding the Tomcat version from Spring Boot 1.5.22.RELEASE -->
-    <!-- and assuming tomcat-jdbc.jar will be in the Tomcat installation folder (\apache-tomcat-8.5.xxx\lib). -->
-    <!-- WebAPI.war.original should not contain overridden libraries -->
+    <!-- Embedded Tomcat dependencies for executable JAR -->
+    <!-- Note: WAR packaging is available via 'mvn package -Pwar' profile -->
     <dependency>
       <groupId>org.apache.tomcat.embed</groupId>
       <artifactId>tomcat-embed-el</artifactId>
@@ -711,7 +700,6 @@
     <dependency>
       <groupId>org.apache.tomcat</groupId>
       <artifactId>tomcat-jdbc</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.tomcat</groupId>
@@ -779,12 +767,15 @@
         </exclusion>
       </exclusions>
     </dependency> -->
+    <!-- javax.servlet-api is now provided by spring-boot-starter-tomcat (Jakarta Servlet API) -->
+    <!-- This old javax.servlet dependency can be removed for JAR packaging -->
+    <!--
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
       <version>3.1.0</version>
-      <scope>provided</scope>
     </dependency>
+    -->
     <dependency>
       <groupId>javax.cache</groupId>
       <artifactId>cache-api</artifactId>
@@ -1901,6 +1892,50 @@
           <type>jar</type>
         </dependency>
       </dependencies>
+    </profile>
+
+    <!-- WAR packaging profile - use with: mvn package -Pwar -->
+    <profile>
+      <id>war</id>
+      <properties>
+        <packaging.type>war</packaging.type>
+      </properties>
+      <dependencies>
+        <!-- Mark embedded Tomcat as provided for external servlet container deployment -->
+        <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-tomcat</artifactId>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.tomcat</groupId>
+          <artifactId>tomcat-jdbc</artifactId>
+          <scope>provided</scope>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-war-plugin</artifactId>
+            <version>3.4.0</version>
+            <executions>
+              <execution>
+                <id>build-war</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>war</goal>
+                </goals>
+                <configuration>
+                  <failOnMissingWebXml>false</failOnMissingWebXml>
+                  <attachClasses>true</attachClasses>
+                  <warName>WebAPI</warName>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>

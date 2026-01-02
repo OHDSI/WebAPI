@@ -40,6 +40,18 @@ The API Documentation is found at [http://webapidoc.ohdsi.org/](http://webapidoc
 
 Documentation can be found a the [Web API Installation Guide](https://github.com/OHDSI/WebAPI/wiki) which covers the system requirements and installation instructions.
 
+## JAR Build (Executable)
+
+WebAPI can also be built as a self-contained executable JAR with embedded Tomcat:
+
+```bash
+# Build as JAR
+mvn clean package -DskipTests -Dpackaging.type=jar
+
+# Run
+java -jar target/WebAPI.jar --spring.profiles.active=webapi-postgresql
+```
+
 ## SAML Auth support
 
 The following parameters are used:
@@ -124,191 +136,20 @@ It was chosen to use embedded PG instead of H2 for unit tests since H2 doesn't s
 ### Quick Start Guide
 
 #### Prerequisites
+1. Ensure that you have the following tools installed: Java 1.8, maven (check via `mvn -v`), docker-ce (check via `docker -v`), psql command line client
+(check via psql --version) or other tool that allows to connect to postgres DB.
+2. Run `mvn clean install` and make sure it completes successfully, resolve dependency issues if any.
+3. Create a new database in docker: `docker create --name postgres-webapi -p 8432:5432 -e POSTGRES_PASSWORD=ohdsi postgres:15.0-alpine`.
+4. Start DB container: `docker start postgres-webapi`.
+	 Verify that you can connect via psql console (`PGPASSWORD='ohdsi' psql -d postgresql://localhost:8432/?user=postgres`).
+5. If your default java version is too high (e.g. 17), set JAVA_HOME to point to 1.8 installaction, for example `export JAVA_HOME=/usr/lib/jvm/zulu8-ca-amd64`
+6. Start WebAPI `mvn clean install spring-boot:run -Dmaven.test.skip=true -P webapi-postgresql -s src/dev/settings.xml -f pom.xml`
+7. Log in with the username of your liking
+8. Grant this newly created user admin privileges by running the following sql `INSERT INTO sec_user_role (user_id, role_id, origin) VALUES (1000, 2, 'SYSTEM');`
+   and log in again.
 
-- **Java 21** (OpenJDK recommended - get from [Adoptium](https://adoptium.net/))
-- **Maven 3.x** (check via `mvn -v`)
-- **Docker** (check via `docker -v`) - for local PostgreSQL
-- **PostgreSQL client** (optional - check via `psql --version`)
-
-#### Installation & Running
-
-**Option 1: Using Pre-built JAR (Recommended)**
-
-1. **Download the latest release:**
-   ```bash
-   wget https://github.com/OHDSI/WebAPI/releases/latest/download/WebAPI.jar
-   ```
-
-2. **Set up PostgreSQL database:**
-   ```bash
-   docker create --name postgres-webapi -p 8432:5432 -e POSTGRES_PASSWORD=ohdsi postgres:15.0-alpine
-   docker start postgres-webapi
-   ```
-
-3. **Run WebAPI:**
-   ```bash
-   java -jar WebAPI.jar --spring.profiles.active=webapi-postgresql
-   ```
-
-4. **Access the API:**
-   - Open browser: http://localhost:8080/WebAPI/
-   - Log in with any username
-   - Grant admin privileges: `INSERT INTO sec_user_role (user_id, role_id, origin) VALUES (1000, 2, 'SYSTEM');`
-
-**Option 2: Building from Source**
-
-1. **Clone and build:**
-   ```bash
-   git clone https://github.com/OHDSI/WebAPI.git
-   cd WebAPI
-   export JAVA_HOME="/path/to/jdk-21"  # Adjust to your Java 21 installation
-   mvn clean package -DskipTests
-   ```
-
-2. **Set up database (same as above):**
-   ```bash
-   docker create --name postgres-webapi -p 8432:5432 -e POSTGRES_PASSWORD=ohdsi postgres:15.0-alpine
-   docker start postgres-webapi
-   ```
-
-3. **Run the JAR:**
-   ```bash
-   java -jar target/WebAPI.jar --spring.profiles.active=webapi-postgresql
-   ```
-
-**Option 3: Development Mode (Maven)**
-
-```bash
-mvn spring-boot:run -P webapi-postgresql
-```
-
-#### Configuration
-
-**No recompilation needed!** Override configuration via:
-
-**1. Command-line arguments:**
-```bash
-java -jar WebAPI.jar \
-  --spring.profiles.active=webapi-postgresql \
-  --datasource.url=jdbc:postgresql://localhost:8432/ohdsi \
-  --datasource.username=postgres \
-  --datasource.password=ohdsi
-```
-
-**2. External `application.properties` file** (in same directory as JAR):
-```properties
-spring.profiles.active=webapi-postgresql
-datasource.url=jdbc:postgresql://localhost:8432/ohdsi
-datasource.username=postgres
-datasource.password=ohdsi
-datasource.ohdsi.schema=webapi
-```
-
-**3. Environment variables:**
-```bash
-export DATASOURCE_URL=jdbc:postgresql://localhost:8432/ohdsi
-export DATASOURCE_USERNAME=postgres
-export DATASOURCE_PASSWORD=ohdsi
-java -jar WebAPI.jar --spring.profiles.active=webapi-postgresql
-```
-
-#### Database Profiles
-
-WebAPI supports multiple databases:
-
-```bash
-# PostgreSQL (recommended for development)
-java -jar WebAPI.jar --spring.profiles.active=webapi-postgresql
-
-# SQL Server
-java -jar WebAPI.jar --spring.profiles.active=webapi-sqlserver
-
-# Oracle
-java -jar WebAPI.jar --spring.profiles.active=webapi-oracle
-```
-
-#### Configuration Properties
-
-Common properties you can override:
-
-| Property | Description | Example |
-|----------|-------------|---------|
-| `datasource.url` | Database JDBC URL | `jdbc:postgresql://localhost:5432/ohdsi` |
-| `datasource.username` | Database username | `webapi_user` |
-| `datasource.password` | Database password | `secret123` |
-| `datasource.ohdsi.schema` | Schema for WebAPI tables | `webapi` |
-| `security.provider` | Security provider | `DisabledSecurity` or `AtlasRegularSecurity` |
-| `security.origin` | CORS origin | `http://localhost` |
-| `flyway.datasource.url` | Flyway migration database | `jdbc:postgresql://localhost:5432/ohdsi` |
-
-See `src/main/resources/application.properties` for all available properties.
-
-#### Next Steps
-
-At this point you have WebAPI running with an admin account. To use it effectively:
-
-1. **Set up security** - Configure authentication providers (see Security section below)
-2. **Add CDM database sources** - Connect to your OMOP CDM databases
-3. **Configure permissions** - Set up user roles and access controls
-
-See the [Installation Guide](https://github.com/OHDSI/WebAPI/wiki) for detailed setup instructions.
-
-### Deployment Options
-
-**Docker Container**
-
-```bash
-# Pull from Docker Hub (when available)
-docker pull ohdsi/webapi:latest
-
-# Or build from source
-docker build -t webapi:local .
-
-# Run container
-docker run -d \
-  --name webapi \
-  -p 8080:8080 \
-  -e DATASOURCE_URL=jdbc:postgresql://db-server:5432/ohdsi \
-  -e DATASOURCE_USERNAME=webapi_user \
-  -e DATASOURCE_PASSWORD=secret \
-  ohdsi/webapi:latest
-```
-
-### Performance Tuning
-
-**JVM Options:**
-
-```bash
-java -Xms2g -Xmx4g \
-  -XX:+UseG1GC \
-  -XX:MaxGCPauseMillis=200 \
-  -XX:+HeapDumpOnOutOfMemoryError \
-  -XX:HeapDumpPath=/var/log/webapi/heap_dump.hprof \
-  -jar WebAPI.jar
-```
-
-**Common JVM parameters:**
-- `-Xms2g` - Initial heap size (2GB)
-- `-Xmx4g` - Maximum heap size (4GB)
-- `-XX:+UseG1GC` - Use G1 garbage collector (recommended for Spring Boot)
-- `-XX:MaxGCPauseMillis=200` - Target max GC pause time
-
-### Troubleshooting
-
-**Check logs:**
-```bash
-# If running in Docker
-docker logs -f webapi
-
-# If running manually
-java -jar WebAPI.jar > webapi.log 2>&1
-```
-
-**Common issues:**
-- **Connection refused**: Check database connectivity and credentials
-- **Port already in use**: Change port with `--server.port=8081`
-- **Out of memory**: Increase heap size with `-Xmx` parameter
-- **Slow startup**: Ensure adequate resources (2GB+ RAM recommended)
+At this point you have the application running and admin account operational. To actually use it, additional steps are required to set up privileges
+and at least one CDM database. They are covered in the respective documentation sections.
 
 ## License
 OHDSI WebAPI is licensed under Apache License 2.0

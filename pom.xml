@@ -305,6 +305,11 @@
 
     <!-- Shiny -->
     <shiny.enabled>false</shiny.enabled>
+
+    <!-- Trexsql -->
+    <trexsql.enabled>false</trexsql.enabled>
+    <trexsql.cache-path>./data/cache</trexsql.cache-path>
+    <trexsql.extensions-path></trexsql.extensions-path>
   </properties>
 
   <build>
@@ -420,6 +425,7 @@
         <configuration>
           <!-- Since we filter properties files via Maven, do not add resources. -->
           <addResources>false</addResources>
+          <includeSystemScope>false</includeSystemScope>
           <mainClass>org.ohdsi.webapi.WebApi</mainClass>
           <jvmArguments>
             --add-opens java.base/java.lang=ALL-UNNAMED
@@ -460,6 +466,9 @@
             --add-opens java.naming/com.sun.jndi.ldap=ALL-UNNAMED
             --add-exports java.naming/com.sun.jndi.ldap=ALL-UNNAMED
           </argLine>
+          <systemPropertyVariables>
+            <org.springframework.boot.logging.LoggingSystem>org.springframework.boot.logging.log4j2.Log4J2LoggingSystem</org.springframework.boot.logging.LoggingSystem>
+          </systemPropertyVariables>
         </configuration>
       </plugin>
       <plugin>
@@ -482,6 +491,9 @@
         <version>3.5.2</version>
         <configuration>
           <skipITs>${skipITtests}</skipITs>
+          <systemPropertyVariables>
+            <org.springframework.boot.logging.LoggingSystem>org.springframework.boot.logging.log4j2.Log4J2LoggingSystem</org.springframework.boot.logging.LoggingSystem>
+          </systemPropertyVariables>
         </configuration>
         <executions>
           <execution>
@@ -558,6 +570,10 @@
       <id>ohdsi</id>
       <name>repo.ohdsi.org</name>
       <url>https://repo.ohdsi.org/nexus/content/groups/public</url>
+    </repository>
+    <repository>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
     </repository>
   </repositories>
 
@@ -1240,9 +1256,31 @@
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jsr310</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.github.p-hoffmann</groupId>
+      <artifactId>trexsql-ext</artifactId>
+      <version>v0.1.2</version>
+    </dependency>
   </dependencies>
 
   <profiles>
+    <profile>
+      <id>tcache</id>
+      <properties>
+        <trexsql.enabled>true</trexsql.enabled>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <configuration>
+              <includeSystemScope>true</includeSystemScope>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
     <profile>
       <id>webapi-oracle</id>
       <properties>

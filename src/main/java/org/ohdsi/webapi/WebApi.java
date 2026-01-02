@@ -17,7 +17,6 @@ import java.util.TimeZone;
 /**
  * OHDSI WebAPI Spring Boot Application
  *
- * Supports both JAR and WAR deployment:
  * - JAR: java -jar WebAPI.jar (embedded Tomcat)
  * - WAR: Deploy to external servlet container (mvn package -Pwar)
  */

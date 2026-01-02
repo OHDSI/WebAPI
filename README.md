@@ -24,6 +24,18 @@ The API Documentation is found at [http://webapidoc.ohdsi.org/](http://webapidoc
 
 Documentation can be found a the [Web API Installation Guide](https://github.com/OHDSI/WebAPI/wiki) which covers the system requirements and installation instructions.
 
+## JAR Build (Executable)
+
+WebAPI can also be built as a self-contained executable JAR with embedded Tomcat:
+
+```bash
+# Build as JAR
+mvn clean package -DskipTests -Dpackaging.type=jar
+
+# Run
+java -jar target/WebAPI.jar --spring.profiles.active=webapi-postgresql
+```
+
 ## SAML Auth support
 
 The following parameters are used:

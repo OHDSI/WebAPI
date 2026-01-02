@@ -58,7 +58,6 @@ public class CacheService {
 
 	
 	@GET
-	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public List<CacheInfo> getCacheInfoList() {
 		List<CacheInfo> caches = new ArrayList<>();

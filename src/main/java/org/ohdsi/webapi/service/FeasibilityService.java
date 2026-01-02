@@ -385,7 +385,6 @@ public class FeasibilityService extends AbstractDaoService {
    * @return List<FeasibilityService.FeasibilityStudyListItem>
    */
   @GET
-  @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
   public List<FeasibilityService.FeasibilityStudyListItem> getFeasibilityStudyList() {
 
@@ -416,7 +415,6 @@ public class FeasibilityService extends AbstractDaoService {
    * @return Feasibility study
    */
   @PUT
-  @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   @Transactional

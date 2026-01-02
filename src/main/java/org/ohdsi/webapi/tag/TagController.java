@@ -40,7 +40,6 @@ public class TagController {
      * @return
      */
     @POST
-    @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public TagDTO create(final TagDTO dto) {
@@ -70,7 +69,6 @@ public class TagController {
      * @return
      */
     @GET
-    @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     public List<TagDTO> list() {
         return tagService.listInfoDTO();

@@ -56,7 +56,6 @@ public class PermissionController {
      * @return A list of permissions
      */
     @GET
-    @Path("")
     @Produces(MediaType.APPLICATION_JSON)
     public List<UserService.Permission> getPermissions() {
 

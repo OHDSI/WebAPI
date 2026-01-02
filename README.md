@@ -36,6 +36,26 @@ mvn clean package -DskipTests -Dpackaging.type=jar
 java -jar target/WebAPI.jar --spring.profiles.active=webapi-postgresql
 ```
 
+## Database configuration (single source of truth)
+
+Set your datasource and schema once; the packaged properties reuse the shared schema key.
+
+Minimal local run example (PostgreSQL):
+
+```bash
+export WEBAPI_SCHEMA=webapi   # optional; defaults to webapi
+export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/postgres
+export SPRING_DATASOURCE_USERNAME=postgres
+export SPRING_DATASOURCE_PASSWORD=your_password
+
+java -jar target/WebAPI.jar \
+	--spring.profiles.active=webapi-postgresql \
+	--datasource.ohdsi.schema=${WEBAPI_SCHEMA:-webapi}
+```
+
+Notes:
+- Batch uses a table prefix and the security datasource can be overridden if you choose a separate connection, but both are optional when you keep everything on the main datasource/schema.
+
 ## SAML Auth support
 
 The following parameters are used:

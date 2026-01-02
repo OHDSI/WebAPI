@@ -52,7 +52,6 @@ public class InfoService {
      * Get info about the WebAPI instance
      */
     @GET
-    @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     public Info getInfo() {
 

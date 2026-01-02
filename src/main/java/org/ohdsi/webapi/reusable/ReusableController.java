@@ -36,7 +36,6 @@ public class ReusableController {
     }
 
     @POST
-    @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public ReusableDTO create(final ReusableDTO dto) {
@@ -44,7 +43,6 @@ public class ReusableController {
     }
 
     @GET
-    @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     public Page<ReusableDTO> page(@Pagination Pageable pageable) {
         return reusableService.page(pageable);

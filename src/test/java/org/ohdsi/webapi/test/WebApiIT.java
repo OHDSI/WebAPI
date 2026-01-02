@@ -5,6 +5,7 @@ import static org.springframework.test.context.TestExecutionListeners.MergeMode.
 
 import com.github.springtestdbunit.DbUnitTestExecutionListener;
 import com.github.springtestdbunit.annotation.DbUnitConfiguration;
+import com.github.springtestdbunit.bean.DatabaseConfigBean;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -24,6 +25,7 @@ import org.ohdsi.sql.SqlTranslate;
 import org.ohdsi.webapi.WebApi;
 import org.ohdsi.webapi.source.Source;
 import org.ohdsi.webapi.source.SourceDaimon;
+import org.dbunit.ext.postgresql.PostgresqlDataTypeFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,6 +54,9 @@ public abstract class WebApiIT {
     protected static final String CDM_SCHEMA_NAME = "cdm";
     protected static final String RESULT_SCHEMA_NAME = "results";
 
+    @Value("${datasource.ohdsi.schema:public}")
+    private String ohdsiSchema;
+
     private static final Collection<String> CDM_DDL_FILE_PATHS = Arrays.asList("/cdm-postgresql-ddl.sql");
     private static final Collection<String> RESULTS_DDL_FILE_PATHS = Arrays.asList(
             "/ddl/results/cohort.sql",
@@ -74,13 +79,22 @@ public abstract class WebApiIT {
 
 		@TestConfiguration
 		public static class DbUnitConfiguration {
-			@Bean
-			DatabaseDataSourceConnectionFactoryBean dbUnitDatabaseConnection() {
+            @Bean
+            DatabaseDataSourceConnectionFactoryBean dbUnitDatabaseConnection(DatabaseConfigBean dbUnitDatabaseConfig,
+                                                                             @Value("${datasource.ohdsi.schema:public}") String ohdsiSchema) {
 				// Use the embedded PostgreSQL datasource from ITStarter
 				DatabaseDataSourceConnectionFactoryBean dbUnitDatabaseConnection = new DatabaseDataSourceConnectionFactoryBean(ITStarter.getDataSource());
-				dbUnitDatabaseConnection.setSchema("public");
+                dbUnitDatabaseConnection.setSchema(ohdsiSchema);
+                dbUnitDatabaseConnection.setDatabaseConfig(dbUnitDatabaseConfig);
 				return dbUnitDatabaseConnection;
 			}
+
+            @Bean
+            DatabaseConfigBean dbUnitDatabaseConfig() {
+                DatabaseConfigBean config = new DatabaseConfigBean();
+                config.setDatatypeFactory(new PostgresqlDataTypeFactory());
+                return config;
+            }
 		}
 
     @Value("${baseUri}")
@@ -125,11 +139,22 @@ public abstract class WebApiIT {
         }
     }
 
-    protected void truncateTable(final String tableName) {
-        jdbcTemplate.execute(String.format("TRUNCATE %s CASCADE",tableName));
+    protected String getOhdsiSchema() {
+        return ohdsiSchema;
     }
+
+    protected String qualifyOhdsiTable(String tableName) {
+        return String.format("%s.%s", ohdsiSchema, tableName);
+    }
+
+    protected void truncateTable(final String tableName) {
+        String qualifiedName = tableName.contains(".") ? tableName : String.format("%s.%s", ohdsiSchema, tableName);
+        jdbcTemplate.execute(String.format("TRUNCATE %s CASCADE", qualifiedName));
+    }
+
     protected void resetSequence(final String sequenceName) {
-        jdbcTemplate.execute(String.format("ALTER SEQUENCE %s RESTART WITH 1", sequenceName));
+        String qualifiedName = sequenceName.contains(".") ? sequenceName : String.format("%s.%s", ohdsiSchema, sequenceName);
+        jdbcTemplate.execute(String.format("ALTER SEQUENCE %s RESTART WITH 1", qualifiedName));
     }
 
     protected Source getCdmSource() throws SQLException {

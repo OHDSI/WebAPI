@@ -24,7 +24,6 @@ public class ToolController {
     }
 
     @GET
-    @Path("")
     @Produces(MediaType.APPLICATION_JSON)
     public List<ToolDTO> getTools() {
         return service.getTools();
@@ -38,7 +37,6 @@ public class ToolController {
     }
 
     @POST
-    @Path("")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public ToolDTO createTool(ToolDTO dto) {
@@ -53,7 +51,6 @@ public class ToolController {
     }
 
     @PUT
-    @Path("")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public ToolDTO updateTool(ToolDTO toolDTO) {

@@ -454,8 +454,6 @@
             --add-opens java.naming/com.sun.jndi.ldap=ALL-UNNAMED
           </jvmArguments>
           <additionalProperties>
-            <git.branch>${git.branch}</git.branch>
-            <git.commit.id>${git.commit.id.abbrev}</git.commit.id>
             <atlas.milestone.id>${buildinfo.atlas.milestone.id}</atlas.milestone.id>
             <webapi.milestone.id>${buildinfo.webapi.milestone.id}</webapi.milestone.id>
             <atlas.release.tag>${buildinfo.atlas.release.tag}</atlas.release.tag>

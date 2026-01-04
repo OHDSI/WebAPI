@@ -80,6 +80,12 @@ public class TrexSQLInstanceManager {
             initConfig.put("extensions-path", config.getExtensionsPath());
         }
 
+        if (config.getCachePath() != null && !config.getCachePath().isEmpty()) {
+            initConfig.put("cache-path", config.getCachePath());
+        }
+
+        initConfig.put("allow-unsigned-extensions", true);
+
         return initConfig;
     }
 

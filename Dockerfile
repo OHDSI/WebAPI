@@ -1,4 +1,4 @@
-FROM maven:3.9-eclipse-temurin-21 as builder
+FROM maven:3.9-eclipse-temurin-21 AS builder
 
 WORKDIR /code
 
@@ -29,7 +29,7 @@ RUN mvn package ${MAVEN_PARAMS} \
 # OHDSI WebAPI running as a Spring Boot executable JAR with Java 21
 FROM index.docker.io/library/eclipse-temurin:21-jre
 
-MAINTAINER Lee Evans - www.ltscomputingllc.com
+LABEL maintainer="Lee Evans - www.ltscomputingllc.com"
 
 # Any Java options to pass along, e.g. memory, garbage collection, etc.
 ENV JAVA_OPTS=""
@@ -49,6 +49,4 @@ EXPOSE 8080
 USER 101
 
 # Run the executable JAR
-CMD exec java ${DEFAULT_JAVA_OPTS} ${JAVA_OPTS} \
-    --add-opens java.naming/com.sun.jndi.ldap=ALL-UNNAMED \
-    -jar WebAPI.jar
+CMD ["sh", "-c", "exec java ${DEFAULT_JAVA_OPTS} ${JAVA_OPTS} --add-opens java.naming/com.sun.jndi.ldap=ALL-UNNAMED -jar WebAPI.jar"]

@@ -559,6 +559,11 @@
 
   <repositories>
     <repository>
+      <id>central</id>
+      <name>Maven Central</name>
+      <url>https://repo.maven.apache.org/maven2</url>
+    </repository>
+    <repository>
       <id>ohdsi</id>
       <name>repo.ohdsi.org</name>
       <url>https://repo.ohdsi.org/nexus/content/groups/public</url>
@@ -1092,7 +1097,7 @@
     <dependency>
       <groupId>org.springframework.ldap</groupId>
       <artifactId>spring-ldap-core</artifactId>
-      <version>2.3.2.RELEASE</version>
+      <version>3.2.8</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
@@ -1225,7 +1230,7 @@
     <dependency>
       <groupId>com.github.p-hoffmann</groupId>
       <artifactId>trexsql-ext</artifactId>
-      <version>v0.1.2</version>
+      <version>v0.1.6</version>
     </dependency>
   </dependencies>
 

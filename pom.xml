@@ -344,6 +344,16 @@
         <includes>
           <include>**/*.properties</include>
         </includes>
+        <excludes>
+          <exclude>application-test.properties</exclude>
+        </excludes>
+      </testResource>
+      <testResource>
+        <directory>src/test/resources</directory>
+        <filtering>false</filtering>
+        <includes>
+          <include>application-test.properties</include>
+        </includes>
       </testResource>
       <testResource>
         <directory>src/test/resources</directory>
@@ -400,8 +410,19 @@
             <configuration>
               <scripts>
                 <script><![CDATA[
-                  if (project.properties.getProperty("git.branch") == null) project.properties.setProperty("git.branch", "*")
-                  if (project.properties.getProperty("git.commit.id.abbrev") == null) project.properties.setProperty("git.commit.id.abbrev", "*")
+                  def ensureProperty(propName) {
+                    def value = session.userProperties.getProperty(propName)
+                    if (value == null || value.trim().isEmpty()) {
+                      value = "*"
+                      session.userProperties.setProperty(propName, value)
+                      project.properties.setProperty(propName, value)
+                      System.setProperty(propName, value)
+                    } else if (project.properties.getProperty(propName) == null || project.properties.getProperty(propName).trim().isEmpty()) {
+                      project.properties.setProperty(propName, value)
+                    }
+                  }
+                  ensureProperty("git.branch")
+                  ensureProperty("git.commit.id.abbrev")
                 ]]></script>
               </scripts>
             </configuration>

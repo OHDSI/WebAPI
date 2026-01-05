@@ -1249,7 +1249,7 @@
     <dependency>
       <groupId>com.github.p-hoffmann</groupId>
       <artifactId>trexsql-ext</artifactId>
-      <version>v0.1.6</version>
+      <version>v0.1.11</version>
     </dependency>
   </dependencies>
 
@@ -1926,7 +1926,7 @@
     <profile>
       <id>war</id>
       <properties>
-        <packaging.type>war</packaging.type>
+        <packaging.type>jar</packaging.type>
       </properties>
       <dependencies>
         <!-- Mark embedded Tomcat as provided for external servlet container deployment -->

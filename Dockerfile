@@ -44,9 +44,16 @@ WORKDIR /var/lib/ohdsi/webapi
 COPY --from=builder /code/opentelemetry-javaagent.jar .
 COPY --from=builder /code/target/WebAPI.jar .
 
+# Extract TrexSQL native library from the nested JAR for proper loading
+RUN mkdir -p /tmp/trexsql && \
+    unzip -j WebAPI.jar 'BOOT-INF/lib/trexsql-ext-*.jar' -d /tmp && \
+    unzip -j /tmp/trexsql-ext-*.jar 'libtrexsql_java.so_linux_amd64' -d /tmp/trexsql 2>/dev/null || true && \
+    mv /tmp/trexsql/libtrexsql_java.so_linux_amd64 /tmp/trexsql/libtrexsql_java.so 2>/dev/null || true && \
+    rm -f /tmp/trexsql-ext-*.jar
+
 EXPOSE 8080
 
 USER 101
 
-# Run the executable JAR
-CMD ["sh", "-c", "exec java ${DEFAULT_JAVA_OPTS} ${JAVA_OPTS} --add-opens java.naming/com.sun.jndi.ldap=ALL-UNNAMED -jar WebAPI.jar"]
+# Run the executable JAR with TrexSQL native library path
+CMD ["sh", "-c", "exec java ${DEFAULT_JAVA_OPTS} ${JAVA_OPTS} -Dorg.duckdb.lib_path=/tmp/trexsql/libtrexsql_java.so --add-opens java.naming/com.sun.jndi.ldap=ALL-UNNAMED -jar WebAPI.jar"]

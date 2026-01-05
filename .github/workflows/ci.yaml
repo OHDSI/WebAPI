@@ -80,6 +80,15 @@ jobs:
           tags: |
             type=raw,value=dev,enable=${{ github.ref == 'refs/heads/master' }}
             type=raw,value=3.0-dev,enable=${{ github.ref == 'refs/heads/webapi-3.0' }}
+            type=sha,prefix={{branch}}-
+
+      - name: Debug Docker metadata
+        run: |
+          echo "Docker metadata outputs:"
+          echo "version: ${{ steps.docker_meta.outputs.version }}"
+          echo "tags: ${{ steps.docker_meta.outputs.tags }}"
+          echo "labels: ${{ steps.docker_meta.outputs.labels }}"
+          echo "json: ${{ steps.docker_meta.outputs.json }}"
 
       # Setup docker build environment
       - name: Set up QEMU

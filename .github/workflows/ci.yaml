@@ -80,7 +80,8 @@ jobs:
           tags: |
             type=raw,value=dev,enable=${{ github.ref == 'refs/heads/master' }}
             type=raw,value=3.0-dev,enable=${{ github.ref == 'refs/heads/webapi-3.0' }}
-            type=sha,prefix={{branch}}-
+            type=sha,prefix=pr-,enable=${{ github.event_name == 'pull_request' }}
+            type=ref,event=branch,prefix=branch-,enable=${{ github.ref != 'refs/heads/master' && github.ref != 'refs/heads/webapi-3.0' }}
 
       - name: Debug Docker metadata
         run: |

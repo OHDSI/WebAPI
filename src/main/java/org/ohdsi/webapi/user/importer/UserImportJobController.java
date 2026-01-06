@@ -55,7 +55,6 @@ public class UserImportJobController {
    * @return The job information
    */
   @POST
-  @Path("/")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public UserImportJobDTO createJob(UserImportJobDTO jobDTO) {
@@ -100,7 +99,6 @@ public class UserImportJobController {
    * @return The list of user import jobs
    */
   @GET
-  @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
   @Transactional
   public List<UserImportJobDTO> listJobs() {

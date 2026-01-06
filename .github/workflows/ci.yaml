@@ -8,9 +8,6 @@ on:
   pull_request:
     branches: [ master, webapi-3.0 ]
 
-env:
-  DOCKER_IMAGE: ohdsi/webapi
-
 jobs:
   # Build and test the code
   build:
@@ -23,7 +20,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - uses: actions/setup-java@v4
         with:
@@ -47,7 +44,7 @@ jobs:
         run: mvn -B -P${{ env.MAVEN_PROFILE }} test
 
   # Check that the docker image builds correctly
-  # Push to ohdsi/atlas:master for commits on master.
+  # Push to ghcr.io for commits on master or webapi-3.0.
   docker:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
@@ -55,7 +52,16 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+
+      - name: Set Docker image name
+        run: |
+          REPO="${GITHUB_REPOSITORY:-ohdsi/webapi}"
+          DOCKER_IMAGE="ghcr.io/$(echo "${REPO}" | tr '[:upper:]' '[:lower:]')"
+          echo "DOCKER_IMAGE=${DOCKER_IMAGE}" >> $GITHUB_ENV
+
+      - name: Debug Docker image name
+        run: echo "DOCKER_IMAGE=${DOCKER_IMAGE}"
 
       - name: Cache Docker layers
         uses: actions/cache@v4
@@ -68,40 +74,54 @@ jobs:
       # Add Docker labels and tags
       - name: Docker meta
         id: docker_meta
-        uses: crazy-max/ghaction-docker-meta@v1
+        uses: docker/metadata-action@v5
         with:
           images: ${{ env.DOCKER_IMAGE }}
+          tags: |
+            type=raw,value=dev,enable=${{ github.ref == 'refs/heads/master' }}
+            type=raw,value=3.0-dev,enable=${{ github.ref == 'refs/heads/webapi-3.0' }}
+            type=sha,prefix=pr-,enable=${{ github.event_name == 'pull_request' }}
+            type=ref,event=branch,prefix=branch-,enable=${{ github.ref != 'refs/heads/master' && github.ref != 'refs/heads/webapi-3.0' }}
+
+      - name: Debug Docker metadata
+        run: |
+          echo "Docker metadata outputs:"
+          echo "version: ${{ steps.docker_meta.outputs.version }}"
+          echo "tags: ${{ steps.docker_meta.outputs.tags }}"
+          echo "labels: ${{ steps.docker_meta.outputs.labels }}"
+          echo "json: ${{ steps.docker_meta.outputs.json }}"
 
       # Setup docker build environment
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v3
 
       - name: Set build parameters
         id: build_params
         run: |
-          echo "::set-output name=sha8::${GITHUB_SHA::8}"
-          if [ "${{ github.event_name }}" != "pull_request" ] && [ "${{ github.ref }}" == "refs/heads/master" ]; then
-            echo "::set-output name=push::true"
-            echo "::set-output name=load::false"
-            echo "::set-output name=platforms::linux/amd64,linux/arm64"
+          echo "sha8=${GITHUB_SHA::8}" >> $GITHUB_OUTPUT
+          if [ "${{ github.event_name }}" != "pull_request" ] && ( [ "${{ github.ref }}" == "refs/heads/master" ] || [ "${{ github.ref }}" == "refs/heads/webapi-3.0" ] ); then
+            echo "push=true" >> $GITHUB_OUTPUT
+            echo "load=false" >> $GITHUB_OUTPUT
+            echo "platforms=linux/amd64,linux/arm64" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=push::false"
-            echo "::set-output name=load::true"
-            echo "::set-output name=platforms::linux/amd64"
+            echo "push=false" >> $GITHUB_OUTPUT
+            echo "load=true" >> $GITHUB_OUTPUT
+            echo "platforms=linux/amd64" >> $GITHUB_OUTPUT
           fi
 
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
         if: steps.build_params.outputs.push == 'true'
         with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
         id: docker_build
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v5
         with:
           context: ./
           file: ./Dockerfile
@@ -113,6 +133,7 @@ jobs:
           build-args: |
             GIT_BRANCH=${{ steps.docker_meta.outputs.version }}
             GIT_COMMIT_ID_ABBREV=${{ steps.build_params.outputs.sha8 }}
+            MAVEN_PROFILE=webapi-docker,tcache
           tags: ${{ steps.docker_meta.outputs.tags }}
           # Use runtime labels from docker_meta as well as fixed labels
           labels: |

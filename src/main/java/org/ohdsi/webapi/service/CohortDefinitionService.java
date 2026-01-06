@@ -447,7 +447,6 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 * @see org.ohdsi.webapi.cohortdefinition.CohortMetadataDTO
 	 */
 	@GET
-	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Transactional
 	@Cacheable(cacheNames = CachingSetup.COHORT_DEFINITION_LIST_CACHE, key = "@permissionService.getSubjectCacheKey()")
@@ -475,7 +474,6 @@ public class CohortDefinitionService extends AbstractDaoService implements HasTa
 	 * @return The newly created cohort definition
 	 */
 	@POST
-	@Path("/")
 	@Transactional
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)

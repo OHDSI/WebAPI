@@ -29,18 +29,29 @@ public class TrexSQLInstanceManager {
         this.config = config;
     }
 
+    private volatile boolean initFailed = false;
+
     public Object getInstance() {
         if (!config.isEnabled()) {
             throw new IllegalStateException("TrexSQL is not enabled");
         }
 
+        if (initFailed) {
+            return null;
+        }
+
         if (trexsqlDb == null) {
             initLock.lock();
             try {
-                if (trexsqlDb == null) {
+                if (trexsqlDb == null && !initFailed) {
                     log.info("Initializing TrexSQL instance");
-                    trexsqlDb = Trexsql.init(buildConfig());
-                    log.info("TrexSQL instance initialized successfully");
+                    try {
+                        trexsqlDb = Trexsql.init(buildConfig());
+                        log.info("TrexSQL instance initialized successfully");
+                    } catch (Exception | Error e) {
+                        log.error("Failed to initialize TrexSQL: {}. TrexSQL features will be unavailable.", e.getMessage());
+                        initFailed = true;
+                    }
                 }
             } finally {
                 initLock.unlock();
@@ -79,6 +90,12 @@ public class TrexSQLInstanceManager {
         if (config.getExtensionsPath() != null && !config.getExtensionsPath().isEmpty()) {
             initConfig.put("extensions-path", config.getExtensionsPath());
         }
+
+        if (config.getCachePath() != null && !config.getCachePath().isEmpty()) {
+            initConfig.put("cache-path", config.getCachePath());
+        }
+
+        initConfig.put("allow-unsigned-extensions", true);
 
         return initConfig;
     }

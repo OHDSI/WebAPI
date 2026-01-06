@@ -51,7 +51,6 @@ public class NotificationController {
      * @return 
      */
     @GET
-    @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional(readOnly = true)
     public List<JobExecutionResource> list(

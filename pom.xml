@@ -14,7 +14,6 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- Spring Boot manages spring.version as well -->
     <spring.boot.version>3.5.6</spring.boot.version>
-    <log4j2.version>2.24.3</log4j2.version>
     <!-- flyway.version removed - using Spring Boot 3.5.6 managed version (11.7.0) -->
     <waffle.version>2.2.1</waffle.version>
     <jna.version>5.5.0</jna.version>
@@ -40,22 +39,21 @@
     <maven.compiler.target>21</maven.compiler.target>
     <maven.compiler.release>21</maven.compiler.release>
 
-    <!-- Primary DataSource -->
-    <!-- default sql server - TODO How about making postgres the default (e.g. in line with open source tech)? -alexfranken -->
-    <datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
-    <datasource.url>jdbc:sqlserver://serverName;databaseName=databaseName</datasource.url>
-    <datasource.username>user</datasource.username>
-    <datasource.password>password</datasource.password>
+    <!-- Primary DataSource (default to Postgres for open source setup) -->
+    <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
+    <datasource.url>jdbc:postgresql://localhost:5433/postgres?currentSchema=webapi</datasource.url>
+    <datasource.username>postgres</datasource.username>
+    <datasource.password>mypass</datasource.password>
     <!--<datasource.validationQuery>SELECT 1</datasource.validationQuery>-->
-    <datasource.dialect>sql server</datasource.dialect>
-    <datasource.ohdsi.schema>dbo</datasource.ohdsi.schema>
-    <datasource.dialect.source>sql server</datasource.dialect.source>
+    <datasource.dialect>postgresql</datasource.dialect>
+    <datasource.ohdsi.schema>webapi</datasource.ohdsi.schema>
+    <datasource.dialect.source>postgresql</datasource.dialect.source>
     <!-- DB Change Management / Migration -->
-    <flyway.datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</flyway.datasource.driverClassName>
-    <flyway.datasource.url>jdbc:sqlserver://serverName</flyway.datasource.url>
-    <flyway.datasource.username>userWithWritePrivs</flyway.datasource.username>
-    <flyway.datasource.password>password</flyway.datasource.password>
-    <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
+    <flyway.datasource.driverClassName>org.postgresql.Driver</flyway.datasource.driverClassName>
+    <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
+    <flyway.datasource.username>${datasource.username}</flyway.datasource.username>
+    <flyway.datasource.password>${datasource.password}</flyway.datasource.password>
+    <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
     <!-- Note: Schema name is case-sensitive. -->
     <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
     <flyway.validateOnMigrate>false</flyway.validateOnMigrate>
@@ -346,6 +344,16 @@
         <includes>
           <include>**/*.properties</include>
         </includes>
+        <excludes>
+          <exclude>application-test.properties</exclude>
+        </excludes>
+      </testResource>
+      <testResource>
+        <directory>src/test/resources</directory>
+        <filtering>false</filtering>
+        <includes>
+          <include>application-test.properties</include>
+        </includes>
       </testResource>
       <testResource>
         <directory>src/test/resources</directory>
@@ -402,8 +410,19 @@
             <configuration>
               <scripts>
                 <script><![CDATA[
-                  if (project.properties.getProperty("git.branch") == null) project.properties.setProperty("git.branch", "*")
-                  if (project.properties.getProperty("git.commit.id.abbrev") == null) project.properties.setProperty("git.commit.id.abbrev", "*")
+                  def ensureProperty(propName) {
+                    def value = session.userProperties.getProperty(propName)
+                    if (value == null || value.trim().isEmpty()) {
+                      value = "*"
+                      session.userProperties.setProperty(propName, value)
+                      project.properties.setProperty(propName, value)
+                      System.setProperty(propName, value)
+                    } else if (project.properties.getProperty(propName) == null || project.properties.getProperty(propName).trim().isEmpty()) {
+                      project.properties.setProperty(propName, value)
+                    }
+                  }
+                  ensureProperty("git.branch")
+                  ensureProperty("git.commit.id.abbrev")
                 ]]></script>
               </scripts>
             </configuration>
@@ -435,8 +454,6 @@
             --add-opens java.naming/com.sun.jndi.ldap=ALL-UNNAMED
           </jvmArguments>
           <additionalProperties>
-            <git.branch>${git.branch}</git.branch>
-            <git.commit.id>${git.commit.id.abbrev}</git.commit.id>
             <atlas.milestone.id>${buildinfo.atlas.milestone.id}</atlas.milestone.id>
             <webapi.milestone.id>${buildinfo.webapi.milestone.id}</webapi.milestone.id>
             <atlas.release.tag>${buildinfo.atlas.release.tag}</atlas.release.tag>
@@ -466,9 +483,6 @@
             --add-opens java.naming/com.sun.jndi.ldap=ALL-UNNAMED
             --add-exports java.naming/com.sun.jndi.ldap=ALL-UNNAMED
           </argLine>
-          <systemPropertyVariables>
-            <org.springframework.boot.logging.LoggingSystem>org.springframework.boot.logging.log4j2.Log4J2LoggingSystem</org.springframework.boot.logging.LoggingSystem>
-          </systemPropertyVariables>
         </configuration>
       </plugin>
       <plugin>
@@ -483,6 +497,10 @@
             <!-- Preserve parameter names for reflection (required for AspectJ parameter resolution) -->
             <arg>-parameters</arg>
           </compilerArgs>
+          <!-- Exclude TrexSQL sources by default (included when -Ptcache is active) -->
+          <excludes>
+            <exclude>**/trexsql/**</exclude>
+          </excludes>
         </configuration>
       </plugin>
       <plugin>
@@ -491,9 +509,6 @@
         <version>3.5.2</version>
         <configuration>
           <skipITs>${skipITtests}</skipITs>
-          <systemPropertyVariables>
-            <org.springframework.boot.logging.LoggingSystem>org.springframework.boot.logging.log4j2.Log4J2LoggingSystem</org.springframework.boot.logging.LoggingSystem>
-          </systemPropertyVariables>
         </configuration>
         <executions>
           <execution>
@@ -567,6 +582,11 @@
 
   <repositories>
     <repository>
+      <id>central</id>
+      <name>Maven Central</name>
+      <url>https://repo.maven.apache.org/maven2</url>
+    </repository>
+    <repository>
       <id>ohdsi</id>
       <name>repo.ohdsi.org</name>
       <url>https://repo.ohdsi.org/nexus/content/groups/public</url>
@@ -591,26 +611,6 @@
 
   <dependencyManagement>
     <dependencies>
-      <dependency>
-        <groupId>org.apache.logging.log4j</groupId>
-        <artifactId>log4j-api</artifactId>
-        <version>${log4j2.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.logging.log4j</groupId>
-        <artifactId>log4j-core</artifactId>
-        <version>${log4j2.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.logging.log4j</groupId>
-        <artifactId>log4j-web</artifactId>
-        <version>${log4j2.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.logging.log4j</groupId>
-        <artifactId>log4j-slf4j-impl</artifactId>
-        <version>${log4j2.version}</version>
-      </dependency>
       <dependency>
         <!-- Import dependency management from Spring Boot -->
         <groupId>org.springframework.boot</groupId>
@@ -661,12 +661,6 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-starter-logging</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <!-- It is overriding a transitive dependency from the dependency above -->
     <!-- After migrating to Spring Boot 2.x we should get rid of it -->
@@ -691,7 +685,7 @@
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-log4j2</artifactId>
+      <artifactId>spring-boot-starter-logging</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -1126,7 +1120,7 @@
     <dependency>
       <groupId>org.springframework.ldap</groupId>
       <artifactId>spring-ldap-core</artifactId>
-      <version>2.3.2.RELEASE</version>
+      <version>3.2.8</version>
     </dependency>
     <dependency>
       <groupId>org.ohdsi</groupId>
@@ -1256,11 +1250,6 @@
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jsr310</artifactId>
     </dependency>
-    <dependency>
-      <groupId>com.github.p-hoffmann</groupId>
-      <artifactId>trexsql-ext</artifactId>
-      <version>v0.1.2</version>
-    </dependency>
   </dependencies>
 
   <profiles>
@@ -1269,8 +1258,23 @@
       <properties>
         <trexsql.enabled>true</trexsql.enabled>
       </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.github.p-hoffmann</groupId>
+          <artifactId>trexsql-ext</artifactId>
+          <version>v0.1.18</version>
+        </dependency>
+      </dependencies>
       <build>
         <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <!-- Include TrexSQL sources when tcache profile is active -->
+              <excludes combine.self="override"/>
+            </configuration>
+          </plugin>
           <plugin>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-maven-plugin</artifactId>
@@ -1936,7 +1940,7 @@
     <profile>
       <id>war</id>
       <properties>
-        <packaging.type>war</packaging.type>
+        <packaging.type>jar</packaging.type>
       </properties>
       <dependencies>
         <!-- Mark embedded Tomcat as provided for external servlet container deployment -->

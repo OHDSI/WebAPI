@@ -1,0 +1,1 @@
+alter table ${ohdsiSchema}.source ADD CONSTRAINT source_key_unique UNIQUE (source_key);

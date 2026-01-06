@@ -153,7 +153,6 @@ public class SourceController extends AbstractDaoService {
 	 * @return a new SourceInfo for the created source
 	 * @throws Exception
 	 */
-	@Path("")
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces(MediaType.APPLICATION_JSON)

@@ -37,8 +37,8 @@ public class CohortAnalysisServiceIT extends WebApiIT {
 
     @Before
     public void init() throws Exception {
-        truncateTable(String.format("%s.%s", "public", "source"));
-        resetSequence(String.format("%s.%s", "public", "source_sequence"));
+        truncateTable(String.format("%s.%s", getOhdsiSchema(), "source"));
+        resetSequence(String.format("%s.%s", getOhdsiSchema(), "source_sequence"));
         sourceRepository.saveAndFlush(getCdmSource());
         prepareCdmSchema();
         prepareResultSchema();

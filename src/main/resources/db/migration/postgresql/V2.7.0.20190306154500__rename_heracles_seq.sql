@@ -1,0 +1,1 @@
+ALTER SEQUENCE ${ohdsiSchema}.heracles_visualization_data_sequence RENAME TO heracles_vis_data_sequence;

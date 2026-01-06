@@ -30,7 +30,6 @@ public class I18nController {
   private I18nService i18nService;
 
   @GET
-  @Path("/")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getResources(@Context ContainerRequestContext requestContext) {
 

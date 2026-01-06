@@ -173,8 +173,7 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * @summary Get all concept sets
      * @return A list of all concept sets in the WebAPI database
      */
-    @GET
-    @Path("/")
+        @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Cacheable(cacheNames = ConceptSetService.CachingSetup.CONCEPT_SET_LIST_CACHE, key = "@permissionService.getSubjectCacheKey()")
 		public Collection<ConceptSetDTO> getConceptSets() {
@@ -491,7 +490,6 @@ public class ConceptSetService extends AbstractDaoService implements HasTags<Int
      * @param conceptSetDTO The concept set to save
      * @return The concept set saved with the concept set identifier
      */
-    @Path("/")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

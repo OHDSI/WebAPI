@@ -1,0 +1,1 @@
+select distinct pathway_analysis_generation_id, combo_id from @results_schema.pathway_analysis_events;

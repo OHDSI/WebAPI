@@ -34,9 +34,7 @@ public class TrexSQLSearchProvider implements SearchProvider {
 
     @Override
     public boolean supports(String vocabularyVersionKey) {
-        return config.isEnabled()
-            && trexsqlService.isEnabledForSource(vocabularyVersionKey)
-            && trexsqlService.isCacheAvailable(vocabularyVersionKey);
+        return config.isEnabled();
     }
 
     @Override
@@ -75,7 +73,8 @@ public class TrexSQLSearchProvider implements SearchProvider {
             return 1000;
         }
         try {
-            return Integer.parseInt(rows);
+            int parsed = Integer.parseInt(rows);
+            return Math.min(parsed, 10000);
         } catch (NumberFormatException e) {
             return 1000;
         }

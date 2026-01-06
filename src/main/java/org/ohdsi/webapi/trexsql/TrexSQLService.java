@@ -62,6 +62,8 @@ public class TrexSQLService {
         Map<String, Object> options = new HashMap<>();
         options.put("database-code", databaseCode);
         options.put("max-rows", maxRows);
+        String cachePath = config.getCachePath();
+        options.put("cache-path", cachePath != null ? cachePath : "/data/cache");
 
         try {
             Object db = instanceManager.getInstance();

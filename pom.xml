@@ -497,6 +497,10 @@
             <!-- Preserve parameter names for reflection (required for AspectJ parameter resolution) -->
             <arg>-parameters</arg>
           </compilerArgs>
+          <!-- Exclude TrexSQL sources by default (included when -Ptcache is active) -->
+          <excludes>
+            <exclude>**/trexsql/**</exclude>
+          </excludes>
         </configuration>
       </plugin>
       <plugin>
@@ -1246,11 +1250,6 @@
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jsr310</artifactId>
     </dependency>
-    <dependency>
-      <groupId>com.github.p-hoffmann</groupId>
-      <artifactId>trexsql-ext</artifactId>
-      <version>v0.1.11</version>
-    </dependency>
   </dependencies>
 
   <profiles>
@@ -1259,8 +1258,23 @@
       <properties>
         <trexsql.enabled>true</trexsql.enabled>
       </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.github.p-hoffmann</groupId>
+          <artifactId>trexsql-ext</artifactId>
+          <version>v0.1.15</version>
+        </dependency>
+      </dependencies>
       <build>
         <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <!-- Include TrexSQL sources when tcache profile is active -->
+              <excludes combine.self="override"/>
+            </configuration>
+          </plugin>
           <plugin>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-maven-plugin</artifactId>

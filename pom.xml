@@ -1262,7 +1262,7 @@
         <dependency>
           <groupId>com.github.p-hoffmann</groupId>
           <artifactId>trexsql-ext</artifactId>
-          <version>v0.1.15</version>
+          <version>v0.1.18</version>
         </dependency>
       </dependencies>
       <build>

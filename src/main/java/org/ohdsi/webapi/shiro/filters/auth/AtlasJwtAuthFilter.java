@@ -10,8 +10,12 @@ import org.apache.shiro.authc.AuthenticationException;
 import org.ohdsi.webapi.shiro.filters.AtlasAuthFilter;
 import org.ohdsi.webapi.shiro.tokens.JwtAuthToken;
 import org.ohdsi.webapi.shiro.TokenManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class AtlasJwtAuthFilter extends AtlasAuthFilter {
+
+  private static final Logger logger = LoggerFactory.getLogger(AtlasJwtAuthFilter.class);
 
   @Override
   protected JwtAuthToken createToken(ServletRequest request, ServletResponse response) throws Exception {
@@ -20,6 +24,7 @@ public final class AtlasJwtAuthFilter extends AtlasAuthFilter {
       String subject = TokenManager.getSubject(jwt);
       return new JwtAuthToken(subject);
     } catch (JwtException e) {
+      logger.warn("JWT validation failed: {}", e.getMessage());
       throw new AuthenticationException(e);
     }
   }
@@ -33,6 +38,7 @@ public final class AtlasJwtAuthFilter extends AtlasAuthFilter {
         loggedIn = executeLogin(request, response);
       }
       catch(AuthenticationException ae) {
+        logger.debug("JWT authentication failed: {}", ae.getMessage());
         loggedIn = false;
       }
     }

@@ -419,6 +419,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
                 // login/logout
                 .addRestPath("/user/refresh", JWT_AUTHC, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
                 .addProtectedRestPath("/user/runas", RUN_AS, UPDATE_TOKEN, SEND_TOKEN_IN_HEADER)
+                .addProtectedRestPath("/user/me")
                 .addRestPath("/user/logout", LOGOUT);
 
         // MUST be called before adding OAuth filters

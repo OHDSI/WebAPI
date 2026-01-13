@@ -2,12 +2,8 @@ package org.ohdsi.webapi.trexsql;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * Configuration properties for trexsql integration.
- * Maps to trexsql.* in application properties.
+ * Global trexsql configuration. Per-source config is in the source table (is_cache_enabled).
  */
 @ConfigurationProperties(prefix = "trexsql")
 public class TrexSQLConfig {
@@ -15,7 +11,6 @@ public class TrexSQLConfig {
     private boolean enabled = false;
     private String cachePath = "./data/cache";
     private String extensionsPath;
-    private Map<String, TrexSQLSourceConfig> sources = new HashMap<>();
 
     public boolean isEnabled() {
         return enabled;
@@ -39,25 +34,5 @@ public class TrexSQLConfig {
 
     public void setExtensionsPath(String extensionsPath) {
         this.extensionsPath = extensionsPath;
-    }
-
-    public Map<String, TrexSQLSourceConfig> getSources() {
-        return sources;
-    }
-
-    public void setSources(Map<String, TrexSQLSourceConfig> sources) {
-        this.sources = sources;
-    }
-
-    public TrexSQLSourceConfig getSourceConfig(String sourceKey) {
-        return sources.get(sourceKey);
-    }
-
-    public boolean isEnabledForSource(String sourceKey) {
-        if (!enabled) {
-            return false;
-        }
-        TrexSQLSourceConfig sourceConfig = sources.get(sourceKey);
-        return sourceConfig != null && sourceConfig.isEnabled();
     }
 }

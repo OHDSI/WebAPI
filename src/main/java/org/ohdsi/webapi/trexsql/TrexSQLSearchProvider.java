@@ -46,11 +46,6 @@ public class TrexSQLSearchProvider implements SearchProvider {
     public Collection<Concept> executeSearch(SearchProviderConfig searchConfig, String query, String rows) throws Exception {
         String sourceKey = searchConfig.getSourceKey();
 
-        if (!trexsqlService.isEnabledForSource(sourceKey)) {
-            log.debug("TrexSQL not enabled for source {}", sourceKey);
-            throw new IllegalStateException("TrexSQL not enabled for source: " + sourceKey);
-        }
-
         if (!trexsqlService.isCacheAvailable(sourceKey)) {
             log.debug("Cache not available for source {}", sourceKey);
             throw new IllegalStateException("TrexSQL cache not available for source: " + sourceKey);

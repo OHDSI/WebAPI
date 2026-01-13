@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Service for TrexSQL operations used by SearchProvider.
+ * Service for TrexSQL operations. Cache is available if file exists.
  */
 @Service
 @ConditionalOnProperty(name = "trexsql.enabled", havingValue = "true", matchIfMissing = false)
@@ -28,42 +28,25 @@ public class TrexSQLService {
         this.instanceManager = instanceManager;
     }
 
-    public boolean isEnabledForSource(String sourceKey) {
-        return config.isEnabledForSource(sourceKey);
-    }
-
+    /**
+     * Check if cache file exists for source.
+     */
     public boolean isCacheAvailable(String sourceKey) {
-        TrexSQLSourceConfig sourceConfig = config.getSourceConfig(sourceKey);
-        if (sourceConfig == null) {
-            return false;
-        }
-        String databaseCode = sourceConfig.getDatabaseCode();
-        if (databaseCode == null || databaseCode.isEmpty()) {
-            return false;
-        }
-        return Paths.get(config.getCachePath(), databaseCode + ".db")
-            .toFile().exists();
+        return Paths.get(config.getCachePath(), sourceKey + ".db").toFile().exists();
     }
 
     @SuppressWarnings("unchecked")
     public List<Map<String, Object>> searchVocab(String sourceKey, String searchTerm, int maxRows) {
         log.debug("Searching vocabulary for source {} with term: {}", sourceKey, searchTerm);
 
-        TrexSQLSourceConfig sourceConfig = config.getSourceConfig(sourceKey);
-        if (sourceConfig == null) {
-            throw new IllegalStateException("TrexSQL source configuration not found for key: " + sourceKey);
-        }
-
-        String databaseCode = sourceConfig.getDatabaseCode();
-        if (databaseCode == null || databaseCode.isEmpty()) {
-            throw new IllegalStateException("TrexSQL database code not configured for source: " + sourceKey);
+        if (!isCacheAvailable(sourceKey)) {
+            throw new IllegalStateException("TrexSQL cache not available for source: " + sourceKey);
         }
 
         Map<String, Object> options = new HashMap<>();
-        options.put("database-code", databaseCode);
+        options.put("database-code", sourceKey);
         options.put("max-rows", maxRows);
-        String cachePath = config.getCachePath();
-        options.put("cache-path", cachePath != null ? cachePath : "/data/cache");
+        options.put("cache-path", config.getCachePath());
 
         try {
             Object db = instanceManager.getInstance();

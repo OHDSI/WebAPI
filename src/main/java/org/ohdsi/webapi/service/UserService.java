@@ -17,7 +17,6 @@ import jakarta.ws.rs.core.MediaType;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import org.ohdsi.webapi.trexsql.TrexSQLConfig;
 
 /**
  *
@@ -34,8 +33,8 @@ public class UserService {
   @Autowired
   private ApplicationEventPublisher eventPublisher;
 
-  @Autowired(required = false)
-  private TrexSQLConfig trexSQLConfig;
+  @Value("${trexsql.enabled:false}")
+  private boolean trexsqlCacheEnabled;
 
   @Value("${security.ad.default.import.group}#{T(java.util.Collections).emptyList()}")
   private List<String> defaultRoles;
@@ -121,7 +120,7 @@ public class UserService {
     user.name = currentUser.getName();
     user.permissions = convertPermissions(permissions);
     user.permissionIdx = authorizer.queryUserPermissions(currentUser.getLogin()).permissions;
-    user.trexsqlCacheEnabled = trexSQLConfig != null && trexSQLConfig.isEnabled();
+    user.trexsqlCacheEnabled = trexsqlCacheEnabled;
 
     return user;
   }

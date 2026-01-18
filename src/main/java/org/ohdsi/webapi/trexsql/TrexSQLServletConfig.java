@@ -27,13 +27,15 @@ public class TrexSQLServletConfig {
             TrexSQLConfig trexConfig,
             SourceRepository sourceRepository) {
 
+        instanceManager.ensureInitialized();
+
         TrexServlet servlet = new TrexServlet();
         Map<String, Object> config = new HashMap<>();
         String cachePath = trexConfig.getCachePath();
         log.info("TrexSQL cache path configured as: {}", cachePath);
         config.put("cache-path", cachePath);
 
-        servlet.initTrex(instanceManager.getInstance(), sourceRepository, config);
+        servlet.initTrex(sourceRepository, config);
 
         ServletRegistrationBean<HttpServlet> registration =
             new ServletRegistrationBean<>(servlet, "/WebAPI/trexsql/*");

@@ -350,7 +350,8 @@ public class SourceController extends AbstractDaoService {
   public SourceInfo checkConnection(@PathParam("key") final String sourceKey) {
 
     final Source source = sourceService.findBySourceKey(sourceKey);
-    sourceService.checkConnection(source);
+    // Explicit endpoint call bypasses checkConnection flag
+    sourceService.forceCheckConnection(source);
     return source.getSourceInfo();
   }
 

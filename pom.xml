@@ -1051,6 +1051,12 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <!-- Override oauth2-oidc-sdk version for pac4j 6.x compatibility -->
+    <dependency>
+      <groupId>com.nimbusds</groupId>
+      <artifactId>oauth2-oidc-sdk</artifactId>
+      <version>11.20.1</version>
+    </dependency>
     <dependency>
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-http</artifactId>
@@ -1262,7 +1268,7 @@
         <dependency>
           <groupId>com.github.p-hoffmann</groupId>
           <artifactId>trexsql-ext</artifactId>
-          <version>v0.1.18</version>
+          <version>v0.1.22</version>
         </dependency>
       </dependencies>
       <build>

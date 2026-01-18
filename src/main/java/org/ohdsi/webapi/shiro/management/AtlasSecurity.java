@@ -96,6 +96,8 @@ public abstract class AtlasSecurity extends Security {
     return filterChainBuilder
             // version info
             .addRestPath("/info")
+            // auth providers (for Atlas frontend)
+            .addRestPath("/auth/providers")
             // DDL service
             .addRestPath("/ddl/results")
             .addRestPath("/ddl/cemresults")

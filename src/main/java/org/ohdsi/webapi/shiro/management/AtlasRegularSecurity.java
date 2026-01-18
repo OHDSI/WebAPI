@@ -37,6 +37,10 @@ import org.pac4j.core.client.Client;
 import org.pac4j.core.client.Clients;
 import org.pac4j.core.config.Config;
 import org.pac4j.core.http.callback.CallbackUrlResolver;
+import org.pac4j.core.profile.factory.ProfileManagerFactory;
+import org.pac4j.jee.context.JEEContextFactory;
+import org.pac4j.jee.context.session.JEESessionStoreFactory;
+import org.pac4j.jee.http.adapter.JEEHttpActionAdapter;
 import org.pac4j.core.http.callback.PathParameterCallbackUrlResolver;
 import org.pac4j.core.http.callback.QueryParameterCallbackUrlResolver;
 import org.pac4j.http.client.direct.HeaderClient;
@@ -331,10 +335,23 @@ public class AtlasRegularSecurity extends AtlasSecurity {
             OidcConfiguration configuration = oidcConfCreator.build();
             if (StringUtils.isNotBlank(configuration.getClientId())) {
                 // https://www.pac4j.org/4.0.x/docs/clients/openid-connect.html
-                // OidcClient allows indirect login through UI with code flow            
+                // OidcClient allows indirect login through UI with code flow
                 OidcClient oidcClient = new OidcClient(configuration);
                 oidcClient.setCallbackUrl(oauthApiCallback);
                 oidcClient.setCallbackUrlResolver(urlResolver);
+
+                // URL rewriting: discovery from internal URL, redirect to external URL
+                String internalUrl = configuration.getDiscoveryURI();
+                String externalUrl = oidcConfCreator.getExternalUrl();
+                if (externalUrl != null && !externalUrl.isEmpty()) {
+                    org.ohdsi.webapi.shiro.filters.ExternalUrlOidcRedirectionActionBuilder redirectBuilder =
+                        new org.ohdsi.webapi.shiro.filters.ExternalUrlOidcRedirectionActionBuilder(
+                            oidcClient, internalUrl, externalUrl);
+                    oidcClient.setRedirectionActionBuilder(redirectBuilder);
+                    logger.info("Configured OIDC URL rewriting: internal={}, external={}", internalUrl, externalUrl);
+                }
+
+                // Configuration already initialized; pac4j handles lazy init
                 clients.add(oidcClient);
                 
                 // Bearer token authentication for API access (pac4j 6.x)
@@ -355,6 +372,11 @@ public class AtlasRegularSecurity extends AtlasSecurity {
                                     clients
                             )
                     );
+            // Set Jakarta EE context factory for pac4j 6.x
+            cfg.setWebContextFactory(new JEEContextFactory());
+            cfg.setSessionStoreFactory(new JEESessionStoreFactory());
+            cfg.setProfileManagerFactory(ProfileManagerFactory.DEFAULT);
+            cfg.setHttpActionAdapter(JEEHttpActionAdapter.INSTANCE);
 
             // assign clients to filters
             if (this.googleAuthEnabled) {
@@ -390,8 +412,17 @@ public class AtlasRegularSecurity extends AtlasSecurity {
                 filters.put(OIDC_DIRECT_AUTH, oidcDirectFilter);
             }
 
-            CallbackFilter callbackFilter = new CallbackFilter();
+            io.buji.pac4j.filter.CallbackFilter callbackFilter = new io.buji.pac4j.filter.CallbackFilter();
             callbackFilter.setConfig(cfg);
+            callbackFilter.setDefaultUrl(this.oauthUiCallback);
+            callbackFilter.setSavedRequestHandler(
+                new org.ohdsi.webapi.shiro.filters.AtlasRedirectSavedRequestHandler(
+                    this.oauthUiCallback,
+                    this.authorizer,
+                    this.tokenExpirationIntervalInSeconds,
+                    this.defaultRoles
+                )
+            );
             filters.put(OAUTH_CALLBACK, callbackFilter);
             filters.put(HANDLE_UNSUCCESSFUL_OAUTH, new RedirectOnFailedOAuthFilter(this.oauthUiCallback));
         }
@@ -570,6 +601,10 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
         final SAML2Client saml2Client = new SAML2Client(cfg);
         Config samlCfg = new Config(new Clients(samlCallbackUrl, saml2Client));
+        samlCfg.setWebContextFactory(new JEEContextFactory());
+        samlCfg.setSessionStoreFactory(new JEESessionStoreFactory());
+        samlCfg.setProfileManagerFactory(ProfileManagerFactory.DEFAULT);
+        samlCfg.setHttpActionAdapter(JEEHttpActionAdapter.INSTANCE);
 
         SecurityFilter samlAuthFilter = new SecurityFilter();
         samlAuthFilter.setConfig(samlCfg);
@@ -641,6 +676,10 @@ public class AtlasRegularSecurity extends AtlasSecurity {
 
             CasClient casClient = new CasClient(casConf);
             Config casCfg = new Config(new Clients(casCallbackUrl, casClient));
+            casCfg.setWebContextFactory(new JEEContextFactory());
+            casCfg.setSessionStoreFactory(new JEESessionStoreFactory());
+            casCfg.setProfileManagerFactory(ProfileManagerFactory.DEFAULT);
+            casCfg.setHttpActionAdapter(JEEHttpActionAdapter.INSTANCE);
 
             /**
              * CAS filter

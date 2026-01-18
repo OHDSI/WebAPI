@@ -6,6 +6,7 @@ import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.EncodingFilter;
 import org.glassfish.jersey.server.spi.internal.ValueParamProvider;
+import org.ohdsi.webapi.auth.AuthProviderService;
 import org.ohdsi.webapi.info.InfoService;
 import org.ohdsi.webapi.security.PermissionController;
 import org.ohdsi.webapi.security.SSOController;
@@ -44,6 +45,7 @@ public class JerseyConfig extends ResourceConfig {
        
        // Register individual services
        register(ActivityService.class);
+       register(AuthProviderService.class);
        register(CacheService.class);
        register(CDMResultsService.class);
        register(CohortAnalysisService.class);

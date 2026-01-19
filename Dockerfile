@@ -2,7 +2,7 @@ FROM maven:3.9-eclipse-temurin-21 AS builder
 
 WORKDIR /code
 
-ARG MAVEN_PROFILE=webapi-docker,tcache
+ARG MAVEN_PROFILE=webapi-docker,trexsql
 ARG MAVEN_PARAMS="" # can use maven options, e.g. -DskipTests=true -DskipUnitTests=true
 
 ARG OPENTELEMETRY_JAVA_AGENT_VERSION=1.17.0

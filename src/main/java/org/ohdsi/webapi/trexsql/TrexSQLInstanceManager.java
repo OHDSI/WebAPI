@@ -11,10 +11,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
-/**
- * Singleton manager for the TrexSQL instance.
- * Provides lazy initialization and graceful shutdown.
- */
 @Component
 @ConditionalOnProperty(name = "trexsql.enabled", havingValue = "true", matchIfMissing = false)
 public class TrexSQLInstanceManager {
@@ -22,31 +18,31 @@ public class TrexSQLInstanceManager {
     private static final Logger log = LoggerFactory.getLogger(TrexSQLInstanceManager.class);
 
     private final TrexSQLConfig config;
-    private volatile Object trexsqlDb = null;
+    private volatile boolean initialized = false;
+    private volatile boolean initFailed = false;
     private final ReentrantLock initLock = new ReentrantLock();
 
     public TrexSQLInstanceManager(TrexSQLConfig config) {
         this.config = config;
     }
 
-    private volatile boolean initFailed = false;
-
-    public Object getInstance() {
+    public void ensureInitialized() {
         if (!config.isEnabled()) {
             throw new IllegalStateException("TrexSQL is not enabled");
         }
 
         if (initFailed) {
-            return null;
+            return;
         }
 
-        if (trexsqlDb == null) {
+        if (!initialized) {
             initLock.lock();
             try {
-                if (trexsqlDb == null && !initFailed) {
+                if (!initialized && !initFailed) {
                     log.info("Initializing TrexSQL instance");
                     try {
-                        trexsqlDb = Trexsql.init(buildConfig());
+                        Trexsql.init(buildConfig());
+                        initialized = true;
                         log.info("TrexSQL instance initialized successfully");
                     } catch (Exception | Error e) {
                         log.error("Failed to initialize TrexSQL: {}. TrexSQL features will be unavailable.", e.getMessage());
@@ -57,15 +53,14 @@ public class TrexSQLInstanceManager {
                 initLock.unlock();
             }
         }
-        return trexsqlDb;
     }
 
     public boolean isAvailable() {
-        if (!config.isEnabled() || trexsqlDb == null) {
+        if (!config.isEnabled() || !initialized) {
             return false;
         }
         try {
-            return Trexsql.isRunning(trexsqlDb);
+            return Trexsql.isRunning();
         } catch (Exception e) {
             log.warn("Error checking TrexSQL status: {}", e.getMessage());
             return false;
@@ -73,11 +68,11 @@ public class TrexSQLInstanceManager {
     }
 
     public boolean isAttached(String databaseCode) {
-        if (trexsqlDb == null) {
+        if (!initialized) {
             return false;
         }
         try {
-            return Trexsql.isAttached(trexsqlDb, databaseCode);
+            return Trexsql.isAttached(databaseCode);
         } catch (Exception e) {
             log.warn("Error checking if database {} is attached: {}", databaseCode, e.getMessage());
             return false;
@@ -104,15 +99,15 @@ public class TrexSQLInstanceManager {
     public void shutdown() {
         initLock.lock();
         try {
-            if (trexsqlDb != null) {
+            if (initialized) {
                 log.info("Shutting down TrexSQL instance");
                 try {
-                    Trexsql.shutdown(trexsqlDb);
+                    Trexsql.shutdown();
                     log.info("TrexSQL instance shut down successfully");
                 } catch (Exception e) {
                     log.error("Error shutting down TrexSQL instance: {}", e.getMessage(), e);
                 } finally {
-                    trexsqlDb = null;
+                    initialized = false;
                 }
             }
         } finally {

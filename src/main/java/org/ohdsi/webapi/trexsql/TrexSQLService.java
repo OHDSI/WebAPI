@@ -49,8 +49,8 @@ public class TrexSQLService {
         options.put("cache-path", config.getCachePath());
 
         try {
-            Object db = instanceManager.getInstance();
-            List<Map<String, Object>> results = Trexsql.searchVocab(db, searchTerm, options);
+            instanceManager.ensureInitialized();
+            List<Map<String, Object>> results = Trexsql.searchVocab(searchTerm, options);
             log.debug("Vocabulary search returned {} results", results.size());
             return results;
         } catch (Exception e) {

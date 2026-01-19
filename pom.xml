@@ -497,7 +497,7 @@
             <!-- Preserve parameter names for reflection (required for AspectJ parameter resolution) -->
             <arg>-parameters</arg>
           </compilerArgs>
-          <!-- Exclude TrexSQL sources by default (included when -Ptcache is active) -->
+          <!-- Exclude TrexSQL sources by default (included when -Ptrexsql is active) -->
           <excludes>
             <exclude>**/trexsql/**</exclude>
           </excludes>
@@ -1260,7 +1260,7 @@
 
   <profiles>
     <profile>
-      <id>tcache</id>
+      <id>trexsql</id>
       <properties>
         <trexsql.enabled>true</trexsql.enabled>
       </properties>
@@ -1268,7 +1268,7 @@
         <dependency>
           <groupId>com.github.p-hoffmann</groupId>
           <artifactId>trexsql-ext</artifactId>
-          <version>v0.1.22</version>
+          <version>v0.1.23</version>
         </dependency>
       </dependencies>
       <build>
@@ -1277,7 +1277,7 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
             <configuration>
-              <!-- Include TrexSQL sources when tcache profile is active -->
+              <!-- Include TrexSQL sources when trexsql profile is active -->
               <excludes combine.self="override"/>
             </configuration>
           </plugin>

@@ -133,7 +133,6 @@ jobs:
           build-args: |
             GIT_BRANCH=${{ steps.docker_meta.outputs.version }}
             GIT_COMMIT_ID_ABBREV=${{ steps.build_params.outputs.sha8 }}
-            MAVEN_PROFILE=webapi-docker,tcache
           tags: ${{ steps.docker_meta.outputs.tags }}
           # Use runtime labels from docker_meta as well as fixed labels
           labels: |

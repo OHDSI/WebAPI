@@ -49,9 +49,9 @@ import java.net.URISyntaxException;
 @Controller
 @Path("/saml/")
 public class SSOController {
-    @Value("${security.saml.metadataLocation}")
+    @Value("${security.auth.saml.metadataLocation}")
     private String metadataLocation;
-    @Value("${security.saml.sloUrl}")
+    @Value("${security.auth.saml.sloUrl}")
     private String sloUri;
     @Value("${security.origin}")
     private String origin;

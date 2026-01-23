@@ -10,8 +10,12 @@
   <name>WebAPI</name>
   <properties>
     <packaging.type>war</packaging.type>
-    <build.number>${BUILD_NUMBER}</build.number>
+    <start-class>org.ohdsi.webapi.WebApi</start-class>
+    <skipUnitTests>false</skipUnitTests>
+    <skipITtests>false</skipITtests>
+    <miredot.phase>none</miredot.phase>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
     <!-- Spring Boot manages spring.version as well -->
     <spring.boot.version>3.5.6</spring.boot.version>
     <!-- flyway.version removed - using Spring Boot 3.5.6 managed version (11.7.0) -->
@@ -23,291 +27,26 @@
     <!-- tomcat.embed.version removed - using Spring Boot 3.5.6 managed version (10.1.48) -->
 
     <commons-fileupload.version>1.5</commons-fileupload.version>
-
     <circe.version>1.12.1</circe.version>
     <jersey.version>3.1.9</jersey.version>
     <SqlRender.version>1.19.1</SqlRender.version>
     <hive-jdbc.version>3.1.2</hive-jdbc.version>
     <pac4j.version>6.0.5</pac4j.version>
     <jackson.version>2.18.2</jackson.version>
-    <start-class>org.ohdsi.webapi.WebApi</start-class>
-    <skipUnitTests>false</skipUnitTests>
-    <skipITtests>false</skipITtests>
-    <miredot.phase>none</miredot.phase>
     <java.version>21</java.version>
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
     <maven.compiler.release>21</maven.compiler.release>
-
-    <!-- Primary DataSource (default to Postgres for open source setup) -->
-    <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
-    <datasource.url>jdbc:postgresql://localhost:5433/postgres?currentSchema=webapi</datasource.url>
-    <datasource.username>postgres</datasource.username>
-    <datasource.password>mypass</datasource.password>
-    <!--<datasource.validationQuery>SELECT 1</datasource.validationQuery>-->
-    <datasource.dialect>postgresql</datasource.dialect>
-    <datasource.ohdsi.schema>webapi</datasource.ohdsi.schema>
-    <datasource.dialect.source>postgresql</datasource.dialect.source>
-    <!-- DB Change Management / Migration -->
-    <flyway.datasource.driverClassName>org.postgresql.Driver</flyway.datasource.driverClassName>
-    <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
-    <flyway.datasource.username>${datasource.username}</flyway.datasource.username>
-    <flyway.datasource.password>${datasource.password}</flyway.datasource.password>
-    <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
-    <!-- Note: Schema name is case-sensitive. -->
-    <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
-    <flyway.validateOnMigrate>false</flyway.validateOnMigrate>
-    <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
-    <!-- CDM properties -->
-    <source.name>CDM_NAME</source.name>
-    <cdm.version>5</cdm.version>
-    <!-- Person properties -->
-    <person.viewDates>false</person.viewDates>
-    <!-- Heracles properties -->
-    <heracles.smallcellcount>5</heracles.smallcellcount>
-
-    <!-- Kerberos properties -->
-    <kerberos.timeout>60</kerberos.timeout>
-    <kerberos.configPath>/etc/krb5.conf</kerberos.configPath>
-    <kerberos.kinitPath></kerberos.kinitPath>
-
-    <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
-    <spring.batch.repository.isolationLevelForCreate>ISOLATION_READ_COMMITTED</spring.batch.repository.isolationLevelForCreate>
-    <spring.profiles.active>default</spring.profiles.active>
-
-    <security.provider>DisabledSecurity</security.provider>
-    <security.token.expiration>43200</security.token.expiration>
-    <security.origin>http://localhost</security.origin>
-    <security.ssl.enabled>false</security.ssl.enabled>
-    <security.oauth.callback.ui>http://localhost/Atlas/#/welcome</security.oauth.callback.ui>
-    <security.oauth.callback.api>http://localhost:8080/WebAPI/user/oauth/callback</security.oauth.callback.api>
-    <!-- Available options for callback urlResolver are: query and path -->
-    <security.oauth.callback.urlResolver>query</security.oauth.callback.urlResolver>
-    <security.oauth.google.apiKey></security.oauth.google.apiKey>
-    <security.oauth.google.apiSecret></security.oauth.google.apiSecret>
-    <security.oauth.facebook.apiKey></security.oauth.facebook.apiKey>
-    <security.oauth.facebook.apiSecret></security.oauth.facebook.apiSecret>
-    <security.oauth.github.apiKey></security.oauth.github.apiKey>
-    <security.oauth.github.apiSecret></security.oauth.github.apiSecret>
-    <security.oid.clientId></security.oid.clientId>
-    <security.oid.apiSecret></security.oid.apiSecret>
-    <security.oid.url></security.oid.url>
-    <security.oid.logoutUrl></security.oid.logoutUrl>
-    <security.oid.extraScopes></security.oid.extraScopes>
-    <security.oid.customParams>{:}</security.oid.customParams>
-    <security.oid.redirectUrl>http://localhost/index.html#/welcome/</security.oid.redirectUrl>
-    <security.kerberos.spn></security.kerberos.spn>
-    <security.kerberos.keytabPath></security.kerberos.keytabPath>
-    <security.ldap.dn>cn={0},dc=example,dc=org</security.ldap.dn>
-    <security.ldap.url>ldap://localhost:389</security.ldap.url>
-    <security.ldap.baseDn></security.ldap.baseDn>
-    <security.ldap.system.username></security.ldap.system.username>
-    <security.ldap.system.password></security.ldap.system.password>
-    <security.ldap.searchString>(&amp;(objectClass=person)(CN={0}))</security.ldap.searchString>
-    <security.ldap.userMapping.displaynameAttr>displayName</security.ldap.userMapping.displaynameAttr>
-    <security.ldap.userMapping.firstnameAttr>givenName</security.ldap.userMapping.firstnameAttr>
-    <security.ldap.userMapping.middlenameAttr>initials</security.ldap.userMapping.middlenameAttr>
-    <security.ldap.userMapping.lastnameAttr>sn</security.ldap.userMapping.lastnameAttr>
-    <security.ldap.userMapping.usernameAttr>cn</security.ldap.userMapping.usernameAttr>
-    <security.ldap.userImport.usernameAttr>cn</security.ldap.userImport.usernameAttr>
-    <security.ldap.userImport.loginAttr>uid</security.ldap.userImport.loginAttr>
-    <security.ldap.searchBase>CN=Users,DC=example,DC=org</security.ldap.searchBase>
-    <security.ad.url></security.ad.url>
-    <security.ad.searchBase>CN=Users,DC=example,DC=org</security.ad.searchBase>
-    <security.ad.principalSuffix>@example.org</security.ad.principalSuffix>
-    <security.ad.system.username></security.ad.system.username>
-    <security.ad.system.password></security.ad.system.password>
-    <security.ad.searchFilter>(&amp;(objectClass=person)(cn=%s))</security.ad.searchFilter>
-    <security.ad.ignore.partial.result.exception>true</security.ad.ignore.partial.result.exception>
-    <security.ad.result.count.limit>30000</security.ad.result.count.limit>    <!-- 0 means no limit -->
-    <security.ad.default.import.group>public</security.ad.default.import.group>
-    <security.ad.searchString>(&amp;(objectClass=person)(userPrincipalName=%s))</security.ad.searchString>
-    <security.ad.userMapping.displaynameAttr>displayname</security.ad.userMapping.displaynameAttr>
-    <security.ad.userMapping.firstnameAttr>givenname</security.ad.userMapping.firstnameAttr>
-    <security.ad.userMapping.middlenameAttr>initials</security.ad.userMapping.middlenameAttr>
-    <security.ad.userMapping.lastnameAttr>sn</security.ad.userMapping.lastnameAttr>
-    <security.ad.userMapping.usernameAttr>cn</security.ad.userMapping.usernameAttr>
-    <security.ad.userImport.loginAttr>sAMAccountName</security.ad.userImport.loginAttr>
-    <security.ad.userImport.usernameAttr>cn</security.ad.userImport.usernameAttr>
-
-    <security.cas.loginUrl></security.cas.loginUrl>
-    <security.cas.callbackUrl></security.cas.callbackUrl>
-    <security.cas.serverUrl></security.cas.serverUrl>
-    <security.cas.cassvcs></security.cas.cassvcs>
-    <security.cas.casticket>casticket</security.cas.casticket>
-
-    <security.db.datasource.schema>${datasource.ohdsi.schema}</security.db.datasource.schema>
-    <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
-    <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
-    <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
-    <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
-
-    <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users where lower(email) = lower(?)</security.db.datasource.authenticationQuery>
-    <use.single.connect.datasource.for.testing>true</use.single.connect.datasource.for.testing>
-
-    <security.googleIap.cloudProjectId></security.googleIap.cloudProjectId>
-    <security.googleIap.backendServiceId></security.googleIap.backendServiceId>
-    <security.google.accessToken.enabled>false</security.google.accessToken.enabled>
-
-    <security.cors.enabled>true</security.cors.enabled>
-    <security.maxLoginAttempts>3</security.maxLoginAttempts>
-    <security.duration.initial>10</security.duration.initial>
-    <security.duration.increment>10</security.duration.increment>
-
-    <security.saml.enabled>false</security.saml.enabled>
-    <security.saml.entityId></security.saml.entityId>
-    <security.saml.idpMetadataLocation></security.saml.idpMetadataLocation>
-    <security.saml.keyManager.keyStoreFile></security.saml.keyManager.keyStoreFile>
-    <security.saml.keyManager.storePassword></security.saml.keyManager.storePassword>
-    <security.saml.keyManager.defaultKey></security.saml.keyManager.defaultKey>
-    <security.saml.keyManager.passwords.arachnenetwork></security.saml.keyManager.passwords.arachnenetwork>
-    <security.saml.metadataLocation></security.saml.metadataLocation>
-    <security.saml.callbackUrl></security.saml.callbackUrl>
-    <security.saml.sloUrl></security.saml.sloUrl>
-    <security.saml.maximumAuthenticationLifetime>60</security.saml.maximumAuthenticationLifetime>
-
-    <security.auth.windows.enabled>true</security.auth.windows.enabled>
-    <security.auth.kerberos.enabled>true</security.auth.kerberos.enabled>
-    <security.auth.openid.enabled>true</security.auth.openid.enabled>
-    <security.auth.facebook.enabled>true</security.auth.facebook.enabled>
-    <security.auth.github.enabled>true</security.auth.github.enabled>
-    <security.auth.google.enabled>true</security.auth.google.enabled>
-    <security.auth.jdbc.enabled>true</security.auth.jdbc.enabled>
-    <security.auth.ldap.enabled>true</security.auth.ldap.enabled>
-    <security.auth.ad.enabled>true</security.auth.ad.enabled>
-    <security.auth.cas.enabled>true</security.auth.cas.enabled>
-
-    <spring.datasource.hikari.connection-test-query>SELECT 1</spring.datasource.hikari.connection-test-query>
-    <spring.datasource.hikari.connection-test-query-timeout>2000</spring.datasource.hikari.connection-test-query-timeout>
-    <spring.datasource.hikari.maximum-pool-size>5</spring.datasource.hikari.maximum-pool-size>
-    <spring.datasource.hikari.minimum-idle>1</spring.datasource.hikari.minimum-idle>
-    <spring.datasource.hikari.connection-timeout>5000</spring.datasource.hikari.connection-timeout>
-    <spring.datasource.hikari.register-mbeans>true</spring.datasource.hikari.register-mbeans>
-    <spring.datasource.hikari.mbean-name>authDataSource</spring.datasource.hikari.mbean-name>
-
-    <!-- If defaultGlobalReadPermissions is set to true (default), then all users can see every artifact.  -->
-    <!-- If it is set to false, WebAPI will filter out the artifacts that a user does not explicitly have -->
-    <!-- read permissions to -->
-    <security.defaultGlobalReadPermissions>true</security.defaultGlobalReadPermissions>
-
-    <!-- EMBEDDED SERVER CONFIGURATION (ServerProperties) -->
-    <server.port>8080</server.port>
-    <server.ssl.key-store></server.ssl.key-store>
-    <server.ssl.key-store-password></server.ssl.key-store-password>
-    <server.ssl.key-password></server.ssl.key-password>
-    <server.servlet.context-path>/WebAPI</server.servlet.context-path>
-
     <arachne.version>1.17.4</arachne.version>
     <jersey-media-multipart.version>3.1.9</jersey-media-multipart.version>
-    <execution.invalidation.period>600000</execution.invalidation.period>
-    <execution.invalidation.maxage.hours>12</execution.invalidation.maxage.hours>
-    <execution.status.period>10000</execution.status.period>
-    <executionengine.url>https://localhost:8888/api/v1/analyze</executionengine.url>
-    <executionengine.token>Basic YWRtaW5Ab2R5c3NldXNpbmMuY29tOnBhc3N3b3Jk</executionengine.token>
-    <executionengine.resultExclusions></executionengine.resultExclusions>
-    <executionengine.updateStatusCallback>http://localhost:8080/WebAPI/executionservice/callbacks/submission/{id}/status/update/{password}</executionengine.updateStatusCallback>
-    <executionengine.resultCallback>http://localhost:8080/WebAPI/executionservice/callbacks/submission/{id}/result/{password}</executionengine.resultCallback>
-    <analysis.result.zipVolumeSizeMb>100</analysis.result.zipVolumeSizeMb>
-
-    <!-- PASSWORD ENCRYPTION -->
-    <jasypt.encryptor.enabled>false</jasypt.encryptor.enabled>
-    <jasypt.encryptor.password></jasypt.encryptor.password>
-    <jasypt.encryptor.algorithm>PBEWithMD5AndDES</jasypt.encryptor.algorithm>
-
-    <!-- ORGANIZATION SETTINGS -->
-    <organization.name>OHDSI</organization.name>
-
-    <!-- JdbcTemplate -->
-    <jdbc.suppressInvalidApiException>true</jdbc.suppressInvalidApiException>
-
-    <!-- Logging -->
-    <spring.jpa.show-sql>false</spring.jpa.show-sql>
-    <spring.jpa.properties.hibernate.generate_statistics>false</spring.jpa.properties.hibernate.generate_statistics>
-    <spring.jpa.properties.hibernate.jdbc.batch_size>200</spring.jpa.properties.hibernate.jdbc.batch_size>
-    <spring.jpa.properties.hibernate.order_inserts>true</spring.jpa.properties.hibernate.order_inserts>
-    <logging.level.root>info</logging.level.root>
-    <logging.level.org.ohdsi>info</logging.level.org.ohdsi>
-    <logging.level.org.springframework.orm>info</logging.level.org.springframework.orm>
-    <logging.level.org.springframework.jdbc>info</logging.level.org.springframework.jdbc>
-    <logging.level.org.springframework.web>info</logging.level.org.springframework.web>
-    <logging.level.org.hibernate>info</logging.level.org.hibernate>
-    <logging.level.org.apache.shiro>warn</logging.level.org.apache.shiro>
-
-    <!-- Spring Cache properties -->
-    <spring.cache.type>jcache</spring.cache.type>
-
-    <!-- Spring Batch -->
-    <spring.batch.taskExecutor.corePoolSize>10</spring.batch.taskExecutor.corePoolSize>
-    <spring.batch.taskExecutor.maxPoolSize>20</spring.batch.taskExecutor.maxPoolSize>
-    <spring.batch.taskExecutor.queueCapacity>2147483647</spring.batch.taskExecutor.queueCapacity>
-    <spring.batch.taskExecutor.threadGroupName></spring.batch.taskExecutor.threadGroupName>
-    <spring.batch.taskExecutor.threadNamePrefix></spring.batch.taskExecutor.threadNamePrefix>
-
-    <!-- Sensitive Info settings -->
-    <sensitiveinfo.admin.role>admin</sensitiveinfo.admin.role>
-    <sensitiveinfo.moderator.role>Moderator</sensitiveinfo.moderator.role>
-    <!-- Use "-" for files without extension, "*" for all files, extension must not include a leading dot. Use comma to separate values.
-     In case of "*" other values will be ignored -->
-    <sensitiveinfo.analysis.extensions>txt</sensitiveinfo.analysis.extensions>
-
-    <!-- Cache Config -->
-    <cdm.result.cache.warming.enable>true</cdm.result.cache.warming.enable>
-    <cdm.cache.achilles.warming.enable>false</cdm.cache.achilles.warming.enable>
-    <!-- Enable or disable warming cdm cache by cron -->
-    <cdm.cache.cron.warming.enable>false</cdm.cache.cron.warming.enable>
-    <!-- cron expression to warm cdm cache -->
-    <!-- cron expression format (asterisk means 'every' - '*' in seconds means 'every second') -->
-    <!-- default value is '0 0 2 * * *' which means "at 2am every day" -->
-    <!-- ┌───────second (0-59)-->
-    <!-- │ ┌────── minute (0-59)-->
-    <!-- │ │ ┌────── hour (0-23)-->
-    <!-- │ │ │ ┌────── day of the month (1-31)-->
-    <!-- │ │ │ │ ┌────── month (1-12) -->
-    <!-- │ │ │ │ │ ┌────── day of the week (0-7)-->
-    <!-- * * * * * *-->
-    <cdm.cache.cron.expression>0 0 2 * * *</cdm.cache.cron.expression>
-    <cache.generation.invalidAfterDays>30</cache.generation.invalidAfterDays>
-    <cache.generation.cleanupInterval>3600000</cache.generation.cleanupInterval>
-    <cache.generation.useAsync>false</cache.generation.useAsync>
-    <!-- Number of spring jobs that will be used for caching -->
-    <cache.jobs.count>3</cache.jobs.count>
-    <!-- Achilles cache -->
-    <cache.achilles.usePersonCount>true</cache.achilles.usePersonCount>
-    <cache.webapi.enabled>true</cache.webapi.enabled>
 
     <!-- Build info -->
-    <buildinfo.atlas.milestone.id>47</buildinfo.atlas.milestone.id>
     <buildinfo.webapi.milestone.id>49</buildinfo.webapi.milestone.id>
-    <buildinfo.atlas.release.tag>*</buildinfo.atlas.release.tag>
     <buildinfo.webapi.release.tag>*</buildinfo.webapi.release.tag>
-
-    <gis.enabled>false</gis.enabled>
-
-    <!-- I18n -->
-    <i18n.enabled>true</i18n.enabled>
-    <i18n.defaultLocale>en</i18n.defaultLocale>
-
-    <!-- Tags -->
-    <tag.enabled>true</tag.enabled>
-    <!-- Period between refreshes of materialized view with statistics -->
-    <!-- 10 minutes by default -->
-    <tag.refreshStat.period>600000</tag.refreshStat.period>
-
-    <!-- Versioning -->
-    <versioning.maxAttempt>10</versioning.maxAttempt>
-
-    <audit.trail.enabled>false</audit.trail.enabled>
-    <audit.trail.log.file>/tmp/atlas/audit/audit.log</audit.trail.log.file>
-    <audit.trail.log.file.pattern>/tmp/atlas/audit/audit-%d{yyyy-MM-dd}-%i.log</audit.trail.log.file.pattern>
-    <audit.trail.log.extraFile>/tmp/atlas/audit/audit-extra.log</audit.trail.log.extraFile>
 
     <!-- Shiny -->
     <shiny.enabled>false</shiny.enabled>
 
-    <!-- Trexsql -->
-    <trexsql.enabled>false</trexsql.enabled>
-    <trexsql.cache-path>./data/cache</trexsql.cache-path>
-    <trexsql.extensions-path></trexsql.extensions-path>
   </properties>
 
   <build>
@@ -316,56 +55,6 @@
     <testSourceDirectory>${basedir}/src/test/java</testSourceDirectory>
     <outputDirectory>${basedir}/target/classes</outputDirectory>
     <testOutputDirectory>${basedir}/target/test-classes</testOutputDirectory>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>true</filtering>
-        <includes>
-          <include>**/*.properties</include>
-          <include>log4j.xml</include>
-        </includes>
-      </resource>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>false</filtering>
-        <includes>
-          <include>**/*.*</include>
-        </includes>
-        <excludes>
-          <exclude>**/*.properties</exclude>
-          <exclude>log4j.xml</exclude>
-        </excludes>
-      </resource>
-    </resources>
-    <testResources>
-      <testResource>
-        <directory>src/test/resources</directory>
-        <filtering>true</filtering>
-        <includes>
-          <include>**/*.properties</include>
-        </includes>
-        <excludes>
-          <exclude>application-test.properties</exclude>
-        </excludes>
-      </testResource>
-      <testResource>
-        <directory>src/test/resources</directory>
-        <filtering>false</filtering>
-        <includes>
-          <include>application-test.properties</include>
-        </includes>
-      </testResource>
-      <testResource>
-        <directory>src/test/resources</directory>
-        <filtering>false</filtering>
-        <includes>
-          <include>**/*.*</include>
-        </includes>
-        <excludes>
-          <exclude>**/*.properties</exclude>
-        </excludes>
-      </testResource>
-    </testResources>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -442,7 +131,6 @@
         <artifactId>spring-boot-maven-plugin</artifactId>
         <version>${spring.boot.version}</version>
         <configuration>
-          <!-- Since we filter properties files via Maven, do not add resources. -->
           <addResources>false</addResources>
           <includeSystemScope>false</includeSystemScope>
           <mainClass>org.ohdsi.webapi.WebApi</mainClass>
@@ -454,10 +142,10 @@
             --add-opens java.naming/com.sun.jndi.ldap=ALL-UNNAMED
           </jvmArguments>
           <additionalProperties>
-            <atlas.milestone.id>${buildinfo.atlas.milestone.id}</atlas.milestone.id>
             <webapi.milestone.id>${buildinfo.webapi.milestone.id}</webapi.milestone.id>
-            <atlas.release.tag>${buildinfo.atlas.release.tag}</atlas.release.tag>
             <webapi.release.tag>${buildinfo.webapi.release.tag}</webapi.release.tag>
+            <git.branch>${git.branch}</git.branch>
+            <git.commit.id.abbrev>${git.commit.id.abbrev}</git.commit.id.abbrev>
           </additionalProperties>
         </configuration>
         <executions>
@@ -497,7 +185,7 @@
             <!-- Preserve parameter names for reflection (required for AspectJ parameter resolution) -->
             <arg>-parameters</arg>
           </compilerArgs>
-          <!-- Exclude TrexSQL sources by default (included when -Ptrexsql is active) -->
+          <!-- Exclude TrexSQL sources by default (included when -Ptcache is active) -->
           <excludes>
             <exclude>**/trexsql/**</exclude>
           </excludes>
@@ -582,26 +270,13 @@
 
   <repositories>
     <repository>
-      <id>central</id>
-      <name>Maven Central</name>
-      <url>https://repo.maven.apache.org/maven2</url>
-    </repository>
-    <repository>
       <id>ohdsi</id>
       <name>repo.ohdsi.org</name>
       <url>https://repo.ohdsi.org/nexus/content/groups/public</url>
     </repository>
-    <repository>
-      <id>jitpack.io</id>
-      <url>https://jitpack.io</url>
-    </repository>
   </repositories>
 
   <pluginRepositories>
-    <pluginRepository>
-      <id>central</id>
-      <url>https://repo.maven.apache.org/maven2</url>
-    </pluginRepository>
     <pluginRepository>
       <id>ohdsi</id>
       <name>repo.ohdsi.org</name>
@@ -1051,12 +726,6 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <!-- Override oauth2-oidc-sdk version for pac4j 6.x compatibility -->
-    <dependency>
-      <groupId>com.nimbusds</groupId>
-      <artifactId>oauth2-oidc-sdk</artifactId>
-      <version>11.20.1</version>
-    </dependency>
     <dependency>
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-http</artifactId>
@@ -1260,7 +929,7 @@
 
   <profiles>
     <profile>
-      <id>trexsql</id>
+      <id>tcache</id>
       <properties>
         <trexsql.enabled>true</trexsql.enabled>
       </properties>
@@ -1268,7 +937,7 @@
         <dependency>
           <groupId>com.github.p-hoffmann</groupId>
           <artifactId>trexsql-ext</artifactId>
-          <version>v0.1.23</version>
+          <version>v0.1.18</version>
         </dependency>
       </dependencies>
       <build>
@@ -1277,7 +946,7 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
             <configuration>
-              <!-- Include TrexSQL sources when trexsql profile is active -->
+              <!-- Include TrexSQL sources when tcache profile is active -->
               <excludes combine.self="override"/>
             </configuration>
           </plugin>
@@ -1293,30 +962,6 @@
     </profile>
     <profile>
       <id>webapi-oracle</id>
-      <properties>
-        <datasource.driverClassName>oracle.jdbc.OracleDriver</datasource.driverClassName>
-        <datasource.url>jdbc:oracle:thin:@127.0.0.1:1521/ohdsi</datasource.url>
-        <datasource.username>user</datasource.username>
-        <datasource.password>password</datasource.password>
-        <datasource.dialect>oracle</datasource.dialect>
-        <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
-        <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
-        <flyway.datasource.username>user</flyway.datasource.username>
-        <flyway.datasource.password>pass</flyway.datasource.password>
-        <datasource.ohdsi.schema>OHDSI</datasource.ohdsi.schema>
-        <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
-        <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
-        <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
-        <!--<datasource.validationQuery>SELECT 1 FROM DUAL</datasource.validationQuery>-->
-        <flyway.locations>classpath:db/migration/oracle</flyway.locations>
-        <hibernate.dialect>org.hibernate.dialect.Oracle10gDialect</hibernate.dialect>
-        <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
-        <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
-        <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
-        <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
-        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \
-          lower(email) = lower(?)</security.db.datasource.authenticationQuery>
-      </properties>
       <dependencies>
         <dependency>
           <groupId>com.oracle.database.jdbc</groupId>
@@ -1326,106 +971,11 @@
       </dependencies>
     </profile>
     <profile>
-      <id>webapi-postgresql</id>
-      <properties>
-        <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
-        <datasource.url>jdbc:postgresql://54.209.111.128:5432/vocabularyv5</datasource.url>
-        <datasource.username>USER</datasource.username>
-        <datasource.password>PASS</datasource.password>
-        <datasource.dialect>postgresql</datasource.dialect>
-        <datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
-        <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
-        <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
-        <flyway.datasource.username>userWithWritesToOhdsiSchema</flyway.datasource.username>
-        <flyway.datasource.password>PASS</flyway.datasource.password>
-        <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
-        <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
-        <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
-        <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
-        <hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</hibernate.dialect>
-        <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
-        <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
-        <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
-        <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
-        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users_data where \
-          lower(email) = lower(?)</security.db.datasource.authenticationQuery>
-      </properties>
-    </profile>
-    <profile>
-      <id>webapi-docker</id>
-      <properties>
-        <git.branch>unknown</git.branch>
-        <git.commit.id.abbrev>unknown</git.commit.id.abbrev>
-        <maven.gitcommitid.skip>true</maven.gitcommitid.skip>
-        <miredot.phase>none</miredot.phase>
-        <skipTests>true</skipTests>
-        <datasource.driverClassName>org.postgresql.Driver</datasource.driverClassName>
-        <datasource.url>jdbc:postgresql://54.209.111.128:5432/vocabularyv5</datasource.url>
-        <datasource.username>USER</datasource.username>
-        <datasource.password>PASS</datasource.password>
-        <datasource.dialect>postgresql</datasource.dialect>
-        <datasource.ohdsi.schema>ohdsi</datasource.ohdsi.schema>
-        <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
-        <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
-        <flyway.datasource.username>userWithWritesToOhdsiSchema</flyway.datasource.username>
-        <flyway.datasource.password>PASS</flyway.datasource.password>
-        <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
-        <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
-        <flyway.locations>classpath:db/migration/postgresql</flyway.locations>
-        <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
-        <hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</hibernate.dialect>
-        <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
-        <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
-        <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
-        <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
-        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.users_data where \
-          lower(email) = lower(?)</security.db.datasource.authenticationQuery>
-      </properties>
-      <repositories>
-        <repository>
-          <id>ohdsi.snapshots</id>
-          <name>repo.ohdsi.org-snapshots</name>
-          <url>https://repo.ohdsi.org/nexus/content/repositories/snapshots</url>
-          <releases>
-            <enabled>false</enabled>
-          </releases>
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
-        </repository>
-      </repositories>
-    </profile>
-    <profile>
       <id>webapi-mssql</id>
-      <properties>
-        <datasource.driverClassName>com.microsoft.sqlserver.jdbc.SQLServerDriver</datasource.driverClassName>
-        <datasource.url>jdbc:sqlserver://server</datasource.url>
-        <datasource.username>USER</datasource.username>
-        <datasource.password>PASS</datasource.password>
-        <datasource.dialect>sql server</datasource.dialect>
-        <datasource.ohdsi.schema>OHDSI_schema</datasource.ohdsi.schema>
-        <flyway.datasource.driverClassName>${datasource.driverClassName}</flyway.datasource.driverClassName>
-        <flyway.datasource.url>${datasource.url}</flyway.datasource.url>
-        <flyway.datasource.username>FLYWAY_USER</flyway.datasource.username>
-        <flyway.datasource.password>FLYWAY_PASS</flyway.datasource.password>
-        <flyway.schemas>${datasource.ohdsi.schema}</flyway.schemas>
-        <flyway.placeholders.ohdsiSchema>${datasource.ohdsi.schema}</flyway.placeholders.ohdsiSchema>
-        <flyway.locations>classpath:db/migration/sqlserver</flyway.locations>
-        <spring.batch.repository.tableprefix>${datasource.ohdsi.schema}.BATCH_</spring.batch.repository.tableprefix>
-        <hibernate.dialect>org.hibernate.dialect.SQLServer2012Dialect</hibernate.dialect>
-        <security.db.datasource.url>${datasource.url}</security.db.datasource.url>
-        <security.db.datasource.driverClassName>${datasource.driverClassName}</security.db.datasource.driverClassName>
-        <security.db.datasource.username>${datasource.username}</security.db.datasource.username>
-        <security.db.datasource.password>${datasource.password}</security.db.datasource.password>
-        <security.db.datasource.authenticationQuery>select password from ${security.db.datasource.schema}.user where \
-          lower(email) = lower(?)</security.db.datasource.authenticationQuery>
-      </properties>
+      <!-- TODO: Could add dependnency to MSSql driver here -->
     </profile>
     <profile>
       <id>webapi-netezza</id>
-      <properties>
-        <netezza.enabled>true</netezza.enabled>
-      </properties>
       <dependencies>
         <dependency>
           <groupId>org.netezza</groupId>
@@ -1462,10 +1012,7 @@
     <profile>
       <id>webapi-impala</id>
       <properties>
-        <impala.enabled>true</impala.enabled>
         <impala.driver.version>2.6.15</impala.driver.version>
-        <!-- Impala JDBC driver path -->
-        <impala.classpath>...path/to/impala/jdbc/drivers...</impala.classpath>
       </properties>
       <dependencies>
         <dependency>
@@ -1503,7 +1050,6 @@
     <profile>
       <id>webapi-spark</id>
       <properties>
-        <spark.enabled>true</spark.enabled>
         <!-- Spark JDBC driver path -->
         <spark.classpath>${basedir}/src/main/extras/spark</spark.classpath>
       </properties>
@@ -1847,10 +1393,6 @@
     </profile>
     <profile>
       <id>webapi-redshift</id>
-      <properties>
-        <!-- Redshift driver path -->
-        <redshift.classpath>...path/to/redshift/jdbc/drivers...</redshift.classpath>
-      </properties>
       <dependencies>
         <dependency>
           <groupId>com.amazonaws</groupId>
@@ -1880,7 +1422,6 @@
     <profile>
       <id>webapi-snowflake</id>
       <properties>
-        <snowflake.enabled>true</snowflake.enabled>
         <snowflake.driver.version>3.26.1</snowflake.driver.version>
       </properties>
       <dependencies>
@@ -1894,7 +1435,6 @@
     <profile>
       <id>webapi-iris</id>
       <properties>
-        <iris.enabled>true</iris.enabled>
         <iris.driver.version>3.10.2</iris.driver.version>
       </properties>
       <dependencies>
@@ -1943,6 +1483,8 @@
     </profile>
 
     <!-- WAR packaging profile - use with: mvn package -Pwar -->
+
+    <!-- TODO: I think this is incorrect, the embedded tomcat should be included when it's JAR, not PROVIDED-->
     <profile>
       <id>war</id>
       <properties>

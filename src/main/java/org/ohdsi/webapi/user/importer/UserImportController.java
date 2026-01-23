@@ -57,10 +57,10 @@ public class UserImportController {
   @Autowired
   private GenericConversionService conversionService;
 
-  @Value("${security.ad.url}")
+  @Value("${security.auth.ad.url}")
   private String adUrl;
 
-  @Value("${security.ldap.url}")
+  @Value("${security.auth.ldap.url}")
   private String ldapUrl;
 
   @GET

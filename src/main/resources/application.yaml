@@ -1,0 +1,365 @@
+analysis:
+  result:
+    zipVolumeSizeMb: 100
+atlasgis:
+  enabled: false
+audit:
+  trail:
+    enabled: false
+    log:
+      extraFile: /tmp/atlas/audit/audit-extra.log
+      file: /tmp/atlas/audit/audit.log
+      file.pattern: /tmp/atlas/audit/audit-%d{yyyy-MM-dd}-%i.log
+build:
+  number: NA
+cache:
+  achilles:
+    usePersonCount: true
+  generation:
+    cleanupInterval: 3600000
+    invalidAfterDays: 30
+    useAsync: false
+  jobs:
+    count: 3
+cdm:
+  cache:
+    achilles:
+      warming:
+        enable: false
+    cron:
+      # cron expression to warm cdm cache
+      #  cron expression format (asterisk means 'every' - '*' in seconds means 'every second')
+      #  default value is '0 0 2 * * *' which means "at 2am every day"
+      #  ┌───────second (0-59)
+      #  │ ┌────── minute (0-59)
+      #  │ │ ┌────── hour (0-23)
+      #  │ │ │ ┌────── day of the month (1-31)
+      #  │ │ │ │ ┌────── month (1-12)
+      #  │ │ │ │ │ ┌────── day of the week (0-7)
+      #  * * * * * *
+      expression: 0 0 2 * * *
+      warming:
+        enable: false
+  result:
+    cache:
+      warming:
+        enable: false
+  version: 5
+compressableMimeType: application/json,application/xml,text/html,text/xml,text/plain
+compression: true
+csrf:
+  disable: true
+datasource:
+  dialect: postgresql
+  dialect.source: postgresql
+  driverClassName: org.postgresql.Driver
+  ohdsi:
+    schema: webapi
+  password: app1
+  url: jdbc:postgresql://localhost:5432/YOUR_DATABASE_NAME
+  username: ohdsi_app_user
+execution:
+  invalidation:
+    period: 600000
+    maxage:
+      hours: 12
+  status:
+    period: 10000
+executionengine:
+  resultCallback:
+  resultExclusions: ""
+  token: Basic YWRtaW5Ab2R5c3NldXNpbmMuY29tOnBhc3N3b3Jk
+  updateStatusCallback: "http://localhost:8080/WebAPI/executionservice/callbacks/submission/{id}/status/update/{password}"
+  url: https://localhost:8888/api/v1/analyze
+
+heracles:
+  smallcellcount: 5
+i18n:
+  defaultLocale: en
+  enabled: true
+jasypt:
+  encryptor:
+    algorithm: PBEWithMD5AndDES
+    enabled: false
+    password: ""
+jdbc:
+  suppressInvalidApiException: true
+jersey:
+  config:
+    server:
+      wadl:
+        disableWadl: true
+  resources:
+    root:
+      package: org.ohdsi.webapi
+kerberos:
+  configPath: /etc/krb5.conf
+  kinitPath: ""
+  timeout: 60
+logging:
+  level:
+    org:
+      apache:
+        shiro: warn
+      hibernate: info
+      ohdsi: info
+      springframework:
+        jdbc: info
+        orm: info
+        web: info
+    root: info
+organization:
+  name: OHDSI
+person:
+  viewDates: false
+r:
+  serviceHost: ${r.serviceHost}
+security:
+  auth:
+    ad: # Active Directory Settings
+      enabled: false
+      default:
+        import:
+          group: public
+      ignore:
+        partial:
+          result:
+            exception: true
+      principalSuffix: "@example.org"
+      result:
+        count:
+          limit: 30000
+      searchBase: CN=Users,DC=example,DC=org
+      searchFilter: (&(objectClass=person)(cn=%s))
+      searchString: (&(objectClass=person)(userPrincipalName=%s))
+      system:
+        password: ""
+        username: ""
+      url: ""
+      userImport:
+        loginAttr: sAMAccountName
+        usernameAttr: cn
+      userMapping:
+        displaynameAttr: displayname
+        firstnameAttr: givenname
+        lastnameAttr: sn
+        middlenameAttr: initials
+        usernameAttr: cn
+
+    cas: # Central Authentication Security (CAS)
+      enabled: false
+      callbackUrl: ""
+      cassvcs: ""
+      casticket: casticket
+      loginUrl: ""
+      serverUrl: ""
+
+    google: # TODO: Need documentation on authentication via google token.
+      accessToken:
+        enabled: false
+
+    googleIap: # Google Cloud Identity-Aware Proxy (IAP)
+      enabled: false
+      backendServiceId: ""
+      cloudProjectId: ""
+    
+    jdbc: # Java Database Connectivity (JDBC) Authentication
+      enabled: false
+      datasource:
+        authenticationQuery: select password from ${security.auth.jdbc.datasource.schema}.your_schema.users where lower(email) = lower(?)
+        driverClassName: org.postgresql.Driver
+        password: app1dbsecurity_pass
+        schema: your_schema
+        url: jdbc:postgresql://localhost:5436/SECURITY_DB
+        username: dbsecurity_user
+
+    kerberos: # Kerberos
+      enabled: false
+      keytabPath: ""
+      spn: ""
+
+    ldap: # Lightweight Directory Access (LDAP)
+      enabled: false
+      baseDn: ""
+      dn: cn={0},dc=example,dc=org
+      searchBase: CN=Users,DC=example,DC=org
+      searchString: (&(objectClass=person)(CN={0}))
+      system:
+        password: ""
+        username: ""
+      url: ldap://localhost:389
+      userImport:
+        loginAttr: uid
+        usernameAttr: cn
+      userMapping:
+        displaynameAttr: displayName
+        firstnameAttr: givenName
+        lastnameAttr: sn
+        middlenameAttr: initials
+        usernameAttr: cn
+
+    oauth: # OAuth
+      enabled: false
+      callback:
+        api: http://localhost:8080/WebAPI/user/oauth/callback
+        ui: http://localhost/Atlas/#/welcome
+        urlResolver: query
+      facebook:
+        enabled: false
+        apiKey: ""
+        apiSecret: ""
+      github:
+        enabled: false
+        apiKey: ""
+        apiSecret: ""
+      google:
+        enabled: false
+        apiKey: ""
+        apiSecret: ""
+
+    oid: # OpenID
+      enabled: false
+      apiSecret: ""
+      clientId: ""
+      customParams: "{:}"
+      extraScopes: ""
+      logoutUrl: ""
+      redirectUrl: http://localhost/index.html#/welcome/
+      url: ""
+
+    saml: # SAML (Security Assertion Markup Language)
+      enabled: false
+      callbackUrl: ""
+      entityId: ""
+      idpMetadataLocation: ""
+      keyManager:
+        defaultKey: ""
+        keyStoreFile: ""
+        passwords:
+          arachnenetwork: ""
+        storePassword: ""
+      maximumAuthenticationLifetime: 60
+      metadataLocation: ""
+      sloUrl: ""
+    
+    windows:
+      enabled: true
+
+  cors: # Cross origin requests
+    enabled: true
+
+  # If defaultGlobalReadPermissions is set to true (default), then all users can see every artifact.
+  # If it is set to false, WebAPI will filter out the artifacts that a user does not explicitly have read permissions to
+  defaultGlobalReadPermissions: true
+
+  duration:
+    increment: 10
+    initial: 10
+
+  maxLoginAttempts: 3
+  origin: http://localhost
+  provider: DisabledSecurity
+
+  ssl:
+    enabled: false
+  token:
+    expiration: 360000
+
+# Sensitive Info settings
+sensitiveinfo:
+  admin:
+    role: admin
+  analysis:
+    # Use "-" for files without extension, "*" for all files, extension must not include a leading dot. Use comma to separate values.
+    # In case of "*" other values will be ignored
+    extensions: txt
+  moderator:
+    role: Moderator
+
+# EMBEDDED SERVER CONFIGURATION (ServerProperties)
+server:
+  context-path: /WebAPI
+  port: 8080
+  ssl:
+    enabled: false
+    key-password: ""
+    key-store: ""
+    key-store-password: ""
+solr:
+  endpoint: ${solr.endpoint}
+  query:
+    prefix: ${solr.query.prefix}
+source:
+  name: CDM_NAME
+sparql:
+  endpoint: http://virtuoso.ohdsi.org:8890/sparql?default-graph-uri=&query=
+spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.ldap.LdapAutoConfiguration
+  batch:
+    initializer:
+      enabled: false
+    job:
+      enabled: false
+    repository:
+      isolationLevelForCreate: ISOLATION_READ_COMMITTED
+      tableprefix: ${datasource.ohdsi.schema}.BATCH_
+    taskExecutor:
+      corePoolSize: 10
+      maxPoolSize: 20
+      queueCapacity: 2147483647
+      threadGroupName: ""
+      threadNamePrefix: ""
+  cache:
+    jcache:
+      config: classpath:appCache.xml
+    type: jcache
+  datasource:
+    hikari:
+      connection-test-query: SELECT 1
+      connection-test-query-timeout: 2000
+      connection-timeout: 5000
+      maximum-pool-size: 5
+      mbean-name: authDataSource
+      minimum-idle: 1
+      register-mbeans: true
+    initialize: false
+  flyway:
+    baseline-on-migrate: true
+    driver-class-name: ${datasource.driverClassName}
+    enabled: true
+    fail-on-missing-locations: true
+    locations: classpath:db/migration/postgresql
+    out-of-order: false
+    password: admin1
+    placeholders:
+      ohdsiSchema: ${datasource.ohdsi.schema}
+    schemas: ${datasource.ohdsi.schema}
+    table: schema_version
+    url: ${datasource.url}
+    user: ohdsi_admin_user
+    validate-on-migrate: false
+  jackson:
+    serialization:
+      write-dates-as-timestamps: true
+  jpa:
+    properties:
+      hibernate:
+        default_schema: ${datasource.ohdsi.schema}
+        generate_statistics: false
+        jdbc:
+          batch_size: 200
+        order_inserts: true
+    show-sql: false
+  profiles:
+    active: default
+tag:
+  enabled: true
+  refreshStat:
+    period: 600000
+trexsql:
+  cache-path: ./data/cache
+  enabled: false
+  extensions-path: ""
+versioning:
+  maxAttempt: 10

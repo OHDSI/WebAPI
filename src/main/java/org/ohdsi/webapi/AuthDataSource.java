@@ -34,15 +34,15 @@ import javax.sql.DataSource;
 public class AuthDataSource {
     private final Logger logger = LoggerFactory.getLogger(AuthDataSource.class);
 
-    @Value("${security.db.datasource.driverClassName}")
+    @Value("${security.auth.jdbc.datasource.driverClassName}")
     private String driverClassName;
-    @Value("${security.db.datasource.url}")
+    @Value("${security.auth.jdbc.datasource.url}")
     private String url;
-    @Value("${security.db.datasource.username}")
+    @Value("${security.auth.jdbc.datasource.username}")
     private String username;
-    @Value("${security.db.datasource.password}")
+    @Value("${security.auth.jdbc.datasource.password}")
     private String password;
-    @Value("${security.db.datasource.schema}")
+    @Value("${security.auth.jdbc.datasource.schema}")
     private String schema;
     @Value("${spring.datasource.hikari.connection-test-query}")
     private String testQuery;

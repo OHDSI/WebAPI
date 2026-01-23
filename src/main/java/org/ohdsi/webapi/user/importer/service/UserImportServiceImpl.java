@@ -61,7 +61,7 @@ public class UserImportServiceImpl implements UserImportService {
 
   private final RoleGroupRepository roleGroupMappingRepository;
 
-  @Value("${security.ad.default.import.group}#{T(java.util.Collections).emptyList()}")
+  @Value("${security.auth.ad.default.import.group}#{T(java.util.Collections).emptyList()}")
   private List<String> defaultRoles;
 
   public UserImportServiceImpl(@Autowired(required = false) ActiveDirectoryProvider activeDirectoryProvider,

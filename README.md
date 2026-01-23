@@ -56,39 +56,41 @@ java -jar target/WebAPI.jar \
 Notes:
 - Batch uses a table prefix and the security datasource can be overridden if you choose a separate connection, but both are optional when you keep everything on the main datasource/schema.
 
-## SAML Auth support
+## SAML Auth support (Updated for 3.0)
 
 The following parameters are used:
 
-- `security.saml.idpMetadataLocation=classpath:saml/dev/idp-metadata.xml` - path to metadata used by identity provider
-- `security.saml.metadataLocation=saml/dev/sp-metadata.xml` - service provider metadata path
-- `security.saml.keyManager.keyStoreFile=classpath:saml/samlKeystore.jks` - path to keystore
-- `security.saml.keyManager.storePassword=nalle123` - keystore password
-- `security.saml.keyManager.passwords.arachnenetwork=nalle123` - private key password
-- `security.saml.keyManager.defaultKey=apollo` - keystore alias
-- `security.saml.sloUrl=https://localhost:8443/cas/logout` - identity provider logout URL
-- `security.saml.callbackUrl=http://localhost:8080/WebAPI/user/saml/callback` - URL called from identity provider after login
+- `security.auth.saml.idpMetadataLocation=classpath:saml/dev/idp-metadata.xml` - path to metadata used by identity provider
+- `security.auth.saml.metadataLocation=saml/dev/sp-metadata.xml` - service provider metadata path
+- `security.auth.saml.keyManager.keyStoreFile=classpath:saml/samlKeystore.jks` - path to keystore
+- `security.auth.saml.keyManager.storePassword=nalle123` - keystore password
+- `security.auth.saml.keyManager.passwords.arachnenetwork=nalle123` - private key password
+- `security.auth.saml.keyManager.defaultKey=apollo` - keystore alias
+- `security.auth.saml.sloUrl=https://localhost:8443/cas/logout` - identity provider logout URL
+- `security.auth.saml.callbackUrl=http://localhost:8080/WebAPI/user/saml/callback` - URL called from identity provider after login
 
 Sample idp metadata and sp metadata config files for okta:
 - `saml/dev/idp-metadata-okta.xml`
 - `saml/dev/sp-metadata-okta.xml`
 
-## Managing auth providers
+## Managing auth providers (Updated for v3.0)
 
 The following parameters are used to enable/disable certain provider:
 
-- `security.auth.windows.enabled`
-- `security.auth.kerberos.enabled`
-- `security.auth.openid.enabled`
-- `security.auth.facebook.enabled`
-- `security.auth.github.enabled`
-- `security.auth.google.enabled`
-- `security.auth.jdbc.enabled`
-- `security.auth.ldap.enabled`
 - `security.auth.ad.enabled`
 - `security.auth.cas.enabled`
+- `security.auth.jdbc.enabled`
+- `security.auth.kerberos.enabled`
+- `security.auth.ldap.enabled`
+- `security.auth.oauth.facebook.enabled`
+- `security.auth.oauth.github.enabled`
+- `security.auth.oauth.google.enabled`
+- `security.auth.openid.enabled`
+- `security.auth.windows.enabled`
 
 Acceptable values are `true` and `false`
+
+Default paramaters for each of these authentication providers are provided as an example in the embedded application.yaml file.  All providers are disabled by default.
 
 ## Geospatial support
 

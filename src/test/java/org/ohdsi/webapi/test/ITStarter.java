@@ -39,10 +39,10 @@ public class ITStarter extends AbstractShiro {
                 String jdbcUrl = pg.getPostgresDatabase().getConnection().getMetaData().getURL();
                 System.setProperty("datasource.url", jdbcUrl);
                 System.setProperty("spring.flyway.url", jdbcUrl);
-                System.setProperty("security.db.datasource.url", jdbcUrl);
-                System.setProperty("security.db.datasource.username", "postgres");
-                System.setProperty("security.db.datasource.password", "postgres");
-                System.setProperty("security.db.datasource.schema", "public");
+                System.setProperty("security.auth.jdbc.datasource.url", jdbcUrl);
+                System.setProperty("security.auth.jdbc.datasource.username", "postgres");
+                System.setProperty("security.auth.jdbc.datasource.password", "postgres");
+                System.setProperty("security.auth.jdbc.datasource.schema", "public");
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }

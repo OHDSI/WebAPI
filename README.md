@@ -24,6 +24,62 @@ The API Documentation is found at [http://webapidoc.ohdsi.org/](http://webapidoc
 
 Documentation can be found a the [Web API Installation Guide](https://github.com/OHDSI/WebAPI/wiki) which covers the system requirements and installation instructions.
 
+## WebAPI Configuration in version 3.0
+
+Application configuration has moved from a maven build-based pipeline (in version 2.x) to external configuration in WebAPI 3.0 (and using a new YAML format) as described in this [Atlas Sandbox project](https://github.com/OHDSI/AtlasWebAPISandbox/tree/main/ExternalConfig).
+
+### VS.Code Launch settings Example
+
+In VS Code, to launch the app using an external config, you can define a new launch settings in your local .vscode/launch.json file:
+
+```
+{
+  "configurations": [
+    {
+      "type": "java",
+      "name": "WebApi",
+      "request": "launch",
+      "mainClass": "org.ohdsi.webapi.WebApi",
+      "projectName": "WebAPI",
+      "vmArgs": "-Dspring.config.additional-location=file:C:/localsource/VSCodeWorkspace/webapi30-application.yaml"
+    }
+	]
+}
+```
+_Note the format of Windows paths in this example_
+
+This will pass the necessary VM arg to load additional Spring configuration from the specified file.  For example, for a local Postgres install with Windows Authentication enabled:
+
+```
+datasource:
+  dialect: postgresql
+  dialect.source: postgresql
+  driverClassName: org.postgresql.Driver
+  ohdsi:
+    schema: webapi
+  password: app1
+  url: jdbc:postgresql://localhost:5436/OHDSI_30
+  username: ohdsi_app_user
+security:
+  auth:
+    windows: 
+        enabled: true  
+  origin: http://localhost
+  provider: AtlasRegularSecurity
+```
+### Deploying WAR to Tomcat
+
+You can provide the enviornment variable `spring.config.additional-location` using a context.xml that is uploaded along with the WAR:
+
+```
+<Context>
+    <Environment name="spring.config.additional-location"
+                 value="file:/some/path/webapi/config/local-config.yaml"
+                 type="java.lang.String"
+                 override="false"/>
+</Context>
+```
+
 ## JAR Build (Executable)
 
 WebAPI can also be built as a self-contained executable JAR with embedded Tomcat:

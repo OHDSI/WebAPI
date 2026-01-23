@@ -210,7 +210,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     @Autowired
     private LdapUserMapper ldapUserMapper;
 
-    @Value("${security.auth.oid.redirectUrl}")
+    @Value("${security.auth.openId.redirectUrl}")
     private String redirectUrl;
 
     @Value("${security.auth.cas.loginUrl}")
@@ -249,7 +249,7 @@ public class AtlasRegularSecurity extends AtlasSecurity {
     @Value("${security.auth.cas.enabled}")
     private boolean casAuthEnabled;
 
-    @Value("${security.auth.oid.enabled}")
+    @Value("${security.auth.openId.enabled}")
     private boolean openidAuthEnabled;
 
     @Value("${security.auth.oauth.facebook.enabled}")

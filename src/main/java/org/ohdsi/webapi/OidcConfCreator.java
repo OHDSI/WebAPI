@@ -39,25 +39,25 @@ public class OidcConfCreator {
     private volatile OidcConfiguration cachedConfiguration;
     private final Object lock = new Object();
 
-    @Value("${security.auth.oid.clientId}")
+    @Value("${security.auth.openId.clientId}")
     private String clientId;
 
-    @Value("${security.auth.oid.apiSecret}")
+    @Value("${security.auth.openId.apiSecret}")
     private String apiSecret;
 
-    @Value("${security.auth.oid.url}")
+    @Value("${security.auth.openId.url}")
     private String url;
 
-    @Value("${security.auth.oid.externalUrl:}")
+    @Value("${security.auth.openId.externalUrl:}")
     private String externalUrl;
 
-    @Value("${security.auth.oid.logoutUrl}")
+    @Value("${security.auth.openId.logoutUrl}")
     private String logoutUrl;
 
-    @Value("${security.auth.oid.extraScopes}")
+    @Value("${security.auth.openId.extraScopes}")
     private String extraScopes;
 
-    @Value("#{${security.auth.oid.customParams:{T(java.util.Collections).emptyMap()}}}")
+    @Value("#{${security.auth.openId.customParams:{T(java.util.Collections).emptyMap()}}}")
     private Map<String, String> customParams = new HashMap<>();
 
     @Value("${security.auth.oauth.callback.api}")

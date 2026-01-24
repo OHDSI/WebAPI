@@ -57,11 +57,6 @@ public class Tracker {
     return activityLog.toArray();
   }
 
-  /**
-   * Get latest activity
-   *
-   * @deprecated DO NOT USE - will be removed in future release
-   */
   @GetMapping(value = "/latest", produces = MediaType.APPLICATION_JSON_VALUE)
   @Deprecated
   public Object[] getLatestActivity() {

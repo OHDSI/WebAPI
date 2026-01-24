@@ -2,6 +2,7 @@ package org.ohdsi.webapi.shiro.filters.auth;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
+import java.io.IOException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletResponse;
@@ -46,6 +47,14 @@ public final class AtlasJwtAuthFilter extends AtlasAuthFilter {
     if (!loggedIn) {
         HttpServletResponse httpResponse = ServletBridge.toHttp(response);
         httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        // Write response body and commit to prevent Spring MVC from processing
+        try {
+            httpResponse.setContentType("application/json");
+            httpResponse.getWriter().write("{\"error\":\"Invalid or missing JWT token\"}");
+            httpResponse.flushBuffer(); // Commit the response
+        } catch (IOException e) {
+            logger.error("Failed to write unauthorized response", e);
+        }
     }
 
     return loggedIn;

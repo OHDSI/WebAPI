@@ -64,6 +64,15 @@ public class ShiroConfiguration {
 
         Map<String, String> filterChain = security.getFilterChain();
 
+        // Debug: log the filter chain configuration
+        log.info("=== Shiro Filter Chain Configuration ===");
+        log.info("Security implementation: {}", security.getClass().getName());
+        log.info("Number of filters: {}", filters.size());
+        log.info("Filter names: {}", filters.keySet());
+        log.info("Filter chain paths ({} entries):", filterChain.size());
+        filterChain.forEach((path, chain) -> log.info("  {} -> {}", path, chain));
+        log.info("=== End Shiro Filter Chain Configuration ===");
+
         shiroFilter.setFilterChainDefinitionMap(filterChain);
 
         return shiroFilter;

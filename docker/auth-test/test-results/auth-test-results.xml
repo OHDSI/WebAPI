@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="WebAPI Authentication Tests" tests="20" time="0.259">
+  <testsuite name="Health &amp; Info / WebAPI Info Endpoint" id="9996009e-643c-4116-b85c-9f5c0b0c8412" timestamp="2026-01-24T15:06:17.921Z" tests="3" failures="0" errors="0" time="0.045">
+    <testcase name="Response time is reasonable" time="0.045" classname="WebApiAuthenticationTests"/>
+    <testcase name="Info endpoint is accessible" time="0.045" classname="WebApiAuthenticationTests"/>
+    <testcase name="Response contains version" time="0.045" classname="WebApiAuthenticationTests"/>
+  </testsuite>
+  <testsuite name="Health &amp; Info / OIDC Discovery Endpoint" id="0dfe213a-e0b9-4212-8a05-8abb1a92af60" timestamp="2026-01-24T15:06:17.921Z" tests="3" failures="0" errors="0" time="0.015">
+    <testcase name="Response time is reasonable" time="0.015" classname="WebApiAuthenticationTests"/>
+    <testcase name="OIDC discovery is accessible" time="0.015" classname="WebApiAuthenticationTests"/>
+    <testcase name="Contains required OIDC endpoints" time="0.015" classname="WebApiAuthenticationTests"/>
+  </testsuite>
+  <testsuite name="Health &amp; Info / Auth Providers Endpoint" id="9455c805-6c9e-42b6-aac7-88c311a3157f" timestamp="2026-01-24T15:06:17.921Z" tests="4" failures="0" errors="0" time="0.009">
+    <testcase name="Response time is reasonable" time="0.009" classname="WebApiAuthenticationTests"/>
+    <testcase name="Auth providers endpoint is accessible" time="0.009" classname="WebApiAuthenticationTests"/>
+    <testcase name="Response is an array" time="0.009" classname="WebApiAuthenticationTests"/>
+    <testcase name="OpenID provider is enabled" time="0.009" classname="WebApiAuthenticationTests"/>
+  </testsuite>
+  <testsuite name="Unauthenticated Access / Protected Endpoint Without Token - Should Return 401" id="4679a7f5-8268-4e49-b139-aa9932e0bdf8" timestamp="2026-01-24T15:06:17.921Z" tests="2" failures="1" errors="0" time="0.010">
+    <testcase name="Response time is reasonable" time="0.010" classname="WebApiAuthenticationTests"/>
+    <testcase name="Protected endpoint returns 401 without token" time="0.010" classname="WebApiAuthenticationTests">
+      <failure type="AssertionFailure" message="expected 200 to be one of [ 401, 403 ]">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
+        <![CDATA[Collection name: WebAPI Authentication Tests.]]>
+        <![CDATA[Request name: Unauthenticated Access / Protected Endpoint Without Token - Should Return 401.]]>
+        <![CDATA[Test description: Protected endpoint returns 401 without token.]]>
+        <![CDATA[Error message: expected 200 to be one of [ 401, 403 ].]]>
+        <![CDATA[Stacktrace: AssertionError: expected 200 to be one of [ 401, 403 ]
+   at Object.eval sandbox-script.js:1:4).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="Unauthenticated Access / User Info Without Token - Should Return 401" id="3de9e38a-0984-406b-9b65-ffc6311710b1" timestamp="2026-01-24T15:06:17.921Z" tests="2" failures="1" errors="0" time="0.047">
+    <testcase name="Response time is reasonable" time="0.047" classname="WebApiAuthenticationTests"/>
+    <testcase name="User info returns 401 without token" time="0.047" classname="WebApiAuthenticationTests">
+      <failure type="AssertionFailure" message="expected 200 to be one of [ 401, 403 ]">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
+        <![CDATA[Collection name: WebAPI Authentication Tests.]]>
+        <![CDATA[Request name: Unauthenticated Access / User Info Without Token - Should Return 401.]]>
+        <![CDATA[Test description: User info returns 401 without token.]]>
+        <![CDATA[Error message: expected 200 to be one of [ 401, 403 ].]]>
+        <![CDATA[Stacktrace: AssertionError: expected 200 to be one of [ 401, 403 ]
+   at Object.eval sandbox-script.js:1:5).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="OIDC Full Login Flow / 1. Start OIDC Login" id="396ff194-e60d-4c80-9b8a-c0b718f0b059" timestamp="2026-01-24T15:06:17.921Z" tests="3" failures="2" errors="1" time="0.019">
+    <system-err><![CDATA[Iteration: 0
+
+---
+testScriptError: Cannot read properties of undefined (reading 'replace')
+---
+]]></system-err>
+    <testcase name="Response time is reasonable" time="0.019" classname="WebApiAuthenticationTests"/>
+    <testcase name="Login redirects to OIDC provider" time="0.019" classname="WebApiAuthenticationTests">
+      <failure type="AssertionFailure" message="expected 404 to be one of [ 302, 303 ]">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
+        <![CDATA[Collection name: WebAPI Authentication Tests.]]>
+        <![CDATA[Request name: OIDC Full Login Flow / 1. Start OIDC Login.]]>
+        <![CDATA[Test description: Login redirects to OIDC provider.]]>
+        <![CDATA[Error message: expected 404 to be one of [ 302, 303 ].]]>
+        <![CDATA[Stacktrace: AssertionError: expected 404 to be one of [ 302, 303 ]
+   at Object.eval sandbox-script.js:1:6).]]>
+      </failure>
+    </testcase>
+    <testcase name="Redirect contains authorize endpoint" time="0.019" classname="WebApiAuthenticationTests">
+      <failure type="AssertionFailure" message="the given combination of arguments (undefined and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
+        <![CDATA[Collection name: WebAPI Authentication Tests.]]>
+        <![CDATA[Request name: OIDC Full Login Flow / 1. Start OIDC Login.]]>
+        <![CDATA[Test description: Redirect contains authorize endpoint.]]>
+        <![CDATA[Error message: the given combination of arguments (undefined and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string.]]>
+        <![CDATA[Stacktrace: AssertionError: the given combination of arguments (undefined and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string
+   at Object.eval sandbox-script.js:2:6).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="OIDC Full Login Flow / 2. Simulate IdP Login" id="cfb972d0-79dd-424a-8ed3-46c85c479811" timestamp="2026-01-24T15:06:17.921Z" tests="3" failures="3" errors="2" time="0.000">
+    <system-err><![CDATA[Iteration: 0
+RequestError: Error: runtime:extensions~request: request url is empty
+    at Requester.request (/usr/local/lib/node_modules/newman/node_modules/postman-runtime/lib/requester/requester.js:421:26)
+    at /usr/local/lib/node_modules/newman/node_modules/postman-runtime/lib/runner/extensions/http-request.command.js:156:37
+    at Function.create (/usr/local/lib/node_modules/newman/node_modules/postman-runtime/lib/requester/requester.js:508:16)
+    at RequesterPool.create (/usr/local/lib/node_modules/newman/node_modules/postman-runtime/lib/requester/requester-pool.js:67:22)
+    at /usr/local/lib/node_modules/newman/node_modules/postman-runtime/lib/runner/extensions/http-request.command.js:105:32
+    at /usr/local/lib/node_modules/newman/node_modules/async/dist/async.js:252:13
+    at wrapper (/usr/local/lib/node_modules/newman/node_modules/async/dist/async.js:273:20)
+    at replenish (/usr/local/lib/node_modules/newman/node_modules/async/dist/async.js:443:29)
+    at /usr/local/lib/node_modules/newman/node_modules/async/dist/async.js:453:13
+    at eachOfLimit (/usr/local/lib/node_modules/newman/node_modules/async/dist/async.js:479:36)
+    at awaitable (/usr/local/lib/node_modules/newman/node_modules/async/dist/async.js:212:32)
+    at eachOfSeries (/usr/local/lib/node_modules/newman/node_modules/async/dist/async.js:815:16)
+    at awaitable (/usr/local/lib/node_modules/newman/node_modules/async/dist/async.js:212:32)
+    at _asyncMap (/usr/local/lib/node_modules/newman/node_modules/async/dist/async.js:245:16)
+    at mapSeries (/usr/local/lib/node_modules/newman/node_modules/async/dist/async.js:839:16)
+    at awaitable (/usr/local/lib/node_modules/newman/node_modules/async/dist/async.js:212:32)
+
+---
+testScriptError: Cannot read properties of undefined (reading 'match')
+---
+]]></system-err>
+    <testcase name="Response time is reasonable" time="0.000" classname="WebApiAuthenticationTests">
+      <failure type="AssertionFailure" message="expected undefined to be a number or a date">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
+        <![CDATA[Collection name: WebAPI Authentication Tests.]]>
+        <![CDATA[Request name: OIDC Full Login Flow / 2. Simulate IdP Login.]]>
+        <![CDATA[Test description: Response time is reasonable.]]>
+        <![CDATA[Error message: expected undefined to be a number or a date.]]>
+        <![CDATA[Stacktrace: AssertionError: expected undefined to be a number or a date
+   at Object.eval sandbox-script.js:1:7).]]>
+      </failure>
+    </testcase>
+    <testcase name="IdP returns redirect with auth code" time="0.000" classname="WebApiAuthenticationTests">
+      <failure type="AssertionFailure" message="expected undefined to be one of [ 302, 303 ]">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
+        <![CDATA[Collection name: WebAPI Authentication Tests.]]>
+        <![CDATA[Request name: OIDC Full Login Flow / 2. Simulate IdP Login.]]>
+        <![CDATA[Test description: IdP returns redirect with auth code.]]>
+        <![CDATA[Error message: expected undefined to be one of [ 302, 303 ].]]>
+        <![CDATA[Stacktrace: AssertionError: expected undefined to be one of [ 302, 303 ]
+   at Object.eval sandbox-script.js:1:7).]]>
+      </failure>
+    </testcase>
+    <testcase name="Redirect contains authorization code" time="0.000" classname="WebApiAuthenticationTests">
+      <failure type="AssertionFailure" message="the given combination of arguments (undefined and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
+        <![CDATA[Collection name: WebAPI Authentication Tests.]]>
+        <![CDATA[Request name: OIDC Full Login Flow / 2. Simulate IdP Login.]]>
+        <![CDATA[Test description: Redirect contains authorization code.]]>
+        <![CDATA[Error message: the given combination of arguments (undefined and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string.]]>
+        <![CDATA[Stacktrace: AssertionError: the given combination of arguments (undefined and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string
+   at Object.eval sandbox-script.js:2:7).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="OIDC Full Login Flow / 3. Complete OAuth Callback" id="40bd317f-db1c-418f-90ca-0cd637d19304" timestamp="2026-01-24T15:06:17.921Z" tests="2" failures="1" errors="0" time="0.009">
+    <testcase name="Response time is reasonable" time="0.009" classname="WebApiAuthenticationTests"/>
+    <testcase name="Callback returns redirect or success" time="0.009" classname="WebApiAuthenticationTests">
+      <failure type="AssertionFailure" message="expected 404 to be one of [ 200, 302, 303 ]">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
+        <![CDATA[Collection name: WebAPI Authentication Tests.]]>
+        <![CDATA[Request name: OIDC Full Login Flow / 3. Complete OAuth Callback.]]>
+        <![CDATA[Test description: Callback returns redirect or success.]]>
+        <![CDATA[Error message: expected 404 to be one of [ 200, 302, 303 ].]]>
+        <![CDATA[Stacktrace: AssertionError: expected 404 to be one of [ 200, 302, 303 ]
+   at Object.eval sandbox-script.js:1:8).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="OIDC Full Login Flow / 4. Get Token via Refresh" id="beab6bbc-7eda-4cb2-8249-53db1cdd02f2" timestamp="2026-01-24T15:06:17.921Z" tests="2" failures="1" errors="0" time="0.008">
+    <testcase name="Response time is reasonable" time="0.008" classname="WebApiAuthenticationTests"/>
+    <testcase name="Refresh returns token" time="0.008" classname="WebApiAuthenticationTests">
+      <failure type="AssertionFailure" message="expected 404 to be one of [ 200, 401 ]">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
+        <![CDATA[Collection name: WebAPI Authentication Tests.]]>
+        <![CDATA[Request name: OIDC Full Login Flow / 4. Get Token via Refresh.]]>
+        <![CDATA[Test description: Refresh returns token.]]>
+        <![CDATA[Error message: expected 404 to be one of [ 200, 401 ].]]>
+        <![CDATA[Stacktrace: AssertionError: expected 404 to be one of [ 200, 401 ]
+   at Object.eval sandbox-script.js:1:9).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="OIDC Full Login Flow / 5. Access Protected Endpoint" id="9dea82eb-1c77-4f37-a3c1-e6a2d099d0b3" timestamp="2026-01-24T15:06:17.921Z" tests="2" failures="0" errors="0" time="0.011">
+    <testcase name="Response time is reasonable" time="0.011" classname="WebApiAuthenticationTests"/>
+    <testcase name="OIDC flow completed (session-based auth)" time="0.011" classname="WebApiAuthenticationTests"/>
+  </testsuite>
+  <testsuite name="JDBC Authentication / JDBC Login - Valid Credentials" id="9792aa17-5591-45ac-89b2-80786af6490f" timestamp="2026-01-24T15:06:17.921Z" tests="3" failures="2" errors="0" time="0.009">
+    <testcase name="Response time is reasonable" time="0.009" classname="WebApiAuthenticationTests"/>
+    <testcase name="JDBC login returns 200" time="0.009" classname="WebApiAuthenticationTests">
+      <failure type="AssertionFailure" message="expected response to have status code 200 but got 404">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
+        <![CDATA[Collection name: WebAPI Authentication Tests.]]>
+        <![CDATA[Request name: JDBC Authentication / JDBC Login - Valid Credentials.]]>
+        <![CDATA[Test description: JDBC login returns 200.]]>
+        <![CDATA[Error message: expected response to have status code 200 but got 404.]]>
+        <![CDATA[Stacktrace: AssertionError: expected response to have status code 200 but got 404
+   at Object.eval sandbox-script.js:1:11).]]>
+      </failure>
+    </testcase>
+    <testcase name="Bearer header should be present" time="0.009" classname="WebApiAuthenticationTests">
+      <failure type="AssertionFailure" message="expected undefined not to be undefined">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
+        <![CDATA[Collection name: WebAPI Authentication Tests.]]>
+        <![CDATA[Request name: JDBC Authentication / JDBC Login - Valid Credentials.]]>
+        <![CDATA[Test description: Bearer header should be present.]]>
+        <![CDATA[Error message: expected undefined not to be undefined.]]>
+        <![CDATA[Stacktrace: AssertionError: expected undefined not to be undefined
+   at Object.eval sandbox-script.js:2:11).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="JDBC Authentication / JDBC Login - Invalid Credentials" id="b794846c-a310-429f-947e-07632c209d54" timestamp="2026-01-24T15:06:17.921Z" tests="2" failures="1" errors="0" time="0.008">
+    <testcase name="Response time is reasonable" time="0.008" classname="WebApiAuthenticationTests"/>
+    <testcase name="Invalid credentials return 401" time="0.008" classname="WebApiAuthenticationTests">
+      <failure type="AssertionFailure" message="expected 404 to be one of [ 401, 403 ]">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
+        <![CDATA[Collection name: WebAPI Authentication Tests.]]>
+        <![CDATA[Request name: JDBC Authentication / JDBC Login - Invalid Credentials.]]>
+        <![CDATA[Test description: Invalid credentials return 401.]]>
+        <![CDATA[Error message: expected 404 to be one of [ 401, 403 ].]]>
+        <![CDATA[Stacktrace: AssertionError: expected 404 to be one of [ 401, 403 ]
+   at Object.eval sandbox-script.js:1:12).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="JDBC Authentication / JDBC Login - Missing Credentials" id="039ba4d3-0104-4275-af62-e6d34d9bbf31" timestamp="2026-01-24T15:06:17.921Z" tests="2" failures="1" errors="0" time="0.007">
+    <testcase name="Response time is reasonable" time="0.007" classname="WebApiAuthenticationTests"/>
+    <testcase name="Missing credentials are handled" time="0.007" classname="WebApiAuthenticationTests">
+      <failure type="AssertionFailure" message="expected 404 to be one of [ 200, 400, 401, 403 ]">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
+        <![CDATA[Collection name: WebAPI Authentication Tests.]]>
+        <![CDATA[Request name: JDBC Authentication / JDBC Login - Missing Credentials.]]>
+        <![CDATA[Test description: Missing credentials are handled.]]>
+        <![CDATA[Error message: expected 404 to be one of [ 200, 400, 401, 403 ].]]>
+        <![CDATA[Stacktrace: AssertionError: expected 404 to be one of [ 200, 400, 401, 403 ]
+   at Object.eval sandbox-script.js:1:13).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="JDBC Authentication / Access Protected Endpoint with JDBC Token" id="b1f12914-e622-4580-9f68-1552adf1068e" timestamp="2026-01-24T15:06:17.921Z" tests="2" failures="0" errors="0" time="0.011">
+    <testcase name="Response time is reasonable" time="0.011" classname="WebApiAuthenticationTests"/>
+    <testcase name="No JDBC token available" time="0.011" classname="WebApiAuthenticationTests"/>
+  </testsuite>
+  <testsuite name="Security Configuration / Security Info Endpoint" id="04954cd8-de08-4f8e-a321-8481ccf89ed5" timestamp="2026-01-24T15:06:17.921Z" tests="3" failures="0" errors="0" time="0.005">
+    <testcase name="Response time is reasonable" time="0.005" classname="WebApiAuthenticationTests"/>
+    <testcase name="Security info endpoint responds" time="0.005" classname="WebApiAuthenticationTests"/>
+    <testcase name="Response contains security info" time="0.005" classname="WebApiAuthenticationTests"/>
+  </testsuite>
+  <testsuite name="JWT Validation / Invalid JWT Token - Should Return 401" id="0a384724-5ba3-49d9-9516-b6fd4dcf5fb6" timestamp="2026-01-24T15:06:17.921Z" tests="2" failures="1" errors="0" time="0.011">
+    <testcase name="Response time is reasonable" time="0.011" classname="WebApiAuthenticationTests"/>
+    <testcase name="Invalid JWT returns 401" time="0.011" classname="WebApiAuthenticationTests">
+      <failure type="AssertionFailure" message="expected 200 to be one of [ 401, 403 ]">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
+        <![CDATA[Collection name: WebAPI Authentication Tests.]]>
+        <![CDATA[Request name: JWT Validation / Invalid JWT Token - Should Return 401.]]>
+        <![CDATA[Test description: Invalid JWT returns 401.]]>
+        <![CDATA[Error message: expected 200 to be one of [ 401, 403 ].]]>
+        <![CDATA[Stacktrace: AssertionError: expected 200 to be one of [ 401, 403 ]
+   at Object.eval sandbox-script.js:1:16).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="JWT Validation / Malformed Authorization Header - Should Return 401" id="ac410404-7801-4a0e-9d4d-3c22d052e9ef" timestamp="2026-01-24T15:06:17.921Z" tests="2" failures="1" errors="0" time="0.012">
+    <testcase name="Response time is reasonable" time="0.012" classname="WebApiAuthenticationTests"/>
+    <testcase name="Malformed auth header returns 401" time="0.012" classname="WebApiAuthenticationTests">
+      <failure type="AssertionFailure" message="expected 200 to be one of [ 401, 403 ]">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
+        <![CDATA[Collection name: WebAPI Authentication Tests.]]>
+        <![CDATA[Request name: JWT Validation / Malformed Authorization Header - Should Return 401.]]>
+        <![CDATA[Test description: Malformed auth header returns 401.]]>
+        <![CDATA[Error message: expected 200 to be one of [ 401, 403 ].]]>
+        <![CDATA[Stacktrace: AssertionError: expected 200 to be one of [ 401, 403 ]
+   at Object.eval sandbox-script.js:1:17).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="JWT Validation / Expired JWT Token - Should Return 401" id="cbca33a7-fe15-4d13-a0e5-793071d5d47b" timestamp="2026-01-24T15:06:17.921Z" tests="2" failures="1" errors="0" time="0.011">
+    <testcase name="Response time is reasonable" time="0.011" classname="WebApiAuthenticationTests"/>
+    <testcase name="Expired JWT returns 401" time="0.011" classname="WebApiAuthenticationTests">
+      <failure type="AssertionFailure" message="expected 200 to be one of [ 401, 403 ]">
+        <![CDATA[Failed 1 times.]]>
+        <![CDATA[Collection JSON ID: webapi-auth-tests.]]>
+        <![CDATA[Collection name: WebAPI Authentication Tests.]]>
+        <![CDATA[Request name: JWT Validation / Expired JWT Token - Should Return 401.]]>
+        <![CDATA[Test description: Expired JWT returns 401.]]>
+        <![CDATA[Error message: expected 200 to be one of [ 401, 403 ].]]>
+        <![CDATA[Stacktrace: AssertionError: expected 200 to be one of [ 401, 403 ]
+   at Object.eval sandbox-script.js:1:18).]]>
+      </failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="Public Endpoints / Info Endpoint - Always Public" id="adf22d9f-72d7-4c00-8719-067908a678dc" timestamp="2026-01-24T15:06:17.921Z" tests="3" failures="0" errors="0" time="0.007">
+    <testcase name="Response time is reasonable" time="0.007" classname="WebApiAuthenticationTests"/>
+    <testcase name="Info endpoint is always accessible" time="0.007" classname="WebApiAuthenticationTests"/>
+    <testcase name="Response is valid JSON" time="0.007" classname="WebApiAuthenticationTests"/>
+  </testsuite>
+  <testsuite name="CORS Headers / CORS Preflight Request" id="63b15a5b-5305-4880-ae7f-29092810a7dc" timestamp="2026-01-24T15:06:17.921Z" tests="3" failures="0" errors="0" time="0.005">
+    <testcase name="Response time is reasonable" time="0.005" classname="WebApiAuthenticationTests"/>
+    <testcase name="CORS preflight responds correctly" time="0.005" classname="WebApiAuthenticationTests"/>
+    <testcase name="CORS headers present" time="0.005" classname="WebApiAuthenticationTests"/>
+  </testsuite>
+</testsuites>

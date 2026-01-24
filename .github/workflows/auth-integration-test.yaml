@@ -21,16 +21,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: maven
-
-      - name: Build WebAPI
+      - name: Build WebAPI Docker image
+        working-directory: docker/auth-test
         run: |
-          mvn clean package -DskipTests -Dpackaging.type=jar -P webapi-postgresql,trexsql -B
+          docker compose build webapi
 
       - name: Set up test environment
         run: |

@@ -2,18 +2,15 @@ FROM maven:3.9-eclipse-temurin-21 AS builder
 
 WORKDIR /code
 
-ARG MAVEN_PROFILE=webapi-docker,trexsql
+ARG MAVEN_PROFILE=trexsql
 ARG MAVEN_PARAMS="" # can use maven options, e.g. -DskipTests=true -DskipUnitTests=true
 
 ARG OPENTELEMETRY_JAVA_AGENT_VERSION=1.17.0
 RUN curl -LSsO https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${OPENTELEMETRY_JAVA_AGENT_VERSION}/opentelemetry-javaagent.jar
 
-# Download dependencies
+# Download dependencies (for Docker layer caching)
 COPY pom.xml /code/
-RUN mkdir .git \
-    && mvn package \
-     -Dpackaging.type=jar \
-     -P${MAVEN_PROFILE}
+RUN mvn dependency:go-offline -DskipTests -P${MAVEN_PROFILE}
 
 ARG GIT_BRANCH=unknown
 ARG GIT_COMMIT_ID_ABBREV=unknown

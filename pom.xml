@@ -929,7 +929,7 @@
 
   <profiles>
     <profile>
-      <id>tcache</id>
+      <id>trexsql</id>
       <properties>
         <trexsql.enabled>true</trexsql.enabled>
       </properties>
@@ -937,7 +937,7 @@
         <dependency>
           <groupId>com.github.p-hoffmann</groupId>
           <artifactId>trexsql-ext</artifactId>
-          <version>v0.1.18</version>
+          <version>v0.1.23</version>
         </dependency>
       </dependencies>
       <build>
